@@ -1,45 +1,84 @@
-# Crabrix hypothesis POC
+# Crabrix — native iOS feasibility spike
 
-This is intentionally **not** the full Crabrix product. It tests one product loop with a real local Rust compiler:
+Crabrix is now a **native SwiftUI application**. There is no WebView, localhost server, JavaScript runtime, or cloud compiler in the app.
 
-1. edit a Rust program;
-2. receive a structured `rustc` diagnostic;
-3. see a causal explanation for E0502;
-4. complete a 30-second compiler-validated exercise;
-5. apply the smallest repair and verify the project again.
+This Phase 0 spike tests the hard product gate:
 
-The interface is responsive for iPad/iPhone-sized browser windows. Compilation and execution happen on the Mac that runs the local server.
+> Can a bundled Rust compiler type-check and run Rust locally inside an iPhone/iPad app while offline?
 
-## Run
+The app embeds:
 
-Requirements: Node.js 20+ and `rustc` in `PATH`.
+- a SwiftUI editor and result UI;
+- [WasmKit 0.3.1](https://github.com/swiftwasm/WasmKit), a WebAssembly interpreter written in Swift with iOS support;
+- a pinned WASI build of `rustc` and its `wasm32-wasip1` sysroot from [Weblings / wasm-rustc](https://github.com/AngelOnFira/wasm-rustc/releases/tag/artifacts-test-7);
+- structured `rustc` JSON diagnostic parsing for the E0502 experiment;
+- local execution of the Wasm program emitted by the bundled compiler.
+
+The toolchain is downloaded **at build time**, verified by SHA-256, and copied into the app bundle. The running app never downloads compiler components.
+
+## Build
+
+Requirements:
+
+- Xcode 27 beta or newer (Swift 6.3+ is required by WasmKit 0.3.1);
+- XcodeGen;
+- `zstd` on the build Mac.
 
 ```bash
-npm start
+./scripts/bootstrap.sh
+DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
+  xcodebuild -project Crabrix.xcodeproj \
+  -scheme Crabrix \
+  -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=26.5' \
+  build
 ```
 
-Open <http://127.0.0.1:4173>.
+Open `Crabrix.xcodeproj` for device testing.
 
-## Test
+## Verification
+
+The normal test scheme excludes the expensive compiler gates:
 
 ```bash
-npm test
+DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
+  xcodebuild -project Crabrix.xcodeproj \
+  -scheme Crabrix \
+  -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=26.5' \
+  test
 ```
 
-The tests invoke the real local `rustc`, verify structured E0502 parsing, run a valid program, and check that an infinite loop is terminated.
+Run the real bundled-compiler gates with the dedicated scheme:
 
-## What this validates
+```bash
+DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
+  xcodebuild -project Crabrix.xcodeproj \
+  -scheme CrabrixCompilerGate \
+  -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=26.5' \
+  test
+```
 
-- the IDE → diagnostic → explanation → practice → repair interaction;
-- whether a causal borrow-checker explanation feels more useful than raw compiler text;
-- whether short practice can remain connected to the user's project;
-- a basic bounded worker lifecycle for local experiments.
+Measured on the iPad Pro 13-inch (M5) Simulator used for this spike:
 
-## What this does not validate
+- structured E0502 check: 16.1 seconds;
+- compile, link, run the repaired borrow sample, and capture `stdout = crab`: 51.5 seconds;
+- unsigned ARM64 `iphoneos` build: succeeds.
+- uncompressed Simulator `.app` bundle: approximately 160 MB (152 MB toolchain payload).
 
-- shipping `rustc` or a compiler-in-Wasm runtime inside an iOS app;
-- physical-device memory, thermal, sandbox, or offline behavior;
-- App Review acceptance;
-- Cargo, crates.io, GitHub, multi-file projects, or adaptive review.
+These numbers prove the native integration path, not physical-device performance.
 
-This server executes user-entered code on the local machine. It binds only to `127.0.0.1` and is a product experiment, not a hardened multi-user sandbox.
+## Success criteria
+
+The compiler gate passes only when all of these are demonstrated on a physical iPhone/iPad:
+
+1. airplane mode is enabled before launch;
+2. the app reports `Bundled rustc.wasm`;
+3. **Check** produces a real E0502 JSON diagnostic;
+4. the repaired program compiles and **Run** prints `crab`;
+5. repeated checks stay within an acceptable memory/thermal envelope;
+6. a non-terminating program can be stopped without leaving runaway work.
+
+Items 1, 5 and 6 cannot be claimed from a Simulator run. See [docs/DEVICE-GATE.md](docs/DEVICE-GATE.md).
+
+## Repository history
+
+The earlier browser experiment is preserved in the `archive/web-poc` branch only. It is not part of the native app or its runtime.

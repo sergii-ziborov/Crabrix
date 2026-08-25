@@ -1,0 +1,100 @@
+name: Crabrix
+
+options:
+  bundleIdPrefix: com.sergiiziborov
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "18.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    SUPPORTS_MACCATALYST: NO
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+
+packages:
+  WasmKit:
+    url: https://github.com/swiftwasm/WasmKit.git
+    exactVersion: 0.3.1
+  SwiftSystem:
+    url: https://github.com/apple/swift-system.git
+    exactVersion: 1.8.1
+
+targets:
+  Crabrix:
+    type: application
+    platform: iOS
+    sources:
+      - path: Crabrix
+        excludes:
+          - Resources/Toolchain
+      - path: Crabrix/Resources/Toolchain
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - package: WasmKit
+        product: WasmKit
+      - package: WasmKit
+        product: WasmKitWASI
+      - package: SwiftSystem
+        product: SystemPackage
+    preBuildScripts:
+      - name: Prepare bundled Rust toolchain
+        script: |
+          "$SRCROOT/scripts/fetch_toolchain.sh"
+        basedOnDependencyAnalysis: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix
+        PRODUCT_NAME: Crabrix
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Crabrix
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.developer-tools
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIRequiresFullScreen: NO
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        CODE_SIGN_STYLE: Automatic
+
+  CrabrixTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: CrabrixTests
+    dependencies:
+      - target: Crabrix
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.CrabrixTests
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  Crabrix:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+    test:
+      targets:
+        - name: CrabrixTests
+          skippedTests:
+            - BundledCompilerGateTests/testBundledRustcProducesE0502()
+            - BundledCompilerGateTests/testBundledRustcCompilesAndRunsRepairedProgram()
+
+  CrabrixCompilerGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+    test:
+      environmentVariables:
+        CRABRIX_RUN_COMPILER_GATE: "1"
+      targets:
+        - name: CrabrixTests
+          selectedTests:
+            - BundledCompilerGateTests/testBundledRustcProducesE0502()
+            - BundledCompilerGateTests/testBundledRustcCompilesAndRunsRepairedProgram()

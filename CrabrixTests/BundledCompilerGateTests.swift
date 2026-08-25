@@ -1,0 +1,44 @@
+import XCTest
+@testable import Crabrix
+
+final class BundledCompilerGateTests: XCTestCase {
+    func testBundledRustcProducesE0502() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
+            throw XCTSkip("Set CRABRIX_RUN_COMPILER_GATE=1 for the expensive bundled compiler gate.")
+        }
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        XCTAssertTrue(compiler.probe().isReady)
+
+        let result = await compiler.check(source: RustSamples.broken)
+
+        XCTAssertFalse(result.succeeded)
+        XCTAssertEqual(
+            result.diagnostics.first?.code,
+            "E0502",
+            "detail: \(result.detail)\nstderr: \(result.stderr)\nstdout: \(result.stdout)"
+        )
+    }
+
+    func testBundledRustcCompilesAndRunsRepairedProgram() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
+            throw XCTSkip("Run the CrabrixCompilerGate scheme for the expensive bundled compiler gate.")
+        }
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        let result = await compiler.run(source: """
+        fn main() {
+            let mut items = vec!["crab", "rust"];
+            let first = &items[0];
+            println!("{first}");
+            items.push("compiler");
+        }
+        """)
+
+        XCTAssertTrue(
+            result.succeeded,
+            "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)"
+        )
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "crab")
+    }
+}

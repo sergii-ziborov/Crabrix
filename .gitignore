@@ -1,4 +1,10 @@
 .DS_Store
-node_modules/
 *.log
 .env
+.artifact-cache/
+.build/
+DerivedData*/
+Crabrix.xcodeproj/
+Crabrix/Resources/Toolchain/artifacts-test-7/
+Crabrix/Resources/Toolchain/.stage.*/
+*.xcresult
