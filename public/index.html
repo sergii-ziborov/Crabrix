@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#10161d" />
+    <title>Crabrix · Compiler learning loop POC</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand" aria-label="Crabrix">
+          <span class="crab-mark" aria-hidden="true">
+            <i></i><b></b><em></em>
+          </span>
+          <span class="wordmark">crabrix<span class="period">.</span></span>
+          <span class="poc-label">HYPOTHESIS LAB</span>
+        </div>
+        <div class="compiler-pill" id="compilerPill">
+          <span class="pulse-dot"></span>
+          <span id="compilerVersion">проверяем rustc…</span>
+        </div>
+      </header>
+
+      <section class="hypothesis-bar" aria-label="Шаги продуктовой гипотезы">
+        <div class="hypothesis-copy">
+          <span class="section-kicker">Проверяемая петля</span>
+          <strong>Ошибка должна превратиться в понимание — и в рабочий код.</strong>
+        </div>
+        <ol class="funnel" id="funnel">
+          <li class="active" data-stage="diagnostic"><span>1</span>Диагностика</li>
+          <li data-stage="explanation"><span>2</span>Понимание</li>
+          <li data-stage="practice"><span>3</span>Практика</li>
+          <li data-stage="repair"><span>4</span>Исправление</li>
+        </ol>
+      </section>
+
+      <main class="workspace">
+        <aside class="project-rail">
+          <nav class="rail-icons" aria-label="Разделы проекта">
+            <button class="rail-button active" aria-label="Проект" title="Проект">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h6l1.8 2H20v11H4z" /></svg>
+            </button>
+            <button class="rail-button" aria-label="Поиск" title="Поиск">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 4.5 4.5" /></svg>
+            </button>
+            <button class="rail-button" aria-label="Обучение" title="Обучение">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 8 8-4 8 4-8 4zM7 10.5V15c2.5 2 7.5 2 10 0v-4.5" /></svg>
+            </button>
+          </nav>
+          <div class="project-panel">
+            <div class="panel-heading">
+              <span>ПРОЕКТ</span>
+              <button aria-label="Ещё">•••</button>
+            </div>
+            <div class="tree-row tree-root"><span class="chevron">⌄</span><b>borrow-lab</b></div>
+            <div class="tree-row nested"><span class="chevron">⌄</span><span class="folder-icon">◇</span>src</div>
+            <button class="tree-row nested deep selected"><span class="rust-file">R</span>main.rs</button>
+            <div class="tree-row nested"><span class="cargo-file">C</span>Cargo.toml</div>
+            <div class="project-note">
+              <span>Только POC</span>
+              Один файл, одна ошибка, настоящий компилятор.
+            </div>
+          </div>
+        </aside>
+
+        <section class="editor-pane">
+          <div class="editor-toolbar">
+            <div class="file-tab"><span class="rust-file">R</span>main.rs <i>×</i></div>
+            <div class="editor-actions">
+              <button class="button ghost" id="resetButton" title="Вернуть исходный пример">
+                Сбросить
+              </button>
+              <button class="button check" id="checkButton">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg>
+                Проверить
+              </button>
+              <button class="button run" id="runButton">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z" /></svg>
+                Запустить
+              </button>
+            </div>
+          </div>
+
+          <div class="editor-main">
+            <div class="code-editor" id="codeEditor">
+              <div class="line-numbers" id="lineNumbers" aria-hidden="true"></div>
+              <div class="editor-stack">
+                <pre id="codeHighlight" aria-hidden="true"></pre>
+                <textarea id="codeInput" aria-label="Редактор Rust-кода" spellcheck="false"></textarea>
+              </div>
+            </div>
+            <div class="inline-diagnostic hidden" id="inlineDiagnostic">
+              <span class="diagnostic-code">E0502</span>
+              <span id="inlineMessage">cannot borrow as mutable</span>
+              <button id="openExplanation">Разобрать →</button>
+            </div>
+          </div>
+
+          <section class="console-panel" id="consolePanel">
+            <div class="console-tabs">
+              <button class="active">ПРОБЛЕМЫ <span id="problemCount">0</span></button>
+              <button>ВЫВОД</button>
+              <span class="console-status" id="consoleStatus">Готово к проверке</span>
+            </div>
+            <div class="console-content" id="consoleContent">
+              <div class="empty-state">
+                <span>⌘↵</span>
+                Нажмите «Проверить», чтобы спросить настоящий rustc.
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <aside class="learning-pane" id="learningPane">
+          <div class="learning-empty" id="learningEmpty">
+            <div class="empty-orbit"><span>&amp;</span></div>
+            <span class="section-kicker">BORROW CHECKER DECODER</span>
+            <h2>Компилятор покажет где.<br />Crabrix объяснит почему.</h2>
+            <p>Запустите проверку, чтобы увидеть причинную модель ошибки и короткую практику.</p>
+          </div>
+
+          <div class="learning-card hidden" id="learningCard">
+            <div class="learning-header">
+              <div>
+                <span class="section-kicker" id="learningEyebrow">BORROW CHECKER</span>
+                <h2 id="learningTitle"></h2>
+              </div>
+              <span class="error-chip" id="learningCode"></span>
+            </div>
+            <p class="learning-summary" id="learningSummary"></p>
+
+            <div class="concept-rule">
+              <span class="rule-icon">§</span>
+              <div><b>Правило</b><p id="learningRule"></p></div>
+            </div>
+
+            <h3>Что произошло</h3>
+            <ol class="causal-timeline" id="causalTimeline"></ol>
+
+            <div class="repair-box" id="repairBox">
+              <span class="section-kicker">МИНИМАЛЬНЫЙ РЕМОНТ</span>
+              <strong id="repairTitle"></strong>
+              <p>Так неизменяемый заём завершится до изменения коллекции.</p>
+              <button class="button repair" id="repairButton">Применить к проекту</button>
+            </div>
+
+            <button class="practice-cta" id="practiceButton">
+              <span class="practice-icon">↯</span>
+              <span><b>Закрепить на микро‑задаче</b><small>Около 30 секунд · проверяет rustc</small></span>
+              <span class="arrow">→</span>
+            </button>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <dialog class="practice-dialog" id="practiceDialog">
+      <form method="dialog" class="practice-shell">
+        <header>
+          <div>
+            <span class="section-kicker">МИКРО‑ПРАКТИКА · E0502</span>
+            <h2 id="practiceTitle">Освободи заём до изменения</h2>
+          </div>
+          <button class="dialog-close" value="cancel" aria-label="Закрыть">×</button>
+        </header>
+        <p id="practicePrompt"></p>
+        <div class="practice-editor-wrap">
+          <textarea id="practiceCode" spellcheck="false" aria-label="Код микро-задачи"></textarea>
+        </div>
+        <div class="practice-feedback" id="practiceFeedback">
+          Измени порядок двух строк и проверь решение настоящим компилятором.
+        </div>
+        <footer>
+          <button class="button ghost" value="cancel">Вернуться к проекту</button>
+          <button class="button run" type="button" id="checkPracticeButton">Проверить решение</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
