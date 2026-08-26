@@ -22,6 +22,7 @@ struct SettingsView: View {
                     editorSection
                     cargoSection
                     compilerSection
+                    aboutSection
                 }
                 .padding(22)
                 .frame(maxWidth: 850)
@@ -234,6 +235,28 @@ struct SettingsView: View {
                 tint: CrabrixTheme.coral
             )
         }
+    }
+
+    private var aboutSection: some View {
+        SettingsSection(
+            title: "About Crabrix",
+            detail: "Use this number to confirm which build is installed."
+        ) {
+            SettingsFactRow(
+                title: "Version",
+                value: "\(appVersion) (build \(appBuild))",
+                icon: "app.badge.checkmark.fill",
+                tint: CrabrixTheme.mint
+            )
+        }
+    }
+
+    private var appVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
+    }
+
+    private var appBuild: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"
     }
 }
 
