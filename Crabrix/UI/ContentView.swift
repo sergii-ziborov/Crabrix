@@ -26,9 +26,7 @@ struct ContentView: View {
     @State private var inspectorWidth: CGFloat = 390
     @State private var isProjectSidebarCollapsed = false
     @State private var isInspectorCollapsed = false
-    @State private var buildDockHeight: CGFloat = 210
-    @State private var isBuildDockCollapsed = false
-    @State private var selectedBuildDockTab: BuildDockTab = .output
+    @State private var selectedBuildDockTab: BuildDockTab = .code
     @State private var learningPath: [LearningRoute] = []
     @State private var editorCursorOffset = 0
     @AppStorage("crabrix.appearance") private var appearanceRaw = CrabrixAppearance.system.rawValue
@@ -111,7 +109,7 @@ struct ContentView: View {
                                     manifest: model.cargoManifest,
                                     report: model.compatibilityReport,
                                     provenance: model.provenance,
-                                    onSelect: model.selectFile,
+                                    onSelect: selectEditorFile,
                                     onNewFile: { projectItemCreation = .rustFile },
                                     onNewFolder: { projectItemCreation = .moduleFolder }
                                 )
@@ -284,8 +282,6 @@ struct ContentView: View {
                 if let dockTab = BuildDockTab(rawValue: tab) {
                     selectedDestination = .build
                     selectedBuildDockTab = dockTab
-                    isBuildDockCollapsed = false
-                    buildDockHeight = 260
                 }
             }
             if let showcaseArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-showcase=") }) {
@@ -365,7 +361,7 @@ struct ContentView: View {
                 isInspectorCollapsed: isInspectorCollapsed,
                 canRun: model.canStartBuild && !model.isProjectOperationInProgress,
                 isCompletionLoading: completion.isLoading,
-                onSelectFile: model.selectFile,
+                onSelectFile: selectEditorFile,
                 onLoadRunnable: model.loadRunnableSample,
                 onLoadDiagnostic: model.loadBorrowDiagnosticSample,
                 onLoadMultiFile: model.loadMultiFileSample,
@@ -384,73 +380,8 @@ struct ContentView: View {
                 }
             )
 
-            ZStack(alignment: .topLeading) {
-                SyntaxCodeEditor(
-                    text: $model.source,
-                    cursorOffset: $editorCursorOffset,
-                    filePath: model.selectedFile,
-                    isEditable: !model.isProjectOperationInProgress
-                )
-
-                if model.isBusy {
-                    HStack(alignment: .top, spacing: 10) {
-                        ProgressView()
-                            .tint(CrabrixTheme.coral)
-                            .padding(.top, 2)
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(model.activity.label)
-                                .font(.caption.monospaced())
-                            Text(model.activity == .running
-                                 ? CrabrixBuildInfo.runTiming
-                                 : CrabrixBuildInfo.checkTiming)
-                                .font(.caption2)
-                                .foregroundStyle(CrabrixTheme.muted)
-                            Label("Background snapshot · keep editing or open another tab", systemImage: "arrow.triangle.2.circlepath")
-                                .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                                .foregroundStyle(CrabrixTheme.blue)
-                        }
-                        Button {
-                            model.cancelBuild()
-                        } label: {
-                            Label("Stop", systemImage: "stop.fill")
-                                .font(.caption.bold())
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(CrabrixTheme.coral)
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 9)
-                    .background(.regularMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                }
-
-                if let suggestion = completion.suggestion {
-                    VStack {
-                        Spacer()
-                        CompletionSuggestionCard(
-                            suggestion: suggestion,
-                            onAccept: acceptCompletion,
-                            onDismiss: completion.dismiss
-                        )
-                    }
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                } else if let message = completion.message {
-                    VStack {
-                        Spacer()
-                        CompletionMessageCard(message: message, onDismiss: completion.dismiss)
-                    }
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                }
-            }
-
             BuildDockView(
                 selectedTab: $selectedBuildDockTab,
-                height: $buildDockHeight,
-                isCollapsed: $isBuildDockCollapsed,
                 terminal: terminal,
                 project: model.exportProject(),
                 result: model.result,
@@ -458,10 +389,81 @@ struct ContentView: View {
                 canStartBuild: model.canStartBuild && !model.isProjectOperationInProgress,
                 onCheck: model.check,
                 onRun: model.run
-            )
-            .frame(height: isBuildDockCollapsed ? 38 : buildDockHeight)
+            ) {
+                codeWorkspace
+            }
         }
         .background(CrabrixTheme.background)
+    }
+
+    private var codeWorkspace: some View {
+        ZStack(alignment: .topLeading) {
+            SyntaxCodeEditor(
+                text: $model.source,
+                cursorOffset: $editorCursorOffset,
+                filePath: model.selectedFile,
+                isEditable: !model.isProjectOperationInProgress
+            )
+
+            if model.isBusy {
+                HStack(alignment: .top, spacing: 10) {
+                    ProgressView()
+                        .tint(CrabrixTheme.coral)
+                        .padding(.top, 2)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(model.activity.label)
+                            .font(.caption.monospaced())
+                        Text(model.activity == .running
+                             ? CrabrixBuildInfo.runTiming
+                             : CrabrixBuildInfo.checkTiming)
+                            .font(.caption2)
+                            .foregroundStyle(CrabrixTheme.muted)
+                        Label("Background snapshot · switch tabs freely", systemImage: "arrow.triangle.2.circlepath")
+                            .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(CrabrixTheme.blue)
+                    }
+                    Button {
+                        model.cancelBuild()
+                    } label: {
+                        Label("Stop", systemImage: "stop.fill")
+                            .font(.caption.bold())
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(CrabrixTheme.coral)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 9)
+                .background(.regularMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+
+            if let suggestion = completion.suggestion {
+                VStack {
+                    Spacer()
+                    CompletionSuggestionCard(
+                        suggestion: suggestion,
+                        onAccept: acceptCompletion,
+                        onDismiss: completion.dismiss
+                    )
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            } else if let message = completion.message {
+                VStack {
+                    Spacer()
+                    CompletionMessageCard(message: message, onDismiss: completion.dismiss)
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+        }
+    }
+
+    private func selectEditorFile(_ file: String) {
+        model.selectFile(file)
+        selectedBuildDockTab = .code
     }
 
     private func requestCompletion() {

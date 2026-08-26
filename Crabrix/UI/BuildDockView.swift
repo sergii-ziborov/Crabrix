@@ -1,6 +1,7 @@
 import SwiftUI
 
 enum BuildDockTab: String, CaseIterable, Identifiable {
+    case code
     case problems
     case output
     case terminal
@@ -11,6 +12,7 @@ enum BuildDockTab: String, CaseIterable, Identifiable {
 
     var systemImage: String {
         switch self {
+        case .code: "chevron.left.forwardslash.chevron.right"
         case .problems: "exclamationmark.triangle"
         case .output: "text.alignleft"
         case .terminal: "apple.terminal"
@@ -19,6 +21,7 @@ enum BuildDockTab: String, CaseIterable, Identifiable {
 
     var tint: Color {
         switch self {
+        case .code: CrabrixTheme.blue
         case .problems: CrabrixTheme.coral
         case .output: CrabrixTheme.blue
         case .terminal: CrabrixTheme.mint
@@ -26,10 +29,8 @@ enum BuildDockTab: String, CaseIterable, Identifiable {
     }
 }
 
-struct BuildDockView: View {
+struct BuildDockView<CodeContent: View>: View {
     @Binding var selectedTab: BuildDockTab
-    @Binding var height: CGFloat
-    @Binding var isCollapsed: Bool
     @ObservedObject var terminal: ProjectTerminalSession
 
     let project: CrabrixProject
@@ -38,44 +39,40 @@ struct BuildDockView: View {
     let canStartBuild: Bool
     let onCheck: () -> Void
     let onRun: () -> Void
+    let codeContent: CodeContent
 
-    @State private var dragStartHeight: CGFloat?
+    init(
+        selectedTab: Binding<BuildDockTab>,
+        terminal: ProjectTerminalSession,
+        project: CrabrixProject,
+        result: CompilationResult?,
+        activity: CompilerViewModel.Activity,
+        canStartBuild: Bool,
+        onCheck: @escaping () -> Void,
+        onRun: @escaping () -> Void,
+        @ViewBuilder codeContent: () -> CodeContent
+    ) {
+        _selectedTab = selectedTab
+        self.terminal = terminal
+        self.project = project
+        self.result = result
+        self.activity = activity
+        self.canStartBuild = canStartBuild
+        self.onCheck = onCheck
+        self.onRun = onRun
+        self.codeContent = codeContent()
+    }
 
     var body: some View {
         VStack(spacing: 0) {
-            resizeHandle
             header
-            if !isCollapsed {
-                Divider().overlay(CrabrixTheme.border)
-                statusStrip
-                Divider().overlay(CrabrixTheme.border)
-                content
-            }
+            Divider().overlay(CrabrixTheme.border)
+            statusStrip
+            Divider().overlay(CrabrixTheme.border)
+            content
         }
         .background(CrabrixTheme.editor)
-        .overlay(alignment: .top) { Divider().overlay(CrabrixTheme.border) }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private var resizeHandle: some View {
-        ZStack {
-            Color.clear
-            Capsule()
-                .fill(CrabrixTheme.muted.opacity(0.5))
-                .frame(width: 40, height: 4)
-        }
-        .frame(height: isCollapsed ? 0 : 12)
-        .contentShape(Rectangle())
-        .gesture(
-            DragGesture(minimumDistance: 1)
-                .onChanged { value in
-                    if dragStartHeight == nil { dragStartHeight = height }
-                    let start = dragStartHeight ?? height
-                    height = min(max(start - value.translation.height, 120), 500)
-                }
-                .onEnded { _ in dragStartHeight = nil }
-        )
-        .accessibilityLabel("Resize build panel")
     }
 
     private var header: some View {
@@ -83,7 +80,6 @@ struct BuildDockView: View {
             ForEach(BuildDockTab.allCases) { tab in
                 Button {
                     selectedTab = tab
-                    if isCollapsed { withAnimation(.easeOut(duration: 0.18)) { isCollapsed = false } }
                 } label: {
                     HStack(spacing: 5) {
                         Image(systemName: tab.systemImage)
@@ -109,19 +105,15 @@ struct BuildDockView: View {
                     }
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Show \(tab.title.lowercased())")
+                .accessibilityAddTraits(selectedTab == tab ? .isSelected : [])
             }
 
             Spacer()
 
-            Button {
-                withAnimation(.easeOut(duration: 0.18)) { isCollapsed.toggle() }
-            } label: {
-                Image(systemName: isCollapsed ? "chevron.up" : "chevron.down")
-                    .frame(width: 30, height: 30)
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(CrabrixTheme.muted)
-            .accessibilityLabel(isCollapsed ? "Expand build panel" : "Collapse build panel")
+            Text("FULL PANE")
+                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .foregroundStyle(CrabrixTheme.muted)
         }
         .font(.system(size: 9, weight: .semibold, design: .monospaced))
         .padding(.horizontal, 9)
@@ -166,6 +158,8 @@ struct BuildDockView: View {
     private var content: some View {
         Group {
             switch selectedTab {
+            case .code:
+                codeContent
             case .problems:
                 ProblemsDockContent(result: result)
             case .output:

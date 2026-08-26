@@ -23,7 +23,7 @@ struct RuntimeInspector: View {
                         .foregroundStyle(CrabrixTheme.mint)
                     Text("Check the code, then run it")
                         .font(.system(size: 25, weight: .bold, design: .rounded))
-                    Text("Compiler output and errors will appear in the panel below the editor.")
+                    Text("Compiler output and errors appear in the full-size Output and Problems tabs beside Code.")
                         .font(.subheadline)
                         .foregroundStyle(CrabrixTheme.muted)
                 }

@@ -24,7 +24,7 @@ The app embeds:
 - a course hub for Basics, Ownership, advanced Cargo projects, and interview preparation, followed by visual lesson journeys, a distinct explanation/objective/task brief for every lesson, and live compiler-backed labs;
 - quick practice that covers answer selection, concept matching, and drag-to-arrange code without forcing every lesson into the editor;
 - four fully offline example projects for pixel art, a terminal dashboard, generative constellations, and collection practice;
-- draggable/collapsible project and diagnostic panels on iPad, plus a fixed-width, vertically resizable `Problems / Output / Terminal` dock with highlighted streams/commands and live build state on both the workspace and project library;
+- draggable/collapsible project and diagnostic panels on iPad, plus stable full-height `Code / Problems / Output / Terminal` workspace tabs with highlighted streams/commands and live build state on both the workspace and project library;
 - a review-before-insert Rust completion action: deterministic offline suggestions everywhere and optional Apple Foundation Models completion on eligible iOS 26+ devices;
 - Auto, Light, and Dark themes, adjustable editor text, build keep-awake control, and a searchable crates.io catalog with owner/download metadata and per-package version selection;
 - a bounded guest runtime with 64 MiB linear-memory and table-growth limits, `/sandbox` as the only writable preopen, and no network imports.
