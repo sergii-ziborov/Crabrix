@@ -7,6 +7,7 @@ enum LearningRoute: Hashable {
 
 struct LearningHubView: View {
     @Binding var navigationPath: [LearningRoute]
+    @AppStorage("crabrix.learn.trainingSessions") private var trainingSessions = 0
     let completedLessonIDs: Set<String>
     let onStartLesson: (RustLesson) -> Void
     let onCompleteLesson: (RustLesson) -> Void
@@ -19,36 +20,33 @@ struct LearningHubView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     hero
 
-                    NavigationLink {
-                        QuickPracticeView()
-                    } label: {
-                        HStack(spacing: 15) {
-                            Image(systemName: "bolt.fill")
-                                .font(.title2)
-                                .foregroundStyle(CrabrixTheme.amber)
-                                .frame(width: 48, height: 48)
-                                .background(CrabrixTheme.amber.opacity(0.13), in: RoundedRectangle(cornerRadius: 14))
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Quick Practice")
-                                    .font(.headline)
-                                Text("Choose · match · arrange code by dragging")
-                                    .font(.caption)
-                                    .foregroundStyle(CrabrixTheme.muted)
-                            }
-                            Spacer()
-                            Text("5 MIN")
-                                .font(.caption2.monospaced().bold())
-                                .foregroundStyle(CrabrixTheme.amber)
-                            Image(systemName: "arrow.right.circle.fill")
-                                .font(.title3)
-                                .foregroundStyle(CrabrixTheme.amber)
+                    LazyVGrid(columns: columns, spacing: 14) {
+                        NavigationLink {
+                            QuickPracticeView()
+                        } label: {
+                            LearningPracticeCard(
+                                title: "Quick Practice",
+                                subtitle: "Choose · match · arrange code by dragging",
+                                badge: "5 MIN",
+                                systemImage: "bolt.fill",
+                                tint: CrabrixTheme.amber
+                            )
                         }
-                        .padding(16)
-                        .background(CrabrixTheme.amber.opacity(0.08))
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .overlay { RoundedRectangle(cornerRadius: 16).stroke(CrabrixTheme.amber.opacity(0.3)) }
+                        .buttonStyle(.plain)
+
+                        NavigationLink {
+                            TermMatchTrainView { trainingSessions += 1 }
+                        } label: {
+                            LearningPracticeCard(
+                                title: "Term Train",
+                                subtitle: "Connect Rust terms with short descriptions",
+                                badge: trainingSessions == 0 ? "NEW" : "\(trainingSessions) SETS",
+                                systemImage: "link",
+                                tint: CrabrixTheme.mint
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Choose a course")
@@ -123,22 +121,36 @@ struct LearningHubView: View {
     }
 
     private var hero: some View {
-        HStack(spacing: 18) {
-            Image(systemName: "map.fill")
-                .font(.system(size: 32, weight: .bold))
-                .foregroundStyle(CrabrixTheme.mint)
-                .frame(width: 70, height: 70)
-                .background(CrabrixTheme.mint.opacity(0.13), in: RoundedRectangle(cornerRadius: 20))
-            VStack(alignment: .leading, spacing: 5) {
-                Text("CRABRIX ACADEMY")
-                    .font(.caption.monospaced().bold())
-                    .foregroundStyle(CrabrixTheme.coral)
-                Text("Learn Rust by building")
-                    .font(.system(size: 30, weight: .heavy, design: .rounded))
-                Text("Short explanations, compiler-checked labs, and a visible next step.")
-                    .foregroundStyle(CrabrixTheme.muted)
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 18) {
+                Image(systemName: "map.fill")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundStyle(CrabrixTheme.mint)
+                    .frame(width: 70, height: 70)
+                    .background(CrabrixTheme.mint.opacity(0.13), in: RoundedRectangle(cornerRadius: 20))
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("CRABRIX ACADEMY")
+                        .font(.caption.monospaced().bold())
+                        .foregroundStyle(CrabrixTheme.coral)
+                    Text("Learn Rust by building")
+                        .font(.system(size: 30, weight: .heavy, design: .rounded))
+                    Text("Short explanations, compiler-checked labs, and a visible next step.")
+                        .foregroundStyle(CrabrixTheme.muted)
+                }
+                Spacer(minLength: 0)
             }
-            Spacer(minLength: 0)
+
+            VStack(spacing: 7) {
+                HStack {
+                    Label("OVERALL PROGRESS", systemImage: "chart.line.uptrend.xyaxis")
+                    Spacer()
+                    Text("\(completedLessonCount) / \(totalLessonCount) lessons · \(progressPercent)%")
+                }
+                .font(.caption.monospaced().bold())
+                .foregroundStyle(CrabrixTheme.muted)
+                ProgressView(value: Double(completedLessonCount), total: Double(max(totalLessonCount, 1)))
+                    .tint(CrabrixTheme.mint)
+            }
         }
         .padding(20)
         .background(
@@ -152,8 +164,62 @@ struct LearningHubView: View {
         .overlay { RoundedRectangle(cornerRadius: 20).stroke(CrabrixTheme.border) }
     }
 
+    private var totalLessonCount: Int {
+        RustCourseCatalog.courses.flatMap(\.units).flatMap(\.lessons).count
+    }
+
+    private var completedLessonCount: Int {
+        let allLessonIDs = Set(RustCourseCatalog.courses.flatMap(\.units).flatMap(\.lessons).map(\.id))
+        return completedLessonIDs.intersection(allLessonIDs).count
+    }
+
+    private var progressPercent: Int {
+        guard totalLessonCount > 0 else { return 0 }
+        return Int((Double(completedLessonCount) / Double(totalLessonCount) * 100).rounded())
+    }
+
     private func tint(at index: Int) -> Color {
         [CrabrixTheme.mint, CrabrixTheme.coral, CrabrixTheme.blue, CrabrixTheme.amber][index % 4]
+    }
+}
+
+private struct LearningPracticeCard: View {
+    let title: String
+    let subtitle: String
+    let badge: String
+    let systemImage: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 15) {
+            Image(systemName: systemImage)
+                .font(.title2)
+                .foregroundStyle(tint)
+                .frame(width: 48, height: 48)
+                .background(tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 14))
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.headline)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(CrabrixTheme.muted)
+                    .lineLimit(2)
+            }
+            Spacer(minLength: 6)
+            VStack(alignment: .trailing, spacing: 5) {
+                Text(badge)
+                    .font(.caption2.monospaced().bold())
+                    .foregroundStyle(tint)
+                Image(systemName: "arrow.right.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(tint)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, minHeight: 92, alignment: .leading)
+        .background(tint.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay { RoundedRectangle(cornerRadius: 16).stroke(tint.opacity(0.3)) }
     }
 }
 

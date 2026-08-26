@@ -39,6 +39,7 @@ struct BuildDockView<CodeContent: View>: View {
     let canStartBuild: Bool
     let onCheck: () -> Void
     let onRun: () -> Void
+    let onReplaceFiles: ([String: String], String?) -> Bool
     let codeContent: CodeContent
 
     init(
@@ -50,6 +51,7 @@ struct BuildDockView<CodeContent: View>: View {
         canStartBuild: Bool,
         onCheck: @escaping () -> Void,
         onRun: @escaping () -> Void,
+        onReplaceFiles: @escaping ([String: String], String?) -> Bool,
         @ViewBuilder codeContent: () -> CodeContent
     ) {
         _selectedTab = selectedTab
@@ -60,6 +62,7 @@ struct BuildDockView<CodeContent: View>: View {
         self.canStartBuild = canStartBuild
         self.onCheck = onCheck
         self.onRun = onRun
+        self.onReplaceFiles = onReplaceFiles
         self.codeContent = codeContent()
     }
 
@@ -131,7 +134,8 @@ struct BuildDockView<CodeContent: View>: View {
                     activity: activity,
                     canStartBuild: canStartBuild,
                     onCheck: onCheck,
-                    onRun: onRun
+                    onRun: onRun,
+                    onReplaceFiles: onReplaceFiles
                 )
             }
         }
@@ -273,6 +277,7 @@ private struct TerminalDockContent: View {
     let canStartBuild: Bool
     let onCheck: () -> Void
     let onRun: () -> Void
+    let onReplaceFiles: ([String: String], String?) -> Bool
 
     private let quickCommands = ["help", "ls", "cargo check", "cargo run", "clear"]
 
@@ -376,7 +381,8 @@ private struct TerminalDockContent: View {
             project: project,
             isBusy: activity != .idle || !canStartBuild,
             onCheck: onCheck,
-            onRun: onRun
+            onRun: onRun,
+            onReplaceFiles: onReplaceFiles
         )
     }
 

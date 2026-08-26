@@ -428,6 +428,38 @@ final class CompilerViewModel: ObservableObject {
         source = fileContents[name] ?? ""
     }
 
+    @discardableResult
+    func replaceProjectFilesFromTerminal(
+        _ files: [String: String],
+        selecting requestedSelection: String? = nil
+    ) -> Bool {
+        guard !isBusy, !isProjectOperationInProgress, !files.isEmpty else { return false }
+
+        fileContents = files
+        if let requestedSelection, files[requestedSelection] != nil {
+            selectedFile = requestedSelection
+        } else if files[selectedFile] == nil {
+            selectedFile = files[entryFile] != nil
+                ? entryFile
+                : files.keys.sorted(by: projectFileOrder).first ?? entryFile
+        }
+        if files[entryFile] == nil {
+            entryFile = ["src/main.rs", "main.rs", "src/lib.rs", "lib.rs"]
+                .first(where: { files[$0] != nil })
+                ?? selectedFile
+        }
+        fileNames = files.keys.sorted(by: projectFileOrder)
+        source = files[selectedFile] ?? ""
+        result = nil
+        lastDiagnostic = nil
+        lastBuild = nil
+        completedStages = []
+        compatibilityReport = ProjectCompatibilityReport.scan(currentProject())
+        let project = currentProject()
+        Task { await remember(project, lastBuild: nil) }
+        return true
+    }
+
     private func loadProject(
         name: String,
         files: [String: String],

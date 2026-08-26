@@ -317,6 +317,10 @@ struct ContentView: View {
         .onReceive(model.$result) { result in
             guard let result else { return }
             terminal.record(result, project: model.exportProject())
+            guard result.phase == .run else { return }
+            withAnimation(.easeOut(duration: 0.18)) {
+                selectedBuildDockTab = result.succeeded ? .output : .problems
+            }
         }
         .onChange(of: keepAwakeDuringBuild) { _, keepAwake in
             UIApplication.shared.isIdleTimerDisabled = model.isBusy && keepAwake
@@ -403,7 +407,8 @@ struct ContentView: View {
                 activity: model.activity,
                 canStartBuild: model.canStartBuild && !model.isProjectOperationInProgress,
                 onCheck: model.check,
-                onRun: model.run
+                onRun: model.run,
+                onReplaceFiles: model.replaceProjectFilesFromTerminal
             ) {
                 codeWorkspace
             }
@@ -420,6 +425,32 @@ struct ContentView: View {
                 isEditable: !model.isProjectOperationInProgress,
                 onRequestCompletion: requestCompletion
             )
+
+            if model.activity == .running {
+                HStack(spacing: 9) {
+                    ProgressView()
+                        .controlSize(.small)
+                        .tint(CrabrixTheme.coral)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Running locally…")
+                            .font(.caption.monospaced().bold())
+                        Text("You can keep editing or switch tabs")
+                            .font(.caption2)
+                            .foregroundStyle(CrabrixTheme.muted)
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 9)
+                .background(.regularMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .stroke(CrabrixTheme.border)
+                }
+                .padding(14)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
 
             if let suggestion = completion.suggestion {
                 VStack {
@@ -473,6 +504,7 @@ struct ContentView: View {
                             }
                         }
                     }
+                    .padding(.top, 52)
                     .zIndex(0.5)
                 }
 
