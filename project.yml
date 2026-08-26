@@ -22,6 +22,9 @@ packages:
   SwiftSystem:
     url: https://github.com/apple/swift-system.git
     exactVersion: 1.8.1
+  ZIPFoundation:
+    url: https://github.com/weichsel/ZIPFoundation.git
+    exactVersion: 0.9.20
 
 targets:
   Crabrix:
@@ -34,13 +37,53 @@ targets:
       - path: Crabrix/Resources/Toolchain
         type: folder
         buildPhase: resources
+      - path: CrabrixShared
+    info:
+      path: Crabrix/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: Crabrix
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        LSApplicationCategoryType: public.app-category.developer-tools
+        LSSupportsOpeningDocumentsInPlace: true
+        UIFileSharingEnabled: true
+        UIApplicationSupportsIndirectInputEvents: true
+        UILaunchScreen: {}
+        UIRequiresFullScreen: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Crabrix Project
+            CFBundleTypeRole: Editor
+            LSHandlerRank: Owner
+            LSItemContentTypes:
+              - com.sergiiziborov.crabrix.project
+        UTExportedTypeDeclarations:
+          - UTTypeIdentifier: com.sergiiziborov.crabrix.project
+            UTTypeDescription: Crabrix Rust Project
+            UTTypeConformsTo:
+              - com.apple.package
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - crabrixproject
     dependencies:
+      - target: CrabrixShare
+        embed: true
       - package: WasmKit
         product: WasmKit
       - package: WasmKit
         product: WasmKitWASI
       - package: SwiftSystem
         product: SystemPackage
+      - package: ZIPFoundation
+        product: ZIPFoundation
     preBuildScripts:
       - name: Prepare bundled Rust toolchain
         script: |
@@ -51,7 +94,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix
         PRODUCT_NAME: Crabrix
         MARKETING_VERSION: 0.1.0
-        CURRENT_PROJECT_VERSION: 5
+        CURRENT_PROJECT_VERSION: 6
+        CODE_SIGN_ENTITLEMENTS: Crabrix/Crabrix.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Crabrix
@@ -62,6 +106,38 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         CODE_SIGN_STYLE: Automatic
+
+  CrabrixShare:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: CrabrixShare
+        excludes:
+          - Info.plist
+      - path: CrabrixShared
+    info:
+      path: CrabrixShare/Info.plist
+      properties:
+        CFBundleDisplayName: Crabrix
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        NSExtension:
+          NSExtensionAttributes:
+            NSExtensionActivationRule:
+              NSExtensionActivationSupportsText: true
+              NSExtensionActivationSupportsWebURLWithMaxCount: 1
+          NSExtensionPointIdentifier: com.apple.share-services
+          NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).ShareViewController"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix.Share
+        PRODUCT_NAME: CrabrixShare
+        MARKETING_VERSION: 0.1.0
+        CURRENT_PROJECT_VERSION: 6
+        CODE_SIGN_ENTITLEMENTS: CrabrixShare/CrabrixShare.entitlements
+        CODE_SIGN_STYLE: Automatic
+        APPLICATION_EXTENSION_API_ONLY: YES
+        SKIP_INSTALL: YES
 
   CrabrixTests:
     type: bundle.unit-test

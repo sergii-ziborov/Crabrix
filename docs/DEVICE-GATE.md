@@ -5,6 +5,8 @@ Simulator success is necessary but not sufficient. A release decision requires t
 ## Preparation
 
 - Build a Development configuration containing the pinned `artifacts-test-7` toolchain.
+- Select the same signing team for `Crabrix` and `CrabrixShare`.
+- Register `group.com.sergiiziborov.Crabrix` for both identifiers and regenerate their provisioning profiles.
 - Install from Xcode while the device is connected.
 - Disconnect the cable after installation.
 - Enable airplane mode and verify Wi-Fi is off.
@@ -48,3 +50,7 @@ The dedicated Release test scheme now proves the following before a physical-dev
 
 These tests reduce device-session risk. They do not replace the 20-run memory,
 thermal, airplane-mode, lifecycle, or infinite-loop checks above.
+
+The App Group requirement was added with the GitHub Share Extension. A
+profile/entitlement mismatch is a provisioning blocker, not evidence for or
+against compiler feasibility.

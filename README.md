@@ -13,10 +13,20 @@ The app embeds:
 - a pinned WASI build of `rustc` and its `wasm32-wasip1` sysroot from [Weblings / wasm-rustc](https://github.com/AngelOnFira/wasm-rustc/releases/tag/artifacts-test-7);
 - structured `rustc` JSON diagnostic parsing for the E0502 experiment;
 - local execution of the Wasm program emitted by the bundled compiler;
+- an adaptive native `Projects / Build / Learn` navigation shell (top tab/sidebar on iPad, bottom tab bar on iPhone);
+- an editable `UITextView` code editor with Rust and Cargo TOML syntax highlighting;
 - a parsed Cargo project layout with `Cargo.toml`, `src/main.rs`, and sibling modules;
+- Files/Working Copy folder import, `.crabrixproject` package export, and a persistent recent-project library with last-build status;
+- bounded public GitHub snapshot import for repository and branch URLs, Cargo-root discovery, and stored source provenance;
+- an iOS Share Extension that queues GitHub URLs through an App Group and never tries to foreground the host app;
+- a five-level Rust learning path with 20 mapped lessons and three live compiler-backed labs;
 - a bounded guest runtime with 64 MiB linear-memory and table-growth limits, `/sandbox` as the only writable preopen, and no network imports.
 
 The toolchain is downloaded **at build time**, verified by SHA-256, and copied into the app bundle. The running app never downloads compiler components.
+
+GitHub import is an explicit user action and is the only current runtime network path. It downloads a public ZIP snapshot without requiring a GitHub login. Archives are rejected when they contain traversal paths, symlinks, too many entries, or exceed the compressed/expanded size limits. Imported programs still execute in the network-free Wasm sandbox.
+
+The Share Extension and host app use `group.com.sergiiziborov.Crabrix`. A signing team must register that App Group before installing this target on a physical device.
 
 ## Build
 
@@ -36,6 +46,11 @@ DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
 ```
 
 Open `Crabrix.xcodeproj` for device testing.
+
+For a signed physical build, select the same Apple development team for the
+`Crabrix` and `CrabrixShare` targets, register
+`group.com.sergiiziborov.Crabrix`, and regenerate both provisioning profiles.
+Simulator builds use the checked-in entitlements automatically.
 
 ## Verification
 
@@ -65,6 +80,7 @@ Measured on the iPad Pro 13-inch (M5) Simulator used for this spike:
 - unoptimized Debug compile/run: approximately 50–59 seconds;
 - three consecutive optimized compile/run cycles: approximately 10–11 seconds total;
 - an 80 MiB guest allocation is rejected by the 64 MiB sandbox gate;
+- public `AngelOnFira/weblings` snapshot import opens 21 bounded text/source files in the native editor on Simulator;
 - unsigned ARM64 `iphoneos` build: succeeds.
 - uncompressed Simulator `.app` bundle: approximately 160 MB (152 MB toolchain payload).
 

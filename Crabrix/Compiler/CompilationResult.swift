@@ -1,7 +1,7 @@
 import Foundation
 
 struct CompilationResult: Sendable {
-    enum Phase: String, Sendable {
+    enum Phase: String, Codable, Sendable {
         case check
         case compile
         case run

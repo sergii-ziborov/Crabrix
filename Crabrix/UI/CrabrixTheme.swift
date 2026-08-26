@@ -2,6 +2,7 @@ import SwiftUI
 
 enum CrabrixTheme {
     static let background = Color(red: 0.045, green: 0.063, blue: 0.083)
+    static let editor = Color(red: 0.052, green: 0.071, blue: 0.092)
     static let panel = Color(red: 0.071, green: 0.094, blue: 0.122)
     static let raised = Color(red: 0.095, green: 0.125, blue: 0.157)
     static let border = Color.white.opacity(0.11)

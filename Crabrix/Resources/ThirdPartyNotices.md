@@ -12,4 +12,12 @@ Copyright (c) 2026 Forest Anderson. Licensed under the MIT License.
 
 Source: https://github.com/AngelOnFira/wasm-rustc
 
+## ZIPFoundation
+
+Copyright (c) 2017-2026 Thomas Zoechling and contributors.
+
+License: MIT
+
+Source: https://github.com/weichsel/ZIPFoundation
+
 The Rust compiler and standard library are distributed under the Rust project's dual MIT OR Apache-2.0 licensing terms. Their complete license files should be included in a production distribution audit; this feasibility spike is not an App Store submission.

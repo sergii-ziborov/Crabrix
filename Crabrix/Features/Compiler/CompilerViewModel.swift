@@ -3,6 +3,21 @@ import SwiftUI
 
 @MainActor
 final class CompilerViewModel: ObservableObject {
+    enum ProjectTransfer: Equatable {
+        case idle
+        case openingFiles
+        case importingGitHub(String)
+        case ready(String)
+        case failed(String)
+
+        var isWorking: Bool {
+            switch self {
+            case .openingFiles, .importingGitHub: true
+            default: false
+            }
+        }
+    }
+
     enum Activity: Equatable {
         case idle
         case checking
@@ -44,16 +59,41 @@ final class CompilerViewModel: ObservableObject {
     @Published private(set) var toolchain: ToolchainStatus
     @Published private(set) var completedStages: Set<Stage> = []
     @Published private(set) var practiceCompleted = false
+    @Published private(set) var projectTransfer: ProjectTransfer = .idle
+    @Published private(set) var compatibilityReport: ProjectCompatibilityReport
+    @Published private(set) var provenance: CrabrixProject.Provenance?
+    @Published private(set) var recentProjects: [ProjectLibraryItem] = []
+    @Published private(set) var lastBuild: ProjectBuildRecord?
     @Published var isPracticePresented = false
 
     private let compiler: WasmRustCompiler
+    private let githubImporter: GitHubProjectImporter
+    private let projectLibrary: ProjectLibrary
     private var lastDiagnostic: RustDiagnostic?
     private var fileContents = ["main.rs": RustSamples.runnable]
     private var entryFile = "main.rs"
 
-    init(compiler: WasmRustCompiler = WasmRustCompiler()) {
+    init(
+        compiler: WasmRustCompiler = WasmRustCompiler(),
+        githubImporter: GitHubProjectImporter = GitHubProjectImporter(),
+        projectLibrary: ProjectLibrary = ProjectLibrary()
+    ) {
         self.compiler = compiler
+        self.githubImporter = githubImporter
+        self.projectLibrary = projectLibrary
         toolchain = compiler.probe()
+        let initialProject = CrabrixProject(
+            name: "hello-crabrix",
+            files: ["main.rs": RustSamples.runnable],
+            entryFile: "main.rs",
+            provenance: nil
+        )
+        compatibilityReport = ProjectCompatibilityReport.scan(initialProject)
+        provenance = nil
+        lastBuild = nil
+        Task {
+            recentProjects = (try? await projectLibrary.items()) ?? []
+        }
     }
 
     var isBusy: Bool { activity != .idle }
@@ -62,6 +102,68 @@ final class CompilerViewModel: ObservableObject {
         var files = fileContents
         files[selectedFile] = source
         return files["Cargo.toml"].flatMap(CargoManifest.parse)
+    }
+
+    var isProjectOperationInProgress: Bool { projectTransfer.isWorking }
+
+    func exportProject() -> CrabrixProject {
+        currentProject()
+    }
+
+    func openProject(from url: URL) async {
+        guard !isBusy, !isProjectOperationInProgress else { return }
+        projectTransfer = .openingFiles
+        do {
+            let project = try await Task.detached {
+                try LocalProjectLoader.load(from: url, provenance: .files())
+            }.value
+            loadProject(project)
+            projectTransfer = .ready("Opened \(project.files.count) files from Files.")
+        } catch {
+            projectTransfer = .failed(error.localizedDescription)
+        }
+    }
+
+    @discardableResult
+    func importGitHub(_ rawURL: String) async -> Bool {
+        guard !isBusy, !isProjectOperationInProgress else { return false }
+        let label = (try? GitHubRepositoryReference.parse(rawURL))
+            .map { "\($0.owner)/\($0.repository)" } ?? "repository"
+        projectTransfer = .importingGitHub(label)
+        do {
+            let project = try await githubImporter.importProject(from: rawURL)
+            loadProject(project)
+            projectTransfer = .ready("Imported \(project.files.count) files from GitHub.")
+            return true
+        } catch {
+            projectTransfer = .failed(error.localizedDescription)
+            return false
+        }
+    }
+
+    func consumePendingSharedImport() async {
+        guard let rawURL = SharedImportQueue.dequeue() else { return }
+        await importGitHub(rawURL)
+    }
+
+    func markProjectSaved() {
+        projectTransfer = .ready("Saved \(projectName) to Files.")
+        Task { await remember(currentProject(), lastBuild: lastBuild) }
+    }
+
+    func reportProjectFailure(_ error: Error) {
+        projectTransfer = .failed(error.localizedDescription)
+    }
+
+    func openRecentProject(id: UUID) async {
+        guard !isBusy, !isProjectOperationInProgress else { return }
+        do {
+            guard let item = try await projectLibrary.project(id: id) else { return }
+            loadProject(item.project, lastBuild: item.lastBuild)
+            projectTransfer = .ready("Opened recent project \(item.project.name).")
+        } catch {
+            projectTransfer = .failed(error.localizedDescription)
+        }
     }
 
     func check() {
@@ -120,18 +222,47 @@ final class CompilerViewModel: ObservableObject {
         source = fileContents[name] ?? ""
     }
 
-    private func loadProject(name: String, files: [String: String]) {
+    private func loadProject(
+        name: String,
+        files: [String: String],
+        entryFile requestedEntry: String? = nil,
+        provenance: CrabrixProject.Provenance? = nil
+    ) {
         guard !isBusy else { return }
         projectName = name
         fileContents = files
-        entryFile = files["src/main.rs"] != nil ? "src/main.rs" : "main.rs"
+        entryFile = requestedEntry
+            ?? (files["src/main.rs"] != nil ? "src/main.rs" : "main.rs")
         fileNames = files.keys.sorted(by: projectFileOrder)
         selectedFile = entryFile
         source = files[entryFile] ?? ""
+        self.provenance = provenance
+        lastBuild = nil
+        compatibilityReport = ProjectCompatibilityReport.scan(
+            CrabrixProject(
+                name: name,
+                files: files,
+                entryFile: entryFile,
+                provenance: provenance
+            )
+        )
         result = nil
         lastDiagnostic = nil
         completedStages = []
         practiceCompleted = false
+        let project = currentProject()
+        Task { await remember(project, lastBuild: nil) }
+    }
+
+    private func loadProject(_ project: CrabrixProject, lastBuild: ProjectBuildRecord? = nil) {
+        loadProject(
+            name: project.name,
+            files: project.files,
+            entryFile: project.entryFile,
+            provenance: project.provenance
+        )
+        self.lastBuild = lastBuild
+        Task { await remember(project, lastBuild: lastBuild) }
     }
 
     func applyRepair() {
@@ -167,6 +298,17 @@ final class CompilerViewModel: ObservableObject {
         return (entryFile, main, files)
     }
 
+    private func currentProject() -> CrabrixProject {
+        var files = fileContents
+        files[selectedFile] = source
+        return CrabrixProject(
+            name: projectName,
+            files: files,
+            entryFile: entryFile,
+            provenance: provenance
+        )
+    }
+
     private func projectFileOrder(_ lhs: String, _ rhs: String) -> Bool {
         func rank(_ path: String) -> Int {
             switch path {
@@ -185,6 +327,7 @@ final class CompilerViewModel: ObservableObject {
     private func finish(_ value: CompilationResult) {
         result = value
         activity = .idle
+        lastBuild = ProjectBuildRecord(result: value)
 
         if let diagnostic = value.diagnostics.first {
             lastDiagnostic = diagnostic
@@ -192,6 +335,13 @@ final class CompilerViewModel: ObservableObject {
             completedStages.insert(.explanation)
         } else if value.succeeded, lastDiagnostic != nil {
             completedStages.insert(.repair)
+        }
+        Task { await remember(currentProject(), lastBuild: lastBuild) }
+    }
+
+    private func remember(_ project: CrabrixProject, lastBuild: ProjectBuildRecord?) async {
+        if let items = try? await projectLibrary.record(project: project, lastBuild: lastBuild) {
+            recentProjects = items
         }
     }
 }

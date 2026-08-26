@@ -1,48 +1,129 @@
 import SwiftUI
+import UniformTypeIdentifiers
+
+private enum CrabrixDestination: Hashable {
+    case projects
+    case build
+    case learn
+}
 
 struct ContentView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var model = CompilerViewModel()
+    @State private var isFileImporterPresented = false
+    @State private var isFileExporterPresented = false
+    @State private var isGitHubImporterPresented = false
+    @State private var githubURL = ""
+    @State private var selectedDestination: CrabrixDestination = .projects
+    @State private var exportDocument = CrabrixProjectDocument(
+        project: CrabrixProject(
+            name: "hello-crabrix",
+            files: ["main.rs": RustSamples.runnable],
+            entryFile: "main.rs",
+            provenance: nil
+        )
+    )
 
     var body: some View {
-        ZStack {
-            CrabrixTheme.background.ignoresSafeArea()
-
-            VStack(spacing: 0) {
-                AppHeader(toolchain: model.toolchain)
-                StageStrip(completed: model.completedStages)
-                Divider().overlay(CrabrixTheme.border)
-
-                if horizontalSizeClass == .regular {
-                    HStack(spacing: 0) {
-                        ProjectSidebar(
-                            projectName: model.projectName,
-                            files: model.fileNames,
-                            selectedFile: model.selectedFile,
-                            manifest: model.cargoManifest,
-                            onSelect: model.selectFile
-                        )
-                            .frame(width: 210)
-                        Divider().overlay(CrabrixTheme.border)
-                        editorPane
-                            .frame(minWidth: 420)
-                        Divider().overlay(CrabrixTheme.border)
-                        inspectorPane
-                            .frame(minWidth: 350, idealWidth: 410, maxWidth: 470)
+        TabView(selection: $selectedDestination) {
+            ProjectsHomeView(
+                projectName: model.projectName,
+                fileCount: model.fileNames.count,
+                lastBuild: model.lastBuild,
+                recentProjects: model.recentProjects,
+                onNewProject: {
+                    model.loadRunnableSample()
+                    selectedDestination = .build
+                },
+                onOpenGitHub: { isGitHubImporterPresented = true },
+                onOpenFiles: { isFileImporterPresented = true },
+                onSaveProject: prepareExport,
+                onOpenRecent: { id in
+                    Task {
+                        await model.openRecentProject(id: id)
+                        selectedDestination = .build
                     }
-                } else {
-                    ScrollView {
-                        VStack(spacing: 0) {
+                },
+                onOpenRunnableSample: {
+                    model.loadRunnableSample()
+                    selectedDestination = .build
+                },
+                onOpenBorrowSample: {
+                    model.loadBorrowDiagnosticSample()
+                    selectedDestination = .build
+                },
+                onOpenModulesSample: {
+                    model.loadMultiFileSample()
+                    selectedDestination = .build
+                }
+            )
+            .tabItem { Label("Projects", systemImage: "folder.fill") }
+            .tag(CrabrixDestination.projects)
+
+            ZStack {
+                CrabrixTheme.background.ignoresSafeArea()
+
+                VStack(spacing: 0) {
+                    AppHeader(
+                        toolchain: model.toolchain,
+                        transfer: model.projectTransfer,
+                        onNewProject: model.loadRunnableSample,
+                        onOpenFiles: { isFileImporterPresented = true },
+                        onSaveFiles: prepareExport,
+                        onOpenGitHub: { isGitHubImporterPresented = true }
+                    )
+                    StageStrip(completed: model.completedStages)
+                    if model.projectTransfer != .idle {
+                        ProjectTransferStrip(transfer: model.projectTransfer)
+                    }
+                    Divider().overlay(CrabrixTheme.border)
+
+                    if horizontalSizeClass == .regular {
+                        HStack(spacing: 0) {
+                            ProjectSidebar(
+                                projectName: model.projectName,
+                                files: model.fileNames,
+                                selectedFile: model.selectedFile,
+                                manifest: model.cargoManifest,
+                                report: model.compatibilityReport,
+                                provenance: model.provenance,
+                                onSelect: model.selectFile
+                            )
+                            .frame(width: 210)
+                            Divider().overlay(CrabrixTheme.border)
                             editorPane
-                                .frame(minHeight: 590)
+                                .frame(minWidth: 420)
                             Divider().overlay(CrabrixTheme.border)
                             inspectorPane
-                                .frame(minHeight: 500)
+                                .frame(minWidth: 350, idealWidth: 410, maxWidth: 470)
+                        }
+                    } else {
+                        ScrollView {
+                            VStack(spacing: 0) {
+                                editorPane
+                                    .frame(minHeight: 590)
+                                Divider().overlay(CrabrixTheme.border)
+                                inspectorPane
+                                    .frame(minHeight: 500)
+                            }
                         }
                     }
                 }
             }
+            .tabItem { Label("Build", systemImage: "hammer.fill") }
+            .tag(CrabrixDestination.build)
+
+            LearnPathView(
+                completedStages: model.completedStages,
+                practiceCompleted: model.practiceCompleted,
+                onOpenLesson: openLesson
+            )
+            .tabItem { Label("Learn", systemImage: "graduationcap.fill") }
+            .tag(CrabrixDestination.learn)
         }
+        .tabViewStyle(.sidebarAdaptable)
+        .tint(CrabrixTheme.coral)
         .foregroundStyle(.white)
         .sheet(isPresented: $model.isPracticePresented) {
             PracticeSheet(
@@ -52,17 +133,100 @@ struct ContentView: View {
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
+        .sheet(isPresented: $isGitHubImporterPresented) {
+            GitHubImportSheet(
+                url: $githubURL,
+                transfer: model.projectTransfer,
+                onImport: { rawURL in
+                    let imported = await model.importGitHub(rawURL)
+                    if imported {
+                        isGitHubImporterPresented = false
+                        selectedDestination = .build
+                    }
+                }
+            )
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
+        .fileImporter(
+            isPresented: $isFileImporterPresented,
+            allowedContentTypes: [.folder, .crabrixProject],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case let .success(urls):
+                guard let url = urls.first else { return }
+                Task {
+                    await model.openProject(from: url)
+                    if case .ready = model.projectTransfer {
+                        selectedDestination = .build
+                    }
+                }
+            case let .failure(error):
+                model.reportProjectFailure(error)
+            }
+        }
+        .fileExporter(
+            isPresented: $isFileExporterPresented,
+            document: exportDocument,
+            contentType: .crabrixProject,
+            defaultFilename: model.projectName
+        ) { result in
+            switch result {
+            case .success: model.markProjectSaved()
+            case let .failure(error): model.reportProjectFailure(error)
+            }
+        }
         .task {
             let arguments = ProcessInfo.processInfo.arguments
             if arguments.contains("--crabrix-auto-multifile") {
                 model.loadMultiFileSample()
+                selectedDestination = .build
+            }
+            if let githubArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-github=") }) {
+                let rawURL = String(githubArgument.dropFirst("--crabrix-auto-github=".count))
+                if await model.importGitHub(rawURL) {
+                    selectedDestination = .build
+                }
+            }
+            if arguments.contains("--crabrix-auto-learn") {
+                selectedDestination = .learn
             }
             if arguments.contains("--crabrix-auto-run") {
                 model.run()
             } else if arguments.contains("--crabrix-auto-check") {
                 model.check()
             }
+            if !arguments.contains(where: { $0.hasPrefix("--crabrix-auto-") }) {
+                await model.consumePendingSharedImport()
+                if case .ready = model.projectTransfer {
+                    selectedDestination = .build
+                }
+            }
         }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            Task { await model.consumePendingSharedImport() }
+        }
+    }
+
+    private func prepareExport() {
+        exportDocument = CrabrixProjectDocument(project: model.exportProject())
+        isFileExporterPresented = true
+    }
+
+    private func openLesson(_ lesson: RustLesson) {
+        switch lesson.exercise {
+        case .runnable:
+            model.loadRunnableSample()
+        case .borrowDiagnostic:
+            model.loadBorrowDiagnosticSample()
+        case .multiFile:
+            model.loadMultiFileSample()
+        case .planned:
+            return
+        }
+        selectedDestination = .build
     }
 
     private var editorPane: some View {
@@ -71,7 +235,7 @@ struct ContentView: View {
                 activity: model.activity,
                 files: model.fileNames,
                 selectedFile: model.selectedFile,
-                canRun: model.toolchain.isReady && !model.isBusy,
+                canRun: model.toolchain.isReady && !model.isBusy && !model.isProjectOperationInProgress,
                 onSelectFile: model.selectFile,
                 onLoadRunnable: model.loadRunnableSample,
                 onLoadDiagnostic: model.loadBorrowDiagnosticSample,
@@ -81,17 +245,11 @@ struct ContentView: View {
             )
 
             ZStack(alignment: .topLeading) {
-                TextEditor(text: $model.source)
-                    .font(.system(size: 14, design: .monospaced))
-                    .lineSpacing(6)
-                    .scrollContentBackground(.hidden)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 12)
-                    .background(Color(red: 0.052, green: 0.071, blue: 0.092))
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                    .accessibilityLabel("Rust source editor")
-                    .disabled(model.isBusy)
+                SyntaxCodeEditor(
+                    text: $model.source,
+                    filePath: model.selectedFile,
+                    isEditable: !model.isBusy && !model.isProjectOperationInProgress
+                )
 
                 if model.isBusy {
                     HStack(alignment: .top, spacing: 10) {
@@ -156,6 +314,11 @@ struct ContentView: View {
 private struct AppHeader: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     let toolchain: ToolchainStatus
+    let transfer: CompilerViewModel.ProjectTransfer
+    let onNewProject: () -> Void
+    let onOpenFiles: () -> Void
+    let onSaveFiles: () -> Void
+    let onOpenGitHub: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
@@ -178,6 +341,30 @@ private struct AppHeader: View {
 
             Spacer()
 
+            Menu {
+                Button(action: onNewProject) {
+                    Label("New Rust Project", systemImage: "plus")
+                }
+                Button(action: onOpenGitHub) {
+                    Label("Open from GitHub", systemImage: "arrow.down.circle")
+                }
+                Button(action: onOpenFiles) {
+                    Label("Open from Files", systemImage: "folder")
+                }
+                Button(action: onSaveFiles) {
+                    Label("Save Project to Files", systemImage: "square.and.arrow.down")
+                }
+            } label: {
+                if transfer.isWorking {
+                    ProgressView().tint(CrabrixTheme.coral)
+                } else {
+                    Label(horizontalSizeClass == .regular ? "PROJECT" : "", systemImage: "folder.fill")
+                        .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(.white)
+                }
+            }
+            .disabled(transfer.isWorking)
+
             Label(horizontalSizeClass == .regular ? "NO WEBVIEW" : "NATIVE", systemImage: "swift")
                 .font(.system(size: 9, weight: .semibold, design: .monospaced))
                 .foregroundStyle(CrabrixTheme.mint)
@@ -188,6 +375,37 @@ private struct AppHeader: View {
         .padding(.horizontal, 18)
         .frame(height: 58)
         .background(CrabrixTheme.background.opacity(0.97))
+    }
+}
+
+private struct ProjectTransferStrip: View {
+    let transfer: CompilerViewModel.ProjectTransfer
+
+    var body: some View {
+        HStack(spacing: 8) {
+            switch transfer {
+            case .idle:
+                EmptyView()
+            case .openingFiles:
+                ProgressView().tint(CrabrixTheme.blue)
+                Text("Opening project from Files…")
+            case let .importingGitHub(repository):
+                ProgressView().tint(CrabrixTheme.blue)
+                Text("Importing \(repository) from GitHub…")
+            case let .ready(message):
+                Image(systemName: "checkmark.circle.fill").foregroundStyle(CrabrixTheme.mint)
+                Text(message)
+            case let .failed(message):
+                Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(CrabrixTheme.amber)
+                Text(message)
+            }
+            Spacer()
+        }
+        .font(.caption.monospaced())
+        .foregroundStyle(CrabrixTheme.muted)
+        .padding(.horizontal, 18)
+        .frame(minHeight: 34)
+        .background(CrabrixTheme.background)
     }
 }
 
@@ -229,6 +447,8 @@ private struct ProjectSidebar: View {
     let files: [String]
     let selectedFile: String
     let manifest: CargoManifest?
+    let report: ProjectCompatibilityReport
+    let provenance: CrabrixProject.Provenance?
     let onSelect: (String) -> Void
 
     private var rootFiles: [String] {
@@ -241,59 +461,83 @@ private struct ProjectSidebar: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("PROJECT")
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .foregroundStyle(CrabrixTheme.muted)
-                .padding(.bottom, 6)
-            Label(projectName, systemImage: "chevron.down")
-                .font(.subheadline.weight(.semibold))
-            ForEach(rootFiles, id: \.self) { file in
-                ProjectFileButton(
-                    file: file,
-                    selectedFile: selectedFile,
-                    indentation: 12,
-                    onSelect: onSelect
-                )
-            }
-            Label("src", systemImage: "chevron.down")
-                .font(.caption)
-                .padding(.leading, 12)
-            ForEach(sourceFiles, id: \.self) { file in
-                ProjectFileButton(
-                    file: file,
-                    selectedFile: selectedFile,
-                    indentation: 24,
-                    onSelect: onSelect
-                )
-            }
-
-            if let manifest {
-                Divider().overlay(CrabrixTheme.border).padding(.vertical, 8)
-                Text("PACKAGE")
-                    .font(.system(size: 9, weight: .bold, design: .monospaced))
-                    .foregroundStyle(CrabrixTheme.muted)
-                Text("\(manifest.name) \(manifest.version ?? "")")
-                    .font(.caption.weight(.semibold))
-                Text("edition \(manifest.edition ?? "unspecified") · manifest parsed")
-                    .font(.caption2.monospaced())
-                    .foregroundStyle(CrabrixTheme.mint)
-                if !manifest.dependencies.isEmpty {
-                    Text("DEPENDENCIES")
+            ScrollView {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("PROJECT")
                         .font(.system(size: 9, weight: .bold, design: .monospaced))
                         .foregroundStyle(CrabrixTheme.muted)
-                        .padding(.top, 6)
-                    ForEach(manifest.dependencies) { dependency in
-                        Text("\(dependency.name)  \(dependency.requirement ?? dependency.source.rawValue)")
-                            .font(.caption2.monospaced())
-                            .foregroundStyle(CrabrixTheme.amber)
+                        .padding(.bottom, 6)
+                    Label(projectName, systemImage: "chevron.down")
+                        .font(.subheadline.weight(.semibold))
+                    ForEach(rootFiles, id: \.self) { file in
+                        ProjectFileButton(
+                            file: file,
+                            selectedFile: selectedFile,
+                            indentation: 12,
+                            onSelect: onSelect
+                        )
                     }
-                    Text("resolver pending")
-                        .font(.caption2)
+                    Label("src", systemImage: "chevron.down")
+                        .font(.caption)
+                        .padding(.leading, 12)
+                    ForEach(sourceFiles, id: \.self) { file in
+                        ProjectFileButton(
+                            file: file,
+                            selectedFile: selectedFile,
+                            indentation: 24,
+                            onSelect: onSelect
+                        )
+                    }
+
+                    if let manifest {
+                        Divider().overlay(CrabrixTheme.border).padding(.vertical, 8)
+                        Text("PACKAGE")
+                            .font(.system(size: 9, weight: .bold, design: .monospaced))
+                            .foregroundStyle(CrabrixTheme.muted)
+                        Text("\(manifest.name) \(manifest.version ?? "")")
+                            .font(.caption.weight(.semibold))
+                        Text("edition \(manifest.edition ?? "unspecified") · manifest parsed")
+                            .font(.caption2.monospaced())
+                            .foregroundStyle(CrabrixTheme.mint)
+                        if !manifest.dependencies.isEmpty {
+                            Text("DEPENDENCIES")
+                                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                .foregroundStyle(CrabrixTheme.muted)
+                                .padding(.top, 6)
+                            ForEach(manifest.dependencies) { dependency in
+                                Text("\(dependency.name)  \(dependency.requirement ?? dependency.source.rawValue)")
+                                    .font(.caption2.monospaced())
+                                    .foregroundStyle(CrabrixTheme.amber)
+                            }
+                            Text("resolver pending")
+                                .font(.caption2)
+                                .foregroundStyle(CrabrixTheme.muted)
+                        }
+                    }
+
+                    Divider().overlay(CrabrixTheme.border).padding(.vertical, 6)
+                    Text("COMPATIBILITY")
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
                         .foregroundStyle(CrabrixTheme.muted)
+                    Label(
+                        report.status == .ready ? "Ready for local inspection" : "Review required",
+                        systemImage: report.status == .ready ? "checkmark.seal.fill" : "exclamationmark.triangle.fill"
+                    )
+                    .font(.caption2.monospaced())
+                    .foregroundStyle(report.status == .ready ? CrabrixTheme.mint : CrabrixTheme.amber)
+                    Text("\(report.rustFiles) Rust files · \(report.dependencies) dependencies")
+                        .font(.caption2.monospaced())
+                        .foregroundStyle(CrabrixTheme.muted)
+                    if let provenance, provenance.source == .github {
+                        Label(
+                            "\(provenance.owner ?? "")/\(provenance.repository ?? "") @ \(provenance.reference ?? "HEAD")",
+                            systemImage: "arrow.triangle.branch"
+                        )
+                        .font(.caption2.monospaced())
+                        .foregroundStyle(CrabrixTheme.blue)
+                    }
                 }
             }
-
-            Spacer()
 
             VStack(alignment: .leading, spacing: 7) {
                 Label("Physical device gate", systemImage: "iphone.gen3")
@@ -308,6 +552,61 @@ private struct ProjectSidebar: View {
         }
         .padding(14)
         .background(CrabrixTheme.panel)
+    }
+}
+
+private struct GitHubImportSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Binding var url: String
+    let transfer: CompilerViewModel.ProjectTransfer
+    let onImport: (String) async -> Void
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 18) {
+                Label("Public repository snapshot", systemImage: "arrow.down.circle.fill")
+                    .font(.title2.bold())
+                    .foregroundStyle(CrabrixTheme.blue)
+                Text("Paste a public GitHub repository or branch URL. No GitHub login is required. Crabrix downloads a bounded ZIP snapshot, discovers Cargo.toml, and opens it locally.")
+                    .foregroundStyle(CrabrixTheme.muted)
+                TextField("https://github.com/owner/repository", text: $url)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .keyboardType(.URL)
+                    .textFieldStyle(.roundedBorder)
+                    .submitLabel(.go)
+                    .onSubmit(importRepository)
+                if case let .failed(message) = transfer {
+                    Label(message, systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(CrabrixTheme.amber)
+                }
+                Button(action: importRepository) {
+                    HStack {
+                        if transfer.isWorking { ProgressView().tint(.white) }
+                        Text(transfer.isWorking ? "Importing…" : "Import Repository")
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(CrabrixTheme.coral)
+                .disabled(url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || transfer.isWorking)
+                Spacer()
+            }
+            .padding(22)
+            .background(CrabrixTheme.background.ignoresSafeArea())
+            .foregroundStyle(.white)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+    }
+
+    private func importRepository() {
+        guard !transfer.isWorking else { return }
+        Task { await onImport(url) }
     }
 }
 
