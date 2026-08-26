@@ -41,6 +41,7 @@ struct BuildDockView<CodeContent: View>: View {
     let onRun: () -> Void
     let onReplaceFiles: ([String: String], String?) -> Bool
     let onOpenDiagnostic: (RustDiagnostic) -> Void
+    let onContinueLearning: () -> Void
     let codeContent: CodeContent
 
     init(
@@ -54,6 +55,7 @@ struct BuildDockView<CodeContent: View>: View {
         onRun: @escaping () -> Void,
         onReplaceFiles: @escaping ([String: String], String?) -> Bool,
         onOpenDiagnostic: @escaping (RustDiagnostic) -> Void,
+        onContinueLearning: @escaping () -> Void,
         @ViewBuilder codeContent: () -> CodeContent
     ) {
         _selectedTab = selectedTab
@@ -66,6 +68,7 @@ struct BuildDockView<CodeContent: View>: View {
         self.onRun = onRun
         self.onReplaceFiles = onReplaceFiles
         self.onOpenDiagnostic = onOpenDiagnostic
+        self.onContinueLearning = onContinueLearning
         self.codeContent = codeContent()
     }
 
@@ -129,7 +132,10 @@ struct BuildDockView<CodeContent: View>: View {
             case .problems:
                 ProblemsDockContent(result: result, onOpenDiagnostic: onOpenDiagnostic)
             case .output:
-                OutputDockContent(result: result)
+                OutputDockContent(
+                    result: result,
+                    onContinueLearning: onContinueLearning
+                )
             case .terminal:
                 TerminalDockContent(
                     terminal: terminal,
@@ -206,6 +212,7 @@ private struct ProblemsDockContent: View {
 
 private struct OutputDockContent: View {
     let result: CompilationResult?
+    let onContinueLearning: () -> Void
 
     var body: some View {
         ScrollView {
@@ -241,6 +248,34 @@ private struct OutputDockContent: View {
                             tint: CrabrixTheme.coral,
                             systemImage: "exclamationmark.octagon.fill"
                         )
+                    }
+                    if result.succeeded, result.phase == .run {
+                        Button(action: onContinueLearning) {
+                            HStack(spacing: 10) {
+                                Image(systemName: "graduationcap.fill")
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Continue learning")
+                                        .font(.subheadline.bold())
+                                    Text("Return to your Rust course and continue from the next lesson.")
+                                        .font(.caption)
+                                        .foregroundStyle(CrabrixTheme.muted)
+                                }
+                                Spacer()
+                                Image(systemName: "arrow.right")
+                            }
+                            .foregroundStyle(CrabrixTheme.mint)
+                            .padding(12)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(
+                                CrabrixTheme.mint.opacity(0.09),
+                                in: RoundedRectangle(cornerRadius: 11, style: .continuous)
+                            )
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 11, style: .continuous)
+                                    .stroke(CrabrixTheme.mint.opacity(0.34))
+                            }
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)

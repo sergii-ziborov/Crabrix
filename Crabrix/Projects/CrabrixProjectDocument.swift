@@ -1,5 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import ZIPFoundation
 
 extension UTType {
     static let crabrixProject = UTType(
@@ -93,5 +94,97 @@ struct CrabrixProjectDocument: FileDocument {
             }
         }
         return result
+    }
+}
+
+enum CrabrixProjectArchive {
+    enum ArchiveError: LocalizedError {
+        case archiveTooLarge
+        case unsafePath(String)
+
+        var errorDescription: String? {
+            switch self {
+            case .archiveTooLarge:
+                "The expanded project archive exceeds Crabrix's safe import limit."
+            case let .unsafePath(path):
+                "The archive contains an unsafe path: \(path)"
+            }
+        }
+    }
+
+    private static let maximumArchiveBytes: UInt64 = 32_000_000
+    private static let maximumArchiveEntries = 1_024
+
+    static func create(project: CrabrixProject) throws -> URL {
+        let fileManager = FileManager.default
+        let workURL = fileManager.temporaryDirectory
+            .appending(path: "CrabrixShare-\(UUID().uuidString)", directoryHint: .isDirectory)
+        let projectURL = workURL
+            .appending(path: safeFilename(project.name), directoryHint: .isDirectory)
+        let archiveURL = workURL.appending(path: "\(safeFilename(project.name)).zip")
+
+        try fileManager.createDirectory(at: workURL, withIntermediateDirectories: true)
+        do {
+            let wrapper = try CrabrixProjectDocument(project: project).packageWrapper()
+            try wrapper.write(to: projectURL, options: .atomic, originalContentsURL: nil)
+            try fileManager.zipItem(at: projectURL, to: archiveURL, shouldKeepParent: true)
+            return archiveURL
+        } catch {
+            try? fileManager.removeItem(at: workURL)
+            throw error
+        }
+    }
+
+    static func load(from archiveURL: URL) throws -> CrabrixProject {
+        let accessGranted = archiveURL.startAccessingSecurityScopedResource()
+        defer {
+            if accessGranted { archiveURL.stopAccessingSecurityScopedResource() }
+        }
+
+        try validate(archiveURL)
+        let fileManager = FileManager.default
+        let workURL = fileManager.temporaryDirectory
+            .appending(path: "CrabrixArchiveImport-\(UUID().uuidString)", directoryHint: .isDirectory)
+        defer { try? fileManager.removeItem(at: workURL) }
+        try fileManager.createDirectory(at: workURL, withIntermediateDirectories: true)
+        try fileManager.unzipItem(at: archiveURL, to: workURL)
+        return try LocalProjectLoader.load(from: workURL, provenance: .files())
+    }
+
+    static func removeTemporaryArchive(at archiveURL: URL) {
+        let temporaryRoot = FileManager.default.temporaryDirectory.standardizedFileURL.path
+        let parent = archiveURL.deletingLastPathComponent().standardizedFileURL
+        guard parent.path.hasPrefix(temporaryRoot),
+              parent.lastPathComponent.hasPrefix("CrabrixShare-")
+        else { return }
+        try? FileManager.default.removeItem(at: parent)
+    }
+
+    private static func validate(_ url: URL) throws {
+        let archive = try Archive(url: url, accessMode: .read)
+        var totalBytes: UInt64 = 0
+        var entryCount = 0
+        for entry in archive {
+            entryCount += 1
+            guard entryCount <= maximumArchiveEntries else { throw ArchiveError.archiveTooLarge }
+            totalBytes += UInt64(entry.uncompressedSize)
+            guard totalBytes <= maximumArchiveBytes else { throw ArchiveError.archiveTooLarge }
+
+            let path = entry.path.replacingOccurrences(of: "\\", with: "/")
+            let components = path.split(separator: "/", omittingEmptySubsequences: false)
+            guard !path.hasPrefix("/"),
+                  !components.contains(".."),
+                  entry.type != .symlink
+            else {
+                throw ArchiveError.unsafePath(entry.path)
+            }
+        }
+    }
+
+    private static func safeFilename(_ rawValue: String) -> String {
+        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
+        let value = rawValue.unicodeScalars.map { allowed.contains($0) ? Character(String($0)) : "-" }
+        let normalized = String(value).trimmingCharacters(in: CharacterSet(charactersIn: "-"))
+        return normalized.isEmpty ? "Crabrix-Project" : normalized
     }
 }

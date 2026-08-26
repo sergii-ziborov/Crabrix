@@ -359,7 +359,9 @@ private final class RustKeyboardAccessoryView: UIView {
             accessibilityLabel: "Complete Rust code"
         )
         completeButton.addAction(UIAction { _ in onComplete() }, for: .touchUpInside)
-        stack.addArrangedSubview(completeButton)
+        completeButton.translatesAutoresizingMaskIntoConstraints = false
+        completeButton.setContentHuggingPriority(.required, for: .horizontal)
+        completeButton.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         for symbol in symbols {
             let button = accessoryButton(title: symbol, systemImage: nil, tint: .label)
@@ -376,27 +378,41 @@ private final class RustKeyboardAccessoryView: UIView {
         doneButton.addAction(UIAction { _ in onDismiss() }, for: .touchUpInside)
         doneButton.translatesAutoresizingMaskIntoConstraints = false
 
-        let separator = UIView()
-        separator.backgroundColor = .separator
-        separator.translatesAutoresizingMaskIntoConstraints = false
+        let leadingSeparator = UIView()
+        leadingSeparator.backgroundColor = .separator
+        leadingSeparator.translatesAutoresizingMaskIntoConstraints = false
 
+        let trailingSeparator = UIView()
+        trailingSeparator.backgroundColor = .separator
+        trailingSeparator.translatesAutoresizingMaskIntoConstraints = false
+
+        addSubview(completeButton)
+        addSubview(leadingSeparator)
         addSubview(scrollView)
-        addSubview(separator)
+        addSubview(trailingSeparator)
         addSubview(doneButton)
         scrollView.addSubview(stack)
 
         NSLayoutConstraint.activate([
             heightAnchor.constraint(equalToConstant: 46),
+            completeButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6),
+            completeButton.centerYAnchor.constraint(equalTo: centerYAnchor),
+            completeButton.heightAnchor.constraint(equalToConstant: 36),
+            completeButton.widthAnchor.constraint(equalToConstant: 42),
+            leadingSeparator.leadingAnchor.constraint(equalTo: completeButton.trailingAnchor, constant: 5),
+            leadingSeparator.topAnchor.constraint(equalTo: topAnchor, constant: 7),
+            leadingSeparator.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -7),
+            leadingSeparator.widthAnchor.constraint(equalToConstant: 1),
             doneButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -6),
             doneButton.centerYAnchor.constraint(equalTo: centerYAnchor),
             doneButton.heightAnchor.constraint(equalToConstant: 36),
             doneButton.widthAnchor.constraint(equalToConstant: 42),
-            separator.trailingAnchor.constraint(equalTo: doneButton.leadingAnchor, constant: -5),
-            separator.topAnchor.constraint(equalTo: topAnchor, constant: 7),
-            separator.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -7),
-            separator.widthAnchor.constraint(equalToConstant: 1),
-            scrollView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6),
-            scrollView.trailingAnchor.constraint(equalTo: separator.leadingAnchor, constant: -5),
+            trailingSeparator.trailingAnchor.constraint(equalTo: doneButton.leadingAnchor, constant: -5),
+            trailingSeparator.topAnchor.constraint(equalTo: topAnchor, constant: 7),
+            trailingSeparator.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -7),
+            trailingSeparator.widthAnchor.constraint(equalToConstant: 1),
+            scrollView.leadingAnchor.constraint(equalTo: leadingSeparator.trailingAnchor, constant: 5),
+            scrollView.trailingAnchor.constraint(equalTo: trailingSeparator.leadingAnchor, constant: -5),
             scrollView.topAnchor.constraint(equalTo: topAnchor),
             scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
             stack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),

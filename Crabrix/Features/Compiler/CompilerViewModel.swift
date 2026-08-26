@@ -4,6 +4,8 @@ import SwiftUI
 enum RustProjectTemplate: String, CaseIterable, Identifiable, Sendable {
     case hello
     case empty
+    case modules
+    case cli
 
     var id: String { rawValue }
 
@@ -11,6 +13,8 @@ enum RustProjectTemplate: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .hello: "Hello Rust"
         case .empty: "Empty Binary"
+        case .modules: "Cargo Modules"
+        case .cli: "CLI Starter"
         }
     }
 
@@ -18,6 +22,8 @@ enum RustProjectTemplate: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .hello: "A runnable Cargo project with stdout"
         case .empty: "Cargo.toml and a minimal main.rs"
+        case .modules: "A multi-file project with a reusable Rust module"
+        case .cli: "Read command-line arguments with the standard library"
         }
     }
 
@@ -25,6 +31,8 @@ enum RustProjectTemplate: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .hello: "play.rectangle.fill"
         case .empty: "doc.badge.plus"
+        case .modules: "square.stack.3d.up.fill"
+        case .cli: "apple.terminal.fill"
         }
     }
 }
@@ -155,7 +163,11 @@ final class CompilerViewModel: ObservableObject {
         projectTransfer = .openingFiles
         do {
             let project = try await Task.detached {
-                try LocalProjectLoader.load(from: url, provenance: .files())
+                if url.pathExtension.lowercased() == "zip" {
+                    try CrabrixProjectArchive.load(from: url)
+                } else {
+                    try LocalProjectLoader.load(from: url, provenance: .files())
+                }
             }.value
             loadProject(project)
             projectTransfer = .ready("Opened \(project.files.count) files from Files.")
@@ -316,20 +328,52 @@ final class CompilerViewModel: ObservableObject {
             return
         }
 
-        let source: String
+        let files: [String: String]
         switch template {
         case .hello:
-            source = """
-            fn main() {
-                println!("Hello from \(name)!");
-            }
-            """
+            files = [
+                "src/main.rs": """
+                fn main() {
+                    println!("Hello from \(name)!");
+                }
+                """,
+            ]
         case .empty:
-            source = """
-            fn main() {
-                // Start building here.
-            }
-            """
+            files = [
+                "src/main.rs": """
+                fn main() {
+                    // Start building here.
+                }
+                """,
+            ]
+        case .modules:
+            files = [
+                "src/main.rs": """
+                mod greeter;
+
+                fn main() {
+                    println!("{}", greeter::message());
+                }
+                """,
+                "src/greeter.rs": """
+                pub fn message() -> &'static str {
+                    "Hello from a Rust module!"
+                }
+                """,
+            ]
+        case .cli:
+            files = [
+                "src/main.rs": """
+                use std::env;
+
+                fn main() {
+                    let name = env::args()
+                        .nth(1)
+                        .unwrap_or_else(|| "crabrix".to_string());
+                    println!("Hello, {name}!");
+                }
+                """,
+            ]
         }
 
         let manifest = """
@@ -340,12 +384,10 @@ final class CompilerViewModel: ObservableObject {
 
         [dependencies]
         """
-        loadProject(
-            name: name,
-            files: ["Cargo.toml": manifest, "src/main.rs": source],
-            entryFile: "src/main.rs"
-        )
-        projectTransfer = .ready("Created \(name) with 2 editable files.")
+        var projectFiles = files
+        projectFiles["Cargo.toml"] = manifest
+        loadProject(name: name, files: projectFiles, entryFile: "src/main.rs")
+        projectTransfer = .ready("Created \(name) with \(projectFiles.count) editable files.")
     }
 
     @discardableResult

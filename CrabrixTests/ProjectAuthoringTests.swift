@@ -27,6 +27,19 @@ final class ProjectAuthoringTests: XCTestCase {
         XCTAssertNotNil(files["src/ui/mod.rs"])
     }
 
+    func testProjectTemplatesProvideDistinctRunnableLayouts() {
+        let model = CompilerViewModel()
+
+        model.createProject(name: "module-crab", template: .modules)
+        var project = model.exportProject()
+        XCTAssertNotNil(project.files["src/greeter.rs"])
+        XCTAssertTrue(project.files["src/main.rs"]?.contains("mod greeter") == true)
+
+        model.createProject(name: "cli-crab", template: .cli)
+        project = model.exportProject()
+        XCTAssertTrue(project.files["src/main.rs"]?.contains("env::args") == true)
+    }
+
     func testCargoDependencyIsInsertedAndUpdated() {
         let model = CompilerViewModel()
         model.createProject(name: "cargo-test", template: .empty)

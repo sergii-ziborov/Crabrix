@@ -12,6 +12,7 @@ struct ProjectsHomeView: View {
     let onOpenGitHub: () -> Void
     let onOpenFiles: () -> Void
     let onSaveProject: () -> Void
+    let onArchiveProject: () -> Void
     let onOpenRecent: (UUID) -> Void
     let onOpenRunnableSample: () -> Void
     let onOpenBorrowSample: () -> Void
@@ -25,14 +26,8 @@ struct ProjectsHomeView: View {
             VStack(alignment: .leading, spacing: 24) {
                 brandHeader
                 hero
+                newProjectBanner
                 LazyVGrid(columns: columns, spacing: 14) {
-                    ProjectActionCard(
-                        title: "New Rust Project",
-                        detail: "Start with a local compiler-ready project",
-                        systemImage: "plus.square.fill",
-                        tint: CrabrixTheme.coral,
-                        action: onNewProject
-                    )
                     ProjectActionCard(
                         title: "Open from GitHub",
                         detail: "Import a public repository snapshot",
@@ -48,11 +43,18 @@ struct ProjectsHomeView: View {
                         action: onOpenFiles
                     )
                     ProjectActionCard(
-                        title: "Save to Files / iCloud",
-                        detail: "Export an editable Crabrix project package",
+                        title: "Save Project to Cloud / Files",
+                        detail: "Keep an editable Crabrix package in iCloud Drive or on device",
                         systemImage: "square.and.arrow.down.fill",
                         tint: CrabrixTheme.amber,
                         action: onSaveProject
+                    )
+                    ProjectActionCard(
+                        title: "Archive & Share",
+                        detail: "Create a standard ZIP for AirDrop, Messages, Mail, or Files",
+                        systemImage: "archivebox.fill",
+                        tint: CrabrixTheme.coral,
+                        action: onArchiveProject
                     )
                 }
 
@@ -174,6 +176,40 @@ struct ProjectsHomeView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Open current project \(projectName)")
+    }
+
+    private var newProjectBanner: some View {
+        Button(action: onNewProject) {
+            HStack(spacing: 16) {
+                Image(systemName: "plus")
+                    .font(.system(size: 26, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 54, height: 54)
+                    .background(CrabrixTheme.coral, in: RoundedRectangle(cornerRadius: 15))
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("Create New Rust Project")
+                        .font(.title3.bold())
+                        .foregroundStyle(CrabrixTheme.primary)
+                    Text("Choose Empty, Hello Rust, Cargo Modules, or a CLI starter")
+                        .font(.subheadline)
+                        .foregroundStyle(CrabrixTheme.muted)
+                }
+                Spacer()
+                Label("NEW", systemImage: "arrow.right.circle.fill")
+                    .font(.caption.monospaced().bold())
+                    .foregroundStyle(CrabrixTheme.coral)
+            }
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(CrabrixTheme.coral.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(CrabrixTheme.coral.opacity(0.45), lineWidth: 1.5)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Create a new Rust project from a template")
     }
 
     private func sectionTitle(_ title: String, detail: String) -> some View {

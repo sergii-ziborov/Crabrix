@@ -44,61 +44,66 @@ struct NewProjectSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 20) {
-                Label("Create a real Cargo project", systemImage: "shippingbox.and.arrow.backward.fill")
-                    .font(.title2.bold())
-                    .foregroundStyle(CrabrixTheme.coral)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Label("Create a real Cargo project", systemImage: "shippingbox.and.arrow.backward.fill")
+                        .font(.title2.bold())
+                        .foregroundStyle(CrabrixTheme.coral)
 
-                TextField("Project name", text: $name)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .textFieldStyle(.roundedBorder)
+                    Text("Choose a starting structure. Every template stays editable and builds with the bundled compiler.")
+                        .font(.subheadline)
+                        .foregroundStyle(CrabrixTheme.muted)
 
-                VStack(spacing: 10) {
-                    ForEach(RustProjectTemplate.allCases) { option in
-                        Button {
-                            template = option
-                        } label: {
-                            HStack(spacing: 13) {
-                                Image(systemName: option.systemImage)
-                                    .font(.title3)
-                                    .foregroundStyle(option == template ? CrabrixTheme.coral : CrabrixTheme.blue)
-                                    .frame(width: 34)
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text(option.title).font(.subheadline.bold())
-                                    Text(option.detail)
-                                        .font(.caption2)
-                                        .foregroundStyle(CrabrixTheme.muted)
+                    TextField("Project name", text: $name)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .textFieldStyle(.roundedBorder)
+
+                    VStack(spacing: 10) {
+                        ForEach(RustProjectTemplate.allCases) { option in
+                            Button {
+                                template = option
+                            } label: {
+                                HStack(spacing: 13) {
+                                    Image(systemName: option.systemImage)
+                                        .font(.title3)
+                                        .foregroundStyle(option == template ? CrabrixTheme.coral : CrabrixTheme.blue)
+                                        .frame(width: 34)
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text(option.title).font(.subheadline.bold())
+                                        Text(option.detail)
+                                            .font(.caption2)
+                                            .foregroundStyle(CrabrixTheme.muted)
+                                    }
+                                    Spacer()
+                                    Image(systemName: option == template ? "checkmark.circle.fill" : "circle")
+                                        .foregroundStyle(option == template ? CrabrixTheme.mint : CrabrixTheme.muted)
                                 }
-                                Spacer()
-                                Image(systemName: option == template ? "checkmark.circle.fill" : "circle")
-                                    .foregroundStyle(option == template ? CrabrixTheme.mint : CrabrixTheme.muted)
+                                .padding(14)
+                                .background(option == template ? CrabrixTheme.coral.opacity(0.08) : CrabrixTheme.panel)
+                                .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 13, style: .continuous)
+                                        .stroke(option == template ? CrabrixTheme.coral.opacity(0.5) : CrabrixTheme.border)
+                                }
                             }
-                            .padding(14)
-                            .background(option == template ? CrabrixTheme.coral.opacity(0.08) : CrabrixTheme.panel)
-                            .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
-                            .overlay {
-                                RoundedRectangle(cornerRadius: 13, style: .continuous)
-                                    .stroke(option == template ? CrabrixTheme.coral.opacity(0.5) : CrabrixTheme.border)
-                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
-                }
 
-                Button {
-                    onCreate(name, template)
-                    dismiss()
-                } label: {
-                    Label("Create Project", systemImage: "plus.circle.fill")
-                        .frame(maxWidth: .infinity)
+                    Button {
+                        onCreate(name, template)
+                        dismiss()
+                    } label: {
+                        Label("Create \(template.title) Project", systemImage: "plus.circle.fill")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(CrabrixTheme.coral)
+                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(CrabrixTheme.coral)
-                .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                Spacer()
+                .padding(22)
             }
-            .padding(22)
             .background(CrabrixTheme.background.ignoresSafeArea())
             .foregroundStyle(CrabrixTheme.primary)
             .toolbar {

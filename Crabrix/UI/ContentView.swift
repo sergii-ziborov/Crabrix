@@ -9,6 +9,27 @@ private enum CrabrixDestination: Hashable {
     case settings
 }
 
+private struct ArchiveShareItem: Identifiable {
+    let id = UUID()
+    let url: URL
+}
+
+private struct ProjectArchiveShareSheet: UIViewControllerRepresentable {
+    let url: URL
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(
+            activityItems: [url],
+            applicationActivities: nil
+        )
+    }
+
+    func updateUIViewController(
+        _ uiViewController: UIActivityViewController,
+        context: Context
+    ) {}
+}
+
 struct ContentView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.scenePhase) private var scenePhase
@@ -17,6 +38,7 @@ struct ContentView: View {
     @StateObject private var terminal = ProjectTerminalSession()
     @State private var isFileImporterPresented = false
     @State private var isFileExporterPresented = false
+    @State private var archiveShareItem: ArchiveShareItem?
     @State private var isGitHubImporterPresented = false
     @State private var isNewProjectPresented = false
     @State private var projectItemCreation: ProjectItemCreation?
@@ -58,6 +80,7 @@ struct ContentView: View {
                 onOpenGitHub: { isGitHubImporterPresented = true },
                 onOpenFiles: { isFileImporterPresented = true },
                 onSaveProject: prepareExport,
+                onArchiveProject: prepareArchiveShare,
                 onOpenRecent: { id in
                     Task {
                         if await model.openRecentProject(id: id) {
@@ -99,7 +122,6 @@ struct ContentView: View {
                         onSaveFiles: prepareExport,
                         onOpenGitHub: { isGitHubImporterPresented = true }
                     )
-                    StageStrip(completed: model.completedStages)
                     if model.projectTransfer != .idle {
                         ProjectTransferStrip(transfer: model.projectTransfer)
                     }
@@ -220,9 +242,17 @@ struct ContentView: View {
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
+        .sheet(item: $archiveShareItem) { item in
+            ProjectArchiveShareSheet(url: item.url)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+                .onDisappear {
+                    CrabrixProjectArchive.removeTemporaryArchive(at: item.url)
+                }
+        }
         .fileImporter(
             isPresented: $isFileImporterPresented,
-            allowedContentTypes: [.folder, .crabrixProject],
+            allowedContentTypes: [.folder, .crabrixProject, .zip],
             allowsMultipleSelection: false
         ) { result in
             switch result {
@@ -344,6 +374,23 @@ struct ContentView: View {
         isFileExporterPresented = true
     }
 
+    private func prepareArchiveShare() {
+        cleanupSharedArchive()
+        do {
+            archiveShareItem = ArchiveShareItem(
+                url: try CrabrixProjectArchive.create(project: model.exportProject())
+            )
+        } catch {
+            model.reportProjectFailure(error)
+        }
+    }
+
+    private func cleanupSharedArchive() {
+        guard let url = archiveShareItem?.url else { return }
+        CrabrixProjectArchive.removeTemporaryArchive(at: url)
+        archiveShareItem = nil
+    }
+
     private func closeBuildWorkspace() {
         if let lessonID = model.activeLessonID,
            let course = RustCourseCatalog.course(containingLessonID: lessonID) {
@@ -423,7 +470,8 @@ struct ContentView: View {
                 onCheck: model.check,
                 onRun: model.run,
                 onReplaceFiles: model.replaceProjectFilesFromTerminal,
-                onOpenDiagnostic: openDiagnostic
+                onOpenDiagnostic: openDiagnostic,
+                onContinueLearning: continueLearning
             ) {
                 codeWorkspace
             }
@@ -871,39 +919,6 @@ private struct ProjectTransferStrip: View {
     }
 }
 
-private struct StageStrip: View {
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    let completed: Set<CompilerViewModel.Stage>
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Text(horizontalSizeClass == .regular ? "DEVICE HYPOTHESIS" : "PHASE 0")
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .foregroundStyle(CrabrixTheme.coral)
-            if horizontalSizeClass == .regular {
-                Text("bundled rustc → diagnostic → repair → local run")
-                    .font(.caption)
-                    .foregroundStyle(CrabrixTheme.muted)
-            }
-            Spacer()
-
-            ForEach(CompilerViewModel.Stage.allCases) { stage in
-                let done = completed.contains(stage)
-                HStack(spacing: 5) {
-                    Image(systemName: done ? "checkmark.circle.fill" : "circle")
-                    Text(stage.title)
-                }
-                .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                .foregroundStyle(done ? CrabrixTheme.mint : CrabrixTheme.muted)
-                .lineLimit(1)
-            }
-        }
-        .padding(.horizontal, 18)
-        .frame(minHeight: 52)
-        .background(CrabrixTheme.panel)
-    }
-}
-
 private struct ResizablePanelDivider: View {
     enum Edge {
         case leading
@@ -1183,7 +1198,7 @@ private struct EditorToolbar: View {
                     title: isProjectSidebarCollapsed ? "Show files" : "Hide files",
                     systemImage: "sidebar.left",
                     isCollapsed: isProjectSidebarCollapsed,
-                    visibleTitle: isProjectSidebarCollapsed ? "Project files" : nil,
+                    visibleTitle: isProjectSidebarCollapsed ? "Files" : nil,
                     action: onToggleProjectSidebar
                 )
 
@@ -1211,7 +1226,7 @@ private struct EditorToolbar: View {
                     title: isInspectorCollapsed ? "Show inspector" : "Hide inspector",
                     systemImage: "sidebar.right",
                     isCollapsed: isInspectorCollapsed,
-                    visibleTitle: nil,
+                    visibleTitle: isInspectorCollapsed ? "Build" : nil,
                     action: onToggleInspector
                 )
             }

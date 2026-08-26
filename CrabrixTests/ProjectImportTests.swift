@@ -116,4 +116,25 @@ final class ProjectImportTests: XCTestCase {
         XCTAssertEqual(loaded.entryFile, "src/main.rs")
         XCTAssertEqual(loaded.provenance, provenance)
     }
+
+    func testZipArchiveRoundTripsProjectFiles() throws {
+        let project = CrabrixProject(
+            name: "share-crab",
+            files: [
+                "Cargo.toml": "[package]\nname = \"share-crab\"\n",
+                "src/main.rs": "fn main() { println!(\"shared\"); }",
+                "src/lib.rs": "pub fn value() -> i32 { 7 }",
+            ],
+            entryFile: "src/main.rs",
+            provenance: nil
+        )
+        let archiveURL = try CrabrixProjectArchive.create(project: project)
+        defer { CrabrixProjectArchive.removeTemporaryArchive(at: archiveURL) }
+
+        let loaded = try CrabrixProjectArchive.load(from: archiveURL)
+
+        XCTAssertEqual(loaded.name, project.name)
+        XCTAssertEqual(loaded.files, project.files)
+        XCTAssertEqual(loaded.entryFile, project.entryFile)
+    }
 }
