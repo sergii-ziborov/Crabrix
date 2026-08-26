@@ -58,7 +58,8 @@ struct ContentView: View {
             EditorToolbar(
                 activity: model.activity,
                 canRun: model.toolchain.isReady && !model.isBusy,
-                onReset: model.reset,
+                onLoadRunnable: model.loadRunnableSample,
+                onLoadDiagnostic: model.loadBorrowDiagnosticSample,
                 onCheck: model.check,
                 onRun: model.run
             )
@@ -211,7 +212,7 @@ private struct ProjectSidebar: View {
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
                 .foregroundStyle(CrabrixTheme.muted)
                 .padding(.bottom, 6)
-            Label("borrow-lab", systemImage: "chevron.down")
+            Label("phase0-lab", systemImage: "chevron.down")
                 .font(.subheadline.weight(.semibold))
             Label("src", systemImage: "chevron.down")
                 .font(.caption)
@@ -246,7 +247,8 @@ private struct ProjectSidebar: View {
 private struct EditorToolbar: View {
     let activity: CompilerViewModel.Activity
     let canRun: Bool
-    let onReset: () -> Void
+    let onLoadRunnable: () -> Void
+    let onLoadDiagnostic: () -> Void
     let onCheck: () -> Void
     let onRun: () -> Void
 
@@ -256,7 +258,16 @@ private struct EditorToolbar: View {
                 .font(.system(size: 11, weight: .medium, design: .monospaced))
                 .foregroundStyle(.white)
             Spacer()
-            Button("Reset", action: onReset)
+            Menu {
+                Button(action: onLoadRunnable) {
+                    Label("Runnable stdout demo", systemImage: "play.fill")
+                }
+                Button(action: onLoadDiagnostic) {
+                    Label("Borrow error E0502", systemImage: "exclamationmark.triangle.fill")
+                }
+            } label: {
+                Label("Samples", systemImage: "chevron.down")
+            }
                 .buttonStyle(.plain)
                 .font(.caption)
                 .foregroundStyle(CrabrixTheme.muted)
@@ -310,7 +321,9 @@ private struct ResultConsole: View {
                 if let result {
                     VStack(alignment: .leading, spacing: 8) {
                         Label(
-                            result.detail,
+                            !result.succeeded && result.phase == .compile
+                                ? "Build failed — the program was not executed."
+                                : result.detail,
                             systemImage: result.succeeded ? "checkmark.circle.fill" : "xmark.octagon.fill"
                         )
                         .foregroundStyle(result.succeeded ? CrabrixTheme.mint : CrabrixTheme.coral)
@@ -333,9 +346,9 @@ private struct ResultConsole: View {
                     .padding(14)
                 } else {
                     ContentUnavailableView(
-                        "Ask the bundled compiler",
-                        systemImage: "command",
-                        description: Text("Check invokes rustc.wasm inside the native app.")
+                        "Ready to run",
+                        systemImage: "play.circle.fill",
+                        description: Text("Press Run to compile and execute this valid starter program locally.")
                     )
                     .foregroundStyle(CrabrixTheme.muted)
                 }

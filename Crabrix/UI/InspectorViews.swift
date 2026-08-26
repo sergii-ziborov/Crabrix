@@ -13,12 +13,23 @@ struct RuntimeInspector: View {
                 Text("NATIVE COMPILER GATE")
                     .font(.system(size: 9, weight: .bold, design: .monospaced))
                     .foregroundStyle(CrabrixTheme.coral)
-                Text("No browser. No server. Ask the compiler inside this app.")
+                Text("Press Run. See real stdout from the compiler inside this app.")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                Text("The first Check parses an 84 MB rustc WebAssembly module, mounts a bundled WASI sysroot, and type-checks main.rs in the app sandbox.")
+                Text("The starter program is valid. Run compiles it with the bundled rustc, executes the emitted WebAssembly, and prints its output below.")
                     .font(.subheadline)
                     .foregroundStyle(CrabrixTheme.muted)
             }
+
+            VStack(alignment: .leading, spacing: 7) {
+                Label("START HERE", systemImage: "play.circle.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(CrabrixTheme.mint)
+                Text("Tap Run. The first local build takes about one minute. Choose Samples → Borrow error E0502 when you want to test diagnostics.")
+                    .font(.caption)
+                    .foregroundStyle(CrabrixTheme.muted)
+            }
+            .padding(14)
+            .crabrixPanel(cornerRadius: 10)
 
             VStack(alignment: .leading, spacing: 12) {
                 RuntimeRow(

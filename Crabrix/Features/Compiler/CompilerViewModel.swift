@@ -35,7 +35,7 @@ final class CompilerViewModel: ObservableObject {
         }
     }
 
-    @Published var source = RustSamples.broken
+    @Published var source = RustSamples.runnable
     @Published private(set) var activity: Activity = .idle
     @Published private(set) var result: CompilationResult?
     @Published private(set) var toolchain: ToolchainStatus
@@ -76,13 +76,21 @@ final class CompilerViewModel: ObservableObject {
         }
     }
 
-    func reset() {
-        source = RustSamples.broken
+    func loadRunnableSample() {
+        loadSample(RustSamples.runnable)
+    }
+
+    func loadBorrowDiagnosticSample() {
+        loadSample(RustSamples.broken)
+    }
+
+    private func loadSample(_ sample: String) {
+        guard !isBusy else { return }
+        source = sample
         result = nil
         lastDiagnostic = nil
         completedStages = []
         practiceCompleted = false
-        activity = .idle
     }
 
     func applyRepair() {

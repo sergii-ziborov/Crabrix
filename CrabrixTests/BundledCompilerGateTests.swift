@@ -26,14 +26,7 @@ final class BundledCompilerGateTests: XCTestCase {
         }
 
         let compiler = WasmRustCompiler(bundle: .main)
-        let result = await compiler.run(source: """
-        fn main() {
-            let mut items = vec!["crab", "rust"];
-            let first = &items[0];
-            println!("{first}");
-            items.push("compiler");
-        }
-        """)
+        let result = await compiler.run(source: RustSamples.runnable)
 
         XCTAssertTrue(
             result.succeeded,

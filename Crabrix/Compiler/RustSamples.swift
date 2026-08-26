@@ -1,4 +1,13 @@
 enum RustSamples {
+    static let runnable = """
+    fn main() {
+        let mut items = vec!["crab", "rust"];
+        let first = &items[0];
+        println!("{first}");
+        items.push("compiler");
+    }
+    """
+
     static let broken = """
     fn main() {
         let mut items = vec!["crab", "rust"];
