@@ -7,6 +7,7 @@ struct ProjectsHomeView: View {
     let activity: CompilerViewModel.Activity
     let isCompilerDraining: Bool
     let recentProjects: [ProjectLibraryItem]
+    let onOpenCurrentProject: () -> Void
     let onNewProject: () -> Void
     let onOpenGitHub: () -> Void
     let onOpenFiles: () -> Void
@@ -139,33 +140,40 @@ struct ProjectsHomeView: View {
     }
 
     private var hero: some View {
-        HStack(alignment: .center, spacing: 18) {
-            VStack(alignment: .leading, spacing: 7) {
-                Text("CURRENT PROJECT")
-                    .font(.caption2.monospaced().bold())
-                    .foregroundStyle(CrabrixTheme.coral)
-                Text(projectName)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                Text("\(fileCount) files ready in the native editor")
+        Button(action: onOpenCurrentProject) {
+            HStack(alignment: .center, spacing: 18) {
+                VStack(alignment: .leading, spacing: 7) {
+                    Text("CURRENT PROJECT")
+                        .font(.caption2.monospaced().bold())
+                        .foregroundStyle(CrabrixTheme.coral)
+                    Text(projectName)
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                    Text("\(fileCount) files ready in the native editor")
+                        .foregroundStyle(CrabrixTheme.muted)
+                }
+                Spacer()
+                BuildStatusBadge(
+                    record: lastBuild,
+                    activity: activity,
+                    isCompilerDraining: isCompilerDraining
+                )
+                Image(systemName: "chevron.right")
+                    .font(.headline)
                     .foregroundStyle(CrabrixTheme.muted)
             }
-            Spacer()
-            BuildStatusBadge(
-                record: lastBuild,
-                activity: activity,
-                isCompilerDraining: isCompilerDraining
+            .padding(20)
+            .background(
+                LinearGradient(
+                    colors: [CrabrixTheme.raised, CrabrixTheme.panel],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
             )
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay { RoundedRectangle(cornerRadius: 16).stroke(CrabrixTheme.border) }
         }
-        .padding(20)
-        .background(
-            LinearGradient(
-                colors: [CrabrixTheme.raised, CrabrixTheme.panel],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay { RoundedRectangle(cornerRadius: 16).stroke(CrabrixTheme.border) }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Open current project \(projectName)")
     }
 
     private func sectionTitle(_ title: String, detail: String) -> some View {

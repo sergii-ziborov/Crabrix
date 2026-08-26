@@ -26,6 +26,8 @@ struct ContentView: View {
     @State private var inspectorWidth: CGFloat = 390
     @State private var isProjectSidebarCollapsed = false
     @State private var isInspectorCollapsed = false
+    @State private var isCompactProjectDrawerPresented = false
+    @State private var isCompactInspectorDrawerPresented = false
     @State private var selectedBuildDockTab: BuildDockTab = .code
     @State private var learningPath: [LearningRoute] = []
     @State private var editorCursorOffset = 0
@@ -50,6 +52,7 @@ struct ContentView: View {
                 activity: model.activity,
                 isCompilerDraining: model.isCompilerDraining,
                 recentProjects: model.recentProjects,
+                onOpenCurrentProject: { selectedDestination = .build },
                 onNewProject: { isNewProjectPresented = true },
                 onOpenGitHub: { isGitHubImporterPresented = true },
                 onOpenFiles: { isFileImporterPresented = true },
@@ -88,6 +91,7 @@ struct ContentView: View {
                     AppHeader(
                         toolchain: model.toolchain,
                         transfer: model.projectTransfer,
+                        onOpenProjects: { selectedDestination = .projects },
                         onNewProject: { isNewProjectPresented = true },
                         onOpenFiles: { isFileImporterPresented = true },
                         onSaveFiles: prepareExport,
@@ -143,15 +147,7 @@ struct ContentView: View {
                             }
                         }
                     } else {
-                        ScrollView {
-                            VStack(spacing: 0) {
-                                editorPane
-                                    .frame(minHeight: 590)
-                                Divider().overlay(CrabrixTheme.border)
-                                inspectorPane
-                                    .frame(minHeight: 500)
-                            }
-                        }
+                        compactBuildWorkspace
                     }
                 }
             }
@@ -357,8 +353,12 @@ struct ContentView: View {
                 result: model.result,
                 files: model.fileNames,
                 selectedFile: model.selectedFile,
-                isProjectSidebarCollapsed: isProjectSidebarCollapsed,
-                isInspectorCollapsed: isInspectorCollapsed,
+                isProjectSidebarCollapsed: horizontalSizeClass == .regular
+                    ? isProjectSidebarCollapsed
+                    : !isCompactProjectDrawerPresented,
+                isInspectorCollapsed: horizontalSizeClass == .regular
+                    ? isInspectorCollapsed
+                    : !isCompactInspectorDrawerPresented,
                 canRun: model.canStartBuild && !model.isProjectOperationInProgress,
                 isCompletionLoading: completion.isLoading,
                 onSelectFile: selectEditorFile,
@@ -369,13 +369,27 @@ struct ContentView: View {
                 onRun: model.run,
                 onComplete: requestCompletion,
                 onToggleProjectSidebar: {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        isProjectSidebarCollapsed.toggle()
+                    if horizontalSizeClass == .regular {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            isProjectSidebarCollapsed.toggle()
+                        }
+                    } else {
+                        withAnimation(.easeInOut(duration: 0.22)) {
+                            isCompactProjectDrawerPresented.toggle()
+                            isCompactInspectorDrawerPresented = false
+                        }
                     }
                 },
                 onToggleInspector: {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        isInspectorCollapsed.toggle()
+                    if horizontalSizeClass == .regular {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            isInspectorCollapsed.toggle()
+                        }
+                    } else {
+                        withAnimation(.easeInOut(duration: 0.22)) {
+                            isCompactInspectorDrawerPresented.toggle()
+                            isCompactProjectDrawerPresented = false
+                        }
                     }
                 }
             )
@@ -388,7 +402,8 @@ struct ContentView: View {
                 activity: model.activity,
                 canStartBuild: model.canStartBuild && !model.isProjectOperationInProgress,
                 onCheck: model.check,
-                onRun: model.run
+                onRun: model.run,
+                onCancel: model.cancelBuild
             ) {
                 codeWorkspace
             }
@@ -402,7 +417,8 @@ struct ContentView: View {
                 text: $model.source,
                 cursorOffset: $editorCursorOffset,
                 filePath: model.selectedFile,
-                isEditable: !model.isProjectOperationInProgress
+                isEditable: !model.isProjectOperationInProgress,
+                onRequestCompletion: requestCompletion
             )
 
             if model.isBusy {
@@ -464,6 +480,137 @@ struct ContentView: View {
     private func selectEditorFile(_ file: String) {
         model.selectFile(file)
         selectedBuildDockTab = .code
+        if horizontalSizeClass != .regular {
+            withAnimation(.easeOut(duration: 0.18)) {
+                isCompactProjectDrawerPresented = false
+            }
+        }
+    }
+
+    private var compactBuildWorkspace: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                editorPane
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                if !isCompactProjectDrawerPresented && !isCompactInspectorDrawerPresented {
+                    HStack(spacing: 0) {
+                        CompactEdgeSwipeZone(edge: .leading) {
+                            withAnimation(.easeOut(duration: 0.22)) {
+                                isCompactProjectDrawerPresented = true
+                            }
+                        }
+                        Spacer(minLength: 0)
+                        CompactEdgeSwipeZone(edge: .trailing) {
+                            withAnimation(.easeOut(duration: 0.22)) {
+                                isCompactInspectorDrawerPresented = true
+                            }
+                        }
+                    }
+                    .zIndex(0.5)
+                }
+
+                if isCompactProjectDrawerPresented || isCompactInspectorDrawerPresented {
+                    Color.black.opacity(0.46)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                isCompactProjectDrawerPresented = false
+                                isCompactInspectorDrawerPresented = false
+                            }
+                        }
+                        .transition(.opacity)
+                        .zIndex(1)
+                }
+
+                if isCompactProjectDrawerPresented {
+                    VStack(spacing: 0) {
+                        CompactDrawerHeader(title: "Project files", systemImage: "sidebar.left") {
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                isCompactProjectDrawerPresented = false
+                            }
+                        }
+                        Divider().overlay(CrabrixTheme.border)
+                        ProjectSidebar(
+                            projectName: model.projectName,
+                            files: model.fileNames,
+                            selectedFile: model.selectedFile,
+                            manifest: model.cargoManifest,
+                            report: model.compatibilityReport,
+                            provenance: model.provenance,
+                            onSelect: selectEditorFile,
+                            onNewFile: { projectItemCreation = .rustFile },
+                            onNewFolder: { projectItemCreation = .moduleFolder }
+                        )
+                    }
+                    .frame(width: min(geometry.size.width * 0.86, 340))
+                    .frame(maxHeight: .infinity)
+                    .background(CrabrixTheme.panel)
+                    .overlay(alignment: .trailing) {
+                        Rectangle().fill(CrabrixTheme.border).frame(width: 1)
+                    }
+                    .transition(.move(edge: .leading).combined(with: .opacity))
+                    .zIndex(2)
+                }
+
+                if isCompactInspectorDrawerPresented {
+                    VStack(spacing: 0) {
+                        CompactDrawerHeader(title: "Build inspector", systemImage: "sidebar.right") {
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                isCompactInspectorDrawerPresented = false
+                            }
+                        }
+                        Divider().overlay(CrabrixTheme.border)
+                        inspectorPane
+                    }
+                    .frame(width: min(geometry.size.width * 0.88, 360))
+                    .frame(maxHeight: .infinity)
+                    .background(CrabrixTheme.panel)
+                    .overlay(alignment: .leading) {
+                        Rectangle().fill(CrabrixTheme.border).frame(width: 1)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+                    .zIndex(2)
+                }
+            }
+            .clipped()
+            .contentShape(Rectangle())
+            .simultaneousGesture(compactDrawerGesture(width: geometry.size.width))
+        }
+    }
+
+    private func compactDrawerGesture(width: CGFloat) -> some Gesture {
+        DragGesture(minimumDistance: 16)
+            .onEnded { value in
+                let horizontal = value.translation.width
+                let vertical = value.translation.height
+                guard abs(horizontal) > abs(vertical), abs(horizontal) > 55 else { return }
+
+                if isCompactProjectDrawerPresented, horizontal < 0 {
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        isCompactProjectDrawerPresented = false
+                    }
+                } else if isCompactInspectorDrawerPresented, horizontal > 0 {
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        isCompactInspectorDrawerPresented = false
+                    }
+                } else if !isCompactProjectDrawerPresented,
+                          !isCompactInspectorDrawerPresented,
+                          value.startLocation.x <= 30,
+                          horizontal > 0 {
+                    withAnimation(.easeOut(duration: 0.22)) {
+                        isCompactProjectDrawerPresented = true
+                    }
+                } else if !isCompactProjectDrawerPresented,
+                          !isCompactInspectorDrawerPresented,
+                          value.startLocation.x >= width - 30,
+                          horizontal < 0 {
+                    withAnimation(.easeOut(duration: 0.22)) {
+                        isCompactInspectorDrawerPresented = true
+                    }
+                }
+            }
     }
 
     private func requestCompletion() {
@@ -537,10 +684,39 @@ struct ContentView: View {
     }
 }
 
+private struct CompactEdgeSwipeZone: View {
+    enum Edge {
+        case leading
+        case trailing
+    }
+
+    let edge: Edge
+    let onOpen: () -> Void
+
+    var body: some View {
+        Color.clear
+            .frame(width: 28)
+            .frame(maxHeight: .infinity)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 12)
+                    .onEnded { value in
+                        let horizontal = value.translation.width
+                        let vertical = value.translation.height
+                        guard abs(horizontal) > abs(vertical), abs(horizontal) > 48 else { return }
+                        if edge == .leading, horizontal > 0 { onOpen() }
+                        if edge == .trailing, horizontal < 0 { onOpen() }
+                    }
+            )
+            .accessibilityHidden(true)
+    }
+}
+
 private struct AppHeader: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     let toolchain: ToolchainStatus
     let transfer: CompilerViewModel.ProjectTransfer
+    let onOpenProjects: () -> Void
     let onNewProject: () -> Void
     let onOpenFiles: () -> Void
     let onSaveFiles: () -> Void
@@ -567,6 +743,15 @@ private struct AppHeader: View {
 
             Spacer()
 
+            Button(action: onOpenProjects) {
+                Label(horizontalSizeClass == .regular ? "Projects" : "", systemImage: "square.grid.2x2.fill")
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .frame(minWidth: horizontalSizeClass == .regular ? 88 : 38, minHeight: 34)
+                    .background(CrabrixTheme.raised, in: RoundedRectangle(cornerRadius: 9))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Open Projects home")
+
             Menu {
                 Button(action: onNewProject) {
                     Label("New Rust Project", systemImage: "plus")
@@ -591,12 +776,14 @@ private struct AppHeader: View {
             }
             .disabled(transfer.isWorking)
 
-            Label(horizontalSizeClass == .regular ? "NO WEBVIEW" : "NATIVE", systemImage: "swift")
+            Label(horizontalSizeClass == .regular ? "NO WEBVIEW" : "", systemImage: "swift")
                 .font(.system(size: 9, weight: .semibold, design: .monospaced))
                 .foregroundStyle(CrabrixTheme.mint)
-            Label(toolchain.isReady ? (horizontalSizeClass == .regular ? "OFFLINE READY" : "OFFLINE") : "MISSING", systemImage: toolchain.isReady ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                .accessibilityLabel("Native SwiftUI")
+            Label(toolchain.isReady ? (horizontalSizeClass == .regular ? "OFFLINE READY" : "") : "MISSING", systemImage: toolchain.isReady ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                 .font(.system(size: 9, weight: .semibold, design: .monospaced))
                 .foregroundStyle(toolchain.isReady ? CrabrixTheme.mint : CrabrixTheme.amber)
+                .accessibilityLabel(toolchain.isReady ? "Offline compiler ready" : "Compiler missing")
         }
         .padding(.horizontal, 18)
         .frame(height: 58)
@@ -1110,17 +1297,43 @@ private struct PanelToolbarButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: systemImage)
-                .font(.caption.bold())
+                .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(isCollapsed ? CrabrixTheme.mint : CrabrixTheme.blue)
-                .frame(width: 30, height: 26)
+                .frame(width: 42, height: 34)
                 .background(
                     (isCollapsed ? CrabrixTheme.mint : CrabrixTheme.blue).opacity(0.11),
-                    in: RoundedRectangle(cornerRadius: 8)
+                    in: RoundedRectangle(cornerRadius: 10)
                 )
         }
         .buttonStyle(.plain)
+        .contentShape(Rectangle())
         .accessibilityLabel(title)
         .accessibilityHint("Toggle this editor panel")
+    }
+}
+
+private struct CompactDrawerHeader: View {
+    let title: String
+    let systemImage: String
+    let onClose: () -> Void
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Label(title, systemImage: systemImage)
+                .font(.headline)
+            Spacer()
+            Button(action: onClose) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14, weight: .bold))
+                    .frame(width: 38, height: 38)
+                    .background(CrabrixTheme.raised, in: Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Close \(title.lowercased())")
+        }
+        .padding(.horizontal, 14)
+        .frame(height: 54)
+        .background(CrabrixTheme.panel)
     }
 }
 

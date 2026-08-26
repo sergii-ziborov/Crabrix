@@ -39,6 +39,7 @@ struct BuildDockView<CodeContent: View>: View {
     let canStartBuild: Bool
     let onCheck: () -> Void
     let onRun: () -> Void
+    let onCancel: () -> Void
     let codeContent: CodeContent
 
     init(
@@ -50,6 +51,7 @@ struct BuildDockView<CodeContent: View>: View {
         canStartBuild: Bool,
         onCheck: @escaping () -> Void,
         onRun: @escaping () -> Void,
+        onCancel: @escaping () -> Void,
         @ViewBuilder codeContent: () -> CodeContent
     ) {
         _selectedTab = selectedTab
@@ -60,14 +62,13 @@ struct BuildDockView<CodeContent: View>: View {
         self.canStartBuild = canStartBuild
         self.onCheck = onCheck
         self.onRun = onRun
+        self.onCancel = onCancel
         self.codeContent = codeContent()
     }
 
     var body: some View {
         VStack(spacing: 0) {
             header
-            Divider().overlay(CrabrixTheme.border)
-            statusStrip
             Divider().overlay(CrabrixTheme.border)
             content
         }
@@ -111,47 +112,41 @@ struct BuildDockView<CodeContent: View>: View {
 
             Spacer()
 
-            Text("FULL PANE")
-                .font(.system(size: 8, weight: .bold, design: .monospaced))
-                .foregroundStyle(CrabrixTheme.muted)
+            compactBuildStatus
         }
         .font(.system(size: 9, weight: .semibold, design: .monospaced))
         .padding(.horizontal, 9)
         .frame(height: 38)
     }
 
-    private var statusStrip: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                if activity != .idle {
-                    ProgressView().controlSize(.small).tint(CrabrixTheme.blue)
-                    Label(
-                        activity == .checking ? "Type-check in progress" : "Compile and run in progress",
-                        systemImage: "hammer.fill"
-                    )
+    @ViewBuilder
+    private var compactBuildStatus: some View {
+        if activity != .idle {
+            HStack(spacing: 6) {
+                ProgressView()
+                    .controlSize(.mini)
+                    .tint(CrabrixTheme.blue)
+                Text(activity == .checking ? "CHECKING" : "RUNNING")
                     .foregroundStyle(CrabrixTheme.blue)
-                    Text("You can keep editing")
-                        .foregroundStyle(CrabrixTheme.muted)
-                } else if let result {
-                    Label(
-                        result.succeeded ? "Last build passed" : "Last build failed",
-                        systemImage: result.succeeded ? "checkmark.seal.fill" : "xmark.octagon.fill"
-                    )
-                    .foregroundStyle(result.succeeded ? CrabrixTheme.mint : CrabrixTheme.coral)
-                    Text(result.phase.rawValue.uppercased())
-                        .foregroundStyle(CrabrixTheme.muted)
-                    Text(result.duration.crabrixDescription)
-                        .foregroundStyle(CrabrixTheme.muted)
-                } else {
-                    Label("No build yet", systemImage: "circle.dashed")
-                        .foregroundStyle(CrabrixTheme.muted)
+                Button(action: onCancel) {
+                    Image(systemName: "stop.fill")
+                        .foregroundStyle(CrabrixTheme.coral)
+                        .frame(width: 24, height: 24)
+                        .background(CrabrixTheme.coral.opacity(0.12), in: Circle())
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Stop build")
             }
-            .font(.system(size: 10, weight: .semibold, design: .monospaced))
-            .padding(.horizontal, 12)
-            .frame(height: 32)
+        } else if let result {
+            Label(
+                result.succeeded ? "PASSED" : "FAILED",
+                systemImage: result.succeeded ? "checkmark.seal.fill" : "xmark.octagon.fill"
+            )
+            .foregroundStyle(result.succeeded ? CrabrixTheme.mint : CrabrixTheme.coral)
+            .accessibilityLabel(
+                result.succeeded ? "Last build passed" : "Last build failed"
+            )
         }
-        .background(CrabrixTheme.panel.opacity(0.62))
     }
 
     @ViewBuilder
@@ -307,11 +302,14 @@ private struct OutputStreamBlock: View {
 
 private struct TerminalDockContent: View {
     @ObservedObject var terminal: ProjectTerminalSession
+    @FocusState private var commandIsFocused: Bool
     let project: CrabrixProject
     let activity: CompilerViewModel.Activity
     let canStartBuild: Bool
     let onCheck: () -> Void
     let onRun: () -> Void
+
+    private let quickCommands = ["help", "ls", "cargo check", "cargo run", "clear"]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -336,26 +334,68 @@ private struct TerminalDockContent: View {
             }
 
             Divider().overlay(CrabrixTheme.border)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 7) {
+                    ForEach(quickCommands, id: \.self) { command in
+                        Button {
+                            run(command)
+                        } label: {
+                            Text(command)
+                                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                                .foregroundStyle(command == "clear" ? CrabrixTheme.coral : CrabrixTheme.blue)
+                                .padding(.horizontal, 10)
+                                .frame(height: 30)
+                                .background(
+                                    (command == "clear" ? CrabrixTheme.coral : CrabrixTheme.blue).opacity(0.09),
+                                    in: Capsule()
+                                )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+            }
+            .background(CrabrixTheme.panel.opacity(0.72))
+
+            Divider().overlay(CrabrixTheme.border)
+
             HStack(spacing: 7) {
                 Text("\(project.name) $ ")
                     .foregroundStyle(CrabrixTheme.mint)
                 TextField("command", text: $terminal.command)
+                    .textFieldStyle(.plain)
+                    .focused($commandIsFocused)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .submitLabel(.send)
                     .onSubmit(submit)
+                    .padding(.horizontal, 10)
+                    .frame(height: 34)
+                    .background(Color.black.opacity(0.22), in: RoundedRectangle(cornerRadius: 8))
                 Button(action: submit) {
-                    Image(systemName: "return").frame(width: 28, height: 28)
+                    Label("Run", systemImage: "return")
+                        .font(.caption.bold())
+                        .padding(.horizontal, 10)
+                        .frame(height: 34)
+                        .background(CrabrixTheme.blue.opacity(0.14), in: RoundedRectangle(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(CrabrixTheme.blue)
             }
             .font(.system(size: 11, design: .monospaced))
             .padding(.horizontal, 12)
-            .frame(height: 38)
+            .frame(height: 50)
             .background(CrabrixTheme.panel)
         }
         .task { terminal.attach(to: project) }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") { commandIsFocused = false }
+            }
+        }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
             LinearGradient(
@@ -373,6 +413,11 @@ private struct TerminalDockContent: View {
             onCheck: onCheck,
             onRun: onRun
         )
+    }
+
+    private func run(_ command: String) {
+        terminal.command = command
+        submit()
     }
 
 }

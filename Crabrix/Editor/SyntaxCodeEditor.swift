@@ -8,6 +8,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
     @Binding var cursorOffset: Int
     let filePath: String
     let isEditable: Bool
+    let onRequestCompletion: () -> Void
 
     func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
@@ -39,6 +40,18 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         textView.spellCheckingType = .no
         textView.accessibilityLabel = "Rust source editor"
         textView.text = text
+        context.coordinator.textView = textView
+        textView.inputAccessoryView = RustKeyboardAccessoryView(
+            onInsert: { [weak coordinator = context.coordinator] symbol in
+                coordinator?.insert(symbol)
+            },
+            onComplete: { [weak coordinator = context.coordinator] in
+                coordinator?.parent.onRequestCompletion()
+            },
+            onDismiss: { [weak textView] in
+                textView?.resignFirstResponder()
+            }
+        )
         context.coordinator.applyHighlighting(to: textView, filePath: filePath)
         return textView
     }
@@ -47,9 +60,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         context.coordinator.parent = self
         textView.isEditable = isEditable
         textView.backgroundColor = UIColor(CrabrixTheme.editor)
-        textView.textColor = UIColor(CrabrixTheme.primary)
         textView.keyboardAppearance = colorScheme == .dark ? .dark : .light
-        textView.font = .monospacedSystemFont(ofSize: editorFontSize, weight: .regular)
         if textView.text != text {
             textView.text = text
             textView.selectedRange = NSRange(
@@ -71,6 +82,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         var highlightedFilePath = ""
         var highlightedFontSize = 0.0
         var highlightedColorScheme: ColorScheme?
+        weak var textView: UITextView?
         private var isApplyingHighlight = false
 
         init(parent: SyntaxCodeEditor) {
@@ -91,6 +103,19 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             DispatchQueue.main.async { [weak self] in
                 self?.parent.cursorOffset = offset
             }
+        }
+
+        func insert(_ symbol: String) {
+            guard let textView else { return }
+            let source = textView.text ?? ""
+            let range = textView.selectedRange
+            let updated = (source as NSString).replacingCharacters(in: range, with: symbol)
+            let cursor = range.location + (symbol as NSString).length
+            textView.text = updated
+            textView.selectedRange = NSRange(location: cursor, length: 0)
+            parent.text = updated
+            parent.cursorOffset = cursor
+            applyHighlighting(to: textView, filePath: parent.filePath)
         }
 
         func applyHighlighting(to textView: UITextView, filePath: String) {
@@ -140,5 +165,99 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             case .key: UIColor(CrabrixTheme.blue)
             }
         }
+    }
+}
+
+private final class RustKeyboardAccessoryView: UIView {
+    private let symbols = ["::", "->", "=>", "&", "&mut ", "|", "_", "!", "<", ">", "{", "}", "[", "]", "(", ")", ";"]
+
+    init(
+        onInsert: @escaping (String) -> Void,
+        onComplete: @escaping () -> Void,
+        onDismiss: @escaping () -> Void
+    ) {
+        super.init(frame: .zero)
+        backgroundColor = .secondarySystemBackground
+        autoresizingMask = .flexibleHeight
+
+        let scrollView = UIScrollView()
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 5
+        stack.alignment = .center
+        stack.translatesAutoresizingMaskIntoConstraints = false
+
+        let completeButton = accessoryButton(
+            title: "Complete",
+            systemImage: "sparkles",
+            tint: .systemBlue
+        )
+        completeButton.addAction(UIAction { _ in onComplete() }, for: .touchUpInside)
+        stack.addArrangedSubview(completeButton)
+
+        for symbol in symbols {
+            let button = accessoryButton(title: symbol, systemImage: nil, tint: .label)
+            button.addAction(UIAction { _ in onInsert(symbol) }, for: .touchUpInside)
+            stack.addArrangedSubview(button)
+        }
+
+        let doneButton = accessoryButton(
+            title: "Done",
+            systemImage: "keyboard.chevron.compact.down",
+            tint: .systemBlue
+        )
+        doneButton.addAction(UIAction { _ in onDismiss() }, for: .touchUpInside)
+        doneButton.translatesAutoresizingMaskIntoConstraints = false
+
+        let separator = UIView()
+        separator.backgroundColor = .separator
+        separator.translatesAutoresizingMaskIntoConstraints = false
+
+        addSubview(scrollView)
+        addSubview(separator)
+        addSubview(doneButton)
+        scrollView.addSubview(stack)
+
+        NSLayoutConstraint.activate([
+            heightAnchor.constraint(equalToConstant: 46),
+            doneButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -6),
+            doneButton.centerYAnchor.constraint(equalTo: centerYAnchor),
+            doneButton.heightAnchor.constraint(equalToConstant: 36),
+            separator.trailingAnchor.constraint(equalTo: doneButton.leadingAnchor, constant: -5),
+            separator.topAnchor.constraint(equalTo: topAnchor, constant: 7),
+            separator.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -7),
+            separator.widthAnchor.constraint(equalToConstant: 1),
+            scrollView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6),
+            scrollView.trailingAnchor.constraint(equalTo: separator.leadingAnchor, constant: -5),
+            scrollView.topAnchor.constraint(equalTo: topAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            stack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+            stack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+            stack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            stack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+            stack.heightAnchor.constraint(equalTo: scrollView.frameLayoutGuide.heightAnchor),
+        ])
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func accessoryButton(title: String, systemImage: String?, tint: UIColor) -> UIButton {
+        var configuration = UIButton.Configuration.gray()
+        configuration.title = title
+        configuration.image = systemImage.flatMap { UIImage(systemName: $0) }
+        configuration.imagePadding = 4
+        configuration.baseForegroundColor = tint
+        configuration.cornerStyle = .small
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 9, bottom: 5, trailing: 9)
+        let button = UIButton(configuration: configuration)
+        button.titleLabel?.font = .monospacedSystemFont(ofSize: 12, weight: .semibold)
+        button.accessibilityLabel = title
+        return button
     }
 }
