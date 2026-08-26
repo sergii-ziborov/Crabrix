@@ -98,7 +98,7 @@ struct DiagnosticInspector: View {
                 .foregroundStyle(CrabrixTheme.muted)
 
             HStack(alignment: .top, spacing: 11) {
-                Image(systemName: "section")
+                Image(systemName: "link")
                     .foregroundStyle(CrabrixTheme.blue)
                     .frame(width: 28, height: 28)
                     .background(CrabrixTheme.blue.opacity(0.1))

@@ -74,18 +74,27 @@ struct ContentView: View {
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
                     .accessibilityLabel("Rust source editor")
+                    .disabled(model.isBusy)
 
                 if model.isBusy {
-                    HStack(spacing: 9) {
-                        ProgressView().tint(CrabrixTheme.coral)
-                        Text(model.activity.label)
-                            .font(.caption.monospaced())
-                            .foregroundStyle(CrabrixTheme.muted)
+                    HStack(alignment: .top, spacing: 10) {
+                        ProgressView()
+                            .tint(CrabrixTheme.coral)
+                            .padding(.top, 2)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(model.activity.label)
+                                .font(.caption.monospaced())
+                            Text(model.activity == .running
+                                 ? "First local run takes about one minute. Keep Crabrix open."
+                                 : "The first local check usually takes 15–20 seconds.")
+                                .font(.caption2)
+                                .foregroundStyle(CrabrixTheme.muted)
+                        }
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 9)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Capsule())
+                    .background(.regularMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .trailing)
                 }
@@ -251,6 +260,7 @@ private struct EditorToolbar: View {
                 .buttonStyle(.plain)
                 .font(.caption)
                 .foregroundStyle(CrabrixTheme.muted)
+                .disabled(activity != .idle)
             Button(action: onCheck) {
                 Label("Check", systemImage: "checkmark")
             }
