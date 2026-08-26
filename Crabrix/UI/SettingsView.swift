@@ -32,8 +32,8 @@ struct SettingsView: View {
             .navigationTitle("Settings")
         }
         .sheet(isPresented: $isAddingDependency) {
-            AddCargoDependencySheet(onAdd: onAddDependency)
-                .presentationDetents([.medium])
+            CargoDependencyCatalogSheet(onAdd: onAddDependency)
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
     }
@@ -194,7 +194,7 @@ struct SettingsView: View {
                 .tint(CrabrixTheme.blue)
 
                 Label(
-                    "Phase 0 records dependencies but does not download crates. The local compiler currently runs source-only projects.",
+                    "The catalog searches crates.io on demand. Phase 0 records the selected dependency but local builds remain offline and source-only.",
                     systemImage: "info.circle"
                 )
                 .font(.caption2)
@@ -280,63 +280,6 @@ private struct SettingsFactRow: View {
                 .font(.caption.monospaced())
                 .foregroundStyle(CrabrixTheme.muted)
                 .multilineTextAlignment(.trailing)
-        }
-    }
-}
-
-private struct AddCargoDependencySheet: View {
-    @Environment(\.dismiss) private var dismiss
-    @State private var crate = ""
-    @State private var requirement = "1.0"
-    @State private var validationMessage: String?
-
-    let onAdd: (String, String) -> Bool
-
-    var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 18) {
-                Label("Add to Cargo.toml", systemImage: "shippingbox.fill")
-                    .font(.title2.bold())
-                    .foregroundStyle(CrabrixTheme.amber)
-
-                TextField("Crate name, for example serde", text: $crate)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .textFieldStyle(.roundedBorder)
-                TextField("Version requirement, for example 1.0", text: $requirement)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .textFieldStyle(.roundedBorder)
-
-                if let validationMessage {
-                    Label(validationMessage, systemImage: "exclamationmark.triangle.fill")
-                        .font(.caption)
-                        .foregroundStyle(CrabrixTheme.amber)
-                }
-
-                Button("Add Dependency", action: add)
-                    .buttonStyle(.borderedProminent)
-                    .tint(CrabrixTheme.blue)
-                    .frame(maxWidth: .infinity)
-                    .disabled(crate.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                Spacer()
-            }
-            .padding(22)
-            .background(CrabrixTheme.background.ignoresSafeArea())
-            .foregroundStyle(CrabrixTheme.primary)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-            }
-        }
-    }
-
-    private func add() {
-        if onAdd(crate, requirement) {
-            dismiss()
-        } else {
-            validationMessage = "Check the crate name, version, and active project."
         }
     }
 }

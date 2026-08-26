@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 import SystemPackage
 @_spi(Fuzzing) import WasmKit
 import WasmKitWASI
@@ -17,6 +18,7 @@ final class WasmRustCompiler: @unchecked Sendable {
     }
 
     private static let toolchainVersion = "artifacts-test-7"
+    private static let cacheSchemaVersion = "fast-dev-1"
 
     private let bundle: Bundle
     // rustc runs synchronously inside the Wasm interpreter. Keep that CPU-heavy work
@@ -29,6 +31,8 @@ final class WasmRustCompiler: @unchecked Sendable {
     private let clock = ContinuousClock()
     private var cachedRustcModule: Module?
     private var cachedEngine: Engine?
+    private var cachedProgramModules: [String: Module] = [:]
+    private var successfulCheckKeys: Set<String> = []
 
     init(bundle: Bundle = .main) {
         self.bundle = bundle
@@ -134,6 +138,12 @@ final class WasmRustCompiler: @unchecked Sendable {
         guard let rustcURL, let sysrootURL else {
             return .failure(phase: .setup, detail: "Bundled Rust toolchain is missing.")
         }
+        let cacheKey = artifactKey(
+            action: action,
+            source: source,
+            sourcePath: sourcePath,
+            supportingFiles: supportingFiles
+        )
 
         let fileManager = FileManager.default
         let jobRoot = fileManager.temporaryDirectory
@@ -183,6 +193,29 @@ final class WasmRustCompiler: @unchecked Sendable {
         defer { try? fileManager.removeItem(at: jobRoot) }
 
         do {
+            if action == .check, successfulCheckKeys.contains(cacheKey) {
+                return CompilationResult(
+                    succeeded: true,
+                    phase: .check,
+                    exitCode: 0,
+                    diagnostics: [],
+                    stdout: "",
+                    stderr: "",
+                    duration: started.duration(to: clock.now),
+                    detail: "Unchanged snapshot accepted from the local check cache."
+                )
+            }
+
+            if action == .run, let cachedProgram = loadCachedProgramModule(for: cacheKey) {
+                return try executeProgram(
+                    module: cachedProgram,
+                    jobRoot: jobRoot,
+                    diagnostics: [],
+                    started: started,
+                    successDetail: "Executed a cached local build artifact inside the bounded WasmKit sandbox."
+                )
+            }
+
             let module = try loadRustcModule(from: rustcURL)
             let outputName = action == .run ? "program.wasm" : "main.rmeta"
             var arguments = [
@@ -200,7 +233,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                 arguments += ["--emit", "metadata", "-o", "/work/\(outputName)"]
             case .run:
                 arguments += [
-                    "-Zunstable-options", "-O", "-Cpanic=abort",
+                    "-Zunstable-options", "-Copt-level=0", "-Cpanic=abort",
                     "-o", "/work/\(outputName)",
                 ]
                 environment["CLIF2WASM_OBJECT"] = "1"
@@ -261,6 +294,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             }
 
             guard action == .run else {
+                successfulCheckKeys.insert(cacheKey)
                 return CompilationResult(
                     succeeded: true,
                     phase: .check,
@@ -283,61 +317,17 @@ final class WasmRustCompiler: @unchecked Sendable {
                 )
             }
 
-            let programModule = try parseWasm(bytes: [UInt8](Data(contentsOf: programURL)))
-            let sandboxURL = jobRoot.appendingPathComponent("sandbox", isDirectory: true)
-            try fileManager.createDirectory(at: sandboxURL, withIntermediateDirectories: true)
-            let programCapture = try makeCapture(in: jobRoot, prefix: "program")
-            let resourceLimiter = WasmSandboxResourceLimiter()
-            let programExit: UInt32
-            do {
-                programExit = try runWASI(
-                    module: programModule,
-                    arguments: ["program"],
-                    environment: [:],
-                    preopens: [
-                        .init(
-                            guestPath: WasmSandboxPolicy.writableGuestDirectory,
-                            hostPath: sandboxURL.path
-                        )
-                    ],
-                    capture: programCapture,
-                    resourceLimiter: resourceLimiter
-                )
-            } catch {
-                let programOutput = try? finishCapture(programCapture)
-                if let deniedResource = resourceLimiter.deniedResource {
-                    let detail = switch deniedResource {
-                    case .memory:
-                        "Program stopped at the \(WasmSandboxPolicy.memoryLimitLabel) sandbox memory limit."
-                    case .table:
-                        "Program stopped at the sandbox table limit."
-                    }
-                    return CompilationResult(
-                        succeeded: false,
-                        phase: .run,
-                        exitCode: nil,
-                        diagnostics: diagnostics,
-                        stdout: programOutput?.stdout ?? "",
-                        stderr: programOutput?.stderr ?? "",
-                        duration: started.duration(to: clock.now),
-                        detail: detail
-                    )
-                }
-                throw error
-            }
-            let programOutput = try finishCapture(programCapture)
+            let programData = try Data(contentsOf: programURL)
+            let programModule = try parseWasm(bytes: [UInt8](programData))
+            cachedProgramModules[cacheKey] = programModule
+            persistProgramArtifact(programData, for: cacheKey)
 
-            return CompilationResult(
-                succeeded: programExit == 0,
-                phase: .run,
-                exitCode: programExit,
+            return try executeProgram(
+                module: programModule,
+                jobRoot: jobRoot,
                 diagnostics: diagnostics,
-                stdout: programOutput.stdout,
-                stderr: programOutput.stderr,
-                duration: started.duration(to: clock.now),
-                detail: programExit == 0
-                    ? "Compiled and executed locally inside the bounded WasmKit sandbox."
-                    : "The program exited with code \(programExit)."
+                started: started,
+                successDetail: "Compiled and executed locally inside the bounded WasmKit sandbox."
             )
         } catch {
             return .failure(
@@ -353,6 +343,128 @@ final class WasmRustCompiler: @unchecked Sendable {
         let module = try parseWasm(bytes: [UInt8](Data(contentsOf: url)))
         cachedRustcModule = module
         return module
+    }
+
+    private func executeProgram(
+        module: Module,
+        jobRoot: URL,
+        diagnostics: [RustDiagnostic],
+        started: ContinuousClock.Instant,
+        successDetail: String
+    ) throws -> CompilationResult {
+        let fileManager = FileManager.default
+        let sandboxURL = jobRoot.appendingPathComponent("sandbox", isDirectory: true)
+        try fileManager.createDirectory(at: sandboxURL, withIntermediateDirectories: true)
+        let programCapture = try makeCapture(in: jobRoot, prefix: "program")
+        let resourceLimiter = WasmSandboxResourceLimiter()
+        let programExit: UInt32
+        do {
+            programExit = try runWASI(
+                module: module,
+                arguments: ["program"],
+                environment: [:],
+                preopens: [
+                    .init(
+                        guestPath: WasmSandboxPolicy.writableGuestDirectory,
+                        hostPath: sandboxURL.path
+                    )
+                ],
+                capture: programCapture,
+                resourceLimiter: resourceLimiter
+            )
+        } catch {
+            let programOutput = try? finishCapture(programCapture)
+            if let deniedResource = resourceLimiter.deniedResource {
+                let detail = switch deniedResource {
+                case .memory:
+                    "Program stopped at the \(WasmSandboxPolicy.memoryLimitLabel) sandbox memory limit."
+                case .table:
+                    "Program stopped at the sandbox table limit."
+                }
+                return CompilationResult(
+                    succeeded: false,
+                    phase: .run,
+                    exitCode: nil,
+                    diagnostics: diagnostics,
+                    stdout: programOutput?.stdout ?? "",
+                    stderr: programOutput?.stderr ?? "",
+                    duration: started.duration(to: clock.now),
+                    detail: detail
+                )
+            }
+            throw error
+        }
+        let programOutput = try finishCapture(programCapture)
+
+        return CompilationResult(
+            succeeded: programExit == 0,
+            phase: .run,
+            exitCode: programExit,
+            diagnostics: diagnostics,
+            stdout: programOutput.stdout,
+            stderr: programOutput.stderr,
+            duration: started.duration(to: clock.now),
+            detail: programExit == 0 ? successDetail : "The program exited with code \(programExit)."
+        )
+    }
+
+    private func artifactKey(
+        action: Action,
+        source: String,
+        sourcePath: String,
+        supportingFiles: [String: String]
+    ) -> String {
+        var hasher = SHA256()
+        let actionLabel = action == .check ? "check" : "run"
+        for value in [Self.toolchainVersion, Self.cacheSchemaVersion, actionLabel, sourcePath, source] {
+            hasher.update(data: Data(value.utf8))
+            hasher.update(data: Data([0]))
+        }
+        for (path, contents) in supportingFiles.sorted(by: { $0.key < $1.key }) {
+            hasher.update(data: Data(path.utf8))
+            hasher.update(data: Data([0]))
+            hasher.update(data: Data(contents.utf8))
+            hasher.update(data: Data([0]))
+        }
+        return hasher.finalize().map { String(format: "%02x", $0) }.joined()
+    }
+
+    private var artifactCacheURL: URL? {
+        FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
+            .appendingPathComponent("CrabrixCompiler", isDirectory: true)
+            .appendingPathComponent(Self.toolchainVersion, isDirectory: true)
+            .appendingPathComponent(Self.cacheSchemaVersion, isDirectory: true)
+    }
+
+    private func artifactURL(for key: String) -> URL? {
+        artifactCacheURL?.appendingPathComponent("\(key).wasm")
+    }
+
+    private func loadCachedProgramModule(for key: String) -> Module? {
+        if let module = cachedProgramModules[key] { return module }
+        guard let url = artifactURL(for: key),
+              FileManager.default.fileExists(atPath: url.path)
+        else {
+            return nil
+        }
+        do {
+            let module = try parseWasm(bytes: [UInt8](Data(contentsOf: url)))
+            cachedProgramModules[key] = module
+            return module
+        } catch {
+            try? FileManager.default.removeItem(at: url)
+            return nil
+        }
+    }
+
+    private func persistProgramArtifact(_ data: Data, for key: String) {
+        guard let directory = artifactCacheURL, let url = artifactURL(for: key) else { return }
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try data.write(to: url, options: .atomic)
+        } catch {
+            // A cache write must never turn a successful local compilation into a failure.
+        }
     }
 
     private func projectFileURL(relativePath: String, under root: URL) -> URL? {

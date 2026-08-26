@@ -14,6 +14,7 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var model = CompilerViewModel()
     @StateObject private var completion = RustCompletionController()
+    @StateObject private var terminal = ProjectTerminalSession()
     @State private var isFileImporterPresented = false
     @State private var isFileExporterPresented = false
     @State private var isGitHubImporterPresented = false
@@ -25,6 +26,10 @@ struct ContentView: View {
     @State private var inspectorWidth: CGFloat = 390
     @State private var isProjectSidebarCollapsed = false
     @State private var isInspectorCollapsed = false
+    @State private var buildDockHeight: CGFloat = 210
+    @State private var isBuildDockCollapsed = false
+    @State private var selectedBuildDockTab: BuildDockTab = .output
+    @State private var selectedLesson: RustLesson?
     @State private var editorCursorOffset = 0
     @AppStorage("crabrix.appearance") private var appearanceRaw = CrabrixAppearance.system.rawValue
     @AppStorage("crabrix.keepAwakeDuringBuild") private var keepAwakeDuringBuild = true
@@ -202,6 +207,14 @@ struct ContentView: View {
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
+        .sheet(item: $selectedLesson) { lesson in
+            LessonDetailView(lesson: lesson) {
+                startLesson(lesson)
+                selectedLesson = nil
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+        }
         .sheet(isPresented: $isGitHubImporterPresented) {
             GitHubImportSheet(
                 url: $githubURL,
@@ -261,8 +274,25 @@ struct ContentView: View {
             if arguments.contains("--crabrix-auto-learn") {
                 selectedDestination = .learn
             }
+            if let lessonArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-lesson=") }) {
+                let lessonID = String(lessonArgument.dropFirst("--crabrix-auto-lesson=".count))
+                let lessons = RustCourseCatalog.courses.flatMap(\.units).flatMap(\.lessons)
+                if let lesson = lessons.first(where: { $0.id == lessonID }) {
+                    selectedDestination = .learn
+                    selectedLesson = lesson
+                }
+            }
             if arguments.contains("--crabrix-auto-settings") {
                 selectedDestination = .settings
+            }
+            if let dockArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-dock=") }) {
+                let tab = String(dockArgument.dropFirst("--crabrix-auto-dock=".count))
+                if let dockTab = BuildDockTab(rawValue: tab) {
+                    selectedDestination = .build
+                    selectedBuildDockTab = dockTab
+                    isBuildDockCollapsed = false
+                    buildDockHeight = 260
+                }
             }
             if let showcaseArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-showcase=") }) {
                 let id = String(showcaseArgument.dropFirst("--crabrix-auto-showcase=".count))
@@ -288,6 +318,20 @@ struct ContentView: View {
         .onChange(of: model.isBusy) { _, isBusy in
             UIApplication.shared.isIdleTimerDisabled = isBusy && keepAwakeDuringBuild
         }
+        .onChange(of: model.projectName) { _, _ in
+            terminal.attach(to: model.exportProject())
+        }
+        .onChange(of: model.activity) { oldValue, newValue in
+            terminal.activityChanged(
+                from: oldValue,
+                to: newValue,
+                project: model.exportProject()
+            )
+        }
+        .onReceive(model.$result) { result in
+            guard let result else { return }
+            terminal.record(result, project: model.exportProject())
+        }
         .onChange(of: keepAwakeDuringBuild) { _, keepAwake in
             UIApplication.shared.isIdleTimerDisabled = model.isBusy && keepAwake
         }
@@ -302,6 +346,10 @@ struct ContentView: View {
     }
 
     private func openLesson(_ lesson: RustLesson) {
+        selectedLesson = lesson
+    }
+
+    private func startLesson(_ lesson: RustLesson) {
         switch lesson.exercise {
         case .runnable:
             model.loadRunnableSample()
@@ -396,8 +444,19 @@ struct ContentView: View {
                 }
             }
 
-            ResultConsole(result: model.result)
-                .frame(minHeight: 150, idealHeight: 190, maxHeight: 230)
+            BuildDockView(
+                selectedTab: $selectedBuildDockTab,
+                height: $buildDockHeight,
+                isCollapsed: $isBuildDockCollapsed,
+                terminal: terminal,
+                project: model.exportProject(),
+                result: model.result,
+                activity: model.activity,
+                canStartBuild: model.canStartBuild && !model.isProjectOperationInProgress,
+                onCheck: model.check,
+                onRun: model.run
+            )
+            .frame(height: isBuildDockCollapsed ? 38 : buildDockHeight)
         }
         .background(CrabrixTheme.background)
     }
@@ -1170,73 +1229,5 @@ private struct WorkflowActionButton: View {
         }
         .buttonStyle(.plain)
         .opacity(isWorking ? 0.85 : 1)
-    }
-}
-
-private struct ResultConsole: View {
-    let result: CompilationResult?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text("PROBLEMS")
-                Text("\(result?.diagnostics.count ?? 0)")
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(CrabrixTheme.raised)
-                    .clipShape(Capsule())
-                Text("OUTPUT")
-                    .padding(.leading, 10)
-                Spacer()
-                if let result {
-                    Text(result.duration.crabrixDescription)
-                }
-            }
-            .font(.system(size: 9, weight: .semibold, design: .monospaced))
-            .foregroundStyle(CrabrixTheme.muted)
-            .padding(.horizontal, 14)
-            .frame(height: 36)
-
-            Divider().overlay(CrabrixTheme.border)
-
-            ScrollView {
-                if let result {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Label(
-                            !result.succeeded && result.phase == .compile
-                                ? "Build failed — the program was not executed."
-                                : result.detail,
-                            systemImage: result.succeeded ? "checkmark.circle.fill" : "xmark.octagon.fill"
-                        )
-                        .foregroundStyle(result.succeeded ? CrabrixTheme.mint : CrabrixTheme.coral)
-
-                        if let diagnostic = result.diagnostics.first {
-                            Text("\(diagnostic.code ?? "error") · \(diagnostic.message)")
-                                .foregroundStyle(CrabrixTheme.primary)
-                        }
-                        if !result.stdout.isEmpty {
-                            Text(result.stdout)
-                                .foregroundStyle(CrabrixTheme.mint)
-                        }
-                        if !result.stderr.isEmpty {
-                            Text(result.stderr)
-                                .foregroundStyle(CrabrixTheme.coral)
-                        }
-                    }
-                    .font(.system(size: 11, design: .monospaced))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(14)
-                } else {
-                    ContentUnavailableView(
-                        "Ready to run",
-                        systemImage: "play.circle.fill",
-                        description: Text("Press Run to compile and execute this valid starter program locally.")
-                    )
-                    .foregroundStyle(CrabrixTheme.muted)
-                }
-            }
-        }
-        .background(CrabrixTheme.editor)
-        .overlay(alignment: .top) { Divider().overlay(CrabrixTheme.border) }
     }
 }

@@ -401,7 +401,6 @@ private struct LessonMapNode: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(LessonMapButtonStyle(isEnabled: state != .locked))
-            .disabled(state == .locked)
             .accessibilityLabel("Lesson \(lessonNumber), \(lesson.title), \(state.accessibilityLabel)")
         }
     }
