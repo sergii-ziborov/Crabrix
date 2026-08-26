@@ -45,6 +45,26 @@ enum RustCourseCatalog {
         ),
     ]
 
+    static func course(id: String) -> RustCourse? {
+        courses.first { $0.id == id }
+    }
+
+    static func course(containingLessonID lessonID: String) -> RustCourse? {
+        courses.first { course in
+            course.units.contains { unit in
+                unit.lessons.contains { $0.id == lessonID }
+            }
+        }
+    }
+
+    static func lesson(id: String) -> RustLesson? {
+        courses
+            .lazy
+            .flatMap(\.units)
+            .flatMap(\.lessons)
+            .first { $0.id == id }
+    }
+
     private static func units(_ ids: String...) -> [RustLearningUnit] {
         RustLearningPath.units.filter { ids.contains($0.id) }
     }

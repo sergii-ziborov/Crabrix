@@ -151,7 +151,7 @@ final class CompilerViewModel: ObservableObject {
     }
 
     func openProject(from url: URL) async {
-        guard !isBusy, !isProjectOperationInProgress else { return }
+        guard prepareForProjectSwitch() else { return }
         projectTransfer = .openingFiles
         do {
             let project = try await Task.detached {
@@ -166,7 +166,7 @@ final class CompilerViewModel: ObservableObject {
 
     @discardableResult
     func importGitHub(_ rawURL: String) async -> Bool {
-        guard !isBusy, !isProjectOperationInProgress else { return false }
+        guard prepareForProjectSwitch() else { return false }
         let label = (try? GitHubRepositoryReference.parse(rawURL))
             .map { "\($0.owner)/\($0.repository)" } ?? "repository"
         projectTransfer = .importingGitHub(label)
@@ -195,14 +195,22 @@ final class CompilerViewModel: ObservableObject {
         projectTransfer = .failed(error.localizedDescription)
     }
 
-    func openRecentProject(id: UUID) async {
-        guard !isBusy, !isProjectOperationInProgress else { return }
+    @discardableResult
+    func openRecentProject(id: UUID) async -> Bool {
+        let stoppedBuild = isBusy
+        guard prepareForProjectSwitch() else { return false }
         do {
-            guard let item = try await projectLibrary.project(id: id) else { return }
+            guard let item = try await projectLibrary.project(id: id) else { return false }
             loadProject(item.project, lastBuild: item.lastBuild)
-            projectTransfer = .ready("Opened recent project \(item.project.name).")
+            projectTransfer = .ready(
+                stoppedBuild
+                    ? "Stopped the previous build and opened \(item.project.name)."
+                    : "Opened recent project \(item.project.name)."
+            )
+            return true
         } catch {
             projectTransfer = .failed(error.localizedDescription)
+            return false
         }
     }
 
@@ -301,7 +309,7 @@ final class CompilerViewModel: ObservableObject {
     }
 
     func createProject(name rawName: String, template: RustProjectTemplate) {
-        guard !isBusy, !isProjectOperationInProgress else { return }
+        guard prepareForProjectSwitch() else { return }
         let name = Self.normalizedProjectName(rawName)
         guard !name.isEmpty else {
             projectTransfer = .failed("Enter a project name.")
@@ -426,7 +434,7 @@ final class CompilerViewModel: ObservableObject {
         entryFile requestedEntry: String? = nil,
         provenance: CrabrixProject.Provenance? = nil
     ) {
-        guard !isBusy else { return }
+        if isBusy { cancelBuild() }
         projectName = name
         fileContents = files
         entryFile = requestedEntry
@@ -462,6 +470,12 @@ final class CompilerViewModel: ObservableObject {
         )
         self.lastBuild = lastBuild
         Task { await remember(project, lastBuild: lastBuild) }
+    }
+
+    private func prepareForProjectSwitch() -> Bool {
+        guard !isProjectOperationInProgress else { return false }
+        if isBusy { cancelBuild() }
+        return true
     }
 
     func applyRepair() {

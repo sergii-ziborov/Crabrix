@@ -1,13 +1,20 @@
 import SwiftUI
 
+enum LearningRoute: Hashable {
+    case course(String)
+    case lesson(String)
+}
+
 struct LearningHubView: View {
+    @Binding var navigationPath: [LearningRoute]
     let completedLessonIDs: Set<String>
-    let onOpenLesson: (RustLesson) -> Void
+    let onStartLesson: (RustLesson) -> Void
+    let onCompleteLesson: (RustLesson) -> Void
 
     private let columns = [GridItem(.adaptive(minimum: 260), spacing: 16)]
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     hero
@@ -53,14 +60,7 @@ struct LearningHubView: View {
 
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(Array(RustCourseCatalog.courses.enumerated()), id: \.element.id) { index, course in
-                            NavigationLink {
-                                LearnPathView(
-                                    units: course.units,
-                                    courseTitle: course.title,
-                                    completedLessonIDs: completedLessonIDs,
-                                    onOpenLesson: onOpenLesson
-                                )
-                            } label: {
+                            NavigationLink(value: LearningRoute.course(course.id)) {
                                 CourseCard(course: course, tint: tint(at: index))
                             }
                             .buttonStyle(.plain)
@@ -74,7 +74,52 @@ struct LearningHubView: View {
             .background(CrabrixTheme.background.ignoresSafeArea())
             .foregroundStyle(CrabrixTheme.primary)
             .navigationTitle("Learn Rust")
+            .navigationDestination(for: LearningRoute.self) { route in
+                destination(for: route)
+            }
         }
+    }
+
+    @ViewBuilder
+    private func destination(for route: LearningRoute) -> some View {
+        switch route {
+        case let .course(courseID):
+            if let course = RustCourseCatalog.course(id: courseID) {
+                LearnPathView(
+                    units: course.units,
+                    courseTitle: course.title,
+                    completedLessonIDs: completedLessonIDs,
+                    onOpenLesson: { lesson in
+                        navigationPath.append(.lesson(lesson.id))
+                    }
+                )
+            } else {
+                ContentUnavailableView("Course unavailable", systemImage: "book.closed")
+            }
+
+        case let .lesson(lessonID):
+            if let lesson = RustCourseCatalog.lesson(id: lessonID) {
+                LessonDetailView(
+                    lesson: lesson,
+                    isCompleted: completedLessonIDs.contains(lesson.id),
+                    onStart: { onStartLesson(lesson) },
+                    onComplete: {
+                        onCompleteLesson(lesson)
+                        returnToCourse(containing: lesson)
+                    }
+                )
+            } else {
+                ContentUnavailableView("Lesson unavailable", systemImage: "book.closed")
+            }
+        }
+    }
+
+    private func returnToCourse(containing lesson: RustLesson) {
+        guard let course = RustCourseCatalog.course(containingLessonID: lesson.id) else {
+            navigationPath = []
+            return
+        }
+        navigationPath = [.course(course.id)]
     }
 
     private var hero: some View {

@@ -29,7 +29,7 @@ struct ContentView: View {
     @State private var buildDockHeight: CGFloat = 210
     @State private var isBuildDockCollapsed = false
     @State private var selectedBuildDockTab: BuildDockTab = .output
-    @State private var selectedLesson: RustLesson?
+    @State private var learningPath: [LearningRoute] = []
     @State private var editorCursorOffset = 0
     @AppStorage("crabrix.appearance") private var appearanceRaw = CrabrixAppearance.system.rawValue
     @AppStorage("crabrix.keepAwakeDuringBuild") private var keepAwakeDuringBuild = true
@@ -58,8 +58,9 @@ struct ContentView: View {
                 onSaveProject: prepareExport,
                 onOpenRecent: { id in
                     Task {
-                        await model.openRecentProject(id: id)
-                        selectedDestination = .build
+                        if await model.openRecentProject(id: id) {
+                            selectedDestination = .build
+                        }
                     }
                 },
                 onOpenRunnableSample: {
@@ -160,8 +161,10 @@ struct ContentView: View {
             .tag(CrabrixDestination.build)
 
             LearningHubView(
+                navigationPath: $learningPath,
                 completedLessonIDs: model.completedLessonIDs,
-                onOpenLesson: openLesson
+                onStartLesson: startLesson,
+                onCompleteLesson: { lesson in model.completeLesson(lesson.id) }
             )
             .tabItem { Label("Learn", systemImage: "graduationcap.fill") }
             .tag(CrabrixDestination.learn)
@@ -202,22 +205,6 @@ struct ContentView: View {
             PracticeSheet(
                 initialSource: RustSamples.practice,
                 validate: model.validatePractice
-            )
-            .presentationDetents([.large])
-            .presentationDragIndicator(.visible)
-        }
-        .sheet(item: $selectedLesson) { lesson in
-            LessonDetailView(
-                lesson: lesson,
-                isCompleted: model.completedLessonIDs.contains(lesson.id),
-                onStart: {
-                    startLesson(lesson)
-                    selectedLesson = nil
-                },
-                onComplete: {
-                    model.completeLesson(lesson.id)
-                    selectedLesson = nil
-                }
             )
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
@@ -283,10 +270,10 @@ struct ContentView: View {
             }
             if let lessonArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-lesson=") }) {
                 let lessonID = String(lessonArgument.dropFirst("--crabrix-auto-lesson=".count))
-                let lessons = RustCourseCatalog.courses.flatMap(\.units).flatMap(\.lessons)
-                if let lesson = lessons.first(where: { $0.id == lessonID }) {
+                if let lesson = RustCourseCatalog.lesson(id: lessonID),
+                   let course = RustCourseCatalog.course(containingLessonID: lesson.id) {
                     selectedDestination = .learn
-                    selectedLesson = lesson
+                    learningPath = [.course(course.id), .lesson(lesson.id)]
                 }
             }
             if arguments.contains("--crabrix-auto-settings") {
@@ -352,10 +339,6 @@ struct ContentView: View {
         isFileExporterPresented = true
     }
 
-    private func openLesson(_ lesson: RustLesson) {
-        selectedLesson = lesson
-    }
-
     private func startLesson(_ lesson: RustLesson) {
         switch lesson.exercise {
         case .runnable:
@@ -378,6 +361,8 @@ struct ContentView: View {
                 result: model.result,
                 files: model.fileNames,
                 selectedFile: model.selectedFile,
+                isProjectSidebarCollapsed: isProjectSidebarCollapsed,
+                isInspectorCollapsed: isInspectorCollapsed,
                 canRun: model.canStartBuild && !model.isProjectOperationInProgress,
                 isCompletionLoading: completion.isLoading,
                 onSelectFile: model.selectFile,
@@ -386,7 +371,17 @@ struct ContentView: View {
                 onLoadMultiFile: model.loadMultiFileSample,
                 onCheck: model.check,
                 onRun: model.run,
-                onComplete: requestCompletion
+                onComplete: requestCompletion,
+                onToggleProjectSidebar: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        isProjectSidebarCollapsed.toggle()
+                    }
+                },
+                onToggleInspector: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        isInspectorCollapsed.toggle()
+                    }
+                }
             )
 
             ZStack(alignment: .topLeading) {
@@ -500,7 +495,7 @@ struct ContentView: View {
                         result: result,
                         practiceCompleted: model.practiceCompleted,
                         onRunNext: model.run,
-                        onContinueLearning: { selectedDestination = .learn }
+                        onContinueLearning: continueLearning
                     )
                 } else if let diagnostic = model.primaryDiagnostic {
                     DiagnosticInspector(
@@ -527,6 +522,16 @@ struct ContentView: View {
                 endPoint: .bottomTrailing
             )
         )
+    }
+
+    private func continueLearning() {
+        selectedDestination = .learn
+        guard let lessonID = model.activeLessonID,
+              let course = RustCourseCatalog.course(containingLessonID: lessonID) else {
+            learningPath = []
+            return
+        }
+        learningPath = [.course(course.id)]
     }
 }
 
@@ -903,6 +908,8 @@ private struct EditorToolbar: View {
     let result: CompilationResult?
     let files: [String]
     let selectedFile: String
+    let isProjectSidebarCollapsed: Bool
+    let isInspectorCollapsed: Bool
     let canRun: Bool
     let isCompletionLoading: Bool
     let onSelectFile: (String) -> Void
@@ -912,6 +919,8 @@ private struct EditorToolbar: View {
     let onCheck: () -> Void
     let onRun: () -> Void
     let onComplete: () -> Void
+    let onToggleProjectSidebar: () -> Void
+    let onToggleInspector: () -> Void
 
     private var checkPassed: Bool {
         result?.succeeded == true && result?.phase == .check
@@ -938,6 +947,13 @@ private struct EditorToolbar: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 8) {
+                PanelToolbarButton(
+                    title: isProjectSidebarCollapsed ? "Show files" : "Hide files",
+                    systemImage: "sidebar.left",
+                    isCollapsed: isProjectSidebarCollapsed,
+                    action: onToggleProjectSidebar
+                )
+
                 Menu {
                     ForEach(files, id: \.self) { file in
                         Button {
@@ -986,6 +1002,13 @@ private struct EditorToolbar: View {
                 .font(.caption)
                 .foregroundStyle(CrabrixTheme.muted)
                 .disabled(activity != .idle)
+
+                PanelToolbarButton(
+                    title: isInspectorCollapsed ? "Show inspector" : "Hide inspector",
+                    systemImage: "sidebar.right",
+                    isCollapsed: isInspectorCollapsed,
+                    action: onToggleInspector
+                )
             }
 
             Divider().overlay(CrabrixTheme.border)
@@ -1073,6 +1096,29 @@ private struct EditorToolbar: View {
         }
         .foregroundStyle(runPassed || checkPassed ? CrabrixTheme.mint : CrabrixTheme.muted)
         .frame(width: 54)
+    }
+}
+
+private struct PanelToolbarButton: View {
+    let title: String
+    let systemImage: String
+    let isCollapsed: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.caption.bold())
+                .foregroundStyle(isCollapsed ? CrabrixTheme.mint : CrabrixTheme.blue)
+                .frame(width: 30, height: 26)
+                .background(
+                    (isCollapsed ? CrabrixTheme.mint : CrabrixTheme.blue).opacity(0.11),
+                    in: RoundedRectangle(cornerRadius: 8)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(title)
+        .accessibilityHint("Toggle this editor panel")
     }
 }
 

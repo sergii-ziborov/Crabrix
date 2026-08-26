@@ -1,8 +1,10 @@
-# Crabrix — native iOS feasibility spike
+# Crabrix — native Rust workspace for iPhone and iPad
 
-Crabrix is now a **native SwiftUI application**. There is no WebView, localhost server, JavaScript runtime, or cloud compiler in the app.
+Crabrix is an early-development **native SwiftUI application** for learning,
+editing, checking, and running Rust locally on iPhone and iPad. There is no
+WebView, localhost server, JavaScript runtime, or cloud compiler in the app.
 
-This Phase 0 spike tests the hard product gate:
+The current Phase 0 build validates the hardest product gate:
 
 > Can a bundled Rust compiler type-check and run Rust locally inside an iPhone/iPad app while offline?
 
@@ -50,6 +52,17 @@ or Apple Intelligence setting is unavailable. Suggested text is never inserted
 without an explicit user action.
 
 The Share Extension and host app use `group.com.sergiiziborov.Crabrix`. A signing team must register that App Group before installing this target on a physical device.
+
+## License and ownership
+
+Crabrix is commercial proprietary software, not an open-source MIT project.
+Copyright © 2026 Serhii Ziborov. All rights reserved. The source is publicly
+visible for review and evaluation; reuse, modification, redistribution, sale,
+or derivative works require prior written authorization. See [LICENSE](LICENSE).
+
+Bundled third-party components keep their original licenses. Their required
+attributions are maintained separately in
+[Crabrix/Resources/ThirdPartyNotices.md](Crabrix/Resources/ThirdPartyNotices.md).
 
 ## Build
 

@@ -1,0 +1,30 @@
+Crabrix Proprietary License
+
+Copyright (c) 2026 Serhii Ziborov. All rights reserved.
+
+Crabrix, including its original source code, application design, branding,
+documentation, learning content, and bundled original assets (collectively,
+the "Software"), is proprietary software.
+
+The public availability of this repository is for review, security research,
+and evaluation only. No permission is granted to use, copy, modify, merge,
+publish, distribute, sublicense, sell, commercially exploit, or create
+derivative works from the Software without prior written authorization from
+the copyright holder.
+
+A legitimately acquired application license grants only the rights stated in
+the applicable purchase terms or end-user license agreement. It does not grant
+rights to the source code or Crabrix branding.
+
+Third-party components and toolchain artifacts remain governed by their own
+licenses. Their notices are listed in Crabrix/Resources/ThirdPartyNotices.md
+and are not relicensed by this document.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. TO THE MAXIMUM EXTENT
+PERMITTED BY LAW, THE COPYRIGHT HOLDER SHALL NOT BE LIABLE FOR ANY CLAIM,
+DAMAGES, OR OTHER LIABILITY ARISING FROM THE SOFTWARE OR ITS USE.
+
+For commercial licensing inquiries, contact the copyright holder through the
+official Crabrix repository owner profile.

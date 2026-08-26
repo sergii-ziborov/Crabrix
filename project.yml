@@ -44,12 +44,15 @@ targets:
         CFBundleDisplayName: Crabrix
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        ITSAppUsesNonExemptEncryption: false
         LSApplicationCategoryType: public.app-category.developer-tools
         LSSupportsOpeningDocumentsInPlace: true
+        NSHumanReadableCopyright: "© 2026 Serhii Ziborov. All rights reserved."
         UIFileSharingEnabled: true
         UIApplicationSupportsIndirectInputEvents: true
         UILaunchScreen: {}
         UIRequiresFullScreen: false
+        UIUserInterfaceStyle: Automatic
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationLandscapeLeft
@@ -93,8 +96,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix
         PRODUCT_NAME: Crabrix
-        MARKETING_VERSION: 0.1.1
-        CURRENT_PROJECT_VERSION: 7
+        MARKETING_VERSION: 0.1.2
+        CURRENT_PROJECT_VERSION: 8
         CODE_SIGN_ENTITLEMENTS: Crabrix/Crabrix.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
@@ -121,6 +124,8 @@ targets:
         CFBundleDisplayName: Crabrix
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        ITSAppUsesNonExemptEncryption: false
+        NSHumanReadableCopyright: "© 2026 Serhii Ziborov. All rights reserved."
         NSExtension:
           NSExtensionAttributes:
             NSExtensionActivationRule:
@@ -132,8 +137,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix.Share
         PRODUCT_NAME: CrabrixShare
-        MARKETING_VERSION: 0.1.1
-        CURRENT_PROJECT_VERSION: 7
+        MARKETING_VERSION: 0.1.2
+        CURRENT_PROJECT_VERSION: 8
         CODE_SIGN_ENTITLEMENTS: CrabrixShare/CrabrixShare.entitlements
         CODE_SIGN_STYLE: Automatic
         APPLICATION_EXTENSION_API_ONLY: YES
