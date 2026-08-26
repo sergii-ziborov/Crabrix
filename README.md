@@ -19,7 +19,7 @@ The app embeds:
 - Files/Working Copy folder import, `.crabrixproject` package export, and a persistent recent-project library with last-build status;
 - bounded public GitHub snapshot import for repository and branch URLs, Cargo-root discovery, and stored source provenance;
 - an iOS Share Extension that queues GitHub URLs through an App Group and never tries to foreground the host app;
-- a five-level Rust learning path with 20 mapped lessons and three live compiler-backed labs;
+- a Duolingo-style native Rust journey map with five colorful chapters, 20 mapped lessons, progress states, and three live compiler-backed labs;
 - a bounded guest runtime with 64 MiB linear-memory and table-growth limits, `/sandbox` as the only writable preopen, and no network imports.
 
 The toolchain is downloaded **at build time**, verified by SHA-256, and copied into the app bundle. The running app never downloads compiler components.

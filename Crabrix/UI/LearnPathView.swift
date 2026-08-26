@@ -5,91 +5,50 @@ struct LearnPathView: View {
     let practiceCompleted: Bool
     let onOpenLesson: (RustLesson) -> Void
 
+    private var completedLessonCount: Int {
+        RustLearningPath.units
+            .flatMap(\.lessons)
+            .filter(isCompleted)
+            .count
+    }
+
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                header
+            LazyVStack(spacing: 30) {
+                LearningHero(
+                    completedLessonCount: completedLessonCount,
+                    totalLessonCount: RustLearningPath.units.flatMap(\.lessons).count
+                )
+
                 ForEach(RustLearningPath.units) { unit in
-                    LearningUnitCard(
+                    LearningUnitMap(
                         unit: unit,
                         completedStages: completedStages,
                         practiceCompleted: practiceCompleted,
                         onOpenLesson: onOpenLesson
                     )
                 }
+
+                LearningLegend()
             }
-            .padding(22)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 22)
             .frame(maxWidth: 760)
             .frame(maxWidth: .infinity)
         }
-        .background(CrabrixTheme.background.ignoresSafeArea())
+        .background {
+            ZStack {
+                CrabrixTheme.background.ignoresSafeArea()
+                LinearGradient(
+                    colors: [CrabrixTheme.blue.opacity(0.08), .clear, CrabrixTheme.coral.opacity(0.05)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+            }
+        }
         .foregroundStyle(.white)
-    }
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Label("LEARN RUST", systemImage: "graduationcap.fill")
-                .font(.caption.monospaced().bold())
-                .foregroundStyle(CrabrixTheme.coral)
-            Text("Learn from code that rustc actually checks")
-                .font(.system(size: 30, weight: .bold, design: .rounded))
-            Text("A guided path mixes short explanations, compiler failures, repairs, and fresh practice. Three labs are live now; the remaining lessons define the next curriculum slices.")
-                .foregroundStyle(CrabrixTheme.muted)
-            HStack(spacing: 16) {
-                Label("5 levels", systemImage: "map.fill")
-                Label("20 lessons", systemImage: "circle.grid.3x3.fill")
-                Label("3 live labs", systemImage: "checkmark.seal.fill")
-            }
-            .font(.caption.monospaced())
-            .foregroundStyle(CrabrixTheme.mint)
-        }
-        .padding(20)
-        .crabrixPanel(cornerRadius: 16)
-    }
-}
-
-private struct LearningUnitCard: View {
-    let unit: RustLearningUnit
-    let completedStages: Set<CompilerViewModel.Stage>
-    let practiceCompleted: Bool
-    let onOpenLesson: (RustLesson) -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("LEVEL \(unit.level)")
-                        .font(.caption2.monospaced().bold())
-                        .foregroundStyle(CrabrixTheme.coral)
-                    Text(unit.title).font(.title3.bold())
-                    Text(unit.subtitle).font(.caption).foregroundStyle(CrabrixTheme.muted)
-                }
-                Spacer()
-                Text("\(liveCount)/\(unit.lessons.count) live")
-                    .font(.caption2.monospaced())
-                    .foregroundStyle(CrabrixTheme.muted)
-            }
-
-            VStack(spacing: 4) {
-                ForEach(Array(unit.lessons.enumerated()), id: \.element.id) { index, lesson in
-                    LessonPathRow(
-                        lesson: lesson,
-                        index: index,
-                        isCompleted: isCompleted(lesson),
-                        onOpen: { onOpenLesson(lesson) }
-                    )
-                }
-            }
-        }
-        .padding(18)
-        .crabrixPanel(cornerRadius: 16)
-    }
-
-    private var liveCount: Int {
-        unit.lessons.filter { lesson in
-            if case .planned = lesson.exercise { return false }
-            return true
-        }.count
+        .navigationTitle("Learn Rust")
     }
 
     private func isCompleted(_ lesson: RustLesson) -> Bool {
@@ -104,41 +63,560 @@ private struct LearningUnitCard: View {
     }
 }
 
-private struct LessonPathRow: View {
-    let lesson: RustLesson
-    let index: Int
-    let isCompleted: Bool
-    let onOpen: () -> Void
+private struct LearningHero: View {
+    let completedLessonCount: Int
+    let totalLessonCount: Int
 
-    private var isLive: Bool {
-        if case .planned = lesson.exercise { return false }
-        return true
+    private var progress: Double {
+        guard totalLessonCount > 0 else { return 0 }
+        return Double(completedLessonCount) / Double(totalLessonCount)
     }
 
     var body: some View {
-        HStack(spacing: 13) {
-            ZStack {
-                Circle()
-                    .fill(isCompleted ? CrabrixTheme.mint
-                          : isLive ? CrabrixTheme.coral : CrabrixTheme.raised)
-                    .frame(width: 42, height: 42)
-                Image(systemName: isCompleted ? "checkmark" : isLive ? "chevron.right" : "lock.fill")
-                    .font(.caption.bold())
-                    .foregroundStyle(isCompleted ? CrabrixTheme.background : .white)
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(alignment: .top, spacing: 14) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("YOUR RUST JOURNEY", systemImage: "map.fill")
+                        .font(.caption.monospaced().bold())
+                        .foregroundStyle(CrabrixTheme.mint)
+
+                    Text("Build fearless\nRust instincts")
+                        .font(.system(size: 34, weight: .heavy, design: .rounded))
+                        .minimumScaleFactor(0.8)
+
+                    Text("Follow the map from your first compile to real Cargo projects. Live labs are verified by the compiler inside Crabrix.")
+                        .font(.subheadline)
+                        .foregroundStyle(.white.opacity(0.72))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 4)
+
+                ZStack {
+                    Circle()
+                        .stroke(.white.opacity(0.12), lineWidth: 8)
+                    Circle()
+                        .trim(from: 0, to: max(progress, 0.025))
+                        .stroke(
+                            AngularGradient(
+                                colors: [CrabrixTheme.mint, CrabrixTheme.blue, CrabrixTheme.mint],
+                                center: .center
+                            ),
+                            style: StrokeStyle(lineWidth: 8, lineCap: .round)
+                        )
+                        .rotationEffect(.degrees(-90))
+                    VStack(spacing: 1) {
+                        Text("\(completedLessonCount)")
+                            .font(.title2.monospaced().bold())
+                        Text("of \(totalLessonCount)")
+                            .font(.caption2.monospaced())
+                            .foregroundStyle(.white.opacity(0.62))
+                    }
+                }
+                .frame(width: 88, height: 88)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(completedLessonCount) of \(totalLessonCount) lessons complete")
             }
-            VStack(alignment: .leading, spacing: 3) {
-                Text(lesson.title).font(.subheadline.bold())
-                Text(lesson.concept).font(.caption).foregroundStyle(CrabrixTheme.muted)
+
+            HStack(spacing: 10) {
+                JourneyMetric(icon: "flag.checkered", value: "5", label: "chapters", tint: CrabrixTheme.blue)
+                JourneyMetric(icon: "hammer.fill", value: "3", label: "live labs", tint: CrabrixTheme.coral)
+                JourneyMetric(icon: "wifi.slash", value: "100%", label: "local", tint: CrabrixTheme.mint)
             }
-            Spacer()
-            Text(isLive ? "\(lesson.minutes) min" : "planned")
-                .font(.caption2.monospaced())
-                .foregroundStyle(isLive ? CrabrixTheme.mint : CrabrixTheme.muted)
         }
-        .padding(.leading, index.isMultiple(of: 2) ? 0 : 34)
-        .padding(.vertical, 8)
-        .contentShape(Rectangle())
-        .onTapGesture { if isLive { onOpen() } }
-        .accessibilityAddTraits(isLive ? .isButton : [])
+        .padding(22)
+        .background {
+            ZStack(alignment: .topTrailing) {
+                LinearGradient(
+                    colors: [Color(red: 0.10, green: 0.20, blue: 0.30), CrabrixTheme.panel],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                Circle()
+                    .fill(CrabrixTheme.blue.opacity(0.15))
+                    .frame(width: 180, height: 180)
+                    .offset(x: 65, y: -90)
+                Circle()
+                    .fill(CrabrixTheme.coral.opacity(0.11))
+                    .frame(width: 120, height: 120)
+                    .offset(x: -235, y: 155)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(.white.opacity(0.12), lineWidth: 1)
+        }
+    }
+}
+
+private struct JourneyMetric: View {
+    let icon: String
+    let value: String
+    let label: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.caption.bold())
+                .foregroundStyle(tint)
+                .frame(width: 26, height: 26)
+                .background(tint.opacity(0.13), in: Circle())
+            VStack(alignment: .leading, spacing: 0) {
+                Text(value)
+                    .font(.caption.monospaced().bold())
+                Text(label)
+                    .font(.caption2)
+                    .foregroundStyle(.white.opacity(0.58))
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 9)
+        .background(.black.opacity(0.16), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+}
+
+private struct LearningUnitMap: View {
+    let unit: RustLearningUnit
+    let completedStages: Set<CompilerViewModel.Stage>
+    let practiceCompleted: Bool
+    let onOpenLesson: (RustLesson) -> Void
+
+    private let rowHeight: CGFloat = 124
+
+    private var palette: LearningPalette { .palette(for: unit.level) }
+
+    private var completedCount: Int {
+        unit.lessons.filter(isCompleted).count
+    }
+
+    private var liveCount: Int {
+        unit.lessons.filter(\.isLive).count
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            UnitBanner(
+                unit: unit,
+                palette: palette,
+                completedCount: completedCount,
+                liveCount: liveCount
+            )
+            .zIndex(2)
+
+            GeometryReader { geometry in
+                let width = geometry.size.width
+
+                ZStack(alignment: .topLeading) {
+                    TrailLine(
+                        lessonCount: unit.lessons.count,
+                        width: width,
+                        rowHeight: rowHeight,
+                        tint: palette.primary
+                    )
+
+                    ForEach(Array(unit.lessons.enumerated()), id: \.element.id) { index, lesson in
+                        LessonMapNode(
+                            lesson: lesson,
+                            lessonNumber: index + 1,
+                            state: state(for: lesson),
+                            palette: palette,
+                            labelToRight: labelToRight(at: index),
+                            onOpen: { onOpenLesson(lesson) }
+                        )
+                        .frame(width: width, height: rowHeight)
+                        .offset(y: CGFloat(index) * rowHeight)
+                    }
+                }
+            }
+            .frame(height: CGFloat(unit.lessons.count) * rowHeight + 8)
+            .padding(.horizontal, 4)
+        }
+        .background(CrabrixTheme.panel.opacity(0.52))
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(CrabrixTheme.border, lineWidth: 1)
+        }
+    }
+
+    private func state(for lesson: RustLesson) -> LessonMapState {
+        if isCompleted(lesson) { return .completed }
+        return lesson.isLive ? .ready : .locked
+    }
+
+    private func isCompleted(_ lesson: RustLesson) -> Bool {
+        switch lesson.exercise {
+        case .runnable:
+            completedStages.contains(.repair)
+        case .borrowDiagnostic:
+            practiceCompleted
+        case .multiFile, .planned:
+            false
+        }
+    }
+
+    private func labelToRight(at index: Int) -> Bool {
+        switch index % 4 {
+        case 0, 3: true
+        default: false
+        }
+    }
+}
+
+private struct UnitBanner: View {
+    let unit: RustLearningUnit
+    let palette: LearningPalette
+    let completedCount: Int
+    let liveCount: Int
+
+    private var progress: Double {
+        guard !unit.lessons.isEmpty else { return 0 }
+        return Double(completedCount) / Double(unit.lessons.count)
+    }
+
+    var body: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 15, style: .continuous)
+                    .fill(.white.opacity(0.16))
+                Image(systemName: palette.symbol)
+                    .font(.title2.bold())
+            }
+            .frame(width: 54, height: 54)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("CHAPTER \(unit.level)")
+                    .font(.caption2.monospaced().bold())
+                    .foregroundStyle(.white.opacity(0.72))
+                Text(unit.title)
+                    .font(.title3.bold())
+                Text(unit.subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.70))
+                    .lineLimit(2)
+            }
+
+            Spacer(minLength: 8)
+
+            VStack(alignment: .trailing, spacing: 6) {
+                Text(completedCount > 0 ? "\(completedCount)/\(unit.lessons.count)" : "\(liveCount) live")
+                    .font(.caption.monospaced().bold())
+                ProgressView(value: progress)
+                    .tint(.white)
+                    .frame(width: 66)
+            }
+        }
+        .padding(16)
+        .background(
+            LinearGradient(
+                colors: [palette.primary, palette.secondary],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .shadow(color: palette.primary.opacity(0.24), radius: 18, y: 8)
+    }
+}
+
+private struct TrailLine: View {
+    let lessonCount: Int
+    let width: CGFloat
+    let rowHeight: CGFloat
+    let tint: Color
+
+    var body: some View {
+        ZStack {
+            trailPath
+                .stroke(
+                    .white.opacity(0.09),
+                    style: StrokeStyle(lineWidth: 12, lineCap: .round, lineJoin: .round)
+                )
+            trailPath
+                .stroke(
+                    tint.opacity(0.34),
+                    style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round, dash: [4, 9])
+                )
+        }
+    }
+
+    private var trailPath: Path {
+        Path { path in
+            guard lessonCount > 0 else { return }
+            var current = point(at: 0)
+            path.move(to: current)
+
+            for index in 1..<lessonCount {
+                let next = point(at: index)
+                let midpointY = (current.y + next.y) / 2
+                path.addCurve(
+                    to: next,
+                    control1: CGPoint(x: current.x, y: midpointY),
+                    control2: CGPoint(x: next.x, y: midpointY)
+                )
+                current = next
+            }
+        }
+    }
+
+    private func point(at index: Int) -> CGPoint {
+        CGPoint(
+            x: width * trailFraction(at: index),
+            y: CGFloat(index) * rowHeight + rowHeight / 2
+        )
+    }
+}
+
+private struct LessonMapNode: View {
+    let lesson: RustLesson
+    let lessonNumber: Int
+    let state: LessonMapState
+    let palette: LearningPalette
+    let labelToRight: Bool
+    let onOpen: () -> Void
+
+    var body: some View {
+        GeometryReader { geometry in
+            let width = geometry.size.width
+            let nodeX = width * trailFraction(at: lessonNumber - 1)
+            let labelWidth = min(230, max(150, width * 0.47))
+            let labelOffset = min(labelWidth / 2 + 48, width * 0.38)
+            let labelX = nodeX + (labelToRight ? labelOffset : -labelOffset)
+
+            Button(action: onOpen) {
+                ZStack {
+                    lessonLabel
+                        .frame(width: labelWidth)
+                        .position(x: labelX, y: geometry.size.height / 2)
+
+                    lessonNode
+                        .position(x: nodeX, y: geometry.size.height / 2)
+                }
+                .frame(width: width, height: geometry.size.height)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(LessonMapButtonStyle(isEnabled: state != .locked))
+            .disabled(state == .locked)
+            .accessibilityLabel("Lesson \(lessonNumber), \(lesson.title), \(state.accessibilityLabel)")
+        }
+    }
+
+    private var lessonNode: some View {
+        ZStack {
+            if state == .ready {
+                Circle()
+                    .stroke(palette.primary.opacity(0.34), lineWidth: 3)
+                    .frame(width: 82, height: 82)
+                Circle()
+                    .stroke(palette.primary.opacity(0.16), lineWidth: 2)
+                    .frame(width: 94, height: 94)
+            }
+
+            Circle()
+                .fill(nodeGradient)
+                .frame(width: 68, height: 68)
+                .overlay {
+                    Circle()
+                        .stroke(.white.opacity(state == .locked ? 0.08 : 0.25), lineWidth: 1)
+                }
+                .shadow(color: nodeShadow, radius: state == .ready ? 14 : 4, y: 6)
+
+            Image(systemName: state.symbol(for: lesson))
+                .font(.system(size: 23, weight: .bold))
+                .foregroundStyle(state == .completed ? CrabrixTheme.background : .white.opacity(state == .locked ? 0.45 : 1))
+        }
+        .frame(width: 96, height: 96)
+    }
+
+    private var lessonLabel: some View {
+        VStack(alignment: labelToRight ? .leading : .trailing, spacing: 5) {
+            HStack(spacing: 6) {
+                if !labelToRight { Spacer(minLength: 0) }
+                Text("\(lessonNumber)")
+                    .font(.caption2.monospaced().bold())
+                    .foregroundStyle(state.tint(palette: palette))
+                Text(lesson.title)
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.white.opacity(state == .locked ? 0.52 : 1))
+                    .lineLimit(1)
+                if labelToRight { Spacer(minLength: 0) }
+            }
+
+            Text(lesson.concept)
+                .font(.caption)
+                .foregroundStyle(.white.opacity(state == .locked ? 0.34 : 0.58))
+                .multilineTextAlignment(labelToRight ? .leading : .trailing)
+                .lineLimit(2)
+
+            Text(state.badge(minutes: lesson.minutes))
+                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .foregroundStyle(state.tint(palette: palette))
+                .padding(.horizontal, 7)
+                .padding(.vertical, 4)
+                .background(state.tint(palette: palette).opacity(0.11), in: Capsule())
+        }
+    }
+
+    private var nodeGradient: LinearGradient {
+        switch state {
+        case .completed:
+            LinearGradient(colors: [CrabrixTheme.mint, Color(red: 0.24, green: 0.69, blue: 0.50)], startPoint: .top, endPoint: .bottom)
+        case .ready:
+            LinearGradient(colors: [palette.primary, palette.secondary], startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .locked:
+            LinearGradient(colors: [CrabrixTheme.raised, CrabrixTheme.editor], startPoint: .top, endPoint: .bottom)
+        }
+    }
+
+    private var nodeShadow: Color {
+        switch state {
+        case .completed: CrabrixTheme.mint.opacity(0.28)
+        case .ready: palette.primary.opacity(0.38)
+        case .locked: .black.opacity(0.15)
+        }
+    }
+}
+
+private struct LessonMapButtonStyle: ButtonStyle {
+    let isEnabled: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed && isEnabled ? 0.975 : 1)
+            .opacity(configuration.isPressed && isEnabled ? 0.82 : 1)
+            .animation(.easeOut(duration: 0.14), value: configuration.isPressed)
+    }
+}
+
+private struct LearningLegend: View {
+    var body: some View {
+        HStack(spacing: 18) {
+            LegendItem(color: CrabrixTheme.mint, icon: "checkmark", text: "Complete")
+            LegendItem(color: CrabrixTheme.coral, icon: "play.fill", text: "Live lab")
+            LegendItem(color: CrabrixTheme.raised, icon: "lock.fill", text: "Coming next")
+        }
+        .frame(maxWidth: .infinity)
+        .padding(16)
+        .crabrixPanel(cornerRadius: 16)
+    }
+}
+
+private struct LegendItem: View {
+    let color: Color
+    let icon: String
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 9, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 22, height: 22)
+                .background(color, in: Circle())
+            Text(text)
+                .font(.caption2)
+                .foregroundStyle(CrabrixTheme.muted)
+        }
+    }
+}
+
+private enum LessonMapState: Equatable {
+    case completed
+    case ready
+    case locked
+
+    var accessibilityLabel: String {
+        switch self {
+        case .completed: "complete"
+        case .ready: "available"
+        case .locked: "coming later"
+        }
+    }
+
+    func badge(minutes: Int) -> String {
+        switch self {
+        case .completed: "COMPLETE"
+        case .ready: "START · \(minutes) MIN"
+        case .locked: "COMING NEXT"
+        }
+    }
+
+    func tint(palette: LearningPalette) -> Color {
+        switch self {
+        case .completed: CrabrixTheme.mint
+        case .ready: palette.primary
+        case .locked: CrabrixTheme.muted
+        }
+    }
+
+    func symbol(for lesson: RustLesson) -> String {
+        if self == .completed { return "checkmark" }
+        if self == .locked { return "lock.fill" }
+        return lesson.symbol
+    }
+}
+
+private struct LearningPalette {
+    let primary: Color
+    let secondary: Color
+    let symbol: String
+
+    static func palette(for level: Int) -> LearningPalette {
+        switch level {
+        case 1:
+            LearningPalette(primary: CrabrixTheme.blue, secondary: Color(red: 0.25, green: 0.48, blue: 0.94), symbol: "sparkles")
+        case 2:
+            LearningPalette(primary: CrabrixTheme.coral, secondary: Color(red: 0.82, green: 0.22, blue: 0.27), symbol: "link")
+        case 3:
+            LearningPalette(primary: Color(red: 0.72, green: 0.47, blue: 0.98), secondary: Color(red: 0.43, green: 0.32, blue: 0.82), symbol: "shippingbox.fill")
+        case 4:
+            LearningPalette(primary: CrabrixTheme.amber, secondary: Color(red: 0.84, green: 0.45, blue: 0.14), symbol: "function")
+        default:
+            LearningPalette(primary: CrabrixTheme.mint, secondary: Color(red: 0.20, green: 0.61, blue: 0.55), symbol: "flag.checkered")
+        }
+    }
+}
+
+private func trailFraction(at index: Int) -> CGFloat {
+    switch index % 4 {
+    case 0: 0.28
+    case 1: 0.50
+    case 2: 0.72
+    default: 0.50
+    }
+}
+
+private extension RustLesson {
+    var isLive: Bool {
+        if case .planned = exercise { return false }
+        return true
+    }
+
+    var symbol: String {
+        switch id {
+        case "hello-rust": "terminal.fill"
+        case "variables": "equal.circle.fill"
+        case "types": "square.stack.3d.up.fill"
+        case "control-flow": "arrow.triangle.branch"
+        case "ownership": "key.fill"
+        case "borrowing": "link"
+        case "slices": "square.split.2x1.fill"
+        case "lifetimes-intro", "lifetimes": "hourglass"
+        case "structs": "shippingbox.fill"
+        case "enums": "switch.2"
+        case "option-result": "questionmark.diamond.fill"
+        case "collections": "tray.2.fill"
+        case "generics": "chevron.left.forwardslash.chevron.right"
+        case "traits": "puzzlepiece.extension.fill"
+        case "iterators": "arrow.triangle.2.circlepath"
+        case "modules": "folder.fill"
+        case "testing": "checkmark.seal.fill"
+        case "errors": "exclamationmark.triangle.fill"
+        case "concurrency": "circle.hexagongrid.fill"
+        default: "circle.fill"
+        }
     }
 }
