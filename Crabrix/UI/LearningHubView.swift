@@ -1,8 +1,7 @@
 import SwiftUI
 
 struct LearningHubView: View {
-    let completedStages: Set<CompilerViewModel.Stage>
-    let practiceCompleted: Bool
+    let completedLessonIDs: Set<String>
     let onOpenLesson: (RustLesson) -> Void
 
     private let columns = [GridItem(.adaptive(minimum: 260), spacing: 16)]
@@ -58,8 +57,7 @@ struct LearningHubView: View {
                                 LearnPathView(
                                     units: course.units,
                                     courseTitle: course.title,
-                                    completedStages: completedStages,
-                                    practiceCompleted: practiceCompleted,
+                                    completedLessonIDs: completedLessonIDs,
                                     onOpenLesson: onOpenLesson
                                 )
                             } label: {

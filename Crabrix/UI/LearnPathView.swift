@@ -3,15 +3,23 @@ import SwiftUI
 struct LearnPathView: View {
     let units: [RustLearningUnit]
     let courseTitle: String
-    let completedStages: Set<CompilerViewModel.Stage>
-    let practiceCompleted: Bool
+    let completedLessonIDs: Set<String>
     let onOpenLesson: (RustLesson) -> Void
 
     private var completedLessonCount: Int {
-        units
-            .flatMap(\.lessons)
-            .filter(isCompleted)
-            .count
+        RustLessonProgression.completedCount(
+            in: units,
+            completedLessonIDs: completedLessonIDs
+        )
+    }
+
+    private var lessons: [RustLesson] { RustLessonProgression.lessons(in: units) }
+
+    private var nextLessonID: String? {
+        RustLessonProgression.nextLessonID(
+            in: units,
+            completedLessonIDs: completedLessonIDs
+        )
     }
 
     var body: some View {
@@ -19,14 +27,16 @@ struct LearnPathView: View {
             LazyVStack(spacing: 30) {
                 LearningHero(
                     completedLessonCount: completedLessonCount,
-                    totalLessonCount: units.flatMap(\.lessons).count
+                    totalLessonCount: lessons.count,
+                    chapterCount: units.count,
+                    liveLessonCount: lessons.filter(\.hasCompilerLab).count
                 )
 
                 ForEach(units) { unit in
                     LearningUnitMap(
                         unit: unit,
-                        completedStages: completedStages,
-                        practiceCompleted: practiceCompleted,
+                        completedLessonIDs: completedLessonIDs,
+                        nextLessonID: nextLessonID,
                         onOpenLesson: onOpenLesson
                     )
                 }
@@ -52,22 +62,13 @@ struct LearnPathView: View {
         .foregroundStyle(CrabrixTheme.primary)
         .navigationTitle(courseTitle)
     }
-
-    private func isCompleted(_ lesson: RustLesson) -> Bool {
-        switch lesson.exercise {
-        case .runnable:
-            completedStages.contains(.repair)
-        case .borrowDiagnostic:
-            practiceCompleted
-        case .multiFile, .planned:
-            false
-        }
-    }
 }
 
 private struct LearningHero: View {
     let completedLessonCount: Int
     let totalLessonCount: Int
+    let chapterCount: Int
+    let liveLessonCount: Int
 
     private var progress: Double {
         guard totalLessonCount > 0 else { return 0 }
@@ -121,8 +122,8 @@ private struct LearningHero: View {
             }
 
             HStack(spacing: 10) {
-                JourneyMetric(icon: "flag.checkered", value: "5", label: "chapters", tint: CrabrixTheme.blue)
-                JourneyMetric(icon: "hammer.fill", value: "3", label: "live labs", tint: CrabrixTheme.coral)
+                JourneyMetric(icon: "flag.checkered", value: "\(chapterCount)", label: "chapters", tint: CrabrixTheme.blue)
+                JourneyMetric(icon: "hammer.fill", value: "\(liveLessonCount)", label: "live labs", tint: CrabrixTheme.coral)
                 JourneyMetric(icon: "wifi.slash", value: "100%", label: "local", tint: CrabrixTheme.mint)
             }
         }
@@ -182,8 +183,8 @@ private struct JourneyMetric: View {
 
 private struct LearningUnitMap: View {
     let unit: RustLearningUnit
-    let completedStages: Set<CompilerViewModel.Stage>
-    let practiceCompleted: Bool
+    let completedLessonIDs: Set<String>
+    let nextLessonID: String?
     let onOpenLesson: (RustLesson) -> Void
 
     private let rowHeight: CGFloat = 124
@@ -194,8 +195,8 @@ private struct LearningUnitMap: View {
         unit.lessons.filter(isCompleted).count
     }
 
-    private var liveCount: Int {
-        unit.lessons.filter(\.isLive).count
+    private var readyCount: Int {
+        unit.lessons.filter { $0.id == nextLessonID }.count
     }
 
     var body: some View {
@@ -204,7 +205,7 @@ private struct LearningUnitMap: View {
                 unit: unit,
                 palette: palette,
                 completedCount: completedCount,
-                liveCount: liveCount
+                readyCount: readyCount
             )
             .zIndex(2)
 
@@ -246,18 +247,11 @@ private struct LearningUnitMap: View {
 
     private func state(for lesson: RustLesson) -> LessonMapState {
         if isCompleted(lesson) { return .completed }
-        return lesson.isLive ? .ready : .locked
+        return lesson.id == nextLessonID ? .ready : .locked
     }
 
     private func isCompleted(_ lesson: RustLesson) -> Bool {
-        switch lesson.exercise {
-        case .runnable:
-            completedStages.contains(.repair)
-        case .borrowDiagnostic:
-            practiceCompleted
-        case .multiFile, .planned:
-            false
-        }
+        completedLessonIDs.contains(lesson.id)
     }
 
     private func labelToRight(at index: Int) -> Bool {
@@ -272,7 +266,7 @@ private struct UnitBanner: View {
     let unit: RustLearningUnit
     let palette: LearningPalette
     let completedCount: Int
-    let liveCount: Int
+    let readyCount: Int
 
     private var progress: Double {
         guard !unit.lessons.isEmpty else { return 0 }
@@ -304,7 +298,11 @@ private struct UnitBanner: View {
             Spacer(minLength: 8)
 
             VStack(alignment: .trailing, spacing: 6) {
-                Text(completedCount > 0 ? "\(completedCount)/\(unit.lessons.count)" : "\(liveCount) live")
+                Text(
+                    completedCount > 0
+                        ? "\(completedCount)/\(unit.lessons.count)"
+                        : (readyCount > 0 ? "\(readyCount) ready" : "locked")
+                )
                     .font(.caption.monospaced().bold())
                 ProgressView(value: progress)
                     .tint(.white)
@@ -591,11 +589,6 @@ private func trailFraction(at index: Int) -> CGFloat {
 }
 
 private extension RustLesson {
-    var isLive: Bool {
-        if case .planned = exercise { return false }
-        return true
-    }
-
     var symbol: String {
         switch id {
         case "hello-rust": "terminal.fill"

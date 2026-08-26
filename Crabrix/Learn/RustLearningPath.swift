@@ -23,6 +23,13 @@ struct RustLesson: Identifiable, Sendable {
     let exercise: Exercise
 }
 
+extension RustLesson {
+    var hasCompilerLab: Bool {
+        if case .planned = exercise { return false }
+        return true
+    }
+}
+
 enum RustLearningPath {
     static let units: [RustLearningUnit] = [
         RustLearningUnit(

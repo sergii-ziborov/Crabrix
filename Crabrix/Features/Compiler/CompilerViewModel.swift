@@ -88,6 +88,8 @@ final class CompilerViewModel: ObservableObject {
     @Published private(set) var toolchain: ToolchainStatus
     @Published private(set) var completedStages: Set<Stage> = []
     @Published private(set) var practiceCompleted = false
+    @Published private(set) var completedLessonIDs: Set<String>
+    @Published private(set) var activeLessonID: String?
     @Published private(set) var projectTransfer: ProjectTransfer = .idle
     @Published private(set) var compatibilityReport: ProjectCompatibilityReport
     @Published private(set) var provenance: CrabrixProject.Provenance?
@@ -103,15 +105,21 @@ final class CompilerViewModel: ObservableObject {
     private var entryFile = "main.rs"
     private var compilationTask: Task<Void, Never>?
     private var activeCompilationID: UUID?
+    private let userDefaults: UserDefaults
+
+    private static let completedLessonsKey = "crabrix.learn.completedLessonIDs"
 
     init(
         compiler: WasmRustCompiler = WasmRustCompiler(),
         githubImporter: GitHubProjectImporter = GitHubProjectImporter(),
-        projectLibrary: ProjectLibrary = ProjectLibrary()
+        projectLibrary: ProjectLibrary = ProjectLibrary(),
+        userDefaults: UserDefaults = .standard
     ) {
         self.compiler = compiler
         self.githubImporter = githubImporter
         self.projectLibrary = projectLibrary
+        self.userDefaults = userDefaults
+        completedLessonIDs = Set(userDefaults.stringArray(forKey: Self.completedLessonsKey) ?? [])
         toolchain = compiler.probe()
         let initialProject = CrabrixProject(
             name: "hello-crabrix",
@@ -274,6 +282,15 @@ final class CompilerViewModel: ObservableObject {
         )
     }
 
+    func beginLesson(_ id: String) {
+        activeLessonID = id
+    }
+
+    func completeLesson(_ id: String) {
+        completedLessonIDs.insert(id)
+        persistCompletedLessons()
+    }
+
     func loadShowcaseProject(id: String) {
         guard let showcase = RustShowcaseLibrary.projects.first(where: { $0.id == id }) else {
             projectTransfer = .failed("That library project is unavailable.")
@@ -431,6 +448,7 @@ final class CompilerViewModel: ObservableObject {
         lastDiagnostic = nil
         completedStages = []
         practiceCompleted = false
+        activeLessonID = nil
         let project = currentProject()
         Task { await remember(project, lastBuild: nil) }
     }
@@ -605,7 +623,14 @@ final class CompilerViewModel: ObservableObject {
         } else if value.succeeded, lastDiagnostic != nil {
             completedStages.insert(.repair)
         }
+        if value.succeeded, value.phase == .run, let activeLessonID {
+            completeLesson(activeLessonID)
+        }
         Task { await remember(currentProject(), lastBuild: lastBuild) }
+    }
+
+    private func persistCompletedLessons() {
+        userDefaults.set(completedLessonIDs.sorted(), forKey: Self.completedLessonsKey)
     }
 
     private func remember(_ project: CrabrixProject, lastBuild: ProjectBuildRecord?) async {

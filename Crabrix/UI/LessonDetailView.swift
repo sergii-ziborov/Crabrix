@@ -4,7 +4,9 @@ struct LessonDetailView: View {
     @Environment(\.dismiss) private var dismiss
 
     let lesson: RustLesson
+    let isCompleted: Bool
     let onStart: () -> Void
+    let onComplete: () -> Void
 
     private var brief: RustLessonBrief { lesson.brief }
     private var isLive: Bool {
@@ -142,14 +144,22 @@ struct LessonDetailView: View {
             .tint(CrabrixTheme.coral)
         } else {
             Label(
-                "The explanation and task are available now. Its dedicated compiler exercise is next on the course roadmap.",
-                systemImage: "clock.badge.checkmark"
+                isCompleted ? "Concept lesson completed" : "Read the task, then continue to the next lesson",
+                systemImage: isCompleted ? "checkmark.seal.fill" : "book.fill"
             )
-            .font(.subheadline)
-            .foregroundStyle(CrabrixTheme.amber)
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(CrabrixTheme.amber.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(isCompleted ? CrabrixTheme.mint : CrabrixTheme.amber)
+
+            if !isCompleted {
+                Button(action: onComplete) {
+                    Label("Complete lesson", systemImage: "checkmark.circle.fill")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 5)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(CrabrixTheme.amber)
+            }
         }
     }
 }

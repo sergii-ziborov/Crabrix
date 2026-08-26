@@ -160,8 +160,7 @@ struct ContentView: View {
             .tag(CrabrixDestination.build)
 
             LearningHubView(
-                completedStages: model.completedStages,
-                practiceCompleted: model.practiceCompleted,
+                completedLessonIDs: model.completedLessonIDs,
                 onOpenLesson: openLesson
             )
             .tabItem { Label("Learn", systemImage: "graduationcap.fill") }
@@ -208,10 +207,18 @@ struct ContentView: View {
             .presentationDragIndicator(.visible)
         }
         .sheet(item: $selectedLesson) { lesson in
-            LessonDetailView(lesson: lesson) {
-                startLesson(lesson)
-                selectedLesson = nil
-            }
+            LessonDetailView(
+                lesson: lesson,
+                isCompleted: model.completedLessonIDs.contains(lesson.id),
+                onStart: {
+                    startLesson(lesson)
+                    selectedLesson = nil
+                },
+                onComplete: {
+                    model.completeLesson(lesson.id)
+                    selectedLesson = nil
+                }
+            )
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
@@ -360,6 +367,7 @@ struct ContentView: View {
         case .planned:
             return
         }
+        model.beginLesson(lesson.id)
         selectedDestination = .build
     }
 
