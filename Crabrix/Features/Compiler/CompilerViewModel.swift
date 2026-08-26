@@ -49,6 +49,7 @@ final class CompilerViewModel: ObservableObject {
     private let compiler: WasmRustCompiler
     private var lastDiagnostic: RustDiagnostic?
     private var fileContents = ["main.rs": RustSamples.runnable]
+    private var entryFile = "main.rs"
 
     init(compiler: WasmRustCompiler = WasmRustCompiler()) {
         self.compiler = compiler
@@ -57,6 +58,11 @@ final class CompilerViewModel: ObservableObject {
 
     var isBusy: Bool { activity != .idle }
     var primaryDiagnostic: RustDiagnostic? { result?.diagnostics.first ?? lastDiagnostic }
+    var cargoManifest: CargoManifest? {
+        var files = fileContents
+        files[selectedFile] = source
+        return files["Cargo.toml"].flatMap(CargoManifest.parse)
+    }
 
     func check() {
         guard !isBusy, toolchain.isReady else { return }
@@ -66,6 +72,7 @@ final class CompilerViewModel: ObservableObject {
         Task {
             let value = await compiler.check(
                 source: project.main,
+                sourcePath: project.entryPath,
                 supportingFiles: project.supporting
             )
             finish(value)
@@ -80,6 +87,7 @@ final class CompilerViewModel: ObservableObject {
         Task {
             let value = await compiler.run(
                 source: project.main,
+                sourcePath: project.entryPath,
                 supportingFiles: project.supporting
             )
             finish(value)
@@ -98,8 +106,9 @@ final class CompilerViewModel: ObservableObject {
         loadProject(
             name: "modules-lab",
             files: [
-                "main.rs": RustSamples.multiFileMain,
-                "greeter.rs": RustSamples.multiFileGreeter,
+                "Cargo.toml": RustSamples.cargoManifest,
+                "src/main.rs": RustSamples.multiFileMain,
+                "src/greeter.rs": RustSamples.multiFileGreeter,
             ]
         )
     }
@@ -115,11 +124,10 @@ final class CompilerViewModel: ObservableObject {
         guard !isBusy else { return }
         projectName = name
         fileContents = files
-        fileNames = files.keys.sorted { lhs, rhs in
-            lhs == "main.rs" || (rhs != "main.rs" && lhs < rhs)
-        }
-        selectedFile = "main.rs"
-        source = files["main.rs"] ?? ""
+        entryFile = files["src/main.rs"] != nil ? "src/main.rs" : "main.rs"
+        fileNames = files.keys.sorted(by: projectFileOrder)
+        selectedFile = entryFile
+        source = files[entryFile] ?? ""
         result = nil
         lastDiagnostic = nil
         completedStages = []
@@ -127,7 +135,7 @@ final class CompilerViewModel: ObservableObject {
     }
 
     func applyRepair() {
-        guard selectedFile == "main.rs",
+        guard selectedFile == entryFile,
               let diagnostic = primaryDiagnostic,
               let repaired = BorrowRepair.apply(to: source, diagnostic: diagnostic)
         else {
@@ -152,11 +160,26 @@ final class CompilerViewModel: ObservableObject {
         return value
     }
 
-    private func projectSnapshot() -> (main: String, supporting: [String: String]) {
+    private func projectSnapshot() -> (entryPath: String, main: String, supporting: [String: String]) {
         var files = fileContents
         files[selectedFile] = source
-        let main = files.removeValue(forKey: "main.rs") ?? ""
-        return (main, files)
+        let main = files.removeValue(forKey: entryFile) ?? ""
+        return (entryFile, main, files)
+    }
+
+    private func projectFileOrder(_ lhs: String, _ rhs: String) -> Bool {
+        func rank(_ path: String) -> Int {
+            switch path {
+            case "Cargo.toml": 0
+            case entryFile: 1
+            default: 2
+            }
+        }
+        let lhsRank = rank(lhs)
+        let rhsRank = rank(rhs)
+        return lhsRank == rhsRank
+            ? lhs.localizedStandardCompare(rhs) == .orderedAscending
+            : lhsRank < rhsRank
     }
 
     private func finish(_ value: CompilationResult) {

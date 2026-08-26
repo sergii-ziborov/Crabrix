@@ -1,4 +1,13 @@
 enum RustSamples {
+    static let cargoManifest = """
+    [package]
+    name = "modules-lab"
+    version = "0.1.0"
+    edition = "2024"
+
+    [dependencies]
+    """
+
     static let runnable = """
     fn main() {
         let mut items = vec!["crab", "rust"];
@@ -28,6 +37,16 @@ enum RustSamples {
     static let multiFileGreeter = """
     pub fn message() -> &'static str {
         "hello from two Rust files"
+    }
+    """
+
+    static let memoryPressure = """
+    fn main() {
+        let mut bytes = vec![0_u8; 80 * 1024 * 1024];
+        for index in (0..bytes.len()).step_by(4096) {
+            bytes[index] = (index % 251) as u8;
+        }
+        println!("{}", bytes[bytes.len() - 4096]);
     }
     """
 

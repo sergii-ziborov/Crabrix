@@ -12,7 +12,9 @@ The app embeds:
 - [WasmKit 0.3.1](https://github.com/swiftwasm/WasmKit), a WebAssembly interpreter written in Swift with iOS support;
 - a pinned WASI build of `rustc` and its `wasm32-wasip1` sysroot from [Weblings / wasm-rustc](https://github.com/AngelOnFira/wasm-rustc/releases/tag/artifacts-test-7);
 - structured `rustc` JSON diagnostic parsing for the E0502 experiment;
-- local execution of the Wasm program emitted by the bundled compiler.
+- local execution of the Wasm program emitted by the bundled compiler;
+- a parsed Cargo project layout with `Cargo.toml`, `src/main.rs`, and sibling modules;
+- a bounded guest runtime with 64 MiB linear-memory and table-growth limits, `/sandbox` as the only writable preopen, and no network imports.
 
 The toolchain is downloaded **at build time**, verified by SHA-256, and copied into the app bundle. The running app never downloads compiler components.
 
@@ -61,12 +63,18 @@ Measured on the iPad Pro 13-inch (M5) Simulator used for this spike:
 
 - optimized Release multi-file compile/run with safe token threading: 3.3 seconds;
 - unoptimized Debug compile/run: approximately 50–59 seconds;
+- three consecutive optimized compile/run cycles: approximately 10–11 seconds total;
+- an 80 MiB guest allocation is rejected by the 64 MiB sandbox gate;
 - unsigned ARM64 `iphoneos` build: succeeds.
 - uncompressed Simulator `.app` bundle: approximately 160 MB (152 MB toolchain payload).
 
 WasmKit 0.3.1's direct-threaded interpreter crashed in an optimized iOS
 Simulator build while running the bundled `rustc` module. Crabrix explicitly
 uses WasmKit's token-threaded fallback, which passed the Release multi-file gate.
+The current memory limiter uses WasmKit's narrow `Fuzzing` SPI because the
+public `ResourceLimiter` protocol is exposed while `Store.resourceLimiter` is
+still SPI. This is tracked as a dependency-integration debt, not hidden as a
+production-stable API.
 
 These numbers prove the native integration path, not physical-device performance.
 

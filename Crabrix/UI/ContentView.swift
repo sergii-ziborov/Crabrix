@@ -19,6 +19,7 @@ struct ContentView: View {
                             projectName: model.projectName,
                             files: model.fileNames,
                             selectedFile: model.selectedFile,
+                            manifest: model.cargoManifest,
                             onSelect: model.selectFile
                         )
                             .frame(width: 210)
@@ -68,8 +69,10 @@ struct ContentView: View {
         VStack(spacing: 0) {
             EditorToolbar(
                 activity: model.activity,
+                files: model.fileNames,
                 selectedFile: model.selectedFile,
                 canRun: model.toolchain.isReady && !model.isBusy,
+                onSelectFile: model.selectFile,
                 onLoadRunnable: model.loadRunnableSample,
                 onLoadDiagnostic: model.loadBorrowDiagnosticSample,
                 onLoadMultiFile: model.loadMultiFileSample,
@@ -225,7 +228,16 @@ private struct ProjectSidebar: View {
     let projectName: String
     let files: [String]
     let selectedFile: String
+    let manifest: CargoManifest?
     let onSelect: (String) -> Void
+
+    private var rootFiles: [String] {
+        files.filter { !$0.hasPrefix("src/") && $0 != "main.rs" }
+    }
+
+    private var sourceFiles: [String] {
+        files.filter { $0.hasPrefix("src/") || $0 == "main.rs" }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -235,23 +247,50 @@ private struct ProjectSidebar: View {
                 .padding(.bottom, 6)
             Label(projectName, systemImage: "chevron.down")
                 .font(.subheadline.weight(.semibold))
+            ForEach(rootFiles, id: \.self) { file in
+                ProjectFileButton(
+                    file: file,
+                    selectedFile: selectedFile,
+                    indentation: 12,
+                    onSelect: onSelect
+                )
+            }
             Label("src", systemImage: "chevron.down")
                 .font(.caption)
                 .padding(.leading, 12)
-            ForEach(files, id: \.self) { file in
-                Button {
-                    onSelect(file)
-                } label: {
-                    Label(file, systemImage: "doc.text.fill")
-                        .font(.system(size: 12, design: .monospaced))
-                        .foregroundStyle(.white)
-                        .padding(8)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(file == selectedFile ? CrabrixTheme.raised : .clear)
-                        .clipShape(RoundedRectangle(cornerRadius: 7))
+            ForEach(sourceFiles, id: \.self) { file in
+                ProjectFileButton(
+                    file: file,
+                    selectedFile: selectedFile,
+                    indentation: 24,
+                    onSelect: onSelect
+                )
+            }
+
+            if let manifest {
+                Divider().overlay(CrabrixTheme.border).padding(.vertical, 8)
+                Text("PACKAGE")
+                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                    .foregroundStyle(CrabrixTheme.muted)
+                Text("\(manifest.name) \(manifest.version ?? "")")
+                    .font(.caption.weight(.semibold))
+                Text("edition \(manifest.edition ?? "unspecified") · manifest parsed")
+                    .font(.caption2.monospaced())
+                    .foregroundStyle(CrabrixTheme.mint)
+                if !manifest.dependencies.isEmpty {
+                    Text("DEPENDENCIES")
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .foregroundStyle(CrabrixTheme.muted)
+                        .padding(.top, 6)
+                    ForEach(manifest.dependencies) { dependency in
+                        Text("\(dependency.name)  \(dependency.requirement ?? dependency.source.rawValue)")
+                            .font(.caption2.monospaced())
+                            .foregroundStyle(CrabrixTheme.amber)
+                    }
+                    Text("resolver pending")
+                        .font(.caption2)
+                        .foregroundStyle(CrabrixTheme.muted)
                 }
-                .buttonStyle(.plain)
-                .padding(.leading, 24)
             }
 
             Spacer()
@@ -272,10 +311,38 @@ private struct ProjectSidebar: View {
     }
 }
 
+private struct ProjectFileButton: View {
+    let file: String
+    let selectedFile: String
+    let indentation: CGFloat
+    let onSelect: (String) -> Void
+
+    var body: some View {
+        Button {
+            onSelect(file)
+        } label: {
+            Label(
+                file.split(separator: "/").last.map(String.init) ?? file,
+                systemImage: "doc.text.fill"
+            )
+            .font(.system(size: 12, design: .monospaced))
+            .foregroundStyle(.white)
+            .padding(8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(file == selectedFile ? CrabrixTheme.raised : .clear)
+            .clipShape(RoundedRectangle(cornerRadius: 7))
+        }
+        .buttonStyle(.plain)
+        .padding(.leading, indentation)
+    }
+}
+
 private struct EditorToolbar: View {
     let activity: CompilerViewModel.Activity
+    let files: [String]
     let selectedFile: String
     let canRun: Bool
+    let onSelectFile: (String) -> Void
     let onLoadRunnable: () -> Void
     let onLoadDiagnostic: () -> Void
     let onLoadMultiFile: () -> Void
@@ -284,9 +351,24 @@ private struct EditorToolbar: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Label(selectedFile, systemImage: "doc.plaintext")
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
-                .foregroundStyle(.white)
+            Menu {
+                ForEach(files, id: \.self) { file in
+                    Button {
+                        onSelectFile(file)
+                    } label: {
+                        if file == selectedFile {
+                            Label(file, systemImage: "checkmark")
+                        } else {
+                            Text(file)
+                        }
+                    }
+                }
+            } label: {
+                Label(selectedFile, systemImage: "doc.plaintext")
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .foregroundStyle(.white)
+            }
+            .disabled(activity != .idle)
             Spacer()
             Menu {
                 Button(action: onLoadRunnable) {

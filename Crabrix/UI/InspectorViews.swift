@@ -45,8 +45,14 @@ struct RuntimeInspector: View {
                     color: CrabrixTheme.coral
                 )
                 RuntimeRow(
+                    title: "Bounded program sandbox",
+                    detail: "\(WasmSandboxPolicy.memoryLimitLabel) memory · /sandbox write access",
+                    icon: "lock.shield.fill",
+                    color: CrabrixTheme.mint
+                )
+                RuntimeRow(
                     title: "No runtime network path",
-                    detail: "Compiler and sysroot are app-bundle resources",
+                    detail: "Compiler and sysroot are app-bundle resources · no socket imports",
                     icon: "airplane",
                     color: CrabrixTheme.blue
                 )
@@ -58,7 +64,7 @@ struct RuntimeInspector: View {
                 Label("A Simulator result is not the final verdict", systemImage: "exclamationmark.triangle.fill")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(CrabrixTheme.amber)
-                Text("Airplane mode, peak memory, thermal behavior, repeated builds, and hard termination must still pass on a physical iPhone/iPad.")
+                Text("Airplane mode, peak memory, thermal behavior, and hard termination must still pass on a physical iPhone/iPad. Repeated-build gates now run in the dedicated test scheme.")
                     .font(.caption)
                     .foregroundStyle(CrabrixTheme.muted)
             }
@@ -225,6 +231,8 @@ struct SuccessInspector: View {
 
             VStack(alignment: .leading, spacing: 12) {
                 EvidenceRow(label: "Runtime", value: "WasmKit in native Swift process")
+                EvidenceRow(label: "Memory cap", value: WasmSandboxPolicy.memoryLimitLabel)
+                EvidenceRow(label: "Writable FS", value: WasmSandboxPolicy.writableGuestDirectory)
                 EvidenceRow(label: "Network", value: "Not used")
                 EvidenceRow(label: "Exit", value: "\(result.exitCode ?? 0)")
                 EvidenceRow(label: "Elapsed", value: result.duration.crabrixDescription)
@@ -239,7 +247,7 @@ struct SuccessInspector: View {
             .padding(14)
             .crabrixPanel()
 
-            Text("This is evidence for the compiler integration. It is not yet evidence for physical-device memory, thermal, or hard-timeout gates.")
+            Text("This proves compiler integration and configured sandbox bounds. Physical-device peak memory, thermal behavior, and hard-timeout termination remain separate gates.")
                 .font(.caption)
                 .foregroundStyle(CrabrixTheme.amber)
         }

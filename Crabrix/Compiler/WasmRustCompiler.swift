@@ -1,6 +1,6 @@
 import Foundation
 import SystemPackage
-import WasmKit
+@_spi(Fuzzing) import WasmKit
 import WasmKitWASI
 
 final class WasmRustCompiler: @unchecked Sendable {
@@ -47,17 +47,36 @@ final class WasmRustCompiler: @unchecked Sendable {
         )
     }
 
-    func check(source: String, supportingFiles: [String: String] = [:]) async -> CompilationResult {
-        await perform(action: .check, source: source, supportingFiles: supportingFiles)
+    func check(
+        source: String,
+        sourcePath: String = "main.rs",
+        supportingFiles: [String: String] = [:]
+    ) async -> CompilationResult {
+        await perform(
+            action: .check,
+            source: source,
+            sourcePath: sourcePath,
+            supportingFiles: supportingFiles
+        )
     }
 
-    func run(source: String, supportingFiles: [String: String] = [:]) async -> CompilationResult {
-        await perform(action: .run, source: source, supportingFiles: supportingFiles)
+    func run(
+        source: String,
+        sourcePath: String = "main.rs",
+        supportingFiles: [String: String] = [:]
+    ) async -> CompilationResult {
+        await perform(
+            action: .run,
+            source: source,
+            sourcePath: sourcePath,
+            supportingFiles: supportingFiles
+        )
     }
 
     private func perform(
         action: Action,
         source: String,
+        sourcePath: String,
         supportingFiles: [String: String]
     ) async -> CompilationResult {
         await withCheckedContinuation { continuation in
@@ -66,6 +85,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                     returning: execute(
                         action: action,
                         source: source,
+                        sourcePath: sourcePath,
                         supportingFiles: supportingFiles
                     )
                 )
@@ -100,6 +120,7 @@ final class WasmRustCompiler: @unchecked Sendable {
     private func execute(
         action: Action,
         source: String,
+        sourcePath: String,
         supportingFiles: [String: String]
     ) -> CompilationResult {
         let started = clock.now
@@ -117,21 +138,27 @@ final class WasmRustCompiler: @unchecked Sendable {
         do {
             try fileManager.createDirectory(at: workURL, withIntermediateDirectories: true)
             try fileManager.createDirectory(at: tempURL, withIntermediateDirectories: true)
-            try Data(source.utf8).write(to: workURL.appendingPathComponent("main.rs"), options: .atomic)
+            guard let sourceURL = projectFileURL(relativePath: sourcePath, under: workURL) else {
+                return .failure(
+                    phase: .setup,
+                    detail: "Invalid project path: \(sourcePath)",
+                    duration: started.duration(to: clock.now)
+                )
+            }
+            try fileManager.createDirectory(
+                at: sourceURL.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            try Data(source.utf8).write(to: sourceURL, options: .atomic)
             for (relativePath, contents) in supportingFiles {
-                let components = relativePath.split(separator: "/", omittingEmptySubsequences: false)
-                guard !relativePath.hasPrefix("/"),
-                      !components.isEmpty,
-                      components.allSatisfy({ !$0.isEmpty && $0 != "." && $0 != ".." })
+                guard relativePath != sourcePath,
+                      let fileURL = projectFileURL(relativePath: relativePath, under: workURL)
                 else {
                     return .failure(
                         phase: .setup,
                         detail: "Invalid project path: \(relativePath)",
                         duration: started.duration(to: clock.now)
                     )
-                }
-                let fileURL = components.reduce(workURL) { partial, component in
-                    partial.appendingPathComponent(String(component))
                 }
                 try fileManager.createDirectory(
                     at: fileURL.deletingLastPathComponent(),
@@ -152,7 +179,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             let module = try loadRustcModule(from: rustcURL)
             let outputName = action == .run ? "program.wasm" : "main.rmeta"
             var arguments = [
-                "rustc", "/work/main.rs",
+                "rustc", "/work/\(sourcePath)",
                 "--sysroot", "/sysroot",
                 "--target", "wasm32-wasip1",
                 "--edition", "2024",
@@ -253,13 +280,44 @@ final class WasmRustCompiler: @unchecked Sendable {
             let sandboxURL = jobRoot.appendingPathComponent("sandbox", isDirectory: true)
             try fileManager.createDirectory(at: sandboxURL, withIntermediateDirectories: true)
             let programCapture = try makeCapture(in: jobRoot, prefix: "program")
-            let programExit = try runWASI(
-                module: programModule,
-                arguments: ["program"],
-                environment: [:],
-                preopens: [.init(guestPath: "/sandbox", hostPath: sandboxURL.path)],
-                capture: programCapture
-            )
+            let resourceLimiter = WasmSandboxResourceLimiter()
+            let programExit: UInt32
+            do {
+                programExit = try runWASI(
+                    module: programModule,
+                    arguments: ["program"],
+                    environment: [:],
+                    preopens: [
+                        .init(
+                            guestPath: WasmSandboxPolicy.writableGuestDirectory,
+                            hostPath: sandboxURL.path
+                        )
+                    ],
+                    capture: programCapture,
+                    resourceLimiter: resourceLimiter
+                )
+            } catch {
+                let programOutput = try? finishCapture(programCapture)
+                if let deniedResource = resourceLimiter.deniedResource {
+                    let detail = switch deniedResource {
+                    case .memory:
+                        "Program stopped at the \(WasmSandboxPolicy.memoryLimitLabel) sandbox memory limit."
+                    case .table:
+                        "Program stopped at the sandbox table limit."
+                    }
+                    return CompilationResult(
+                        succeeded: false,
+                        phase: .run,
+                        exitCode: nil,
+                        diagnostics: diagnostics,
+                        stdout: programOutput?.stdout ?? "",
+                        stderr: programOutput?.stderr ?? "",
+                        duration: started.duration(to: clock.now),
+                        detail: detail
+                    )
+                }
+                throw error
+            }
             let programOutput = try finishCapture(programCapture)
 
             return CompilationResult(
@@ -271,7 +329,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                 stderr: programOutput.stderr,
                 duration: started.duration(to: clock.now),
                 detail: programExit == 0
-                    ? "Compiled and executed locally inside WasmKit."
+                    ? "Compiled and executed locally inside the bounded WasmKit sandbox."
                     : "The program exited with code \(programExit)."
             )
         } catch {
@@ -288,6 +346,19 @@ final class WasmRustCompiler: @unchecked Sendable {
         let module = try parseWasm(bytes: [UInt8](Data(contentsOf: url)))
         cachedRustcModule = module
         return module
+    }
+
+    private func projectFileURL(relativePath: String, under root: URL) -> URL? {
+        let components = relativePath.split(separator: "/", omittingEmptySubsequences: false)
+        guard !relativePath.hasPrefix("/"),
+              !components.isEmpty,
+              components.allSatisfy({ !$0.isEmpty && $0 != "." && $0 != ".." })
+        else {
+            return nil
+        }
+        return components.reduce(root) { partial, component in
+            partial.appendingPathComponent(String(component))
+        }
     }
 
     private func engine() -> Engine {
@@ -312,7 +383,8 @@ final class WasmRustCompiler: @unchecked Sendable {
         arguments: [String],
         environment: [String: String],
         preopens: [WASIBridgeToHost.Preopen],
-        capture: Capture
+        capture: Capture,
+        resourceLimiter: (any ResourceLimiter)? = nil
     ) throws -> UInt32 {
         let wasi = try WASIBridgeToHost(
             args: arguments,
@@ -323,6 +395,9 @@ final class WasmRustCompiler: @unchecked Sendable {
         )
         return try wasi.runAndClose { wasi in
             let store = Store(engine: engine())
+            if let resourceLimiter {
+                store.resourceLimiter = resourceLimiter
+            }
             var imports = Imports()
             wasi.link(to: &imports, store: store)
             let instance = try module.instantiate(store: store, imports: imports)

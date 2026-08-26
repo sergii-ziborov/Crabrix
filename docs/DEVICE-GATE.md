@@ -34,3 +34,17 @@ Before App Store work, choose and verify one of:
 3. instrument emitted Wasm with cooperative budget checks.
 
 Do not replace this test with a simulated timeout.
+
+## Automated evidence already available
+
+The dedicated Release test scheme now proves the following before a physical-device session:
+
+- structured E0502 diagnostics;
+- single-file compile/run and captured stdout;
+- a Cargo-shaped multi-file project (`Cargo.toml`, `src/main.rs`, `src/greeter.rs`);
+- three consecutive compile/run cycles in one compiler instance;
+- denial of an 80 MiB guest allocation at the configured 64 MiB program limit;
+- path validation and a single writable `/sandbox` preopen for the user program.
+
+These tests reduce device-session risk. They do not replace the 20-run memory,
+thermal, airplane-mode, lifecycle, or infinite-loop checks above.

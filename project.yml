@@ -50,6 +50,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix
         PRODUCT_NAME: Crabrix
+        MARKETING_VERSION: 0.1.0
+        CURRENT_PROJECT_VERSION: 5
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Crabrix
@@ -88,6 +90,8 @@ schemes:
             - BundledCompilerGateTests/testBundledRustcProducesE0502()
             - BundledCompilerGateTests/testBundledRustcCompilesAndRunsRepairedProgram()
             - BundledCompilerGateTests/testBundledRustcCompilesMultiFileProject()
+            - BundledCompilerGateTests/testBundledRustcSurvivesRepeatedBuilds()
+            - BundledCompilerGateTests/testUserProgramCannotGrowPastSandboxMemoryLimit()
 
   CrabrixCompilerGate:
     build:
@@ -103,3 +107,5 @@ schemes:
             - BundledCompilerGateTests/testBundledRustcProducesE0502()
             - BundledCompilerGateTests/testBundledRustcCompilesAndRunsRepairedProgram()
             - BundledCompilerGateTests/testBundledRustcCompilesMultiFileProject()
+            - BundledCompilerGateTests/testBundledRustcSurvivesRepeatedBuilds()
+            - BundledCompilerGateTests/testUserProgramCannotGrowPastSandboxMemoryLimit()
