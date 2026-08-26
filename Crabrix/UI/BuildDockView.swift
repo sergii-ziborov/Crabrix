@@ -39,7 +39,6 @@ struct BuildDockView<CodeContent: View>: View {
     let canStartBuild: Bool
     let onCheck: () -> Void
     let onRun: () -> Void
-    let onCancel: () -> Void
     let codeContent: CodeContent
 
     init(
@@ -51,7 +50,6 @@ struct BuildDockView<CodeContent: View>: View {
         canStartBuild: Bool,
         onCheck: @escaping () -> Void,
         onRun: @escaping () -> Void,
-        onCancel: @escaping () -> Void,
         @ViewBuilder codeContent: () -> CodeContent
     ) {
         _selectedTab = selectedTab
@@ -62,7 +60,6 @@ struct BuildDockView<CodeContent: View>: View {
         self.canStartBuild = canStartBuild
         self.onCheck = onCheck
         self.onRun = onRun
-        self.onCancel = onCancel
         self.codeContent = codeContent()
     }
 
@@ -111,42 +108,10 @@ struct BuildDockView<CodeContent: View>: View {
             }
 
             Spacer()
-
-            compactBuildStatus
         }
         .font(.system(size: 9, weight: .semibold, design: .monospaced))
         .padding(.horizontal, 9)
         .frame(height: 38)
-    }
-
-    @ViewBuilder
-    private var compactBuildStatus: some View {
-        if activity != .idle {
-            HStack(spacing: 6) {
-                ProgressView()
-                    .controlSize(.mini)
-                    .tint(CrabrixTheme.blue)
-                Text(activity == .checking ? "CHECKING" : "RUNNING")
-                    .foregroundStyle(CrabrixTheme.blue)
-                Button(action: onCancel) {
-                    Image(systemName: "stop.fill")
-                        .foregroundStyle(CrabrixTheme.coral)
-                        .frame(width: 24, height: 24)
-                        .background(CrabrixTheme.coral.opacity(0.12), in: Circle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Stop build")
-            }
-        } else if let result {
-            Label(
-                result.succeeded ? "PASSED" : "FAILED",
-                systemImage: result.succeeded ? "checkmark.seal.fill" : "xmark.octagon.fill"
-            )
-            .foregroundStyle(result.succeeded ? CrabrixTheme.mint : CrabrixTheme.coral)
-            .accessibilityLabel(
-                result.succeeded ? "Last build passed" : "Last build failed"
-            )
-        }
     }
 
     @ViewBuilder

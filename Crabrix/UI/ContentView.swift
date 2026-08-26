@@ -367,6 +367,7 @@ struct ContentView: View {
                 onLoadMultiFile: model.loadMultiFileSample,
                 onCheck: model.check,
                 onRun: model.run,
+                onCancel: model.cancelBuild,
                 onComplete: requestCompletion,
                 onToggleProjectSidebar: {
                     if horizontalSizeClass == .regular {
@@ -402,8 +403,7 @@ struct ContentView: View {
                 activity: model.activity,
                 canStartBuild: model.canStartBuild && !model.isProjectOperationInProgress,
                 onCheck: model.check,
-                onRun: model.run,
-                onCancel: model.cancelBuild
+                onRun: model.run
             ) {
                 codeWorkspace
             }
@@ -420,40 +420,6 @@ struct ContentView: View {
                 isEditable: !model.isProjectOperationInProgress,
                 onRequestCompletion: requestCompletion
             )
-
-            if model.isBusy {
-                HStack(alignment: .top, spacing: 10) {
-                    ProgressView()
-                        .tint(CrabrixTheme.coral)
-                        .padding(.top, 2)
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(model.activity.label)
-                            .font(.caption.monospaced())
-                        Text(model.activity == .running
-                             ? CrabrixBuildInfo.runTiming
-                             : CrabrixBuildInfo.checkTiming)
-                            .font(.caption2)
-                            .foregroundStyle(CrabrixTheme.muted)
-                        Label("Background snapshot · switch tabs freely", systemImage: "arrow.triangle.2.circlepath")
-                            .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                            .foregroundStyle(CrabrixTheme.blue)
-                    }
-                    Button {
-                        model.cancelBuild()
-                    } label: {
-                        Label("Stop", systemImage: "stop.fill")
-                            .font(.caption.bold())
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(CrabrixTheme.coral)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 9)
-                .background(.regularMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-            }
 
             if let suggestion = completion.suggestion {
                 VStack {
@@ -1107,6 +1073,7 @@ private struct EditorToolbar: View {
     let onLoadMultiFile: () -> Void
     let onCheck: () -> Void
     let onRun: () -> Void
+    let onCancel: () -> Void
     let onComplete: () -> Void
     let onToggleProjectSidebar: () -> Void
     let onToggleInspector: () -> Void
@@ -1125,8 +1092,6 @@ private struct EditorToolbar: View {
     }
 
     private var connectorLabel: String {
-        if activity == .checking { return "Checking…" }
-        if activity == .running { return "Running…" }
         if runPassed { return "Done" }
         if checkPassed { return "Run next" }
         if checkNeedsAttention { return "Fix, then retry" }
@@ -1217,31 +1182,31 @@ private struct EditorToolbar: View {
         HStack(spacing: 10) {
             WorkflowActionButton(
                 step: 1,
-                title: checkPassed ? "Checked" : "Check code",
-                subtitle: checkNeedsAttention ? "Fix errors and retry" : "Find errors, don't run",
-                systemImage: checkPassed ? "checkmark.circle.fill" : "checkmark.shield.fill",
+                title: activity == .checking ? "Checking" : (checkPassed ? "Checked" : "Check code"),
+                subtitle: activity == .checking ? "Tap to stop" : (checkNeedsAttention ? "Fix errors and retry" : "Find errors, don't run"),
+                systemImage: activity == .checking ? "stop.fill" : (checkPassed ? "checkmark.circle.fill" : "checkmark.shield.fill"),
                 tint: checkPassed ? CrabrixTheme.mint : (checkNeedsAttention ? CrabrixTheme.coral : CrabrixTheme.blue),
                 isWorking: activity == .checking,
                 isEmphasized: !checkPassed && !runPassed,
-                action: onCheck
+                action: activity == .checking ? onCancel : onCheck
             )
             .keyboardShortcut(.return, modifiers: .command)
-            .disabled(!canRun)
+            .disabled(activity == .running || (activity == .idle && !canRun))
 
             workflowConnector
 
             WorkflowActionButton(
                 step: 2,
-                title: runPassed ? "Ran successfully" : "Run project",
-                subtitle: runPassed ? "Output is ready" : "Compile and show output",
-                systemImage: runPassed ? "checkmark.circle.fill" : "play.fill",
+                title: activity == .running ? "Running" : (runPassed ? "Ran successfully" : "Run project"),
+                subtitle: activity == .running ? "Tap to stop" : (runPassed ? "Output is ready" : "Compile and show output"),
+                systemImage: activity == .running ? "stop.fill" : (runPassed ? "checkmark.circle.fill" : "play.fill"),
                 tint: runPassed ? CrabrixTheme.mint : CrabrixTheme.coral,
                 isWorking: activity == .running,
                 isEmphasized: checkPassed || !runPassed,
-                action: onRun
+                action: activity == .running ? onCancel : onRun
             )
             .keyboardShortcut("r", modifiers: .command)
-            .disabled(!canRun)
+            .disabled(activity == .checking || (activity == .idle && !canRun))
         }
     }
 
@@ -1249,14 +1214,14 @@ private struct EditorToolbar: View {
         HStack(spacing: 8) {
             CompactWorkflowButton(
                 step: 1,
-                title: checkPassed ? "Checked" : "Check",
-                systemImage: checkPassed ? "checkmark.circle.fill" : "checkmark.shield.fill",
+                title: activity == .checking ? "Checking" : (checkPassed ? "Checked" : "Check"),
+                systemImage: activity == .checking ? "stop.fill" : (checkPassed ? "checkmark.circle.fill" : "checkmark.shield.fill"),
                 tint: checkPassed ? CrabrixTheme.mint : CrabrixTheme.blue,
                 isWorking: activity == .checking,
-                action: onCheck
+                action: activity == .checking ? onCancel : onCheck
             )
             .keyboardShortcut(.return, modifiers: .command)
-            .disabled(!canRun)
+            .disabled(activity == .running || (activity == .idle && !canRun))
 
             Image(systemName: runPassed ? "checkmark" : "arrow.right")
                 .font(.caption.bold())
@@ -1264,14 +1229,14 @@ private struct EditorToolbar: View {
 
             CompactWorkflowButton(
                 step: 2,
-                title: runPassed ? "Done" : "Run",
-                systemImage: runPassed ? "checkmark.circle.fill" : "play.fill",
+                title: activity == .running ? "Running" : (runPassed ? "Done" : "Run"),
+                systemImage: activity == .running ? "stop.fill" : (runPassed ? "checkmark.circle.fill" : "play.fill"),
                 tint: runPassed ? CrabrixTheme.mint : CrabrixTheme.coral,
                 isWorking: activity == .running,
-                action: onRun
+                action: activity == .running ? onCancel : onRun
             )
             .keyboardShortcut("r", modifiers: .command)
-            .disabled(!canRun)
+            .disabled(activity == .checking || (activity == .idle && !canRun))
         }
     }
 
@@ -1352,11 +1317,7 @@ private struct CompactWorkflowButton: View {
                     .font(.caption.monospaced().bold())
                     .frame(width: 22, height: 22)
                     .background(tint.opacity(0.16), in: Circle())
-                if isWorking {
-                    ProgressView().controlSize(.small).tint(tint)
-                } else {
-                    Image(systemName: systemImage)
-                }
+                Image(systemName: systemImage)
                 Text(title)
                     .lineLimit(1)
             }
