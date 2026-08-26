@@ -40,6 +40,7 @@ struct BuildDockView<CodeContent: View>: View {
     let onCheck: () -> Void
     let onRun: () -> Void
     let onReplaceFiles: ([String: String], String?) -> Bool
+    let onOpenDiagnostic: (RustDiagnostic) -> Void
     let codeContent: CodeContent
 
     init(
@@ -52,6 +53,7 @@ struct BuildDockView<CodeContent: View>: View {
         onCheck: @escaping () -> Void,
         onRun: @escaping () -> Void,
         onReplaceFiles: @escaping ([String: String], String?) -> Bool,
+        onOpenDiagnostic: @escaping (RustDiagnostic) -> Void,
         @ViewBuilder codeContent: () -> CodeContent
     ) {
         _selectedTab = selectedTab
@@ -63,6 +65,7 @@ struct BuildDockView<CodeContent: View>: View {
         self.onCheck = onCheck
         self.onRun = onRun
         self.onReplaceFiles = onReplaceFiles
+        self.onOpenDiagnostic = onOpenDiagnostic
         self.codeContent = codeContent()
     }
 
@@ -124,7 +127,7 @@ struct BuildDockView<CodeContent: View>: View {
             case .code:
                 codeContent
             case .problems:
-                ProblemsDockContent(result: result)
+                ProblemsDockContent(result: result, onOpenDiagnostic: onOpenDiagnostic)
             case .output:
                 OutputDockContent(result: result)
             case .terminal:
@@ -146,28 +149,44 @@ struct BuildDockView<CodeContent: View>: View {
 
 private struct ProblemsDockContent: View {
     let result: CompilationResult?
+    let onOpenDiagnostic: (RustDiagnostic) -> Void
 
     var body: some View {
         ScrollView {
             if let diagnostics = result?.diagnostics, !diagnostics.isEmpty {
                 LazyVStack(alignment: .leading, spacing: 7) {
                     ForEach(Array(diagnostics.enumerated()), id: \.offset) { index, diagnostic in
-                        HStack(alignment: .top, spacing: 9) {
-                            Image(systemName: "xmark.octagon.fill")
-                                .foregroundStyle(CrabrixTheme.coral)
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text("\(diagnostic.code ?? "error") · \(diagnostic.message)")
-                                    .foregroundStyle(CrabrixTheme.primary)
-                                if let line = diagnostic.primarySpan?.lineStart {
-                                    Text("line \(line)")
-                                        .foregroundStyle(CrabrixTheme.muted)
+                        Button {
+                            onOpenDiagnostic(diagnostic)
+                        } label: {
+                            HStack(alignment: .top, spacing: 9) {
+                                Image(systemName: "xmark.octagon.fill")
+                                    .foregroundStyle(CrabrixTheme.coral)
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("\(diagnostic.code ?? "error") · \(diagnostic.message)")
+                                        .foregroundStyle(CrabrixTheme.primary)
+                                    if let span = diagnostic.primarySpan {
+                                        Text("\(span.fileName):\(span.lineStart):\(span.columnStart)")
+                                            .foregroundStyle(CrabrixTheme.blue)
+                                    }
+                                }
+                                Spacer()
+                                Text("#\(index + 1)").foregroundStyle(CrabrixTheme.muted)
+                                if diagnostic.primarySpan != nil {
+                                    Image(systemName: "arrow.up.forward.square")
+                                        .foregroundStyle(CrabrixTheme.blue)
                                 }
                             }
-                            Spacer()
-                            Text("#\(index + 1)").foregroundStyle(CrabrixTheme.muted)
+                            .padding(10)
+                            .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 9))
                         }
-                        .padding(10)
-                        .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 9))
+                        .buttonStyle(.plain)
+                        .disabled(diagnostic.primarySpan == nil)
+                        .accessibilityHint(
+                            diagnostic.primarySpan == nil
+                                ? "No source location is available"
+                                : "Open and highlight this source line"
+                        )
                     }
                 }
                 .padding(12)
@@ -363,7 +382,10 @@ private struct TerminalDockContent: View {
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                Button("Done") { commandIsFocused = false }
+                Button { commandIsFocused = false } label: {
+                    Image(systemName: "keyboard.chevron.compact.down")
+                }
+                .accessibilityLabel("Hide keyboard")
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

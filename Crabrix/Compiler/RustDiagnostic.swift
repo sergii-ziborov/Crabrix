@@ -2,6 +2,7 @@ import Foundation
 
 struct RustDiagnostic: Identifiable, Equatable, Sendable {
     struct Span: Equatable, Sendable {
+        let fileName: String
         let lineStart: Int
         let lineEnd: Int
         let columnStart: Int
@@ -9,6 +10,26 @@ struct RustDiagnostic: Identifiable, Equatable, Sendable {
         let isPrimary: Bool
         let label: String?
         let sourceLine: String
+
+        init(
+            fileName: String = "main.rs",
+            lineStart: Int,
+            lineEnd: Int,
+            columnStart: Int,
+            columnEnd: Int,
+            isPrimary: Bool,
+            label: String?,
+            sourceLine: String
+        ) {
+            self.fileName = fileName
+            self.lineStart = lineStart
+            self.lineEnd = lineEnd
+            self.columnStart = columnStart
+            self.columnEnd = columnEnd
+            self.isPrimary = isPrimary
+            self.label = label
+            self.sourceLine = sourceLine
+        }
     }
 
     let id = UUID()
@@ -84,10 +105,9 @@ enum RustDiagnosticParser {
                 return nil
             }
 
-            let spans = envelope.spans
-                .filter { $0.fileName.hasSuffix("main.rs") }
-                .map {
+            let spans = envelope.spans.map {
                     RustDiagnostic.Span(
+                        fileName: normalizedProjectPath($0.fileName),
                         lineStart: $0.lineStart,
                         lineEnd: $0.lineEnd,
                         columnStart: $0.columnStart,
@@ -114,5 +134,14 @@ enum RustDiagnosticParser {
                 spans: spans
             )
         }
+    }
+
+    private static func normalizedProjectPath(_ rawPath: String) -> String {
+        var path = rawPath.replacingOccurrences(of: "\\", with: "/")
+        if let workRange = path.range(of: "/work/") {
+            path = String(path[workRange.upperBound...])
+        }
+        while path.hasPrefix("./") { path.removeFirst(2) }
+        return path
     }
 }

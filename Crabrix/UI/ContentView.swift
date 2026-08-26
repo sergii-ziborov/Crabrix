@@ -31,6 +31,7 @@ struct ContentView: View {
     @State private var selectedBuildDockTab: BuildDockTab = .code
     @State private var learningPath: [LearningRoute] = []
     @State private var editorCursorOffset = 0
+    @State private var editorNavigationTarget: EditorNavigationTarget?
     @AppStorage("crabrix.appearance") private var appearanceRaw = CrabrixAppearance.system.rawValue
     @AppStorage("crabrix.keepAwakeDuringBuild") private var keepAwakeDuringBuild = true
     @AppStorage("crabrix.appleIntelligenceCompletion") private var appleIntelligenceCompletion = true
@@ -92,6 +93,7 @@ struct ContentView: View {
                         toolchain: model.toolchain,
                         transfer: model.projectTransfer,
                         onOpenProjects: { selectedDestination = .projects },
+                        onCloseWorkspace: closeBuildWorkspace,
                         onNewProject: { isNewProjectPresented = true },
                         onOpenFiles: { isFileImporterPresented = true },
                         onSaveFiles: prepareExport,
@@ -253,6 +255,10 @@ struct ContentView: View {
                 model.loadMultiFileSample()
                 selectedDestination = .build
             }
+            if arguments.contains("--crabrix-auto-borrow") {
+                model.loadBorrowDiagnosticSample()
+                selectedDestination = .build
+            }
             if let githubArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-github=") }) {
                 let rawURL = String(githubArgument.dropFirst("--crabrix-auto-github=".count))
                 if await model.importGitHub(rawURL) {
@@ -317,9 +323,12 @@ struct ContentView: View {
         .onReceive(model.$result) { result in
             guard let result else { return }
             terminal.record(result, project: model.exportProject())
-            guard result.phase == .run else { return }
             withAnimation(.easeOut(duration: 0.18)) {
-                selectedBuildDockTab = result.succeeded ? .output : .problems
+                if !result.succeeded {
+                    selectedBuildDockTab = .problems
+                } else if result.phase == .run {
+                    selectedBuildDockTab = .output
+                }
             }
         }
         .onChange(of: keepAwakeDuringBuild) { _, keepAwake in
@@ -333,6 +342,16 @@ struct ContentView: View {
     private func prepareExport() {
         exportDocument = CrabrixProjectDocument(project: model.exportProject())
         isFileExporterPresented = true
+    }
+
+    private func closeBuildWorkspace() {
+        if let lessonID = model.activeLessonID,
+           let course = RustCourseCatalog.course(containingLessonID: lessonID) {
+            selectedDestination = .learn
+            learningPath = [.course(course.id), .lesson(lessonID)]
+        } else {
+            selectedDestination = .projects
+        }
     }
 
     private func startLesson(_ lesson: RustLesson) {
@@ -364,15 +383,10 @@ struct ContentView: View {
                     ? isInspectorCollapsed
                     : !isCompactInspectorDrawerPresented,
                 canRun: model.canStartBuild && !model.isProjectOperationInProgress,
-                isCompletionLoading: completion.isLoading,
                 onSelectFile: selectEditorFile,
-                onLoadRunnable: model.loadRunnableSample,
-                onLoadDiagnostic: model.loadBorrowDiagnosticSample,
-                onLoadMultiFile: model.loadMultiFileSample,
                 onCheck: model.check,
                 onRun: model.run,
                 onCancel: model.cancelBuild,
-                onComplete: requestCompletion,
                 onToggleProjectSidebar: {
                     if horizontalSizeClass == .regular {
                         withAnimation(.easeInOut(duration: 0.2)) {
@@ -408,7 +422,8 @@ struct ContentView: View {
                 canStartBuild: model.canStartBuild && !model.isProjectOperationInProgress,
                 onCheck: model.check,
                 onRun: model.run,
-                onReplaceFiles: model.replaceProjectFilesFromTerminal
+                onReplaceFiles: model.replaceProjectFilesFromTerminal,
+                onOpenDiagnostic: openDiagnostic
             ) {
                 codeWorkspace
             }
@@ -423,6 +438,7 @@ struct ContentView: View {
                 cursorOffset: $editorCursorOffset,
                 filePath: model.selectedFile,
                 isEditable: !model.isProjectOperationInProgress,
+                navigationTarget: editorNavigationTarget,
                 onRequestCompletion: requestCompletion
             )
 
@@ -476,6 +492,7 @@ struct ContentView: View {
 
     private func selectEditorFile(_ file: String) {
         model.selectFile(file)
+        editorNavigationTarget = nil
         selectedBuildDockTab = .code
         if horizontalSizeClass != .regular {
             withAnimation(.easeOut(duration: 0.18)) {
@@ -621,6 +638,28 @@ struct ContentView: View {
         )
     }
 
+    private func openDiagnostic(_ diagnostic: RustDiagnostic) {
+        guard let span = diagnostic.primarySpan else { return }
+        let diagnosticPath = span.fileName
+        let targetFile = model.fileNames.first(where: { $0 == diagnosticPath })
+            ?? model.fileNames.first(where: {
+                diagnosticPath.hasSuffix("/\($0)") || $0.hasSuffix("/\(diagnosticPath)")
+            })
+            ?? model.selectedFile
+
+        if targetFile != model.selectedFile {
+            model.selectFile(targetFile)
+        }
+        editorNavigationTarget = EditorNavigationTarget(
+            filePath: targetFile,
+            line: span.lineStart,
+            column: span.columnStart
+        )
+        withAnimation(.easeOut(duration: 0.18)) {
+            selectedBuildDockTab = .code
+        }
+    }
+
     private func acceptCompletion() {
         guard let suggestion = completion.suggestion else { return }
         let source = model.source as NSString
@@ -715,6 +754,7 @@ private struct AppHeader: View {
     let toolchain: ToolchainStatus
     let transfer: CompilerViewModel.ProjectTransfer
     let onOpenProjects: () -> Void
+    let onCloseWorkspace: () -> Void
     let onNewProject: () -> Void
     let onOpenFiles: () -> Void
     let onSaveFiles: () -> Void
@@ -741,47 +781,58 @@ private struct AppHeader: View {
 
             Spacer()
 
-            Button(action: onOpenProjects) {
-                Label(horizontalSizeClass == .regular ? "Projects" : "", systemImage: "square.grid.2x2.fill")
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
-                    .frame(minWidth: horizontalSizeClass == .regular ? 88 : 38, minHeight: 34)
-                    .background(CrabrixTheme.raised, in: RoundedRectangle(cornerRadius: 9))
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Open Projects home")
+            if horizontalSizeClass == .regular {
+                Button(action: onOpenProjects) {
+                    Label("Projects", systemImage: "square.grid.2x2.fill")
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .frame(minWidth: 88, minHeight: 34)
+                        .background(CrabrixTheme.raised, in: RoundedRectangle(cornerRadius: 9))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Open Projects home")
 
-            Menu {
-                Button(action: onNewProject) {
-                    Label("New Rust Project", systemImage: "plus")
+                Menu {
+                    Button(action: onNewProject) {
+                        Label("New Rust Project", systemImage: "plus")
+                    }
+                    Button(action: onOpenGitHub) {
+                        Label("Open from GitHub", systemImage: "arrow.down.circle")
+                    }
+                    Button(action: onOpenFiles) {
+                        Label("Open from Files", systemImage: "folder")
+                    }
+                    Button(action: onSaveFiles) {
+                        Label("Save Project to Files", systemImage: "square.and.arrow.down")
+                    }
+                } label: {
+                    if transfer.isWorking {
+                        ProgressView().tint(CrabrixTheme.coral)
+                    } else {
+                        Label("PROJECT", systemImage: "folder.fill")
+                            .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(CrabrixTheme.primary)
+                    }
                 }
-                Button(action: onOpenGitHub) {
-                    Label("Open from GitHub", systemImage: "arrow.down.circle")
-                }
-                Button(action: onOpenFiles) {
-                    Label("Open from Files", systemImage: "folder")
-                }
-                Button(action: onSaveFiles) {
-                    Label("Save Project to Files", systemImage: "square.and.arrow.down")
-                }
-            } label: {
-                if transfer.isWorking {
-                    ProgressView().tint(CrabrixTheme.coral)
-                } else {
-                    Label(horizontalSizeClass == .regular ? "PROJECT" : "", systemImage: "folder.fill")
-                        .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(CrabrixTheme.primary)
-                }
-            }
-            .disabled(transfer.isWorking)
+                .disabled(transfer.isWorking)
 
-            Label(horizontalSizeClass == .regular ? "NO WEBVIEW" : "", systemImage: "swift")
-                .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                .foregroundStyle(CrabrixTheme.mint)
-                .accessibilityLabel("Native SwiftUI")
-            Label(toolchain.isReady ? (horizontalSizeClass == .regular ? "OFFLINE READY" : "") : "MISSING", systemImage: toolchain.isReady ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                .foregroundStyle(toolchain.isReady ? CrabrixTheme.mint : CrabrixTheme.amber)
-                .accessibilityLabel(toolchain.isReady ? "Offline compiler ready" : "Compiler missing")
+                Label("NO WEBVIEW", systemImage: "swift")
+                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(CrabrixTheme.mint)
+                    .accessibilityLabel("Native SwiftUI")
+                Label(toolchain.isReady ? "OFFLINE READY" : "MISSING", systemImage: toolchain.isReady ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(toolchain.isReady ? CrabrixTheme.mint : CrabrixTheme.amber)
+                    .accessibilityLabel(toolchain.isReady ? "Offline compiler ready" : "Compiler missing")
+            } else {
+                Button(action: onCloseWorkspace) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 13, weight: .bold))
+                        .frame(width: 38, height: 38)
+                        .background(CrabrixTheme.raised, in: Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Close editor")
+            }
         }
         .padding(.horizontal, 18)
         .frame(height: 58)
@@ -1098,15 +1149,10 @@ private struct EditorToolbar: View {
     let isProjectSidebarCollapsed: Bool
     let isInspectorCollapsed: Bool
     let canRun: Bool
-    let isCompletionLoading: Bool
     let onSelectFile: (String) -> Void
-    let onLoadRunnable: () -> Void
-    let onLoadDiagnostic: () -> Void
-    let onLoadMultiFile: () -> Void
     let onCheck: () -> Void
     let onRun: () -> Void
     let onCancel: () -> Void
-    let onComplete: () -> Void
     let onToggleProjectSidebar: () -> Void
     let onToggleInspector: () -> Void
 
@@ -1137,6 +1183,7 @@ private struct EditorToolbar: View {
                     title: isProjectSidebarCollapsed ? "Show files" : "Hide files",
                     systemImage: "sidebar.left",
                     isCollapsed: isProjectSidebarCollapsed,
+                    visibleTitle: isProjectSidebarCollapsed ? "Project files" : nil,
                     action: onToggleProjectSidebar
                 )
 
@@ -1159,40 +1206,12 @@ private struct EditorToolbar: View {
                 }
                 .disabled(activity != .idle)
                 Spacer()
-                Button(action: onComplete) {
-                    if isCompletionLoading {
-                        ProgressView().controlSize(.small)
-                    } else {
-                        Label("Complete", systemImage: "sparkles")
-                    }
-                }
-                .buttonStyle(.plain)
-                .font(.caption.bold())
-                .foregroundStyle(CrabrixTheme.blue)
-                .disabled(activity != .idle || isCompletionLoading)
-                .accessibilityHint("Suggest Rust code at the cursor")
-                Menu {
-                    Button(action: onLoadRunnable) {
-                        Label("Runnable stdout demo", systemImage: "play.fill")
-                    }
-                    Button(action: onLoadDiagnostic) {
-                        Label("Borrow error E0502", systemImage: "exclamationmark.triangle.fill")
-                    }
-                    Button(action: onLoadMultiFile) {
-                        Label("Multi-file modules", systemImage: "square.stack.3d.up.fill")
-                    }
-                } label: {
-                    Label("Samples", systemImage: "chevron.down")
-                }
-                .buttonStyle(.plain)
-                .font(.caption)
-                .foregroundStyle(CrabrixTheme.muted)
-                .disabled(activity != .idle)
 
                 PanelToolbarButton(
                     title: isInspectorCollapsed ? "Show inspector" : "Hide inspector",
                     systemImage: "sidebar.right",
                     isCollapsed: isInspectorCollapsed,
+                    visibleTitle: nil,
                     action: onToggleInspector
                 )
             }
@@ -1289,18 +1308,27 @@ private struct PanelToolbarButton: View {
     let title: String
     let systemImage: String
     let isCollapsed: Bool
+    let visibleTitle: String?
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(isCollapsed ? CrabrixTheme.mint : CrabrixTheme.blue)
-                .frame(width: 42, height: 34)
-                .background(
-                    (isCollapsed ? CrabrixTheme.mint : CrabrixTheme.blue).opacity(0.11),
-                    in: RoundedRectangle(cornerRadius: 10)
-                )
+            HStack(spacing: 7) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 16, weight: .bold))
+                if let visibleTitle {
+                    Text(visibleTitle)
+                        .font(.caption.bold())
+                        .lineLimit(1)
+                }
+            }
+            .foregroundStyle(isCollapsed ? CrabrixTheme.mint : CrabrixTheme.blue)
+            .padding(.horizontal, visibleTitle == nil ? 0 : 10)
+            .frame(minWidth: 42, minHeight: 34)
+            .background(
+                (isCollapsed ? CrabrixTheme.mint : CrabrixTheme.blue).opacity(0.11),
+                in: RoundedRectangle(cornerRadius: 10)
+            )
         }
         .buttonStyle(.plain)
         .contentShape(Rectangle())

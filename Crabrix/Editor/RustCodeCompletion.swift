@@ -44,9 +44,16 @@ final class RustCompletionController: ObservableObject {
         let prefix = (source as NSString).substring(to: safeOffset)
         let local = RustLocalCompleter.suggestion(for: prefix)
 
-        guard useAppleIntelligence else {
+        // Known Rust constructs should feel instant even when the on-device model is
+        // enabled. The model remains the fallback for contexts the deterministic
+        // completer does not recognize.
+        if let local {
             suggestion = local
-            message = local == nil ? "Type part of a Rust expression first." : nil
+            return
+        }
+
+        guard useAppleIntelligence else {
+            message = "Type at least two characters of a Rust construct first."
             return
         }
 
@@ -59,16 +66,13 @@ final class RustCompletionController: ObservableObject {
                     do {
                         let completion = try await AppleIntelligenceRustCompleter.complete(prefix: prefix)
                         guard !Task.isCancelled else { return }
-                        self?.suggestion = completion ?? local
-                        self?.message = completion == nil && local == nil
+                        self?.suggestion = completion
+                        self?.message = completion == nil
                             ? "No useful completion was produced."
                             : nil
                     } catch {
                         guard !Task.isCancelled else { return }
-                        self?.suggestion = local
-                        self?.message = local == nil
-                            ? "Apple Intelligence could not complete this code."
-                            : "Using the instant offline fallback."
+                        self?.message = "Apple Intelligence could not complete this code."
                     }
                     self?.isLoading = false
                     self?.requestTask = nil
@@ -82,10 +86,7 @@ final class RustCompletionController: ObservableObject {
         }
         #endif
 
-        suggestion = local
-        message = local == nil
-            ? "Apple Intelligence is unavailable; type part of a Rust expression first."
-            : "Apple Intelligence is unavailable; using the instant offline fallback."
+        message = "Apple Intelligence is unavailable; type at least two characters of a Rust construct."
     }
 
     func dismiss() {
@@ -130,10 +131,6 @@ enum RustLocalCompleter {
 
         let insertion: String?
         switch true {
-        case trimmed.hasSuffix("pri"):
-            insertion = "ntln!(\"Hello, Crabrix!\");"
-        case trimmed.hasSuffix("println"):
-            insertion = "!(\"Hello, Crabrix!\");"
         case trimmed.hasSuffix("fn "):
             insertion = "main() {\n    \n}"
         case trimmed.hasSuffix("let mut "):
@@ -153,7 +150,7 @@ enum RustLocalCompleter {
         case trimmed.hasSuffix("."):
             insertion = "iter()"
         default:
-            insertion = nil
+            insertion = completionForCurrentToken(in: trimmed)
         }
 
         guard let insertion else { return nil }
@@ -162,6 +159,61 @@ enum RustLocalCompleter {
             provider: .local,
             detail: "Deterministic, instant, and fully offline"
         )
+    }
+
+    private static func completionForCurrentToken(in line: String) -> String? {
+        var token = String(
+            line.reversed().prefix { character in
+                character.isLetter
+                    || character.isNumber
+                    || character == "_"
+                    || character == ":"
+                    || character == "."
+            }.reversed()
+        )
+        if let lastDot = token.lastIndex(of: "."), !token.contains("::") {
+            token = String(token[lastDot...])
+        }
+        guard token.count >= 2 else { return nil }
+
+        let candidates = [
+            "println!(\"Hello, Crabrix!\");",
+            "print!(\"{value}\");",
+            "fn main() {\n    \n}",
+            "let mut value = 0;",
+            "match value {\n    Some(value) => value,\n    None => return,\n}",
+            "for item in items.iter() {\n    println!(\"{item:?}\");\n}",
+            "while condition {\n    \n}",
+            "loop {\n    break;\n}",
+            "struct AppState {\n    \n}",
+            "enum Message {\n    \n}",
+            "impl Default for AppState {\n    fn default() -> Self {\n        Self {}\n    }\n}",
+            "pub fn ",
+            "return ",
+            "vec![]",
+            "Vec::new()",
+            "String::new()",
+            "Some(value)",
+            "None",
+            "Ok(value)",
+            "Err(error)",
+            "Result<T, E>",
+            "Option<T>",
+            "std::collections::HashMap",
+            ".iter()",
+            ".iter_mut()",
+            ".into_iter()",
+            ".collect::<Vec<_>>()",
+            ".unwrap_or_default()",
+        ]
+
+        let candidate = candidates.first(where: {
+            $0.hasPrefix(token) && $0.count > token.count
+        }) ?? candidates.first(where: {
+            $0.lowercased().hasPrefix(token.lowercased()) && $0.count > token.count
+        })
+        guard let candidate else { return nil }
+        return String(candidate.dropFirst(token.count))
     }
 }
 

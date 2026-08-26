@@ -9,8 +9,18 @@ final class RustDiagnosticParserTests: XCTestCase {
 
         XCTAssertEqual(diagnostics.count, 1)
         XCTAssertEqual(diagnostics[0].code, "E0502")
+        XCTAssertEqual(diagnostics[0].primarySpan?.fileName, "main.rs")
         XCTAssertEqual(diagnostics[0].primarySpan?.lineStart, 4)
         XCTAssertEqual(diagnostics[0].spans.count, 3)
+    }
+
+    func testKeepsSupportingFilePathForEditorNavigation() throws {
+        let json = #"{"$message_type":"diagnostic","message":"missing item","code":{"code":"E0425"},"level":"error","spans":[{"file_name":"/work/src/greeter.rs","line_start":7,"line_end":7,"column_start":9,"column_end":16,"is_primary":true,"text":[{"text":"missing();"}],"label":"not found"}],"rendered":"error[E0425]"}"#
+
+        let diagnostic = try XCTUnwrap(RustDiagnosticParser.parse(stderr: json).first)
+
+        XCTAssertEqual(diagnostic.primarySpan?.fileName, "src/greeter.rs")
+        XCTAssertEqual(diagnostic.primarySpan?.lineStart, 7)
     }
 
     func testIgnoresSummaryDiagnosticsWithoutSeverity() {

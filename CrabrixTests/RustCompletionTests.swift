@@ -14,4 +14,19 @@ final class RustCompletionTests: XCTestCase {
     func testDoesNotInventCompletionWithoutKnownRustContext() {
         XCTAssertNil(RustLocalCompleter.suggestion(for: "fn main() {\n    value"))
     }
+
+    func testCompletesCommonRustConstructsFromTwoCharacters() {
+        XCTAssertEqual(
+            RustLocalCompleter.suggestion(for: "fn main() {\n    mat")?.insertion,
+            "ch value {\n    Some(value) => value,\n    None => return,\n}"
+        )
+        XCTAssertEqual(
+            RustLocalCompleter.suggestion(for: "fn main() {\n    Vec")?.insertion,
+            "::new()"
+        )
+        XCTAssertEqual(
+            RustLocalCompleter.suggestion(for: "fn main() {\n    items.it")?.insertion,
+            "er()"
+        )
+    }
 }
