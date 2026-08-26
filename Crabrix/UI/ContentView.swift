@@ -503,7 +503,11 @@ struct ContentView: View {
                         onPractice: model.presentPractice
                     )
                 } else {
-                    RuntimeInspector(toolchain: model.toolchain)
+                    RuntimeInspector(
+                        toolchain: model.toolchain,
+                        onCheck: model.check,
+                        onRun: model.run
+                    )
                 }
             }
             .padding(22)
