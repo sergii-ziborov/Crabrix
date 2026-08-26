@@ -19,7 +19,13 @@ final class WasmRustCompiler: @unchecked Sendable {
     private static let toolchainVersion = "artifacts-test-7"
 
     private let bundle: Bundle
-    private let queue = DispatchQueue(label: "com.sergiiziborov.Crabrix.compiler", qos: .userInitiated)
+    // rustc runs synchronously inside the Wasm interpreter. Keep that CPU-heavy work
+    // below the UI's QoS so scrolling, navigation, and animations stay responsive.
+    private let queue = DispatchQueue(
+        label: "com.sergiiziborov.Crabrix.compiler",
+        qos: .utility,
+        autoreleaseFrequency: .workItem
+    )
     private let clock = ContinuousClock()
     private var cachedRustcModule: Module?
     private var cachedEngine: Engine?
@@ -81,6 +87,7 @@ final class WasmRustCompiler: @unchecked Sendable {
     ) async -> CompilationResult {
         await withCheckedContinuation { continuation in
             queue.async { [self] in
+                assert(!Thread.isMainThread, "Bundled rustc must never execute on the UI thread")
                 continuation.resume(
                     returning: execute(
                         action: action,

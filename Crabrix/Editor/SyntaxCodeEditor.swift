@@ -2,7 +2,10 @@ import SwiftUI
 import UIKit
 
 struct SyntaxCodeEditor: UIViewRepresentable {
+    @Environment(\.colorScheme) private var colorScheme
+    @AppStorage("crabrix.editorFontSize") private var editorFontSize = 14.0
     @Binding var text: String
+    @Binding var cursorOffset: Int
     let filePath: String
     let isEditable: Bool
 
@@ -14,10 +17,10 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         let textView = UITextView()
         textView.delegate = context.coordinator
         textView.backgroundColor = UIColor(CrabrixTheme.editor)
-        textView.textColor = .white
+        textView.textColor = UIColor(CrabrixTheme.primary)
         textView.tintColor = UIColor(CrabrixTheme.blue)
-        textView.keyboardAppearance = .dark
-        textView.font = .monospacedSystemFont(ofSize: 14, weight: .regular)
+        textView.keyboardAppearance = colorScheme == .dark ? .dark : .light
+        textView.font = .monospacedSystemFont(ofSize: editorFontSize, weight: .regular)
         textView.textContainerInset = UIEdgeInsets(top: 16, left: 14, bottom: 16, right: 14)
         textView.textContainer.lineFragmentPadding = 0
         textView.alwaysBounceVertical = true
@@ -43,16 +46,21 @@ struct SyntaxCodeEditor: UIViewRepresentable {
     func updateUIView(_ textView: UITextView, context: Context) {
         context.coordinator.parent = self
         textView.isEditable = isEditable
+        textView.backgroundColor = UIColor(CrabrixTheme.editor)
+        textView.textColor = UIColor(CrabrixTheme.primary)
+        textView.keyboardAppearance = colorScheme == .dark ? .dark : .light
+        textView.font = .monospacedSystemFont(ofSize: editorFontSize, weight: .regular)
         if textView.text != text {
-            let selection = textView.selectedRange
             textView.text = text
             textView.selectedRange = NSRange(
-                location: min(selection.location, (text as NSString).length),
+                location: min(cursorOffset, (text as NSString).length),
                 length: 0
             )
         }
         if context.coordinator.highlightedText != text
-            || context.coordinator.highlightedFilePath != filePath {
+            || context.coordinator.highlightedFilePath != filePath
+            || context.coordinator.highlightedFontSize != editorFontSize
+            || context.coordinator.highlightedColorScheme != colorScheme {
             context.coordinator.applyHighlighting(to: textView, filePath: filePath)
         }
     }
@@ -61,6 +69,8 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         var parent: SyntaxCodeEditor
         var highlightedText = ""
         var highlightedFilePath = ""
+        var highlightedFontSize = 0.0
+        var highlightedColorScheme: ColorScheme?
         private var isApplyingHighlight = false
 
         init(parent: SyntaxCodeEditor) {
@@ -70,17 +80,30 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         func textViewDidChange(_ textView: UITextView) {
             guard !isApplyingHighlight else { return }
             parent.text = textView.text
+            parent.cursorOffset = textView.selectedRange.location
             applyHighlighting(to: textView, filePath: parent.filePath)
+        }
+
+        func textViewDidChangeSelection(_ textView: UITextView) {
+            guard !isApplyingHighlight else { return }
+            let offset = textView.selectedRange.location
+            guard parent.cursorOffset != offset else { return }
+            DispatchQueue.main.async { [weak self] in
+                self?.parent.cursorOffset = offset
+            }
         }
 
         func applyHighlighting(to textView: UITextView, filePath: String) {
             let source = textView.text ?? ""
             let fullRange = NSRange(location: 0, length: (source as NSString).length)
             let selection = textView.selectedRange
-            let baseFont = UIFont.monospacedSystemFont(ofSize: 14, weight: .regular)
+            let baseFont = UIFont.monospacedSystemFont(
+                ofSize: parent.editorFontSize,
+                weight: .regular
+            )
             let base: [NSAttributedString.Key: Any] = [
                 .font: baseFont,
-                .foregroundColor: UIColor.white,
+                .foregroundColor: UIColor(CrabrixTheme.primary),
             ]
 
             isApplyingHighlight = true
@@ -100,6 +123,8 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             isApplyingHighlight = false
             highlightedText = source
             highlightedFilePath = filePath
+            highlightedFontSize = parent.editorFontSize
+            highlightedColorScheme = parent.colorScheme
         }
 
         private func color(for kind: SyntaxTokenKind) -> UIColor {

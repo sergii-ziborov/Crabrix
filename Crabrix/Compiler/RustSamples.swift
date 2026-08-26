@@ -59,3 +59,151 @@ enum RustSamples {
     }
     """
 }
+
+struct RustShowcaseProject: Identifiable, Sendable {
+    let id: String
+    let title: String
+    let detail: String
+    let systemImage: String
+    let concepts: [String]
+    let project: CrabrixProject
+}
+
+enum RustShowcaseLibrary {
+    static let projects: [RustShowcaseProject] = [
+        RustShowcaseProject(
+            id: "ferris-pixel-art",
+            title: "Ferris Pixel Art",
+            detail: "Render a crab from strings and iterators",
+            systemImage: "paintpalette.fill",
+            concepts: ["arrays", "iterators", "stdout"],
+            project: CrabrixProject(
+                name: "ferris-pixel-art",
+                files: [
+                    "Cargo.toml": manifest(name: "ferris-pixel-art"),
+                    "src/main.rs": """
+                    fn main() {
+                        let ferris = [
+                            r"        _~^~^~_",
+                            r"    \\) /  o o  \\ (/",
+                            r"      '_   -   _'",
+                            r"      / '-----' \\",
+                            r"     /  /     \\  \\",
+                            r"    /__/       \\__\\",
+                        ];
+
+                        println!("CRABRIX PIXEL LAB\\n");
+                        ferris.iter().for_each(|line| println!("{line}"));
+                        println!("\\n  fearless Rust, one line at a time");
+                    }
+                    """,
+                ],
+                entryFile: "src/main.rs",
+                provenance: nil
+            )
+        ),
+        RustShowcaseProject(
+            id: "orbit-dashboard",
+            title: "Orbit Dashboard",
+            detail: "A terminal UI built from a local module",
+            systemImage: "gauge.with.dots.needle.67percent",
+            concepts: ["modules", "formatting", "functions"],
+            project: CrabrixProject(
+                name: "orbit-dashboard",
+                files: [
+                    "Cargo.toml": manifest(name: "orbit-dashboard"),
+                    "src/main.rs": """
+                    mod ui;
+
+                    fn main() {
+                        println!("╭──── CRABRIX ORBIT CONTROL ────╮");
+                        for (name, value) in [("fuel", 82), ("signal", 67), ("oxygen", 94)] {
+                            println!("│ {:<8} {} {:>3}% │", name, ui::bar(value), value);
+                        }
+                        println!("╰──────── all systems local ────╯");
+                    }
+                    """,
+                    "src/ui.rs": """
+                    pub fn bar(percent: usize) -> String {
+                        let filled = percent / 10;
+                        format!("{}{}", "■".repeat(filled), "·".repeat(10 - filled))
+                    }
+                    """,
+                ],
+                entryFile: "src/main.rs",
+                provenance: nil
+            )
+        ),
+        RustShowcaseProject(
+            id: "constellation-generator",
+            title: "Constellation Generator",
+            detail: "Deterministic generative art with no network",
+            systemImage: "sparkles",
+            concepts: ["algorithms", "String", "loops"],
+            project: CrabrixProject(
+                name: "constellation-generator",
+                files: [
+                    "Cargo.toml": manifest(name: "constellation-generator"),
+                    "src/main.rs": """
+                    fn main() {
+                        let (width, height) = (38_u32, 12_u32);
+                        let mut seed = 0xC0FFEE_u32;
+                        println!("CRABRIX NIGHT SKY");
+                        for _ in 0..height {
+                            let mut row = String::new();
+                            for _ in 0..width {
+                                seed = seed.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+                                row.push(match seed % 29 { 0 => '✦', 1..=3 => '·', _ => ' ' });
+                            }
+                            println!("│{row}│");
+                        }
+                    }
+                    """,
+                ],
+                entryFile: "src/main.rs",
+                provenance: nil
+            )
+        ),
+        RustShowcaseProject(
+            id: "word-lab",
+            title: "Word Lab",
+            detail: "Build a sorted frequency chart with std",
+            systemImage: "chart.bar.xaxis",
+            concepts: ["BTreeMap", "ownership", "collections"],
+            project: CrabrixProject(
+                name: "word-lab",
+                files: [
+                    "Cargo.toml": manifest(name: "word-lab"),
+                    "src/main.rs": """
+                    use std::collections::BTreeMap;
+
+                    fn main() {
+                        let phrase = "rust makes systems fearless rust makes ideas real";
+                        let mut counts = BTreeMap::new();
+                        for word in phrase.split_whitespace() {
+                            *counts.entry(word).or_insert(0) += 1;
+                        }
+                        println!("WORD LAB");
+                        for (word, count) in counts {
+                            println!("{word:>9}  {}", "█".repeat(count));
+                        }
+                    }
+                    """,
+                ],
+                entryFile: "src/main.rs",
+                provenance: nil
+            )
+        ),
+    ]
+
+    private static func manifest(name: String) -> String {
+        """
+        [package]
+        name = "\(name)"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        """
+    }
+}

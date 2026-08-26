@@ -205,6 +205,8 @@ struct DiagnosticInspector: View {
 struct SuccessInspector: View {
     let result: CompilationResult
     let practiceCompleted: Bool
+    let onRunNext: () -> Void
+    let onContinueLearning: () -> Void
 
     private var performanceGateFailed: Bool {
         result.phase == .run && result.duration > .seconds(20)
@@ -222,7 +224,7 @@ struct SuccessInspector: View {
             Text(
                 performanceGateFailed
                     ? "Runs locally — performance gate failed"
-                    : (result.phase == .run ? "The code compiled and ran locally" : "The repair passed rustc")
+                    : (result.phase == .run ? "The code compiled and ran locally" : "The code passed rustc — run it next")
             )
                 .font(.system(size: 28, weight: .bold, design: .rounded))
             Text(result.detail)
@@ -247,9 +249,68 @@ struct SuccessInspector: View {
             .padding(14)
             .crabrixPanel()
 
+            if result.phase == .check {
+                NextWorkflowStep(
+                    eyebrow: "STEP 1 COMPLETE",
+                    title: "Next: Run project",
+                    detail: "Compile the checked code, execute it locally, and inspect real stdout.",
+                    buttonTitle: "Run project",
+                    systemImage: "play.fill",
+                    tint: CrabrixTheme.coral,
+                    action: onRunNext
+                )
+            } else if result.phase == .run {
+                NextWorkflowStep(
+                    eyebrow: "BUILD COMPLETE",
+                    title: "Continue on the Rust path",
+                    detail: "Return to the learning map and choose the next available compiler lab.",
+                    buttonTitle: "Continue learning",
+                    systemImage: "arrow.right",
+                    tint: CrabrixTheme.mint,
+                    action: onContinueLearning
+                )
+            }
+
             Text("This proves compiler integration and configured sandbox bounds. Physical-device peak memory, thermal behavior, and hard-timeout termination remain separate gates.")
                 .font(.caption)
                 .foregroundStyle(CrabrixTheme.amber)
+        }
+    }
+}
+
+private struct NextWorkflowStep: View {
+    let eyebrow: String
+    let title: String
+    let detail: String
+    let buttonTitle: String
+    let systemImage: String
+    let tint: Color
+    let action: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            Text(eyebrow)
+                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .foregroundStyle(tint)
+            Text(title)
+                .font(.headline)
+            Text(detail)
+                .font(.caption)
+                .foregroundStyle(CrabrixTheme.muted)
+            Button(action: action) {
+                Label(buttonTitle, systemImage: systemImage)
+                    .font(.subheadline.bold())
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(tint)
+        }
+        .padding(14)
+        .background(tint.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(tint.opacity(0.28), lineWidth: 1)
         }
     }
 }

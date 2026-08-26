@@ -13,18 +13,29 @@ The app embeds:
 - a pinned WASI build of `rustc` and its `wasm32-wasip1` sysroot from [Weblings / wasm-rustc](https://github.com/AngelOnFira/wasm-rustc/releases/tag/artifacts-test-7);
 - structured `rustc` JSON diagnostic parsing for the E0502 experiment;
 - local execution of the Wasm program emitted by the bundled compiler;
-- an adaptive native `Projects / Build / Learn` navigation shell (top tab/sidebar on iPad, bottom tab bar on iPhone);
+- an adaptive native `Projects / Build / Learn / Settings` navigation shell (top tab/sidebar on iPad, bottom tab bar on iPhone);
 - an editable `UITextView` code editor with Rust and Cargo TOML syntax highlighting;
-- a parsed Cargo project layout with `Cargo.toml`, `src/main.rs`, and sibling modules;
+- a parsed Cargo project layout with `Cargo.toml`, `src/main.rs`, sibling modules, colored file-type icons, and native file/folder creation;
 - Files/Working Copy folder import, `.crabrixproject` package export, and a persistent recent-project library with last-build status;
 - bounded public GitHub snapshot import for repository and branch URLs, Cargo-root discovery, and stored source provenance;
 - an iOS Share Extension that queues GitHub URLs through an App Group and never tries to foreground the host app;
-- a Duolingo-style native Rust journey map with five colorful chapters, 20 mapped lessons, progress states, and three live compiler-backed labs;
+- a course hub for Basics, Ownership, advanced Cargo projects, and interview preparation, followed by visual lesson journeys and live compiler-backed labs;
+- quick practice that covers answer selection, concept matching, and drag-to-arrange code without forcing every lesson into the editor;
+- four fully offline example projects for pixel art, a terminal dashboard, generative constellations, and collection practice;
+- draggable/collapsible project and diagnostic panels on iPad, plus live build state on both the workspace and project library;
+- a review-before-insert Rust completion action: deterministic offline suggestions everywhere and optional Apple Foundation Models completion on eligible iOS 26+ devices;
+- Auto, Light, and Dark themes, adjustable editor text, build keep-awake control, and a basic Cargo dependency editor;
 - a bounded guest runtime with 64 MiB linear-memory and table-growth limits, `/sandbox` as the only writable preopen, and no network imports.
 
 The toolchain is downloaded **at build time**, verified by SHA-256, and copied into the app bundle. The running app never downloads compiler components.
 
 GitHub import is an explicit user action and is the only current runtime network path. It downloads a public ZIP snapshot without requiring a GitHub login. Archives are rejected when they contain traversal paths, symlinks, too many entries, or exceed the compressed/expanded size limits. Imported programs still execute in the network-free Wasm sandbox.
+
+Apple Intelligence completion is also local and optional. Crabrix checks
+`SystemLanguageModel.availability` at runtime and falls back to its small,
+deterministic Rust completion table when the system model, supported hardware,
+or Apple Intelligence setting is unavailable. Suggested text is never inserted
+without an explicit user action.
 
 The Share Extension and host app use `group.com.sergiiziborov.Crabrix`. A signing team must register that App Group before installing this target on a physical device.
 
@@ -91,6 +102,12 @@ The current memory limiter uses WasmKit's narrow `Fuzzing` SPI because the
 public `ResourceLimiter` protocol is exposed while `Store.resourceLimiter` is
 still SPI. This is tracked as a dependency-integration debt, not hidden as a
 production-stable API.
+
+The current Stop button immediately releases the app UI, ignores the stale
+compiler result, and reports sandbox cleanup. WasmKit 0.3.1 does not expose a
+safe hard-interruption/fuel API for an already-running interpreter, so Crabrix
+does not start a second compiler job until that worker has drained. A true
+hard-timeout remains part of the physical-device gate.
 
 These numbers prove the native integration path, not physical-device performance.
 

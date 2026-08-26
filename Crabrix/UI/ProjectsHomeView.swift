@@ -4,6 +4,8 @@ struct ProjectsHomeView: View {
     let projectName: String
     let fileCount: Int
     let lastBuild: ProjectBuildRecord?
+    let activity: CompilerViewModel.Activity
+    let isCompilerDraining: Bool
     let recentProjects: [ProjectLibraryItem]
     let onNewProject: () -> Void
     let onOpenGitHub: () -> Void
@@ -13,6 +15,7 @@ struct ProjectsHomeView: View {
     let onOpenRunnableSample: () -> Void
     let onOpenBorrowSample: () -> Void
     let onOpenModulesSample: () -> Void
+    let onOpenShowcase: (String) -> Void
 
     private let columns = [GridItem(.adaptive(minimum: 210), spacing: 14)]
 
@@ -37,19 +40,30 @@ struct ProjectsHomeView: View {
                         action: onOpenGitHub
                     )
                     ProjectActionCard(
-                        title: "Open from Files",
-                        detail: "Use Files or a Working Copy folder",
-                        systemImage: "folder.fill",
+                        title: "iCloud Drive / Files",
+                        detail: "Open a folder from Apple's document picker",
+                        systemImage: "icloud.and.arrow.down.fill",
                         tint: CrabrixTheme.mint,
                         action: onOpenFiles
                     )
                     ProjectActionCard(
-                        title: "Save Project",
-                        detail: "Export editable files as a Crabrix package",
+                        title: "Save to Files / iCloud",
+                        detail: "Export an editable Crabrix project package",
                         systemImage: "square.and.arrow.down.fill",
                         tint: CrabrixTheme.amber,
                         action: onSaveProject
                     )
+                }
+
+                sectionTitle("Project Library", detail: "Pythonista-style examples that build fully offline")
+                LazyVGrid(columns: columns, spacing: 12) {
+                    ForEach(Array(RustShowcaseLibrary.projects.enumerated()), id: \.element.id) { index, showcase in
+                        ShowcaseProjectCard(
+                            project: showcase,
+                            tint: [CrabrixTheme.coral, CrabrixTheme.blue, CrabrixTheme.mint, CrabrixTheme.amber][index % 4],
+                            action: { onOpenShowcase(showcase.id) }
+                        )
+                    }
                 }
 
                 sectionTitle("Recent Projects", detail: "Stored locally on this device")
@@ -63,7 +77,11 @@ struct ProjectsHomeView: View {
                     LazyVStack(spacing: 10) {
                         ForEach(recentProjects) { item in
                             Button { onOpenRecent(item.id) } label: {
-                                RecentProjectRow(item: item)
+                                RecentProjectRow(
+                                    item: item,
+                                    activity: item.project.name == projectName ? activity : .idle,
+                                    isCompilerDraining: item.project.name == projectName && isCompilerDraining
+                                )
                             }
                             .buttonStyle(.plain)
                         }
@@ -97,7 +115,7 @@ struct ProjectsHomeView: View {
             .frame(maxWidth: .infinity)
         }
         .background(CrabrixTheme.background.ignoresSafeArea())
-        .foregroundStyle(.white)
+        .foregroundStyle(CrabrixTheme.primary)
     }
 
     private var brandHeader: some View {
@@ -132,7 +150,11 @@ struct ProjectsHomeView: View {
                     .foregroundStyle(CrabrixTheme.muted)
             }
             Spacer()
-            BuildStatusBadge(record: lastBuild)
+            BuildStatusBadge(
+                record: lastBuild,
+                activity: activity,
+                isCompilerDraining: isCompilerDraining
+            )
         }
         .padding(20)
         .background(
@@ -169,7 +191,7 @@ private struct ProjectActionCard: View {
                     .foregroundStyle(tint)
                     .frame(width: 34)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(title).font(.subheadline.bold()).foregroundStyle(.white)
+                    Text(title).font(.subheadline.bold()).foregroundStyle(CrabrixTheme.primary)
                     Text(detail).font(.caption2).foregroundStyle(CrabrixTheme.muted)
                 }
                 Spacer()
@@ -185,6 +207,8 @@ private struct ProjectActionCard: View {
 
 private struct RecentProjectRow: View {
     let item: ProjectLibraryItem
+    let activity: CompilerViewModel.Activity
+    let isCompilerDraining: Bool
 
     var body: some View {
         HStack(spacing: 12) {
@@ -194,13 +218,18 @@ private struct RecentProjectRow: View {
                                  ? CrabrixTheme.blue : CrabrixTheme.mint)
                 .frame(width: 28)
             VStack(alignment: .leading, spacing: 3) {
-                Text(item.project.name).font(.subheadline.bold()).foregroundStyle(.white)
+                Text(item.project.name).font(.subheadline.bold()).foregroundStyle(CrabrixTheme.primary)
                 Text("\(item.project.files.count) files · \(item.project.rustFileCount) Rust")
                     .font(.caption2.monospaced())
                     .foregroundStyle(CrabrixTheme.muted)
             }
             Spacer()
-            BuildStatusBadge(record: item.lastBuild, compact: true)
+            BuildStatusBadge(
+                record: item.lastBuild,
+                compact: true,
+                activity: activity,
+                isCompilerDraining: isCompilerDraining
+            )
             Image(systemName: "chevron.right").foregroundStyle(CrabrixTheme.muted)
         }
         .padding(14)
@@ -211,9 +240,25 @@ private struct RecentProjectRow: View {
 private struct BuildStatusBadge: View {
     let record: ProjectBuildRecord?
     var compact = false
+    var activity: CompilerViewModel.Activity = .idle
+    var isCompilerDraining = false
 
     var body: some View {
-        if let record {
+        if activity != .idle {
+            HStack(spacing: 7) {
+                ProgressView().controlSize(.small).tint(CrabrixTheme.blue)
+                Text(activity == .checking ? "Checking…" : "Building…")
+            }
+            .font((compact ? Font.caption2 : Font.caption).monospaced().bold())
+            .foregroundStyle(CrabrixTheme.blue)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(CrabrixTheme.blue.opacity(0.1), in: Capsule())
+        } else if isCompilerDraining {
+            Label("Stopping…", systemImage: "stop.circle.fill")
+                .font((compact ? Font.caption2 : Font.caption).monospaced().bold())
+                .foregroundStyle(CrabrixTheme.amber)
+        } else if let record {
             Label(
                 compact ? (record.succeeded ? "Passed" : "Failed")
                     : "Last \(record.phase.rawValue): \(record.succeeded ? "passed" : "failed")",
@@ -243,12 +288,65 @@ private struct SampleProjectCard: View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 9) {
                 Image(systemName: icon).foregroundStyle(CrabrixTheme.coral)
-                Text(title).font(.subheadline.bold()).foregroundStyle(.white)
+                Text(title).font(.subheadline.bold()).foregroundStyle(CrabrixTheme.primary)
                 Text(detail).font(.caption2.monospaced()).foregroundStyle(CrabrixTheme.muted)
             }
             .padding(15)
             .frame(maxWidth: .infinity, minHeight: 112, alignment: .leading)
             .crabrixPanel()
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct ShowcaseProjectCard: View {
+    let project: RustShowcaseProject
+    let tint: Color
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Image(systemName: project.systemImage)
+                        .font(.title2)
+                        .foregroundStyle(tint)
+                        .frame(width: 42, height: 42)
+                        .background(tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 12))
+                    Spacer()
+                    Label("OPEN", systemImage: "arrow.up.right")
+                        .font(.caption2.monospaced().bold())
+                        .foregroundStyle(tint)
+                }
+                Text(project.title)
+                    .font(.headline)
+                    .foregroundStyle(CrabrixTheme.primary)
+                Text(project.detail)
+                    .font(.caption)
+                    .foregroundStyle(CrabrixTheme.muted)
+                    .lineLimit(2)
+                HStack(spacing: 5) {
+                    ForEach(project.concepts.prefix(3), id: \.self) { concept in
+                        Text(concept)
+                            .font(.system(size: 8, weight: .bold, design: .monospaced))
+                            .foregroundStyle(tint)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 4)
+                            .background(tint.opacity(0.1), in: Capsule())
+                    }
+                }
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, minHeight: 168, alignment: .leading)
+            .background(
+                LinearGradient(
+                    colors: [tint.opacity(0.08), CrabrixTheme.panel],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay { RoundedRectangle(cornerRadius: 16).stroke(tint.opacity(0.25)) }
         }
         .buttonStyle(.plain)
     }

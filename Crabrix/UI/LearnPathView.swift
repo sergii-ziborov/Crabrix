@@ -1,12 +1,14 @@
 import SwiftUI
 
 struct LearnPathView: View {
+    let units: [RustLearningUnit]
+    let courseTitle: String
     let completedStages: Set<CompilerViewModel.Stage>
     let practiceCompleted: Bool
     let onOpenLesson: (RustLesson) -> Void
 
     private var completedLessonCount: Int {
-        RustLearningPath.units
+        units
             .flatMap(\.lessons)
             .filter(isCompleted)
             .count
@@ -17,10 +19,10 @@ struct LearnPathView: View {
             LazyVStack(spacing: 30) {
                 LearningHero(
                     completedLessonCount: completedLessonCount,
-                    totalLessonCount: RustLearningPath.units.flatMap(\.lessons).count
+                    totalLessonCount: units.flatMap(\.lessons).count
                 )
 
-                ForEach(RustLearningPath.units) { unit in
+                ForEach(units) { unit in
                     LearningUnitMap(
                         unit: unit,
                         completedStages: completedStages,
@@ -47,8 +49,8 @@ struct LearnPathView: View {
                 .ignoresSafeArea()
             }
         }
-        .foregroundStyle(.white)
-        .navigationTitle("Learn Rust")
+        .foregroundStyle(CrabrixTheme.primary)
+        .navigationTitle(courseTitle)
     }
 
     private func isCompleted(_ lesson: RustLesson) -> Bool {
@@ -86,7 +88,7 @@ private struct LearningHero: View {
 
                     Text("Follow the map from your first compile to real Cargo projects. Live labs are verified by the compiler inside Crabrix.")
                         .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.72))
+                        .foregroundStyle(CrabrixTheme.muted)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -94,7 +96,7 @@ private struct LearningHero: View {
 
                 ZStack {
                     Circle()
-                        .stroke(.white.opacity(0.12), lineWidth: 8)
+                        .stroke(CrabrixTheme.border, lineWidth: 8)
                     Circle()
                         .trim(from: 0, to: max(progress, 0.025))
                         .stroke(
@@ -110,7 +112,7 @@ private struct LearningHero: View {
                             .font(.title2.monospaced().bold())
                         Text("of \(totalLessonCount)")
                             .font(.caption2.monospaced())
-                            .foregroundStyle(.white.opacity(0.62))
+                            .foregroundStyle(CrabrixTheme.muted)
                     }
                 }
                 .frame(width: 88, height: 88)
@@ -145,7 +147,7 @@ private struct LearningHero: View {
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(.white.opacity(0.12), lineWidth: 1)
+                .stroke(CrabrixTheme.border, lineWidth: 1)
         }
     }
 }
@@ -168,7 +170,7 @@ private struct JourneyMetric: View {
                     .font(.caption.monospaced().bold())
                 Text(label)
                     .font(.caption2)
-                    .foregroundStyle(.white.opacity(0.58))
+                    .foregroundStyle(CrabrixTheme.muted)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -290,12 +292,12 @@ private struct UnitBanner: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("CHAPTER \(unit.level)")
                     .font(.caption2.monospaced().bold())
-                    .foregroundStyle(.white.opacity(0.72))
+                    .foregroundStyle(CrabrixTheme.primary.opacity(0.72))
                 Text(unit.title)
                     .font(.title3.bold())
                 Text(unit.subtitle)
                     .font(.caption)
-                    .foregroundStyle(.white.opacity(0.70))
+                    .foregroundStyle(CrabrixTheme.primary.opacity(0.70))
                     .lineLimit(2)
             }
 
@@ -420,7 +422,7 @@ private struct LessonMapNode: View {
                 .frame(width: 68, height: 68)
                 .overlay {
                     Circle()
-                        .stroke(.white.opacity(state == .locked ? 0.08 : 0.25), lineWidth: 1)
+                        .stroke(CrabrixTheme.primary.opacity(state == .locked ? 0.08 : 0.25), lineWidth: 1)
                 }
                 .shadow(color: nodeShadow, radius: state == .ready ? 14 : 4, y: 6)
 
@@ -440,14 +442,14 @@ private struct LessonMapNode: View {
                     .foregroundStyle(state.tint(palette: palette))
                 Text(lesson.title)
                     .font(.subheadline.bold())
-                    .foregroundStyle(.white.opacity(state == .locked ? 0.52 : 1))
+                    .foregroundStyle(CrabrixTheme.primary.opacity(state == .locked ? 0.52 : 1))
                     .lineLimit(1)
                 if labelToRight { Spacer(minLength: 0) }
             }
 
             Text(lesson.concept)
                 .font(.caption)
-                .foregroundStyle(.white.opacity(state == .locked ? 0.34 : 0.58))
+                .foregroundStyle(CrabrixTheme.primary.opacity(state == .locked ? 0.34 : 0.58))
                 .multilineTextAlignment(labelToRight ? .leading : .trailing)
                 .lineLimit(2)
 

@@ -68,14 +68,13 @@ struct PracticeSheet: View {
             }
             .padding(20)
             .background(CrabrixTheme.panel.ignoresSafeArea())
-            .foregroundStyle(.white)
+            .foregroundStyle(CrabrixTheme.primary)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
                 }
             }
         }
-        .preferredColorScheme(.dark)
     }
 
     private func check() async {
