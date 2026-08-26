@@ -17,6 +17,20 @@ enum RustSamples {
     }
     """
 
+    static let multiFileMain = """
+    mod greeter;
+
+    fn main() {
+        println!("{}", greeter::message());
+    }
+    """
+
+    static let multiFileGreeter = """
+    pub fn message() -> &'static str {
+        "hello from two Rust files"
+    }
+    """
+
     static let practice = """
     fn main() {
         let mut names = vec!["Ada", "Linus"];

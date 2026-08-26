@@ -36,6 +36,9 @@ final class CompilerViewModel: ObservableObject {
     }
 
     @Published var source = RustSamples.runnable
+    @Published private(set) var projectName = "hello-crabrix"
+    @Published private(set) var fileNames = ["main.rs"]
+    @Published private(set) var selectedFile = "main.rs"
     @Published private(set) var activity: Activity = .idle
     @Published private(set) var result: CompilationResult?
     @Published private(set) var toolchain: ToolchainStatus
@@ -45,6 +48,7 @@ final class CompilerViewModel: ObservableObject {
 
     private let compiler: WasmRustCompiler
     private var lastDiagnostic: RustDiagnostic?
+    private var fileContents = ["main.rs": RustSamples.runnable]
 
     init(compiler: WasmRustCompiler = WasmRustCompiler()) {
         self.compiler = compiler
@@ -58,9 +62,12 @@ final class CompilerViewModel: ObservableObject {
         guard !isBusy, toolchain.isReady else { return }
         activity = .checking
         result = nil
-        let currentSource = source
+        let project = projectSnapshot()
         Task {
-            let value = await compiler.check(source: currentSource)
+            let value = await compiler.check(
+                source: project.main,
+                supportingFiles: project.supporting
+            )
             finish(value)
         }
     }
@@ -69,24 +76,50 @@ final class CompilerViewModel: ObservableObject {
         guard !isBusy, toolchain.isReady else { return }
         activity = .running
         result = nil
-        let currentSource = source
+        let project = projectSnapshot()
         Task {
-            let value = await compiler.run(source: currentSource)
+            let value = await compiler.run(
+                source: project.main,
+                supportingFiles: project.supporting
+            )
             finish(value)
         }
     }
 
     func loadRunnableSample() {
-        loadSample(RustSamples.runnable)
+        loadProject(name: "hello-crabrix", files: ["main.rs": RustSamples.runnable])
     }
 
     func loadBorrowDiagnosticSample() {
-        loadSample(RustSamples.broken)
+        loadProject(name: "borrow-lab", files: ["main.rs": RustSamples.broken])
     }
 
-    private func loadSample(_ sample: String) {
+    func loadMultiFileSample() {
+        loadProject(
+            name: "modules-lab",
+            files: [
+                "main.rs": RustSamples.multiFileMain,
+                "greeter.rs": RustSamples.multiFileGreeter,
+            ]
+        )
+    }
+
+    func selectFile(_ name: String) {
+        guard !isBusy, name != selectedFile, fileContents[name] != nil else { return }
+        fileContents[selectedFile] = source
+        selectedFile = name
+        source = fileContents[name] ?? ""
+    }
+
+    private func loadProject(name: String, files: [String: String]) {
         guard !isBusy else { return }
-        source = sample
+        projectName = name
+        fileContents = files
+        fileNames = files.keys.sorted { lhs, rhs in
+            lhs == "main.rs" || (rhs != "main.rs" && lhs < rhs)
+        }
+        selectedFile = "main.rs"
+        source = files["main.rs"] ?? ""
         result = nil
         lastDiagnostic = nil
         completedStages = []
@@ -94,7 +127,8 @@ final class CompilerViewModel: ObservableObject {
     }
 
     func applyRepair() {
-        guard let diagnostic = primaryDiagnostic,
+        guard selectedFile == "main.rs",
+              let diagnostic = primaryDiagnostic,
               let repaired = BorrowRepair.apply(to: source, diagnostic: diagnostic)
         else {
             return
@@ -116,6 +150,13 @@ final class CompilerViewModel: ObservableObject {
             completedStages.insert(.practice)
         }
         return value
+    }
+
+    private func projectSnapshot() -> (main: String, supporting: [String: String]) {
+        var files = fileContents
+        files[selectedFile] = source
+        let main = files.removeValue(forKey: "main.rs") ?? ""
+        return (main, files)
     }
 
     private func finish(_ value: CompilationResult) {

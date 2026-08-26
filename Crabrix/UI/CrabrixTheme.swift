@@ -12,6 +12,16 @@ enum CrabrixTheme {
     static let amber = Color(red: 0.95, green: 0.72, blue: 0.34)
 }
 
+enum CrabrixBuildInfo {
+    #if DEBUG
+    static let runTiming = "Debug builds can take about one minute. The normal Xcode Run scheme uses optimized Release."
+    static let checkTiming = "A Debug check usually takes 15–20 seconds."
+    #else
+    static let runTiming = "The optimized local build usually completes in a few seconds."
+    static let checkTiming = "The optimized local check usually completes in a few seconds."
+    #endif
+}
+
 extension View {
     func crabrixPanel(cornerRadius: CGFloat = 12) -> some View {
         background(CrabrixTheme.panel)

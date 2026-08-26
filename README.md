@@ -59,10 +59,14 @@ DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
 
 Measured on the iPad Pro 13-inch (M5) Simulator used for this spike:
 
-- structured E0502 check: 16.1 seconds;
-- compile, link, run the repaired borrow sample, and capture `stdout = crab`: 51.5 seconds;
+- optimized Release multi-file compile/run with safe token threading: 3.3 seconds;
+- unoptimized Debug compile/run: approximately 50–59 seconds;
 - unsigned ARM64 `iphoneos` build: succeeds.
 - uncompressed Simulator `.app` bundle: approximately 160 MB (152 MB toolchain payload).
+
+WasmKit 0.3.1's direct-threaded interpreter crashed in an optimized iOS
+Simulator build while running the bundled `rustc` module. Crabrix explicitly
+uses WasmKit's token-threaded fallback, which passed the Release multi-file gate.
 
 These numbers prove the native integration path, not physical-device performance.
 

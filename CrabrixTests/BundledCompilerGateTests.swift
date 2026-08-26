@@ -34,4 +34,25 @@ final class BundledCompilerGateTests: XCTestCase {
         )
         XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "crab")
     }
+
+    func testBundledRustcCompilesMultiFileProject() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
+            throw XCTSkip("Run the CrabrixCompilerGate scheme for the expensive multi-file gate.")
+        }
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        let result = await compiler.run(
+            source: RustSamples.multiFileMain,
+            supportingFiles: ["greeter.rs": RustSamples.multiFileGreeter]
+        )
+
+        XCTAssertTrue(
+            result.succeeded,
+            "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)"
+        )
+        XCTAssertEqual(
+            result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+            "hello from two Rust files"
+        )
+    }
 }

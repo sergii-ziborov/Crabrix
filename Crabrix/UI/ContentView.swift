@@ -15,7 +15,12 @@ struct ContentView: View {
 
                 if horizontalSizeClass == .regular {
                     HStack(spacing: 0) {
-                        ProjectSidebar()
+                        ProjectSidebar(
+                            projectName: model.projectName,
+                            files: model.fileNames,
+                            selectedFile: model.selectedFile,
+                            onSelect: model.selectFile
+                        )
                             .frame(width: 210)
                         Divider().overlay(CrabrixTheme.border)
                         editorPane
@@ -47,7 +52,13 @@ struct ContentView: View {
             .presentationDragIndicator(.visible)
         }
         .task {
-            if ProcessInfo.processInfo.arguments.contains("--crabrix-auto-check") {
+            let arguments = ProcessInfo.processInfo.arguments
+            if arguments.contains("--crabrix-auto-multifile") {
+                model.loadMultiFileSample()
+            }
+            if arguments.contains("--crabrix-auto-run") {
+                model.run()
+            } else if arguments.contains("--crabrix-auto-check") {
                 model.check()
             }
         }
@@ -57,9 +68,11 @@ struct ContentView: View {
         VStack(spacing: 0) {
             EditorToolbar(
                 activity: model.activity,
+                selectedFile: model.selectedFile,
                 canRun: model.toolchain.isReady && !model.isBusy,
                 onLoadRunnable: model.loadRunnableSample,
                 onLoadDiagnostic: model.loadBorrowDiagnosticSample,
+                onLoadMultiFile: model.loadMultiFileSample,
                 onCheck: model.check,
                 onRun: model.run
             )
@@ -86,8 +99,8 @@ struct ContentView: View {
                             Text(model.activity.label)
                                 .font(.caption.monospaced())
                             Text(model.activity == .running
-                                 ? "First local run takes about one minute. Keep Crabrix open."
-                                 : "The first local check usually takes 15–20 seconds.")
+                                 ? CrabrixBuildInfo.runTiming
+                                 : CrabrixBuildInfo.checkTiming)
                                 .font(.caption2)
                                 .foregroundStyle(CrabrixTheme.muted)
                         }
@@ -143,9 +156,12 @@ private struct AppHeader: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: "ant.fill")
-                .font(.title2)
-                .foregroundStyle(CrabrixTheme.coral)
+            Image("CrabrixMark")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 30, height: 30)
+                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                .accessibilityLabel("Crabrix crab")
             Text("crabrix")
                 .font(.system(size: 21, weight: .bold, design: .rounded))
             if horizontalSizeClass == .regular {
@@ -206,25 +222,37 @@ private struct StageStrip: View {
 }
 
 private struct ProjectSidebar: View {
+    let projectName: String
+    let files: [String]
+    let selectedFile: String
+    let onSelect: (String) -> Void
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("PROJECT")
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
                 .foregroundStyle(CrabrixTheme.muted)
                 .padding(.bottom, 6)
-            Label("phase0-lab", systemImage: "chevron.down")
+            Label(projectName, systemImage: "chevron.down")
                 .font(.subheadline.weight(.semibold))
             Label("src", systemImage: "chevron.down")
                 .font(.caption)
                 .padding(.leading, 12)
-            Label("main.rs", systemImage: "doc.text.fill")
-                .font(.system(size: 12, design: .monospaced))
-                .foregroundStyle(.white)
-                .padding(8)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(CrabrixTheme.raised)
-                .clipShape(RoundedRectangle(cornerRadius: 7))
+            ForEach(files, id: \.self) { file in
+                Button {
+                    onSelect(file)
+                } label: {
+                    Label(file, systemImage: "doc.text.fill")
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundStyle(.white)
+                        .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(file == selectedFile ? CrabrixTheme.raised : .clear)
+                        .clipShape(RoundedRectangle(cornerRadius: 7))
+                }
+                .buttonStyle(.plain)
                 .padding(.leading, 24)
+            }
 
             Spacer()
 
@@ -246,15 +274,17 @@ private struct ProjectSidebar: View {
 
 private struct EditorToolbar: View {
     let activity: CompilerViewModel.Activity
+    let selectedFile: String
     let canRun: Bool
     let onLoadRunnable: () -> Void
     let onLoadDiagnostic: () -> Void
+    let onLoadMultiFile: () -> Void
     let onCheck: () -> Void
     let onRun: () -> Void
 
     var body: some View {
         HStack(spacing: 8) {
-            Label("main.rs", systemImage: "doc.plaintext")
+            Label(selectedFile, systemImage: "doc.plaintext")
                 .font(.system(size: 11, weight: .medium, design: .monospaced))
                 .foregroundStyle(.white)
             Spacer()
@@ -264,6 +294,9 @@ private struct EditorToolbar: View {
                 }
                 Button(action: onLoadDiagnostic) {
                     Label("Borrow error E0502", systemImage: "exclamationmark.triangle.fill")
+                }
+                Button(action: onLoadMultiFile) {
+                    Label("Multi-file modules", systemImage: "square.stack.3d.up.fill")
                 }
             } label: {
                 Label("Samples", systemImage: "chevron.down")

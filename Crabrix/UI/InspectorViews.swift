@@ -24,7 +24,7 @@ struct RuntimeInspector: View {
                 Label("START HERE", systemImage: "play.circle.fill")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(CrabrixTheme.mint)
-                Text("Tap Run. The first local build takes about one minute. Choose Samples → Borrow error E0502 when you want to test diagnostics.")
+                Text("Tap Run. \(CrabrixBuildInfo.runTiming) Choose Samples → Borrow error E0502 or Multi-file modules for the other compiler gates.")
                     .font(.caption)
                     .foregroundStyle(CrabrixTheme.muted)
             }
@@ -200,16 +200,24 @@ struct SuccessInspector: View {
     let result: CompilationResult
     let practiceCompleted: Bool
 
+    private var performanceGateFailed: Bool {
+        result.phase == .run && result.duration > .seconds(20)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Image(systemName: "checkmark.seal.fill")
+            Image(systemName: performanceGateFailed ? "exclamationmark.triangle.fill" : "checkmark.seal.fill")
                 .font(.system(size: 44))
-                .foregroundStyle(CrabrixTheme.mint)
+                .foregroundStyle(performanceGateFailed ? CrabrixTheme.amber : CrabrixTheme.mint)
 
             Text("COMPILER EVIDENCE")
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
                 .foregroundStyle(CrabrixTheme.coral)
-            Text(result.phase == .run ? "The code compiled and ran locally" : "The repair passed rustc")
+            Text(
+                performanceGateFailed
+                    ? "Runs locally — performance gate failed"
+                    : (result.phase == .run ? "The code compiled and ran locally" : "The repair passed rustc")
+            )
                 .font(.system(size: 28, weight: .bold, design: .rounded))
             Text(result.detail)
                 .font(.subheadline)
@@ -220,6 +228,9 @@ struct SuccessInspector: View {
                 EvidenceRow(label: "Network", value: "Not used")
                 EvidenceRow(label: "Exit", value: "\(result.exitCode ?? 0)")
                 EvidenceRow(label: "Elapsed", value: result.duration.crabrixDescription)
+                if performanceGateFailed {
+                    EvidenceRow(label: "Performance", value: "Needs optimization · target ≤ 20 s")
+                }
                 if !result.stdout.isEmpty {
                     EvidenceRow(label: "stdout", value: result.stdout.trimmingCharacters(in: .whitespacesAndNewlines))
                 }

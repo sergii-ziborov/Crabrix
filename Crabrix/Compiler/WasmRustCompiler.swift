@@ -47,18 +47,28 @@ final class WasmRustCompiler: @unchecked Sendable {
         )
     }
 
-    func check(source: String) async -> CompilationResult {
-        await perform(action: .check, source: source)
+    func check(source: String, supportingFiles: [String: String] = [:]) async -> CompilationResult {
+        await perform(action: .check, source: source, supportingFiles: supportingFiles)
     }
 
-    func run(source: String) async -> CompilationResult {
-        await perform(action: .run, source: source)
+    func run(source: String, supportingFiles: [String: String] = [:]) async -> CompilationResult {
+        await perform(action: .run, source: source, supportingFiles: supportingFiles)
     }
 
-    private func perform(action: Action, source: String) async -> CompilationResult {
+    private func perform(
+        action: Action,
+        source: String,
+        supportingFiles: [String: String]
+    ) async -> CompilationResult {
         await withCheckedContinuation { continuation in
             queue.async { [self] in
-                continuation.resume(returning: execute(action: action, source: source))
+                continuation.resume(
+                    returning: execute(
+                        action: action,
+                        source: source,
+                        supportingFiles: supportingFiles
+                    )
+                )
             }
         }
     }
@@ -87,7 +97,11 @@ final class WasmRustCompiler: @unchecked Sendable {
         return url
     }
 
-    private func execute(action: Action, source: String) -> CompilationResult {
+    private func execute(
+        action: Action,
+        source: String,
+        supportingFiles: [String: String]
+    ) -> CompilationResult {
         let started = clock.now
         guard let rustcURL, let sysrootURL else {
             return .failure(phase: .setup, detail: "Bundled Rust toolchain is missing.")
@@ -104,6 +118,27 @@ final class WasmRustCompiler: @unchecked Sendable {
             try fileManager.createDirectory(at: workURL, withIntermediateDirectories: true)
             try fileManager.createDirectory(at: tempURL, withIntermediateDirectories: true)
             try Data(source.utf8).write(to: workURL.appendingPathComponent("main.rs"), options: .atomic)
+            for (relativePath, contents) in supportingFiles {
+                let components = relativePath.split(separator: "/", omittingEmptySubsequences: false)
+                guard !relativePath.hasPrefix("/"),
+                      !components.isEmpty,
+                      components.allSatisfy({ !$0.isEmpty && $0 != "." && $0 != ".." })
+                else {
+                    return .failure(
+                        phase: .setup,
+                        detail: "Invalid project path: \(relativePath)",
+                        duration: started.duration(to: clock.now)
+                    )
+                }
+                let fileURL = components.reduce(workURL) { partial, component in
+                    partial.appendingPathComponent(String(component))
+                }
+                try fileManager.createDirectory(
+                    at: fileURL.deletingLastPathComponent(),
+                    withIntermediateDirectories: true
+                )
+                try Data(contents.utf8).write(to: fileURL, options: .atomic)
+            }
         } catch {
             return .failure(
                 phase: .setup,
@@ -258,6 +293,11 @@ final class WasmRustCompiler: @unchecked Sendable {
     private func engine() -> Engine {
         if let cachedEngine { return cachedEngine }
         let configuration = EngineConfiguration(
+            // WasmKit 0.3.1's direct-threaded interpreter crashes in optimized
+            // iOS Simulator builds while executing the bundled rustc module.
+            // Token threading is the supported fallback and remains stable in
+            // both Debug and Release configurations.
+            threadingModel: .token,
             compilationMode: .lazy,
             stackSize: 16 * 1024 * 1024,
             memoryBoundsChecking: .software

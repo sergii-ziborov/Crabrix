@@ -50,6 +50,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix
         PRODUCT_NAME: Crabrix
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Crabrix
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.developer-tools
@@ -78,12 +79,15 @@ schemes:
       targets:
         Crabrix: all
         CrabrixTests: [test]
+    run:
+      config: Release
     test:
       targets:
         - name: CrabrixTests
           skippedTests:
             - BundledCompilerGateTests/testBundledRustcProducesE0502()
             - BundledCompilerGateTests/testBundledRustcCompilesAndRunsRepairedProgram()
+            - BundledCompilerGateTests/testBundledRustcCompilesMultiFileProject()
 
   CrabrixCompilerGate:
     build:
@@ -98,3 +102,4 @@ schemes:
           selectedTests:
             - BundledCompilerGateTests/testBundledRustcProducesE0502()
             - BundledCompilerGateTests/testBundledRustcCompilesAndRunsRepairedProgram()
+            - BundledCompilerGateTests/testBundledRustcCompilesMultiFileProject()
