@@ -55,6 +55,7 @@ struct ContentView: View {
     @StateObject private var completion = RustCompletionController()
     @StateObject private var terminal = ProjectTerminalSession()
     @EnvironmentObject private var progress: CrabrixProgressStore
+    @EnvironmentObject private var vitals: CrabrixVitalsStore
     /// Lessons already turned into rating, seeded from persisted progress so a
     /// relaunch never re-awards them.
     @State private var scoredLessonIDs: Set<String>?
@@ -120,18 +121,6 @@ struct ContentView: View {
                             selectedDestination = .build
                         }
                     }
-                },
-                onOpenRunnableSample: {
-                    model.loadRunnableSample()
-                    selectedDestination = .build
-                },
-                onOpenBorrowSample: {
-                    model.loadBorrowDiagnosticSample()
-                    selectedDestination = .build
-                },
-                onOpenModulesSample: {
-                    model.loadMultiFileSample()
-                    selectedDestination = .build
                 },
                 onOpenShowcase: { id in
                     model.loadShowcaseProject(id: id)
@@ -872,12 +861,23 @@ struct ContentView: View {
         guard result.succeeded, result.phase == .run else { return }
         // Rating follows the diff, so re-running an untouched sample earns a
         // token amount and real editing earns real points.
-        let contribution = CodeContributionLedger.shared.record(
+        var contribution = CodeContributionLedger.shared.record(
             project: model.projectName,
             files: model.exportProject().files
         )
+        contribution.typedShare = TypingLedger.shared.typedShare(project: model.projectName)
+        contribution.isFirstRunToday = progress.isFirstRunToday()
         progress.record(.buildSucceeded(contribution))
         lastContribution = contribution
+
+        // A run costs a little energy, so a loop of builds is not free.
+        // It never blocks the build itself: this is a developer tool, and
+        // being unable to run your own code would be the wrong trade.
+        vitals.spendOnBuild()
+
+        // Typing is where most of the rating comes from now.
+        let typed = TypingLedger.shared.drainPendingTyped()
+        if typed > 0 { progress.record(.codeTyped(characters: typed)) }
         if model.completedStages.contains(.repair) {
             progress.record(.diagnosticRepaired)
         }

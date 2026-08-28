@@ -25,6 +25,10 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
     var codeRecallRuns = 0
     var codeRecallBestLevel = 0
     var codeRecallLines = 0
+    var charactersTyped = 0
+    /// Start of the day the last full run reward was paid, so the bonus is
+    /// once daily and the rest of the rating comes from writing.
+    var lastRunRewardDay: Date?
     var unlockedAchievementIDs: Set<String> = []
     var lastActiveAt: Date?
     /// Which achievement catalogue this state was last reconciled against, so
@@ -59,6 +63,8 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
         codeRecallRuns = try int(.codeRecallRuns)
         codeRecallBestLevel = try int(.codeRecallBestLevel)
         codeRecallLines = try int(.codeRecallLines)
+        charactersTyped = try int(.charactersTyped)
+        lastRunRewardDay = try container.decodeIfPresent(Date.self, forKey: .lastRunRewardDay)
         achievementCatalogVersion = try int(.achievementCatalogVersion)
         unlockedAchievementIDs = try container
             .decodeIfPresent(Set<String>.self, forKey: .unlockedAchievementIDs) ?? []
@@ -80,6 +86,8 @@ enum CrabrixProgressEvent: Sendable, Equatable {
     case packagesCompiled(Int)
     /// One Code Recall run: the deepest window rebuilt and the total lines.
     case codeRecallFinished(bestLevel: Int, linesRecalled: Int)
+    /// Rust actually typed, which is where most rating now comes from.
+    case codeTyped(characters: Int)
 
     var points: Int {
         switch self {
@@ -107,6 +115,9 @@ enum CrabrixProgressEvent: Sendable, Equatable {
             // Depth is what the game actually measures, so it is worth more per
             // unit than the raw number of lines tapped.
             return bestLevel * 30 + linesRecalled * 4
+        case let .codeTyped(characters):
+            // Roughly a point per line of Rust actually typed.
+            return characters / 40
         }
     }
 }
@@ -359,6 +370,14 @@ enum CrabrixAchievementCatalog {
             thresholds: [25, 100, 500, 2_000, 10_000],
             measure: { $0.codeRecallLines },
             requirement: { "Recall \($0.formatted(.number)) lines of Rust in Code Recall." }
+        ),
+        CrabrixAchievementFamily(
+            id: "typing",
+            title: "Written by Hand",
+            systemImage: "keyboard.fill",
+            thresholds: [1_000, 10_000, 50_000, 200_000, 1_000_000],
+            measure: { $0.charactersTyped },
+            requirement: { "Type \($0.formatted(.number)) characters of Rust." }
         ),
         CrabrixAchievementFamily(
             id: "rating",

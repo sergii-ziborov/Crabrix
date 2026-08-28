@@ -108,6 +108,22 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             self.parent = parent
         }
 
+        /// Classifies every insertion before it lands.
+        ///
+        /// Length is the signal: a keystroke or an accessory symbol is short, a
+        /// paste or an accepted completion is not. This is the only place that
+        /// sees the difference — by `textViewDidChange` it is just new text.
+        func textView(
+            _ textView: UITextView,
+            shouldChangeTextIn range: NSRange,
+            replacementText text: String
+        ) -> Bool {
+            if !text.isEmpty {
+                TypingLedger.shared.record(project: parent.filePath, inserted: text)
+            }
+            return true
+        }
+
         func textViewDidChange(_ textView: UITextView) {
             guard !isApplyingHighlight else { return }
             parent.text = textView.text

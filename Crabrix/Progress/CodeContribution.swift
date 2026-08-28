@@ -13,23 +13,40 @@ struct CodeContribution: Equatable, Sendable {
 
     var changedLines: Int { addedLines + removedLines }
     var isFirstRun = false
+    /// 0…1, the share of this project's characters that were typed rather than
+    /// pasted or imported.
+    var typedShare = 0.5
+    /// False once the day's run reward has already been paid.
+    var isFirstRunToday = true
+
+    /// What the diff is worth before the day's run reward is considered.
+    ///
+    /// Typed code is worth more than the same code pasted: producing a diff is
+    /// not the same as writing one, and the diff alone cannot tell them apart.
+    var craftMultiplier: Double { 0.4 + 0.6 * min(max(typedShare, 0), 1) }
 
     /// Rating for one successful run.
     ///
     /// The curve is logarithmic on purpose: real edits are paid well, and
     /// pasting a thousand lines does not out-earn a whole course.
     var points: Int {
+        // Only the first successful run of the day pays for the run itself.
+        // After that the rating comes from writing, not from pressing Run —
+        // otherwise a loop of builds is worth more than a morning of work.
+        guard isFirstRunToday else { return 1 }
         // A rerun of untouched code still acknowledges the run, quietly.
         guard changedLines > 0 else { return 3 }
         let scaled = 12.0 * log2(Double(changedLines) + 1)
         let fileBonus = min(newFiles, 5) * 6
-        return min(150, 6 + Int(scaled.rounded()) + fileBonus)
+        let raw = Double(6 + Int(scaled.rounded()) + fileBonus) * craftMultiplier
+        return min(150, max(1, Int(raw.rounded())))
     }
 
     var summary: String {
         guard changedLines > 0 else { return "unchanged" }
         var parts = ["+\(addedLines)", "−\(removedLines)"]
         if newFiles > 0 { parts.append("\(newFiles) new file\(newFiles == 1 ? "" : "s")") }
+        if typedShare >= 0.8 { parts.append("hand-written") }
         return parts.joined(separator: " ")
     }
 

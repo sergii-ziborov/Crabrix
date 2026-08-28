@@ -102,6 +102,27 @@ final class CrabrixVitalsStore: ObservableObject {
         return outcome
     }
 
+    /// Charges the small cost of one successful run.
+    ///
+    /// Deliberately does not block: running your own code is the point of the
+    /// app, so an empty pool slows the reward down rather than stopping work.
+    @discardableResult
+    func spendOnBuild() -> VitalsOutcome {
+        refresh()
+        var updated = state
+        let cost = Double(CrabrixVitalsState.energyPerBuild)
+        guard updated.energy >= cost else {
+            state = updated
+            return .free
+        }
+        updated.energy -= cost
+        state = updated
+        persist()
+        let outcome = VitalsOutcome.spent(energy: CrabrixVitalsState.energyPerBuild)
+        publish(outcome)
+        return outcome
+    }
+
     /// Training is deliberately unlimited: it costs nothing and cannot be
     /// blocked, so there is always a way to keep learning while health returns.
     func recordTrainingAnswer(correct: Bool) {

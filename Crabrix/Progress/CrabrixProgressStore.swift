@@ -50,6 +50,12 @@ final class CrabrixProgressStore: ObservableObject {
 
     var rank: CrabrixRank { CrabrixRank.rank(for: state.totalPoints) }
 
+    /// Whether the day's run reward is still unclaimed.
+    func isFirstRunToday(now: Date = Date()) -> Bool {
+        guard let last = state.lastRunRewardDay else { return true }
+        return !Calendar.current.isDate(last, inSameDayAs: now)
+    }
+
     var earnedAchievements: [CrabrixAchievement] {
         CrabrixAchievementCatalog.all.filter { state.unlockedAchievementIDs.contains($0.id) }
     }
@@ -71,6 +77,9 @@ final class CrabrixProgressStore: ObservableObject {
         case let .buildSucceeded(contribution):
             updated.buildsSucceeded += 1
             updated.linesChanged += contribution.changedLines
+            if contribution.isFirstRunToday {
+                updated.lastRunRewardDay = Calendar.current.startOfDay(for: Date())
+            }
         case .diagnosticRepaired:
             updated.diagnosticsRepaired += 1
         case .practicePassed:
@@ -85,6 +94,8 @@ final class CrabrixProgressStore: ObservableObject {
             }
         case let .packagesCompiled(count):
             updated.packagesCompiled += count
+        case let .codeTyped(characters):
+            updated.charactersTyped += characters
         case let .codeRecallFinished(bestLevel, linesRecalled):
             updated.codeRecallRuns += 1
             updated.codeRecallBestLevel = max(updated.codeRecallBestLevel, bestLevel)

@@ -187,6 +187,9 @@ private struct LearningUnitMap: View {
     let nextLessonID: String?
     let onOpenLesson: (RustLesson) -> Void
 
+    /// The lesson a reader just tried to open too early.
+    @State private var blocked: RustLesson?
+
     private let rowHeight: CGFloat = 124
 
     private var palette: LearningPalette { .palette(for: unit.level) }
@@ -197,6 +200,18 @@ private struct LearningUnitMap: View {
 
     private var readyCount: Int {
         unit.lessons.filter { $0.id == nextLessonID }.count
+    }
+
+    /// Names the lesson standing in the way, rather than only refusing.
+    private func blockedMessage(for lesson: RustLesson) -> String {
+        guard let index = unit.lessons.firstIndex(where: { $0.id == lesson.id }),
+              index > 0
+        else {
+            return "Lessons unlock in order. Finish the ones before this first."
+        }
+        let previous = unit.lessons[index - 1]
+        return "\(lesson.title) unlocks once you finish \(previous.title). "
+            + "The path builds on itself, so the order is the point."
     }
 
     var body: some View {
@@ -227,7 +242,8 @@ private struct LearningUnitMap: View {
                             state: state(for: lesson),
                             palette: palette,
                             labelToRight: labelToRight(at: index),
-                            onOpen: { onOpenLesson(lesson) }
+                            onOpen: { onOpenLesson(lesson) },
+                            onBlocked: { blocked = lesson }
                         )
                         .frame(width: width, height: rowHeight)
                         .offset(y: CGFloat(index) * rowHeight)
@@ -236,6 +252,15 @@ private struct LearningUnitMap: View {
             }
             .frame(height: CGFloat(unit.lessons.count) * rowHeight + 8)
             .padding(.horizontal, 4)
+        }
+        .alert(
+            "Not yet",
+            isPresented: Binding(get: { blocked != nil }, set: { if !$0 { blocked = nil } }),
+            presenting: blocked
+        ) { _ in
+            Button("OK", role: .cancel) {}
+        } message: { lesson in
+            Text(blockedMessage(for: lesson))
         }
         .background(CrabrixTheme.panel.opacity(0.52))
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
@@ -377,6 +402,8 @@ private struct LessonMapNode: View {
     let palette: LearningPalette
     let labelToRight: Bool
     let onOpen: () -> Void
+    /// Called instead of `onOpen` when the lesson is still locked.
+    let onBlocked: () -> Void
 
     var body: some View {
         GeometryReader { geometry in
@@ -386,7 +413,12 @@ private struct LessonMapNode: View {
             let labelOffset = min(labelWidth / 2 + 48, width * 0.38)
             let labelX = nodeX + (labelToRight ? labelOffset : -labelOffset)
 
-            Button(action: onOpen) {
+            Button {
+                // The button style only dimmed a locked node; the action still
+                // fired, so a locked lesson opened anyway. Order is the point
+                // of the path, so it is enforced here.
+                if state == .locked { onBlocked() } else { onOpen() }
+            } label: {
                 ZStack {
                     lessonLabel
                         .frame(width: labelWidth)

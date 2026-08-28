@@ -14,9 +14,6 @@ struct ProjectsHomeView: View {
     let onSaveProject: () -> Void
     let onArchiveProject: () -> Void
     let onOpenRecent: (UUID) -> Void
-    let onOpenRunnableSample: () -> Void
-    let onOpenBorrowSample: () -> Void
-    let onOpenModulesSample: () -> Void
     let onOpenShowcase: (String) -> Void
     let onOpenLibrary: () -> Void
     let onOpenProgress: () -> Void
@@ -65,7 +62,6 @@ struct ProjectsHomeView: View {
                 }
 
                 libraryBanner
-                sampleChips
 
                 sectionTitle("Recent Projects", detail: "Stored locally on this device")
                 if recentProjects.isEmpty {
@@ -129,27 +125,6 @@ struct ProjectsHomeView: View {
         }
         .buttonStyle(.plain)
         .accessibilityHint("Opens the full project catalogue")
-    }
-
-    /// The three bundled labs, kept as one quiet row rather than a second
-    /// section listing what the library above already contains.
-    private var sampleChips: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("OR START FROM A BUNDLED LAB")
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .foregroundStyle(CrabrixTheme.muted)
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 9) { sampleChipRow }
-                VStack(alignment: .leading, spacing: 9) { sampleChipRow }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var sampleChipRow: some View {
-        SampleChip(title: "Hello Rust", icon: "play.fill", tint: CrabrixTheme.mint, action: onOpenRunnableSample)
-        SampleChip(title: "Borrow Checker", icon: "link.badge.plus", tint: CrabrixTheme.coral, action: onOpenBorrowSample)
-        SampleChip(title: "Cargo Modules", icon: "square.stack.3d.up.fill", tint: CrabrixTheme.blue, action: onOpenModulesSample)
     }
 
     /// Rating, rank, and both pools, on the screen the app opens on.
@@ -395,26 +370,6 @@ private struct BuildStatusBadge: View {
                 .font((compact ? Font.caption2 : Font.caption).monospaced())
                 .foregroundStyle(CrabrixTheme.muted)
         }
-    }
-}
-
-private struct SampleChip: View {
-    let title: String
-    let icon: String
-    let tint: Color
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Label(title, systemImage: icon)
-                .font(.caption.bold())
-                .foregroundStyle(tint)
-                .padding(.horizontal, 13)
-                .padding(.vertical, 9)
-                .background(tint.opacity(0.10), in: Capsule())
-                .overlay { Capsule().stroke(tint.opacity(0.32)) }
-        }
-        .buttonStyle(.plain)
     }
 }
 

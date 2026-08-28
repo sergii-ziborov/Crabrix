@@ -72,6 +72,8 @@ struct CrabrixVitalsState: Codable, Equatable, Sendable {
 
     /// Energy charged per lesson page the first time it is read.
     static let energyPerLessonPage = 2
+    /// Energy charged for one successful run.
+    static let energyPerBuild = 1
     /// Correct answers needed in a row before energy is handed back.
     static let flowStreakForRefund = 3
 
