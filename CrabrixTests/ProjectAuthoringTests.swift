@@ -61,3 +61,45 @@ final class ProjectAuthoringTests: XCTestCase {
         }
     }
 }
+
+@MainActor
+final class CargoTemplateTests: XCTestCase {
+    func testPackagesTemplateWritesResolvableRegistryDependencies() throws {
+        let model = CompilerViewModel(
+            userDefaults: UserDefaults(suiteName: "crabrix.tests.\(UUID().uuidString)")!
+        )
+        model.createProject(name: "Package Demo", template: .packages)
+
+        XCTAssertEqual(model.projectName, "package-demo")
+        XCTAssertEqual(model.selectedFile, "src/main.rs")
+        XCTAssertTrue(model.source.contains("smallvec::SmallVec"))
+
+        let manifestSource = try XCTUnwrap(model.cargoManifestSource)
+        let manifest = try CratePackageManifest.parse(manifestSource)
+        XCTAssertEqual(manifest.packageName, "package-demo")
+        XCTAssertEqual(manifest.edition, "2024")
+
+        let dependencies = manifest.registryDependencies(for: .wasm32WasiP1)
+        XCTAssertEqual(dependencies.map(\.alias).sorted(), ["log", "smallvec"])
+        // Every template dependency must be a plain registry requirement, or the
+        // resolver has nothing to look up.
+        XCTAssertTrue(dependencies.allSatisfy(\.isRegistry))
+        XCTAssertTrue(dependencies.allSatisfy { $0.requirement != nil })
+    }
+
+    func testEveryTemplateProducesAParsableManifest() throws {
+        for template in RustProjectTemplate.allCases {
+            let model = CompilerViewModel(
+                userDefaults: UserDefaults(suiteName: "crabrix.tests.\(UUID().uuidString)")!
+            )
+            model.createProject(name: "t-\(template.rawValue)", template: template)
+            let manifestSource = try XCTUnwrap(
+                model.cargoManifestSource,
+                "\(template.rawValue) has no Cargo.toml"
+            )
+            let manifest = try CratePackageManifest.parse(manifestSource)
+            XCTAssertFalse(manifest.packageName.isEmpty, "\(template.rawValue)")
+            XCTAssertFalse(manifest.isVirtualWorkspace, "\(template.rawValue)")
+        }
+    }
+}

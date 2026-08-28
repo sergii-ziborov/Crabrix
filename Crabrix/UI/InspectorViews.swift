@@ -2,8 +2,7 @@ import SwiftUI
 
 struct RuntimeInspector: View {
     let toolchain: ToolchainStatus
-    let onCheck: () -> Void
-    let onRun: () -> Void
+    let activity: CompilerViewModel.Activity
 
     @State private var isBuildTipExpanded = false
     @State private var isDeviceTipExpanded = false
@@ -18,9 +17,9 @@ struct RuntimeInspector: View {
                     .background(CrabrixTheme.blue.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("READY TO BUILD")
+                    Text(activity == .idle ? "READY TO BUILD" : "BUILDING")
                         .font(.system(size: 9, weight: .bold, design: .monospaced))
-                        .foregroundStyle(CrabrixTheme.mint)
+                        .foregroundStyle(activity == .idle ? CrabrixTheme.mint : CrabrixTheme.amber)
                     Text("Check the code, then run it")
                         .font(.system(size: 25, weight: .bold, design: .rounded))
                     Text("Compiler output and errors appear in the full-size Output and Problems tabs beside Code.")
@@ -29,27 +28,11 @@ struct RuntimeInspector: View {
                 }
             }
 
-            HStack(spacing: 10) {
-                Button(action: onCheck) {
-                    Label("Check", systemImage: "checkmark.shield.fill")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .tint(CrabrixTheme.blue)
-
-                Button(action: onRun) {
-                    Label("Run", systemImage: "play.fill")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(CrabrixTheme.coral)
-            }
-
             VStack(alignment: .leading, spacing: 9) {
                 Text("NEXT STEP")
                     .font(.system(size: 9, weight: .bold, design: .monospaced))
                     .foregroundStyle(CrabrixTheme.coral)
-                Text("Use Check while editing. Run when you want fresh stdout. An unchanged successful Run can reuse the local artifact cache.")
+                Text("Use Check while editing. Run when you want fresh stdout. An unchanged successful Run reuses the local artifact cache, and Stop interrupts a build that is taking too long.")
                     .font(.caption)
                     .foregroundStyle(CrabrixTheme.muted)
             }
@@ -78,10 +61,16 @@ struct RuntimeInspector: View {
                             color: CrabrixTheme.mint
                         )
                         RuntimeRow(
-                            title: "No runtime network path",
+                            title: "Guest programs have no network",
                             detail: "Compiler and sysroot are app-bundle resources · no socket imports",
                             icon: "airplane",
                             color: CrabrixTheme.blue
+                        )
+                        RuntimeRow(
+                            title: "Cargo packages are fetched, then cached",
+                            detail: "crates.io download · SHA-256 verified · compiled and reused offline",
+                            icon: "shippingbox.fill",
+                            color: CrabrixTheme.amber
                         )
                     }
                     .padding(.top, 12)
@@ -95,7 +84,7 @@ struct RuntimeInspector: View {
             .crabrixPanel()
 
             DisclosureGroup(isExpanded: $isDeviceTipExpanded) {
-                Text("Airplane mode, peak memory, thermal behavior, and hard termination must still pass on a physical iPhone/iPad. Repeated-build gates run in the dedicated test scheme.")
+                Text("Airplane mode, peak memory, and thermal behavior under a multi-crate build must still be measured on a physical iPhone/iPad. Repeated-build and interruption gates run in the dedicated test scheme.")
                     .font(.caption)
                     .foregroundStyle(CrabrixTheme.muted)
                     .padding(.top, 8)
@@ -241,6 +230,9 @@ struct DiagnosticInspector: View {
 struct SuccessInspector: View {
     let result: CompilationResult
     let practiceCompleted: Bool
+    let canContinueLearning: Bool
+    /// What the run earned, and on what, so the number is never unexplained.
+    let contribution: CodeContribution?
     let onRunNext: () -> Void
     let onContinueLearning: () -> Void
 
@@ -281,6 +273,12 @@ struct SuccessInspector: View {
                     EvidenceRow(label: "stdout", value: result.stdout.trimmingCharacters(in: .whitespacesAndNewlines))
                 }
                 EvidenceRow(label: "Practice", value: practiceCompleted ? "Passed" : "Not attempted")
+                if let contribution {
+                    EvidenceRow(
+                        label: "Rating",
+                        value: "+\(contribution.points) · \(contribution.summary)"
+                    )
+                }
             }
             .padding(14)
             .crabrixPanel()
@@ -295,11 +293,11 @@ struct SuccessInspector: View {
                     tint: CrabrixTheme.coral,
                     action: onRunNext
                 )
-            } else if result.phase == .run {
+            } else if result.phase == .run, canContinueLearning {
                 NextWorkflowStep(
-                    eyebrow: "BUILD COMPLETE",
+                    eyebrow: "LESSON COMPLETE",
                     title: "Continue on the Rust path",
-                    detail: "Return to the learning map and choose the next available compiler lab.",
+                    detail: "Return to the learning map and open the next lesson.",
                     buttonTitle: "Continue learning",
                     systemImage: "arrow.right",
                     tint: CrabrixTheme.mint,

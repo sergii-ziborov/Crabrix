@@ -40,6 +40,13 @@ struct BuildDockView<CodeContent: View>: View {
     let onCheck: () -> Void
     let onRun: () -> Void
     let onReplaceFiles: ([String: String], String?) -> Bool
+    let workspace: CargoWorkspaceSnapshot
+    let onFetch: () -> Void
+    let onCancel: () -> Void
+    let canContinueLearning: Bool
+    /// What the last successful run was scored on, so the reward is explained
+    /// rather than appearing from nowhere.
+    let contribution: CodeContribution?
     let onOpenDiagnostic: (RustDiagnostic) -> Void
     let onContinueLearning: () -> Void
     let codeContent: CodeContent
@@ -54,6 +61,11 @@ struct BuildDockView<CodeContent: View>: View {
         onCheck: @escaping () -> Void,
         onRun: @escaping () -> Void,
         onReplaceFiles: @escaping ([String: String], String?) -> Bool,
+        workspace: CargoWorkspaceSnapshot,
+        onFetch: @escaping () -> Void,
+        onCancel: @escaping () -> Void,
+        canContinueLearning: Bool,
+        contribution: CodeContribution?,
         onOpenDiagnostic: @escaping (RustDiagnostic) -> Void,
         onContinueLearning: @escaping () -> Void,
         @ViewBuilder codeContent: () -> CodeContent
@@ -67,6 +79,11 @@ struct BuildDockView<CodeContent: View>: View {
         self.onCheck = onCheck
         self.onRun = onRun
         self.onReplaceFiles = onReplaceFiles
+        self.workspace = workspace
+        self.onFetch = onFetch
+        self.onCancel = onCancel
+        self.canContinueLearning = canContinueLearning
+        self.contribution = contribution
         self.onOpenDiagnostic = onOpenDiagnostic
         self.onContinueLearning = onContinueLearning
         self.codeContent = codeContent()
@@ -134,6 +151,12 @@ struct BuildDockView<CodeContent: View>: View {
             case .output:
                 OutputDockContent(
                     result: result,
+                    activity: activity,
+                    canStartBuild: canStartBuild,
+                    canContinueLearning: canContinueLearning,
+                    contribution: contribution,
+                    onRun: onRun,
+                    onCancel: onCancel,
                     onContinueLearning: onContinueLearning
                 )
             case .terminal:
@@ -144,7 +167,9 @@ struct BuildDockView<CodeContent: View>: View {
                     canStartBuild: canStartBuild,
                     onCheck: onCheck,
                     onRun: onRun,
-                    onReplaceFiles: onReplaceFiles
+                    onReplaceFiles: onReplaceFiles,
+                    workspace: workspace,
+                    onFetch: onFetch
                 )
             }
         }
@@ -212,6 +237,12 @@ private struct ProblemsDockContent: View {
 
 private struct OutputDockContent: View {
     let result: CompilationResult?
+    let activity: CompilerViewModel.Activity
+    let canStartBuild: Bool
+    let canContinueLearning: Bool
+    let contribution: CodeContribution?
+    let onRun: () -> Void
+    let onCancel: () -> Void
     let onContinueLearning: () -> Void
 
     var body: some View {
@@ -249,7 +280,13 @@ private struct OutputDockContent: View {
                             systemImage: "exclamationmark.octagon.fill"
                         )
                     }
-                    if result.succeeded, result.phase == .run {
+                    runButton
+
+                    if result.succeeded, result.phase == .run, let contribution {
+                        ContributionSummaryRow(contribution: contribution)
+                    }
+
+                    if result.succeeded, result.phase == .run, canContinueLearning {
                         Button(action: onContinueLearning) {
                             HStack(spacing: 10) {
                                 Image(systemName: "graduationcap.fill")
@@ -281,12 +318,23 @@ private struct OutputDockContent: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(14)
             } else {
-                ContentUnavailableView(
-                    "Ready to run",
-                    systemImage: "play.circle.fill",
-                    description: Text("Press Run to compile and execute the current project locally.")
-                )
-                .foregroundStyle(CrabrixTheme.muted)
+                VStack(spacing: 12) {
+                    Image(systemName: "play.circle.fill")
+                        .font(.system(size: 42))
+                        .foregroundStyle(CrabrixTheme.coral.opacity(0.7))
+                    Text("Ready to run")
+                        .font(.headline)
+                        .foregroundStyle(CrabrixTheme.primary)
+                    Text("Compile the current project and execute it locally.")
+                        .font(.caption)
+                        .foregroundStyle(CrabrixTheme.muted)
+                        .multilineTextAlignment(.center)
+                    runButton
+                        .padding(.top, 4)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 40)
             }
         }
         .font(.system(size: 11, design: .monospaced))
@@ -298,6 +346,22 @@ private struct OutputDockContent: View {
                 endPoint: .bottomTrailing
             )
         )
+    }
+
+    /// Output is where you look for a result, so it can also produce one.
+    private var runButton: some View {
+        Button(action: activity == .running ? onCancel : onRun) {
+            Label(
+                activity == .running ? "Stop" : (result == nil ? "Run project" : "Run again"),
+                systemImage: activity == .running ? "stop.fill" : "play.fill"
+            )
+            .font(.subheadline.bold())
+            .frame(maxWidth: .infinity, minHeight: 40)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(activity == .running ? CrabrixTheme.amber : CrabrixTheme.coral)
+        .disabled(activity == .checking || (activity == .idle && !canStartBuild))
+        .frame(maxWidth: 320)
     }
 }
 
@@ -332,8 +396,10 @@ private struct TerminalDockContent: View {
     let onCheck: () -> Void
     let onRun: () -> Void
     let onReplaceFiles: ([String: String], String?) -> Bool
+    let workspace: CargoWorkspaceSnapshot
+    let onFetch: () -> Void
 
-    private let quickCommands = ["help", "ls", "cargo check", "cargo run", "clear"]
+    private let quickCommands = ["help", "ls", "cargo check", "cargo tree", "cargo run", "clear"]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -437,8 +503,10 @@ private struct TerminalDockContent: View {
         terminal.submit(
             project: project,
             isBusy: activity != .idle || !canStartBuild,
+            workspace: workspace,
             onCheck: onCheck,
             onRun: onRun,
+            onFetch: onFetch,
             onReplaceFiles: onReplaceFiles
         )
     }
@@ -482,6 +550,53 @@ private struct TerminalHighlightedLine: View {
         case .info: CrabrixTheme.muted
         case .success: CrabrixTheme.mint
         case .error: CrabrixTheme.coral
+        }
+    }
+}
+
+/// Explains what the last run earned, and why.
+///
+/// Rating is paid on the diff now, so an unchanged rerun says so plainly
+/// instead of looking like the score is broken.
+private struct ContributionSummaryRow: View {
+    let contribution: CodeContribution
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: contribution.changedLines > 0 ? "chart.bar.doc.horizontal.fill" : "arrow.clockwise")
+                .foregroundStyle(CrabrixTheme.amber)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("+\(contribution.points) rating")
+                    .font(.subheadline.bold())
+                    .monospacedDigit()
+                Text(caption)
+                    .font(.caption)
+                    .foregroundStyle(CrabrixTheme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+            if contribution.changedLines > 0 {
+                Text(contribution.summary)
+                    .font(.caption.monospaced().bold())
+                    .foregroundStyle(CrabrixTheme.mint)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(CrabrixTheme.amber.opacity(0.08), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .stroke(CrabrixTheme.amber.opacity(0.3))
+        }
+    }
+
+    private var caption: String {
+        if contribution.isFirstRun {
+            "First run of this project — scored on everything in it."
+        } else if contribution.changedLines > 0 {
+            "Scored on the \(contribution.changedLines) lines you changed since the last run."
+        } else {
+            "Nothing changed since the last run, so this one is worth very little."
         }
     }
 }

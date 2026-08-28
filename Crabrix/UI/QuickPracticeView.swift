@@ -1,11 +1,18 @@
 import SwiftUI
 
 struct QuickPracticeView: View {
+    @EnvironmentObject private var progress: CrabrixProgressStore
+    @EnvironmentObject private var vitals: CrabrixVitalsStore
+    @State private var didAward = false
     @Environment(\.dismiss) private var dismiss
     @State private var step = 0
     @State private var score = 0
+    /// Drawn once per session from the whole curriculum, weighted by mastery.
+    @State private var questions: [RustQuestion] = []
+    private let mastery = TopicMasteryStore.shared
 
-    private let total = 3
+    /// Two hand-built drills plus the generated questions.
+    private var total: Int { questions.count + 2 }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -15,11 +22,16 @@ struct QuickPracticeView: View {
             Group {
                 switch step {
                 case 0:
-                    ChoicePractice { passed in advance(passed) }
-                case 1:
                     MatchPractice { passed in advance(passed) }
-                case 2:
+                case 1:
                     ArrangeCodePractice { passed in advance(passed) }
+                case let index where index - 2 < questions.count:
+                    let question = questions[index - 2]
+                    LessonQuestionPractice(question: question) { passed in
+                        mastery.record(topic: question.topic, correct: passed)
+                        advance(passed)
+                    }
+                    .id(question.topic)
                 default:
                     completion
                 }
@@ -31,6 +43,10 @@ struct QuickPracticeView: View {
         .foregroundStyle(CrabrixTheme.primary)
         .navigationTitle("Quick Practice")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            guard questions.isEmpty else { return }
+            questions = RustQuestionBank.round(count: 4, records: mastery.records)
+        }
     }
 
     private var practiceHeader: some View {
@@ -61,6 +77,7 @@ struct QuickPracticeView: View {
                 .font(.largeTitle.bold())
             Text("\(score) of \(total) solved on the first check")
                 .foregroundStyle(CrabrixTheme.muted)
+            RatingSummaryCard(store: progress)
             Button {
                 dismiss()
             } label: {
@@ -71,65 +88,25 @@ struct QuickPracticeView: View {
             .tint(CrabrixTheme.coral)
         }
         .padding(24)
+        .frame(maxWidth: 620)
+        .onAppear {
+            // Each solved round is worth rating; award the set once.
+            guard !didAward else { return }
+            didAward = true
+            for _ in 0..<score { progress.record(.practicePassed) }
+        }
+    }
+
+    /// Practice is training: it builds the flow streak that hands energy back,
+    /// but it never spends health, so there is always a way to keep going.
+    private func recordTraining(_ passed: Bool) {
+        vitals.recordTrainingAnswer(correct: passed)
     }
 
     private func advance(_ passed: Bool) {
         if passed { score += 1 }
+        recordTraining(passed)
         withAnimation(.easeInOut(duration: 0.22)) { step += 1 }
-    }
-}
-
-private struct ChoicePractice: View {
-    @State private var selection: Int?
-    let onNext: (Bool) -> Void
-
-    var body: some View {
-        PracticeCard(
-            eyebrow: "CHOOSE LEFT OR RIGHT",
-            title: "Which declaration lets the value change?",
-            detail: "Tap one answer. No editor needed."
-        ) {
-            HStack(spacing: 14) {
-                choice(0, code: "let count = 1;", label: "Immutable")
-                choice(1, code: "let mut count = 1;", label: "Mutable")
-            }
-            PracticeFeedback(
-                isVisible: selection != nil,
-                isCorrect: selection == 1,
-                correctText: "Correct — mut explicitly allows reassignment.",
-                wrongText: "Almost. Add mut after let to allow reassignment."
-            )
-            nextButton(correctAnswer: selection == 1)
-        }
-    }
-
-    private func choice(_ id: Int, code: String, label: String) -> some View {
-        Button { selection = id } label: {
-            VStack(alignment: .leading, spacing: 9) {
-                Text(code)
-                    .font(.system(size: 13, design: .monospaced).bold())
-                Text(label).font(.caption).foregroundStyle(CrabrixTheme.muted)
-            }
-            .padding(16)
-            .frame(maxWidth: .infinity, minHeight: 105, alignment: .leading)
-            .background(selection == id ? answerTint(id == 1).opacity(0.13) : CrabrixTheme.raised)
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-            .overlay {
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(selection == id ? answerTint(id == 1) : CrabrixTheme.border, lineWidth: selection == id ? 2 : 1)
-            }
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func answerTint(_ correct: Bool) -> Color { correct ? CrabrixTheme.mint : CrabrixTheme.coral }
-
-    private func nextButton(correctAnswer: Bool) -> some View {
-        Button("Continue") { onNext(correctAnswer) }
-            .buttonStyle(.borderedProminent)
-            .tint(CrabrixTheme.coral)
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .disabled(selection == nil)
     }
 }
 
@@ -294,6 +271,78 @@ private struct PracticeFeedback: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background((isCorrect ? CrabrixTheme.mint : CrabrixTheme.amber).opacity(0.1))
             .clipShape(RoundedRectangle(cornerRadius: 11))
+        }
+    }
+}
+
+/// A generated question from the curriculum, so practice grows with the lessons.
+private struct LessonQuestionPractice: View {
+    let question: RustQuestion
+    let onFinish: (Bool) -> Void
+
+    @State private var selection: Int?
+    @State private var checked = false
+
+    var body: some View {
+        PracticeCard(
+            eyebrow: question.lessonTitle.uppercased(),
+            title: question.prompt,
+            detail: "Pick the answer that matches how Rust actually behaves."
+        ) {
+            HighlightedCodeBlock(code: question.code, fontSize: 13)
+
+            VStack(spacing: 9) {
+                ForEach(question.answers.indices, id: \.self) { index in
+                    Button {
+                        guard !checked else { return }
+                        selection = index
+                    } label: {
+                        HStack(spacing: 11) {
+                            Image(systemName: selection == index
+                                  ? "largecircle.fill.circle" : "circle")
+                                .foregroundStyle(selection == index
+                                                 ? CrabrixTheme.blue : CrabrixTheme.muted)
+                            Text(question.answers[index])
+                                .font(.subheadline)
+                                .multilineTextAlignment(.leading)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Spacer(minLength: 0)
+                        }
+                        .padding(13)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            selection == index
+                                ? CrabrixTheme.blue.opacity(0.1) : CrabrixTheme.raised,
+                            in: RoundedRectangle(cornerRadius: 12)
+                        )
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(selection == index ? CrabrixTheme.blue : CrabrixTheme.border)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(checked)
+                }
+            }
+
+            PracticeFeedback(
+                isVisible: checked,
+                isCorrect: selection == question.correctAnswer,
+                correctText: question.feedback,
+                wrongText: "Not quite — \(question.answers[question.correctAnswer])."
+            )
+
+            Button(checked ? "Continue" : "Check answer") {
+                if checked {
+                    onFinish(selection == question.correctAnswer)
+                } else {
+                    checked = true
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(CrabrixTheme.coral)
+            .disabled(selection == nil)
+            .frame(maxWidth: .infinity)
         }
     }
 }

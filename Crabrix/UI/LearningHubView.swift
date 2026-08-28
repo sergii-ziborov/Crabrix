@@ -3,11 +3,37 @@ import SwiftUI
 enum LearningRoute: Hashable {
     case course(String)
     case lesson(String)
+    case profile
+
+    /// Opens a Learn screen straight from a launch argument, the same way
+    /// `-CrabrixTab` opens a tab. Store screenshots are captured this way so
+    /// the same frames come out of every build.
+    static var launchArgument: [LearningRoute] {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: "-CrabrixLearn"),
+              index + 1 < arguments.count
+        else { return [] }
+
+        let value = arguments[index + 1]
+        if value == "profile" { return [.profile] }
+        if let course = RustCourseCatalog.course(id: value) { return [.course(course.id)] }
+        if let lesson = RustCourseCatalog.lesson(id: value),
+           let course = RustCourseCatalog.course(containingLessonID: lesson.id) {
+            return [.course(course.id), .lesson(lesson.id)]
+        }
+        return []
+    }
 }
 
 struct LearningHubView: View {
     @Binding var navigationPath: [LearningRoute]
+    @EnvironmentObject private var progress: CrabrixProgressStore
+    @EnvironmentObject private var vitals: CrabrixVitalsStore
     @AppStorage("crabrix.learn.trainingSessions") private var trainingSessions = 0
+    @AppStorage("crabrix.learn.recallSessions") private var recallSessions = 0
+    /// Training is the always-open route, so anything that blocks lessons
+    /// offers it directly rather than leaving the reader at a dead end.
+    @State private var isTrainingPresented = false
     let completedLessonIDs: Set<String>
     let onStartLesson: (RustLesson) -> Void
     let onCompleteLesson: (RustLesson) -> Void
@@ -19,6 +45,18 @@ struct LearningHubView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     hero
+
+                    NavigationLink(value: LearningRoute.profile) {
+                        RatingSummaryCard(store: progress)
+                    }
+                    .buttonStyle(.plain)
+                    VitalsCard(store: vitals) { navigationPath = []; isTrainingPresented = true }
+                    WeakTopicsCard { topic in
+                        guard let lesson = RustCourseCatalog.lesson(id: topic),
+                              let course = RustCourseCatalog.course(containingLessonID: topic)
+                        else { return }
+                        navigationPath = [.course(course.id), .lesson(lesson.id)]
+                    }
 
                     LazyVGrid(columns: columns, spacing: 14) {
                         NavigationLink {
@@ -40,9 +78,24 @@ struct LearningHubView: View {
                             LearningPracticeCard(
                                 title: "Term Train",
                                 subtitle: "Connect Rust terms with short descriptions",
-                                badge: trainingSessions == 0 ? "NEW" : "\(trainingSessions) SETS",
+                                badge: trainingSessions == 0 ? "NEW" : "\(trainingSessions) RUNS",
                                 systemImage: "link",
                                 tint: CrabrixTheme.mint
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        NavigationLink {
+                            CodeRecallView { recallSessions += 1 }
+                        } label: {
+                            LearningPracticeCard(
+                                title: "Code Recall",
+                                subtitle: "Memorise a snippet, then rebuild it line by line",
+                                badge: progress.state.codeRecallBestLevel > 0
+                                    ? "BEST \(progress.state.codeRecallBestLevel)"
+                                    : "NEW",
+                                systemImage: "brain.head.profile",
+                                tint: CrabrixTheme.blue
                             )
                         }
                         .buttonStyle(.plain)
@@ -64,6 +117,8 @@ struct LearningHubView: View {
                             .buttonStyle(.plain)
                         }
                     }
+
+                    AchievementsSection(store: progress)
                 }
                 .padding(22)
                 .frame(maxWidth: 920)
@@ -75,6 +130,8 @@ struct LearningHubView: View {
             .navigationDestination(for: LearningRoute.self) { route in
                 destination(for: route)
             }
+            .sheet(isPresented: $isTrainingPresented) { trainingSheet }
+            .task { vitals.refresh(points: progress.state.totalPoints) }
         }
     }
 
@@ -95,8 +152,17 @@ struct LearningHubView: View {
                 ContentUnavailableView("Course unavailable", systemImage: "book.closed")
             }
 
+        case .profile:
+            ProfileView()
+
         case let .lesson(lessonID):
             if let lesson = RustCourseCatalog.lesson(id: lessonID) {
+                // Vitals gate entry, not the middle of a lesson: being cut off
+                // halfway through a page you already paid for would be worse
+                // than not letting you start.
+                if vitals.isLessonBlocked, !vitals.canStartLessonPage(lessonID: lesson.id, page: 0) {
+                    LessonPausedView(store: vitals) { isTrainingPresented = true }
+                } else {
                 LessonDetailView(
                     lesson: lesson,
                     isCompleted: completedLessonIDs.contains(lesson.id),
@@ -106,9 +172,17 @@ struct LearningHubView: View {
                         returnToCourse(containing: lesson)
                     }
                 )
+                }
             } else {
                 ContentUnavailableView("Lesson unavailable", systemImage: "book.closed")
             }
+        }
+    }
+
+    @ViewBuilder
+    fileprivate var trainingSheet: some View {
+        NavigationStack {
+            TermMatchTrainView { trainingSessions += 1 }
         }
     }
 
@@ -134,6 +208,9 @@ struct LearningHubView: View {
                         .foregroundStyle(CrabrixTheme.coral)
                     Text("Learn Rust by building")
                         .font(.system(size: 30, weight: .heavy, design: .rounded))
+                        .minimumScaleFactor(0.6)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                     Text("Short explanations, compiler-checked labs, and a visible next step.")
                         .foregroundStyle(CrabrixTheme.muted)
                 }

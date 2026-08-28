@@ -6,6 +6,7 @@ enum RustProjectTemplate: String, CaseIterable, Identifiable, Sendable {
     case empty
     case modules
     case cli
+    case packages
 
     var id: String { rawValue }
 
@@ -15,6 +16,7 @@ enum RustProjectTemplate: String, CaseIterable, Identifiable, Sendable {
         case .empty: "Empty Binary"
         case .modules: "Cargo Modules"
         case .cli: "CLI Starter"
+        case .packages: "Cargo Packages"
         }
     }
 
@@ -24,6 +26,7 @@ enum RustProjectTemplate: String, CaseIterable, Identifiable, Sendable {
         case .empty: "Cargo.toml and a minimal main.rs"
         case .modules: "A multi-file project with a reusable Rust module"
         case .cli: "Read command-line arguments with the standard library"
+        case .packages: "Two real crates.io packages · the first build downloads and compiles them"
         }
     }
 
@@ -33,6 +36,7 @@ enum RustProjectTemplate: String, CaseIterable, Identifiable, Sendable {
         case .empty: "doc.badge.plus"
         case .modules: "square.stack.3d.up.fill"
         case .cli: "apple.terminal.fill"
+        case .packages: "shippingbox.fill"
         }
     }
 }
@@ -51,6 +55,12 @@ final class CompilerViewModel: ObservableObject {
             case .openingFiles, .importingGitHub: true
             default: false
             }
+        }
+
+        /// Only failures still deserve a row above the editor.
+        var isFailure: Bool {
+            if case .failed = self { return true }
+            return false
         }
     }
 
@@ -103,11 +113,18 @@ final class CompilerViewModel: ObservableObject {
     @Published private(set) var provenance: CrabrixProject.Provenance?
     @Published private(set) var recentProjects: [ProjectLibraryItem] = []
     @Published private(set) var lastBuild: ProjectBuildRecord?
+    @Published private(set) var cargoStage: CargoPreparationStage = .idle
+    @Published private(set) var cargoWorkspace: CargoWorkspaceSnapshot = .empty
+    @Published private(set) var cargoStorage: CrateStorageUsage = CrateStorageUsage()
     @Published var isPracticePresented = false
 
     private let compiler: WasmRustCompiler
     private let githubImporter: GitHubProjectImporter
     private let projectLibrary: ProjectLibrary
+    private let packageManager: CargoPackageManager
+    /// The manifest text the current `cargoWorkspace` was resolved from.
+    private var resolvedManifestSource: String?
+    private var cargoTask: Task<Void, Never>?
     private var lastDiagnostic: RustDiagnostic?
     private var fileContents = ["main.rs": RustSamples.runnable]
     private var entryFile = "main.rs"
@@ -121,11 +138,13 @@ final class CompilerViewModel: ObservableObject {
         compiler: WasmRustCompiler = WasmRustCompiler(),
         githubImporter: GitHubProjectImporter = GitHubProjectImporter(),
         projectLibrary: ProjectLibrary = ProjectLibrary(),
+        packageManager: CargoPackageManager = CargoPackageManager(),
         userDefaults: UserDefaults = .standard
     ) {
         self.compiler = compiler
         self.githubImporter = githubImporter
         self.projectLibrary = projectLibrary
+        self.packageManager = packageManager
         self.userDefaults = userDefaults
         completedLessonIDs = Set(userDefaults.stringArray(forKey: Self.completedLessonsKey) ?? [])
         toolchain = compiler.probe()
@@ -153,6 +172,10 @@ final class CompilerViewModel: ObservableObject {
     }
 
     var isProjectOperationInProgress: Bool { projectTransfer.isWorking }
+
+    /// True only while the workspace is running a lesson's project. A personal
+    /// project is not part of the course, so it gets no "continue learning" step.
+    var isLessonContext: Bool { activeLessonID != nil }
 
     func exportProject() -> CrabrixProject {
         currentProject()
@@ -226,60 +249,219 @@ final class CompilerViewModel: ObservableObject {
         }
     }
 
-    func check() {
+    func check() { startBuild(.checking) }
+
+    func run() { startBuild(.running) }
+
+    private func startBuild(_ mode: Activity) {
         guard canStartBuild else { return }
-        activity = .checking
+        activity = mode
         result = nil
         let project = projectSnapshot()
+        let manifestSource = manifestSource(in: project)
         let compilationID = UUID()
         activeCompilationID = compilationID
         compilationTask = Task { [weak self] in
             guard let self else { return }
-            let value = await compiler.check(
-                source: project.main,
-                sourcePath: project.entryPath,
-                supportingFiles: project.supporting
-            )
+
+            var plan = CargoBuildPlan.empty
+            if let manifestSource {
+                do {
+                    let snapshot = try await resolveWorkspace(manifestSource: manifestSource)
+                    guard activeCompilationID == compilationID else { return }
+                    if let blocked = snapshot.blockingPackages.first {
+                        finish(
+                            .failure(
+                                phase: .setup,
+                                detail: "\(blocked.name) \(blocked.version) cannot be built locally: "
+                                    + (blocked.compatibility.detail ?? "unsupported package")
+                            )
+                        )
+                        return
+                    }
+                    plan = snapshot.plan
+                } catch {
+                    guard activeCompilationID == compilationID else { return }
+                    cargoStage = .failed(error.localizedDescription)
+                    finish(
+                        .failure(
+                            phase: .setup,
+                            detail: "Dependency resolution failed: \(error.localizedDescription)"
+                        )
+                    )
+                    return
+                }
+            }
+
+            let progress: @Sendable (CargoBuildProgress) -> Void = { [weak self] update in
+                Task { @MainActor [weak self] in
+                    guard let self, activeCompilationID == compilationID else { return }
+                    cargoStage = update.wasCached
+                        ? .building(
+                            name: "\(update.package.name) (cached)",
+                            index: update.index,
+                            total: update.total
+                        )
+                        : .building(
+                            name: update.package.name,
+                            index: update.index,
+                            total: update.total
+                        )
+                }
+            }
+
+            let value = switch mode {
+            case .checking:
+                await compiler.check(
+                    source: project.main,
+                    sourcePath: project.entryPath,
+                    supportingFiles: project.supporting,
+                    plan: plan,
+                    onDependencyProgress: plan.isEmpty ? nil : progress
+                )
+            default:
+                await compiler.run(
+                    source: project.main,
+                    sourcePath: project.entryPath,
+                    supportingFiles: project.supporting,
+                    plan: plan,
+                    onDependencyProgress: plan.isEmpty ? nil : progress
+                )
+            }
+
             guard !Task.isCancelled, activeCompilationID == compilationID else {
                 isCompilerDraining = false
                 return
             }
+            if !plan.isEmpty { cargoStage = .ready }
             finish(value)
+            // A build is the only source of verified compatibility, so refresh
+            // the package list with whatever the compiler just learned.
+            if !plan.isEmpty, let manifestSource {
+                resolvedManifestSource = nil
+                _ = try? await resolveWorkspace(manifestSource: manifestSource)
+            }
         }
     }
 
-    func run() {
-        guard canStartBuild else { return }
-        activity = .running
-        result = nil
-        let project = projectSnapshot()
-        let compilationID = UUID()
-        activeCompilationID = compilationID
-        compilationTask = Task { [weak self] in
-            guard let self else { return }
-            let value = await compiler.run(
-                source: project.main,
-                sourcePath: project.entryPath,
-                supportingFiles: project.supporting
-            )
-            guard !Task.isCancelled, activeCompilationID == compilationID else {
-                isCompilerDraining = false
-                return
-            }
-            finish(value)
+    // MARK: - Cargo
+
+    /// The active project's manifest text, if it has one.
+    private func manifestSource(
+        in project: (entryPath: String, main: String, supporting: [String: String])
+    ) -> String? {
+        project.entryPath == "Cargo.toml" ? project.main : project.supporting["Cargo.toml"]
+    }
+
+    var cargoManifestSource: String? {
+        var files = fileContents
+        files[selectedFile] = source
+        return files["Cargo.toml"]
+    }
+
+    /// Resolves and downloads, reusing the last snapshot when the manifest text
+    /// has not changed.
+    @discardableResult
+    private func resolveWorkspace(manifestSource: String) async throws -> CargoWorkspaceSnapshot {
+        if resolvedManifestSource == manifestSource, !cargoWorkspace.isEmpty {
+            return cargoWorkspace
         }
+        let handler: @Sendable (CargoPreparationStage) -> Void = { [weak self] stage in
+            Task { @MainActor [weak self] in self?.cargoStage = stage }
+        }
+        let snapshot = try await packageManager.prepare(
+            manifestSource: manifestSource,
+            onStage: handler
+        )
+        cargoWorkspace = snapshot
+        resolvedManifestSource = manifestSource
+        cargoStage = snapshot.isEmpty ? .idle : .ready
+        return snapshot
+    }
+
+    /// Explicitly re-resolves the project's dependencies and writes Cargo.lock.
+    func refreshCargoWorkspace() {
+        guard let manifestSource = cargoManifestSource else {
+            cargoWorkspace = .empty
+            cargoStage = .idle
+            resolvedManifestSource = nil
+            return
+        }
+        cargoTask?.cancel()
+        cargoTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let snapshot = try await resolveWorkspace(manifestSource: manifestSource)
+                if let lockfile = snapshot.lockfile, !snapshot.packages.isEmpty {
+                    writeLockfile(lockfile)
+                }
+            } catch is CancellationError {
+                return
+            } catch {
+                cargoStage = .failed(error.localizedDescription)
+            }
+            await refreshCargoStorage()
+        }
+    }
+
+    /// Records the resolved graph in the project, exactly as `cargo fetch` does,
+    /// so the same versions rebuild later and travel with the project.
+    private func writeLockfile(_ contents: String) {
+        guard !isBusy else { return }
+        // Sync the editor buffer first so an in-progress edit is not lost.
+        fileContents[selectedFile] = source
+        guard fileContents["Cargo.lock"] != contents else { return }
+        fileContents["Cargo.lock"] = contents
+        if selectedFile == "Cargo.lock" { source = contents }
+        fileNames = fileContents.keys.sorted(by: projectFileOrder)
+        let project = currentProject()
+        Task { await remember(project, lastBuild: lastBuild) }
+    }
+
+    /// Downloads every resolved package so the project builds with no network.
+    func downloadDependenciesForOffline() {
+        resolvedManifestSource = nil
+        refreshCargoWorkspace()
+    }
+
+    func refreshCargoStorage() async {
+        cargoStorage = await packageManager.storageUsage()
+    }
+
+    func clearCargoBuildArtifacts() async {
+        try? await packageManager.clearBuildArtifacts()
+        resolvedManifestSource = nil
+        await refreshCargoStorage()
+        refreshCargoWorkspace()
+    }
+
+    func clearCargoPackageCache() async {
+        try? await packageManager.clearPackageCache()
+        resolvedManifestSource = nil
+        cargoWorkspace = .empty
+        cargoStage = .idle
+        await refreshCargoStorage()
+    }
+
+    func clearCargoDownloadedArchives() async {
+        try? await packageManager.clearDownloadedArchives()
+        await refreshCargoStorage()
     }
 
     func cancelBuild() {
         guard isBusy else { return }
+        // Interrupt the guest itself; the task cancellation below only detaches
+        // the UI from a worker that would otherwise run to completion.
+        compiler.cancel()
         compilationTask?.cancel()
         compilationTask = nil
         activeCompilationID = nil
         activity = .idle
         isCompilerDraining = true
+        if cargoStage.isWorking { cargoStage = .idle }
         result = .failure(
             phase: .setup,
-            detail: "Build cancelled. The Wasm worker is finishing sandbox cleanup in the background."
+            detail: "Build stopped. The Wasm guest is being interrupted and its sandbox released."
         )
     }
 
@@ -374,8 +556,36 @@ final class CompilerViewModel: ObservableObject {
                 }
                 """,
             ]
+        case .packages:
+            files = [
+                "src/main.rs": """
+                use smallvec::SmallVec;
+
+                fn main() {
+                    // SmallVec keeps the first eight values inline, with no heap
+                    // allocation, and spills to a Vec only when it has to.
+                    let mut squares: SmallVec<[u32; 8]> = SmallVec::new();
+                    for value in 1..=6 {
+                        squares.push(value * value);
+                    }
+
+                    println!("squares      {squares:?}");
+                    println!("spilled      {}", squares.spilled());
+                    println!("log level    {}", log::max_level());
+                }
+                """,
+            ]
         }
 
+        let dependencies = switch template {
+        case .packages:
+            """
+            smallvec = "1"
+            log = "0.4"
+            """
+        default:
+            ""
+        }
         let manifest = """
         [package]
         name = "\(name)"
@@ -383,6 +593,7 @@ final class CompilerViewModel: ObservableObject {
         edition = "2024"
 
         [dependencies]
+        \(dependencies)
         """
         var projectFiles = files
         projectFiles["Cargo.toml"] = manifest
@@ -460,6 +671,7 @@ final class CompilerViewModel: ObservableObject {
         projectTransfer = .ready("Added \(name) \(requirement) to Cargo.toml.")
         let project = currentProject()
         Task { await remember(project, lastBuild: nil) }
+        refreshCargoWorkspace()
         return true
     }
 
@@ -497,6 +709,7 @@ final class CompilerViewModel: ObservableObject {
         lastBuild = nil
         completedStages = []
         compatibilityReport = ProjectCompatibilityReport.scan(currentProject())
+        resetCargoWorkspace()
         let project = currentProject()
         Task { await remember(project, lastBuild: nil) }
         return true
@@ -531,8 +744,18 @@ final class CompilerViewModel: ObservableObject {
         completedStages = []
         practiceCompleted = false
         activeLessonID = nil
+        resetCargoWorkspace()
         let project = currentProject()
         Task { await remember(project, lastBuild: nil) }
+    }
+
+    /// Drops the resolved graph so the next build resolves the new manifest.
+    private func resetCargoWorkspace() {
+        cargoTask?.cancel()
+        cargoTask = nil
+        resolvedManifestSource = nil
+        cargoWorkspace = .empty
+        cargoStage = .idle
     }
 
     private func loadProject(_ project: CrabrixProject, lastBuild: ProjectBuildRecord? = nil) {
@@ -600,8 +823,9 @@ final class CompilerViewModel: ObservableObject {
         func rank(_ path: String) -> Int {
             switch path {
             case "Cargo.toml": 0
-            case entryFile: 1
-            default: 2
+            case "Cargo.lock": 1
+            case entryFile: 2
+            default: 3
             }
         }
         let lhsRank = rank(lhs)

@@ -3,6 +3,7 @@ import SwiftUI
 struct PracticeSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var source: String
+    @State private var cursorOffset = 0
     @State private var isChecking = false
     @State private var feedback = "Move one line so the name is printed before the Vec changes."
     @State private var passed = false
@@ -28,19 +29,21 @@ struct PracticeSheet: View {
                         .foregroundStyle(CrabrixTheme.muted)
                 }
 
-                TextEditor(text: $source)
-                    .font(.system(size: 13, design: .monospaced))
-                    .lineSpacing(5)
-                    .scrollContentBackground(.hidden)
-                    .padding(12)
-                    .background(CrabrixTheme.background)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(CrabrixTheme.border)
-                    }
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
+                // The practice editor is a real Rust editor, so it gets the same
+                // highlighting, gutter, and Rust keyboard as the workspace.
+                SyntaxCodeEditor(
+                    text: $source,
+                    cursorOffset: $cursorOffset,
+                    filePath: "practice.rs",
+                    isEditable: !isChecking,
+                    navigationTarget: nil,
+                    onRequestCompletion: {}
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(CrabrixTheme.border)
+                }
 
                 HStack(spacing: 9) {
                     Image(systemName: passed ? "checkmark.circle.fill" : "info.circle")

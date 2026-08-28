@@ -31,9 +31,25 @@ enum RustCourseCatalog {
             id: "projects",
             level: "ADVANCED",
             title: "Cargo & Real Projects",
-            subtitle: "Modules, testing, error design, and concurrency",
+            subtitle: "Modules, testing, error design, dependencies, and smart pointers",
             systemImage: "shippingbox.fill",
-            units: units("projects")
+            units: units("projects", "pointers")
+        ),
+        RustCourse(
+            id: "concurrency",
+            level: "ADVANCED",
+            title: "Concurrency & Async",
+            subtitle: "Threads, channels, shared state, and async/await",
+            systemImage: "arrow.triangle.branch",
+            units: units("threads", "async")
+        ),
+        RustCourse(
+            id: "systems",
+            level: "EXPERT",
+            title: "Macros & Systems Rust",
+            subtitle: "Metaprogramming, unsafe, FFI, performance, and idioms",
+            systemImage: "cpu.fill",
+            units: units("meta", "systems")
         ),
         RustCourse(
             id: "interview",
@@ -92,6 +108,62 @@ enum RustCourseCatalog {
                 RustLesson(id: "q-box-rc-arc", title: "Box, Rc, and Arc", concept: "Ownership and allocation choices", minutes: 12, exercise: .planned),
                 RustLesson(id: "q-dyn-generics", title: "dyn Trait vs Generics", concept: "Dispatch and code size tradeoffs", minutes: 11, exercise: .planned),
                 RustLesson(id: "q-unsafe", title: "Reasoning About unsafe", concept: "Sound abstractions and invariants", minutes: 12, exercise: .planned),
+            ]
+        ),
+        RustLearningUnit(
+            id: "interview-concurrency",
+            level: 3,
+            title: "Concurrency in Depth",
+            subtitle: "The follow-up questions after Send and Sync",
+            lessons: [
+                RustLesson(id: "q-atomics", title: "Atomics and Ordering", concept: "Relaxed, Acquire/Release, SeqCst", minutes: 13, exercise: .planned),
+                RustLesson(id: "q-deadlock", title: "Deadlocks", concept: "What the borrow checker does not prevent", minutes: 10, exercise: .planned),
+                RustLesson(id: "q-channels-vs-mutex", title: "Channels vs Mutex", concept: "Moving ownership or sharing it", minutes: 10, exercise: .planned),
+                RustLesson(id: "q-async-vs-threads", title: "Async vs Threads", concept: "Waiting versus computing", minutes: 11, exercise: .planned),
+                RustLesson(id: "q-blocking-async", title: "Blocking an Executor", concept: "Why one sync call stalls a runtime", minutes: 10, exercise: .planned),
+                RustLesson(id: "q-cancellation", title: "Cancellation Safety", concept: "Dropping a future mid-await", minutes: 12, exercise: .planned),
+            ]
+        ),
+        RustLearningUnit(
+            id: "interview-platform",
+            level: 4,
+            title: "Systems and Networking",
+            subtitle: "The layer under your Rust service, which interviews always reach",
+            lessons: [
+                RustLesson(id: "q-stack-heap", title: "Stack and Heap", concept: "Where values live and what a move copies", minutes: 9, exercise: .planned),
+                RustLesson(id: "q-virtual-memory", title: "Virtual Memory", concept: "Pages, faults, and resident size", minutes: 11, exercise: .planned),
+                RustLesson(id: "q-syscalls", title: "Syscalls and Buffering", concept: "Where the cost of IO actually is", minutes: 10, exercise: .planned),
+                RustLesson(id: "q-tcp-udp", title: "TCP vs UDP", concept: "Streams, datagrams, and trade-offs", minutes: 9, exercise: .planned),
+                RustLesson(id: "q-http-versions", title: "HTTP/1.1, 2, and 3", concept: "Head-of-line blocking per layer", minutes: 10, exercise: .planned),
+                RustLesson(id: "q-tls", title: "What TLS Guarantees", concept: "Identity, confidentiality, integrity", minutes: 11, exercise: .planned),
+                RustLesson(id: "q-backpressure", title: "Backpressure", concept: "Bounded queues and load shedding", minutes: 10, exercise: .planned),
+            ]
+        ),
+        RustLearningUnit(
+            id: "interview-data",
+            level: 5,
+            title: "Data and Distributed Systems",
+            subtitle: "The half of a backend interview that is not the language",
+            lessons: [
+                RustLesson(id: "q-acid", title: "Transactions and Isolation", concept: "Which anomaly each level allows", minutes: 12, exercise: .planned),
+                RustLesson(id: "q-indexes", title: "Indexes and B-trees", concept: "Leftmost prefix and write cost", minutes: 11, exercise: .planned),
+                RustLesson(id: "q-cap", title: "CAP in Practice", concept: "What happens during a partition", minutes: 11, exercise: .planned),
+                RustLesson(id: "q-idempotency", title: "Idempotency and Retries", concept: "Making at-least-once safe", minutes: 10, exercise: .planned),
+                RustLesson(id: "q-caching", title: "Caching and Invalidation", concept: "Staleness budgets and stampedes", minutes: 11, exercise: .planned),
+            ]
+        ),
+        RustLearningUnit(
+            id: "interview-craft",
+            level: 6,
+            title: "Engineering Craft",
+            subtitle: "How you work, which is the part every panel scores",
+            lessons: [
+                RustLesson(id: "q-complexity", title: "Complexity in Practice", concept: "Constants, cache, and amortised cost", minutes: 10, exercise: .planned),
+                RustLesson(id: "q-hashmap", title: "Hashing and Collisions", concept: "Why Rust seeds its hasher", minutes: 10, exercise: .planned),
+                RustLesson(id: "q-testing-strategy", title: "Choosing a Test", concept: "Unit, property, fuzz, integration", minutes: 11, exercise: .planned),
+                RustLesson(id: "q-api-design", title: "API Design and Semver", concept: "Making misuse impossible to express", minutes: 12, exercise: .planned),
+                RustLesson(id: "q-perf-profiling", title: "Profiling First", concept: "Measure, change one thing, measure", minutes: 10, exercise: .planned),
+                RustLesson(id: "q-ffi-abi", title: "FFI and ABI", concept: "Ownership across the C boundary", minutes: 13, exercise: .planned),
             ]
         ),
     ]

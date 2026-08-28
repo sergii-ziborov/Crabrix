@@ -47,7 +47,9 @@ final class ProjectImportTests: XCTestCase {
         XCTAssertEqual(report.status, .inspect)
         XCTAssertEqual(report.dependencies, 1)
         XCTAssertEqual(report.rustFiles, 2)
-        XCTAssertEqual(report.notes.count, 2)
+        // Registry dependencies are resolved by the package manager now, so the
+        // only remaining note is the build script the local build does not run.
+        XCTAssertEqual(report.notes, ["build.rs is not executed by the local build."])
     }
 
     func testRecentProjectLibraryPersistsBuildStatus() async throws {

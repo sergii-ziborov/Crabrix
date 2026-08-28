@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — Crabrix</title>
+<meta name="description" content="Crabrix has no account and no analytics. Your code and progress stay on your device. The only optional transmission is the leaderboard entry you choose to publish.">
+<meta property="og:title" content="Privacy Policy — Crabrix">
+<meta property="og:description" content="Crabrix has no account and no analytics. Your code and progress stay on your device. The only optional transmission is the leaderboard entry you choose to publish.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#129408;</text></svg>">
+<style>
+  :root {
+    --bg: #0b0f14;
+    --panel: #121821;
+    --raised: #18202b;
+    --border: #232e3d;
+    --text: #eaf0f7;
+    --muted: #93a4b8;
+    --coral: #ff6b4a;
+    --mint: #4fd1a5;
+    --blue: #4aa8ff;
+    --amber: #ffb648;
+    --radius: 16px;
+    --max: 1080px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--blue); }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 22px; }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: blur(14px);
+    background: rgba(11,15,20,.82);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav { display: flex; align-items: center; gap: 18px; height: 62px; }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; letter-spacing: -.01em;
+    color: var(--text); text-decoration: none;
+  }
+  .brand .mark { font-size: 24px; }
+  .nav a.link { color: var(--muted); text-decoration: none; font-size: 14px; transition: color .2s; }
+  .nav a.link:hover, .nav a.link[aria-current] { color: var(--text); }
+  .nav .spacer { flex: 1; }
+
+  /* At phone widths the brand plus four links overflow a single 62px row,
+     which pushed the whole page sideways. Brand on its own line, links below. */
+  @media (max-width: 560px) {
+    .nav { height: auto; min-height: 56px; flex-wrap: wrap; gap: 14px; padding: 11px 0; }
+    .nav .spacer { display: none; }
+    .brand { width: 100%; }
+  }
+
+  .head { padding: 60px 0 30px; }
+  .eyebrow {
+    font: 600 12px/1 ui-monospace, monospace; letter-spacing: .12em;
+    color: var(--mint); text-transform: uppercase; margin-bottom: 14px;
+  }
+  h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.06; letter-spacing: -.03em; margin: 0 0 14px; font-weight: 800; }
+  .lede { color: var(--muted); max-width: 62ch; margin: 0; }
+
+  .board { padding-bottom: 70px; }
+  .table-shell {
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--panel); overflow: hidden;
+  }
+  /* Narrow screens scroll the table itself rather than the page sideways. */
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { border-collapse: collapse; width: 100%; min-width: 620px; }
+  th, td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--border); }
+  th {
+    font: 600 11px/1 ui-monospace, monospace; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted); background: var(--raised);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background .15s; }
+  tbody tr:hover { background: rgba(74,168,255,.05); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: ui-monospace, monospace; }
+  .rank { font-family: ui-monospace, monospace; color: var(--muted); width: 68px; }
+  .rank.top { color: var(--amber); font-weight: 700; }
+  .who { display: flex; align-items: center; gap: 11px; }
+  .pip {
+    width: 30px; height: 30px; border-radius: 50%; flex: 0 0 auto;
+    display: grid; place-items: center; font-size: 13px; font-weight: 700;
+    background: rgba(79,209,165,.14); color: var(--mint);
+  }
+  .title { color: var(--muted); font-size: 13px; }
+  .points { color: var(--amber); font-weight: 700; }
+
+  .state { padding: 42px 18px; text-align: center; color: var(--muted); }
+  .state.error { color: var(--coral); }
+
+  .legend {
+    margin-top: 26px; display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+  .legend div {
+    border: 1px solid var(--border); border-radius: 13px;
+    background: var(--panel); padding: 14px 16px; font-size: 14px; color: var(--muted);
+  }
+  .legend strong { color: var(--text); display: block; margin-bottom: 3px; font-size: 15px; }
+
+  footer { border-top: 1px solid var(--border); padding: 30px 0 46px; color: var(--muted); font-size: 14px; }
+  .foot-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+  .foot-row .spacer { flex: 1; }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--text); }
+
+  tbody tr { animation: rise .4s ease both; }
+  @media (prefers-reduced-motion: reduce) {
+    tbody tr { animation: none; }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+</style>
+
+<style>
+  /* The wrap stays full width so the prose lines up with the page heading;
+     line length is constrained per block instead of on the container, which
+     would centre the whole column and leave the heading hanging to its left. */
+  .prose { padding-bottom: 70px; }
+  .prose > p, .prose > ul, .prose > h2, .prose > h3, .prose > .callout { max-width: 72ch; }
+  .prose h2 { font-size: clamp(20px, 3vw, 26px); margin: 40px 0 10px; letter-spacing: -.02em; }
+  .prose h3 { font-size: 17px; margin: 26px 0 6px; }
+  .prose p { color: var(--muted); }
+  .prose ul { color: var(--muted); padding-left: 20px; }
+  .prose li { margin: 6px 0; }
+  .prose strong { color: var(--text); }
+  .prose .updated { font: 600 12px/1 ui-monospace, monospace; color: var(--muted); letter-spacing: .06em; }
+  .callout {
+    border: 1px solid var(--border); border-left: 3px solid var(--mint);
+    background: var(--panel); border-radius: 12px; padding: 16px 18px; margin: 22px 0;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout p:first-child { margin-top: 0; }
+  .grid2 { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); margin: 22px 0; }
+  .grid2 div {
+    border: 1px solid var(--border); border-radius: 13px;
+    background: var(--panel); padding: 16px 18px; color: var(--muted); font-size: 14px;
+  }
+  .grid2 strong { display: block; color: var(--text); margin-bottom: 4px; font-size: 15px; }
+  table.plain { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 14px; }
+  table.plain th, table.plain td { text-align: left; padding: 11px 13px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.plain th { color: var(--muted); font: 600 11px/1 ui-monospace, monospace; letter-spacing: .09em; text-transform: uppercase; }
+  table.plain td { color: var(--muted); }
+  .table-scroll { overflow-x: auto; }
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="/"><span class="mark">&#129408;</span> Crabrix</a>
+    <div class="spacer"></div>
+    <a class="link" href="/about">About</a>
+    <a class="link" href="/leaderboard">Leaderboard</a>
+    <a class="link" href="/support">Support</a>
+    <a class="link" href="/#price">Price</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap head">
+    <div class="eyebrow">Privacy</div>
+    <h1>Privacy Policy</h1>
+    <p class="lede">No account. No analytics. No tracking. This page describes exactly what leaves your device, which is almost nothing.</p>
+  </div>
+
+  <div class="wrap prose">
+
+    <p class="updated">LAST UPDATED 28 AUGUST 2026</p>
+
+    <div class="callout">
+      <p><strong>The short version.</strong> Crabrix has no account and no analytics.
+      Your code, your projects, and your progress stay on your device. One optional
+      feature &mdash; the public leaderboard &mdash; sends a display name you choose and
+      your rating, and only after you switch it on. You can delete that entry from
+      inside the app at any time.</p>
+    </div>
+
+    <h2>Who is responsible</h2>
+    <p>
+      Crabrix is made by Serhii Ziborov, an independent developer. There is no company,
+      no investor, and no third party with access to anything described on this page.
+      Contact: <a href="mailto:support@crabrix.com">support@crabrix.com</a>.
+    </p>
+
+    <h2>What stays on your device</h2>
+    <p>All of this is stored locally and is never transmitted anywhere:</p>
+    <ul>
+      <li><strong>Your Rust code and projects</strong> &mdash; files you write, import from
+        GitHub, or open from the Files app.</li>
+      <li><strong>Build output</strong> &mdash; compiler diagnostics, program stdout and stderr,
+        and cached build artifacts.</li>
+      <li><strong>Learning progress</strong> &mdash; lessons completed, answers, topic mastery,
+        rating, achievements, health and energy.</li>
+      <li><strong>Preferences</strong> &mdash; appearance, editor font size, and the rest of
+        Settings.</li>
+      <li><strong>Downloaded crates</strong> &mdash; package sources and compiled artifacts,
+        cached so a project rebuilds offline.</li>
+    </ul>
+    <p>
+      Deleting the app removes all of it. Crabrix keeps no copy and has no way to
+      recover it.
+    </p>
+
+    <h2>What leaves your device</h2>
+
+    <h3>1. Package downloads (crates.io)</h3>
+    <p>
+      When you add a dependency, Crabrix fetches it from the crates.io registry
+      (<code>index.crates.io</code> and <code>static.crates.io</code>) over HTTPS. These are
+      ordinary requests for public files. Crabrix sends no identifier with them and
+      crates.io is operated by the Rust Foundation under its own privacy policy.
+    </p>
+
+    <h3>2. Repository import (GitHub)</h3>
+    <p>
+      If you import a public repository, Crabrix downloads its archive from
+      <code>github.com</code> over HTTPS. Only the URL you typed is sent. No credentials
+      are involved and no private repositories are accessed.
+    </p>
+
+    <h3>3. The public leaderboard &mdash; optional, off by default</h3>
+    <p>
+      In Profile you can switch on <strong>Publish my rating</strong>. Until you do, nothing
+      is sent. When you do, each submission contains:
+    </p>
+    <div class="table-scroll">
+      <table class="plain">
+        <thead><tr><th>Field</th><th>What it is</th></tr></thead>
+        <tbody>
+          <tr><td>Display name</td><td>The name you type. It is not read from your device, your Apple Account, or anywhere else.</td></tr>
+          <tr><td>Player key</td><td>A random string generated on your device the first time you publish, stored in the Keychain. It is not derived from your device, your Apple Account, or any advertising identifier.</td></tr>
+          <tr><td>Rating and rank</td><td>Your point total and its tier name.</td></tr>
+          <tr><td>Counts</td><td>Lessons completed, lines of Rust changed, achievements unlocked, best Code Recall level.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Nothing else is sent: no email address, no name from your Apple Account, no
+      contacts, no location, no device identifier, no code, and no file names. The entry
+      is stored on Cloudflare infrastructure and shown on the public
+      <a href="/leaderboard">leaderboard</a>.
+    </p>
+
+    <h3>Deleting your leaderboard entry</h3>
+    <p>
+      Profile &rarr; <strong>Remove my entry from the board</strong> deletes the row
+      immediately and permanently. Nothing on your device is affected. You can also
+      write to <a href="mailto:support@crabrix.com">support@crabrix.com</a> and it will be
+      removed for you.
+    </p>
+
+    <h2>What Crabrix never does</h2>
+    <ul>
+      <li>No tracking, in the App Store sense or any other. Your activity is not linked
+        to data from other apps or websites.</li>
+      <li>No advertising, no ad identifiers, no advertising networks.</li>
+      <li>No third-party analytics, crash reporting, or attribution SDK. None is linked
+        into the app.</li>
+      <li>No selling or sharing of data. There is nobody to sell it to and nothing to
+        sell.</li>
+      <li>No access to your photos, camera, microphone, location, contacts, or health
+        data. The app requests none of these permissions.</li>
+      <li>No reading of your code by anyone but you. It is compiled on your device by a
+        compiler that ships inside the app.</li>
+    </ul>
+
+    <h2>Children</h2>
+    <p>
+      Crabrix is a programming tool suitable for all ages and collects no personal data
+      from anyone, of any age. The optional leaderboard asks only for a display name;
+      please do not enter a real name, a school, or any other identifying detail. Names
+      are filtered and can be reported and removed &mdash; see <a href="/support">Support</a>.
+    </p>
+
+    <h2>Legal basis and your rights</h2>
+    <p>
+      Where the GDPR applies, the legal basis for the leaderboard entry is your consent,
+      given by switching the feature on, and withdrawn by removing the entry or turning
+      it off. Because the entry contains only what you typed and numbers the app
+      calculated, access, correction, and erasure are all available directly in the app:
+      change the name and publish again, or remove the entry. For anything else, write to
+      <a href="mailto:support@crabrix.com">support@crabrix.com</a>.
+    </p>
+    <p>
+      There is no data retention schedule to describe, because there is nothing else
+      retained. A leaderboard entry stays until you delete it.
+    </p>
+
+    <h2>Changes to this policy</h2>
+    <p>
+      If Crabrix ever collects something new, this page will say so before that version
+      ships, and the date at the top will change. The app's App Store privacy details are
+      kept in step with this page.
+    </p>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap foot-row">
+    <div>&copy; 2026 Serhii Ziborov. All rights reserved.</div>
+    <div class="spacer"></div>
+    <a href="/about">About</a>
+    <a href="/support">Support</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="https://github.com/sergii-ziborov/Crabrix">GitHub</a>
+  </div>
+  <div class="wrap" style="margin-top:14px; font-size:13px; opacity:.75">
+    Rust and the Rust logo are trademarks of the Rust Foundation. Crabrix is an
+    independent project and is not affiliated with or endorsed by the Rust Foundation
+    or by Apple.
+  </div>
+</footer>
+
+</body>
+</html>

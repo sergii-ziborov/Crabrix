@@ -48,8 +48,10 @@ final class ProjectTerminalSession: ObservableObject {
     func submit(
         project: CrabrixProject,
         isBusy: Bool,
+        workspace: CargoWorkspaceSnapshot = .empty,
         onCheck: () -> Void,
         onRun: () -> Void,
+        onFetch: (() -> Void)? = nil,
         onReplaceFiles: (([String: String], String?) -> Bool)? = nil
     ) {
         let raw = command.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -75,7 +77,8 @@ final class ProjectTerminalSession: ObservableObject {
                 "  grep [-inr] · find · wc Search and inspect text\n" +
                 "  touch · mkdir · rm      Edit the project snapshot\n" +
                 "  cp · mv · echo          Copy, move, and write files\n" +
-                "  cargo check|run|tree    Use the bundled Rust toolchain\n" +
+                "  cargo check|run|build   Use the bundled Rust toolchain\n" +
+                "  cargo tree|fetch        Inspect and download packages\n" +
                 "  env · date · uname      Sandbox information\n" +
                 "  clear                    Clear this terminal\n\n" +
                 "Commands run inside /workspace/\(project.name); iOS does not expose host processes.",
@@ -132,9 +135,11 @@ final class ProjectTerminalSession: ObservableObject {
             runCargo(
                 arguments: Array(normalized.dropFirst()),
                 project: project,
+                workspace: workspace,
                 isBusy: isBusy,
                 onCheck: onCheck,
-                onRun: onRun
+                onRun: onRun,
+                onFetch: onFetch
             )
         case "clear":
             lines = []
@@ -185,12 +190,14 @@ final class ProjectTerminalSession: ObservableObject {
     private func runCargo(
         arguments: [String],
         project: CrabrixProject,
+        workspace: CargoWorkspaceSnapshot,
         isBusy: Bool,
         onCheck: () -> Void,
-        onRun: () -> Void
+        onRun: () -> Void,
+        onFetch: (() -> Void)?
     ) {
         guard let command = arguments.first else {
-            append("usage: cargo <check|run|tree>", kind: .error)
+            append("usage: cargo <check|run|build|tree|fetch>", kind: .error)
             return
         }
         switch command {
@@ -200,24 +207,72 @@ final class ProjectTerminalSession: ObservableObject {
                 return
             }
             onCheck()
-        case "run":
+        case "run", "build":
             guard !isBusy else {
                 append("A build is already running.", kind: .error)
                 return
             }
             onRun()
-        case "tree":
-            let dependencies = project.manifest?.dependencies ?? []
-            guard !dependencies.isEmpty else {
-                append("\(project.name) v0.1.0\n└── no dependencies", kind: .info)
+        case "fetch":
+            guard let onFetch else {
+                append("cargo fetch is unavailable right now.", kind: .error)
                 return
             }
-            let tree = dependencies.map {
-                "├── \($0.name) \($0.requirement ?? $0.source.rawValue)"
-            }.joined(separator: "\n")
-            append("\(project.name) v0.1.0\n\(tree)", kind: .info)
+            append("Resolving and downloading registry packages…", kind: .info)
+            onFetch()
+        case "tree":
+            append(Self.renderTree(project: project, workspace: workspace), kind: .info)
         default:
-            append("cargo \(command) is not available in the Phase 0 sandbox", kind: .error)
+            append("cargo \(command) is not available in the Crabrix project shell", kind: .error)
+        }
+    }
+
+    /// Renders the resolved graph the way `cargo tree` does, falling back to the
+    /// manifest's declared dependencies before anything has been resolved.
+    nonisolated static func renderTree(
+        project: CrabrixProject,
+        workspace: CargoWorkspaceSnapshot
+    ) -> String {
+        let manifest = project.manifest
+        let rootLabel = "\(manifest?.name ?? project.name) v\(manifest?.version ?? "0.1.0")"
+
+        guard !workspace.packages.isEmpty else {
+            let declared = manifest?.dependencies ?? []
+            guard !declared.isEmpty else { return "\(rootLabel)\n└── no dependencies" }
+            var lines = [rootLabel]
+            for (offset, dependency) in declared.enumerated() {
+                let isLast = offset == declared.count - 1
+                lines.append(
+                    "\(isLast ? "└── " : "├── ")\(dependency.name) \(dependency.requirement ?? dependency.source.rawValue) (unresolved)"
+                )
+            }
+            lines.append("")
+            lines.append("Run cargo fetch to resolve and download these packages.")
+            return lines.joined(separator: "\n")
+        }
+
+        var lines = [rootLabel]
+        let direct = workspace.packages.filter(\.isDirect)
+        let transitive = workspace.packages.filter { !$0.isDirect }
+        for (offset, package) in direct.enumerated() {
+            let isLast = offset == direct.count - 1 && transitive.isEmpty
+            lines.append("\(isLast ? "└── " : "├── ")\(package.name) v\(package.version) \(marker(for: package))")
+        }
+        for (offset, package) in transitive.enumerated() {
+            let isLast = offset == transitive.count - 1
+            lines.append("\(isLast ? "└── " : "├── ")\(package.name) v\(package.version) \(marker(for: package)) (transitive)")
+        }
+        lines.append("")
+        lines.append(workspace.summary + (workspace.isOfflineReady ? " · offline ready" : " · download pending"))
+        return lines.joined(separator: "\n")
+    }
+
+    private nonisolated static func marker(for package: CratePackageStatus) -> String {
+        switch package.compatibility {
+        case .verified: "[built]"
+        case .expected: "[ready]"
+        case .review: "[review]"
+        case .unsupported: "[unsupported]"
         }
     }
 

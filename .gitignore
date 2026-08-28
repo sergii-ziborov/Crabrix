@@ -8,3 +8,5 @@ Crabrix.xcodeproj/
 Crabrix/Resources/Toolchain/artifacts-test-7/
 Crabrix/Resources/Toolchain/.stage.*/
 *.xcresult
+.wrangler/
+node_modules/

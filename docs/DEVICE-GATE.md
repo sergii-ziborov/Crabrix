@@ -23,11 +23,24 @@ Simulator success is necessary but not sufficient. A release decision requires t
 | Repeat | Perform 20 checks | No crash; record median/p95 time and peak memory |
 | Thermal | Continue checking for 10 minutes | Record `ProcessInfo.thermalState`; no critical state |
 | Recovery | Background/foreground during a check | UI recovers without corrupting the work directory |
+| Stop during a build | Start a fresh Run, tap Stop after ~3 s | The build returns as stopped and CPU returns to idle |
+| Stop a printing loop | Run a program that prints in an endless loop, then Stop | Execution ends and CPU returns to idle |
 | Infinite loop | Run `fn main() { loop {} }` | Work is terminated and CPU returns to idle |
+| Cargo first build | Create the Cargo Packages template and Run | Packages download, compile, and the program prints; record wall-clock and peak memory |
+| Cargo offline rebuild | Enable airplane mode and Run the same project again | The build reuses cached artifacts and succeeds with no network |
 
-## Current hard blocker
+## Interruption: what is solved and what is not
 
-WasmKit 0.3.1 exposes a synchronous interpreter without a public fuel/epoch interruption API. Running compilation off the main actor keeps SwiftUI responsive, but a guest infinite loop cannot yet be safely killed. A soft UI timeout would hide the result while leaving CPU work alive, so Crabrix deliberately does not claim this gate.
+Crabrix now wraps every WASI host function the guest imports, so cancelling
+traps the guest on its next syscall. That covers the cases that matter in
+practice — `rustc` performs continuous file I/O, and a runaway user program that
+prints or touches files is stopped immediately. The automated gate asserts that
+a compile which normally takes 15–20 s returns inside 40 s of a Stop; it
+currently returns in about 3 s.
+
+The remaining hole is a guest that spins without ever calling into the host, of
+which `fn main() { loop {} }` is the pure case. WasmKit 0.3.1 exposes no
+fuel/epoch interruption, so that specific program still cannot be killed.
 
 Before App Store work, choose and verify one of:
 
@@ -46,7 +59,10 @@ The dedicated Release test scheme now proves the following before a physical-dev
 - a Cargo-shaped multi-file project (`Cargo.toml`, `src/main.rs`, `src/greeter.rs`);
 - three consecutive compile/run cycles in one compiler instance;
 - denial of an 80 MiB guest allocation at the configured 64 MiB program limit;
-- path validation and a single writable `/sandbox` preopen for the user program.
+- path validation and a single writable `/sandbox` preopen for the user program;
+- resolution, checksum-verified download, extraction, compilation, and linking of
+  a real crates.io package, followed by running the linked program;
+- interruption of a running compile within the asserted window.
 
 These tests reduce device-session risk. They do not replace the 20-run memory,
 thermal, airplane-mode, lifecycle, or infinite-loop checks above.

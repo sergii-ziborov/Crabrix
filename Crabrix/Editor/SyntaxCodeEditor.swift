@@ -35,11 +35,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         textView.alwaysBounceVertical = true
         textView.alwaysBounceHorizontal = true
         textView.showsHorizontalScrollIndicator = true
-        textView.textContainer.widthTracksTextView = false
-        textView.textContainer.size = CGSize(
-            width: CGFloat.greatestFiniteMagnitude,
-            height: CGFloat.greatestFiniteMagnitude
-        )
+        textView.disableLineWrapping()
         textView.autocorrectionType = .no
         textView.autocapitalizationType = .none
         textView.smartDashesType = .no
@@ -49,6 +45,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         textView.accessibilityLabel = "Rust source editor"
         textView.lineNumberColor = UIColor(CrabrixTheme.muted).withAlphaComponent(0.82)
         textView.gutterSeparatorColor = UIColor(CrabrixTheme.border)
+        textView.gutterBackgroundColor = UIColor(CrabrixTheme.editor)
         textView.text = text
         context.coordinator.textView = textView
         textView.inputAccessoryView = RustKeyboardAccessoryView(
@@ -74,6 +71,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         if let sourceTextView = textView as? RustSourceTextView {
             sourceTextView.lineNumberColor = UIColor(CrabrixTheme.muted).withAlphaComponent(0.82)
             sourceTextView.gutterSeparatorColor = UIColor(CrabrixTheme.border)
+            sourceTextView.gutterBackgroundColor = UIColor(CrabrixTheme.editor)
         }
         if textView.text != text {
             textView.text = text
@@ -114,7 +112,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             guard !isApplyingHighlight else { return }
             parent.text = textView.text
             parent.cursorOffset = textView.selectedRange.location
-            applyHighlighting(to: textView, filePath: parent.filePath)
+            applyHighlighting(to: textView, filePath: parent.filePath, preservingScroll: false)
         }
 
         func textViewDidChangeSelection(_ textView: UITextView) {
@@ -136,13 +134,25 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             textView.selectedRange = NSRange(location: cursor, length: 0)
             parent.text = updated
             parent.cursorOffset = cursor
-            applyHighlighting(to: textView, filePath: parent.filePath)
+            applyHighlighting(to: textView, filePath: parent.filePath, preservingScroll: false)
         }
 
-        func applyHighlighting(to textView: UITextView, filePath: String) {
+        /// Repaints the syntax colours.
+        ///
+        /// - Parameter preservingScroll: true when this is a repaint rather than
+        ///   something the reader did. Re-applying a selection makes UITextView
+        ///   scroll it into view, so a repaint with the caret still at offset 0
+        ///   would yank a reader who had scrolled down back to the first line.
+        ///   Typing passes false, because there the caret should lead.
+        func applyHighlighting(
+            to textView: UITextView,
+            filePath: String,
+            preservingScroll: Bool = true
+        ) {
             let source = textView.text ?? ""
             let fullRange = NSRange(location: 0, length: (source as NSString).length)
             let selection = textView.selectedRange
+            let offsetBefore = textView.contentOffset
             let baseFont = UIFont.monospacedSystemFont(
                 ofSize: parent.editorFontSize,
                 weight: .regular
@@ -165,7 +175,14 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             }
             textView.textStorage.endEditing()
             textView.typingAttributes = base
-            textView.selectedRange = selection
+            // Only when it actually moved: assigning an unchanged selection
+            // still scrolls, which is the whole bug.
+            if textView.selectedRange != selection {
+                textView.selectedRange = selection
+            }
+            if preservingScroll, textView.contentOffset != offsetBefore {
+                textView.contentOffset = offsetBefore
+            }
             isApplyingHighlight = false
             highlightedText = source
             highlightedFilePath = filePath
@@ -216,66 +233,153 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         }
 
         private func color(for kind: SyntaxTokenKind) -> UIColor {
-            switch kind {
-            case .comment: UIColor(CrabrixTheme.muted)
-            case .string: UIColor(CrabrixTheme.mint)
-            case .keyword: UIColor(CrabrixTheme.coral)
-            case .type: UIColor(CrabrixTheme.blue)
-            case .number: UIColor(CrabrixTheme.amber)
-            case .macro: UIColor(red: 0.79, green: 0.60, blue: 1.0, alpha: 1)
-            case .attribute: UIColor(red: 0.95, green: 0.54, blue: 0.75, alpha: 1)
-            case .section: UIColor(CrabrixTheme.coral)
-            case .key: UIColor(CrabrixTheme.blue)
-            }
+            SyntaxTheme.uiColor(for: kind)
         }
     }
 }
 
 private final class RustSourceTextView: UITextView {
-    var lineNumberColor = UIColor.secondaryLabel { didSet { setNeedsDisplay() } }
-    var gutterSeparatorColor = UIColor.separator { didSet { setNeedsDisplay() } }
+    var lineNumberColor = UIColor.secondaryLabel {
+        didSet { gutterView.lineNumberColor = lineNumberColor }
+    }
+    var gutterSeparatorColor = UIColor.separator {
+        didSet { gutterView.separatorColor = gutterSeparatorColor }
+    }
+    var gutterBackgroundColor: UIColor = .clear {
+        didSet { gutterView.backgroundColor = gutterBackgroundColor }
+    }
+
+    /// Width reserved for line numbers, matching `textContainerInset.left`.
+    static let gutterWidth: CGFloat = 44
+
+    /// The gutter is a subview rather than something drawn in `draw(_:)`.
+    ///
+    /// Drawing it inside the scroll view meant the code scrolled straight
+    /// across the numbers: the left inset only reserves space at content x = 0,
+    /// and that space scrolls away the moment you swipe sideways. A subview
+    /// pinned to the visible left edge stays put and always draws above.
+    private lazy var gutterView: GutterView = {
+        let view = GutterView()
+        view.isUserInteractionEnabled = false
+        view.contentMode = .redraw
+        view.backgroundColor = gutterBackgroundColor
+        return view
+    }()
+
+    /// Set when the laid-out width may have changed, so `contentSize` is
+    /// recomputed on the next layout pass instead of on every one.
+    private var needsContentWidthUpdate = true
 
     override var text: String! {
-        didSet { setNeedsDisplay() }
+        didSet { setNeedsContentWidthUpdate() }
+    }
+
+    override var font: UIFont? {
+        didSet { setNeedsContentWidthUpdate() }
     }
 
     override var contentOffset: CGPoint {
-        didSet { setNeedsDisplay() }
+        didSet { positionGutter() }
     }
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        setNeedsDisplay()
-    }
+        // UITextView re-attaches the text container to its own width on every
+        // layout pass, which silently turns wrapping back on. Code must scroll
+        // sideways instead of wrapping, so the no-wrap setup is re-asserted here
+        // rather than only once at construction.
+        disableLineWrapping()
 
-    override func draw(_ rect: CGRect) {
-        super.draw(rect)
-        drawLineNumbers()
-    }
-
-    private func drawLineNumbers() {
-        guard let font else { return }
-        let source = text ?? ""
-        let lineStarts = logicalLineStarts(in: source)
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.monospacedDigitSystemFont(ofSize: max(font.pointSize - 3, 9), weight: .regular),
-            .foregroundColor: lineNumberColor,
-        ]
-        let gutterX = bounds.minX
-        let gutterWidth: CGFloat = 44
-
-        let separator = UIBezierPath()
-        separator.move(to: CGPoint(x: gutterX + gutterWidth, y: bounds.minY))
-        separator.addLine(to: CGPoint(x: gutterX + gutterWidth, y: bounds.maxY))
-        gutterSeparatorColor.setStroke()
-        separator.lineWidth = 1 / max(UIScreen.main.scale, 1)
-        separator.stroke()
-
-        guard !source.isEmpty else {
-            drawLineNumber(1, y: textContainerInset.top, gutterX: gutterX, width: gutterWidth, attributes: attributes)
-            return
+        if gutterView.superview !== self { addSubview(gutterView) }
+        // Always the topmost subview: UITextView adds its own as it scrolls.
+        if subviews.last !== gutterView { bringSubviewToFront(gutterView) }
+        if let font {
+            gutterView.numberFont = .monospacedDigitSystemFont(
+                ofSize: max(font.pointSize - 3, 9),
+                weight: .regular
+            )
         }
 
+        // Recomputing contentSize on every pass is what made a long file snap
+        // back to line one: assigning it mid-scroll perturbs contentOffset, and
+        // scrolling triggers another layout pass, so it never settled.
+        if needsContentWidthUpdate || abs(contentSize.width - lastMeasuredWidth) > 0.5 {
+            needsContentWidthUpdate = false
+            growContentWidthToFitLongestLine()
+        }
+
+        positionGutter()
+    }
+
+    func setNeedsContentWidthUpdate() {
+        needsContentWidthUpdate = true
+        setNeedsLayout()
+    }
+
+    /// Keeps the gutter over the visible left edge and redraws its numbers.
+    private func positionGutter() {
+        guard gutterView.superview === self else { return }
+        let frame = CGRect(
+            x: contentOffset.x,
+            y: contentOffset.y,
+            width: Self.gutterWidth,
+            height: bounds.height
+        )
+        if gutterView.frame != frame { gutterView.frame = frame }
+        gutterView.verticalOffset = contentOffset.y
+        gutterView.lines = visibleLineNumbers()
+        gutterView.setNeedsDisplay()
+    }
+
+    private var lastMeasuredWidth: CGFloat = 0
+
+    /// An unbounded text container stops wrapping, but it does not make the
+    /// scroll view scrollable on its own: contentSize still has to cover the
+    /// longest laid-out line.
+    private func growContentWidthToFitLongestLine() {
+        layoutManager.ensureLayout(for: textContainer)
+        let used = layoutManager.usedRect(for: textContainer)
+        let required = ceil(used.maxX) + textContainerInset.left + textContainerInset.right
+        let target = max(required, bounds.width)
+        lastMeasuredWidth = target
+        guard abs(contentSize.width - target) > 0.5 else { return }
+
+        // Restore the reading position: shrinking the content can clamp the
+        // offset, and the reader did not ask to be moved.
+        let previous = contentOffset
+        contentSize.width = target
+        let maximumX = max(0, contentSize.width - bounds.width)
+        let restored = CGPoint(x: min(previous.x, maximumX), y: previous.y)
+        if contentOffset != restored { contentOffset = restored }
+    }
+
+    func disableLineWrapping() {
+        if textContainer.widthTracksTextView {
+            textContainer.widthTracksTextView = false
+        }
+        if textContainer.heightTracksTextView {
+            textContainer.heightTracksTextView = false
+        }
+        if textContainer.lineBreakMode != .byClipping {
+            textContainer.lineBreakMode = .byClipping
+        }
+        let unbounded = CGSize(
+            width: CGFloat.greatestFiniteMagnitude,
+            height: CGFloat.greatestFiniteMagnitude
+        )
+        if textContainer.size != unbounded {
+            textContainer.size = unbounded
+        }
+    }
+
+    /// The line numbers visible right now, with their y in content coordinates.
+    private func visibleLineNumbers() -> [GutterView.Line] {
+        let source = text ?? ""
+        guard !source.isEmpty else {
+            return [GutterView.Line(number: 1, y: textContainerInset.top)]
+        }
+
+        let lineStarts = logicalLineStarts(in: source)
         let visible = CGRect(
             x: contentOffset.x,
             y: contentOffset.y,
@@ -283,30 +387,17 @@ private final class RustSourceTextView: UITextView {
             height: bounds.height
         )
         let glyphRange = layoutManager.glyphRange(forBoundingRect: visible, in: textContainer)
-        var drawnLines: Set<Int> = []
+
+        var lines: [GutterView.Line] = []
+        var seen: Set<Int> = []
         layoutManager.enumerateLineFragments(forGlyphRange: glyphRange) { [weak self] rect, _, _, glyphRange, _ in
             guard let self, glyphRange.location < self.layoutManager.numberOfGlyphs else { return }
             let characterIndex = self.layoutManager.characterIndexForGlyph(at: glyphRange.location)
             let line = self.lineNumber(at: characterIndex, starts: lineStarts)
-            guard drawnLines.insert(line).inserted else { return }
-            let y = rect.minY + self.textContainerInset.top
-            self.drawLineNumber(line, y: y, gutterX: gutterX, width: gutterWidth, attributes: attributes)
+            guard seen.insert(line).inserted else { return }
+            lines.append(GutterView.Line(number: line, y: rect.minY + self.textContainerInset.top))
         }
-    }
-
-    private func drawLineNumber(
-        _ line: Int,
-        y: CGFloat,
-        gutterX: CGFloat,
-        width: CGFloat,
-        attributes: [NSAttributedString.Key: Any]
-    ) {
-        let value = "\(line)" as NSString
-        let size = value.size(withAttributes: attributes)
-        value.draw(
-            at: CGPoint(x: gutterX + width - size.width - 8, y: y),
-            withAttributes: attributes
-        )
+        return lines
     }
 
     private func logicalLineStarts(in source: String) -> [Int] {
@@ -327,6 +418,54 @@ private final class RustSourceTextView: UITextView {
             else { upper = middle }
         }
         return max(lower, 1)
+    }
+}
+
+/// Draws the line numbers, pinned over the visible left edge of the editor.
+///
+/// Separate from the text view's own drawing on purpose: text rendering
+/// composites over anything the scroll view draws itself once the content
+/// scrolls sideways, which is what put code on top of the numbers.
+private final class GutterView: UIView {
+    struct Line: Equatable {
+        let number: Int
+        /// Position in the text view's content coordinates.
+        let y: CGFloat
+    }
+
+    var lines: [Line] = []
+    var verticalOffset: CGFloat = 0
+    var lineNumberColor = UIColor.secondaryLabel
+    var separatorColor = UIColor.separator
+    var numberFont = UIFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular)
+
+    override func draw(_ rect: CGRect) {
+        // Opaque behind the numbers so code scrolling past cannot show through.
+        backgroundColor?.setFill()
+        UIRectFill(bounds)
+
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: numberFont,
+            .foregroundColor: lineNumberColor,
+        ]
+
+        for line in lines {
+            let y = line.y - verticalOffset
+            guard y > -numberFont.lineHeight, y < bounds.height else { continue }
+            let value = "\(line.number)" as NSString
+            let size = value.size(withAttributes: attributes)
+            value.draw(
+                at: CGPoint(x: bounds.width - size.width - 8, y: y),
+                withAttributes: attributes
+            )
+        }
+
+        let separator = UIBezierPath()
+        separator.move(to: CGPoint(x: bounds.maxX, y: bounds.minY))
+        separator.addLine(to: CGPoint(x: bounds.maxX, y: bounds.maxY))
+        separatorColor.setStroke()
+        separator.lineWidth = 1 / max(UIScreen.main.scale, 1)
+        separator.stroke()
     }
 }
 

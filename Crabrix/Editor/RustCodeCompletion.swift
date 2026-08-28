@@ -127,21 +127,34 @@ enum RustCompletionSupport {
 enum RustLocalCompleter {
     static func suggestion(for prefix: String) -> RustCodeCompletion? {
         let line = prefix.split(separator: "\n", omittingEmptySubsequences: false).last.map(String.init) ?? ""
-        let trimmed = line.trimmingCharacters(in: .whitespaces)
+        // Only the leading indentation is dropped: a trailing space is what tells
+        // `fn ` apart from a half-typed identifier, so it has to survive.
+        let body = String(line.drop(while: { $0 == " " || $0 == "\t" }))
+        let trimmed = body.trimmingCharacters(in: .whitespaces)
+
+        // A declaration with a name already typed is the most useful thing to
+        // complete, so it is checked before the generic token table.
+        if let scaffold = declarationScaffold(for: body) {
+            return RustCodeCompletion(
+                insertion: scaffold.insertion,
+                provider: .local,
+                detail: scaffold.detail
+            )
+        }
 
         let insertion: String?
         switch true {
-        case trimmed.hasSuffix("fn "):
+        case body.hasSuffix("fn "):
             insertion = "main() {\n    \n}"
-        case trimmed.hasSuffix("let mut "):
+        case body.hasSuffix("let mut "):
             insertion = "items = Vec::new();"
-        case trimmed.hasSuffix("let "):
+        case body.hasSuffix("let "):
             insertion = "value = 0;"
-        case trimmed.hasSuffix("match "):
+        case body.hasSuffix("match "):
             insertion = "value {\n    Some(value) => value,\n    None => return,\n}"
-        case trimmed.hasSuffix("for "):
+        case body.hasSuffix("for "):
             insertion = "item in items.iter() {\n    println!(\"{item:?}\");\n}"
-        case trimmed.hasSuffix("impl "):
+        case body.hasSuffix("impl "):
             insertion = "Default for AppState {\n    fn default() -> Self {\n        Self {}\n    }\n}"
         case trimmed.hasSuffix("use std::"):
             insertion = "collections::HashMap;"
@@ -159,6 +172,73 @@ enum RustLocalCompleter {
             provider: .local,
             detail: "Deterministic, instant, and fully offline"
         )
+    }
+
+    /// Turns `fn calculate_total`, `struct Order`, `enum State` or `impl Order`
+    /// into a complete, compiling skeleton.
+    ///
+    /// This is the case a code model would otherwise be needed for, and it is
+    /// the one that has to work on every device rather than only on the handful
+    /// that can run Apple Intelligence.
+    private static func declarationScaffold(for line: String) -> (insertion: String, detail: String)? {
+        guard !line.hasSuffix(" ") else { return nil }
+        let words = line.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
+        guard let name = words.last, isPlainIdentifier(name) else { return nil }
+
+        let keywords = Set(words.dropLast())
+        // `pub`, `async`, `const` and `unsafe` may all precede the keyword.
+        if keywords.contains("fn") {
+            let signature = functionSignature(for: name, isAsync: keywords.contains("async"))
+            return (signature, "Function skeleton inferred from the name")
+        }
+        if keywords.contains("struct") {
+            return (" {\n    \n}", "Struct skeleton")
+        }
+        if keywords.contains("enum") {
+            return (" {\n    \n}", "Enum skeleton")
+        }
+        if keywords.contains("impl") {
+            return (" {\n    \n}", "Impl block skeleton")
+        }
+        return nil
+    }
+
+    /// Guesses a return type from the verb the name starts with, and always
+    /// pairs it with a body that actually compiles.
+    private static func functionSignature(for name: String, isAsync: Bool) -> String {
+        let lowered = name.lowercased()
+
+        func startsWithAny(_ prefixes: [String]) -> Bool {
+            prefixes.contains { lowered == $0 || lowered.hasPrefix($0 + "_") }
+        }
+
+        let returnType: String
+        let bodyValue: String
+        if startsWithAny(["is", "has", "can", "should", "was", "are", "contains", "matches"]) {
+            returnType = " -> bool"
+            bodyValue = "false"
+        } else if lowered == "new" {
+            returnType = " -> Self"
+            bodyValue = "Self {}"
+        } else if startsWithAny(["count", "total", "sum", "len", "size", "calculate", "score"]) {
+            returnType = " -> usize"
+            bodyValue = "0"
+        } else if startsWithAny(["name", "title", "label", "describe", "format", "render", "to"]) {
+            returnType = " -> String"
+            bodyValue = "String::new()"
+        } else {
+            returnType = ""
+            bodyValue = ""
+        }
+
+        let body = bodyValue.isEmpty ? "    " : "    \(bodyValue)"
+        return "()\(returnType) {\n\(body)\n}"
+    }
+
+    private static func isPlainIdentifier(_ value: String) -> Bool {
+        guard let first = value.first, first.isLetter || first == "_" else { return false }
+        // A partially typed generic or path is not a finished declaration name.
+        return value.allSatisfy { $0.isLetter || $0.isNumber || $0 == "_" }
     }
 
     private static func completionForCurrentToken(in line: String) -> String? {

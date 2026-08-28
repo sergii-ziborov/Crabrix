@@ -95,7 +95,7 @@ struct NewProjectSheet: View {
                         onCreate(name, template)
                         dismiss()
                     } label: {
-                        Label("Create \(template.title) Project", systemImage: "plus.circle.fill")
+                        Label("Create Rust Project", systemImage: "plus.circle.fill")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)

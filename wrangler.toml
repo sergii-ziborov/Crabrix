@@ -1,0 +1,30 @@
+name = "crabrix-site"
+# Kept outside ./site so it is never served as a public asset.
+main = "worker/index.js"
+compatibility_date = "2026-08-01"
+
+# The whole site is static files; the Worker only serves them.
+[assets]
+directory = "./site"
+binding = "ASSETS"
+not_found_handling = "404-page"
+
+# custom_domain = true makes the deploy create the DNS record itself, so the
+# zone does not have to be wired up by hand first.
+[[routes]]
+pattern = "crabrix.com"
+custom_domain = true
+
+[[routes]]
+pattern = "www.crabrix.com"
+custom_domain = true
+
+# The public rating board. There are no accounts behind it: a player is a
+# random key the app keeps in its Keychain, so nothing personal is stored.
+[[d1_databases]]
+binding = "DB"
+database_name = "crabrix-leaderboard"
+database_id = "b6a38237-4213-4f79-aebe-8e2af3375c26"
+
+# The account is supplied by CLOUDFLARE_ACCOUNT_ID rather than committed here,
+# for the same reason the signing team is not in project.yml.

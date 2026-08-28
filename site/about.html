@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About Crabrix</title>
+<meta name="description" content="Crabrix runs the real Rust compiler on iPhone and iPad. What it is, how it works, what it cannot do, and who builds it.">
+<meta property="og:title" content="About Crabrix">
+<meta property="og:description" content="Crabrix runs the real Rust compiler on iPhone and iPad. What it is, how it works, what it cannot do, and who builds it.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#129408;</text></svg>">
+<style>
+  :root {
+    --bg: #0b0f14;
+    --panel: #121821;
+    --raised: #18202b;
+    --border: #232e3d;
+    --text: #eaf0f7;
+    --muted: #93a4b8;
+    --coral: #ff6b4a;
+    --mint: #4fd1a5;
+    --blue: #4aa8ff;
+    --amber: #ffb648;
+    --radius: 16px;
+    --max: 1080px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--blue); }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 22px; }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: blur(14px);
+    background: rgba(11,15,20,.82);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav { display: flex; align-items: center; gap: 18px; height: 62px; }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; letter-spacing: -.01em;
+    color: var(--text); text-decoration: none;
+  }
+  .brand .mark { font-size: 24px; }
+  .nav a.link { color: var(--muted); text-decoration: none; font-size: 14px; transition: color .2s; }
+  .nav a.link:hover, .nav a.link[aria-current] { color: var(--text); }
+  .nav .spacer { flex: 1; }
+
+  /* At phone widths the brand plus four links overflow a single 62px row,
+     which pushed the whole page sideways. Brand on its own line, links below. */
+  @media (max-width: 560px) {
+    .nav { height: auto; min-height: 56px; flex-wrap: wrap; gap: 14px; padding: 11px 0; }
+    .nav .spacer { display: none; }
+    .brand { width: 100%; }
+  }
+
+  .head { padding: 60px 0 30px; }
+  .eyebrow {
+    font: 600 12px/1 ui-monospace, monospace; letter-spacing: .12em;
+    color: var(--mint); text-transform: uppercase; margin-bottom: 14px;
+  }
+  h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.06; letter-spacing: -.03em; margin: 0 0 14px; font-weight: 800; }
+  .lede { color: var(--muted); max-width: 62ch; margin: 0; }
+
+  .board { padding-bottom: 70px; }
+  .table-shell {
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--panel); overflow: hidden;
+  }
+  /* Narrow screens scroll the table itself rather than the page sideways. */
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { border-collapse: collapse; width: 100%; min-width: 620px; }
+  th, td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--border); }
+  th {
+    font: 600 11px/1 ui-monospace, monospace; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted); background: var(--raised);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background .15s; }
+  tbody tr:hover { background: rgba(74,168,255,.05); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: ui-monospace, monospace; }
+  .rank { font-family: ui-monospace, monospace; color: var(--muted); width: 68px; }
+  .rank.top { color: var(--amber); font-weight: 700; }
+  .who { display: flex; align-items: center; gap: 11px; }
+  .pip {
+    width: 30px; height: 30px; border-radius: 50%; flex: 0 0 auto;
+    display: grid; place-items: center; font-size: 13px; font-weight: 700;
+    background: rgba(79,209,165,.14); color: var(--mint);
+  }
+  .title { color: var(--muted); font-size: 13px; }
+  .points { color: var(--amber); font-weight: 700; }
+
+  .state { padding: 42px 18px; text-align: center; color: var(--muted); }
+  .state.error { color: var(--coral); }
+
+  .legend {
+    margin-top: 26px; display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+  .legend div {
+    border: 1px solid var(--border); border-radius: 13px;
+    background: var(--panel); padding: 14px 16px; font-size: 14px; color: var(--muted);
+  }
+  .legend strong { color: var(--text); display: block; margin-bottom: 3px; font-size: 15px; }
+
+  footer { border-top: 1px solid var(--border); padding: 30px 0 46px; color: var(--muted); font-size: 14px; }
+  .foot-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+  .foot-row .spacer { flex: 1; }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--text); }
+
+  tbody tr { animation: rise .4s ease both; }
+  @media (prefers-reduced-motion: reduce) {
+    tbody tr { animation: none; }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+</style>
+
+<style>
+  /* The wrap stays full width so the prose lines up with the page heading;
+     line length is constrained per block instead of on the container, which
+     would centre the whole column and leave the heading hanging to its left. */
+  .prose { padding-bottom: 70px; }
+  .prose > p, .prose > ul, .prose > h2, .prose > h3, .prose > .callout { max-width: 72ch; }
+  .prose h2 { font-size: clamp(20px, 3vw, 26px); margin: 40px 0 10px; letter-spacing: -.02em; }
+  .prose h3 { font-size: 17px; margin: 26px 0 6px; }
+  .prose p { color: var(--muted); }
+  .prose ul { color: var(--muted); padding-left: 20px; }
+  .prose li { margin: 6px 0; }
+  .prose strong { color: var(--text); }
+  .prose .updated { font: 600 12px/1 ui-monospace, monospace; color: var(--muted); letter-spacing: .06em; }
+  .callout {
+    border: 1px solid var(--border); border-left: 3px solid var(--mint);
+    background: var(--panel); border-radius: 12px; padding: 16px 18px; margin: 22px 0;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout p:first-child { margin-top: 0; }
+  .grid2 { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); margin: 22px 0; }
+  .grid2 div {
+    border: 1px solid var(--border); border-radius: 13px;
+    background: var(--panel); padding: 16px 18px; color: var(--muted); font-size: 14px;
+  }
+  .grid2 strong { display: block; color: var(--text); margin-bottom: 4px; font-size: 15px; }
+  table.plain { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 14px; }
+  table.plain th, table.plain td { text-align: left; padding: 11px 13px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.plain th { color: var(--muted); font: 600 11px/1 ui-monospace, monospace; letter-spacing: .09em; text-transform: uppercase; }
+  table.plain td { color: var(--muted); }
+  .table-scroll { overflow-x: auto; }
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="/"><span class="mark">&#129408;</span> Crabrix</a>
+    <div class="spacer"></div>
+    <a class="link" href="/about" aria-current="page">About</a>
+    <a class="link" href="/leaderboard">Leaderboard</a>
+    <a class="link" href="/support">Support</a>
+    <a class="link" href="/#price">Price</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap head">
+    <div class="eyebrow">About</div>
+    <h1>About Crabrix</h1>
+    <p class="lede">A real Rust compiler on a phone, an honest account of its limits, and one developer behind it.</p>
+  </div>
+
+  <div class="wrap prose">
+
+    <h2>What Crabrix is</h2>
+    <p>
+      Crabrix is a Rust workspace for iPhone and iPad. You write Rust, add real
+      dependencies from crates.io, press Run, and the code compiles and executes on the
+      device in your hand. There is no server doing the work and no account standing
+      between you and the compiler.
+    </p>
+    <p>
+      That distinction is the whole point. Every other way to run code on an iPhone
+      either sends it somewhere else or runs an interpreter written to look like the real
+      thing. Crabrix ships the actual Rust compiler.
+    </p>
+
+    <h2>How it actually works</h2>
+    <div class="grid2">
+      <div><strong>A real rustc</strong>The app bundles a WebAssembly build of the Rust
+        compiler and standard library. It is the same compiler front end, producing the
+        same diagnostics, with the same error codes.</div>
+      <div><strong>Running in Swift</strong>That WebAssembly module is executed by
+        WasmKit, a WebAssembly interpreter written in Swift, inside the app's own
+        process. No JIT, no dynamic code loading, no daemon.</div>
+      <div><strong>A real package manager</strong>Crabrix speaks the crates.io sparse
+        index protocol, resolves SemVer ranges, unifies features, verifies SHA-256
+        checksums, extracts the sources, and compiles and links them.</div>
+      <div><strong>Sandboxed by construction</strong>Your program runs inside the
+        WebAssembly sandbox with a memory cap, no network, and a single writable
+        directory. It cannot reach the rest of your device.</div>
+    </div>
+    <p>
+      Every crate Crabrix downloads is fully readable inside the app, file by file, in
+      the Packages screen. Nothing that runs on your device is hidden from you.
+    </p>
+
+    <h2>What it cannot do</h2>
+    <p>
+      Being honest about the edges is more useful than a feature list. The bundled
+      compiler targets <code>wasm32-wasip1</code> and has no native linker, so:
+    </p>
+    <ul>
+      <li>Crates with C dependencies, build scripts, or procedural macros generally
+        cannot build. Crabrix detects these and says so instead of failing halfway.</li>
+      <li>Compilation is interpreted WebAssembly, so a first build is slower than on a
+        laptop. Repeat builds come from a local artifact cache.</li>
+      <li>There is no debugger and no <code>cargo test</code> harness yet.</li>
+    </ul>
+    <p>
+      The Packages screen labels every dependency verified, expected to work, needs
+      review, or unsupported, based on real build outcomes recorded on device.
+    </p>
+
+    <h2>Learning, not just tooling</h2>
+    <p>
+      Crabrix contains a full Rust course &mdash; 83 lessons across six courses, from
+      <code>fn main</code> through ownership, traits, and async to macros, unsafe, and
+      FFI, plus interview preparation that reaches past the language into memory,
+      networking, databases, and distributed systems.
+    </p>
+    <p>
+      Each lesson has a short written explanation, a syntax-highlighted example, and a
+      lab checked by the compiler that ships in the app. Three drills &mdash; Quick
+      Practice, Term Train, and Code Recall &mdash; are generated from that same
+      curriculum and scheduled with SM-2 spaced repetition, so what you are weakest at
+      comes back soonest.
+    </p>
+    <p>
+      Rating is earned across everything, and a successful run is scored on how much Rust
+      actually changed since the last one. Pressing Run on an untouched sample is not
+      work, and the app does not pretend otherwise.
+    </p>
+
+    <h2>Who makes it</h2>
+    <p>
+      Crabrix is built by <strong>Serhii Ziborov</strong>, an independent developer. It is
+      not a company, it has no investors, and it has nobody's growth targets to hit. That
+      is why it is a one-time purchase with no subscription, no advertising, no analytics,
+      and no account.
+    </p>
+    <p>
+      The source is on <a href="https://github.com/sergii-ziborov/Crabrix">GitHub</a> for
+      review. Questions, bugs, and disagreements are welcome at
+      <a href="mailto:support@crabrix.com">support@crabrix.com</a>.
+    </p>
+
+    <h2>Credits</h2>
+    <p>
+      Crabrix stands on work by other people, all of it open source and attributed in
+      full inside the app under Settings &rarr; About Crabrix &rarr; Open-source
+      licenses:
+    </p>
+    <ul>
+      <li><strong>The Rust Project</strong> &mdash; the compiler and standard library,
+        under Apache-2.0 or MIT.</li>
+      <li><strong>WasmKit</strong> by Akio Yasui &mdash; the Swift WebAssembly
+        interpreter, MIT.</li>
+      <li><strong>wasm-rustc</strong> by Forest Anderson &mdash; the WebAssembly build of
+        the toolchain, MIT.</li>
+      <li><strong>ZIPFoundation</strong> by Thomas Zoechling &mdash; archive reading and
+        writing, MIT.</li>
+      <li><strong>Swift System, Collections, Atomics, Argument Parser, Log, and NIO</strong>
+        &mdash; Apache-2.0.</li>
+    </ul>
+    <p>
+      Rust and the Rust logo are trademarks of the Rust Foundation. Crabrix is an
+      independent project, not affiliated with or endorsed by the Rust Foundation or by
+      Apple.
+    </p>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap foot-row">
+    <div>&copy; 2026 Serhii Ziborov. All rights reserved.</div>
+    <div class="spacer"></div>
+    <a href="/about">About</a>
+    <a href="/support">Support</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="https://github.com/sergii-ziborov/Crabrix">GitHub</a>
+  </div>
+  <div class="wrap" style="margin-top:14px; font-size:13px; opacity:.75">
+    Rust and the Rust logo are trademarks of the Rust Foundation. Crabrix is an
+    independent project and is not affiliated with or endorsed by the Rust Foundation
+    or by Apple.
+  </div>
+</footer>
+
+</body>
+</html>

@@ -155,3 +155,74 @@ final class ProjectTerminalSessionTests: XCTestCase {
         )
     }
 }
+
+final class ProjectTerminalCargoTreeTests: XCTestCase {
+    private func project(manifest: String) -> CrabrixProject {
+        CrabrixProject(
+            name: "tree-demo",
+            files: ["Cargo.toml": manifest, "src/main.rs": "fn main() {}"],
+            entryFile: "src/main.rs",
+            provenance: nil
+        )
+    }
+
+    func testFallsBackToDeclaredDependenciesBeforeResolution() {
+        let rendered = ProjectTerminalSession.renderTree(
+            project: project(manifest: """
+            [package]
+            name = "tree-demo"
+            version = "0.4.0"
+
+            [dependencies]
+            smallvec = "1"
+            """),
+            workspace: .empty
+        )
+
+        XCTAssertTrue(rendered.hasPrefix("tree-demo v0.4.0"))
+        XCTAssertTrue(rendered.contains("smallvec 1 (unresolved)"))
+        XCTAssertTrue(rendered.contains("cargo fetch"))
+    }
+
+    func testReportsNoDependenciesForAPlainProject() {
+        let rendered = ProjectTerminalSession.renderTree(
+            project: project(manifest: "[package]\nname = \"tree-demo\"\nversion = \"0.1.0\""),
+            workspace: .empty
+        )
+        XCTAssertTrue(rendered.contains("no dependencies"))
+    }
+
+    func testRendersTheResolvedGraphWithCompatibilityMarkers() {
+        let direct = CratePackageStatus(
+            package: PackageID(name: "smallvec", version: SemanticVersion("1.15.2")!),
+            features: ["default"],
+            compatibility: .verified,
+            isDownloaded: true,
+            isDirect: true
+        )
+        let transitive = CratePackageStatus(
+            package: PackageID(name: "cfg-if", version: SemanticVersion("1.0.4")!),
+            features: [],
+            compatibility: .review("runs build.rs, which Crabrix does not execute"),
+            isDownloaded: true,
+            isDirect: false
+        )
+        let workspace = CargoWorkspaceSnapshot(
+            packages: [direct, transitive],
+            plan: .empty,
+            warnings: [],
+            lockfile: nil,
+            isOfflineReady: true,
+            unresolvedDependencies: []
+        )
+
+        let rendered = ProjectTerminalSession.renderTree(
+            project: project(manifest: "[package]\nname = \"tree-demo\"\nversion = \"0.1.0\""),
+            workspace: workspace
+        )
+
+        XCTAssertTrue(rendered.contains("├── smallvec v1.15.2 [built]"))
+        XCTAssertTrue(rendered.contains("└── cfg-if v1.0.4 [review] (transitive)"))
+        XCTAssertTrue(rendered.contains("offline ready"))
+    }
+}

@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support — Crabrix</title>
+<meta name="description" content="Contact, content reporting, and answers to common questions about compiling Rust on iPhone and iPad with Crabrix.">
+<meta property="og:title" content="Support — Crabrix">
+<meta property="og:description" content="Contact, content reporting, and answers to common questions about compiling Rust on iPhone and iPad with Crabrix.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#129408;</text></svg>">
+<style>
+  :root {
+    --bg: #0b0f14;
+    --panel: #121821;
+    --raised: #18202b;
+    --border: #232e3d;
+    --text: #eaf0f7;
+    --muted: #93a4b8;
+    --coral: #ff6b4a;
+    --mint: #4fd1a5;
+    --blue: #4aa8ff;
+    --amber: #ffb648;
+    --radius: 16px;
+    --max: 1080px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--blue); }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 22px; }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: blur(14px);
+    background: rgba(11,15,20,.82);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav { display: flex; align-items: center; gap: 18px; height: 62px; }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; letter-spacing: -.01em;
+    color: var(--text); text-decoration: none;
+  }
+  .brand .mark { font-size: 24px; }
+  .nav a.link { color: var(--muted); text-decoration: none; font-size: 14px; transition: color .2s; }
+  .nav a.link:hover, .nav a.link[aria-current] { color: var(--text); }
+  .nav .spacer { flex: 1; }
+
+  /* At phone widths the brand plus four links overflow a single 62px row,
+     which pushed the whole page sideways. Brand on its own line, links below. */
+  @media (max-width: 560px) {
+    .nav { height: auto; min-height: 56px; flex-wrap: wrap; gap: 14px; padding: 11px 0; }
+    .nav .spacer { display: none; }
+    .brand { width: 100%; }
+  }
+
+  .head { padding: 60px 0 30px; }
+  .eyebrow {
+    font: 600 12px/1 ui-monospace, monospace; letter-spacing: .12em;
+    color: var(--mint); text-transform: uppercase; margin-bottom: 14px;
+  }
+  h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.06; letter-spacing: -.03em; margin: 0 0 14px; font-weight: 800; }
+  .lede { color: var(--muted); max-width: 62ch; margin: 0; }
+
+  .board { padding-bottom: 70px; }
+  .table-shell {
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--panel); overflow: hidden;
+  }
+  /* Narrow screens scroll the table itself rather than the page sideways. */
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { border-collapse: collapse; width: 100%; min-width: 620px; }
+  th, td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--border); }
+  th {
+    font: 600 11px/1 ui-monospace, monospace; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted); background: var(--raised);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background .15s; }
+  tbody tr:hover { background: rgba(74,168,255,.05); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: ui-monospace, monospace; }
+  .rank { font-family: ui-monospace, monospace; color: var(--muted); width: 68px; }
+  .rank.top { color: var(--amber); font-weight: 700; }
+  .who { display: flex; align-items: center; gap: 11px; }
+  .pip {
+    width: 30px; height: 30px; border-radius: 50%; flex: 0 0 auto;
+    display: grid; place-items: center; font-size: 13px; font-weight: 700;
+    background: rgba(79,209,165,.14); color: var(--mint);
+  }
+  .title { color: var(--muted); font-size: 13px; }
+  .points { color: var(--amber); font-weight: 700; }
+
+  .state { padding: 42px 18px; text-align: center; color: var(--muted); }
+  .state.error { color: var(--coral); }
+
+  .legend {
+    margin-top: 26px; display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+  .legend div {
+    border: 1px solid var(--border); border-radius: 13px;
+    background: var(--panel); padding: 14px 16px; font-size: 14px; color: var(--muted);
+  }
+  .legend strong { color: var(--text); display: block; margin-bottom: 3px; font-size: 15px; }
+
+  footer { border-top: 1px solid var(--border); padding: 30px 0 46px; color: var(--muted); font-size: 14px; }
+  .foot-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+  .foot-row .spacer { flex: 1; }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--text); }
+
+  tbody tr { animation: rise .4s ease both; }
+  @media (prefers-reduced-motion: reduce) {
+    tbody tr { animation: none; }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+</style>
+
+<style>
+  /* The wrap stays full width so the prose lines up with the page heading;
+     line length is constrained per block instead of on the container, which
+     would centre the whole column and leave the heading hanging to its left. */
+  .prose { padding-bottom: 70px; }
+  .prose > p, .prose > ul, .prose > h2, .prose > h3, .prose > .callout { max-width: 72ch; }
+  .prose h2 { font-size: clamp(20px, 3vw, 26px); margin: 40px 0 10px; letter-spacing: -.02em; }
+  .prose h3 { font-size: 17px; margin: 26px 0 6px; }
+  .prose p { color: var(--muted); }
+  .prose ul { color: var(--muted); padding-left: 20px; }
+  .prose li { margin: 6px 0; }
+  .prose strong { color: var(--text); }
+  .prose .updated { font: 600 12px/1 ui-monospace, monospace; color: var(--muted); letter-spacing: .06em; }
+  .callout {
+    border: 1px solid var(--border); border-left: 3px solid var(--mint);
+    background: var(--panel); border-radius: 12px; padding: 16px 18px; margin: 22px 0;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout p:first-child { margin-top: 0; }
+  .grid2 { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); margin: 22px 0; }
+  .grid2 div {
+    border: 1px solid var(--border); border-radius: 13px;
+    background: var(--panel); padding: 16px 18px; color: var(--muted); font-size: 14px;
+  }
+  .grid2 strong { display: block; color: var(--text); margin-bottom: 4px; font-size: 15px; }
+  table.plain { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 14px; }
+  table.plain th, table.plain td { text-align: left; padding: 11px 13px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.plain th { color: var(--muted); font: 600 11px/1 ui-monospace, monospace; letter-spacing: .09em; text-transform: uppercase; }
+  table.plain td { color: var(--muted); }
+  .table-scroll { overflow-x: auto; }
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="/"><span class="mark">&#129408;</span> Crabrix</a>
+    <div class="spacer"></div>
+    <a class="link" href="/about">About</a>
+    <a class="link" href="/leaderboard">Leaderboard</a>
+    <a class="link" href="/support" aria-current="page">Support</a>
+    <a class="link" href="/#price">Price</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap head">
+    <div class="eyebrow">Support</div>
+    <h1>Support</h1>
+    <p class="lede">One developer, one address, and answers to the questions that come up most.</p>
+  </div>
+
+  <div class="wrap prose">
+
+    <div class="callout">
+      <p><strong>Contact:</strong> <a href="mailto:support@crabrix.com">support@crabrix.com</a></p>
+      <p>One person reads this address. Expect a reply within two business days.
+      Reports of offensive content on the leaderboard are handled first, usually the
+      same day.</p>
+    </div>
+
+    <h2>Report a name on the leaderboard</h2>
+    <p>
+      The <a href="/leaderboard">public board</a> shows display names people typed
+      themselves. Names are filtered before they appear &mdash; abusive text, sexual
+      content, and anything impersonating Crabrix or Apple is rejected &mdash; but no
+      filter catches everything.
+    </p>
+    <p>
+      If you see a name that is offensive, impersonating someone, or otherwise
+      inappropriate, email <a href="mailto:support@crabrix.com">support@crabrix.com</a>
+      with the name and roughly where it appeared. It will be removed from the board and
+      the key behind it blocked from publishing again.
+    </p>
+    <p>
+      You can reach this page from inside the app: <strong>Learn &rarr; your rating card
+      &rarr; Report a name</strong>.
+    </p>
+
+    <h2>Remove your own entry</h2>
+    <p>
+      In the app: <strong>Profile &rarr; Remove my entry from the board</strong>. It is
+      deleted immediately and nothing on your device changes. If you have deleted the app
+      already, email the display name you used and it will be removed.
+    </p>
+
+    <h2>Common questions</h2>
+
+    <h3>A crate will not compile</h3>
+    <p>
+      Crabrix compiles to <code>wasm32-wasip1</code> with a bundled compiler that has no
+      linker for native code. Crates that need C code, procedural macros, or a build
+      script generally cannot build on device, and Crabrix marks them as unsupported
+      rather than failing halfway. The Packages screen says which of your dependencies
+      are verified, expected to work, or blocked, and why.
+    </p>
+
+    <h3>A build is slow</h3>
+    <p>
+      The first compile of a project is genuinely doing the work &mdash; a real compiler,
+      running in a WebAssembly interpreter, on a phone. Identical repeat runs come from a
+      local artifact cache and are much faster. Large dependency trees take longer on
+      first fetch; after that they rebuild offline.
+    </p>
+
+    <h3>I ran out of health or energy</h3>
+    <p>
+      Both refill on their own, and faster at a higher rank. Training &mdash; Quick
+      Practice, Term Train, and Code Recall &mdash; never costs either, so there is always
+      something to do while they come back. Re-reading a lesson page you have already
+      opened is always free.
+    </p>
+
+    <h3>Where are my projects stored?</h3>
+    <p>
+      In the app's own container on your device. Save a project to Files or iCloud Drive
+      from the Projects screen if you want a copy you control, or use Archive &amp; Share
+      for a plain ZIP. Deleting the app deletes everything that was only inside it.
+    </p>
+
+    <h3>Does it work offline?</h3>
+    <p>
+      Yes. The compiler and standard library ship inside the app. Once a project's
+      dependencies are downloaded, it builds and runs with the network off entirely.
+    </p>
+
+    <h3>Do I need an account?</h3>
+    <p>
+      No. There is no sign-up, no password, and no email address to give. The leaderboard
+      is the only thing that involves a name, it is optional, and it is off until you
+      turn it on.
+    </p>
+
+    <h2>Bugs and feature requests</h2>
+    <p>
+      Email <a href="mailto:support@crabrix.com">support@crabrix.com</a>, or open an issue
+      on <a href="https://github.com/sergii-ziborov/Crabrix">GitHub</a>. For a build
+      problem it helps enormously to include the Rust code, the compiler output from the
+      Problems tab, and the version number from Settings &rarr; About Crabrix.
+    </p>
+
+    <h2>Refunds</h2>
+    <p>
+      Purchases are handled by Apple, so refunds go through Apple rather than through me:
+      <a href="https://reportaproblem.apple.com">reportaproblem.apple.com</a>. If
+      something about the app is broken, write to me too &mdash; I would rather fix it.
+    </p>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap foot-row">
+    <div>&copy; 2026 Serhii Ziborov. All rights reserved.</div>
+    <div class="spacer"></div>
+    <a href="/about">About</a>
+    <a href="/support">Support</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="https://github.com/sergii-ziborov/Crabrix">GitHub</a>
+  </div>
+  <div class="wrap" style="margin-top:14px; font-size:13px; opacity:.75">
+    Rust and the Rust logo are trademarks of the Rust Foundation. Crabrix is an
+    independent project and is not affiliated with or endorsed by the Rust Foundation
+    or by Apple.
+  </div>
+</footer>
+
+</body>
+</html>

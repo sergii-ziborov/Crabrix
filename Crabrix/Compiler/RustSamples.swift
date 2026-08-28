@@ -60,22 +60,101 @@ enum RustSamples {
     """
 }
 
+/// How a library project is grouped and how hard it reads.
+enum RustShowcaseCategory: String, CaseIterable, Identifiable, Sendable {
+    case graphics
+    case algorithms
+    case data
+    case text
+    case simulation
+    case systems
+    case math
+    case games
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .graphics: "Graphics"
+        case .algorithms: "Algorithms"
+        case .data: "Data"
+        case .text: "Text"
+        case .simulation: "Simulation"
+        case .systems: "Systems"
+        case .math: "Math"
+        case .games: "Games"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .graphics: "paintpalette.fill"
+        case .algorithms: "function"
+        case .data: "tablecells.fill"
+        case .text: "text.alignleft"
+        case .simulation: "waveform.path.ecg"
+        case .systems: "cpu.fill"
+        case .math: "x.squareroot"
+        case .games: "gamecontroller.fill"
+        }
+    }
+}
+
+enum RustShowcaseDifficulty: String, CaseIterable, Identifiable, Sendable {
+    case starter
+    case intermediate
+    case advanced
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .starter: "Starter"
+        case .intermediate: "Intermediate"
+        case .advanced: "Advanced"
+        }
+    }
+
+    var order: Int {
+        switch self {
+        case .starter: 0
+        case .intermediate: 1
+        case .advanced: 2
+        }
+    }
+}
+
 struct RustShowcaseProject: Identifiable, Sendable {
     let id: String
     let title: String
     let detail: String
     let systemImage: String
+    let category: RustShowcaseCategory
+    let difficulty: RustShowcaseDifficulty
     let concepts: [String]
     let project: CrabrixProject
+
+    /// Everything a search box should look at.
+    var searchHaystack: String {
+        ([title, detail, category.title, difficulty.title] + concepts)
+            .joined(separator: " ")
+            .lowercased()
+    }
 }
 
 enum RustShowcaseLibrary {
-    static let projects: [RustShowcaseProject] = [
+    /// The four original showcases plus the wider catalogue.
+    static let projects: [RustShowcaseProject] = featured + RustShowcaseCatalog.projects
+
+    /// Shown first on the library screen.
+    static let featured: [RustShowcaseProject] = [
         RustShowcaseProject(
             id: "ferris-pixel-art",
             title: "Ferris Pixel Art",
             detail: "Render a crab from strings and iterators",
             systemImage: "paintpalette.fill",
+            category: .graphics,
+            difficulty: .starter,
             concepts: ["arrays", "iterators", "stdout"],
             project: CrabrixProject(
                 name: "ferris-pixel-art",
@@ -107,6 +186,8 @@ enum RustShowcaseLibrary {
             title: "Orbit Dashboard",
             detail: "A terminal UI built from a local module",
             systemImage: "gauge.with.dots.needle.67percent",
+            category: .graphics,
+            difficulty: .intermediate,
             concepts: ["modules", "formatting", "functions"],
             project: CrabrixProject(
                 name: "orbit-dashboard",
@@ -139,6 +220,8 @@ enum RustShowcaseLibrary {
             title: "Constellation Generator",
             detail: "Deterministic generative art with no network",
             systemImage: "sparkles",
+            category: .graphics,
+            difficulty: .intermediate,
             concepts: ["algorithms", "String", "loops"],
             project: CrabrixProject(
                 name: "constellation-generator",
@@ -169,6 +252,8 @@ enum RustShowcaseLibrary {
             title: "Word Lab",
             detail: "Build a sorted frequency chart with std",
             systemImage: "chart.bar.xaxis",
+            category: .data,
+            difficulty: .starter,
             concepts: ["BTreeMap", "ownership", "collections"],
             project: CrabrixProject(
                 name: "word-lab",

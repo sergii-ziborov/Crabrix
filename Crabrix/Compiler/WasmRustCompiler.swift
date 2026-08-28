@@ -1,26 +1,36 @@
 import Foundation
 import CryptoKit
-import SystemPackage
 @_spi(Fuzzing) import WasmKit
 import WasmKitWASI
+
+/// Progress emitted while dependencies compile, so the UI can name the crate
+/// a multi-minute build is currently working on.
+struct CargoBuildProgress: Sendable, Equatable {
+    let package: PackageID
+    let index: Int
+    let total: Int
+    let wasCached: Bool
+}
 
 final class WasmRustCompiler: @unchecked Sendable {
     private enum Action {
         case check
         case run
+
+        var emit: CargoEmitKind {
+            switch self {
+            case .check: .metadata
+            case .run: .link
+            }
+        }
     }
 
-    private struct Capture {
-        let stdoutURL: URL
-        let stderrURL: URL
-        let stdoutHandle: FileHandle
-        let stderrHandle: FileHandle
-    }
-
-    private static let toolchainVersion = "artifacts-test-7"
-    private static let cacheSchemaVersion = "fast-dev-1"
+    static var toolchainVersion: String { CargoToolchain.bundledVersion }
+    private static let cacheSchemaVersion = "fast-dev-2"
 
     private let bundle: Bundle
+    private let ledger: CrateCompatibilityLedger
+    private let runtime = RustcRuntime()
     // rustc runs synchronously inside the Wasm interpreter. Keep that CPU-heavy work
     // below the UI's QoS so scrolling, navigation, and animations stay responsive.
     private let queue = DispatchQueue(
@@ -29,17 +39,23 @@ final class WasmRustCompiler: @unchecked Sendable {
         autoreleaseFrequency: .workItem
     )
     private let clock = ContinuousClock()
-    private var cachedRustcModule: Module?
-    private var cachedEngine: Engine?
-    private var cachedProgramModules: [String: Module] = [:]
     private var successfulCheckKeys: Set<String> = []
+    private let interrupterLock = NSLock()
+    private var activeInterrupter: WasmInterrupter?
 
-    init(bundle: Bundle = .main) {
+    init(bundle: Bundle = .main, ledger: CrateCompatibilityLedger = .shared) {
         self.bundle = bundle
+        self.ledger = ledger
+    }
+
+    // MARK: - Toolchain
+
+    private var toolchain: BundledToolchain? {
+        BundledToolchain.locate(in: bundle, version: Self.toolchainVersion)
     }
 
     func probe() -> ToolchainStatus {
-        guard let rustcURL, let sysrootURL else {
+        guard let toolchain else {
             return ToolchainStatus(
                 isReady: false,
                 rustcSize: 0,
@@ -47,47 +63,80 @@ final class WasmRustCompiler: @unchecked Sendable {
                 detail: "Run scripts/bootstrap.sh before building."
             )
         }
-
-        let size = (try? rustcURL.resourceValues(forKeys: [.fileSizeKey]).fileSize).map(Int64.init) ?? 0
+        let size = (try? toolchain.rustcURL.resourceValues(forKeys: [.fileSizeKey]).fileSize)
+            .map(Int64.init) ?? 0
         return ToolchainStatus(
             isReady: true,
             rustcSize: size,
             label: "Bundled rustc.wasm",
-            detail: "WasmKit interpreter · fully local · \(sysrootURL.lastPathComponent)"
+            detail: "WasmKit interpreter · fully local · \(toolchain.sysrootURL.lastPathComponent)"
         )
     }
+
+    // MARK: - Public entry points
 
     func check(
         source: String,
         sourcePath: String = "main.rs",
-        supportingFiles: [String: String] = [:]
+        supportingFiles: [String: String] = [:],
+        plan: CargoBuildPlan = .empty,
+        onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil
     ) async -> CompilationResult {
         await perform(
             action: .check,
             source: source,
             sourcePath: sourcePath,
-            supportingFiles: supportingFiles
+            supportingFiles: supportingFiles,
+            plan: plan,
+            onDependencyProgress: onDependencyProgress
         )
     }
 
     func run(
         source: String,
         sourcePath: String = "main.rs",
-        supportingFiles: [String: String] = [:]
+        supportingFiles: [String: String] = [:],
+        plan: CargoBuildPlan = .empty,
+        onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil
     ) async -> CompilationResult {
         await perform(
             action: .run,
             source: source,
             sourcePath: sourcePath,
-            supportingFiles: supportingFiles
+            supportingFiles: supportingFiles,
+            plan: plan,
+            onDependencyProgress: onDependencyProgress
         )
+    }
+
+    /// Stops the guest currently executing on the compiler queue.
+    ///
+    /// Cancellation lands on the guest's next WASI call, which for rustc is the
+    /// next file read and therefore near-immediate.
+    func cancel() {
+        interrupterLock.lock()
+        let interrupter = activeInterrupter
+        interrupterLock.unlock()
+        interrupter?.cancel()
+    }
+
+    /// True when every artefact this plan needs is already on disk.
+    func isPlanCached(_ plan: CargoBuildPlan, emit: CargoEmitKind) -> Bool {
+        guard let artifacts = artifactsDirectory else { return plan.isEmpty }
+        return plan.units.allSatisfy { unit in
+            FileManager.default.fileExists(
+                atPath: artifacts.appending(path: artifactFileName(unit, emit: emit)).path
+            )
+        }
     }
 
     private func perform(
         action: Action,
         source: String,
         sourcePath: String,
-        supportingFiles: [String: String]
+        supportingFiles: [String: String],
+        plan: CargoBuildPlan,
+        onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?
     ) async -> CompilationResult {
         await withCheckedContinuation { continuation in
             queue.async { [self] in
@@ -97,92 +146,71 @@ final class WasmRustCompiler: @unchecked Sendable {
                         action: action,
                         source: source,
                         sourcePath: sourcePath,
-                        supportingFiles: supportingFiles
+                        supportingFiles: supportingFiles,
+                        plan: plan,
+                        onDependencyProgress: onDependencyProgress
                     )
                 )
             }
         }
     }
 
-    private var toolchainRootURL: URL? {
-        bundle.resourceURL?
-            .appendingPathComponent("Toolchain", isDirectory: true)
-            .appendingPathComponent(Self.toolchainVersion, isDirectory: true)
-    }
-
-    private var rustcURL: URL? {
-        let url = toolchainRootURL?.appendingPathComponent("rustc.wasm")
-        guard let url, FileManager.default.fileExists(atPath: url.path) else { return nil }
-        return url
-    }
-
-    private var sysrootURL: URL? {
-        let url = toolchainRootURL?.appendingPathComponent("sysroot-wasip1", isDirectory: true)
-        var isDirectory: ObjCBool = false
-        guard let url,
-              FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory),
-              isDirectory.boolValue
-        else {
-            return nil
-        }
-        return url
-    }
+    // MARK: - Compilation
 
     private func execute(
         action: Action,
         source: String,
         sourcePath: String,
-        supportingFiles: [String: String]
+        supportingFiles: [String: String],
+        plan: CargoBuildPlan,
+        onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?
     ) -> CompilationResult {
         let started = clock.now
-        guard let rustcURL, let sysrootURL else {
+        guard let toolchain else {
             return .failure(phase: .setup, detail: "Bundled Rust toolchain is missing.")
         }
+
+        let interrupter = WasmInterrupter()
+        interrupterLock.lock()
+        activeInterrupter = interrupter
+        interrupterLock.unlock()
+        defer {
+            interrupterLock.lock()
+            activeInterrupter = nil
+            interrupterLock.unlock()
+        }
+
         let cacheKey = artifactKey(
             action: action,
             source: source,
             sourcePath: sourcePath,
-            supportingFiles: supportingFiles
+            supportingFiles: supportingFiles,
+            plan: plan
         )
 
         let fileManager = FileManager.default
         let jobRoot = fileManager.temporaryDirectory
-            .appendingPathComponent("CrabrixCompiler", isDirectory: true)
-            .appendingPathComponent(UUID().uuidString, isDirectory: true)
-        let workURL = jobRoot.appendingPathComponent("work", isDirectory: true)
-        let tempURL = jobRoot.appendingPathComponent("tmp", isDirectory: true)
+            .appending(path: "CrabrixCompiler", directoryHint: .isDirectory)
+            .appending(path: UUID().uuidString, directoryHint: .isDirectory)
+        let workURL = jobRoot.appending(path: "work", directoryHint: .isDirectory)
+        let tempURL = jobRoot.appending(path: "tmp", directoryHint: .isDirectory)
+        defer { try? fileManager.removeItem(at: jobRoot) }
 
         do {
             try fileManager.createDirectory(at: workURL, withIntermediateDirectories: true)
             try fileManager.createDirectory(at: tempURL, withIntermediateDirectories: true)
-            guard let sourceURL = projectFileURL(relativePath: sourcePath, under: workURL) else {
-                return .failure(
-                    phase: .setup,
-                    detail: "Invalid project path: \(sourcePath)",
-                    duration: started.duration(to: clock.now)
-                )
-            }
-            try fileManager.createDirectory(
-                at: sourceURL.deletingLastPathComponent(),
-                withIntermediateDirectories: true
+            try writeProject(
+                source: source,
+                sourcePath: sourcePath,
+                supportingFiles: supportingFiles,
+                into: workURL
             )
-            try Data(source.utf8).write(to: sourceURL, options: .atomic)
-            for (relativePath, contents) in supportingFiles {
-                guard relativePath != sourcePath,
-                      let fileURL = projectFileURL(relativePath: relativePath, under: workURL)
-                else {
-                    return .failure(
-                        phase: .setup,
-                        detail: "Invalid project path: \(relativePath)",
-                        duration: started.duration(to: clock.now)
-                    )
-                }
-                try fileManager.createDirectory(
-                    at: fileURL.deletingLastPathComponent(),
-                    withIntermediateDirectories: true
-                )
-                try Data(contents.utf8).write(to: fileURL, options: .atomic)
-            }
+        } catch let error as ProjectLayoutError {
+            return .failure(
+                phase: .setup,
+                detail: error.localizedDescription,
+                duration: started.duration(to: clock.now)
+            )
         } catch {
             return .failure(
                 phase: .setup,
@@ -190,7 +218,6 @@ final class WasmRustCompiler: @unchecked Sendable {
                 duration: started.duration(to: clock.now)
             )
         }
-        defer { try? fileManager.removeItem(at: jobRoot) }
 
         do {
             if action == .check, successfulCheckKeys.contains(cacheKey) {
@@ -206,17 +233,34 @@ final class WasmRustCompiler: @unchecked Sendable {
                 )
             }
 
+            // Dependencies must exist before the cached-program fast path, because
+            // a cached program.wasm already has them linked in.
             if action == .run, let cachedProgram = loadCachedProgramModule(for: cacheKey) {
                 return try executeProgram(
                     module: cachedProgram,
                     jobRoot: jobRoot,
                     diagnostics: [],
                     started: started,
+                    interrupter: interrupter,
                     successDetail: "Executed a cached local build artifact inside the bounded WasmKit sandbox."
                 )
             }
 
-            let module = try loadRustcModule(from: rustcURL)
+            if !plan.isEmpty {
+                if let failure = buildDependencies(
+                    plan: plan,
+                    emit: action.emit,
+                    toolchain: toolchain,
+                    jobRoot: jobRoot,
+                    tempURL: tempURL,
+                    interrupter: interrupter,
+                    started: started,
+                    onProgress: onDependencyProgress
+                ) {
+                    return failure
+                }
+            }
+
             let outputName = action == .run ? "program.wasm" : "main.rmeta"
             var arguments = [
                 "rustc", "/work/\(sourcePath)",
@@ -226,7 +270,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                 "--error-format=json",
                 "--json=diagnostic-rendered-ansi",
             ]
-            var environment: [String: String] = [:]
+            arguments += externArguments(plan.rootExterns, emit: action.emit)
 
             switch action {
             case .check:
@@ -236,34 +280,33 @@ final class WasmRustCompiler: @unchecked Sendable {
                     "-Zunstable-options", "-Copt-level=0", "-Cpanic=abort",
                     "-o", "/work/\(outputName)",
                 ]
-                environment["CLIF2WASM_OBJECT"] = "1"
             }
 
-            let capture = try makeCapture(in: jobRoot, prefix: "compiler")
-            let exitCode: UInt32
+            let compilerOutput: WasmProcessResult
             do {
-                exitCode = try runWASI(
-                    module: module,
+                compilerOutput = try invokeRustc(
+                    toolchain: toolchain,
                     arguments: arguments,
-                    environment: environment,
+                    jobRoot: jobRoot,
+                    capturePrefix: "compiler",
                     preopens: [
                         .init(guestPath: "/tmp", hostPath: tempURL.path),
-                        .init(guestPath: "/sysroot", hostPath: sysrootURL.path),
+                        .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path),
                         .init(guestPath: "/work", hostPath: workURL.path),
-                    ],
-                    capture: capture
+                    ] + registryPreopens(for: plan),
+                    interrupter: interrupter
                 )
-            } catch {
-                let output = try? finishCapture(capture)
-                let stderr = output?.stderr ?? ""
-                let diagnostics = RustDiagnosticParser.parse(stderr: stderr)
+            } catch is WasmExecutionCancelled {
+                return cancelledResult(phase: action == .check ? .check : .compile, started: started)
+            } catch let failure as RustcRuntimeFailure {
+                let diagnostics = RustDiagnosticParser.parse(stderr: failure.stderr)
                 if let diagnostic = diagnostics.first {
                     return CompilationResult(
                         succeeded: false,
                         phase: action == .check ? .check : .compile,
                         exitCode: nil,
                         diagnostics: diagnostics,
-                        stdout: output?.stdout ?? "",
+                        stdout: failure.stdout,
                         stderr: "",
                         duration: started.duration(to: clock.now),
                         detail: diagnostic.message
@@ -271,25 +314,26 @@ final class WasmRustCompiler: @unchecked Sendable {
                 }
                 return .failure(
                     phase: action == .check ? .check : .compile,
-                    detail: "Bundled rustc trapped: \(error)",
-                    stderr: stderr,
+                    detail: "Bundled rustc trapped: \(failure.underlying)",
+                    stderr: failure.stderr,
                     duration: started.duration(to: clock.now)
                 )
             }
-            let compilerOutput = try finishCapture(capture)
+
             let diagnostics = RustDiagnosticParser.parse(stderr: compilerOutput.stderr)
             let hasErrors = diagnostics.contains(where: { $0.level == "error" })
 
-            guard exitCode == 0, !hasErrors else {
+            guard compilerOutput.exitCode == 0, !hasErrors else {
                 return CompilationResult(
                     succeeded: false,
                     phase: action == .check ? .check : .compile,
-                    exitCode: exitCode,
+                    exitCode: compilerOutput.exitCode,
                     diagnostics: diagnostics,
                     stdout: compilerOutput.stdout,
                     stderr: diagnostics.isEmpty ? compilerOutput.stderr : "",
                     duration: started.duration(to: clock.now),
-                    detail: diagnostics.first?.message ?? "rustc exited with code \(exitCode)."
+                    detail: diagnostics.first?.message
+                        ?? "rustc exited with code \(compilerOutput.exitCode)."
                 )
             }
 
@@ -298,16 +342,18 @@ final class WasmRustCompiler: @unchecked Sendable {
                 return CompilationResult(
                     succeeded: true,
                     phase: .check,
-                    exitCode: exitCode,
+                    exitCode: compilerOutput.exitCode,
                     diagnostics: diagnostics,
                     stdout: compilerOutput.stdout,
                     stderr: compilerOutput.stderr,
                     duration: started.duration(to: clock.now),
-                    detail: "Real bundled rustc accepted the program."
+                    detail: plan.isEmpty
+                        ? "Real bundled rustc accepted the program."
+                        : "Real bundled rustc accepted the program and \(plan.units.count) dependencies."
                 )
             }
 
-            let programURL = workURL.appendingPathComponent(outputName)
+            let programURL = workURL.appending(path: outputName)
             guard fileManager.fileExists(atPath: programURL.path) else {
                 return .failure(
                     phase: .compile,
@@ -319,7 +365,7 @@ final class WasmRustCompiler: @unchecked Sendable {
 
             let programData = try Data(contentsOf: programURL)
             let programModule = try parseWasm(bytes: [UInt8](programData))
-            cachedProgramModules[cacheKey] = programModule
+            runtime.cacheProgramModule(programModule, for: cacheKey)
             persistProgramArtifact(programData, for: cacheKey)
 
             return try executeProgram(
@@ -327,8 +373,13 @@ final class WasmRustCompiler: @unchecked Sendable {
                 jobRoot: jobRoot,
                 diagnostics: diagnostics,
                 started: started,
-                successDetail: "Compiled and executed locally inside the bounded WasmKit sandbox."
+                interrupter: interrupter,
+                successDetail: plan.isEmpty
+                    ? "Compiled and executed locally inside the bounded WasmKit sandbox."
+                    : "Compiled \(plan.units.count) dependencies and the program locally, then ran it in the bounded sandbox."
             )
+        } catch is WasmExecutionCancelled {
+            return cancelledResult(phase: action == .check ? .check : .run, started: started)
         } catch {
             return .failure(
                 phase: action == .check ? .check : .run,
@@ -338,11 +389,252 @@ final class WasmRustCompiler: @unchecked Sendable {
         }
     }
 
-    private func loadRustcModule(from url: URL) throws -> Module {
-        if let cachedRustcModule { return cachedRustcModule }
-        let module = try parseWasm(bytes: [UInt8](Data(contentsOf: url)))
-        cachedRustcModule = module
-        return module
+    // MARK: - Dependencies
+
+    /// Compiles every unit that is not already cached. Returns a failure result,
+    /// or nil when the whole plan is available on disk afterwards.
+    private func buildDependencies(
+        plan: CargoBuildPlan,
+        emit: CargoEmitKind,
+        toolchain: BundledToolchain,
+        jobRoot: URL,
+        tempURL: URL,
+        interrupter: WasmInterrupter,
+        started: ContinuousClock.Instant,
+        onProgress: (@Sendable (CargoBuildProgress) -> Void)?
+    ) -> CompilationResult? {
+        guard let artifacts = artifactsDirectory,
+              let registryRoot = CrateStorageLayout.sourceDirectory
+        else {
+            return .failure(
+                phase: .setup,
+                detail: "Crabrix could not open its package artifact cache.",
+                duration: started.duration(to: clock.now)
+            )
+        }
+        do {
+            try FileManager.default.createDirectory(at: artifacts, withIntermediateDirectories: true)
+        } catch {
+            return .failure(
+                phase: .setup,
+                detail: "Could not create the package artifact cache: \(error.localizedDescription)",
+                duration: started.duration(to: clock.now)
+            )
+        }
+
+        for (index, unit) in plan.units.enumerated() {
+            if interrupter.wasCancelled {
+                return cancelledResult(phase: .compile, started: started)
+            }
+            let outputURL = artifacts.appending(path: artifactFileName(unit, emit: emit))
+            if FileManager.default.fileExists(atPath: outputURL.path) {
+                onProgress?(
+                    CargoBuildProgress(
+                        package: unit.package,
+                        index: index + 1,
+                        total: plan.units.count,
+                        wasCached: true
+                    )
+                )
+                continue
+            }
+            onProgress?(
+                CargoBuildProgress(
+                    package: unit.package,
+                    index: index + 1,
+                    total: plan.units.count,
+                    wasCached: false
+                )
+            )
+
+            var arguments = [
+                "rustc",
+                "/registry/\(unit.sourceDirectoryName)/\(unit.libraryPath)",
+                "--sysroot", "/sysroot",
+                "--target", "wasm32-wasip1",
+                "--edition", unit.edition,
+                "--crate-name", unit.crateName,
+                "--crate-type", "lib",
+                "--emit", emit.rustcEmitValue,
+                "-Cmetadata=\(unit.fingerprint)",
+                "-Cextra-filename=-\(unit.fingerprint)",
+                "-Copt-level=0",
+                // A dependency's lints are not the user's problem.
+                "--cap-lints", "allow",
+                "--error-format=json",
+                "--out-dir", "/artifacts",
+                "-Zunstable-options",
+            ]
+            for feature in unit.features.sorted() {
+                arguments += ["--cfg", "feature=\"\(feature)\""]
+            }
+            arguments += externArguments(unit.externs, emit: emit)
+
+            let output: WasmProcessResult
+            do {
+                output = try invokeRustc(
+                    toolchain: toolchain,
+                    arguments: arguments,
+                    jobRoot: jobRoot,
+                    capturePrefix: "dep-\(unit.fingerprint)",
+                    preopens: [
+                        .init(guestPath: "/tmp", hostPath: tempURL.path),
+                        .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path),
+                        .init(guestPath: "/registry", hostPath: registryRoot.path),
+                        .init(guestPath: "/artifacts", hostPath: artifacts.path),
+                    ],
+                    environment: cargoEnvironment(for: unit),
+                    interrupter: interrupter
+                )
+            } catch is WasmExecutionCancelled {
+                return cancelledResult(phase: .compile, started: started)
+            } catch let failure as RustcRuntimeFailure {
+                // A codegen gap in the bundled backend prints a normal JSON
+                // diagnostic and *then* aborts, so the useful message is in the
+                // captured output rather than in the trap itself.
+                let reason = RustDiagnosticParser.parse(stderr: failure.stderr).first?.message
+                    ?? Self.firstErrorLine(in: failure.stderr)
+                    ?? "the bundled rustc trapped while compiling it"
+                return dependencyFailure(unit: unit, detail: reason, stderr: failure.stderr, started: started)
+            } catch {
+                return dependencyFailure(
+                    unit: unit,
+                    detail: error.localizedDescription,
+                    stderr: "",
+                    started: started
+                )
+            }
+
+            let diagnostics = RustDiagnosticParser.parse(stderr: output.stderr)
+            let hasErrors = diagnostics.contains { $0.level == "error" }
+            guard output.exitCode == 0, !hasErrors,
+                  FileManager.default.fileExists(atPath: outputURL.path)
+            else {
+                let reason = diagnostics.first?.message
+                    ?? Self.firstErrorLine(in: output.stderr)
+                    ?? "rustc exited with code \(output.exitCode)"
+                return dependencyFailure(
+                    unit: unit,
+                    detail: reason,
+                    stderr: diagnostics.isEmpty ? output.stderr : "",
+                    started: started
+                )
+            }
+            ledger.record(package: unit.package, fingerprint: unit.fingerprint, outcome: .built)
+        }
+        return nil
+    }
+
+    /// Picks the first `error: …` line out of raw rustc output.
+    private static func firstErrorLine(in stderr: String) -> String? {
+        for line in stderr.split(whereSeparator: \.isNewline) {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard trimmed.hasPrefix("error") else { continue }
+            return String(trimmed.prefix(240))
+        }
+        return nil
+    }
+
+    private func dependencyFailure(
+        unit: CargoBuildUnit,
+        detail: String,
+        stderr: String,
+        started: ContinuousClock.Instant
+    ) -> CompilationResult {
+        // Remember the verdict so the package list can show it without paying
+        // for another multi-minute compile.
+        ledger.record(package: unit.package, fingerprint: unit.fingerprint, outcome: .failed(detail))
+        return CompilationResult(
+            succeeded: false,
+            phase: .compile,
+            exitCode: nil,
+            diagnostics: [],
+            stdout: "",
+            stderr: stderr,
+            duration: started.duration(to: clock.now),
+            detail: "\(unit.package.name) \(unit.package.version) did not build: \(detail)"
+        )
+    }
+
+    /// `env!("CARGO_PKG_…")` is common enough in real crates that omitting these
+    /// turns otherwise-compatible packages into compile errors.
+    private func cargoEnvironment(for unit: CargoBuildUnit) -> [String: String] {
+        let version = unit.package.version
+        var environment: [String: String] = [
+            "CLIF2WASM_OBJECT": "1",
+            "CARGO_CRATE_NAME": unit.crateName,
+            "CARGO_PKG_NAME": unit.package.name,
+            "CARGO_PKG_VERSION": version.description,
+            "CARGO_PKG_VERSION_MAJOR": String(version.major),
+            "CARGO_PKG_VERSION_MINOR": String(version.minor),
+            "CARGO_PKG_VERSION_PATCH": String(version.patch),
+            "CARGO_PKG_VERSION_PRE": version.prerelease.joined(separator: "."),
+            "CARGO_PKG_AUTHORS": unit.authors,
+            "CARGO_PKG_DESCRIPTION": unit.description,
+            "CARGO_PKG_REPOSITORY": unit.repository,
+            "CARGO_PKG_HOMEPAGE": unit.homepage,
+            "CARGO_PKG_LICENSE": unit.license,
+            "CARGO_PKG_LICENSE_FILE": "",
+            "CARGO_PKG_RUST_VERSION": "",
+            "CARGO_MANIFEST_DIR": "/registry/\(unit.sourceDirectoryName)",
+        ]
+        for feature in unit.features {
+            let key = feature.uppercased()
+                .replacingOccurrences(of: "-", with: "_")
+                .replacingOccurrences(of: ".", with: "_")
+            environment["CARGO_FEATURE_\(key)"] = "1"
+        }
+        return environment
+    }
+
+    private func externArguments(_ externs: [CargoExtern], emit: CargoEmitKind) -> [String] {
+        guard !externs.isEmpty else { return [] }
+        var arguments: [String] = []
+        for value in externs.sorted(by: { $0.alias < $1.alias }) {
+            arguments += ["--extern", "\(value.alias)=/artifacts/\(value.fileName(emit: emit))"]
+        }
+        // rustc resolves transitive dependencies out of this directory using the
+        // identity recorded in each artefact, so several versions can coexist.
+        arguments += ["-L", "dependency=/artifacts"]
+        return arguments
+    }
+
+    private func registryPreopens(for plan: CargoBuildPlan) -> [WASIBridgeToHost.Preopen] {
+        guard !plan.rootExterns.isEmpty, let artifacts = artifactsDirectory else { return [] }
+        return [.init(guestPath: "/artifacts", hostPath: artifacts.path)]
+    }
+
+    private func artifactFileName(_ unit: CargoBuildUnit, emit: CargoEmitKind) -> String {
+        "lib\(unit.crateName)-\(unit.fingerprint).\(emit.fileExtension)"
+    }
+
+    private var artifactsDirectory: URL? {
+        CrateStorageLayout.artifactDirectory?
+            .appending(path: Self.toolchainVersion, directoryHint: .isDirectory)
+            .appending(path: CargoFingerprint.schemaVersion, directoryHint: .isDirectory)
+    }
+
+    // MARK: - Guest execution
+
+    private func invokeRustc(
+        toolchain: BundledToolchain,
+        arguments: [String],
+        jobRoot: URL,
+        capturePrefix: String,
+        preopens: [WASIBridgeToHost.Preopen],
+        environment: [String: String] = ["CLIF2WASM_OBJECT": "1"],
+        interrupter: WasmInterrupter
+    ) throws -> WasmProcessResult {
+        let module = try runtime.rustcModule(at: toolchain.rustcURL)
+        return try runtime.run(
+            module: module,
+            arguments: arguments,
+            environment: environment,
+            preopens: preopens,
+            captureDirectory: jobRoot,
+            capturePrefix: capturePrefix,
+            interrupter: interrupter
+        )
     }
 
     private func executeProgram(
@@ -350,16 +642,16 @@ final class WasmRustCompiler: @unchecked Sendable {
         jobRoot: URL,
         diagnostics: [RustDiagnostic],
         started: ContinuousClock.Instant,
+        interrupter: WasmInterrupter,
         successDetail: String
     ) throws -> CompilationResult {
-        let fileManager = FileManager.default
-        let sandboxURL = jobRoot.appendingPathComponent("sandbox", isDirectory: true)
-        try fileManager.createDirectory(at: sandboxURL, withIntermediateDirectories: true)
-        let programCapture = try makeCapture(in: jobRoot, prefix: "program")
+        let sandboxURL = jobRoot.appending(path: "sandbox", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: sandboxURL, withIntermediateDirectories: true)
         let resourceLimiter = WasmSandboxResourceLimiter()
-        let programExit: UInt32
+
+        let output: WasmProcessResult
         do {
-            programExit = try runWASI(
+            output = try runtime.run(
                 module: module,
                 arguments: ["program"],
                 environment: [:],
@@ -369,11 +661,14 @@ final class WasmRustCompiler: @unchecked Sendable {
                         hostPath: sandboxURL.path
                     )
                 ],
-                capture: programCapture,
-                resourceLimiter: resourceLimiter
+                captureDirectory: jobRoot,
+                capturePrefix: "program",
+                resourceLimiter: resourceLimiter,
+                interrupter: interrupter
             )
-        } catch {
-            let programOutput = try? finishCapture(programCapture)
+        } catch is WasmExecutionCancelled {
+            return cancelledResult(phase: .run, started: started)
+        } catch let failure as RustcRuntimeFailure {
             if let deniedResource = resourceLimiter.deniedResource {
                 let detail = switch deniedResource {
                 case .memory:
@@ -386,84 +681,82 @@ final class WasmRustCompiler: @unchecked Sendable {
                     phase: .run,
                     exitCode: nil,
                     diagnostics: diagnostics,
-                    stdout: programOutput?.stdout ?? "",
-                    stderr: programOutput?.stderr ?? "",
+                    stdout: failure.stdout,
+                    stderr: failure.stderr,
                     duration: started.duration(to: clock.now),
                     detail: detail
                 )
             }
-            throw error
+            throw failure.underlying
         }
-        let programOutput = try finishCapture(programCapture)
 
         return CompilationResult(
-            succeeded: programExit == 0,
+            succeeded: output.exitCode == 0,
             phase: .run,
-            exitCode: programExit,
+            exitCode: output.exitCode,
             diagnostics: diagnostics,
-            stdout: programOutput.stdout,
-            stderr: programOutput.stderr,
+            stdout: output.stdout,
+            stderr: output.stderr,
             duration: started.duration(to: clock.now),
-            detail: programExit == 0 ? successDetail : "The program exited with code \(programExit)."
+            detail: output.exitCode == 0
+                ? successDetail
+                : "The program exited with code \(output.exitCode)."
         )
     }
 
-    private func artifactKey(
-        action: Action,
+    private func cancelledResult(
+        phase: CompilationResult.Phase,
+        started: ContinuousClock.Instant
+    ) -> CompilationResult {
+        CompilationResult(
+            succeeded: false,
+            phase: phase,
+            exitCode: nil,
+            diagnostics: [],
+            stdout: "",
+            stderr: "",
+            duration: started.duration(to: clock.now),
+            detail: "Build stopped. The Wasm guest was interrupted and its sandbox released."
+        )
+    }
+
+    // MARK: - Project layout
+
+    private enum ProjectLayoutError: LocalizedError {
+        case invalidPath(String)
+
+        var errorDescription: String? {
+            switch self {
+            case let .invalidPath(path): "Invalid project path: \(path)"
+            }
+        }
+    }
+
+    private func writeProject(
         source: String,
         sourcePath: String,
-        supportingFiles: [String: String]
-    ) -> String {
-        var hasher = SHA256()
-        let actionLabel = action == .check ? "check" : "run"
-        for value in [Self.toolchainVersion, Self.cacheSchemaVersion, actionLabel, sourcePath, source] {
-            hasher.update(data: Data(value.utf8))
-            hasher.update(data: Data([0]))
+        supportingFiles: [String: String],
+        into workURL: URL
+    ) throws {
+        let fileManager = FileManager.default
+        guard let sourceURL = projectFileURL(relativePath: sourcePath, under: workURL) else {
+            throw ProjectLayoutError.invalidPath(sourcePath)
         }
-        for (path, contents) in supportingFiles.sorted(by: { $0.key < $1.key }) {
-            hasher.update(data: Data(path.utf8))
-            hasher.update(data: Data([0]))
-            hasher.update(data: Data(contents.utf8))
-            hasher.update(data: Data([0]))
-        }
-        return hasher.finalize().map { String(format: "%02x", $0) }.joined()
-    }
+        try fileManager.createDirectory(
+            at: sourceURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try Data(source.utf8).write(to: sourceURL, options: .atomic)
 
-    private var artifactCacheURL: URL? {
-        FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
-            .appendingPathComponent("CrabrixCompiler", isDirectory: true)
-            .appendingPathComponent(Self.toolchainVersion, isDirectory: true)
-            .appendingPathComponent(Self.cacheSchemaVersion, isDirectory: true)
-    }
-
-    private func artifactURL(for key: String) -> URL? {
-        artifactCacheURL?.appendingPathComponent("\(key).wasm")
-    }
-
-    private func loadCachedProgramModule(for key: String) -> Module? {
-        if let module = cachedProgramModules[key] { return module }
-        guard let url = artifactURL(for: key),
-              FileManager.default.fileExists(atPath: url.path)
-        else {
-            return nil
-        }
-        do {
-            let module = try parseWasm(bytes: [UInt8](Data(contentsOf: url)))
-            cachedProgramModules[key] = module
-            return module
-        } catch {
-            try? FileManager.default.removeItem(at: url)
-            return nil
-        }
-    }
-
-    private func persistProgramArtifact(_ data: Data, for key: String) {
-        guard let directory = artifactCacheURL, let url = artifactURL(for: key) else { return }
-        do {
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            try data.write(to: url, options: .atomic)
-        } catch {
-            // A cache write must never turn a successful local compilation into a failure.
+        for (relativePath, contents) in supportingFiles where relativePath != sourcePath {
+            guard let fileURL = projectFileURL(relativePath: relativePath, under: workURL) else {
+                throw ProjectLayoutError.invalidPath(relativePath)
+            }
+            try fileManager.createDirectory(
+                at: fileURL.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            try Data(contents.utf8).write(to: fileURL, options: .atomic)
         }
     }
 
@@ -476,72 +769,77 @@ final class WasmRustCompiler: @unchecked Sendable {
             return nil
         }
         return components.reduce(root) { partial, component in
-            partial.appendingPathComponent(String(component))
+            partial.appending(path: String(component))
         }
     }
 
-    private func engine() -> Engine {
-        if let cachedEngine { return cachedEngine }
-        let configuration = EngineConfiguration(
-            // WasmKit 0.3.1's direct-threaded interpreter crashes in optimized
-            // iOS Simulator builds while executing the bundled rustc module.
-            // Token threading is the supported fallback and remains stable in
-            // both Debug and Release configurations.
-            threadingModel: .token,
-            compilationMode: .lazy,
-            stackSize: 16 * 1024 * 1024,
-            memoryBoundsChecking: .software
-        )
-        let engine = Engine(configuration: configuration)
-        cachedEngine = engine
-        return engine
+    // MARK: - Program artifact cache
+
+    private func artifactKey(
+        action: Action,
+        source: String,
+        sourcePath: String,
+        supportingFiles: [String: String],
+        plan: CargoBuildPlan
+    ) -> String {
+        var hasher = SHA256()
+        let actionLabel = action == .check ? "check" : "run"
+        for value in [
+            Self.toolchainVersion, Self.cacheSchemaVersion, actionLabel, sourcePath, source,
+        ] {
+            hasher.update(data: Data(value.utf8))
+            hasher.update(data: Data([0]))
+        }
+        for (path, contents) in supportingFiles.sorted(by: { $0.key < $1.key }) {
+            hasher.update(data: Data(path.utf8))
+            hasher.update(data: Data([0]))
+            hasher.update(data: Data(contents.utf8))
+            hasher.update(data: Data([0]))
+        }
+        // Dependency identity is part of the key, so adding or changing a crate
+        // never reuses a stale program artifact.
+        for value in plan.rootExterns.sorted(by: { $0.alias < $1.alias }) {
+            hasher.update(data: Data("\(value.alias)=\(value.crateName)-\(value.fingerprint)".utf8))
+            hasher.update(data: Data([0]))
+        }
+        return hasher.finalize().map { String(format: "%02x", $0) }.joined()
     }
 
-    private func runWASI(
-        module: Module,
-        arguments: [String],
-        environment: [String: String],
-        preopens: [WASIBridgeToHost.Preopen],
-        capture: Capture,
-        resourceLimiter: (any ResourceLimiter)? = nil
-    ) throws -> UInt32 {
-        let wasi = try WASIBridgeToHost(
-            args: arguments,
-            environment: environment,
-            preopens: preopens,
-            stdout: FileDescriptor(rawValue: capture.stdoutHandle.fileDescriptor),
-            stderr: FileDescriptor(rawValue: capture.stderrHandle.fileDescriptor)
-        )
-        return try wasi.runAndClose { wasi in
-            let store = Store(engine: engine())
-            if let resourceLimiter {
-                store.resourceLimiter = resourceLimiter
-            }
-            var imports = Imports()
-            wasi.link(to: &imports, store: store)
-            let instance = try module.instantiate(store: store, imports: imports)
-            return try wasi.start(instance)
+    private var programCacheURL: URL? {
+        FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
+            .appending(path: "CrabrixCompiler", directoryHint: .isDirectory)
+            .appending(path: Self.toolchainVersion, directoryHint: .isDirectory)
+            .appending(path: Self.cacheSchemaVersion, directoryHint: .isDirectory)
+    }
+
+    private func programArtifactURL(for key: String) -> URL? {
+        programCacheURL?.appending(path: "\(key).wasm")
+    }
+
+    private func loadCachedProgramModule(for key: String) -> Module? {
+        if let module = runtime.programModule(for: key) { return module }
+        guard let url = programArtifactURL(for: key),
+              FileManager.default.fileExists(atPath: url.path)
+        else {
+            return nil
+        }
+        do {
+            let module = try parseWasm(bytes: [UInt8](Data(contentsOf: url)))
+            runtime.cacheProgramModule(module, for: key)
+            return module
+        } catch {
+            try? FileManager.default.removeItem(at: url)
+            return nil
         }
     }
 
-    private func makeCapture(in directory: URL, prefix: String) throws -> Capture {
-        let stdoutURL = directory.appendingPathComponent("\(prefix)-stdout.log")
-        let stderrURL = directory.appendingPathComponent("\(prefix)-stderr.log")
-        FileManager.default.createFile(atPath: stdoutURL.path, contents: nil)
-        FileManager.default.createFile(atPath: stderrURL.path, contents: nil)
-        return Capture(
-            stdoutURL: stdoutURL,
-            stderrURL: stderrURL,
-            stdoutHandle: try FileHandle(forWritingTo: stdoutURL),
-            stderrHandle: try FileHandle(forWritingTo: stderrURL)
-        )
-    }
-
-    private func finishCapture(_ capture: Capture) throws -> (stdout: String, stderr: String) {
-        try capture.stdoutHandle.close()
-        try capture.stderrHandle.close()
-        let stdout = String(decoding: try Data(contentsOf: capture.stdoutURL), as: UTF8.self)
-        let stderr = String(decoding: try Data(contentsOf: capture.stderrURL), as: UTF8.self)
-        return (stdout, stderr)
+    private func persistProgramArtifact(_ data: Data, for key: String) {
+        guard let directory = programCacheURL, let url = programArtifactURL(for: key) else { return }
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try data.write(to: url, options: .atomic)
+        } catch {
+            // A cache write must never turn a successful local compilation into a failure.
+        }
     }
 }

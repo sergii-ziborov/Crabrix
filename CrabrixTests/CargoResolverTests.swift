@@ -1,0 +1,370 @@
+import XCTest
+@testable import Crabrix
+
+/// A registry that answers from fixtures instead of the network.
+private struct StubIndex: CrateIndexProviding {
+    let files: [String: RegistryIndexFile]
+
+    func indexFile(for crate: String) async throws -> RegistryIndexFile {
+        guard let file = files[crate.lowercased()] else {
+            throw CrateRegistryError.crateNotFound(crate)
+        }
+        return file
+    }
+
+    static func make(_ lines: [String: [String]]) throws -> StubIndex {
+        var files: [String: RegistryIndexFile] = [:]
+        for (name, entries) in lines {
+            let data = Data(entries.joined(separator: "\n").utf8)
+            files[name] = try SparseRegistryIndex.parse(data, name: name)
+        }
+        return StubIndex(files: files)
+    }
+}
+
+private func indexLine(
+    _ name: String,
+    _ version: String,
+    deps: String = "[]",
+    features: String = "{}",
+    yanked: Bool = false,
+    links: String? = nil
+) -> String {
+    let linksField = links.map { ",\"links\":\"\($0)\"" } ?? ""
+    return """
+    {"name":"\(name)","vers":"\(version)","deps":\(deps),"cksum":"\(String(repeating: "a", count: 64))","features":\(features),"yanked":\(yanked)\(linksField)}
+    """
+}
+
+private func dep(
+    _ name: String,
+    _ req: String,
+    optional: Bool = false,
+    defaultFeatures: Bool = true,
+    features: [String] = [],
+    kind: String = "normal",
+    target: String? = nil,
+    package: String? = nil
+) -> String {
+    let featureList = features.map { "\"\($0)\"" }.joined(separator: ",")
+    let targetField = target.map { "\"\($0)\"" } ?? "null"
+    let packageField = package.map { ",\"package\":\"\($0)\"" } ?? ""
+    return """
+    {"name":"\(name)","req":"\(req)","features":[\(featureList)],"optional":\(optional),"default_features":\(defaultFeatures),"target":\(targetField),"kind":"\(kind)"\(packageField)}
+    """
+}
+
+private func manifest(_ body: String) throws -> CratePackageManifest {
+    try CratePackageManifest.parse("""
+    [package]
+    name = "root"
+    version = "0.1.0"
+    edition = "2021"
+
+    \(body)
+    """)
+}
+
+final class CargoResolverTests: XCTestCase {
+    func testSelectsHighestCompatibleVersionAndSkipsYanked() async throws {
+        let index = try StubIndex.make([
+            "alpha": [
+                indexLine("alpha", "1.0.0"),
+                indexLine("alpha", "1.4.0"),
+                indexLine("alpha", "1.9.0", yanked: true),
+                indexLine("alpha", "2.0.0"),
+            ],
+        ])
+        let root = try manifest("[dependencies]\nalpha = \"1\"")
+        let graph = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features
+        )
+
+        XCTAssertEqual(graph.rootDependencies["alpha"]?.version.description, "1.4.0")
+        XCTAssertEqual(graph.packages.count, 1)
+    }
+
+    func testResolvesTransitiveDependenciesInBuildOrder() async throws {
+        let index = try StubIndex.make([
+            "top": [indexLine("top", "1.0.0", deps: "[\(dep("mid", "^1"))]")],
+            "mid": [indexLine("mid", "1.2.0", deps: "[\(dep("leaf", "^0.3"))]")],
+            "leaf": [indexLine("leaf", "0.3.4")],
+        ])
+        let root = try manifest("[dependencies]\ntop = \"1\"")
+        let graph = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features
+        )
+
+        XCTAssertEqual(graph.packages.count, 3)
+        let order = graph.buildOrder.map(\.name)
+        XCTAssertLessThan(
+            try XCTUnwrap(order.firstIndex(of: "leaf")),
+            try XCTUnwrap(order.firstIndex(of: "mid"))
+        )
+        XCTAssertLessThan(
+            try XCTUnwrap(order.firstIndex(of: "mid")),
+            try XCTUnwrap(order.firstIndex(of: "top"))
+        )
+    }
+
+    func testUnifiesRequirementsOntoOneCompatibleVersion() async throws {
+        let index = try StubIndex.make([
+            "shared": [
+                indexLine("shared", "1.0.0"),
+                indexLine("shared", "1.2.0"),
+                indexLine("shared", "1.5.0"),
+            ],
+            "left": [indexLine("left", "1.0.0", deps: "[\(dep("shared", "^1.2"))]")],
+        ])
+        let root = try manifest("""
+        [dependencies]
+        left = "1"
+        shared = "=1.2.0"
+        """)
+        let graph = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features
+        )
+
+        // Both requirements land on one copy, which is what Cargo links.
+        XCTAssertEqual(graph.packages.keys.filter { $0.name == "shared" }.count, 1)
+        XCTAssertEqual(graph.rootDependencies["shared"]?.version.description, "1.2.0")
+    }
+
+    func testReportsUnsatisfiableRequirements() async throws {
+        let index = try StubIndex.make([
+            "shared": [indexLine("shared", "1.0.0"), indexLine("shared", "1.2.0")],
+            "left": [indexLine("left", "1.0.0", deps: "[\(dep("shared", "=1.0.0"))]")],
+        ])
+        let root = try manifest("""
+        [dependencies]
+        left = "1"
+        shared = "=1.2.0"
+        """)
+        do {
+            _ = try await CargoResolver(index: index).resolve(
+                rootDependencies: root.dependencies,
+                rootFeatures: root.features
+            )
+            XCTFail("Expected a conflict")
+        } catch let error as CargoResolutionError {
+            guard case let .conflict(crate, _) = error else {
+                return XCTFail("Unexpected error \(error)")
+            }
+            XCTAssertEqual(crate, "shared")
+        }
+    }
+
+    func testKeepsIncompatibleMajorVersionsSideBySide() async throws {
+        let index = try StubIndex.make([
+            "shared": [indexLine("shared", "1.4.0"), indexLine("shared", "2.1.0")],
+            "legacy": [indexLine("legacy", "1.0.0", deps: "[\(dep("shared", "^1"))]")],
+        ])
+        let root = try manifest("""
+        [dependencies]
+        legacy = "1"
+        shared = "2"
+        """)
+        let graph = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features
+        )
+
+        let versions = graph.packages.keys.filter { $0.name == "shared" }
+            .map(\.version.description).sorted()
+        XCTAssertEqual(versions, ["1.4.0", "2.1.0"])
+    }
+
+    func testTargetPredicatesFilterOutForeignPlatformDependencies() async throws {
+        let index = try StubIndex.make([
+            "portable": [
+                indexLine(
+                    "portable",
+                    "1.0.0",
+                    deps: "[\(dep("winapi", "^0.3", target: "cfg(windows)")),\(dep("wasi", "^0.11", target: "cfg(target_os = \\\"wasi\\\")"))]"
+                ),
+            ],
+            "winapi": [indexLine("winapi", "0.3.9")],
+            "wasi": [indexLine("wasi", "0.11.0")],
+        ])
+        let root = try manifest("[dependencies]\nportable = \"1\"")
+        let graph = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features
+        )
+
+        let names = Set(graph.packages.keys.map(\.name))
+        XCTAssertTrue(names.contains("wasi"))
+        XCTAssertFalse(names.contains("winapi"))
+    }
+
+    func testDevAndBuildDependenciesAreNotResolved() async throws {
+        let index = try StubIndex.make([
+            "lib": [
+                indexLine(
+                    "lib",
+                    "1.0.0",
+                    deps: "[\(dep("testkit", "^1", kind: "dev")),\(dep("autocfg", "^1", kind: "build"))]"
+                ),
+            ],
+            "testkit": [indexLine("testkit", "1.0.0")],
+            "autocfg": [indexLine("autocfg", "1.0.0")],
+        ])
+        let root = try manifest("[dependencies]\nlib = \"1\"")
+        let graph = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features
+        )
+
+        XCTAssertEqual(Set(graph.packages.keys.map(\.name)), ["lib"])
+    }
+
+    func testOptionalDependencyIsActivatedOnlyByItsFeature() async throws {
+        let index = try StubIndex.make([
+            "host": [
+                indexLine(
+                    "host",
+                    "1.0.0",
+                    deps: "[\(dep("extra", "^1", optional: true))]",
+                    features: "{\"default\":[],\"fancy\":[\"extra\"]}"
+                ),
+            ],
+            "extra": [indexLine("extra", "1.0.0")],
+        ])
+
+        let plain = try manifest("[dependencies]\nhost = \"1\"")
+        let withoutFeature = try await CargoResolver(index: index).resolve(
+            rootDependencies: plain.dependencies,
+            rootFeatures: plain.features
+        )
+        XCTAssertFalse(withoutFeature.packages.keys.contains { $0.name == "extra" })
+
+        let enabled = try manifest("""
+        [dependencies]
+        host = { version = "1", features = ["fancy"] }
+        """)
+        let withFeature = try await CargoResolver(index: index).resolve(
+            rootDependencies: enabled.dependencies,
+            rootFeatures: enabled.features
+        )
+        XCTAssertTrue(withFeature.packages.keys.contains { $0.name == "extra" })
+    }
+
+    func testFeaturesPropagateToDependenciesAndUnify() async throws {
+        let index = try StubIndex.make([
+            "front": [
+                indexLine(
+                    "front",
+                    "1.0.0",
+                    deps: "[\(dep("core", "^1", defaultFeatures: false, features: ["alloc"]))]",
+                    features: "{\"default\":[\"std\"],\"std\":[\"core/std\"]}"
+                ),
+            ],
+            "core": [
+                indexLine(
+                    "core",
+                    "1.0.0",
+                    features: "{\"default\":[],\"std\":[],\"alloc\":[]}"
+                ),
+            ],
+        ])
+        let root = try manifest("[dependencies]\nfront = \"1\"")
+        let graph = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features
+        )
+
+        let core = try XCTUnwrap(graph.packages.values.first { $0.name == "core" })
+        XCTAssertEqual(core.sortedFeatures, ["alloc", "std"])
+        let front = try XCTUnwrap(graph.packages.values.first { $0.name == "front" })
+        XCTAssertEqual(front.sortedFeatures, ["default", "std"])
+    }
+
+    func testWeakFeatureOnlyAppliesWhenTheDependencyIsActive() async throws {
+        let index = try StubIndex.make([
+            "host": [
+                indexLine(
+                    "host",
+                    "1.0.0",
+                    deps: "[\(dep("extra", "^1", optional: true, defaultFeatures: false))]",
+                    features: "{\"default\":[],\"std\":[\"extra?/std\"],\"with-extra\":[\"dep:extra\"]}"
+                ),
+            ],
+            "extra": [indexLine("extra", "1.0.0", features: "{\"default\":[],\"std\":[]}")],
+        ])
+
+        let weakOnly = try manifest("""
+        [dependencies]
+        host = { version = "1", features = ["std"] }
+        """)
+        let graph = try await CargoResolver(index: index).resolve(
+            rootDependencies: weakOnly.dependencies,
+            rootFeatures: weakOnly.features
+        )
+        XCTAssertFalse(graph.packages.keys.contains { $0.name == "extra" })
+
+        let both = try manifest("""
+        [dependencies]
+        host = { version = "1", features = ["std", "with-extra"] }
+        """)
+        let activated = try await CargoResolver(index: index).resolve(
+            rootDependencies: both.dependencies,
+            rootFeatures: both.features
+        )
+        let extra = try XCTUnwrap(activated.packages.values.first { $0.name == "extra" })
+        XCTAssertTrue(extra.features.contains("std"))
+    }
+
+    func testRenamedDependencyResolvesThePublishedPackage() async throws {
+        let index = try StubIndex.make([
+            "real-crate": [indexLine("real-crate", "1.0.0")],
+        ])
+        let root = try manifest("""
+        [dependencies]
+        alias = { version = "1", package = "real-crate" }
+        """)
+        let graph = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features
+        )
+
+        XCTAssertEqual(graph.rootDependencies["alias"]?.name, "real-crate")
+    }
+
+    func testWarnsAboutNativeLibraryAndUnsupportedSources() async throws {
+        let index = try StubIndex.make([
+            "native": [indexLine("native", "1.0.0", links: "z")],
+        ])
+        let root = try manifest("""
+        [dependencies]
+        native = "1"
+        local = { path = "../local" }
+        forked = { git = "https://example.com/forked.git" }
+        """)
+        let graph = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features
+        )
+
+        let messages = graph.warnings.map(\.message).joined(separator: "\n")
+        XCTAssertTrue(messages.contains("native library"))
+        XCTAssertTrue(messages.contains("path dependency"))
+        XCTAssertTrue(messages.contains("git dependency"))
+    }
+
+    func testMissingCrateSurfacesAsAResolutionError() async throws {
+        let index = try StubIndex.make(["present": [indexLine("present", "1.0.0")]])
+        let root = try manifest("[dependencies]\nabsent = \"1\"")
+        do {
+            _ = try await CargoResolver(index: index).resolve(
+                rootDependencies: root.dependencies,
+                rootFeatures: root.features
+            )
+            XCTFail("Expected a missing crate error")
+        } catch let error as CrateRegistryError {
+            XCTAssertEqual(error, .crateNotFound("absent"))
+        }
+    }
+}

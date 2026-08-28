@@ -1,12 +1,41 @@
 # Crabrix — native Rust workspace for iPhone and iPad
 
-Crabrix is an early-development **native SwiftUI application** for learning,
-editing, checking, and running Rust locally on iPhone and iPad. There is no
-WebView, localhost server, JavaScript runtime, or cloud compiler in the app.
+Crabrix is a **native SwiftUI application** that compiles and runs real Rust on
+an iPhone or iPad. There is no WebView, no localhost server, no JavaScript
+runtime, and no cloud compiler: `rustc` itself ships inside the app and executes
+on the device.
 
-The current Phase 0 build validates the hardest product gate:
+> Write Rust. Add real crates.io packages. Compile and run them. On a phone. Offline.
 
-> Can a bundled Rust compiler type-check and run Rust locally inside an iPhone/iPad app while offline?
+[**crabrix.com**](https://crabrix.com) · [About](https://crabrix.com/about) ·
+[Leaderboard](https://crabrix.com/leaderboard) · [Support](https://crabrix.com/support) ·
+[Privacy](https://crabrix.com/privacy) · [Terms](https://crabrix.com/terms)
+
+| | |
+| :--: | :--: |
+| <img src="docs/screenshots/iphone-projects.png" width="260" alt="Projects dashboard on iPhone"> | <img src="docs/screenshots/iphone-library.png" width="260" alt="Project library with search and filters"> |
+| **Projects** — current project, import, and the library | **Library** — 20 working projects, searchable |
+| <img src="docs/screenshots/iphone-build.png" width="260" alt="Build workspace on iPhone"> | <img src="docs/screenshots/iphone-learn.png" width="260" alt="Learn tab with rating and achievements"> |
+| **Build** — editor, packages, diagnostics, terminal | **Learn** — 83 lessons, rating, achievements |
+
+<p align="center">
+  <img src="docs/screenshots/ipad-build.png" width="720" alt="Crabrix build workspace on iPad">
+  <br><em>The iPad workspace: file tree and resolved packages, editor, and the build inspector.</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/ipad-library.png" width="720" alt="Project library on iPad">
+</p>
+
+## What it does
+
+- **Compiles Rust on device.** A pinned WASI build of `rustc` runs inside a Swift WebAssembly interpreter. The first compile is real; identical repeat runs come from a local artifact cache.
+- **Resolves and builds crates.io packages.** Sparse-index resolution, SemVer and feature unification, checksum-verified downloads, dependency compilation, and `--extern` linking — all on the device.
+- **Health and energy, scaled by rating.** Wrong answers in a lesson cost health; a new lesson page costs energy, once ever. Both refill on their own, and a higher rank means a bigger pool *and* a faster refill. Training — Quick Practice, Term Train, Code Recall — never costs anything, so there is always a way to keep learning.
+- **Teaches from the compiler.** 83 lessons across 6 courses, each with a highlighted example and a compiler-checked lab, plus Quick Practice, Term Train, and Code Recall drills.
+- **Achievements have ladders.** 14 families of five tiers each — Bronze to Diamond — so finishing one Code Recall run is Bronze and ten thousand lines recalled is Diamond. The tier is what the badge reports.
+- **Rating follows the diff.** A successful run is scored on how much Rust actually changed since the last one, so pressing Run on an untouched sample is worth almost nothing and real editing is worth real points.
+- **Works offline.** Once a project's packages are cached, it rebuilds with the network off.
 
 The app embeds:
 
@@ -21,22 +50,85 @@ The app embeds:
 - Files/Working Copy folder import, `.crabrixproject` package export, and a persistent recent-project library with last-build status;
 - bounded public GitHub snapshot import for repository and branch URLs, Cargo-root discovery, and stored source provenance;
 - an iOS Share Extension that queues GitHub URLs through an App Group and never tries to foreground the host app;
-- a course hub for Basics, Ownership, advanced Cargo projects, and interview preparation, followed by visual lesson journeys, a distinct explanation/objective/task brief for every lesson, and live compiler-backed labs;
-- quick practice that covers answer selection, concept matching, and drag-to-arrange code without forcing every lesson into the editor;
-- four fully offline example projects for pixel art, a terminal dashboard, generative constellations, and collection practice;
+- six courses covering the language end to end — foundations, ownership, data modelling, abstractions, Cargo projects, smart pointers, concurrency, async, macros, and systems Rust — plus interview prep that reaches past the language into memory, networking, databases, and distributed systems: 83 lessons in total, each with a syntax-highlighted example and a compiler-backed lab;
+- Quick Practice, Term Train (practice and timed modes, streaks, accuracy), and Code Recall, a memory drill that hides a snippet and asks you to rebuild it — all three generated from the lesson content and scheduled with SM-2 spaced repetition;
+- a rating earned across every part of the app, 14 achievement ladders of five tiers each, with a tiered unlock animation, and a health/energy system whose pool and refill rate both scale with rank — all stored on device;
+- a project library of 20 std-only projects across eight categories, searchable and filterable by difficulty, every one verified to compile and run with the bundled toolchain;
 - draggable/collapsible project and diagnostic panels on iPad, plus stable full-height `Code / Problems / Output / Terminal` workspace tabs with highlighted streams/commands and live build state on both the workspace and project library;
 - a review-before-insert Rust completion action: deterministic offline suggestions everywhere and optional Apple Foundation Models completion on eligible iOS 26+ devices;
 - Auto, Light, and Dark themes, adjustable editor text, build keep-awake control, and a searchable crates.io catalog with owner/download metadata and per-package version selection;
+- **a working Cargo package manager**: sparse-index resolution, SemVer and feature unification, checksum-verified `.crate` downloads, bounded extraction, dependency compilation to `.rlib`/`.rmeta`, and `--extern` linking into the final program;
+- a per-package compatibility view backed by a persisted ledger of real build results, plus Cargo storage accounting and cache controls in Settings;
 - a bounded guest runtime with 64 MiB linear-memory and table-growth limits, `/sandbox` as the only writable preopen, and no network imports.
+
+## Cargo package manager
+
+Crabrix resolves and builds real crates.io dependencies on device.
+
+```
+Cargo.toml
+  → sparse index (https://index.crates.io)
+  → SemVer selection + feature unification + target-predicate filtering
+  → .crate download, SHA-256 verified against the index checksum
+  → bounded gzip/tar extraction into the app cache
+  → rustc --crate-type lib per package, artifacts keyed by fingerprint
+  → rustc --extern name=... -L dependency=... for the program
+  → run in the bounded WasmKit sandbox
+```
+
+What the resolver implements:
+
+- the crates.io sparse index layout (`1/a`, `2/ab`, `3/a/abc`, `ab/cd/abcdef`), cached on disk so a resolved project stays resolvable offline;
+- Cargo's caret, tilde, wildcard, exact, and comparator-range requirements, including the `^0.x` and `^0.0.z` narrowing rules and the prerelease opt-in rule;
+- SemVer compatibility buckets, so incompatible major versions of one crate coexist while compatible ranges unify onto a single copy;
+- feature resolution with `default`, `dep:name`, `name/feature`, weak `name?/feature`, and implicit optional-dependency features;
+- `[target.'cfg(...)'.dependencies]` evaluation against `wasm32-wasip1`, which keeps Windows- and Linux-only crates out of the graph;
+- dev- and build-dependency exclusion, renamed dependencies (`package = "..."`), and yanked-version avoidance;
+- a generated `Cargo.lock` in Cargo's current format.
+
+Compilation caches per build unit. A unit's fingerprint covers the toolchain,
+crate version, checksum, edition, resolved features, library path, and the
+fingerprints of its own dependencies, so changing a feature or bumping a
+transitive crate invalidates exactly what it should. `cargo check` builds
+dependency `.rmeta` only; `Run` builds `.rlib`s.
+
+Caching is not a nicety here. `rustc` runs inside a Wasm interpreter, so one
+crate costs minutes rather than seconds: on an iPhone 16 Pro simulator a first
+build of a project with `smallvec` takes about five minutes end to end, and the
+identical second build finishes in under a second from cache. The build controls
+name the package currently compiling for exactly that reason, and `Stop`
+interrupts it.
+
+### Known limits
+
+The bundled `rustc` is a WASI build with a Cranelift-to-Wasm backend and no
+linker, which constrains what can compile:
+
+- **procedural macros** cannot run — they need a host compiler, so `serde`'s `derive` feature and similar are reported as unsupported rather than silently mis-built;
+- **build scripts are not executed**. Many crates whose `build.rs` only probes compiler features still build correctly, and those are marked "needs review" rather than blocked;
+- crates that **link a native library** (`links = "..."`) or build only as `cdylib`/`staticlib` are unsupported;
+- the codegen backend has real gaps. `ryu 1.0.23` and `itoa 1.0.18` currently fail with `umulhi on i64` and `ireduce i16 -> i8` respectively, while `arrayvec`, `cfg-if`, `either`, `itoa 1.0.11`, `log`, `memchr`, `once_cell`, and `smallvec` build and link.
+
+Because static inspection cannot predict a codegen gap, Crabrix records the
+outcome of every dependency build in a local ledger and shows `Verified`,
+`Expected compatible`, `Needs review`, or `Unsupported` with the compiler's own
+reason.
 
 The toolchain is downloaded **at build time**, verified by SHA-256, and copied into the app bundle. The running app never downloads compiler components.
 
-Runtime network access is limited to explicit user actions: public GitHub snapshot import and crates.io package discovery. The catalog fetches metadata only; it does not download crate sources. GitHub archives are rejected when they contain traversal paths, symlinks, too many entries, or exceed the compressed/expanded size limits. Imported programs still execute in the network-free Wasm sandbox.
+Runtime network access is limited to explicit user actions: public GitHub snapshot import, crates.io package discovery, and Cargo dependency resolution and download. Every `.crate` archive is verified against the SHA-256 checksum published in the registry index before it is written to disk, and both GitHub and crate archives are rejected when they contain traversal paths, symlinks, non-regular entries, too many files, or exceed the compressed/expanded size limits. Imported programs still execute in the network-free Wasm sandbox.
 
 The project terminal is an app-scoped command console, not an arbitrary iOS
 shell. It keeps a separate transcript per project and maps `cargo check`,
-`cargo run`, `cargo tree`, `ls`, `cat`, `pwd`, and `clear` to Crabrix's native
-project and compiler operations.
+`cargo run`, `cargo build`, `cargo fetch`, `cargo tree`, `ls`, `cat`, `pwd`, and
+`clear` to Crabrix's native project and compiler operations. `cargo tree` prints
+the actual resolved graph with per-package compatibility markers.
+
+`Stop` interrupts the running guest rather than only detaching the UI from it.
+Crabrix wraps every WASI import the guest uses, so a cancelled build traps on the
+next syscall — which, for `rustc` and for any program that prints or touches
+files, is immediate. A guest that spins without ever calling into the host still
+cannot be interrupted; WasmKit 0.3.1 exposes no engine-level interruption.
 
 The learning build profile favors iteration speed over optimized guest code.
 `Run` emits an unoptimized teaching artifact, stores successful `program.wasm`
@@ -53,6 +145,57 @@ without an explicit user action.
 
 The Share Extension and host app use `group.com.sergiiziborov.Crabrix`. A signing team must register that App Group before installing this target on a physical device.
 
+## Privacy
+
+Crabrix has no account, no analytics SDK, no advertising, and no tracking. Your
+code, projects, build output, and progress never leave the device.
+
+One optional feature transmits anything at all: publishing your rating to the
+[public board](https://crabrix.com/leaderboard). It is off until you turn it on,
+it sends only a display name you type plus your rating and a few counts, and the
+same screen deletes the entry permanently.
+
+The full policy is at [crabrix.com/privacy](https://crabrix.com/privacy), and the
+App Store privacy manifest that has to agree with it is
+[`Crabrix/Resources/PrivacyInfo.xcprivacy`](Crabrix/Resources/PrivacyInfo.xcprivacy).
+
+## App Store compliance
+
+The App Store review guidelines that actually bite for an app like this, and what
+Crabrix does about each:
+
+| Guideline | How Crabrix satisfies it |
+| --- | --- |
+| **2.5.2** — self-contained code | The compiler and standard library are **bundled**, not downloaded. The only code fetched at runtime is crates.io package source, at the user's explicit request, used only to build their own project. Every extracted file is readable in-app (Build → Packages → tap a crate), which is the condition the educational carve-out attaches. |
+| **2.5.1** — private APIs, process spawning | No host processes are spawned. The project terminal is a simulated shell over the in-app project files. Guest programs run in a WebAssembly sandbox with a memory cap, one writable preopen, and no network imports. |
+| **1.2** — user-generated content | The only UGC is a leaderboard display name. Names are filtered server-side for abuse and impersonation, reporting is in the app and on [/support](https://crabrix.com/support), and reported entries are removed. |
+| **5.1.1(v)** — account deletion | There is no account, and the one row a user can create is deleted in-app from Profile. |
+| **5.1.1** — privacy policy | Published at [/privacy](https://crabrix.com/privacy) and linked from Settings → About Crabrix. |
+| **Privacy manifest** | `PrivacyInfo.xcprivacy` ships in both the app and the Share extension, declaring UserDefaults and file-timestamp reasons and the two collected data types. |
+| **2.1** — completeness | No control ships that cannot work. Game Center is dormant until the entitlement exists (see [docs/GAME-CENTER.md](docs/GAME-CENTER.md)) and no dead "connect" button is shown. |
+| **2.3** — accurate metadata | The listing copy in [docs/app-store/listing.md](docs/app-store/listing.md) states the limits — crates needing C code or proc macros cannot build on device — rather than only the strengths. |
+
+Listing copy, App Privacy answers, review notes, and the pre-submission checklist
+are in [docs/app-store/listing.md](docs/app-store/listing.md).
+
+## Price
+
+Crabrix is a **one-time purchase**. There is no subscription, no in-app purchase, and
+no feature held back for a second transaction.
+
+| | |
+| --- | --- |
+| Launch price | **$17.99** |
+| Regular price | **$24.99** |
+| Devices | Universal — iPhone and iPad, one purchase |
+| Accounts | None. No sign-in, no cloud sync, no analytics |
+| Version | 1.0 (build 1) |
+| Updates | Included |
+
+The compiler, the package manager, the project library, and the whole curriculum ship
+in the app itself. Nothing runs on a server on your behalf, so there is no recurring
+cost to pass on.
+
 ## License and ownership
 
 Crabrix is commercial proprietary software, not an open-source MIT project.
@@ -61,8 +204,14 @@ visible for review and evaluation; reuse, modification, redistribution, sale,
 or derivative works require prior written authorization. See [LICENSE](LICENSE).
 
 Bundled third-party components keep their original licenses. Their required
-attributions are maintained separately in
-[Crabrix/Resources/ThirdPartyNotices.md](Crabrix/Resources/ThirdPartyNotices.md).
+attributions are maintained in
+[Crabrix/Resources/ThirdPartyNotices.md](Crabrix/Resources/ThirdPartyNotices.md),
+which ships inside the app and is readable at **Settings → About Crabrix →
+Open-source licenses**.
+
+Rust and the Rust logo are trademarks of the Rust Foundation. Crabrix is an
+independent project and is not affiliated with or endorsed by the Rust Foundation
+or by Apple.
 
 ## Build
 
@@ -81,12 +230,29 @@ DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
   build
 ```
 
-Open `Crabrix.xcodeproj` for device testing.
+Simulator builds need no signing configuration.
 
-For a signed physical build, select the same Apple development team for the
-`Crabrix` and `CrabrixShare` targets, register
-`group.com.sergiiziborov.Crabrix`, and regenerate both provisioning profiles.
-Simulator builds use the checked-in entitlements automatically.
+### Building for a device
+
+No signing team is checked in — `project.yml` deliberately carries no
+`DEVELOPMENT_TEAM`, so nothing account-specific reaches the repository. Supply
+yours locally instead, in a git-ignored `.env`:
+
+```bash
+echo "CRABRIX_DEVELOPMENT_TEAM=YOURTEAMID" > .env   # .env is git-ignored
+./scripts/device-build.sh
+```
+
+The script builds, installs, and launches on the first connected device. You can
+also export `CRABRIX_DEVELOPMENT_TEAM`, pass the team as the first argument, or
+set `CRABRIX_DEVICE` to target a specific device. Find your team id with
+`security find-identity -v -p codesigning`.
+
+One account-side step is needed once: register the App Group
+`group.com.sergiiziborov.Crabrix` for both `com.sergiiziborov.Crabrix` and
+`com.sergiiziborov.Crabrix.Share`. In Xcode that is the target's *Signing &
+Capabilities* tab → **+ Capability** → **App Groups**. Without it, signing fails
+with an entitlement mismatch on both targets.
 
 ## Verification
 

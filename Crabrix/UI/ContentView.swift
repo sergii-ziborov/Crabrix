@@ -7,6 +7,24 @@ private enum CrabrixDestination: Hashable {
     case build
     case learn
     case settings
+
+    /// Lets a launch argument open a tab directly, which is how the README and
+    /// store screenshots are captured reproducibly.
+    static var launchArgument: CrabrixDestination? {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: "-CrabrixTab"),
+              index + 1 < arguments.count
+        else {
+            return nil
+        }
+        switch arguments[index + 1] {
+        case "projects": return .projects
+        case "build": return .build
+        case "learn": return .learn
+        case "settings": return .settings
+        default: return nil
+        }
+    }
 }
 
 private struct ArchiveShareItem: Identifiable {
@@ -36,14 +54,23 @@ struct ContentView: View {
     @StateObject private var model = CompilerViewModel()
     @StateObject private var completion = RustCompletionController()
     @StateObject private var terminal = ProjectTerminalSession()
+    @EnvironmentObject private var progress: CrabrixProgressStore
+    /// Lessons already turned into rating, seeded from persisted progress so a
+    /// relaunch never re-awards them.
+    @State private var scoredLessonIDs: Set<String>?
+    @State private var scoredPractice = false
     @State private var isFileImporterPresented = false
     @State private var isFileExporterPresented = false
     @State private var archiveShareItem: ArchiveShareItem?
     @State private var isGitHubImporterPresented = false
     @State private var isNewProjectPresented = false
+    @State private var isCargoCatalogPresented = false
+    @State private var projectsPath: [ProjectsRoute] =
+        ProcessInfo.processInfo.arguments.contains("-CrabrixLibrary") ? [.library] : []
     @State private var projectItemCreation: ProjectItemCreation?
     @State private var githubURL = ""
-    @State private var selectedDestination: CrabrixDestination = .projects
+    @State private var selectedDestination: CrabrixDestination =
+        CrabrixDestination.launchArgument ?? .projects
     @State private var projectSidebarWidth: CGFloat = 220
     @State private var inspectorWidth: CGFloat = 390
     @State private var isProjectSidebarCollapsed = false
@@ -51,8 +78,13 @@ struct ContentView: View {
     @State private var isCompactProjectDrawerPresented = false
     @State private var isCompactInspectorDrawerPresented = false
     @State private var selectedBuildDockTab: BuildDockTab = .code
-    @State private var learningPath: [LearningRoute] = []
+    @State private var learningPath: [LearningRoute] = LearningRoute.launchArgument
     @State private var editorCursorOffset = 0
+    /// Dismissing the running toast hides it for that run only; the next run
+    /// shows it again, so a tap is never a setting the reader has to undo.
+    @State private var isRunningToastDismissed = false
+    /// What the last successful run was scored on, shown in the build dock.
+    @State private var lastContribution: CodeContribution?
     @State private var editorNavigationTarget: EditorNavigationTarget?
     @AppStorage("crabrix.appearance") private var appearanceRaw = CrabrixAppearance.system.rawValue
     @AppStorage("crabrix.keepAwakeDuringBuild") private var keepAwakeDuringBuild = true
@@ -68,7 +100,8 @@ struct ContentView: View {
 
     var body: some View {
         TabView(selection: $selectedDestination) {
-            ProjectsHomeView(
+            NavigationStack(path: $projectsPath) {
+                ProjectsHomeView(
                 projectName: model.projectName,
                 fileCount: model.fileNames.count,
                 lastBuild: model.lastBuild,
@@ -103,8 +136,21 @@ struct ContentView: View {
                 onOpenShowcase: { id in
                     model.loadShowcaseProject(id: id)
                     selectedDestination = .build
+                },
+                onOpenLibrary: { projectsPath = [.library] },
+                onOpenProgress: { selectedDestination = .learn }
+                )
+                .navigationDestination(for: ProjectsRoute.self) { route in
+                    switch route {
+                    case .library:
+                        ProjectLibraryView { id in
+                            model.loadShowcaseProject(id: id)
+                            projectsPath = []
+                            selectedDestination = .build
+                        }
+                    }
                 }
-            )
+            }
             .tabItem { Label("Projects", systemImage: "folder.fill") }
             .tag(CrabrixDestination.projects)
 
@@ -122,7 +168,7 @@ struct ContentView: View {
                         onSaveFiles: prepareExport,
                         onOpenGitHub: { isGitHubImporterPresented = true }
                     )
-                    if model.projectTransfer != .idle {
+                    if model.projectTransfer.isWorking || model.projectTransfer.isFailure {
                         ProjectTransferStrip(transfer: model.projectTransfer)
                     }
                     Divider().overlay(CrabrixTheme.border)
@@ -137,9 +183,14 @@ struct ContentView: View {
                                     manifest: model.cargoManifest,
                                     report: model.compatibilityReport,
                                     provenance: model.provenance,
+                                    cargoStage: model.cargoStage,
+                                    cargoWorkspace: model.cargoWorkspace,
+                                    isBusy: model.isBusy,
                                     onSelect: selectEditorFile,
                                     onNewFile: { projectItemCreation = .rustFile },
-                                    onNewFolder: { projectItemCreation = .moduleFolder }
+                                    onNewFolder: { projectItemCreation = .moduleFolder },
+                                    onResolvePackages: model.refreshCargoWorkspace,
+                                    onAddPackage: { isCargoCatalogPresented = true }
                                 )
                                 .frame(width: projectSidebarWidth)
                                 .transition(.move(edge: .leading).combined(with: .opacity))
@@ -190,7 +241,13 @@ struct ContentView: View {
             SettingsView(
                 toolchain: model.toolchain,
                 manifest: model.cargoManifest,
-                onAddDependency: model.addCargoDependency
+                workspace: model.cargoWorkspace,
+                storage: model.cargoStorage,
+                onAddDependency: model.addCargoDependency,
+                onRefreshStorage: model.refreshCargoStorage,
+                onClearBuildArtifacts: model.clearCargoBuildArtifacts,
+                onClearDownloadedArchives: model.clearCargoDownloadedArchives,
+                onClearPackageCache: model.clearCargoPackageCache
             )
             .tabItem { Label("Settings", systemImage: "gearshape.fill") }
             .tag(CrabrixDestination.settings)
@@ -201,6 +258,9 @@ struct ContentView: View {
         .preferredColorScheme(
             CrabrixAppearance(rawValue: appearanceRaw)?.colorScheme
         )
+        .sheet(isPresented: $isCargoCatalogPresented) {
+            CargoDependencyCatalogSheet(onAdd: model.addCargoDependency)
+        }
         .sheet(isPresented: $isNewProjectPresented) {
             NewProjectSheet { name, template in
                 model.createProject(name: name, template: template)
@@ -349,10 +409,12 @@ struct ContentView: View {
                 to: newValue,
                 project: model.exportProject()
             )
+            if newValue == .running { isRunningToastDismissed = false }
         }
         .onReceive(model.$result) { result in
             guard let result else { return }
             terminal.record(result, project: model.exportProject())
+            recordBuildProgress(result)
             withAnimation(.easeOut(duration: 0.18)) {
                 if !result.succeeded {
                     selectedBuildDockTab = .problems
@@ -360,6 +422,21 @@ struct ContentView: View {
                     selectedBuildDockTab = .output
                 }
             }
+        }
+        .onReceive(model.$completedLessonIDs) { ids in
+            guard let scored = scoredLessonIDs else {
+                scoredLessonIDs = ids
+                return
+            }
+            let fresh = ids.subtracting(scored)
+            guard !fresh.isEmpty else { return }
+            scoredLessonIDs = ids
+            for _ in fresh { progress.record(.lessonCompleted) }
+        }
+        .onReceive(model.$practiceCompleted) { passed in
+            guard passed, !scoredPractice else { return }
+            scoredPractice = true
+            progress.record(.practicePassed)
         }
         .onChange(of: keepAwakeDuringBuild) { _, keepAwake in
             UIApplication.shared.isIdleTimerDisabled = model.isBusy && keepAwake
@@ -420,6 +497,7 @@ struct ContentView: View {
         VStack(spacing: 0) {
             EditorToolbar(
                 activity: model.activity,
+                cargoStage: model.cargoStage,
                 result: model.result,
                 files: model.fileNames,
                 selectedFile: model.selectedFile,
@@ -429,11 +507,7 @@ struct ContentView: View {
                 isInspectorCollapsed: horizontalSizeClass == .regular
                     ? isInspectorCollapsed
                     : !isCompactInspectorDrawerPresented,
-                canRun: model.canStartBuild && !model.isProjectOperationInProgress,
                 onSelectFile: selectEditorFile,
-                onCheck: model.check,
-                onRun: model.run,
-                onCancel: model.cancelBuild,
                 onToggleProjectSidebar: {
                     if horizontalSizeClass == .regular {
                         withAnimation(.easeInOut(duration: 0.2)) {
@@ -470,6 +544,11 @@ struct ContentView: View {
                 onCheck: model.check,
                 onRun: model.run,
                 onReplaceFiles: model.replaceProjectFilesFromTerminal,
+                workspace: model.cargoWorkspace,
+                onFetch: model.downloadDependenciesForOffline,
+                onCancel: model.cancelBuild,
+                canContinueLearning: model.isLessonContext,
+                contribution: lastContribution,
                 onOpenDiagnostic: openDiagnostic,
                 onContinueLearning: continueLearning
             ) {
@@ -490,7 +569,7 @@ struct ContentView: View {
                 onRequestCompletion: requestCompletion
             )
 
-            if model.activity == .running {
+            if model.activity == .running, !isRunningToastDismissed {
                 HStack(spacing: 9) {
                     ProgressView()
                         .controlSize(.small)
@@ -498,10 +577,13 @@ struct ContentView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Running locally…")
                             .font(.caption.monospaced().bold())
-                        Text("You can keep editing or switch tabs")
+                        Text("Tap to hide · the run keeps going")
                             .font(.caption2)
                             .foregroundStyle(CrabrixTheme.muted)
                     }
+                    Image(systemName: "xmark")
+                        .font(.caption2.bold())
+                        .foregroundStyle(CrabrixTheme.muted)
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 9)
@@ -514,6 +596,15 @@ struct ContentView: View {
                 .padding(14)
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .transition(.move(edge: .top).combined(with: .opacity))
+                // Hiding the toast only hides the toast; the build is untouched.
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    withAnimation(.easeOut(duration: 0.18)) {
+                        isRunningToastDismissed = true
+                    }
+                }
+                .accessibilityAddTraits(.isButton)
+                .accessibilityHint("Hides this notice. The run continues.")
             }
 
             if let suggestion = completion.suggestion {
@@ -601,9 +692,14 @@ struct ContentView: View {
                             manifest: model.cargoManifest,
                             report: model.compatibilityReport,
                             provenance: model.provenance,
+                            cargoStage: model.cargoStage,
+                            cargoWorkspace: model.cargoWorkspace,
+                            isBusy: model.isBusy,
                             onSelect: selectEditorFile,
                             onNewFile: { projectItemCreation = .rustFile },
-                            onNewFolder: { projectItemCreation = .moduleFolder }
+                            onNewFolder: { projectItemCreation = .moduleFolder },
+                            onResolvePackages: model.refreshCargoWorkspace,
+                            onAddPackage: { isCargoCatalogPresented = true }
                         )
                     }
                     .frame(width: min(geometry.size.width * 0.86, 340))
@@ -724,10 +820,24 @@ struct ContentView: View {
     private var inspectorPane: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
+                // One place in the workspace starts, reports, and stops a build,
+                // and it stays put as the panel below it changes.
+                BuildWorkflowControls(
+                    activity: model.activity,
+                    cargoStage: model.cargoStage,
+                    result: model.result,
+                    canRun: model.canStartBuild && !model.isProjectOperationInProgress,
+                    onCheck: model.check,
+                    onRun: model.run,
+                    onCancel: model.cancelBuild
+                )
+
                 if let result = model.result, result.succeeded {
                     SuccessInspector(
                         result: result,
                         practiceCompleted: model.practiceCompleted,
+                        canContinueLearning: model.isLessonContext,
+                        contribution: lastContribution,
                         onRunNext: model.run,
                         onContinueLearning: continueLearning
                     )
@@ -742,8 +852,7 @@ struct ContentView: View {
                 } else {
                     RuntimeInspector(
                         toolchain: model.toolchain,
-                        onCheck: model.check,
-                        onRun: model.run
+                        activity: model.activity
                     )
                 }
             }
@@ -758,14 +867,38 @@ struct ContentView: View {
         )
     }
 
+    /// Turns a finished build into rating, once per result.
+    private func recordBuildProgress(_ result: CompilationResult) {
+        guard result.succeeded, result.phase == .run else { return }
+        // Rating follows the diff, so re-running an untouched sample earns a
+        // token amount and real editing earns real points.
+        let contribution = CodeContributionLedger.shared.record(
+            project: model.projectName,
+            files: model.exportProject().files
+        )
+        progress.record(.buildSucceeded(contribution))
+        lastContribution = contribution
+        if model.completedStages.contains(.repair) {
+            progress.record(.diagnosticRepaired)
+        }
+        let verified = model.cargoWorkspace.verifiedCount
+        if verified > 0 {
+            progress.record(.packagesCompiled(verified))
+        }
+    }
+
     private func continueLearning() {
         selectedDestination = .learn
-        guard let lessonID = model.activeLessonID,
-              let course = RustCourseCatalog.course(containingLessonID: lessonID) else {
+        // Land on the next lesson itself, not on the course list: after finishing
+        // something, "what is next" is a specific screen.
+        guard let step = RustLessonProgression.nextStep(
+            after: model.activeLessonID,
+            completedLessonIDs: model.completedLessonIDs
+        ) else {
             learningPath = []
             return
         }
-        learningPath = [.course(course.id)]
+        learningPath = [.course(step.courseID), .lesson(step.lessonID)]
     }
 }
 
@@ -902,9 +1035,10 @@ private struct ProjectTransferStrip: View {
             case let .importingGitHub(repository):
                 ProgressView().tint(CrabrixTheme.blue)
                 Text("Importing \(repository) from GitHub…")
-            case let .ready(message):
-                Image(systemName: "checkmark.circle.fill").foregroundStyle(CrabrixTheme.mint)
-                Text(message)
+            case .ready:
+                // Success is already visible in the workspace itself, so it does
+                // not get a permanent row above the editor.
+                EmptyView()
             case let .failed(message):
                 Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(CrabrixTheme.amber)
                 Text(message)
@@ -996,9 +1130,14 @@ private struct ProjectSidebar: View {
     let manifest: CargoManifest?
     let report: ProjectCompatibilityReport
     let provenance: CrabrixProject.Provenance?
+    let cargoStage: CargoPreparationStage
+    let cargoWorkspace: CargoWorkspaceSnapshot
+    let isBusy: Bool
     let onSelect: (String) -> Void
     let onNewFile: () -> Void
     let onNewFolder: () -> Void
+    let onResolvePackages: () -> Void
+    let onAddPackage: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -1045,21 +1184,17 @@ private struct ProjectSidebar: View {
                         Text("edition \(manifest.edition ?? "unspecified") · manifest parsed")
                             .font(.caption2.monospaced())
                             .foregroundStyle(CrabrixTheme.mint)
-                        if !manifest.dependencies.isEmpty {
-                            Text("DEPENDENCIES")
-                                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                                .foregroundStyle(CrabrixTheme.muted)
-                                .padding(.top, 6)
-                            ForEach(manifest.dependencies) { dependency in
-                                Text("\(dependency.name)  \(dependency.requirement ?? dependency.source.rawValue)")
-                                    .font(.caption2.monospaced())
-                                    .foregroundStyle(CrabrixTheme.amber)
-                            }
-                            Text("resolver pending")
-                                .font(.caption2)
-                                .foregroundStyle(CrabrixTheme.muted)
-                        }
                     }
+
+                    Divider().overlay(CrabrixTheme.border).padding(.vertical, 8)
+                    CargoPackagesPanel(
+                        stage: cargoStage,
+                        workspace: cargoWorkspace,
+                        manifest: manifest,
+                        isBusy: isBusy,
+                        onRefresh: onResolvePackages,
+                        onAddDependency: onAddPackage
+                    )
 
                     Divider().overlay(CrabrixTheme.border).padding(.vertical, 6)
                     Text("COMPATIBILITY")
@@ -1158,37 +1293,32 @@ private struct GitHubImportSheet: View {
 
 private struct EditorToolbar: View {
     let activity: CompilerViewModel.Activity
+    let cargoStage: CargoPreparationStage
     let result: CompilationResult?
     let files: [String]
     let selectedFile: String
     let isProjectSidebarCollapsed: Bool
     let isInspectorCollapsed: Bool
-    let canRun: Bool
     let onSelectFile: (String) -> Void
-    let onCheck: () -> Void
-    let onRun: () -> Void
-    let onCancel: () -> Void
     let onToggleProjectSidebar: () -> Void
     let onToggleInspector: () -> Void
 
-    private var checkPassed: Bool {
-        result?.succeeded == true && result?.phase == .check
-    }
-
-    private var runPassed: Bool {
-        result?.succeeded == true && result?.phase == .run
-    }
-
-    private var checkNeedsAttention: Bool {
-        guard let result else { return false }
-        return !result.succeeded || !result.diagnostics.isEmpty
-    }
-
-    private var connectorLabel: String {
-        if runPassed { return "Done" }
-        if checkPassed { return "Run next" }
-        if checkNeedsAttention { return "Fix, then retry" }
-        return "then"
+    /// Build controls live in the Build inspector. What stays above the editor
+    /// is a read-only line, so a multi-minute build is never silent while the
+    /// inspector is closed.
+    private var buildStatus: some View {
+        HStack(spacing: 7) {
+            ProgressView().controlSize(.mini).tint(CrabrixTheme.amber)
+            Text(cargoStage.isWorking ? cargoStage.label : activity.label)
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundStyle(CrabrixTheme.muted)
+                .lineLimit(1)
+            Spacer(minLength: 0)
+            Text(activity == .checking ? "CHECK" : "RUN")
+                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .foregroundStyle(activity == .checking ? CrabrixTheme.blue : CrabrixTheme.coral)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     var body: some View {
@@ -1233,89 +1363,13 @@ private struct EditorToolbar: View {
 
             Divider().overlay(CrabrixTheme.border)
 
-            ViewThatFits(in: .horizontal) {
-                fullWorkflow
-                    .frame(minWidth: 520)
-                compactWorkflow
+            if activity != .idle {
+                buildStatus
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 9)
         }
         .background(CrabrixTheme.panel)
-    }
-
-    private var fullWorkflow: some View {
-        HStack(spacing: 10) {
-            WorkflowActionButton(
-                step: 1,
-                title: activity == .checking ? "Checking" : (checkPassed ? "Checked" : "Check code"),
-                subtitle: activity == .checking ? "Tap to stop" : (checkNeedsAttention ? "Fix errors and retry" : "Find errors, don't run"),
-                systemImage: activity == .checking ? "stop.fill" : (checkPassed ? "checkmark.circle.fill" : "checkmark.shield.fill"),
-                tint: checkPassed ? CrabrixTheme.mint : (checkNeedsAttention ? CrabrixTheme.coral : CrabrixTheme.blue),
-                isWorking: activity == .checking,
-                isEmphasized: !checkPassed && !runPassed,
-                action: activity == .checking ? onCancel : onCheck
-            )
-            .keyboardShortcut(.return, modifiers: .command)
-            .disabled(activity == .running || (activity == .idle && !canRun))
-
-            workflowConnector
-
-            WorkflowActionButton(
-                step: 2,
-                title: activity == .running ? "Running" : (runPassed ? "Ran successfully" : "Run project"),
-                subtitle: activity == .running ? "Tap to stop" : (runPassed ? "Output is ready" : "Compile and show output"),
-                systemImage: activity == .running ? "stop.fill" : (runPassed ? "checkmark.circle.fill" : "play.fill"),
-                tint: runPassed ? CrabrixTheme.mint : CrabrixTheme.coral,
-                isWorking: activity == .running,
-                isEmphasized: checkPassed || !runPassed,
-                action: activity == .running ? onCancel : onRun
-            )
-            .keyboardShortcut("r", modifiers: .command)
-            .disabled(activity == .checking || (activity == .idle && !canRun))
-        }
-    }
-
-    private var compactWorkflow: some View {
-        HStack(spacing: 8) {
-            CompactWorkflowButton(
-                step: 1,
-                title: activity == .checking ? "Checking" : (checkPassed ? "Checked" : "Check"),
-                systemImage: activity == .checking ? "stop.fill" : (checkPassed ? "checkmark.circle.fill" : "checkmark.shield.fill"),
-                tint: checkPassed ? CrabrixTheme.mint : CrabrixTheme.blue,
-                isWorking: activity == .checking,
-                action: activity == .checking ? onCancel : onCheck
-            )
-            .keyboardShortcut(.return, modifiers: .command)
-            .disabled(activity == .running || (activity == .idle && !canRun))
-
-            Image(systemName: runPassed ? "checkmark" : "arrow.right")
-                .font(.caption.bold())
-                .foregroundStyle(runPassed || checkPassed ? CrabrixTheme.mint : CrabrixTheme.muted)
-
-            CompactWorkflowButton(
-                step: 2,
-                title: activity == .running ? "Running" : (runPassed ? "Done" : "Run"),
-                systemImage: activity == .running ? "stop.fill" : (runPassed ? "checkmark.circle.fill" : "play.fill"),
-                tint: runPassed ? CrabrixTheme.mint : CrabrixTheme.coral,
-                isWorking: activity == .running,
-                action: activity == .running ? onCancel : onRun
-            )
-            .keyboardShortcut("r", modifiers: .command)
-            .disabled(activity == .checking || (activity == .idle && !canRun))
-        }
-    }
-
-    private var workflowConnector: some View {
-        VStack(spacing: 3) {
-            Image(systemName: runPassed ? "checkmark" : "arrow.right")
-                .font(.caption.bold())
-            Text(connectorLabel)
-                .font(.system(size: 8, weight: .bold, design: .monospaced))
-                .lineLimit(1)
-        }
-        .foregroundStyle(runPassed || checkPassed ? CrabrixTheme.mint : CrabrixTheme.muted)
-        .frame(width: 54)
     }
 }
 
@@ -1374,37 +1428,6 @@ private struct CompactDrawerHeader: View {
         .padding(.horizontal, 14)
         .frame(height: 54)
         .background(CrabrixTheme.panel)
-    }
-}
-
-private struct CompactWorkflowButton: View {
-    let step: Int
-    let title: String
-    let systemImage: String
-    let tint: Color
-    let isWorking: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                Text("\(step)")
-                    .font(.caption.monospaced().bold())
-                    .frame(width: 22, height: 22)
-                    .background(tint.opacity(0.16), in: Circle())
-                Image(systemName: systemImage)
-                Text(title)
-                    .lineLimit(1)
-            }
-            .font(.caption.bold())
-            .foregroundStyle(tint)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 9)
-            .padding(.horizontal, 8)
-            .background(tint.opacity(0.08), in: RoundedRectangle(cornerRadius: 11))
-            .overlay { RoundedRectangle(cornerRadius: 11).stroke(tint.opacity(0.45)) }
-        }
-        .buttonStyle(.plain)
     }
 }
 
@@ -1485,58 +1508,3 @@ private struct CompletionMessageCard: View {
     }
 }
 
-private struct WorkflowActionButton: View {
-    let step: Int
-    let title: String
-    let subtitle: String
-    let systemImage: String
-    let tint: Color
-    let isWorking: Bool
-    let isEmphasized: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 9) {
-                ZStack {
-                    Circle()
-                        .fill(tint.opacity(isEmphasized ? 0.24 : 0.14))
-                    if isWorking {
-                        ProgressView().tint(tint).controlSize(.small)
-                    } else {
-                        Text("\(step)")
-                            .font(.caption.monospaced().bold())
-                            .foregroundStyle(tint)
-                    }
-                }
-                .frame(width: 30, height: 30)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.subheadline.bold())
-                        .lineLimit(1)
-                    Text(subtitle)
-                        .font(.system(size: 9, weight: .medium))
-                        .foregroundStyle(CrabrixTheme.muted)
-                        .lineLimit(1)
-                }
-
-                Spacer(minLength: 2)
-
-                Image(systemName: systemImage)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(tint)
-            }
-            .padding(.horizontal, 11)
-            .frame(maxWidth: .infinity, minHeight: 50)
-            .background(tint.opacity(isEmphasized ? 0.13 : 0.06))
-            .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 13, style: .continuous)
-                    .stroke(tint.opacity(isEmphasized ? 0.52 : 0.18), lineWidth: isEmphasized ? 1.5 : 1)
-            }
-        }
-        .buttonStyle(.plain)
-        .opacity(isWorking ? 0.85 : 1)
-    }
-}

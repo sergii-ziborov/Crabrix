@@ -96,8 +96,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix
         PRODUCT_NAME: Crabrix
-        MARKETING_VERSION: 0.1.8
-        CURRENT_PROJECT_VERSION: 14
+        MARKETING_VERSION: 1.0
+        CURRENT_PROJECT_VERSION: 1
         CODE_SIGN_ENTITLEMENTS: Crabrix/Crabrix.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
@@ -137,8 +137,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix.Share
         PRODUCT_NAME: CrabrixShare
-        MARKETING_VERSION: 0.1.8
-        CURRENT_PROJECT_VERSION: 14
+        MARKETING_VERSION: 1.0
+        CURRENT_PROJECT_VERSION: 1
         CODE_SIGN_ENTITLEMENTS: CrabrixShare/CrabrixShare.entitlements
         CODE_SIGN_STYLE: Automatic
         APPLICATION_EXTENSION_API_ONLY: YES
@@ -173,6 +173,8 @@ schemes:
             - BundledCompilerGateTests/testBundledRustcCompilesMultiFileProject()
             - BundledCompilerGateTests/testBundledRustcSurvivesRepeatedBuilds()
             - BundledCompilerGateTests/testUserProgramCannotGrowPastSandboxMemoryLimit()
+            - BundledCompilerGateTests/testResolvesDownloadsAndLinksARealCratesIOPackage()
+            - BundledCompilerGateTests/testStopInterruptsARunningCompile()
 
   CrabrixCompilerGate:
     build:
@@ -190,3 +192,5 @@ schemes:
             - BundledCompilerGateTests/testBundledRustcCompilesMultiFileProject()
             - BundledCompilerGateTests/testBundledRustcSurvivesRepeatedBuilds()
             - BundledCompilerGateTests/testUserProgramCannotGrowPastSandboxMemoryLimit()
+            - BundledCompilerGateTests/testResolvesDownloadsAndLinksARealCratesIOPackage()
+            - BundledCompilerGateTests/testStopInterruptsARunningCompile()

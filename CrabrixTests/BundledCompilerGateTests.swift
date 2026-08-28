@@ -95,4 +95,87 @@ final class BundledCompilerGateTests: XCTestCase {
             "Program stopped at the \(WasmSandboxPolicy.memoryLimitLabel) sandbox memory limit."
         )
     }
+
+    func testResolvesDownloadsAndLinksARealCratesIOPackage() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
+            throw XCTSkip("Run the CrabrixCompilerGate scheme for the registry dependency gate.")
+        }
+
+        let manifest = """
+        [package]
+        name = "package-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        smallvec = "1"
+        """
+        let source = """
+        use smallvec::SmallVec;
+
+        fn main() {
+            let mut values: SmallVec<[u32; 4]> = SmallVec::new();
+            for value in 1..=3 { values.push(value * 10); }
+            println!("{}", values.iter().map(|v| v.to_string()).collect::<Vec<_>>().join("-"));
+        }
+        """
+
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertFalse(snapshot.plan.isEmpty, "smallvec should produce at least one build unit")
+        XCTAssertTrue(snapshot.isOfflineReady, "every resolved package should be extracted on disk")
+        XCTAssertTrue(
+            snapshot.blockingPackages.isEmpty,
+            "unexpected unsupported packages: \(snapshot.blockingPackages.map(\.id))"
+        )
+        XCTAssertEqual(snapshot.plan.rootExterns.map(\.alias), ["smallvec"])
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        let result = await compiler.run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": manifest],
+            plan: snapshot.plan
+        )
+
+        XCTAssertTrue(
+            result.succeeded,
+            "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)"
+        )
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "10-20-30")
+        XCTAssertTrue(
+            compiler.isPlanCached(snapshot.plan, emit: .link),
+            "dependency artifacts should be reusable after a successful build"
+        )
+    }
+
+    func testStopInterruptsARunningCompile() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
+            throw XCTSkip("Run the CrabrixCompilerGate scheme for the interruption gate.")
+        }
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        // A unique body defeats the artifact cache so rustc really runs.
+        let source = """
+        fn main() {
+            println!("interrupt gate \(UUID().uuidString)");
+        }
+        """
+
+        let started = ContinuousClock.now
+        async let result = compiler.check(source: source)
+        try await Task.sleep(for: .seconds(3))
+        compiler.cancel()
+
+        let value = await result
+        let elapsed = ContinuousClock.now - started
+
+        XCTAssertFalse(value.succeeded)
+        XCTAssertTrue(
+            value.detail.contains("stopped"),
+            "expected a stop result, got: \(value.detail)"
+        )
+        // The bare compile takes far longer than this; a real interruption is
+        // the only way the call returns inside the window.
+        XCTAssertLessThan(elapsed, .seconds(40), "Stop did not interrupt the guest promptly")
+    }
 }

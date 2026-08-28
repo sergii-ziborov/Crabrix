@@ -83,11 +83,8 @@ struct ProjectCompatibilityReport: Equatable, Sendable {
             .compactMap { CargoManifest.parse($0.value) }
         let dependencyCount = manifests.reduce(0) { $0 + $1.dependencies.count }
 
-        if dependencyCount > 0 {
-            notes.append("Cargo dependency resolution is not enabled in this build.")
-        }
         if project.files.keys.contains(where: { $0 == "build.rs" || $0.hasSuffix("/build.rs") }) {
-            notes.append("build.rs requires compatibility review.")
+            notes.append("build.rs is not executed by the local build.")
         }
         if project.files["Cargo.toml"]?.contains("[workspace]") == true {
             notes.append("Workspace detected; Crabrix opened the discovered root.")

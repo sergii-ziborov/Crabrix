@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crabrix — a real Rust compiler on your iPhone and iPad</title>
+<meta name="description" content="Crabrix compiles and runs real Rust on iPhone and iPad. Real rustc on device, real crates.io packages, 83 lessons. One-time purchase, no subscription.">
+<meta property="og:title" content="Crabrix — a real Rust compiler on your iPhone and iPad">
+<meta property="og:description" content="Write Rust. Add real crates.io packages. Compile and run them. On a phone. Offline.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/screenshots/ipad-build.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦀</text></svg>">
+<style>
+  :root {
+    --bg: #0b0f14;
+    --panel: #121821;
+    --raised: #18202b;
+    --border: #232e3d;
+    --text: #eaf0f7;
+    --muted: #93a4b8;
+    --coral: #ff6b4a;
+    --mint: #4fd1a5;
+    --blue: #4aa8ff;
+    --amber: #ffb648;
+    --radius: 16px;
+    --max: 1080px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--blue); }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 22px; }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: blur(14px);
+    background: rgba(11,15,20,.82);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav { display: flex; align-items: center; gap: 18px; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -.01em; }
+  .brand .mark { font-size: 24px; }
+  .nav a.link { color: var(--muted); text-decoration: none; font-size: 14px; }
+  .nav a.link:hover { color: var(--text); }
+  .nav .spacer { flex: 1; }
+
+  /* At phone widths the brand plus four links overflow a single 62px row,
+     which pushed the whole page sideways. Brand on its own line, links below. */
+  @media (max-width: 560px) {
+    .nav { height: auto; min-height: 56px; flex-wrap: wrap; gap: 14px; padding: 11px 0; }
+    .nav .spacer { display: none; }
+    .brand { width: 100%; }
+  }
+  .btn {
+    display: inline-block; text-decoration: none; font-weight: 650; font-size: 15px;
+    padding: 11px 20px; border-radius: 999px; border: 1px solid transparent;
+    background: var(--coral); color: #16110f;
+  }
+  .btn.ghost { background: transparent; border-color: var(--border); color: var(--text); }
+  .btn:hover { filter: brightness(1.08); }
+
+  .hero { padding: 76px 0 42px; }
+  .eyebrow {
+    font: 600 12px/1 ui-monospace, monospace; letter-spacing: .12em;
+    color: var(--mint); text-transform: uppercase; margin-bottom: 16px;
+  }
+  h1 {
+    font-size: clamp(34px, 6vw, 60px); line-height: 1.04;
+    letter-spacing: -.03em; margin: 0 0 18px; font-weight: 800;
+  }
+  h1 .grad {
+    background: linear-gradient(100deg, var(--coral), var(--amber));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .lede { font-size: clamp(17px, 2.2vw, 21px); color: var(--muted); max-width: 58ch; margin: 0 0 30px; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .cta-note { color: var(--muted); font-size: 14px; }
+
+  section { padding: 60px 0; border-top: 1px solid var(--border); }
+  h2 { font-size: clamp(24px, 3.6vw, 34px); letter-spacing: -.02em; margin: 0 0 10px; }
+  .section-lede { color: var(--muted); max-width: 62ch; margin: 0 0 32px; }
+
+  .grid { display: grid; gap: 16px; }
+  .g2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .g3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px;
+  }
+  .card h3 { margin: 0 0 8px; font-size: 18px; letter-spacing: -.01em; }
+  .card p { margin: 0; color: var(--muted); font-size: 15px; }
+  .card .ic { font-size: 22px; margin-bottom: 12px; display: block; }
+
+  .shots { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+  .shots img, .wide img {
+    width: 100%; height: auto; display: block;
+    border-radius: 14px; border: 1px solid var(--border); background: var(--panel);
+  }
+  .shots figure, .wide figure { margin: 0; }
+  .shots figcaption, .wide figcaption {
+    color: var(--muted); font-size: 13px; margin-top: 9px; text-align: center;
+  }
+  .wide { margin-top: 22px; }
+
+  .price {
+    background: linear-gradient(160deg, var(--raised), var(--panel));
+    border: 1px solid var(--border); border-radius: 22px; padding: 34px;
+    max-width: 520px;
+  }
+  .price .amount { font-size: 54px; font-weight: 800; letter-spacing: -.03em; line-height: 1; }
+  .price .amount span { font-size: 18px; color: var(--muted); font-weight: 500; letter-spacing: 0; }
+  .price ul { list-style: none; padding: 0; margin: 22px 0 0; }
+  .price li { padding: 7px 0 7px 28px; position: relative; color: var(--muted); }
+  .price li::before {
+    content: "✓"; position: absolute; left: 0; color: var(--mint); font-weight: 700;
+  }
+  .badge {
+    display: inline-block; font: 600 11px/1 ui-monospace, monospace; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--amber);
+    border: 1px solid rgba(255,182,72,.35); background: rgba(255,182,72,.10);
+    padding: 6px 10px; border-radius: 999px; margin-bottom: 16px;
+  }
+
+  details {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 18px; margin-bottom: 10px;
+  }
+  details summary { cursor: pointer; font-weight: 620; list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::after { content: " +"; color: var(--muted); }
+  details[open] summary::after { content: " −"; }
+  details p { color: var(--muted); margin: 12px 0 0; }
+
+  .curriculum { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+  .unit {
+    background: var(--raised); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .unit strong { display: block; font-size: 15px; margin-bottom: 3px; }
+  .unit span { color: var(--muted); font-size: 13px; }
+
+  .honest { border-left: 3px solid var(--amber); padding-left: 18px; }
+  .honest li { color: var(--muted); margin-bottom: 8px; }
+
+  footer { padding: 46px 0 60px; border-top: 1px solid var(--border); color: var(--muted); font-size: 14px; }
+  footer a { color: var(--muted); }
+  .foot-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+  .foot-row .spacer { flex: 1; }
+
+  /* ---- Motion -------------------------------------------------------- */
+  /* Everything here is opt-out: the whole block is disabled for anyone who
+     asks for reduced motion, and nothing is hidden unless JS is running. */
+  @keyframes rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+  @keyframes glow { 0%,100% { opacity:.55; transform: translate(-50%,-50%) scale(1); }
+                    50%    { opacity:.9;  transform: translate(-50%,-50%) scale(1.12); } }
+  @keyframes float-in { from { opacity: 0; transform: translateY(30px) scale(.97); } to { opacity: 1; transform: none; } }
+  @keyframes caret { 0%,45% { opacity: 1 } 50%,100% { opacity: 0 } }
+
+  .js .reveal { opacity: 0; }
+  .js .reveal.seen { animation: rise .62s cubic-bezier(.22,.8,.28,1) both; }
+  .js .reveal.seen.d1 { animation-delay: .07s }
+  .js .reveal.seen.d2 { animation-delay: .14s }
+  .js .reveal.seen.d3 { animation-delay: .21s }
+  .js .reveal.seen.d4 { animation-delay: .28s }
+
+  .hero { position: relative; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; left: 18%; top: 30%;
+    width: 620px; height: 620px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,107,74,.16), transparent 62%);
+    filter: blur(20px); pointer-events: none; z-index: -1;
+    animation: glow 9s ease-in-out infinite;
+  }
+  .hero h1, .hero .lede, .hero .cta-row, .hero .eyebrow { animation: float-in .7s cubic-bezier(.22,.8,.28,1) both; }
+  .hero .eyebrow { animation-delay: .02s }
+  .hero h1 { animation-delay: .10s }
+  .hero .lede { animation-delay: .20s }
+  .hero .cta-row { animation-delay: .30s }
+
+  .cursor {
+    display: inline-block; width: 3px; height: 1.05em; margin-left: 3px;
+    background: var(--coral); vertical-align: -2px; animation: caret 1.05s steps(1) infinite;
+  }
+
+  .card, .unit, .shots img, .wide img, details, .price {
+    transition: transform .28s cubic-bezier(.22,.8,.28,1), border-color .28s, box-shadow .28s;
+  }
+  .card:hover, .unit:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,107,74,.4);
+    box-shadow: 0 14px 40px -22px rgba(0,0,0,.85);
+  }
+  .shots img:hover, .wide img:hover {
+    transform: translateY(-6px) scale(1.012);
+    box-shadow: 0 22px 50px -26px rgba(0,0,0,.9);
+  }
+  .price:hover { transform: translateY(-3px); border-color: rgba(255,182,72,.45); }
+  .btn { transition: transform .2s cubic-bezier(.22,.8,.28,1), filter .2s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active { transform: translateY(0); }
+  details summary { transition: color .2s; }
+  details:hover summary { color: var(--coral); }
+  .nav a.link { transition: color .2s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js .reveal, .js .reveal.seen,
+    .hero h1, .hero .lede, .hero .cta-row, .hero .eyebrow {
+      animation: none !important; opacity: 1 !important; transform: none !important;
+    }
+    .hero::before, .cursor { animation: none !important; }
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand"><span class="mark">🦀</span> Crabrix</div>
+    <div class="spacer"></div>
+    <a class="link" href="#what">What it is</a>
+    <a class="link" href="/about">About</a>
+    <a class="link" href="/leaderboard">Leaderboard</a>
+    <a class="link" href="/support">Support</a>
+    <a class="link" href="#price">Price</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <div class="eyebrow">iPhone &amp; iPad · one-time purchase</div>
+    <h1>A real Rust compiler,<br><span class="grad">in your pocket.</span><span class="cursor" aria-hidden="true"></span></h1>
+    <p class="lede">
+      Crabrix runs <code>rustc</code> itself on your device. Not a sandbox that phones home,
+      not a syntax-highlighted notepad — the actual compiler, resolving real crates.io
+      packages and producing real diagnostics, with the network off.
+    </p>
+    <div class="cta-row">
+      <a class="btn" href="#price">See the price</a>
+      <a class="btn ghost" href="https://github.com/sergii-ziborov/Crabrix">Source on GitHub</a>
+      <span class="cta-note">No subscription. No accounts. No ads.</span>
+    </div>
+  </div>
+
+  <section id="what">
+    <div class="wrap">
+      <h2>What it actually does</h2>
+      <p class="section-lede">
+        Four things that normally require a laptop, done on a phone.
+      </p>
+      <div class="grid g2 reveal-group">
+        <div class="card">
+          <span class="ic">⚙️</span>
+          <h3>Compiles Rust on device</h3>
+          <p>A pinned WASI build of <code>rustc</code> executes inside a Swift WebAssembly
+          interpreter. Real type checking, real borrow checking, real error codes — the
+          first compile is genuine, and identical repeat runs come from a local cache.</p>
+        </div>
+        <div class="card">
+          <span class="ic">📦</span>
+          <h3>Resolves real crates.io packages</h3>
+          <p>Sparse-index resolution, SemVer and feature unification, target filtering,
+          SHA-256-verified downloads, dependency compilation, and <code>--extern</code>
+          linking. It writes a real <code>Cargo.lock</code>, and cached packages rebuild offline.</p>
+        </div>
+        <div class="card">
+          <span class="ic">🎓</span>
+          <h3>Teaches from the compiler</h3>
+          <p>83 lessons across six courses, each with a syntax-highlighted example and a
+          lab the bundled compiler actually checks. Diagnostics become explanations,
+          practice, and a suggested repair.</p>
+        </div>
+        <div class="card">
+          <span class="ic">✈️</span>
+          <h3>Works with the network off</h3>
+          <p>The toolchain ships inside the app and never downloads at runtime. Once a
+          project's packages are cached, it builds in airplane mode.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screens">
+    <div class="wrap">
+      <h2>On the device</h2>
+      <p class="section-lede">Adaptive layout: a workspace on iPad, drawers on iPhone.</p>
+      <div class="shots reveal-group">
+        <figure><img src="screenshots/iphone-projects.png" alt="Projects dashboard"><figcaption>Projects</figcaption></figure>
+        <figure><img src="screenshots/iphone-library.png" alt="Project library"><figcaption>Library — 20 projects</figcaption></figure>
+        <figure><img src="screenshots/iphone-build.png" alt="Build workspace"><figcaption>Build</figcaption></figure>
+        <figure><img src="screenshots/iphone-learn.png" alt="Learn tab"><figcaption>Learn</figcaption></figure>
+      </div>
+      <div class="wide">
+        <figure>
+          <img src="screenshots/ipad-build.png" alt="Crabrix workspace on iPad">
+          <figcaption>The iPad workspace: files and resolved packages, editor, build inspector.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="learn">
+    <div class="wrap">
+      <h2>The curriculum</h2>
+      <p class="section-lede">
+        Six courses, sixteen units, 83 lessons — from <code>fn main</code> to <code>unsafe</code>, FFI, and the systems questions that come with a Rust interview.
+      </p>
+      <div class="curriculum reveal-group">
+        <div class="unit"><strong>Rust Foundations</strong><span>Types, operators, functions, control flow, docs</span></div>
+        <div class="unit"><strong>Ownership &amp; Borrowing</strong><span>Moves, borrows, slices, Copy, Drop, lifetimes</span></div>
+        <div class="unit"><strong>Modeling Data</strong><span>Structs, enums, Option/Result, strings, patterns</span></div>
+        <div class="unit"><strong>Abstractions</strong><span>Generics, traits, closures, iterators, operators</span></div>
+        <div class="unit"><strong>Real Projects</strong><span>Modules, tests, errors, dependencies, workspaces</span></div>
+        <div class="unit"><strong>Smart Pointers</strong><span>Box, Rc, RefCell, Deref, Drop, cycles</span></div>
+        <div class="unit"><strong>Fearless Concurrency</strong><span>Threads, channels, Mutex, Send &amp; Sync</span></div>
+        <div class="unit"><strong>Async Rust</strong><span>Futures, runtimes, join and cancellation</span></div>
+        <div class="unit"><strong>Macros</strong><span>macro_rules!, proc macros, cfg and features</span></div>
+        <div class="unit"><strong>Systems Rust</strong><span>unsafe, FFI, performance, idioms</span></div>
+      </div>
+      <p class="section-lede" style="margin-top:28px">
+        Plus Quick Practice, Term Train with a timed mode, Code Recall, 70 achievement tiers, and a rating you earn across everything you do.
+      </p>
+    </div>
+  </section>
+
+  <section id="price">
+    <div class="wrap">
+      <h2>Price</h2>
+      <p class="section-lede">
+        Buy it once. It is yours, on iPhone and iPad, with every update included.
+      </p>
+      <div class="price">
+        <span class="badge">Launch price</span>
+        <div class="amount">$17.99 <span>· then $24.99</span></div>
+        <ul>
+          <li>One-time purchase — no subscription, ever</li>
+          <li>Universal: iPhone and iPad, one buy</li>
+          <li>No in-app purchases and no paywalled features</li>
+          <li>No ads, no analytics, no tracking, no account required</li>
+          <li>Free updates</li>
+        </ul>
+      </div>
+      <p class="section-lede" style="margin-top:24px">
+        The compiler, the package manager, and the whole curriculum are in the app you buy.
+        Nothing is held back for a second transaction.
+      </p>
+    </div>
+  </section>
+
+  <section id="honest">
+    <div class="wrap">
+      <h2>What it does not do</h2>
+      <p class="section-lede">
+        A compiler on a phone has real edges. Better you read them here than discover them later.
+      </p>
+      <ul class="honest">
+        <li><strong>Procedural macros do not run.</strong> They need a host-native compiler, so <code>serde</code>'s <code>derive</code> feature and anything like it is reported as unsupported rather than silently mis-built.</li>
+        <li><strong>Build scripts are not executed.</strong> Many crates whose <code>build.rs</code> only probes compiler features still work, and those are flagged for review rather than blocked.</li>
+        <li><strong>Crates that link native C libraries are out of reach</strong>, as are ones that build only as <code>cdylib</code> or <code>staticlib</code>.</li>
+        <li><strong>Builds take minutes, not seconds.</strong> <code>rustc</code> runs in an interpreter. A first build with one package is around five minutes; the identical rebuild is under a second from cache.</li>
+        <li><strong>The codegen backend has gaps.</strong> A few crates hit unimplemented 64-bit operations. Crabrix records the real outcome of every dependency build and shows it, with the compiler's own reason.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <h2>Questions</h2>
+
+      <details>
+        <summary>Is this really compiling, or is it sending my code to a server?</summary>
+        <p>Really compiling. The <code>rustc</code> binary and its <code>wasm32-wasip1</code> sysroot are inside the app bundle, verified by SHA-256 at build time. Turn on airplane mode and it still compiles. The only network calls are ones you start: importing a public GitHub snapshot, searching crates.io, and downloading packages.</p>
+      </details>
+
+      <details>
+        <summary>Which crates work?</summary>
+        <p>Pure-Rust, <code>no-std</code>-friendly and std crates that do not need proc macros or native libraries. Verified working examples include <code>smallvec</code>, <code>memchr</code>, <code>log</code>, <code>once_cell</code>, <code>arrayvec</code>, <code>either</code>, <code>cfg-if</code> and <code>anyhow</code>. Crabrix records what actually built and tells you the reason when something does not.</p>
+      </details>
+
+      <details>
+        <summary>Do I need an account?</summary>
+        <p>No. There is no sign-in, no cloud sync, and no analytics. Your projects, your progress, and your rating live on your device.</p>
+      </details>
+
+      <details>
+        <summary>Can I get my projects in and out?</summary>
+        <p>Yes. Import a folder from Files or iCloud Drive, import a public GitHub repository snapshot, or open a shared GitHub link straight from Safari. Export as an editable <code>.crabrixproject</code> package or as a plain ZIP for AirDrop, Mail, or Files.</p>
+      </details>
+
+      <details>
+        <summary>Why is it a one-time purchase?</summary>
+        <p>Because it is a tool, not a service. Nothing runs on a server on your behalf, so there is no recurring cost to pass on.</p>
+      </details>
+
+      <details>
+        <summary>Which devices does it need?</summary>
+        <p>iOS and iPadOS 18 or newer. It runs on an iPhone, but a compiler is CPU-heavy work: newer devices build noticeably faster, and an iPad gives you the full multi-panel workspace.</p>
+      </details>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="wrap">
+      <h2>About</h2>
+      <p class="section-lede">
+        Crabrix is built by Serhii Ziborov. It began as one stubborn question — whether a
+        real Rust compiler could type-check and run code inside an iPhone app while
+        offline — and turned into a workspace once the answer was yes.
+      </p>
+      <p class="section-lede">
+        The source is publicly readable on
+        <a href="https://github.com/sergii-ziborov/Crabrix">GitHub</a> for review and
+        evaluation. It is commercial software, not an open-source project: reuse,
+        redistribution, or derivative works need written permission. Bundled third-party
+        components keep their own licences and attributions.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-row">
+    <div>© 2026 Serhii Ziborov. All rights reserved.</div>
+    <div class="spacer"></div>
+    <a href="/about">About</a>
+    <a href="/support">Support</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/leaderboard">Leaderboard</a>
+    <a href="https://github.com/sergii-ziborov/Crabrix">GitHub</a>
+  </div>
+  <div class="wrap" style="margin-top:14px; font-size:13px; opacity:.75">
+    Rust and the Rust logo are trademarks of the Rust Foundation. Crabrix is an
+    independent project and is not affiliated with or endorsed by the Rust Foundation
+    or by Apple.
+  </div>
+</footer>
+
+
+<script>
+  // Progressive enhancement: without JS nothing is hidden, so the page still reads.
+  document.documentElement.classList.add("js");
+
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const targets = [
+    ...document.querySelectorAll("section h2, section .section-lede, .price, details, .wide figure, .honest li"),
+    ...document.querySelectorAll(".reveal-group > *"),
+  ];
+
+  targets.forEach((node, index) => {
+    node.classList.add("reveal");
+    const group = node.parentElement?.classList.contains("reveal-group");
+    if (group) node.classList.add("d" + ((index % 4) + 1));
+  });
+
+  if (reduce || !("IntersectionObserver" in window)) {
+    targets.forEach(n => n.classList.add("seen"));
+  } else {
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.classList.add("seen");
+        io.unobserve(entry.target);
+      }
+    }, { rootMargin: "0px 0px -12% 0px", threshold: 0.08 });
+    targets.forEach(n => io.observe(n));
+
+    // Failsafe: content must never stay invisible because an observer did not
+    // fire (screenshot services, odd viewports, background tabs).
+    setTimeout(() => targets.forEach(n => n.classList.add("seen")), 2500);
+  }
+
+  // Smooth in-page navigation, honouring the same motion preference.
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener("click", event => {
+      const target = document.querySelector(link.getAttribute("href"));
+      if (!target) return;
+      event.preventDefault();
+      target.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    });
+  });
+</script>
+</body>
+</html>
