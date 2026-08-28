@@ -15,6 +15,16 @@ struct LearnPathView: View {
 
     private var lessons: [RustLesson] { RustLessonProgression.lessons(in: units) }
 
+    private var isCourseCompleted: Bool {
+        !lessons.isEmpty && completedLessonCount == lessons.count
+    }
+
+    private var courseEntryLesson: RustLesson? {
+        if isCourseCompleted { return lessons.first }
+        return lessons.first(where: { !completedLessonIDs.contains($0.id) })
+            ?? lessons.first
+    }
+
     private var nextLessonID: String? {
         RustLessonProgression.nextLessonID(
             in: units,
@@ -29,7 +39,17 @@ struct LearnPathView: View {
                     completedLessonCount: completedLessonCount,
                     totalLessonCount: lessons.count,
                     chapterCount: units.count,
-                    liveLessonCount: lessons.filter(\.hasCompilerLab).count
+                    liveLessonCount: lessons.filter(\.hasCompilerLab).count,
+                    actionTitle: isCourseCompleted
+                        ? "Review course from start"
+                        : (completedLessonCount == 0 ? "Start course" : "Continue course"),
+                    actionSystemImage: isCourseCompleted
+                        ? "arrow.counterclockwise"
+                        : "arrow.right",
+                    onAction: {
+                        guard let courseEntryLesson else { return }
+                        onOpenLesson(courseEntryLesson)
+                    }
                 )
 
                 ForEach(units) { unit in
@@ -69,6 +89,9 @@ private struct LearningHero: View {
     let totalLessonCount: Int
     let chapterCount: Int
     let liveLessonCount: Int
+    let actionTitle: String
+    let actionSystemImage: String
+    let onAction: () -> Void
 
     private var progress: Double {
         guard totalLessonCount > 0 else { return 0 }
@@ -126,6 +149,14 @@ private struct LearningHero: View {
                 JourneyMetric(icon: "hammer.fill", value: "\(liveLessonCount)", label: "live labs", tint: CrabrixTheme.coral)
                 JourneyMetric(icon: "wifi.slash", value: "100%", label: "local", tint: CrabrixTheme.mint)
             }
+
+            Button(action: onAction) {
+                Label(actionTitle, systemImage: actionSystemImage)
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(CrabrixTheme.mint)
         }
         .padding(22)
         .background {

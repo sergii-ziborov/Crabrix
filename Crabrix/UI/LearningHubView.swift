@@ -168,10 +168,10 @@ struct LearningHubView: View {
                     isCompleted: completedLessonIDs.contains(lesson.id),
                     onStart: { onStartLesson(lesson) },
                     onComplete: {
-                        onCompleteLesson(lesson)
-                        returnToCourse(containing: lesson)
+                        completeAndContinue(from: lesson)
                     }
                 )
+                .id(lesson.id)
                 }
             } else {
                 ContentUnavailableView("Lesson unavailable", systemImage: "book.closed")
@@ -192,6 +192,19 @@ struct LearningHubView: View {
             return
         }
         navigationPath = [.course(course.id)]
+    }
+
+    private func completeAndContinue(from lesson: RustLesson) {
+        onCompleteLesson(lesson)
+        let completed = completedLessonIDs.union([lesson.id])
+        guard let step = RustLessonProgression.nextStep(
+            after: lesson.id,
+            completedLessonIDs: completed
+        ), step.lessonID != lesson.id else {
+            returnToCourse(containing: lesson)
+            return
+        }
+        navigationPath = [.course(step.courseID), .lesson(step.lessonID)]
     }
 
     private var hero: some View {

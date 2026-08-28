@@ -108,7 +108,11 @@ struct DiagnosticInspector: View {
     let diagnostic: RustDiagnostic
     let canRepair: Bool
     let practiceCompleted: Bool
+    let adviceState: RustDiagnosticAdviceState
     let onRepair: () -> Void
+    let onRequestAdvice: () -> Void
+    let onCancelAdvice: () -> Void
+    let onApplyAdvice: () -> Void
     let onPractice: () -> Void
 
     private var explanation: BorrowExplanation {
@@ -138,6 +142,8 @@ struct DiagnosticInspector: View {
             Text(explanation.summary)
                 .font(.subheadline)
                 .foregroundStyle(CrabrixTheme.muted)
+
+            appleIntelligencePanel
 
             HStack(alignment: .top, spacing: 11) {
                 Image(systemName: "link")
@@ -223,6 +229,133 @@ struct DiagnosticInspector: View {
                 }
             }
             .buttonStyle(.plain)
+        }
+    }
+
+    private var appleIntelligencePanel: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 9) {
+                Image(systemName: "apple.intelligence")
+                    .foregroundStyle(CrabrixTheme.blue)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("APPLE INTELLIGENCE")
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .foregroundStyle(CrabrixTheme.blue)
+                    Text("On-device Rust diagnostic advisor")
+                        .font(.subheadline.weight(.semibold))
+                }
+                Spacer()
+            }
+
+            switch adviceState {
+            case .idle:
+                Text("Ask Apple’s on-device model to explain this rustc error and propose the smallest source edit.")
+                    .font(.caption)
+                    .foregroundStyle(CrabrixTheme.muted)
+                Button(action: onRequestAdvice) {
+                    Label("Find a possible fix", systemImage: "sparkles")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(CrabrixTheme.blue.opacity(0.72))
+
+            case .generating:
+                advisorProgress(
+                    title: "Analyzing the compiler error…",
+                    detail: "The prompt and source context stay on this device."
+                )
+
+            case .verifying:
+                advisorProgress(
+                    title: "Checking the proposed edit…",
+                    detail: "The bundled rustc is compiling a temporary snapshot before Crabrix offers Apply."
+                )
+
+            case let .unavailable(message):
+                Label(message, systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundStyle(CrabrixTheme.amber)
+                Button("Try Apple Intelligence again", action: onRequestAdvice)
+                    .buttonStyle(.bordered)
+
+            case let .ready(advice):
+                Text(advice.explanation)
+                    .font(.caption)
+                    .foregroundStyle(CrabrixTheme.muted)
+
+                if !advice.changeSummary.isEmpty {
+                    Text(advice.changeSummary)
+                        .font(.subheadline.weight(.semibold))
+                }
+
+                if !advice.edits.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(Array(advice.edits.enumerated()), id: \.offset) { _, edit in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("\(advice.filePath) · \(edit.lineLabel)")
+                                    .font(.caption2.monospaced().bold())
+                                    .foregroundStyle(CrabrixTheme.blue)
+                                Text(edit.replacement)
+                                    .font(.system(size: 10, design: .monospaced))
+                                    .foregroundStyle(CrabrixTheme.primary)
+                                    .textSelection(.enabled)
+                            }
+                            .padding(10)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(CrabrixTheme.editor, in: RoundedRectangle(cornerRadius: 8))
+                        }
+                    }
+                }
+
+                switch advice.verification {
+                case .explanationOnly:
+                    Label(
+                        "Apple Intelligence explained the issue but did not return a safe edit.",
+                        systemImage: "info.circle.fill"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(CrabrixTheme.blue)
+
+                case .verified:
+                    Label("Verified by the bundled rustc", systemImage: "checkmark.seal.fill")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(CrabrixTheme.mint)
+                    Button(action: onApplyAdvice) {
+                        Label("Apply and check again", systemImage: "checkmark.circle.fill")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(CrabrixTheme.mint.opacity(0.62))
+
+                case let .rejected(reason):
+                    Label("Not offered for application", systemImage: "xmark.shield.fill")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(CrabrixTheme.amber)
+                    Text("rustc still reports: \(reason)")
+                        .font(.caption2)
+                        .foregroundStyle(CrabrixTheme.muted)
+                    Button("Generate another suggestion", action: onRequestAdvice)
+                        .buttonStyle(.bordered)
+                }
+            }
+        }
+        .padding(14)
+        .crabrixPanel(cornerRadius: 10)
+    }
+
+    private func advisorProgress(title: String, detail: String) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                ProgressView()
+                    .controlSize(.small)
+                Text(title)
+                    .font(.caption.weight(.semibold))
+            }
+            Text(detail)
+                .font(.caption2)
+                .foregroundStyle(CrabrixTheme.muted)
+            Button("Cancel", role: .cancel, action: onCancelAdvice)
+                .buttonStyle(.bordered)
         }
     }
 }

@@ -60,6 +60,18 @@ final class ProjectAuthoringTests: XCTestCase {
             XCTAssertNotNil(showcase.project.files["Cargo.toml"])
         }
     }
+
+    func testReviewLabCanUseAFreshProjectWithoutReusingTheOriginalName() {
+        let model = CompilerViewModel(
+            userDefaults: UserDefaults(suiteName: "crabrix.tests.\(UUID().uuidString)")!
+        )
+        model.source = "fn main() { /* completed solution */ }"
+
+        model.loadRunnableSample(projectName: "review-hello-rust")
+
+        XCTAssertEqual(model.projectName, "review-hello-rust")
+        XCTAssertEqual(model.source, RustSamples.runnable)
+    }
 }
 
 @MainActor

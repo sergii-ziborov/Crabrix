@@ -201,17 +201,16 @@ final class RustLessonProgressionNextStepTests: XCTestCase {
         XCTAssertEqual(next, second)
     }
 
-    func testSkipsLessonsThatAreAlreadyDone() throws {
+    func testReviewingDoesNotSkipTheImmediatelyFollowingCompletedLesson() throws {
         let steps = allSteps
         let first = try XCTUnwrap(steps.first)
         let second = try XCTUnwrap(steps.dropFirst().first)
-        let third = try XCTUnwrap(steps.dropFirst(2).first)
 
         let next = RustLessonProgression.nextStep(
             after: first.lessonID,
             completedLessonIDs: [first.lessonID, second.lessonID]
         )
-        XCTAssertEqual(next, third)
+        XCTAssertEqual(next, second)
     }
 
     func testContinuesIntoTheNextCourseAtACourseBoundary() throws {

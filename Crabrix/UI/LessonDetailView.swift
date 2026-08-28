@@ -246,7 +246,10 @@ struct LessonDetailView: View {
             }
 
             if isCompleted {
-                Label("Already completed — you can review it any time.", systemImage: "checkmark.circle.fill")
+                Label(
+                    "Already completed — reviewing keeps your progress and starts labs from clean code.",
+                    systemImage: "checkmark.circle.fill"
+                )
                     .font(.headline)
                     .foregroundStyle(CrabrixTheme.mint)
                     .padding(18)
@@ -335,8 +338,8 @@ struct LessonDetailView: View {
                 Button(action: isLive ? onStart : onComplete) {
                     Label(
                         isLive
-                            ? "Open compiler lab"
-                            : (isCompleted ? "Back to course" : "Complete lesson"),
+                            ? (isCompleted ? "Restart compiler lab" : "Open compiler lab")
+                            : (isCompleted ? "Next lesson" : "Complete & continue"),
                         systemImage: isLive ? "hammer.fill" : "checkmark.circle.fill"
                     )
                     .frame(minWidth: 200)

@@ -48,6 +48,8 @@ struct BuildDockView<CodeContent: View>: View {
     /// rather than appearing from nowhere.
     let contribution: CodeContribution?
     let onOpenDiagnostic: (RustDiagnostic) -> Void
+    let diagnosticAdviceState: RustDiagnosticAdviceState
+    let onOpenDiagnosticAdvisor: () -> Void
     let onContinueLearning: () -> Void
     let codeContent: CodeContent
 
@@ -67,6 +69,8 @@ struct BuildDockView<CodeContent: View>: View {
         canContinueLearning: Bool,
         contribution: CodeContribution?,
         onOpenDiagnostic: @escaping (RustDiagnostic) -> Void,
+        diagnosticAdviceState: RustDiagnosticAdviceState,
+        onOpenDiagnosticAdvisor: @escaping () -> Void,
         onContinueLearning: @escaping () -> Void,
         @ViewBuilder codeContent: () -> CodeContent
     ) {
@@ -85,6 +89,8 @@ struct BuildDockView<CodeContent: View>: View {
         self.canContinueLearning = canContinueLearning
         self.contribution = contribution
         self.onOpenDiagnostic = onOpenDiagnostic
+        self.diagnosticAdviceState = diagnosticAdviceState
+        self.onOpenDiagnosticAdvisor = onOpenDiagnosticAdvisor
         self.onContinueLearning = onContinueLearning
         self.codeContent = codeContent()
     }
@@ -147,7 +153,12 @@ struct BuildDockView<CodeContent: View>: View {
             case .code:
                 codeContent
             case .problems:
-                ProblemsDockContent(result: result, onOpenDiagnostic: onOpenDiagnostic)
+                ProblemsDockContent(
+                    result: result,
+                    adviceState: diagnosticAdviceState,
+                    onOpenDiagnostic: onOpenDiagnostic,
+                    onOpenDiagnosticAdvisor: onOpenDiagnosticAdvisor
+                )
             case .output:
                 OutputDockContent(
                     result: result,
@@ -180,12 +191,49 @@ struct BuildDockView<CodeContent: View>: View {
 
 private struct ProblemsDockContent: View {
     let result: CompilationResult?
+    let adviceState: RustDiagnosticAdviceState
     let onOpenDiagnostic: (RustDiagnostic) -> Void
+    let onOpenDiagnosticAdvisor: () -> Void
 
     var body: some View {
         ScrollView {
             if let diagnostics = result?.diagnostics, !diagnostics.isEmpty {
                 LazyVStack(alignment: .leading, spacing: 7) {
+                    if diagnostics.contains(where: { $0.level == "error" }) {
+                        Button(action: onOpenDiagnosticAdvisor) {
+                            HStack(spacing: 10) {
+                                if adviceState.isWorking {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                        .tint(CrabrixTheme.blue)
+                                } else {
+                                    Image(systemName: "apple.intelligence")
+                                        .foregroundStyle(CrabrixTheme.blue)
+                                }
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(advisorButtonTitle)
+                                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                        .foregroundStyle(CrabrixTheme.primary)
+                                    Text(advisorButtonDetail)
+                                        .font(.system(size: 9, design: .monospaced))
+                                        .foregroundStyle(CrabrixTheme.muted)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption2.bold())
+                                    .foregroundStyle(CrabrixTheme.blue)
+                            }
+                            .padding(11)
+                            .background(CrabrixTheme.blue.opacity(0.1), in: RoundedRectangle(cornerRadius: 9))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 9)
+                                    .stroke(CrabrixTheme.blue.opacity(0.28))
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityHint("Opens Apple Intelligence analysis for the compiler error")
+                    }
+
                     ForEach(Array(diagnostics.enumerated()), id: \.offset) { index, diagnostic in
                         Button {
                             onOpenDiagnostic(diagnostic)
@@ -232,6 +280,36 @@ private struct ProblemsDockContent: View {
         }
         .font(.system(size: 11, design: .monospaced))
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var advisorButtonTitle: String {
+        switch adviceState {
+        case .idle:
+            "Fix with Apple Intelligence"
+        case .generating:
+            "Apple Intelligence is analyzing…"
+        case .verifying:
+            "Verifying the suggested fix…"
+        case let .ready(advice):
+            advice.canApply ? "Review verified Apple Intelligence fix" : "Review Apple Intelligence advice"
+        case .unavailable:
+            "Apple Intelligence is unavailable"
+        }
+    }
+
+    private var advisorButtonDetail: String {
+        switch adviceState {
+        case .idle:
+            "Tap to analyze this rustc error on device"
+        case .generating:
+            "Generating a minimal source edit"
+        case .verifying:
+            "Checking the edit with the bundled rustc"
+        case let .ready(advice):
+            advice.canApply ? "The proposed edit passed rustc" : "Open the diagnostic advisor"
+        case let .unavailable(message):
+            message
+        }
     }
 }
 

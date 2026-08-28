@@ -5,6 +5,7 @@ struct SettingsView: View {
     @AppStorage("crabrix.editorFontSize") private var editorFontSize = 14.0
     @AppStorage("crabrix.keepAwakeDuringBuild") private var keepAwakeDuringBuild = true
     @AppStorage("crabrix.appleIntelligenceCompletion") private var appleIntelligenceCompletion = true
+    @AppStorage("crabrix.appleIntelligenceDiagnostics") private var appleIntelligenceDiagnostics = true
     @State private var isAddingDependency = false
 
     let toolchain: ToolchainStatus
@@ -146,6 +147,18 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 3) {
                         Label("Apple Intelligence code completion", systemImage: "apple.intelligence")
                         Text("\(RustCompletionSupport.appleIntelligenceStatus). Crabrix always keeps an instant offline Rust fallback.")
+                            .font(.caption2)
+                            .foregroundStyle(CrabrixTheme.muted)
+                    }
+                }
+                .tint(CrabrixTheme.blue)
+
+                Divider().overlay(CrabrixTheme.border)
+
+                Toggle(isOn: $appleIntelligenceDiagnostics) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Label("Apple Intelligence diagnostic fixes", systemImage: "apple.intelligence")
+                        Text("After a failed Check, analyze the rustc error and offer only edits that pass a temporary compiler verification.")
                             .font(.caption2)
                             .foregroundStyle(CrabrixTheme.muted)
                     }

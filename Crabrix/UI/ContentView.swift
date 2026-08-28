@@ -150,6 +150,10 @@ struct ContentView: View {
                     AppHeader(
                         toolchain: model.toolchain,
                         transfer: model.projectTransfer,
+                        activity: model.activity,
+                        canRun: model.canStartBuild && !model.isProjectOperationInProgress,
+                        onRun: model.run,
+                        onCancelBuild: model.cancelBuild,
                         onOpenProjects: { selectedDestination = .projects },
                         onCloseWorkspace: closeBuildWorkspace,
                         onNewProject: { isNewProjectPresented = true },
@@ -402,6 +406,7 @@ struct ContentView: View {
         }
         .onReceive(model.$result) { result in
             guard let result else { return }
+            completion.dismiss()
             terminal.record(result, project: model.exportProject())
             recordBuildProgress(result)
             withAnimation(.easeOut(duration: 0.18)) {
@@ -468,13 +473,21 @@ struct ContentView: View {
     }
 
     private func startLesson(_ lesson: RustLesson) {
+        let isReview = model.completedLessonIDs.contains(lesson.id)
+        let reviewProjectName = "review-\(lesson.id)"
         switch lesson.exercise {
         case .runnable:
-            model.loadRunnableSample()
+            model.loadRunnableSample(
+                projectName: isReview ? reviewProjectName : "hello-crabrix"
+            )
         case .borrowDiagnostic:
-            model.loadBorrowDiagnosticSample()
+            model.loadBorrowDiagnosticSample(
+                projectName: isReview ? reviewProjectName : "borrow-lab"
+            )
         case .multiFile:
-            model.loadMultiFileSample()
+            model.loadMultiFileSample(
+                projectName: isReview ? reviewProjectName : "modules-lab"
+            )
         case .planned:
             return
         }
@@ -510,6 +523,13 @@ struct ContentView: View {
                     }
                 },
                 onToggleInspector: {
+                    let inspectorIsCollapsed = horizontalSizeClass == .regular
+                        ? isInspectorCollapsed
+                        : !isCompactInspectorDrawerPresented
+                    if inspectorIsCollapsed, model.primaryDiagnostic != nil {
+                        presentDiagnosticAdvisor()
+                        return
+                    }
                     if horizontalSizeClass == .regular {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             isInspectorCollapsed.toggle()
@@ -539,6 +559,8 @@ struct ContentView: View {
                 canContinueLearning: model.isLessonContext,
                 contribution: lastContribution,
                 onOpenDiagnostic: openDiagnostic,
+                diagnosticAdviceState: model.diagnosticAdviceState,
+                onOpenDiagnosticAdvisor: presentDiagnosticAdvisor,
                 onContinueLearning: continueLearning
             ) {
                 codeWorkspace
@@ -554,8 +576,9 @@ struct ContentView: View {
                 cursorOffset: $editorCursorOffset,
                 filePath: model.selectedFile,
                 isEditable: !model.isProjectOperationInProgress,
+                diagnostics: model.result?.diagnostics ?? [],
                 navigationTarget: editorNavigationTarget,
-                onRequestCompletion: requestCompletion
+                onRequestCompletion: requestEditorAssistant
             )
 
             if model.activity == .running, !isRunningToastDismissed {
@@ -596,7 +619,20 @@ struct ContentView: View {
                 .accessibilityHint("Hides this notice. The run continues.")
             }
 
-            if let suggestion = completion.suggestion {
+            if let diagnostic = model.primaryDiagnostic,
+               completion.suggestion == nil,
+               completion.message == nil {
+                VStack {
+                    Spacer()
+                    DiagnosticAdvisorQuickButton(
+                        diagnostic: diagnostic,
+                        state: model.diagnosticAdviceState,
+                        action: presentDiagnosticAdvisor
+                    )
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            } else if let suggestion = completion.suggestion {
                 VStack {
                     Spacer()
                     CompletionSuggestionCard(
@@ -771,6 +807,40 @@ struct ContentView: View {
         )
     }
 
+    /// The keyboard sparkle is one contextual assistant action. With a current
+    /// compiler error it opens diagnostic help; otherwise it completes code.
+    private func requestEditorAssistant() {
+        if model.primaryDiagnostic != nil {
+            presentDiagnosticAdvisor()
+        } else {
+            requestCompletion()
+        }
+    }
+
+    private func presentDiagnosticAdvisor() {
+        guard model.primaryDiagnostic != nil else { return }
+        completion.dismiss()
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder),
+            to: nil,
+            from: nil,
+            for: nil
+        )
+
+        if case .idle = model.diagnosticAdviceState {
+            model.requestAppleIntelligenceAdvice()
+        }
+
+        withAnimation(.easeOut(duration: 0.22)) {
+            if horizontalSizeClass == .regular {
+                isInspectorCollapsed = false
+            } else {
+                isCompactProjectDrawerPresented = false
+                isCompactInspectorDrawerPresented = true
+            }
+        }
+    }
+
     private func openDiagnostic(_ diagnostic: RustDiagnostic) {
         guard let span = diagnostic.primarySpan else { return }
         let diagnosticPath = span.fileName
@@ -835,7 +905,11 @@ struct ContentView: View {
                         diagnostic: diagnostic,
                         canRepair: BorrowRepair.apply(to: model.source, diagnostic: diagnostic) != nil,
                         practiceCompleted: model.practiceCompleted,
+                        adviceState: model.diagnosticAdviceState,
                         onRepair: model.applyRepair,
+                        onRequestAdvice: model.requestAppleIntelligenceAdvice,
+                        onCancelAdvice: model.cancelAppleIntelligenceAdvice,
+                        onApplyAdvice: model.applyAppleIntelligenceAdvice,
                         onPractice: model.presentPractice
                     )
                 } else {
@@ -934,12 +1008,20 @@ private struct AppHeader: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     let toolchain: ToolchainStatus
     let transfer: CompilerViewModel.ProjectTransfer
+    let activity: CompilerViewModel.Activity
+    let canRun: Bool
+    let onRun: () -> Void
+    let onCancelBuild: () -> Void
     let onOpenProjects: () -> Void
     let onCloseWorkspace: () -> Void
     let onNewProject: () -> Void
     let onOpenFiles: () -> Void
     let onSaveFiles: () -> Void
     let onOpenGitHub: () -> Void
+
+    private var isPhone: Bool {
+        UIDevice.current.userInterfaceIdiom == .phone
+    }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -951,7 +1033,7 @@ private struct AppHeader: View {
                 .accessibilityLabel("Crabrix crab")
             Text("crabrix")
                 .font(.system(size: 21, weight: .bold, design: .rounded))
-            if horizontalSizeClass == .regular {
+            if horizontalSizeClass == .regular, !isPhone {
                 Text("NATIVE PHASE 0")
                     .font(.system(size: 9, weight: .semibold, design: .monospaced))
                     .foregroundStyle(CrabrixTheme.muted)
@@ -962,7 +1044,7 @@ private struct AppHeader: View {
 
             Spacer()
 
-            if horizontalSizeClass == .regular {
+            if horizontalSizeClass == .regular, !isPhone {
                 Button(action: onOpenProjects) {
                     Label("Projects", systemImage: "square.grid.2x2.fill")
                         .font(.system(size: 10, weight: .bold, design: .monospaced))
@@ -1005,6 +1087,38 @@ private struct AppHeader: View {
                     .foregroundStyle(toolchain.isReady ? CrabrixTheme.mint : CrabrixTheme.amber)
                     .accessibilityLabel(toolchain.isReady ? "Offline compiler ready" : "Compiler missing")
             } else {
+                if isPhone {
+                    Button(action: activity == .idle ? onRun : onCancelBuild) {
+                        HStack(spacing: 6) {
+                            if activity == .idle {
+                                Image(systemName: "play.fill")
+                            } else {
+                                ProgressView()
+                                    .controlSize(.mini)
+                                    .tint(CrabrixTheme.coral)
+                            }
+                            Text(activity == .idle ? "Run" : "Stop")
+                                .font(.caption.bold())
+                        }
+                        .foregroundStyle(CrabrixTheme.coral)
+                        .padding(.horizontal, 11)
+                        .frame(minHeight: 38)
+                        .background(CrabrixTheme.coral.opacity(0.12), in: Capsule())
+                        .overlay {
+                            Capsule().stroke(CrabrixTheme.coral.opacity(0.3))
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(activity == .idle && !canRun)
+                    .opacity(activity == .idle && !canRun ? 0.46 : 1)
+                    .accessibilityLabel(activity == .idle ? "Run project" : "Stop build")
+                    .accessibilityHint(
+                        activity == .idle
+                            ? "Compiles and runs the project locally"
+                            : "Cancels the current compiler operation"
+                    )
+                }
+
                 Button(action: onCloseWorkspace) {
                     Image(systemName: "xmark")
                         .font(.system(size: 13, weight: .bold))
@@ -1303,6 +1417,10 @@ private struct EditorToolbar: View {
     let onToggleProjectSidebar: () -> Void
     let onToggleInspector: () -> Void
 
+    private var hasCompilerError: Bool {
+        result?.diagnostics.contains(where: { $0.level == "error" }) == true
+    }
+
     /// Build controls live in the Build inspector. What stays above the editor
     /// is a read-only line, so a multi-minute build is never silent while the
     /// inspector is closed.
@@ -1353,10 +1471,16 @@ private struct EditorToolbar: View {
                 Spacer()
 
                 PanelToolbarButton(
-                    title: isInspectorCollapsed ? "Show inspector" : "Hide inspector",
-                    systemImage: "sidebar.right",
+                    title: isInspectorCollapsed
+                        ? (hasCompilerError ? "Show Apple Intelligence error help" : "Show inspector")
+                        : "Hide inspector",
+                    systemImage: hasCompilerError && isInspectorCollapsed
+                        ? "apple.intelligence"
+                        : "sidebar.right",
                     isCollapsed: isInspectorCollapsed,
-                    visibleTitle: isInspectorCollapsed ? "Build" : nil,
+                    visibleTitle: isInspectorCollapsed
+                        ? (hasCompilerError ? "Fix" : "Build")
+                        : nil,
                     action: onToggleInspector
                 )
             }
@@ -1428,6 +1552,78 @@ private struct CompactDrawerHeader: View {
         .padding(.horizontal, 14)
         .frame(height: 54)
         .background(CrabrixTheme.panel)
+    }
+}
+
+private struct DiagnosticAdvisorQuickButton: View {
+    let diagnostic: RustDiagnostic
+    let state: RustDiagnosticAdviceState
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                if state.isWorking {
+                    ProgressView()
+                        .controlSize(.small)
+                        .tint(CrabrixTheme.blue)
+                } else {
+                    Image(systemName: "apple.intelligence")
+                        .foregroundStyle(CrabrixTheme.blue)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(CrabrixTheme.primary)
+                    Text(detail)
+                        .font(.caption2.monospaced())
+                        .foregroundStyle(CrabrixTheme.muted)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 4)
+                Image(systemName: "chevron.right")
+                    .font(.caption2.bold())
+                    .foregroundStyle(CrabrixTheme.blue)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .frame(maxWidth: 360, alignment: .leading)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 11, style: .continuous)
+                    .stroke(CrabrixTheme.blue.opacity(0.35))
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("Opens Apple Intelligence analysis for this compiler error")
+    }
+
+    private var title: String {
+        switch state {
+        case .idle:
+            "Fix " + (diagnostic.code ?? "error") + " with Apple Intelligence"
+        case .generating:
+            "Apple Intelligence is analyzing…"
+        case .verifying:
+            "Verifying the suggested fix…"
+        case let .ready(advice):
+            advice.canApply ? "Review verified fix" : "Review Apple Intelligence advice"
+        case .unavailable:
+            "Apple Intelligence needs attention"
+        }
+    }
+
+    private var detail: String {
+        switch state {
+        case .idle:
+            "Tap to analyze this rustc error"
+        case .generating, .verifying:
+            "Tap to view progress"
+        case let .ready(advice):
+            advice.canApply ? "The edit passed the bundled rustc" : "Open the diagnostic advisor"
+        case let .unavailable(message):
+            message
+        }
     }
 }
 
@@ -1507,4 +1703,3 @@ private struct CompletionMessageCard: View {
         .overlay { RoundedRectangle(cornerRadius: 12).stroke(CrabrixTheme.border) }
     }
 }
-

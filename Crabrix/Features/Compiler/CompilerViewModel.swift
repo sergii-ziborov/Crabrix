@@ -116,6 +116,7 @@ final class CompilerViewModel: ObservableObject {
     @Published private(set) var cargoStage: CargoPreparationStage = .idle
     @Published private(set) var cargoWorkspace: CargoWorkspaceSnapshot = .empty
     @Published private(set) var cargoStorage: CrateStorageUsage = CrateStorageUsage()
+    @Published private(set) var diagnosticAdviceState: RustDiagnosticAdviceState = .idle
     @Published var isPracticePresented = false
 
     private let compiler: WasmRustCompiler
@@ -130,9 +131,11 @@ final class CompilerViewModel: ObservableObject {
     private var entryFile = "main.rs"
     private var compilationTask: Task<Void, Never>?
     private var activeCompilationID: UUID?
+    private var diagnosticAdviceTask: Task<Void, Never>?
     private let userDefaults: UserDefaults
 
     private static let completedLessonsKey = "crabrix.learn.completedLessonIDs"
+    private static let appleIntelligenceDiagnosticsKey = "crabrix.appleIntelligenceDiagnostics"
 
     init(
         compiler: WasmRustCompiler = WasmRustCompiler(),
@@ -163,8 +166,17 @@ final class CompilerViewModel: ObservableObject {
     }
 
     var isBusy: Bool { activity != .idle }
-    var canStartBuild: Bool { !isBusy && !isCompilerDraining && toolchain.isReady }
-    var primaryDiagnostic: RustDiagnostic? { result?.diagnostics.first ?? lastDiagnostic }
+    var canStartBuild: Bool {
+        !isBusy
+            && !isCompilerDraining
+            && !diagnosticAdviceState.isWorking
+            && toolchain.isReady
+    }
+    var primaryDiagnostic: RustDiagnostic? {
+        result?.diagnostics.first(where: { $0.level == "error" })
+            ?? result?.diagnostics.first
+            ?? lastDiagnostic
+    }
     var cargoManifest: CargoManifest? {
         var files = fileContents
         files[selectedFile] = source
@@ -255,6 +267,7 @@ final class CompilerViewModel: ObservableObject {
 
     private func startBuild(_ mode: Activity) {
         guard canStartBuild else { return }
+        resetDiagnosticAdvice()
         activity = mode
         result = nil
         let project = projectSnapshot()
@@ -465,17 +478,17 @@ final class CompilerViewModel: ObservableObject {
         )
     }
 
-    func loadRunnableSample() {
-        loadProject(name: "hello-crabrix", files: ["main.rs": RustSamples.runnable])
+    func loadRunnableSample(projectName: String = "hello-crabrix") {
+        loadProject(name: projectName, files: ["main.rs": RustSamples.runnable])
     }
 
-    func loadBorrowDiagnosticSample() {
-        loadProject(name: "borrow-lab", files: ["main.rs": RustSamples.broken])
+    func loadBorrowDiagnosticSample(projectName: String = "borrow-lab") {
+        loadProject(name: projectName, files: ["main.rs": RustSamples.broken])
     }
 
-    func loadMultiFileSample() {
+    func loadMultiFileSample(projectName: String = "modules-lab") {
         loadProject(
-            name: "modules-lab",
+            name: projectName,
             files: [
                 "Cargo.toml": RustSamples.cargoManifest,
                 "src/main.rs": RustSamples.multiFileMain,
@@ -637,6 +650,7 @@ final class CompilerViewModel: ObservableObject {
     @discardableResult
     func addCargoDependency(name rawName: String, requirement rawRequirement: String) -> Bool {
         guard !isBusy, !isProjectOperationInProgress else { return false }
+        resetDiagnosticAdvice()
         let name = rawName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let requirement = rawRequirement.trimmingCharacters(in: .whitespacesAndNewlines)
         let allowedNameCharacters = CharacterSet.alphanumerics
@@ -689,6 +703,7 @@ final class CompilerViewModel: ObservableObject {
     ) -> Bool {
         guard !isBusy, !isProjectOperationInProgress, !files.isEmpty else { return false }
 
+        resetDiagnosticAdvice()
         fileContents = files
         if let requestedSelection, files[requestedSelection] != nil {
             selectedFile = requestedSelection
@@ -722,6 +737,7 @@ final class CompilerViewModel: ObservableObject {
         provenance: CrabrixProject.Provenance? = nil
     ) {
         if isBusy { cancelBuild() }
+        resetDiagnosticAdvice()
         projectName = name
         fileContents = files
         entryFile = requestedEntry
@@ -772,6 +788,7 @@ final class CompilerViewModel: ObservableObject {
     private func prepareForProjectSwitch() -> Bool {
         guard !isProjectOperationInProgress else { return false }
         if isBusy { cancelBuild() }
+        resetDiagnosticAdvice()
         return true
     }
 
@@ -782,8 +799,191 @@ final class CompilerViewModel: ObservableObject {
         else {
             return
         }
+        resetDiagnosticAdvice()
         source = repaired
         result = nil
+    }
+
+    func requestAppleIntelligenceAdvice() {
+        guard !isBusy,
+              !diagnosticAdviceState.isWorking,
+              let diagnostic = primaryDiagnostic
+        else { return }
+
+        let project = currentProject()
+        guard let targetFile = diagnosticTargetFile(for: diagnostic, in: project.files),
+              targetFile.lowercased().hasSuffix(".rs"),
+              let originalSource = project.files[targetFile]
+        else {
+            diagnosticAdviceState = .unavailable(
+                "The compiler did not identify an editable Rust source file for this issue."
+            )
+            return
+        }
+
+        diagnosticAdviceTask?.cancel()
+        diagnosticAdviceState = .generating
+        let plan = cargoWorkspace.plan
+        diagnosticAdviceTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let draft = try await AppleIntelligenceDiagnosticAdvisor.generate(
+                    diagnostic: diagnostic,
+                    project: project,
+                    targetFile: targetFile
+                )
+                try Task.checkCancellation()
+
+                guard currentProject().files[targetFile] == originalSource else {
+                    diagnosticAdviceState = .unavailable(
+                        "The source changed during analysis. Run Check again for a fresh suggestion."
+                    )
+                    diagnosticAdviceTask = nil
+                    return
+                }
+
+                guard !draft.edits.isEmpty else {
+                    diagnosticAdviceState = .ready(
+                        RustDiagnosticAdvice(
+                            filePath: targetFile,
+                            originalSource: originalSource,
+                            proposedSource: nil,
+                            explanation: draft.explanation,
+                            changeSummary: draft.changeSummary,
+                            edits: [],
+                            verification: .explanationOnly
+                        )
+                    )
+                    diagnosticAdviceTask = nil
+                    return
+                }
+
+                let proposedSource = try RustSourcePatch.applying(
+                    draft.edits,
+                    to: originalSource
+                )
+                guard proposedSource != originalSource else {
+                    diagnosticAdviceState = .ready(
+                        RustDiagnosticAdvice(
+                            filePath: targetFile,
+                            originalSource: originalSource,
+                            proposedSource: nil,
+                            explanation: draft.explanation,
+                            changeSummary: draft.changeSummary,
+                            edits: [],
+                            verification: .explanationOnly
+                        )
+                    )
+                    diagnosticAdviceTask = nil
+                    return
+                }
+
+                diagnosticAdviceState = .verifying
+                var candidateFiles = project.files
+                candidateFiles[targetFile] = proposedSource
+                let entryPath = project.entryFile
+                guard let main = candidateFiles.removeValue(forKey: entryPath) else {
+                    diagnosticAdviceState = .unavailable(
+                        "The project entry file is unavailable for verification."
+                    )
+                    diagnosticAdviceTask = nil
+                    return
+                }
+                let verificationResult = await compiler.check(
+                    source: main,
+                    sourcePath: entryPath,
+                    supportingFiles: candidateFiles,
+                    plan: plan
+                )
+                guard !Task.isCancelled else { return }
+                guard currentProject().files[targetFile] == originalSource else {
+                    diagnosticAdviceState = .unavailable(
+                        "The source changed during verification. Run Check again for a fresh suggestion."
+                    )
+                    diagnosticAdviceTask = nil
+                    return
+                }
+
+                let verification: RustDiagnosticAdvice.Verification
+                if verificationResult.succeeded {
+                    verification = .verified
+                } else {
+                    let reason = verificationResult.diagnostics.first?.message
+                        ?? verificationResult.detail
+                    verification = .rejected(reason)
+                }
+                diagnosticAdviceState = .ready(
+                    RustDiagnosticAdvice(
+                        filePath: targetFile,
+                        originalSource: originalSource,
+                        proposedSource: proposedSource,
+                        explanation: draft.explanation,
+                        changeSummary: draft.changeSummary,
+                        edits: draft.edits,
+                        verification: verification
+                    )
+                )
+                diagnosticAdviceTask = nil
+            } catch is CancellationError {
+                if diagnosticAdviceState.isWorking {
+                    diagnosticAdviceState = .idle
+                }
+                diagnosticAdviceTask = nil
+            } catch {
+                diagnosticAdviceState = .unavailable(error.localizedDescription)
+                diagnosticAdviceTask = nil
+            }
+        }
+    }
+
+    func cancelAppleIntelligenceAdvice() {
+        guard diagnosticAdviceState.isWorking else { return }
+        resetDiagnosticAdvice()
+    }
+
+    private func resetDiagnosticAdvice() {
+        diagnosticAdviceTask?.cancel()
+        diagnosticAdviceTask = nil
+        if diagnosticAdviceState == .verifying {
+            compiler.cancel()
+        }
+        diagnosticAdviceState = .idle
+    }
+
+    func applyAppleIntelligenceAdvice() {
+        guard case let .ready(advice) = diagnosticAdviceState,
+              advice.canApply,
+              let proposedSource = advice.proposedSource
+        else { return }
+
+        fileContents[selectedFile] = source
+        guard fileContents[advice.filePath] == advice.originalSource else {
+            diagnosticAdviceState = .unavailable(
+                "The source changed after verification. Run Check again before applying a fix."
+            )
+            return
+        }
+
+        fileContents[advice.filePath] = proposedSource
+        selectedFile = advice.filePath
+        source = proposedSource
+        result = nil
+        lastBuild = nil
+        diagnosticAdviceState = .idle
+        completedStages.insert(.repair)
+        compatibilityReport = ProjectCompatibilityReport.scan(currentProject())
+        startBuild(.checking)
+    }
+
+    private func diagnosticTargetFile(
+        for diagnostic: RustDiagnostic,
+        in files: [String: String]
+    ) -> String? {
+        guard let diagnosticPath = diagnostic.primarySpan?.fileName else { return nil }
+        return files.keys.first(where: { $0 == diagnosticPath })
+            ?? files.keys.first(where: {
+                diagnosticPath.hasSuffix("/\($0)") || $0.hasSuffix("/\(diagnosticPath)")
+            })
     }
 
     func presentPractice() {
@@ -928,10 +1128,17 @@ final class CompilerViewModel: ObservableObject {
         activeCompilationID = nil
         lastBuild = ProjectBuildRecord(result: value)
 
-        if let diagnostic = value.diagnostics.first {
+        if let diagnostic = value.diagnostics.first(where: { $0.level == "error" })
+            ?? value.diagnostics.first {
             lastDiagnostic = diagnostic
             completedStages.insert(.diagnostic)
             completedStages.insert(.explanation)
+            let diagnosticsSetting = userDefaults.object(
+                forKey: Self.appleIntelligenceDiagnosticsKey
+            ) as? Bool ?? true
+            if diagnosticsSetting, !value.succeeded, diagnostic.level == "error" {
+                requestAppleIntelligenceAdvice()
+            }
         } else if value.succeeded, lastDiagnostic != nil {
             completedStages.insert(.repair)
         }

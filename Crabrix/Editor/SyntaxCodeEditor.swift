@@ -15,8 +15,27 @@ struct SyntaxCodeEditor: UIViewRepresentable {
     @Binding var cursorOffset: Int
     let filePath: String
     let isEditable: Bool
+    let diagnostics: [RustDiagnostic]
     let navigationTarget: EditorNavigationTarget?
     let onRequestCompletion: () -> Void
+
+    init(
+        text: Binding<String>,
+        cursorOffset: Binding<Int>,
+        filePath: String,
+        isEditable: Bool,
+        diagnostics: [RustDiagnostic] = [],
+        navigationTarget: EditorNavigationTarget?,
+        onRequestCompletion: @escaping () -> Void
+    ) {
+        _text = text
+        _cursorOffset = cursorOffset
+        self.filePath = filePath
+        self.isEditable = isEditable
+        self.diagnostics = diagnostics
+        self.navigationTarget = navigationTarget
+        self.onRequestCompletion = onRequestCompletion
+    }
 
     func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
@@ -83,7 +102,8 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         if context.coordinator.highlightedText != text
             || context.coordinator.highlightedFilePath != filePath
             || context.coordinator.highlightedFontSize != editorFontSize
-            || context.coordinator.highlightedColorScheme != colorScheme {
+            || context.coordinator.highlightedColorScheme != colorScheme
+            || context.coordinator.highlightedDiagnosticsSignature != diagnosticsSignature {
             context.coordinator.applyHighlighting(to: textView, filePath: filePath)
         }
         if let navigationTarget,
@@ -100,6 +120,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         var highlightedFilePath = ""
         var highlightedFontSize = 0.0
         var highlightedColorScheme: ColorScheme?
+        var highlightedDiagnosticsSignature = ""
         weak var textView: UITextView?
         var lastNavigationID: UUID?
         private var isApplyingHighlight = false
@@ -189,6 +210,24 @@ struct SyntaxCodeEditor: UIViewRepresentable {
                     range: token.range
                 )
             }
+            for diagnostic in parent.diagnostics {
+                for span in diagnostic.spans where matches(span.fileName, filePath) {
+                    guard let range = diagnosticRange(for: span, in: source),
+                          NSMaxRange(range) <= fullRange.length
+                    else { continue }
+                    let style: NSUnderlineStyle = span.isPrimary ? .thick : .single
+                    let color = diagnostic.level == "warning"
+                        ? UIColor(CrabrixTheme.amber)
+                        : UIColor(CrabrixTheme.coral)
+                    textView.textStorage.addAttributes(
+                        [
+                            .underlineStyle: style.rawValue,
+                            .underlineColor: color,
+                        ],
+                        range: range
+                    )
+                }
+            }
             textView.textStorage.endEditing()
             textView.typingAttributes = base
             // Only when it actually moved: assigning an unchanged selection
@@ -204,6 +243,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             highlightedFilePath = filePath
             highlightedFontSize = parent.editorFontSize
             highlightedColorScheme = parent.colorScheme
+            highlightedDiagnosticsSignature = parent.diagnosticsSignature
         }
 
         func reveal(_ target: EditorNavigationTarget, in textView: UITextView) {
@@ -248,9 +288,45 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             return NSRange(location: location, length: length)
         }
 
+        private func diagnosticRange(
+            for span: RustDiagnostic.Span,
+            in source: String
+        ) -> NSRange? {
+            guard let firstLine = lineRange(span.lineStart, in: source),
+                  let lastLine = lineRange(span.lineEnd, in: source)
+            else { return nil }
+
+            let start = min(
+                firstLine.location + max(span.columnStart - 1, 0),
+                NSMaxRange(firstLine)
+            )
+            let end = min(
+                lastLine.location + max(span.columnEnd - 1, 0),
+                NSMaxRange(lastLine)
+            )
+            let upperBound = max(end, min(start + 1, (source as NSString).length))
+            guard upperBound > start else { return nil }
+            return NSRange(location: start, length: upperBound - start)
+        }
+
+        private func matches(_ diagnosticPath: String, _ editorPath: String) -> Bool {
+            diagnosticPath == editorPath
+                || diagnosticPath.hasSuffix("/\(editorPath)")
+                || editorPath.hasSuffix("/\(diagnosticPath)")
+        }
+
         private func color(for kind: SyntaxTokenKind) -> UIColor {
             SyntaxTheme.uiColor(for: kind)
         }
+    }
+
+    private var diagnosticsSignature: String {
+        diagnostics.map { diagnostic in
+            let spans = diagnostic.spans.map {
+                "\($0.fileName):\($0.lineStart):\($0.columnStart):\($0.lineEnd):\($0.columnEnd)"
+            }.joined(separator: ",")
+            return "\(diagnostic.id.uuidString):\(diagnostic.level):\(spans)"
+        }.joined(separator: "|")
     }
 }
 

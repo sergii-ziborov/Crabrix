@@ -36,6 +36,7 @@ struct PracticeSheet: View {
                     cursorOffset: $cursorOffset,
                     filePath: "practice.rs",
                     isEditable: !isChecking,
+                    diagnostics: [],
                     navigationTarget: nil,
                     onRequestCompletion: {}
                 )

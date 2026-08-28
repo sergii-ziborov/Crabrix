@@ -78,15 +78,17 @@ final class RustCompletionController: ObservableObject {
                     self?.requestTask = nil
                 }
                 return
-            case .unavailable:
-                break
+            case let .unavailable(reason):
+                message = RustCompletionSupport.unavailableMessage(for: reason)
+                return
             @unknown default:
-                break
+                message = "Apple Intelligence is unavailable on this device."
+                return
             }
         }
         #endif
 
-        message = "Apple Intelligence is unavailable; type at least two characters of a Rust construct."
+        message = "Apple Intelligence code completion requires iOS 26 or newer."
     }
 
     func dismiss() {
@@ -122,6 +124,24 @@ enum RustCompletionSupport {
         #endif
         return "Requires iOS 26 or newer"
     }
+
+    #if canImport(FoundationModels)
+    @available(iOS 26.0, *)
+    static func unavailableMessage(
+        for reason: SystemLanguageModel.Availability.UnavailableReason
+    ) -> String {
+        switch reason {
+        case .deviceNotEligible:
+            "This device does not support Apple Intelligence."
+        case .appleIntelligenceNotEnabled:
+            "Turn on Apple Intelligence in Settings > Apple Intelligence & Siri."
+        case .modelNotReady:
+            "Apple Intelligence is still downloading or preparing. Try again when it is ready."
+        @unknown default:
+            "Apple Intelligence is unavailable on this device."
+        }
+    }
+    #endif
 }
 
 enum RustLocalCompleter {
