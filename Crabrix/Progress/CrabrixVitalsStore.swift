@@ -147,6 +147,11 @@ final class CrabrixVitalsStore: ObservableObject {
 }
 
 enum VitalsFormatter {
+    /// "2" or "10.5", so a whole number is not shown with a pointless decimal.
+    static func rate(_ value: Double) -> String {
+        value == value.rounded() ? String(Int(value)) : String(format: "%.1f", value)
+    }
+
     /// "4 min" / "1 h 12 min", for the "next heart in…" label.
     static func countdown(_ seconds: TimeInterval) -> String {
         let total = Int(seconds.rounded())

@@ -179,7 +179,7 @@ struct ProjectsHomeView: View {
 
                 Spacer(minLength: 0)
 
-                VitalsPill(store: vitals, showsCountdown: false)
+                VitalsPill(store: vitals, showsCountdown: false, isInteractive: true)
 
                 Image(systemName: "chevron.right")
                     .font(.caption.bold())

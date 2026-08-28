@@ -419,13 +419,13 @@ private struct LessonMapNode: View {
                 .frame(width: 68, height: 68)
                 .overlay {
                     Circle()
-                        .stroke(CrabrixTheme.primary.opacity(state == .locked ? 0.08 : 0.25), lineWidth: 1)
+                        .stroke(CrabrixTheme.primary.opacity(state == .locked ? 0.18 : 0.25), lineWidth: 1)
                 }
                 .shadow(color: nodeShadow, radius: state == .ready ? 14 : 4, y: 6)
 
             Image(systemName: state.symbol(for: lesson))
                 .font(.system(size: 23, weight: .bold))
-                .foregroundStyle(state == .completed ? CrabrixTheme.background : .white.opacity(state == .locked ? 0.45 : 1))
+                .foregroundStyle(nodeIconColor)
         }
         .frame(width: 96, height: 96)
     }
@@ -456,6 +456,17 @@ private struct LessonMapNode: View {
                 .padding(.horizontal, 7)
                 .padding(.vertical, 4)
                 .background(state.tint(palette: palette).opacity(0.11), in: Capsule())
+        }
+    }
+
+    /// The locked circle is nearly white in the light theme, so a white icon on
+    /// it was invisible. Every state now picks a colour that contrasts with its
+    /// own fill rather than assuming a dark background.
+    private var nodeIconColor: Color {
+        switch state {
+        case .completed: CrabrixTheme.background
+        case .ready: .white
+        case .locked: CrabrixTheme.muted
         }
     }
 

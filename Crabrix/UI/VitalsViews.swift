@@ -89,6 +89,10 @@ struct VitalsCard: View {
     @ObservedObject var store: CrabrixVitalsStore
     var onOpenTraining: (() -> Void)?
 
+    private enum Meter { case health, energy }
+    /// Which bar is showing its recovery detail, if any.
+    @State private var expanded: Meter?
+
     var body: some View {
         VStack(alignment: .leading, spacing: 13) {
             HStack {
@@ -104,25 +108,67 @@ struct VitalsCard: View {
                 }
             }
 
-            bar(
-                title: "Health",
-                systemImage: "heart.fill",
-                tint: CrabrixTheme.coral,
-                value: store.health,
-                maximum: store.capacity.maxHealth,
-                seconds: store.secondsToNextHealth,
-                caption: "Spent on wrong answers in lessons."
-            )
+            Button {
+                store.refresh()
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    expanded = expanded == .health ? nil : .health
+                }
+            } label: {
+                bar(
+                    title: "Health",
+                    systemImage: "heart.fill",
+                    tint: CrabrixTheme.coral,
+                    value: store.health,
+                    maximum: store.capacity.maxHealth,
+                    seconds: store.secondsToNextHealth,
+                    caption: "Spent on wrong answers in lessons.",
+                    isExpanded: expanded == .health
+                )
+            }
+            .buttonStyle(.plain)
 
-            bar(
-                title: "Energy",
-                systemImage: "bolt.fill",
-                tint: CrabrixTheme.amber,
-                value: store.energy,
-                maximum: store.capacity.maxEnergy,
-                seconds: store.secondsToNextEnergy,
-                caption: "\(CrabrixVitalsState.energyPerLessonPage) per new lesson page. Re-reading is free."
-            )
+            if expanded == .health {
+                detail(
+                    tint: CrabrixTheme.coral,
+                    value: store.health,
+                    maximum: store.capacity.maxHealth,
+                    perHour: store.capacity.healthPerHour,
+                    seconds: store.secondsToNextHealth,
+                    extra: store.shieldsRemaining > 0
+                        ? "\(store.shieldsRemaining) shield\(store.shieldsRemaining == 1 ? "" : "s") left today — the next wrong answer costs none."
+                        : nil
+                )
+            }
+
+            Button {
+                store.refresh()
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    expanded = expanded == .energy ? nil : .energy
+                }
+            } label: {
+                bar(
+                    title: "Energy",
+                    systemImage: "bolt.fill",
+                    tint: CrabrixTheme.amber,
+                    value: store.energy,
+                    maximum: store.capacity.maxEnergy,
+                    seconds: store.secondsToNextEnergy,
+                    caption: "\(CrabrixVitalsState.energyPerLessonPage) per new lesson page. Re-reading is free.",
+                    isExpanded: expanded == .energy
+                )
+            }
+            .buttonStyle(.plain)
+
+            if expanded == .energy {
+                detail(
+                    tint: CrabrixTheme.amber,
+                    value: store.energy,
+                    maximum: store.capacity.maxEnergy,
+                    perHour: store.capacity.energyPerHour,
+                    seconds: store.secondsToNextEnergy,
+                    extra: "Training — Quick Practice, Term Train, Code Recall — never costs any."
+                )
+            }
 
             if store.isLessonBlocked {
                 VStack(alignment: .leading, spacing: 8) {
@@ -168,17 +214,25 @@ struct VitalsCard: View {
         value: Int,
         maximum: Int,
         seconds: TimeInterval?,
-        caption: String
+        caption: String,
+        isExpanded: Bool = false
     ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 7) {
                 Image(systemName: systemImage).foregroundStyle(tint)
-                Text(title).font(.subheadline.bold())
+                Text(title)
+                    .font(.subheadline.bold())
+                    .foregroundStyle(CrabrixTheme.primary)
                 Spacer(minLength: 0)
                 Text("\(value)/\(maximum)")
                     .font(.caption.monospaced().bold())
                     .monospacedDigit()
                     .contentTransition(.numericText())
+                    .foregroundStyle(CrabrixTheme.primary)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(CrabrixTheme.muted)
+                    .rotationEffect(.degrees(isExpanded ? 0 : -90))
             }
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
@@ -205,6 +259,52 @@ struct VitalsCard: View {
             .font(.caption2)
             .foregroundStyle(CrabrixTheme.muted)
             .fixedSize(horizontal: false, vertical: true)
+        }
+        .contentShape(Rectangle())
+    }
+
+    /// The recovery numbers: how fast, when the next point lands, when full.
+    private func detail(
+        tint: Color,
+        value: Int,
+        maximum: Int,
+        perHour: Double,
+        seconds: TimeInterval?,
+        extra: String?
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            row("Refills", "+\(VitalsFormatter.rate(perHour)) an hour", tint: tint)
+            row("One point every", VitalsFormatter.countdown(3_600 / max(perHour, 0.01)), tint: tint)
+            if let seconds {
+                row("Next point in", VitalsFormatter.countdown(seconds), tint: tint)
+                let missing = Double(maximum - value)
+                row("Full in", VitalsFormatter.countdown(missing / max(perHour, 0.01) * 3_600), tint: tint)
+            } else {
+                row("Status", "Full", tint: CrabrixTheme.mint)
+            }
+            if let extra {
+                Text(extra)
+                    .font(.caption2)
+                    .foregroundStyle(CrabrixTheme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 2)
+            }
+        }
+        .padding(11)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(tint.opacity(0.08), in: RoundedRectangle(cornerRadius: 11))
+        .transition(.opacity.combined(with: .move(edge: .top)))
+    }
+
+    private func row(_ label: String, _ value: String, tint: Color) -> some View {
+        HStack {
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(CrabrixTheme.muted)
+            Spacer(minLength: 0)
+            Text(value)
+                .font(.caption2.monospaced().bold())
+                .foregroundStyle(tint)
         }
     }
 }
@@ -382,7 +482,7 @@ struct VitalsRatesPopover: View {
                     .font(.caption.monospaced().bold())
                     .monospacedDigit()
             }
-            Text("+\(formatted(perHour)) an hour · one every \(VitalsFormatter.countdown(3_600 / max(perHour, 0.01)))")
+            Text("+\(VitalsFormatter.rate(perHour)) an hour · one every \(VitalsFormatter.countdown(3_600 / max(perHour, 0.01)))")
                 .font(.caption2)
                 .foregroundStyle(CrabrixTheme.muted)
             if let seconds {
@@ -397,9 +497,4 @@ struct VitalsRatesPopover: View {
         }
     }
 
-    private func formatted(_ value: Double) -> String {
-        value == value.rounded()
-            ? String(Int(value))
-            : String(format: "%.1f", value)
-    }
 }

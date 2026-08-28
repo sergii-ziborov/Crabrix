@@ -271,3 +271,47 @@ final class CrabrixVitalsStoreTests: XCTestCase {
         XCTAssertTrue(store.isOutOfHealth)
     }
 }
+
+final class VitalsRecoveryReportingTests: XCTestCase {
+    func testRecoveryRateReadsAsAWholeNumberWhenItIsOne() {
+        XCTAssertEqual(VitalsFormatter.rate(2.0), "2")
+        XCTAssertEqual(VitalsFormatter.rate(10.0), "10")
+        // And keeps a decimal when there genuinely is one.
+        XCTAssertEqual(VitalsFormatter.rate(2.9), "2.9")
+    }
+
+    func testCountdownIsReadableAtEveryScale() {
+        XCTAssertEqual(VitalsFormatter.countdown(30), "30s")
+        XCTAssertEqual(VitalsFormatter.countdown(600), "10 min")
+        XCTAssertEqual(VitalsFormatter.countdown(3_600), "1 h")
+        XCTAssertEqual(VitalsFormatter.countdown(5_400), "1 h 30 min")
+    }
+
+    @MainActor
+    func testTheStoreCanAnswerHowLongUntilFull() {
+        let suite = "crabrix.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+        let moment = Date(timeIntervalSince1970: 1_700_000_000)
+        let store = CrabrixVitalsStore(defaults: defaults, now: { moment })
+
+        for _ in 0..<(store.capacity.dailyShields + 2) { _ = store.recordAnswer(correct: false) }
+        let missing = Double(store.capacity.maxHealth - store.health)
+        XCTAssertGreaterThan(missing, 0)
+
+        // What the expanded detail reports: the wait for a full bar.
+        let hoursToFull = missing / store.capacity.healthPerHour
+        XCTAssertGreaterThan(hoursToFull, 0)
+        XCTAssertNotNil(store.secondsToNextHealth, "a partly empty pool has a next point")
+    }
+
+    @MainActor
+    func testAFullPoolReportsNoCountdown() {
+        let suite = "crabrix.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+        let store = CrabrixVitalsStore(defaults: defaults)
+        XCTAssertNil(store.secondsToNextHealth)
+        XCTAssertNil(store.secondsToNextEnergy)
+    }
+}
