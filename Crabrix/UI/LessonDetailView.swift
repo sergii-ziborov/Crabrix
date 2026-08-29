@@ -7,7 +7,7 @@ struct LessonDetailView: View {
     let onStart: () -> Void
     let onComplete: () -> Void
     /// Called once, with the first answer the reader commits to.
-    var onAnswer: (Bool) -> Void = { _ in }
+    var onAnswer: (Int, Bool) -> Void = { _, _ in }
 
     @State private var page = 0
     @State private var selectedAnswer: Int?
@@ -22,6 +22,26 @@ struct LessonDetailView: View {
     private var isLive: Bool {
         if case .planned = lesson.exercise { return false }
         return true
+    }
+
+    init(
+        lesson: RustLesson,
+        isCompleted: Bool,
+        savedAnswer: Int? = nil,
+        onStart: @escaping () -> Void,
+        onComplete: @escaping () -> Void,
+        onAnswer: @escaping (Int, Bool) -> Void = { _, _ in }
+    ) {
+        self.lesson = lesson
+        self.isCompleted = isCompleted
+        self.onStart = onStart
+        self.onComplete = onComplete
+        self.onAnswer = onAnswer
+        // Older installations did not persist the chosen answer. A completed
+        // lesson still opens as answered, using its known correct choice.
+        _selectedAnswer = State(
+            initialValue: savedAnswer ?? (isCompleted ? lesson.lessonPractice.correctAnswer : nil)
+        )
     }
 
     var body: some View {
@@ -247,7 +267,7 @@ struct LessonDetailView: View {
 
             if isCompleted {
                 Label(
-                    "Already completed — reviewing keeps your progress and starts labs from clean code.",
+                    "Already completed — review is free, keeps its answer, and awards no additional rating.",
                     systemImage: "checkmark.circle.fill"
                 )
                     .font(.headline)
@@ -260,7 +280,11 @@ struct LessonDetailView: View {
     }
 
     private func chargeCurrentPage() {
-        let outcome = vitals.startLessonPage(lessonID: lesson.id, page: page)
+        let outcome = vitals.startLessonPage(
+            lessonID: lesson.id,
+            page: page,
+            isReview: isCompleted
+        )
         guard outcome != .free else { return }
         withAnimation(.easeOut(duration: 0.2)) { lastOutcome = outcome }
     }
@@ -274,9 +298,9 @@ struct LessonDetailView: View {
             }
             let correct = index == practice.correctAnswer
             withAnimation(.easeOut(duration: 0.2)) {
-                lastOutcome = vitals.recordAnswer(correct: correct)
+                lastOutcome = vitals.recordAnswer(correct: correct, isReview: isCompleted)
             }
-            onAnswer(correct)
+            onAnswer(index, correct)
         } label: {
             HStack(spacing: 12) {
                 Text(String(UnicodeScalar(65 + index)!))

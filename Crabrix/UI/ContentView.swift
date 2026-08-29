@@ -225,8 +225,12 @@ struct ContentView: View {
             LearningHubView(
                 navigationPath: $learningPath,
                 completedLessonIDs: model.completedLessonIDs,
+                lessonAnswerIndices: model.lessonAnswerIndices,
                 onStartLesson: startLesson,
-                onCompleteLesson: { lesson in model.completeLesson(lesson.id) }
+                onCompleteLesson: { lesson in model.completeLesson(lesson.id) },
+                onAnswerLesson: { lesson, answer in
+                    model.recordLessonAnswer(answer, for: lesson.id)
+                }
             )
             .tabItem { Label("Learn", systemImage: "graduationcap.fill") }
             .tag(CrabrixDestination.learn)
@@ -491,7 +495,7 @@ struct ContentView: View {
         case .planned:
             return
         }
-        model.beginLesson(lesson.id)
+        model.beginLesson(lesson.id, isReview: isReview)
         selectedDestination = .build
     }
 
@@ -576,6 +580,7 @@ struct ContentView: View {
                 cursorOffset: $editorCursorOffset,
                 filePath: model.selectedFile,
                 isEditable: !model.isProjectOperationInProgress,
+                tracksTyping: !model.activeLessonIsReview,
                 diagnostics: model.result?.diagnostics ?? [],
                 navigationTarget: editorNavigationTarget,
                 onRequestCompletion: requestEditorAssistant
@@ -933,6 +938,13 @@ struct ContentView: View {
     /// Turns a finished build into rating, once per result.
     private func recordBuildProgress(_ result: CompilationResult) {
         guard result.succeeded, result.phase == .run else { return }
+        // A completed lesson is review-only. The editor does not add its typing
+        // to the ledger, and the run neither changes vitals nor earns rating.
+        if !model.earnsProgressForCurrentRun {
+            lastContribution = nil
+            _ = vitals.spendOnBuild(isReview: true)
+            return
+        }
         // Rating follows the diff, so re-running an untouched sample earns a
         // token amount and real editing earns real points.
         var contribution = CodeContributionLedger.shared.record(

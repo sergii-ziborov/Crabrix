@@ -202,6 +202,26 @@ final class CrabrixVitalsStoreTests: XCTestCase {
         XCTAssertEqual(store.energy, afterFirst)
     }
 
+    func testCompletedLessonReviewNeverChangesVitals() {
+        let (store, suite) = makeStore()
+        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+        let health = store.health
+        let energy = store.energy
+
+        XCTAssertEqual(
+            store.startLessonPage(lessonID: "ownership", page: 0, isReview: true),
+            .free
+        )
+        XCTAssertEqual(store.recordAnswer(correct: false, isReview: true), .free)
+        XCTAssertEqual(store.spendOnBuild(isReview: true), .free)
+
+        XCTAssertEqual(store.health, health)
+        XCTAssertEqual(store.energy, energy)
+        XCTAssertTrue(
+            store.canStartLessonPage(lessonID: "ownership", page: 0, isReview: true)
+        )
+    }
+
     func testTrainingNeverCostsAnything() {
         let (store, suite) = makeStore()
         defer { UserDefaults.standard.removePersistentDomain(forName: suite) }

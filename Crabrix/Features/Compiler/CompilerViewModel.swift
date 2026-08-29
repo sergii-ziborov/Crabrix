@@ -107,7 +107,9 @@ final class CompilerViewModel: ObservableObject {
     @Published private(set) var completedStages: Set<Stage> = []
     @Published private(set) var practiceCompleted = false
     @Published private(set) var completedLessonIDs: Set<String>
+    @Published private(set) var lessonAnswerIndices: [String: Int]
     @Published private(set) var activeLessonID: String?
+    @Published private(set) var activeLessonIsReview = false
     @Published private(set) var projectTransfer: ProjectTransfer = .idle
     @Published private(set) var compatibilityReport: ProjectCompatibilityReport
     @Published private(set) var provenance: CrabrixProject.Provenance?
@@ -135,6 +137,7 @@ final class CompilerViewModel: ObservableObject {
     private let userDefaults: UserDefaults
 
     private static let completedLessonsKey = "crabrix.learn.completedLessonIDs"
+    private static let lessonAnswersKey = "crabrix.learn.lessonAnswerIndices"
     private static let appleIntelligenceDiagnosticsKey = "crabrix.appleIntelligenceDiagnostics"
 
     init(
@@ -150,6 +153,8 @@ final class CompilerViewModel: ObservableObject {
         self.packageManager = packageManager
         self.userDefaults = userDefaults
         completedLessonIDs = Set(userDefaults.stringArray(forKey: Self.completedLessonsKey) ?? [])
+        lessonAnswerIndices = (userDefaults.dictionary(forKey: Self.lessonAnswersKey) ?? [:])
+            .compactMapValues { ($0 as? NSNumber)?.intValue }
         toolchain = compiler.probe()
         let initialProject = CrabrixProject(
             name: "hello-crabrix",
@@ -166,6 +171,7 @@ final class CompilerViewModel: ObservableObject {
     }
 
     var isBusy: Bool { activity != .idle }
+    var earnsProgressForCurrentRun: Bool { !activeLessonIsReview }
     var canStartBuild: Bool {
         !isBusy
             && !isCompilerDraining
@@ -497,13 +503,22 @@ final class CompilerViewModel: ObservableObject {
         )
     }
 
-    func beginLesson(_ id: String) {
+    func beginLesson(_ id: String, isReview: Bool = false) {
         activeLessonID = id
+        activeLessonIsReview = isReview
     }
 
     func completeLesson(_ id: String) {
         completedLessonIDs.insert(id)
         persistCompletedLessons()
+    }
+
+    /// Keeps the first committed quick-check answer so reopening a lesson is
+    /// review, not a second attempt that can spend or earn resources again.
+    func recordLessonAnswer(_ index: Int, for lessonID: String) {
+        guard index >= 0, lessonAnswerIndices[lessonID] == nil else { return }
+        lessonAnswerIndices[lessonID] = index
+        userDefaults.set(lessonAnswerIndices, forKey: Self.lessonAnswersKey)
     }
 
     func loadShowcaseProject(id: String) {
@@ -760,6 +775,7 @@ final class CompilerViewModel: ObservableObject {
         completedStages = []
         practiceCompleted = false
         activeLessonID = nil
+        activeLessonIsReview = false
         resetCargoWorkspace()
         let project = currentProject()
         Task { await remember(project, lastBuild: nil) }

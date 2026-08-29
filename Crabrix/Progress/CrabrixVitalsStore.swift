@@ -74,8 +74,13 @@ final class CrabrixVitalsStore: ObservableObject {
 
     /// Charges for reading one lesson page. A page already paid for is free.
     @discardableResult
-    func startLessonPage(lessonID: String, page: Int) -> VitalsOutcome {
+    func startLessonPage(
+        lessonID: String,
+        page: Int,
+        isReview: Bool = false
+    ) -> VitalsOutcome {
         refresh()
+        guard !isReview else { return .free }
         var updated = state
         let outcome = updated.chargeLessonPage("\(lessonID)#\(page)")
         state = updated
@@ -85,13 +90,19 @@ final class CrabrixVitalsStore: ObservableObject {
     }
 
     /// Whether a page can be opened without spending what is not there.
-    func canStartLessonPage(lessonID: String, page: Int) -> Bool {
-        state.canStartLessonPage("\(lessonID)#\(page)")
+    func canStartLessonPage(
+        lessonID: String,
+        page: Int,
+        isReview: Bool = false
+    ) -> Bool {
+        if isReview { return true }
+        return state.canStartLessonPage("\(lessonID)#\(page)")
     }
 
     @discardableResult
-    func recordAnswer(correct: Bool) -> VitalsOutcome {
+    func recordAnswer(correct: Bool, isReview: Bool = false) -> VitalsOutcome {
         refresh()
+        guard !isReview else { return .free }
         var updated = state
         let outcome = correct
             ? updated.recordCorrect(capacity: capacity)
@@ -107,8 +118,9 @@ final class CrabrixVitalsStore: ObservableObject {
     /// Deliberately does not block: running your own code is the point of the
     /// app, so an empty pool slows the reward down rather than stopping work.
     @discardableResult
-    func spendOnBuild() -> VitalsOutcome {
+    func spendOnBuild(isReview: Bool = false) -> VitalsOutcome {
         refresh()
+        guard !isReview else { return .free }
         var updated = state
         let cost = Double(CrabrixVitalsState.energyPerBuild)
         guard updated.energy >= cost else {

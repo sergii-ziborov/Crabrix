@@ -35,8 +35,10 @@ struct LearningHubView: View {
     /// offers it directly rather than leaving the reader at a dead end.
     @State private var isTrainingPresented = false
     let completedLessonIDs: Set<String>
+    let lessonAnswerIndices: [String: Int]
     let onStartLesson: (RustLesson) -> Void
     let onCompleteLesson: (RustLesson) -> Void
+    let onAnswerLesson: (RustLesson, Int) -> Void
 
     private let columns = [GridItem(.adaptive(minimum: 260), spacing: 16)]
 
@@ -157,21 +159,29 @@ struct LearningHubView: View {
 
         case let .lesson(lessonID):
             if let lesson = RustCourseCatalog.lesson(id: lessonID) {
+                let isReview = completedLessonIDs.contains(lesson.id)
                 // Vitals gate entry, not the middle of a lesson: being cut off
                 // halfway through a page you already paid for would be worse
                 // than not letting you start.
-                if vitals.isLessonBlocked, !vitals.canStartLessonPage(lessonID: lesson.id, page: 0) {
+                if vitals.isLessonBlocked,
+                   !vitals.canStartLessonPage(
+                       lessonID: lesson.id,
+                       page: 0,
+                       isReview: isReview
+                   ) {
                     LessonPausedView(store: vitals) { isTrainingPresented = true }
                 } else {
-                LessonDetailView(
-                    lesson: lesson,
-                    isCompleted: completedLessonIDs.contains(lesson.id),
-                    onStart: { onStartLesson(lesson) },
-                    onComplete: {
-                        completeAndContinue(from: lesson)
-                    }
-                )
-                .id(lesson.id)
+                    LessonDetailView(
+                        lesson: lesson,
+                        isCompleted: isReview,
+                        savedAnswer: lessonAnswerIndices[lesson.id],
+                        onStart: { onStartLesson(lesson) },
+                        onComplete: {
+                            completeAndContinue(from: lesson)
+                        },
+                        onAnswer: { index, _ in onAnswerLesson(lesson, index) }
+                    )
+                    .id(lesson.id)
                 }
             } else {
                 ContentUnavailableView("Lesson unavailable", systemImage: "book.closed")

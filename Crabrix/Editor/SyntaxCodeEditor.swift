@@ -15,6 +15,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
     @Binding var cursorOffset: Int
     let filePath: String
     let isEditable: Bool
+    let tracksTyping: Bool
     let diagnostics: [RustDiagnostic]
     let navigationTarget: EditorNavigationTarget?
     let onRequestCompletion: () -> Void
@@ -24,6 +25,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         cursorOffset: Binding<Int>,
         filePath: String,
         isEditable: Bool,
+        tracksTyping: Bool = true,
         diagnostics: [RustDiagnostic] = [],
         navigationTarget: EditorNavigationTarget?,
         onRequestCompletion: @escaping () -> Void
@@ -32,6 +34,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         _cursorOffset = cursorOffset
         self.filePath = filePath
         self.isEditable = isEditable
+        self.tracksTyping = tracksTyping
         self.diagnostics = diagnostics
         self.navigationTarget = navigationTarget
         self.onRequestCompletion = onRequestCompletion
@@ -139,7 +142,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             shouldChangeTextIn range: NSRange,
             replacementText text: String
         ) -> Bool {
-            if !text.isEmpty {
+            if parent.tracksTyping, !text.isEmpty {
                 TypingLedger.shared.record(project: parent.filePath, inserted: text)
             }
             return true

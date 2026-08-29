@@ -72,6 +72,24 @@ final class ProjectAuthoringTests: XCTestCase {
         XCTAssertEqual(model.projectName, "review-hello-rust")
         XCTAssertEqual(model.source, RustSamples.runnable)
     }
+
+    func testLessonAnswerAndReviewStateSurviveTheExpectedTransitions() {
+        let suite = "crabrix.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+        let first = CompilerViewModel(userDefaults: defaults)
+
+        first.recordLessonAnswer(2, for: "hello-rust")
+        first.recordLessonAnswer(0, for: "hello-rust")
+        first.beginLesson("hello-rust", isReview: true)
+
+        XCTAssertEqual(first.lessonAnswerIndices["hello-rust"], 2)
+        XCTAssertTrue(first.activeLessonIsReview)
+        XCTAssertFalse(first.earnsProgressForCurrentRun)
+
+        let reopened = CompilerViewModel(userDefaults: defaults)
+        XCTAssertEqual(reopened.lessonAnswerIndices["hello-rust"], 2)
+    }
 }
 
 @MainActor
