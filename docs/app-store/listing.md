@@ -64,7 +64,7 @@ AN EDITOR BUILT FOR A PHONE
 LEARN RUST PROPERLY
 • 142 lessons across six courses: from fn main to unsafe, FFI, and async
 • 142 guided lessons with written explanations and highlighted examples
-• A separate Algorithm Atlas: 20 solution-method chapters, 200 patterns, and 600 ordered steps
+• A separate Algorithm Atlas: 20 independent solution-method chapters, 200 patterns, and 600 steps ordered within their method
 • Every pattern has a mental model, use-case guide, and local Rust challenge
 • Compiler-backed labs across the curriculum use the bundled rustc as evidence
 • Interview preparation that goes past the language: memory, atomics,

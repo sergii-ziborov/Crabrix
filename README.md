@@ -51,7 +51,7 @@ The app embeds:
 - bounded public GitHub snapshot import for repository and branch URLs, Cargo-root discovery, and stored source provenance;
 - an iOS Share Extension that queues GitHub URLs through an App Group and never tries to foreground the host app;
 - six courses covering the language end to end — foundations, ownership, data modelling, abstractions, Cargo projects, smart pointers, concurrency, async, macros, and systems Rust — plus interview prep that reaches past the language into memory, networking, databases, and distributed systems: 142 guided Rust lessons in total;
-- a seventh Algorithms course with 20 solution-method chapters, 200 reusable patterns, and 600 ordered steps on a winding learning path: HOW, WHEN, then a compiler-backed Rust challenge;
+- a seventh Algorithms course with 20 independent solution-method chapters, 200 reusable patterns, and 600 steps ordered inside each method: HOW, WHEN, then a compiler-backed Rust challenge;
 - Quick Practice, Term Train (practice and timed modes, streaks, accuracy), and Code Recall, a memory drill that hides a snippet and asks you to rebuild it — all three generated from the lesson content and scheduled with SM-2 spaced repetition;
 - a rating earned across every part of the app, 36 achievement ladders of five tiers each, with algorithm-category mastery tracked idempotently, a tiered unlock animation, and health/energy that scale with rank — all stored on device;
 - a project library of 20 std-only projects across eight categories, searchable and filterable by difficulty, every one verified to compile and run with the bundled toolchain;

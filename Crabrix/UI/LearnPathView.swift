@@ -5,6 +5,7 @@ struct LearnPathView: View {
     let courseTitle: String
     let courseTheme: RustCourseTheme
     let completedLessonIDs: Set<String>
+    var unlockScope: RustLessonProgression.UnlockScope = .course
     let onOpenLesson: (RustLesson) -> Void
 
     private var completedLessonCount: Int {
@@ -26,10 +27,11 @@ struct LearnPathView: View {
             ?? lessons.first
     }
 
-    private var nextLessonID: String? {
-        RustLessonProgression.nextLessonID(
+    private var readyLessonIDs: Set<String> {
+        RustLessonProgression.readyLessonIDs(
             in: units,
-            completedLessonIDs: completedLessonIDs
+            completedLessonIDs: completedLessonIDs,
+            scope: unlockScope
         )
     }
 
@@ -58,7 +60,7 @@ struct LearnPathView: View {
                     LearningUnitMap(
                         unit: unit,
                         completedLessonIDs: completedLessonIDs,
-                        nextLessonID: nextLessonID,
+                        readyLessonIDs: readyLessonIDs,
                         courseTheme: courseTheme,
                         onOpenLesson: onOpenLesson
                     )
@@ -262,7 +264,7 @@ private struct JourneyMetric: View {
 private struct LearningUnitMap: View {
     let unit: RustLearningUnit
     let completedLessonIDs: Set<String>
-    let nextLessonID: String?
+    let readyLessonIDs: Set<String>
     let courseTheme: RustCourseTheme
     let onOpenLesson: (RustLesson) -> Void
 
@@ -283,10 +285,6 @@ private struct LearningUnitMap: View {
         unit.lessons.filter(isCompleted).count
     }
 
-    private var readyCount: Int {
-        unit.lessons.filter { $0.id == nextLessonID }.count
-    }
-
     /// Names the lesson standing in the way, rather than only refusing.
     private func blockedMessage(for lesson: RustLesson) -> String {
         guard let index = unit.lessons.firstIndex(where: { $0.id == lesson.id }),
@@ -304,8 +302,7 @@ private struct LearningUnitMap: View {
             UnitBanner(
                 unit: unit,
                 palette: palette,
-                completedCount: completedCount,
-                readyCount: readyCount
+                completedCount: completedCount
             )
             .zIndex(2)
 
@@ -357,7 +354,7 @@ private struct LearningUnitMap: View {
 
     private func state(for lesson: RustLesson) -> LessonMapState {
         if isCompleted(lesson) { return .completed }
-        return lesson.id == nextLessonID ? .ready : .locked
+        return readyLessonIDs.contains(lesson.id) ? .ready : .locked
     }
 
     private func isCompleted(_ lesson: RustLesson) -> Bool {
@@ -373,7 +370,6 @@ private struct UnitBanner: View {
     let unit: RustLearningUnit
     let palette: LearningPalette
     let completedCount: Int
-    let readyCount: Int
 
     private var progress: Double {
         guard !unit.lessons.isEmpty else { return 0 }
@@ -405,11 +401,7 @@ private struct UnitBanner: View {
             Spacer(minLength: 8)
 
             VStack(alignment: .trailing, spacing: 6) {
-                Text(
-                    completedCount > 0
-                        ? "\(completedCount)/\(unit.lessons.count)"
-                        : (readyCount > 0 ? "\(readyCount) ready" : "locked")
-                )
+                Text("\(completedCount)/\(unit.lessons.count)")
                     .font(.caption.monospaced().bold())
                 ProgressView(value: progress)
                     .tint(.white)

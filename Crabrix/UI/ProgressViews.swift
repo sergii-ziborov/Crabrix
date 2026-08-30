@@ -220,7 +220,6 @@ struct AchievementRow: View {
 /// Every family, the ones with progress first.
 struct AchievementsSection: View {
     @ObservedObject var store: CrabrixProgressStore
-    @State private var showsAlgorithmAchievements = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 11) {
@@ -240,28 +239,22 @@ struct AchievementsSection: View {
 
                 Divider().overlay(CrabrixTheme.border)
 
-                DisclosureGroup(isExpanded: $showsAlgorithmAchievements) {
-                    VStack(spacing: 14) {
-                        ForEach(sortedAlgorithmFamilies) { family in
-                            AchievementFamilyRow(family: family, state: store.state)
-                        }
-                    }
-                    .padding(.top, 12)
-                } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "point.3.connected.trianglepath.dotted")
-                            .foregroundStyle(CrabrixTheme.indigo)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("ALGORITHM ACHIEVEMENTS")
-                                .font(.caption.monospaced().bold())
-                                .foregroundStyle(CrabrixTheme.primary)
-                            Text("\(store.state.solvedAlgorithmPatternIDs.count)/200 patterns · 20 method ladders")
-                                .font(.caption2)
-                                .foregroundStyle(CrabrixTheme.muted)
-                        }
+                HStack(spacing: 10) {
+                    Image(systemName: "point.3.connected.trianglepath.dotted")
+                        .foregroundStyle(CrabrixTheme.indigo)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("ALGORITHM ACHIEVEMENTS")
+                            .font(.caption.monospaced().bold())
+                            .foregroundStyle(CrabrixTheme.primary)
+                        Text("\(store.state.solvedAlgorithmPatternIDs.count)/200 patterns · 20 independent methods")
+                            .font(.caption2)
+                            .foregroundStyle(CrabrixTheme.muted)
                     }
                 }
-                .tint(CrabrixTheme.indigo)
+
+                ForEach(sortedAlgorithmFamilies) { family in
+                    AchievementFamilyRow(family: family, state: store.state)
+                }
             }
             .padding(15)
             .crabrixPanel(cornerRadius: 16)

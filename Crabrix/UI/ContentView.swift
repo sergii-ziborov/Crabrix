@@ -1067,6 +1067,15 @@ struct ContentView: View {
 
     private func continueLearning() {
         selectedDestination = .learn
+        if let lessonID = model.activeLessonID,
+           AlgorithmCourseCatalog.pattern(forLessonID: lessonID) != nil {
+            if let next = AlgorithmCourseCatalog.nextLessonInSameMethod(after: lessonID) {
+                learningPath = [.course("algorithms"), .lesson(next.id)]
+            } else {
+                learningPath = [.course("algorithms")]
+            }
+            return
+        }
         // Land on the next lesson itself, not on the course list: after finishing
         // something, "what is next" is a specific screen.
         guard let step = RustLessonProgression.nextStep(

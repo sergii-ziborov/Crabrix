@@ -78,9 +78,9 @@ struct AlgorithmChallenge: Equatable, Sendable {
 }
 
 enum AlgorithmCourseCatalog {
-    /// Stable method families presented as Duolingo-style chapters. `categories`
-    /// remains as a compatibility name so saved progress and achievement IDs do
-    /// not change when the learning hierarchy becomes method-first.
+    /// Stable, independent method families. `categories` remains as a
+    /// compatibility name so saved progress and achievement IDs do not change
+    /// when the learning hierarchy becomes method-first.
     static let categories: [AlgorithmCategory] = AlgorithmCourseData.categories
     static let methods: [AlgorithmCategory] = categories
     static let patterns: [AlgorithmPattern] = categories.flatMap(\.patterns)
@@ -143,11 +143,15 @@ enum AlgorithmCourseCatalog {
         pattern(id: patternID)?.categoryID
     }
 
-    static func previousPattern(before patternID: String) -> AlgorithmPattern? {
-        guard let index = patterns.firstIndex(where: { $0.id == patternID }), index > 0 else {
-            return nil
-        }
-        return patterns[patterns.index(before: index)]
+    static func nextLessonInSameMethod(after lessonID: String) -> RustLesson? {
+        guard let pattern = pattern(forLessonID: lessonID),
+              let method = method(id: pattern.categoryID)
+        else { return nil }
+
+        let lessons = method.patterns.flatMap(\.lessons)
+        guard let index = lessons.firstIndex(where: { $0.id == lessonID }) else { return nil }
+        let nextIndex = lessons.index(after: index)
+        return nextIndex < lessons.endIndex ? lessons[nextIndex] : nil
     }
 
     static func writing(for lessonID: String) -> RustLessonWriting? {

@@ -89,25 +89,42 @@ final class AlgorithmCourseCatalogTests: XCTestCase {
         }
     }
 
-    func testAlgorithmMethodPathStaysInsideCompactAndRegularWidths() {
-        for width: CGFloat in [240, 280, 320, 339, 534, 760] {
-            for index in 0..<10 {
-                let labelWidth = AlgorithmMethodPathLayout.labelWidth(for: width)
-                let nodeX = AlgorithmMethodPathLayout.nodeCenterX(width: width, index: index)
-                let labelX = AlgorithmMethodPathLayout.labelCenterX(
-                    width: width,
-                    nodeX: nodeX,
-                    labelWidth: labelWidth,
-                    labelToRight: AlgorithmMethodPathLayout.labelToRight(at: index)
-                )
-                let radius = AlgorithmMethodPathLayout.nodeDiameter / 2
+    func testEveryMethodStartsIndependentlyAndAdvancesOnlyInsideIt() throws {
+        let units = AlgorithmCourseCatalog.units
+        let initiallyReady = RustLessonProgression.readyLessonIDs(
+            in: units,
+            completedLessonIDs: [],
+            scope: .independentUnits
+        )
 
-                XCTAssertGreaterThanOrEqual(nodeX - radius, AlgorithmMethodPathLayout.edgeInset)
-                XCTAssertLessThanOrEqual(nodeX + radius, width - AlgorithmMethodPathLayout.edgeInset)
-                XCTAssertGreaterThanOrEqual(labelX - labelWidth / 2, AlgorithmMethodPathLayout.edgeInset)
-                XCTAssertLessThanOrEqual(labelX + labelWidth / 2, width - AlgorithmMethodPathLayout.edgeInset)
-            }
-        }
+        XCTAssertEqual(initiallyReady.count, units.count)
+        XCTAssertEqual(initiallyReady, Set(units.compactMap { $0.lessons.first?.id }))
+
+        let firstUnit = try XCTUnwrap(units.first)
+        let secondUnit = try XCTUnwrap(units.dropFirst().first)
+        let completed = Set([try XCTUnwrap(firstUnit.lessons.first?.id)])
+        let readyAfterOneLesson = RustLessonProgression.readyLessonIDs(
+            in: units,
+            completedLessonIDs: completed,
+            scope: .independentUnits
+        )
+
+        XCTAssertTrue(readyAfterOneLesson.contains(try XCTUnwrap(firstUnit.lessons.dropFirst().first?.id)))
+        XCTAssertTrue(readyAfterOneLesson.contains(try XCTUnwrap(secondUnit.lessons.first?.id)))
+    }
+
+    func testContinueNeverCrossesFromOneMethodIntoAnother() throws {
+        let firstMethod = try XCTUnwrap(AlgorithmCourseCatalog.methods.first)
+        let firstMethodLessons = firstMethod.patterns.flatMap(\.lessons)
+        let firstLesson = try XCTUnwrap(firstMethodLessons.first)
+        let secondLesson = try XCTUnwrap(firstMethodLessons.dropFirst().first)
+        let lastLesson = try XCTUnwrap(firstMethodLessons.last)
+
+        XCTAssertEqual(
+            AlgorithmCourseCatalog.nextLessonInSameMethod(after: firstLesson.id)?.id,
+            secondLesson.id
+        )
+        XCTAssertNil(AlgorithmCourseCatalog.nextLessonInSameMethod(after: lastLesson.id))
     }
 
     func testCourseThemesAreStableAndUnique() {

@@ -1,6 +1,14 @@
 import Foundation
 
 enum RustLessonProgression {
+    enum UnlockScope: Sendable {
+        /// One continuous course: only the first unfinished lesson is ready.
+        case course
+        /// Every unit is its own learning path: the first unfinished lesson in
+        /// each unit is ready, and completing one unit never gates another.
+        case independentUnits
+    }
+
     static func lessons(in units: [RustLearningUnit]) -> [RustLesson] {
         units.flatMap(\.lessons)
     }
@@ -12,6 +20,26 @@ enum RustLessonProgression {
         lessons(in: units)
             .first(where: { !completedLessonIDs.contains($0.id) })?
             .id
+    }
+
+    static func readyLessonIDs(
+        in units: [RustLearningUnit],
+        completedLessonIDs: Set<String>,
+        scope: UnlockScope
+    ) -> Set<String> {
+        switch scope {
+        case .course:
+            return Set(
+                nextLessonID(in: units, completedLessonIDs: completedLessonIDs)
+                    .map { [$0] } ?? []
+            )
+        case .independentUnits:
+            return Set(
+                units.compactMap { unit in
+                    unit.lessons.first { !completedLessonIDs.contains($0.id) }?.id
+                }
+            )
+        }
     }
 
     static func completedCount(

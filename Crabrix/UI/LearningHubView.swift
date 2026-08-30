@@ -135,22 +135,16 @@ struct LearningHubView: View {
         switch route {
         case let .course(courseID):
             if let course = RustCourseCatalog.course(id: courseID) {
-                if course.id == "algorithms" {
-                    AlgorithmsCourseView(
-                        completedLessonIDs: completedLessonIDs,
-                        onOpenLesson: { lesson in navigationPath.append(.lesson(lesson.id)) }
-                    )
-                } else {
-                    LearnPathView(
-                        units: course.units,
-                        courseTitle: course.title,
-                        courseTheme: course.theme,
-                        completedLessonIDs: completedLessonIDs,
-                        onOpenLesson: { lesson in
-                            navigationPath.append(.lesson(lesson.id))
-                        }
-                    )
-                }
+                LearnPathView(
+                    units: course.units,
+                    courseTitle: course.title,
+                    courseTheme: course.theme,
+                    completedLessonIDs: completedLessonIDs,
+                    unlockScope: course.id == "algorithms" ? .independentUnits : .course,
+                    onOpenLesson: { lesson in
+                        navigationPath.append(.lesson(lesson.id))
+                    }
+                )
             } else {
                 ContentUnavailableView("Course unavailable", systemImage: "book.closed")
             }
@@ -210,6 +204,14 @@ struct LearningHubView: View {
     private func completeAndContinue(from lesson: RustLesson) {
         onCompleteLesson(lesson)
         let completed = completedLessonIDs.union([lesson.id])
+        if AlgorithmCourseCatalog.pattern(forLessonID: lesson.id) != nil {
+            if let next = AlgorithmCourseCatalog.nextLessonInSameMethod(after: lesson.id) {
+                navigationPath = [.course("algorithms"), .lesson(next.id)]
+            } else {
+                navigationPath = [.course("algorithms")]
+            }
+            return
+        }
         guard let step = RustLessonProgression.nextStep(
             after: lesson.id,
             completedLessonIDs: completed
