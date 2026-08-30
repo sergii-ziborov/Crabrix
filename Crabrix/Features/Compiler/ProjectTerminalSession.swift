@@ -18,19 +18,24 @@ final class ProjectTerminalSession: ObservableObject {
     @Published var command = ""
     @Published private(set) var lines: [Line] = []
     @Published private(set) var projectName = ""
+    @Published private(set) var projectID: UUID?
 
-    private var buffers: [String: [Line]] = [:]
-    private var resultSignatures: [String: String] = [:]
-    private var workingDirectories: [String: String] = [:]
-    private var directoryBuffers: [String: Set<String>] = [:]
+    private var buffers: [UUID: [Line]] = [:]
+    private var resultSignatures: [UUID: String] = [:]
+    private var workingDirectories: [UUID: String] = [:]
+    private var directoryBuffers: [UUID: Set<String>] = [:]
 
     func attach(to project: CrabrixProject) {
-        guard projectName != project.name else { return }
-        if !projectName.isEmpty { buffers[projectName] = lines }
+        guard projectID != project.id else {
+            projectName = project.name
+            return
+        }
+        if let projectID { buffers[projectID] = lines }
+        projectID = project.id
         projectName = project.name
-        workingDirectories[project.name, default: ""] = workingDirectories[project.name] ?? ""
-        directoryBuffers[project.name, default: []].formUnion(Self.directories(in: project.files))
-        if let stored = buffers[project.name] {
+        workingDirectories[project.id, default: ""] = workingDirectories[project.id] ?? ""
+        directoryBuffers[project.id, default: []].formUnion(Self.directories(in: project.files))
+        if let stored = buffers[project.id] {
             lines = stored
         } else {
             lines = [
@@ -40,7 +45,7 @@ final class ProjectTerminalSession: ObservableObject {
                 ),
                 Line(text: "Type help to see available commands.", kind: .info),
             ]
-            buffers[project.name] = lines
+            buffers[project.id] = lines
         }
         command = ""
     }
@@ -143,7 +148,7 @@ final class ProjectTerminalSession: ObservableObject {
             )
         case "clear":
             lines = []
-            buffers[projectName] = []
+            buffers[project.id] = []
         default:
             append("\(components[0]): command is not available in the iOS project sandbox", kind: .error)
             append("Type help for Crabrix project commands.", kind: .info)
@@ -172,8 +177,8 @@ final class ProjectTerminalSession: ObservableObject {
             result.stderr,
             result.detail,
         ].joined(separator: "|")
-        guard resultSignatures[project.name] != signature else { return }
-        resultSignatures[project.name] = signature
+        guard resultSignatures[project.id] != signature else { return }
+        resultSignatures[project.id] = signature
 
         let status = result.succeeded ? "finished successfully" : "failed"
         append(
@@ -277,7 +282,7 @@ final class ProjectTerminalSession: ObservableObject {
     }
 
     private var currentDirectory: String {
-        workingDirectories[projectName] ?? ""
+        projectID.flatMap { workingDirectories[$0] } ?? ""
     }
 
     private static let availableCommands: Set<String> = [
@@ -373,7 +378,7 @@ final class ProjectTerminalSession: ObservableObject {
     }
 
     private func allDirectories(project: CrabrixProject) -> Set<String> {
-        Self.directories(in: project.files).union(directoryBuffers[project.name] ?? [])
+        Self.directories(in: project.files).union(directoryBuffers[project.id] ?? [])
     }
 
     private func displayPath(_ path: String, project: CrabrixProject) -> String {
@@ -474,7 +479,7 @@ final class ProjectTerminalSession: ObservableObject {
             append("cd: \(rawPath): No such directory", kind: .error)
             return
         }
-        workingDirectories[project.name] = path
+        workingDirectories[project.id] = path
     }
 
     private func runTree(arguments: [String], project: CrabrixProject) {
@@ -747,7 +752,7 @@ final class ProjectTerminalSession: ObservableObject {
             return
         }
 
-        directoryBuffers[project.name] = directories.union(Self.directories(in: files))
+        directoryBuffers[project.id] = directories.union(Self.directories(in: files))
         if onReplaceFiles(files, selectedFile) {
             append("Project snapshot updated.", kind: .success)
         } else {
@@ -757,6 +762,6 @@ final class ProjectTerminalSession: ObservableObject {
 
     private func append(_ text: String, kind: Line.Kind) {
         lines.append(Line(text: text, kind: kind))
-        buffers[projectName] = lines
+        if let projectID { buffers[projectID] = lines }
     }
 }

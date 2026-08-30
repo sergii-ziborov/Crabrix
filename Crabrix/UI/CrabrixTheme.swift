@@ -66,11 +66,40 @@ enum CrabrixTheme {
     static let mint = Color(red: 0.42, green: 0.83, blue: 0.66)
     static let blue = Color(red: 0.41, green: 0.70, blue: 1.0)
     static let amber = Color(red: 0.95, green: 0.72, blue: 0.34)
+    static let violet = Color(red: 0.67, green: 0.45, blue: 0.98)
+    static let cyan = Color(red: 0.25, green: 0.82, blue: 0.82)
+    static let indigo = Color(red: 0.45, green: 0.49, blue: 1.0)
 
     private static func adaptive(light: UIColor, dark: UIColor) -> Color {
         Color(uiColor: UIColor { traits in
             traits.userInterfaceStyle == .dark ? dark : light
         })
+    }
+}
+
+extension RustCourseTheme {
+    var primaryColor: Color {
+        switch self {
+        case .basics: CrabrixTheme.mint
+        case .ownership: CrabrixTheme.coral
+        case .projects: CrabrixTheme.blue
+        case .concurrency: CrabrixTheme.amber
+        case .systems: CrabrixTheme.violet
+        case .interview: CrabrixTheme.cyan
+        case .algorithms: CrabrixTheme.indigo
+        }
+    }
+
+    var secondaryColor: Color {
+        switch self {
+        case .basics: Color(red: 0.20, green: 0.61, blue: 0.55)
+        case .ownership: Color(red: 0.82, green: 0.22, blue: 0.27)
+        case .projects: Color(red: 0.25, green: 0.48, blue: 0.94)
+        case .concurrency: Color(red: 0.84, green: 0.45, blue: 0.14)
+        case .systems: Color(red: 0.43, green: 0.32, blue: 0.82)
+        case .interview: Color(red: 0.08, green: 0.58, blue: 0.64)
+        case .algorithms: Color(red: 0.29, green: 0.30, blue: 0.78)
+        }
     }
 }
 

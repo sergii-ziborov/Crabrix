@@ -235,14 +235,17 @@ final class RustQuestionBankTests: XCTestCase {
         XCTAssertEqual(Set(topics).count, topics.count)
     }
 
-    func testEveryLessonContributesAQuestion() {
-        // Practice is derived from lesson writing, so a lesson without content
-        // vanishes from Quick Practice silently instead of failing loudly.
-        let lessons = RustCourseCatalog.courses.flatMap { $0.units.flatMap(\.lessons) }
+    func testEveryLanguageLessonContributesAQuestion() {
+        // Algorithms deliberately has its own 600-step drill. General Quick
+        // Practice stays balanced across the Rust-language courses.
+        let lessons = RustCourseCatalog.courses
+            .filter { $0.id != "algorithms" }
+            .flatMap { $0.units.flatMap(\.lessons) }
         let covered = Set(RustQuestionBank.topics)
         let missing = lessons.map(\.id).filter { !covered.contains($0) }
         XCTAssertTrue(missing.isEmpty, "lessons with no question: \(missing)")
         XCTAssertEqual(RustQuestionBank.all.count, lessons.count)
+        XCTAssertFalse(RustQuestionBank.topics.contains { $0.hasPrefix("algorithm.") })
     }
 
     func testEveryQuestionCarriesTheSnippetItAsksAbout() {

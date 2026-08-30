@@ -44,6 +44,7 @@ struct BuildDockView<CodeContent: View>: View {
     let onFetch: () -> Void
     let onCancel: () -> Void
     let canContinueLearning: Bool
+    let lessonEvidenceMessage: String?
     /// What the last successful run was scored on, so the reward is explained
     /// rather than appearing from nowhere.
     let contribution: CodeContribution?
@@ -67,6 +68,7 @@ struct BuildDockView<CodeContent: View>: View {
         onFetch: @escaping () -> Void,
         onCancel: @escaping () -> Void,
         canContinueLearning: Bool,
+        lessonEvidenceMessage: String?,
         contribution: CodeContribution?,
         onOpenDiagnostic: @escaping (RustDiagnostic) -> Void,
         diagnosticAdviceState: RustDiagnosticAdviceState,
@@ -87,6 +89,7 @@ struct BuildDockView<CodeContent: View>: View {
         self.onFetch = onFetch
         self.onCancel = onCancel
         self.canContinueLearning = canContinueLearning
+        self.lessonEvidenceMessage = lessonEvidenceMessage
         self.contribution = contribution
         self.onOpenDiagnostic = onOpenDiagnostic
         self.diagnosticAdviceState = diagnosticAdviceState
@@ -165,6 +168,7 @@ struct BuildDockView<CodeContent: View>: View {
                     activity: activity,
                     canStartBuild: canStartBuild,
                     canContinueLearning: canContinueLearning,
+                    lessonEvidenceMessage: lessonEvidenceMessage,
                     contribution: contribution,
                     onRun: onRun,
                     onCancel: onCancel,
@@ -318,10 +322,15 @@ private struct OutputDockContent: View {
     let activity: CompilerViewModel.Activity
     let canStartBuild: Bool
     let canContinueLearning: Bool
+    let lessonEvidenceMessage: String?
     let contribution: CodeContribution?
     let onRun: () -> Void
     let onCancel: () -> Void
     let onContinueLearning: () -> Void
+
+    private var parsedOutput: ParsedRustCanvasOutput? {
+        result.map { RustCanvasOutput.parse($0.stdout) }
+    }
 
     var body: some View {
         ScrollView {
@@ -342,10 +351,14 @@ private struct OutputDockContent: View {
                             systemImage: "exclamationmark.triangle.fill"
                         )
                     }
-                    if !result.stdout.isEmpty {
+                    if let frame = parsedOutput?.frame {
+                        RustCanvasPreview(frame: frame)
+                    }
+                    if let plainText = parsedOutput?.plainText,
+                       !plainText.isEmpty {
                         OutputStreamBlock(
                             label: "STDOUT",
-                            text: result.stdout,
+                            text: plainText,
                             tint: CrabrixTheme.mint,
                             systemImage: "arrow.right.circle.fill"
                         )
@@ -356,6 +369,18 @@ private struct OutputDockContent: View {
                             text: result.stderr,
                             tint: CrabrixTheme.coral,
                             systemImage: "exclamationmark.octagon.fill"
+                        )
+                    }
+                    if result.phase == .run, let lessonEvidenceMessage {
+                        Label(
+                            lessonEvidenceMessage,
+                            systemImage: canContinueLearning
+                                ? "checkmark.seal.fill"
+                                : "exclamationmark.triangle.fill"
+                        )
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(
+                            canContinueLearning ? CrabrixTheme.mint : CrabrixTheme.amber
                         )
                     }
                     runButton
@@ -440,6 +465,96 @@ private struct OutputDockContent: View {
         .tint(activity == .running ? CrabrixTheme.amber : CrabrixTheme.coral)
         .disabled(activity == .checking || (activity == .idle && !canStartBuild))
         .frame(maxWidth: 320)
+    }
+}
+
+private struct RustCanvasPreview: View {
+    let frame: RustCanvasFrame
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Label("VISUAL OUTPUT", systemImage: "paintpalette.fill")
+                    .font(.system(
+                        size: 9,
+                        weight: .bold,
+                        design: .monospaced
+                    ))
+                    .foregroundStyle(CrabrixTheme.blue)
+                Spacer()
+                Text("\(frame.width) × \(frame.height)")
+                    .font(.caption2.monospaced())
+                    .foregroundStyle(CrabrixTheme.muted)
+            }
+
+            Text(frame.title)
+                .font(.headline)
+
+            Canvas { context, size in
+                let cellWidth = size.width / CGFloat(frame.width)
+                let cellHeight = size.height / CGFloat(frame.height)
+                for row in 0..<frame.height {
+                    for column in 0..<frame.width {
+                        let pixel = frame.pixels[
+                            row * frame.width + column
+                        ]
+                        let rect = CGRect(
+                            x: CGFloat(column) * cellWidth,
+                            y: CGFloat(row) * cellHeight,
+                            width: cellWidth + 0.5,
+                            height: cellHeight + 0.5
+                        )
+                        context.fill(
+                            Path(rect),
+                            with: .color(
+                                Color(
+                                    crabrixHex: frame.palette[pixel]
+                                )
+                            )
+                        )
+                    }
+                }
+            }
+            .aspectRatio(
+                CGFloat(frame.width) / CGFloat(frame.height),
+                contentMode: .fit
+            )
+            .frame(maxWidth: 460, maxHeight: 420)
+            .clipShape(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(CrabrixTheme.border)
+            }
+            .accessibilityLabel(
+                "\(frame.title), \(frame.width) by \(frame.height) pixel canvas"
+            )
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            CrabrixTheme.blue.opacity(0.08),
+            in: RoundedRectangle(cornerRadius: 12)
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(CrabrixTheme.blue.opacity(0.3))
+        }
+    }
+}
+
+private extension Color {
+    init(crabrixHex value: String) {
+        let hex = String(value.dropFirst())
+        let number = UInt64(hex, radix: 16) ?? 0
+        self.init(
+            .sRGB,
+            red: Double((number >> 16) & 0xFF) / 255,
+            green: Double((number >> 8) & 0xFF) / 255,
+            blue: Double(number & 0xFF) / 255,
+            opacity: 1
+        )
     }
 }
 

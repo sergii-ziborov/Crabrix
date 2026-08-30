@@ -121,12 +121,18 @@ struct CargoWorkspaceSnapshot: Sendable, Equatable {
 enum CargoPackageManagerError: LocalizedError {
     case noManifest
     case offlineWithoutLockfile
+    case virtualWorkspace
+    case rootRustVersionTooNew(required: String, bundled: String)
 
     var errorDescription: String? {
         switch self {
         case .noManifest: "This project has no Cargo.toml to resolve."
         case .offlineWithoutLockfile:
             "Crabrix could not reach crates.io and this project has no cached packages to build from."
+        case .virtualWorkspace:
+            "This Cargo.toml is a virtual workspace. Choose a package member before building."
+        case let .rootRustVersionTooNew(required, bundled):
+            "This project requires Rust \(required), newer than bundled rustc \(bundled)."
         }
     }
 }
@@ -157,10 +163,32 @@ actor CargoPackageManager {
     func prepare(
         manifestSource: String,
         lockfileSource: String? = nil,
+        mode: CargoResolutionMode = .normal,
         onStage: (@Sendable (CargoPreparationStage) -> Void)? = nil
     ) async throws -> CargoWorkspaceSnapshot {
         let manifest = try CratePackageManifest.parse(manifestSource)
-        let registryDependencies = manifest.registryDependencies(for: target)
+        guard !manifest.isVirtualWorkspace else {
+            throw CargoPackageManagerError.virtualWorkspace
+        }
+        if let rustVersion = manifest.rustVersion {
+            guard let required = SemanticVersion(rustVersion),
+                  required <= CargoToolchain.semanticVersion
+            else {
+                throw CargoPackageManagerError.rootRustVersionTooNew(
+                    required: rustVersion,
+                    bundled: CargoToolchain.semanticVersionLabel
+                )
+            }
+        }
+        let parsedLockfile: CargoLockfile?
+        if mode == .update {
+            parsedLockfile = nil
+        } else if let lockfileSource {
+            parsedLockfile = try CargoLockfile.parseValidated(lockfileSource)
+        } else {
+            if mode.requiresLockfile { throw CargoLockfileError.missing }
+            parsedLockfile = nil
+        }
         let unresolved = manifest.dependencies
             .filter { $0.kind == .normal && !$0.isRegistry }
             .map { dependency -> String in
@@ -171,30 +199,28 @@ actor CargoPackageManager {
                 }
             }
 
-        guard !registryDependencies.filter(\.isRegistry).isEmpty else {
-            onStage?(.ready)
-            return CargoWorkspaceSnapshot(
-                packages: [],
-                plan: .empty,
-                warnings: [],
-                lockfile: lockfileSource,
-                isOfflineReady: true,
-                unresolvedDependencies: unresolved
-            )
-        }
-
         onStage?(.resolving)
         let resolver = CargoResolver(index: index, target: target)
+        let rootName = manifest.packageName.isEmpty ? "project" : manifest.packageName
+        let rootVersion = manifest.version ?? SemanticVersion(major: 0, minor: 1, patch: 0)
         let graph = try await resolver.resolve(
             rootDependencies: manifest.dependencies,
-            rootFeatures: manifest.features
+            rootFeatures: manifest.features,
+            rootPackageName: rootName,
+            rootPackageVersion: rootVersion,
+            lockfile: parsedLockfile,
+            mode: mode
         )
 
         var materialized: [PackageID: MaterializedCrate] = [:]
         let ordered = graph.buildOrder
         for (offset, id) in ordered.enumerated() {
             guard let package = graph.packages[id] else { continue }
-            let alreadyOnDisk = store.isMaterialized(name: id.name, version: id.version)
+            let alreadyOnDisk = store.isMaterialized(
+                name: id.name,
+                version: id.version,
+                checksum: package.checksum
+            )
             if !alreadyOnDisk {
                 onStage?(
                     .downloading(name: id.name, index: offset + 1, total: ordered.count)
@@ -203,11 +229,16 @@ actor CargoPackageManager {
             materialized[id] = try await store.materialize(
                 name: id.name,
                 version: id.version,
-                checksum: package.checksum
+                checksum: package.checksum,
+                allowNetwork: !mode.prohibitsNetwork
             )
         }
 
-        let plan = buildPlan(graph: graph, materialized: materialized)
+        let plan = buildPlan(
+            graph: graph,
+            materialized: materialized,
+            resolverVersion: manifest.resolverVersion
+        )
         let statuses = self.statuses(
             graph: graph,
             materialized: materialized,
@@ -215,8 +246,8 @@ actor CargoPackageManager {
         )
         let lockfile = CargoLockfile(
             graph: graph,
-            rootName: manifest.packageName.isEmpty ? "project" : manifest.packageName,
-            rootVersion: manifest.version?.description ?? "0.1.0"
+            rootName: rootName,
+            rootVersion: rootVersion.description
         ).render()
 
         onStage?(.ready)
@@ -234,7 +265,8 @@ actor CargoPackageManager {
 
     private func buildPlan(
         graph: ResolvedGraph,
-        materialized: [PackageID: MaterializedCrate]
+        materialized: [PackageID: MaterializedCrate],
+        resolverVersion: CargoResolverVersion
     ) -> CargoBuildPlan {
         var fingerprints: [PackageID: String] = [:]
         var units: [CargoBuildUnit] = []
@@ -261,13 +293,20 @@ actor CargoPackageManager {
                 .sorted { $0.alias < $1.alias }
 
             let fingerprint = CargoFingerprint.compute(
-                toolchainVersion: toolchainVersion,
+                toolchainID: toolchainVersion,
+                toolchainArtifactHash: CargoToolchain.artifactIdentity,
+                toolchainSemanticVersion: CargoToolchain.semanticVersionLabel,
+                compilerFlags: CargoFingerprint.dependencyCompilerFlags,
+                targetTriple: target.triple,
+                resolverVersion: resolverVersion,
+                packageSource: CargoLockfile.registrySource,
                 package: id,
                 checksum: package.checksum,
+                crateName: crate.manifest.libraryCrateName,
                 edition: crate.manifest.edition,
                 features: package.sortedFeatures,
                 libraryPath: libraryPath,
-                dependencyFingerprints: externs.map(\.fingerprint)
+                dependencies: externs
             )
             fingerprints[id] = fingerprint
 

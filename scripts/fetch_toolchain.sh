@@ -12,9 +12,23 @@ RUSTC_ARCHIVE="rustc-wasm.tar.zst"
 SYSROOT_ARCHIVE="wasip1-sysroot.tar.zst"
 RUSTC_SHA="a96f6d53afff3c95d6387def27f6ddb53a02575679dc6c981d60797c32dcd022"
 SYSROOT_SHA="4eedff7b0cd4330bfe226734b67751a97fac5572ac55392e93f9d3e4886a277d"
+RUSTC_FILE_SHA="41412081eefc3e08ec5664ed0748902a7e575e1f267898dcc64d412702df7e83"
+SYSROOT_MANIFEST_SHA="a89ba732c649a983126750112268614c80b6e7d6bba8c60980cbfd32e04d9892"
 BASE_URL="https://github.com/AngelOnFira/wasm-rustc/releases/download/$TOOLCHAIN_TAG"
 
+verify_installed_toolchain() {
+  local root="$1"
+  [[ -f "$root/rustc.wasm" ]] || return 1
+  [[ -f "$root/sysroot-wasip1/manifest.json" ]] || return 1
+  [[ "$(shasum -a 256 "$root/rustc.wasm" | awk '{print $1}')" == "$RUSTC_FILE_SHA" ]] || return 1
+  [[ "$(shasum -a 256 "$root/sysroot-wasip1/manifest.json" | awk '{print $1}')" == "$SYSROOT_MANIFEST_SHA" ]] || return 1
+}
+
 if [[ -f "$MARKER" && -f "$VERSION_DIR/rustc.wasm" && -d "$VERSION_DIR/sysroot-wasip1" ]]; then
+  if ! verify_installed_toolchain "$VERSION_DIR"; then
+    echo "Pinned toolchain files do not match their release hashes: $VERSION_DIR" >&2
+    exit 1
+  fi
   exit 0
 fi
 
@@ -84,6 +98,10 @@ trap cleanup EXIT
 
 if [[ ! -f "$STAGING/rustc.wasm" || ! -d "$STAGING/sysroot-wasip1/lib/rustlib/wasm32-wasip1" ]]; then
   echo "Pinned toolchain archive has an unexpected layout" >&2
+  exit 1
+fi
+if ! verify_installed_toolchain "$STAGING"; then
+  echo "Extracted toolchain files do not match their pinned hashes" >&2
   exit 1
 fi
 

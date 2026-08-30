@@ -1,18 +1,10 @@
 import Foundation
 
-/// How much of a project was actually typed, as opposed to pasted or imported.
-///
-/// Rating is meant to reward writing Rust, not producing it. A project typed by
-/// hand and the same project pasted in one go produce an identical diff, so the
-/// diff alone cannot tell them apart — this can.
+/// How much of each durable project was typed instead of pasted/imported.
+/// Keys are ProjectID + file path; pending rewards are also project-scoped so
+/// switching workspaces cannot drain another project's input.
 final class TypingLedger: @unchecked Sendable {
     static let shared = TypingLedger()
-
-    /// An insertion longer than this did not come from the keyboard.
-    ///
-    /// The accessory row inserts short fragments like `&mut ` and completion
-    /// accepts a signature, so the line is drawn above a keystroke and well
-    /// below a paste rather than at exactly one character.
     static let typedInsertionLimit = 12
 
     private struct Counts: Codable {
@@ -20,89 +12,94 @@ final class TypingLedger: @unchecked Sendable {
         var bulk = 0
     }
 
+    private struct State: Codable {
+        var filesByProject: [String: [String: Counts]] = [:]
+        var pendingByProject: [String: Int] = [:]
+    }
+
     private let lock = NSLock()
     private let defaults: UserDefaults
-    private static let storageKey = "crabrix.typing.v1"
-    private static let pendingKey = "crabrix.typing.pending.v1"
-    private var cache: [String: Counts]?
+    private static let storageKey = "crabrix.typing.v2"
+    private var cache: State?
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
     }
 
-    /// Records one insertion.
-    ///
-    /// - Parameter text: exactly what was inserted, so the length can classify it.
-    func record(project: String, inserted text: String) {
+    func record(projectID: UUID, filePath: String, inserted text: String) {
         let count = text.count
         guard count > 0 else { return }
 
         lock.lock()
         defer { lock.unlock() }
-        var counts = loadLocked()
-        var entry = counts[project] ?? Counts()
+        var state = loadLocked()
+        let projectKey = projectID.uuidString.lowercased()
+        var files = state.filesByProject[projectKey] ?? [:]
+        var entry = files[filePath] ?? Counts()
         if count <= Self.typedInsertionLimit {
             entry.typed += count
-            defaults.set(pendingLocked() + count, forKey: Self.pendingKey)
+            state.pendingByProject[projectKey, default: 0] += count
         } else {
             entry.bulk += count
         }
-        counts[project] = entry
-        cache = counts
-        persistLocked(counts)
+        files[filePath] = entry
+        state.filesByProject[projectKey] = files
+        cache = state
+        persistLocked(state)
     }
 
-    /// 0…1: the share of this project's characters that were typed.
-    ///
-    /// A project with no record at all returns 0.5 rather than 0 — an imported
-    /// repository is not cheating, it simply predates any typing.
-    func typedShare(project: String) -> Double {
+    /// Aggregates every file in one ProjectID. An unseen imported project is
+    /// neutral rather than treated as pasted code.
+    func typedShare(projectID: UUID) -> Double {
         lock.lock()
         defer { lock.unlock() }
-        guard let entry = loadLocked()[project] else { return 0.5 }
-        let total = entry.typed + entry.bulk
+        let key = projectID.uuidString.lowercased()
+        guard let files = loadLocked().filesByProject[key] else { return 0.5 }
+        let typed = files.values.reduce(0) { $0 + $1.typed }
+        let bulk = files.values.reduce(0) { $0 + $1.bulk }
+        let total = typed + bulk
         guard total > 0 else { return 0.5 }
-        return Double(entry.typed) / Double(total)
+        return Double(typed) / Double(total)
     }
 
-    /// Typed characters not yet turned into rating, taken and cleared.
-    func drainPendingTyped() -> Int {
+    func drainPendingTyped(projectID: UUID) -> Int {
         lock.lock()
         defer { lock.unlock() }
-        let pending = pendingLocked()
-        defaults.set(0, forKey: Self.pendingKey)
+        var state = loadLocked()
+        let key = projectID.uuidString.lowercased()
+        let pending = state.pendingByProject.removeValue(forKey: key) ?? 0
+        cache = state
+        persistLocked(state)
         return pending
     }
 
-    var pendingTyped: Int {
+    func pendingTyped(projectID: UUID) -> Int {
         lock.lock()
         defer { lock.unlock() }
-        return pendingLocked()
+        return loadLocked().pendingByProject[projectID.uuidString.lowercased()] ?? 0
     }
 
     func reset() {
         lock.lock()
         defer { lock.unlock() }
-        cache = [:]
+        cache = State()
         defaults.removeObject(forKey: Self.storageKey)
-        defaults.removeObject(forKey: Self.pendingKey)
     }
 
-    private func pendingLocked() -> Int { defaults.integer(forKey: Self.pendingKey) }
-
-    private func loadLocked() -> [String: Counts] {
+    private func loadLocked() -> State {
         if let cache { return cache }
         guard let data = defaults.data(forKey: Self.storageKey),
-              let decoded = try? JSONDecoder().decode([String: Counts].self, from: data)
+              let decoded = try? JSONDecoder().decode(State.self, from: data)
         else {
-            cache = [:]
-            return [:]
+            let empty = State()
+            cache = empty
+            return empty
         }
         cache = decoded
         return decoded
     }
 
-    private func persistLocked(_ value: [String: Counts]) {
+    private func persistLocked(_ value: State) {
         guard let data = try? JSONEncoder().encode(value) else { return }
         defaults.set(data, forKey: Self.storageKey)
     }

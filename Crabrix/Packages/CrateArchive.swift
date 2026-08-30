@@ -23,6 +23,7 @@ enum CrateArchiveError: LocalizedError, Equatable {
     case archiveTooLarge
     case tooManyEntries
     case unsafePath(String)
+    case duplicatePath(String)
     case unsupportedEntry(String)
 
     var errorDescription: String? {
@@ -39,6 +40,8 @@ enum CrateArchiveError: LocalizedError, Equatable {
             "The package archive contains more files than Crabrix extracts."
         case let .unsafePath(path):
             "The package archive contains an unsafe path: \(path)"
+        case let .duplicatePath(path):
+            "The package archive contains a duplicate or colliding path: \(path)"
         case let .unsupportedEntry(path):
             "The package archive contains an unsupported entry: \(path)"
         }
@@ -206,25 +209,48 @@ enum TarArchiveReader {
         var totalBytes = 0
         /// GNU long-name records set the path used by the following entry.
         var pendingLongName: String?
+        var foundEndMarker = false
+        var rawPaths: Set<String> = []
 
         while offset + 512 <= data.count {
             let header = data.subdata(in: offset..<(offset + 512))
             offset += 512
-            if header.allSatisfy({ $0 == 0 }) { break }
+            if header.allSatisfy({ $0 == 0 }) {
+                guard offset + 512 <= data.count,
+                      data[offset..<(offset + 512)].allSatisfy({ $0 == 0 })
+                else {
+                    throw CrateArchiveError.corruptArchive("missing second tar end marker")
+                }
+                offset += 512
+                guard data[offset...].allSatisfy({ $0 == 0 }) else {
+                    throw CrateArchiveError.corruptArchive("non-zero bytes after tar end marker")
+                }
+                foundEndMarker = true
+                break
+            }
+
+            guard headerChecksumIsValid(header) else {
+                throw CrateArchiveError.corruptArchive("tar header checksum mismatch")
+            }
 
             guard let rawName = string(in: header, at: 0, length: 100) else {
                 throw CrateArchiveError.corruptArchive("unreadable entry name")
             }
-            guard let sizeField = string(in: header, at: 124, length: 12),
-                  let size = octal(sizeField)
-            else {
+            guard let size = numericField(in: header, at: 124, length: 12) else {
                 throw CrateArchiveError.corruptArchive("unreadable entry size")
             }
             let typeFlag = header[header.startIndex + 156]
             let prefix = string(in: header, at: 345, length: 155) ?? ""
 
+            guard size >= 0, size <= Int.max - 511 else {
+                throw CrateArchiveError.archiveTooLarge
+            }
             let padded = (size + 511) / 512 * 512
-            guard offset + size <= data.count else {
+            guard
+                  padded >= size,
+                  offset <= data.count - size,
+                  offset <= data.count - padded
+            else {
                 throw CrateArchiveError.corruptArchive("truncated entry body")
             }
             let body = data.subdata(in: offset..<(offset + size))
@@ -232,15 +258,26 @@ enum TarArchiveReader {
 
             // GNU long name / long link records carry the next entry's path.
             if typeFlag == UInt8(ascii: "L") {
-                pendingLongName = String(decoding: body, as: UTF8.self)
-                    .trimmingCharacters(in: CharacterSet(charactersIn: "\0"))
+                guard pendingLongName == nil,
+                      body.last == 0,
+                      let decoded = String(data: body.dropLast(), encoding: .utf8),
+                      !decoded.isEmpty,
+                      !decoded.contains("\0")
+                else {
+                    throw CrateArchiveError.corruptArchive("invalid GNU long-name record")
+                }
+                pendingLongName = decoded
                 continue
             }
-            if typeFlag == UInt8(ascii: "K") { continue }
-            // Directories and PAX metadata carry nothing Crabrix needs.
-            if typeFlag == UInt8(ascii: "5")
-                || typeFlag == UInt8(ascii: "x")
-                || typeFlag == UInt8(ascii: "g") {
+            if typeFlag == UInt8(ascii: "K") {
+                throw CrateArchiveError.unsupportedEntry("GNU long-link metadata")
+            }
+            // PAX can override paths and sizes. Until those records are parsed,
+            // rejecting them is safer than silently using the ustar header.
+            if typeFlag == UInt8(ascii: "x") || typeFlag == UInt8(ascii: "g") {
+                throw CrateArchiveError.unsupportedEntry("PAX metadata")
+            }
+            if typeFlag == UInt8(ascii: "5") {
                 pendingLongName = nil
                 continue
             }
@@ -252,6 +289,9 @@ enum TarArchiveReader {
             // Anything that is not a plain file could point outside the sandbox.
             guard typeFlag == 0 || typeFlag == UInt8(ascii: "0") else {
                 throw CrateArchiveError.unsupportedEntry(name)
+            }
+            guard rawPaths.insert(name).inserted else {
+                throw CrateArchiveError.duplicatePath(name)
             }
             guard size <= limits.maximumFileBytes else {
                 throw CrateArchiveError.archiveTooLarge
@@ -266,6 +306,12 @@ enum TarArchiveReader {
                 throw CrateArchiveError.tooManyEntries
             }
         }
+        guard foundEndMarker else {
+            throw CrateArchiveError.corruptArchive("truncated tar end marker")
+        }
+        guard pendingLongName == nil else {
+            throw CrateArchiveError.corruptArchive("orphaned GNU long-name record")
+        }
         return files
     }
 
@@ -275,16 +321,47 @@ enum TarArchiveReader {
         guard start + length <= header.endIndex else { return nil }
         var bytes = [UInt8](header[start..<(start + length)])
         if let terminator = bytes.firstIndex(of: 0) { bytes = Array(bytes[..<terminator]) }
-        return String(decoding: bytes, as: UTF8.self)
-            .trimmingCharacters(in: .whitespaces)
+        guard let value = String(bytes: bytes, encoding: .utf8) else { return nil }
+        return value.trimmingCharacters(in: .whitespaces)
     }
 
-    /// Tar sizes are octal text, except for GNU's base-256 form for large files.
-    private static func octal(_ field: String) -> Int? {
-        let trimmed = field.trimmingCharacters(in: .whitespaces)
+    /// Tar numeric fields are octal text or GNU base-256. Sizes must be
+    /// non-negative and fit in the host's Int without wrapping.
+    private static func numericField(
+        in header: Data,
+        at offset: Int,
+        length: Int
+    ) -> Int? {
+        let start = header.startIndex + offset
+        guard start + length <= header.endIndex else { return nil }
+        let bytes = [UInt8](header[start..<(start + length)])
+        if let first = bytes.first, first & 0x80 != 0 {
+            // The high bit marks base-256; the next bit is the sign bit.
+            guard first & 0x40 == 0 else { return nil }
+            var value: UInt64 = UInt64(first & 0x3f)
+            for byte in bytes.dropFirst() {
+                guard value <= (UInt64.max - UInt64(byte)) / 256 else { return nil }
+                value = value * 256 + UInt64(byte)
+            }
+            guard value <= UInt64(Int.max) else { return nil }
+            return Int(value)
+        }
+        guard let text = String(bytes: bytes, encoding: .ascii) else { return nil }
+        let trimmed = text.trimmingCharacters(in: CharacterSet(charactersIn: " \0"))
         if trimmed.isEmpty { return 0 }
-        guard let value = Int(trimmed, radix: 8), value >= 0 else { return nil }
+        guard trimmed.allSatisfy({ ("0"..."7").contains($0) }),
+              let value = Int(trimmed, radix: 8),
+              value >= 0
+        else { return nil }
         return value
+    }
+
+    private static func headerChecksumIsValid(_ header: Data) -> Bool {
+        guard let expected = numericField(in: header, at: 148, length: 8) else { return false }
+        var bytes = [UInt8](header)
+        guard bytes.count == 512 else { return false }
+        for index in 148..<156 { bytes[index] = 0x20 }
+        return bytes.reduce(0) { $0 + Int($1) } == expected
     }
 
     /// Strips the mandatory `name-version/` root and rejects unsafe paths.

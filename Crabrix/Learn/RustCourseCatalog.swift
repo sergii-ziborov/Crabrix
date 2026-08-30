@@ -1,11 +1,22 @@
 import Foundation
 
+enum RustCourseTheme: String, Sendable {
+    case basics
+    case ownership
+    case projects
+    case concurrency
+    case systems
+    case interview
+    case algorithms
+}
+
 struct RustCourse: Identifiable, Sendable {
     let id: String
     let level: String
     let title: String
     let subtitle: String
     let systemImage: String
+    let theme: RustCourseTheme
     let units: [RustLearningUnit]
 }
 
@@ -15,9 +26,19 @@ enum RustCourseCatalog {
             id: "basics",
             level: "BEGINNER",
             title: "Rust Basics",
-            subtitle: "Syntax, types, control flow, and your first compiled programs",
+            subtitle: "A gradual path from the first line to small, reliable programs",
             systemImage: "leaf.fill",
-            units: units("foundations", "modeling")
+            theme: .basics,
+            units: units("foundations", "expressions-flow", "small-programs", "modeling")
+        ),
+        RustCourse(
+            id: "algorithms",
+            level: "EASY → HARD",
+            title: "Algorithms",
+            subtitle: "200 reusable patterns, each taught twice and then proved in a Rust challenge",
+            systemImage: "point.3.connected.trianglepath.dotted",
+            theme: .algorithms,
+            units: AlgorithmCourseCatalog.units
         ),
         RustCourse(
             id: "ownership",
@@ -25,7 +46,11 @@ enum RustCourseCatalog {
             title: "Ownership Mastery",
             subtitle: "Borrowing, lifetimes, traits, iterators, and compiler-guided repair",
             systemImage: "link.circle.fill",
-            units: units("ownership", "abstraction")
+            theme: .ownership,
+            units: units(
+                "ownership", "abstraction",
+                "ownership-practice", "abstraction-practice"
+            )
         ),
         RustCourse(
             id: "projects",
@@ -33,7 +58,11 @@ enum RustCourseCatalog {
             title: "Cargo & Real Projects",
             subtitle: "Modules, testing, error design, dependencies, and smart pointers",
             systemImage: "shippingbox.fill",
-            units: units("projects", "pointers")
+            theme: .projects,
+            units: units(
+                "projects", "pointers",
+                "cargo-workflow", "project-quality"
+            )
         ),
         RustCourse(
             id: "concurrency",
@@ -41,7 +70,11 @@ enum RustCourseCatalog {
             title: "Concurrency & Async",
             subtitle: "Threads, channels, shared state, and async/await",
             systemImage: "arrow.triangle.branch",
-            units: units("threads", "async")
+            theme: .concurrency,
+            units: units(
+                "threads", "async",
+                "concurrency-safety", "async-reliability"
+            )
         ),
         RustCourse(
             id: "systems",
@@ -49,7 +82,11 @@ enum RustCourseCatalog {
             title: "Macros & Systems Rust",
             subtitle: "Metaprogramming, unsafe, FFI, performance, and idioms",
             systemImage: "cpu.fill",
-            units: units("meta", "systems")
+            theme: .systems,
+            units: units(
+                "meta", "systems",
+                "macro-design", "unsafe-engineering"
+            )
         ),
         RustCourse(
             id: "interview",
@@ -57,7 +94,8 @@ enum RustCourseCatalog {
             title: "Rust Interview Prep",
             subtitle: "Explain the hard ideas clearly and practice common interview questions",
             systemImage: "person.wave.2.fill",
-            units: interviewUnits
+            theme: .interview,
+            units: interviewUnits + RustAdvancedExpansion.interviewUnits
         ),
     ]
 
@@ -79,6 +117,10 @@ enum RustCourseCatalog {
             .flatMap(\.units)
             .flatMap(\.lessons)
             .first { $0.id == id }
+    }
+
+    static var lessonCount: Int {
+        courses.flatMap(\.units).flatMap(\.lessons).count
     }
 
     private static func units(_ ids: String...) -> [RustLearningUnit] {

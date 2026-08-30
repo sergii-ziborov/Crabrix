@@ -38,7 +38,7 @@ struct LearningHubView: View {
     let lessonAnswerIndices: [String: Int]
     let onStartLesson: (RustLesson) -> Void
     let onCompleteLesson: (RustLesson) -> Void
-    let onAnswerLesson: (RustLesson, Int) -> Void
+    let onAnswerLesson: (RustLesson, Int, Bool) -> Void
 
     private let columns = [GridItem(.adaptive(minimum: 260), spacing: 16)]
 
@@ -47,11 +47,6 @@ struct LearningHubView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     hero
-
-                    NavigationLink(value: LearningRoute.profile) {
-                        RatingSummaryCard(store: progress)
-                    }
-                    .buttonStyle(.plain)
                     VitalsCard(store: vitals) { navigationPath = []; isTrainingPresented = true }
                     WeakTopicsCard { topic in
                         guard let lesson = RustCourseCatalog.lesson(id: topic),
@@ -112,15 +107,13 @@ struct LearningHubView: View {
                     }
 
                     LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(Array(RustCourseCatalog.courses.enumerated()), id: \.element.id) { index, course in
+                        ForEach(RustCourseCatalog.courses) { course in
                             NavigationLink(value: LearningRoute.course(course.id)) {
-                                CourseCard(course: course, tint: tint(at: index))
+                                CourseCard(course: course)
                             }
                             .buttonStyle(.plain)
                         }
                     }
-
-                    AchievementsSection(store: progress)
                 }
                 .padding(22)
                 .frame(maxWidth: 920)
@@ -142,14 +135,22 @@ struct LearningHubView: View {
         switch route {
         case let .course(courseID):
             if let course = RustCourseCatalog.course(id: courseID) {
-                LearnPathView(
-                    units: course.units,
-                    courseTitle: course.title,
-                    completedLessonIDs: completedLessonIDs,
-                    onOpenLesson: { lesson in
-                        navigationPath.append(.lesson(lesson.id))
-                    }
-                )
+                if course.id == "algorithms" {
+                    AlgorithmsCourseView(
+                        completedLessonIDs: completedLessonIDs,
+                        onOpenLesson: { lesson in navigationPath.append(.lesson(lesson.id)) }
+                    )
+                } else {
+                    LearnPathView(
+                        units: course.units,
+                        courseTitle: course.title,
+                        courseTheme: course.theme,
+                        completedLessonIDs: completedLessonIDs,
+                        onOpenLesson: { lesson in
+                            navigationPath.append(.lesson(lesson.id))
+                        }
+                    )
+                }
             } else {
                 ContentUnavailableView("Course unavailable", systemImage: "book.closed")
             }
@@ -179,7 +180,9 @@ struct LearningHubView: View {
                         onComplete: {
                             completeAndContinue(from: lesson)
                         },
-                        onAnswer: { index, _ in onAnswerLesson(lesson, index) }
+                        onAnswer: { index, correct in
+                            onAnswerLesson(lesson, index, correct)
+                        }
                     )
                     .id(lesson.id)
                 }
@@ -234,7 +237,7 @@ struct LearningHubView: View {
                         .minimumScaleFactor(0.6)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
-                    Text("Short explanations, compiler-checked labs, and a visible next step.")
+                    Text("Short explanations, compiler-backed labs across the curriculum, and a visible next step.")
                         .foregroundStyle(CrabrixTheme.muted)
                 }
                 Spacer(minLength: 0)
@@ -251,6 +254,13 @@ struct LearningHubView: View {
                 ProgressView(value: Double(completedLessonCount), total: Double(max(totalLessonCount, 1)))
                     .tint(CrabrixTheme.mint)
             }
+
+            Divider().overlay(CrabrixTheme.border)
+
+            NavigationLink(value: LearningRoute.profile) {
+                ratingStrip
+            }
+            .buttonStyle(.plain)
         }
         .padding(20)
         .background(
@@ -262,6 +272,54 @@ struct LearningHubView: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay { RoundedRectangle(cornerRadius: 20).stroke(CrabrixTheme.border) }
+    }
+
+    private var ratingStrip: some View {
+        let rank = progress.rank
+        return HStack(spacing: 12) {
+            Image(systemName: rank.systemImage)
+                .font(.headline)
+                .foregroundStyle(CrabrixTheme.amber)
+                .frame(width: 38, height: 38)
+                .background(
+                    CrabrixTheme.amber.opacity(0.14),
+                    in: RoundedRectangle(cornerRadius: 11)
+                )
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text("RATING")
+                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                    .foregroundStyle(CrabrixTheme.muted)
+                Text(CrabrixPointsFormatter.string(progress.state.totalPoints))
+                    .font(.title3.bold())
+                    .monospacedDigit()
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(rank.title)
+                    .font(.subheadline.bold())
+                    .foregroundStyle(CrabrixTheme.mint)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                ProgressView(value: rank.progress(points: progress.state.totalPoints))
+                    .tint(CrabrixTheme.amber)
+                Text("\(progress.earnedAchievements.count)/\(CrabrixAchievementCatalog.all.count) achievements")
+                    .font(.caption2.monospaced())
+                    .foregroundStyle(CrabrixTheme.muted)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Image(systemName: "chevron.right")
+                .font(.caption.bold())
+                .foregroundStyle(CrabrixTheme.muted)
+        }
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            "Rating \(progress.state.totalPoints), rank \(rank.title). Open profile."
+        )
     }
 
     private var totalLessonCount: Int {
@@ -278,9 +336,6 @@ struct LearningHubView: View {
         return Int((Double(completedLessonCount) / Double(totalLessonCount) * 100).rounded())
     }
 
-    private func tint(at index: Int) -> Color {
-        [CrabrixTheme.mint, CrabrixTheme.coral, CrabrixTheme.blue, CrabrixTheme.amber][index % 4]
-    }
 }
 
 private struct LearningPracticeCard: View {
@@ -325,9 +380,9 @@ private struct LearningPracticeCard: View {
 
 private struct CourseCard: View {
     let course: RustCourse
-    let tint: Color
 
     private var lessonCount: Int { course.units.flatMap(\.lessons).count }
+    private var tint: Color { course.theme.primaryColor }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -356,8 +411,14 @@ private struct CourseCard: View {
             Spacer(minLength: 0)
 
             HStack {
-                Label("\(course.units.count) units", systemImage: "square.stack.3d.up.fill")
-                Label("\(lessonCount) lessons", systemImage: "checklist")
+                Label(
+                    course.id == "algorithms" ? "200 patterns" : "\(course.units.count) units",
+                    systemImage: "square.stack.3d.up.fill"
+                )
+                Label(
+                    course.id == "algorithms" ? "600 steps" : "\(lessonCount) lessons",
+                    systemImage: "checklist"
+                )
                 Spacer()
                 Image(systemName: "arrow.right.circle.fill")
                     .font(.title3)

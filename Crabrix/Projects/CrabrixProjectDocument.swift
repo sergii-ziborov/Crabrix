@@ -25,16 +25,26 @@ struct CrabrixProjectDocument: FileDocument {
         }
         let files = try Self.readFiles(from: configuration.file)
         guard !files.isEmpty else { throw LocalProjectLoader.ProjectError.noReadableSource }
+        let metadata = try Self.readMetadata(from: configuration.file)
         let manifest = files["Cargo.toml"].flatMap(CargoManifest.parse)
-        let entry = ["src/main.rs", "main.rs", "src/lib.rs", "lib.rs"]
+        let inferredEntry = ["src/main.rs", "main.rs", "src/lib.rs", "lib.rs"]
             .first(where: { files[$0] != nil })
             ?? files.keys.sorted().first(where: { $0.hasSuffix(".rs") })
             ?? "main.rs"
         project = CrabrixProject(
-            name: manifest?.name ?? "Crabrix Project",
+            id: metadata?.projectID ?? UUID(),
+            name: metadata.flatMap { $0.name.isEmpty ? nil : $0.name }
+                ?? manifest?.name
+                ?? "Crabrix Project",
             files: files,
-            entryFile: entry,
-            provenance: nil
+            entryFile: metadata.flatMap { files[$0.entryFile] == nil ? nil : $0.entryFile }
+                ?? inferredEntry,
+            provenance: metadata?.provenance,
+            projectDescription: metadata?.projectDescription ?? "",
+            tags: metadata?.tags ?? [],
+            folder: metadata?.folder,
+            kind: metadata?.kind ?? .general,
+            isFavorite: metadata?.isFavorite ?? false
         )
     }
 
@@ -47,16 +57,14 @@ struct CrabrixProjectDocument: FileDocument {
         for (path, source) in project.files.sorted(by: { $0.key < $1.key }) {
             try Self.add(data: Data(source.utf8), at: path, to: root)
         }
-        if let provenance = project.provenance {
-            let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .iso8601
-            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-            try Self.add(
-                data: encoder.encode(provenance),
-                at: ".crabrix/project.json",
-                to: root
-            )
-        }
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        try Self.add(
+            data: encoder.encode(CrabrixProject.PackageMetadata(project: project)),
+            at: ".crabrix/project.json",
+            to: root
+        )
         return root
     }
 
@@ -94,6 +102,37 @@ struct CrabrixProjectDocument: FileDocument {
             }
         }
         return result
+    }
+
+    private static func readMetadata(
+        from root: FileWrapper
+    ) throws -> CrabrixProject.PackageMetadata? {
+        guard let metadataDirectory = root.fileWrappers?[".crabrix"],
+              let metadataFile = metadataDirectory.fileWrappers?["project.json"],
+              let data = metadataFile.regularFileContents
+        else { return nil }
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        if let metadata = try? decoder.decode(CrabrixProject.PackageMetadata.self, from: data) {
+            return metadata
+        }
+
+        // Version 0 contained provenance directly and no identity.
+        if let provenance = try? decoder.decode(CrabrixProject.Provenance.self, from: data) {
+            return CrabrixProject.PackageMetadata(
+                projectID: UUID(),
+                name: "Crabrix Project",
+                entryFile: "",
+                provenance: provenance,
+                projectDescription: nil,
+                tags: nil,
+                folder: nil,
+                kind: nil,
+                isFavorite: nil
+            )
+        }
+        throw CocoaError(.fileReadCorruptFile)
     }
 }
 

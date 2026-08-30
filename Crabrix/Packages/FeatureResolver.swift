@@ -51,8 +51,10 @@ enum FeatureResolver {
     static func expand(
         requested: Set<String>,
         featureTable: [String: [String]],
-        optionalDependencyAliases: Set<String>
-    ) -> Expansion {
+        optionalDependencyAliases: Set<String>,
+        dependencyAliases: Set<String>,
+        packageName: String
+    ) throws -> Expansion {
         var expansion = Expansion()
         /// `dep?/feature` only applies once the dependency is active, so those
         /// requests are held back until the fixed point settles.
@@ -72,7 +74,14 @@ enum FeatureResolver {
             guard seen.insert(feature).inserted else { continue }
 
             if feature.hasPrefix("dep:") {
-                expansion.activatedAliases.insert(String(feature.dropFirst(4)))
+                let alias = String(feature.dropFirst(4))
+                guard optionalDependencyAliases.contains(alias) else {
+                    throw CargoResolutionError.unknownFeatureDependency(
+                        package: packageName,
+                        dependency: alias
+                    )
+                }
+                expansion.activatedAliases.insert(alias)
                 continue
             }
             if let slash = feature.firstIndex(of: "/") {
@@ -80,6 +89,12 @@ enum FeatureResolver {
                 let child = String(feature[feature.index(after: slash)...])
                 let isWeak = alias.hasSuffix("?")
                 if isWeak { alias.removeLast() }
+                guard dependencyAliases.contains(alias), !child.isEmpty else {
+                    throw CargoResolutionError.unknownFeatureDependency(
+                        package: packageName,
+                        dependency: alias
+                    )
+                }
                 if isWeak {
                     weakRequests.append((alias, child))
                 } else {
@@ -100,10 +115,12 @@ enum FeatureResolver {
                 // feature of the same name that turns it on.
                 expansion.features.insert(feature)
                 expansion.activatedAliases.insert(feature)
+            } else if feature != "default" {
+                throw CargoResolutionError.unknownFeature(
+                    package: packageName,
+                    feature: feature
+                )
             }
-            // A name the crate does not declare is not a feature. Cargo errors
-            // here; Crabrix drops it so a hand-edited manifest still builds, and
-            // so an undeclared name never reaches rustc as a `--cfg`.
         }
 
         for request in weakRequests where expansion.activatedAliases.contains(request.alias) {
@@ -140,12 +157,15 @@ enum FeatureResolver {
     static func rootEdges(
         for dependencies: [ManifestDependency],
         featureTable: [String: [String]],
-        enabledFeatures: Set<String>
-    ) -> [Edge] {
-        let expansion = expand(
+        enabledFeatures: Set<String>,
+        packageName: String
+    ) throws -> [Edge] {
+        let expansion = try expand(
             requested: enabledFeatures,
             featureTable: featureTable,
-            optionalDependencyAliases: Set(dependencies.filter(\.isOptional).map(\.alias))
+            optionalDependencyAliases: Set(dependencies.filter(\.isOptional).map(\.alias)),
+            dependencyAliases: Set(dependencies.map(\.alias)),
+            packageName: packageName
         )
         return edges(for: dependencies, expansion: expansion)
     }

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-29T23:33:12Z",
+  "status": "pending-physical-device-run",
+  "requiredScenarios": [
+    "cold package resolution",
+    "interrupted download and extraction",
+    "first dependency compile",
+    "warm rebuild",
+    "offline locked rebuild",
+    "cache corruption recovery",
+    "low-disk failure"
+  ],
+  "measurements": []
+}

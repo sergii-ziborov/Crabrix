@@ -20,7 +20,12 @@ struct RustLessonWriting: Sendable {
 }
 
 enum RustLessonLibrary {
-    static func writing(for id: String) -> RustLessonWriting? { entries[id] }
+    static func writing(for id: String) -> RustLessonWriting? {
+        entries[id]
+            ?? RustBasicsExpansion.writing[id]
+            ?? RustAdvancedExpansion.writing[id]
+            ?? AlgorithmCourseCatalog.writing(for: id)
+    }
 
     private static let entries: [String: RustLessonWriting] = [
         "hello-rust": RustLessonWriting(

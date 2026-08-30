@@ -178,7 +178,8 @@ enum TermTrainDeck {
         TermTrainPair(id: "non-exhaustive", term: "non_exhaustive", description: "Forces a wildcard arm so adding a variant is not a breaking change.", topic: "q-api-design"),
         TermTrainPair(id: "release-build", term: "Release build", description: "The only build whose timings are worth comparing.", topic: "q-perf-profiling"),
         TermTrainPair(id: "abi", term: "ABI", description: "The binary contract two compiled languages agree on.", topic: "q-ffi-abi"),
-    ]
+    ] + RustBasicsExpansion.termPairs
+        + RustAdvancedExpansion.termPairs
 
     /// A fresh board, excluding anything already on screen.
     ///

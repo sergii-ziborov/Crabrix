@@ -39,8 +39,32 @@ struct WasmProcessResult: Sendable {
     let stderr: String
 }
 
-/// Raised when a guest is stopped on purpose rather than failing on its own.
-struct WasmExecutionCancelled: Error, Sendable {}
+enum WasmStopReason: Sendable, Equatable {
+    case userRequested
+    case instructionBudget
+    case wallClock
+    case outputLimit
+    case fileCountLimit
+    case writableBytesLimit
+}
+
+/// Raised when a guest is stopped by the user or by a sandbox quota rather
+/// than failing on its own. Captured output is retained for an honest result.
+struct WasmExecutionCancelled: Error, Sendable {
+    let reason: WasmStopReason
+    let stdout: String
+    let stderr: String
+
+    init(
+        reason: WasmStopReason,
+        stdout: String = "",
+        stderr: String = ""
+    ) {
+        self.reason = reason
+        self.stdout = stdout
+        self.stderr = stderr
+    }
+}
 
 /// Owns the WasmKit engine and the parsed modules that every rustc invocation
 /// shares.
@@ -83,6 +107,10 @@ final class RustcRuntime: @unchecked Sendable {
         cachedProgramModules[key] = module
     }
 
+    func clearProgramModules() {
+        cachedProgramModules.removeAll(keepingCapacity: false)
+    }
+
     /// Runs a WASI module to completion, capturing stdout and stderr.
     func run(
         module: Module,
@@ -92,7 +120,9 @@ final class RustcRuntime: @unchecked Sendable {
         captureDirectory: URL,
         capturePrefix: String,
         resourceLimiter: (any ResourceLimiter)? = nil,
-        interrupter: WasmInterrupter? = nil
+        instructionLimiter: (any InstructionLimiter)? = nil,
+        interrupter: WasmInterrupter? = nil,
+        capturedOutputLimitBytes: Int? = nil
     ) throws -> WasmProcessResult {
         let capture = try Capture(directory: captureDirectory, prefix: capturePrefix)
         var exitCode: UInt32 = 0
@@ -108,6 +138,7 @@ final class RustcRuntime: @unchecked Sendable {
             exitCode = try wasi.runAndClose { wasi in
                 let store = Store(engine: engine())
                 if let resourceLimiter { store.resourceLimiter = resourceLimiter }
+                store.instructionLimiter = instructionLimiter
                 var imports = Imports()
                 wasi.link(to: &imports, store: store)
                 interrupter?.wrapHostFunctions(of: wasi, into: &imports, store: store)
@@ -117,9 +148,15 @@ final class RustcRuntime: @unchecked Sendable {
         } catch {
             thrown = error
         }
-        let output = try capture.finish()
+        let output = try capture.finish(maxBytesPerStream: capturedOutputLimitBytes)
         if let thrown {
-            if interrupter?.wasCancelled == true { throw WasmExecutionCancelled() }
+            if let reason = interrupter?.stopReason {
+                throw WasmExecutionCancelled(
+                    reason: reason,
+                    stdout: output.stdout,
+                    stderr: output.stderr
+                )
+            }
             throw RustcRuntimeFailure(underlying: thrown, stdout: output.stdout, stderr: output.stderr)
         }
         return WasmProcessResult(exitCode: exitCode, stdout: output.stdout, stderr: output.stderr)
@@ -141,12 +178,25 @@ final class RustcRuntime: @unchecked Sendable {
             stderrHandle = try FileHandle(forWritingTo: stderrURL)
         }
 
-        func finish() throws -> (stdout: String, stderr: String) {
+        func finish(maxBytesPerStream: Int?) throws -> (stdout: String, stderr: String) {
             try? stdoutHandle.close()
             try? stderrHandle.close()
-            let stdout = String(decoding: (try? Data(contentsOf: stdoutURL)) ?? Data(), as: UTF8.self)
-            let stderr = String(decoding: (try? Data(contentsOf: stderrURL)) ?? Data(), as: UTF8.self)
+            let stdout = String(
+                decoding: Self.read(url: stdoutURL, limit: maxBytesPerStream),
+                as: UTF8.self
+            )
+            let stderr = String(
+                decoding: Self.read(url: stderrURL, limit: maxBytesPerStream),
+                as: UTF8.self
+            )
             return (stdout, stderr)
+        }
+
+        private static func read(url: URL, limit: Int?) -> Data {
+            guard let limit else { return (try? Data(contentsOf: url)) ?? Data() }
+            guard let handle = try? FileHandle(forReadingFrom: url) else { return Data() }
+            defer { try? handle.close() }
+            return (try? handle.read(upToCount: max(0, limit))) ?? Data()
         }
     }
 }
@@ -158,61 +208,45 @@ struct RustcRuntimeFailure: Error, @unchecked Sendable {
     let stderr: String
 }
 
-/// Stops a running guest.
-///
-/// WasmKit 0.3.1 exposes no engine-level interruption, so Crabrix wraps every
-/// WASI host function the guest imports. A cancelled build traps the moment the
-/// guest makes its next syscall, which for `rustc` is continuous file I/O and
-/// for a user program is any print or file access. The one case this cannot
-/// reach is a guest that spins without ever calling into the host; that is
-/// tracked as a known limitation rather than papered over with a fake timeout.
+/// Stops a running guest. Host calls are guarded here; pure-compute code is
+/// guarded by `WasmInstructionBudgetLimiter` through the vendored WasmKit
+/// instruction-boundary hook.
 final class WasmInterrupter: @unchecked Sendable {
-    private let flag = AtomicFlag()
+    private let state = AtomicStopState()
 
-    var wasCancelled: Bool { flag.isSet }
+    var wasCancelled: Bool { state.reason != nil }
+    var stopReason: WasmStopReason? { state.reason }
 
-    func cancel() { flag.set() }
+    func cancel(reason: WasmStopReason = .userRequested) {
+        state.cancel(reason: reason)
+    }
 
     /// Re-defines each WASI import as a guard that checks cancellation first.
     func wrapHostFunctions(of wasi: WASIBridgeToHost, into imports: inout Imports, store: Store) {
-        let flag = flag
-        // `hostModules` is WasmKit's deprecated bridge, but it is the only public
-        // way to reach the WASI implementations and re-export them wrapped.
-        for (moduleName, module) in Self.hostModules(of: wasi) {
-            for (name, function) in module.functions {
-                let implementation = function.implementation
-                imports.define(
-                    module: moduleName,
-                    name: name,
-                    Function(store: store, type: function.type) { caller, values in
-                        if flag.isSet { throw WasmExecutionCancelled() }
-                        return try implementation(caller, values)
-                    }
-                )
+        let state = state
+        wasi.link(to: &imports, store: store) {
+            if let reason = state.reason {
+                throw WasmExecutionCancelled(reason: reason)
             }
         }
     }
-
-    @available(*, deprecated)
-    private static func hostModules(of wasi: WASIBridgeToHost) -> [String: HostModule] {
-        wasi.hostModules
-    }
 }
 
-/// A lock-backed flag; the compiler queue and the UI thread both touch it.
-final class AtomicFlag: @unchecked Sendable {
+/// A lock-backed first-writer-wins stop state. The compiler queue, limiter,
+/// quota monitor, and UI thread may all touch it concurrently.
+final class AtomicStopState: @unchecked Sendable {
     private let lock = NSLock()
-    private var value = false
+    private var storedReason: WasmStopReason?
 
-    var isSet: Bool {
+    var reason: WasmStopReason? {
         lock.lock()
         defer { lock.unlock() }
-        return value
+        return storedReason
     }
 
-    func set() {
+    func cancel(reason: WasmStopReason) {
         lock.lock()
-        value = true
+        if storedReason == nil { storedReason = reason }
         lock.unlock()
     }
 }

@@ -93,6 +93,32 @@ final class CargoLockfileTests: XCTestCase {
         XCTAssertEqual(parsed.entries.count, 1)
         XCTAssertEqual(parsed.entries[0].name, "itoa")
     }
+
+    func testRejectsUnsupportedRegistrySourceAndMalformedChecksum() {
+        XCTAssertThrowsError(try CargoLockfile.parseValidated("""
+        version = 4
+
+        [[package]]
+        name = "forked"
+        version = "1.0.0"
+        source = "git+https://example.com/forked"
+        """)) { error in
+            XCTAssertEqual(
+                error as? CargoLockfileError,
+                .sourceMismatch(package: "forked 1.0.0")
+            )
+        }
+
+        XCTAssertThrowsError(try CargoLockfile.parseValidated("""
+        version = 4
+
+        [[package]]
+        name = "broken"
+        version = "1.0.0"
+        source = "registry+https://github.com/rust-lang/crates.io-index"
+        checksum = "short"
+        """))
+    }
 }
 
 final class CargoFingerprintTests: XCTestCase {
@@ -102,16 +128,23 @@ final class CargoFingerprintTests: XCTestCase {
         edition: String = "2021",
         features: [String] = ["default"],
         libraryPath: String = "src/lib.rs",
-        dependencies: [String] = []
+        dependencies: [CargoExtern] = []
     ) -> String {
         CargoFingerprint.compute(
-            toolchainVersion: "artifacts-test-7",
+            toolchainID: "artifacts-test-7",
+            toolchainArtifactHash: "toolchain-hash",
+            toolchainSemanticVersion: "1.96.0-dev",
+            compilerFlags: CargoFingerprint.dependencyCompilerFlags,
+            targetTriple: "wasm32-wasip1",
+            resolverVersion: .v3,
+            packageSource: CargoLockfile.registrySource,
             package: PackageID(name: "demo", version: SemanticVersion(version)!),
             checksum: checksum,
+            crateName: "demo",
             edition: edition,
             features: features,
             libraryPath: libraryPath,
-            dependencyFingerprints: dependencies
+            dependencies: dependencies
         )
     }
 
@@ -131,7 +164,29 @@ final class CargoFingerprintTests: XCTestCase {
         XCTAssertNotEqual(base, fingerprint(features: ["default", "std"]))
         XCTAssertNotEqual(base, fingerprint(libraryPath: "src/other.rs"))
         // A rebuilt dependency has to invalidate everything that links it.
-        XCTAssertNotEqual(base, fingerprint(dependencies: ["0123456789abcdef"]))
+        XCTAssertNotEqual(
+            base,
+            fingerprint(dependencies: [
+                CargoExtern(alias: "dep", crateName: "dep", fingerprint: "0123456789abcdef"),
+            ])
+        )
+    }
+
+    func testChangesWhenDependencyAliasChanges() {
+        let dependency = CargoExtern(
+            alias: "foo",
+            crateName: "bar",
+            fingerprint: "0123456789abcdef"
+        )
+        let renamed = CargoExtern(
+            alias: "bar",
+            crateName: "bar",
+            fingerprint: "0123456789abcdef"
+        )
+        XCTAssertNotEqual(
+            fingerprint(dependencies: [dependency]),
+            fingerprint(dependencies: [renamed])
+        )
     }
 
     func testExternFileNamesMatchTheArtifactLayout() {

@@ -1,25 +1,31 @@
 import SwiftUI
 
 struct ProjectsHomeView: View {
+    let projectID: UUID
     let projectName: String
     let fileCount: Int
     let lastBuild: ProjectBuildRecord?
     let activity: CompilerViewModel.Activity
     let isCompilerDraining: Bool
     let recentProjects: [ProjectLibraryItem]
+    let allProjects: [ProjectLibraryItem]
     let onOpenCurrentProject: () -> Void
     let onNewProject: () -> Void
     let onOpenGitHub: () -> Void
     let onOpenFiles: () -> Void
-    let onSaveProject: () -> Void
-    let onArchiveProject: () -> Void
     let onOpenRecent: (UUID) -> Void
     let onOpenShowcase: (String) -> Void
     let onOpenLibrary: () -> Void
+    let onOpenMyProjects: () -> Void
     let onOpenProgress: () -> Void
 
     @EnvironmentObject private var progress: CrabrixProgressStore
     @EnvironmentObject private var vitals: CrabrixVitalsStore
+
+    @State private var projectQuery = ""
+    @State private var selectedProjectFolder: String?
+    @State private var selectedProjectTag: String?
+    @State private var favoritesOnly = false
 
     private let columns = [GridItem(.adaptive(minimum: 210), spacing: 14)]
 
@@ -29,6 +35,7 @@ struct ProjectsHomeView: View {
                 brandHeader
                 progressStrip
                 hero
+                projectBrowser
                 newProjectBanner
                 LazyVGrid(columns: columns, spacing: 14) {
                     ProjectActionCard(
@@ -45,45 +52,8 @@ struct ProjectsHomeView: View {
                         tint: CrabrixTheme.mint,
                         action: onOpenFiles
                     )
-                    ProjectActionCard(
-                        title: "Save Project to Cloud / Files",
-                        detail: "Keep an editable Crabrix package in iCloud Drive or on device",
-                        systemImage: "square.and.arrow.down.fill",
-                        tint: CrabrixTheme.amber,
-                        action: onSaveProject
-                    )
-                    ProjectActionCard(
-                        title: "Archive & Share",
-                        detail: "Create a standard ZIP for AirDrop, Messages, Mail, or Files",
-                        systemImage: "archivebox.fill",
-                        tint: CrabrixTheme.coral,
-                        action: onArchiveProject
-                    )
                 }
-
                 libraryBanner
-
-                sectionTitle("Recent Projects", detail: "Stored locally on this device")
-                if recentProjects.isEmpty {
-                    Text("Projects you open or build will appear here.")
-                        .foregroundStyle(CrabrixTheme.muted)
-                        .padding(18)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .crabrixPanel()
-                } else {
-                    LazyVStack(spacing: 10) {
-                        ForEach(recentProjects) { item in
-                            Button { onOpenRecent(item.id) } label: {
-                                RecentProjectRow(
-                                    item: item,
-                                    activity: item.project.name == projectName ? activity : .idle,
-                                    isCompilerDraining: item.project.name == projectName && isCompilerDraining
-                                )
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
 
             }
             .padding(22)
@@ -125,6 +95,190 @@ struct ProjectsHomeView: View {
         }
         .buttonStyle(.plain)
         .accessibilityHint("Opens the full project catalogue")
+    }
+
+    private var projectBrowser: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
+                Image(systemName: "folder.fill")
+                    .font(.headline)
+                    .foregroundStyle(CrabrixTheme.blue)
+                    .frame(width: 38, height: 38)
+                    .background(
+                        CrabrixTheme.blue.opacity(0.13),
+                        in: RoundedRectangle(cornerRadius: 11)
+                    )
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("My Projects")
+                        .font(.headline)
+                    Text("\(allProjects.count) saved · \(projectFolderCount) folders")
+                        .font(.caption2.monospaced())
+                        .foregroundStyle(CrabrixTheme.muted)
+                }
+                Spacer(minLength: 0)
+                Button("Manage", action: onOpenMyProjects)
+                    .font(.caption.bold())
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+            }
+
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(CrabrixTheme.muted)
+                TextField("Search projects, folders, or tags", text: $projectQuery)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                if !projectQuery.isEmpty {
+                    Button {
+                        projectQuery = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(CrabrixTheme.muted)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Clear project search")
+                }
+            }
+            .padding(.horizontal, 11)
+            .frame(height: 38)
+            .background(CrabrixTheme.raised, in: RoundedRectangle(cornerRadius: 11))
+            .overlay {
+                RoundedRectangle(cornerRadius: 11)
+                    .stroke(CrabrixTheme.border)
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 7) {
+                    HomeProjectFilterChip(
+                        title: "All",
+                        systemImage: "tray.full.fill",
+                        isSelected: !favoritesOnly
+                            && selectedProjectFolder == nil
+                            && selectedProjectTag == nil
+                    ) {
+                        favoritesOnly = false
+                        selectedProjectFolder = nil
+                        selectedProjectTag = nil
+                    }
+                    HomeProjectFilterChip(
+                        title: "Favorites",
+                        systemImage: "star.fill",
+                        isSelected: favoritesOnly
+                    ) {
+                        favoritesOnly.toggle()
+                    }
+                    ForEach(projectFolders, id: \.self) { folder in
+                        HomeProjectFilterChip(
+                            title: folder,
+                            systemImage: "folder.fill",
+                            isSelected: selectedProjectFolder == folder
+                        ) {
+                            favoritesOnly = false
+                            selectedProjectFolder = selectedProjectFolder == folder
+                                ? nil
+                                : folder
+                        }
+                    }
+                }
+            }
+
+            if !projectTags.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 7) {
+                        ForEach(projectTags, id: \.self) { tag in
+                            HomeProjectFilterChip(
+                                title: "#\(tag)",
+                                systemImage: "tag.fill",
+                                isSelected: selectedProjectTag == tag
+                            ) {
+                                selectedProjectTag = selectedProjectTag == tag
+                                    ? nil
+                                    : tag
+                            }
+                        }
+                    }
+                }
+            }
+
+            if filteredProjects.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: allProjects.isEmpty ? "folder.badge.plus" : "magnifyingglass")
+                        .font(.title2)
+                        .foregroundStyle(CrabrixTheme.muted)
+                    Text(allProjects.isEmpty
+                         ? "Projects you create or open will appear here."
+                         : "No projects match these filters.")
+                        .font(.caption)
+                        .foregroundStyle(CrabrixTheme.muted)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+            } else {
+                LazyVStack(spacing: 7) {
+                    ForEach(Array(filteredProjects.prefix(3))) { item in
+                        Button { onOpenRecent(item.id) } label: {
+                            RecentProjectRow(
+                                item: item,
+                                activity: item.id == projectID ? activity : .idle,
+                                isCompilerDraining: item.id == projectID && isCompilerDraining
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+
+                if filteredProjects.count > 3 {
+                    Button(action: onOpenMyProjects) {
+                        Label(
+                            "Browse all \(filteredProjects.count) matching projects",
+                            systemImage: "rectangle.grid.1x2.fill"
+                        )
+                        .font(.caption.bold())
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+            }
+        }
+        .padding(14)
+        .crabrixPanel(cornerRadius: 16)
+    }
+
+    private var projectFolders: [String] {
+        Array(Set(allProjects.map { $0.project.folderLabel }))
+            .sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    }
+
+    private var projectTags: [String] {
+        Array(Set(allProjects.flatMap { $0.project.tags }))
+            .sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    }
+
+    private var filteredProjects: [ProjectLibraryItem] {
+        let needle = projectQuery
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        let recentOrder = Dictionary(
+            uniqueKeysWithValues: recentProjects.enumerated().map { ($0.element.id, $0.offset) }
+        )
+        return allProjects
+            .filter { item in
+                (!favoritesOnly || item.project.isFavorite)
+                    && (selectedProjectFolder == nil
+                        || item.project.folderLabel == selectedProjectFolder)
+                    && (selectedProjectTag.map { item.project.tags.contains($0) } ?? true)
+                    && (needle.isEmpty || item.project.searchHaystack.contains(needle))
+            }
+            .sorted { left, right in
+                if left.project.isFavorite != right.project.isFavorite {
+                    return left.project.isFavorite
+                }
+                let leftOrder = recentOrder[left.id] ?? Int.max
+                let rightOrder = recentOrder[right.id] ?? Int.max
+                if leftOrder != rightOrder { return leftOrder < rightOrder }
+                return left.lastOpenedAt > right.lastOpenedAt
+            }
     }
 
     /// Rating, rank, and both pools, on the screen the app opens on.
@@ -170,6 +324,10 @@ struct ProjectsHomeView: View {
 
     private var libraryCategoryCount: Int {
         Set(RustShowcaseLibrary.projects.map(\.category)).count
+    }
+
+    private var projectFolderCount: Int {
+        Set(allProjects.map { $0.project.folderLabel }).count
     }
 
     private var brandHeader: some View {
@@ -300,24 +458,65 @@ private struct ProjectActionCard: View {
     }
 }
 
+private struct HomeProjectFilterChip: View {
+    let title: String
+    let systemImage: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.caption2.bold())
+                .lineLimit(1)
+                .padding(.horizontal, 9)
+                .frame(height: 29)
+                .background(
+                    isSelected
+                        ? CrabrixTheme.blue.opacity(0.17)
+                        : CrabrixTheme.raised,
+                    in: Capsule()
+                )
+                .overlay {
+                    Capsule().stroke(
+                        isSelected ? CrabrixTheme.blue : CrabrixTheme.border
+                    )
+                }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 private struct RecentProjectRow: View {
     let item: ProjectLibraryItem
     let activity: CompilerViewModel.Activity
     let isCompilerDraining: Bool
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             Image(systemName: item.project.provenance?.source == .github
-                  ? "arrow.triangle.branch" : "folder.fill")
+                  ? "arrow.triangle.branch" : item.project.kind.systemImage)
                 .foregroundStyle(item.project.provenance?.source == .github
                                  ? CrabrixTheme.blue : CrabrixTheme.mint)
-                .frame(width: 28)
+                .frame(width: 25)
             VStack(alignment: .leading, spacing: 3) {
-                Text(item.project.name).font(.subheadline.bold()).foregroundStyle(CrabrixTheme.primary)
-                Text("\(item.project.files.count) files · \(item.project.rustFileCount) Rust")
+                HStack(spacing: 5) {
+                    Text(item.project.name)
+                        .font(.subheadline.bold())
+                        .foregroundStyle(CrabrixTheme.primary)
+                        .lineLimit(1)
+                    if item.project.isFavorite {
+                        Image(systemName: "star.fill")
+                            .font(.caption2)
+                            .foregroundStyle(CrabrixTheme.amber)
+                    }
+                }
+                Text(projectLocation)
                     .font(.caption2.monospaced())
                     .foregroundStyle(CrabrixTheme.muted)
+                    .lineLimit(1)
             }
+            .layoutPriority(1)
             Spacer()
             BuildStatusBadge(
                 record: item.lastBuild,
@@ -327,8 +526,18 @@ private struct RecentProjectRow: View {
             )
             Image(systemName: "chevron.right").foregroundStyle(CrabrixTheme.muted)
         }
-        .padding(14)
-        .crabrixPanel()
+        .padding(.horizontal, 11)
+        .frame(minHeight: 58)
+        .background(CrabrixTheme.raised.opacity(0.55), in: RoundedRectangle(cornerRadius: 12))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12).stroke(CrabrixTheme.border)
+        }
+    }
+
+    private var projectLocation: String {
+        let tags = item.project.tags.prefix(2).map { "#\($0)" }
+        return ([item.project.folderLabel] + tags + ["\(item.project.files.count) files"])
+            .joined(separator: " · ")
     }
 }
 
@@ -372,4 +581,3 @@ private struct BuildStatusBadge: View {
         }
     }
 }
-

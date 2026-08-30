@@ -73,6 +73,10 @@ struct ResolvedGraph: Sendable {
 enum CargoResolutionError: LocalizedError, Equatable {
     case noMatchingVersion(crate: String, requirement: String)
     case conflict(crate: String, requirements: [String])
+    case unknownFeature(package: String, feature: String)
+    case unknownFeatureDependency(package: String, dependency: String)
+    case unknownTargetPredicate(String)
+    case requiresNewerRust(crate: String, required: String, bundled: String)
     case didNotConverge
 
     var errorDescription: String? {
@@ -81,6 +85,14 @@ enum CargoResolutionError: LocalizedError, Equatable {
             "No published version of \(crate) satisfies \(requirement)."
         case let .conflict(crate, requirements):
             "Cannot satisfy every requirement on \(crate): \(requirements.joined(separator: ", "))."
+        case let .unknownFeature(package, feature):
+            "\(package) does not define the requested Cargo feature \"\(feature)\"."
+        case let .unknownFeatureDependency(package, dependency):
+            "\(package) references unknown feature dependency \"\(dependency)\"."
+        case let .unknownTargetPredicate(detail):
+            detail
+        case let .requiresNewerRust(crate, required, bundled):
+            "\(crate) requires Rust \(required), newer than bundled rustc \(bundled)."
         case .didNotConverge:
             "Dependency resolution did not settle. The graph may contain a cycle."
         }
@@ -95,6 +107,7 @@ enum CargoResolutionError: LocalizedError, Equatable {
 actor CargoResolver {
     private let index: any CrateIndexProviding
     private let target: RustTargetSpec
+    private let toolchainRustVersion: SemanticVersion
     private let maximumPasses = 16
 
     /// Cargo keeps one version per SemVer-compatible range but allows several
@@ -108,23 +121,48 @@ actor CargoResolver {
     private var featureRequests: [PackageID: Set<String>] = [:]
     private var indexCache: [String: RegistryIndexFile] = [:]
     private var warnings: Set<ResolutionWarning> = []
+    private var lockfile: CargoLockfile?
+    private var resolutionMode: CargoResolutionMode = .normal
+    private var rootLockEntry: CargoLockfile.Entry?
 
-    init(index: any CrateIndexProviding, target: RustTargetSpec = .wasm32WasiP1) {
+    init(
+        index: any CrateIndexProviding,
+        target: RustTargetSpec = .wasm32WasiP1,
+        toolchainRustVersion: SemanticVersion = CargoToolchain.semanticVersion
+    ) {
         self.index = index
         self.target = target
+        self.toolchainRustVersion = toolchainRustVersion
     }
 
     func resolve(
         rootDependencies: [ManifestDependency],
         rootFeatures: [String: [String]] = [:],
-        enabledRootFeatures: Set<String> = ["default"]
+        enabledRootFeatures: Set<String> = ["default"],
+        rootPackageName: String = "root",
+        rootPackageVersion: SemanticVersion = SemanticVersion(major: 0, minor: 1, patch: 0),
+        lockfile: CargoLockfile? = nil,
+        mode: CargoResolutionMode = .normal
     ) async throws -> ResolvedGraph {
+        if mode.requiresLockfile, lockfile == nil { throw CargoLockfileError.missing }
         buckets = [:]
         featureRequests = [:]
         warnings = []
+        self.lockfile = lockfile
+        resolutionMode = mode
+        rootLockEntry = lockfile?.rootEntry(name: rootPackageName, version: rootPackageVersion)
+        if mode.requiresExactPins, rootLockEntry == nil {
+            throw CargoLockfileError.graphWouldChange
+        }
 
-        let normalRootDependencies = rootDependencies
-            .filter { $0.kind == .normal && $0.applies(to: target) }
+        var normalRootDependencies: [ManifestDependency] = []
+        for dependency in rootDependencies where dependency.kind == .normal {
+            switch dependency.matchResult(for: target) {
+            case .yes: normalRootDependencies.append(dependency)
+            case .no: continue
+            case let .unknown(reason): throw CargoResolutionError.unknownTargetPredicate(reason)
+            }
+        }
         for dependency in normalRootDependencies where !dependency.isRegistry {
             let detail: String
             switch dependency.source {
@@ -134,10 +172,11 @@ actor CargoResolver {
             }
             warnings.insert(.unsupportedSource(alias: dependency.alias, detail: detail))
         }
-        let registryRootEdges = FeatureResolver.rootEdges(
+        let registryRootEdges = try FeatureResolver.rootEdges(
             for: normalRootDependencies.filter(\.isRegistry),
             featureTable: rootFeatures,
-            enabledFeatures: enabledRootFeatures
+            enabledFeatures: enabledRootFeatures,
+            packageName: rootPackageName
         )
 
         var packages: [PackageID: ResolvedPackage] = [:]
@@ -164,12 +203,20 @@ actor CargoResolver {
             }
         }
 
-        return ResolvedGraph(
+        let graph = ResolvedGraph(
             packages: packages,
             rootDependencies: rootMap,
             buildOrder: Self.topologicalOrder(packages: packages, roots: Array(rootMap.values)),
             warnings: warnings.sorted { $0.id < $1.id }
         )
+        if mode.requiresExactPins {
+            try lockfile?.validate(
+                graph: graph,
+                rootName: rootPackageName,
+                rootVersion: rootPackageVersion
+            )
+        }
+        return graph
     }
 
     // MARK: - Passes
@@ -187,7 +234,8 @@ actor CargoResolver {
         var visited: Set<PackageID> = []
 
         for edge in rootEdges {
-            let (id, entry) = try await select(edge: edge)
+            let lockedID = lockfile?.dependencyID(packageName: edge.packageName, from: rootLockEntry)
+            let (id, entry) = try await select(edge: edge, lockedID: lockedID)
             rootMap[edge.alias] = id
             request(features: edge.requestedFeatures, for: id)
             if visited.insert(id).inserted { queue.append((id, entry)) }
@@ -199,22 +247,34 @@ actor CargoResolver {
             cursor += 1
 
             let requested = featureRequests[id] ?? []
-            let expansion = FeatureResolver.expand(
+            let expansion = try FeatureResolver.expand(
                 requested: requested,
                 featureTable: entry.features,
-                optionalDependencyAliases: Set(
-                    entry.dependencies.filter(\.isOptional).map(\.alias)
-                )
+                optionalDependencyAliases: Set(entry.dependencies.filter(\.isOptional).map(\.alias)),
+                dependencyAliases: Set(entry.dependencies.map(\.alias)),
+                packageName: id.name
             )
+            var activeDependencies: [RegistryDependency] = []
+            for dependency in entry.dependencies where dependency.kind == .normal {
+                switch dependency.matchResult(for: self.target) {
+                case .yes: activeDependencies.append(dependency)
+                case .no: continue
+                case let .unknown(reason): throw CargoResolutionError.unknownTargetPredicate(reason)
+                }
+            }
             let edges = FeatureResolver.edges(
-                for: entry.dependencies
-                    .filter { $0.kind == .normal && $0.applies(to: self.target) },
+                for: activeDependencies,
                 expansion: expansion
             )
 
             var dependencies: [String: PackageID] = [:]
+            let parentLockEntry = lockfile?.pin(for: id)
             for edge in edges {
-                let (childID, childEntry) = try await select(edge: edge)
+                let lockedID = lockfile?.dependencyID(
+                    packageName: edge.packageName,
+                    from: parentLockEntry
+                )
+                let (childID, childEntry) = try await select(edge: edge, lockedID: lockedID)
                 dependencies[edge.alias] = childID
                 request(features: edge.requestedFeatures, for: childID)
                 if visited.insert(childID).inserted { queue.append((childID, childEntry)) }
@@ -240,12 +300,87 @@ actor CargoResolver {
     // MARK: - Version selection
 
     private func select(
-        edge: FeatureResolver.Edge
+        edge: FeatureResolver.Edge,
+        lockedID: PackageID?
     ) async throws -> (PackageID, RegistryIndexEntry) {
         let name = edge.packageName
         let requirement = edge.requirement
         let file = try await indexFile(for: name)
 
+        if resolutionMode.preservesPins, let lockedID {
+            guard requirement.isSatisfied(by: lockedID.version) else {
+                if resolutionMode.requiresExactPins {
+                    throw CargoLockfileError.incompatible(
+                        crate: name,
+                        requirement: requirement.source
+                    )
+                }
+                return try await selectUnpinned(
+                    name: name,
+                    requirement: requirement,
+                    file: file
+                )
+            }
+            return try await selectPinned(
+                id: lockedID,
+                requirement: requirement,
+                file: file
+            )
+        }
+        if resolutionMode.requiresExactPins {
+            throw CargoLockfileError.missingPackage(name)
+        }
+        return try await selectUnpinned(name: name, requirement: requirement, file: file)
+    }
+
+    private func selectPinned(
+        id: PackageID,
+        requirement: VersionRequirement,
+        file: RegistryIndexFile
+    ) async throws -> (PackageID, RegistryIndexEntry) {
+        guard id.name == file.name, let entry = file.entry(for: id.version) else {
+            throw CargoLockfileError.missingPackage(id.description)
+        }
+        guard let pin = lockfile?.pin(for: id) else {
+            throw CargoLockfileError.missingPackage(id.description)
+        }
+        guard pin.source == CargoLockfile.registrySource else {
+            throw CargoLockfileError.sourceMismatch(package: id.description)
+        }
+        guard pin.checksum == entry.checksum.lowercased() else {
+            throw CargoLockfileError.checksumMismatch(package: id.description)
+        }
+        try validateMSRV(entry, package: id)
+
+        if let existingIndex = buckets[id.name]?.firstIndex(where: {
+            $0.version.isCaretCompatible(with: id.version)
+        }) {
+            let existing = buckets[id.name]![existingIndex]
+            if existing.version == id.version {
+                appendRequirement(requirement, to: id.version, of: id.name)
+                return (id, entry)
+            }
+            if resolutionMode.requiresExactPins { throw CargoLockfileError.graphWouldChange }
+            // A stale normal-mode pin cannot create a second SemVer-compatible
+            // copy. Re-run ordinary unification against every requirement.
+            return try await selectUnpinned(
+                name: id.name,
+                requirement: requirement,
+                file: file
+            )
+        }
+
+        buckets[id.name, default: []].append(
+            Bucket(version: id.version, requirements: [requirement])
+        )
+        return (id, entry)
+    }
+
+    private func selectUnpinned(
+        name: String,
+        requirement: VersionRequirement,
+        file: RegistryIndexFile
+    ) async throws -> (PackageID, RegistryIndexEntry) {
         if let existing = buckets[name],
            let match = existing.first(where: { requirement.isSatisfied(by: $0.version) }) {
             appendRequirement(requirement, to: match.version, of: name)
@@ -258,8 +393,23 @@ actor CargoResolver {
             return (PackageID(name: name, version: match.version), entry)
         }
 
-        let candidates = file.selectableVersions()
+        let publishedCandidates = file.selectableVersions()
+        let candidates = publishedCandidates.filter { version in
+            guard let rustVersion = file.entry(for: version)?.rustVersion else { return true }
+            guard let required = SemanticVersion(rustVersion) else { return false }
+            return required <= toolchainRustVersion
+        }
         guard let candidate = requirement.bestMatch(in: candidates) else {
+            let newerCandidates = publishedCandidates.filter(requirement.isSatisfied(by:))
+            if let required = newerCandidates.compactMap({ version in
+                file.entry(for: version)?.rustVersion.flatMap(SemanticVersion.init)
+            }).min() {
+                throw CargoResolutionError.requiresNewerRust(
+                    crate: name,
+                    required: required.description,
+                    bundled: CargoToolchain.semanticVersionLabel
+                )
+            }
             throw CargoResolutionError.noMatchingVersion(
                 crate: name,
                 requirement: requirement.source
@@ -305,6 +455,17 @@ actor CargoResolver {
         return (PackageID(name: name, version: candidate), entry)
     }
 
+    private func validateMSRV(_ entry: RegistryIndexEntry, package: PackageID) throws {
+        guard let rustVersion = entry.rustVersion else { return }
+        guard let required = SemanticVersion(rustVersion), required <= toolchainRustVersion else {
+            throw CargoResolutionError.requiresNewerRust(
+                crate: package.name,
+                required: rustVersion,
+                bundled: CargoToolchain.semanticVersionLabel
+            )
+        }
+    }
+
     private func appendRequirement(
         _ requirement: VersionRequirement,
         to version: SemanticVersion,
@@ -317,7 +478,9 @@ actor CargoResolver {
 
     private func indexFile(for name: String) async throws -> RegistryIndexFile {
         if let cached = indexCache[name] { return cached }
-        let file = try await index.indexFile(for: name)
+        let file = resolutionMode.prohibitsNetwork
+            ? try await index.cachedIndexFile(for: name)
+            : try await index.indexFile(for: name)
         indexCache[name] = file
         return file
     }

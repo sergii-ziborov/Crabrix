@@ -13,6 +13,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
     @AppStorage("crabrix.editorFontSize") private var editorFontSize = 14.0
     @Binding var text: String
     @Binding var cursorOffset: Int
+    let projectID: UUID?
     let filePath: String
     let isEditable: Bool
     let tracksTyping: Bool
@@ -23,6 +24,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
     init(
         text: Binding<String>,
         cursorOffset: Binding<Int>,
+        projectID: UUID? = nil,
         filePath: String,
         isEditable: Bool,
         tracksTyping: Bool = true,
@@ -32,6 +34,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
     ) {
         _text = text
         _cursorOffset = cursorOffset
+        self.projectID = projectID
         self.filePath = filePath
         self.isEditable = isEditable
         self.tracksTyping = tracksTyping
@@ -142,8 +145,12 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             shouldChangeTextIn range: NSRange,
             replacementText text: String
         ) -> Bool {
-            if parent.tracksTyping, !text.isEmpty {
-                TypingLedger.shared.record(project: parent.filePath, inserted: text)
+            if parent.tracksTyping, let projectID = parent.projectID, !text.isEmpty {
+                TypingLedger.shared.record(
+                    projectID: projectID,
+                    filePath: parent.filePath,
+                    inserted: text
+                )
             }
             return true
         }

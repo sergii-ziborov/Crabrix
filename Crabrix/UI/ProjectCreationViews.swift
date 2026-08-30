@@ -37,10 +37,10 @@ enum ProjectItemCreation: String, Identifiable {
 
 struct NewProjectSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var name = "my-rust-project"
+    @State private var draft = ProjectDetailsDraft(kind: .learning)
     @State private var template: RustProjectTemplate = .hello
 
-    let onCreate: (String, RustProjectTemplate) -> Void
+    let onCreate: (NewRustProjectRequest) -> Void
 
     var body: some View {
         NavigationStack {
@@ -54,7 +54,7 @@ struct NewProjectSheet: View {
                         .font(.subheadline)
                         .foregroundStyle(CrabrixTheme.muted)
 
-                    TextField("Project name", text: $name)
+                    TextField("Project name", text: $draft.name)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .textFieldStyle(.roundedBorder)
@@ -63,6 +63,7 @@ struct NewProjectSheet: View {
                         ForEach(RustProjectTemplate.allCases) { option in
                             Button {
                                 template = option
+                                draft.kind = option.defaultProjectKind
                             } label: {
                                 HStack(spacing: 13) {
                                     Image(systemName: option.systemImage)
@@ -91,8 +92,27 @@ struct NewProjectSheet: View {
                         }
                     }
 
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("ORGANIZE")
+                            .font(.caption2.monospaced().bold())
+                            .foregroundStyle(CrabrixTheme.mint)
+                        ProjectMetadataFields(
+                            draft: $draft,
+                            showsName: false
+                        )
+                    }
+
                     Button {
-                        onCreate(name, template)
+                        onCreate(
+                            NewRustProjectRequest(
+                                name: draft.name,
+                                template: template,
+                                projectDescription: draft.projectDescription,
+                                folder: draft.optionalFolder,
+                                tags: draft.tags,
+                                kind: draft.kind
+                            )
+                        )
                         dismiss()
                     } label: {
                         Label("Create Rust Project", systemImage: "plus.circle.fill")
@@ -100,7 +120,11 @@ struct NewProjectSheet: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(CrabrixTheme.coral)
-                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(
+                        draft.name
+                            .trimmingCharacters(in: .whitespacesAndNewlines)
+                            .isEmpty
+                    )
                 }
                 .padding(22)
             }

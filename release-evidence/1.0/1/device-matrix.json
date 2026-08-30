@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-29T23:33:12Z",
+  "candidate": {
+    "version": "1.0",
+    "build": "1",
+    "branch": "release/1.0-app-store",
+    "baseCommit": "74ffeebd0487380365d224653b4019395f95ab2d",
+    "workingTree": "uncommitted release-hardening changes"
+  },
+  "simulator": {
+    "model": "iPhone 17 Pro",
+    "osVersion": "26.5 (23F77)",
+    "architecture": "arm64",
+    "testCount": 315,
+    "passed": 315,
+    "failed": 0,
+    "skipped": 0,
+    "runtimeWarnings": 0,
+    "result": "passed"
+  },
+  "physicalDevices": [
+    {
+      "model": "iPhone 13 mini",
+      "architecture": "arm64",
+      "signedBuild": "passed",
+      "install": "passed",
+      "launch": "passed",
+      "processObserved": "running",
+      "runtimeMatrix": "partial",
+      "compilerGate": {
+        "scenario": "cold E0502 check",
+        "configuration": "Release",
+        "result": "passed",
+        "durationSeconds": 9.198768019676208
+      }
+    }
+  ],
+  "requiredButNotYetCaptured": [
+    "older supported iPhone runtime matrix",
+    "current standard iPhone runtime matrix",
+    "Pro iPhone runtime matrix",
+    "base iPad runtime matrix",
+    "M-series iPad runtime matrix",
+    "thermal, low-power, memory-warning, background and lock cycles"
+  ]
+}

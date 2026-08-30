@@ -1,4 +1,10 @@
 enum RustSamples {
+    static let helloLesson = """
+    fn main() {
+        println!("Hello, Crabrix!");
+    }
+    """
+
     static let cargoManifest = """
     [package]
     name = "modules-lab"
@@ -134,6 +140,13 @@ struct RustShowcaseProject: Identifiable, Sendable {
     let concepts: [String]
     let project: CrabrixProject
 
+    var isGuided: Bool { project.files["README.md"] != nil }
+    var isVisual: Bool {
+        project.files.values.contains {
+            $0.contains(RustCanvasOutput.marker)
+        }
+    }
+
     /// Everything a search box should look at.
     var searchHaystack: String {
         ([title, detail, category.title, difficulty.title] + concepts)
@@ -143,8 +156,13 @@ struct RustShowcaseProject: Identifiable, Sendable {
 }
 
 enum RustShowcaseLibrary {
-    /// The four original showcases plus the wider catalogue.
-    static let projects: [RustShowcaseProject] = featured + RustShowcaseCatalog.projects
+    /// Original showcases, the wider catalogue, and guided projects with an
+    /// editable README challenge inside each Cargo package.
+    static let projects: [RustShowcaseProject] =
+        featured
+            + RustShowcaseCatalog.projects
+            + RustShowcaseExpansionCatalog.projects
+            + RustVisualShowcaseCatalog.projects
 
     /// Shown first on the library screen.
     static let featured: [RustShowcaseProject] = [

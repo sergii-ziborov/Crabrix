@@ -1,0 +1,25 @@
+name: ClusterFuzzLite continuous builds
+on:
+  push:
+    branches:
+      - main
+permissions: read-all
+jobs:
+  Build:
+   runs-on: ubuntu-latest
+   concurrency:
+     group: ${{ github.workflow }}-${{ matrix.sanitizer }}-${{ github.ref }}
+     cancel-in-progress: true
+   strategy:
+     fail-fast: false
+     matrix:
+        sanitizer:
+        - address
+   steps:
+   - name: Build Fuzzers (${{ matrix.sanitizer }})
+     id: build
+     uses: google/clusterfuzzlite/actions/build_fuzzers@d2c7d068aab9081cbbc57825ad0d5d6ca6674f95 # google/clusterfuzzlite#146 (Ubuntu 24.04); revert to @v1 once merged
+     with:
+        language: swift
+        sanitizer: ${{ matrix.sanitizer }}
+        upload-build: true

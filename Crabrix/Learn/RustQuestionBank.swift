@@ -32,6 +32,10 @@ struct RustQuestion: Identifiable, Sendable, Equatable {
 enum RustQuestionBank {
     static let all: [RustQuestion] = {
         RustCourseCatalog.courses
+            // Algorithms has its own 600-step progression. Mixing all of those
+            // questions into the general Rust drill would drown out the
+            // language curriculum instead of reinforcing it.
+            .filter { $0.id != "algorithms" }
             .flatMap { $0.units.flatMap(\.lessons) }
             .compactMap { lesson in
                 guard let writing = RustLessonLibrary.writing(for: lesson.id) else { return nil }

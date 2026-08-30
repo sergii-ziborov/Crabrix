@@ -10,52 +10,89 @@ final class TypingLedgerTests: XCTestCase {
     func testShortInsertionsCountAsTypedAndLongOnesDoNot() {
         let (ledger, suite) = makeLedger()
         defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+        let projectID = UUID()
 
-        for character in "fn main() {}" { ledger.record(project: "p", inserted: String(character)) }
-        XCTAssertEqual(ledger.typedShare(project: "p"), 1.0, accuracy: 0.001)
+        for character in "fn main() {}" {
+            ledger.record(projectID: projectID, filePath: "main.rs", inserted: String(character))
+        }
+        XCTAssertEqual(ledger.typedShare(projectID: projectID), 1.0, accuracy: 0.001)
 
         // A paste of a whole file is not writing.
-        ledger.record(project: "p", inserted: String(repeating: "x", count: 500))
-        XCTAssertLessThan(ledger.typedShare(project: "p"), 0.1)
+        ledger.record(
+            projectID: projectID,
+            filePath: "main.rs",
+            inserted: String(repeating: "x", count: 500)
+        )
+        XCTAssertLessThan(ledger.typedShare(projectID: projectID), 0.1)
     }
 
     func testTheAccessoryRowStillCountsAsTyping() {
         let (ledger, suite) = makeLedger()
         defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+        let projectID = UUID()
         // "&mut " comes from the keyboard row, and is deliberate writing.
-        ledger.record(project: "p", inserted: "&mut ")
-        XCTAssertEqual(ledger.typedShare(project: "p"), 1.0, accuracy: 0.001)
+        ledger.record(projectID: projectID, filePath: "main.rs", inserted: "&mut ")
+        XCTAssertEqual(ledger.typedShare(projectID: projectID), 1.0, accuracy: 0.001)
     }
 
     func testAProjectWithNoHistoryIsNeitherRewardedNorPunished() {
         let (ledger, suite) = makeLedger()
         defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
         // An imported repository predates any typing; it is not cheating.
-        XCTAssertEqual(ledger.typedShare(project: "imported"), 0.5, accuracy: 0.001)
+        XCTAssertEqual(ledger.typedShare(projectID: UUID()), 0.5, accuracy: 0.001)
     }
 
     func testProjectsAreCountedSeparately() {
         let (ledger, suite) = makeLedger()
         defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
-        ledger.record(project: "typed", inserted: "let x = 1;")
-        ledger.record(project: "pasted", inserted: String(repeating: "y", count: 300))
-        XCTAssertGreaterThan(ledger.typedShare(project: "typed"), 0.9)
-        XCTAssertLessThan(ledger.typedShare(project: "pasted"), 0.1)
+        let typedID = UUID()
+        let pastedID = UUID()
+        ledger.record(projectID: typedID, filePath: "main.rs", inserted: "let x = 1;")
+        ledger.record(
+            projectID: pastedID,
+            filePath: "main.rs",
+            inserted: String(repeating: "y", count: 300)
+        )
+        XCTAssertGreaterThan(ledger.typedShare(projectID: typedID), 0.9)
+        XCTAssertLessThan(ledger.typedShare(projectID: pastedID), 0.1)
     }
 
     func testPendingTypedCharactersDrainOnce() {
         let (ledger, suite) = makeLedger()
         defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
-        ledger.record(project: "p", inserted: "abcde")
-        XCTAssertEqual(ledger.drainPendingTyped(), 5)
-        XCTAssertEqual(ledger.drainPendingTyped(), 0, "draining twice must not pay twice")
+        let projectID = UUID()
+        ledger.record(projectID: projectID, filePath: "main.rs", inserted: "abcde")
+        XCTAssertEqual(ledger.drainPendingTyped(projectID: projectID), 5)
+        XCTAssertEqual(
+            ledger.drainPendingTyped(projectID: projectID),
+            0,
+            "draining twice must not pay twice"
+        )
     }
 
     func testPastedCharactersEarnNoTypingRating() {
         let (ledger, suite) = makeLedger()
         defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
-        ledger.record(project: "p", inserted: String(repeating: "z", count: 400))
-        XCTAssertEqual(ledger.drainPendingTyped(), 0)
+        let projectID = UUID()
+        ledger.record(
+            projectID: projectID,
+            filePath: "main.rs",
+            inserted: String(repeating: "z", count: 400)
+        )
+        XCTAssertEqual(ledger.drainPendingTyped(projectID: projectID), 0)
+    }
+
+    func testPendingCharactersCannotDrainAcrossProjects() {
+        let (ledger, suite) = makeLedger()
+        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+        let first = UUID()
+        let second = UUID()
+
+        ledger.record(projectID: first, filePath: "main.rs", inserted: "abc")
+        ledger.record(projectID: second, filePath: "main.rs", inserted: "de")
+
+        XCTAssertEqual(ledger.drainPendingTyped(projectID: second), 2)
+        XCTAssertEqual(ledger.pendingTyped(projectID: first), 3)
     }
 }
 

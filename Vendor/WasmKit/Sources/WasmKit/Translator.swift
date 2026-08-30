@@ -1,0 +1,3412 @@
+import WasmParser
+import WasmTypes
+
+class ISeqAllocator {
+
+    private var buffers: [UnsafeMutableRawBufferPointer] = []
+
+    func allocateBrTable(capacity: Int) -> UnsafeMutableBufferPointer<Instruction.BrTableOperand.Entry> {
+        assert(_isPOD(Instruction.BrTableOperand.Entry.self), "Instruction.BrTableOperand.Entry must be POD")
+        let buffer = UnsafeMutableBufferPointer<Instruction.BrTableOperand.Entry>.allocate(capacity: capacity)
+        self.buffers.append(UnsafeMutableRawBufferPointer(buffer))
+        return buffer
+    }
+
+    func allocateCatchTable(capacity: Int) -> UnsafeMutableBufferPointer<CatchTableEntry> {
+        assert(_isPOD(CatchTableEntry.self), "CatchTableEntry must be POD")
+        let buffer = UnsafeMutableBufferPointer<CatchTableEntry>.allocate(capacity: capacity)
+        self.buffers.append(UnsafeMutableRawBufferPointer(buffer))
+        return buffer
+    }
+
+    func allocateConstants(_ slots: [UntypedValue]) -> UnsafeBufferPointer<UntypedValue> {
+        let buffer = UnsafeMutableBufferPointer<UntypedValue>.allocate(capacity: slots.count)
+        _ = buffer.initialize(fromContentsOf: slots)
+        self.buffers.append(UnsafeMutableRawBufferPointer(buffer))
+        return UnsafeBufferPointer(buffer)
+    }
+
+    func allocateInstructions(capacity: Int) -> UnsafeMutableBufferPointer<UInt64> {
+        assert(_isPOD(Instruction.self), "Instruction must be POD")
+        let buffer = UnsafeMutableBufferPointer<UInt64>.allocate(capacity: capacity)
+        self.buffers.append(UnsafeMutableRawBufferPointer(buffer))
+        return buffer
+    }
+
+    deinit {
+        for buffer in buffers {
+            buffer.deallocate()
+        }
+    }
+}
+
+extension InternalInstance {
+    func addressType(memoryIndex: MemoryIndex) throws(WasmKitError) -> ValueType {
+        return ValueType.addressType(isMemory64: try isMemory64(memoryIndex: memoryIndex))
+    }
+    func addressType(tableIndex: TableIndex) throws(WasmKitError) -> ValueType {
+        return ValueType.addressType(isMemory64: try isMemory64(tableIndex: tableIndex))
+    }
+    func validateElementSegment(_ index: ElementIndex) throws(WasmKitError) {
+        _ = try elementType(index)
+    }
+
+    func resolveType(_ index: TypeIndex) throws(WasmKitError) -> FunctionType {
+        guard Int(index) < self.types.count else {
+            throw WasmKitError(message: .indexOutOfBounds("type", index, max: UInt32(self.types.count)))
+        }
+        return self.types[Int(index)]
+    }
+    func resolveBlockType(_ blockType: BlockType) throws(WasmKitError) -> FunctionType {
+        try FunctionType(blockType: blockType, typeSection: self.types)
+    }
+    func functionType(_ index: FunctionIndex, interner: Interner<FunctionType>) throws(WasmKitError) -> FunctionType {
+        return try interner.resolve(self.functions[validating: Int(index)].type)
+    }
+    func globalType(_ index: GlobalIndex) throws(WasmKitError) -> ValueType {
+        return try self.globals[validating: Int(index)].globalType.valueType
+    }
+    func isMemory64(memoryIndex index: MemoryIndex) throws(WasmKitError) -> Bool {
+        let memory = try self.memories[validating: Int(index), MemoryEntity.createOutOfBoundsError]
+        return memory.withValue { $0.limit.isMemory64 }
+    }
+    func isMemory64(tableIndex index: TableIndex) throws(WasmKitError) -> Bool {
+        return try self.tables[validating: Int(index)].limits.isMemory64
+    }
+    func tableType(_ index: TableIndex) throws(WasmKitError) -> TableType {
+        return try self.tables[validating: Int(index)].tableType
+    }
+    func elementType(_ index: ElementIndex) throws(WasmKitError) -> ReferenceType {
+        try self.elementSegments[validating: Int(index)].type
+    }
+
+    func resolveCallee(_ index: FunctionIndex) -> InternalFunction? {
+        return self.functions[Int(index)]
+    }
+    func resolveGlobal(_ index: GlobalIndex) -> InternalGlobal? {
+        return self.globals[Int(index)]
+    }
+    func isSameInstance(_ instance: InternalInstance) -> Bool {
+        return instance == self
+    }
+    func validateFunctionIndex(_ index: FunctionIndex) throws(WasmKitError) {
+        let function = try self.functions[validating: Int(index)]
+        guard self.functionRefs.contains(function) else {
+            throw WasmKitError(message: .functionIndexNotDeclared(index: index))
+        }
+    }
+    var dataCount: UInt32? {
+        self.withValue { $0.dataCount }
+    }
+}
+
+private struct MetaProgramCounter {
+    let offsetFromHead: Int
+}
+
+/// The layout of the function stack frame.
+///
+/// A function call frame starts with a "frame header" which contains
+/// the function parameters and the result values. The size of the frame
+/// header is determined by the maximum number of parameters and results
+/// of the function type. While executing the function, the frame header
+/// is used as a storage for parameters. On function return, the frame
+/// header is used as a storage for the result values.
+///
+/// On function entry, the stack frame looks like:
+///
+/// ```
+/// | Offset                             | Description          |
+/// |------------------------------------|----------------------|
+/// | 0                                  | Function parameter 0 |
+/// | 1                                  | Function parameter 1 |
+/// | ...                                | ...                  |
+/// | len(params)-1                      | Function parameter N |
+/// ```
+///
+/// On function return, the stack frame looks like:
+/// ```
+/// | Offset                             | Description          |
+/// |------------------------------------|----------------------|
+/// | 0                                  | Function result 0    |
+/// | 1                                  | Function result 1    |
+/// | ...                                | ...                  |
+/// | len(results)-1                     | Function result N    |
+/// ```
+///
+/// The end of the frame header is usually referred to as "stack pointer"
+/// (SP). "local" variables and the value stack space are allocated after
+/// the frame header. The value stack space is used to store intermediate
+/// values usually corresponding to Wasm's value stack. Unlike the Wasm's
+/// value stack, a value slot in the value stack space might be absent if
+/// the value is backed by a local variable.
+/// The slot index is referred to as "register". The register index is
+/// relative to the stack pointer, so the register indices for parameters
+/// and results are negative.
+///
+/// ```
+/// | Offset                             | Description          |
+/// |------------------------------------|----------------------|
+/// | SP-(max(params, results)+3)        | Param/result slots   |------+
+/// | ...                                | ...                  |      |
+/// | SP-3                               | Saved Instance       |  Frame header
+/// | SP-2                               | Saved PC             |      |
+/// | SP-1                               | Saved SP             |------+
+/// | SP+0                               | Local variable 0     |
+/// | SP+1                               | Local variable 1     |
+/// | ...                                | ...                  |
+/// | SP+len(locals)-1                   | Local variable N     |
+/// | SP+len(locals)                     | Const 0              |
+/// | SP+len(locals)+1                   | Const 1              |
+/// | ...                                | ...                  |
+/// | SP+len(locals)+C                   | Const C              |
+/// | SP+len(locals)+C                   | Value stack 0        |
+/// | SP+len(locals)+C+1                 | Value stack 1        |
+/// | ...                                | ...                  |
+/// | SP+len(locals)+C+heighest(stack)-1 | Value stack N        |
+/// ```
+/// where `C` is the number of constant slots.
+///
+/// ## Example
+///
+/// Consider the following Wasm function:
+///
+/// ```wat
+/// (func (param i32 i32) (result i32)
+///   (local i32)
+///   (local i64)
+///   (local.set 2 (i32.add (local.get 0) (i32.const 42)))
+///   (return (local.get 2))
+/// )
+/// ```
+///
+/// Then the stack frame layout looks like:
+///
+/// ```
+/// | Offset                             | Description          |
+/// |------------------------------------|----------------------|
+/// | -5                                 | Param 0 / Result 0   |------+
+/// | -4                                 | Param 1              |      |
+/// | -3                                 | Saved Instance       |  Frame header
+/// | -2                                 | Saved PC             |      |
+/// | -1                                 | Saved SP             |------+
+/// | 0                                  | Local 0 (i32)        |
+/// | 1                                  | Local 1 (i64)        |
+/// | 2                                  | Const 0 (i32:42)     |
+/// ```
+
+struct FrameHeaderLayout {
+    let type: FunctionType
+    let size: VReg
+    private let paramSlotOffsets: [Int]
+    private let resultSlotOffsets: [Int]
+
+    init(type: FunctionType) {
+        self.type = type
+        self.paramSlotOffsets = Self.slotOffsets(of: type.parameters)
+        self.resultSlotOffsets = Self.slotOffsets(of: type.results)
+        self.size = Self.size(of: type, paramSlotOffsets: paramSlotOffsets, resultSlotOffsets: resultSlotOffsets)
+    }
+
+    func paramReg(_ index: Int) -> VReg {
+        VReg(paramSlotOffsets[index]) - size
+    }
+
+    func returnReg(_ index: Int) -> VReg {
+        VReg(resultSlotOffsets[index]) - size
+    }
+
+    internal static func size(of: FunctionType) -> VReg {
+        let paramSlotOffsets = Self.slotOffsets(of: of.parameters)
+        let resultSlotOffsets = Self.slotOffsets(of: of.results)
+        return Self.size(of: of, paramSlotOffsets: paramSlotOffsets, resultSlotOffsets: resultSlotOffsets)
+    }
+    private static func size(
+        of type: FunctionType,
+        paramSlotOffsets: [Int],
+        resultSlotOffsets: [Int]
+    ) -> VReg {
+        let paramSlots = (paramSlotOffsets.last ?? 0) + (type.parameters.last?.stackSlotCount ?? 0)
+        let resultSlots = (resultSlotOffsets.last ?? 0) + (type.results.last?.stackSlotCount ?? 0)
+        return VReg(max(paramSlots, resultSlots)) + VReg(numberOfSavingSlots)
+    }
+
+    private static func slotOffsets(of types: [WasmTypes.ValueType]) -> [Int] {
+        var offsets: [Int] = []
+        offsets.reserveCapacity(types.count)
+        var next = 0
+        for t in types {
+            offsets.append(next)
+            next += t.stackSlotCount
+        }
+        return offsets
+    }
+    /// The number of slots used to save the current instance, PC, and SP
+    internal static var numberOfSavingSlots: Int { 3 }
+}
+
+struct StackLayout {
+    let frameHeader: FrameHeaderLayout
+    let constantSlotSize: Int
+    let localTypes: [WasmTypes.ValueType]
+    private let nonParameterLocalSlotOffsets: [Int]
+    private let numberOfNonParameterLocalSlots: Int
+
+    var stackRegBase: VReg {
+        return VReg(numberOfNonParameterLocalSlots + constantSlotSize)
+    }
+
+    init(type: FunctionType, locals: [WasmTypes.ValueType], codeSize: Int) throws(WasmKitError) {
+        self.frameHeader = FrameHeaderLayout(type: type)
+        self.localTypes = locals
+        self.nonParameterLocalSlotOffsets = Self.slotOffsets(of: locals)
+        self.numberOfNonParameterLocalSlots =
+            (nonParameterLocalSlotOffsets.last ?? 0) + (locals.last?.stackSlotCount ?? 0)
+        // The number of constant slots is determined by the code size
+        // This is a heuristic value to balance the fast access to constants
+        // and the size of stack frame. Cap the slot size to avoid size explosion.
+        self.constantSlotSize = min(max(codeSize / 20, 4), 128)
+        let (maxSlots, overflow) = self.constantSlotSize.addingReportingOverflow(numberOfNonParameterLocalSlots)
+        guard !overflow, maxSlots < VReg.max else {
+            throw WasmKitError("The number of constant slots overflows")
+        }
+    }
+
+    func localReg(_ index: LocalIndex) -> VReg {
+        if isParameter(index) {
+            return frameHeader.paramReg(Int(index))
+        } else {
+            let nonParamIndex = Int(index) - frameHeader.type.parameters.count
+            return VReg(nonParameterLocalSlotOffsets[nonParamIndex])
+        }
+    }
+
+    func isParameter(_ index: LocalIndex) -> Bool {
+        index < frameHeader.type.parameters.count
+    }
+
+    func constReg(_ index: Int) -> VReg {
+        return VReg(numberOfNonParameterLocalSlots + index)
+    }
+
+    func dump<Target: TextOutputStream>(to target: inout Target, iseq: InstructionSequence) {
+        let frameHeaderSize = FrameHeaderLayout.size(of: frameHeader.type)
+        let slotMinIndex = VReg(-frameHeaderSize)
+        let slotMaxIndex = VReg(stackRegBase - 1)
+        let slotIndexWidth = max(String(slotMinIndex).count, String(slotMaxIndex).count)
+        func writeSlot(_ target: inout Target, _ index: VReg, _ description: String) {
+            var index = String(index)
+            index = String(repeating: " ", count: slotIndexWidth - index.count) + index
+
+            target.write(" [\(index)] \(description)\n")
+        }
+        func hex(_ value: UInt64) -> String {
+            let value = String(value, radix: 16)
+            return String(repeating: "0", count: 16 - value.count) + value
+        }
+
+        let savedItems: [String] = ["Instance", "Pc", "Sp"]
+        for i in 0..<frameHeaderSize - VReg(savedItems.count) {
+            var descriptions: [String] = []
+            if i < frameHeader.type.parameters.count {
+                descriptions.append("Param \(i)")
+            }
+            if i < frameHeader.type.results.count {
+                descriptions.append("Result \(i)")
+            }
+            writeSlot(&target, VReg(i - frameHeaderSize), descriptions.joined(separator: ", "))
+        }
+
+        for (i, name) in savedItems.enumerated() {
+            writeSlot(&target, VReg(i - savedItems.count), "Saved \(name)")
+        }
+
+        var localSlot = 0
+        for (i, t) in localTypes.enumerated() {
+            writeSlot(&target, VReg(localSlot), "Local \(i) (\(t))")
+            localSlot += t.stackSlotCount
+        }
+        for i in 0..<iseq.constants.count {
+            writeSlot(&target, VReg(numberOfNonParameterLocalSlots + i), "Const \(i) = \(iseq.constants[i])")
+        }
+    }
+
+    private static func slotOffsets(of types: [WasmTypes.ValueType]) -> [Int] {
+        var offsets: [Int] = []
+        offsets.reserveCapacity(types.count)
+        var next = 0
+        for t in types {
+            offsets.append(next)
+            next += t.stackSlotCount
+        }
+        return offsets
+    }
+}
+
+struct InstructionTranslator: ~Copyable, InstructionVisitor {
+    typealias VisitorError = WasmKitError
+    typealias Output = Void
+
+    typealias LabelRef = Int
+    typealias ValueType = WasmTypes.ValueType
+
+    struct ControlStack {
+        typealias BlockType = FunctionType
+
+        struct ControlFrame {
+            enum Kind {
+                case block(root: Bool)
+                case loop
+                case `if`(elseLabel: LabelRef, endLabel: LabelRef, isElse: Bool)
+                case tryTable(catchCount: UInt16)
+
+                static var block: Kind { .block(root: false) }
+            }
+
+            let blockType: BlockType
+            /// The logical value height of `ValueStack` without including the frame parameters.
+            let valueStackHeight: Int
+            /// The physical slot height of `ValueStack` without including the frame parameters.
+            let slotStackHeight: Int
+            let continuation: LabelRef
+            var kind: Kind
+            var reachable: Bool = true
+
+            var copyTypes: [ValueType] {
+                switch self.kind {
+                case .block, .if, .tryTable:
+                    return blockType.results
+                case .loop:
+                    return blockType.parameters
+                }
+            }
+            var copySlotCount: UInt16 {
+                UInt16(copyTypes.reduce(into: 0) { $0 += $1.stackSlotCount })
+            }
+        }
+
+        private var frames: [ControlFrame] = []
+
+        var numberOfFrames: Int { frames.count }
+
+        mutating func pushFrame(_ frame: ControlFrame) {
+            self.frames.append(frame)
+        }
+
+        mutating func popFrame() -> ControlFrame? {
+            self.frames.popLast()
+        }
+
+        mutating func markUnreachable() throws(WasmKitError) {
+            try setReachability(false)
+        }
+        mutating func resetReachability() throws(WasmKitError) {
+            try setReachability(true)
+        }
+
+        private mutating func setReachability(_ value: Bool) throws(WasmKitError) {
+            guard !self.frames.isEmpty else {
+                throw WasmKitError(message: .controlStackEmpty)
+            }
+            self.frames[self.frames.count - 1].reachable = value
+        }
+
+        func currentFrame() throws(WasmKitError) -> ControlFrame {
+            guard let frame = self.frames.last else {
+                throw WasmKitError(message: .controlStackEmpty)
+            }
+            return frame
+        }
+
+        func branchTarget(relativeDepth: UInt32) throws(WasmKitError) -> ControlFrame {
+            let index = frames.count - 1 - Int(relativeDepth)
+            guard frames.indices.contains(index) else {
+                throw WasmKitError(message: .relativeDepthOutOfRange(relativeDepth: relativeDepth))
+            }
+            return frames[index]
+        }
+
+        /// Count the total number of catch handlers that would be exited when
+        /// branching to the given relative depth.
+        func catchHandlersToUnwind(relativeDepth: UInt32) -> UInt16 {
+            var count: UInt16 = 0
+            let targetIndex = frames.count - 1 - Int(relativeDepth)
+            for i in (targetIndex..<frames.count).reversed() {
+                if case .tryTable(let catchCount) = frames[i].kind {
+                    count += catchCount
+                }
+            }
+            return count
+        }
+    }
+
+    enum MetaValue: Equatable {
+        case some(ValueType)
+        case unknown
+    }
+
+    enum MetaValueOnStack {
+        case local(ValueType, LocalIndex)
+        case stack(MetaValue)
+        case const(ValueType, Int)
+
+        var type: MetaValue {
+            switch self {
+            case .local(let type, _): return .some(type)
+            case .stack(let type): return type
+            case .const(let type, _): return .some(type)
+            }
+        }
+    }
+
+    enum ValueSource {
+        case vreg(VReg)
+        case const(Int, ValueType)
+        case local(LocalIndex)
+    }
+
+    struct ValueStack {
+        private var values: [MetaValueOnStack] = []
+        private var startSlotOffsets: [Int] = []
+        /// The current physical slot height of the stack (excluding locals/const pool base).
+        private(set) var slotHeight: Int = 0
+        /// The maximum physical slot height of the stack within the function.
+        private(set) var maxSlotHeight: Int = 0
+        /// The current logical value height of the stack.
+        var valueHeight: Int { values.count }
+        let stackRegBase: VReg
+        let stackLayout: StackLayout
+
+        init(stackLayout: StackLayout) {
+            self.stackRegBase = stackLayout.stackRegBase
+            self.stackLayout = stackLayout
+        }
+
+        mutating func push(_ value: ValueType) -> VReg {
+            push(.some(value))
+        }
+        mutating func push(_ value: MetaValue) -> VReg {
+            // Record the maximum height of the stack we have seen
+            let type = value.concreteType
+            let width = type?.stackSlotCount ?? 1
+            maxSlotHeight = max(maxSlotHeight, slotHeight + width)
+            let usedSlotOffset = slotHeight
+            self.values.append(.stack(value))
+            self.startSlotOffsets.append(usedSlotOffset)
+            self.slotHeight += width
+            assert(valueHeight < UInt16.max)
+            return stackRegBase + VReg(usedSlotOffset)
+        }
+        mutating func pushLocal(_ localIndex: LocalIndex, locals: inout Locals) throws(WasmKitError) {
+            let type = try locals.type(of: localIndex)
+            self.values.append(.local(type, localIndex))
+            self.startSlotOffsets.append(slotHeight)
+            self.slotHeight += type.stackSlotCount
+            maxSlotHeight = max(maxSlotHeight, slotHeight)
+        }
+        mutating func pushConst(_ index: Int, type: ValueType) {
+            assert(index < stackLayout.constantSlotSize)
+            self.values.append(.const(type, index))
+            self.startSlotOffsets.append(slotHeight)
+            self.slotHeight += type.stackSlotCount
+            maxSlotHeight = max(maxSlotHeight, slotHeight)
+        }
+        mutating func preserveLocalsOnStack(_ localIndex: LocalIndex) -> [(to: VReg, type: ValueType)] {
+            var copyTo: [(to: VReg, type: ValueType)] = []
+            for i in 0..<values.count {
+                guard case .local(let type, localIndex) = self.values[i] else { continue }
+                self.values[i] = .stack(.some(type))
+                copyTo.append((to: stackRegBase + VReg(startSlotOffsets[i]), type: type))
+            }
+            return copyTo
+        }
+
+        mutating func preserveLocalsOnStack(depth: Int) -> [(source: LocalIndex, to: VReg, type: ValueType)] {
+            var copies: [(source: LocalIndex, to: VReg, type: ValueType)] = []
+            for offset in 0..<min(depth, self.valueHeight) {
+                let valueIndex = self.values.count - 1 - offset
+                let value = self.values[valueIndex]
+                guard case .local(let type, let localIndex) = value else { continue }
+                self.values[valueIndex] = .stack(.some(type))
+                copies.append((localIndex, self.stackRegBase + VReg(startSlotOffsets[valueIndex]), type))
+            }
+            return copies
+        }
+
+        mutating func preserveConstsOnStack(depth: Int) -> [(source: VReg, to: VReg, type: ValueType)] {
+            var copies: [(source: VReg, to: VReg, type: ValueType)] = []
+            for offset in 0..<min(depth, self.valueHeight) {
+                let valueIndex = self.values.count - 1 - offset
+                let value = self.values[valueIndex]
+                guard case .const(let type, let index) = value else { continue }
+                self.values[valueIndex] = .stack(.some(type))
+                copies.append((stackLayout.constReg(index), self.stackRegBase + VReg(startSlotOffsets[valueIndex]), type))
+            }
+            return copies
+        }
+
+        func peek(depth: Int) -> ValueSource {
+            return makeValueSource(valueIndexFromTop: depth)
+        }
+
+        func peekType(depth: Int) -> MetaValue {
+            return self.values[valueHeight - 1 - depth].type
+        }
+
+        private func makeValueSource(valueIndexFromTop depth: Int) -> ValueSource {
+            let valueIndex = valueHeight - 1 - depth
+            let value = values[valueIndex]
+            let source: ValueSource
+            switch value {
+            case .local(_, let localIndex):
+                source = .local(localIndex)
+            case .stack:
+                source = .vreg(stackRegBase + VReg(startSlotOffsets[valueIndex]))
+            case .const(let type, let index):
+                source = .const(index, type)
+            }
+            return source
+        }
+
+        mutating func pop() throws(WasmKitError) -> (MetaValue, ValueSource) {
+            guard let value = self.values.popLast() else {
+                throw WasmKitError("Expected a value on stack but it's empty")
+            }
+            guard let startSlotOffset = self.startSlotOffsets.popLast() else {
+                throw WasmKitError("Internal consistency error: missing slot offset")
+            }
+            let width = value.type.concreteType?.stackSlotCount ?? 1
+            self.slotHeight -= width
+            let source: ValueSource
+            switch value {
+            case .local(_, let localIndex):
+                source = .local(localIndex)
+            case .stack:
+                source = .vreg(stackRegBase + VReg(startSlotOffset))
+            case .const(let type, let index):
+                source = .const(index, type)
+            }
+            return (value.type, source)
+        }
+        mutating func pop(_ expected: ValueType) throws(WasmKitError) -> ValueSource {
+            let (value, register) = try pop()
+            switch value {
+            case .some(let actual):
+                guard actual == expected else {
+                    throw WasmKitError("Expected \(expected) on the stack top but got \(actual)")
+                }
+            case .unknown: break  // OK
+            }
+            return register
+        }
+        mutating func popRef() throws(WasmKitError) -> ValueSource {
+            let (value, register) = try pop()
+            switch value {
+            case .some(let actual):
+                guard case .ref = actual else {
+                    throw WasmKitError("Expected reference value on the stack top but got \(actual)")
+                }
+            case .unknown: break  // OK
+            }
+            return register
+        }
+        mutating func truncate(height: Int) throws(WasmKitError) {
+            guard height <= self.valueHeight else {
+                throw WasmKitError("Truncating to \(height) but the stack height is \(self.valueHeight)")
+            }
+            while height != self.valueHeight {
+                _ = try pop()
+            }
+        }
+    }
+
+    fileprivate struct ISeqBuilder: ~Copyable {
+        typealias InstructionFactoryWithLabel = (
+            borrowing ISeqBuilder,
+            // The position of the next slot of the creating instruction
+            _ source: MetaProgramCounter,
+            // The position of the resolved label
+            _ target: MetaProgramCounter
+        ) -> (WasmKit.Instruction)
+        typealias BrTableEntryFactory = (borrowing ISeqBuilder, MetaProgramCounter) -> Instruction.BrTableOperand.Entry
+        typealias BuildingBrTable = UnsafeMutableBufferPointer<Instruction.BrTableOperand.Entry>
+        typealias BuildingCatchTable = UnsafeMutableBufferPointer<CatchTableEntry>
+
+        enum OnPinAction {
+            case emitInstruction(
+                insertAt: MetaProgramCounter,
+                source: MetaProgramCounter,
+                InstructionFactoryWithLabel
+            )
+            case fillBrTableEntry(
+                buildingTable: BuildingBrTable,
+                index: Int, make: BrTableEntryFactory
+            )
+            case fillCatchTableEntry(
+                buildingTable: BuildingCatchTable,
+                index: Int,
+                /// The position of the `catchHandlers` instruction (used to compute relative offset)
+                catchHandlersPC: MetaProgramCounter
+            )
+        }
+        struct LabelUser: CustomStringConvertible {
+            let action: OnPinAction
+            let sourceLine: UInt
+
+            var description: String {
+                "LabelUser:\(sourceLine)"
+            }
+        }
+        enum LabelEntry {
+            case unpinned(users: [LabelUser])
+            case pinned(MetaProgramCounter)
+        }
+
+        typealias ResultRelink = (_ result: VReg) -> Instruction
+        fileprivate struct LastEmission {
+            let position: MetaProgramCounter
+            let resultRelink: ResultRelink?
+        }
+
+        private var labels: [LabelEntry] = []
+        private var unpinnedLabels: Set<LabelRef> = []
+        private var instructions: [UInt64] = []
+        private var lastEmission: LastEmission?
+        fileprivate var insertingPC: MetaProgramCounter {
+            MetaProgramCounter(offsetFromHead: instructions.count)
+        }
+        let engineConfiguration: EngineConfiguration
+
+        init(engineConfiguration: EngineConfiguration) {
+            self.engineConfiguration = engineConfiguration
+        }
+
+        func assertDanglingLabels() throws(WasmKitError) {
+            for ref in unpinnedLabels {
+                let label = labels[ref]
+                switch label {
+                case .unpinned(let users):
+                    guard !users.isEmpty else { continue }
+                    throw WasmKitError("Internal consistency error: Label (#\(ref)) is used but not pinned at finalization-time: \(users)")
+                case .pinned: break  // unreachable in theory
+                }
+            }
+        }
+
+        func trace(_ message: @autoclosure () -> String) {
+            #if WASMKIT_TRANSLATOR_TRACE
+                print(message())
+            #endif
+        }
+
+        private mutating func assign(at index: Int, _ instruction: Instruction) {
+            trace("assign: \(instruction)")
+            let headSlot = instruction.headSlot(threadingModel: engineConfiguration.threadingModel)
+            trace("        [\(index)] = 0x\(String(headSlot, radix: 16))")
+            self.instructions[index] = headSlot
+            if let immediate = instruction.rawImmediate {
+                var slots: [CodeSlot] = []
+                immediate.emit(to: { slots.append($0) })
+                for (i, slot) in slots.enumerated() {
+                    let slotIndex = index + 1 + i
+                    trace("        [\(slotIndex)] = 0x\(String(slot, radix: 16))")
+                    self.instructions[slotIndex] = slot
+                }
+            }
+        }
+
+        mutating func resetLastEmission() {
+            lastEmission = nil
+        }
+
+        mutating func relinkLastInstructionResult(_ newResult: VReg) -> Bool {
+            guard let lastEmission = self.lastEmission,
+                let resultRelink = lastEmission.resultRelink
+            else { return false }
+            let newInstruction = resultRelink(newResult)
+            assign(at: lastEmission.position.offsetFromHead, newInstruction)
+            resetLastEmission()
+            return true
+        }
+
+        private mutating func emitSlot(_ codeSlot: CodeSlot) {
+            trace("emitSlot[\(instructions.count)]: 0x\(String(codeSlot, radix: 16))")
+            self.instructions.append(codeSlot)
+        }
+
+        func dump() {
+            for instruction in instructions {
+                print(instruction)
+            }
+        }
+
+        consuming func finalize() -> [UInt64] {
+            return instructions
+        }
+
+        mutating func emit(_ instruction: Instruction, resultRelink: ResultRelink? = nil) {
+            self.lastEmission = LastEmission(position: insertingPC, resultRelink: resultRelink)
+            trace("emitInstruction: \(instruction)")
+            emitSlot(instruction.headSlot(threadingModel: engineConfiguration.threadingModel))
+            if let immediate = instruction.rawImmediate {
+                var slots: [CodeSlot] = []
+                immediate.emit(to: { slots.append($0) })
+                for slot in slots { emitSlot(slot) }
+            }
+        }
+
+        mutating func putLabel() -> LabelRef {
+            let ref = labels.count
+            self.labels.append(.pinned(insertingPC))
+            return ref
+        }
+
+        mutating func allocLabel() -> LabelRef {
+            let ref = labels.count
+            self.labels.append(.unpinned(users: []))
+            self.unpinnedLabels.insert(ref)
+            return ref
+        }
+
+        fileprivate func resolveLabel(_ ref: LabelRef) -> MetaProgramCounter? {
+            let entry = self.labels[ref]
+            switch entry {
+            case .pinned(let pc): return pc
+            case .unpinned: return nil
+            }
+        }
+
+        fileprivate mutating func pinLabel(_ ref: LabelRef, pc: MetaProgramCounter) throws(WasmKitError) {
+            switch self.labels[ref] {
+            case .pinned(let oldPC):
+                throw WasmKitError("Internal consistency error: Label \(ref) is already pinned at \(oldPC), but tried to pin at \(pc) again")
+            case .unpinned(let users):
+                self.labels[ref] = .pinned(pc)
+                self.unpinnedLabels.remove(ref)
+                for user in users {
+                    switch user.action {
+                    case .emitInstruction(let insertAt, let source, let make):
+                        assign(at: insertAt.offsetFromHead, make(self, source, pc))
+                    case .fillBrTableEntry(let brTable, let index, let make):
+                        brTable[index] = make(self, pc)
+                    case .fillCatchTableEntry(let catchTable, let index, let catchHandlersPC):
+                        // pcOffset is relative to the PC position after the catchHandlers instruction
+                        catchTable[index].pcOffset = Int32(pc.offsetFromHead - catchHandlersPC.offsetFromHead)
+                    }
+                }
+            }
+        }
+
+        mutating func pinLabelHere(_ ref: LabelRef) throws(WasmKitError) {
+            try pinLabel(ref, pc: insertingPC)
+        }
+
+        /// Emit an instruction at the current insertion point with resolved label position
+        /// - Parameters:
+        ///   - ref: Label reference to be resolved
+        ///   - make: Factory closure to make an inserting instruction
+        mutating func emitWithLabel<Immediate: InstructionImmediate>(
+            _ makeInstruction: @escaping (Immediate) -> Instruction,
+            _ ref: LabelRef,
+            line: UInt = #line,
+            make:
+                @escaping (
+                    borrowing ISeqBuilder,
+                    // The position of the next slot of the creating instruction
+                    _ source: MetaProgramCounter,
+                    // The position of the resolved label
+                    _ target: MetaProgramCounter
+                ) -> (Immediate)
+        ) {
+            let insertAt = insertingPC
+
+            // Emit dummy instruction to be replaced later
+            emitSlot(0)  // dummy opcode
+            var immediateSlots = 0
+            Immediate.emit(to: { _ in immediateSlots += 1 })
+            for _ in 0..<immediateSlots { emitSlot(0) }
+
+            // Schedule actual emission
+            emitWithLabel(
+                ref, insertAt: insertAt, line: line,
+                make: {
+                    makeInstruction(make($0, $1, $2))
+                })
+        }
+
+        /// Emit an instruction at the specified position with resolved label position
+        /// - Parameters:
+        ///   - ref: Label reference to be resolved
+        ///   - insertAt: Instruction sequence offset to insert at
+        ///   - make: Factory closure to make an inserting instruction
+        private mutating func emitWithLabel(
+            _ ref: LabelRef, insertAt: MetaProgramCounter,
+            line: UInt = #line, make: @escaping InstructionFactoryWithLabel
+        ) {
+            switch self.labels[ref] {
+            case .pinned(let pc):
+                assign(at: insertAt.offsetFromHead, make(self, insertingPC, pc))
+            case .unpinned(var users):
+                users.append(LabelUser(action: .emitInstruction(insertAt: insertAt, source: insertingPC, make), sourceLine: line))
+                self.labels[ref] = .unpinned(users: users)
+            }
+        }
+
+        /// Schedule to fill a br_table entry with the resolved label position
+        /// - Parameters:
+        ///   - ref: Label reference to be resolved
+        ///   - table: Building br_table buffer
+        ///   - index: Index of the entry to fill
+        ///   - make: Factory closure to make an br_table entry
+        mutating func fillBrTableEntry(
+            _ ref: LabelRef,
+            table: BuildingBrTable,
+            index: Int, line: UInt = #line,
+            make: @escaping BrTableEntryFactory
+        ) {
+            switch self.labels[ref] {
+            case .pinned(let pc):
+                table[index] = make(self, pc)
+            case .unpinned(var users):
+                users.append(LabelUser(action: .fillBrTableEntry(buildingTable: table, index: index, make: make), sourceLine: line))
+                self.labels[ref] = .unpinned(users: users)
+            }
+        }
+
+        /// Schedule to fill a catch table entry with the resolved label position.
+        mutating func fillCatchTableEntry(
+            _ ref: LabelRef,
+            table: BuildingCatchTable,
+            index: Int,
+            catchHandlersPC: MetaProgramCounter,
+            line: UInt = #line
+        ) {
+            switch self.labels[ref] {
+            case .pinned(let pc):
+                table[index].pcOffset = Int32(pc.offsetFromHead - catchHandlersPC.offsetFromHead)
+            case .unpinned(var users):
+                users.append(
+                    LabelUser(
+                        action: .fillCatchTableEntry(buildingTable: table, index: index, catchHandlersPC: catchHandlersPC),
+                        sourceLine: line
+                    ))
+                self.labels[ref] = .unpinned(users: users)
+            }
+        }
+    }
+
+    struct Locals {
+        let types: [ValueType]
+
+        var count: Int { types.count }
+
+        func type(of localIndex: UInt32) throws(WasmKitError) -> ValueType {
+            guard Int(localIndex) < types.count else {
+                throw WasmKitError("Local index \(localIndex) is out of range")
+            }
+            return self.types[Int(localIndex)]
+        }
+    }
+
+    struct ConstSlots {
+        private(set) var values: [UntypedValue]
+        private var indexByValue: [UntypedValue: Int]
+        let stackLayout: StackLayout
+
+        init(stackLayout: StackLayout) {
+            self.values = []
+            self.indexByValue = [:]
+            self.stackLayout = stackLayout
+        }
+
+        mutating func allocate(_ value: Value) -> Int? {
+            let untyped = UntypedValue(value)
+            if let allocated = indexByValue[untyped] {
+                // NOTE: Share the same const slot for exactly the same bit pattern
+                // values even having different types
+                return allocated
+            }
+            guard values.count < stackLayout.constantSlotSize else { return nil }
+            let constSlotIndex = values.count
+            values.append(untyped)
+            indexByValue[untyped] = constSlotIndex
+            return constSlotIndex
+        }
+    }
+
+    let allocator: ISeqAllocator
+    let funcTypeInterner: Interner<FunctionType>
+    let engineConfiguration: EngineConfiguration
+    var module: InternalInstance
+    private var iseqBuilder: ISeqBuilder
+    var controlStack: ControlStack
+    var valueStack: ValueStack
+    var locals: Locals
+    let type: FunctionType
+    let stackLayout: StackLayout
+    /// The index of the function in the module
+    let functionIndex: FunctionIndex
+    /// Whether a call to this function should be intercepted
+    let isIntercepting: Bool
+    var constantSlots: ConstSlots
+    let validator: InstructionValidator
+
+    // Wasm debugging support.
+
+    /// Current offset to an instruction in the original Wasm binary processed by this translator.
+    var binaryOffset: Int = 0
+
+    /// Mapping from `self.iseqBuilder.instructions` to Wasm instructions.
+    /// As mapping between iSeq to Wasm is many:many, but we only care about first mapping for overlapping address,
+    /// we need to iterate on it in the order the mappings were stored to ensure we don't overwrite the frist mapping.
+    var iseqToWasmMapping = [(iseq: Int, wasm: Int)]()
+
+    init(
+        allocator: ISeqAllocator,
+        engineConfiguration: EngineConfiguration,
+        funcTypeInterner: Interner<FunctionType>,
+        module: InternalInstance,
+        type: FunctionType,
+        locals: [WasmTypes.ValueType],
+        functionIndex: FunctionIndex,
+        codeSize: Int,
+        isIntercepting: Bool
+    ) throws(WasmKitError) {
+        self.allocator = allocator
+        self.funcTypeInterner = funcTypeInterner
+        self.engineConfiguration = engineConfiguration
+        self.type = type
+        self.module = module
+        self.iseqBuilder = ISeqBuilder(engineConfiguration: engineConfiguration)
+        self.controlStack = ControlStack()
+        self.stackLayout = try StackLayout(
+            type: type,
+            locals: locals,
+            codeSize: codeSize
+        )
+        self.valueStack = ValueStack(stackLayout: stackLayout)
+        self.locals = Locals(types: type.parameters + locals)
+        self.functionIndex = functionIndex
+        self.isIntercepting = isIntercepting
+        self.constantSlots = ConstSlots(stackLayout: stackLayout)
+        self.validator = InstructionValidator(context: module)
+
+        do {
+            let endLabel = self.iseqBuilder.allocLabel()
+            let rootFrame = ControlStack.ControlFrame(
+                blockType: type,
+                valueStackHeight: 0,
+                slotStackHeight: 0,
+                continuation: endLabel,
+                kind: .block(root: true)
+            )
+            self.controlStack.pushFrame(rootFrame)
+        }
+    }
+
+    private func returnReg(_ index: Int) -> VReg {
+        return stackLayout.frameHeader.returnReg(index)
+    }
+    private func localReg(_ index: LocalIndex) -> VReg {
+        return stackLayout.localReg(index)
+    }
+
+    private mutating func emit(_ instruction: Instruction, resultRelink: ISeqBuilder.ResultRelink? = nil) {
+        self.updateInstructionMapping()
+        iseqBuilder.emit(instruction, resultRelink: resultRelink)
+    }
+
+    @discardableResult
+    private mutating func emitCopyStack(from source: VReg, to dest: VReg) -> Bool {
+        guard source != dest else { return false }
+        self.updateInstructionMapping()
+        emit(.copyStack(Instruction.CopyStackOperand(source: LVReg(source), dest: LVReg(dest))))
+        return true
+    }
+
+    @discardableResult
+    private mutating func emitCopyValueSlots(_ type: ValueType, from source: VReg, to dest: VReg) -> Bool {
+        var copied = false
+        for offset in 0..<type.stackSlotCount {
+            copied = emitCopyStack(from: source + VReg(offset), to: dest + VReg(offset)) || copied
+        }
+        return copied
+    }
+
+    private mutating func preserveOnStack(depth: Int) {
+        preserveLocalsOnStack(depth: depth)
+        for (source, dest, type) in valueStack.preserveConstsOnStack(depth: depth) {
+            emitCopyValueSlots(type, from: source, to: dest)
+        }
+    }
+
+    private mutating func preserveLocalsOnStack(_ localIndex: LocalIndex) {
+        for (copyTo, type) in valueStack.preserveLocalsOnStack(localIndex) {
+            emitCopyValueSlots(type, from: localReg(localIndex), to: copyTo)
+        }
+    }
+
+    /// Emit copy instructions to ensure local variable values on the logical
+    /// stack are on the physical stack.
+    ///
+    /// - Parameter depth: The depth of the logical stack to ensure the values
+    ///   are on the physical stack.
+    private mutating func preserveLocalsOnStack(depth: Int) {
+        for (sourceLocal, destReg, type) in valueStack.preserveLocalsOnStack(depth: depth) {
+            emitCopyValueSlots(type, from: localReg(sourceLocal), to: destReg)
+        }
+    }
+
+    /// Perform a precondition check for pop operation on value stack.
+    ///
+    /// - Parameter typeHint: A type expected to be popped. Only used for diagnostic purpose.
+    /// - Returns: `true` if check succeed. `false` if the pop operation is going to be performed in unreachable code path.
+    private func checkBeforePop(typeHint: ValueType?, depth: Int = 0, controlFrame: ControlStack.ControlFrame) throws(WasmKitError) -> Bool {
+        if _slowPath(valueStack.valueHeight - depth <= controlFrame.valueStackHeight) {
+            if controlFrame.reachable {
+                throw WasmKitError(message: .expectedTypeOnStackButEmpty(expected: typeHint))
+            }
+            // Too many pop on unreachable path is ignored
+            return false
+        }
+        return true
+    }
+    private func checkBeforePop(typeHint: ValueType?, depth: Int = 0) throws(WasmKitError) -> Bool {
+        let controlFrame = try controlStack.currentFrame()
+        return try self.checkBeforePop(typeHint: typeHint, depth: depth, controlFrame: controlFrame)
+    }
+    private mutating func ensureOnVReg(_ source: ValueSource) -> VReg {
+        // TODO: Copy to stack if source is on preg
+        // let copyTo = valueStack.stackRegBase + VReg(valueStack.slotHeight)
+        switch source {
+        case .vreg(let register):
+            return register
+        case .local(let index):
+            return stackLayout.localReg(index)
+        case .const(let index, _):
+            return stackLayout.constReg(index)
+        }
+    }
+    private mutating func ensureOnStack(_ source: ValueSource, type: ValueType) -> VReg {
+        let copyTo = valueStack.stackRegBase + VReg(valueStack.slotHeight)
+        switch source {
+        case .vreg(let vReg):
+            return vReg
+        case .local(let localIndex):
+            emitCopyValueSlots(type, from: localReg(localIndex), to: copyTo)
+            return copyTo
+        case .const(let index, _):
+            emitCopyValueSlots(type, from: stackLayout.constReg(index), to: copyTo)
+            return copyTo
+        }
+    }
+    private mutating func popOperand(_ type: ValueType) throws(WasmKitError) -> ValueSource? {
+        guard try checkBeforePop(typeHint: type) else {
+            return nil
+        }
+        iseqBuilder.resetLastEmission()
+        return try valueStack.pop(type)
+    }
+
+    private mutating func popOnStackOperand(_ type: ValueType) throws(WasmKitError) -> VReg? {
+        guard let op = try popOperand(type) else { return nil }
+        return ensureOnStack(op, type: type)
+    }
+
+    private mutating func popVRegOperand(_ type: ValueType) throws(WasmKitError) -> VReg? {
+        guard let op = try popOperand(type) else { return nil }
+        return ensureOnVReg(op)
+    }
+
+    private mutating func popAnyOperand() throws(WasmKitError) -> (MetaValue, ValueSource?) {
+        guard try checkBeforePop(typeHint: nil) else {
+            return (.unknown, nil)
+        }
+        iseqBuilder.resetLastEmission()
+        return try valueStack.pop()
+    }
+
+    @discardableResult
+    private mutating func popPushValues(_ valueTypes: [ValueType]) throws(WasmKitError) -> (valueHeight: Int, slotHeight: Int) {
+        var values: [ValueSource?] = []
+        for type in valueTypes.reversed() {
+            values.append(try popOperand(type))
+        }
+        let stackHeight = (valueHeight: self.valueStack.valueHeight, slotHeight: self.valueStack.slotHeight)
+        for (type, value) in zip(valueTypes, values.reversed()) {
+            switch value {
+            case .local(let localIndex):
+                // Re-push local variables to the stack
+                _ = try valueStack.pushLocal(localIndex, locals: &locals)
+            case .vreg, nil:
+                _ = valueStack.push(type)
+            case .const(let index, let type):
+                valueStack.pushConst(index, type: type)
+            }
+        }
+        return stackHeight
+    }
+
+    private func checkStackTop(_ valueTypes: [ValueType]) throws(WasmKitError) {
+        for (stackDepth, type) in valueTypes.reversed().enumerated() {
+            guard try checkBeforePop(typeHint: type, depth: stackDepth) else { return }
+            let actual = valueStack.peekType(depth: stackDepth)
+            switch actual {
+            case .some(let actualType):
+                guard actualType == type else {
+                    throw WasmKitError(message: .expectedTypeOnStack(expected: type, actual: actualType))
+                }
+            case .unknown: break
+            }
+        }
+    }
+
+    private mutating func visitReturnLike() throws(WasmKitError) {
+        try copyValuesIntoResultSlots(self.type.results, frameHeader: stackLayout.frameHeader)
+    }
+
+    /// Pop values from the stack and copy them to the return slots.
+    ///
+    /// - Parameter valueTypes: The types of the values to copy.
+    private mutating func copyValuesIntoResultSlots(_ valueTypes: [ValueType], frameHeader: FrameHeaderLayout) throws(WasmKitError) {
+        var copies: [(source: VReg, dest: VReg, type: ValueType)] = []
+        for (index, resultType) in valueTypes.enumerated().reversed() {
+            guard let operand = try popOperand(resultType) else { continue }
+            var source = ensureOnVReg(operand)
+            if case .local(let localIndex) = operand, stackLayout.isParameter(localIndex) {
+                // Parameter space is shared with return values, so we need to copy it to the stack
+                // before copying to the return slot to avoid overwriting the parameter value.
+                let copyTo = valueStack.stackRegBase + VReg(valueStack.slotHeight)
+                emitCopyValueSlots(resultType, from: localReg(localIndex), to: copyTo)
+                source = copyTo
+            }
+            let dest = frameHeader.returnReg(index)
+            copies.append((source, dest, resultType))
+        }
+        for (source, dest, type) in copies {
+            emitCopyValueSlots(type, from: source, to: dest)
+        }
+    }
+
+    /// Pop values from the stack and copy them to the parameter slots.
+    ///
+    /// This is used by `return_call`-like instructions which rewrite the current frame header
+    /// to the callee's frame header layout.
+    private mutating func copyValuesIntoParamSlots(_ valueTypes: [ValueType], frameHeader: FrameHeaderLayout) throws(WasmKitError) {
+        var copies: [(source: VReg, dest: VReg, type: ValueType)] = []
+        for (index, paramType) in valueTypes.enumerated().reversed() {
+            guard let operand = try popOperand(paramType) else { continue }
+            var source = ensureOnVReg(operand)
+            if case .local(let localIndex) = operand, stackLayout.isParameter(localIndex) {
+                // Parameter space is shared with frame header slots, so copy to stack first
+                // to avoid overwriting when the destination is also in the frame header.
+                let copyTo = valueStack.stackRegBase + VReg(valueStack.slotHeight)
+                emitCopyValueSlots(paramType, from: localReg(localIndex), to: copyTo)
+                source = copyTo
+            }
+            let dest = frameHeader.paramReg(index)
+            copies.append((source, dest, paramType))
+        }
+        for (source, dest, type) in copies {
+            emitCopyValueSlots(type, from: source, to: dest)
+        }
+    }
+
+    @discardableResult
+    private mutating func copyOnBranch(targetFrame frame: ControlStack.ControlFrame) throws(WasmKitError) -> Bool {
+        let depthValues = min(frame.copyTypes.count, valueStack.valueHeight - frame.valueStackHeight)
+        preserveOnStack(depth: depthValues)
+        let copyCount = VReg(frame.copySlotCount)
+        let sourceBase = valueStack.stackRegBase + VReg(valueStack.slotHeight)
+        let destBase = valueStack.stackRegBase + VReg(frame.slotStackHeight)
+        var emittedCopy = false
+        for i in (0..<copyCount).reversed() {
+            let source = sourceBase - 1 - VReg(i)
+            let dest: VReg
+            if case .block(root: true) = frame.kind {
+                guard frame.copySlotCount > 0 else { continue }
+                dest = returnReg(0) + copyCount - 1 - VReg(i)
+            } else {
+                dest = destBase + copyCount - 1 - VReg(i)
+            }
+            let copied = emitCopyStack(from: source, to: dest)
+            emittedCopy = emittedCopy || copied
+        }
+        return emittedCopy
+    }
+    private mutating func translateReturn() throws(WasmKitError) {
+        if isIntercepting {
+            // Emit `onExit` instruction before every `return` instruction
+            emit(.onExit(functionIndex))
+        }
+        // Clean up all exception handlers before returning from the function
+        let handlersToUnwind = controlStack.catchHandlersToUnwind(
+            relativeDepth: UInt32(controlStack.numberOfFrames - 1)
+        )
+        if handlersToUnwind > 0 {
+            emit(.catchHandlersEnd(Instruction.CatchHandlersEndOperand(count: handlersToUnwind)))
+        }
+        try visitReturnLike()
+        self.updateInstructionMapping()
+        iseqBuilder.emit(._return)
+    }
+    private mutating func markUnreachable() throws(WasmKitError) {
+        try controlStack.markUnreachable()
+        let currentFrame = try controlStack.currentFrame()
+        try valueStack.truncate(height: currentFrame.valueStackHeight)
+    }
+
+    private consuming func finalize() throws(WasmKitError) -> InstructionSequence {
+        if controlStack.numberOfFrames > 1 {
+            throw WasmKitError(message: .expectedMoreEndInstructions(count: controlStack.numberOfFrames - 1))
+        }
+        // Check dangling labels
+        try iseqBuilder.assertDanglingLabels()
+
+        iseqBuilder.emit(._return)
+        let instructions = iseqBuilder.finalize()
+        // TODO: Figure out a way to avoid the copy here while keeping the execution performance.
+        let buffer = allocator.allocateInstructions(capacity: instructions.count)
+        let initializedElementsIndex = buffer.initialize(fromContentsOf: instructions)
+        assert(initializedElementsIndex == instructions.endIndex)
+
+        #if WasmDebuggingSupport
+            for (iseq, wasm) in self.iseqToWasmMapping {
+                self.module.withValue {
+                    let absoluteIseq = iseq + buffer.baseAddress.unsafelyUnwrapped
+                    $0.instructionMapping.add(wasm: wasm, iseq: absoluteIseq)
+                }
+            }
+        #endif
+
+        let constants = allocator.allocateConstants(self.constantSlots.values)
+        return InstructionSequence(
+            instructions: buffer,
+            maxStackHeight: Int(valueStack.stackRegBase) + valueStack.maxSlotHeight,
+            constants: constants
+        )
+    }
+
+    private mutating func updateInstructionMapping() {
+        // This is a hot path, so best to exclude the code altogether if the trait isn't enabled.
+        #if WasmDebuggingSupport
+            guard self.module.isDebuggable else { return }
+
+            self.iseqToWasmMapping.append((self.iseqBuilder.insertingPC.offsetFromHead, self.binaryOffset))
+        #endif
+    }
+
+    // MARK: Main entry point
+
+    /// Translate a Wasm expression into a sequence of instructions.
+    consuming func translate(code: Code) throws(WasmKitError) -> InstructionSequence {
+        if isIntercepting {
+            // Emit `onEnter` instruction at the beginning of the function
+            emit(.onEnter(functionIndex))
+        }
+        var parser = ExpressionParser(code: code)
+        while let visit = try WasmKitError.wrap({ () throws(WasmParserError) in try parser.parse() }) {
+            do throws(WasmKitError) {
+                try visit(visitor: &self)
+            } catch {
+                var errorWithOffset = error
+                if errorWithOffset.location == nil {
+                    errorWithOffset.location = self.binaryOffset
+                }
+                throw errorWithOffset
+            }
+        }
+        return try finalize()
+    }
+
+    // MARK: - Visitor
+
+    mutating func visitUnreachable() throws(WasmKitError) -> Output {
+        emit(.unreachable)
+        try markUnreachable()
+    }
+    mutating func visitNop() -> Output {
+        emit(.nop)
+    }
+
+    mutating func visitBlock(blockType: WasmParser.BlockType) throws(WasmKitError) -> Output {
+        let blockType = try module.resolveBlockType(blockType)
+        let endLabel = iseqBuilder.allocLabel()
+        self.preserveLocalsOnStack(depth: self.valueStack.valueHeight)
+        let stackHeight = try popPushValues(blockType.parameters)
+        controlStack.pushFrame(
+            ControlStack.ControlFrame(
+                blockType: blockType,
+                valueStackHeight: stackHeight.valueHeight,
+                slotStackHeight: stackHeight.slotHeight,
+                continuation: endLabel,
+                kind: .block
+            )
+        )
+    }
+
+    mutating func visitLoop(blockType: WasmParser.BlockType) throws(WasmKitError) -> Output {
+        let blockType = try module.resolveBlockType(blockType)
+        preserveOnStack(depth: blockType.parameters.count)
+        iseqBuilder.resetLastEmission()
+        for param in blockType.parameters.reversed() {
+            _ = try popOperand(param)
+        }
+        let headLabel = iseqBuilder.putLabel()
+        let stackHeight = (valueHeight: self.valueStack.valueHeight, slotHeight: self.valueStack.slotHeight)
+        for param in blockType.parameters {
+            _ = valueStack.push(param)
+        }
+        controlStack.pushFrame(
+            ControlStack.ControlFrame(
+                blockType: blockType,
+                valueStackHeight: stackHeight.valueHeight,
+                slotStackHeight: stackHeight.slotHeight,
+                continuation: headLabel,
+                kind: .loop
+            )
+        )
+    }
+
+    mutating func visitIf(blockType: WasmParser.BlockType) throws(WasmKitError) -> Output {
+        // Pop condition value
+        let condition = try popVRegOperand(.i32)
+        let blockType = try module.resolveBlockType(blockType)
+        self.preserveLocalsOnStack(depth: self.valueStack.valueHeight)
+        preserveOnStack(depth: blockType.parameters.count)
+        let endLabel = iseqBuilder.allocLabel()
+        let elseLabel = iseqBuilder.allocLabel()
+        for param in blockType.parameters.reversed() {
+            _ = try popOperand(param)
+        }
+        let stackHeight = (valueHeight: self.valueStack.valueHeight, slotHeight: self.valueStack.slotHeight)
+        for param in blockType.parameters {
+            _ = valueStack.push(param)
+        }
+        controlStack.pushFrame(
+            ControlStack.ControlFrame(
+                blockType: blockType,
+                valueStackHeight: stackHeight.valueHeight,
+                slotStackHeight: stackHeight.slotHeight,
+                continuation: endLabel,
+                kind: .if(elseLabel: elseLabel, endLabel: endLabel, isElse: false)
+            )
+        )
+        guard let condition = condition else { return }
+        self.updateInstructionMapping()
+        iseqBuilder.emitWithLabel(Instruction.brIfNot, endLabel) { iseqBuilder, selfPC, endPC in
+            let targetPC: MetaProgramCounter
+            if let elsePC = iseqBuilder.resolveLabel(elseLabel) {
+                targetPC = elsePC
+            } else {
+                targetPC = endPC
+            }
+            let elseOrEnd = UInt32(targetPC.offsetFromHead - selfPC.offsetFromHead)
+            return Instruction.BrIfOperand(condition: LVReg(condition), offset: Int32(elseOrEnd))
+        }
+    }
+
+    mutating func visitElse() throws(WasmKitError) -> Output {
+        var frame = try controlStack.currentFrame()
+        guard case .if(let elseLabel, let endLabel, _) = frame.kind else {
+            throw WasmKitError(message: .expectedIfControlFrame)
+        }
+        preserveOnStack(depth: valueStack.valueHeight - frame.valueStackHeight)
+        try controlStack.resetReachability()
+        iseqBuilder.resetLastEmission()
+
+        self.updateInstructionMapping()
+        iseqBuilder.emitWithLabel(Instruction.br, endLabel) { _, selfPC, endPC in
+            let offset = endPC.offsetFromHead - selfPC.offsetFromHead
+            return Int32(offset)
+        }
+        for result in frame.blockType.results.reversed() {
+            guard try checkBeforePop(typeHint: result, controlFrame: frame) else { continue }
+            _ = try valueStack.pop(result)
+        }
+        guard valueStack.valueHeight == frame.valueStackHeight else {
+            throw WasmKitError(message: .valuesRemainingAtEndOfBlock)
+        }
+        guard valueStack.slotHeight == frame.slotStackHeight else {
+            throw WasmKitError(message: .valuesRemainingAtEndOfBlock)
+        }
+        _ = controlStack.popFrame()
+        frame.kind = .if(elseLabel: elseLabel, endLabel: endLabel, isElse: true)
+        frame.reachable = true
+        controlStack.pushFrame(frame)
+
+        // Re-push parameters
+        for parameter in frame.blockType.parameters {
+            _ = valueStack.push(parameter)
+        }
+        try iseqBuilder.pinLabelHere(elseLabel)
+    }
+
+    mutating func visitEnd() throws(WasmKitError) -> Output {
+        let toBePopped = try controlStack.currentFrame()
+        iseqBuilder.resetLastEmission()
+        if case .block(root: true) = toBePopped.kind {
+            try translateReturn()
+            guard valueStack.valueHeight == toBePopped.valueStackHeight else {
+                throw WasmKitError(message: .valuesRemainingAtEndOfBlock)
+            }
+            guard valueStack.slotHeight == toBePopped.slotStackHeight else {
+                throw WasmKitError(message: .valuesRemainingAtEndOfBlock)
+            }
+            try iseqBuilder.pinLabelHere(toBePopped.continuation)
+            return
+        }
+
+        if case .if(_, _, isElse: false) = toBePopped.kind {
+            let blockType = toBePopped.blockType
+            guard blockType.parameters == blockType.results else {
+                throw WasmKitError(message: .parameterResultTypeMismatch(blockType: blockType))
+            }
+        }
+
+        preserveOnStack(depth: Int(valueStack.valueHeight - toBePopped.valueStackHeight))
+        switch toBePopped.kind {
+        case .block:
+            try iseqBuilder.pinLabelHere(toBePopped.continuation)
+        case .loop: break
+        case .if:
+            try iseqBuilder.pinLabelHere(toBePopped.continuation)
+        case .tryTable(let catchCount):
+            emit(.catchHandlersEnd(Instruction.CatchHandlersEndOperand(count: catchCount)))
+            try iseqBuilder.pinLabelHere(toBePopped.continuation)
+        }
+        for result in toBePopped.blockType.results.reversed() {
+            guard try checkBeforePop(typeHint: result, controlFrame: toBePopped) else { continue }
+            _ = try valueStack.pop(result)
+        }
+        guard valueStack.valueHeight == toBePopped.valueStackHeight else {
+            throw WasmKitError(message: .valuesRemainingAtEndOfBlock)
+        }
+        guard valueStack.slotHeight == toBePopped.slotStackHeight else {
+            throw WasmKitError(message: .valuesRemainingAtEndOfBlock)
+        }
+        for result in toBePopped.blockType.results {
+            _ = valueStack.push(result)
+        }
+        _ = controlStack.popFrame()
+    }
+
+    private static func computePopCount(
+        destination: ControlStack.ControlFrame,
+        currentFrame: ControlStack.ControlFrame,
+        currentHeight: Int
+    ) throws(WasmKitError) -> UInt32 {
+        let popCount: UInt32
+        if _fastPath(currentFrame.reachable) {
+            let count = currentHeight - Int(destination.copySlotCount) - destination.slotStackHeight
+            guard count >= 0 else {
+                throw WasmKitError(message: .stackHeightUnderflow(available: currentHeight, required: destination.slotStackHeight + Int(destination.copySlotCount)))
+            }
+            popCount = UInt32(count)
+        } else {
+            // Slow path: This path is taken when "br" is placed after "unreachable"
+            // It's ok to put the fake popCount because it will not be executed at runtime.
+            popCount = 0
+        }
+        return popCount
+    }
+
+    private mutating func emitBranch<Immediate: InstructionImmediate>(
+        _ makeInstruction: @escaping (Immediate) -> Instruction,
+        relativeDepth: UInt32,
+        make: @escaping (_ offset: Int32, _ copyCount: UInt32, _ popCount: UInt32) -> Immediate
+    ) throws(WasmKitError) {
+        let frame = try controlStack.branchTarget(relativeDepth: relativeDepth)
+        let copyCount = frame.copySlotCount
+        let popCount = try Self.computePopCount(
+            destination: frame,
+            currentFrame: try controlStack.currentFrame(),
+            currentHeight: valueStack.slotHeight
+        )
+
+        self.updateInstructionMapping()
+        iseqBuilder.emitWithLabel(makeInstruction, frame.continuation) { _, selfPC, continuation in
+            let relativeOffset = continuation.offsetFromHead - selfPC.offsetFromHead
+            return make(Int32(relativeOffset), UInt32(copyCount), popCount)
+        }
+    }
+    /// Emit `catchHandlersEnd` instructions for any `try_table` blocks that
+    /// would be exited by branching to the given relative depth.
+    private mutating func emitCatchHandlersUnwind(relativeDepth: UInt32) {
+        let count = controlStack.catchHandlersToUnwind(relativeDepth: relativeDepth)
+        if count > 0 {
+            emit(.catchHandlersEnd(Instruction.CatchHandlersEndOperand(count: count)))
+        }
+    }
+
+    mutating func visitBr(relativeDepth: UInt32) throws(WasmKitError) -> Output {
+        let frame = try controlStack.branchTarget(relativeDepth: relativeDepth)
+
+        // Copy from the stack top to the bottom to avoid overwrites
+        //              [BLOCK1]
+        //              [      ]
+        //              [      ]
+        //              [BLOCK2] () -> (i32, i64)
+        // copy [1] +-->[  i32 ]
+        //          +---[  i32 ]<--+ copy [2]
+        //              [  i64 ]---+
+        try copyOnBranch(targetFrame: frame)
+        emitCatchHandlersUnwind(relativeDepth: relativeDepth)
+        try emitBranch(Instruction.br, relativeDepth: relativeDepth) { offset, copyCount, popCount in
+            return offset
+        }
+        for type in frame.copyTypes.reversed() {
+            _ = try popOperand(type)
+        }
+        try markUnreachable()
+    }
+
+    mutating func visitBrIf(relativeDepth: UInt32) throws(WasmKitError) -> Output {
+        let frame = try controlStack.branchTarget(relativeDepth: relativeDepth)
+        let condition = try popVRegOperand(.i32)
+        let handlersToUnwind = controlStack.catchHandlersToUnwind(relativeDepth: relativeDepth)
+
+        if frame.copySlotCount == 0 && handlersToUnwind == 0 {
+            guard let condition else { return }
+            // Optimization where we don't need copying values when the branch taken
+            // and no exception handlers need unwinding.
+            self.updateInstructionMapping()
+            iseqBuilder.emitWithLabel(Instruction.brIf, frame.continuation) { _, selfPC, continuation in
+                let relativeOffset = continuation.offsetFromHead - selfPC.offsetFromHead
+                return Instruction.BrIfOperand(
+                    condition: LVReg(condition), offset: Int32(relativeOffset)
+                )
+            }
+            return
+        }
+        preserveOnStack(depth: valueStack.valueHeight - frame.valueStackHeight)
+
+        if let condition {
+            // If branch taken, fallthrough to landing pad, copy stack values,
+            // clean up exception handlers (if any), then branch to the actual place.
+            // If branch not taken, branch to the next of the landing pad.
+            //
+            // (block (result i32)
+            //   (i32.const 42)
+            //   (i32.const 24)
+            //   (local.get 0)
+            //   (br_if 0) ------+
+            //   (local.get 1)   |
+            // )         <-------+
+            //
+            // [0x00] (i32.const 42 reg:0)
+            // [0x01] (i32.const 24 reg:1)
+            // [0x02] (local.get 0 result=reg:2)
+            // [0x03] (br_if_z offset=+0x3 cond=reg:2) --+
+            // [0x04] (stack.copy reg:1 -> reg:0)        |
+            //        (catchHandlersEnd count=N)?        |  // only if handlersToUnwind > 0
+            // [0x05] (br offset=+0x2) --------+         |
+            // [0x06] (local.get 1 reg:2) <----|---------+
+            // [0x07] ...              <-------+
+            let onBranchNotTaken = iseqBuilder.allocLabel()
+            self.updateInstructionMapping()
+            iseqBuilder.emitWithLabel(Instruction.brIfNot, onBranchNotTaken) { _, conditionCheckAt, continuation in
+                let relativeOffset = continuation.offsetFromHead - conditionCheckAt.offsetFromHead
+                return Instruction.BrIfOperand(condition: LVReg(condition), offset: Int32(relativeOffset))
+            }
+            try copyOnBranch(targetFrame: frame)
+            if handlersToUnwind > 0 {
+                emit(.catchHandlersEnd(Instruction.CatchHandlersEndOperand(count: handlersToUnwind)))
+            }
+            self.updateInstructionMapping()
+            try emitBranch(Instruction.br, relativeDepth: relativeDepth) { offset, copyCount, popCount in
+                return offset
+            }
+            try iseqBuilder.pinLabelHere(onBranchNotTaken)
+        }
+        try popPushValues(frame.copyTypes)
+    }
+
+    mutating func visitBrTable(targets: WasmParser.BrTable) throws(WasmKitError) -> Output {
+        guard let index = try popVRegOperand(.i32) else { return }
+
+        let defaultFrame = try controlStack.branchTarget(relativeDepth: targets.defaultIndex)
+
+        // If this instruction is unreachable, copyCount might be greater than the actual stack height
+        try preserveOnStack(
+            depth: min(
+                defaultFrame.copyTypes.count,
+                valueStack.valueHeight - controlStack.currentFrame().valueStackHeight
+            )
+        )
+        let allLabelIndices = targets.labelIndices + [targets.defaultIndex]
+        let tableBuffer = allocator.allocateBrTable(capacity: allLabelIndices.count)
+        let operand = Instruction.BrTableOperand(
+            baseAddress: tableBuffer.baseAddress!,
+            count: UInt16(tableBuffer.count), index: index
+        )
+        self.updateInstructionMapping()
+        iseqBuilder.emit(.brTable(operand))
+        let brTableAt = iseqBuilder.insertingPC
+
+        //
+        // (block $l1 (result i32)
+        //   (i32.const 63)
+        //   (block $l2 (result i32)
+        //     (i32.const 42)
+        //     (i32.const 24)
+        //     (local.get 0)
+        //     (br_table $l1 $l2) ---+
+        //                           |
+        //   )               <-------+
+        //   (i32.const 36)          |
+        // )              <----------+
+        //
+        //
+        //           [0x00] (i32.const 63 reg:0)
+        //           [0x01] (i32.const 42 reg:1)
+        //           [0x02] (i32.const 24 reg:2)
+        //           [0x03] (local.get 0 result=reg:3)
+        //           [0x04] (br_table index=reg:3 offsets=[
+        //                    +0x01       -----------------+
+        //                    +0x03       -----------------|----+
+        //                  ])                             |    |
+        //           [0x05] (stack.copy reg:2 -> reg:0) <--+    |
+        //  +------- [0x06] (br offset=+0x03)                   |
+        //  |        [0x07] (stack.copy reg:2 -> reg:1)  <------+
+        //  |  +---- [0x08] (br offset=+0x03)
+        //  +--|---> [0x09] (i32.const 36 reg:2)
+        //     |     [0x0a] (stack.copy reg:2 -> reg:0)
+        //     +---> [0x0b] ...
+        for (entryIndex, labelIndex) in allLabelIndices.enumerated() {
+            let frame = try controlStack.branchTarget(relativeDepth: labelIndex)
+
+            // Check copyTypes consistency
+            guard frame.copyTypes.count == defaultFrame.copyTypes.count else {
+                throw WasmKitError(
+                    message:
+                        .expectedSameCopyTypes(
+                            frameCopyTypes: frame.copyTypes,
+                            defaultFrameCopyTypes: defaultFrame.copyTypes
+                        )
+                )
+            }
+            try checkStackTop(frame.copyTypes)
+
+            let handlersToUnwind = controlStack.catchHandlersToUnwind(relativeDepth: labelIndex)
+
+            do {
+                let relativeOffset = iseqBuilder.insertingPC.offsetFromHead - brTableAt.offsetFromHead
+                tableBuffer[entryIndex] = Instruction.BrTableOperand.Entry(
+                    offset: Int32(relativeOffset)
+                )
+            }
+            let emittedCopy = try copyOnBranch(targetFrame: frame)
+            if emittedCopy || handlersToUnwind > 0 {
+                if handlersToUnwind > 0 {
+                    emit(.catchHandlersEnd(Instruction.CatchHandlersEndOperand(count: handlersToUnwind)))
+                }
+                self.updateInstructionMapping()
+                iseqBuilder.emitWithLabel(Instruction.br, frame.continuation) { _, brAt, continuation in
+                    let relativeOffset = continuation.offsetFromHead - brAt.offsetFromHead
+                    return Int32(relativeOffset)
+                }
+            } else {
+                // Optimization: If no value is copied and no handlers to unwind,
+                // we can directly jump to the target
+                iseqBuilder.fillBrTableEntry(frame.continuation, table: tableBuffer, index: entryIndex) { _, continuation in
+                    return Instruction.BrTableOperand.Entry(offset: Int32(continuation.offsetFromHead - brTableAt.offsetFromHead))
+                }
+            }
+        }
+        // Pop branch copy values for type checking
+        for type in defaultFrame.copyTypes.reversed() {
+            _ = try popOperand(type)
+        }
+        try markUnreachable()
+    }
+
+    mutating func visitReturn() throws(WasmKitError) -> Output {
+        try translateReturn()
+        try markUnreachable()
+    }
+
+    private mutating func visitCallLike(calleeType: FunctionType) throws(WasmKitError) -> VReg? {
+        for parameter in calleeType.parameters.reversed() {
+            guard (try popOnStackOperand(parameter)) != nil else { return nil }
+        }
+
+        let spAddend =
+            valueStack.stackRegBase + VReg(valueStack.slotHeight)
+            + FrameHeaderLayout.size(of: calleeType)
+
+        for result in calleeType.results {
+            _ = valueStack.push(result)
+        }
+        return VReg(spAddend)
+    }
+    mutating func visitCall(functionIndex: UInt32) throws(WasmKitError) -> Output {
+        let calleeType = try self.module.functionType(functionIndex, interner: funcTypeInterner)
+        guard let spAddend = try visitCallLike(calleeType: calleeType) else { return }
+        guard let callee = self.module.resolveCallee(functionIndex) else {
+            // Skip actual code emission if validation-only mode
+            return
+        }
+        if callee.isWasm {
+            if module.isSameInstance(callee.wasm.instance) {
+                emit(.compilingCall(Instruction.CallOperand(callee: callee, spAddend: spAddend)))
+                return
+            }
+        }
+        emit(.call(Instruction.CallOperand(callee: callee, spAddend: spAddend)))
+    }
+
+    mutating func visitCallIndirect(typeIndex: UInt32, tableIndex: UInt32) throws(WasmKitError) -> Output {
+        let addressType = try module.addressType(tableIndex: tableIndex)
+        let address = try popVRegOperand(addressType)  // function address
+        let calleeType = try self.module.resolveType(typeIndex)
+        guard let spAddend = try visitCallLike(calleeType: calleeType) else { return }
+        guard let address = address else { return }
+        let internType = funcTypeInterner.intern(calleeType)
+        let operand = Instruction.CallIndirectOperand(
+            tableIndex: tableIndex,
+            type: internType,
+            index: address,
+            spAddend: spAddend
+        )
+        emit(.callIndirect(operand))
+    }
+
+    /// Emit instructions to prepare the frame header for a return call to replace the
+    /// current frame header with the callee's frame header layout.
+    ///
+    /// The frame header should have the callee's frame header layout and parameter
+    /// slots are filled with arguments on the caller's stack.
+    ///
+    /// - Parameters:
+    ///   - calleeType: The type of the callee function.
+    ///   - stackTopHeightToCopy: The height of the stack top needed to be available at the
+    ///     return-call-like instruction point.
+    private mutating func prepareFrameHeaderForReturnCall(calleeType: FunctionType, stackTopHeightToCopy: Int) throws(WasmKitError) {
+        let calleeFrameHeader = FrameHeaderLayout(type: calleeType)
+        if calleeType == self.type {
+            // Fast path: If the callee and the caller have the same signature, we can
+            // skip reconstructing the frame header and we can just copy the parameters.
+        } else {
+            // Ensure all parameters are on stack to avoid conflicting with the next resize.
+            preserveOnStack(depth: calleeType.parameters.count)
+            // Resize the current frame header while moving stack slots after the header
+            // to the resized positions
+            let newHeaderSize = FrameHeaderLayout.size(of: calleeType)
+            let delta = newHeaderSize - FrameHeaderLayout.size(of: type)
+            let sizeToCopy = VReg(FrameHeaderLayout.numberOfSavingSlots) + valueStack.stackRegBase + VReg(stackTopHeightToCopy)
+            emit(.resizeFrameHeader(Instruction.ResizeFrameHeaderOperand(delta: delta, sizeToCopy: sizeToCopy)))
+        }
+        try copyValuesIntoParamSlots(calleeType.parameters, frameHeader: calleeFrameHeader)
+    }
+
+    mutating func visitReturnCall(functionIndex: UInt32) throws(WasmKitError) {
+        let calleeType = try self.module.functionType(functionIndex, interner: funcTypeInterner)
+        try validator.validateReturnCallLike(calleeType: calleeType, callerType: type)
+
+        guard let callee = self.module.resolveCallee(functionIndex) else {
+            // Skip actual code emission if validation-only mode
+            return
+        }
+        // Clean up all exception handlers before the tail call
+        let handlersToUnwind = controlStack.catchHandlersToUnwind(
+            relativeDepth: UInt32(controlStack.numberOfFrames - 1)
+        )
+        if handlersToUnwind > 0 {
+            emit(.catchHandlersEnd(Instruction.CatchHandlersEndOperand(count: handlersToUnwind)))
+        }
+        try prepareFrameHeaderForReturnCall(calleeType: calleeType, stackTopHeightToCopy: valueStack.slotHeight)
+        emit(.returnCall(Instruction.ReturnCallOperand(callee: callee)))
+        try markUnreachable()
+    }
+
+    mutating func visitReturnCallIndirect(typeIndex: UInt32, tableIndex: UInt32) throws(WasmKitError) {
+        let stackTopHeightToCopy = valueStack.slotHeight
+        let addressType = try module.addressType(tableIndex: tableIndex)
+        // Preserve function index slot on stack
+        let address = try popOnStackOperand(addressType)  // function address
+        guard let address = address else { return }
+
+        let calleeType = try self.module.resolveType(typeIndex)
+        let internType = funcTypeInterner.intern(calleeType)
+
+        // Clean up all exception handlers before the tail call
+        let handlersToUnwind = controlStack.catchHandlersToUnwind(
+            relativeDepth: UInt32(controlStack.numberOfFrames - 1)
+        )
+        if handlersToUnwind > 0 {
+            emit(.catchHandlersEnd(Instruction.CatchHandlersEndOperand(count: handlersToUnwind)))
+        }
+        try prepareFrameHeaderForReturnCall(
+            calleeType: calleeType,
+            // Keep the stack space including the function index slot to be
+            // accessible at the `return_call_indirect` instruction point.
+            stackTopHeightToCopy: stackTopHeightToCopy
+        )
+
+        let operand = Instruction.ReturnCallIndirectOperand(
+            tableIndex: tableIndex,
+            type: internType,
+            index: address
+        )
+        emit(.returnCallIndirect(operand))
+        try markUnreachable()
+    }
+
+    // MARK: - Exception handling
+
+    mutating func visitThrow(tagIndex: UInt32) throws(WasmKitError) -> Output {
+        let tag = try module.tags[validating: Int(tagIndex)]
+        let tagType = funcTypeInterner.resolve(tag.type)
+        // Pop tag parameter values and ensure they're on the physical stack
+        for param in tagType.parameters.reversed() {
+            guard (try popOnStackOperand(param)) != nil else { return }
+        }
+        let payloadBase = valueStack.stackRegBase + VReg(valueStack.slotHeight)
+        // Push the parameter values back (they've been popped for on-stack guarantee)
+        for param in tagType.parameters {
+            _ = valueStack.push(param)
+        }
+        emit(.throwTag(Instruction.ThrowTagOperand(tagIndex: tagIndex, payloadBase: payloadBase)))
+        try markUnreachable()
+    }
+
+    mutating func visitThrowRef() throws(WasmKitError) -> Output {
+        guard let exnRef = try popVRegOperand(.ref(.init(isNullable: true, heapType: .abstract(.exnRef)))) else { return }
+        emit(.throwRef(Instruction.ThrowRefOperand(exnRef: exnRef)))
+        try markUnreachable()
+    }
+
+    mutating func visitTryTable(blockType: WasmParser.BlockType, tryCatch: WasmParser.TryCatch) throws(WasmKitError) -> Output {
+        let blockType = try module.resolveBlockType(blockType)
+        let endLabel = iseqBuilder.allocLabel()
+
+        self.preserveLocalsOnStack(depth: self.valueStack.valueHeight)
+        let stackHeight = try popPushValues(blockType.parameters)
+
+        let catchCount = UInt16(tryCatch.catches.count)
+
+        // Allocate the catch table
+        let catchTable = allocator.allocateCatchTable(capacity: tryCatch.catches.count)
+
+        // Emit the catchHandlers instruction first so we know its PC position.
+        self.updateInstructionMapping()
+        let operand = Instruction.CatchHandlersOperand(
+            baseAddress: UnsafePointer(catchTable.baseAddress!),
+            count: catchCount
+        )
+        emit(.catchHandlers(operand))
+
+        // After emission, insertingPC points past the catchHandlers instruction.
+        // This is the reference point for pcOffset values.
+        let catchHandlersEndPC = iseqBuilder.insertingPC
+
+        // Process catch clauses BEFORE pushing the try_table frame, because
+        // catch clause label depths are relative to the enclosing scope
+        // (the try_table's own label is not in scope for catch clauses per spec).
+        for (i, clause) in tryCatch.catches.enumerated() {
+            let tagIndex: UInt32?
+            let labelDepth: UInt32
+            let isRef: Bool
+
+            switch clause {
+            case .catch(let tIdx, let lIdx):
+                tagIndex = tIdx
+                labelDepth = lIdx
+                isRef = false
+            case .catchRef(let tIdx, let lIdx):
+                tagIndex = tIdx
+                labelDepth = lIdx
+                isRef = true
+            case .catchAll(let lIdx):
+                tagIndex = nil
+                labelDepth = lIdx
+                isRef = false
+            case .catchAllRef(let lIdx):
+                tagIndex = nil
+                labelDepth = lIdx
+                isRef = true
+            }
+
+            let targetFrame = try controlStack.branchTarget(relativeDepth: labelDepth)
+
+            // Resolve the tag to get the InternalTag handle
+            let tag: InternalTag?
+            var catchTypes: [ValueType]
+            if let tagIndex {
+                tag = try module.tags[validating: Int(tagIndex)]
+                let tagType = funcTypeInterner.resolve(tag!.type)
+                catchTypes = tagType.parameters
+            } else {
+                tag = nil
+                catchTypes = []
+            }
+            if isRef {
+                catchTypes.append(.ref(.init(isNullable: true, heapType: .abstract(.exnRef))))
+            }
+
+            // Validate that the caught value types match the target label's copy types
+            guard catchTypes == targetFrame.copyTypes else {
+                throw WasmKitError(message: .catchTypeMismatch)
+            }
+
+            // The payload register base is where the handler will write values.
+            // This is at the target frame's stack base.
+            let payloadRegBase = valueStack.stackRegBase + VReg(targetFrame.slotStackHeight)
+
+            // Initialize the entry with a placeholder pcOffset (will be resolved)
+            catchTable[i] = CatchTableEntry(
+                tag: tag,
+                isRef: isRef,
+                pcOffset: 0,  // placeholder
+                payloadRegBase: payloadRegBase
+            )
+
+            // Schedule the pcOffset to be filled when the target label is resolved.
+            // The offset is relative to catchHandlersEndPC.
+            iseqBuilder.fillCatchTableEntry(
+                targetFrame.continuation, table: catchTable, index: i,
+                catchHandlersPC: catchHandlersEndPC
+            )
+        }
+
+        // Push the try_table frame AFTER processing catch clauses.
+        // The try_table's own label is only in scope for the body instructions.
+        controlStack.pushFrame(
+            ControlStack.ControlFrame(
+                blockType: blockType,
+                valueStackHeight: stackHeight.valueHeight,
+                slotStackHeight: stackHeight.slotHeight,
+                continuation: endLabel,
+                kind: .tryTable(catchCount: catchCount)
+            )
+        )
+    }
+
+    mutating func visitDrop() throws(WasmKitError) -> Output {
+        _ = try popAnyOperand()
+        iseqBuilder.resetLastEmission()
+    }
+    mutating func visitSelect() throws(WasmKitError) -> Output {
+        let condition = try popVRegOperand(.i32)
+        let (value1Type, value1) = try popAnyOperand()
+        let (value2Type, value2) = try popAnyOperand()
+        switch (value1Type, value2Type) {
+        case (.some(.ref(_)), _), (_, .some(.ref(_))):
+            throw WasmKitError(message: .cannotSelectOnReferenceTypes)
+        case (.some(let type1), .some(let type2)):
+            guard type1 == type2 else {
+                throw WasmKitError(message: .typeMismatchOnSelect(expected: type1, actual: type2))
+            }
+        case (.unknown, _), (_, .unknown):
+            break
+        }
+        let result = valueStack.push(value1Type)
+        if let condition = condition, let value1 = value1, let value2 = value2 {
+            let onTrue = ensureOnVReg(value2)
+            let onFalse = ensureOnVReg(value1)
+            if value1Type.concreteType == .v128 {
+                emit(.select(.init(result: result, condition: condition, onTrue: onTrue, onFalse: onFalse)))
+                emit(.select(.init(result: result + 1, condition: condition, onTrue: onTrue + 1, onFalse: onFalse + 1)))
+            } else {
+                emit(.select(.init(result: result, condition: condition, onTrue: onTrue, onFalse: onFalse)))
+            }
+        }
+    }
+    mutating func visitTypedSelect(type: WasmTypes.ValueType) throws(WasmKitError) -> Output {
+        let condition = try popVRegOperand(.i32)
+        let (value1Type, value1) = try popAnyOperand()
+        let (_, value2) = try popAnyOperand()
+        // TODO: Perform actual validation
+        // guard value1 == ValueType(type) else {
+        //     throw WasmKitError("Type mismatch on `select`. Expected \(value1) and \(type) to be same")
+        // }
+        // guard value2 == ValueType(type) else {
+        //     throw WasmKitError("Type mismatch on `select`. Expected \(value2) and \(type) to be same")
+        // }
+        let result = valueStack.push(value1Type)
+        if let condition = condition, let value1 = value1, let value2 = value2 {
+            let onTrue = ensureOnVReg(value2)
+            let onFalse = ensureOnVReg(value1)
+            if type == .v128 {
+                emit(.select(.init(result: result, condition: condition, onTrue: onTrue, onFalse: onFalse)))
+                emit(.select(.init(result: result + 1, condition: condition, onTrue: onTrue + 1, onFalse: onFalse + 1)))
+            } else {
+                emit(.select(.init(result: result, condition: condition, onTrue: onTrue, onFalse: onFalse)))
+            }
+        }
+    }
+    mutating func visitLocalGet(localIndex: UInt32) throws(WasmKitError) -> Output {
+        iseqBuilder.resetLastEmission()
+        try valueStack.pushLocal(localIndex, locals: &locals)
+    }
+    mutating func visitLocalSetOrTee(localIndex: UInt32, isTee: Bool) throws(WasmKitError) {
+        preserveLocalsOnStack(localIndex)
+        let type = try locals.type(of: localIndex)
+        let result = localReg(localIndex)
+
+        guard try checkBeforePop(typeHint: type) else { return }
+        let op = try valueStack.pop(type)
+
+        if case .const(let slotIndex, _) = op {
+            // Optimize (local.set $x (i32.const $c)) to reg:$x = 42 rather than through const slot
+            let value = constantSlots.values[slotIndex]
+            let is32Bit = type == .i32 || type == .f32
+            if is32Bit {
+                emit(.const32(Instruction.Const32Operand(value: UInt32(value.storage), result: LVReg(result))))
+            } else {
+                emit(.const64(Instruction.Const64Operand(value: value, result: LLVReg(result))))
+            }
+            return
+        }
+
+        let value = ensureOnVReg(op)
+        guard try controlStack.currentFrame().reachable else { return }
+        if type != .v128, !isTee, iseqBuilder.relinkLastInstructionResult(result) {
+            // Good news, copyStack is optimized out :)
+            return
+        }
+        emitCopyValueSlots(type, from: value, to: result)
+    }
+    mutating func visitLocalSet(localIndex: UInt32) throws(WasmKitError) -> Output {
+        try visitLocalSetOrTee(localIndex: localIndex, isTee: false)
+    }
+    mutating func visitLocalTee(localIndex: UInt32) throws(WasmKitError) -> Output {
+        try visitLocalSetOrTee(localIndex: localIndex, isTee: true)
+        _ = try valueStack.pushLocal(localIndex, locals: &locals)
+    }
+    mutating func visitGlobalGet(globalIndex: UInt32) throws(WasmKitError) -> Output {
+        let type = try module.globalType(globalIndex)
+        let result = valueStack.push(type)
+        guard let global = module.resolveGlobal(globalIndex) else {
+            // Skip actual code emission if validation-only mode
+            return
+        }
+        emit(.globalGet(Instruction.GlobalAndVRegOperand(reg: LLVReg(result), global: global)))
+    }
+    mutating func visitGlobalSet(globalIndex: UInt32) throws(WasmKitError) -> Output {
+        let type = try module.globalType(globalIndex)
+        guard let value = try popVRegOperand(type) else { return }
+        guard let global = module.resolveGlobal(globalIndex) else {
+            // Skip actual code emission if validation-only mode
+            return
+        }
+        try validator.validateGlobalSet(global.globalType)
+        emit(.globalSet(Instruction.GlobalAndVRegOperand(reg: LLVReg(value), global: global)))
+    }
+
+    private mutating func pushEmit(
+        _ type: ValueType,
+        _ instruction: @escaping (VReg) -> Instruction
+    ) {
+        let register = valueStack.push(type)
+        emit(
+            instruction(register),
+            resultRelink: { newResult in
+                instruction(newResult)
+            })
+    }
+    private mutating func popPushEmit(
+        _ pop: ValueType,
+        _ push: ValueType,
+        _ instruction: @escaping (_ popped: VReg, _ result: VReg) -> Instruction
+    ) throws(WasmKitError) {
+        let value = try popVRegOperand(pop)
+        let result = valueStack.push(push)
+        if let value = value {
+            emit(
+                instruction(value, result),
+                resultRelink: { newResult in
+                    instruction(value, newResult)
+                })
+        }
+    }
+
+    private mutating func pop3Emit(
+        _ pops: (ValueType, ValueType, ValueType),
+        _ instruction: (
+            _ popped: (VReg, VReg, VReg),
+            inout ValueStack
+        ) -> Instruction
+    ) throws(WasmKitError) {
+        guard let pop1 = try popVRegOperand(pops.0),
+            let pop2 = try popVRegOperand(pops.1),
+            let pop3 = try popVRegOperand(pops.2)
+        else { return }
+        emit(instruction((pop1, pop2, pop3), &valueStack))
+    }
+
+    private mutating func pop2Emit(
+        _ pops: (ValueType, ValueType),
+        _ instruction: (
+            _ popped: (VReg, VReg),
+            inout ValueStack
+        ) -> Instruction
+    ) throws(WasmKitError) {
+        guard let pop1 = try popVRegOperand(pops.0),
+            let pop2 = try popVRegOperand(pops.1)
+        else { return }
+        emit(instruction((pop1, pop2), &valueStack))
+    }
+
+    private mutating func pop2PushEmit(
+        _ pops: (ValueType, ValueType),
+        _ push: ValueType,
+        _ instruction:
+            @escaping (
+                _ popped: (VReg, VReg),
+                _ result: VReg
+            ) -> Instruction
+    ) throws(WasmKitError) {
+        guard let pop1 = try popVRegOperand(pops.0),
+            let pop2 = try popVRegOperand(pops.1)
+        else { return }
+        let result = valueStack.push(push)
+        emit(
+            instruction((pop1, pop2), result),
+            resultRelink: { result in
+                instruction((pop1, pop2), result)
+            })
+    }
+
+    private mutating func pop3PushEmit(
+        _ pops: (ValueType, ValueType, ValueType),
+        _ push: ValueType,
+        _ instruction: @escaping (_ popped: (VReg, VReg, VReg), _ result: VReg) -> Instruction
+    ) throws(WasmKitError) {
+        guard let pop1 = try popVRegOperand(pops.0),
+            let pop2 = try popVRegOperand(pops.1),
+            let pop3 = try popVRegOperand(pops.2)
+        else { return }
+        let result = valueStack.push(push)
+        emit(
+            instruction((pop1, pop2, pop3), result),
+            resultRelink: { result in
+                instruction((pop1, pop2, pop3), result)
+            })
+    }
+
+    private mutating func visitLoad(
+        _ memarg: MemArg,
+        _ type: ValueType,
+        _ naturalAlignment: Int,
+        _ instruction: @escaping (Instruction.LoadOperand) -> Instruction
+    ) throws(WasmKitError) {
+        let isMemory64 = try module.isMemory64(memoryIndex: 0)
+        try validator.validateMemArg(memarg, naturalAlignment: naturalAlignment)
+        try popPushEmit(.address(isMemory64: isMemory64), type) { value, result in
+            let loadOperand = Instruction.LoadOperand(
+                offset: memarg.offset,
+                pointer: value,
+                result: result
+            )
+            return instruction(loadOperand)
+        }
+    }
+    private mutating func visitStore(
+        _ memarg: MemArg,
+        _ type: ValueType,
+        _ naturalAlignment: Int,
+        _ instruction: (Instruction.StoreOperand) -> Instruction
+    ) throws(WasmKitError) {
+        let isMemory64 = try module.isMemory64(memoryIndex: 0)
+        try validator.validateMemArg(memarg, naturalAlignment: naturalAlignment)
+        let value = try popVRegOperand(type)
+        let pointer = try popVRegOperand(.address(isMemory64: isMemory64))
+        if let value = value, let pointer = pointer {
+            let storeOperand = Instruction.StoreOperand(
+                offset: memarg.offset,
+                pointer: pointer,
+                value: value
+            )
+            emit(instruction(storeOperand))
+        }
+    }
+
+    mutating func visitLoad(_ load: WasmParser.Instruction.Load, memarg: MemArg) throws(WasmKitError) {
+        let instruction: (Instruction.LoadOperand) -> Instruction
+        switch load {
+        case .i32Load: instruction = Instruction.i32Load
+        case .i64Load: instruction = Instruction.i64Load
+        case .f32Load: instruction = Instruction.f32Load
+        case .f64Load: instruction = Instruction.f64Load
+        case .v128Load, .v128Load8X8S, .v128Load8X8U, .v128Load16X4S, .v128Load16X4U,
+            .v128Load32X2S, .v128Load32X2U, .v128Load8Splat, .v128Load16Splat, .v128Load32Splat,
+            .v128Load64Splat, .v128Load32Zero, .v128Load64Zero:
+            let isMemory64 = try module.isMemory64(memoryIndex: 0)
+            try validator.validateMemArg(memarg, naturalAlignment: load.naturalAlignment)
+            guard let opcode = SIMDOpcode.fromLoad(load) else { preconditionFailure("missing SIMDOpcode mapping: \(load)") }
+            try popPushEmit(.address(isMemory64: isMemory64), .v128) { pointer, result in
+                .simd(
+                    Instruction.SimdOperand(
+                        opcode: opcode.rawValue,
+                        lane: 0,
+                        reserved: 0,
+                        offset: memarg.offset,
+                        input0: pointer,
+                        input1: 0,
+                        input2: 0,
+                        result: result
+                    ))
+            }
+            return
+        case .i32Load8S: instruction = Instruction.i32Load8S
+        case .i32Load8U: instruction = Instruction.i32Load8U
+        case .i32Load16S: instruction = Instruction.i32Load16S
+        case .i32Load16U: instruction = Instruction.i32Load16U
+        case .i64Load8S: instruction = Instruction.i64Load8S
+        case .i64Load8U: instruction = Instruction.i64Load8U
+        case .i64Load16S: instruction = Instruction.i64Load16S
+        case .i64Load16U: instruction = Instruction.i64Load16U
+        case .i64Load32S: instruction = Instruction.i64Load32S
+        case .i64Load32U: instruction = Instruction.i64Load32U
+        case .i32AtomicLoad: instruction = Instruction.i32AtomicLoad
+        case .i64AtomicLoad: instruction = Instruction.i64AtomicLoad
+        case .i32AtomicLoad8U: instruction = Instruction.i32AtomicLoad8U
+        case .i32AtomicLoad16U: instruction = Instruction.i32AtomicLoad16U
+        case .i64AtomicLoad8U: instruction = Instruction.i64AtomicLoad8U
+        case .i64AtomicLoad16U: instruction = Instruction.i64AtomicLoad16U
+        case .i64AtomicLoad32U: instruction = Instruction.i64AtomicLoad32U
+
+        }
+        try visitLoad(memarg, load.type, load.naturalAlignment, instruction)
+    }
+
+    mutating func visitStore(_ store: WasmParser.Instruction.Store, memarg: MemArg) throws(WasmKitError) {
+        let instruction: (Instruction.StoreOperand) -> Instruction
+        switch store {
+        case .i32Store: instruction = Instruction.i32Store
+        case .i64Store: instruction = Instruction.i64Store
+        case .f32Store: instruction = Instruction.f32Store
+        case .f64Store: instruction = Instruction.f64Store
+        case .v128Store:
+            let isMemory64 = try module.isMemory64(memoryIndex: 0)
+            try validator.validateMemArg(memarg, naturalAlignment: store.naturalAlignment)
+            guard let opcode = SIMDOpcode.fromStore(store) else { preconditionFailure("missing SIMDOpcode mapping: \(store)") }
+            let value = try popVRegOperand(.v128)
+            let pointer = try popVRegOperand(.address(isMemory64: isMemory64))
+            if let value = value, let pointer = pointer {
+                emit(
+                    .simd(
+                        Instruction.SimdOperand(
+                            opcode: opcode.rawValue,
+                            lane: 0,
+                            reserved: 0,
+                            offset: memarg.offset,
+                            input0: pointer,
+                            input1: value,
+                            input2: 0,
+                            result: 0
+                        )))
+            }
+            return
+        case .i32Store8: instruction = Instruction.i32Store8
+        case .i32Store16: instruction = Instruction.i32Store16
+        case .i64Store8: instruction = Instruction.i64Store8
+        case .i64Store16: instruction = Instruction.i64Store16
+        case .i64Store32: instruction = Instruction.i64Store32
+        case .i32AtomicStore: instruction = Instruction.i32AtomicStore
+        case .i64AtomicStore: instruction = Instruction.i64AtomicStore
+        case .i32AtomicStore8: instruction = Instruction.i32AtomicStore8
+        case .i32AtomicStore16: instruction = Instruction.i32AtomicStore16
+        case .i64AtomicStore8: instruction = Instruction.i64AtomicStore8
+        case .i64AtomicStore16: instruction = Instruction.i64AtomicStore16
+        case .i64AtomicStore32: instruction = Instruction.i64AtomicStore32
+        }
+        try visitStore(memarg, store.type, store.naturalAlignment, instruction)
+    }
+
+    mutating func visitV128Const(value: V128) throws(WasmKitError) {
+        let storage = V128Storage(value)
+        pushEmit(.v128) { result in
+            .v128Const(.init(lo: storage.lo, hi: storage.hi, result: result))
+        }
+    }
+
+    mutating func visitI8x16Shuffle(lanes: V128ShuffleMask) throws(WasmKitError) {
+        for lane in lanes.lanes where lane >= 32 {
+            throw WasmKitError(message: .invalidLaneIndex(lane: lane, laneCount: 32))
+        }
+        try pop2PushEmit((.v128, .v128), .v128) { popped, result in
+            let rhs = popped.0
+            let lhs = popped.1
+            let ls = lanes.lanes
+            precondition(ls.count == 16)
+            return .i8x16Shuffle(
+                .init(
+                    lane0: ls[0], lane1: ls[1], lane2: ls[2], lane3: ls[3],
+                    lane4: ls[4], lane5: ls[5], lane6: ls[6], lane7: ls[7],
+                    lane8: ls[8], lane9: ls[9], lane10: ls[10], lane11: ls[11],
+                    lane12: ls[12], lane13: ls[13], lane14: ls[14], lane15: ls[15],
+                    lhs: lhs, rhs: rhs, result: result
+                ))
+        }
+    }
+
+    mutating func visitSimd(_ simd: WasmParser.Instruction.Simd) throws(WasmKitError) {
+        guard let opcode = SIMDOpcode.fromSimd(simd) else { preconditionFailure("missing SIMDOpcode mapping: \(simd)") }
+        func emitUnaryV128() throws(WasmKitError) {
+            try popPushEmit(.v128, .v128) { v0, result in
+                .simd(.init(opcode: opcode.rawValue, lane: 0, reserved: 0, offset: 0, input0: v0, input1: 0, input2: 0, result: result))
+            }
+        }
+        func emitBinaryV128() throws(WasmKitError) {
+            try pop2PushEmit((.v128, .v128), .v128) { popped, result in
+                let rhs = popped.0
+                let lhs = popped.1
+                return .simd(.init(opcode: opcode.rawValue, lane: 0, reserved: 0, offset: 0, input0: lhs, input1: rhs, input2: 0, result: result))
+            }
+        }
+        func emitTernaryV128() throws(WasmKitError) {
+            try pop3PushEmit((.v128, .v128, .v128), .v128) { popped, result in
+                let mask = popped.0
+                let b = popped.1
+                let a = popped.2
+                return .simd(.init(opcode: opcode.rawValue, lane: 0, reserved: 0, offset: 0, input0: a, input1: b, input2: mask, result: result))
+            }
+        }
+        func emitUnaryI32() throws(WasmKitError) {
+            try popPushEmit(.v128, .i32) { v0, result in
+                .simd(.init(opcode: opcode.rawValue, lane: 0, reserved: 0, offset: 0, input0: v0, input1: 0, input2: 0, result: result))
+            }
+        }
+        func emitShift() throws(WasmKitError) {
+            try pop2PushEmit((.i32, .v128), .v128) { popped, result in
+                let shift = popped.0
+                let vec = popped.1
+                return .simd(.init(opcode: opcode.rawValue, lane: 0, reserved: 0, offset: 0, input0: vec, input1: shift, input2: 0, result: result))
+            }
+        }
+
+        switch simd {
+        case .i8x16Splat, .i16x8Splat, .i32x4Splat:
+            try popPushEmit(.i32, .v128) { scalar, result in
+                .simd(.init(opcode: opcode.rawValue, lane: 0, reserved: 0, offset: 0, input0: scalar, input1: 0, input2: 0, result: result))
+            }
+        case .i64x2Splat:
+            try popPushEmit(.i64, .v128) { scalar, result in
+                .simd(.init(opcode: opcode.rawValue, lane: 0, reserved: 0, offset: 0, input0: scalar, input1: 0, input2: 0, result: result))
+            }
+        case .f32x4Splat:
+            try popPushEmit(.f32, .v128) { scalar, result in
+                .simd(.init(opcode: opcode.rawValue, lane: 0, reserved: 0, offset: 0, input0: scalar, input1: 0, input2: 0, result: result))
+            }
+        case .f64x2Splat:
+            try popPushEmit(.f64, .v128) { scalar, result in
+                .simd(.init(opcode: opcode.rawValue, lane: 0, reserved: 0, offset: 0, input0: scalar, input1: 0, input2: 0, result: result))
+            }
+
+        case .v128Bitselect:
+            try emitTernaryV128()
+
+        case .v128AnyTrue, .i8x16AllTrue, .i8x16Bitmask, .i16x8AllTrue, .i16x8Bitmask, .i32x4AllTrue, .i32x4Bitmask, .i64x2AllTrue, .i64x2Bitmask:
+            try emitUnaryI32()
+
+        case .i8x16Shl, .i8x16ShrS, .i8x16ShrU,
+            .i16x8Shl, .i16x8ShrS, .i16x8ShrU,
+            .i32x4Shl, .i32x4ShrS, .i32x4ShrU,
+            .i64x2Shl, .i64x2ShrS, .i64x2ShrU:
+            try emitShift()
+
+        case .v128Not,
+            .i8x16Abs, .i8x16Neg,
+            .i16x8Abs, .i16x8Neg,
+            .i32x4Abs, .i32x4Neg,
+            .i64x2Abs, .i64x2Neg,
+            .f32x4Ceil, .f32x4Floor, .f32x4Trunc, .f32x4Nearest,
+            .f64x2Ceil, .f64x2Floor, .f64x2Trunc, .f64x2Nearest,
+            .f32x4Abs, .f32x4Neg, .f32x4Sqrt,
+            .f64x2Abs, .f64x2Neg, .f64x2Sqrt,
+            .i32x4TruncSatF32X4S, .i32x4TruncSatF32X4U,
+            .f32x4ConvertI32X4S, .f32x4ConvertI32X4U,
+            .f64x2ConvertLowI32X4S, .f64x2ConvertLowI32X4U,
+            .i32x4TruncSatF64X2SZero, .i32x4TruncSatF64X2UZero,
+            .f32x4DemoteF64X2Zero, .f64x2PromoteLowF32X4,
+            .i8x16Popcnt,
+            .i16x8ExtaddPairwiseI8X16S, .i16x8ExtaddPairwiseI8X16U,
+            .i32x4ExtaddPairwiseI16X8S, .i32x4ExtaddPairwiseI16X8U,
+            .i16x8ExtendLowI8X16S, .i16x8ExtendHighI8X16S, .i16x8ExtendLowI8X16U, .i16x8ExtendHighI8X16U,
+            .i32x4ExtendLowI16X8S, .i32x4ExtendHighI16X8S, .i32x4ExtendLowI16X8U, .i32x4ExtendHighI16X8U,
+            .i64x2ExtendLowI32X4S, .i64x2ExtendHighI32X4S, .i64x2ExtendLowI32X4U, .i64x2ExtendHighI32X4U:
+            try emitUnaryV128()
+
+        case .v128And, .v128Andnot, .v128Or, .v128Xor,
+            .i8x16Swizzle,
+            .i8x16Eq, .i8x16Ne, .i8x16LtS, .i8x16LtU, .i8x16GtS, .i8x16GtU, .i8x16LeS, .i8x16LeU, .i8x16GeS, .i8x16GeU,
+            .i16x8Eq, .i16x8Ne, .i16x8LtS, .i16x8LtU, .i16x8GtS, .i16x8GtU, .i16x8LeS, .i16x8LeU, .i16x8GeS, .i16x8GeU,
+            .i32x4Eq, .i32x4Ne, .i32x4LtS, .i32x4LtU, .i32x4GtS, .i32x4GtU, .i32x4LeS, .i32x4LeU, .i32x4GeS, .i32x4GeU,
+            .i64x2Eq, .i64x2Ne, .i64x2LtS, .i64x2GtS, .i64x2LeS, .i64x2GeS,
+            .f32x4Eq, .f32x4Ne, .f32x4Lt, .f32x4Gt, .f32x4Le, .f32x4Ge,
+            .f64x2Eq, .f64x2Ne, .f64x2Lt, .f64x2Gt, .f64x2Le, .f64x2Ge,
+            .i8x16NarrowI16X8S, .i8x16NarrowI16X8U,
+            .i16x8NarrowI32X4S, .i16x8NarrowI32X4U,
+            .i8x16Add, .i8x16AddSatS, .i8x16AddSatU, .i8x16Sub, .i8x16SubSatS, .i8x16SubSatU, .i8x16MinS, .i8x16MinU, .i8x16MaxS, .i8x16MaxU, .i8x16AvgrU,
+            .i16x8Add, .i16x8AddSatS, .i16x8AddSatU, .i16x8Sub, .i16x8SubSatS, .i16x8SubSatU, .i16x8Mul, .i16x8MinS, .i16x8MinU, .i16x8MaxS, .i16x8MaxU, .i16x8AvgrU,
+            .i32x4Add, .i32x4Sub, .i32x4Mul, .i32x4MinS, .i32x4MinU, .i32x4MaxS, .i32x4MaxU,
+            .i64x2Add, .i64x2Sub, .i64x2Mul,
+            .f32x4Add, .f32x4Sub, .f32x4Mul, .f32x4Div, .f32x4Min, .f32x4Max, .f32x4Pmin, .f32x4Pmax,
+            .f64x2Add, .f64x2Sub, .f64x2Mul, .f64x2Div, .f64x2Min, .f64x2Max, .f64x2Pmin, .f64x2Pmax,
+            .i32x4DotI16X8S,
+            .i16x8ExtmulLowI8X16S, .i16x8ExtmulHighI8X16S, .i16x8ExtmulLowI8X16U, .i16x8ExtmulHighI8X16U,
+            .i32x4ExtmulLowI16X8S, .i32x4ExtmulHighI16X8S, .i32x4ExtmulLowI16X8U, .i32x4ExtmulHighI16X8U,
+            .i64x2ExtmulLowI32X4S, .i64x2ExtmulHighI32X4S, .i64x2ExtmulLowI32X4U, .i64x2ExtmulHighI32X4U,
+            .i16x8Q15MulrSatS:
+            try emitBinaryV128()
+        }
+    }
+
+    mutating func visitSimdLane(_ simdLane: WasmParser.Instruction.SimdLane, lane: UInt8) throws(WasmKitError) {
+        guard let opcode = SIMDOpcode.fromSimdLane(simdLane) else { preconditionFailure("missing SIMDOpcode mapping: \(simdLane)") }
+        let laneCount: UInt8
+        switch simdLane {
+        case .i8x16ExtractLaneS, .i8x16ExtractLaneU, .i8x16ReplaceLane: laneCount = 16
+        case .i16x8ExtractLaneS, .i16x8ExtractLaneU, .i16x8ReplaceLane: laneCount = 8
+        case .i32x4ExtractLane, .i32x4ReplaceLane, .f32x4ExtractLane, .f32x4ReplaceLane: laneCount = 4
+        case .i64x2ExtractLane, .i64x2ReplaceLane, .f64x2ExtractLane, .f64x2ReplaceLane: laneCount = 2
+        }
+        if lane >= laneCount {
+            throw WasmKitError(message: .invalidLaneIndex(lane: lane, laneCount: laneCount))
+        }
+        switch simdLane {
+        case .i8x16ExtractLaneS, .i8x16ExtractLaneU, .i16x8ExtractLaneS, .i16x8ExtractLaneU, .i32x4ExtractLane:
+            try popPushEmit(.v128, .i32) { vec, result in
+                .simd(.init(opcode: opcode.rawValue, lane: lane, reserved: 0, offset: 0, input0: vec, input1: 0, input2: 0, result: result))
+            }
+        case .i64x2ExtractLane:
+            try popPushEmit(.v128, .i64) { vec, result in
+                .simd(.init(opcode: opcode.rawValue, lane: lane, reserved: 0, offset: 0, input0: vec, input1: 0, input2: 0, result: result))
+            }
+        case .f32x4ExtractLane:
+            try popPushEmit(.v128, .f32) { vec, result in
+                .simd(.init(opcode: opcode.rawValue, lane: lane, reserved: 0, offset: 0, input0: vec, input1: 0, input2: 0, result: result))
+            }
+        case .f64x2ExtractLane:
+            try popPushEmit(.v128, .f64) { vec, result in
+                .simd(.init(opcode: opcode.rawValue, lane: lane, reserved: 0, offset: 0, input0: vec, input1: 0, input2: 0, result: result))
+            }
+        case .i8x16ReplaceLane:
+            try pop2PushEmit((.i32, .v128), .v128) { popped, result in
+                .simd(.init(opcode: opcode.rawValue, lane: lane, reserved: 0, offset: 0, input0: popped.1, input1: popped.0, input2: 0, result: result))
+            }
+        case .i16x8ReplaceLane, .i32x4ReplaceLane:
+            try pop2PushEmit((.i32, .v128), .v128) { popped, result in
+                .simd(.init(opcode: opcode.rawValue, lane: lane, reserved: 0, offset: 0, input0: popped.1, input1: popped.0, input2: 0, result: result))
+            }
+        case .i64x2ReplaceLane:
+            try pop2PushEmit((.i64, .v128), .v128) { popped, result in
+                .simd(.init(opcode: opcode.rawValue, lane: lane, reserved: 0, offset: 0, input0: popped.1, input1: popped.0, input2: 0, result: result))
+            }
+        case .f32x4ReplaceLane:
+            try pop2PushEmit((.f32, .v128), .v128) { popped, result in
+                .simd(.init(opcode: opcode.rawValue, lane: lane, reserved: 0, offset: 0, input0: popped.1, input1: popped.0, input2: 0, result: result))
+            }
+        case .f64x2ReplaceLane:
+            try pop2PushEmit((.f64, .v128), .v128) { popped, result in
+                .simd(.init(opcode: opcode.rawValue, lane: lane, reserved: 0, offset: 0, input0: popped.1, input1: popped.0, input2: 0, result: result))
+            }
+        }
+    }
+
+    mutating func visitSimdMemLane(_ simdMemLane: WasmParser.Instruction.SimdMemLane, memarg: MemArg, lane: UInt8) throws(WasmKitError) {
+        let isMemory64 = try module.isMemory64(memoryIndex: 0)
+        guard let opcode = SIMDOpcode.fromSimdMemLane(simdMemLane) else { preconditionFailure("missing SIMDOpcode mapping: \(simdMemLane)") }
+        let naturalAlignment: Int
+        let laneCount: UInt8
+        switch simdMemLane {
+        case .v128Load8Lane, .v128Store8Lane: (naturalAlignment, laneCount) = (0, 16)
+        case .v128Load16Lane, .v128Store16Lane: (naturalAlignment, laneCount) = (1, 8)
+        case .v128Load32Lane, .v128Store32Lane: (naturalAlignment, laneCount) = (2, 4)
+        case .v128Load64Lane, .v128Store64Lane: (naturalAlignment, laneCount) = (3, 2)
+        }
+        if lane >= laneCount {
+            throw WasmKitError(message: .invalidLaneIndex(lane: lane, laneCount: laneCount))
+        }
+        try validator.validateMemArg(memarg, naturalAlignment: naturalAlignment)
+
+        switch simdMemLane {
+        case .v128Load8Lane, .v128Load16Lane, .v128Load32Lane, .v128Load64Lane:
+            try pop2PushEmit((.v128, .address(isMemory64: isMemory64)), .v128) { popped, result in
+                let vec = popped.0
+                let ptr = popped.1
+                return .simd(.init(opcode: opcode.rawValue, lane: lane, reserved: 0, offset: memarg.offset, input0: ptr, input1: vec, input2: 0, result: result))
+            }
+        case .v128Store8Lane, .v128Store16Lane, .v128Store32Lane, .v128Store64Lane:
+            let vec = try popVRegOperand(.v128)
+            let ptr = try popVRegOperand(.address(isMemory64: isMemory64))
+            if let vec = vec, let ptr = ptr {
+                emit(.simd(.init(opcode: opcode.rawValue, lane: lane, reserved: 0, offset: memarg.offset, input0: ptr, input1: vec, input2: 0, result: 0)))
+            }
+        }
+    }
+
+    mutating func visitMemorySize(memory: UInt32) throws(WasmKitError) -> Output {
+        let sizeType: ValueType = try module.isMemory64(memoryIndex: memory) ? .i64 : .i32
+        pushEmit(sizeType, { .memorySize(Instruction.MemorySizeOperand(memoryIndex: memory, result: LVReg($0))) })
+    }
+    mutating func visitMemoryGrow(memory: UInt32) throws(WasmKitError) -> Output {
+        let isMemory64 = try module.isMemory64(memoryIndex: memory)
+        let sizeType = ValueType.address(isMemory64: isMemory64)
+        // Just pop/push the same type (i64 or i32) value
+        try popPushEmit(sizeType, sizeType) { value, result in
+            .memoryGrow(
+                Instruction.MemoryGrowOperand(
+                    result: result, delta: value, memory: memory
+                ))
+        }
+    }
+
+    private mutating func visitConst(_ type: ValueType, _ value: Value) {
+        // TODO: document this behavior
+        if let constSlotIndex = constantSlots.allocate(value) {
+            valueStack.pushConst(constSlotIndex, type: type)
+            iseqBuilder.resetLastEmission()
+            return
+        }
+        let value = UntypedValue(value)
+        let is32Bit = type == .i32 || type == .f32
+        if is32Bit {
+            pushEmit(
+                type,
+                {
+                    .const32(Instruction.Const32Operand(value: UInt32(value.storage), result: LVReg($0)))
+                })
+        } else {
+            pushEmit(type, { .const64(Instruction.Const64Operand(value: value, result: LLVReg($0))) })
+        }
+    }
+    mutating func visitI32Const(value: Int32) -> Output { visitConst(.i32, .i32(UInt32(bitPattern: value))) }
+    mutating func visitI64Const(value: Int64) -> Output { visitConst(.i64, .i64(UInt64(bitPattern: value))) }
+    mutating func visitF32Const(value: IEEE754.Float32) -> Output { visitConst(.f32, .f32(value.bitPattern)) }
+    mutating func visitF64Const(value: IEEE754.Float64) -> Output { visitConst(.f64, .f64(value.bitPattern)) }
+    mutating func visitRefNull(type: HeapType) throws(WasmKitError) {
+        guard case .abstract(let abstractType) = type else {
+            throw WasmKitError("concrete heap type is not implemented yet")
+        }
+        let typeToPush = ReferenceType(isNullable: true, heapType: type)
+        pushEmit(.ref(typeToPush), { .refNull(Instruction.RefNullOperand(result: $0, type: abstractType)) })
+    }
+    mutating func visitRefIsNull() throws(WasmKitError) -> Output {
+        let value = try valueStack.popRef()
+        let result = valueStack.push(.i32)
+        emit(.refIsNull(Instruction.RefIsNullOperand(value: LVReg(ensureOnVReg(value)), result: LVReg(result))))
+    }
+    mutating func visitRefFunc(functionIndex: UInt32) throws(WasmKitError) -> Output {
+        try validator.validateRefFunc(functionIndex: functionIndex)
+        pushEmit(.ref(.funcRef), { .refFunc(Instruction.RefFuncOperand(index: functionIndex, result: LVReg($0))) })
+    }
+
+    private mutating func visitUnary(_ operand: ValueType, _ instruction: @escaping (Instruction.UnaryOperand) -> Instruction) throws(WasmKitError) {
+        try popPushEmit(operand, operand) { value, result in
+            return instruction(Instruction.UnaryOperand(result: LVReg(result), input: LVReg(value)))
+        }
+    }
+    private mutating func visitBinary(
+        _ operand: ValueType,
+        _ result: ValueType,
+        _ instruction: @escaping (Instruction.BinaryOperand) -> Instruction
+    ) throws(WasmKitError) {
+        let rhs = try popVRegOperand(operand)
+        let lhs = try popVRegOperand(operand)
+        let result = valueStack.push(result)
+        guard let lhs = lhs, let rhs = rhs else { return }
+        emit(
+            instruction(Instruction.BinaryOperand(result: LVReg(result), lhs: lhs, rhs: rhs)),
+            resultRelink: { result in
+                return instruction(Instruction.BinaryOperand(result: LVReg(result), lhs: lhs, rhs: rhs))
+            }
+        )
+    }
+    private mutating func visitCmp(_ operand: ValueType, _ instruction: @escaping (Instruction.BinaryOperand) -> Instruction) throws(WasmKitError) {
+        try visitBinary(operand, .i32, instruction)
+    }
+    private mutating func visitConversion(_ from: ValueType, _ to: ValueType, _ instruction: @escaping (Instruction.UnaryOperand) -> Instruction) throws(WasmKitError) {
+        try popPushEmit(from, to) { value, result in
+            return instruction(Instruction.UnaryOperand(result: LVReg(result), input: LVReg(value)))
+        }
+    }
+    mutating func visitI32Eqz() throws(WasmKitError) -> Output {
+        try popPushEmit(.i32, .i32) { value, result in
+            .i32Eqz(Instruction.UnaryOperand(result: LVReg(result), input: LVReg(value)))
+        }
+    }
+    mutating func visitCmp(_ cmp: WasmParser.Instruction.Cmp) throws(WasmKitError) {
+        let operand: ValueType
+        let instruction: (Instruction.BinaryOperand) -> Instruction
+        switch cmp {
+        case .i32Eq: (operand, instruction) = (.i32, Instruction.i32Eq)
+        case .i32Ne: (operand, instruction) = (.i32, Instruction.i32Ne)
+        case .i32LtS: (operand, instruction) = (.i32, Instruction.i32LtS)
+        case .i32LtU: (operand, instruction) = (.i32, Instruction.i32LtU)
+        case .i32GtS: (operand, instruction) = (.i32, Instruction.i32GtS)
+        case .i32GtU: (operand, instruction) = (.i32, Instruction.i32GtU)
+        case .i32LeS: (operand, instruction) = (.i32, Instruction.i32LeS)
+        case .i32LeU: (operand, instruction) = (.i32, Instruction.i32LeU)
+        case .i32GeS: (operand, instruction) = (.i32, Instruction.i32GeS)
+        case .i32GeU: (operand, instruction) = (.i32, Instruction.i32GeU)
+        case .i64Eq: (operand, instruction) = (.i64, Instruction.i64Eq)
+        case .i64Ne: (operand, instruction) = (.i64, Instruction.i64Ne)
+        case .i64LtS: (operand, instruction) = (.i64, Instruction.i64LtS)
+        case .i64LtU: (operand, instruction) = (.i64, Instruction.i64LtU)
+        case .i64GtS: (operand, instruction) = (.i64, Instruction.i64GtS)
+        case .i64GtU: (operand, instruction) = (.i64, Instruction.i64GtU)
+        case .i64LeS: (operand, instruction) = (.i64, Instruction.i64LeS)
+        case .i64LeU: (operand, instruction) = (.i64, Instruction.i64LeU)
+        case .i64GeS: (operand, instruction) = (.i64, Instruction.i64GeS)
+        case .i64GeU: (operand, instruction) = (.i64, Instruction.i64GeU)
+        case .f32Eq: (operand, instruction) = (.f32, Instruction.f32Eq)
+        case .f32Ne: (operand, instruction) = (.f32, Instruction.f32Ne)
+        case .f32Lt: (operand, instruction) = (.f32, Instruction.f32Lt)
+        case .f32Gt: (operand, instruction) = (.f32, Instruction.f32Gt)
+        case .f32Le: (operand, instruction) = (.f32, Instruction.f32Le)
+        case .f32Ge: (operand, instruction) = (.f32, Instruction.f32Ge)
+        case .f64Eq: (operand, instruction) = (.f64, Instruction.f64Eq)
+        case .f64Ne: (operand, instruction) = (.f64, Instruction.f64Ne)
+        case .f64Lt: (operand, instruction) = (.f64, Instruction.f64Lt)
+        case .f64Gt: (operand, instruction) = (.f64, Instruction.f64Gt)
+        case .f64Le: (operand, instruction) = (.f64, Instruction.f64Le)
+        case .f64Ge: (operand, instruction) = (.f64, Instruction.f64Ge)
+        }
+        try visitCmp(operand, instruction)
+    }
+    public mutating func visitBinary(_ binary: WasmParser.Instruction.Binary) throws(WasmKitError) {
+        let operand: ValueType
+        let result: ValueType
+        let instruction: (Instruction.BinaryOperand) -> Instruction
+        switch binary {
+        case .i32Add: (operand, result, instruction) = (.i32, .i32, Instruction.i32Add)
+        case .i32Sub: (operand, result, instruction) = (.i32, .i32, Instruction.i32Sub)
+        case .i32Mul: (operand, result, instruction) = (.i32, .i32, Instruction.i32Mul)
+        case .i32DivS: (operand, result, instruction) = (.i32, .i32, Instruction.i32DivS)
+        case .i32DivU: (operand, result, instruction) = (.i32, .i32, Instruction.i32DivU)
+        case .i32RemS: (operand, result, instruction) = (.i32, .i32, Instruction.i32RemS)
+        case .i32RemU: (operand, result, instruction) = (.i32, .i32, Instruction.i32RemU)
+        case .i32And: (operand, result, instruction) = (.i32, .i32, Instruction.i32And)
+        case .i32Or: (operand, result, instruction) = (.i32, .i32, Instruction.i32Or)
+        case .i32Xor: (operand, result, instruction) = (.i32, .i32, Instruction.i32Xor)
+        case .i32Shl: (operand, result, instruction) = (.i32, .i32, Instruction.i32Shl)
+        case .i32ShrS: (operand, result, instruction) = (.i32, .i32, Instruction.i32ShrS)
+        case .i32ShrU: (operand, result, instruction) = (.i32, .i32, Instruction.i32ShrU)
+        case .i32Rotl: (operand, result, instruction) = (.i32, .i32, Instruction.i32Rotl)
+        case .i32Rotr: (operand, result, instruction) = (.i32, .i32, Instruction.i32Rotr)
+        case .i64Add: (operand, result, instruction) = (.i64, .i64, Instruction.i64Add)
+        case .i64Sub: (operand, result, instruction) = (.i64, .i64, Instruction.i64Sub)
+        case .i64Mul: (operand, result, instruction) = (.i64, .i64, Instruction.i64Mul)
+        case .i64DivS: (operand, result, instruction) = (.i64, .i64, Instruction.i64DivS)
+        case .i64DivU: (operand, result, instruction) = (.i64, .i64, Instruction.i64DivU)
+        case .i64RemS: (operand, result, instruction) = (.i64, .i64, Instruction.i64RemS)
+        case .i64RemU: (operand, result, instruction) = (.i64, .i64, Instruction.i64RemU)
+        case .i64And: (operand, result, instruction) = (.i64, .i64, Instruction.i64And)
+        case .i64Or: (operand, result, instruction) = (.i64, .i64, Instruction.i64Or)
+        case .i64Xor: (operand, result, instruction) = (.i64, .i64, Instruction.i64Xor)
+        case .i64Shl: (operand, result, instruction) = (.i64, .i64, Instruction.i64Shl)
+        case .i64ShrS: (operand, result, instruction) = (.i64, .i64, Instruction.i64ShrS)
+        case .i64ShrU: (operand, result, instruction) = (.i64, .i64, Instruction.i64ShrU)
+        case .i64Rotl: (operand, result, instruction) = (.i64, .i64, Instruction.i64Rotl)
+        case .i64Rotr: (operand, result, instruction) = (.i64, .i64, Instruction.i64Rotr)
+        case .f32Add: (operand, result, instruction) = (.f32, .f32, Instruction.f32Add)
+        case .f32Sub: (operand, result, instruction) = (.f32, .f32, Instruction.f32Sub)
+        case .f32Mul: (operand, result, instruction) = (.f32, .f32, Instruction.f32Mul)
+        case .f32Div: (operand, result, instruction) = (.f32, .f32, Instruction.f32Div)
+        case .f32Min: (operand, result, instruction) = (.f32, .f32, Instruction.f32Min)
+        case .f32Max: (operand, result, instruction) = (.f32, .f32, Instruction.f32Max)
+        case .f32Copysign: (operand, result, instruction) = (.f32, .f32, Instruction.f32CopySign)
+        case .f64Add: (operand, result, instruction) = (.f64, .f64, Instruction.f64Add)
+        case .f64Sub: (operand, result, instruction) = (.f64, .f64, Instruction.f64Sub)
+        case .f64Mul: (operand, result, instruction) = (.f64, .f64, Instruction.f64Mul)
+        case .f64Div: (operand, result, instruction) = (.f64, .f64, Instruction.f64Div)
+        case .f64Min: (operand, result, instruction) = (.f64, .f64, Instruction.f64Min)
+        case .f64Max: (operand, result, instruction) = (.f64, .f64, Instruction.f64Max)
+        case .f64Copysign: (operand, result, instruction) = (.f64, .f64, Instruction.f64CopySign)
+        }
+        try visitBinary(operand, result, instruction)
+    }
+    mutating func visitI64Eqz() throws(WasmKitError) -> Output {
+        try popPushEmit(.i64, .i32) { value, result in
+            .i64Eqz(Instruction.UnaryOperand(result: LVReg(result), input: LVReg(value)))
+        }
+    }
+    mutating func visitUnary(_ unary: WasmParser.Instruction.Unary) throws(WasmKitError) {
+        let operand: ValueType
+        let instruction: (Instruction.UnaryOperand) -> Instruction
+        switch unary {
+        case .i32Clz: (operand, instruction) = (.i32, Instruction.i32Clz)
+        case .i32Ctz: (operand, instruction) = (.i32, Instruction.i32Ctz)
+        case .i32Popcnt: (operand, instruction) = (.i32, Instruction.i32Popcnt)
+        case .i64Clz: (operand, instruction) = (.i64, Instruction.i64Clz)
+        case .i64Ctz: (operand, instruction) = (.i64, Instruction.i64Ctz)
+        case .i64Popcnt: (operand, instruction) = (.i64, Instruction.i64Popcnt)
+        case .f32Abs: (operand, instruction) = (.f32, Instruction.f32Abs)
+        case .f32Neg: (operand, instruction) = (.f32, Instruction.f32Neg)
+        case .f32Ceil: (operand, instruction) = (.f32, Instruction.f32Ceil)
+        case .f32Floor: (operand, instruction) = (.f32, Instruction.f32Floor)
+        case .f32Trunc: (operand, instruction) = (.f32, Instruction.f32Trunc)
+        case .f32Nearest: (operand, instruction) = (.f32, Instruction.f32Nearest)
+        case .f32Sqrt: (operand, instruction) = (.f32, Instruction.f32Sqrt)
+        case .f64Abs: (operand, instruction) = (.f64, Instruction.f64Abs)
+        case .f64Neg: (operand, instruction) = (.f64, Instruction.f64Neg)
+        case .f64Ceil: (operand, instruction) = (.f64, Instruction.f64Ceil)
+        case .f64Floor: (operand, instruction) = (.f64, Instruction.f64Floor)
+        case .f64Trunc: (operand, instruction) = (.f64, Instruction.f64Trunc)
+        case .f64Nearest: (operand, instruction) = (.f64, Instruction.f64Nearest)
+        case .f64Sqrt: (operand, instruction) = (.f64, Instruction.f64Sqrt)
+        case .i32Extend8S: (operand, instruction) = (.i32, Instruction.i32Extend8S)
+        case .i32Extend16S: (operand, instruction) = (.i32, Instruction.i32Extend16S)
+        case .i64Extend8S: (operand, instruction) = (.i64, Instruction.i64Extend8S)
+        case .i64Extend16S: (operand, instruction) = (.i64, Instruction.i64Extend16S)
+        case .i64Extend32S: (operand, instruction) = (.i64, Instruction.i64Extend32S)
+        }
+        try visitUnary(operand, instruction)
+    }
+    mutating func visitConversion(_ conversion: WasmParser.Instruction.Conversion) throws(WasmKitError) {
+        let from: ValueType
+        let to: ValueType
+        let instruction: (Instruction.UnaryOperand) -> Instruction
+        switch conversion {
+        case .i32WrapI64: (from, to, instruction) = (.i64, .i32, Instruction.i32WrapI64)
+        case .i32TruncF32S: (from, to, instruction) = (.f32, .i32, Instruction.i32TruncF32S)
+        case .i32TruncF32U: (from, to, instruction) = (.f32, .i32, Instruction.i32TruncF32U)
+        case .i32TruncF64S: (from, to, instruction) = (.f64, .i32, Instruction.i32TruncF64S)
+        case .i32TruncF64U: (from, to, instruction) = (.f64, .i32, Instruction.i32TruncF64U)
+        case .i64ExtendI32S: (from, to, instruction) = (.i32, .i64, Instruction.i64ExtendI32S)
+        case .i64ExtendI32U: (from, to, instruction) = (.i32, .i64, Instruction.i64ExtendI32U)
+        case .i64TruncF32S: (from, to, instruction) = (.f32, .i64, Instruction.i64TruncF32S)
+        case .i64TruncF32U: (from, to, instruction) = (.f32, .i64, Instruction.i64TruncF32U)
+        case .i64TruncF64S: (from, to, instruction) = (.f64, .i64, Instruction.i64TruncF64S)
+        case .i64TruncF64U: (from, to, instruction) = (.f64, .i64, Instruction.i64TruncF64U)
+        case .f32ConvertI32S: (from, to, instruction) = (.i32, .f32, Instruction.f32ConvertI32S)
+        case .f32ConvertI32U: (from, to, instruction) = (.i32, .f32, Instruction.f32ConvertI32U)
+        case .f32ConvertI64S: (from, to, instruction) = (.i64, .f32, Instruction.f32ConvertI64S)
+        case .f32ConvertI64U: (from, to, instruction) = (.i64, .f32, Instruction.f32ConvertI64U)
+        case .f32DemoteF64: (from, to, instruction) = (.f64, .f32, Instruction.f32DemoteF64)
+        case .f64ConvertI32S: (from, to, instruction) = (.i32, .f64, Instruction.f64ConvertI32S)
+        case .f64ConvertI32U: (from, to, instruction) = (.i32, .f64, Instruction.f64ConvertI32U)
+        case .f64ConvertI64S: (from, to, instruction) = (.i64, .f64, Instruction.f64ConvertI64S)
+        case .f64ConvertI64U: (from, to, instruction) = (.i64, .f64, Instruction.f64ConvertI64U)
+        case .f64PromoteF32: (from, to, instruction) = (.f32, .f64, Instruction.f64PromoteF32)
+        case .i32ReinterpretF32: (from, to, instruction) = (.f32, .i32, Instruction.i32ReinterpretF32)
+        case .i64ReinterpretF64: (from, to, instruction) = (.f64, .i64, Instruction.i64ReinterpretF64)
+        case .f32ReinterpretI32: (from, to, instruction) = (.i32, .f32, Instruction.f32ReinterpretI32)
+        case .f64ReinterpretI64: (from, to, instruction) = (.i64, .f64, Instruction.f64ReinterpretI64)
+        case .i32TruncSatF32S: (from, to, instruction) = (.f32, .i32, Instruction.i32TruncSatF32S)
+        case .i32TruncSatF32U: (from, to, instruction) = (.f32, .i32, Instruction.i32TruncSatF32U)
+        case .i32TruncSatF64S: (from, to, instruction) = (.f64, .i32, Instruction.i32TruncSatF64S)
+        case .i32TruncSatF64U: (from, to, instruction) = (.f64, .i32, Instruction.i32TruncSatF64U)
+        case .i64TruncSatF32S: (from, to, instruction) = (.f32, .i64, Instruction.i64TruncSatF32S)
+        case .i64TruncSatF32U: (from, to, instruction) = (.f32, .i64, Instruction.i64TruncSatF32U)
+        case .i64TruncSatF64S: (from, to, instruction) = (.f64, .i64, Instruction.i64TruncSatF64S)
+        case .i64TruncSatF64U: (from, to, instruction) = (.f64, .i64, Instruction.i64TruncSatF64U)
+        }
+        try visitConversion(from, to, instruction)
+    }
+
+    mutating func visitMemoryInit(dataIndex: UInt32) throws(WasmKitError) -> Output {
+        try self.validator.validateDataSegment(dataIndex)
+        let addressType = try module.addressType(memoryIndex: 0)
+        try pop3Emit((.i32, .i32, addressType)) { values, stack in
+            let (size, sourceOffset, destOffset) = values
+            return .memoryInit(
+                Instruction.MemoryInitOperand(
+                    segmentIndex: dataIndex,
+                    destOffset: destOffset,
+                    sourceOffset: sourceOffset,
+                    size: size
+                )
+            )
+        }
+    }
+    mutating func visitDataDrop(dataIndex: UInt32) throws(WasmKitError) -> Output {
+        try self.validator.validateDataSegment(dataIndex)
+        emit(.memoryDataDrop(Instruction.MemoryDataDropOperand(segmentIndex: dataIndex)))
+    }
+    mutating func visitMemoryCopy(dstMem: UInt32, srcMem: UInt32) throws(WasmKitError) -> Output {
+        //     C.mems[0] = it limits
+        // -----------------------------
+        // C ⊦ memory.fill : [it i32 it] → []
+        // https://github.com/WebAssembly/memory64/blob/main/proposals/memory64/Overview.md
+        let addressType = try module.addressType(memoryIndex: 0)
+        try pop3Emit((addressType, addressType, addressType)) { values, stack in
+            let (size, sourceOffset, destOffset) = values
+            return .memoryCopy(
+                Instruction.MemoryCopyOperand(
+                    destOffset: destOffset,
+                    sourceOffset: sourceOffset,
+                    size: LVReg(size)
+                )
+            )
+        }
+    }
+    mutating func visitMemoryFill(memory: UInt32) throws(WasmKitError) -> Output {
+        //     C.mems[0] = it limits
+        // -----------------------------
+        // C ⊦ memory.fill : [it i32 it] → []
+        // https://github.com/WebAssembly/memory64/blob/main/proposals/memory64/Overview.md
+        let addressType = try module.addressType(memoryIndex: 0)
+        try pop3Emit((addressType, .i32, addressType)) { values, stack in
+            let (size, value, destOffset) = values
+            return .memoryFill(
+                Instruction.MemoryFillOperand(
+                    destOffset: destOffset,
+                    value: value,
+                    size: LVReg(size)
+                )
+            )
+        }
+    }
+    mutating func visitTableInit(elemIndex: UInt32, table: UInt32) throws(WasmKitError) -> Output {
+        try validator.validateTableInit(elemIndex: elemIndex, table: table)
+
+        try pop3Emit((.i32, .i32, module.addressType(tableIndex: table))) { values, stack in
+            let (size, sourceOffset, destOffset) = values
+            return .tableInit(
+                Instruction.TableInitOperand(
+                    tableIndex: table,
+                    segmentIndex: elemIndex,
+                    destOffset: destOffset,
+                    sourceOffset: sourceOffset,
+                    size: size
+                )
+            )
+        }
+    }
+    mutating func visitElemDrop(elemIndex: UInt32) throws(WasmKitError) -> Output {
+        try self.module.validateElementSegment(elemIndex)
+        emit(.tableElementDrop(Instruction.TableElementDropOperand(index: elemIndex)))
+    }
+    mutating func visitTableCopy(dstTable: UInt32, srcTable: UInt32) throws(WasmKitError) -> Output {
+        //   C.tables[d] = iN limits t   C.tables[s] = iM limits t    K = min {N, M}
+        // -----------------------------------------------------------------------------
+        // C ⊦ table.copy d s : [iN iM iK] → []
+        // https://github.com/WebAssembly/memory64/blob/main/proposals/memory64/Overview.md
+        try validator.validateTableCopy(dest: dstTable, source: srcTable)
+        let destIsMemory64 = try module.isMemory64(tableIndex: dstTable)
+        let sourceIsMemory64 = try module.isMemory64(tableIndex: srcTable)
+        let lengthIsMemory64 = destIsMemory64 && sourceIsMemory64
+        try pop3Emit(
+            (
+                .address(isMemory64: lengthIsMemory64),
+                .address(isMemory64: sourceIsMemory64),
+                .address(isMemory64: destIsMemory64)
+            )
+        ) { values, stack in
+            let (size, sourceOffset, destOffset) = values
+            return .tableCopy(
+                Instruction.TableCopyOperand(
+                    sourceIndex: srcTable,
+                    destIndex: dstTable,
+                    destOffset: destOffset,
+                    sourceOffset: sourceOffset,
+                    size: size
+                )
+            )
+        }
+    }
+    mutating func visitTableFill(table: UInt32) throws(WasmKitError) -> Output {
+        let address = try module.addressType(tableIndex: table)
+        let type = try module.tableType(table)
+        try pop3Emit((address, .ref(type.elementType), address)) { values, stack in
+            let (size, value, destOffset) = values
+            return .tableFill(
+                Instruction.TableFillOperand(
+                    tableIndex: table,
+                    destOffset: destOffset,
+                    value: value,
+                    size: size
+                )
+            )
+        }
+    }
+    mutating func visitTableGet(table: UInt32) throws(WasmKitError) -> Output {
+        let type = try module.tableType(table)
+        try popPushEmit(
+            module.addressType(tableIndex: table),
+            .ref(type.elementType)
+        ) { index, result in
+            return .tableGet(
+                Instruction.TableGetOperand(
+                    index: index,
+                    result: result,
+                    tableIndex: table
+                )
+            )
+        }
+    }
+    mutating func visitTableSet(table: UInt32) throws(WasmKitError) -> Output {
+        let type = try module.tableType(table)
+        try pop2Emit((.ref(type.elementType), module.addressType(tableIndex: table))) { values, stack in
+            let (value, index) = values
+            return .tableSet(
+                Instruction.TableSetOperand(
+                    index: index,
+                    value: value,
+                    tableIndex: table
+                )
+            )
+        }
+    }
+    mutating func visitTableGrow(table: UInt32) throws(WasmKitError) -> Output {
+        let address = try module.addressType(tableIndex: table)
+        let type = try module.tableType(table)
+        try pop2PushEmit((address, .ref(type.elementType)), address) { values, result in
+            let (delta, value) = values
+            return .tableGrow(
+                Instruction.TableGrowOperand(
+                    tableIndex: table,
+                    result: result,
+                    delta: delta,
+                    value: value
+                )
+            )
+        }
+    }
+    mutating func visitTableSize(table: UInt32) throws(WasmKitError) -> Output {
+        pushEmit(try module.addressType(tableIndex: table)) { result in
+            return .tableSize(Instruction.TableSizeOperand(tableIndex: table, result: LVReg(result)))
+        }
+    }
+
+    // MARK: - Atomic Operations Translation
+
+    private mutating func visitRmw(
+        _ memarg: MemArg,
+        _ type: ValueType,
+        _ naturalAlignment: Int,
+        _ instruction: @escaping (Instruction.RmwOperand) -> Instruction
+    ) throws(WasmKitError) {
+        let isMemory64 = try module.isMemory64(memoryIndex: 0)
+        try validator.validateMemArg(memarg, naturalAlignment: naturalAlignment)
+        let value = try popVRegOperand(type)
+        let pointer = try popVRegOperand(.address(isMemory64: isMemory64))
+        guard let value = value, let pointer = pointer else {
+            throw WasmKitError("missing rmw operands")
+        }
+        let result = valueStack.push(type)
+        let rmwOperand = Instruction.RmwOperand(
+            offset: memarg.offset,
+            pointer: pointer,
+            value: value,
+            result: result
+        )
+        emit(instruction(rmwOperand))
+    }
+
+    private mutating func visitRmw8(
+        _ memarg: MemArg,
+        _ resultType: ValueType,
+        _ naturalAlignment: Int,
+        _ instruction: @escaping (Instruction.RmwOperand) -> Instruction
+    ) throws(WasmKitError) {
+        let isMemory64 = try module.isMemory64(memoryIndex: 0)
+        try validator.validateMemArg(memarg, naturalAlignment: naturalAlignment)
+        let value = try popVRegOperand(resultType)
+        let pointer = try popVRegOperand(.address(isMemory64: isMemory64))
+        guard let value = value, let pointer = pointer else {
+            throw WasmKitError("missing rmw operands")
+        }
+        let result = valueStack.push(resultType)
+        let rmwOperand = Instruction.RmwOperand(
+            offset: memarg.offset,
+            pointer: pointer,
+            value: value,
+            result: result
+        )
+        emit(instruction(rmwOperand))
+    }
+
+    private mutating func visitRmw16(
+        _ memarg: MemArg,
+        _ resultType: ValueType,
+        _ naturalAlignment: Int,
+        _ instruction: @escaping (Instruction.RmwOperand) -> Instruction
+    ) throws(WasmKitError) {
+        let isMemory64 = try module.isMemory64(memoryIndex: 0)
+        try validator.validateMemArg(memarg, naturalAlignment: naturalAlignment)
+        let value = try popVRegOperand(resultType)
+        let pointer = try popVRegOperand(.address(isMemory64: isMemory64))
+        guard let value = value, let pointer = pointer else {
+            throw WasmKitError("missing rmw operands")
+        }
+        let result = valueStack.push(resultType)
+        let rmwOperand = Instruction.RmwOperand(
+            offset: memarg.offset,
+            pointer: pointer,
+            value: value,
+            result: result
+        )
+        emit(instruction(rmwOperand))
+    }
+
+    private mutating func visitRmw32(
+        _ memarg: MemArg,
+        _ resultType: ValueType,
+        _ naturalAlignment: Int,
+        _ instruction: @escaping (Instruction.RmwOperand) -> Instruction
+    ) throws(WasmKitError) {
+        let isMemory64 = try module.isMemory64(memoryIndex: 0)
+        try validator.validateMemArg(memarg, naturalAlignment: naturalAlignment)
+        let value = try popVRegOperand(resultType)
+        let pointer = try popVRegOperand(.address(isMemory64: isMemory64))
+        guard let value = value, let pointer = pointer else {
+            throw WasmKitError("missing rmw operands")
+        }
+        let result = valueStack.push(resultType)
+        let rmwOperand = Instruction.RmwOperand(
+            offset: memarg.offset,
+            pointer: pointer,
+            value: value,
+            result: result
+        )
+        emit(instruction(rmwOperand))
+    }
+
+    mutating func visitI32AtomicRmwAdd(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw(memarg, .i32, 4) { .i32AtomicRmwAdd($0) }
+    }
+    mutating func visitI64AtomicRmwAdd(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw(memarg, .i64, 8) { .i64AtomicRmwAdd($0) }
+    }
+    mutating func visitI32AtomicRmw8AddU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw8(memarg, .i32, 1) { .i32AtomicRmw8AddU($0) }
+    }
+    mutating func visitI32AtomicRmw16AddU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw16(memarg, .i32, 2) { .i32AtomicRmw16AddU($0) }
+    }
+    mutating func visitI64AtomicRmw8AddU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw8(memarg, .i64, 1) { .i64AtomicRmw8AddU($0) }
+    }
+    mutating func visitI64AtomicRmw16AddU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw16(memarg, .i64, 2) { .i64AtomicRmw16AddU($0) }
+    }
+    mutating func visitI64AtomicRmw32AddU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw32(memarg, .i64, 4) { .i64AtomicRmw32AddU($0) }
+    }
+
+    mutating func visitI32AtomicRmwSub(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw(memarg, .i32, 4) { .i32AtomicRmwSub($0) }
+    }
+    mutating func visitI64AtomicRmwSub(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw(memarg, .i64, 8) { .i64AtomicRmwSub($0) }
+    }
+    mutating func visitI32AtomicRmw8SubU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw8(memarg, .i32, 1) { .i32AtomicRmw8SubU($0) }
+    }
+    mutating func visitI32AtomicRmw16SubU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw16(memarg, .i32, 2) { .i32AtomicRmw16SubU($0) }
+    }
+    mutating func visitI64AtomicRmw8SubU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw8(memarg, .i64, 1) { .i64AtomicRmw8SubU($0) }
+    }
+    mutating func visitI64AtomicRmw16SubU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw16(memarg, .i64, 2) { .i64AtomicRmw16SubU($0) }
+    }
+    mutating func visitI64AtomicRmw32SubU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw32(memarg, .i64, 4) { .i64AtomicRmw32SubU($0) }
+    }
+
+    mutating func visitI32AtomicRmwAnd(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw(memarg, .i32, 4) { .i32AtomicRmwAnd($0) }
+    }
+    mutating func visitI64AtomicRmwAnd(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw(memarg, .i64, 8) { .i64AtomicRmwAnd($0) }
+    }
+    mutating func visitI32AtomicRmw8AndU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw8(memarg, .i32, 1) { .i32AtomicRmw8AndU($0) }
+    }
+    mutating func visitI32AtomicRmw16AndU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw16(memarg, .i32, 2) { .i32AtomicRmw16AndU($0) }
+    }
+    mutating func visitI64AtomicRmw8AndU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw8(memarg, .i64, 1) { .i64AtomicRmw8AndU($0) }
+    }
+    mutating func visitI64AtomicRmw16AndU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw16(memarg, .i64, 2) { .i64AtomicRmw16AndU($0) }
+    }
+    mutating func visitI64AtomicRmw32AndU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw32(memarg, .i64, 4) { .i64AtomicRmw32AndU($0) }
+    }
+
+    mutating func visitI32AtomicRmwOr(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw(memarg, .i32, 4) { .i32AtomicRmwOr($0) }
+    }
+    mutating func visitI64AtomicRmwOr(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw(memarg, .i64, 8) { .i64AtomicRmwOr($0) }
+    }
+    mutating func visitI32AtomicRmw8OrU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw8(memarg, .i32, 1) { .i32AtomicRmw8OrU($0) }
+    }
+    mutating func visitI32AtomicRmw16OrU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw16(memarg, .i32, 2) { .i32AtomicRmw16OrU($0) }
+    }
+    mutating func visitI64AtomicRmw8OrU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw8(memarg, .i64, 1) { .i64AtomicRmw8OrU($0) }
+    }
+    mutating func visitI64AtomicRmw16OrU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw16(memarg, .i64, 2) { .i64AtomicRmw16OrU($0) }
+    }
+    mutating func visitI64AtomicRmw32OrU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw32(memarg, .i64, 4) { .i64AtomicRmw32OrU($0) }
+    }
+
+    mutating func visitI32AtomicRmwXor(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw(memarg, .i32, 4) { .i32AtomicRmwXor($0) }
+    }
+    mutating func visitI64AtomicRmwXor(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw(memarg, .i64, 8) { .i64AtomicRmwXor($0) }
+    }
+    mutating func visitI32AtomicRmw8XorU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw8(memarg, .i32, 1) { .i32AtomicRmw8XorU($0) }
+    }
+    mutating func visitI32AtomicRmw16XorU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw16(memarg, .i32, 2) { .i32AtomicRmw16XorU($0) }
+    }
+    mutating func visitI64AtomicRmw8XorU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw8(memarg, .i64, 1) { .i64AtomicRmw8XorU($0) }
+    }
+    mutating func visitI64AtomicRmw16XorU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw16(memarg, .i64, 2) { .i64AtomicRmw16XorU($0) }
+    }
+    mutating func visitI64AtomicRmw32XorU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw32(memarg, .i64, 4) { .i64AtomicRmw32XorU($0) }
+    }
+
+    mutating func visitI32AtomicRmwXchg(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw(memarg, .i32, 4) { .i32AtomicRmwXchg($0) }
+    }
+    mutating func visitI64AtomicRmwXchg(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw(memarg, .i64, 8) { .i64AtomicRmwXchg($0) }
+    }
+    mutating func visitI32AtomicRmw8XchgU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw8(memarg, .i32, 1) { .i32AtomicRmw8XchgU($0) }
+    }
+    mutating func visitI32AtomicRmw16XchgU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw16(memarg, .i32, 2) { .i32AtomicRmw16XchgU($0) }
+    }
+    mutating func visitI64AtomicRmw8XchgU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw8(memarg, .i64, 1) { .i64AtomicRmw8XchgU($0) }
+    }
+    mutating func visitI64AtomicRmw16XchgU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw16(memarg, .i64, 2) { .i64AtomicRmw16XchgU($0) }
+    }
+    mutating func visitI64AtomicRmw32XchgU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitRmw32(memarg, .i64, 4) { .i64AtomicRmw32XchgU($0) }
+    }
+
+    private mutating func visitCmpxchg(
+        _ memarg: MemArg,
+        _ type: ValueType,
+        _ naturalAlignment: Int,
+        _ instruction: @escaping (Instruction.CmpxchgOperand) -> Instruction
+    ) throws(WasmKitError) {
+        let isMemory64 = try module.isMemory64(memoryIndex: 0)
+        try validator.validateMemArg(memarg, naturalAlignment: naturalAlignment)
+        let replacement = try popVRegOperand(type)
+        let expected = try popVRegOperand(type)
+        let pointer = try popVRegOperand(.address(isMemory64: isMemory64))
+        guard let replacement = replacement, let expected = expected, let pointer = pointer else {
+            throw WasmKitError("missing cmpxchg operands")
+        }
+        let result = valueStack.push(type)
+        let cmpxchgOperand = Instruction.CmpxchgOperand(
+            offset: memarg.offset,
+            pointer: pointer,
+            expected: expected,
+            replacement: replacement,
+            result: result
+        )
+        emit(instruction(cmpxchgOperand))
+    }
+
+    private mutating func visitCmpxchg8(
+        _ memarg: MemArg,
+        _ resultType: ValueType,
+        _ naturalAlignment: Int,
+        _ instruction: @escaping (Instruction.CmpxchgOperand) -> Instruction
+    ) throws(WasmKitError) {
+        let isMemory64 = try module.isMemory64(memoryIndex: 0)
+        try validator.validateMemArg(memarg, naturalAlignment: naturalAlignment)
+        let replacement = try popVRegOperand(resultType)
+        let expected = try popVRegOperand(resultType)
+        let pointer = try popVRegOperand(.address(isMemory64: isMemory64))
+        guard let replacement = replacement, let expected = expected, let pointer = pointer else {
+            throw WasmKitError("missing cmpxchg operands")
+        }
+        let result = valueStack.push(resultType)
+        let cmpxchgOperand = Instruction.CmpxchgOperand(
+            offset: memarg.offset,
+            pointer: pointer,
+            expected: expected,
+            replacement: replacement,
+            result: result
+        )
+        emit(instruction(cmpxchgOperand))
+    }
+
+    private mutating func visitCmpxchg16(
+        _ memarg: MemArg,
+        _ resultType: ValueType,
+        _ naturalAlignment: Int,
+        _ instruction: @escaping (Instruction.CmpxchgOperand) -> Instruction
+    ) throws(WasmKitError) {
+        let isMemory64 = try module.isMemory64(memoryIndex: 0)
+        try validator.validateMemArg(memarg, naturalAlignment: naturalAlignment)
+        let replacement = try popVRegOperand(resultType)
+        let expected = try popVRegOperand(resultType)
+        let pointer = try popVRegOperand(.address(isMemory64: isMemory64))
+        guard let replacement = replacement, let expected = expected, let pointer = pointer else {
+            throw WasmKitError("missing cmpxchg operands")
+        }
+        let result = valueStack.push(resultType)
+        let cmpxchgOperand = Instruction.CmpxchgOperand(
+            offset: memarg.offset,
+            pointer: pointer,
+            expected: expected,
+            replacement: replacement,
+            result: result
+        )
+        emit(instruction(cmpxchgOperand))
+    }
+
+    private mutating func visitCmpxchg32(
+        _ memarg: MemArg,
+        _ resultType: ValueType,
+        _ naturalAlignment: Int,
+        _ instruction: @escaping (Instruction.CmpxchgOperand) -> Instruction
+    ) throws(WasmKitError) {
+        let isMemory64 = try module.isMemory64(memoryIndex: 0)
+        try validator.validateMemArg(memarg, naturalAlignment: naturalAlignment)
+        let replacement = try popVRegOperand(resultType)
+        let expected = try popVRegOperand(resultType)
+        let pointer = try popVRegOperand(.address(isMemory64: isMemory64))
+        guard let replacement = replacement, let expected = expected, let pointer = pointer else {
+            throw WasmKitError("missing cmpxchg operands")
+        }
+        let result = valueStack.push(resultType)
+        let cmpxchgOperand = Instruction.CmpxchgOperand(
+            offset: memarg.offset,
+            pointer: pointer,
+            expected: expected,
+            replacement: replacement,
+            result: result
+        )
+        emit(instruction(cmpxchgOperand))
+    }
+
+    mutating func visitI32AtomicRmwCmpxchg(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitCmpxchg(memarg, .i32, 4) { .i32AtomicRmwCmpxchg($0) }
+    }
+    mutating func visitI64AtomicRmwCmpxchg(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitCmpxchg(memarg, .i64, 8) { .i64AtomicRmwCmpxchg($0) }
+    }
+    mutating func visitI32AtomicRmw8CmpxchgU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitCmpxchg8(memarg, .i32, 1) { .i32AtomicRmw8CmpxchgU($0) }
+    }
+    mutating func visitI32AtomicRmw16CmpxchgU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitCmpxchg16(memarg, .i32, 2) { .i32AtomicRmw16CmpxchgU($0) }
+    }
+    mutating func visitI64AtomicRmw8CmpxchgU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitCmpxchg8(memarg, .i64, 1) { .i64AtomicRmw8CmpxchgU($0) }
+    }
+    mutating func visitI64AtomicRmw16CmpxchgU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitCmpxchg16(memarg, .i64, 2) { .i64AtomicRmw16CmpxchgU($0) }
+    }
+    mutating func visitI64AtomicRmw32CmpxchgU(memarg: MemArg) throws(WasmKitError) -> Output {
+        try visitCmpxchg32(memarg, .i64, 4) { .i64AtomicRmw32CmpxchgU($0) }
+    }
+
+    mutating func visitMemoryAtomicWait32(memarg: MemArg) throws(WasmKitError) -> Output {
+        let isMemory64 = try module.isMemory64(memoryIndex: 0)
+        try validator.validateMemArg(memarg, naturalAlignment: 4)
+        let timeout = try popVRegOperand(.i64)
+        let expected = try popVRegOperand(.i32)
+        let pointer = try popVRegOperand(.address(isMemory64: isMemory64))
+        guard let timeout = timeout, let expected = expected, let pointer = pointer else {
+            throw WasmKitError("missing wait operands")
+        }
+        let result = valueStack.push(.i32)
+        let waitOperand = Instruction.AtomicWaitOperand(
+            offset: memarg.offset,
+            pointer: pointer,
+            expected: expected,
+            timeout: timeout,
+            result: VReg(result)
+        )
+        emit(.memoryAtomicWait32(waitOperand))
+    }
+
+    mutating func visitMemoryAtomicWait64(memarg: MemArg) throws(WasmKitError) -> Output {
+        let isMemory64 = try module.isMemory64(memoryIndex: 0)
+        try validator.validateMemArg(memarg, naturalAlignment: 8)
+        let timeout = try popVRegOperand(.i64)
+        let expected = try popVRegOperand(.i64)
+        let pointer = try popVRegOperand(.address(isMemory64: isMemory64))
+        guard let timeout = timeout, let expected = expected, let pointer = pointer else {
+            throw WasmKitError("missing wait operands")
+        }
+        let result = valueStack.push(.i32)
+        let waitOperand = Instruction.AtomicWaitOperand(
+            offset: memarg.offset,
+            pointer: pointer,
+            expected: expected,
+            timeout: timeout,
+            result: VReg(result)
+        )
+        emit(.memoryAtomicWait64(waitOperand))
+    }
+
+    mutating func visitMemoryAtomicNotify(memarg: MemArg) throws(WasmKitError) -> Output {
+        let isMemory64 = try module.isMemory64(memoryIndex: 0)
+        try validator.validateMemArg(memarg, naturalAlignment: 4)
+        let count = try popVRegOperand(.i32)
+        let pointer = try popVRegOperand(.address(isMemory64: isMemory64))
+        guard let count = count, let pointer = pointer else {
+            throw WasmKitError("missing notify operands")
+        }
+        let result = valueStack.push(.i32)
+        let notifyOperand = Instruction.AtomicNotifyOperand(
+            offset: memarg.offset,
+            pointer: pointer,
+            count: count,
+            result: VReg(result)
+        )
+        emit(.memoryAtomicNotify(notifyOperand))
+    }
+
+    mutating func visitAtomicFence() throws(WasmKitError) -> Output {
+        emit(.atomicFence)
+    }
+}
+
+extension InstructionTranslator.MetaValue {
+    fileprivate var concreteType: WasmTypes.ValueType? {
+        switch self {
+        case .some(let type): return type
+        case .unknown: return nil
+        }
+    }
+}
+
+extension FunctionType {
+    fileprivate init(blockType: WasmParser.BlockType, typeSection: [FunctionType]) throws(WasmKitError) {
+        switch blockType {
+        case .type(let valueType):
+            self.init(parameters: [], results: [valueType])
+        case .empty:
+            self.init(parameters: [], results: [])
+        case .funcType(let typeIndex):
+            let typeIndex = Int(typeIndex)
+            guard typeIndex < typeSection.count else {
+                throw WasmKitError(message: .indexOutOfBounds("type", typeIndex, max: typeSection.count))
+            }
+            let funcType = typeSection[typeIndex]
+            self.init(
+                parameters: funcType.parameters,
+                results: funcType.results
+            )
+        }
+    }
+}
+
+extension ValueType {
+    fileprivate static func address(isMemory64: Bool) -> ValueType {
+        return isMemory64 ? .i64 : .i32
+    }
+}

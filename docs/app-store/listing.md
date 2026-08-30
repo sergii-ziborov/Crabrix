@@ -27,8 +27,8 @@ the app cannot drift apart. Character limits are Apple's.
 
 ## Promotional text (170)
 
-> Now with 83 lessons, tiered achievements from Bronze to Diamond, a health-and-energy
-> system that rewards rank, Code Recall for memory training, and a global board.
+> Now with 142 guided Rust lessons, a 200-pattern Algorithm Atlas, tiered
+> achievements, and compiler-backed practice that runs locally.
 
 ## Description (4000)
 
@@ -62,9 +62,11 @@ AN EDITOR BUILT FOR A PHONE
 • Import from GitHub or Files, export as a package or a plain ZIP
 
 LEARN RUST PROPERLY
-• 83 lessons across six courses: from fn main to unsafe, FFI, and async
-• Every lesson has a written explanation, a highlighted example, and a lab
-  checked by the compiler in the app
+• 142 lessons across six courses: from fn main to unsafe, FFI, and async
+• 142 guided lessons with written explanations and highlighted examples
+• A separate Algorithm Atlas: 20 solution-method chapters, 200 patterns, and 600 ordered steps
+• Every pattern has a mental model, use-case guide, and local Rust challenge
+• Compiler-backed labs across the curriculum use the bundled rustc as evidence
 • Interview preparation that goes past the language: memory, atomics,
   networking, databases, and distributed systems
 • Quick Practice, Term Train, and Code Recall — all generated from the same
@@ -75,8 +77,7 @@ LEARN RUST PROPERLY
 RATING THAT MEANS SOMETHING
 A successful run is scored on how much Rust actually changed since the last one.
 Pressing Run on an untouched sample is not work, and Crabrix does not pretend
-otherwise. Publish your rating to the global board if you want to — it is
-optional, off by default, and needs no account.
+otherwise. Rating and achievements remain local in the production 1.0 build.
 
 NO ACCOUNT. NO SUBSCRIPTION. NO TRACKING.
 Buy it once. There is no sign-up, no password, no advertising, no analytics
@@ -89,7 +90,9 @@ device. Crabrix detects these and tells you, instead of failing halfway. There
 is no debugger yet. Compilation is interpreted WebAssembly, so a first build is
 slower than on a laptop.
 
-Everything else compiles and runs, in your hand, offline.
+The compiler, curriculum, local projects, and already-fetched supported
+dependencies work offline. GitHub import, first-time crate downloads, and the
+optional online boards require a connection.
 ```
 
 ## Keywords (100, comma separated, no spaces)
@@ -104,27 +107,25 @@ rust,compiler,rustc,cargo,crates,code,programming,ide,editor,learn,offline,wasm,
 The first release of Crabrix.
 
 A real Rust compiler on your iPhone and iPad, with a real crates.io package
-manager, an editor built for a phone, and 83 lessons that check your work with
-the compiler that ships in the app.
+manager, an editor built for a phone, 142 guided Rust lessons, and a separate
+200-pattern Algorithm Atlas with compiler-backed challenges.
 
-Everything runs on device. Everything works offline.
+The compiler, curriculum, local projects, and already-fetched dependencies work
+offline. First-time package downloads and online services require a connection.
 ```
 
-## App Privacy answers
+## App Privacy answers — production 1.0
 
 Match `Crabrix/Resources/PrivacyInfo.xcprivacy` exactly.
 
 | Question | Answer |
 | --- | --- |
-| Do you collect data from this app? | **Yes** — only through the optional leaderboard |
-| Used for tracking? | **No**, for every type |
-| Identifiers → User ID | Collected, **linked** to the user, not used for tracking. Purpose: **App Functionality**. The display name the reader types and a random key generated on device. |
-| Usage Data → Product Interaction | Collected, **linked** to the user, not used for tracking. Purpose: **App Functionality**. Rating, lessons completed, lines changed, achievements, best Code Recall level. |
+| Do you collect data from this app? | **No** — Game Center and Crabrix Board are dormant in production 1.0 |
+| Used for tracking? | **No** |
 | Everything else | **Not collected** |
 
-Say plainly in the review notes that this collection happens only after the
-reader turns on "Publish my rating" in Profile, and that the same screen deletes
-the entry.
+If either online board is enabled in a later release, update these answers and
+the review notes from the shipped binary/server behavior before submission.
 
 ## Export compliance
 
@@ -136,8 +137,8 @@ not encryption, and no proprietary or non-exempt cryptography is implemented.
 ## Review notes
 
 ```
-Crabrix is a Rust development environment. No account is needed and nothing is
-gated — all features are available immediately on launch.
+Crabrix is a Rust development environment. No account or subscription is needed,
+and there are no in-app purchases. Free training is always available.
 
 TO SEE IT COMPILE
 1. Projects → "Hello Rust" chip → Build tab → Run.
@@ -160,16 +161,10 @@ memory cap, no network access, and one writable directory. Crabrix spawns no
 host processes; the "terminal" is a simulated shell over the in-app project
 files only.
 
-REGARDING USER-GENERATED CONTENT (1.2)
-The only user-generated content is a display name on an optional leaderboard,
-off by default. Names are filtered server-side for abuse and impersonation.
-Reporting is available in the app (Learn → rating card → Report a name) and at
-https://crabrix.com/support, and reported entries are removed.
-
-REGARDING ACCOUNT DELETION (5.1.1v)
-There is no account. The leaderboard entry a user can create is deleted from
-inside the app: Learn → rating card → Profile → "Remove my entry from the
-board".
+ONLINE BOARDS
+Game Center and the Crabrix Rust Board implementations are dormant in the
+production 1.0 configuration. The app does not authenticate, publish a score,
+show board controls, or collect a display name in this build.
 
 CONTACT
 support@crabrix.com

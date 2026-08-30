@@ -74,11 +74,14 @@ final class LeaderboardClient: ObservableObject {
     var playerKey: String { DeviceKey.shared.value }
 
     var canPublish: Bool {
-        isEnabled && !displayName.trimmingCharacters(in: .whitespaces).isEmpty
+        CrabrixReleaseFeatures.crabrixBoardEnabled
+            && isEnabled
+            && !displayName.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     /// Sends the current rating, if publishing is on and something changed.
     func publish(state: CrabrixProgressState, force: Bool = false) async {
+        guard CrabrixReleaseFeatures.crabrixBoardEnabled else { return }
         guard canPublish else { return }
         guard force || lastPublishedPoints != state.totalPoints else { return }
         guard state.totalPoints > 0 else { return }
@@ -122,6 +125,7 @@ final class LeaderboardClient: ObservableObject {
 
     /// Loads the public top of the board, for the in-app preview.
     func loadBoard(limit: Int = 25) async {
+        guard CrabrixReleaseFeatures.crabrixBoardEnabled else { return }
         var components = URLComponents(
             url: Self.apiRoot.appendingPathComponent("leaderboard"),
             resolvingAgainstBaseURL: false
@@ -145,6 +149,11 @@ final class LeaderboardClient: ObservableObject {
     /// the key alone is the whole request.
     @discardableResult
     func stopPublishingAndForget() async -> Bool {
+        guard CrabrixReleaseFeatures.crabrixBoardEnabled else {
+            isEnabled = false
+            status = .removed
+            return true
+        }
         isEnabled = false
         lastPublishedPoints = nil
 

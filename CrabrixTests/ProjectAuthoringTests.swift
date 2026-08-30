@@ -38,6 +38,35 @@ final class ProjectAuthoringTests: XCTestCase {
         model.createProject(name: "cli-crab", template: .cli)
         project = model.exportProject()
         XCTAssertTrue(project.files["src/main.rs"]?.contains("env::args") == true)
+
+        model.createProject(name: "visual-crab", template: .visual)
+        project = model.exportProject()
+        XCTAssertEqual(project.kind, .visual)
+        XCTAssertTrue(
+            project.files["src/main.rs"]?.contains(RustCanvasOutput.marker)
+                == true
+        )
+    }
+
+    func testNewProjectPersistsOrganizationMetadata() {
+        let model = CompilerViewModel()
+        model.createProject(
+            NewRustProjectRequest(
+                name: "Borrow Notebook",
+                template: .modules,
+                projectDescription: "Experiments with shared references",
+                folder: "Learning",
+                tags: ["Borrowing", "practice", "borrowing"],
+                kind: .experiment
+            )
+        )
+
+        let project = model.exportProject()
+        XCTAssertEqual(project.name, "borrow-notebook")
+        XCTAssertEqual(project.projectDescription, "Experiments with shared references")
+        XCTAssertEqual(project.folder, "Learning")
+        XCTAssertEqual(project.tags, ["borrowing", "practice"])
+        XCTAssertEqual(project.kind, .experiment)
     }
 
     func testCargoDependencyIsInsertedAndUpdated() {
@@ -54,10 +83,24 @@ final class ProjectAuthoringTests: XCTestCase {
     }
 
     func testBundledProjectLibraryHasRunnableEntries() {
-        XCTAssertGreaterThanOrEqual(RustShowcaseLibrary.projects.count, 4)
+        XCTAssertEqual(RustShowcaseLibrary.projects.count, 46)
+        XCTAssertEqual(Set(RustShowcaseLibrary.projects.map(\.id)).count, 46)
+        XCTAssertGreaterThanOrEqual(
+            RustShowcaseLibrary.projects.filter(\.isGuided).count,
+            26
+        )
+        XCTAssertEqual(
+            RustShowcaseLibrary.projects.filter(\.isVisual).count,
+            6
+        )
         for showcase in RustShowcaseLibrary.projects {
             XCTAssertNotNil(showcase.project.files[showcase.project.entryFile])
             XCTAssertNotNil(showcase.project.files["Cargo.toml"])
+        }
+        for showcase in RustShowcaseLibrary.projects.filter(\.isVisual) {
+            XCTAssertEqual(showcase.project.kind, .visual)
+            XCTAssertEqual(showcase.project.folder, "Visual Gallery")
+            XCTAssertNotNil(showcase.project.files["README.md"])
         }
     }
 

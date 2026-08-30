@@ -159,6 +159,19 @@ final class CrabrixVitalsStateTests: XCTestCase {
         XCTAssertEqual(state.recordCorrect(capacity: capacity), .free)
     }
 
+    func testSixCorrectAnswersRestoreHealthAndEnergy() {
+        var state = CrabrixVitalsState(health: 3, energy: 10, updatedAt: start)
+        for _ in 1..<CrabrixVitalsState.flowStreakForHealth {
+            _ = state.recordCorrect(capacity: capacity)
+        }
+        XCTAssertEqual(
+            state.recordCorrect(capacity: capacity),
+            .recovered(health: 1, energy: 1)
+        )
+        XCTAssertEqual(state.health, 4)
+        XCTAssertEqual(state.energy, 12, "three- and six-answer refunds both apply")
+    }
+
     func testCountdownReportsTimeToTheNextWholePoint() {
         let seconds = CrabrixVitalsState.secondsToNextPoint(
             value: 2.5,

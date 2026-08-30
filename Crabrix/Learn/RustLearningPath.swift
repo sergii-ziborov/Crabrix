@@ -13,6 +13,7 @@ struct RustLesson: Identifiable, Sendable {
         case runnable
         case borrowDiagnostic
         case multiFile
+        case algorithmChallenge
         case planned
     }
 
@@ -23,10 +24,223 @@ struct RustLesson: Identifiable, Sendable {
     let exercise: Exercise
 }
 
+enum LessonOutputMatcher: Codable, Equatable, Sendable {
+    case exact(String)
+    case contains(String)
+    case differsFrom(String)
+
+    func matches(_ output: String) -> Bool {
+        switch self {
+        case let .exact(expected): output == expected
+        case let .contains(fragment): output.contains(fragment)
+        case let .differsFrom(starter): !output.isEmpty && output != starter
+        }
+    }
+}
+
+/// The proof a lesson requires. A successful process exit is only one input;
+/// it is never, by itself, a universal lesson validator.
+enum LessonEvidence: Equatable, Sendable {
+    case compilerRun(
+        expectedOutput: LessonOutputMatcher,
+        requiresSourceChange: Bool,
+        requiredFiles: [String]
+    )
+    case repair(
+        removesDiagnostic: String,
+        expectedOutput: LessonOutputMatcher,
+        requiredSourceFragments: [String]
+    )
+    case algorithmChallenge(
+        expectedOutput: LessonOutputMatcher,
+        requiredSourceFragments: [String],
+        forbiddenSourceFragments: [String]
+    )
+    case reasoning(correctAnswer: Int)
+}
+
+enum LessonAttemptResult: String, Codable, Equatable, Sendable {
+    case passed
+    case failed
+}
+
+/// Persisted evidence contains hashes and compiler facts, never the learner's
+/// source code.
+struct LessonAttemptEvidence: Codable, Equatable, Sendable {
+    static let validatorVersion = "lesson-evidence-1"
+
+    let lessonID: String
+    let projectRevision: String
+    let validatorVersion: String
+    let compilerVersion: String?
+    let result: LessonAttemptResult
+    let diagnosticCodes: [String]
+    let stdoutHash: String?
+    let completedAt: Date
+}
+
+struct LessonEvidenceValidation: Equatable, Sendable {
+    let passed: Bool
+    let detail: String
+}
+
+enum LessonEvidenceValidator {
+    static func validateCompilerAttempt(
+        lesson: RustLesson,
+        result: CompilationResult,
+        project: CrabrixProject,
+        initialSourceTreeHash: String?,
+        currentSourceTreeHash: String,
+        observedDiagnosticCodes: Set<String>
+    ) -> LessonEvidenceValidation {
+        guard result.succeeded, result.phase == .run else {
+            return LessonEvidenceValidation(
+                passed: false,
+                detail: "Run the lesson project successfully to produce compiler evidence."
+            )
+        }
+
+        switch lesson.evidence {
+        case let .compilerRun(output, requiresSourceChange, requiredFiles):
+            if requiresSourceChange, initialSourceTreeHash == currentSourceTreeHash {
+                return LessonEvidenceValidation(
+                    passed: false,
+                    detail: "The starter project ran unchanged. Make the requested edit and run again."
+                )
+            }
+            let missingFiles = requiredFiles.filter { project.files[$0] == nil }
+            guard missingFiles.isEmpty else {
+                return LessonEvidenceValidation(
+                    passed: false,
+                    detail: "Required lesson files are missing: \(missingFiles.joined(separator: ", "))."
+                )
+            }
+            guard output.matches(result.stdout) else {
+                return LessonEvidenceValidation(
+                    passed: false,
+                    detail: "The program ran, but stdout does not yet prove the requested behavior."
+                )
+            }
+            return LessonEvidenceValidation(
+                passed: true,
+                detail: "The edited project compiled and its stdout matched this lesson's validator."
+            )
+
+        case let .repair(code, output, requiredFragments):
+            guard observedDiagnosticCodes.contains(code) else {
+                return LessonEvidenceValidation(
+                    passed: false,
+                    detail: "Reproduce \(code) first, then repair that exact diagnostic."
+                )
+            }
+            guard !result.diagnostics.contains(where: { $0.code == code }) else {
+                return LessonEvidenceValidation(
+                    passed: false,
+                    detail: "\(code) is still present."
+                )
+            }
+            let allSource = project.files.keys.sorted().compactMap { project.files[$0] }
+                .joined(separator: "\n")
+            let missingFragments = requiredFragments.filter { !allSource.contains($0) }
+            guard missingFragments.isEmpty else {
+                return LessonEvidenceValidation(
+                    passed: false,
+                    detail: "The repair removed required behavior from the starter project."
+                )
+            }
+            guard output.matches(result.stdout) else {
+                return LessonEvidenceValidation(
+                    passed: false,
+                    detail: "The diagnostic is gone, but the expected behavior was not preserved."
+                )
+            }
+            return LessonEvidenceValidation(
+                passed: true,
+                detail: "\(code) was reproduced, removed, and the expected behavior still ran."
+            )
+
+        case let .algorithmChallenge(output, requiredFragments, forbiddenFragments):
+            guard initialSourceTreeHash != currentSourceTreeHash else {
+                return LessonEvidenceValidation(
+                    passed: false,
+                    detail: "The starter algorithm is unchanged. Implement solve(), then run it again."
+                )
+            }
+            let allSource = project.files.keys.sorted().compactMap { project.files[$0] }
+                .joined(separator: "\n")
+            let missingFragments = requiredFragments.filter { !allSource.contains($0) }
+            guard missingFragments.isEmpty else {
+                return LessonEvidenceValidation(
+                    passed: false,
+                    detail: "Keep the supplied solve() function and visible verification harness."
+                )
+            }
+            let remainingPlaceholders = forbiddenFragments.filter { allSource.contains($0) }
+            guard remainingPlaceholders.isEmpty else {
+                return LessonEvidenceValidation(
+                    passed: false,
+                    detail: "Replace the starter todo! placeholder with your algorithm."
+                )
+            }
+            guard output.matches(result.stdout) else {
+                return LessonEvidenceValidation(
+                    passed: false,
+                    detail: "The program ran, but the visible algorithm case did not pass yet."
+                )
+            }
+            return LessonEvidenceValidation(
+                passed: true,
+                detail: "rustc accepted the solution and the visible algorithm case passed."
+            )
+
+        case .reasoning:
+            return LessonEvidenceValidation(
+                passed: false,
+                detail: "This lesson is completed by its explanation question, not by a generic Run."
+            )
+        }
+    }
+}
+
 extension RustLesson {
     var hasCompilerLab: Bool {
         if case .planned = exercise { return false }
         return true
+    }
+
+    var evidence: LessonEvidence {
+        switch exercise {
+        case .runnable:
+            .compilerRun(
+                expectedOutput: .differsFrom("Hello, Crabrix!\n"),
+                requiresSourceChange: true,
+                requiredFiles: ["main.rs"]
+            )
+        case .borrowDiagnostic:
+            .repair(
+                removesDiagnostic: "E0502",
+                expectedOutput: .contains("crab"),
+                requiredSourceFragments: ["items.push(", "println!"]
+            )
+        case .multiFile:
+            .compilerRun(
+                expectedOutput: .differsFrom("hello from two Rust files\n"),
+                requiresSourceChange: true,
+                requiredFiles: ["Cargo.toml", "src/main.rs", "src/greeter.rs"]
+            )
+        case .algorithmChallenge:
+            if let challenge = AlgorithmCourseCatalog.challenge(for: id) {
+                .algorithmChallenge(
+                    expectedOutput: .exact(challenge.expectedOutput),
+                    requiredSourceFragments: challenge.requiredSourceFragments,
+                    forbiddenSourceFragments: ["todo!(\"implement"]
+                )
+            } else {
+                .reasoning(correctAnswer: RustLessonLibrary.writing(for: id)?.correctAnswer ?? 0)
+            }
+        case .planned:
+            .reasoning(correctAnswer: RustLessonLibrary.writing(for: id)?.correctAnswer ?? 1)
+        }
     }
 }
 
@@ -40,16 +254,17 @@ enum RustLearningPath {
             lessons: [
                 RustLesson(id: "hello-rust", title: "Hello, Rust", concept: "Functions and stdout", minutes: 4, exercise: .runnable),
                 RustLesson(id: "variables", title: "Variables", concept: "let, mut, and shadowing", minutes: 6, exercise: .planned),
-                RustLesson(id: "types", title: "Types", concept: "Scalars, tuples, and arrays", minutes: 7, exercise: .planned),
-                RustLesson(id: "operators", title: "Operators & Casting", concept: "Arithmetic, overflow, and as", minutes: 7, exercise: .planned),
-                RustLesson(id: "functions", title: "Functions", concept: "Parameters, returns, and expressions", minutes: 7, exercise: .planned),
-                RustLesson(id: "control-flow", title: "Control Flow", concept: "if, loop, while, and for", minutes: 8, exercise: .planned),
-                RustLesson(id: "comments-docs", title: "Comments & Docs", concept: "/// doc comments and examples", minutes: 5, exercise: .planned),
+                RustLesson(id: "print-formatting", title: "Printing Values", concept: "Format strings and placeholders", minutes: 5, exercise: .planned),
+                RustLesson(id: "number-types", title: "Numbers", concept: "Integer and floating-point types", minutes: 6, exercise: .planned),
+                RustLesson(id: "booleans-comparisons", title: "Booleans", concept: "Comparisons and logical operators", minutes: 5, exercise: .planned),
+                RustLesson(id: "chars-and-text", title: "Characters & Text", concept: "char, &str, and Unicode", minutes: 6, exercise: .planned),
+                RustLesson(id: "compiler-feedback", title: "Reading rustc", concept: "Expected, found, spans, and help", minutes: 6, exercise: .planned),
             ]
         ),
+    ] + RustBasicsExpansion.units + [
         RustLearningUnit(
             id: "ownership",
-            level: 2,
+            level: 5,
             title: "Ownership & Borrowing",
             subtitle: "The ideas that make Rust different",
             lessons: [
@@ -63,7 +278,7 @@ enum RustLearningPath {
         ),
         RustLearningUnit(
             id: "modeling",
-            level: 3,
+            level: 4,
             title: "Modeling Data",
             subtitle: "Make invalid states harder to express",
             lessons: [
@@ -78,7 +293,7 @@ enum RustLearningPath {
         ),
         RustLearningUnit(
             id: "abstraction",
-            level: 4,
+            level: 6,
             title: "Rust Abstractions",
             subtitle: "Reuse without hiding the cost",
             lessons: [
@@ -94,7 +309,7 @@ enum RustLearningPath {
         ),
         RustLearningUnit(
             id: "projects",
-            level: 5,
+            level: 7,
             title: "Real Projects",
             subtitle: "Cargo-shaped code beyond one file",
             lessons: [
@@ -107,7 +322,7 @@ enum RustLearningPath {
         ),
         RustLearningUnit(
             id: "pointers",
-            level: 6,
+            level: 8,
             title: "Smart Pointers",
             subtitle: "Ownership shapes beyond a plain value",
             lessons: [
@@ -119,7 +334,7 @@ enum RustLearningPath {
         ),
         RustLearningUnit(
             id: "threads",
-            level: 7,
+            level: 9,
             title: "Fearless Concurrency",
             subtitle: "Share data across threads without data races",
             lessons: [
@@ -131,7 +346,7 @@ enum RustLearningPath {
         ),
         RustLearningUnit(
             id: "async",
-            level: 8,
+            level: 10,
             title: "Async Rust",
             subtitle: "Concurrency without a thread per task",
             lessons: [
@@ -142,7 +357,7 @@ enum RustLearningPath {
         ),
         RustLearningUnit(
             id: "meta",
-            level: 9,
+            level: 11,
             title: "Macros & Metaprogramming",
             subtitle: "Code that writes code, checked by the compiler",
             lessons: [
@@ -153,7 +368,7 @@ enum RustLearningPath {
         ),
         RustLearningUnit(
             id: "systems",
-            level: 10,
+            level: 12,
             title: "Systems Rust",
             subtitle: "The unchecked edges, handled carefully",
             lessons: [
@@ -163,5 +378,5 @@ enum RustLearningPath {
                 RustLesson(id: "idioms", title: "Rust Idioms", concept: "Newtype, builder, and typestate", minutes: 11, exercise: .planned),
             ]
         ),
-    ]
+    ] + RustAdvancedExpansion.allUnits
 }

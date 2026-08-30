@@ -10,42 +10,10 @@
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
 
-	<!-- The only data that ever leaves the device is the leaderboard entry,
-	     and only when the reader turns publishing on in Profile. It is off by
-	     default and can be deleted from the same screen. -->
+	<!-- Production 1.0 keeps Game Center and the Crabrix Board dormant. No
+	     profile, score, analytics, or source code is collected by this build. -->
 	<key>NSPrivacyCollectedDataTypes</key>
-	<array>
-		<dict>
-			<!-- The display name the reader types, plus the random key kept in
-			     the Keychain that identifies their row. No email, no password,
-			     no device identifier. -->
-			<key>NSPrivacyCollectedDataType</key>
-			<string>NSPrivacyCollectedDataTypeUserID</string>
-			<key>NSPrivacyCollectedDataTypeLinked</key>
-			<true/>
-			<key>NSPrivacyCollectedDataTypeTracking</key>
-			<false/>
-			<key>NSPrivacyCollectedDataTypePurposes</key>
-			<array>
-				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
-			</array>
-		</dict>
-		<dict>
-			<!-- Rating, lessons finished, lines of Rust changed, achievements
-			     unlocked, and best Code Recall level: the numbers the public
-			     board displays. -->
-			<key>NSPrivacyCollectedDataType</key>
-			<string>NSPrivacyCollectedDataTypeProductInteraction</string>
-			<key>NSPrivacyCollectedDataTypeLinked</key>
-			<true/>
-			<key>NSPrivacyCollectedDataTypeTracking</key>
-			<false/>
-			<key>NSPrivacyCollectedDataTypePurposes</key>
-			<array>
-				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
-			</array>
-		</dict>
-	</array>
+	<array/>
 
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array>

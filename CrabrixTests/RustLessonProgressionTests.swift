@@ -2,6 +2,19 @@ import XCTest
 @testable import Crabrix
 
 final class RustLessonProgressionTests: XCTestCase {
+    private func successfulRun(stdout: String) -> CompilationResult {
+        CompilationResult(
+            succeeded: true,
+            phase: .run,
+            exitCode: 0,
+            diagnostics: [],
+            stdout: stdout,
+            stderr: "",
+            duration: .milliseconds(1),
+            detail: "fixture"
+        )
+    }
+
     func testCatalogFindsCourseAndLessonByStableIdentifiers() throws {
         let course = try XCTUnwrap(RustCourseCatalog.course(id: "basics"))
         let lesson = try XCTUnwrap(RustCourseCatalog.lesson(id: "variables"))
@@ -39,6 +52,16 @@ final class RustLessonProgressionTests: XCTestCase {
         )
     }
 
+    func testRustBasicsIsAFullGradualTwentyEightLessonCourse() throws {
+        let basics = try XCTUnwrap(RustCourseCatalog.course(id: "basics"))
+        let lessons = RustLessonProgression.lessons(in: basics.units)
+
+        XCTAssertEqual(basics.units.count, 4)
+        XCTAssertEqual(lessons.count, 28)
+        XCTAssertEqual(lessons.prefix(2).map(\.id), ["hello-rust", "variables"])
+        XCTAssertEqual(lessons.last?.id, "derive")
+    }
+
     func testCourseCompletesWhenEveryLessonIDIsRecorded() throws {
         let basics = try XCTUnwrap(RustCourseCatalog.courses.first { $0.id == "basics" })
         let completed = Set(RustLessonProgression.lessons(in: basics.units).map(\.id))
@@ -59,6 +82,82 @@ final class RustLessonProgressionTests: XCTestCase {
             completed.count
         )
         XCTAssertGreaterThan(completed.count, 0)
+    }
+
+    func testSuccessfulRunDoesNotCompleteUnchangedHelloStarter() throws {
+        let lesson = try XCTUnwrap(RustCourseCatalog.lesson(id: "hello-rust"))
+        let project = CrabrixProject(
+            name: "hello",
+            files: ["main.rs": RustSamples.helloLesson],
+            entryFile: "main.rs",
+            provenance: nil
+        )
+        let hash = WorkspaceRevision.capture(
+            project: project,
+            generation: 0,
+            toolchainID: "test"
+        ).sourceTreeHash
+
+        let validation = LessonEvidenceValidator.validateCompilerAttempt(
+            lesson: lesson,
+            result: successfulRun(stdout: "Hello, Crabrix!\n"),
+            project: project,
+            initialSourceTreeHash: hash,
+            currentSourceTreeHash: hash,
+            observedDiagnosticCodes: []
+        )
+
+        XCTAssertFalse(validation.passed)
+        XCTAssertTrue(validation.detail.contains("unchanged"))
+    }
+
+    func testEditedHelloOutputPassesItsSpecificValidator() throws {
+        let lesson = try XCTUnwrap(RustCourseCatalog.lesson(id: "hello-rust"))
+        let project = CrabrixProject(
+            name: "hello",
+            files: ["main.rs": "fn main() { println!(\"Hello, Ferris!\"); }"],
+            entryFile: "main.rs",
+            provenance: nil
+        )
+        let validation = LessonEvidenceValidator.validateCompilerAttempt(
+            lesson: lesson,
+            result: successfulRun(stdout: "Hello, Ferris!\n"),
+            project: project,
+            initialSourceTreeHash: "starter-hash",
+            currentSourceTreeHash: "edited-hash",
+            observedDiagnosticCodes: []
+        )
+
+        XCTAssertTrue(validation.passed)
+    }
+
+    func testBorrowRepairRequiresOriginalDiagnosticAndPreservedBehavior() throws {
+        let lesson = try XCTUnwrap(RustCourseCatalog.lesson(id: "borrowing"))
+        let project = CrabrixProject(
+            name: "borrow",
+            files: ["main.rs": RustSamples.runnable],
+            entryFile: "main.rs",
+            provenance: nil
+        )
+        let withoutDiagnostic = LessonEvidenceValidator.validateCompilerAttempt(
+            lesson: lesson,
+            result: successfulRun(stdout: "crab\n"),
+            project: project,
+            initialSourceTreeHash: "before",
+            currentSourceTreeHash: "after",
+            observedDiagnosticCodes: []
+        )
+        XCTAssertFalse(withoutDiagnostic.passed)
+
+        let provenRepair = LessonEvidenceValidator.validateCompilerAttempt(
+            lesson: lesson,
+            result: successfulRun(stdout: "crab\n"),
+            project: project,
+            initialSourceTreeHash: "before",
+            currentSourceTreeHash: "after",
+            observedDiagnosticCodes: ["E0502"]
+        )
+        XCTAssertTrue(provenRepair.passed)
     }
 }
 
@@ -106,8 +205,18 @@ final class RustCurriculumCoverageTests: XCTestCase {
         }
     }
 
-    func testWrittenLessonContentIsComplete() {
+    func testEveryLessonDeclaresAnExplicitEvidenceType() {
+        XCTAssertEqual(allLessons.count, 742)
         for lesson in allLessons {
+            switch lesson.evidence {
+            case .compilerRun, .repair, .algorithmChallenge, .reasoning:
+                break
+            }
+        }
+    }
+
+    func testWrittenLessonContentIsComplete() {
+        for lesson in allLessons where !lesson.id.hasPrefix("algorithm.") {
             guard let writing = RustLessonLibrary.writing(for: lesson.id) else { continue }
             XCTAssertFalse(writing.summary.isEmpty, lesson.id)
             XCTAssertFalse(writing.explanation.isEmpty, lesson.id)

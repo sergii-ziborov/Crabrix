@@ -1,5 +1,13 @@
 import Foundation
 
+enum TargetMatchResult: Sendable, Equatable {
+    case yes
+    case no
+    case unknown(reason: String)
+
+    var isMatch: Bool { self == .yes }
+}
+
 /// The compile target Crabrix builds every crate for.
 ///
 /// Registry dependencies carry `target` predicates that decide whether an edge
@@ -14,6 +22,10 @@ struct RustTargetSpec: Sendable, Equatable {
     let vendor: String
     let pointerWidth: String
     let endian: String
+    /// Canonical facts captured from the exact bundled compiler with:
+    /// `rustc --print cfg --target wasm32-wasip1`.
+    let cfgFlags: Set<String>
+    let cfgValues: [String: Set<String>]
 
     static let wasm32WasiP1 = RustTargetSpec(
         triple: "wasm32-wasip1",
@@ -23,7 +35,36 @@ struct RustTargetSpec: Sendable, Equatable {
         family: "wasm",
         vendor: "unknown",
         pointerWidth: "32",
-        endian: "little"
+        endian: "little",
+        cfgFlags: [
+            "debug_assertions",
+            "emscripten_wasm_eh",
+            "overflow_checks",
+            "target_has_atomic",
+            "target_has_atomic_load_store",
+            "target_has_reliable_f128",
+            "target_has_reliable_f16",
+            "target_has_reliable_f16_math",
+            "target_thread_local",
+            "ub_checks",
+        ],
+        cfgValues: [
+            "fmt_debug": ["full"],
+            "panic": ["abort"],
+            "relocation_model": ["static"],
+            "target_abi": [""],
+            "target_arch": ["wasm32"],
+            "target_endian": ["little"],
+            "target_env": ["p1"],
+            "target_family": ["wasm"],
+            "target_feature": ["crt-static"],
+            "target_has_atomic": ["8", "16", "32", "64", "ptr"],
+            "target_has_atomic_equal_alignment": ["8", "16", "32", "64", "ptr"],
+            "target_has_atomic_load_store": ["8", "16", "32", "64", "ptr"],
+            "target_os": ["wasi"],
+            "target_pointer_width": ["32"],
+            "target_vendor": ["unknown"],
+        ]
     )
 
     /// rustc still reports the historical triple name for this target, and older
@@ -32,26 +73,13 @@ struct RustTargetSpec: Sendable, Equatable {
         [triple, "wasm32-wasi", "wasm32-unknown-wasi"]
     }
 
-    func value(forKey key: String) -> String? {
-        switch key {
-        case "target_arch": arch
-        case "target_os": os
-        case "target_env": env
-        case "target_family": family
-        case "target_vendor": vendor
-        case "target_pointer_width": pointerWidth
-        case "target_endian": endian
-        default: nil
-        }
+    func matches(key: String, value: String) -> Bool {
+        cfgValues[key]?.contains(value) == true
     }
 
     /// Bare predicates such as `unix` or `windows`.
     func flag(_ name: String) -> Bool {
-        switch name {
-        case "wasm", "wasi": true
-        case "unix", "windows": false
-        default: false
-        }
+        cfgFlags.contains(name)
     }
 }
 
@@ -63,8 +91,8 @@ indirect enum TargetCfgExpression: Hashable, Sendable {
     case not(TargetCfgExpression)
     case keyValue(String, String)
     case flag(String)
-    /// A predicate Crabrix cannot model. Treated as not matching so unknown
-    /// platform-specific dependencies stay out of the graph.
+    /// A predicate Crabrix could not parse or model. It is never guessed true
+    /// or false by boolean negation/composition.
     case unsupported(String)
 
     static func parse(_ raw: String) -> TargetCfgExpression {
@@ -80,24 +108,41 @@ indirect enum TargetCfgExpression: Hashable, Sendable {
         return expression
     }
 
-    func matches(_ target: RustTargetSpec) -> Bool {
+    func matchResult(_ target: RustTargetSpec) -> TargetMatchResult {
         switch self {
         case let .triple(value):
-            return target.acceptedTriples.contains(value)
+            return target.acceptedTriples.contains(value) ? .yes : .no
         case let .all(children):
-            return children.allSatisfy { $0.matches(target) }
+            let results = children.map { $0.matchResult(target) }
+            if results.contains(.no) { return .no }
+            return results.first(where: {
+                if case .unknown = $0 { true } else { false }
+            }) ?? .yes
         case let .any(children):
-            return children.contains { $0.matches(target) }
+            let results = children.map { $0.matchResult(target) }
+            if results.contains(.yes) { return .yes }
+            return results.first(where: {
+                if case .unknown = $0 { true } else { false }
+            }) ?? .no
         case let .not(child):
-            return !child.matches(target)
+            switch child.matchResult(target) {
+            case .yes: return .no
+            case .no: return .yes
+            case let .unknown(reason): return .unknown(reason: reason)
+            }
         case let .keyValue(key, value):
-            guard let actual = target.value(forKey: key) else { return false }
-            return actual == value
+            return target.matches(key: key, value: value) ? .yes : .no
         case let .flag(name):
-            return target.flag(name)
-        case .unsupported:
-            return false
+            return target.flag(name) ? .yes : .no
+        case let .unsupported(raw):
+            return .unknown(reason: "Could not evaluate target predicate \"\(raw)\".")
         }
+    }
+
+    /// Compatibility convenience for UI/tests. Resolution uses `matchResult`
+    /// and rejects `.unknown` rather than silently treating it as false.
+    func matches(_ target: RustTargetSpec) -> Bool {
+        matchResult(target).isMatch
     }
 
     private struct Scanner {

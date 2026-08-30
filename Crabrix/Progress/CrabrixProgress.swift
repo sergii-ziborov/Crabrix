@@ -26,6 +26,9 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
     var codeRecallBestLevel = 0
     var codeRecallLines = 0
     var charactersTyped = 0
+    /// Exact algorithm patterns whose compiler-backed challenge was completed.
+    /// A set makes mastery and its achievements naturally idempotent.
+    var solvedAlgorithmPatternIDs: Set<String> = []
     /// Start of the day the last full run reward was paid, so the bonus is
     /// once daily and the rest of the rating comes from writing.
     var lastRunRewardDay: Date?
@@ -34,6 +37,9 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
     /// Which achievement catalogue this state was last reconciled against, so
     /// a reshaped catalogue can be adopted without replaying old unlocks.
     var achievementCatalogVersion = 0
+    /// Stable reward identities already applied locally. Counters and points
+    /// can therefore be replayed after a relaunch without being paid twice.
+    var processedEventKeys: Set<String> = []
 
     init() {}
 
@@ -64,8 +70,12 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
         codeRecallBestLevel = try int(.codeRecallBestLevel)
         codeRecallLines = try int(.codeRecallLines)
         charactersTyped = try int(.charactersTyped)
+        solvedAlgorithmPatternIDs = try container
+            .decodeIfPresent(Set<String>.self, forKey: .solvedAlgorithmPatternIDs) ?? []
         lastRunRewardDay = try container.decodeIfPresent(Date.self, forKey: .lastRunRewardDay)
         achievementCatalogVersion = try int(.achievementCatalogVersion)
+        processedEventKeys = try container
+            .decodeIfPresent(Set<String>.self, forKey: .processedEventKeys) ?? []
         unlockedAchievementIDs = try container
             .decodeIfPresent(Set<String>.self, forKey: .unlockedAchievementIDs) ?? []
         lastActiveAt = try container.decodeIfPresent(Date.self, forKey: .lastActiveAt)
@@ -233,6 +243,25 @@ struct CrabrixAchievementFamily: Identifiable, Sendable {
     let measure: @Sendable (CrabrixProgressState) -> Int
     /// Reads the requirement for a threshold, e.g. "Finish 50 local builds."
     let requirement: @Sendable (Int) -> String
+    let group: CrabrixAchievementGroup
+
+    init(
+        id: String,
+        title: String,
+        systemImage: String,
+        thresholds: [Int],
+        measure: @escaping @Sendable (CrabrixProgressState) -> Int,
+        requirement: @escaping @Sendable (Int) -> String,
+        group: CrabrixAchievementGroup = .general
+    ) {
+        self.id = id
+        self.title = title
+        self.systemImage = systemImage
+        self.thresholds = thresholds
+        self.measure = measure
+        self.requirement = requirement
+        self.group = group
+    }
 
     var achievements: [CrabrixAchievement] {
         zip(thresholds, AchievementTier.allCases).map { threshold, tier in
@@ -259,12 +288,17 @@ struct CrabrixAchievementFamily: Identifiable, Sendable {
     }
 }
 
+enum CrabrixAchievementGroup: String, Sendable {
+    case general
+    case algorithms
+}
+
 enum CrabrixAchievementCatalog {
     /// Bumped when the ladders change shape, so the store can adopt a new
     /// catalogue without replaying a decade of unlocks as fresh celebrations.
-    static let version = 2
+    static let version = 5
 
-    static let families: [CrabrixAchievementFamily] = [
+    private static let generalFamilies: [CrabrixAchievementFamily] = [
         CrabrixAchievementFamily(
             id: "builds",
             title: "It Compiles",
@@ -285,7 +319,7 @@ enum CrabrixAchievementCatalog {
             id: "lessons",
             title: "Coursework",
             systemImage: "graduationcap.fill",
-            thresholds: [1, 5, 25, 60, 83],
+            thresholds: [1, 5, 25, 75, 142],
             measure: { $0.lessonsCompleted },
             requirement: { $0 == 1 ? "Complete a lesson on the Rust path." : "Complete \($0) lessons." }
         ),
@@ -389,6 +423,44 @@ enum CrabrixAchievementCatalog {
             requirement: { "Reach \($0.formatted(.number)) rating points." }
         ),
     ]
+
+    private static let algorithmFamilies: [CrabrixAchievementFamily] = {
+        let overall = CrabrixAchievementFamily(
+            id: "algorithm-atlas",
+            title: "Algorithm Atlas",
+            systemImage: "point.3.connected.trianglepath.dotted",
+            thresholds: [1, 25, 75, 150, 200],
+            measure: { $0.solvedAlgorithmPatternIDs.count },
+            requirement: {
+                $0 == 1
+                    ? "Solve a compiler-backed algorithm challenge."
+                    : "Master \($0) unique algorithm patterns."
+            },
+            group: .algorithms
+        )
+
+        let categories = AlgorithmCourseCatalog.categories.map { category in
+            let patternIDs = Set(category.patterns.map(\.id))
+            return CrabrixAchievementFamily(
+                id: "algorithm-\(category.id)",
+                title: category.achievementTitle,
+                systemImage: category.systemImage,
+                thresholds: [1, 3, 5, 8, 10],
+                measure: { state in
+                    state.solvedAlgorithmPatternIDs.intersection(patternIDs).count
+                },
+                requirement: {
+                    $0 == 1
+                        ? "Solve one challenge in \(category.title)."
+                        : "Solve \($0) unique challenges in \(category.title)."
+                },
+                group: .algorithms
+            )
+        }
+        return [overall] + categories
+    }()
+
+    static let families: [CrabrixAchievementFamily] = generalFamilies + algorithmFamilies
 
     static let all: [CrabrixAchievement] = families.flatMap(\.achievements)
 

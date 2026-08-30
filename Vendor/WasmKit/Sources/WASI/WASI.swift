@@ -1,0 +1,1991 @@
+import Synchronization
+import SystemExtras
+import SystemPackage
+import WasmTypes
+
+#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+    import Darwin
+#elseif canImport(Glibc)
+    import Glibc
+#elseif canImport(Musl)
+    import Musl
+#elseif canImport(Android)
+    import Android
+#elseif os(Windows)
+    import ucrt
+#elseif os(WASI)
+    import WASILibc
+#else
+    #error("Unsupported Platform")
+#endif
+
+#if !os(Windows)
+    /// Free function wrapper to call the C sched_yield(2) without name collision.
+    @inline(__always) private func _platform_sched_yield() -> Int32 {
+        return sched_yield()
+    }
+#endif
+
+enum WASIAbi {
+    enum Errno: UInt16, Error, GuestPointee {
+        /// No error occurred. System call completed successfully.
+        case SUCCESS = 0
+        /// Argument list too long.
+        case E2BIG = 1
+        /// Permission denied.
+        case EACCES = 2
+        /// Address in use.
+        case EADDRINUSE = 3
+        /// Address not available.
+        case EADDRNOTAVAIL = 4
+        /// Address family not supported.
+        case EAFNOSUPPORT = 5
+        /// Resource unavailable, or operation would block.
+        case EAGAIN = 6
+        /// Connection already in progress.
+        case EALREADY = 7
+        /// Bad file descriptor.
+        case EBADF = 8
+        /// Bad message.
+        case EBADMSG = 9
+        /// Device or resource busy.
+        case EBUSY = 10
+        /// Operation canceled.
+        case ECANCELED = 11
+        /// No child processes.
+        case ECHILD = 12
+        /// Connection aborted.
+        case ECONNABORTED = 13
+        /// Connection refused.
+        case ECONNREFUSED = 14
+        /// Connection reset.
+        case ECONNRESET = 15
+        /// Resource deadlock would occur.
+        case EDEADLK = 16
+        /// Destination address required.
+        case EDESTADDRREQ = 17
+        /// Mathematics argument out of domain of function.
+        case EDOM = 18
+        /// Reserved.
+        case EDQUOT = 19
+        /// File exists.
+        case EEXIST = 20
+        /// Bad address.
+        case EFAULT = 21
+        /// File too large.
+        case EFBIG = 22
+        /// Host is unreachable.
+        case EHOSTUNREACH = 23
+        /// Identifier removed.
+        case EIDRM = 24
+        /// Illegal byte sequence.
+        case EILSEQ = 25
+        /// Operation in progress.
+        case EINPROGRESS = 26
+        /// Interrupted function.
+        case EINTR = 27
+        /// Invalid argument.
+        case EINVAL = 28
+        /// I/O error.
+        case EIO = 29
+        /// Socket is connected.
+        case EISCONN = 30
+        /// Is a directory.
+        case EISDIR = 31
+        /// Too many levels of symbolic links.
+        case ELOOP = 32
+        /// File descriptor value too large.
+        case EMFILE = 33
+        /// Too many links.
+        case EMLINK = 34
+        /// Message too large.
+        case EMSGSIZE = 35
+        /// Reserved.
+        case EMULTIHOP = 36
+        /// Filename too long.
+        case ENAMETOOLONG = 37
+        /// Network is down.
+        case ENETDOWN = 38
+        /// Connection aborted by network.
+        case ENETRESET = 39
+        /// Network unreachable.
+        case ENETUNREACH = 40
+        /// Too many files open in system.
+        case ENFILE = 41
+        /// No buffer space available.
+        case ENOBUFS = 42
+        /// No such device.
+        case ENODEV = 43
+        /// No such file or directory.
+        case ENOENT = 44
+        /// Executable file format error.
+        case ENOEXEC = 45
+        /// No locks available.
+        case ENOLCK = 46
+        /// Reserved.
+        case ENOLINK = 47
+        /// Not enough space.
+        case ENOMEM = 48
+        /// No message of the desired type.
+        case ENOMSG = 49
+        /// Protocol not available.
+        case ENOPROTOOPT = 50
+        /// No space left on device.
+        case ENOSPC = 51
+        /// Function not supported.
+        case ENOSYS = 52
+        /// The socket is not connected.
+        case ENOTCONN = 53
+        /// Not a directory or a symbolic link to a directory.
+        case ENOTDIR = 54
+        /// Directory not empty.
+        case ENOTEMPTY = 55
+        /// State not recoverable.
+        case ENOTRECOVERABLE = 56
+        /// Not a socket.
+        case ENOTSOCK = 57
+        /// Not supported, or operation not supported on socket.
+        case ENOTSUP = 58
+        /// Inappropriate I/O control operation.
+        case ENOTTY = 59
+        /// No such device or address.
+        case ENXIO = 60
+        /// Value too large to be stored in data type.
+        case EOVERFLOW = 61
+        /// Previous owner died.
+        case EOWNERDEAD = 62
+        /// Operation not permitted.
+        case EPERM = 63
+        /// Broken pipe.
+        case EPIPE = 64
+        /// Protocol error.
+        case EPROTO = 65
+        /// Protocol not supported.
+        case EPROTONOSUPPORT = 66
+        /// Protocol wrong type for socket.
+        case EPROTOTYPE = 67
+        /// Result too large.
+        case ERANGE = 68
+        /// Read-only file system.
+        case EROFS = 69
+        /// Invalid seek.
+        case ESPIPE = 70
+        /// No such process.
+        case ESRCH = 71
+        /// Reserved.
+        case ESTALE = 72
+        /// Connection timed out.
+        case ETIMEDOUT = 73
+        /// Text file busy.
+        case ETXTBSY = 74
+        /// Cross-device link.
+        case EXDEV = 75
+        /// Extension: Capabilities insufficient.
+        case ENOTCAPABLE = 76
+    }
+
+    typealias Size = UInt32
+
+    /// Non-negative file size or length of a region within a file.
+    typealias FileSize = UInt64
+
+    typealias Fd = UInt32
+
+    struct IOVec: GuestPointee {
+        let buffer: UnsafeGuestRawPointer
+        let length: WASIAbi.Size
+
+        func withHostBufferPointer<M: GuestMemory, R>(in memory: M, _ body: (UnsafeMutableRawBufferPointer) throws -> R) rethrows -> R {
+            try buffer.withHostPointer(in: memory, count: Int(length)) { hostPointer in
+                try body(hostPointer)
+            }
+        }
+
+        static var sizeInGuest: UInt32 {
+            return UnsafeGuestRawPointer.sizeInGuest + WASIAbi.Size.sizeInGuest
+        }
+
+        static var alignInGuest: UInt32 {
+            max(UnsafeGuestRawPointer.alignInGuest, WASIAbi.Size.alignInGuest)
+        }
+
+        static func readFromGuest<M: GuestMemory>(_ pointer: UnsafeGuestRawPointer, in memory: M) -> IOVec {
+            return IOVec(
+                buffer: .readFromGuest(pointer, in: memory),
+                length: .readFromGuest(pointer.advanced(by: UnsafeGuestRawPointer.sizeInGuest), in: memory)
+            )
+        }
+
+        static func writeToGuest<M: GuestMemory>(at pointer: UnsafeGuestRawPointer, in memory: M, value: IOVec) {
+            UnsafeGuestRawPointer.writeToGuest(at: pointer, in: memory, value: value.buffer)
+            WASIAbi.Size.writeToGuest(at: pointer.advanced(by: UnsafeGuestRawPointer.sizeInGuest), in: memory, value: value.length)
+        }
+    }
+
+    /// Relative offset within a file.
+    typealias FileDelta = Int64
+
+    /// The position relative to which to set the offset of the file descriptor.
+    enum Whence: UInt8 {
+        /// Seek relative to start-of-file.
+        case SET = 0
+        /// Seek relative to current position.
+        case CUR = 1
+        /// Seek relative to end-of-file.
+        case END = 2
+    }
+
+    struct Clock: Equatable, GuestPointee {
+        struct Flags: OptionSet, GuestPointee {
+            let rawValue: UInt16
+
+            static let isAbsoluteTime = Self(rawValue: 1)
+        }
+
+        let id: ClockId
+        let timeout: Timestamp
+        let precision: Timestamp
+        let flags: Flags
+
+        static let sizeInGuest: UInt32 = 32
+        static let alignInGuest: UInt32 = max(ClockId.alignInGuest, Timestamp.alignInGuest, Flags.alignInGuest)
+
+        static func readFromGuest<M: GuestMemory>(_ pointer: UnsafeGuestRawPointer, in memory: M) -> Self {
+            var pointer = pointer
+            return .init(
+                id: .readFromGuest(&pointer, in: memory),
+                timeout: .readFromGuest(&pointer, in: memory),
+                precision: .readFromGuest(&pointer, in: memory),
+                flags: .readFromGuest(&pointer, in: memory)
+            )
+        }
+
+        static func writeToGuest<M: GuestMemory>(at pointer: UnsafeGuestRawPointer, in memory: M, value: Self) {
+            var pointer = pointer
+            ClockId.writeToGuest(at: &pointer, in: memory, value: value.id)
+            Timestamp.writeToGuest(at: &pointer, in: memory, value: value.timeout)
+            Timestamp.writeToGuest(at: &pointer, in: memory, value: value.precision)
+            Flags.writeToGuest(at: &pointer, in: memory, value: value.flags)
+        }
+    }
+
+    enum EventType: UInt8, GuestPointee {
+        case clock
+        case fdRead
+        case fdWrite
+    }
+
+    typealias UserData = UInt64
+
+    struct Subscription: Equatable, GuestPointee {
+        enum Union: Equatable, GuestPointee {
+            case clock(Clock)
+            case fdRead(Fd)
+            case fdWrite(Fd)
+
+            static let sizeInGuest: UInt32 = 40
+            static let alignInGuest: UInt32 = max(Clock.alignInGuest, Fd.alignInGuest)
+
+            static func readFromGuest<M: GuestMemory>(_ pointer: UnsafeGuestRawPointer, in memory: M) -> Self {
+                var pointer = pointer
+                let tag = UInt8.readFromGuest(&pointer, in: memory)
+                // Align to variant content area (max alignment of all variant payloads)
+                pointer = pointer.alignedUp(toMultipleOf: Clock.alignInGuest)
+
+                switch tag {
+                case 0:
+                    return .clock(.readFromGuest(&pointer, in: memory))
+
+                case 1:
+                    return .fdRead(.readFromGuest(&pointer, in: memory))
+
+                case 2:
+                    return .fdWrite(.readFromGuest(&pointer, in: memory))
+
+                default:
+                    // FIXME: should this throw?
+                    fatalError()
+                }
+            }
+
+            static func writeToGuest<M: GuestMemory>(at pointer: UnsafeGuestRawPointer, in memory: M, value: Self) {
+                var pointer = pointer
+                switch value {
+                case .clock(let clock):
+                    UInt8.writeToGuest(at: &pointer, in: memory, value: 0)
+                    pointer = pointer.alignedUp(toMultipleOf: Clock.alignInGuest)
+                    Clock.writeToGuest(at: &pointer, in: memory, value: clock)
+                case .fdRead(let fd):
+                    UInt8.writeToGuest(at: &pointer, in: memory, value: 1)
+                    pointer = pointer.alignedUp(toMultipleOf: Clock.alignInGuest)
+                    Fd.writeToGuest(at: &pointer, in: memory, value: fd)
+                case .fdWrite(let fd):
+                    UInt8.writeToGuest(at: &pointer, in: memory, value: 2)
+                    pointer = pointer.alignedUp(toMultipleOf: Clock.alignInGuest)
+                    Fd.writeToGuest(at: &pointer, in: memory, value: fd)
+                }
+            }
+        }
+
+        let userData: UserData
+        let union: Union
+        static let sizeInGuest: UInt32 = 48
+        static let alignInGuest: UInt32 = max(UserData.alignInGuest, Union.alignInGuest)
+
+        static func readFromGuest<M: GuestMemory>(_ pointer: UnsafeGuestRawPointer, in memory: M) -> Self {
+            var pointer = pointer
+            return .init(userData: .readFromGuest(&pointer, in: memory), union: .readFromGuest(&pointer, in: memory))
+        }
+
+        static func writeToGuest<M: GuestMemory>(at pointer: UnsafeGuestRawPointer, in memory: M, value: Self) {
+            var pointer = pointer
+            UserData.writeToGuest(at: &pointer, in: memory, value: value.userData)
+            Union.writeToGuest(at: &pointer, in: memory, value: value.union)
+        }
+    }
+
+    struct Event: Equatable, GuestPointee {
+        struct FdReadWrite: Equatable, GuestPointee {
+            struct Flags: OptionSet, GuestPointee {
+                let rawValue: UInt16
+                static let hangup = Self(rawValue: 1)
+            }
+            let nBytes: FileSize
+            let flags: Flags
+            static let sizeInGuest: UInt32 = 16
+            static let alignInGuest: UInt32 = 8
+
+            static func readFromGuest<M: GuestMemory>(_ pointer: UnsafeGuestRawPointer, in memory: M) -> Self {
+                var pointer = pointer
+                return .init(nBytes: FileSize.readFromGuest(&pointer, in: memory), flags: Flags.readFromGuest(&pointer, in: memory))
+            }
+            static func writeToGuest<M: GuestMemory>(at pointer: UnsafeGuestRawPointer, in memory: M, value: Self) {
+                var pointer = pointer
+                FileSize.writeToGuest(at: &pointer, in: memory, value: value.nBytes)
+                Flags.writeToGuest(at: &pointer, in: memory, value: value.flags)
+            }
+        }
+
+        let userData: UserData
+        let error: Errno
+        let eventType: EventType
+        let fdReadWrite: FdReadWrite
+        static let sizeInGuest: UInt32 = 32
+        static let alignInGuest: UInt32 = 8
+
+        static func readFromGuest<M: GuestMemory>(_ pointer: UnsafeGuestRawPointer, in memory: M) -> Self {
+            var pointer = pointer
+            return .init(
+                userData: .readFromGuest(&pointer, in: memory),
+                error: .readFromGuest(&pointer, in: memory),
+                eventType: .readFromGuest(&pointer, in: memory),
+                fdReadWrite: .readFromGuest(&pointer, in: memory)
+            )
+        }
+        static func writeToGuest<M: GuestMemory>(at pointer: UnsafeGuestRawPointer, in memory: M, value: Self) {
+            var pointer = pointer
+            UserData.writeToGuest(at: &pointer, in: memory, value: value.userData)
+            Errno.writeToGuest(at: &pointer, in: memory, value: value.error)
+            EventType.writeToGuest(at: &pointer, in: memory, value: value.eventType)
+            FdReadWrite.writeToGuest(at: &pointer, in: memory, value: value.fdReadWrite)
+        }
+    }
+
+    struct ClockId: Equatable, RawRepresentable, GuestPointee {
+        let rawValue: UInt32
+        /// The clock measuring real time. Time value zero corresponds with
+        /// 1970-01-01T00:00:00Z.
+        static let REALTIME = Self(rawValue: 0)
+        /// The store-wide monotonic clock, which is defined as a clock measuring
+        /// real time, whose value cannot be adjusted and which cannot have negative
+        /// clock jumps. The epoch of this clock is undefined. The absolute time
+        /// value of this clock therefore has no meaning.
+        static let MONOTONIC = Self(rawValue: 1)
+        /// The CPU-time clock associated with the current process.
+        static let PROCESS_CPUTIME_ID = Self(rawValue: 2)
+        /// The CPU-time clock associated with the current thread.
+        static let THREAD_CPUTIME_ID = Self(rawValue: 3)
+    }
+
+    typealias Timestamp = UInt64
+
+    struct Fdflags: OptionSet, GuestPrimitivePointee {
+        var rawValue: UInt16
+        /// Append mode: Data written to the file is always appended to the file's end.
+        static let APPEND = Fdflags(rawValue: 1 << 0)
+        /// Write according to synchronized I/O data integrity completion. Only the data stored in the file is synchronized.
+        static let DSYNC = Fdflags(rawValue: 1 << 1)
+        /// Non-blocking mode.
+        static let NONBLOCK = Fdflags(rawValue: 1 << 2)
+        /// Synchronized read I/O operations.
+        static let RSYNC = Fdflags(rawValue: 1 << 3)
+        /// Write according to synchronized I/O file integrity completion. In
+        /// addition to synchronizing the data stored in the file, the implementation
+        /// may also synchronously update the file's metadata.
+        static let SYNC = Fdflags(rawValue: 1 << 4)
+    }
+
+    struct Rights: OptionSet, GuestPrimitivePointee {
+        let rawValue: UInt64
+
+        /// The right to invoke `fd_datasync`.
+        /// If `path_open` is set, includes the right to invoke
+        /// `path_open` with `fdflags::dsync`.
+        static let FD_DATASYNC = Rights(rawValue: 1 << 0)
+        /// The right to invoke `fd_read` and `sock_recv`.
+        /// If `rights::fd_seek` is set, includes the right to invoke `fd_pread`.
+        static let FD_READ = Rights(rawValue: 1 << 1)
+        /// The right to invoke `fd_seek`. This flag implies `rights::fd_tell`.
+        static let FD_SEEK = Rights(rawValue: 1 << 2)
+        /// The right to invoke `fd_fdstat_set_flags`.
+        static let FD_FDSTAT_SET_FLAGS = Rights(rawValue: 1 << 3)
+        /// The right to invoke `fd_sync`.
+        /// If `path_open` is set, includes the right to invoke
+        /// `path_open` with `fdflags::rsync` and `fdflags::dsync`.
+        static let FD_SYNC = Rights(rawValue: 1 << 4)
+        /// The right to invoke `fd_seek` in such a way that the file offset
+        /// remains unaltered (i.e., `whence::cur` with offset zero), or to
+        /// invoke `fd_tell`.
+        static let FD_TELL = Rights(rawValue: 1 << 5)
+        /// The right to invoke `fd_write` and `sock_send`.
+        /// If `rights::fd_seek` is set, includes the right to invoke `fd_pwrite`.
+        static let FD_WRITE = Rights(rawValue: 1 << 6)
+        /// The right to invoke `fd_advise`.
+        static let FD_ADVISE = Rights(rawValue: 1 << 7)
+        /// The right to invoke `fd_allocate`.
+        static let FD_ALLOCATE = Rights(rawValue: 1 << 8)
+        /// The right to invoke `path_create_directory`.
+        static let PATH_CREATE_DIRECTORY = Rights(rawValue: 1 << 9)
+        /// If `path_open` is set, the right to invoke `path_open` with `oflags::creat`.
+        static let PATH_CREATE_FILE = Rights(rawValue: 1 << 10)
+        /// The right to invoke `path_link` with the file descriptor as the
+        /// source directory.
+        static let PATH_LINK_SOURCE = Rights(rawValue: 1 << 11)
+        /// The right to invoke `path_link` with the file descriptor as the
+        /// target directory.
+        static let PATH_LINK_TARGET = Rights(rawValue: 1 << 12)
+        /// The right to invoke `path_open`.
+        static let PATH_OPEN = Rights(rawValue: 1 << 13)
+        /// The right to invoke `fd_readdir`.
+        static let FD_READDIR = Rights(rawValue: 1 << 14)
+        /// The right to invoke `path_readlink`.
+        static let PATH_READLINK = Rights(rawValue: 1 << 15)
+        /// The right to invoke `path_rename` with the file descriptor as the source directory.
+        static let PATH_RENAME_SOURCE = Rights(rawValue: 1 << 16)
+        /// The right to invoke `path_rename` with the file descriptor as the target directory.
+        static let PATH_RENAME_TARGET = Rights(rawValue: 1 << 17)
+        /// The right to invoke `path_filestat_get`.
+        static let PATH_FILESTAT_GET = Rights(rawValue: 1 << 18)
+        /// The right to change a file's size (there is no `path_filestat_set_size`).
+        /// If `path_open` is set, includes the right to invoke `path_open` with `oflags::trunc`.
+        static let PATH_FILESTAT_SET_SIZE = Rights(rawValue: 1 << 19)
+        /// The right to invoke `path_filestat_set_times`.
+        static let PATH_FILESTAT_SET_TIMES = Rights(rawValue: 1 << 20)
+        /// The right to invoke `fd_filestat_get`.
+        static let FD_FILESTAT_GET = Rights(rawValue: 1 << 21)
+        /// The right to invoke `fd_filestat_set_size`.
+        static let FD_FILESTAT_SET_SIZE = Rights(rawValue: 1 << 22)
+        /// The right to invoke `fd_filestat_set_times`.
+        static let FD_FILESTAT_SET_TIMES = Rights(rawValue: 1 << 23)
+        /// The right to invoke `path_symlink`.
+        static let PATH_SYMLINK = Rights(rawValue: 1 << 24)
+        /// The right to invoke `path_remove_directory`.
+        static let PATH_REMOVE_DIRECTORY = Rights(rawValue: 1 << 25)
+        /// The right to invoke `path_unlink_file`.
+        static let PATH_UNLINK_FILE = Rights(rawValue: 1 << 26)
+        /// If `rights::fd_read` is set, includes the right to invoke `poll_oneoff` to subscribe to `eventtype::fd_read`.
+        /// If `rights::fd_write` is set, includes the right to invoke `poll_oneoff` to subscribe to `eventtype::fd_write`.
+        static let POLL_FD_READWRITE = Rights(rawValue: 1 << 27)
+        /// The right to invoke `sock_shutdown`.
+        static let SOCK_SHUTDOWN = Rights(rawValue: 1 << 28)
+        /// The right to invoke `sock_accept`.
+        static let SOCK_ACCEPT = Rights(rawValue: 1 << 29)
+
+        static let DIRECTORY_BASE_RIGHTS: Rights = [
+            .PATH_CREATE_DIRECTORY,
+            .PATH_CREATE_FILE,
+            .PATH_LINK_SOURCE,
+            .PATH_LINK_TARGET,
+            .PATH_OPEN,
+            .FD_READDIR,
+            .PATH_READLINK,
+            .PATH_RENAME_SOURCE,
+            .PATH_RENAME_TARGET,
+            .PATH_SYMLINK,
+            .PATH_REMOVE_DIRECTORY,
+            .PATH_UNLINK_FILE,
+            .PATH_FILESTAT_GET,
+            .PATH_FILESTAT_SET_TIMES,
+            .FD_FILESTAT_GET,
+            .FD_FILESTAT_SET_TIMES,
+        ]
+
+        static let DIRECTORY_INHERITING_RIGHTS: Rights = DIRECTORY_BASE_RIGHTS.union([
+            .FD_DATASYNC,
+            .FD_READ,
+            .FD_SEEK,
+            .FD_FDSTAT_SET_FLAGS,
+            .FD_SYNC,
+            .FD_TELL,
+            .FD_WRITE,
+            .FD_ADVISE,
+            .FD_ALLOCATE,
+            .FD_FILESTAT_GET,
+            .FD_FILESTAT_SET_SIZE,
+            .FD_FILESTAT_SET_TIMES,
+            .POLL_FD_READWRITE,
+        ])
+    }
+
+    /// A reference to the offset of a directory entry.
+    /// The value 0 signifies the start of the directory.
+    typealias DirCookie = UInt64
+    /// The type for the `dirent::d_namlen` field of `dirent` struct.
+    typealias DirNameLen = UInt32
+
+    /// File serial number that is unique within its file system.
+    typealias Inode = UInt64
+
+    /// The type of a file descriptor or file.
+    enum FileType: UInt8, GuestPrimitivePointee {
+        /// The type of the file descriptor or file is unknown or is different from any of the other types specified.
+        case UNKNOWN = 0
+        /// The file descriptor or file refers to a block device inode.
+        case BLOCK_DEVICE = 1
+        /// The file descriptor or file refers to a character device inode.
+        case CHARACTER_DEVICE = 2
+        /// The file descriptor or file refers to a directory inode.
+        case DIRECTORY = 3
+        /// The file descriptor or file refers to a regular file inode.
+        case REGULAR_FILE = 4
+        /// The file descriptor or file refers to a datagram socket.
+        case SOCKET_DGRAM = 5
+        /// The file descriptor or file refers to a byte-stream socket.
+        case SOCKET_STREAM = 6
+        /// The file refers to a symbolic link inode.
+        case SYMBOLIC_LINK = 7
+    }
+
+    /// A directory entry.
+    struct Dirent {
+        /// The offset of the next directory entry stored in this directory.
+        let dNext: DirCookie
+        /// The serial number of the file referred to by this directory entry.
+        let dIno: Inode
+        /// The length of the name of the directory entry.
+        let dirNameLen: DirNameLen
+        /// The type of the file referred to by this directory entry.
+        let dType: FileType
+
+        static var sizeInGuest: UInt32 {
+            // Hard coded because WIT aligns up at last when calculating struct size, but Swift doesn't
+            // https://github.com/WebAssembly/WASI/blob/4712d490fd7662f689af6faa5d718e042f014931/legacy/tools/witx/src/layout.rs#L117C24-L117C24
+            24
+        }
+
+        static func writeToGuest<M: GuestMemory>(unalignedAt pointer: UnsafeGuestRawPointer, end: UnsafeGuestRawPointer, in memory: M, value: Dirent) {
+            var pointer = pointer
+            guard pointer < end else { return }
+            DirCookie.writeToGuest(at: pointer, in: memory, value: value.dNext)
+            pointer = pointer.advanced(by: DirCookie.sizeInGuest)
+
+            guard pointer < end else { return }
+            Inode.writeToGuest(at: pointer, in: memory, value: value.dIno)
+            pointer = pointer.advanced(by: Inode.sizeInGuest)
+
+            guard pointer < end else { return }
+            DirNameLen.writeToGuest(at: pointer, in: memory, value: value.dirNameLen)
+            pointer = pointer.advanced(by: DirNameLen.sizeInGuest)
+
+            guard pointer < end else { return }
+            FileType.writeToGuest(at: pointer, in: memory, value: value.dType)
+            pointer = pointer.advanced(by: FileType.sizeInGuest)
+        }
+    }
+
+    enum Advice: UInt8 {
+        /// The application has no advice to give on its behavior with respect to the specified data.
+        case NORMAL = 0
+        /// The application expects to access the specified data sequentially from lower offsets to higher offsets.
+        case SEQUENTIAL = 1
+        /// The application expects to access the specified data in a random order.
+        case RANDOM = 2
+        /// The application expects to access the specified data in the near future.
+        case WILLNEED = 3
+        /// The application expects that it will not access the specified data in the near future.
+        case DONTNEED = 4
+        /// The application expects to access the specified data once and then not reuse it thereafter.
+        case NOREUSE = 5
+    }
+
+    struct FdStat: GuestPrimitivePointee {
+        let fsFileType: FileType
+        let fsFlags: Fdflags
+        let fsRightsBase: Rights
+        let fsRightsInheriting: Rights
+
+        static var sizeInGuest: UInt32 {
+            FileType.sizeInGuest + Fdflags.sizeInGuest + Rights.sizeInGuest * 2
+        }
+
+        static func readFromGuest<M: GuestMemory>(_ pointer: UnsafeGuestRawPointer, in memory: M) -> FdStat {
+            var pointer = pointer
+            return FdStat(
+                fsFileType: .readFromGuest(&pointer, in: memory),
+                fsFlags: .readFromGuest(&pointer, in: memory),
+                fsRightsBase: .readFromGuest(&pointer, in: memory),
+                fsRightsInheriting: .readFromGuest(&pointer, in: memory)
+            )
+        }
+
+        static func writeToGuest<M: GuestMemory>(at pointer: UnsafeGuestRawPointer, in memory: M, value: FdStat) {
+            var pointer = pointer
+            FileType.writeToGuest(at: &pointer, in: memory, value: value.fsFileType)
+            Fdflags.writeToGuest(at: &pointer, in: memory, value: value.fsFlags)
+            Rights.writeToGuest(at: &pointer, in: memory, value: value.fsRightsBase)
+            Rights.writeToGuest(at: &pointer, in: memory, value: value.fsRightsInheriting)
+        }
+    }
+
+    /// Identifier for a device containing a file system. Can be used in combination
+    /// with `inode` to uniquely identify a file or directory in the filesystem.
+    typealias Device = UInt64
+
+    /// Which file time attributes to adjust.
+    struct FstFlags: OptionSet, GuestPrimitivePointee {
+        let rawValue: UInt16
+
+        static let ATIM = FstFlags(rawValue: 1 << 0)
+        /// Adjust the last data access timestamp to the time of clock `clockid::realtime`.
+        static let ATIM_NOW = FstFlags(rawValue: 1 << 1)
+        /// Adjust the last data modification timestamp to the value stored in `filestat::mtim`.
+        static let MTIM = FstFlags(rawValue: 1 << 2)
+        /// Adjust the last data modification timestamp to the time of clock `clockid::realtime`.
+        static let MTIM_NOW = FstFlags(rawValue: 1 << 3)
+    }
+
+    struct LookupFlags: OptionSet, GuestPrimitivePointee {
+        let rawValue: UInt32
+
+        /// As long as the resolved path corresponds to a symbolic link, it is expanded.
+        static let SYMLINK_FOLLOW = LookupFlags(rawValue: 1 << 0)
+    }
+
+    struct Oflags: OptionSet, GuestPrimitivePointee {
+        let rawValue: UInt32
+
+        /// Create file if it does not exist.
+        static let CREAT = Oflags(rawValue: 1 << 0)
+        /// Fail if not a directory.
+        static let DIRECTORY = Oflags(rawValue: 1 << 1)
+        /// Fail if file already exists.
+        static let EXCL = Oflags(rawValue: 1 << 2)
+        /// Truncate file to size 0.
+        static let TRUNC = Oflags(rawValue: 1 << 3)
+    }
+
+    /// Number of hard links to an inode.
+    typealias LinkCount = UInt64
+
+    /// File attributes.
+    struct Filestat: GuestPrimitivePointee {
+        /// Device ID of device containing the file.
+        let dev: Device
+        /// File serial number.
+        let ino: Inode
+        /// File type.
+        let filetype: FileType
+        /// Number of hard links to the file.
+        let nlink: LinkCount
+        /// For regular files, the file size in bytes. For symbolic links, the length in bytes of the pathname contained in the symbolic link.
+        let size: FileSize
+        /// Last data access timestamp.
+        let atim: Timestamp
+        /// Last data modification timestamp.
+        let mtim: Timestamp
+        /// Last file status change timestamp.
+        let ctim: Timestamp
+
+        static func readFromGuest<M: GuestMemory>(_ pointer: UnsafeGuestRawPointer, in memory: M) -> WASIAbi.Filestat {
+            var pointer = pointer
+            return Filestat(
+                dev: .readFromGuest(&pointer, in: memory), ino: .readFromGuest(&pointer, in: memory),
+                filetype: .readFromGuest(&pointer, in: memory), nlink: .readFromGuest(&pointer, in: memory),
+                size: .readFromGuest(&pointer, in: memory), atim: .readFromGuest(&pointer, in: memory),
+                mtim: .readFromGuest(&pointer, in: memory), ctim: .readFromGuest(&pointer, in: memory)
+            )
+        }
+
+        static func writeToGuest<M: GuestMemory>(at pointer: UnsafeGuestRawPointer, in memory: M, value: WASIAbi.Filestat) {
+            var pointer = pointer
+            Device.writeToGuest(at: &pointer, in: memory, value: value.dev)
+            Inode.writeToGuest(at: &pointer, in: memory, value: value.ino)
+            FileType.writeToGuest(at: &pointer, in: memory, value: value.filetype)
+            LinkCount.writeToGuest(at: &pointer, in: memory, value: value.nlink)
+            FileSize.writeToGuest(at: &pointer, in: memory, value: value.size)
+            Timestamp.writeToGuest(at: &pointer, in: memory, value: value.atim)
+            Timestamp.writeToGuest(at: &pointer, in: memory, value: value.mtim)
+            Timestamp.writeToGuest(at: &pointer, in: memory, value: value.ctim)
+        }
+    }
+
+    typealias PrestatDir = Size
+
+    enum Prestat: GuestPointee {
+        case dir(PrestatDir)
+        static var sizeInGuest: UInt32 { 8 }
+        static var alignInGuest: UInt32 { 4 }
+
+        static func readFromGuest<M: GuestMemory>(_ pointer: UnsafeGuestRawPointer, in memory: M) -> WASIAbi.Prestat {
+            var pointer = pointer
+            switch UInt8.readFromGuest(&pointer, in: memory) {
+            case 0:
+                return .dir(.readFromGuest(&pointer, in: memory))
+            default: fatalError()
+            }
+        }
+
+        static func writeToGuest<M: GuestMemory>(at pointer: UnsafeGuestRawPointer, in memory: M, value: WASIAbi.Prestat) {
+            var pointer = pointer
+            switch value {
+            case .dir(let dir):
+                UInt8.writeToGuest(at: &pointer, in: memory, value: 0)
+                PrestatDir.writeToGuest(at: &pointer, in: memory, value: dir)
+            }
+        }
+    }
+}
+
+public struct WASIError: Error, CustomStringConvertible {
+    public let description: String
+
+    public init(description: String) {
+        self.description = description
+    }
+}
+
+public struct WASIExitCode: Error {
+    public let code: UInt32
+}
+
+public struct WASIHostFunction: Sendable {
+    public let type: FunctionType
+    public let implementation: @Sendable (GuestMemory, [Value]) throws -> [Value]
+}
+
+public struct WASIHostModule: Sendable {
+    public let functions: [String: WASIHostFunction]
+}
+
+extension WASIImplementation {
+    var _hostModules: [String: WASIHostModule] {
+        let unimplementedFunctionTypes: [String: FunctionType] = [
+            "proc_raise": .init(parameters: [.i32], results: [.i32]),
+            "sock_accept": .init(parameters: [.i32, .i32, .i32], results: [.i32]),
+            "sock_recv": .init(parameters: [.i32, .i32, .i32, .i32, .i32, .i32], results: [.i32]),
+            "sock_send": .init(parameters: [.i32, .i32, .i32, .i32, .i32], results: [.i32]),
+        ]
+
+        var preview1: [String: WASIHostFunction] = unimplementedFunctionTypes.reduce(into: [:]) { functions, entry in
+            let (name, type) = entry
+            functions[name] = WASIHostFunction(type: type) { _, _ in
+                print("\"\(name)\" not implemented yet")
+                return [.i32(.init(WASIAbi.Errno.ENOSYS.rawValue))]
+            }
+        }
+
+        @Sendable func withMemoryBuffer<T>(
+            caller: GuestMemory,
+            body: (GuestMemory) throws -> T
+        ) throws -> T {
+            return try body(caller)
+        }
+
+        @Sendable func readString(pointer: UInt32, length: UInt32, buffer: GuestMemory) throws -> String {
+            let pointer = UnsafeGuestBufferPointer<UInt8>(
+                baseAddress: UnsafeGuestPointer(offset: pointer),
+                count: length
+            )
+            return try pointer.withHostPointer(in: buffer) { hostBuffer in
+                guard let baseAddress = hostBuffer.baseAddress,
+                    memchr(baseAddress, 0x00, Int(pointer.count)) == nil
+                else {
+                    // If byte sequence contains null byte in the middle, it's illegal string
+                    // TODO: This restriction should be only applied to strings that can be interpreted as platform-string, which is expected to be null-terminated
+                    throw WASIAbi.Errno.EILSEQ
+                }
+                return String(decoding: hostBuffer, as: UTF8.self)
+            }
+        }
+
+        func wasiFunction(type: FunctionType, implementation: @Sendable @escaping (GuestMemory, [Value]) throws -> [Value]) -> WASIHostFunction {
+            return WASIHostFunction(type: type) { caller, arguments in
+                do {
+                    return try implementation(caller, arguments)
+                } catch let errno as WASIAbi.Errno {
+                    return [.i32(.init(errno.rawValue))]
+                }
+            }
+        }
+
+        preview1["args_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                self.args_get(
+                    argv: .init(offset: arguments[0].i32),
+                    argvBuffer: .init(offset: arguments[1].i32),
+                    memory: buffer
+                )
+                return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+            }
+        }
+
+        preview1["args_sizes_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                let (argc, bufferSize) = self.args_sizes_get()
+                let argcPointer = UnsafeGuestPointer<WASIAbi.Size>(offset: arguments[0].i32)
+                argcPointer.write(argc, to: buffer)
+                let bufferSizePointer = UnsafeGuestPointer<WASIAbi.Size>(offset: arguments[1].i32)
+                bufferSizePointer.write(bufferSize, to: buffer)
+                return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+            }
+        }
+
+        preview1["environ_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                self.environ_get(
+                    environ: .init(offset: arguments[0].i32),
+                    environBuffer: .init(offset: arguments[1].i32),
+                    memory: buffer
+                )
+                return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+            }
+        }
+
+        preview1["environ_sizes_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                let (environSize, bufferSize) = self.environ_sizes_get()
+                let environSizePointer = UnsafeGuestPointer<WASIAbi.Size>(offset: arguments[0].i32)
+                environSizePointer.write(environSize, to: buffer)
+                let bufferSizePointer = UnsafeGuestPointer<WASIAbi.Size>(offset: arguments[1].i32)
+                bufferSizePointer.write(bufferSize, to: buffer)
+                return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+            }
+        }
+
+        preview1["clock_res_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            let id = WASIAbi.ClockId(rawValue: arguments[0].i32)
+            let res = try self.clock_res_get(id: id)
+            try withMemoryBuffer(caller: caller) { buffer in
+                let resPointer = UnsafeGuestPointer<WASIAbi.Timestamp>(
+                    offset: arguments[1].i32
+                )
+                resPointer.write(res, to: buffer)
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["clock_time_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i64, .i32], results: [.i32])
+        ) { caller, arguments in
+            let id = WASIAbi.ClockId(rawValue: arguments[0].i32)
+            let time = try self.clock_time_get(id: id, precision: WASIAbi.Timestamp(arguments[1].i64))
+            try withMemoryBuffer(caller: caller) { buffer in
+                let resPointer = UnsafeGuestPointer<WASIAbi.Timestamp>(
+                    offset: arguments[2].i32
+                )
+                resPointer.write(time, to: buffer)
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_advise"] = wasiFunction(
+            type: .init(parameters: [.i32, .i64, .i64, .i32], results: [.i32])
+        ) { caller, arguments in
+            guard let rawAdvice = UInt8(exactly: arguments[3].i32),
+                let advice = WASIAbi.Advice(rawValue: rawAdvice)
+            else {
+                throw WASIAbi.Errno.EINVAL
+            }
+            try self.fd_advise(
+                fd: arguments[0].i32, offset: arguments[1].i64,
+                length: arguments[2].i64, advice: advice
+            )
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_allocate"] = wasiFunction(
+            type: .init(parameters: [.i32, .i64, .i64], results: [.i32])
+        ) { caller, arguments in
+            try self.fd_allocate(
+                fd: arguments[0].i32, offset: arguments[1].i64, length: arguments[2].i64
+            )
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_close"] = wasiFunction(
+            type: .init(parameters: [.i32], results: [.i32])
+        ) { caller, arguments in
+            try self.fd_close(fd: arguments[0].i32)
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_datasync"] = wasiFunction(
+            type: .init(parameters: [.i32], results: [.i32])
+        ) { caller, arguments in
+            try self.fd_datasync(fd: arguments[0].i32)
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_fdstat_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                let stat = try self.fd_fdstat_get(fileDescriptor: arguments[0].i32)
+                let statPointer = UnsafeGuestPointer<WASIAbi.FdStat>(offset: arguments[1].i32)
+                statPointer.write(stat, to: buffer)
+                return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+            }
+        }
+
+        preview1["fd_fdstat_set_flags"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            guard let rawFdFlags = UInt16(exactly: arguments[1].i32) else {
+                throw WASIAbi.Errno.EINVAL
+            }
+            try self.fd_fdstat_set_flags(
+                fd: arguments[0].i32, flags: WASIAbi.Fdflags(rawValue: rawFdFlags)
+            )
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_fdstat_set_rights"] = wasiFunction(
+            type: .init(parameters: [.i32, .i64, .i64], results: [.i32])
+        ) { caller, arguments in
+            try self.fd_fdstat_set_rights(
+                fd: arguments[0].i32,
+                fsRightsBase: WASIAbi.Rights(rawValue: arguments[1].i64),
+                fsRightsInheriting: WASIAbi.Rights(rawValue: arguments[2].i64)
+            )
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_filestat_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                let filestat = try self.fd_filestat_get(fd: arguments[0].i32)
+                let filestatPointer = UnsafeGuestPointer<WASIAbi.Filestat>(offset: arguments[1].i32)
+                filestatPointer.write(filestat, to: buffer)
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_filestat_set_size"] = wasiFunction(
+            type: .init(parameters: [.i32, .i64], results: [.i32])
+        ) { caller, arguments in
+            try self.fd_filestat_set_size(fd: arguments[0].i32, size: arguments[1].i64)
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_filestat_set_times"] = wasiFunction(
+            type: .init(parameters: [.i32, .i64, .i64, .i32], results: [.i32])
+        ) { caller, arguments in
+            guard let rawFstFlags = UInt16(exactly: arguments[3].i32) else {
+                throw WASIAbi.Errno.EINVAL
+            }
+            try self.fd_filestat_set_times(
+                fd: arguments[0].i32,
+                atim: arguments[1].i64, mtim: arguments[2].i64,
+                fstFlags: WASIAbi.FstFlags(rawValue: rawFstFlags)
+            )
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_pread"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i64, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                let nread = try self.fd_pread(
+                    fd: arguments[0].i32,
+                    iovs: UnsafeGuestBufferPointer<WASIAbi.IOVec>(
+                        baseAddress: .init(offset: arguments[1].i32),
+                        count: arguments[2].i32
+                    ),
+                    offset: arguments[3].i64,
+                    memory: buffer
+                )
+                let nreadPointer = UnsafeGuestPointer<WASIAbi.Size>(offset: arguments[4].i32)
+                nreadPointer.write(nread, to: buffer)
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+        preview1["fd_prestat_get"] = wasiFunction(type: .init(parameters: [.i32, .i32], results: [.i32])) { caller, arguments in
+            let prestat = try self.fd_prestat_get(fd: arguments[0].i32)
+            try withMemoryBuffer(caller: caller) { buffer in
+                let prestatPointer = UnsafeGuestPointer<WASIAbi.Prestat>(offset: arguments[1].i32)
+                prestatPointer.write(prestat, to: buffer)
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_prestat_dir_name"] = wasiFunction(type: .init(parameters: [.i32, .i32, .i32], results: [.i32])) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                try self.fd_prestat_dir_name(
+                    fd: arguments[0].i32,
+                    path: UnsafeGuestPointer(offset: arguments[1].i32),
+                    maxPathLength: arguments[2].i32,
+                    memory: buffer
+                )
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_pwrite"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i64, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                let nwritten = try self.fd_pwrite(
+                    fd: arguments[0].i32,
+                    iovs: UnsafeGuestBufferPointer<WASIAbi.IOVec>(
+                        baseAddress: .init(offset: arguments[1].i32),
+                        count: arguments[2].i32
+                    ),
+                    offset: arguments[3].i64,
+                    memory: buffer
+                )
+                let nwrittenPointer = UnsafeGuestPointer<WASIAbi.Size>(offset: arguments[4].i32)
+                nwrittenPointer.write(nwritten, to: buffer)
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_read"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                let nread = try self.fd_read(
+                    fd: arguments[0].i32,
+                    iovs: UnsafeGuestBufferPointer<WASIAbi.IOVec>(
+                        baseAddress: .init(offset: arguments[1].i32),
+                        count: arguments[2].i32
+                    ),
+                    memory: buffer
+                )
+                let nreadPointer = UnsafeGuestPointer<WASIAbi.Size>(offset: arguments[3].i32)
+                nreadPointer.write(nread, to: buffer)
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_readdir"] = wasiFunction(type: .init(parameters: [.i32, .i32, .i32, .i64, .i32], results: [.i32])) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                let nwritten = try self.fd_readdir(
+                    fd: arguments[0].i32,
+                    buffer: UnsafeGuestBufferPointer<UInt8>(
+                        baseAddress: UnsafeGuestPointer<UInt8>(offset: arguments[1].i32),
+                        count: arguments[2].i32
+                    ),
+                    cookie: arguments[3].i64,
+                    memory: buffer
+                )
+                let nwrittenPointer = UnsafeGuestPointer<WASIAbi.Size>(offset: arguments[4].i32)
+                nwrittenPointer.write(nwritten, to: buffer)
+                return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+            }
+        }
+
+        preview1["fd_renumber"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try self.fd_renumber(fd: arguments[0].i32, to: arguments[1].i32)
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_seek"] = wasiFunction(
+            type: .init(parameters: [.i32, .i64, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            guard let whence = WASIAbi.Whence(rawValue: UInt8(arguments[2].i32)) else {
+                return [.i32(.init(WASIAbi.Errno.EINVAL.rawValue))]
+            }
+            let ret = try self.fd_seek(
+                fd: arguments[0].i32, offset: WASIAbi.FileDelta(bitPattern: arguments[1].i64), whence: whence
+            )
+            try withMemoryBuffer(caller: caller) { buffer in
+                let retPointer = UnsafeGuestPointer<WASIAbi.FileSize>(offset: arguments[3].i32)
+                retPointer.write(ret, to: buffer)
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_sync"] = wasiFunction(type: .init(parameters: [.i32], results: [.i32])) { caller, arguments in
+            try self.fd_sync(fd: arguments[0].i32)
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_tell"] = wasiFunction(type: .init(parameters: [.i32, .i32], results: [.i32])) { caller, arguments in
+            let ret = try self.fd_tell(fd: arguments[0].i32)
+            try withMemoryBuffer(caller: caller) { buffer in
+                let retPointer = UnsafeGuestPointer<WASIAbi.FileSize>(offset: arguments[1].i32)
+                retPointer.write(ret, to: buffer)
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["fd_write"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                let nwritten = try self.fd_write(
+                    fileDescriptor: arguments[0].i32,
+                    ioVectors: UnsafeGuestBufferPointer<WASIAbi.IOVec>(
+                        baseAddress: .init(offset: arguments[1].i32),
+                        count: arguments[2].i32
+                    ),
+                    memory: buffer
+                )
+                let nwrittenPointer = UnsafeGuestPointer<WASIAbi.Size>(offset: arguments[3].i32)
+                nwrittenPointer.write(nwritten, to: buffer)
+                return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+            }
+        }
+
+        preview1["path_create_directory"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                try self.path_create_directory(
+                    dirFd: arguments[0].i32,
+                    path: readString(pointer: arguments[1].i32, length: arguments[2].i32, buffer: buffer)
+                )
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+        preview1["path_filestat_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                let filestat = try self.path_filestat_get(
+                    dirFd: arguments[0].i32, flags: .init(rawValue: arguments[1].i32),
+                    path: readString(pointer: arguments[2].i32, length: arguments[3].i32, buffer: buffer)
+                )
+                let filestatPointer = UnsafeGuestPointer<WASIAbi.Filestat>(offset: arguments[4].i32)
+                filestatPointer.write(filestat, to: buffer)
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["path_filestat_set_times"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32, .i64, .i64, .i32], results: [.i32])
+        ) { caller, arguments in
+            guard let rawFstFlags = UInt16(exactly: arguments[6].i32) else {
+                throw WASIAbi.Errno.EINVAL
+            }
+            try withMemoryBuffer(caller: caller) { buffer in
+                try self.path_filestat_set_times(
+                    dirFd: arguments[0].i32, flags: .init(rawValue: arguments[1].i32),
+                    path: readString(pointer: arguments[2].i32, length: arguments[3].i32, buffer: buffer),
+                    atim: arguments[4].i64, mtim: arguments[5].i64,
+                    fstFlags: WASIAbi.FstFlags(rawValue: rawFstFlags)
+                )
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["path_link"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32, .i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                try self.path_link(
+                    oldFd: arguments[0].i32, oldFlags: .init(rawValue: arguments[1].i32),
+                    oldPath: readString(pointer: arguments[2].i32, length: arguments[3].i32, buffer: buffer),
+                    newFd: arguments[4].i32,
+                    newPath: readString(pointer: arguments[5].i32, length: arguments[6].i32, buffer: buffer)
+                )
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["path_open"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32, .i32, .i64, .i64, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                let newFd = try self.path_open(
+                    dirFd: arguments[0].i32,
+                    dirFlags: .init(rawValue: arguments[1].i32),
+                    path: readString(pointer: arguments[2].i32, length: arguments[3].i32, buffer: buffer),
+                    oflags: .init(rawValue: arguments[4].i32),
+                    fsRightsBase: .init(rawValue: arguments[5].i64),
+                    fsRightsInheriting: .init(rawValue: arguments[6].i64),
+                    fdflags: .init(rawValue: UInt16(arguments[7].i32))
+                )
+                let newFdPointer = UnsafeGuestPointer<WASIAbi.Fd>(offset: arguments[8].i32)
+                newFdPointer.write(newFd, to: buffer)
+                return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+            }
+        }
+
+        preview1["path_readlink"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                let ret = try self.path_readlink(
+                    fd: arguments[0].i32,
+                    path: readString(pointer: arguments[1].i32, length: arguments[2].i32, buffer: buffer),
+                    buffer: UnsafeGuestBufferPointer<UInt8>(
+                        baseAddress: .init(offset: arguments[3].i32),
+                        count: arguments[4].i32
+                    ),
+                    memory: buffer
+                )
+                let retPointer = UnsafeGuestPointer<WASIAbi.Size>(offset: arguments[5].i32)
+                retPointer.write(ret, to: buffer)
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["path_remove_directory"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                try self.path_remove_directory(
+                    dirFd: arguments[0].i32,
+                    path: readString(pointer: arguments[1].i32, length: arguments[2].i32, buffer: buffer)
+                )
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["path_rename"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                try self.path_rename(
+                    oldFd: arguments[0].i32,
+                    oldPath: readString(pointer: arguments[1].i32, length: arguments[2].i32, buffer: buffer),
+                    newFd: arguments[3].i32,
+                    newPath: readString(pointer: arguments[4].i32, length: arguments[5].i32, buffer: buffer)
+                )
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["path_symlink"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                try self.path_symlink(
+                    oldPath: readString(pointer: arguments[0].i32, length: arguments[1].i32, buffer: buffer),
+                    dirFd: arguments[2].i32,
+                    newPath: readString(pointer: arguments[3].i32, length: arguments[4].i32, buffer: buffer)
+                )
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["path_unlink_file"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                try self.path_unlink_file(
+                    dirFd: arguments[0].i32,
+                    path: readString(pointer: arguments[1].i32, length: arguments[2].i32, buffer: buffer)
+                )
+            }
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["proc_exit"] = wasiFunction(type: .init(parameters: [.i32])) { memory, arguments in
+            let exitCode = arguments[0].i32
+            throw WASIExitCode(code: exitCode)
+        }
+
+        preview1["sched_yield"] = wasiFunction(
+            type: .init(parameters: [], results: [.i32])
+        ) { _, _ in
+            try self.sched_yield()
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        preview1["random_get"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                self.random_get(
+                    buffer: UnsafeGuestPointer<UInt8>(offset: arguments[0].i32),
+                    length: arguments[1].i32,
+                    memory: buffer
+                )
+                return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+            }
+        }
+
+        preview1["poll_oneoff"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32, .i32, .i32], results: [.i32])
+        ) { caller, arguments in
+            try withMemoryBuffer(caller: caller) { buffer in
+                let subscriptionsBaseAddress = UnsafeGuestPointer<WASIAbi.Subscription>(offset: arguments[0].i32)
+                let eventsBaseAddress = UnsafeGuestPointer<WASIAbi.Event>(offset: arguments[1].i32)
+                let size = try self.poll_oneoff(
+                    subscriptions: .init(baseAddress: subscriptionsBaseAddress, count: arguments[2].i32),
+                    events: .init(baseAddress: eventsBaseAddress, count: arguments[2].i32),
+                    memory: buffer
+                )
+                buffer.withUnsafeMutableBufferPointer(offset: .init(arguments[3].i32), count: MemoryLayout<UInt32>.size) { raw in
+                    raw.withMemoryRebound(to: UInt32.self) { rebound in rebound[0] = size.littleEndian }
+                }
+
+                return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+            }
+        }
+
+        preview1["sock_shutdown"] = wasiFunction(
+            type: .init(parameters: [.i32, .i32], results: [.i32])
+        ) { _, arguments in
+            try self.sock_shutdown(fd: arguments[0].i32)
+            return [.i32(.init(WASIAbi.Errno.SUCCESS.rawValue))]
+        }
+
+        return [
+            "wasi_snapshot_preview1": WASIHostModule(functions: preview1)
+        ]
+    }
+}
+
+final class WASIImplementation: Sendable {
+    private let args: [String]
+    private let environment: [String: String]
+    private let wallClock: WallClock
+    private let monotonicClock: MonotonicClock
+    private let randomGenerator: Mutex<any RandomBufferGenerator>
+    internal let fdTable: Mutex<FdTable>
+    internal let fileSystem: FileSystemImplementation
+
+    init(
+        args: [String] = [],
+        environment: [String: String] = [:],
+        fileSystem: FileSystemImplementation,
+        wallClock: WallClock,
+        monotonicClock: MonotonicClock,
+        randomGenerator: RandomBufferGenerator
+    ) throws {
+        self.args = args
+        self.environment = environment
+        self.fileSystem = fileSystem
+
+        self.fdTable = Mutex(FdTable())
+        self.wallClock = wallClock
+        self.monotonicClock = monotonicClock
+        self.randomGenerator = Mutex(randomGenerator)
+    }
+
+    /// Closes all owned file descriptors (skipping borrowed ones like stdio).
+    func close() throws {
+        try fdTable.withLock { try $0.closeAll() }
+    }
+
+    /// Look up a directory entry by WASI fd, throwing EBADF if the fd doesn't
+    /// exist or ENOTDIR if it exists but isn't a directory.
+    private func directoryEntry(fd: WASIAbi.Fd) throws -> any WASIDir {
+        guard let entry = fdTable.withLock({ $0[fd] }) else {
+            throw WASIAbi.Errno.EBADF
+        }
+        guard case .directory(let dirEntry) = entry else {
+            throw WASIAbi.Errno.ENOTDIR
+        }
+        return dirEntry
+    }
+
+    /// Reads command-line argument data.
+    /// - Parameters:
+    ///   - argv: Pointer to an array of argument strings to be written
+    ///   - argvBuffer: Pointer to a buffer of argument strings to be written
+    func args_get<M: GuestMemory>(
+        argv: UnsafeGuestPointer<UnsafeGuestPointer<UInt8>>,
+        argvBuffer: UnsafeGuestPointer<UInt8>,
+        memory: M
+    ) {
+        var offsets = argv
+        var buffer = argvBuffer
+        for arg in args {
+            offsets.write(buffer, to: memory)
+            offsets += 1
+            let count = arg.utf8CString.withUnsafeBytes { bytes in
+                let count = UInt32(bytes.count)
+                buffer.raw.withHostPointer(in: memory, count: bytes.count) { hostDestBuffer in
+                    hostDestBuffer.copyMemory(from: bytes)
+                }
+                return count
+            }
+            buffer += count
+        }
+    }
+
+    /// Return command-line argument data sizes.
+    /// - Returns: Tuple of number of arguments and required buffer size
+    func args_sizes_get() -> (WASIAbi.Size, WASIAbi.Size) {
+        let bufferSize = args.reduce(0) {
+            // `utf8CString` returns null-terminated bytes and WASI also expect it
+            $0 + $1.utf8CString.count
+        }
+        return (WASIAbi.Size(args.count), WASIAbi.Size(bufferSize))
+    }
+
+    /// Read environment variable data.
+    func environ_get<M: GuestMemory>(environ: UnsafeGuestPointer<UnsafeGuestPointer<UInt8>>, environBuffer: UnsafeGuestPointer<UInt8>, memory: M) {
+        var offsets = environ
+        var buffer = environBuffer
+        for (key, value) in environment {
+            offsets.write(buffer, to: memory)
+            offsets += 1
+            let count = "\(key)=\(value)".utf8CString.withUnsafeBytes { bytes in
+                let count = UInt32(bytes.count)
+                buffer.raw.withHostPointer(in: memory, count: bytes.count) { hostDestBuffer in
+                    hostDestBuffer.copyMemory(from: bytes)
+                }
+                return count
+            }
+            buffer += count
+        }
+    }
+
+    /// Return environment variable data sizes.
+    /// - Returns: Tuple of number of environment variables and required buffer size
+    func environ_sizes_get() -> (WASIAbi.Size, WASIAbi.Size) {
+        let bufferSize = environment.reduce(0) {
+            // `utf8CString` returns null-terminated bytes and WASI also expect it
+            $0 + $1.key.utf8CString.count /* = */ + 1 + $1.value.utf8CString.count
+        }
+        return (WASIAbi.Size(environment.count), WASIAbi.Size(bufferSize))
+    }
+
+    /// Return the resolution of a clock.
+    func clock_res_get(id: WASIAbi.ClockId) throws -> WASIAbi.Timestamp {
+        switch id {
+        case .REALTIME:
+            return WASIAbi.Timestamp(wallClockDuration: try wallClock.resolution())
+        case .MONOTONIC:
+            return try monotonicClock.resolution()
+        default:
+            throw WASIAbi.Errno.ENOTSUP
+        }
+    }
+
+    /// Return the time value of a clock.
+    func clock_time_get(
+        id: WASIAbi.ClockId, precision: WASIAbi.Timestamp
+    ) throws -> WASIAbi.Timestamp {
+        switch id {
+        case .REALTIME:
+            return WASIAbi.Timestamp(wallClockDuration: try wallClock.now())
+        case .MONOTONIC:
+            return try monotonicClock.now()
+        default:
+            throw WASIAbi.Errno.ENOTSUP
+        }
+    }
+
+    /// Provide file advisory information on a file descriptor.
+    func fd_advise(fd: WASIAbi.Fd, offset: WASIAbi.FileSize, length: WASIAbi.FileSize, advice: WASIAbi.Advice) throws {
+        let fileEntry = try fdTable.withLock { table -> any WASIFile in
+            guard case .file(let fileEntry) = table[fd] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            return fileEntry
+        }
+        try fileEntry.advise(offset: offset, length: length, advice: advice)
+    }
+
+    /// Force the allocation of space in a file.
+    func fd_allocate(fd: WASIAbi.Fd, offset: WASIAbi.FileSize, length: WASIAbi.FileSize) throws {
+        try fdTable.withLock { table in
+            guard table[fd] != nil else {
+                throw WASIAbi.Errno.EBADF
+            }
+        }
+        // This operation has been removed in preview 2 and is not supported across all linux
+        // filesystems, and has no support on macos or windows, so just return ENOTSUP now.
+        throw WASIAbi.Errno.ENOTSUP
+    }
+
+    /// Close a file descriptor.
+    func fd_close(fd: WASIAbi.Fd) throws {
+        let entry = try fdTable.withLock { table -> FdEntry in
+            guard let entry = table[fd] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            table[fd] = nil
+            return entry
+        }
+        try entry.asEntry().close()
+    }
+
+    /// Synchronize the data of a file to disk.
+    func fd_datasync(fd: WASIAbi.Fd) throws {
+        let fileEntry = try fdTable.withLock { table -> any WASIFile in
+            guard case .file(let fileEntry) = table[fd] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            return fileEntry
+        }
+        return try fileEntry.datasync()
+    }
+
+    /// Get the attributes of a file descriptor.
+    /// - Parameter fileDescriptor: File descriptor to get attribute.
+    func fd_fdstat_get(fileDescriptor: UInt32) throws -> WASIAbi.FdStat {
+        let entry = fdTable.withLock { table in table[fileDescriptor] }
+        switch entry {
+        case .file(let entry):
+            return try entry.fdStat()
+        case .directory:
+            return WASIAbi.FdStat(
+                fsFileType: .DIRECTORY,
+                fsFlags: [],
+                fsRightsBase: .DIRECTORY_BASE_RIGHTS,
+                fsRightsInheriting: .DIRECTORY_INHERITING_RIGHTS
+            )
+        case .none:
+            throw WASIAbi.Errno.EBADF
+        }
+    }
+
+    /// Adjust the flags associated with a file descriptor.
+    func fd_fdstat_set_flags(fd: WASIAbi.Fd, flags: WASIAbi.Fdflags) throws {
+        let fileEntry = try fdTable.withLock { table -> any WASIFile in
+            guard case .file(let fileEntry) = table[fd] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            return fileEntry
+        }
+        try fileEntry.setFdStatFlags(flags)
+    }
+
+    /// Adjust the rights associated with a file descriptor.
+    func fd_fdstat_set_rights(
+        fd: WASIAbi.Fd,
+        fsRightsBase: WASIAbi.Rights,
+        fsRightsInheriting: WASIAbi.Rights
+    ) throws {
+        throw WASIAbi.Errno.ENOTSUP
+    }
+
+    /// Return the attributes of an open file.
+    func fd_filestat_get(fd: WASIAbi.Fd) throws -> WASIAbi.Filestat {
+        let entry = try fdTable.withLock { table -> FdEntry in
+            guard let entry = table[fd] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            return entry
+        }
+        return try entry.asEntry().attributes()
+    }
+
+    /// Adjust the size of an open file. If this increases the file's size, the extra bytes are filled with zeros.
+    func fd_filestat_set_size(fd: WASIAbi.Fd, size: WASIAbi.FileSize) throws {
+        let entry = try fdTable.withLock { table -> any WASIFile in
+            guard case .file(let entry) = table[fd] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            return entry
+        }
+        return try entry.setFilestatSize(size)
+    }
+
+    /// Adjust the timestamps of an open file or directory.
+    func fd_filestat_set_times(
+        fd: WASIAbi.Fd, atim: WASIAbi.Timestamp, mtim: WASIAbi.Timestamp,
+        fstFlags: WASIAbi.FstFlags
+    ) throws {
+        let entry = try fdTable.withLock { table -> FdEntry in
+            guard let entry = table[fd] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            return entry
+        }
+        try entry.asEntry().setTimes(atim: atim, mtim: mtim, fstFlags: fstFlags)
+    }
+
+    /// Read from a file descriptor, without using and updating the file descriptor's offset.
+    func fd_pread<M: GuestMemory>(
+        fd: WASIAbi.Fd, iovs: UnsafeGuestBufferPointer<WASIAbi.IOVec>,
+        offset: WASIAbi.FileSize,
+        memory: M
+    ) throws -> WASIAbi.Size {
+        let fileEntry = try fdTable.withLock { table -> any WASIFile in
+            guard case .file(let fileEntry) = table[fd] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            return fileEntry
+        }
+        return try fileEntry.pread(into: (0..<iovs.count).map { iovs.read(at: $0, in: memory) }, memory: memory, offset: offset)
+    }
+
+    /// Return a description of the given preopened file descriptor.
+    func fd_prestat_get(fd: WASIAbi.Fd) throws -> WASIAbi.Prestat {
+        let preopenPath = try fdTable.withLock { table -> String in
+            guard case .directory(let entry) = table[fd],
+                let preopenPath = entry.preopenPath
+            else {
+                throw WASIAbi.Errno.EBADF
+            }
+            return preopenPath
+        }
+        return .dir(WASIAbi.PrestatDir(preopenPath.utf8.count))
+    }
+
+    /// Return a directory name of the given preopened file descriptor
+    func fd_prestat_dir_name<M: GuestMemory>(fd: WASIAbi.Fd, path: UnsafeGuestPointer<UInt8>, maxPathLength: WASIAbi.Size, memory: M) throws {
+        var preopenPath = try fdTable.withLock { table -> String in
+            guard case .directory(let entry) = table[fd],
+                let preopenPath = entry.preopenPath
+            else {
+                throw WASIAbi.Errno.EBADF
+            }
+            return preopenPath
+        }
+
+        try preopenPath.withUTF8 { bytes in
+            guard bytes.count <= maxPathLength else {
+                throw WASIAbi.Errno.ENAMETOOLONG
+            }
+            path.withHostPointer(in: memory, count: Int(maxPathLength)) { buffer in
+                UnsafeMutableRawBufferPointer(buffer).copyBytes(from: bytes)
+            }
+        }
+    }
+
+    /// Write to a file descriptor, without using and updating the file descriptor's offset.
+    func fd_pwrite<M: GuestMemory>(
+        fd: WASIAbi.Fd, iovs: UnsafeGuestBufferPointer<WASIAbi.IOVec>,
+        offset: WASIAbi.FileSize,
+        memory: M
+    ) throws -> WASIAbi.Size {
+        let fileEntry = try fdTable.withLock { table -> any WASIFile in
+            guard case .file(let fileEntry) = table[fd] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            return fileEntry
+        }
+        return try fileEntry.pwrite(vectored: (0..<iovs.count).map { iovs.read(at: $0, in: memory) }, memory: memory, offset: offset)
+    }
+
+    /// Read from a file descriptor.
+    func fd_read<M: GuestMemory>(
+        fd: WASIAbi.Fd,
+        iovs: UnsafeGuestBufferPointer<WASIAbi.IOVec>,
+        memory: M
+    ) throws -> WASIAbi.Size {
+        let fileEntry = try fdTable.withLock { table -> any WASIFile in
+            guard case .file(let fileEntry) = table[fd] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            return fileEntry
+        }
+        return try fileEntry.read(into: (0..<iovs.count).map { iovs.read(at: $0, in: memory) }, memory: memory)
+    }
+
+    /// Read directory entries from a directory.
+    func fd_readdir<M: GuestMemory>(
+        fd: WASIAbi.Fd,
+        buffer: UnsafeGuestBufferPointer<UInt8>,
+        cookie: WASIAbi.DirCookie,
+        memory: M
+    ) throws -> WASIAbi.Size {
+        func readDirectoryEntries<D: WASIDir>(
+            from dirEntry: D
+        ) throws -> WASIAbi.Size {
+            var entries = try dirEntry.readEntries(cookie: cookie)
+            defer { entries.close() }
+            var bufferUsed: WASIAbi.Size = 0
+            let totalBufferSize = buffer.count
+            while let result = entries.next() {
+                var (entry, name) = try result.get()
+                do {
+                    // 1. Copy dirent to the buffer
+                    // Copy dirent as much as possible even though the buffer doesn't have enough remaining space
+                    let copyingBytes = min(WASIAbi.Dirent.sizeInGuest, totalBufferSize - bufferUsed)
+                    let rangeStart = buffer.baseAddress.raw.advanced(by: bufferUsed)
+                    let rangeEnd = rangeStart.advanced(by: copyingBytes)
+                    WASIAbi.Dirent.writeToGuest(unalignedAt: rangeStart, end: rangeEnd, in: memory, value: entry)
+                    bufferUsed += copyingBytes
+
+                    // bail out if the remaining buffer space is not enough
+                    if copyingBytes < WASIAbi.Dirent.sizeInGuest {
+                        return totalBufferSize
+                    }
+                }
+
+                do {
+                    // 2. Copy name string to the buffer
+                    // Same truncation rule applied as above
+                    let copyingBytes = min(entry.dirNameLen, totalBufferSize - bufferUsed)
+                    let rangeStart = buffer.baseAddress.raw.advanced(by: bufferUsed)
+                    name.withUTF8 { bytes in
+                        rangeStart.withHostPointer(in: memory, count: Int(copyingBytes)) { hostBuffer in
+                            hostBuffer.copyMemory(
+                                from: UnsafeRawBufferPointer(start: bytes.baseAddress, count: Int(copyingBytes))
+                            )
+                        }
+                    }
+                    bufferUsed += copyingBytes
+
+                    // bail out if the remaining buffer space is not enough
+                    if copyingBytes < entry.dirNameLen {
+                        return totalBufferSize
+                    }
+                }
+            }
+            return bufferUsed
+        }
+
+        let dirEntry = try fdTable.withLock { table -> any WASIDir in
+            guard case .directory(let dirEntry) = table[fd] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            return dirEntry
+        }
+        return try readDirectoryEntries(from: dirEntry)
+    }
+
+    /// Atomically replace a file descriptor by renumbering another file descriptor.
+    func fd_renumber(fd: WASIAbi.Fd, to toFd: WASIAbi.Fd) throws {
+        let toClose = try fdTable.withLock { table -> FdEntry in
+            guard let entry = table[fd] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            guard let toEntry = table[toFd] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            table[toFd] = entry
+            table[fd] = nil
+            return toEntry
+        }
+        try toClose.asEntry().close()
+    }
+
+    /// Move the offset of a file descriptor.
+    func fd_seek(fd: WASIAbi.Fd, offset: WASIAbi.FileDelta, whence: WASIAbi.Whence) throws -> WASIAbi.FileSize {
+        let fileEntry = try fdTable.withLock { table -> any WASIFile in
+            guard case .file(let fileEntry) = table[fd] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            return fileEntry
+        }
+        return try fileEntry.seek(offset: offset, whence: whence)
+    }
+
+    /// Synchronize the data and metadata of a file to disk.
+    func fd_sync(fd: WASIAbi.Fd) throws {
+        let fileEntry = try fdTable.withLock { table -> any WASIFile in
+            guard case .file(let fileEntry) = table[fd] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            return fileEntry
+        }
+        return try fileEntry.sync()
+    }
+
+    /// Return the current offset of a file descriptor.
+    func fd_tell(fd: WASIAbi.Fd) throws -> WASIAbi.FileSize {
+        let fileEntry = try fdTable.withLock { table -> any WASIFile in
+            guard case .file(let fileEntry) = table[fd] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            return fileEntry
+        }
+        return try fileEntry.tell()
+    }
+
+    /// POSIX `writev` equivalent.
+    /// - Parameters:
+    ///   - fileDescriptor: File descriptor to write to.
+    ///   - ioVectors: Buffer pointer to an array of byte buffers to write.
+    /// - Returns: Number of bytes written.
+    func fd_write<M: GuestMemory>(
+        fileDescriptor: WASIAbi.Fd,
+        ioVectors: UnsafeGuestBufferPointer<WASIAbi.IOVec>,
+        memory: M
+    ) throws -> UInt32 {
+        let entry = try fdTable.withLock { table -> any WASIFile in
+            guard case .file(let entry) = table[fileDescriptor] else {
+                throw WASIAbi.Errno.EBADF
+            }
+            return entry
+        }
+        return try entry.write(vectored: (0..<ioVectors.count).map { ioVectors.read(at: $0, in: memory) }, memory: memory)
+    }
+
+    /// Create a directory.
+    func path_create_directory(dirFd: WASIAbi.Fd, path: String) throws {
+        let dirEntry = try directoryEntry(fd: dirFd)
+        try dirEntry.createDirectory(atPath: path)
+    }
+
+    /// Return the attributes of a file or directory.
+    func path_filestat_get(
+        dirFd: WASIAbi.Fd, flags: WASIAbi.LookupFlags, path: String
+    ) throws -> WASIAbi.Filestat {
+        let dirEntry = try directoryEntry(fd: dirFd)
+        return try dirEntry.attributes(
+            path: path, symlinkFollow: flags.contains(.SYMLINK_FOLLOW)
+        )
+    }
+
+    /// Adjust the timestamps of a file or directory.
+    func path_filestat_set_times(
+        dirFd: WASIAbi.Fd, flags: WASIAbi.LookupFlags,
+        path: String, atim: WASIAbi.Timestamp, mtim: WASIAbi.Timestamp,
+        fstFlags: WASIAbi.FstFlags
+    ) throws {
+        let dirEntry = try directoryEntry(fd: dirFd)
+        try dirEntry.setFilestatTimes(
+            path: path, atim: atim, mtim: mtim,
+            fstFlags: fstFlags,
+            symlinkFollow: flags.contains(.SYMLINK_FOLLOW)
+        )
+    }
+
+    /// Create a hard link.
+    func path_link(
+        oldFd: WASIAbi.Fd, oldFlags: WASIAbi.LookupFlags, oldPath: String,
+        newFd: WASIAbi.Fd, newPath: String
+    ) throws {
+        throw WASIAbi.Errno.ENOTSUP
+    }
+
+    /// Open a file or directory.
+    ///
+    /// Lookup, open, and push share one `fdTable` lock scope: the new entry holds
+    /// non-Sendable existentials, so it must be built inside the closure to satisfy
+    /// the lock's `sending` requirement. A full table is rejected before the open,
+    /// so a successful open is never orphaned by a failing install.
+    func path_open(
+        dirFd: WASIAbi.Fd,
+        dirFlags: WASIAbi.LookupFlags,
+        path: String,
+        oflags: WASIAbi.Oflags,
+        fsRightsBase: WASIAbi.Rights,
+        fsRightsInheriting: WASIAbi.Rights,
+        fdflags: WASIAbi.Fdflags
+    ) throws -> WASIAbi.Fd {
+        try fdTable.withLock { table in
+            guard case .directory(let dirEntry) = table[dirFd] else {
+                throw WASIAbi.Errno.ENOTDIR
+            }
+            guard table.hasCapacity else {
+                throw WASIAbi.Errno.ENFILE
+            }
+            let newEntry = try fileSystem.openAt(
+                dirFd: dirEntry,
+                path: path,
+                oflags: oflags,
+                fsRightsBase: fsRightsBase,
+                fsRightsInheriting: fsRightsInheriting,
+                fdflags: fdflags,
+                symlinkFollow: dirFlags.contains(.SYMLINK_FOLLOW)
+            )
+            return try table.push(newEntry)
+        }
+    }
+
+    /// Read the contents of a symbolic link.
+    func path_readlink<M: GuestMemory>(fd: WASIAbi.Fd, path: String, buffer: UnsafeGuestBufferPointer<UInt8>, memory: M) throws -> WASIAbi.Size {
+        let dirEntry = try directoryEntry(fd: fd)
+
+        let linkBytes = try dirEntry.readlink(atPath: path)
+        let bytesWritten = min(Int(buffer.count), linkBytes.count)
+        if bytesWritten > 0 {
+            buffer.withHostPointer(in: memory) { hostBuffer in
+                linkBytes.withUnsafeBytes { linkBytes in
+                    guard let source = linkBytes.baseAddress?.assumingMemoryBound(to: UInt8.self) else { return }
+                    hostBuffer.baseAddress?.update(from: source, count: bytesWritten)
+                }
+            }
+        }
+        return WASIAbi.Size(bytesWritten)
+    }
+
+    /// Remove a directory.
+    func path_remove_directory(dirFd: WASIAbi.Fd, path: String) throws {
+        let dirEntry = try directoryEntry(fd: dirFd)
+        try dirEntry.removeDirectory(atPath: path)
+    }
+
+    /// Rename a file or directory.
+    func path_rename(
+        oldFd: WASIAbi.Fd, oldPath: String,
+        newFd: WASIAbi.Fd, newPath: String
+    ) throws {
+        let oldDirEntry = try directoryEntry(fd: oldFd)
+        let newDirEntry = try directoryEntry(fd: newFd)
+        try oldDirEntry.rename(from: oldPath, toDir: newDirEntry, to: newPath)
+    }
+
+    /// Create a symbolic link.
+    func path_symlink(oldPath: String, dirFd: WASIAbi.Fd, newPath: String) throws {
+        let dirEntry = try directoryEntry(fd: dirFd)
+        try dirEntry.symlink(from: oldPath, to: newPath)
+    }
+
+    /// Unlink a file.
+    func path_unlink_file(dirFd: WASIAbi.Fd, path: String) throws {
+        let dirEntry = try directoryEntry(fd: dirFd)
+        try dirEntry.removeFile(atPath: path)
+    }
+
+    /// Concurrently poll for the occurrence of a set of events.
+    func poll_oneoff<M: GuestMemory>(
+        subscriptions: UnsafeGuestBufferPointer<WASIAbi.Subscription>,
+        events: UnsafeGuestBufferPointer<WASIAbi.Event>,
+        memory: M
+    ) throws -> WASIAbi.Size {
+        guard !subscriptions.isEmpty else { throw WASIAbi.Errno.EINVAL }
+        let materializedSubscriptions = (0..<subscriptions.count).map { subscriptions.read(at: $0, in: memory) }
+        let table = fdTable.withLock { $0 }
+        return try poll(subscriptions: materializedSubscriptions, events: events, table, memory: memory)
+    }
+
+    /// Shut down socket send and receive channels.
+    /// Since WasmKit has no socket support, any valid fd is not a socket.
+    func sock_shutdown(fd: WASIAbi.Fd) throws {
+        try fdTable.withLock { table in
+            guard table[fd] != nil else {
+                throw WASIAbi.Errno.EBADF
+            }
+        }
+        throw WASIAbi.Errno.ENOTSOCK
+    }
+
+    /// Temporarily yield execution of the calling thread.
+    func sched_yield() throws {
+        #if os(Windows)
+            #warning("sched_yield is not implemented on Windows")
+        #else
+            let result = _platform_sched_yield()
+            guard result == 0 else {
+                throw try WASIAbi.Errno(platformErrno: errno)
+            }
+        #endif
+    }
+
+    /// Write high-quality random data into a buffer.
+    func random_get<M: GuestMemory>(buffer: UnsafeGuestPointer<UInt8>, length: WASIAbi.Size, memory: M) {
+        guard length > 0 else { return }
+        buffer.withHostPointer(in: memory, count: Int(length)) { hostBuffer in
+            self.randomGenerator.withLock { rng in
+                rng.fill(buffer: hostBuffer)
+            }
+        }
+    }
+}

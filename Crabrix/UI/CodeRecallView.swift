@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 /// Code Recall: memorise a snippet while it is visible, then rebuild it.
 ///

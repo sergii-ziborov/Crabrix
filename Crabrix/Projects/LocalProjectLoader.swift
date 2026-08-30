@@ -53,20 +53,31 @@ enum LocalProjectLoader {
             throw ProjectError.noReadableSource
         }
 
+        // ZIP imports commonly contain one parent directory. Metadata belongs
+        // to the discovered Cargo root, not necessarily to the picker URL.
+        let storedMetadata = try readStoredMetadata(in: rootURL)
         let manifest = files["Cargo.toml"].flatMap(CargoManifest.parse)
-        let name = manifest?.name
+        let name = storedMetadata.flatMap { $0.name.isEmpty ? nil : $0.name }
+            ?? manifest?.name
             ?? provenance?.repository
             ?? rootURL.deletingPathExtension().lastPathComponent
             .replacingOccurrences(of: "-main", with: "")
             .replacingOccurrences(of: "-master", with: "")
-        let entryFile = preferredEntryFile(in: files)
-        let storedProvenance = try readStoredProvenance(in: projectURL) ?? provenance
+        let entryFile = storedMetadata.flatMap { files[$0.entryFile] == nil ? nil : $0.entryFile }
+            ?? preferredEntryFile(in: files)
+        let storedProvenance = storedMetadata?.provenance ?? provenance
 
         return CrabrixProject(
+            id: storedMetadata?.projectID ?? UUID(),
             name: name.isEmpty ? "imported-project" : name,
             files: files,
             entryFile: entryFile,
-            provenance: storedProvenance
+            provenance: storedProvenance,
+            projectDescription: storedMetadata?.projectDescription ?? "",
+            tags: storedMetadata?.tags ?? [],
+            folder: storedMetadata?.folder,
+            kind: storedMetadata?.kind ?? .general,
+            isFavorite: storedMetadata?.isFavorite ?? false
         )
     }
 
@@ -171,11 +182,24 @@ enum LocalProjectLoader {
             .first ?? rustFiles.sorted().first ?? "main.rs"
     }
 
-    private static func readStoredProvenance(in rootURL: URL) throws -> CrabrixProject.Provenance? {
+    private static func readStoredMetadata(
+        in rootURL: URL
+    ) throws -> CrabrixProject.PackageMetadata? {
         let metadataURL = rootURL.appending(path: ".crabrix/project.json")
         guard FileManager.default.fileExists(atPath: metadataURL.path) else { return nil }
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        return try decoder.decode(CrabrixProject.Provenance.self, from: Data(contentsOf: metadataURL))
+        let data = try Data(contentsOf: metadataURL)
+        if let metadata = try? decoder.decode(CrabrixProject.PackageMetadata.self, from: data) {
+            return metadata
+        }
+        // Version 0 saved provenance as the whole metadata document.
+        let provenance = try decoder.decode(CrabrixProject.Provenance.self, from: data)
+        return CrabrixProject.PackageMetadata(
+            projectID: UUID(),
+            name: "",
+            entryFile: "",
+            provenance: provenance
+        )
     }
 }

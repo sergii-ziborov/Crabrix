@@ -3,6 +3,7 @@ import SwiftUI
 struct LearnPathView: View {
     let units: [RustLearningUnit]
     let courseTitle: String
+    let courseTheme: RustCourseTheme
     let completedLessonIDs: Set<String>
     let onOpenLesson: (RustLesson) -> Void
 
@@ -46,6 +47,7 @@ struct LearnPathView: View {
                     actionSystemImage: isCourseCompleted
                         ? "arrow.counterclockwise"
                         : "arrow.right",
+                    theme: courseTheme,
                     onAction: {
                         guard let courseEntryLesson else { return }
                         onOpenLesson(courseEntryLesson)
@@ -57,6 +59,7 @@ struct LearnPathView: View {
                         unit: unit,
                         completedLessonIDs: completedLessonIDs,
                         nextLessonID: nextLessonID,
+                        courseTheme: courseTheme,
                         onOpenLesson: onOpenLesson
                     )
                 }
@@ -72,7 +75,7 @@ struct LearnPathView: View {
             ZStack {
                 CrabrixTheme.background.ignoresSafeArea()
                 LinearGradient(
-                    colors: [CrabrixTheme.blue.opacity(0.08), .clear, CrabrixTheme.coral.opacity(0.05)],
+                    colors: [courseTheme.primaryColor.opacity(0.10), .clear, courseTheme.secondaryColor.opacity(0.06)],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -85,12 +88,16 @@ struct LearnPathView: View {
 }
 
 private struct LearningHero: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let completedLessonCount: Int
     let totalLessonCount: Int
     let chapterCount: Int
     let liveLessonCount: Int
     let actionTitle: String
     let actionSystemImage: String
+    let theme: RustCourseTheme
     let onAction: () -> Void
 
     private var progress: Double {
@@ -100,48 +107,10 @@ private struct LearningHero: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            HStack(alignment: .top, spacing: 14) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Label("YOUR RUST JOURNEY", systemImage: "map.fill")
-                        .font(.caption.monospaced().bold())
-                        .foregroundStyle(CrabrixTheme.mint)
-
-                    Text("Build fearless\nRust instincts")
-                        .font(.system(size: 34, weight: .heavy, design: .rounded))
-                        .minimumScaleFactor(0.8)
-
-                    Text("Follow the map from your first compile to real Cargo projects. Live labs are verified by the compiler inside Crabrix.")
-                        .font(.subheadline)
-                        .foregroundStyle(CrabrixTheme.muted)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                Spacer(minLength: 4)
-
-                ZStack {
-                    Circle()
-                        .stroke(CrabrixTheme.border, lineWidth: 8)
-                    Circle()
-                        .trim(from: 0, to: max(progress, 0.025))
-                        .stroke(
-                            AngularGradient(
-                                colors: [CrabrixTheme.mint, CrabrixTheme.blue, CrabrixTheme.mint],
-                                center: .center
-                            ),
-                            style: StrokeStyle(lineWidth: 8, lineCap: .round)
-                        )
-                        .rotationEffect(.degrees(-90))
-                    VStack(spacing: 1) {
-                        Text("\(completedLessonCount)")
-                            .font(.title2.monospaced().bold())
-                        Text("of \(totalLessonCount)")
-                            .font(.caption2.monospaced())
-                            .foregroundStyle(CrabrixTheme.muted)
-                    }
-                }
-                .frame(width: 88, height: 88)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("\(completedLessonCount) of \(totalLessonCount) lessons complete")
+            if usesCompactHeader {
+                compactHeader
+            } else {
+                regularHeader
             }
 
             HStack(spacing: 10) {
@@ -156,22 +125,22 @@ private struct LearningHero: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
-            .tint(CrabrixTheme.mint)
+            .tint(theme.primaryColor)
         }
         .padding(22)
         .background {
             ZStack(alignment: .topTrailing) {
                 LinearGradient(
-                    colors: [Color(red: 0.10, green: 0.20, blue: 0.30), CrabrixTheme.panel],
+                    colors: [theme.primaryColor.opacity(0.24), CrabrixTheme.panel],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
                 Circle()
-                    .fill(CrabrixTheme.blue.opacity(0.15))
+                    .fill(theme.primaryColor.opacity(0.17))
                     .frame(width: 180, height: 180)
                     .offset(x: 65, y: -90)
                 Circle()
-                    .fill(CrabrixTheme.coral.opacity(0.11))
+                    .fill(theme.secondaryColor.opacity(0.13))
                     .frame(width: 120, height: 120)
                     .offset(x: -235, y: 155)
             }
@@ -181,6 +150,84 @@ private struct LearningHero: View {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .stroke(CrabrixTheme.border, lineWidth: 1)
         }
+    }
+
+    private var usesCompactHeader: Bool {
+        horizontalSizeClass == .compact || dynamicTypeSize.isAccessibilitySize
+    }
+
+    private var compactHeader: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .center, spacing: 10) {
+                Label("YOUR RUST JOURNEY", systemImage: "map.fill")
+                    .font(.caption.monospaced().bold())
+                    .foregroundStyle(theme.primaryColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+                Spacer(minLength: 4)
+                progressRing(size: 70, lineWidth: 7)
+            }
+
+            Text("Build fearless Rust instincts")
+                .font(.system(size: 30, weight: .heavy, design: .rounded))
+                .fixedSize(horizontal: false, vertical: true)
+
+            journeyDescription
+                .font(.footnote)
+        }
+    }
+
+    private var regularHeader: some View {
+        HStack(alignment: .top, spacing: 14) {
+            VStack(alignment: .leading, spacing: 8) {
+                Label("YOUR RUST JOURNEY", systemImage: "map.fill")
+                    .font(.caption.monospaced().bold())
+                    .foregroundStyle(theme.primaryColor)
+
+                Text("Build fearless\nRust instincts")
+                    .font(.system(size: 34, weight: .heavy, design: .rounded))
+                    .minimumScaleFactor(0.8)
+
+                journeyDescription
+                    .font(.subheadline)
+            }
+
+            Spacer(minLength: 4)
+            progressRing(size: 88, lineWidth: 8)
+        }
+    }
+
+    private var journeyDescription: some View {
+        Text("Follow the map from your first compile to real Cargo projects. Live labs are verified by the compiler inside Crabrix.")
+            .foregroundStyle(CrabrixTheme.muted)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func progressRing(size: CGFloat, lineWidth: CGFloat) -> some View {
+        ZStack {
+            Circle()
+                .stroke(CrabrixTheme.border, lineWidth: lineWidth)
+            Circle()
+                .trim(from: 0, to: max(progress, 0.025))
+                .stroke(
+                    AngularGradient(
+                        colors: [theme.primaryColor, theme.secondaryColor, theme.primaryColor],
+                        center: .center
+                    ),
+                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+            VStack(spacing: 1) {
+                Text("\(completedLessonCount)")
+                    .font(.headline.monospaced().bold())
+                Text("of \(totalLessonCount)")
+                    .font(.caption2.monospaced())
+                    .foregroundStyle(CrabrixTheme.muted)
+            }
+        }
+        .frame(width: size, height: size)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(completedLessonCount) of \(totalLessonCount) lessons complete")
     }
 }
 
@@ -216,6 +263,7 @@ private struct LearningUnitMap: View {
     let unit: RustLearningUnit
     let completedLessonIDs: Set<String>
     let nextLessonID: String?
+    let courseTheme: RustCourseTheme
     let onOpenLesson: (RustLesson) -> Void
 
     /// The lesson a reader just tried to open too early.
@@ -223,7 +271,13 @@ private struct LearningUnitMap: View {
 
     private let rowHeight: CGFloat = 124
 
-    private var palette: LearningPalette { .palette(for: unit.level) }
+    private var palette: LearningPalette {
+        LearningPalette(
+            primary: courseTheme.primaryColor,
+            secondary: courseTheme.secondaryColor,
+            symbol: unit.level == 1 ? "sparkles" : "flag.checkered"
+        )
+    }
 
     private var completedCount: Int {
         unit.lessons.filter(isCompleted).count
@@ -311,10 +365,7 @@ private struct LearningUnitMap: View {
     }
 
     private func labelToRight(at index: Int) -> Bool {
-        switch index % 4 {
-        case 0, 3: true
-        default: false
-        }
+        LessonMapLayout.labelToRight(at: index)
     }
 }
 
@@ -420,7 +471,7 @@ private struct TrailLine: View {
 
     private func point(at index: Int) -> CGPoint {
         CGPoint(
-            x: width * trailFraction(at: index),
+            x: LessonMapLayout.nodeCenterX(width: width, index: index),
             y: CGFloat(index) * rowHeight + rowHeight / 2
         )
     }
@@ -439,10 +490,15 @@ private struct LessonMapNode: View {
     var body: some View {
         GeometryReader { geometry in
             let width = geometry.size.width
-            let nodeX = width * trailFraction(at: lessonNumber - 1)
-            let labelWidth = min(230, max(150, width * 0.47))
-            let labelOffset = min(labelWidth / 2 + 48, width * 0.38)
-            let labelX = nodeX + (labelToRight ? labelOffset : -labelOffset)
+            let index = lessonNumber - 1
+            let nodeX = LessonMapLayout.nodeCenterX(width: width, index: index)
+            let labelWidth = LessonMapLayout.labelWidth(for: width)
+            let labelX = LessonMapLayout.labelCenterX(
+                width: width,
+                nodeX: nodeX,
+                labelWidth: labelWidth,
+                labelToRight: labelToRight
+            )
 
             Button {
                 // The button style only dimmed a locked node; the action still
@@ -459,6 +515,7 @@ private struct LessonMapNode: View {
                         .position(x: nodeX, y: geometry.size.height / 2)
                 }
                 .frame(width: width, height: geometry.size.height)
+                .clipped()
                 .contentShape(Rectangle())
             }
             .buttonStyle(LessonMapButtonStyle(isEnabled: state != .locked))
@@ -653,12 +710,58 @@ private struct LearningPalette {
     }
 }
 
-private func trailFraction(at index: Int) -> CGFloat {
-    switch index % 4 {
-    case 0: 0.28
-    case 1: 0.50
-    case 2: 0.72
-    default: 0.50
+/// Geometry for the winding lesson path. It deliberately exposes pure helpers
+/// so narrow iPhones and Split View widths can be regression-tested without
+/// taking screenshots. Labels always remain inside `edgeInset`, while nodes
+/// occupy two lanes rather than placing a label-bearing node in the centre.
+enum LessonMapLayout {
+    static let edgeInset: CGFloat = 8
+    static let nodeDiameter: CGFloat = 96
+    static let labelGap: CGFloat = 6
+
+    static func trailFraction(at index: Int) -> CGFloat {
+        switch index % 4 {
+        case 0, 3: 0.23
+        default: 0.77
+        }
+    }
+
+    static func labelToRight(at index: Int) -> Bool {
+        trailFraction(at: index) < 0.5
+    }
+
+    static func nodeCenterX(width: CGFloat, index: Int) -> CGFloat {
+        let radius = nodeDiameter / 2
+        let minimum = edgeInset + radius
+        let maximum = max(minimum, width - edgeInset - radius)
+        return clamp(width * trailFraction(at: index), minimum, maximum)
+    }
+
+    static func labelWidth(for width: CGFloat) -> CGFloat {
+        let available = max(0, width - edgeInset * 2)
+        return min(210, available, max(112, width * 0.43))
+    }
+
+    static func labelCenterX(
+        width: CGFloat,
+        nodeX: CGFloat,
+        labelWidth: CGFloat,
+        labelToRight: Bool
+    ) -> CGFloat {
+        let halfLabel = labelWidth / 2
+        let direction: CGFloat = labelToRight ? 1 : -1
+        let ideal = nodeX + direction * (nodeDiameter / 2 + labelGap + halfLabel)
+        let minimum = edgeInset + halfLabel
+        let maximum = max(minimum, width - edgeInset - halfLabel)
+        return clamp(ideal, minimum, maximum)
+    }
+
+    private static func clamp(
+        _ value: CGFloat,
+        _ minimum: CGFloat,
+        _ maximum: CGFloat
+    ) -> CGFloat {
+        min(max(value, minimum), maximum)
     }
 }
 

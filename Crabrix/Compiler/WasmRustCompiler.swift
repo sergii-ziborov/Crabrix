@@ -79,6 +79,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         source: String,
         sourcePath: String = "main.rs",
         supportingFiles: [String: String] = [:],
+        edition: String = "2024",
         plan: CargoBuildPlan = .empty,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil
     ) async -> CompilationResult {
@@ -87,6 +88,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             source: source,
             sourcePath: sourcePath,
             supportingFiles: supportingFiles,
+            edition: edition,
             plan: plan,
             onDependencyProgress: onDependencyProgress
         )
@@ -96,6 +98,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         source: String,
         sourcePath: String = "main.rs",
         supportingFiles: [String: String] = [:],
+        edition: String = "2024",
         plan: CargoBuildPlan = .empty,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil
     ) async -> CompilationResult {
@@ -104,6 +107,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             source: source,
             sourcePath: sourcePath,
             supportingFiles: supportingFiles,
+            edition: edition,
             plan: plan,
             onDependencyProgress: onDependencyProgress
         )
@@ -111,13 +115,29 @@ final class WasmRustCompiler: @unchecked Sendable {
 
     /// Stops the guest currently executing on the compiler queue.
     ///
-    /// Cancellation lands on the guest's next WASI call, which for rustc is the
-    /// next file read and therefore near-immediate.
+    /// Cancellation is checked in WasmKit's dispatch loop and at every WASI
+    /// call, so it also reaches a user guest that performs pure computation.
     func cancel() {
         interrupterLock.lock()
         let interrupter = activeInterrupter
         interrupterLock.unlock()
         interrupter?.cancel()
+    }
+
+    /// Clears both persisted root-program Wasm files and their in-memory fast
+    /// paths. Work is serialized behind an active compilation on `queue`.
+    func clearProjectArtifacts() async {
+        await withCheckedContinuation { continuation in
+            queue.async { [self] in
+                successfulCheckKeys.removeAll(keepingCapacity: false)
+                runtime.clearProgramModules()
+                if let directory = CrateStorageLayout.projectArtifactDirectory,
+                   FileManager.default.fileExists(atPath: directory.path) {
+                    try? FileManager.default.removeItem(at: directory)
+                }
+                continuation.resume()
+            }
+        }
     }
 
     /// True when every artefact this plan needs is already on disk.
@@ -135,6 +155,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         source: String,
         sourcePath: String,
         supportingFiles: [String: String],
+        edition: String,
         plan: CargoBuildPlan,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?
     ) async -> CompilationResult {
@@ -147,6 +168,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                         source: source,
                         sourcePath: sourcePath,
                         supportingFiles: supportingFiles,
+                        edition: edition,
                         plan: plan,
                         onDependencyProgress: onDependencyProgress
                     )
@@ -162,12 +184,19 @@ final class WasmRustCompiler: @unchecked Sendable {
         source: String,
         sourcePath: String,
         supportingFiles: [String: String],
+        edition: String,
         plan: CargoBuildPlan,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?
     ) -> CompilationResult {
         let started = clock.now
         guard let toolchain else {
             return .failure(phase: .setup, detail: "Bundled Rust toolchain is missing.")
+        }
+        guard ["2015", "2018", "2021", "2024"].contains(edition) else {
+            return .failure(
+                phase: .setup,
+                detail: "Unsupported Cargo edition \"\(edition)\". Use 2015, 2018, 2021, or 2024."
+            )
         }
 
         let interrupter = WasmInterrupter()
@@ -185,6 +214,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             source: source,
             sourcePath: sourcePath,
             supportingFiles: supportingFiles,
+            edition: edition,
             plan: plan
         )
 
@@ -266,7 +296,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                 "rustc", "/work/\(sourcePath)",
                 "--sysroot", "/sysroot",
                 "--target", "wasm32-wasip1",
-                "--edition", "2024",
+                "--edition", edition,
                 "--error-format=json",
                 "--json=diagnostic-rendered-ansi",
             ]
@@ -378,8 +408,12 @@ final class WasmRustCompiler: @unchecked Sendable {
                     ? "Compiled and executed locally inside the bounded WasmKit sandbox."
                     : "Compiled \(plan.units.count) dependencies and the program locally, then ran it in the bounded sandbox."
             )
-        } catch is WasmExecutionCancelled {
-            return cancelledResult(phase: action == .check ? .check : .run, started: started)
+        } catch let cancellation as WasmExecutionCancelled {
+            return cancelledResult(
+                phase: action == .check ? .check : .run,
+                started: started,
+                cancellation: cancellation
+            )
         } catch {
             return .failure(
                 phase: action == .check ? .check : .run,
@@ -648,6 +682,15 @@ final class WasmRustCompiler: @unchecked Sendable {
         let sandboxURL = jobRoot.appending(path: "sandbox", directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: sandboxURL, withIntermediateDirectories: true)
         let resourceLimiter = WasmSandboxResourceLimiter()
+        let instructionLimiter = WasmInstructionBudgetLimiter(interrupter: interrupter)
+        let quotaMonitor = WasmSandboxQuotaMonitor(
+            captureDirectory: jobRoot,
+            capturePrefix: "program",
+            writableDirectory: sandboxURL,
+            interrupter: interrupter
+        )
+        quotaMonitor.start()
+        defer { quotaMonitor.stop() }
 
         let output: WasmProcessResult
         do {
@@ -664,10 +707,12 @@ final class WasmRustCompiler: @unchecked Sendable {
                 captureDirectory: jobRoot,
                 capturePrefix: "program",
                 resourceLimiter: resourceLimiter,
-                interrupter: interrupter
+                instructionLimiter: instructionLimiter,
+                interrupter: interrupter,
+                capturedOutputLimitBytes: WasmSandboxPolicy.userProgramOutputLimitBytes
             )
-        } catch is WasmExecutionCancelled {
-            return cancelledResult(phase: .run, started: started)
+        } catch let cancellation as WasmExecutionCancelled {
+            return cancelledResult(phase: .run, started: started, cancellation: cancellation)
         } catch let failure as RustcRuntimeFailure {
             if let deniedResource = resourceLimiter.deniedResource {
                 let detail = switch deniedResource {
@@ -706,17 +751,42 @@ final class WasmRustCompiler: @unchecked Sendable {
 
     private func cancelledResult(
         phase: CompilationResult.Phase,
-        started: ContinuousClock.Instant
+        started: ContinuousClock.Instant,
+        cancellation: WasmExecutionCancelled = .init(reason: .userRequested)
     ) -> CompilationResult {
-        CompilationResult(
+        let outputLimitLabel = ByteCountFormatter.string(
+            fromByteCount: Int64(WasmSandboxPolicy.userProgramOutputLimitBytes),
+            countStyle: .file
+        )
+        let writableLimitLabel = ByteCountFormatter.string(
+            fromByteCount: Int64(WasmSandboxPolicy.userProgramWritableBytesLimit),
+            countStyle: .file
+        )
+        let detail = switch cancellation.reason {
+        case .userRequested:
+            "Build stopped. The Wasm guest was interrupted and its sandbox released."
+        case .instructionBudget:
+            "Program stopped at the local instruction budget. Its sandbox was released."
+        case .wallClock:
+            "Program stopped at the 30-second local runtime limit. Its sandbox was released."
+        case .outputLimit:
+            "Program stopped after producing " + outputLimitLabel + " of output."
+        case .fileCountLimit:
+            "Program stopped at the sandbox limit of "
+                + String(WasmSandboxPolicy.userProgramFileCountLimit)
+                + " writable files."
+        case .writableBytesLimit:
+            "Program stopped at the " + writableLimitLabel + " writable sandbox limit."
+        }
+        return CompilationResult(
             succeeded: false,
             phase: phase,
             exitCode: nil,
             diagnostics: [],
-            stdout: "",
-            stderr: "",
+            stdout: cancellation.stdout,
+            stderr: cancellation.stderr,
             duration: started.duration(to: clock.now),
-            detail: "Build stopped. The Wasm guest was interrupted and its sandbox released."
+            detail: detail
         )
     }
 
@@ -780,12 +850,13 @@ final class WasmRustCompiler: @unchecked Sendable {
         source: String,
         sourcePath: String,
         supportingFiles: [String: String],
+        edition: String,
         plan: CargoBuildPlan
     ) -> String {
         var hasher = SHA256()
         let actionLabel = action == .check ? "check" : "run"
         for value in [
-            Self.toolchainVersion, Self.cacheSchemaVersion, actionLabel, sourcePath, source,
+            Self.toolchainVersion, Self.cacheSchemaVersion, actionLabel, edition, sourcePath, source,
         ] {
             hasher.update(data: Data(value.utf8))
             hasher.update(data: Data([0]))
@@ -806,8 +877,7 @@ final class WasmRustCompiler: @unchecked Sendable {
     }
 
     private var programCacheURL: URL? {
-        FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
-            .appending(path: "CrabrixCompiler", directoryHint: .isDirectory)
+        CrateStorageLayout.projectArtifactDirectory?
             .appending(path: Self.toolchainVersion, directoryHint: .isDirectory)
             .appending(path: Self.cacheSchemaVersion, directoryHint: .isDirectory)
     }

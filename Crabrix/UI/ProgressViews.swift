@@ -220,6 +220,7 @@ struct AchievementRow: View {
 /// Every family, the ones with progress first.
 struct AchievementsSection: View {
     @ObservedObject var store: CrabrixProgressStore
+    @State private var showsAlgorithmAchievements = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 11) {
@@ -233,9 +234,34 @@ struct AchievementsSection: View {
                     .foregroundStyle(CrabrixTheme.muted)
             }
             VStack(spacing: 14) {
-                ForEach(sortedFamilies) { family in
+                ForEach(sortedGeneralFamilies) { family in
                     AchievementFamilyRow(family: family, state: store.state)
                 }
+
+                Divider().overlay(CrabrixTheme.border)
+
+                DisclosureGroup(isExpanded: $showsAlgorithmAchievements) {
+                    VStack(spacing: 14) {
+                        ForEach(sortedAlgorithmFamilies) { family in
+                            AchievementFamilyRow(family: family, state: store.state)
+                        }
+                    }
+                    .padding(.top, 12)
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "point.3.connected.trianglepath.dotted")
+                            .foregroundStyle(CrabrixTheme.indigo)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("ALGORITHM ACHIEVEMENTS")
+                                .font(.caption.monospaced().bold())
+                                .foregroundStyle(CrabrixTheme.primary)
+                            Text("\(store.state.solvedAlgorithmPatternIDs.count)/200 patterns · 20 method ladders")
+                                .font(.caption2)
+                                .foregroundStyle(CrabrixTheme.muted)
+                        }
+                    }
+                }
+                .tint(CrabrixTheme.indigo)
             }
             .padding(15)
             .crabrixPanel(cornerRadius: 16)
@@ -244,8 +270,16 @@ struct AchievementsSection: View {
 
     /// Families with something earned come first, deepest first, so the ladder
     /// you are actually climbing is at the top.
-    private var sortedFamilies: [CrabrixAchievementFamily] {
-        CrabrixAchievementCatalog.families.sorted { lhs, rhs in
+    private var sortedGeneralFamilies: [CrabrixAchievementFamily] {
+        sorted(CrabrixAchievementCatalog.families.filter { $0.group == .general })
+    }
+
+    private var sortedAlgorithmFamilies: [CrabrixAchievementFamily] {
+        sorted(CrabrixAchievementCatalog.families.filter { $0.group == .algorithms })
+    }
+
+    private func sorted(_ families: [CrabrixAchievementFamily]) -> [CrabrixAchievementFamily] {
+        families.sorted { lhs, rhs in
             let left = lhs.earnedTier(in: store.state)?.rawValue ?? -1
             let right = rhs.earnedTier(in: store.state)?.rawValue ?? -1
             return left == right ? lhs.title < rhs.title : left > right

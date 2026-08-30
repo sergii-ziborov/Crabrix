@@ -1,0 +1,140 @@
+#!/usr/bin/env python3
+#
+# This script checks out dependency repositories from dependencies.json
+#
+# Usage:
+#   checkout-dependency <dependency-name>
+
+import os
+import sys
+import json
+import subprocess
+import hashlib
+import tarfile
+
+class CheckoutDependency:
+
+    def __init__(self, dependencies_file):
+        self.dependencies_file = dependencies_file
+        self.dependencies = json.load(open(dependencies_file))
+
+    def verify_sha256(self, file_path, expected_sha256):
+        """Verify SHA256 checksum of a file"""
+
+        sha256_hash = hashlib.sha256()
+        with open(file_path, "rb") as f:
+            for byte_block in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(byte_block)
+
+        actual_sha256 = sha256_hash.hexdigest()
+        if actual_sha256 != expected_sha256:
+            raise ValueError(f"SHA256 mismatch: expected {expected_sha256}, got {actual_sha256}")
+
+        print(f"SHA256 verification passed: {actual_sha256}")
+
+    def checkout_tarball(self, dependency_name, dependency):
+        """Download and extract a tarball dependency"""
+        url = dependency["url"]
+        expected_sha256 = dependency.get("sha256")
+
+        vendor_dir = os.path.dirname(__file__)
+        dependency_path = os.path.join(vendor_dir, dependency_name)
+
+        os.makedirs(dependency_path, exist_ok=True)
+
+        tarball_name = os.path.basename(url)
+        tarball_path = os.path.join(vendor_dir, tarball_name)
+
+        if not os.path.exists(tarball_path):
+            print(f"Downloading '{dependency_name}' from {url}")
+            result = subprocess.run(
+                ["curl", "-L", "--progress-bar", "-o", tarball_path, url],
+                capture_output=False
+            )
+            if result.returncode != 0:
+                raise RuntimeError(f"Failed to download {url}")
+        else:
+            print(f"Tarball already downloaded: {tarball_path}")
+
+        if expected_sha256:
+            print(f"Verifying SHA256 checksum for '{dependency_name}'")
+            self.verify_sha256(tarball_path, expected_sha256)
+
+        print(f"Extracting '{dependency_name}' to {dependency_path}")
+        with tarfile.open(tarball_path, "r:gz") as tar:
+            tar.extractall(path=dependency_path)
+
+        print(f"Successfully extracted '{dependency_name}'")
+
+    def checkout_git(self, dependency_name, dependency):
+        """Clone and checkout a git repository dependency"""
+        dependency_path = os.path.join(os.path.dirname(__file__), dependency_name)
+
+        if os.path.exists(dependency_path):
+            print(f"Dependency '{dependency_name}' already exists at {dependency_path}")
+        else:
+            print(f"Cloning '{dependency_name}' to {dependency_path}")
+            sparse_checkout = ("sparse-checkout" in dependency and dependency["sparse-checkout"]) or ""
+            if len(sparse_checkout) > 0:
+                subprocess.run(["git", "clone", "--no-checkout", "--depth=1", "--filter=tree:0", dependency["repository"], dependency_path], check=True)
+                subprocess.run(["git", "-C", dependency_path, "sparse-checkout", "set", "--no-cone", sparse_checkout], check=True)
+                subprocess.run(["git", "-C", dependency_path, "checkout"], check=True)
+            else:
+                subprocess.run(["git", "clone", dependency["repository"], dependency_path], check=True)
+
+        print(f"Checking out '{dependency_name}' to {dependency['revision']}")
+        subprocess.run(["git", "-C", dependency_path, "checkout", dependency["revision"]], check=True)
+
+    def checkout(self, dependency_name):
+        dependency = self.dependencies.get(dependency_name)
+
+        if dependency is None:
+            print(f"Dependency '{dependency_name}' not found in {self.dependencies_file}")
+            print(f"Available dependencies: {', '.join(self.dependencies.keys())}")
+            sys.exit(1)
+
+        if "url" in dependency:
+            self.checkout_tarball(dependency_name, dependency)
+        elif "repository" in dependency:
+            self.checkout_git(dependency_name, dependency)
+        else:
+            print(f"Unknown dependency type for '{dependency_name}'")
+            sys.exit(1)
+
+    def checkout_category(self, category):
+        for dependency_name, dependency in self.dependencies.items():
+            if category in dependency.get("categories", []):
+                self.checkout(dependency_name)
+
+    def checkout_all(self):
+        for dependency_name in self.dependencies.keys():
+            self.checkout(dependency_name)
+
+
+def main():
+    import argparse
+    dependencies_file = os.path.join(os.path.dirname(__file__), "dependencies.json")
+    checkout_dependency = CheckoutDependency(dependencies_file)
+
+    parser = argparse.ArgumentParser(description="Checkout dependency repositories")
+    available_dependencies = ", ".join(checkout_dependency.dependencies.keys())
+    parser.add_argument("names", nargs="*", help=f"Available dependencies: {available_dependencies}")
+    parser.add_argument("--all", action="store_true", help="Checkout all dependencies")
+    parser.add_argument("--category", action="append", dest="categories",
+                        default=["default"],
+                        help="Checkout dependencies by category")
+
+    args = parser.parse_args()
+
+    if args.names:
+        for dependency_name in args.names:
+            checkout_dependency.checkout(dependency_name)
+    elif args.all:
+        checkout_dependency.checkout_all()
+    elif args.categories:
+        for category in args.categories:
+            checkout_dependency.checkout_category(category)
+
+
+if __name__ == "__main__":
+    main()

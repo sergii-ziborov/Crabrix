@@ -1,0 +1,294 @@
+name: Build and test
+
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # Shared dev snapshot; bump these two to refresh every dev-snapshot download below.
+  DEV_SNAPSHOT: swift-DEVELOPMENT-SNAPSHOT-2026-06-12-a
+  WASI_SDK_CHECKSUM: "72eeab944b2ac44536aaaea2c5dc75fb30a0aa469f9ce59f831e08d2a8e60c48"
+
+jobs:
+  check-autogen-diff:
+    runs-on: ubuntu-latest
+    container:
+      image: swift:6.3-noble
+    steps:
+      - uses: actions/checkout@v6
+      - name: Re-generate auto-generated code checks
+        run: |
+          swift run -q --package-path Utilities WasmKitDevUtils
+      - name: Check for changes
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git diff --exit-code || {
+            echo "::error::The auto-generated code utilities changed some files. Please see \`Utilities/README.md\`, re-run the tools, and commit the changes."
+            exit 1
+          }
+
+  build-macos-snapshots:
+    runs-on: macos-26
+    strategy:
+      matrix:
+        include:
+          - toolchain: 6.4.x-snapshot
+            test-args: ""
+          - toolchain: main-snapshot
+            test-args: ""
+    steps:
+      - uses: actions/checkout@v6
+      - id: setup-development
+        run: |
+          brew install wabt jemalloc
+          curl -O https://download.swift.org/swiftly/darwin/swiftly.pkg && \
+            installer -pkg swiftly.pkg -target CurrentUserHomeDirectory
+
+      - name: Build with selected toolchain
+        run: |
+          ~/.swiftly/bin/swiftly init --quiet-shell-followup --skip-install && \
+            . "${SWIFTLY_HOME_DIR:-$HOME/.swiftly}/env.sh" && \
+            hash -r
+          swiftly install ${{ matrix.toolchain }}
+          swiftly use ${{ matrix.toolchain }}
+
+          ./Vendor/checkout-dependency --category benchmark --category component-model
+
+          swift --version
+          swift test --sanitize address --traits ComponentModel,WasmDebuggingSupport ${{ matrix.test-args }}
+          cd Benchmarks && swift package benchmark
+
+  build-macos:
+    strategy:
+      matrix:
+        include:
+          # Swift 6.3.2
+          - os: macos-26
+            xcode: Xcode_26.5
+            test-args: "--sanitize address --traits ComponentModel,WasmDebuggingSupport"
+
+    runs-on: ${{ matrix.os }}
+    name: "build-macos (${{ matrix.xcode }})"
+    steps:
+      - uses: actions/checkout@v6
+      - id: setup-development
+        run: |
+          toolchain_path="/Library/Developer/Toolchains/$DEV_SNAPSHOT.xctoolchain"
+          pkg="$(mktemp -d)/InstallMe.pkg"
+          development_toolchain_download="https://download.swift.org/development/xcode/$DEV_SNAPSHOT/$DEV_SNAPSHOT-osx.pkg"
+          curl -L "$development_toolchain_download" -o $pkg
+          sudo installer -pkg $pkg -target /
+          echo "toolchain-path=$toolchain_path" >> $GITHUB_OUTPUT
+          "$toolchain_path/usr/bin/swift" sdk install "https://download.swift.org/development/wasm-sdk/$DEV_SNAPSHOT/${DEV_SNAPSHOT}_wasm.artifactbundle.tar.gz" --checksum "$WASI_SDK_CHECKSUM"
+          wasi_sdk_path=$("$toolchain_path/usr/bin/swift" sdk configure --show-configuration "${DEV_SNAPSHOT}_wasm" wasm32-unknown-wasip1 | grep sdkRootPath: | cut -d: -f2)
+          echo "wasi-swift-sdk-path=$(dirname $wasi_sdk_path)" >> $GITHUB_OUTPUT
+
+      - name: Select Xcode version
+        run: sudo xcode-select -switch /Applications/${{ matrix.xcode }}.app
+      - name: Configure Tests/default.json
+        run: |
+          cat <<EOS > Tests/default.json
+          {
+            "swiftExecutablePath": "${{ steps.setup-development.outputs.toolchain-path }}/usr/bin/swift",
+            "wasiSwiftSDKPath": "${{ steps.setup-development.outputs.wasi-swift-sdk-path }}",
+            "hostSwiftExecutablePath": "$(xcrun --find swift)",
+            "hostSdkRootPath": "$(xcrun --show-sdk-path --sdk macosx)"
+          }
+          EOS
+      - run: ./Vendor/checkout-dependency --category default --category component-model
+      - run: swift test ${{ matrix.test-args }}
+
+  build-xcode:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v6
+      - name: Prepare Xcode platforms
+        run: |
+          set -euxo pipefail
+          sudo xcode-select -s /Applications/Xcode_26.5.app
+          sudo xcodebuild -runFirstLaunch || true
+          for PLAT in iOS tvOS watchOS visionOS; do
+            if ! xcodebuild -showsdks | grep -q "$PLAT"; then
+              echo "Downloading $PLAT platform..."
+              sudo xcodebuild -downloadPlatform "$PLAT"
+            fi
+          done
+          xcodebuild -showsdks
+          xcodebuild -scheme WasmKit-Package -showdestinations || true
+      - run: xcrun xcodebuild -skipMacroValidation -skipPackagePluginValidation build -scheme WasmKit-Package -destination generic/platform=macOS
+      - run: xcrun xcodebuild -skipMacroValidation -skipPackagePluginValidation build -scheme WasmKit-Package -destination generic/platform=iOS
+      - run: xcrun xcodebuild -skipMacroValidation -skipPackagePluginValidation build -scheme WasmKit-Package -destination generic/platform=watchOS
+      - run: xcrun xcodebuild -skipMacroValidation -skipPackagePluginValidation build -scheme WasmKit-Package -destination generic/platform=tvOS
+      - run: xcrun xcodebuild -skipMacroValidation -skipPackagePluginValidation build -scheme WasmKit-Package -destination generic/platform=visionOS
+
+  build-linux:
+    strategy:
+      matrix:
+        include:
+          - swift: "swift:6.3-noble"
+            test-args: "--traits ComponentModel,WasmDebuggingSupport --enable-code-coverage"
+            build-benchmarks: true
+            build-dev-dashboard: true
+          - swift: "swiftlang/swift:nightly-6.4.x-noble"
+            test-args: "--traits ComponentModel,WasmDebuggingSupport"
+            build-benchmarks: true
+          - swift: "swiftlang/swift:nightly-main-noble"
+            test-args: "--traits ComponentModel,WasmDebuggingSupport"
+            build-benchmarks: true
+
+    runs-on: ubuntu-24.04
+    name: "build-linux (${{ matrix.swift }}${{ matrix.label }})"
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Configure container
+        run: |
+          docker run -dit --name build-container -v $PWD:/workspace -w /workspace ${{ matrix.swift }}
+          echo 'docker exec -i build-container "$@"' > ./build-exec
+          chmod +x ./build-exec
+
+      - name: Install Development toolchain
+        id: setup-development
+        run: |
+          toolchain_path="/opt/swiftwasm"
+          ./build-exec mkdir -p "$toolchain_path"
+          curl -L "https://download.swift.org/development/ubuntu2404/$DEV_SNAPSHOT/$DEV_SNAPSHOT-ubuntu24.04.tar.gz" | ./build-exec tar xz --strip-component 1 -C "$toolchain_path"
+          echo "toolchain-path=$toolchain_path" >> $GITHUB_OUTPUT
+          ./build-exec "$toolchain_path/usr/bin/swift" sdk install "https://download.swift.org/development/wasm-sdk/$DEV_SNAPSHOT/${DEV_SNAPSHOT}_wasm.artifactbundle.tar.gz" --checksum "$WASI_SDK_CHECKSUM"
+          wasi_sdk_path=$(./build-exec "$toolchain_path/usr/bin/swift" sdk configure --show-configuration "${DEV_SNAPSHOT}_wasm" wasm32-unknown-wasip1 | grep sdkRootPath: | cut -d: -f2)
+          echo "wasi-swift-sdk-path=$(dirname $wasi_sdk_path)" >> $GITHUB_OUTPUT
+
+      - name: Configure Tests/default.json
+        run: |
+          cat <<EOS > Tests/default.json
+          {
+            "swiftExecutablePath": "${{ steps.setup-development.outputs.toolchain-path }}/usr/bin/swift",
+            "wasiSwiftSDKPath": "${{ steps.setup-development.outputs.wasi-swift-sdk-path }}",
+            "hostSwiftExecutablePath": "/usr/bin/swift"
+          }
+          EOS
+      - run: ./build-exec ./CI/install-wabt.sh
+      - run: ./Vendor/checkout-dependency --category benchmark --category component-model
+      - run: ./build-exec swift test ${{ matrix.test-args }}
+
+      - if: matrix.build-benchmarks
+        run: |
+          ./build-exec apt-get update
+          ./build-exec apt-get install -y libjemalloc-dev
+          ./build-exec swift package --build-system native --package-path Benchmarks benchmark
+
+      - if: matrix.build-dev-dashboard
+        run: ./build-exec ./CI/build-dev-dashboard.sh
+      - if: matrix.build-dev-dashboard
+        name: Relax artifact permissions
+        run: sudo chown -R $USER .build/html
+      - if: matrix.build-dev-dashboard
+        id: deployment
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: .build/html
+
+  deploy-dev-dashboard:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    needs: build-linux
+    permissions:
+      id-token: write
+      pages: write
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
+
+  build-musl:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        include:
+          - swift: 6.3-noble
+            musl-swift-sdk-download: "https://download.swift.org/swift-6.3.2-release/static-sdk/swift-6.3.2-RELEASE/swift-6.3.2-RELEASE_static-linux-0.1.0.artifactbundle.tar.gz"
+            musl-swift-sdk-checksum: "3fd798bef6f4408f1ea5a6f94ce4d4052830c4326ab85ebc04f983f01b3da407"
+    steps:
+      - uses: actions/checkout@v6
+      - name: Configure container
+        run: |
+          docker run -dit --name build-container -v $PWD:/workspace -w /workspace swift:${{ matrix.swift }}
+          echo 'docker exec -i build-container "$@"' > ./build-exec
+          chmod +x ./build-exec
+
+      - name: Install Static Linux SDK
+        run: ./build-exec swift sdk install "${{ matrix.musl-swift-sdk-download }}" --checksum "${{ matrix.musl-swift-sdk-checksum }}"
+
+      - name: Build (x86_64-swift-linux-musl)
+        run: ./build-exec swift build --swift-sdk x86_64-swift-linux-musl --traits ComponentModel,WasmDebuggingSupport --explicit-target-dependency-import-check error
+      - name: Build (aarch64-swift-linux-musl)
+        run: ./build-exec swift build --swift-sdk aarch64-swift-linux-musl --traits ComponentModel,WasmDebuggingSupport --explicit-target-dependency-import-check error
+
+  build-android:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        include:
+          - swift-version: "6.3"
+          - swift-version: "nightly-main"
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Free up disk space
+        run: ./CI/gha-free-disk-space.sh
+      - name: Run Tests on Android emulator
+        uses: skiptools/swift-android-action@v2
+        with:
+          android-api-level: 30
+          swift-version: "${{ matrix.swift-version }}"
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: compnerd/gha-setup-swift@main
+        with:
+          swift-version: swift-6.3.2-release
+          swift-build: 6.3.2-RELEASE
+      - uses: actions/checkout@v6
+      - run: python3 ./Vendor/checkout-dependency --category default
+      # Run tests with SwiftPM
+      - name: Run tests with SwiftPM
+        run: swift test
+
+  build-cmake:
+    runs-on: ubuntu-24.04
+    container:
+      image: swift:6.3-noble
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Ninja
+        run: apt-get update && apt-get install -y ninja-build
+      - name: Install CMake
+        run: |
+          apt-get install -y curl
+          curl -L https://github.com/Kitware/CMake/releases/download/v3.29.2/cmake-3.29.2-linux-x86_64.tar.gz | tar xz --strip-component 1 -C /usr/local/
+      - run: cmake -G Ninja -B ./build
+      - run: cmake --build ./build
+      - run: ./build/bin/wasmkit --version
+
+  build-wasi:
+    runs-on: ubuntu-24.04
+    container:
+      image: swift:6.3-noble
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install jq
+        run: apt-get update && apt-get install -y jq
+      - name: Install Swift SDK
+        run: swift sdk install https://download.swift.org/swift-6.3.2-release/wasm-sdk/swift-6.3.2-RELEASE/swift-6.3.2-RELEASE_wasm.artifactbundle.tar.gz --checksum a61f0584c93283589f8b2f42db05c1f9a182b506c2957271402992655591dd7c
+      - name: Build with the Swift SDK
+        run: swift build --swift-sdk "$(swiftc -print-target-info | jq -r '.swiftCompilerTag')_wasm" --traits ComponentModel --explicit-target-dependency-import-check error --product wasmkit-cli

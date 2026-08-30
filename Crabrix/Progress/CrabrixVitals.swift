@@ -50,6 +50,8 @@ enum VitalsOutcome: Equatable, Sendable {
     case shielded
     /// A run of correct answers handed some energy back.
     case refunded(energy: Int)
+    /// A longer correct streak repairs both pools through demonstrated skill.
+    case recovered(health: Int, energy: Int)
     /// Not enough of the resource to proceed.
     case blocked
 }
@@ -76,6 +78,8 @@ struct CrabrixVitalsState: Codable, Equatable, Sendable {
     static let energyPerBuild = 1
     /// Correct answers needed in a row before energy is handed back.
     static let flowStreakForRefund = 3
+    /// A longer streak restores health as well, including from free training.
+    static let flowStreakForHealth = 6
 
     /// Applies elapsed-time regeneration up to `now`.
     ///
@@ -132,10 +136,23 @@ struct CrabrixVitalsState: Codable, Equatable, Sendable {
     /// who actually knows the material is never gated by the meter.
     mutating func recordCorrect(capacity: VitalsCapacity) -> VitalsOutcome {
         flowStreak += 1
-        guard flowStreak % Self.flowStreakForRefund == 0 else { return .free }
-        guard energy < Double(capacity.maxEnergy) else { return .free }
-        energy = min(Double(capacity.maxEnergy), energy + 1)
-        return .refunded(energy: 1)
+        let shouldRefundEnergy = flowStreak % Self.flowStreakForRefund == 0
+        let shouldRestoreHealth = flowStreak % Self.flowStreakForHealth == 0
+        let energyBefore = energy
+        let healthBefore = health
+        if shouldRefundEnergy {
+            energy = min(Double(capacity.maxEnergy), energy + 1)
+        }
+        if shouldRestoreHealth {
+            health = min(Double(capacity.maxHealth), health + 1)
+        }
+        let energyGained = Int((energy - energyBefore).rounded(.down))
+        let healthGained = Int((health - healthBefore).rounded(.down))
+        if healthGained > 0 {
+            return .recovered(health: healthGained, energy: energyGained)
+        }
+        if energyGained > 0 { return .refunded(energy: energyGained) }
+        return .free
     }
 
     private mutating func resetShieldsIfNewDay(now: Date) {

@@ -65,6 +65,7 @@ struct ContentView: View {
     @State private var archiveShareItem: ArchiveShareItem?
     @State private var isGitHubImporterPresented = false
     @State private var isNewProjectPresented = false
+    @State private var isProjectActionsPresented = false
     @State private var isCargoCatalogPresented = false
     @State private var projectsPath: [ProjectsRoute] =
         ProcessInfo.processInfo.arguments.contains("-CrabrixLibrary") ? [.library] : []
@@ -103,18 +104,18 @@ struct ContentView: View {
         TabView(selection: $selectedDestination) {
             NavigationStack(path: $projectsPath) {
                 ProjectsHomeView(
+                projectID: model.projectID,
                 projectName: model.projectName,
                 fileCount: model.fileNames.count,
                 lastBuild: model.lastBuild,
                 activity: model.activity,
                 isCompilerDraining: model.isCompilerDraining,
                 recentProjects: model.recentProjects,
+                allProjects: model.allProjects,
                 onOpenCurrentProject: { selectedDestination = .build },
                 onNewProject: { isNewProjectPresented = true },
                 onOpenGitHub: { isGitHubImporterPresented = true },
                 onOpenFiles: { isFileImporterPresented = true },
-                onSaveProject: prepareExport,
-                onArchiveProject: prepareArchiveShare,
                 onOpenRecent: { id in
                     Task {
                         if await model.openRecentProject(id: id) {
@@ -127,10 +128,40 @@ struct ContentView: View {
                     selectedDestination = .build
                 },
                 onOpenLibrary: { projectsPath = [.library] },
+                onOpenMyProjects: { projectsPath = [.myProjects] },
                 onOpenProgress: { selectedDestination = .learn }
                 )
                 .navigationDestination(for: ProjectsRoute.self) { route in
                     switch route {
+                    case .myProjects:
+                        MyProjectsView(
+                            items: model.allProjects,
+                            onOpen: { id in
+                                Task {
+                                    if await model.openRecentProject(id: id) {
+                                        projectsPath = []
+                                        selectedDestination = .build
+                                    }
+                                }
+                            },
+                            onToggleFavorite: { id in
+                                Task { await model.toggleFavorite(projectID: id) }
+                            },
+                            onDelete: { id in
+                                Task { _ = await model.deleteProject(projectID: id) }
+                            },
+                            onUpdate: { id, draft in
+                                await model.updateProjectDetails(
+                                    projectID: id,
+                                    name: draft.name,
+                                    description: draft.projectDescription,
+                                    tags: draft.tags,
+                                    folder: draft.optionalFolder,
+                                    kind: draft.kind,
+                                    isFavorite: draft.isFavorite
+                                )
+                            }
+                        )
                     case .library:
                         ProjectLibraryView { id in
                             model.loadShowcaseProject(id: id)
@@ -158,8 +189,10 @@ struct ContentView: View {
                         onCloseWorkspace: closeBuildWorkspace,
                         onNewProject: { isNewProjectPresented = true },
                         onOpenFiles: { isFileImporterPresented = true },
-                        onSaveFiles: prepareExport,
-                        onOpenGitHub: { isGitHubImporterPresented = true }
+                        onOpenGitHub: { isGitHubImporterPresented = true },
+                        onProjectActions: {
+                            isProjectActionsPresented = true
+                        }
                     )
                     if model.projectTransfer.isWorking || model.projectTransfer.isFailure {
                         ProjectTransferStrip(transfer: model.projectTransfer)
@@ -179,6 +212,9 @@ struct ContentView: View {
                                     cargoStage: model.cargoStage,
                                     cargoWorkspace: model.cargoWorkspace,
                                     isBusy: model.isBusy,
+                                    onProjectActions: {
+                                        isProjectActionsPresented = true
+                                    },
                                     onSelect: selectEditorFile,
                                     onNewFile: { projectItemCreation = .rustFile },
                                     onNewFolder: { projectItemCreation = .moduleFolder },
@@ -228,8 +264,8 @@ struct ContentView: View {
                 lessonAnswerIndices: model.lessonAnswerIndices,
                 onStartLesson: startLesson,
                 onCompleteLesson: { lesson in model.completeLesson(lesson.id) },
-                onAnswerLesson: { lesson, answer in
-                    model.recordLessonAnswer(answer, for: lesson.id)
+                onAnswerLesson: { lesson, answer, correct in
+                    if correct { model.recordLessonAnswer(answer, for: lesson.id) }
                 }
             )
             .tabItem { Label("Learn", systemImage: "graduationcap.fill") }
@@ -259,8 +295,8 @@ struct ContentView: View {
             CargoDependencyCatalogSheet(onAdd: model.addCargoDependency)
         }
         .sheet(isPresented: $isNewProjectPresented) {
-            NewProjectSheet { name, template in
-                model.createProject(name: name, template: template)
+            NewProjectSheet { request in
+                model.createProject(request)
                 selectedDestination = .build
             }
             .presentationDetents([.medium, .large])
@@ -274,6 +310,25 @@ struct ContentView: View {
                 }
             }
             .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $isProjectActionsPresented) {
+            ProjectActionsSheet(
+                project: model.exportProject(),
+                onUpdate: { draft in
+                    model.updateCurrentProjectDetails(
+                        name: draft.name,
+                        description: draft.projectDescription,
+                        tags: draft.tags,
+                        folder: draft.optionalFolder,
+                        kind: draft.kind,
+                        isFavorite: draft.isFavorite
+                    )
+                },
+                onSaveToFiles: prepareExport,
+                onShareArchive: prepareArchiveShare
+            )
+            .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $model.isPracticePresented) {
@@ -397,7 +452,7 @@ struct ContentView: View {
         .onChange(of: model.isBusy) { _, isBusy in
             UIApplication.shared.isIdleTimerDisabled = isBusy && keepAwakeDuringBuild
         }
-        .onChange(of: model.projectName) { _, _ in
+        .onChange(of: model.projectID) { _, _ in
             terminal.attach(to: model.exportProject())
         }
         .onChange(of: model.activity) { oldValue, newValue in
@@ -424,12 +479,25 @@ struct ContentView: View {
         .onReceive(model.$completedLessonIDs) { ids in
             guard let scored = scoredLessonIDs else {
                 scoredLessonIDs = ids
+                for lessonID in ids {
+                    if let pattern = AlgorithmCourseCatalog.pattern(forChallengeLessonID: lessonID) {
+                        progress.recordAlgorithmSolved(patternID: pattern.id)
+                    }
+                }
                 return
             }
             let fresh = ids.subtracting(scored)
             guard !fresh.isEmpty else { return }
             scoredLessonIDs = ids
-            for _ in fresh { progress.record(.lessonCompleted) }
+            for lessonID in fresh {
+                progress.record(
+                    .lessonCompleted,
+                    eventKey: "lesson:\(lessonID):first-completion"
+                )
+                if let pattern = AlgorithmCourseCatalog.pattern(forChallengeLessonID: lessonID) {
+                    progress.recordAlgorithmSolved(patternID: pattern.id)
+                }
+            }
         }
         .onReceive(model.$practiceCompleted) { passed in
             guard passed, !scoredPractice else { return }
@@ -481,7 +549,7 @@ struct ContentView: View {
         let reviewProjectName = "review-\(lesson.id)"
         switch lesson.exercise {
         case .runnable:
-            model.loadRunnableSample(
+            model.loadHelloLessonSample(
                 projectName: isReview ? reviewProjectName : "hello-crabrix"
             )
         case .borrowDiagnostic:
@@ -491,6 +559,14 @@ struct ContentView: View {
         case .multiFile:
             model.loadMultiFileSample(
                 projectName: isReview ? reviewProjectName : "modules-lab"
+            )
+        case .algorithmChallenge:
+            guard let challenge = AlgorithmCourseCatalog.challenge(for: lesson.id) else {
+                return
+            }
+            model.loadAlgorithmLessonSample(
+                projectName: isReview ? reviewProjectName : challenge.projectName,
+                source: challenge.source
             )
         case .planned:
             return
@@ -560,7 +636,8 @@ struct ContentView: View {
                 workspace: model.cargoWorkspace,
                 onFetch: model.downloadDependenciesForOffline,
                 onCancel: model.cancelBuild,
-                canContinueLearning: model.isLessonContext,
+                canContinueLearning: model.canContinueFromLessonResult,
+                lessonEvidenceMessage: model.lessonEvidenceMessage,
                 contribution: lastContribution,
                 onOpenDiagnostic: openDiagnostic,
                 diagnosticAdviceState: model.diagnosticAdviceState,
@@ -578,6 +655,7 @@ struct ContentView: View {
             SyntaxCodeEditor(
                 text: $model.source,
                 cursorOffset: $editorCursorOffset,
+                projectID: model.projectID,
                 filePath: model.selectedFile,
                 isEditable: !model.isProjectOperationInProgress,
                 tracksTyping: !model.activeLessonIsReview,
@@ -725,6 +803,9 @@ struct ContentView: View {
                             cargoStage: model.cargoStage,
                             cargoWorkspace: model.cargoWorkspace,
                             isBusy: model.isBusy,
+                            onProjectActions: {
+                                isProjectActionsPresented = true
+                            },
                             onSelect: selectEditorFile,
                             onNewFile: { projectItemCreation = .rustFile },
                             onNewFolder: { projectItemCreation = .moduleFolder },
@@ -900,7 +981,8 @@ struct ContentView: View {
                     SuccessInspector(
                         result: result,
                         practiceCompleted: model.practiceCompleted,
-                        canContinueLearning: model.isLessonContext,
+                        canContinueLearning: model.canContinueFromLessonResult,
+                        lessonEvidenceMessage: model.lessonEvidenceMessage,
                         contribution: lastContribution,
                         onRunNext: model.run,
                         onContinueLearning: continueLearning
@@ -948,13 +1030,16 @@ struct ContentView: View {
         // Rating follows the diff, so re-running an untouched sample earns a
         // token amount and real editing earns real points.
         var contribution = CodeContributionLedger.shared.record(
-            project: model.projectName,
+            projectID: model.projectID,
             files: model.exportProject().files
         )
-        contribution.typedShare = TypingLedger.shared.typedShare(project: model.projectName)
+        contribution.typedShare = TypingLedger.shared.typedShare(projectID: model.projectID)
         contribution.isFirstRunToday = progress.isFirstRunToday()
-        progress.record(.buildSucceeded(contribution))
-        lastContribution = contribution
+        let buildRecorded = progress.record(
+            .buildSucceeded(contribution),
+            eventKey: "build:\(model.projectID.uuidString):\(model.workspaceRevision.sourceTreeHash)"
+        )
+        lastContribution = buildRecorded ? contribution : nil
 
         // A run costs a little energy, so a loop of builds is not free.
         // It never blocks the build itself: this is a developer tool, and
@@ -962,14 +1047,21 @@ struct ContentView: View {
         vitals.spendOnBuild()
 
         // Typing is where most of the rating comes from now.
-        let typed = TypingLedger.shared.drainPendingTyped()
+        let typed = TypingLedger.shared.drainPendingTyped(projectID: model.projectID)
         if typed > 0 { progress.record(.codeTyped(characters: typed)) }
-        if model.completedStages.contains(.repair) {
-            progress.record(.diagnosticRepaired)
+        if let repairEventKey = model.repairRewardEventKey {
+            progress.record(.diagnosticRepaired, eventKey: repairEventKey)
         }
-        let verified = model.cargoWorkspace.verifiedCount
-        if verified > 0 {
-            progress.record(.packagesCompiled(verified))
+        let verifiedPackages = Set(
+            model.cargoWorkspace.packages.compactMap { status in
+                status.compatibility == .verified ? status.package : nil
+            }
+        )
+        for unit in model.cargoWorkspace.plan.units where verifiedPackages.contains(unit.package) {
+            progress.record(
+                .packagesCompiled(1),
+                eventKey: "crate:\(CargoToolchain.bundledVersion):\(unit.fingerprint):first-build"
+            )
         }
     }
 
@@ -1028,8 +1120,8 @@ private struct AppHeader: View {
     let onCloseWorkspace: () -> Void
     let onNewProject: () -> Void
     let onOpenFiles: () -> Void
-    let onSaveFiles: () -> Void
     let onOpenGitHub: () -> Void
+    let onProjectActions: () -> Void
 
     private var isPhone: Bool {
         UIDevice.current.userInterfaceIdiom == .phone
@@ -1045,15 +1137,6 @@ private struct AppHeader: View {
                 .accessibilityLabel("Crabrix crab")
             Text("crabrix")
                 .font(.system(size: 21, weight: .bold, design: .rounded))
-            if horizontalSizeClass == .regular, !isPhone {
-                Text("NATIVE PHASE 0")
-                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(CrabrixTheme.muted)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 5)
-                    .overlay(Capsule().stroke(CrabrixTheme.border))
-            }
-
             Spacer()
 
             if horizontalSizeClass == .regular, !isPhone {
@@ -1076,8 +1159,8 @@ private struct AppHeader: View {
                     Button(action: onOpenFiles) {
                         Label("Open from Files", systemImage: "folder")
                     }
-                    Button(action: onSaveFiles) {
-                        Label("Save Project to Files", systemImage: "square.and.arrow.down")
+                    Button(action: onProjectActions) {
+                        Label("Project Details & Share", systemImage: "ellipsis.circle")
                     }
                 } label: {
                     if transfer.isWorking {
@@ -1100,6 +1183,19 @@ private struct AppHeader: View {
                     .accessibilityLabel(toolchain.isReady ? "Offline compiler ready" : "Compiler missing")
             } else {
                 if isPhone {
+                    Button(action: onProjectActions) {
+                        Image(systemName: "ellipsis.circle")
+                            .font(.system(size: 18, weight: .semibold))
+                            .frame(width: 34, height: 38)
+                            .background(
+                                CrabrixTheme.raised,
+                                in: Circle()
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(transfer.isWorking)
+                    .accessibilityLabel("Project details, save, and share")
+
                     Button(action: activity == .idle ? onRun : onCancelBuild) {
                         HStack(spacing: 6) {
                             if activity == .idle {
@@ -1259,6 +1355,7 @@ private struct ProjectSidebar: View {
     let cargoStage: CargoPreparationStage
     let cargoWorkspace: CargoWorkspaceSnapshot
     let isBusy: Bool
+    let onProjectActions: () -> Void
     let onSelect: (String) -> Void
     let onNewFile: () -> Void
     let onNewFolder: () -> Void
@@ -1280,6 +1377,14 @@ private struct ProjectSidebar: View {
                             .font(.subheadline.weight(.semibold))
                             .lineLimit(1)
                         Spacer(minLength: 0)
+                        Button(action: onProjectActions) {
+                            Image(systemName: "ellipsis.circle")
+                                .foregroundStyle(CrabrixTheme.blue)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(
+                            "Project details, save, and share"
+                        )
                         Menu {
                             Button(action: onNewFile) {
                                 Label("New Rust File", systemImage: "doc.badge.plus")

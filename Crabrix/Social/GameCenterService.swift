@@ -44,6 +44,7 @@ final class GameCenterService: ObservableObject {
 
     /// Starts authentication. Safe to call more than once.
     func authenticate() {
+        guard CrabrixReleaseFeatures.gameCenterEnabled else { return }
         guard case .idle = status else { return }
         status = .authenticating
 
@@ -91,6 +92,7 @@ final class GameCenterService: ObservableObject {
     /// Nothing here is required for the app to work, so a failure is recorded
     /// and forgotten rather than surfaced as an error the reader must act on.
     func submit(state: CrabrixProgressState) async {
+        guard CrabrixReleaseFeatures.gameCenterEnabled else { return }
         guard isSignedIn else { return }
 
         if lastSubmittedPoints != state.totalPoints {

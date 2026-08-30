@@ -1,14 +1,72 @@
 import Foundation
 
+enum CargoResolutionMode: Sendable, Equatable {
+    /// Preserve compatible pins and update only what the manifest requires.
+    case normal
+    /// Require Cargo.lock and reject any graph change.
+    case locked
+    /// Prohibit network access and use cached index/source data only.
+    case offline
+    /// Locked plus offline.
+    case frozen
+    /// Explicitly ignore old pins and calculate package updates.
+    case update
+
+    var requiresLockfile: Bool { self == .locked || self == .frozen }
+    var prohibitsNetwork: Bool { self == .offline || self == .frozen }
+    var preservesPins: Bool { self == .normal || self == .locked || self == .offline || self == .frozen }
+    var requiresExactPins: Bool { self == .locked || self == .frozen }
+}
+
+enum CargoLockfileError: LocalizedError, Equatable {
+    case malformed(String)
+    case unsupportedFormat(Int64)
+    case missing
+    case incompatible(crate: String, requirement: String)
+    case missingPackage(String)
+    case checksumMismatch(package: String)
+    case sourceMismatch(package: String)
+    case graphWouldChange
+
+    var errorDescription: String? {
+        switch self {
+        case let .malformed(detail): "Cargo.lock is malformed: \(detail)"
+        case let .unsupportedFormat(version): "Cargo.lock format \(version) is unsupported."
+        case .missing: "This build mode requires an existing valid Cargo.lock."
+        case let .incompatible(crate, requirement):
+            "Cargo.lock pin for \(crate) does not satisfy manifest requirement \(requirement)."
+        case let .missingPackage(package): "Cargo.lock does not pin required package \(package)."
+        case let .checksumMismatch(package): "Cargo.lock checksum does not match the registry for \(package)."
+        case let .sourceMismatch(package): "Cargo.lock source for \(package) is not the crates.io registry."
+        case .graphWouldChange: "The manifest would change Cargo.lock; update packages explicitly first."
+        }
+    }
+}
+
 /// A `Cargo.lock`, which is what makes a resolved graph reproducible and, on a
 /// phone, rebuildable with the network off.
 struct CargoLockfile: Sendable, Equatable {
     struct Entry: Sendable, Equatable, Comparable {
         let name: String
         let version: SemanticVersion
+        let source: String?
         let checksum: String?
         /// `name version` strings, exactly as Cargo writes them.
         let dependencies: [String]
+
+        init(
+            name: String,
+            version: SemanticVersion,
+            source: String? = nil,
+            checksum: String?,
+            dependencies: [String]
+        ) {
+            self.name = name
+            self.version = version
+            self.source = source ?? (checksum == nil ? nil : CargoLockfile.registrySource)
+            self.checksum = checksum
+            self.dependencies = dependencies.sorted()
+        }
 
         static func < (lhs: Entry, rhs: Entry) -> Bool {
             lhs.name == rhs.name ? lhs.version < rhs.version : lhs.name < rhs.name
@@ -63,7 +121,7 @@ struct CargoLockfile: Sendable, Equatable {
             lines.append("name = \"\(entry.name)\"")
             lines.append("version = \"\(entry.version)\"")
             if entry.checksum != nil {
-                lines.append("source = \"\(Self.registrySource)\"")
+                lines.append("source = \"\(entry.source ?? Self.registrySource)\"")
                 lines.append("checksum = \"\(entry.checksum ?? "")\"")
             }
             if !entry.dependencies.isEmpty {
@@ -78,9 +136,24 @@ struct CargoLockfile: Sendable, Equatable {
     }
 
     static func parse(_ source: String) -> CargoLockfile? {
-        guard let document = try? TOMLParser.parse(source) else { return nil }
+        try? parseValidated(source)
+    }
+
+    static func parseValidated(_ source: String) throws -> CargoLockfile {
+        let document: [String: TOMLValue]
+        do {
+            document = try TOMLParser.parse(source)
+        } catch {
+            throw CargoLockfileError.malformed(error.localizedDescription)
+        }
+        guard let format = document["version"]?.integerValue else {
+            throw CargoLockfileError.malformed("missing format version")
+        }
+        guard format == 3 || format == 4 else {
+            throw CargoLockfileError.unsupportedFormat(format)
+        }
         guard let packages = document["package"]?.arrayValue else {
-            return CargoLockfile(entries: [])
+            throw CargoLockfileError.malformed("missing [[package]] entries")
         }
         var entries: [Entry] = []
         for package in packages {
@@ -89,16 +162,41 @@ struct CargoLockfile: Sendable, Equatable {
                   let versionText = table["version"]?.stringValue,
                   let version = SemanticVersion(versionText)
             else {
-                continue
+                throw CargoLockfileError.malformed("invalid package identity")
+            }
+            let source = table["source"]?.stringValue
+            let checksum = table["checksum"]?.stringValue?.lowercased()
+            if let source, source != registrySource {
+                throw CargoLockfileError.sourceMismatch(package: "\(name) \(version)")
+            }
+            if checksum != nil {
+                guard source == registrySource else {
+                    throw CargoLockfileError.sourceMismatch(package: "\(name) \(version)")
+                }
+                guard checksum?.count == 64, checksum?.allSatisfy(\.isHexDigit) == true else {
+                    throw CargoLockfileError.malformed("invalid checksum for \(name) \(version)")
+                }
+            } else if source != nil {
+                throw CargoLockfileError.malformed("missing registry checksum for \(name) \(version)")
+            }
+            let dependencyValues = table["dependencies"]?.arrayValue ?? []
+            let dependencies = dependencyValues.compactMap(\.stringValue)
+            guard dependencies.count == dependencyValues.count else {
+                throw CargoLockfileError.malformed("non-string dependency for \(name) \(version)")
             }
             entries.append(
                 Entry(
                     name: name,
                     version: version,
-                    checksum: table["checksum"]?.stringValue,
-                    dependencies: table["dependencies"]?.stringArrayValue ?? []
+                    source: source,
+                    checksum: checksum,
+                    dependencies: dependencies
                 )
             )
+        }
+        let identities = entries.map { "\($0.name) \($0.version) \($0.source ?? "root")" }
+        guard Set(identities).count == identities.count else {
+            throw CargoLockfileError.malformed("duplicate package identity")
         }
         return CargoLockfile(entries: entries)
     }
@@ -106,5 +204,85 @@ struct CargoLockfile: Sendable, Equatable {
     /// The pinned version of a crate, if this lockfile has one.
     func pin(for name: String) -> Entry? {
         entries.first { $0.name == name && $0.checksum != nil }
+    }
+
+    func pin(for id: PackageID) -> Entry? {
+        entries.first { $0.name == id.name && $0.version == id.version && $0.checksum != nil }
+    }
+
+    func rootEntry(name: String, version: SemanticVersion) -> Entry? {
+        entries.first { $0.name == name && $0.version == version && $0.checksum == nil }
+    }
+
+    /// Finds the exact child identity named by a parent's Cargo.lock dependency
+    /// list. Cargo may omit the version when only one package with that name is
+    /// present, so that case is resolved only when unambiguous.
+    func dependencyID(packageName: String, from parent: Entry?) -> PackageID? {
+        guard let parent else { return nil }
+        let candidates = parent.dependencies.compactMap(Self.dependencyReference)
+            .filter { $0.name == packageName }
+        for candidate in candidates {
+            if let version = candidate.version { return PackageID(name: packageName, version: version) }
+        }
+        let matchingPins = entries.filter { $0.name == packageName && $0.checksum != nil }
+        guard candidates.count == 1, matchingPins.count == 1, let only = matchingPins.first else {
+            return nil
+        }
+        return PackageID(name: only.name, version: only.version)
+    }
+
+    func validate(
+        graph: ResolvedGraph,
+        rootName: String,
+        rootVersion: SemanticVersion
+    ) throws {
+        let registryEntries = entries.filter { $0.checksum != nil }
+        let pinnedIDs = Set(registryEntries.map { PackageID(name: $0.name, version: $0.version) })
+        guard pinnedIDs == Set(graph.packages.keys) else {
+            throw CargoLockfileError.graphWouldChange
+        }
+
+        for (id, package) in graph.packages {
+            guard let entry = pin(for: id) else {
+                throw CargoLockfileError.missingPackage(id.description)
+            }
+            guard entry.source == Self.registrySource else {
+                throw CargoLockfileError.sourceMismatch(package: id.description)
+            }
+            guard entry.checksum == package.checksum.lowercased() else {
+                throw CargoLockfileError.checksumMismatch(package: id.description)
+            }
+            guard dependencyIDs(from: entry) == Set(package.dependencies.values) else {
+                throw CargoLockfileError.graphWouldChange
+            }
+        }
+
+        guard let root = rootEntry(name: rootName, version: rootVersion),
+              dependencyIDs(from: root) == Set(graph.rootDependencies.values)
+        else {
+            throw CargoLockfileError.graphWouldChange
+        }
+    }
+
+    private func dependencyIDs(from entry: Entry) -> Set<PackageID>? {
+        var result: Set<PackageID> = []
+        for raw in entry.dependencies {
+            guard let reference = Self.dependencyReference(raw) else { return nil }
+            if let version = reference.version {
+                result.insert(PackageID(name: reference.name, version: version))
+                continue
+            }
+            let candidates = entries.filter { $0.name == reference.name && $0.checksum != nil }
+            guard candidates.count == 1, let only = candidates.first else { return nil }
+            result.insert(PackageID(name: only.name, version: only.version))
+        }
+        return result
+    }
+
+    private static func dependencyReference(_ raw: String) -> (name: String, version: SemanticVersion?)? {
+        let pieces = raw.split(separator: " ", omittingEmptySubsequences: true)
+        guard let first = pieces.first else { return nil }
+        let version = pieces.count > 1 ? SemanticVersion(String(pieces[1])) : nil
+        return (String(first), version)
     }
 }

@@ -9,6 +9,7 @@ options:
 
 settings:
   base:
+    DEVELOPMENT_TEAM: XMS5ZC28UJ
     SWIFT_VERSION: "6.0"
     IPHONEOS_DEPLOYMENT_TARGET: "18.0"
     TARGETED_DEVICE_FAMILY: "1,2"
@@ -17,8 +18,9 @@ settings:
 
 packages:
   WasmKit:
-    url: https://github.com/swiftwasm/WasmKit.git
-    exactVersion: 0.3.1
+    # Pinned local fork of upstream 0.3.1 (ee36070). Crabrix adds only the
+    # instruction-boundary limiter required to stop pure-compute guests.
+    path: Vendor/WasmKit
   SwiftSystem:
     url: https://github.com/apple/swift-system.git
     exactVersion: 1.8.1
@@ -175,6 +177,14 @@ schemes:
             - BundledCompilerGateTests/testUserProgramCannotGrowPastSandboxMemoryLimit()
             - BundledCompilerGateTests/testResolvesDownloadsAndLinksARealCratesIOPackage()
             - BundledCompilerGateTests/testStopInterruptsARunningCompile()
+            - BundledCompilerGateTests/testViewModelStopReenablesBuildAfterWorkerDrains()
+            - BundledCompilerGateTests/testVisualPixelSunsetRendersAValidatedCanvas()
+            - BundledCompilerGateTests/testVisualCellularGardenRendersAValidatedCanvas()
+            - BundledCompilerGateTests/testVisualMandelbrotRendersAValidatedCanvas()
+            - BundledCompilerGateTests/testVisualConstellationRendersAValidatedCanvas()
+            - BundledCompilerGateTests/testVisualTerrainRendersAValidatedCanvas()
+            - BundledCompilerGateTests/testVisualColorWavesRendersAValidatedCanvas()
+            - BundledCompilerGateTests/testVisualCreateTemplateRendersAValidatedCanvas()
 
   CrabrixCompilerGate:
     build:
@@ -194,3 +204,11 @@ schemes:
             - BundledCompilerGateTests/testUserProgramCannotGrowPastSandboxMemoryLimit()
             - BundledCompilerGateTests/testResolvesDownloadsAndLinksARealCratesIOPackage()
             - BundledCompilerGateTests/testStopInterruptsARunningCompile()
+            - BundledCompilerGateTests/testViewModelStopReenablesBuildAfterWorkerDrains()
+            - BundledCompilerGateTests/testVisualPixelSunsetRendersAValidatedCanvas()
+            - BundledCompilerGateTests/testVisualCellularGardenRendersAValidatedCanvas()
+            - BundledCompilerGateTests/testVisualMandelbrotRendersAValidatedCanvas()
+            - BundledCompilerGateTests/testVisualConstellationRendersAValidatedCanvas()
+            - BundledCompilerGateTests/testVisualTerrainRendersAValidatedCanvas()
+            - BundledCompilerGateTests/testVisualColorWavesRendersAValidatedCanvas()
+            - BundledCompilerGateTests/testVisualCreateTemplateRendersAValidatedCanvas()

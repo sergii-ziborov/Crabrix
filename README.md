@@ -5,18 +5,18 @@ an iPhone or iPad. There is no WebView, no localhost server, no JavaScript
 runtime, and no cloud compiler: `rustc` itself ships inside the app and executes
 on the device.
 
-> Write Rust. Add real crates.io packages. Compile and run them. On a phone. Offline.
+> Real Rust. Real Cargo. Built locally on iPhone and iPad.
 
 [**crabrix.com**](https://crabrix.com) · [About](https://crabrix.com/about) ·
-[Leaderboard](https://crabrix.com/leaderboard) · [Support](https://crabrix.com/support) ·
+[Support](https://crabrix.com/support) ·
 [Privacy](https://crabrix.com/privacy) · [Terms](https://crabrix.com/terms)
 
 | | |
 | :--: | :--: |
 | <img src="docs/screenshots/iphone-projects.png" width="260" alt="Projects dashboard on iPhone"> | <img src="docs/screenshots/iphone-library.png" width="260" alt="Project library with search and filters"> |
-| **Projects** — current project, import, and the library | **Library** — 20 working projects, searchable |
+| **Projects** — current project, import, and My Projects | **Library** — 46 working projects, 6 visual canvases |
 | <img src="docs/screenshots/iphone-build.png" width="260" alt="Build workspace on iPhone"> | <img src="docs/screenshots/iphone-learn.png" width="260" alt="Learn tab with rating and achievements"> |
-| **Build** — editor, packages, diagnostics, terminal | **Learn** — 83 lessons, rating, achievements |
+| **Build** — editor, packages, diagnostics, terminal | **Learn** — 142 Rust lessons + 200 algorithm patterns |
 
 <p align="center">
   <img src="docs/screenshots/ipad-build.png" width="720" alt="Crabrix build workspace on iPad">
@@ -32,8 +32,8 @@ on the device.
 - **Compiles Rust on device.** A pinned WASI build of `rustc` runs inside a Swift WebAssembly interpreter. The first compile is real; identical repeat runs come from a local artifact cache.
 - **Resolves and builds crates.io packages.** Sparse-index resolution, SemVer and feature unification, checksum-verified downloads, dependency compilation, and `--extern` linking — all on the device.
 - **Health and energy, scaled by rating.** Wrong answers in a lesson cost health; a new lesson page costs energy, once ever. Both refill on their own, and a higher rank means a bigger pool *and* a faster refill. Training — Quick Practice, Term Train, Code Recall — never costs anything, so there is always a way to keep learning.
-- **Teaches from the compiler.** 83 lessons across 6 courses, each with a highlighted example and a compiler-checked lab, plus Quick Practice, Term Train, and Code Recall drills.
-- **Achievements have ladders.** 14 families of five tiers each — Bronze to Diamond — so finishing one Code Recall run is Bronze and ten thousand lines recalled is Diamond. The tier is what the badge reports.
+- **Teaches from the compiler.** 142 guided Rust lessons across six language courses, plus a 200-pattern Algorithm Atlas with two explanations and one local Rust challenge per pattern.
+- **Achievements have ladders.** 36 families of five tiers each — Bronze to Diamond — including an overall Algorithm Atlas ladder and one ladder for each of its 20 solution methods.
 - **Rating follows the diff.** A successful run is scored on how much Rust actually changed since the last one, so pressing Run on an untouched sample is worth almost nothing and real editing is worth real points.
 - **Works offline.** Once a project's packages are cached, it rebuilds with the network off.
 
@@ -50,9 +50,10 @@ The app embeds:
 - Files/Working Copy folder import, `.crabrixproject` package export, and a persistent recent-project library with last-build status;
 - bounded public GitHub snapshot import for repository and branch URLs, Cargo-root discovery, and stored source provenance;
 - an iOS Share Extension that queues GitHub URLs through an App Group and never tries to foreground the host app;
-- six courses covering the language end to end — foundations, ownership, data modelling, abstractions, Cargo projects, smart pointers, concurrency, async, macros, and systems Rust — plus interview prep that reaches past the language into memory, networking, databases, and distributed systems: 83 lessons in total, each with a syntax-highlighted example and a compiler-backed lab;
+- six courses covering the language end to end — foundations, ownership, data modelling, abstractions, Cargo projects, smart pointers, concurrency, async, macros, and systems Rust — plus interview prep that reaches past the language into memory, networking, databases, and distributed systems: 142 guided Rust lessons in total;
+- a seventh Algorithms course with 20 solution-method chapters, 200 reusable patterns, and 600 ordered steps on a winding learning path: HOW, WHEN, then a compiler-backed Rust challenge;
 - Quick Practice, Term Train (practice and timed modes, streaks, accuracy), and Code Recall, a memory drill that hides a snippet and asks you to rebuild it — all three generated from the lesson content and scheduled with SM-2 spaced repetition;
-- a rating earned across every part of the app, 14 achievement ladders of five tiers each, with a tiered unlock animation, and a health/energy system whose pool and refill rate both scale with rank — all stored on device;
+- a rating earned across every part of the app, 36 achievement ladders of five tiers each, with algorithm-category mastery tracked idempotently, a tiered unlock animation, and health/energy that scale with rank — all stored on device;
 - a project library of 20 std-only projects across eight categories, searchable and filterable by difficulty, every one verified to compile and run with the bundled toolchain;
 - draggable/collapsible project and diagnostic panels on iPad, plus stable full-height `Code / Problems / Output / Terminal` workspace tabs with highlighted streams/commands and live build state on both the workspace and project library;
 - a review-before-insert Rust completion action: deterministic offline suggestions everywhere and optional Apple Foundation Models completion on eligible iOS 26+ devices;
@@ -125,10 +126,10 @@ shell. It keeps a separate transcript per project and maps `cargo check`,
 the actual resolved graph with per-package compatibility markers.
 
 `Stop` interrupts the running guest rather than only detaching the UI from it.
-Crabrix wraps every WASI import the guest uses, so a cancelled build traps on the
-next syscall — which, for `rustc` and for any program that prints or touches
-files, is immediate. A guest that spins without ever calling into the host still
-cannot be interrupted; WasmKit 0.3.1 exposes no engine-level interruption.
+Crabrix wraps WASI imports and vendors a narrowly documented WasmKit patch with
+an instruction budget, so even a pure `loop {}` traps without waiting for a host
+call. Runtime watchdogs separately enforce wall-clock, output, writable-file,
+memory, and table limits; after a stop, a fresh guest can start immediately.
 
 The learning build profile favors iteration speed over optimized guest code.
 `Run` emits an unoptimized teaching artifact, stores successful `program.wasm`
@@ -148,12 +149,10 @@ The Share Extension and host app use `group.com.sergiiziborov.Crabrix`. A signin
 ## Privacy
 
 Crabrix has no account, no analytics SDK, no advertising, and no tracking. Your
-code, projects, build output, and progress never leave the device.
-
-One optional feature transmits anything at all: publishing your rating to the
-[public board](https://crabrix.com/leaderboard). It is off until you turn it on,
-it sends only a display name you type plus your rating and a few counts, and the
-same screen deletes the entry permanently.
+code, projects, build output, and progress never leave the device. Game Center
+and the Crabrix Rust Board implementations are retained behind explicit release
+flags, but both are dormant in production 1.0 while their provisioning and
+signed-event/moderation gates are completed.
 
 The full policy is at [crabrix.com/privacy](https://crabrix.com/privacy), and the
 App Store privacy manifest that has to agree with it is
@@ -168,11 +167,11 @@ Crabrix does about each:
 | --- | --- |
 | **2.5.2** — self-contained code | The compiler and standard library are **bundled**, not downloaded. The only code fetched at runtime is crates.io package source, at the user's explicit request, used only to build their own project. Every extracted file is readable in-app (Build → Packages → tap a crate), which is the condition the educational carve-out attaches. |
 | **2.5.1** — private APIs, process spawning | No host processes are spawned. The project terminal is a simulated shell over the in-app project files. Guest programs run in a WebAssembly sandbox with a memory cap, one writable preopen, and no network imports. |
-| **1.2** — user-generated content | The only UGC is a leaderboard display name. Names are filtered server-side for abuse and impersonation, reporting is in the app and on [/support](https://crabrix.com/support), and reported entries are removed. |
-| **5.1.1(v)** — account deletion | There is no account, and the one row a user can create is deleted in-app from Profile. |
+| **1.2** — user-generated content | Production 1.0 exposes no public board or display-name input. The retained board code stays dormant until report/hide/moderation are release-ready. |
+| **5.1.1(v)** — account deletion | There is no account and production 1.0 creates no server-side profile. |
 | **5.1.1** — privacy policy | Published at [/privacy](https://crabrix.com/privacy) and linked from Settings → About Crabrix. |
-| **Privacy manifest** | `PrivacyInfo.xcprivacy` ships in both the app and the Share extension, declaring UserDefaults and file-timestamp reasons and the two collected data types. |
-| **2.1** — completeness | No control ships that cannot work. Game Center is dormant until the entitlement exists (see [docs/GAME-CENTER.md](docs/GAME-CENTER.md)) and no dead "connect" button is shown. |
+| **Privacy manifest** | `PrivacyInfo.xcprivacy` ships in both the app and the Share extension, declares the required UserDefaults/file-timestamp reasons, and declares no collected data for production 1.0. |
+| **2.1** — completeness | No control ships that cannot work. Game Center and Crabrix Board are dormant behind release flags until their gates pass; no dead board controls are shown. |
 | **2.3** — accurate metadata | The listing copy in [docs/app-store/listing.md](docs/app-store/listing.md) states the limits — crates needing C code or proc macros cannot build on device — rather than only the strengths. |
 
 Listing copy, App Privacy answers, review notes, and the pre-submission checklist

@@ -1,0 +1,53 @@
+{
+  "testsuite": {
+    "repository": "https://github.com/WebAssembly/testsuite.git",
+    "revision": "53da17c0936a23f68f97cde4f9346a0a374dc35f",
+    "categories": ["default"]
+  },
+  "wasi-testsuite": {
+    "repository": "https://github.com/WebAssembly/wasi-testsuite.git",
+    "revision": "f442fae1a214263aeeddb5395c0c50dc9403b7f8",
+    "categories": ["default"]
+  },
+  "wasm-c-api": {
+    "repository": "https://github.com/WebAssembly/wasm-c-api.git",
+    "revision": "2ce1367c9d1271c83fb63bef26d896a2f290cd23",
+    "categories": ["default"]
+  },
+  "component-model": {
+    "repository": "https://github.com/WebAssembly/component-model.git",
+    "revision": "0b951b72b3f4019edf386a93585782587d221a0c",
+    "categories": ["component-model"]
+  },
+  "wasm-tools-prebuilt": {
+    "url": "https://github.com/bytecodealliance/wasm-tools/releases/download/v1.244.0/wasm-tools-1.244.0-wasm32-wasip1.tar.gz",
+    "sha256": "010f8a3c591f3070d06a1c13830c8a61dcbf6527a62ab289970ed3341f0008e7",
+    "categories": ["component-model"]
+  },
+  "wasm-tools": {
+    "repository": "https://github.com/bytecodealliance/wasm-tools.git",
+    "revision": "42127681cc850a4dc62824efc3786e25aa5f9910",
+    "sparse-checkout": "crates/wasm-wave/tests",
+    "categories": ["component-model"]
+  },
+  "swift-format": {
+    "repository": "https://github.com/swiftlang/swift-format.git",
+    "revision": "62eaad2822b865407b8cde56c36386c00800f7ec",
+    "categories": ["formatting"]
+  },
+  "wish-you-were-fast": {
+    "repository": "https://github.com/composablesys/wish-you-were-fast.git",
+    "revision": "65c968685d66eea3ae88ef747df95210690c6b46",
+    "categories": ["benchmark"]
+  },
+  "swift-stringify-macro.wasm": {
+    "repository": "https://github.com/kateinoigakukun/swift-stringify-macro.wasm.git",
+    "revision": "576ef7ff3b9713d75519eab0cb1f2b738220b636",
+    "categories": ["benchmark"]
+  },
+  "coremark": {
+    "repository": "https://github.com/eembc/coremark.git",
+    "revision": "d5fad6bd094899101a4e5fd53af7298160ced6ab",
+    "categories": ["benchmark"]
+  }
+}

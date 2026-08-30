@@ -334,6 +334,12 @@ struct VitalsOutcomeBadge: View {
             ("Shield absorbed that one", "shield.lefthalf.filled", CrabrixTheme.blue)
         case let .refunded(energy):
             ("+\(energy) energy — nice run", "bolt.badge.checkmark", CrabrixTheme.mint)
+        case let .recovered(health, energy):
+            (
+                "+\(health) health" + (energy > 0 ? " · +\(energy) energy" : ""),
+                "heart.circle.fill",
+                CrabrixTheme.mint
+            )
         case .blocked:
             ("Out of vitals — training is still open", "pause.circle.fill", CrabrixTheme.muted)
         }

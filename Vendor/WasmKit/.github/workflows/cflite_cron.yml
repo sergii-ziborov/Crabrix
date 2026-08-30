@@ -1,0 +1,49 @@
+name: ClusterFuzzLite cron tasks
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch: {}
+
+permissions: read-all
+jobs:
+  Pruning:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'swiftwasm/WasmKit' }}
+    steps:
+    - name: Build Fuzzers
+      id: build
+      uses: google/clusterfuzzlite/actions/build_fuzzers@d2c7d068aab9081cbbc57825ad0d5d6ca6674f95 # google/clusterfuzzlite#146 (Ubuntu 24.04); revert to @v1 once merged
+      with:
+        language: swift
+    - name: Run Fuzzers
+      id: run
+      uses: google/clusterfuzzlite/actions/run_fuzzers@d2c7d068aab9081cbbc57825ad0d5d6ca6674f95 # google/clusterfuzzlite#146 (Ubuntu 24.04); revert to @v1 once merged
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        fuzz-seconds: 600
+        mode: 'prune'
+        output-sarif: true
+        storage-repo: https://${{ secrets.SWIFTWASM_BOT_GITHUB_TOKEN }}@github.com/swiftwasm/wasmkit-fuzz-corpora.git
+        storage-repo-branch: main
+        storage-repo-branch-coverage: gh-pages
+  Coverage:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'swiftwasm/WasmKit' }}
+    steps:
+    - name: Build Fuzzers
+      id: build
+      uses: google/clusterfuzzlite/actions/build_fuzzers@d2c7d068aab9081cbbc57825ad0d5d6ca6674f95 # google/clusterfuzzlite#146 (Ubuntu 24.04); revert to @v1 once merged
+      with:
+        language: swift
+        sanitizer: coverage
+    - name: Run Fuzzers
+      id: run
+      uses: google/clusterfuzzlite/actions/run_fuzzers@d2c7d068aab9081cbbc57825ad0d5d6ca6674f95 # google/clusterfuzzlite#146 (Ubuntu 24.04); revert to @v1 once merged
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        fuzz-seconds: 600
+        mode: 'coverage'
+        sanitizer: 'coverage'
+        storage-repo: https://${{ secrets.SWIFTWASM_BOT_GITHUB_TOKEN }}@github.com/swiftwasm/wasmkit-fuzz-corpora.git
+        storage-repo-branch: main
+        storage-repo-branch-coverage: gh-pages

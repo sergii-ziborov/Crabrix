@@ -53,6 +53,53 @@ final class CrabrixProgressStoreTests: XCTestCase {
         XCTAssertEqual(reopened.state.termTrainBestStreak, 4)
     }
 
+    func testStableRewardEventIsAppliedOnceAcrossRelaunch() {
+        let suite = "crabrix.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+
+        let first = CrabrixProgressStore(defaults: defaults)
+        XCTAssertTrue(
+            first.record(
+                .lessonCompleted,
+                eventKey: "lesson:ownership:first-completion"
+            )
+        )
+        XCTAssertFalse(
+            first.record(
+                .lessonCompleted,
+                eventKey: "lesson:ownership:first-completion"
+            )
+        )
+
+        let reopened = CrabrixProgressStore(defaults: defaults)
+        XCTAssertFalse(
+            reopened.record(
+                .lessonCompleted,
+                eventKey: "lesson:ownership:first-completion"
+            )
+        )
+        XCTAssertEqual(reopened.state.lessonsCompleted, 1)
+        XCTAssertEqual(reopened.state.totalPoints, CrabrixProgressEvent.lessonCompleted.points)
+    }
+
+    func testProductionSocialPathsStayDormantUntilReleaseGatesEnableThem() {
+        XCTAssertFalse(CrabrixReleaseFeatures.gameCenterEnabled)
+        XCTAssertFalse(CrabrixReleaseFeatures.crabrixBoardEnabled)
+
+        let suite = "crabrix.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+        let board = LeaderboardClient(defaults: defaults)
+        board.isEnabled = true
+        board.displayName = "Ferris"
+        XCTAssertFalse(board.canPublish)
+
+        let gameCenter = GameCenterService()
+        gameCenter.authenticate()
+        XCTAssertEqual(gameCenter.status, .idle)
+    }
+
     func testKeepsTheBestTermTrainNumbersNotTheLatest() {
         let (store, _, suite) = makeStore()
         defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
@@ -316,11 +363,19 @@ final class CurriculumCoverageTests: XCTestCase {
         RustCourseCatalog.courses.flatMap { $0.units.flatMap(\.lessons) }.map(\.id)
     }
 
-    func testEveryLessonHasATermTrainPair() {
+    private var languageLessonIDs: [String] {
+        RustCourseCatalog.courses
+            .filter { $0.id != "algorithms" }
+            .flatMap { $0.units.flatMap(\.lessons) }
+            .map(\.id)
+    }
+
+    func testEveryLanguageLessonHasATermTrainPair() {
         // Term Train, Quick Practice, and Code Recall are all derived from the
-        // curriculum. A lesson with no pair is a topic the drill cannot reach.
+        // language curriculum. Algorithms uses its own ordered three-step
+        // practice so 600 cards do not swamp the general Rust vocabulary drill.
         let covered = Set(TermTrainDeck.all.map(\.topic))
-        let missing = lessonIDs.filter { !covered.contains($0) }
+        let missing = languageLessonIDs.filter { !covered.contains($0) }
         XCTAssertTrue(missing.isEmpty, "lessons with no Term Train pair: \(missing)")
     }
 
@@ -347,8 +402,8 @@ final class CurriculumCoverageTests: XCTestCase {
         XCTAssertTrue(missing.isEmpty, "interview prep is missing: \(missing)")
     }
 
-    func testEveryDrillDrawsFromTheWholeCurriculum() {
-        let lessons = lessonIDs.count
+    func testEveryGeneralDrillDrawsFromTheWholeLanguageCurriculum() {
+        let lessons = languageLessonIDs.count
         XCTAssertEqual(RustQuestionBank.all.count, lessons, "Quick Practice should reach every lesson")
         XCTAssertGreaterThanOrEqual(
             Set(TermTrainDeck.all.map(\.topic)).count, lessons,

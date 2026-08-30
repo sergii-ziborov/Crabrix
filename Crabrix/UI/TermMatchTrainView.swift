@@ -156,8 +156,6 @@ struct TermMatchTrainView: View {
                         .buttonStyle(.plain)
                     }
                 }
-
-                AchievementsSection(store: progress)
             }
             .padding(20)
             .frame(maxWidth: 820)

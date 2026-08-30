@@ -1,0 +1,486 @@
+import WasmTypes
+
+/// Function code in a module
+/// > Note:
+/// <https://webassembly.github.io/spec/core/binary/modules.html#binary-code>
+public struct Code: Sendable {
+    /// Local variables in the function
+    public let locals: [ValueType]
+    /// Expression body of the function
+    public let expression: ArraySlice<UInt8>
+
+    // Parser state used to parse the expression body lazily
+    @usableFromInline
+    internal let offset: Int
+    @usableFromInline
+    internal let features: WasmFeatureSet
+
+    #if WasmDebuggingSupport
+        package var originalAddress: Int { self.offset }
+    #endif
+
+    @inlinable
+    init(locals: [ValueType], expression: ArraySlice<UInt8>, offset: Int, features: WasmFeatureSet) {
+        self.locals = locals
+        self.expression = expression
+        self.offset = offset
+        self.features = features
+    }
+}
+
+extension Code: Equatable {
+    public static func == (lhs: Code, rhs: Code) -> Bool {
+        return lhs.locals == rhs.locals && lhs.expression == rhs.expression
+    }
+}
+
+public struct MemArg: Equatable, Sendable {
+    public let offset: UInt64
+    public let align: UInt32
+
+    public init(offset: UInt64, align: UInt32) {
+        self.offset = offset
+        self.align = align
+    }
+}
+
+public enum BlockType: Equatable, Sendable {
+    case empty
+    case type(ValueType)
+    case funcType(UInt32)
+}
+
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/types.html#limits>
+public struct Limits: Equatable, Sendable {
+    public var min: UInt64
+    public var max: UInt64?
+    public var isMemory64: Bool
+    public var shared: Bool
+
+    public init(min: UInt64, max: UInt64? = nil, isMemory64: Bool = false, shared: Bool = false) {
+        self.min = min
+        self.max = max
+        self.isMemory64 = isMemory64
+        self.shared = shared
+    }
+}
+
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/types.html#memory-types>
+public typealias MemoryType = Limits
+
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/types.html#table-types>
+public struct TableType: Equatable, Sendable {
+    public var elementType: ReferenceType
+    public var limits: Limits
+
+    public init(elementType: ReferenceType, limits: Limits) {
+        self.elementType = elementType
+        self.limits = limits
+    }
+}
+
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/types.html#global-types>
+public enum Mutability: Equatable, Sendable {
+    case constant
+    case variable
+}
+
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/types.html#global-types>
+public struct GlobalType: Equatable, Sendable {
+    public let mutability: Mutability
+    public let valueType: ValueType
+
+    public init(mutability: Mutability, valueType: ValueType) {
+        self.mutability = mutability
+        self.valueType = valueType
+    }
+}
+
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/types.html#external-types>
+public enum ExternalType: Sendable {
+    case function(FunctionType)
+    case table(TableType)
+    case memory(MemoryType)
+    case global(GlobalType)
+}
+
+public enum IEEE754 {
+    public struct Float32: Equatable, Sendable {
+        public let bitPattern: UInt32
+
+        public init(bitPattern: UInt32) {
+            self.bitPattern = bitPattern
+        }
+    }
+    public struct Float64: Equatable, Sendable {
+        public let bitPattern: UInt64
+
+        public init(bitPattern: UInt64) {
+            self.bitPattern = bitPattern
+        }
+    }
+}
+
+public struct BrTable: Equatable, Sendable {
+    public let labelIndices: [UInt32]
+    public let defaultIndex: UInt32
+
+    public init(labelIndices: [UInt32], defaultIndex: UInt32) {
+        self.labelIndices = labelIndices
+        self.defaultIndex = defaultIndex
+    }
+}
+
+/// A custom section in a module
+public struct CustomSection: Equatable, Sendable {
+    public let name: String
+    public let bytes: ArraySlice<UInt8>
+}
+
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/modules.html#syntax-typeidx>
+
+/// Index type for function types within a module
+public typealias TypeIndex = UInt32
+/// Index type for tables within a module
+public typealias FunctionIndex = UInt32
+/// Index type for tables within a module
+public typealias TableIndex = UInt32
+/// Index type for memories within a module
+public typealias MemoryIndex = UInt32
+/// Index type for globals within a module
+public typealias GlobalIndex = UInt32
+/// Index type for elements within a module
+public typealias ElementIndex = UInt32
+/// Index type for data segments within a module
+public typealias DataIndex = UInt32
+/// Index type for tags within a module
+public typealias TagIndex = UInt32
+
+public typealias ConstExpression = [Instruction]
+
+/// Table entry in a module
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/modules.html#tables>
+public struct Table: Equatable, Sendable {
+    public let type: TableType
+
+    public init(type: TableType) {
+        self.type = type
+    }
+}
+
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/modules.html#memories>
+public struct Memory: Equatable, Sendable {
+    public let type: MemoryType
+}
+
+/// Global entry in a module
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/modules.html#globals>
+public struct Global: Equatable, Sendable {
+    public let type: GlobalType
+    public let initializer: ConstExpression
+}
+
+/// Tag entry in a module
+/// > Note:
+/// <https://webassembly.github.io/exception-handling/core/syntax/modules.html#tags>
+public struct Tag: Equatable {
+    /// The type index of the tag's function type (parameters = exception payload, results must be empty).
+    public let type: TypeIndex
+
+    public init(type: TypeIndex) {
+        self.type = type
+    }
+}
+
+/// Catch clause within a `try_table` instruction.
+/// > Note:
+/// <https://webassembly.github.io/exception-handling/core/binary/instructions.html#control-instructions>
+public enum CatchClause: Equatable, Sendable {
+    /// Catches an exception matching the given tag and branches with payload values.
+    case `catch`(tagIndex: TagIndex, labelIndex: UInt32)
+    /// Like `catch`, but also passes an `exnref`.
+    case catchRef(tagIndex: TagIndex, labelIndex: UInt32)
+    /// Catches any exception and branches with no extra values.
+    case catchAll(labelIndex: UInt32)
+    /// Like `catchAll`, but also passes an `exnref`.
+    case catchAllRef(labelIndex: UInt32)
+}
+
+/// The catch clauses of a `try_table` instruction.
+public struct TryCatch: Equatable, Sendable {
+    public let catches: [CatchClause]
+
+    public init(catches: [CatchClause]) {
+        self.catches = catches
+    }
+}
+
+/// Segment of elements that are initialized in a table
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/modules.html#element-segments>
+public struct ElementSegment: Equatable, Sendable {
+    @usableFromInline
+    struct Flag: OptionSet, Sendable {
+        @usableFromInline let rawValue: UInt32
+
+        @inlinable
+        init(rawValue: UInt32) {
+            self.rawValue = rawValue
+        }
+
+        @inlinable var segmentHasElemKind: Bool {
+            !contains(.usesExpressions) && rawValue != 0
+        }
+
+        @inlinable var segmentHasRefType: Bool {
+            contains(.usesExpressions) && rawValue != 4
+        }
+
+        @usableFromInline static let isPassiveOrDeclarative = Flag(rawValue: 1 << 0)
+        @usableFromInline static let isDeclarative = Flag(rawValue: 1 << 1)
+        @usableFromInline static let hasTableIndex = Flag(rawValue: 1 << 1)
+        @usableFromInline static let usesExpressions = Flag(rawValue: 1 << 2)
+    }
+
+    public enum Mode: Equatable, Sendable {
+        case active(table: UInt32, offset: ConstExpression)
+        case declarative
+        case passive
+    }
+
+    public let type: ReferenceType
+    public let initializer: [ConstExpression]
+    public let mode: Mode
+
+    public init(type: ReferenceType, initializer: [ConstExpression], mode: Mode) {
+        self.type = type
+        self.initializer = initializer
+        self.mode = mode
+    }
+}
+
+/// Data segment in a module
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/modules.html#data-segments>
+public enum DataSegment: Equatable, Sendable {
+    public struct Active: Equatable, Sendable {
+        public let index: UInt32
+        public let offset: ConstExpression
+        public let initializer: ArraySlice<UInt8>
+
+        @inlinable init(index: UInt32, offset: ConstExpression, initializer: ArraySlice<UInt8>) {
+            self.index = index
+            self.offset = offset
+            self.initializer = initializer
+        }
+    }
+
+    case passive(ArraySlice<UInt8>)
+    case active(Active)
+}
+
+/// Exported entity in a module
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/modules.html#exports>
+public struct Export: Equatable, Sendable {
+    /// Name of the export
+    public let name: String
+    /// Descriptor of the export
+    public let descriptor: ExportDescriptor
+
+    public init(name: String, descriptor: ExportDescriptor) {
+        self.name = name
+        self.descriptor = descriptor
+    }
+}
+
+/// Export descriptor
+public enum ExportDescriptor: Equatable, Sendable {
+    /// Function export
+    case function(FunctionIndex)
+    /// Table export
+    case table(TableIndex)
+    /// Memory export
+    case memory(MemoryIndex)
+    /// Global export
+    case global(GlobalIndex)
+    /// Tag export
+    case tag(TagIndex)
+}
+
+/// Import entity in a module
+/// > Note:
+/// <https://webassembly.github.io/spec/core/syntax/modules.html#imports>
+public struct Import: Equatable, Sendable {
+    /// Module name imported from
+    public let module: String
+    /// Name of the import
+    public let name: String
+    /// Descriptor of the import
+    public let descriptor: ImportDescriptor
+
+    public init(module: String, name: String, descriptor: ImportDescriptor) {
+        self.module = module
+        self.name = name
+        self.descriptor = descriptor
+    }
+}
+
+/// Import descriptor
+public enum ImportDescriptor: Equatable, Sendable {
+    /// Function import
+    case function(TypeIndex)
+    /// Table import
+    case table(TableType)
+    /// Memory import
+    case memory(MemoryType)
+    /// Global import
+    case global(GlobalType)
+    /// Tag import
+    case tag(TypeIndex)
+}
+
+@usableFromInline
+protocol RawUnsignedInteger: FixedWidthInteger & UnsignedInteger {
+    associatedtype Signed: RawSignedInteger where Signed.Unsigned == Self
+    init(bitPattern: Signed)
+}
+
+@usableFromInline
+protocol RawSignedInteger: FixedWidthInteger & SignedInteger {
+    associatedtype Unsigned: RawUnsignedInteger where Unsigned.Signed == Self
+    init(bitPattern: Unsigned)
+}
+
+extension UInt8: RawUnsignedInteger {
+    @usableFromInline typealias Signed = Int8
+}
+
+extension UInt16: RawUnsignedInteger {
+    @usableFromInline typealias Signed = Int16
+}
+
+extension UInt32: RawUnsignedInteger {
+    @usableFromInline typealias Signed = Int32
+}
+
+extension UInt64: RawUnsignedInteger {
+    @usableFromInline typealias Signed = Int64
+}
+
+extension Int8: RawSignedInteger {}
+extension Int16: RawSignedInteger {}
+extension Int32: RawSignedInteger {}
+extension Int64: RawSignedInteger {}
+
+extension RawUnsignedInteger {
+    var signed: Signed {
+        .init(bitPattern: self)
+    }
+}
+
+extension Instruction.Load {
+    /// The alignment to the storage size of the memory access
+    /// in log2 form.
+    @_alwaysEmitIntoClient
+    public var naturalAlignment: Int {
+        switch self {
+        case .i32Load, .i32AtomicLoad: return 2
+        case .i64Load, .i64AtomicLoad: return 3
+        case .f32Load: return 2
+        case .f64Load: return 3
+        case .v128Load: return 4
+        case .v128Load8X8S, .v128Load8X8U: return 3
+        case .v128Load16X4S, .v128Load16X4U: return 3
+        case .v128Load32X2S, .v128Load32X2U: return 3
+        case .v128Load8Splat: return 0
+        case .v128Load16Splat: return 1
+        case .v128Load32Splat: return 2
+        case .v128Load64Splat: return 3
+        case .v128Load32Zero: return 2
+        case .v128Load64Zero: return 3
+        case .i32Load8S: return 0
+        case .i32Load8U, .i32AtomicLoad8U: return 0
+        case .i32Load16S: return 1
+        case .i32Load16U, .i32AtomicLoad16U: return 1
+        case .i64Load8S: return 0
+        case .i64Load8U, .i64AtomicLoad8U: return 0
+        case .i64Load16S: return 1
+        case .i64Load16U, .i64AtomicLoad16U: return 1
+        case .i64Load32S: return 2
+        case .i64Load32U, .i64AtomicLoad32U: return 2
+        }
+    }
+
+    /// The type of the value loaded from memory
+    @_alwaysEmitIntoClient
+    public var type: ValueType {
+        switch self {
+        case .i32Load, .i32AtomicLoad: return .i32
+        case .i64Load, .i64AtomicLoad: return .i64
+        case .f32Load: return .f32
+        case .f64Load: return .f64
+        case .v128Load, .v128Load8X8S, .v128Load8X8U, .v128Load16X4S, .v128Load16X4U,
+            .v128Load32X2S, .v128Load32X2U, .v128Load8Splat, .v128Load16Splat, .v128Load32Splat,
+            .v128Load64Splat, .v128Load32Zero, .v128Load64Zero:
+            return .v128
+        case .i32Load8S: return .i32
+        case .i32Load8U, .i32AtomicLoad8U: return .i32
+        case .i32Load16S: return .i32
+        case .i32Load16U, .i32AtomicLoad16U: return .i32
+        case .i64Load8S: return .i64
+        case .i64Load8U, .i64AtomicLoad8U: return .i64
+        case .i64Load16S: return .i64
+        case .i64Load16U, .i64AtomicLoad16U: return .i64
+        case .i64Load32S: return .i64
+        case .i64Load32U, .i64AtomicLoad32U: return .i64
+        }
+    }
+}
+
+extension Instruction.Store {
+    /// The alignment to the storage size of the memory access
+    /// in log2 form.
+    @_alwaysEmitIntoClient
+    public var naturalAlignment: Int {
+        switch self {
+        case .i32Store, .i32AtomicStore: return 2
+        case .i64Store, .i64AtomicStore: return 3
+        case .f32Store: return 2
+        case .f64Store: return 3
+        case .v128Store: return 4
+        case .i32Store8, .i32AtomicStore8: return 0
+        case .i32Store16, .i32AtomicStore16: return 1
+        case .i64Store8, .i64AtomicStore8: return 0
+        case .i64Store16, .i64AtomicStore16: return 1
+        case .i64Store32, .i64AtomicStore32: return 2
+        }
+    }
+
+    /// The type of the value stored to memory
+    @_alwaysEmitIntoClient
+    public var type: ValueType {
+        switch self {
+        case .i32Store, .i32AtomicStore: return .i32
+        case .i64Store, .i64AtomicStore: return .i64
+        case .f32Store: return .f32
+        case .f64Store: return .f64
+        case .v128Store: return .v128
+        case .i32Store8, .i32AtomicStore8: return .i32
+        case .i32Store16, .i32AtomicStore16: return .i32
+        case .i64Store8, .i64AtomicStore8: return .i64
+        case .i64Store16, .i64AtomicStore16: return .i64
+        case .i64Store32, .i64AtomicStore32: return .i64
+        }
+    }
+}

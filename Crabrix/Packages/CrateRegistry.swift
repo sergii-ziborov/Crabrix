@@ -23,6 +23,10 @@ struct RegistryDependency: Sendable, Hashable {
         guard let target else { return true }
         return target.matches(spec)
     }
+
+    func matchResult(for spec: RustTargetSpec) -> TargetMatchResult {
+        target?.matchResult(spec) ?? .yes
+    }
 }
 
 /// One version line of a sparse-index file.
@@ -68,6 +72,7 @@ enum CrateRegistryError: LocalizedError, Equatable {
     case transport(String)
     case malformedIndex(String)
     case indexTooLarge(String)
+    case offlineCacheMiss(String)
 
     var errorDescription: String? {
         switch self {
@@ -81,6 +86,8 @@ enum CrateRegistryError: LocalizedError, Equatable {
             "The registry index entry for \(name) could not be read."
         case let .indexTooLarge(name):
             "The registry index entry for \(name) is larger than Crabrix downloads."
+        case let .offlineCacheMiss(name):
+            "Offline build is missing the cached registry index for \(name)."
         }
     }
 }
@@ -89,6 +96,15 @@ enum CrateRegistryError: LocalizedError, Equatable {
 /// index instead of reaching the network.
 protocol CrateIndexProviding: Sendable {
     func indexFile(for crate: String) async throws -> RegistryIndexFile
+    func cachedIndexFile(for crate: String) async throws -> RegistryIndexFile
+}
+
+extension CrateIndexProviding {
+    /// Fixture/custom providers are already deterministic local sources. The
+    /// production sparse provider overrides this to prohibit HTTP completely.
+    func cachedIndexFile(for crate: String) async throws -> RegistryIndexFile {
+        try await indexFile(for: crate)
+    }
 }
 
 /// A sparse (HTTP) registry index client.
@@ -160,6 +176,17 @@ actor SparseRegistryIndex: CrateIndexProviding {
         let file = try Self.parse(data, name: key)
         memoryCache[key] = file
         storeDiskCache(data, for: key)
+        return file
+    }
+
+    func cachedIndexFile(for crate: String) async throws -> RegistryIndexFile {
+        let key = crate.lowercased()
+        if let cached = memoryCache[key] { return cached }
+        guard let cached = loadDiskCache(for: key) else {
+            throw CrateRegistryError.offlineCacheMiss(key)
+        }
+        let file = try Self.parse(cached, name: key)
+        memoryCache[key] = file
         return file
     }
 

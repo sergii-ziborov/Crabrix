@@ -2,6 +2,27 @@ import XCTest
 import Compression
 @testable import Crabrix
 
+private final class CrateArchiveURLProtocol: URLProtocol {
+    nonisolated(unsafe) static var responseData = Data()
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        let response = HTTPURLResponse(
+            url: request.url!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )!
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: Self.responseData)
+        client?.urlProtocolDidFinishLoading(self)
+    }
+
+    override func stopLoading() {}
+}
+
 /// Builds real gzip/tar bytes so the reader is tested against the format rather
 /// than against a mock.
 enum TarFixture {
@@ -41,6 +62,29 @@ enum TarFixture {
         header[154] = 0
         header[155] = 0x20
         return Data(header)
+    }
+
+    static func replacingSizeWithBase256(_ header: Data, size: UInt64) -> Data {
+        var bytes = [UInt8](header)
+        for index in 124..<136 { bytes[index] = 0 }
+        var remaining = size
+        for index in stride(from: 135, through: 125, by: -1) {
+            bytes[index] = UInt8(remaining & 0xff)
+            remaining >>= 8
+        }
+        precondition(remaining < 0x40)
+        bytes[124] = UInt8(remaining) | 0x80
+        rewriteChecksum(&bytes)
+        return Data(bytes)
+    }
+
+    private static func rewriteChecksum(_ header: inout [UInt8]) {
+        for index in 148..<156 { header[index] = 0x20 }
+        let checksum = header.reduce(0) { $0 + Int($1) }
+        let text = String(format: "%06o", checksum)
+        for (index, byte) in text.utf8.enumerated() { header[148 + index] = byte }
+        header[154] = 0
+        header[155] = 0x20
     }
 
     static func gzip(_ data: Data) -> Data {
@@ -125,6 +169,63 @@ final class CrateArchiveTests: XCTestCase {
         }
     }
 
+    func testRejectsTarHeaderChecksumMismatch() {
+        var tar = TarFixture.tar([
+            ("\(root)/Cargo.toml", Data("[package]".utf8), UInt8(ascii: "0")),
+        ])
+        tar[10] ^= 0x01
+        XCTAssertThrowsError(try TarArchiveReader.entries(in: tar)) { error in
+            XCTAssertEqual(
+                error as? CrateArchiveError,
+                .corruptArchive("tar header checksum mismatch")
+            )
+        }
+    }
+
+    func testRejectsTruncatedEndMarkerAndPAXMetadata() {
+        let valid = TarFixture.tar([
+            ("\(root)/Cargo.toml", Data("[package]".utf8), UInt8(ascii: "0")),
+        ])
+        XCTAssertThrowsError(try TarArchiveReader.entries(in: Data(valid.dropLast(512))))
+
+        let pax = TarFixture.tar([
+            ("PaxHeaders/path", Data("20 path=elsewhere\n".utf8), UInt8(ascii: "x")),
+        ])
+        XCTAssertThrowsError(try TarArchiveReader.entries(in: pax)) { error in
+            XCTAssertEqual(error as? CrateArchiveError, .unsupportedEntry("PAX metadata"))
+        }
+    }
+
+    func testRejectsDuplicatePaths() {
+        let tar = TarFixture.tar([
+            ("\(root)/src/lib.rs", Data("one".utf8), UInt8(ascii: "0")),
+            ("\(root)/src/lib.rs", Data("two".utf8), UInt8(ascii: "0")),
+        ])
+        XCTAssertThrowsError(try TarArchiveReader.entries(in: tar)) { error in
+            XCTAssertEqual(
+                error as? CrateArchiveError,
+                .duplicatePath("\(self.root)/src/lib.rs")
+            )
+        }
+    }
+
+    func testReadsValidatedPositiveBase256Size() throws {
+        var tar = Data()
+        let header = TarFixture.header(
+            path: "\(root)/one-byte",
+            size: 1,
+            typeFlag: UInt8(ascii: "0")
+        )
+        tar.append(TarFixture.replacingSizeWithBase256(header, size: 1))
+        tar.append(Data([0x41]))
+        tar.append(Data(repeating: 0, count: 511))
+        tar.append(Data(repeating: 0, count: 1024))
+
+        let entries = try TarArchiveReader.entries(in: tar)
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries[0].contents, Data([0x41]))
+    }
+
     func testRejectsTraversalAbsoluteAndForeignRootPaths() {
         for path in ["../escape.rs", "/etc/passwd", "other-1.0.0/src/lib.rs", "\(root)/../x.rs"] {
             XCTAssertThrowsError(
@@ -164,5 +265,80 @@ final class CrateArchiveTests: XCTestCase {
         let digest = CrateStore.sha256(payload)
         XCTAssertEqual(digest.count, 64)
         XCTAssertNotEqual(digest, CrateStore.sha256(Data("other bytes".utf8)))
+    }
+
+    func testCompletedSourceDetectsTamperingAndRepairsFromVerifiedArchive() async throws {
+        let name = "cachetest\(UUID().uuidString.replacingOccurrences(of: "-", with: "").prefix(8))"
+        let version = SemanticVersion("1.0.0")!
+        let archive = TarFixture.gzip(TarFixture.tar([
+            (
+                "\(name)-\(version)/Cargo.toml",
+                Data("[package]\nname = \"\(name)\"\nversion = \"1.0.0\"\nedition = \"2021\"\n".utf8),
+                UInt8(ascii: "0")
+            ),
+            (
+                "\(name)-\(version)/src/lib.rs",
+                Data("pub fn value() -> u8 { 1 }\n".utf8),
+                UInt8(ascii: "0")
+            ),
+            (
+                "\(name)-\(version)/build.rs",
+                Data("fn main() {}\n".utf8),
+                UInt8(ascii: "0")
+            ),
+        ]))
+        let checksum = CrateStore.sha256(archive)
+        CrateArchiveURLProtocol.responseData = archive
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [CrateArchiveURLProtocol.self]
+        let store = CrateStore(
+            session: URLSession(configuration: configuration),
+            downloadBase: URL(string: "https://fixtures.invalid/crates")!
+        )
+        guard let sourceURL = CrateStorageLayout.sourceDirectory(name: name, version: version),
+              let archiveURL = CrateStorageLayout.archiveURL(name: name, version: version)
+        else { return XCTFail("Package cache must be available in tests") }
+        let backupURL = sourceURL.deletingLastPathComponent()
+            .appending(path: ".backup-\(sourceURL.lastPathComponent)")
+        defer {
+            try? FileManager.default.removeItem(at: sourceURL)
+            try? FileManager.default.removeItem(at: backupURL)
+            try? FileManager.default.removeItem(at: archiveURL)
+        }
+
+        let materialized = try await store.materialize(
+            name: name,
+            version: version,
+            checksum: checksum
+        )
+        XCTAssertEqual(materialized.manifest.buildScriptPath, "build.rs")
+        XCTAssertTrue(store.isMaterialized(name: name, version: version, checksum: checksum))
+
+        let libraryURL = sourceURL.appending(path: "src/lib.rs")
+        try Data("pub fn value() -> u8 { 2 }\n".utf8).write(to: libraryURL, options: .atomic)
+        XCTAssertFalse(
+            store.isMaterialized(name: name, version: version, checksum: checksum),
+            "A same-size source edit must invalidate verified registry source"
+        )
+
+        _ = try await store.materialize(
+            name: name,
+            version: version,
+            checksum: checksum,
+            allowNetwork: false
+        )
+        XCTAssertTrue(store.isMaterialized(name: name, version: version, checksum: checksum))
+
+        try FileManager.default.moveItem(at: sourceURL, to: backupURL)
+        try FileManager.default.createDirectory(at: sourceURL, withIntermediateDirectories: true)
+        try Data("partial".utf8).write(to: sourceURL.appending(path: "Cargo.toml"))
+        _ = try await store.materialize(
+            name: name,
+            version: version,
+            checksum: checksum,
+            allowNetwork: false
+        )
+        XCTAssertTrue(store.isMaterialized(name: name, version: version, checksum: checksum))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: backupURL.path))
     }
 }

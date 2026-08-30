@@ -1,5 +1,13 @@
 import SwiftUI
 
+/// Release capabilities stay explicit and auditable. The implementations are
+/// retained, but production UI/network paths remain dormant until provisioning
+/// and server evidence satisfy their P0 gates.
+enum CrabrixReleaseFeatures {
+    static let gameCenterEnabled = false
+    static let crabrixBoardEnabled = false
+}
+
 @main
 struct CrabrixApp: App {
     /// Rating and achievements are earned everywhere, so the store is owned once
@@ -25,13 +33,19 @@ struct CrabrixApp: App {
                 .gameCenterAuthentication(gameCenter)
                 .task {
                     vitals.refresh(points: progress.state.totalPoints)
-                    gameCenter.authenticate()
+                    if CrabrixReleaseFeatures.gameCenterEnabled {
+                        gameCenter.authenticate()
+                    }
                 }
                 .onReceive(progress.$state) { state in
                     vitals.refresh(points: state.totalPoints)
                     Task {
-                        await gameCenter.submit(state: state)
-                        await leaderboard.publish(state: state)
+                        if CrabrixReleaseFeatures.gameCenterEnabled {
+                            await gameCenter.submit(state: state)
+                        }
+                        if CrabrixReleaseFeatures.crabrixBoardEnabled {
+                            await leaderboard.publish(state: state)
+                        }
                     }
                 }
         }

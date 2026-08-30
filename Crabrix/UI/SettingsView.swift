@@ -250,8 +250,8 @@ struct SettingsView: View {
 
     private var cargoStorageSection: some View {
         SettingsSection(
-            title: "Cargo storage",
-            detail: "Downloaded package sources and compiled artifacts live in the app cache."
+            title: "Local build storage",
+            detail: "Compiled projects, Cargo packages, and downloaded sources live in the app cache."
         ) {
             SettingsFactRow(
                 title: "Downloaded archives",
@@ -266,10 +266,16 @@ struct SettingsView: View {
                 tint: CrabrixTheme.amber
             )
             SettingsFactRow(
-                title: "Build artifacts",
+                title: "Package artifacts",
                 value: Self.formatted(storage.artifactBytes),
                 icon: "cube.transparent.fill",
                 tint: CrabrixTheme.mint
+            )
+            SettingsFactRow(
+                title: "Project builds",
+                value: Self.formatted(storage.projectArtifactBytes),
+                icon: "hammer.circle.fill",
+                tint: CrabrixTheme.amber
             )
             SettingsFactRow(
                 title: "Total",
@@ -305,7 +311,7 @@ struct SettingsView: View {
             .buttonStyle(.bordered)
 
             Label(
-                "Clearing artifacts also forgets recorded build results, so a package marked unsupported is compiled again on the next build. Clearing the cache removes offline packages, and a project that used them needs the network again.",
+                "Clearing artifacts removes cached project programs and forgets recorded package build results, so the next Run recompiles them. Clearing the whole cache also removes offline packages, and a project that used them needs the network again.",
                 systemImage: "exclamationmark.triangle"
             )
             .font(.caption2)
@@ -382,7 +388,7 @@ struct SettingsView: View {
             Link(destination: CrabrixLinks.support) {
                 SettingsLinkRow(
                     title: "Support",
-                    detail: "Questions, bugs, and reporting a leaderboard name",
+                    detail: "Questions, release notes, and bug reports",
                     icon: "lifepreserver.fill",
                     tint: CrabrixTheme.mint,
                     isExternal: true

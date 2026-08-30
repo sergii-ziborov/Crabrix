@@ -94,14 +94,15 @@ final class CodeContributionLedgerTests: XCTestCase {
     func testTheSecondRunIsMeasuredAgainstTheFirst() {
         let (ledger, suite) = makeLedger()
         defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+        let projectID = UUID()
 
-        let first = ledger.record(project: "demo", files: ["main.rs": "a\nb\n"])
+        let first = ledger.record(projectID: projectID, files: ["main.rs": "a\nb\n"])
         XCTAssertTrue(first.isFirstRun)
 
-        let second = ledger.record(project: "demo", files: ["main.rs": "a\nb\n"])
+        let second = ledger.record(projectID: projectID, files: ["main.rs": "a\nb\n"])
         XCTAssertEqual(second.changedLines, 0, "nothing changed between the runs")
 
-        let third = ledger.record(project: "demo", files: ["main.rs": "a\nb\nc\n"])
+        let third = ledger.record(projectID: projectID, files: ["main.rs": "a\nb\nc\n"])
         XCTAssertEqual(third.addedLines, 1)
     }
 
@@ -109,8 +110,23 @@ final class CodeContributionLedgerTests: XCTestCase {
         let (ledger, suite) = makeLedger()
         defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
 
-        _ = ledger.record(project: "one", files: ["main.rs": "a\n"])
-        let other = ledger.record(project: "two", files: ["main.rs": "a\n"])
+        _ = ledger.record(projectID: UUID(), files: ["main.rs": "a\n"])
+        let other = ledger.record(projectID: UUID(), files: ["main.rs": "a\n"])
         XCTAssertTrue(other.isFirstRun, "a different project starts from scratch")
+    }
+
+    func testSameNamedProjectsCannotShareABaseline() {
+        let (ledger, suite) = makeLedger()
+        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+        let firstID = UUID()
+        let secondID = UUID()
+
+        _ = ledger.record(projectID: firstID, files: ["main.rs": "same name, first project"])
+        let second = ledger.record(
+            projectID: secondID,
+            files: ["main.rs": "same name, second project"]
+        )
+
+        XCTAssertTrue(second.isFirstRun)
     }
 }

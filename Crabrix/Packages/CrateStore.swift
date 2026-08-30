@@ -34,6 +34,13 @@ enum CrateStorageLayout {
     static var archiveDirectory: URL? { root?.appending(path: "archives", directoryHint: .isDirectory) }
     static var sourceDirectory: URL? { root?.appending(path: "src", directoryHint: .isDirectory) }
     static var artifactDirectory: URL? { root?.appending(path: "artifacts", directoryHint: .isDirectory) }
+    /// Root-program Wasm files are cached separately from dependency rlibs.
+    /// Keep the location in the shared layout so Settings measures the same
+    /// bytes that the compiler writes and the clear action removes.
+    static var projectArtifactDirectory: URL? {
+        FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
+            .appending(path: "CrabrixCompiler", directoryHint: .isDirectory)
+    }
 
     static func sourceDirectory(name: String, version: SemanticVersion) -> URL? {
         sourceDirectory?.appending(path: "\(name)-\(version)", directoryHint: .isDirectory)
@@ -48,24 +55,52 @@ enum CrateStorageLayout {
 struct CrateStorageUsage: Equatable, Sendable {
     var archiveBytes: Int64 = 0
     var sourceBytes: Int64 = 0
+    /// Compiled dependency metadata and libraries under CrabrixCargo.
     var artifactBytes: Int64 = 0
+    /// Compiled root-program Wasm files under CrabrixCompiler.
+    var projectArtifactBytes: Int64 = 0
     var indexBytes: Int64 = 0
     var packageCount = 0
 
-    var totalBytes: Int64 { archiveBytes + sourceBytes + artifactBytes + indexBytes }
+    var buildArtifactBytes: Int64 { artifactBytes + projectArtifactBytes }
+    var totalBytes: Int64 {
+        archiveBytes + sourceBytes + buildArtifactBytes + indexBytes
+    }
 
     static func measure() -> CrateStorageUsage {
+        measure(
+            archiveDirectory: CrateStorageLayout.archiveDirectory,
+            sourceDirectory: CrateStorageLayout.sourceDirectory,
+            artifactDirectory: CrateStorageLayout.artifactDirectory,
+            projectArtifactDirectory: CrateStorageLayout.projectArtifactDirectory,
+            indexDirectory: CrateStorageLayout.indexCacheDirectory
+        )
+    }
+
+    /// Injectable directories keep the accounting independently testable and
+    /// prevent the Settings screen from drifting away from the real layout.
+    static func measure(
+        archiveDirectory: URL?,
+        sourceDirectory: URL?,
+        artifactDirectory: URL?,
+        projectArtifactDirectory: URL?,
+        indexDirectory: URL?
+    ) -> CrateStorageUsage {
         var usage = CrateStorageUsage()
-        usage.archiveBytes = directorySize(CrateStorageLayout.archiveDirectory)
-        usage.sourceBytes = directorySize(CrateStorageLayout.sourceDirectory)
-        usage.artifactBytes = directorySize(CrateStorageLayout.artifactDirectory)
-        usage.indexBytes = directorySize(CrateStorageLayout.indexCacheDirectory)
-        if let sources = CrateStorageLayout.sourceDirectory,
+        usage.archiveBytes = directorySize(archiveDirectory)
+        usage.sourceBytes = directorySize(sourceDirectory)
+        usage.artifactBytes = directorySize(artifactDirectory)
+        usage.projectArtifactBytes = directorySize(projectArtifactDirectory)
+        usage.indexBytes = directorySize(indexDirectory)
+        if let sources = sourceDirectory,
            let entries = try? FileManager.default.contentsOfDirectory(
                at: sources,
-               includingPropertiesForKeys: nil
+               includingPropertiesForKeys: [.isDirectoryKey]
            ) {
-            usage.packageCount = entries.count
+            usage.packageCount = entries.filter {
+                (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
+                    && !$0.lastPathComponent.hasPrefix(".")
+            }.count
         }
         return usage
     }
@@ -95,6 +130,7 @@ enum CrateDownloadError: LocalizedError, Equatable {
     case server(Int)
     case tooLarge
     case missingManifest(String)
+    case offlineCacheMiss(String)
 
     var errorDescription: String? {
         switch self {
@@ -103,6 +139,8 @@ enum CrateDownloadError: LocalizedError, Equatable {
         case let .server(code): "The package registry returned HTTP \(code)."
         case .tooLarge: "The package archive is larger than Crabrix downloads."
         case let .missingManifest(name): "\(name) does not contain a Cargo.toml."
+        case let .offlineCacheMiss(package):
+            "Offline build is missing verified source or archive for \(package)."
         }
     }
 }
@@ -113,6 +151,17 @@ struct MaterializedCrate: Sendable, Equatable {
     let version: SemanticVersion
     let sourceDirectory: URL
     let manifest: CratePackageManifest
+}
+
+private struct CrateSourceCompletion: Codable, Equatable {
+    static let fileName = ".crabrix-complete.json"
+    let package: String
+    let version: String
+    let checksum: String
+    let fileCount: Int
+    let expandedBytes: Int64
+    let sourceTreeHash: String
+    let completed: Bool
 }
 
 /// Downloads, verifies, and extracts `.crate` archives.
@@ -140,13 +189,25 @@ actor CrateStore {
     func materialize(
         name: String,
         version: SemanticVersion,
-        checksum: String
+        checksum: String,
+        allowNetwork: Bool = true
     ) async throws -> MaterializedCrate {
         guard let sourceURL = CrateStorageLayout.sourceDirectory(name: name, version: version) else {
             throw CrateDownloadError.storageUnavailable
         }
+        try recoverInterruptedSwap(
+            at: sourceURL,
+            name: name,
+            version: version,
+            checksum: checksum
+        )
 
-        if let manifest = try? loadManifest(at: sourceURL, name: name) {
+        if Self.hasValidCompletedSource(
+            at: sourceURL,
+            name: name,
+            version: version,
+            checksum: checksum
+        ), let manifest = try? loadManifest(at: sourceURL, name: name) {
             return MaterializedCrate(
                 name: name,
                 version: version,
@@ -155,8 +216,19 @@ actor CrateStore {
             )
         }
 
-        let archive = try await archiveData(name: name, version: version, checksum: checksum)
-        try extract(archive, name: name, version: version, into: sourceURL)
+        let archive = try await archiveData(
+            name: name,
+            version: version,
+            checksum: checksum,
+            allowNetwork: allowNetwork
+        )
+        try extract(
+            archive,
+            name: name,
+            version: version,
+            checksum: checksum,
+            into: sourceURL
+        )
         let manifest = try loadManifest(at: sourceURL, name: name)
         return MaterializedCrate(
             name: name,
@@ -167,12 +239,19 @@ actor CrateStore {
     }
 
     /// True when the crate's source is already extracted, i.e. usable offline.
-    nonisolated func isMaterialized(name: String, version: SemanticVersion) -> Bool {
+    nonisolated func isMaterialized(
+        name: String,
+        version: SemanticVersion,
+        checksum: String
+    ) -> Bool {
         guard let sourceURL = CrateStorageLayout.sourceDirectory(name: name, version: version) else {
             return false
         }
-        return FileManager.default.fileExists(
-            atPath: sourceURL.appending(path: "Cargo.toml").path
+        return Self.hasValidCompletedSource(
+            at: sourceURL,
+            name: name,
+            version: version,
+            checksum: checksum
         )
     }
 
@@ -197,11 +276,15 @@ actor CrateStore {
     private func archiveData(
         name: String,
         version: SemanticVersion,
-        checksum: String
+        checksum: String,
+        allowNetwork: Bool
     ) async throws -> Data {
         if let cached = cachedArchive(name: name, version: version),
            Self.sha256(cached) == checksum.lowercased() {
             return cached
+        }
+        guard allowNetwork else {
+            throw CrateDownloadError.offlineCacheMiss("\(name) \(version)")
         }
 
         let url = downloadBase
@@ -263,6 +346,7 @@ actor CrateStore {
         _ archive: Data,
         name: String,
         version: SemanticVersion,
+        checksum: String,
         into destination: URL
     ) throws {
         let tar = try GzipDecoder.decompress(archive, limit: limits.maximumExpandedBytes)
@@ -277,6 +361,7 @@ actor CrateStore {
         defer { try? fileManager.removeItem(at: staging) }
 
         var wroteManifest = false
+        var normalizedPaths: Set<String> = []
         for entry in entries {
             guard let relative = try TarArchiveReader.normalizedRelativePath(
                 entry.path,
@@ -284,6 +369,12 @@ actor CrateStore {
                 limits: limits
             ) else {
                 continue
+            }
+            let collisionKey = relative
+                .precomposedStringWithCanonicalMapping
+                .lowercased()
+            guard normalizedPaths.insert(collisionKey).inserted else {
+                throw CrateArchiveError.duplicatePath(relative)
             }
             let fileURL = staging.appending(path: relative)
             try fileManager.createDirectory(
@@ -295,14 +386,145 @@ actor CrateStore {
         }
         guard wroteManifest else { throw CrateDownloadError.missingManifest(name) }
 
-        if fileManager.fileExists(atPath: destination.path) {
-            try fileManager.removeItem(at: destination)
-        }
+        let evidence = Self.sourceTreeEvidence(at: staging)
+        let completion = CrateSourceCompletion(
+            package: name,
+            version: version.description,
+            checksum: checksum.lowercased(),
+            fileCount: evidence.fileCount,
+            expandedBytes: evidence.expandedBytes,
+            sourceTreeHash: evidence.sourceTreeHash,
+            completed: true
+        )
+        let completionData = try JSONEncoder().encode(completion)
+        try completionData.write(
+            to: staging.appending(path: CrateSourceCompletion.fileName),
+            options: .atomic
+        )
+
         try fileManager.createDirectory(
             at: destination.deletingLastPathComponent(),
             withIntermediateDirectories: true
         )
-        try fileManager.moveItem(at: staging, to: destination)
+        let backup = Self.backupURL(for: destination)
+        if fileManager.fileExists(atPath: backup.path) {
+            try fileManager.removeItem(at: backup)
+        }
+        if fileManager.fileExists(atPath: destination.path) {
+            try fileManager.moveItem(at: destination, to: backup)
+        }
+        do {
+            try fileManager.moveItem(at: staging, to: destination)
+            if fileManager.fileExists(atPath: backup.path) {
+                try fileManager.removeItem(at: backup)
+            }
+        } catch {
+            if !fileManager.fileExists(atPath: destination.path),
+               fileManager.fileExists(atPath: backup.path) {
+                try? fileManager.moveItem(at: backup, to: destination)
+            }
+            throw error
+        }
+    }
+
+    private func recoverInterruptedSwap(
+        at destination: URL,
+        name: String,
+        version: SemanticVersion,
+        checksum: String
+    ) throws {
+        let backup = Self.backupURL(for: destination)
+        guard fileManager.fileExists(atPath: backup.path) else { return }
+        if Self.hasValidCompletedSource(
+            at: destination,
+            name: name,
+            version: version,
+            checksum: checksum
+        ) {
+            try fileManager.removeItem(at: backup)
+            return
+        }
+        guard Self.hasValidCompletedSource(
+            at: backup,
+            name: name,
+            version: version,
+            checksum: checksum
+        ) else { return }
+        if fileManager.fileExists(atPath: destination.path) {
+            try fileManager.removeItem(at: destination)
+        }
+        try fileManager.moveItem(at: backup, to: destination)
+    }
+
+    private nonisolated static func backupURL(for destination: URL) -> URL {
+        destination.deletingLastPathComponent()
+            .appending(path: ".backup-\(destination.lastPathComponent)", directoryHint: .isDirectory)
+    }
+
+    private nonisolated static func hasValidCompletedSource(
+        at sourceURL: URL,
+        name: String,
+        version: SemanticVersion,
+        checksum: String
+    ) -> Bool {
+        let completionURL = sourceURL.appending(path: CrateSourceCompletion.fileName)
+        guard let data = try? Data(contentsOf: completionURL),
+              let completion = try? JSONDecoder().decode(CrateSourceCompletion.self, from: data),
+              completion.completed,
+              completion.package == name,
+              completion.version == version.description,
+              completion.checksum == checksum.lowercased(),
+              FileManager.default.fileExists(
+                  atPath: sourceURL.appending(path: "Cargo.toml").path
+              )
+        else { return false }
+        let actual = sourceTreeEvidence(at: sourceURL)
+        return actual.fileCount == completion.fileCount
+            && actual.expandedBytes == completion.expandedBytes
+            && actual.sourceTreeHash == completion.sourceTreeHash
+    }
+
+    private nonisolated static func sourceTreeEvidence(
+        at directory: URL
+    ) -> (fileCount: Int, expandedBytes: Int64, sourceTreeHash: String) {
+        guard let enumerator = FileManager.default.enumerator(
+            at: directory,
+            includingPropertiesForKeys: [.isRegularFileKey, .fileSizeKey],
+            options: [.skipsPackageDescendants]
+        ) else { return (0, 0, Self.sha256(Data())) }
+        var regularFiles: [URL] = []
+        for case let url as URL in enumerator {
+            guard url.lastPathComponent != CrateSourceCompletion.fileName,
+                  let values = try? url.resourceValues(forKeys: [.isRegularFileKey]),
+                  values.isRegularFile == true
+            else { continue }
+            regularFiles.append(url)
+        }
+        regularFiles.sort {
+            $0.path.replacingOccurrences(of: directory.path, with: "")
+                < $1.path.replacingOccurrences(of: directory.path, with: "")
+        }
+
+        var count = 0
+        var bytes: Int64 = 0
+        var hasher = SHA256()
+        for url in regularFiles {
+            guard let data = try? Data(contentsOf: url) else {
+                return (-1, -1, "unreadable")
+            }
+            let relativePath = String(url.path.dropFirst(directory.path.count))
+            hasher.update(data: Data(relativePath.utf8))
+            hasher.update(data: Data([0]))
+            hasher.update(data: data)
+            hasher.update(data: Data([0]))
+            count += 1
+            bytes += Int64(data.count)
+        }
+        return (
+            count,
+            bytes,
+            hasher.finalize().map { String(format: "%02x", $0) }.joined()
+        )
     }
 
     private func loadManifest(at directory: URL, name: String) throws -> CratePackageManifest {
@@ -310,6 +532,11 @@ actor CrateStore {
         guard let data = try? Data(contentsOf: manifestURL) else {
             throw CrateDownloadError.missingManifest(name)
         }
-        return try CratePackageManifest.parse(String(decoding: data, as: UTF8.self))
+        let manifest = try CratePackageManifest.parse(String(decoding: data, as: UTF8.self))
+        return manifest.detectingImplicitBuildScript(
+            fileExists: fileManager.fileExists(
+                atPath: directory.appending(path: "build.rs").path
+            )
+        )
     }
 }

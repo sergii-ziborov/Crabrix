@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-29T23:33:12Z",
+  "tooling": {
+    "xcodeVersion": "27.0",
+    "xcodeBuild": "27A5228h",
+    "swiftVersion": "6.4",
+    "wasmKitVersion": "0.3.1",
+    "wasmKitUpstreamCommit": "ee36070acc31878ef727b90d5bdc4c9cc1fff22e"
+  },
+  "toolchain": {
+    "id": "artifacts-test-7",
+    "rustcSHA256": "41412081eefc3e08ec5664ed0748902a7e575e1f267898dcc64d412702df7e83",
+    "sysrootManifestSHA256": "a89ba732c649a983126750112268614c80b6e7d6bba8c60980cbfd32e04d9892",
+    "sysrootFilesDigestSHA256": "191974854c167ec1c1e9c3186de94811645dc45bae85435bcc2db968d568013a"
+  },
+  "source": {
+    "baseCommit": "74ffeebd0487380365d224653b4019395f95ab2d",
+    "workingTree": "uncommitted",
+    "note": "A final immutable source/archive checksum must be recorded after commit and archive."
+  }
+}

@@ -364,6 +364,7 @@ struct SuccessInspector: View {
     let result: CompilationResult
     let practiceCompleted: Bool
     let canContinueLearning: Bool
+    let lessonEvidenceMessage: String?
     /// What the run earned, and on what, so the number is never unexplained.
     let contribution: CodeContribution?
     let onRunNext: () -> Void
@@ -406,6 +407,9 @@ struct SuccessInspector: View {
                     EvidenceRow(label: "stdout", value: result.stdout.trimmingCharacters(in: .whitespacesAndNewlines))
                 }
                 EvidenceRow(label: "Practice", value: practiceCompleted ? "Passed" : "Not attempted")
+                if let lessonEvidenceMessage {
+                    EvidenceRow(label: "Lesson", value: lessonEvidenceMessage)
+                }
                 if let contribution {
                     EvidenceRow(
                         label: "Rating",

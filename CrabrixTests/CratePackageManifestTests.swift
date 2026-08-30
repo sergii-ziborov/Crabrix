@@ -29,6 +29,7 @@ final class CratePackageManifestTests: XCTestCase {
         XCTAssertEqual(manifest.library.path, "src/other.rs")
         XCTAssertEqual(manifest.libraryCrateName, "my_lib")
         XCTAssertEqual(manifest.features["default"], ["std"])
+        XCTAssertFalse(manifest.buildScriptDisabled)
     }
 
     func testDefaultsEditionAndDerivesCrateNameFromPackageName() throws {
@@ -41,7 +42,29 @@ final class CratePackageManifestTests: XCTestCase {
         XCTAssertEqual(manifest.edition, "2015")
         XCTAssertEqual(manifest.libraryCrateName, "cfg_if")
         XCTAssertNil(manifest.buildScriptPath)
+        XCTAssertFalse(manifest.buildScriptDisabled)
         XCTAssertFalse(manifest.isProcMacro)
+    }
+
+    func testDetectsImplicitBuildScriptUnlessManifestDisablesIt() throws {
+        let omitted = try CratePackageManifest.parse("""
+        [package]
+        name = "implicit"
+        version = "1.0.0"
+        """)
+        XCTAssertEqual(
+            omitted.detectingImplicitBuildScript(fileExists: true).buildScriptPath,
+            "build.rs"
+        )
+
+        let disabled = try CratePackageManifest.parse("""
+        [package]
+        name = "disabled"
+        version = "1.0.0"
+        build = false
+        """)
+        XCTAssertTrue(disabled.buildScriptDisabled)
+        XCTAssertNil(disabled.detectingImplicitBuildScript(fileExists: true).buildScriptPath)
     }
 
     func testDetectsProcMacroAndUnsupportedCrateTypes() throws {
@@ -122,6 +145,68 @@ final class CratePackageManifestTests: XCTestCase {
         XCTAssertTrue(manifest.isVirtualWorkspace)
         XCTAssertTrue(manifest.packageName.isEmpty)
     }
+
+    func testValidatesEditionAndResolverVersion() throws {
+        let manifest = try CratePackageManifest.parse("""
+        [package]
+        name = "edition-test"
+        version = "0.1.0"
+        edition = "2018"
+        resolver = "2"
+        """)
+        XCTAssertEqual(manifest.edition, "2018")
+        XCTAssertEqual(manifest.resolverVersion, .v2)
+
+        XCTAssertThrowsError(try CratePackageManifest.parse("""
+        [package]
+        name = "future"
+        version = "0.1.0"
+        edition = "2099"
+        """)) { error in
+            XCTAssertEqual(error as? CratePackageManifestError, .unsupportedEdition("2099"))
+        }
+    }
+
+    func testRejectsWorkspaceInheritanceAndInvalidDependencyRequirements() {
+        XCTAssertThrowsError(try CratePackageManifest.parse("""
+        [package]
+        name = "member"
+        version.workspace = true
+        """)) { error in
+            XCTAssertEqual(
+                error as? CratePackageManifestError,
+                .unsupportedWorkspaceInheritance("package.version")
+            )
+        }
+
+        XCTAssertThrowsError(try CratePackageManifest.parse("""
+        [package]
+        name = "member"
+        version = "1.0.0"
+
+        [dependencies]
+        inherited.workspace = true
+        """)) { error in
+            XCTAssertEqual(
+                error as? CratePackageManifestError,
+                .unsupportedWorkspaceInheritance("dependencies.inherited")
+            )
+        }
+
+        XCTAssertThrowsError(try CratePackageManifest.parse("""
+        [package]
+        name = "broken"
+        version = "1.0.0"
+
+        [dependencies]
+        serde = { features = ["derive"] }
+        """)) { error in
+            XCTAssertEqual(
+                error as? CratePackageManifestError,
+                .missingRegistryDependencyVersion("serde")
+            )
+        }
+    }
 }
 
 final class TargetCfgExpressionTests: XCTestCase {
@@ -161,6 +246,22 @@ final class TargetCfgExpressionTests: XCTestCase {
         XCTAssertEqual(
             TargetCfgExpression.parse("cfg(target_os = )"),
             .unsupported("cfg(target_os = )")
+        )
+    }
+
+    func testUnknownPropagatesThroughNotAllAndAny() {
+        let unknown = TargetCfgExpression.unsupported("cfg(unmodelled)")
+        XCTAssertEqual(
+            TargetCfgExpression.not(unknown).matchResult(target),
+            .unknown(reason: "Could not evaluate target predicate \"cfg(unmodelled)\".")
+        )
+        XCTAssertEqual(
+            TargetCfgExpression.all([.flag("target_has_atomic"), unknown]).matchResult(target),
+            .unknown(reason: "Could not evaluate target predicate \"cfg(unmodelled)\".")
+        )
+        XCTAssertEqual(
+            TargetCfgExpression.any([.flag("windows"), unknown]).matchResult(target),
+            .unknown(reason: "Could not evaluate target predicate \"cfg(unmodelled)\".")
         )
     }
 }

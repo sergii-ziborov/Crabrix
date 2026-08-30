@@ -22,17 +22,36 @@ private struct StubIndex: CrateIndexProviding {
     }
 }
 
+/// Proves offline/frozen resolution cannot accidentally fall through to the
+/// network-backed entry point.
+private struct OfflineOnlyIndex: CrateIndexProviding {
+    let files: [String: RegistryIndexFile]
+
+    func indexFile(for crate: String) async throws -> RegistryIndexFile {
+        throw CrateRegistryError.transport("network access is forbidden in this fixture")
+    }
+
+    func cachedIndexFile(for crate: String) async throws -> RegistryIndexFile {
+        guard let file = files[crate.lowercased()] else {
+            throw CrateRegistryError.offlineCacheMiss(crate)
+        }
+        return file
+    }
+}
+
 private func indexLine(
     _ name: String,
     _ version: String,
     deps: String = "[]",
     features: String = "{}",
     yanked: Bool = false,
-    links: String? = nil
+    links: String? = nil,
+    rustVersion: String? = nil
 ) -> String {
     let linksField = links.map { ",\"links\":\"\($0)\"" } ?? ""
+    let rustVersionField = rustVersion.map { ",\"rust_version\":\"\($0)\"" } ?? ""
     return """
-    {"name":"\(name)","vers":"\(version)","deps":\(deps),"cksum":"\(String(repeating: "a", count: 64))","features":\(features),"yanked":\(yanked)\(linksField)}
+    {"name":"\(name)","vers":"\(version)","deps":\(deps),"cksum":"\(String(repeating: "a", count: 64))","features":\(features),"yanked":\(yanked)\(linksField)\(rustVersionField)}
     """
 }
 
@@ -365,6 +384,206 @@ final class CargoResolverTests: XCTestCase {
             XCTFail("Expected a missing crate error")
         } catch let error as CrateRegistryError {
             XCTAssertEqual(error, .crateNotFound("absent"))
+        }
+    }
+
+    func testUnknownRequestedFeatureIsAnError() async throws {
+        let index = try StubIndex.make([
+            "alpha": [indexLine("alpha", "1.0.0", features: "{\"default\":[]}")],
+        ])
+        let root = try manifest("""
+        [dependencies]
+        alpha = { version = "1", features = ["ghost"] }
+        """)
+
+        do {
+            _ = try await CargoResolver(index: index).resolve(
+                rootDependencies: root.dependencies,
+                rootFeatures: root.features
+            )
+            XCTFail("Expected an unknown feature error")
+        } catch let error as CargoResolutionError {
+            XCTAssertEqual(error, .unknownFeature(package: "alpha", feature: "ghost"))
+        }
+    }
+
+    func testMSRVSelectsNewestVersionSupportedByBundledRustc() async throws {
+        let index = try StubIndex.make([
+            "alpha": [
+                indexLine("alpha", "1.0.0", rustVersion: "1.80"),
+                indexLine("alpha", "1.1.0", rustVersion: "1.97"),
+            ],
+        ])
+        let root = try manifest("[dependencies]\nalpha = \"1\"")
+        let graph = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features
+        )
+
+        XCTAssertEqual(graph.rootDependencies["alpha"]?.version.description, "1.0.0")
+    }
+
+    func testMSRVFailureNamesRequiredAndBundledVersions() async throws {
+        let index = try StubIndex.make([
+            "alpha": [indexLine("alpha", "1.0.0", rustVersion: "1.97")],
+        ])
+        let root = try manifest("[dependencies]\nalpha = \"1\"")
+
+        do {
+            _ = try await CargoResolver(index: index).resolve(
+                rootDependencies: root.dependencies,
+                rootFeatures: root.features
+            )
+            XCTFail("Expected an MSRV error")
+        } catch let error as CargoResolutionError {
+            XCTAssertEqual(
+                error,
+                .requiresNewerRust(crate: "alpha", required: "1.97.0", bundled: "1.96.0-dev")
+            )
+        }
+    }
+
+    func testNormalResolutionPreservesCompatibleCargoLockPin() async throws {
+        let originalIndex = try StubIndex.make([
+            "alpha": [indexLine("alpha", "1.0.0")],
+        ])
+        let root = try manifest("[dependencies]\nalpha = \"1\"")
+        let original = try await CargoResolver(index: originalIndex).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features
+        )
+        let lockfile = CargoLockfile(graph: original, rootName: "root", rootVersion: "0.1.0")
+
+        let newerIndex = try StubIndex.make([
+            "alpha": [indexLine("alpha", "1.0.0"), indexLine("alpha", "1.9.0")],
+        ])
+        let rebuilt = try await CargoResolver(index: newerIndex).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features,
+            lockfile: lockfile
+        )
+
+        XCTAssertEqual(rebuilt.rootDependencies["alpha"]?.version.description, "1.0.0")
+    }
+
+    func testLockedResolutionRejectsManifestThatWouldChangeLockfile() async throws {
+        let index = try StubIndex.make([
+            "alpha": [indexLine("alpha", "1.0.0"), indexLine("alpha", "2.0.0")],
+        ])
+        let oldRoot = try manifest("[dependencies]\nalpha = \"1\"")
+        let original = try await CargoResolver(index: index).resolve(
+            rootDependencies: oldRoot.dependencies,
+            rootFeatures: oldRoot.features
+        )
+        let lockfile = CargoLockfile(graph: original, rootName: "root", rootVersion: "0.1.0")
+        let changedRoot = try manifest("[dependencies]\nalpha = \"2\"")
+
+        do {
+            _ = try await CargoResolver(index: index).resolve(
+                rootDependencies: changedRoot.dependencies,
+                rootFeatures: changedRoot.features,
+                lockfile: lockfile,
+                mode: .locked
+            )
+            XCTFail("Expected --locked semantics to reject the manifest change")
+        } catch let error as CargoLockfileError {
+            XCTAssertEqual(error, .incompatible(crate: "alpha", requirement: "2"))
+        }
+    }
+
+    func testUpdateModeIgnoresOldPin() async throws {
+        let index = try StubIndex.make([
+            "alpha": [indexLine("alpha", "1.0.0"), indexLine("alpha", "1.9.0")],
+        ])
+        let root = try manifest("[dependencies]\nalpha = \"1\"")
+        let oldLock = CargoLockfile(entries: [
+            .init(
+                name: "root",
+                version: SemanticVersion("0.1.0")!,
+                checksum: nil,
+                dependencies: ["alpha 1.0.0"]
+            ),
+            .init(
+                name: "alpha",
+                version: SemanticVersion("1.0.0")!,
+                checksum: String(repeating: "a", count: 64),
+                dependencies: []
+            ),
+        ])
+
+        let updated = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features,
+            lockfile: oldLock,
+            mode: .update
+        )
+        XCTAssertEqual(updated.rootDependencies["alpha"]?.version.description, "1.9.0")
+    }
+
+    func testOfflineResolutionUsesOnlyCachedIndexData() async throws {
+        let file = try SparseRegistryIndex.parse(
+            Data(indexLine("alpha", "1.2.0").utf8),
+            name: "alpha"
+        )
+        let root = try manifest("[dependencies]\nalpha = \"1\"")
+        let graph = try await CargoResolver(
+            index: OfflineOnlyIndex(files: ["alpha": file])
+        ).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features,
+            mode: .offline
+        )
+
+        XCTAssertEqual(graph.rootDependencies["alpha"]?.version.description, "1.2.0")
+    }
+
+    func testFrozenResolutionRequiresCachedExactLockfileGraph() async throws {
+        let originalIndex = try StubIndex.make([
+            "alpha": [indexLine("alpha", "1.0.0")],
+        ])
+        let root = try manifest("[dependencies]\nalpha = \"1\"")
+        let original = try await CargoResolver(index: originalIndex).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features
+        )
+        let lockfile = CargoLockfile(
+            graph: original,
+            rootName: "root",
+            rootVersion: "0.1.0"
+        )
+        let cached = try SparseRegistryIndex.parse(
+            Data([
+                indexLine("alpha", "1.0.0"),
+                indexLine("alpha", "1.9.0"),
+            ].joined(separator: "\n").utf8),
+            name: "alpha"
+        )
+
+        let graph = try await CargoResolver(
+            index: OfflineOnlyIndex(files: ["alpha": cached])
+        ).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features,
+            lockfile: lockfile,
+            mode: .frozen
+        )
+
+        XCTAssertEqual(graph.rootDependencies["alpha"]?.version.description, "1.0.0")
+    }
+
+    func testOfflineResolutionNamesMissingCachedIndex() async throws {
+        let root = try manifest("[dependencies]\nalpha = \"1\"")
+        do {
+            _ = try await CargoResolver(
+                index: OfflineOnlyIndex(files: [:])
+            ).resolve(
+                rootDependencies: root.dependencies,
+                rootFeatures: root.features,
+                mode: .offline
+            )
+            XCTFail("Expected an exact offline cache miss")
+        } catch let error as CrateRegistryError {
+            XCTAssertEqual(error, .offlineCacheMiss("alpha"))
         }
     }
 }

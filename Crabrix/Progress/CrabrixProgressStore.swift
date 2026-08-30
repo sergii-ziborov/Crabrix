@@ -66,8 +66,11 @@ final class CrabrixProgressStore: ObservableObject {
 
     /// Applies an event: adds its points, updates the counters it affects, then
     /// unlocks whatever that made true.
-    func record(_ event: CrabrixProgressEvent) {
+    @discardableResult
+    func record(_ event: CrabrixProgressEvent, eventKey: String? = nil) -> Bool {
+        if let eventKey, state.processedEventKeys.contains(eventKey) { return false }
         var updated = state
+        if let eventKey { updated.processedEventKeys.insert(eventKey) }
         updated.totalPoints += event.points
         updated.lastActiveAt = Date()
 
@@ -110,10 +113,40 @@ final class CrabrixProgressStore: ObservableObject {
 
         state = updated
         persist()
-        if !unlocked.isEmpty { pendingCelebration = unlocked }
+        if !unlocked.isEmpty {
+            let pendingIDs = Set(pendingCelebration.map(\.id))
+            pendingCelebration += unlocked.filter { !pendingIDs.contains($0.id) }
+        }
+        return true
     }
 
     func clearCelebration() { pendingCelebration = [] }
+
+    /// Records mastery only once per exact pattern. Rating already comes from
+    /// the challenge lesson, so this method unlocks solution-method ladders without
+    /// creating a second reward that could be farmed by rerunning the project.
+    @discardableResult
+    func recordAlgorithmSolved(patternID: String) -> Bool {
+        guard AlgorithmCourseCatalog.pattern(id: patternID) != nil,
+              !state.solvedAlgorithmPatternIDs.contains(patternID)
+        else { return false }
+
+        var updated = state
+        updated.solvedAlgorithmPatternIDs.insert(patternID)
+        updated.lastActiveAt = Date()
+        let unlocked = CrabrixAchievementCatalog.newlyEarned(in: updated)
+        for achievement in unlocked {
+            updated.unlockedAchievementIDs.insert(achievement.id)
+        }
+
+        state = updated
+        persist()
+        if !unlocked.isEmpty {
+            let pendingIDs = Set(pendingCelebration.map(\.id))
+            pendingCelebration += unlocked.filter { !pendingIDs.contains($0.id) }
+        }
+        return true
+    }
 
     /// Resets everything. Only reachable from an explicit Settings action.
     func reset() {

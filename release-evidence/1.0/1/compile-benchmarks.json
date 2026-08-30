@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-29T23:33:12Z",
+  "status": "partial-physical-device-evidence",
+  "requiredScenarios": [
+    "cold E0502 check",
+    "verified repaired run",
+    "20 repeated checks",
+    "20 repeated runs",
+    "pure-compute stop and immediate next run"
+  ],
+  "measurements": [
+    {
+      "scenario": "cold E0502 check",
+      "device": "iPhone 13 mini",
+      "osVersion": "26.5 (23F77)",
+      "architecture": "arm64",
+      "configuration": "Release",
+      "durationSeconds": 9.198768019676208,
+      "result": "passed",
+      "diagnostic": "E0502"
+    },
+    {
+      "scenario": "Stop releases UI Run gate",
+      "device": "iPhone 17 Pro simulator",
+      "osVersion": "26.5 (23F77)",
+      "configuration": "Debug",
+      "durationSeconds": 0.7193799018859863,
+      "result": "passed"
+    }
+  ]
+}

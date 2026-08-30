@@ -1,4 +1,5 @@
 import GameKit
+import PhotosUI
 import SwiftUI
 
 /// The player's profile: identity, rating, vitals, and achievements.
@@ -12,8 +13,11 @@ struct ProfileView: View {
     @EnvironmentObject private var gameCenter: GameCenterService
     @EnvironmentObject private var leaderboard: LeaderboardClient
 
+    @StateObject private var avatarStore = LocalAvatarStore()
+
     @State private var gameCenterPanel: GameCenterPanel?
     @State private var isRemovalConfirmed = false
+    @State private var selectedAvatarItem: PhotosPickerItem?
 
     private enum GameCenterPanel: Identifiable {
         case leaderboard
@@ -25,8 +29,9 @@ struct ProfileView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 identityCard
-                publishCard
-                RatingSummaryCard(store: progress)
+                if CrabrixReleaseFeatures.crabrixBoardEnabled {
+                    publishCard
+                }
                 VitalsCard(store: vitals)
                 statsCard
                 AchievementsSection(store: progress)
@@ -47,18 +52,48 @@ struct ProfileView: View {
             )
             .ignoresSafeArea()
         }
+        .alert(
+            "Avatar",
+            isPresented: Binding(
+                get: { avatarStore.errorMessage != nil },
+                set: { if !$0 { avatarStore.errorMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) { avatarStore.errorMessage = nil }
+        } message: {
+            Text(avatarStore.errorMessage ?? "The image could not be loaded.")
+        }
+        .task(id: selectedAvatarItem) {
+            guard let selectedAvatarItem else { return }
+            do {
+                guard let data = try await selectedAvatarItem.loadTransferable(
+                    type: Data.self
+                ) else {
+                    avatarStore.errorMessage = "The selected image could not be read."
+                    return
+                }
+                await avatarStore.importImageData(data)
+            } catch {
+                avatarStore.errorMessage = error.localizedDescription
+            }
+        }
         .task {
-            gameCenter.authenticate()
-            await gameCenter.submit(state: progress.state)
-            await leaderboard.publish(state: progress.state)
-            await leaderboard.loadBoard()
+            if CrabrixReleaseFeatures.gameCenterEnabled {
+                gameCenter.authenticate()
+                await gameCenter.submit(state: progress.state)
+            }
+            if CrabrixReleaseFeatures.crabrixBoardEnabled {
+                await leaderboard.publish(state: progress.state)
+                await leaderboard.loadBoard()
+            }
         }
     }
 
     private var identityCard: some View {
-        VStack(alignment: .leading, spacing: 15) {
+        let hasCustomAvatar = avatarStore.hasCustomAvatar
+        return VStack(alignment: .leading, spacing: 15) {
             HStack(spacing: 15) {
-                avatar
+                avatarPicker
                 VStack(alignment: .leading, spacing: 3) {
                     Text(gameCenter.isSignedIn ? gameCenter.playerName : "Playing offline")
                         .font(.title3.bold())
@@ -68,7 +103,8 @@ struct ProfileView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
-                if let rank = gameCenter.globalRank {
+                if CrabrixReleaseFeatures.gameCenterEnabled,
+                   let rank = gameCenter.globalRank {
                     VStack(spacing: 1) {
                         Text("#\(rank)")
                             .font(.title3.bold().monospacedDigit())
@@ -80,7 +116,36 @@ struct ProfileView: View {
                 }
             }
 
-            if gameCenter.isSignedIn {
+            HStack(spacing: 10) {
+                PhotosPicker(
+                    selection: $selectedAvatarItem,
+                    matching: .images,
+                    photoLibrary: .shared()
+                ) {
+                    Label(
+                        hasCustomAvatar ? "Change photo" : "Choose photo",
+                        systemImage: "photo.on.rectangle"
+                    )
+                }
+                .buttonStyle(.bordered)
+
+                if hasCustomAvatar {
+                    Button(role: .destructive) {
+                        avatarStore.removeAvatar()
+                    } label: {
+                        Label("Remove", systemImage: "trash")
+                    }
+                    .buttonStyle(.bordered)
+                }
+
+                if avatarStore.isImporting {
+                    ProgressView()
+                        .controlSize(.small)
+                }
+            }
+            .font(.caption.bold())
+
+            if CrabrixReleaseFeatures.gameCenterEnabled, gameCenter.isSignedIn {
                 HStack(spacing: 10) {
                     Button { gameCenterPanel = .leaderboard } label: {
                         Label("Leaderboard", systemImage: "list.number")
@@ -109,39 +174,104 @@ struct ProfileView: View {
                 .foregroundStyle(CrabrixTheme.muted)
                 .fixedSize(horizontal: false, vertical: true)
             }
+
+            Divider().overlay(CrabrixTheme.border)
+            combinedProgress
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .crabrixPanel(cornerRadius: 16)
     }
 
-    private var avatar: some View {
-        Group {
-            if let photo = gameCenter.photo {
-                Image(uiImage: photo)
-                    .resizable()
-                    .scaledToFill()
-            } else {
-                Image(systemName: "person.fill")
-                    .font(.title)
-                    .foregroundStyle(CrabrixTheme.muted)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(CrabrixTheme.raised)
-            }
+    private var avatarPicker: some View {
+        let customImage = avatarStore.image
+        let gameCenterImage = CrabrixReleaseFeatures.gameCenterEnabled
+            ? gameCenter.photo
+            : nil
+        let hasCustomAvatar = customImage != nil
+        return PhotosPicker(
+            selection: $selectedAvatarItem,
+            matching: .images,
+            photoLibrary: .shared()
+        ) {
+            ProfileAvatarPickerLabel(
+                customImage: customImage,
+                gameCenterImage: gameCenterImage
+            )
         }
-        .frame(width: 60, height: 60)
-        .clipShape(Circle())
-        .overlay { Circle().stroke(CrabrixTheme.border, lineWidth: 1.5) }
+        .buttonStyle(.plain)
+        .accessibilityLabel(
+            hasCustomAvatar ? "Change profile photo" : "Choose profile photo"
+        )
+    }
+
+    private var combinedProgress: some View {
+        let rank = progress.rank
+        let lessonTotal = RustCourseCatalog.courses
+            .flatMap(\.units)
+            .flatMap(\.lessons)
+            .count
+        let lessonCompleted = min(progress.state.lessonsCompleted, lessonTotal)
+        let lessonProgress = lessonTotal == 0
+            ? 0
+            : Double(lessonCompleted) / Double(lessonTotal)
+
+        return VStack(spacing: 12) {
+            HStack(alignment: .top, spacing: 14) {
+                ProfileMetric(
+                    title: "RATING",
+                    value: CrabrixPointsFormatter.string(progress.state.totalPoints),
+                    detail: rank.title,
+                    systemImage: rank.systemImage,
+                    tint: CrabrixTheme.amber,
+                    progress: rank.progress(points: progress.state.totalPoints)
+                )
+
+                Divider()
+
+                ProfileMetric(
+                    title: "LEARN RUST",
+                    value: "\(lessonCompleted)/\(lessonTotal)",
+                    detail: "\(Int((lessonProgress * 100).rounded()))% complete",
+                    systemImage: "map.fill",
+                    tint: CrabrixTheme.mint,
+                    progress: lessonProgress
+                )
+            }
+
+            HStack {
+                Label(
+                    "\(progress.earnedAchievements.count)/\(CrabrixAchievementCatalog.all.count) achievements",
+                    systemImage: "rosette"
+                )
+                Spacer(minLength: 0)
+                if let next = rank.next {
+                    Text("\(next - progress.state.totalPoints) pts to next rank")
+                } else {
+                    Label("Top rank", systemImage: "crown.fill")
+                }
+            }
+            .font(.caption2.monospaced())
+            .foregroundStyle(CrabrixTheme.muted)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            "Rating \(progress.state.totalPoints), rank \(rank.title). "
+                + "\(lessonCompleted) of \(lessonTotal) Rust lessons complete."
+        )
     }
 
     private var subtitle: String {
         // Nothing here names Game Center unless it actually connected: an
         // explanation of a feature the build cannot offer reads as a fault.
+        guard CrabrixReleaseFeatures.gameCenterEnabled else {
+            return "Everything is stored on this device"
+        }
         switch gameCenter.status {
         case .signedIn:
-            "Game Center · rating syncs to the global board"
+            return "Game Center · rating syncs to the global board"
         default:
-            "Everything is stored on this device"
+            return "Everything is stored on this device"
         }
     }
 
@@ -289,6 +419,7 @@ struct ProfileView: View {
                 .foregroundStyle(CrabrixTheme.muted)
             let state = progress.state
             statRow("Lessons completed", "\(state.lessonsCompleted)", "graduationcap.fill")
+            statRow("Algorithms mastered", "\(state.solvedAlgorithmPatternIDs.count)/200", "function")
             statRow("Successful runs", "\(state.buildsSucceeded)", "play.circle.fill")
             statRow("Lines of Rust changed", "\(state.linesChanged)", "chart.bar.doc.horizontal.fill")
             statRow("Diagnostics repaired", "\(state.diagnosticsRepaired)", "bandage.fill")
@@ -316,6 +447,78 @@ struct ProfileView: View {
     }
 }
 
+private struct ProfileAvatarPickerLabel: View {
+    let customImage: UIImage?
+    let gameCenterImage: UIImage?
+
+    var body: some View {
+        ZStack(alignment: .bottomTrailing) {
+            Group {
+                if let image = customImage ?? gameCenterImage {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    Image(systemName: "person.fill")
+                        .font(.title)
+                        .foregroundStyle(CrabrixTheme.muted)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(CrabrixTheme.raised)
+                }
+            }
+            .frame(width: 68, height: 68)
+            .clipShape(Circle())
+            .overlay { Circle().stroke(CrabrixTheme.border, lineWidth: 1.5) }
+
+            Image(systemName: "camera.fill")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 23, height: 23)
+                .background(CrabrixTheme.coral, in: Circle())
+                .overlay { Circle().stroke(CrabrixTheme.panel, lineWidth: 2) }
+        }
+    }
+}
+
+private struct ProfileMetric: View {
+    let title: String
+    let value: String
+    let detail: String
+    let systemImage: String
+    let tint: Color
+    let progress: Double
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 7) {
+                Image(systemName: systemImage)
+                    .font(.caption.bold())
+                    .foregroundStyle(tint)
+                    .frame(width: 27, height: 27)
+                    .background(tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 8))
+                Text(title)
+                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                    .foregroundStyle(CrabrixTheme.muted)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+            }
+            Text(value)
+                .font(.system(size: 23, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+            Text(detail)
+                .font(.caption2.bold())
+                .foregroundStyle(tint)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+            ProgressView(value: progress)
+                .tint(tint)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
 /// Hosts Game Center's own leaderboard and achievement screens.
 private struct GameCenterSheet: UIViewControllerRepresentable {
     let controller: GKGameCenterViewController
@@ -329,7 +532,8 @@ private struct GameCenterSheet: UIViewControllerRepresentable {
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
-    final class Coordinator: NSObject, GKGameCenterControllerDelegate {
+    @MainActor
+    final class Coordinator: NSObject, @preconcurrency GKGameCenterControllerDelegate {
         func gameCenterViewControllerDidFinish(_ controller: GKGameCenterViewController) {
             controller.dismiss(animated: true)
         }

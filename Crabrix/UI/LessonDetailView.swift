@@ -11,14 +11,16 @@ struct LessonDetailView: View {
 
     @State private var page = 0
     @State private var selectedAnswer: Int?
+    @State private var lastWrongAnswer: Int?
     /// The last thing that cost or returned something, shown briefly in the header.
     @State private var lastOutcome: VitalsOutcome?
 
     private var brief: RustLessonBrief { lesson.brief }
     private var practice: RustLessonPractice { lesson.lessonPractice }
+    private var depth: RustLessonDepth { RustLessonDepthCatalog.depth(for: lesson) }
     /// The quick check gates the rest of the lesson, so it needs an answer
     /// before the summary page becomes reachable at all.
-    private var isQuickCheckAnswered: Bool { selectedAnswer != nil }
+    private var isQuickCheckAnswered: Bool { selectedAnswer == practice.correctAnswer }
     private var isLive: Bool {
         if case .planned = lesson.exercise { return false }
         return true
@@ -39,9 +41,10 @@ struct LessonDetailView: View {
         self.onAnswer = onAnswer
         // Older installations did not persist the chosen answer. A completed
         // lesson still opens as answered, using its known correct choice.
-        _selectedAnswer = State(
-            initialValue: savedAnswer ?? (isCompleted ? lesson.lessonPractice.correctAnswer : nil)
-        )
+        let correct = lesson.lessonPractice.correctAnswer
+        let restored = savedAnswer ?? (isCompleted ? correct : nil)
+        _selectedAnswer = State(initialValue: restored == correct ? correct : nil)
+        _lastWrongAnswer = State(initialValue: restored == correct ? nil : restored)
     }
 
     var body: some View {
@@ -154,6 +157,14 @@ struct LessonDetailView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            LessonCard(title: "Build the mental model", systemImage: "point.3.connected.trianglepath.dotted", tint: CrabrixTheme.blue) {
+                VStack(alignment: .leading, spacing: 14) {
+                    ForEach(Array(depth.traceSteps.enumerated()), id: \.offset) { index, step in
+                        LessonTraceStepRow(index: index + 1, step: step, tint: brief.tint)
+                    }
+                }
+            }
+
             objectives
         }
     }
@@ -211,18 +222,18 @@ struct LessonDetailView: View {
                     .foregroundStyle(CrabrixTheme.muted)
                 }
 
-                if let selectedAnswer {
+                if selectedAnswer != nil || lastWrongAnswer != nil {
                     Label(
-                        selectedAnswer == practice.correctAnswer
+                        isQuickCheckAnswered
                             ? "Correct — \(practice.feedback)"
                             : "Not quite — \(practice.feedback)",
-                        systemImage: selectedAnswer == practice.correctAnswer
+                        systemImage: isQuickCheckAnswered
                             ? "checkmark.circle.fill"
                             : "arrow.counterclockwise.circle.fill"
                     )
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(
-                        selectedAnswer == practice.correctAnswer
+                        isQuickCheckAnswered
                             ? CrabrixTheme.mint
                             : CrabrixTheme.amber
                     )
@@ -232,6 +243,19 @@ struct LessonDetailView: View {
             .padding(18)
             .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 18))
             .overlay { RoundedRectangle(cornerRadius: 18).stroke(CrabrixTheme.border) }
+
+            if isQuickCheckAnswered {
+                LessonCard(title: "Why the trap fails", systemImage: "exclamationmark.bubble.fill", tint: CrabrixTheme.amber) {
+                    Text(depth.misconception)
+                        .font(.headline)
+                        .strikethrough(color: CrabrixTheme.coral)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(depth.correction)
+                        .foregroundStyle(CrabrixTheme.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
     }
 
@@ -265,6 +289,29 @@ struct LessonDetailView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            LessonCard(title: "Transfer challenge", systemImage: "arrow.triangle.branch", tint: CrabrixTheme.coral) {
+                Text(depth.transferChallenge)
+                    .font(.headline)
+                    .fixedSize(horizontal: false, vertical: true)
+                Label(
+                    "Predict first. Compiler or observable behaviour is the evidence; a guess is not.",
+                    systemImage: "checkmark.seal.fill"
+                )
+                .font(.subheadline)
+                .foregroundStyle(CrabrixTheme.muted)
+                .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if !depth.connections.isEmpty {
+                LessonCard(title: "Connect the idea", systemImage: "link", tint: CrabrixTheme.blue) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(Array(depth.connections.enumerated()), id: \.offset) { _, connection in
+                            LessonConnectionRow(connection: connection)
+                        }
+                    }
+                }
+            }
+
             if isCompleted {
                 Label(
                     "Already completed — review is free, keeps its answer, and awards no additional rating.",
@@ -290,13 +337,18 @@ struct LessonDetailView: View {
     }
 
     private func answerButton(_ answer: String, at index: Int) -> some View {
-        let isSelected = selectedAnswer == index
+        let isSelected = selectedAnswer == index || lastWrongAnswer == index
         return Button {
-            guard selectedAnswer == nil else { return }
-            withAnimation(.easeInOut(duration: 0.16)) {
-                selectedAnswer = index
-            }
+            guard !isCompleted, selectedAnswer == nil else { return }
             let correct = index == practice.correctAnswer
+            withAnimation(.easeInOut(duration: 0.16)) {
+                if correct {
+                    selectedAnswer = index
+                    lastWrongAnswer = nil
+                } else {
+                    lastWrongAnswer = index
+                }
+            }
             withAnimation(.easeOut(duration: 0.2)) {
                 lastOutcome = vitals.recordAnswer(correct: correct, isReview: isCompleted)
             }
@@ -328,7 +380,7 @@ struct LessonDetailView: View {
             .opacity(isQuickCheckAnswered && !isSelected ? 0.55 : 1)
         }
         .buttonStyle(.plain)
-        .disabled(isQuickCheckAnswered)
+        .disabled(isCompleted || isQuickCheckAnswered)
     }
 
     private var navigationFooter: some View {
@@ -386,6 +438,52 @@ struct LessonDetailView: View {
             .padding(22)
             .frame(maxWidth: 760)
             .frame(maxWidth: .infinity)
+        }
+    }
+}
+
+private struct LessonTraceStepRow: View {
+    let index: Int
+    let step: RustLessonDepth.TraceStep
+    let tint: Color
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text("\(index)")
+                .font(.caption.monospaced().bold())
+                .foregroundStyle(CrabrixTheme.background)
+                .frame(width: 28, height: 28)
+                .background(tint, in: Circle())
+            VStack(alignment: .leading, spacing: 4) {
+                Text(step.title)
+                    .font(.subheadline.weight(.bold))
+                Text(step.detail)
+                    .font(.subheadline)
+                    .foregroundStyle(CrabrixTheme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+}
+
+private struct LessonConnectionRow: View {
+    let connection: RustLessonDepth.Connection
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: connection.direction == .previous ? "arrow.up.left.circle.fill" : "arrow.down.right.circle.fill")
+                .foregroundStyle(connection.direction == .previous ? CrabrixTheme.muted : CrabrixTheme.mint)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(connection.direction == .previous ? "BUILDS ON" : "LEADS TO")
+                    .font(.caption2.monospaced().bold())
+                    .foregroundStyle(CrabrixTheme.muted)
+                Text(connection.title)
+                    .font(.subheadline.weight(.bold))
+                Text(connection.concept)
+                    .font(.caption)
+                    .foregroundStyle(CrabrixTheme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 }
@@ -542,16 +640,13 @@ private extension RustLesson {
         case .runnable: "terminal.fill"
         case .borrowDiagnostic: "link.badge.plus"
         case .multiFile: "folder.fill.badge.gearshape"
+        case .algorithmChallenge: "function"
         case .planned: "book.closed.fill"
         }
     }
 
     private var lessonTint: Color {
-        switch exercise {
-        case .runnable: CrabrixTheme.mint
-        case .borrowDiagnostic: CrabrixTheme.coral
-        case .multiFile: CrabrixTheme.blue
-        case .planned: CrabrixTheme.amber
-        }
+        RustCourseCatalog.course(containingLessonID: id)?.theme.primaryColor
+            ?? CrabrixTheme.mint
     }
 }

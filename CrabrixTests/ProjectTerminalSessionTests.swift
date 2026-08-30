@@ -40,6 +40,28 @@ final class ProjectTerminalSessionTests: XCTestCase {
         XCTAssertTrue(terminal.lines.map(\.text).joined().contains("/workspace/first"))
     }
 
+    func testSameNamedProjectsKeepIndependentTerminalState() {
+        let terminal = ProjectTerminalSession()
+        let first = project(named: "demo")
+        let second = project(named: "demo")
+
+        terminal.attach(to: first)
+        terminal.command = "echo first"
+        terminal.submit(project: first, isBusy: false, onCheck: {}, onRun: {})
+        terminal.attach(to: second)
+
+        XCTAssertEqual(terminal.projectID, second.id)
+        XCTAssertFalse(terminal.lines.map(\.text).joined().contains("first"))
+
+        terminal.command = "echo second"
+        terminal.submit(project: second, isBusy: false, onCheck: {}, onRun: {})
+        terminal.attach(to: first)
+
+        let restored = terminal.lines.map(\.text).joined(separator: "\n")
+        XCTAssertTrue(restored.contains("first"))
+        XCTAssertFalse(restored.contains("second"))
+    }
+
     func testCargoRunInvokesBuildCallback() {
         let terminal = ProjectTerminalSession()
         let project = project(named: "runner")
@@ -105,9 +127,11 @@ final class ProjectTerminalSessionTests: XCTestCase {
     func testMutationCommandsReplaceProjectSnapshot() {
         let terminal = ProjectTerminalSession()
         var files = ["main.rs": "fn main() {}"]
+        let projectID = UUID()
 
         func project() -> CrabrixProject {
             CrabrixProject(
+                id: projectID,
                 name: "edit-lab",
                 files: files,
                 entryFile: "main.rs",

@@ -140,7 +140,7 @@ final class CodeContributionLedger: @unchecked Sendable {
 
     private let lock = NSLock()
     private let defaults: UserDefaults
-    private static let storageKey = "crabrix.contribution.v1"
+    private static let storageKey = "crabrix.contribution.v2"
     /// Enough for a real multi-file project, far short of anything worth worrying about.
     private static let maxBytesPerProject = 256 * 1_024
     private static let maxProjects = 30
@@ -152,16 +152,17 @@ final class CodeContributionLedger: @unchecked Sendable {
     }
 
     /// Measures this run against the last scored one and stores the new baseline.
-    func record(project: String, files: [String: String]) -> CodeContribution {
+    func record(projectID: UUID, files: [String: String]) -> CodeContribution {
         lock.lock()
         defer { lock.unlock() }
 
         var snapshots = loadLocked()
-        let previous = snapshots[project]?.files ?? [:]
+        let key = projectID.uuidString.lowercased()
+        let previous = snapshots[key]?.files ?? [:]
         let contribution = CodeContribution.measure(previous: previous, current: files)
 
         let trimmed = Self.trim(files)
-        snapshots[project] = Snapshot(files: trimmed, recordedAt: Date())
+        snapshots[key] = Snapshot(files: trimmed, recordedAt: Date())
         if snapshots.count > Self.maxProjects {
             let oldest = snapshots.min { $0.value.recordedAt < $1.value.recordedAt }
             if let oldest { snapshots.removeValue(forKey: oldest.key) }

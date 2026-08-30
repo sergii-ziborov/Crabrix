@@ -1,0 +1,320 @@
+import Foundation
+
+enum AlgorithmDifficulty: String, CaseIterable, Sendable {
+    case easy
+    case medium
+    case hard
+
+    var title: String { rawValue.uppercased() }
+
+    var lessonMinutes: Int {
+        switch self {
+        case .easy: 8
+        case .medium: 11
+        case .hard: 15
+        }
+    }
+}
+
+enum AlgorithmLessonStage: String, Sendable {
+    case model
+    case recognize
+    case challenge
+}
+
+struct AlgorithmPattern: Identifiable, Sendable {
+    let id: String
+    let title: String
+    let difficulty: AlgorithmDifficulty
+    let categoryID: String
+    let categoryTitle: String
+    let idea: String
+    let useCases: String
+    let complexity: String
+    let task: String
+    let visibleInput: String
+    let expectedAnswer: String
+    let rustSketch: String
+
+    var lessons: [RustLesson] {
+        [
+            lesson(stage: .model, title: "\(title): Mental Model", concept: idea),
+            lesson(stage: .recognize, title: "\(title): When to Use It", concept: useCases),
+            lesson(stage: .challenge, title: "Challenge: \(title)", concept: task),
+        ]
+    }
+
+    func lessonID(_ stage: AlgorithmLessonStage) -> String {
+        "algorithm.\(id).\(stage.rawValue)"
+    }
+
+    private func lesson(stage: AlgorithmLessonStage, title: String, concept: String) -> RustLesson {
+        RustLesson(
+            id: lessonID(stage),
+            title: title,
+            concept: concept,
+            minutes: difficulty.lessonMinutes,
+            exercise: stage == .challenge ? .algorithmChallenge : .planned
+        )
+    }
+}
+
+struct AlgorithmCategory: Identifiable, Sendable {
+    let id: String
+    let title: String
+    let subtitle: String
+    let systemImage: String
+    let achievementTitle: String
+    let patterns: [AlgorithmPattern]
+}
+
+struct AlgorithmChallenge: Equatable, Sendable {
+    let lessonID: String
+    let patternID: String
+    let projectName: String
+    let source: String
+    let expectedOutput: String
+    let requiredSourceFragments: [String]
+}
+
+enum AlgorithmCourseCatalog {
+    /// Stable method families presented as Duolingo-style chapters. `categories`
+    /// remains as a compatibility name so saved progress and achievement IDs do
+    /// not change when the learning hierarchy becomes method-first.
+    static let categories: [AlgorithmCategory] = AlgorithmCourseData.categories
+    static let methods: [AlgorithmCategory] = categories
+    static let patterns: [AlgorithmPattern] = categories.flatMap(\.patterns)
+
+    static let units: [RustLearningUnit] = categories.enumerated().map { index, category in
+        RustLearningUnit(
+            id: "algorithms-\(category.id)",
+            level: index + 1,
+            title: category.title,
+            subtitle: category.subtitle,
+            lessons: category.patterns.flatMap(\.lessons)
+        )
+    }
+
+    static let termPairs: [TermTrainPair] = patterns.map { pattern in
+        TermTrainPair(
+            id: "algorithm-term-\(pattern.id)",
+            term: pattern.title,
+            description: pattern.idea,
+            topic: pattern.lessonID(.recognize)
+        )
+    }
+
+    private static let lessonLookup: [String: (pattern: AlgorithmPattern, stage: AlgorithmLessonStage)] = {
+        var result: [String: (AlgorithmPattern, AlgorithmLessonStage)] = [:]
+        for pattern in patterns {
+            for stage in [AlgorithmLessonStage.model, .recognize, .challenge] {
+                result[pattern.lessonID(stage)] = (pattern, stage)
+            }
+        }
+        return result
+    }()
+
+    static func pattern(id: String) -> AlgorithmPattern? {
+        patterns.first { $0.id == id }
+    }
+
+    static func pattern(forLessonID lessonID: String) -> AlgorithmPattern? {
+        lessonLookup[lessonID]?.pattern
+    }
+
+    static func stage(forLessonID lessonID: String) -> AlgorithmLessonStage? {
+        lessonLookup[lessonID]?.stage
+    }
+
+    static func pattern(forChallengeLessonID lessonID: String) -> AlgorithmPattern? {
+        guard lessonLookup[lessonID]?.stage == .challenge else { return nil }
+        return lessonLookup[lessonID]?.pattern
+    }
+
+    static func category(id: String) -> AlgorithmCategory? {
+        categories.first { $0.id == id }
+    }
+
+    static func method(id: String) -> AlgorithmCategory? {
+        methods.first { $0.id == id }
+    }
+
+    static func categoryID(forPatternID patternID: String) -> String? {
+        pattern(id: patternID)?.categoryID
+    }
+
+    static func previousPattern(before patternID: String) -> AlgorithmPattern? {
+        guard let index = patterns.firstIndex(where: { $0.id == patternID }), index > 0 else {
+            return nil
+        }
+        return patterns[patterns.index(before: index)]
+    }
+
+    static func writing(for lessonID: String) -> RustLessonWriting? {
+        guard let entry = lessonLookup[lessonID] else { return nil }
+        return writing(for: entry.pattern, stage: entry.stage)
+    }
+
+    static func challenge(for lessonID: String) -> AlgorithmChallenge? {
+        guard let pattern = pattern(forChallengeLessonID: lessonID) else { return nil }
+        let output = "PASS \(pattern.id)\n"
+        return AlgorithmChallenge(
+            lessonID: lessonID,
+            patternID: pattern.id,
+            projectName: "algorithm-\(pattern.id)",
+            source: challengeSource(for: pattern),
+            expectedOutput: output,
+            requiredSourceFragments: ["fn solve", "assert_eq!", pattern.expectedAnswer]
+        )
+    }
+
+    private static func writing(
+        for pattern: AlgorithmPattern,
+        stage: AlgorithmLessonStage
+    ) -> RustLessonWriting {
+        switch stage {
+        case .model:
+            RustLessonWriting(
+                summary: pattern.idea,
+                explanation: "\(pattern.title) belongs to \(pattern.categoryTitle). Its invariant is the part that stays true after every step; tracing that invariant is more reliable than memorising lines. Typical uses include \(pattern.useCases).",
+                exampleCaption: "Rust sketch · target \(pattern.complexity)",
+                exampleCode: pattern.rustSketch,
+                task: "Trace the sketch by hand and name the state that changes after each iteration.",
+                success: "You can explain the invariant, termination condition, and \(pattern.complexity) bound without looking at the code.",
+                rule: "Preserve the invariant first; the implementation is a consequence of it.",
+                practiceCode: pattern.rustSketch,
+                question: "What should you identify before translating this pattern into Rust?",
+                answers: [
+                    "Its invariant and the state changed by one step",
+                    "The shortest variable names",
+                    "A recursive implementation in every case",
+                ],
+                correctAnswer: 0,
+                feedback: "The invariant explains both correctness and which state may change."
+            )
+
+        case .recognize:
+            RustLessonWriting(
+                summary: "Recognise the problem shape before choosing \(pattern.title).",
+                explanation: "Reach for this pattern when the prompt contains \(pattern.useCases). Confirm that its assumptions actually hold, then compare \(pattern.complexity) with the input limits. Similar-looking prompts may need a different pattern when data is unsorted, weights are negative, or state cannot be updated locally.",
+                exampleCaption: "Classification checklist for \(pattern.title)",
+                exampleCode: """
+                // 1. What structure or monotonic property is promised?
+                // 2. What result must be maintained or optimised?
+                // 3. Which edge case breaks the obvious approach?
+                // Candidate: \(pattern.title)
+                """,
+                task: "Name two problem families that fit and one counterexample where this pattern is the wrong choice.",
+                success: "You can justify the choice from constraints rather than from a remembered problem title.",
+                rule: "Choose a pattern from the input guarantees and required operations, not from surface wording.",
+                practiceCode: pattern.rustSketch,
+                question: "Which group is the strongest signal for this pattern?",
+                answers: [
+                    "Any problem that contains a Vec",
+                    pattern.useCases,
+                    "Only problems with exactly one input value",
+                ],
+                correctAnswer: 1,
+                feedback: "The useful signal is the operation and guarantee: \(pattern.useCases)."
+            )
+
+        case .challenge:
+            RustLessonWriting(
+                summary: pattern.task,
+                explanation: "This is an original Crabrix exercise in the same problem family as common interview-platform questions. Visible input: \(pattern.visibleInput). Expected answer: \(pattern.expectedAnswer). Implement solve instead of printing the expected value directly; the local harness checks the visible case and rustc checks the program.",
+                exampleCaption: "Starter harness · edit solve(), then Run",
+                exampleCode: challengeSource(for: pattern),
+                task: pattern.task,
+                success: "The harness prints PASS \(pattern.id), and your explanation still meets \(pattern.complexity).",
+                rule: "First make the visible case correct, then test an empty, smallest, duplicate, or adversarial case appropriate to the pattern.",
+                practiceCode: challengeSource(for: pattern),
+                question: "Which performance target should guide this solution?",
+                answers: [
+                    pattern.complexity,
+                    "No complexity bound is needed",
+                    "Always O(n!) time",
+                ],
+                correctAnswer: 0,
+                feedback: "The intended target is \(pattern.complexity); defend any different tradeoff explicitly."
+            )
+        }
+    }
+
+    private static func challengeSource(for pattern: AlgorithmPattern) -> String {
+        let task = rustComment(pattern.task)
+        let input = rustRawString(pattern.visibleInput)
+        let answer = rustRawString(pattern.expectedAnswer)
+        return """
+        fn solve(input: &str) -> String {
+            // \(task)
+            // Parse the visible input into the structures your algorithm needs.
+            let _ = input;
+            todo!("implement \(pattern.title)")
+        }
+
+        fn main() {
+            let input = r#"\(input)"#;
+            let expected = r#"\(answer)"#;
+            let actual = solve(input);
+            assert_eq!(actual, expected);
+            println!("PASS \(pattern.id)");
+        }
+        """
+    }
+
+    private static func rustComment(_ value: String) -> String {
+        value.replacingOccurrences(of: "\n", with: " ")
+    }
+
+    private static func rustRawString(_ value: String) -> String {
+        value.replacingOccurrences(of: "\"#", with: "\" #")
+    }
+}
+
+struct AlgorithmPatternSeed: Sendable {
+    let id: String
+    let title: String
+    let difficulty: AlgorithmDifficulty
+    let idea: String
+    let useCases: String
+    let complexity: String
+    let task: String
+    let input: String
+    let output: String
+}
+
+struct AlgorithmCategorySeed: Sendable {
+    let id: String
+    let title: String
+    let subtitle: String
+    let systemImage: String
+    let achievementTitle: String
+    let rustSketch: String
+    let patterns: [AlgorithmPatternSeed]
+
+    var category: AlgorithmCategory {
+        AlgorithmCategory(
+            id: id,
+            title: title,
+            subtitle: subtitle,
+            systemImage: systemImage,
+            achievementTitle: achievementTitle,
+            patterns: patterns.map { seed in
+                AlgorithmPattern(
+                    id: seed.id,
+                    title: seed.title,
+                    difficulty: seed.difficulty,
+                    categoryID: id,
+                    categoryTitle: title,
+                    idea: seed.idea,
+                    useCases: seed.useCases,
+                    complexity: seed.complexity,
+                    task: seed.task,
+                    visibleInput: seed.input,
+                    expectedAnswer: seed.output,
+                    rustSketch: rustSketch
+                )
+            }
+        )
+    }
+}
