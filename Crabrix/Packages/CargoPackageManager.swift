@@ -241,6 +241,8 @@ actor CargoPackageManager {
             rootFeatures: manifest.features,
             rootPackageName: rootName,
             rootPackageVersion: rootVersion,
+            resolverVersion: manifest.resolverVersion,
+            rootProjectRustVersion: manifest.rustVersion.flatMap(SemanticVersion.init),
             lockfile: parsedLockfile,
             mode: mode
         )

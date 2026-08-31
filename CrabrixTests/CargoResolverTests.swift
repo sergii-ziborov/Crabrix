@@ -407,6 +407,137 @@ final class CargoResolverTests: XCTestCase {
         }
     }
 
+    func testRequestedFeatureSelectsNewestVersionThatStillDefinesIt() async throws {
+        let index = try StubIndex.make([
+            "alpha": [
+                indexLine("alpha", "1.7.0", features: "{\"default\":[],\"legacy\":[]}"),
+                indexLine("alpha", "1.8.0", features: "{\"default\":[],\"legacy\":[]}"),
+                indexLine("alpha", "1.9.0", features: "{\"default\":[]}"),
+            ],
+        ])
+        let root = try manifest("""
+        [dependencies]
+        alpha = { version = "1", features = ["legacy"] }
+        """)
+
+        let graph = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features
+        )
+
+        XCTAssertEqual(graph.rootDependencies["alpha"]?.version.description, "1.8.0")
+        XCTAssertEqual(graph.packages.values.first?.sortedFeatures, ["default", "legacy"])
+    }
+
+    func testLateFeatureUnificationCanReselectAnOlderCompatibleVersion() async throws {
+        let index = try StubIndex.make([
+            "left": [indexLine("left", "1.0.0", deps: "[\(dep("shared", "^1"))]")],
+            "right": [
+                indexLine(
+                    "right",
+                    "1.0.0",
+                    deps: "[\(dep("shared", "^1", features: ["legacy"]))]"
+                ),
+            ],
+            "shared": [
+                indexLine("shared", "1.8.0", features: "{\"default\":[],\"legacy\":[]}"),
+                indexLine("shared", "1.9.0", features: "{\"default\":[]}"),
+            ],
+        ])
+        let root = try manifest("""
+        [dependencies]
+        left = "1"
+        right = "1"
+        """)
+
+        let graph = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features
+        )
+
+        let shared = try XCTUnwrap(graph.packages.values.first { $0.name == "shared" })
+        XCTAssertEqual(shared.version.description, "1.8.0")
+        XCTAssertTrue(shared.features.contains("legacy"))
+    }
+
+    func testResolverThreePrefersRootMSRVCompatibleRelease() async throws {
+        let index = try StubIndex.make([
+            "alpha": [
+                indexLine("alpha", "1.0.0", rustVersion: "1.60"),
+                indexLine("alpha", "1.5.0", rustVersion: "1.74"),
+            ],
+        ])
+        let root = try manifest("[dependencies]\nalpha = \"1\"")
+
+        let resolverTwo = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features,
+            resolverVersion: .v2,
+            rootProjectRustVersion: SemanticVersion("1.62")
+        )
+        let resolverThree = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features,
+            resolverVersion: .v3,
+            rootProjectRustVersion: SemanticVersion("1.62")
+        )
+
+        XCTAssertEqual(resolverTwo.rootDependencies["alpha"]?.version.description, "1.5.0")
+        XCTAssertEqual(resolverThree.rootDependencies["alpha"]?.version.description, "1.0.0")
+    }
+
+    func testResolverThreeFallsBackWhenRequirementHasNoRootMSRVCompatibleRelease() async throws {
+        let index = try StubIndex.make([
+            "alpha": [indexLine("alpha", "1.5.0", rustVersion: "1.74")],
+        ])
+        let root = try manifest("[dependencies]\nalpha = \"1.5\"")
+
+        let graph = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features,
+            resolverVersion: .v3,
+            rootProjectRustVersion: SemanticVersion("1.62")
+        )
+
+        XCTAssertEqual(graph.rootDependencies["alpha"]?.version.description, "1.5.0")
+    }
+
+    func testResolverOneUnifiesInactiveTargetFeaturesButResolverTwoDoesNot() async throws {
+        let index = try StubIndex.make([
+            "front": [
+                indexLine(
+                    "front",
+                    "1.0.0",
+                    deps: "[\(dep("shared", "^1", features: ["alloc"])),\(dep("shared", "^1", features: ["windows"], target: "cfg(windows)"))]"
+                ),
+            ],
+            "shared": [
+                indexLine(
+                    "shared",
+                    "1.0.0",
+                    features: "{\"default\":[],\"alloc\":[],\"windows\":[]}"
+                ),
+            ],
+        ])
+        let root = try manifest("[dependencies]\nfront = \"1\"")
+
+        let legacy = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features,
+            resolverVersion: .v1
+        )
+        let modern = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features,
+            resolverVersion: .v2
+        )
+
+        let legacyShared = try XCTUnwrap(legacy.packages.values.first { $0.name == "shared" })
+        let modernShared = try XCTUnwrap(modern.packages.values.first { $0.name == "shared" })
+        XCTAssertEqual(legacyShared.sortedFeatures, ["alloc", "default", "windows"])
+        XCTAssertEqual(modernShared.sortedFeatures, ["alloc", "default"])
+    }
+
     func testMSRVSelectsNewestVersionSupportedByBundledRustc() async throws {
         let index = try StubIndex.make([
             "alpha": [
