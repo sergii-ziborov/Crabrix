@@ -17,7 +17,7 @@ jobs:
     runs-on: xcode-27
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Record toolchain
         run: |
@@ -25,7 +25,10 @@ jobs:
           xcrun swift --version
 
       - name: Install project-generation tools
-        run: brew install xcodegen zstd
+        run: |
+          brew untap aws/tap >/dev/null 2>&1 || true
+          brew install xcodegen
+          if ! command -v zstd >/dev/null 2>&1; then brew install zstd; fi
 
       - name: Generate project and verify bundled toolchain hashes
         run: scripts/bootstrap.sh
@@ -60,10 +63,13 @@ jobs:
     runs-on: xcode-27
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install project-generation tools
-        run: brew install xcodegen zstd
+        run: |
+          brew untap aws/tap >/dev/null 2>&1 || true
+          brew install xcodegen
+          if ! command -v zstd >/dev/null 2>&1; then brew install zstd; fi
 
       - name: Generate project and verify bundled toolchain hashes
         run: scripts/bootstrap.sh
