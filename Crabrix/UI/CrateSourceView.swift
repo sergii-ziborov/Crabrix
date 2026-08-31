@@ -21,6 +21,7 @@ struct CrateSourceView: View {
     @State private var selected: CrateSourceBrowser.Entry?
     @State private var contents: String?
     @State private var guide: CrateGuide?
+    @State private var sourceAccessIssue: CrateSourceBrowser.SourceAccessIssue?
     @State private var hasLoaded = false
     @State private var isResetConfirmationPresented = false
 
@@ -48,6 +49,10 @@ struct CrateSourceView: View {
             guard !hasLoaded else { return }
             entries = CrateSourceBrowser.entries(name: name, version: version)
             guide = CrateGuide.cached(name: name, version: version)
+            sourceAccessIssue = CrateSourceBrowser.sourceAccessIssue(
+                name: name,
+                version: version
+            )
             hasLoaded = true
         }
         .navigationDestination(item: $selected) { entry in
@@ -123,7 +128,17 @@ struct CrateSourceView: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(CrabrixTheme.mint)
 
-            if localPatch.isEmpty {
+            if let sourceAccessIssue {
+                Label("Complete View/Edit limit exceeded", systemImage: "exclamationmark.triangle.fill")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(CrabrixTheme.coral)
+                Text(sourceAccessIssue.localizedDescription)
+                    .font(.caption)
+                    .foregroundStyle(CrabrixTheme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if localPatch.isEmpty, sourceAccessIssue == nil {
                 Button {
                     if onVendor() { dismiss() }
                 } label: {
@@ -131,7 +146,7 @@ struct CrateSourceView: View {
                         .font(.subheadline.bold())
                 }
                 .tint(CrabrixTheme.coral)
-            } else {
+            } else if !localPatch.isEmpty {
                 Label("Using Local Patch", systemImage: "hammer.circle.fill")
                     .font(.subheadline.bold())
                     .foregroundStyle(CrabrixTheme.amber)

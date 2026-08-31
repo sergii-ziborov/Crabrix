@@ -21,8 +21,10 @@ by a successful local build.
 - crates.io registry source remains immutable; **Vendor & Edit** creates a
   project-local source overlay, a distinct content fingerprint, Diff, Reset,
   and a real patched dependency build.
-- textual downloaded crate source, including hidden paths, is viewable and
-  vendorable; binary assets remain in the immutable verified tree.
+- every extracted crate path is listed; programming source, including hidden
+  paths and explicit nonstandard lib/build targets, is audited against the
+  complete View/Edit contract before rustc can use it. Oversized or non-UTF-8
+  source fails closed, while binary assets remain in the immutable verified tree.
 - `cargo check` evidence is labelled **Check verified** and cannot be mistaken
   for stronger **Link verified** evidence.
 - the root project receives `CARGO_PKG_*` values from its exact `Cargo.toml`.
@@ -48,7 +50,7 @@ by a successful local build.
 | Runtime interruption and quotas | instruction limiter, WASI cancel, memory/table/output/storage tests | five-class CPU-idle/thermal/immediate-next-Run matrix | **BLOCKED** |
 | Cargo correctness | lock modes, edition, MSRV, tri-state cfg, feature errors, SemVer wildcard tests | maintained differential corpus against desktop Cargo | **PARTIAL** |
 | Offline durability | exact archive pin + frozen cache-eviction rehydrate gate | airplane-mode device run and low-disk behavior | **PARTIAL** |
-| Package source under guideline 2.5.2 | view, Vendor & Edit, diff/reset, patched link gate | exact-RC reviewer walkthrough / consultation outcome | **PARTIAL** |
+| Package source under guideline 2.5.2 | path listing, pre-build complete View/Edit audit, oversized/non-UTF-8 fail-closed tests, Vendor & Edit, diff/reset, patched link gate | exact-RC reviewer walkthrough / consultation outcome | **PARTIAL** |
 | Rust Academy integrity | lesson-specific evidence model and structural QA | expert content sample and remaining compiler-evidence coverage | **PARTIAL** |
 | Algorithm Atlas integrity | four-case private verifier for all 200 patterns; independent semantic probes; literal-answer regression; bundled-rustc harness gate | canonical-solution validation for all 200 patterns and broader edge/adversarial corpus | **PARTIAL** |
 | Social/privacy | boards dormant; privacy manifest says no collection | verify production flags and App Privacy answers in archived RC | **PARTIAL** |

@@ -105,6 +105,85 @@ final class CrateSourceBrowserTests: XCTestCase {
         XCTAssertEqual(files[".cargo/config.toml"], "[build]\ntarget = \"wasm32-wasip1\"\n")
         XCTAssertNil(files["fixture.bin"])
     }
+
+    func testOversizedProgrammingSourceFailsClosedBeforeBuildOrVendor() throws {
+        let path = "src/oversized.rs"
+        let byteCount = CrateSourceBrowser.maximumEditableSourceBytes + 1
+        try Data(repeating: 0x20, count: byteCount).write(
+            to: root.appending(path: path),
+            options: .atomic
+        )
+
+        let expected = CrateSourceBrowser.SourceAccessIssue.sourceTooLarge(
+            path: path,
+            byteCount: byteCount,
+            limit: CrateSourceBrowser.maximumEditableSourceBytes
+        )
+        XCTAssertEqual(
+            CrateSourceBrowser.sourceAccessIssue(name: "browsertest", version: version),
+            expected
+        )
+        XCTAssertThrowsError(
+            try CrateSourceBrowser.vendorableFiles(name: "browsertest", version: version)
+        ) { error in
+            XCTAssertEqual(error as? CrateSourceBrowser.SourceAccessIssue, expected)
+        }
+    }
+
+    func testInvalidUTF8ProgrammingSourceFailsClosed() throws {
+        try Data([0xff, 0xfe, 0xfd]).write(to: root.appending(path: "src/not-utf8.rs"))
+
+        XCTAssertEqual(
+            CrateSourceBrowser.sourceAccessIssue(name: "browsertest", version: version),
+            .sourceIsNotUTF8("src/not-utf8.rs")
+        )
+    }
+
+    func testExplicitLibraryPathIsAuditedEvenWithoutRustExtension() throws {
+        try """
+        [package]
+        name = "browsertest"
+        version = "1.2.3"
+
+        [lib]
+        path = "src/generated.inc"
+        """.write(
+            to: root.appending(path: "Cargo.toml"),
+            atomically: true,
+            encoding: .utf8
+        )
+        let byteCount = CrateSourceBrowser.maximumEditableSourceBytes + 1
+        try Data(repeating: 0x20, count: byteCount).write(
+            to: root.appending(path: "src/generated.inc"),
+            options: .atomic
+        )
+
+        XCTAssertEqual(
+            CrateSourceBrowser.sourceAccessIssue(name: "browsertest", version: version),
+            .sourceTooLarge(
+                path: "src/generated.inc",
+                byteCount: byteCount,
+                limit: CrateSourceBrowser.maximumEditableSourceBytes
+            )
+        )
+    }
+
+    func testOversizedBinaryAssetDoesNotPretendToBeEditableSource() throws {
+        try Data(
+            repeating: 0xff,
+            count: CrateSourceBrowser.maximumEditableSourceBytes + 1
+        ).write(to: root.appending(path: "large-fixture.bin"), options: .atomic)
+
+        XCTAssertNil(
+            CrateSourceBrowser.sourceAccessIssue(name: "browsertest", version: version)
+        )
+        let files = try CrateSourceBrowser.vendorableFiles(
+            name: "browsertest",
+            version: version
+        )
+        XCTAssertNil(files["large-fixture.bin"])
+        XCTAssertNotNil(files["src/lib.rs"])
+    }
 }
 
 final class CrateGuideTests: XCTestCase {

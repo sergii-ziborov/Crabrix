@@ -74,6 +74,8 @@ The dedicated Release test scheme now proves the following before a physical-dev
   semantic input and surrounding-whitespace variants;
 - crates.io **Vendor & Edit**, including a distinct patch fingerprint and real
   patched dependency link;
+- a pre-build package-source audit that blocks oversized or non-UTF-8
+  programming source when Crabrix cannot expose it through complete View/Edit;
 - offline pinning followed by deletion of purgeable source/archive cache and a
   successful frozen rehydrate;
 - root `CARGO_PKG_*` environment values from the project manifest;

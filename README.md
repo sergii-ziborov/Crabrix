@@ -145,7 +145,11 @@ Registry source is immutable. **Vendor & Edit** copies its editable text files
 into `vendor/<crate>-<version>` in the user's project; the compiler overlays
 those files onto a private copy of the verified registry tree, fingerprints the
 new source hash, shows a diff, and always offers Reset. Binary assets remain in
-the verified tree and are never exposed as corrupt text.
+the verified tree and are never exposed as corrupt text. Before `rustc` can use
+a downloaded package, Crabrix audits its programming source against the same
+complete View/Edit limits used by the project editor. An oversized or non-UTF-8
+source file is labelled `Unsupported` and the build fails closed instead of
+compiling code that the app cannot fully expose for editing.
 
 The toolchain is downloaded **at build time**, verified by SHA-256, and copied into the app bundle. The running app never downloads compiler components.
 The generated Xcode project is not committed, but `Dependencies/Package.resolved`
@@ -200,7 +204,7 @@ Crabrix does about each:
 
 | Guideline | How Crabrix satisfies it |
 | --- | --- |
-| **2.5.2** — self-contained code | The compiler and standard library are **bundled**, not downloaded. The only code fetched at runtime is crates.io package source, at the user's explicit request, used only to build their own project. Extracted source is completely viewable in Build → Packages and editable through **Vendor & Edit**; registry bytes remain immutable and Reset is always available. Final acceptance still belongs to App Review, so the reviewer path is tested and documented rather than assumed. |
+| **2.5.2** — self-contained code | The compiler and standard library are **bundled**, not downloaded. The only code fetched at runtime is crates.io package source, at the user's explicit request, used only to build their own project. Every extracted path is listed in Build → Packages, and every supported programming-source file is completely viewable and editable through **Vendor & Edit**. Registry bytes remain immutable and Reset is always available. A source file outside the complete View/Edit contract makes the package `Unsupported` before `rustc` runs. Final acceptance still belongs to App Review, so the reviewer path is tested and documented rather than assumed. |
 | **2.5.1** — private APIs, process spawning | No host processes are spawned. The project terminal is a simulated shell over the in-app project files. Guest programs run in a WebAssembly sandbox with a memory cap, one writable preopen, and no network imports. |
 | **1.2** — user-generated content | Production 1.0 exposes no public board or display-name input. The retained board code stays dormant until report/hide/moderation are release-ready. |
 | **5.1.1(v)** — account deletion | There is no account and production 1.0 creates no server-side profile. |

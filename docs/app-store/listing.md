@@ -52,7 +52,8 @@ A REAL PACKAGE MANAGER
 • Add dependencies from crates.io by name and version
 • Sparse index resolution, SemVer ranges, and feature unification
 • SHA-256 checksums verified before anything is written to disk
-• Every downloaded crate is readable inside the app, file by file
+• Every extracted crate path is listed; supported source is completely viewable
+  and editable, or the package is blocked before compilation
 • Vendor & Edit creates a project-local editable patch with Diff and Reset
 • Cached graphs rebuild offline; Pin for Offline survives iOS cache eviction
 
@@ -156,11 +157,16 @@ runtime is Rust package source from the public crates.io registry, at the user's
 explicit request, and it is used solely to build the user's own project inside
 the app.
 
-All such source is fully viewable in the app: Build → Packages → tap any
-downloaded crate to browse every extracted file. Tap Vendor & Edit to copy its
-editable source into the current project, edit it in the normal project editor,
-review the local diff, compile the patched fingerprint, or Reset to the original
-checksum-backed registry source. The immutable registry copy is never modified.
+Every extracted path is listed in the app: Build → Packages → tap any downloaded
+crate. For a supported package, every programming-source file is fully viewable
+and can be copied with Vendor & Edit into the current project, edited in the
+normal project editor, reviewed as a local diff, compiled under a distinct
+patched fingerprint, or Reset to the checksum-backed registry source. If a
+programming-source file exceeds the editor's complete file/tree limits or is not
+valid UTF-8, Crabrix labels the package Unsupported and blocks it before rustc
+runs. Binary assets remain visible as file metadata in the immutable registry
+tree and are not misrepresented as editable text. The immutable registry copy is
+never modified.
 
 Programs execute inside a WebAssembly sandbox in the app's own process, with a
 memory/instruction/output/storage caps, no network access, and one writable directory. Crabrix spawns no

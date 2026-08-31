@@ -479,6 +479,14 @@ actor CargoPackageManager {
             return .unsupported("links the native library \"\(links)\"")
         }
         guard let crate else { return .expected }
+        if let issue = CrateSourceBrowser.sourceAccessIssue(
+            in: crate.registry.sourceDirectory
+        ) {
+            return .unsupported(
+                "source cannot remain completely viewable and editable: "
+                    + (issue.errorDescription ?? "source access limit exceeded")
+            )
+        }
         if crate.manifest.isProcMacro {
             return .unsupported("procedural macros need a host compiler Crabrix does not bundle")
         }
