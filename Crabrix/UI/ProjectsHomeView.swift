@@ -17,10 +17,6 @@ struct ProjectsHomeView: View {
     let onOpenShowcase: (String) -> Void
     let onOpenLibrary: () -> Void
     let onOpenMyProjects: () -> Void
-    let onOpenProgress: () -> Void
-
-    @EnvironmentObject private var progress: CrabrixProgressStore
-    @EnvironmentObject private var vitals: CrabrixVitalsStore
 
     @State private var projectQuery = ""
     @State private var selectedProjectFolder: String?
@@ -33,7 +29,6 @@ struct ProjectsHomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 brandHeader
-                progressStrip
                 hero
                 projectBrowser
                 newProjectBanner
@@ -279,47 +274,6 @@ struct ProjectsHomeView: View {
                 if leftOrder != rightOrder { return leftOrder < rightOrder }
                 return left.lastOpenedAt > right.lastOpenedAt
             }
-    }
-
-    /// Rating, rank, and both pools, on the screen the app opens on.
-    private var progressStrip: some View {
-        Button(action: onOpenProgress) {
-            HStack(spacing: 14) {
-                Image(systemName: progress.rank.systemImage)
-                    .font(.title3)
-                    .foregroundStyle(CrabrixTheme.amber)
-                    .frame(width: 40, height: 40)
-                    .background(CrabrixTheme.amber.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
-
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 7) {
-                        Text(CrabrixPointsFormatter.string(progress.state.totalPoints))
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .monospacedDigit()
-                            .contentTransition(.numericText())
-                        Text(progress.rank.title)
-                            .font(.caption.bold())
-                            .foregroundStyle(CrabrixTheme.mint)
-                    }
-                    Text("\(progress.earnedAchievements.count) of \(CrabrixAchievementCatalog.all.count) achievements")
-                        .font(.caption2.monospaced())
-                        .foregroundStyle(CrabrixTheme.muted)
-                }
-
-                Spacer(minLength: 0)
-
-                VitalsPill(store: vitals, showsCountdown: false, isInteractive: true)
-
-                Image(systemName: "chevron.right")
-                    .font(.caption.bold())
-                    .foregroundStyle(CrabrixTheme.muted)
-            }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .crabrixPanel(cornerRadius: 15)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Rating \(progress.state.totalPoints), rank \(progress.rank.title). Opens your progress.")
     }
 
     private var libraryCategoryCount: Int {

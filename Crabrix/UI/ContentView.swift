@@ -82,9 +82,6 @@ struct ContentView: View {
     @State private var selectedBuildDockTab: BuildDockTab = .code
     @State private var learningPath: [LearningRoute] = LearningRoute.launchArgument
     @State private var editorCursorOffset = 0
-    /// Dismissing the running toast hides it for that run only; the next run
-    /// shows it again, so a tap is never a setting the reader has to undo.
-    @State private var isRunningToastDismissed = false
     /// What the last successful run was scored on, shown in the build dock.
     @State private var lastContribution: CodeContribution?
     @State private var editorNavigationTarget: EditorNavigationTarget?
@@ -128,8 +125,7 @@ struct ContentView: View {
                     selectedDestination = .build
                 },
                 onOpenLibrary: { projectsPath = [.library] },
-                onOpenMyProjects: { projectsPath = [.myProjects] },
-                onOpenProgress: { selectedDestination = .learn }
+                onOpenMyProjects: { projectsPath = [.myProjects] }
                 )
                 .navigationDestination(for: ProjectsRoute.self) { route in
                     switch route {
@@ -461,7 +457,6 @@ struct ContentView: View {
                 to: newValue,
                 project: model.exportProject()
             )
-            if newValue == .running { isRunningToastDismissed = false }
         }
         .onReceive(model.$result) { result in
             guard let result else { return }
@@ -663,44 +658,6 @@ struct ContentView: View {
                 navigationTarget: editorNavigationTarget,
                 onRequestCompletion: requestEditorAssistant
             )
-
-            if model.activity == .running, !isRunningToastDismissed {
-                HStack(spacing: 9) {
-                    ProgressView()
-                        .controlSize(.small)
-                        .tint(CrabrixTheme.coral)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Running locally…")
-                            .font(.caption.monospaced().bold())
-                        Text("Tap to hide · the run keeps going")
-                            .font(.caption2)
-                            .foregroundStyle(CrabrixTheme.muted)
-                    }
-                    Image(systemName: "xmark")
-                        .font(.caption2.bold())
-                        .foregroundStyle(CrabrixTheme.muted)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 9)
-                .background(.regularMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 11, style: .continuous)
-                        .stroke(CrabrixTheme.border)
-                }
-                .padding(14)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .transition(.move(edge: .top).combined(with: .opacity))
-                // Hiding the toast only hides the toast; the build is untouched.
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    withAnimation(.easeOut(duration: 0.18)) {
-                        isRunningToastDismissed = true
-                    }
-                }
-                .accessibilityAddTraits(.isButton)
-                .accessibilityHint("Hides this notice. The run continues.")
-            }
 
             if let diagnostic = model.primaryDiagnostic,
                completion.suggestion == nil,
