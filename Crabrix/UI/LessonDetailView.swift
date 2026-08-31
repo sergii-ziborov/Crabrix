@@ -1,5 +1,21 @@
 import SwiftUI
 
+enum LessonNavigationFooterVisibility {
+    /// The footer is an overlay, so the end of the lesson needs enough room to
+    /// scroll clear of it before the action appears.
+    static let contentBottomClearance: CGFloat = 96
+    static let revealDistance: CGFloat = 24
+
+    static func shouldShow(
+        contentHeight: CGFloat,
+        visibleMaxY: CGFloat,
+        containerHeight: CGFloat
+    ) -> Bool {
+        guard contentHeight > 0, containerHeight > 0 else { return false }
+        return contentHeight - visibleMaxY <= revealDistance
+    }
+}
+
 struct LessonDetailView: View {
     @EnvironmentObject private var vitals: CrabrixVitalsStore
     let lesson: RustLesson
@@ -14,6 +30,10 @@ struct LessonDetailView: View {
     @State private var lastWrongAnswer: Int?
     /// The last thing that cost or returned something, shown briefly in the header.
     @State private var lastOutcome: VitalsOutcome?
+    /// Each horizontally paged step owns a separate vertical scroll position.
+    /// Keeping their footer state separate prevents an action from the previous
+    /// step flashing over the next one while its geometry settles.
+    @State private var footerVisibility: [Int: Bool] = [:]
 
     private var brief: RustLessonBrief { lesson.brief }
     private var practice: RustLessonPractice { lesson.lessonPractice }
@@ -24,6 +44,9 @@ struct LessonDetailView: View {
     private var isLive: Bool {
         if case .planned = lesson.exercise { return false }
         return true
+    }
+    private var showsNavigationFooter: Bool {
+        footerVisibility[page] ?? false
     }
 
     init(
@@ -51,21 +74,26 @@ struct LessonDetailView: View {
         VStack(spacing: 0) {
             progressHeader
 
-            TabView(selection: $page) {
-                conceptPage.tag(0)
-                practicePage.tag(1)
-                // The last page only exists once the quick check is answered.
-                // Disabling the footer button was not enough on its own: a
-                // right-to-left swipe walked straight past the question.
-                if isQuickCheckAnswered {
-                    readyPage.tag(2)
+            ZStack(alignment: .bottom) {
+                TabView(selection: $page) {
+                    conceptPage.tag(0)
+                    practicePage.tag(1)
+                    // The last page only exists once the quick check is answered.
+                    // Disabling the footer button was not enough on its own: a
+                    // right-to-left swipe walked straight past the question.
+                    if isQuickCheckAnswered {
+                        readyPage.tag(2)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .animation(.easeInOut(duration: 0.2), value: isQuickCheckAnswered)
+
+                if showsNavigationFooter {
+                    navigationFooter
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .zIndex(1)
                 }
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .animation(.easeInOut(duration: 0.2), value: isQuickCheckAnswered)
-
-            Divider().overlay(CrabrixTheme.border)
-            navigationFooter
         }
         // Reading a page costs energy the first time only, so revisiting a
         // lesson to review it never charges twice.
@@ -123,7 +151,7 @@ struct LessonDetailView: View {
     }
 
     private var conceptPage: some View {
-        lessonScrollPage {
+        lessonScrollPage(index: 0) {
             LessonPageHeading(
                 step: "01 · UNDERSTAND",
                 title: lesson.title,
@@ -186,7 +214,7 @@ struct LessonDetailView: View {
     }
 
     private var practicePage: some View {
-        lessonScrollPage {
+        lessonScrollPage(index: 1) {
             LessonPageHeading(
                 step: "02 · PRACTICE",
                 title: "Make the rule concrete",
@@ -260,7 +288,7 @@ struct LessonDetailView: View {
     }
 
     private var readyPage: some View {
-        lessonScrollPage {
+        lessonScrollPage(index: 2) {
             LessonPageHeading(
                 step: "03 · APPLY",
                 title: isLive ? "Ready for the compiler" : "Lock in the idea",
@@ -384,60 +412,84 @@ struct LessonDetailView: View {
     }
 
     private var navigationFooter: some View {
-        HStack(spacing: 12) {
-            if page > 0 {
-                Button {
-                    withAnimation(.easeInOut) { page -= 1 }
-                } label: {
-                    Label("Back", systemImage: "arrow.left")
-                        .frame(minWidth: 90)
-                }
-                .buttonStyle(.bordered)
-            }
+        VStack(spacing: 0) {
+            Divider().overlay(CrabrixTheme.border)
 
-            Spacer(minLength: 0)
+            HStack(spacing: 12) {
+                if page > 0 {
+                    Button {
+                        withAnimation(.easeInOut) { page -= 1 }
+                    } label: {
+                        Label("Back", systemImage: "arrow.left")
+                            .frame(minWidth: 90)
+                    }
+                    .buttonStyle(.bordered)
+                }
 
-            if page < 2 {
-                Button {
-                    withAnimation(.easeInOut) { page += 1 }
-                } label: {
-                    Label(
-                        page == 0 ? "Try a quick check" : "Review result",
-                        systemImage: "arrow.right"
-                    )
-                    .frame(minWidth: 180)
+                Spacer(minLength: 0)
+
+                if page < 2 {
+                    Button {
+                        withAnimation(.easeInOut) { page += 1 }
+                    } label: {
+                        Label(
+                            page == 0 ? "Try a quick check" : "Review result",
+                            systemImage: "arrow.right"
+                        )
+                        .frame(minWidth: 180)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(brief.tint)
+                    .disabled(page == 1 && !isQuickCheckAnswered)
+                } else {
+                    Button(action: isLive ? onStart : onComplete) {
+                        Label(
+                            isLive
+                                ? (isCompleted ? "Restart compiler lab" : "Open compiler lab")
+                                : (isCompleted ? "Next lesson" : "Complete & continue"),
+                            systemImage: isLive ? "hammer.fill" : "checkmark.circle.fill"
+                        )
+                        .frame(minWidth: 200)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(isLive ? CrabrixTheme.coral : CrabrixTheme.mint)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(brief.tint)
-                .disabled(page == 1 && !isQuickCheckAnswered)
-            } else {
-                Button(action: isLive ? onStart : onComplete) {
-                    Label(
-                        isLive
-                            ? (isCompleted ? "Restart compiler lab" : "Open compiler lab")
-                            : (isCompleted ? "Next lesson" : "Complete & continue"),
-                        systemImage: isLive ? "hammer.fill" : "checkmark.circle.fill"
-                    )
-                    .frame(minWidth: 200)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(isLive ? CrabrixTheme.coral : CrabrixTheme.mint)
             }
+            .font(.headline)
+            .padding(.horizontal, 22)
+            .padding(.vertical, 14)
         }
-        .font(.headline)
-        .padding(.horizontal, 22)
-        .padding(.vertical, 14)
         .background(.ultraThinMaterial)
     }
 
-    private func lessonScrollPage<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+    private func lessonScrollPage<Content: View>(
+        index: Int,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 content()
             }
-            .padding(22)
+            .padding(.horizontal, 22)
+            .padding(.top, 22)
+            .padding(
+                .bottom,
+                22 + LessonNavigationFooterVisibility.contentBottomClearance
+            )
             .frame(maxWidth: 760)
             .frame(maxWidth: .infinity)
+        }
+        .onScrollGeometryChange(for: Bool.self) { geometry in
+            LessonNavigationFooterVisibility.shouldShow(
+                contentHeight: geometry.contentSize.height,
+                visibleMaxY: geometry.visibleRect.maxY,
+                containerHeight: geometry.containerSize.height
+            )
+        } action: { _, shouldShow in
+            guard footerVisibility[index] != shouldShow else { return }
+            withAnimation(.easeInOut(duration: 0.18)) {
+                footerVisibility[index] = shouldShow
+            }
         }
     }
 }
