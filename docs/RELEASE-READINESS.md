@@ -53,6 +53,7 @@ by a successful local build.
 | Package source under guideline 2.5.2 | path listing, pre-build complete View/Edit audit, oversized/non-UTF-8 fail-closed tests, Vendor & Edit, diff/reset, patched link gate | exact-RC reviewer walkthrough / consultation outcome | **PARTIAL** |
 | Rust Academy integrity | lesson-specific evidence model and structural QA | expert content sample and remaining compiler-evidence coverage | **PARTIAL** |
 | Algorithm Atlas integrity | four-case private verifier for all 200 patterns; independent semantic probes; literal-answer regression; bundled-rustc harness gate | canonical-solution validation for all 200 patterns and broader edge/adversarial corpus | **PARTIAL** |
+| Rating integrity | per-revision build rewards, separate daily bonus, bounded reward identities, digest-backed contribution baseline, curriculum-scaled rank ladder, split Rust/Atlas counters | long-run device economy observation before any public board | **PARTIAL** |
 | Social/privacy | boards dormant; privacy manifest says no collection | verify production flags and App Privacy answers in archived RC | **PARTIAL** |
 | Signing/submission | unsigned Release and development-signed device builds pass; App/Share App Group matches | App Store distribution profile/archive, accepted Xcode/SDK, archive validation | **BLOCKED** |
 | Screenshots/metadata | copy is source-controlled and corrected | recapture every frame from exact signed RC | **BLOCKED** |

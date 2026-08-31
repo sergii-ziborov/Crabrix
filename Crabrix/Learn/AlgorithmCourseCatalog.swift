@@ -93,6 +93,12 @@ enum AlgorithmCourseCatalog {
     static let methods: [AlgorithmCategory] = categories
     static let patterns: [AlgorithmPattern] = categories.flatMap(\.patterns)
 
+    /// Mental-model and recognition steps across every pattern: what the Atlas
+    /// asks a learner to read rather than to prove to the compiler.
+    static let studyStepCount: Int = patterns.count * 2
+    /// Compiler-verified challenges, one per pattern.
+    static let challengeCount: Int = patterns.count
+
     static let units: [RustLearningUnit] = categories.enumerated().map { index, category in
         RustLearningUnit(
             id: "algorithms-\(category.id)",

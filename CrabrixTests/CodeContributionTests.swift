@@ -73,6 +73,37 @@ final class CodeContributionTests: XCTestCase {
         XCTAssertEqual(diff.removed, 1)
     }
 
+    func testAFileRememberedOnlyByDigestIsNotMistakenForNewWork() {
+        let text = (0..<500).map { "let value\($0) = \($0);" }.joined(separator: "\n")
+        let baseline = ["src/big.rs": FileBaseline(text: text).withoutText]
+
+        let untouched = CodeContribution.measure(
+            baseline: baseline,
+            current: ["src/big.rs": text]
+        )
+        XCTAssertEqual(untouched.changedLines, 0, "the digest says it did not change")
+        XCTAssertEqual(untouched.newFiles, 0, "a file we still remember is not new")
+
+        let edited = CodeContribution.measure(
+            baseline: baseline,
+            current: ["src/big.rs": text + "\nlet extra = 1;"]
+        )
+        XCTAssertEqual(edited.addedLines, 1)
+        XCTAssertEqual(edited.newFiles, 0)
+    }
+
+    func testAnInPlaceEditOfAForgottenFileStillCountsAsWork() {
+        let before = "let a = 1;\nlet b = 2;"
+        let baseline = ["src/lib.rs": FileBaseline(text: before).withoutText]
+        let changed = CodeContribution.measure(
+            baseline: baseline,
+            current: ["src/lib.rs": "let a = 9;\nlet b = 2;"]
+        )
+        // The line count did not move, so the estimate is deliberately small,
+        // but calling it unchanged would be wrong.
+        XCTAssertEqual(changed.changedLines, 1)
+    }
+
     func testAVeryLargeFileStillProducesAMeasurement() {
         // Past the LCS size guard it falls back to a multiset comparison, which
         // still has to report the right magnitude rather than giving up.
@@ -104,6 +135,47 @@ final class CodeContributionLedgerTests: XCTestCase {
 
         let third = ledger.record(projectID: projectID, files: ["main.rs": "a\nb\nc\n"])
         XCTAssertEqual(third.addedLines, 1)
+    }
+
+    func testALargeUntouchedFileIsNotRescoredOnEveryRun() {
+        let (ledger, suite) = makeLedger()
+        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+        let projectID = UUID()
+        // Past the per-project snapshot budget, so the ledger has to forget
+        // this file's text and keep only its identity.
+        let big = (0..<40_000).map { "let value\($0) = \($0);" }.joined(separator: "\n")
+        let files = ["src/big.rs": big, "src/main.rs": "fn main() {}\n"]
+
+        XCTAssertTrue(ledger.record(projectID: projectID, files: files).isFirstRun)
+
+        let rerun = ledger.record(projectID: projectID, files: files)
+        XCTAssertEqual(rerun.changedLines, 0, "nothing was written between the runs")
+        XCTAssertEqual(rerun.newFiles, 0, "the file was remembered, not dropped")
+
+        let edited = ledger.record(
+            projectID: projectID,
+            files: ["src/big.rs": big + "\nlet extra = 1;", "src/main.rs": "fn main() {}\n"]
+        )
+        XCTAssertEqual(edited.addedLines, 1)
+    }
+
+    func testABaselineWrittenByAnOlderBuildIsKeptRatherThanDiscarded() {
+        let suite = "crabrix.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+        let projectID = UUID()
+
+        // The pre-digest shape, as an earlier release wrote it.
+        let legacy = """
+        {"\(projectID.uuidString.lowercased())":{"files":{"main.rs":"a\\nb\\n"},"recordedAt":0}}
+        """
+        defaults.set(Data(legacy.utf8), forKey: "crabrix.contribution.v2")
+
+        let ledger = CodeContributionLedger(defaults: defaults)
+        let contribution = ledger.record(projectID: projectID, files: ["main.rs": "a\nb\n"])
+        XCTAssertFalse(contribution.isFirstRun, "the old baseline still applies")
+        XCTAssertEqual(contribution.changedLines, 0)
+        XCTAssertNil(defaults.data(forKey: "crabrix.contribution.v2"), "converted, not left behind")
     }
 
     func testProjectsAreMeasuredIndependently() {

@@ -207,11 +207,13 @@ struct ProfileView: View {
 
     private var combinedProgress: some View {
         let rank = progress.rank
-        let lessonTotal = RustCourseCatalog.courses
-            .flatMap(\.units)
-            .flatMap(\.lessons)
-            .count
+        // Every step the Learn tab offers, the Algorithm Atlas included.
+        let lessonTotal = RustCourseCatalog.lessonCount
         let lessonCompleted = min(progress.state.lessonsCompleted, lessonTotal)
+        let rustLessons = min(
+            progress.state.rustLessonsCompleted,
+            RustCourseCatalog.academyLessonCount
+        )
         let lessonProgress = lessonTotal == 0
             ? 0
             : Double(lessonCompleted) / Double(lessonTotal)
@@ -257,7 +259,9 @@ struct ProfileView: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
             "Rating \(progress.state.totalPoints), rank \(rank.title). "
-                + "\(lessonCompleted) of \(lessonTotal) Rust lessons complete."
+                + "\(lessonCompleted) of \(lessonTotal) learning steps complete, "
+                + "including \(rustLessons) of "
+                + "\(RustCourseCatalog.academyLessonCount) Rust lessons."
         )
     }
 
@@ -418,8 +422,21 @@ struct ProfileView: View {
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
                 .foregroundStyle(CrabrixTheme.muted)
             let state = progress.state
-            statRow("Lessons completed", "\(state.lessonsCompleted)", "graduationcap.fill")
-            statRow("Algorithms mastered", "\(state.solvedAlgorithmPatternIDs.count)/200", "function")
+            statRow(
+                "Rust lessons",
+                "\(state.rustLessonsCompleted)/\(RustCourseCatalog.academyLessonCount)",
+                "graduationcap.fill"
+            )
+            statRow(
+                "Atlas study steps",
+                "\(state.algorithmStudySteps)/\(AlgorithmCourseCatalog.studyStepCount)",
+                "book.pages.fill"
+            )
+            statRow(
+                "Algorithms mastered",
+                "\(state.solvedAlgorithmPatternIDs.count)/\(AlgorithmCourseCatalog.challengeCount)",
+                "function"
+            )
             statRow("Successful runs", "\(state.buildsSucceeded)", "play.circle.fill")
             statRow("Lines of Rust changed", "\(state.linesChanged)", "chart.bar.doc.horizontal.fill")
             statRow("Diagnostics repaired", "\(state.diagnosticsRepaired)", "bandage.fill")

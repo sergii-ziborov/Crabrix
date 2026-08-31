@@ -492,7 +492,7 @@ struct ContentView: View {
             scoredLessonIDs = ids
             for lessonID in fresh {
                 progress.record(
-                    .lessonCompleted,
+                    Self.progressEvent(forLessonID: lessonID),
                     eventKey: "lesson:\(lessonID):first-completion"
                 )
                 if let pattern = AlgorithmCourseCatalog.pattern(forChallengeLessonID: lessonID) {
@@ -985,6 +985,20 @@ struct ContentView: View {
         )
     }
 
+    /// What finishing this step is worth.
+    ///
+    /// The Atlas is three times the size of the language path, so paying each
+    /// of its 600 steps like a Rust lesson would have made the rank ladder a
+    /// formality. Reading a pattern is a quarter of a lesson; proving one to
+    /// the compiler is worth more than either.
+    private static func progressEvent(forLessonID lessonID: String) -> CrabrixProgressEvent {
+        switch AlgorithmCourseCatalog.stage(forLessonID: lessonID) {
+        case .model, .recognize: .algorithmStudyStepCompleted
+        case .challenge: .algorithmChallengeSolved
+        case nil: .lessonCompleted
+        }
+    }
+
     /// Turns a finished build into rating, once per result.
     private func recordBuildProgress(_ result: CompilationResult) {
         guard result.succeeded, result.phase == .run else { return }
@@ -1002,11 +1016,14 @@ struct ContentView: View {
             files: model.exportProject().files
         )
         contribution.typedShare = TypingLedger.shared.typedShare(projectID: model.projectID)
-        contribution.isFirstRunToday = progress.isFirstRunToday()
-        let buildRecorded = progress.record(
-            .buildSucceeded(contribution),
-            eventKey: "build:\(model.projectID.uuidString):\(model.workspaceRevision.sourceTreeHash)"
-        )
+        // Two separate rewards, because they answer different questions. The
+        // diff is paid once per exact source revision, so a loop of identical
+        // builds earns nothing; showing up is paid once a day, so coming back
+        // to a finished project tomorrow still counts.
+        let revisionKey = CrabrixProgressState.buildRevisionKeyPrefix
+            + "\(model.projectID.uuidString):\(model.workspaceRevision.sourceTreeHash)"
+        let buildRecorded = progress.record(.buildSucceeded(contribution), eventKey: revisionKey)
+        if progress.isFirstRunToday() { progress.record(.dailyRunBonus) }
         lastContribution = buildRecorded ? contribution : nil
 
         // A run costs a little energy, so a loop of builds is not free.

@@ -1,4 +1,43 @@
+import CryptoKit
 import Foundation
+
+/// What one file looked like when a project was last scored.
+///
+/// The text is kept while it fits the per-project budget. When it does not, the
+/// digest and line count stay behind in its place: dropping the entry outright
+/// is what used to make a large untouched file look new on every later run and
+/// earn rating for work nobody did.
+struct FileBaseline: Codable, Equatable, Sendable {
+    /// Nil once the file was too large to keep verbatim.
+    var text: String?
+    var digest: String
+    var lineCount: Int
+
+    init(text: String) {
+        self.text = text
+        digest = Self.digest(of: text)
+        lineCount = Self.lineCount(of: text)
+    }
+
+    private init(digest: String, lineCount: Int) {
+        text = nil
+        self.digest = digest
+        self.lineCount = lineCount
+    }
+
+    /// The same file, remembered by identity alone.
+    var withoutText: FileBaseline { FileBaseline(digest: digest, lineCount: lineCount) }
+
+    static func digest(of text: String) -> String {
+        SHA256.hash(data: Data(text.utf8))
+            .map { String(format: "%02x", $0) }
+            .joined()
+    }
+
+    static func lineCount(of text: String) -> Int {
+        text.split(separator: "\n", omittingEmptySubsequences: false).count
+    }
+}
 
 /// How much a project's source actually changed between two successful runs.
 ///
@@ -16,8 +55,6 @@ struct CodeContribution: Equatable, Sendable {
     /// 0…1, the share of this project's characters that were typed rather than
     /// pasted or imported.
     var typedShare = 0.5
-    /// False once the day's run reward has already been paid.
-    var isFirstRunToday = true
 
     /// What the diff is worth before the day's run reward is considered.
     ///
@@ -25,16 +62,15 @@ struct CodeContribution: Equatable, Sendable {
     /// not the same as writing one, and the diff alone cannot tell them apart.
     var craftMultiplier: Double { 0.4 + 0.6 * min(max(typedShare, 0), 1) }
 
-    /// Rating for one successful run.
+    /// Rating for running a source revision this project has not run before.
     ///
     /// The curve is logarithmic on purpose: real edits are paid well, and
-    /// pasting a thousand lines does not out-earn a whole course.
+    /// pasting a thousand lines does not out-earn a whole course. Showing up at
+    /// all is paid once a day by a separate reward, so this number is only ever
+    /// about the diff.
     var points: Int {
-        // Only the first successful run of the day pays for the run itself.
-        // After that the rating comes from writing, not from pressing Run —
-        // otherwise a loop of builds is worth more than a morning of work.
-        guard isFirstRunToday else { return 1 }
-        // A rerun of untouched code still acknowledges the run, quietly.
+        // A revision can be new to the workspace and still leave the scored
+        // files identical — a rename, or a baseline the ledger had to shorten.
         guard changedLines > 0 else { return 3 }
         let scaled = 12.0 * log2(Double(changedLines) + 1)
         let fileBonus = min(newFiles, 5) * 6
@@ -55,24 +91,44 @@ struct CodeContribution: Equatable, Sendable {
         previous: [String: String],
         current: [String: String]
     ) -> CodeContribution {
+        measure(baseline: previous.mapValues { FileBaseline(text: $0) }, current: current)
+    }
+
+    /// Compares the current files against the last scored baseline, which may
+    /// remember some files by digest rather than by text.
+    static func measure(
+        baseline: [String: FileBaseline],
+        current: [String: String]
+    ) -> CodeContribution {
         var result = CodeContribution()
-        result.isFirstRun = previous.isEmpty
+        result.isFirstRun = baseline.isEmpty
 
         for (name, text) in current {
-            guard let before = previous[name] else {
+            guard let before = baseline[name] else {
                 result.newFiles += 1
                 result.addedLines += lines(of: text).count
                 continue
             }
-            let diff = lineDiff(from: lines(of: before), to: lines(of: text))
-            result.addedLines += diff.added
-            result.removedLines += diff.removed
+            if let beforeText = before.text {
+                let diff = lineDiff(from: lines(of: beforeText), to: lines(of: text))
+                result.addedLines += diff.added
+                result.removedLines += diff.removed
+                continue
+            }
+            // Too large to keep verbatim. The digest still answers whether it
+            // changed at all, and the line counts bound by how much. A
+            // deliberately conservative estimate beats calling it new.
+            guard before.digest != FileBaseline.digest(of: text) else { continue }
+            let delta = FileBaseline.lineCount(of: text) - before.lineCount
+            result.addedLines += max(delta, 0)
+            result.removedLines += max(-delta, 0)
+            if delta == 0 { result.addedLines += 1 }
         }
 
         // A deleted file is work too, and ignoring it would let a delete-then-
         // re-add cycle look like pure addition.
-        for (name, text) in previous where current[name] == nil {
-            result.removedLines += lines(of: text).count
+        for (name, before) in baseline where current[name] == nil {
+            result.removedLines += before.lineCount
         }
         return result
     }
@@ -134,13 +190,21 @@ final class CodeContributionLedger: @unchecked Sendable {
     static let shared = CodeContributionLedger()
 
     private struct Snapshot: Codable {
+        var files: [String: FileBaseline]
+        var recordedAt: Date
+    }
+
+    /// The pre-digest shape, kept only so an update does not throw away every
+    /// baseline and pay for a whole project as if it were newly written.
+    private struct LegacySnapshot: Codable {
         var files: [String: String]
         var recordedAt: Date
     }
 
     private let lock = NSLock()
     private let defaults: UserDefaults
-    private static let storageKey = "crabrix.contribution.v2"
+    private static let storageKey = "crabrix.contribution.v3"
+    private static let legacyStorageKey = "crabrix.contribution.v2"
     /// Enough for a real multi-file project, far short of anything worth worrying about.
     private static let maxBytesPerProject = 256 * 1_024
     private static let maxProjects = 30
@@ -159,7 +223,7 @@ final class CodeContributionLedger: @unchecked Sendable {
         var snapshots = loadLocked()
         let key = projectID.uuidString.lowercased()
         let previous = snapshots[key]?.files ?? [:]
-        let contribution = CodeContribution.measure(previous: previous, current: files)
+        let contribution = CodeContribution.measure(baseline: previous, current: files)
 
         let trimmed = Self.trim(files)
         snapshots[key] = Snapshot(files: trimmed, recordedAt: Date())
@@ -179,30 +243,48 @@ final class CodeContributionLedger: @unchecked Sendable {
         defaults.removeObject(forKey: Self.storageKey)
     }
 
-    /// Keeps the snapshot under the per-project cap, dropping the largest files
-    /// first so a big generated file cannot evict everything the reader wrote.
-    private static func trim(_ files: [String: String]) -> [String: String] {
+    /// Keeps the snapshot under the per-project cap by forgetting the text of
+    /// the largest files first, so a big generated file cannot evict what the
+    /// reader wrote.
+    ///
+    /// Every file keeps its entry. Removing them is what made an untouched
+    /// 3,000-line file read as new on the next run, paying again for code
+    /// nobody had touched since.
+    private static func trim(_ files: [String: String]) -> [String: FileBaseline] {
+        var baselines = files.mapValues { FileBaseline(text: $0) }
         var total = files.values.reduce(0) { $0 + $1.utf8.count }
-        guard total > maxBytesPerProject else { return files }
-        var trimmed = files
+        guard total > maxBytesPerProject else { return baselines }
         for (name, text) in files.sorted(by: { $0.value.utf8.count > $1.value.utf8.count }) {
             guard total > maxBytesPerProject else { break }
-            trimmed.removeValue(forKey: name)
+            baselines[name] = baselines[name]?.withoutText
             total -= text.utf8.count
         }
-        return trimmed
+        return baselines
     }
 
     private func loadLocked() -> [String: Snapshot] {
         if let cache { return cache }
-        guard let data = defaults.data(forKey: Self.storageKey),
-              let decoded = try? JSONDecoder().decode([String: Snapshot].self, from: data)
-        else {
-            cache = [:]
-            return [:]
+        if let data = defaults.data(forKey: Self.storageKey),
+           let decoded = try? JSONDecoder().decode([String: Snapshot].self, from: data) {
+            cache = decoded
+            return decoded
         }
-        cache = decoded
-        return decoded
+        let migrated = loadLegacyLocked()
+        cache = migrated
+        if !migrated.isEmpty { persistLocked(migrated) }
+        return migrated
+    }
+
+    /// Converts a pre-digest snapshot rather than starting from nothing: an
+    /// empty baseline would score the reader's whole project as newly written.
+    private func loadLegacyLocked() -> [String: Snapshot] {
+        guard let data = defaults.data(forKey: Self.legacyStorageKey),
+              let decoded = try? JSONDecoder().decode([String: LegacySnapshot].self, from: data)
+        else { return [:] }
+        defaults.removeObject(forKey: Self.legacyStorageKey)
+        return decoded.mapValues {
+            Snapshot(files: Self.trim($0.files), recordedAt: $0.recordedAt)
+        }
     }
 
     private func persistLocked(_ value: [String: Snapshot]) {

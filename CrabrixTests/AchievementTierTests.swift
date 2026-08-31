@@ -58,11 +58,39 @@ final class AchievementTierTests: XCTestCase {
         XCTAssertEqual(bronze.progress(state).current, bronze.target)
     }
 
-    func testTheRatingLadderMatchesTheRankLadder() {
+    func testTheRatingLadderMatchesTheTopOfTheRankLadder() {
         let family = try! XCTUnwrap(CrabrixAchievementCatalog.family(id: "rating"))
         // A badge that disagreed with the rank shown next to it would be a bug
-        // the reader could see.
-        XCTAssertEqual(family.thresholds, CrabrixRank.ladder.dropFirst().map(\.threshold))
+        // the reader could see. There are more ranks than tiers, so the badge
+        // covers the top five rungs.
+        XCTAssertEqual(family.thresholds, CrabrixRank.ladder.suffix(5).map(\.threshold))
+    }
+
+    func testCourseworkMeasuresTheRustPathAlone() {
+        let family = try! XCTUnwrap(CrabrixAchievementCatalog.family(id: "lessons"))
+        var state = CrabrixProgressState()
+        // Enough Atlas steps to finish the whole ladder, if it counted them.
+        state.lessonsCompleted = 600
+        state.algorithmStudySteps = 400
+        XCTAssertNil(
+            family.earnedTier(in: state),
+            "a language badge must not be earned without a language lesson"
+        )
+
+        state.rustLessonsCompleted = RustCourseCatalog.academyLessonCount
+        XCTAssertEqual(family.earnedTier(in: state), .diamond)
+        XCTAssertEqual(
+            family.thresholds.last, RustCourseCatalog.academyLessonCount,
+            "the last rung is the path itself"
+        )
+    }
+
+    func testAtlasStudyHasItsOwnLadder() {
+        let family = try! XCTUnwrap(CrabrixAchievementCatalog.family(id: "algorithm-study"))
+        XCTAssertEqual(family.thresholds.last, AlgorithmCourseCatalog.studyStepCount)
+        var state = CrabrixProgressState()
+        state.algorithmStudySteps = AlgorithmCourseCatalog.studyStepCount
+        XCTAssertEqual(family.earnedTier(in: state), .diamond)
     }
 
     func testRecallDepthIsAchievable() {
@@ -110,6 +138,11 @@ final class AchievementMigrationTests: XCTestCase {
         // Progress survived the catalogue change.
         XCTAssertEqual(store.state.totalPoints, 900)
         XCTAssertEqual(store.state.buildsSucceeded, 60)
+        // The single old lesson counter is split without inventing progress:
+        // no pattern was solved, so all thirty are attributed to the Rust path.
+        XCTAssertEqual(store.state.lessonsCompleted, 30)
+        XCTAssertEqual(store.state.rustLessonsCompleted, 30)
+        XCTAssertEqual(store.state.algorithmStudySteps, 0)
         // Tiers already satisfied are recorded...
         XCTAssertTrue(store.state.unlockedAchievementIDs.contains("builds.2"))
         XCTAssertTrue(store.state.unlockedAchievementIDs.contains("lessons.2"))

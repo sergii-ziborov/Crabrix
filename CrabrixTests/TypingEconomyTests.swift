@@ -107,13 +107,59 @@ final class RunRewardEconomyTests: XCTestCase {
         XCTAssertGreaterThan(Double(typed.points), Double(pasted.points) * 1.8)
     }
 
-    func testOnlyTheFirstRunOfTheDayPaysForTheRun() {
-        var first = CodeContribution(addedLines: 80)
-        first.typedShare = 1.0
-        var later = first
-        later.isFirstRunToday = false
-        XCTAssertGreaterThan(first.points, 20)
-        XCTAssertEqual(later.points, 1, "a loop of builds must not out-earn writing")
+    @MainActor
+    func testTheSameRevisionIsPaidOnceHoweverOftenItIsRun() {
+        let suite = "crabrix.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+        let store = CrabrixProgressStore(defaults: defaults)
+
+        var contribution = CodeContribution(addedLines: 80)
+        contribution.typedShare = 1.0
+        let key = CrabrixProgressState.buildRevisionKeyPrefix + "project:revision-a"
+        XCTAssertTrue(store.record(.buildSucceeded(contribution), eventKey: key))
+        let afterFirst = store.state.totalPoints
+        XCTAssertGreaterThan(afterFirst, 20)
+
+        XCTAssertFalse(
+            store.record(.buildSucceeded(contribution), eventKey: key),
+            "a loop of identical builds must not out-earn writing"
+        )
+        XCTAssertEqual(store.state.totalPoints, afterFirst)
+
+        // Editing and running again on the same day is real work, and is paid.
+        XCTAssertTrue(store.record(
+            .buildSucceeded(contribution),
+            eventKey: CrabrixProgressState.buildRevisionKeyPrefix + "project:revision-b"
+        ))
+        XCTAssertGreaterThan(store.state.totalPoints, afterFirst)
+    }
+
+    @MainActor
+    func testRevisionIdentitiesStayBoundedWhileLessonIdentitiesDoNot() {
+        let suite = "crabrix.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+        let store = CrabrixProgressStore(defaults: defaults)
+
+        let limit = CrabrixProgressState.maximumRecentBuildRevisions
+        for index in 0...(limit + 20) {
+            store.record(
+                .buildSucceeded(CodeContribution(addedLines: 1)),
+                eventKey: CrabrixProgressState.buildRevisionKeyPrefix + "project:\(index)"
+            )
+        }
+        XCTAssertEqual(store.state.recentBuildRevisions.count, limit)
+        XCTAssertTrue(store.state.processedEventKeys.isEmpty, "revisions never join the permanent set")
+        // The window keeps the newest revisions, so the loop just run is still
+        // recognised as already paid.
+        XCTAssertFalse(store.record(
+            .buildSucceeded(CodeContribution(addedLines: 1)),
+            eventKey: CrabrixProgressState.buildRevisionKeyPrefix + "project:\(limit + 20)"
+        ))
+        // A lesson is finite and stays remembered for good.
+        store.record(.lessonCompleted, eventKey: "lesson:basics-1:first-completion")
+        XCTAssertTrue(store.state.processedEventKeys.contains("lesson:basics-1:first-completion"))
     }
 
     func testTypingIsWhereTheRatingComesFrom() {
@@ -138,9 +184,7 @@ final class RunRewardEconomyTests: XCTestCase {
         let store = CrabrixProgressStore(defaults: defaults)
 
         XCTAssertTrue(store.isFirstRunToday())
-        var contribution = CodeContribution(addedLines: 10)
-        contribution.isFirstRunToday = true
-        store.record(.buildSucceeded(contribution))
+        store.record(.dailyRunBonus)
 
         XCTAssertFalse(store.isFirstRunToday(), "the day's reward is already paid")
         let tomorrow = Date().addingTimeInterval(86_400)

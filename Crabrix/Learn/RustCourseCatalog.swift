@@ -123,6 +123,17 @@ enum RustCourseCatalog {
         courses.flatMap(\.units).flatMap(\.lessons).count
     }
 
+    /// Lessons on the Rust language path, excluding the Algorithms course.
+    ///
+    /// The Atlas is three times the size of the Academy and its steps are
+    /// rewarded separately, so anything that means "how much Rust has been
+    /// taught" has to ask for this number rather than for `lessonCount`.
+    static let academyLessonCount: Int = courses
+        .filter { $0.theme != .algorithms }
+        .flatMap(\.units)
+        .flatMap(\.lessons)
+        .count
+
     private static func units(_ ids: String...) -> [RustLearningUnit] {
         RustLearningPath.units.filter { ids.contains($0.id) }
     }

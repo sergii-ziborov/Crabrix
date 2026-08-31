@@ -28,7 +28,8 @@ final class VitalsCapacityTests: XCTestCase {
 
     func testCapacityIsDerivedFromRatingPoints() {
         let low = VitalsCapacity.forPoints(0)
-        let high = VitalsCapacity.forPoints(6_000)
+        // The top of the ladder, wherever the economy puts it.
+        let high = VitalsCapacity.forPoints(CrabrixRank.ladder.last?.threshold ?? 0)
         XCTAssertEqual(low, VitalsCapacity.forRank(index: 0))
         XCTAssertEqual(high, VitalsCapacity.forRank(index: CrabrixRank.ladder.count - 1))
     }

@@ -10,9 +10,31 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
     /// mis-decoded.
     static let currentVersion = 1
 
+    /// Reward identity for one exact project source revision.
+    static let buildRevisionKeyPrefix = "build-revision:"
+    /// How many source revisions stay remembered. Large enough that no real
+    /// editing session can cycle back to a paid revision, small enough that the
+    /// persisted state stays a fixed size.
+    static let maximumRecentBuildRevisions = 400
+
+    /// Whether this identity belongs to the bounded window rather than to the
+    /// permanent set.
+    static func isBoundedEventKey(_ key: String) -> Bool {
+        key.hasPrefix(buildRevisionKeyPrefix)
+    }
+
     var version = CrabrixProgressState.currentVersion
     var totalPoints = 0
+    /// Every finished curriculum step: Rust Academy lessons and Algorithm
+    /// Atlas steps together.
     var lessonsCompleted = 0
+    /// Lessons finished on the Rust language path only. The Atlas is three
+    /// times the size of the Academy, so one shared counter would let a
+    /// language badge be earned without opening a language lesson.
+    var rustLessonsCompleted = 0
+    /// Atlas mental-model and recognition steps. Reading a pattern is worth
+    /// something, but not a whole language lesson.
+    var algorithmStudySteps = 0
     var buildsSucceeded = 0
     var linesChanged = 0
     var diagnosticsRepaired = 0
@@ -39,7 +61,12 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
     var achievementCatalogVersion = 0
     /// Stable reward identities already applied locally. Counters and points
     /// can therefore be replayed after a relaunch without being paid twice.
+    /// Finite by construction: lessons, patterns, crates, and repairs.
     var processedEventKeys: Set<String> = []
+    /// The one reward identity that grows with use — a project's exact source
+    /// revision — kept as a bounded, ordered window so the persisted state
+    /// cannot grow without limit. Oldest entries fall out first.
+    var recentBuildRevisions: [String] = []
 
     init() {}
 
@@ -72,10 +99,27 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
         charactersTyped = try int(.charactersTyped)
         solvedAlgorithmPatternIDs = try container
             .decodeIfPresent(Set<String>.self, forKey: .solvedAlgorithmPatternIDs) ?? []
+        // Before the split, one counter held both paths. Challenges are known
+        // exactly from the solved-pattern set, so subtract those and attribute
+        // the rest to the Academy, capped at the number of lessons that exist.
+        // The remainder becomes Atlas study, which keeps the total intact.
+        if let stored = try container.decodeIfPresent(Int.self, forKey: .rustLessonsCompleted) {
+            rustLessonsCompleted = stored
+            algorithmStudySteps = try int(.algorithmStudySteps)
+        } else {
+            let challenges = solvedAlgorithmPatternIDs.count
+            rustLessonsCompleted = min(
+                max(0, lessonsCompleted - challenges),
+                RustCourseCatalog.academyLessonCount
+            )
+            algorithmStudySteps = max(0, lessonsCompleted - challenges - rustLessonsCompleted)
+        }
         lastRunRewardDay = try container.decodeIfPresent(Date.self, forKey: .lastRunRewardDay)
         achievementCatalogVersion = try int(.achievementCatalogVersion)
         processedEventKeys = try container
             .decodeIfPresent(Set<String>.self, forKey: .processedEventKeys) ?? []
+        recentBuildRevisions = try container
+            .decodeIfPresent([String].self, forKey: .recentBuildRevisions) ?? []
         unlockedAchievementIDs = try container
             .decodeIfPresent(Set<String>.self, forKey: .unlockedAchievementIDs) ?? []
         lastActiveAt = try container.decodeIfPresent(Date.self, forKey: .lastActiveAt)
@@ -84,10 +128,20 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
 
 /// Something the learner did that is worth points.
 enum CrabrixProgressEvent: Sendable, Equatable {
+    /// One lesson on the Rust language path.
     case lessonCompleted
-    /// A successful run, paid by how much of the project actually changed
-    /// since the last one rather than by a flat fee per tap.
+    /// One Algorithm Atlas mental-model or recognition step. Reading how a
+    /// pattern works is real study, but it is not a language lesson and it is
+    /// not the compiler-verified challenge either.
+    case algorithmStudyStepCompleted
+    /// One Atlas challenge whose solution the bundled compiler accepted.
+    case algorithmChallengeSolved
+    /// A successful run of a source revision this project has not run before,
+    /// paid by how much actually changed since the last scored run.
     case buildSucceeded(CodeContribution)
+    /// The day's first successful run, independent of the diff, so returning to
+    /// a project tomorrow is worth something on its own.
+    case dailyRunBonus
     case diagnosticRepaired
     case practicePassed
     /// One Term Train run: how many pairs were matched, the longest streak, and
@@ -103,8 +157,17 @@ enum CrabrixProgressEvent: Sendable, Equatable {
         switch self {
         case .lessonCompleted:
             return 120
+        case .algorithmStudyStepCompleted:
+            // A quarter of a lesson: 400 of these exist, and paying each one
+            // like a language lesson made the whole rank ladder meaningless.
+            return 25
+        case .algorithmChallengeSolved:
+            // The only curriculum step the compiler itself has to accept.
+            return 150
         case let .buildSucceeded(contribution):
             return contribution.points
+        case .dailyRunBonus:
+            return 25
         case .diagnosticRepaired:
             return 60
         case .practicePassed:
@@ -147,13 +210,20 @@ struct CrabrixRank: Equatable, Sendable {
         return min(1, max(0, Double(points - threshold) / Double(next - threshold)))
     }
 
+    /// Scaled to the curriculum that actually exists.
+    ///
+    /// The old top rung was 6,000 points — about fifty lessons — which the
+    /// Academy alone passed less than half way through, long before the
+    /// Algorithm Atlas was opened. The ladder now stretches past the whole
+    /// language path and ends inside, not before, a finished curriculum.
     static let ladder: [(title: String, systemImage: String, threshold: Int)] = [
         ("Newcomer", "circle.dashed", 0),
-        ("Apprentice", "leaf.fill", 250),
-        ("Builder", "hammer.fill", 750),
-        ("Borrow Checker", "link.circle.fill", 1_800),
-        ("Crate Author", "shippingbox.fill", 3_500),
-        ("Rustacean", "crown.fill", 6_000),
+        ("Apprentice", "leaf.fill", 500),
+        ("Builder", "hammer.fill", 2_000),
+        ("Borrow Checker", "link.circle.fill", 6_000),
+        ("Crate Author", "shippingbox.fill", 15_000),
+        ("Rustacean", "crown.fill", 30_000),
+        ("Core Contributor", "trophy.fill", 50_000),
     ]
 
     static func rank(for points: Int) -> CrabrixRank {
@@ -296,7 +366,7 @@ enum CrabrixAchievementGroup: String, Sendable {
 enum CrabrixAchievementCatalog {
     /// Bumped when the ladders change shape, so the store can adopt a new
     /// catalogue without replaying a decade of unlocks as fresh celebrations.
-    static let version = 5
+    static let version = 6
 
     private static let generalFamilies: [CrabrixAchievementFamily] = [
         CrabrixAchievementFamily(
@@ -319,9 +389,16 @@ enum CrabrixAchievementCatalog {
             id: "lessons",
             title: "Coursework",
             systemImage: "graduationcap.fill",
-            thresholds: [1, 5, 25, 75, 142],
-            measure: { $0.lessonsCompleted },
-            requirement: { $0 == 1 ? "Complete a lesson on the Rust path." : "Complete \($0) lessons." }
+            // The Rust path only, and its top rung is the path itself. Atlas
+            // steps have their own ladders; counting them here let a language
+            // badge be finished without opening a language lesson.
+            thresholds: [1, 5, 25, 75, RustCourseCatalog.academyLessonCount],
+            measure: { $0.rustLessonsCompleted },
+            requirement: {
+                $0 == 1
+                    ? "Complete a lesson on the Rust path."
+                    : "Complete \($0) Rust lessons."
+            }
         ),
         CrabrixAchievementFamily(
             id: "diagnostics",
@@ -417,8 +494,9 @@ enum CrabrixAchievementCatalog {
             id: "rating",
             title: "Rising Rustacean",
             systemImage: "crown.fill",
-            // Deliberately the rank ladder: the badge and the rank agree.
-            thresholds: [250, 750, 1_800, 3_500, 6_000],
+            // Deliberately the top five rungs of the rank ladder, so the badge
+            // and the rank shown beside it always agree.
+            thresholds: CrabrixRank.ladder.suffix(5).map(\.threshold),
             measure: { $0.totalPoints },
             requirement: { "Reach \($0.formatted(.number)) rating points." }
         ),
@@ -435,6 +513,18 @@ enum CrabrixAchievementCatalog {
                 $0 == 1
                     ? "Solve a compiler-backed algorithm challenge."
                     : "Master \($0) unique algorithm patterns."
+            },
+            group: .algorithms
+        )
+
+        let study = CrabrixAchievementFamily(
+            id: "algorithm-study",
+            title: "Pattern Study",
+            systemImage: "book.pages.fill",
+            thresholds: [10, 50, 150, 300, AlgorithmCourseCatalog.studyStepCount],
+            measure: { $0.algorithmStudySteps },
+            requirement: {
+                "Finish \($0) Algorithm Atlas mental-model or recognition steps."
             },
             group: .algorithms
         )
@@ -457,7 +547,7 @@ enum CrabrixAchievementCatalog {
                 group: .algorithms
             )
         }
-        return [overall] + categories
+        return [overall, study] + categories
     }()
 
     static let families: [CrabrixAchievementFamily] = generalFamilies + algorithmFamilies

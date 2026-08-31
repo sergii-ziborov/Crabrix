@@ -68,21 +68,28 @@ final class CrabrixProgressStore: ObservableObject {
     /// unlocks whatever that made true.
     @discardableResult
     func record(_ event: CrabrixProgressEvent, eventKey: String? = nil) -> Bool {
-        if let eventKey, state.processedEventKeys.contains(eventKey) { return false }
+        if let eventKey, hasApplied(eventKey) { return false }
         var updated = state
-        if let eventKey { updated.processedEventKeys.insert(eventKey) }
+        if let eventKey { Self.remember(eventKey, in: &updated) }
         updated.totalPoints += event.points
         updated.lastActiveAt = Date()
 
         switch event {
         case .lessonCompleted:
             updated.lessonsCompleted += 1
+            updated.rustLessonsCompleted += 1
+        case .algorithmStudyStepCompleted:
+            updated.lessonsCompleted += 1
+            updated.algorithmStudySteps += 1
+        case .algorithmChallengeSolved:
+            // Mastery of the pattern itself is recorded separately, by id, so
+            // this only moves the curriculum counters.
+            updated.lessonsCompleted += 1
         case let .buildSucceeded(contribution):
             updated.buildsSucceeded += 1
             updated.linesChanged += contribution.changedLines
-            if contribution.isFirstRunToday {
-                updated.lastRunRewardDay = Calendar.current.startOfDay(for: Date())
-            }
+        case .dailyRunBonus:
+            updated.lastRunRewardDay = Calendar.current.startOfDay(for: Date())
         case .diagnosticRepaired:
             updated.diagnosticsRepaired += 1
         case .practicePassed:
@@ -121,6 +128,30 @@ final class CrabrixProgressStore: ObservableObject {
     }
 
     func clearCelebration() { pendingCelebration = [] }
+
+    /// Whether a reward identity has already been paid.
+    private func hasApplied(_ eventKey: String) -> Bool {
+        CrabrixProgressState.isBoundedEventKey(eventKey)
+            ? state.recentBuildRevisions.contains(eventKey)
+            : state.processedEventKeys.contains(eventKey)
+    }
+
+    /// Records a reward identity so a relaunch cannot pay it twice.
+    ///
+    /// Lesson, pattern, crate, and repair identities are finite, so they are
+    /// kept for good. Source revisions are not: they are held in a bounded
+    /// window instead, which is far longer than any plausible farming loop and
+    /// keeps the persisted state from growing with every edit.
+    private static func remember(_ eventKey: String, in state: inout CrabrixProgressState) {
+        guard CrabrixProgressState.isBoundedEventKey(eventKey) else {
+            state.processedEventKeys.insert(eventKey)
+            return
+        }
+        state.recentBuildRevisions.append(eventKey)
+        let overflow = state.recentBuildRevisions.count
+            - CrabrixProgressState.maximumRecentBuildRevisions
+        if overflow > 0 { state.recentBuildRevisions.removeFirst(overflow) }
+    }
 
     /// Records mastery only once per exact pattern. Rating already comes from
     /// the challenge lesson, so this method unlocks solution-method ladders without

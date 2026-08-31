@@ -272,8 +272,13 @@ final class AlgorithmCourseCatalogTests: XCTestCase {
 final class AlgorithmAchievementTests: XCTestCase {
     func testEachMethodHasAFiveTierLadderPlusOverallAtlas() {
         let families = CrabrixAchievementCatalog.families.filter { $0.group == .algorithms }
-        XCTAssertEqual(families.count, 21)
+        // Every method, plus the overall Atlas ladder and the study ladder.
+        XCTAssertEqual(families.count, AlgorithmCourseCatalog.categories.count + 2)
         XCTAssertEqual(families.first { $0.id == "algorithm-atlas" }?.thresholds, [1, 25, 75, 150, 200])
+        XCTAssertEqual(
+            families.first { $0.id == "algorithm-study" }?.thresholds.last,
+            AlgorithmCourseCatalog.studyStepCount
+        )
         for category in AlgorithmCourseCatalog.categories {
             XCTAssertEqual(
                 families.first { $0.id == "algorithm-\(category.id)" }?.thresholds,

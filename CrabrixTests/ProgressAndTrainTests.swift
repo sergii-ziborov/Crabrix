@@ -132,16 +132,60 @@ final class CrabrixProgressStoreTests: XCTestCase {
 
     func testRanksAdvanceWithPointsAndReportRemainingDistance() {
         XCTAssertEqual(CrabrixRank.rank(for: 0).title, "Newcomer")
-        XCTAssertEqual(CrabrixRank.rank(for: 250).title, "Apprentice")
-        XCTAssertEqual(CrabrixRank.rank(for: 749).title, "Apprentice")
-        XCTAssertEqual(CrabrixRank.rank(for: 750).title, "Builder")
+        XCTAssertEqual(CrabrixRank.rank(for: 500).title, "Apprentice")
+        XCTAssertEqual(CrabrixRank.rank(for: 1_999).title, "Apprentice")
+        XCTAssertEqual(CrabrixRank.rank(for: 2_000).title, "Builder")
 
-        let top = CrabrixRank.rank(for: 99_999)
+        let top = CrabrixRank.rank(for: 999_999)
         XCTAssertTrue(top.isMaximum)
-        XCTAssertEqual(top.progress(points: 99_999), 1)
+        XCTAssertEqual(top.progress(points: 999_999), 1)
 
-        let mid = CrabrixRank.rank(for: 500)
-        XCTAssertEqual(mid.progress(points: 500), 0.5, accuracy: 0.01)
+        let mid = CrabrixRank.rank(for: 1_250)
+        XCTAssertEqual(mid.progress(points: 1_250), 0.5, accuracy: 0.01)
+    }
+
+    func testTheRankLadderIsScaledToTheCurriculumThatExists() {
+        let rustPath = RustCourseCatalog.academyLessonCount
+            * CrabrixProgressEvent.lessonCompleted.points
+        let atlas = AlgorithmCourseCatalog.studyStepCount
+            * CrabrixProgressEvent.algorithmStudyStepCompleted.points
+            + AlgorithmCourseCatalog.challengeCount
+            * CrabrixProgressEvent.algorithmChallengeSolved.points
+        let top = CrabrixRank.ladder.last?.threshold ?? 0
+
+        // Finishing every Rust lesson must not be enough for the last rank:
+        // that was the old ladder's problem, several times over.
+        XCTAssertGreaterThan(top, rustPath)
+        // But the whole curriculum has to be able to reach it, otherwise the
+        // top rank is decoration.
+        XCTAssertLessThan(top, rustPath + atlas)
+    }
+
+    func testAtlasStepsAreWorthLessThanALanguageLesson() {
+        XCTAssertLessThan(
+            CrabrixProgressEvent.algorithmStudyStepCompleted.points,
+            CrabrixProgressEvent.lessonCompleted.points
+        )
+        // Proving a pattern to the compiler is the hardest step in either path.
+        XCTAssertGreaterThan(
+            CrabrixProgressEvent.algorithmChallengeSolved.points,
+            CrabrixProgressEvent.lessonCompleted.points
+        )
+    }
+
+    @MainActor
+    func testTheTwoPathsAreCountedSeparately() {
+        let (store, _, suite) = makeStore()
+        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+
+        store.record(.lessonCompleted)
+        store.record(.algorithmStudyStepCompleted)
+        store.record(.algorithmChallengeSolved)
+
+        XCTAssertEqual(store.state.rustLessonsCompleted, 1)
+        XCTAssertEqual(store.state.algorithmStudySteps, 1)
+        // Everything the learner finished still counts as curriculum progress.
+        XCTAssertEqual(store.state.lessonsCompleted, 3)
     }
 
     func testResetClearsEverything() {

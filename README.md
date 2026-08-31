@@ -39,8 +39,9 @@ on the device.
 - **Resolves and builds crates.io packages.** Sparse-index resolution, SemVer and feature unification, checksum-verified downloads, dependency compilation, and `--extern` linking — all on the device.
 - **Health and energy, scaled by rating.** Wrong answers in a lesson cost health; a new lesson page costs energy, once ever. Both refill on their own, and a higher rank means a bigger pool *and* a faster refill. Training — Quick Practice, Term Train, Code Recall — never costs anything, so there is always a way to keep learning.
 - **Teaches from the compiler.** 142 guided Rust lessons across six language courses, plus a 200-pattern Algorithm Atlas with two explanations and one local Rust challenge per pattern.
-- **Achievements have ladders.** 36 families of five tiers each — Bronze to Diamond — including an overall Algorithm Atlas ladder and one ladder for each of its 20 solution methods.
-- **Rating follows the diff.** A successful run is scored on how much Rust actually changed since the last one, so pressing Run on an untouched sample is worth almost nothing and real editing is worth real points.
+- **Achievements have ladders.** 37 families of five tiers each — Bronze to Diamond — including an overall Algorithm Atlas ladder, an Atlas study ladder, and one ladder for each of its 20 solution methods.
+- **Rating follows the diff.** A successful run is scored on how much Rust actually changed since the last one, and each exact source revision is paid once, so a loop of identical builds earns nothing while real editing earns real points. Showing up is paid separately, once a day.
+- **The two paths are counted separately.** A Rust lesson, an Atlas study step, and a compiler-verified Atlas challenge are worth different amounts, the language and Atlas counters are distinct, and the rank ladder is scaled to the whole 742-step curriculum rather than to the 142-lesson Academy it started as.
 - **Offline with honest durability.** Cached packages rebuild without a network
   while iOS retains the cache. **Pin exact graph for offline** stores the
   checksum-verified archives outside purgeable Caches, so Cargo can rehydrate
@@ -68,7 +69,7 @@ The app embeds:
   normalisation variants. Canonical-solution validation for all 200 patterns
   remains a release gate rather than a finished claim;
 - Quick Practice, Term Train (practice and timed modes, streaks, accuracy), and Code Recall, a memory drill that hides a snippet and asks you to rebuild it — all three generated from the lesson content and scheduled with SM-2 spaced repetition;
-- a rating earned across every part of the app, 36 achievement ladders of five tiers each, with algorithm-category mastery tracked idempotently, a tiered unlock animation, and health/energy that scale with rank — all stored on device;
+- a rating earned across every part of the app, 37 achievement ladders of five tiers each, with algorithm-category mastery tracked idempotently, a tiered unlock animation, and health/energy that scale with rank — all stored on device;
 - a project library of **46** Cargo-shaped projects across eight categories,
   including at least 26 guided projects and **6 bounded visual canvases**,
   searchable and filterable by difficulty;
