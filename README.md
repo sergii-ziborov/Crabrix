@@ -10,7 +10,7 @@ on the device.
 > **Release status:** the code-level candidate is under active hardening. A
 > production 1.0 tag is fail-closed until the full physical iPhone/iPad matrix,
 > final screenshots, signing/App Store configuration, and the remaining
-> multi-case Algorithm Atlas evidence are recorded. See
+> complete Algorithm Atlas canonical-solution evidence is recorded. See
 > [Release readiness](docs/RELEASE-READINESS.md).
 
 [**crabrix.com**](https://crabrix.com) · [About](https://crabrix.com/about) ·
@@ -63,9 +63,10 @@ The app embeds:
 - a seventh Algorithms course with 20 independent solution-method chapters,
   200 reusable patterns, and 600 steps ordered inside each method: HOW, WHEN,
   then a compiler-backed Rust challenge. The editable solution contains no
-  expected value or assertion; Crabrix injects the verifier privately at build
-  time. A full multi-case hidden-test bank remains a release gate rather than a
-  finished claim;
+  expected value or assertion. Crabrix privately runs every solution against a
+  visible example, an independently authored semantic probe, and two input-
+  normalisation variants. Canonical-solution validation for all 200 patterns
+  remains a release gate rather than a finished claim;
 - Quick Practice, Term Train (practice and timed modes, streaks, accuracy), and Code Recall, a memory drill that hides a snippet and asks you to rebuild it — all three generated from the lesson content and scheduled with SM-2 spaced repetition;
 - a rating earned across every part of the app, 36 achievement ladders of five tiers each, with algorithm-category mastery tracked idempotently, a tiered unlock animation, and health/energy that scale with rank — all stored on device;
 - a project library of **46** Cargo-shaped projects across eight categories,

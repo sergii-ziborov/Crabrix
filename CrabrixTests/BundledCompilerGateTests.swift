@@ -103,6 +103,7 @@ final class BundledCompilerGateTests: XCTestCase {
             of: "let _ = input;\n    todo!(\"implement \(pattern.title)\")",
             with: """
             let values: Vec<i32> = input
+                .trim()
                 .trim_matches(['[', ']'])
                 .split(',')
                 .map(|part| part.trim().parse().unwrap())

@@ -30,7 +30,9 @@ by a successful local build.
   purgeable Caches and can rehydrate a frozen graph after source/archive cache
   deletion.
 - Algorithm Atlas expected values and assertions are no longer present in the
-  editable project. Crabrix injects an app-private verifier at compilation.
+  editable project. Every pattern now has an independent semantic probe plus
+  two input-normalisation variants in an app-private verifier, and the bundled
+  compiler gate executes that multi-case harness.
 - CI definitions now contain a fast suite, an unsigned Release build, and the
   bundled-rustc/sandbox suite on GitHub's Xcode 27 runner.
 - clean XcodeGen builds restore a source-controlled `Package.resolved` and
@@ -48,7 +50,7 @@ by a successful local build.
 | Offline durability | exact archive pin + frozen cache-eviction rehydrate gate | airplane-mode device run and low-disk behavior | **PARTIAL** |
 | Package source under guideline 2.5.2 | view, Vendor & Edit, diff/reset, patched link gate | exact-RC reviewer walkthrough / consultation outcome | **PARTIAL** |
 | Rust Academy integrity | lesson-specific evidence model and structural QA | expert content sample and remaining compiler-evidence coverage | **PARTIAL** |
-| Algorithm Atlas integrity | private verifier; literal starter-answer regression | real multi-case hidden/adversarial bank and canonical solution for all 200 patterns | **BLOCKED** |
+| Algorithm Atlas integrity | four-case private verifier for all 200 patterns; independent semantic probes; literal-answer regression; bundled-rustc harness gate | canonical-solution validation for all 200 patterns and broader edge/adversarial corpus | **PARTIAL** |
 | Social/privacy | boards dormant; privacy manifest says no collection | verify production flags and App Privacy answers in archived RC | **PARTIAL** |
 | Signing/submission | unsigned Release and development-signed device builds pass; App/Share App Group matches | App Store distribution profile/archive, accepted Xcode/SDK, archive validation | **BLOCKED** |
 | Screenshots/metadata | copy is source-controlled and corrected | recapture every frame from exact signed RC | **BLOCKED** |

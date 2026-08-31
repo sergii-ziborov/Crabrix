@@ -71,9 +71,41 @@ final class AlgorithmCourseCatalogTests: XCTestCase {
             XCTAssertFalse(challenge.source.contains("assert_eq!"), pattern.id)
             XCTAssertFalse(challenge.source.contains("let expected ="), pattern.id)
             XCTAssertTrue(challenge.source.contains("todo!(\"implement"), pattern.id)
-            XCTAssertTrue(challenge.verificationSource.contains("assert_eq!"), pattern.id)
+            XCTAssertFalse(challenge.verificationSource.contains("assert_eq!"), pattern.id)
+            XCTAssertTrue(challenge.verificationSource.contains("PRIVATE CASE"), pattern.id)
+            XCTAssertTrue(challenge.verificationSource.contains("cases.iter()"), pattern.id)
             XCTAssertTrue(challenge.verificationSource.contains(pattern.expectedAnswer), pattern.id)
             XCTAssertEqual(challenge.expectedOutput, "PASS \(pattern.id)\n")
+        }
+    }
+
+    func testEveryPatternHasIndependentPrivateVerificationCases() throws {
+        XCTAssertEqual(
+            AlgorithmVerificationData.coveredPatternIDs,
+            Set(patterns.map(\.id))
+        )
+
+        for pattern in patterns {
+            let challenge = try XCTUnwrap(
+                AlgorithmCourseCatalog.challenge(for: pattern.lessonID(.challenge)),
+                pattern.id
+            )
+            let cases = challenge.verificationCases
+
+            XCTAssertEqual(cases.count, 4, pattern.id)
+            XCTAssertEqual(cases.first?.kind, .visible, pattern.id)
+            XCTAssertEqual(cases.first?.input, pattern.visibleInput, pattern.id)
+            XCTAssertEqual(cases.first?.expectedAnswer, pattern.expectedAnswer, pattern.id)
+            XCTAssertEqual(Set(cases.map(\.input)).count, cases.count, pattern.id)
+            XCTAssertGreaterThanOrEqual(Set(cases.map(\.expectedAnswer)).count, 2, pattern.id)
+            XCTAssertTrue(cases.dropFirst(2).allSatisfy { $0.kind == .normalisation }, pattern.id)
+
+            let semanticCase = try XCTUnwrap(cases.dropFirst().first, pattern.id)
+            XCTAssertNotEqual(semanticCase.input, pattern.visibleInput, pattern.id)
+            XCTAssertNotEqual(semanticCase.expectedAnswer, pattern.expectedAnswer, pattern.id)
+            XCTAssertFalse(challenge.source.contains(semanticCase.input), pattern.id)
+            XCTAssertTrue(challenge.verificationSource.contains(semanticCase.input), pattern.id)
+            XCTAssertTrue(challenge.verificationSource.contains(semanticCase.expectedAnswer), pattern.id)
         }
     }
 
@@ -197,6 +229,7 @@ final class AlgorithmCourseCatalogTests: XCTestCase {
             of: "let _ = input;\n    todo!(\"implement \(pattern.title)\")",
             with: """
             let values: Vec<i32> = input
+                .trim()
                 .trim_matches(['[', ']'])
                 .split(',')
                 .map(|part| part.trim().parse().unwrap())

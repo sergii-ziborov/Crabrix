@@ -69,8 +69,9 @@ The dedicated Release test scheme now proves the following before a physical-dev
   a real crates.io package, followed by running the linked program;
 - interruption of a running compile within the asserted window;
 - deterministic instruction-budget and explicit-cancel traps for a pure loop;
-- private Algorithm Atlas verifier injection (expected values are not in the
-  editable project);
+- four-case private Algorithm Atlas verifier injection for every pattern
+  (expected values are not in the editable project), including an independent
+  semantic input and surrounding-whitespace variants;
 - crates.io **Vendor & Edit**, including a distinct patch fingerprint and real
   patched dependency link;
 - offline pinning followed by deletion of purgeable source/archive cache and a

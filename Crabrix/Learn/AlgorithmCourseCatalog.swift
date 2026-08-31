@@ -77,6 +77,9 @@ struct AlgorithmChallenge: Equatable, Sendable {
     let source: String
     /// App-private executable harness supplied to rustc at build time.
     let verificationSource: String
+    /// One visible case plus private semantic and input-normalisation cases.
+    /// These stay outside the editable project and are never printed on failure.
+    let verificationCases: [AlgorithmVerificationCase]
     let expectedOutput: String
     let requiredSourceFragments: [String]
     let forbiddenSourceFragments: [String]
@@ -165,14 +168,18 @@ enum AlgorithmCourseCatalog {
     }
 
     static func challenge(for lessonID: String) -> AlgorithmChallenge? {
-        guard let pattern = pattern(forChallengeLessonID: lessonID) else { return nil }
+        guard let pattern = pattern(forChallengeLessonID: lessonID),
+              let semanticProbe = AlgorithmVerificationData.semanticProbe(for: pattern.id)
+        else { return nil }
         let output = "PASS \(pattern.id)\n"
+        let cases = verificationCases(for: pattern, semanticProbe: semanticProbe)
         return AlgorithmChallenge(
             lessonID: lessonID,
             patternID: pattern.id,
             projectName: "algorithm-\(pattern.id)",
             source: challengeSource(for: pattern),
-            verificationSource: verificationSource(for: pattern),
+            verificationSource: verificationSource(for: pattern, cases: cases),
+            verificationCases: cases,
             expectedOutput: output,
             requiredSourceFragments: ["pub fn solve", "input: &str", "-> String"],
             forbiddenSourceFragments: [
@@ -236,12 +243,12 @@ enum AlgorithmCourseCatalog {
         case .challenge:
             RustLessonWriting(
                 summary: pattern.task,
-                explanation: "This is an original Crabrix exercise in the same problem family as common interview-platform questions. Visible input: \(pattern.visibleInput). Expected answer: \(pattern.expectedAnswer). Implement solve instead of printing the expected value directly; Crabrix supplies the verification harness privately when you Run.",
+                explanation: "This is an original Crabrix exercise in the same problem family as common interview-platform questions. Visible input: \(pattern.visibleInput). Expected answer: \(pattern.expectedAnswer). Implement solve instead of printing the expected value directly; Crabrix supplies several verification cases privately when you Run. The input grammar matches the visible example, and whitespace surrounding the complete input is insignificant.",
                 exampleCaption: "Editable solution · verification data stays outside the project",
                 exampleCode: challengeSource(for: pattern),
                 task: pattern.task,
                 success: "The harness prints PASS \(pattern.id), and your explanation still meets \(pattern.complexity).",
-                rule: "First make the visible case correct, then test an empty, smallest, duplicate, or adversarial case appropriate to the pattern.",
+                rule: "First make the visible case correct, then test a smallest, duplicate, or adversarial case. Trim whitespace surrounding the complete input before parsing.",
                 practiceCode: challengeSource(for: pattern),
                 question: "Which performance target should guide this solution?",
                 answers: [
@@ -261,23 +268,57 @@ enum AlgorithmCourseCatalog {
         pub fn solve(input: &str) -> String {
             // \(task)
             // Parse the visible input into the structures your algorithm needs.
+            // Whitespace surrounding the complete input is insignificant.
             let _ = input;
             todo!("implement \(pattern.title)")
         }
         """
     }
 
-    private static func verificationSource(for pattern: AlgorithmPattern) -> String {
-        let input = rustRawString(pattern.visibleInput)
-        let answer = rustRawString(pattern.expectedAnswer)
+    private static func verificationCases(
+        for pattern: AlgorithmPattern,
+        semanticProbe: AlgorithmVerificationCase
+    ) -> [AlgorithmVerificationCase] {
+        [
+            AlgorithmVerificationCase(
+                kind: .visible,
+                input: pattern.visibleInput,
+                expectedAnswer: pattern.expectedAnswer
+            ),
+            semanticProbe,
+            AlgorithmVerificationCase(
+                kind: .normalisation,
+                input: "\n\(semanticProbe.input)\n",
+                expectedAnswer: semanticProbe.expectedAnswer
+            ),
+            AlgorithmVerificationCase(
+                kind: .normalisation,
+                input: "  \n\(pattern.visibleInput)\n  ",
+                expectedAnswer: pattern.expectedAnswer
+            ),
+        ]
+    }
+
+    private static func verificationSource(
+        for pattern: AlgorithmPattern,
+        cases: [AlgorithmVerificationCase]
+    ) -> String {
+        let rustCases = cases.map { testCase in
+            "    (r#\"\(rustRawString(testCase.input))\"#, r#\"\(rustRawString(testCase.expectedAnswer))\"#),"
+        }.joined(separator: "\n")
         return """
         mod solution;
 
         fn main() {
-            let input = r#"\(input)"#;
-            let expected = r#"\(answer)"#;
-            let actual = solution::solve(input);
-            assert_eq!(actual, expected);
+            let cases = [
+        \(rustCases)
+            ];
+            for (case_index, (input, expected)) in cases.iter().enumerate() {
+                if solution::solve(input) != *expected {
+                    eprintln!("PRIVATE CASE {} FAILED", case_index + 1);
+                    std::process::exit(1);
+                }
+            }
             println!("PASS \(pattern.id)");
         }
         """
