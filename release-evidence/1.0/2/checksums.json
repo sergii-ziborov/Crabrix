@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-31T21:22:04Z",
+  "tooling": {
+    "xcodeVersion": "27.0",
+    "xcodeBuild": "27A5228h",
+    "swiftVersion": "6.4",
+    "wasmKitVersion": "0.3.1",
+    "wasmKitUpstreamCommit": "ee36070acc31878ef727b90d5bdc4c9cc1fff22e"
+  },
+  "toolchain": {
+    "id": "artifacts-test-7",
+    "rustcSHA256": "41412081eefc3e08ec5664ed0748902a7e575e1f267898dcc64d412702df7e83",
+    "sysrootManifestSHA256": "a89ba732c649a983126750112268614c80b6e7d6bba8c60980cbfd32e04d9892",
+    "verifiedFrom": "Toolchain/artifacts-test-7 inside the signed Release-iphoneos app built from this commit"
+  },
+  "sourceControlledReleaseInputs": {
+    "swiftPackageResolvedSHA256": "76bb09a203066767aae44ab9d7b4e05889a97dc66c5698a491ad6d82c140cb3a",
+    "vendoredWasmKitPackageResolvedSHA256": "1afebf26f03fc3544fcd497af83180a4fb6f89e532ebb79f5b9ae275aee438f3",
+    "projectYMLSHA256": "b318e218d8d9f57ffb972aa4d37c9e45e4ab47f7af9c518b664c83562ca66c4e",
+    "appPrivacyManifestSHA256": "b0630193c7681d24e56f0c1cff3fbead8c19c7f110c984c6aa1a5abe078e9d2f",
+    "sharePrivacyManifestSHA256": "3375c51907eaabdd46d10846d3dfa8f5c5e6e134cee9b5645835c9ab9f24bcae",
+    "thirdPartyNoticesSHA256": "c5f20d22969ae7a06132448ff1a34acfa3d411c812318000add46175e2539afa"
+  },
+  "source": {
+    "candidateCommit": "adf10fb1566ec89e18c7104e1bd0a45c5b615665",
+    "candidateCommittedAt": "2026-09-01T00:19:28+03:00",
+    "candidateBranch": "release/1.0-app-store",
+    "previousEvidenceBuild": "1",
+    "previousEvidenceBaseCommit": "1b45367d5e3273752bbc5bc36f8c45465788c679",
+    "immutableReleaseTag": null,
+    "note": "Every hash in this file was recomputed from this commit's own working tree and signed device product. Nothing is inherited from build 1, although the audited SwiftPM graph, project spec, privacy manifests and pinned toolchain are byte-identical to it."
+  }
+}

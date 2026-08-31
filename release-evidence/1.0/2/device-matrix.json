@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-31T21:22:04Z",
+  "candidate": {
+    "version": "1.0",
+    "build": "2",
+    "branch": "release/1.0-app-store",
+    "candidateCommit": "adf10fb1566ec89e18c7104e1bd0a45c5b615665",
+    "sourceIdentity": "release branch hardening candidate; immutable release tag pending"
+  },
+  "simulator": {
+    "model": "iPhone 16 Pro",
+    "osVersion": "18.2",
+    "osNote": "the minimum deployment target, chosen deliberately over the newest runtime",
+    "architecture": "arm64",
+    "xctestCount": 364,
+    "swiftTestingCount": 7,
+    "passed": 371,
+    "failed": 0,
+    "skipped": 0,
+    "runtimeWarnings": 0,
+    "result": "passed",
+    "scope": "fast release suite only; the bundled compiler/sandbox suite was not re-run on this commit"
+  },
+  "unsignedReleaseBuild": {
+    "destination": "iOS Simulator",
+    "configuration": "Release",
+    "result": "passed",
+    "newWarnings": 0
+  },
+  "currentCandidateSigning": {
+    "configuration": "Release-iphoneos",
+    "appSizeMiB": 171,
+    "codesignVerification": "passed (--verify --deep --strict)",
+    "appAndShareExtensionAppGroupMatch": true,
+    "gameCenterEntitlement": "absent as required by the dormant production feature flag",
+    "profileKind": "development",
+    "getTaskAllow": true,
+    "profileExpiration": "2026-09-03T13:11:57Z",
+    "productionArchiveEligible": false
+  },
+  "physicalDevices": [
+    {
+      "model": "iPhone 13 mini",
+      "identifier": "24FD2D6E-6EE2-59CE-90EC-39B48B6FF171",
+      "architecture": "arm64",
+      "sourceCommit": "adf10fb1566ec89e18c7104e1bd0a45c5b615665",
+      "configuration": "Release",
+      "build": "passed",
+      "install": "passed",
+      "launch": "not performed; the device was locked when the installer requested a launch",
+      "runtimeMatrix": "pending",
+      "result": "installed-not-yet-exercised"
+    }
+  ],
+  "notMeasuredOnThisCommit": [
+    "bundled compiler and sandbox suite (20 tests)",
+    "cold E0502 check timing on a physical device",
+    "20 repeated checks and 20 repeated runs",
+    "pure-compute stop, CPU-idle and memory-release observation",
+    "Cargo cold, warm and offline-pinned rebuilds on a physical device",
+    "Vendor & Edit walkthrough on a physical device",
+    "thermal, low-power, background/foreground and memory-warning behaviour",
+    "iPad of any class",
+    "physical device running the minimum supported iOS 18"
+  ],
+  "inheritedEvidenceNotClaimedHere": {
+    "build": "1",
+    "note": "Build 1 recorded a 9.2 second cold E0502 check on an iPhone 13 mini and a 20/20 bundled compiler suite. Both were measured on older source and are deliberately not attributed to this candidate."
+  }
+}

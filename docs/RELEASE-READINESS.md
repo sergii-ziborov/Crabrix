@@ -61,6 +61,10 @@ by a successful local build.
 
 ## Production tag requirements
 
+The current bundle is `release-evidence/1.0/2/`, captured from commit
+`adf10fb`. It separates what that exact commit proves from what it does not
+measure, and inherits no result from build 1.
+
 Do not create or push a `1.0` production tag until all of these are attached to
 `release-evidence/1.0/<build>/`:
 
