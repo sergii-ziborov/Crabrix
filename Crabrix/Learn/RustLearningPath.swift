@@ -233,7 +233,7 @@ extension RustLesson {
                 .algorithmChallenge(
                     expectedOutput: .exact(challenge.expectedOutput),
                     requiredSourceFragments: challenge.requiredSourceFragments,
-                    forbiddenSourceFragments: ["todo!(\"implement"]
+                    forbiddenSourceFragments: challenge.forbiddenSourceFragments
                 )
             } else {
                 .reasoning(correctAnswer: RustLessonLibrary.writing(for: id)?.correctAnswer ?? 0)

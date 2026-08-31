@@ -8,6 +8,9 @@ import Foundation
 /// per build unit, which is what lets the UI say "verified" or "does not build
 /// here" without recompiling.
 enum CrateBuildOutcome: Codable, Sendable, Equatable {
+    /// rustc emitted metadata successfully (`cargo check`-level evidence).
+    case checked
+    /// rustc emitted a linkable library successfully.
     case built
     case failed(String)
 }
@@ -55,6 +58,11 @@ final class CrateCompatibilityLedger: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         var current = loadLocked()
+        // A later cheap Check must not erase stronger link evidence for the
+        // exact same fingerprint and toolchain.
+        if current[fingerprint]?.outcome == .built, outcome == .checked {
+            return
+        }
         current[fingerprint] = CrateBuildRecord(
             package: package,
             fingerprint: fingerprint,

@@ -37,6 +37,17 @@ enum CargoEmitKind: String, Sendable, Equatable {
     }
 }
 
+/// Where rustc reads one dependency's source.
+///
+/// Registry sources stay immutable and checksum-backed. `projectPatch` points
+/// at an editable `vendor/<name>-<version>` overlay inside the user's project;
+/// the compiler merges that overlay onto a private copy of the verified source
+/// before invoking rustc, so assets the editor cannot represent remain intact.
+enum CargoBuildSource: Sendable, Equatable {
+    case registry(directoryName: String)
+    case projectPatch(relativeDirectory: String, registryDirectoryName: String)
+}
+
 /// Everything the compiler needs to build one dependency crate.
 struct CargoBuildUnit: Sendable, Equatable, Identifiable {
     let package: PackageID
@@ -48,6 +59,7 @@ struct CargoBuildUnit: Sendable, Equatable, Identifiable {
     let features: [String]
     /// The crate's library entry point, relative to its source directory.
     let libraryPath: String
+    let source: CargoBuildSource
     let externs: [CargoExtern]
     let authors: String
     let description: String
@@ -57,6 +69,18 @@ struct CargoBuildUnit: Sendable, Equatable, Identifiable {
 
     var id: String { fingerprint }
     var sourceDirectoryName: String { "\(package.name)-\(package.version)" }
+
+    var guestSourceDirectory: String {
+        switch source {
+        case let .registry(directoryName): "/registry/\(directoryName)"
+        case .projectPatch: "/patches/\(fingerprint)"
+        }
+    }
+
+    var isLocallyPatched: Bool {
+        if case .projectPatch = source { return true }
+        return false
+    }
 }
 
 /// A topologically ordered dependency build, dependencies first.
@@ -90,7 +114,7 @@ enum CargoToolchain {
 enum CargoFingerprint {
     /// Bumped whenever the compiler flags or artefact layout change, so stale
     /// artefacts are never reused across an app update.
-    static let schemaVersion = "cargo-units-2"
+    static let schemaVersion = "cargo-units-3"
     static let dependencyCompilerFlags = [
         "--crate-type=lib",
         "-Copt-level=0",

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-08-29T23:33:12Z",
-  "status": "pending-physical-device-run",
+  "capturedAt": "2026-08-31T09:11:45Z",
+  "status": "partial-automated-evidence; pending-physical-device-run",
   "requiredScenarios": [
     "cold package resolution",
     "interrupted download and extraction",
@@ -11,5 +11,21 @@
     "cache corruption recovery",
     "low-disk failure"
   ],
-  "measurements": []
+  "measurements": [
+    {
+      "scenario": "project-local vendored crate fingerprint and link",
+      "environment": "iPhone 17 Pro simulator",
+      "result": "passed"
+    },
+    {
+      "scenario": "offline-pinned frozen rehydrate after source/archive cache deletion",
+      "environment": "iPhone 17 Pro simulator",
+      "result": "passed"
+    },
+    {
+      "scenario": "package cache clear preserves registry index and explicit offline pins",
+      "environment": "iPhone 17 Pro simulator",
+      "result": "passed"
+    }
+  ]
 }

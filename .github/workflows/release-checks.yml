@@ -1,0 +1,78 @@
+name: Release checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - release/1.0-app-store
+  workflow_dispatch:
+
+concurrency:
+  group: release-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  swift-tests:
+    runs-on: xcode-27
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Record toolchain
+        run: |
+          xcodebuild -version
+          xcrun swift --version
+
+      - name: Install project-generation tools
+        run: brew install xcodegen zstd
+
+      - name: Generate project and verify bundled toolchain hashes
+        run: scripts/bootstrap.sh
+
+      - name: Resolve Swift packages
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project Crabrix.xcodeproj \
+            -scheme Crabrix \
+            -onlyUsePackageVersionsFromResolvedFile
+
+      - name: Run fast release suite
+        run: |
+          xcodebuild test \
+            -project Crabrix.xcodeproj \
+            -scheme Crabrix \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0' \
+            -onlyUsePackageVersionsFromResolvedFile \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Build unsigned Release candidate
+        run: |
+          xcodebuild build \
+            -project Crabrix.xcodeproj \
+            -scheme Crabrix \
+            -configuration Release \
+            -destination 'generic/platform=iOS Simulator' \
+            -onlyUsePackageVersionsFromResolvedFile \
+            CODE_SIGNING_ALLOWED=NO
+
+  compiler-gates:
+    runs-on: xcode-27
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install project-generation tools
+        run: brew install xcodegen zstd
+
+      - name: Generate project and verify bundled toolchain hashes
+        run: scripts/bootstrap.sh
+
+      - name: Run bundled rustc and sandbox gates
+        run: |
+          xcodebuild test \
+            -project Crabrix.xcodeproj \
+            -scheme CrabrixCompilerGate \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0' \
+            -onlyUsePackageVersionsFromResolvedFile \
+            CODE_SIGNING_ALLOWED=NO

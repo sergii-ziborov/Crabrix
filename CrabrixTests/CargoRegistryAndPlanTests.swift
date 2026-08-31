@@ -128,6 +128,7 @@ final class CargoFingerprintTests: XCTestCase {
         edition: String = "2021",
         features: [String] = ["default"],
         libraryPath: String = "src/lib.rs",
+        packageSource: String = CargoLockfile.registrySource,
         dependencies: [CargoExtern] = []
     ) -> String {
         CargoFingerprint.compute(
@@ -137,7 +138,7 @@ final class CargoFingerprintTests: XCTestCase {
             compilerFlags: CargoFingerprint.dependencyCompilerFlags,
             targetTriple: "wasm32-wasip1",
             resolverVersion: .v3,
-            packageSource: CargoLockfile.registrySource,
+            packageSource: packageSource,
             package: PackageID(name: "demo", version: SemanticVersion(version)!),
             checksum: checksum,
             crateName: "demo",
@@ -163,6 +164,10 @@ final class CargoFingerprintTests: XCTestCase {
         XCTAssertNotEqual(base, fingerprint(edition: "2018"))
         XCTAssertNotEqual(base, fingerprint(features: ["default", "std"]))
         XCTAssertNotEqual(base, fingerprint(libraryPath: "src/other.rs"))
+        XCTAssertNotEqual(
+            base,
+            fingerprint(packageSource: "project-patch:0123456789abcdef")
+        )
         // A rebuilt dependency has to invalidate everything that links it.
         XCTAssertNotEqual(
             base,
@@ -218,6 +223,13 @@ final class CrateCompatibilityLedgerTests: XCTestCase {
 
         reopened.record(package: package, fingerprint: "aaaa", outcome: .built)
         XCTAssertEqual(reopened.outcome(forFingerprint: "aaaa"), .built)
+
+        reopened.record(package: package, fingerprint: "aaaa", outcome: .checked)
+        XCTAssertEqual(
+            reopened.outcome(forFingerprint: "aaaa"),
+            .built,
+            "a metadata-only check must not erase stronger link evidence"
+        )
     }
 
     func testIgnoresRecordsFromAnotherToolchain() throws {
@@ -244,5 +256,47 @@ final class CrateCompatibilityLedgerTests: XCTestCase {
         )
         ledger.removeAll()
         XCTAssertNil(ledger.outcome(forFingerprint: "cccc"))
+    }
+}
+
+final class CargoWorkspaceEvidenceTests: XCTestCase {
+    func testSummaryKeepsCheckAndLinkEvidenceDistinct() {
+        let linked = CratePackageStatus(
+            package: PackageID(name: "linked", version: SemanticVersion("1.0.0")!),
+            checksum: String(repeating: "a", count: 64),
+            features: [],
+            compatibility: .verified,
+            isDownloaded: true,
+            isLocallyPatched: false,
+            isDirect: true
+        )
+        let checked = CratePackageStatus(
+            package: PackageID(name: "checked", version: SemanticVersion("1.0.0")!),
+            checksum: String(repeating: "b", count: 64),
+            features: [],
+            compatibility: .checkVerified,
+            isDownloaded: true,
+            isLocallyPatched: false,
+            isDirect: true
+        )
+        let snapshot = CargoWorkspaceSnapshot(packages: [linked, checked])
+
+        XCTAssertTrue(snapshot.summary.contains("1 link verified"), snapshot.summary)
+        XCTAssertTrue(snapshot.summary.contains("1 check verified"), snapshot.summary)
+        XCTAssertFalse(snapshot.summary.contains("2 verified"), snapshot.summary)
+    }
+
+    func testDependencyFreeWorkspaceIsNotReportedAsOfflinePinned() async throws {
+        let snapshot = try await CargoPackageManager().prepare(
+            manifestSource: """
+            [package]
+            name = "no-dependencies"
+            version = "0.1.0"
+            edition = "2024"
+            """
+        )
+
+        XCTAssertTrue(snapshot.packages.isEmpty)
+        XCTAssertFalse(snapshot.isOfflinePinned)
     }
 }

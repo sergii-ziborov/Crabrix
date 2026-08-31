@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-08-29T23:33:12Z",
+  "capturedAt": "2026-08-31T09:11:45Z",
   "status": "partial-physical-device-evidence",
   "requiredScenarios": [
     "cold E0502 check",
@@ -26,6 +26,29 @@
       "osVersion": "26.5 (23F77)",
       "configuration": "Debug",
       "durationSeconds": 0.7193799018859863,
+      "result": "passed"
+    },
+    {
+      "scenario": "complete bundled compiler and sandbox suite",
+      "device": "iPhone 17 Pro simulator",
+      "osVersion": "26.5 (23F77)",
+      "architecture": "arm64",
+      "configuration": "Test",
+      "durationSeconds": 1537.872,
+      "tests": 20,
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0,
+      "runtimeWarnings": 0,
+      "result": "passed"
+    },
+    {
+      "scenario": "unsigned Release app bundle and toolchain hash verification",
+      "device": "generic iOS Simulator",
+      "configuration": "Release",
+      "appSizeMiB": 187,
+      "rustcSHA256": "41412081eefc3e08ec5664ed0748902a7e575e1f267898dcc64d412702df7e83",
+      "sysrootManifestSHA256": "a89ba732c649a983126750112268614c80b6e7d6bba8c60980cbfd32e04d9892",
       "result": "passed"
     }
   ]

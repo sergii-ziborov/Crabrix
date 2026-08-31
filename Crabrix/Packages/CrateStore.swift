@@ -3,8 +3,9 @@ import CryptoKit
 
 /// Where every Cargo artefact lives inside the app container.
 ///
-/// Sources and archives are caches: iOS may evict them, and the package manager
-/// re-downloads on demand. Nothing here is user data.
+/// Sources, downloaded archives, and build outputs are purgeable caches. The
+/// compact registry index and archives that the user explicitly pins for
+/// offline use live in Application Support and are managed independently.
 enum CrateStorageLayout {
     static var root: URL? {
         FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
@@ -23,17 +24,32 @@ enum CrateStorageLayout {
         var directory = support
             .appending(path: "Crabrix", directoryHint: .isDirectory)
             .appending(path: "registry-index", directoryHint: .isDirectory)
-        if !FileManager.default.fileExists(atPath: directory.path) {
-            try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            var values = URLResourceValues()
-            values.isExcludedFromBackup = true
-            try? directory.setResourceValues(values)
-        }
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        try? directory.setResourceValues(values)
         return directory
     }
     static var archiveDirectory: URL? { root?.appending(path: "archives", directoryHint: .isDirectory) }
     static var sourceDirectory: URL? { root?.appending(path: "src", directoryHint: .isDirectory) }
     static var artifactDirectory: URL? { root?.appending(path: "artifacts", directoryHint: .isDirectory) }
+    /// User-requested offline archives are durable application data rather
+    /// than purgeable cache. They are excluded from iCloud backup because every
+    /// byte is reproducible from crates.io plus Cargo.lock/checksums.
+    static var pinnedArchiveDirectory: URL? {
+        guard let support = FileManager.default
+            .urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+        else { return nil }
+        var directory = support
+            .appending(path: "Crabrix", directoryHint: .isDirectory)
+            .appending(path: "OfflinePackages", directoryHint: .isDirectory)
+            .appending(path: "archives", directoryHint: .isDirectory)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        try? directory.setResourceValues(values)
+        return directory
+    }
     /// Root-program Wasm files are cached separately from dependency rlibs.
     /// Keep the location in the shared layout so Settings measures the same
     /// bytes that the compiler writes and the clear action removes.
@@ -49,6 +65,10 @@ enum CrateStorageLayout {
     static func archiveURL(name: String, version: SemanticVersion) -> URL? {
         archiveDirectory?.appending(path: "\(name)-\(version).crate")
     }
+
+    static func pinnedArchiveURL(name: String, version: SemanticVersion) -> URL? {
+        pinnedArchiveDirectory?.appending(path: "\(name)-\(version).crate")
+    }
 }
 
 /// A byte breakdown of the Cargo caches, for the storage screen in Settings.
@@ -60,11 +80,13 @@ struct CrateStorageUsage: Equatable, Sendable {
     /// Compiled root-program Wasm files under CrabrixCompiler.
     var projectArtifactBytes: Int64 = 0
     var indexBytes: Int64 = 0
+    /// Verified archives the user explicitly made durable for offline use.
+    var pinnedArchiveBytes: Int64 = 0
     var packageCount = 0
 
     var buildArtifactBytes: Int64 { artifactBytes + projectArtifactBytes }
     var totalBytes: Int64 {
-        archiveBytes + sourceBytes + buildArtifactBytes + indexBytes
+        archiveBytes + sourceBytes + buildArtifactBytes + indexBytes + pinnedArchiveBytes
     }
 
     static func measure() -> CrateStorageUsage {
@@ -73,7 +95,8 @@ struct CrateStorageUsage: Equatable, Sendable {
             sourceDirectory: CrateStorageLayout.sourceDirectory,
             artifactDirectory: CrateStorageLayout.artifactDirectory,
             projectArtifactDirectory: CrateStorageLayout.projectArtifactDirectory,
-            indexDirectory: CrateStorageLayout.indexCacheDirectory
+            indexDirectory: CrateStorageLayout.indexCacheDirectory,
+            pinnedArchiveDirectory: CrateStorageLayout.pinnedArchiveDirectory
         )
     }
 
@@ -84,7 +107,8 @@ struct CrateStorageUsage: Equatable, Sendable {
         sourceDirectory: URL?,
         artifactDirectory: URL?,
         projectArtifactDirectory: URL?,
-        indexDirectory: URL?
+        indexDirectory: URL?,
+        pinnedArchiveDirectory: URL? = nil
     ) -> CrateStorageUsage {
         var usage = CrateStorageUsage()
         usage.archiveBytes = directorySize(archiveDirectory)
@@ -92,6 +116,7 @@ struct CrateStorageUsage: Equatable, Sendable {
         usage.artifactBytes = directorySize(artifactDirectory)
         usage.projectArtifactBytes = directorySize(projectArtifactDirectory)
         usage.indexBytes = directorySize(indexDirectory)
+        usage.pinnedArchiveBytes = directorySize(pinnedArchiveDirectory)
         if let sources = sourceDirectory,
            let entries = try? FileManager.default.contentsOfDirectory(
                at: sources,
@@ -255,6 +280,48 @@ actor CrateStore {
         )
     }
 
+    nonisolated func isPinned(
+        name: String,
+        version: SemanticVersion,
+        checksum: String
+    ) -> Bool {
+        guard let url = CrateStorageLayout.pinnedArchiveURL(name: name, version: version),
+              let data = try? Data(contentsOf: url)
+        else { return false }
+        return Self.sha256(data) == checksum.lowercased()
+    }
+
+    /// Persists the exact checksum-verified registry archive outside iOS's
+    /// purgeable Caches directory. A missing cache may be downloaded here only
+    /// because this is an explicit user action.
+    func pinForOffline(
+        name: String,
+        version: SemanticVersion,
+        checksum: String
+    ) async throws {
+        let data = try await archiveData(
+            name: name,
+            version: version,
+            checksum: checksum,
+            allowNetwork: true
+        )
+        guard let directory = CrateStorageLayout.pinnedArchiveDirectory,
+              let destination = CrateStorageLayout.pinnedArchiveURL(
+                  name: name,
+                  version: version
+              )
+        else { throw CrateDownloadError.storageUnavailable }
+        try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        try data.write(to: destination, options: .atomic)
+    }
+
+    func removeOfflinePins() throws {
+        guard let directory = CrateStorageLayout.pinnedArchiveDirectory,
+              fileManager.fileExists(atPath: directory.path)
+        else { return }
+        try fileManager.removeItem(at: directory)
+    }
+
     func removeAllSources() throws {
         for directory in [CrateStorageLayout.sourceDirectory, CrateStorageLayout.archiveDirectory] {
             guard let directory, fileManager.fileExists(atPath: directory.path) else { continue }
@@ -279,6 +346,10 @@ actor CrateStore {
         checksum: String,
         allowNetwork: Bool
     ) async throws -> Data {
+        if let pinned = pinnedArchive(name: name, version: version),
+           Self.sha256(pinned) == checksum.lowercased() {
+            return pinned
+        }
         if let cached = cachedArchive(name: name, version: version),
            Self.sha256(cached) == checksum.lowercased() {
             return cached
@@ -323,6 +394,13 @@ actor CrateStore {
 
     private func cachedArchive(name: String, version: SemanticVersion) -> Data? {
         guard let url = CrateStorageLayout.archiveURL(name: name, version: version) else { return nil }
+        return try? Data(contentsOf: url)
+    }
+
+    private func pinnedArchive(name: String, version: SemanticVersion) -> Data? {
+        guard let url = CrateStorageLayout.pinnedArchiveURL(name: name, version: version) else {
+            return nil
+        }
         return try? Data(contentsOf: url)
     }
 

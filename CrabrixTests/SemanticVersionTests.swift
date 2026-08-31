@@ -59,8 +59,39 @@ final class SemanticVersionTests: XCTestCase {
         XCTAssertTrue(matches("*", "9.9.9"))
         XCTAssertTrue(matches("1.*", "1.4.0"))
         XCTAssertFalse(matches("1.*", "2.0.0"))
+        XCTAssertTrue(matches("1.2.*", "1.2.99"))
+        XCTAssertFalse(matches("1.2.*", "1.3.0"))
         XCTAssertTrue(matches(">=1.2, <1.5", "1.4.9"))
         XCTAssertFalse(matches(">=1.2, <1.5", "1.5.0"))
+    }
+
+    func testCargoWildcardMatrixUsesTheWildcardBoundary() {
+        func matches(_ requirement: String, _ candidate: String) -> Bool {
+            VersionRequirement(requirement)?.isSatisfied(by: version(candidate)) ?? false
+        }
+
+        XCTAssertTrue(matches("*", "0.0.0"))
+        XCTAssertTrue(matches("1.*", "1.99.99"))
+        XCTAssertFalse(matches("1.*", "2.0.0"))
+        XCTAssertTrue(matches("1.x", "1.8.0"))
+        XCTAssertFalse(matches("1.x", "2.0.0"))
+        XCTAssertTrue(matches("1.2.*", "1.2.99"))
+        XCTAssertFalse(matches("1.2.*", "1.3.0"))
+        XCTAssertTrue(matches("1.2.x", "1.2.7"))
+        XCTAssertFalse(matches("1.2.x", "1.3.0"))
+        XCTAssertTrue(matches("0.*", "0.99.0"))
+        XCTAssertFalse(matches("0.*", "1.0.0"))
+        XCTAssertTrue(matches("0.2.*", "0.2.99"))
+        XCTAssertFalse(matches("0.2.*", "0.3.0"))
+    }
+
+    func testMalformedOrOperatorPrefixedWildcardsAreRejected() {
+        XCTAssertNil(VersionRequirement("1.*.3"))
+        XCTAssertNil(VersionRequirement("*.1"))
+        XCTAssertNil(VersionRequirement("1.x.2"))
+        XCTAssertNil(VersionRequirement("^1.2.*"))
+        XCTAssertNil(VersionRequirement("~1.*"))
+        XCTAssertNil(VersionRequirement("=1.*"))
     }
 
     func testPrereleasesOnlyMatchWhenExplicitlyRequested() {

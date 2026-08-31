@@ -60,6 +60,70 @@ final class BundledCompilerGateTests: XCTestCase {
         )
     }
 
+    func testRootCargoPackageEnvironmentComesFromTheManifest() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
+            throw XCTSkip("Run the CrabrixCompilerGate scheme for the root Cargo env gate.")
+        }
+        let manifest = """
+        [package]
+        name = "root-env-gate"
+        version = "2.3.4"
+        edition = "2024"
+        rust-version = "1.90"
+        """
+        let source = """
+        fn main() {
+            println!("{}:{}:{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"), env!("CARGO_PKG_RUST_VERSION"));
+        }
+        """
+
+        let result = await WasmRustCompiler(bundle: .main).run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": manifest]
+        )
+
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(
+            result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+            "root-env-gate:2.3.4:1.90"
+        )
+    }
+
+    func testAlgorithmSolutionRunsOnlyThroughThePrivateHarness() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
+            throw XCTSkip("Run the CrabrixCompilerGate scheme for the algorithm harness gate.")
+        }
+
+        let pattern = try XCTUnwrap(AlgorithmCourseCatalog.patterns.first)
+        let challenge = try XCTUnwrap(
+            AlgorithmCourseCatalog.challenge(for: pattern.lessonID(.challenge))
+        )
+        let solution = challenge.source.replacingOccurrences(
+            of: "let _ = input;\n    todo!(\"implement \(pattern.title)\")",
+            with: """
+            let values: Vec<i32> = input
+                .trim_matches(['[', ']'])
+                .split(',')
+                .map(|part| part.trim().parse().unwrap())
+                .collect();
+            values.iter().position(|value| *value < 0)
+                .map(|index| index.to_string())
+                .unwrap_or_else(|| (-1).to_string())
+            """
+        )
+
+        let result = await WasmRustCompiler(bundle: .main).run(
+            source: challenge.verificationSource,
+            sourcePath: "main.rs",
+            supportingFiles: ["solution.rs": solution]
+        )
+
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout, challenge.expectedOutput)
+        XCTAssertFalse(challenge.source.contains("assert_eq!"))
+    }
+
     func testBundledRustcSurvivesRepeatedBuilds() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
             throw XCTSkip("Run the CrabrixCompilerGate scheme for the repeated-build gate.")
@@ -246,6 +310,142 @@ final class BundledCompilerGateTests: XCTestCase {
             compiler.isPlanCached(snapshot.plan, emit: .link),
             "dependency artifacts should be reusable after a successful build"
         )
+    }
+
+    func testVendoredCrateBuildsFromAProjectLocalPatch() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
+            throw XCTSkip("Run the CrabrixCompilerGate scheme for the Vendor & Edit gate.")
+        }
+
+        let manifest = """
+        [package]
+        name = "vendor-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        smallvec = "1"
+        """
+        let source = """
+        use smallvec::SmallVec;
+
+        fn main() {
+            let values: SmallVec<[u32; 4]> = [4, 8, 15].into_iter().collect();
+            println!("{}", values.iter().sum::<u32>());
+        }
+        """
+        let manager = CargoPackageManager()
+        let registry = try await manager.prepare(manifestSource: manifest)
+        let registryUnit = try XCTUnwrap(
+            registry.plan.units.first { $0.package.name == "smallvec" }
+        )
+        let package = registryUnit.package
+        let vendorRoot = "vendor/\(package.name)-\(package.version)"
+        let editable = try CrateSourceBrowser.vendorableFiles(
+            name: package.name,
+            version: package.version
+        )
+        var projectFiles: [String: String] = Dictionary(
+            uniqueKeysWithValues: editable.map { ("\(vendorRoot)/\($0.key)", $0.value) }
+        )
+        let patchedLibrary = "\(vendorRoot)/src/lib.rs"
+        projectFiles[patchedLibrary, default: ""] += "\n// Crabrix local patch gate.\n"
+
+        let patched = try await manager.prepare(
+            manifestSource: manifest,
+            projectFiles: projectFiles
+        )
+        let patchedUnit = try XCTUnwrap(
+            patched.plan.units.first { $0.package == package }
+        )
+
+        XCTAssertTrue(patchedUnit.isLocallyPatched)
+        XCTAssertNotEqual(patchedUnit.fingerprint, registryUnit.fingerprint)
+        XCTAssertTrue(
+            patched.packages.first { $0.package == package }?.isLocallyPatched == true
+        )
+
+        let result = await WasmRustCompiler(bundle: .main).run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: projectFiles.merging(["Cargo.toml": manifest]) { current, _ in current },
+            plan: patched.plan
+        )
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "27")
+    }
+
+    func testOfflinePinRehydratesSourcesAfterPurgeableCacheEviction() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
+            throw XCTSkip("Run the CrabrixCompilerGate scheme for the durable offline gate.")
+        }
+        let manifest = """
+        [package]
+        name = "offline-pin-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        smallvec = "1"
+        """
+        let manager = CargoPackageManager()
+
+        do {
+            let fetched = try await manager.prepare(manifestSource: manifest)
+            let package = try XCTUnwrap(
+                fetched.packages.first { $0.name == "smallvec" }
+            )
+            let lockfile = try XCTUnwrap(fetched.lockfile)
+            try await manager.pinForOffline(fetched.packages)
+
+            let pinned = try await manager.prepare(
+                manifestSource: manifest,
+                lockfileSource: lockfile,
+                mode: .frozen
+            )
+            XCTAssertTrue(pinned.isOfflinePinned)
+
+            let indexSentinel = try XCTUnwrap(CrateStorageLayout.indexCacheDirectory)
+                .appending(path: ".offline-pin-gate-\(UUID().uuidString)")
+            try Data("index survives cache clear".utf8).write(to: indexSentinel, options: .atomic)
+            defer { try? FileManager.default.removeItem(at: indexSentinel) }
+
+            try await manager.clearPackageCache()
+            XCTAssertTrue(
+                FileManager.default.fileExists(atPath: indexSentinel.path),
+                "clearing purgeable package data must retain the registry index"
+            )
+            XCTAssertFalse(
+                CrateStorageLayout.sourceDirectory(
+                    name: package.name,
+                    version: package.version
+                ).map { FileManager.default.fileExists(atPath: $0.path) } ?? true
+            )
+            XCTAssertFalse(
+                CrateStorageLayout.archiveURL(
+                    name: package.name,
+                    version: package.version
+                ).map { FileManager.default.fileExists(atPath: $0.path) } ?? true
+            )
+
+            let rehydrated = try await manager.prepare(
+                manifestSource: manifest,
+                lockfileSource: lockfile,
+                mode: .frozen
+            )
+            XCTAssertTrue(rehydrated.isOfflineReady)
+            XCTAssertTrue(rehydrated.isOfflinePinned)
+            XCTAssertTrue(
+                CrateStorageLayout.sourceDirectory(
+                    name: package.name,
+                    version: package.version
+                ).map { FileManager.default.fileExists(atPath: $0.path) } == true
+            )
+            try await manager.clearOfflinePins()
+        } catch {
+            try? await manager.clearOfflinePins()
+            throw error
+        }
     }
 
     func testStopInterruptsARunningCompile() async throws {

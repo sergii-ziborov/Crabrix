@@ -1,9 +1,13 @@
+import CryptoKit
 import Foundation
 
 /// How well Crabrix expects a crate to build against the bundled toolchain.
 enum CrateCompatibility: Sendable, Equatable, Comparable {
-    /// Built successfully at least once; its artefact is on disk.
+    /// A linkable library was built successfully at least once.
     case verified
+    /// rustc emitted metadata successfully, but code generation/linking has not
+    /// yet been proved for this exact package fingerprint.
+    case checkVerified
     /// Pure Rust with nothing Crabrix cannot handle. Not yet proven.
     case expected
     /// Builds, but something about it may need review, e.g. a build script.
@@ -14,9 +18,10 @@ enum CrateCompatibility: Sendable, Equatable, Comparable {
     var rank: Int {
         switch self {
         case .verified: 0
-        case .expected: 1
-        case .review: 2
-        case .unsupported: 3
+        case .checkVerified: 1
+        case .expected: 2
+        case .review: 3
+        case .unsupported: 4
         }
     }
 
@@ -27,14 +32,15 @@ enum CrateCompatibility: Sendable, Equatable, Comparable {
 
     var detail: String? {
         switch self {
-        case .verified, .expected: nil
+        case .verified, .checkVerified, .expected: nil
         case let .review(reason), let .unsupported(reason): reason
         }
     }
 
     var label: String {
         switch self {
-        case .verified: "Verified"
+        case .verified: "Link verified"
+        case .checkVerified: "Check verified"
         case .expected: "Expected compatible"
         case .review: "Needs review"
         case .unsupported: "Unsupported"
@@ -49,9 +55,14 @@ enum CrateCompatibility: Sendable, Equatable, Comparable {
 /// One resolved package as the UI shows it.
 struct CratePackageStatus: Sendable, Equatable, Identifiable {
     let package: PackageID
+    /// crates.io checksum for the exact archive; also proves an offline pin.
+    let checksum: String
     let features: [String]
     let compatibility: CrateCompatibility
     let isDownloaded: Bool
+    /// The compiler is using an editable project-local overlay instead of the
+    /// immutable registry tree for this exact package version.
+    let isLocallyPatched: Bool
     /// Direct dependency of the project, as opposed to a transitive one.
     let isDirect: Bool
 
@@ -96,6 +107,8 @@ struct CargoWorkspaceSnapshot: Sendable, Equatable {
     var lockfile: String?
     /// True when every package's source is extracted, so a build needs no network.
     var isOfflineReady = false
+    /// True when every exact archive is durable outside purgeable Caches.
+    var isOfflinePinned = false
     /// Manifest declared dependencies Crabrix will not resolve, e.g. git ones.
     var unresolvedDependencies: [String] = []
 
@@ -106,13 +119,15 @@ struct CargoWorkspaceSnapshot: Sendable, Equatable {
     var reviewPackages: [CratePackageStatus] {
         packages.filter { if case .review = $0.compatibility { return true } else { return false } }
     }
-    var verifiedCount: Int { packages.filter { $0.compatibility == .verified }.count }
+    var linkVerifiedCount: Int { packages.filter { $0.compatibility == .verified }.count }
+    var checkVerifiedCount: Int { packages.filter { $0.compatibility == .checkVerified }.count }
 
     /// A one-line summary for the workspace sidebar.
     var summary: String {
         guard !packages.isEmpty else { return "No registry dependencies" }
         var parts = ["\(packages.count) packages"]
-        if verifiedCount > 0 { parts.append("\(verifiedCount) verified") }
+        if linkVerifiedCount > 0 { parts.append("\(linkVerifiedCount) link verified") }
+        if checkVerifiedCount > 0 { parts.append("\(checkVerifiedCount) check verified") }
         if !blockingPackages.isEmpty { parts.append("\(blockingPackages.count) unsupported") }
         return parts.joined(separator: " · ")
     }
@@ -123,6 +138,7 @@ enum CargoPackageManagerError: LocalizedError {
     case offlineWithoutLockfile
     case virtualWorkspace
     case rootRustVersionTooNew(required: String, bundled: String)
+    case invalidLocalPatch(String)
 
     var errorDescription: String? {
         switch self {
@@ -133,8 +149,24 @@ enum CargoPackageManagerError: LocalizedError {
             "This Cargo.toml is a virtual workspace. Choose a package member before building."
         case let .rootRustVersionTooNew(required, bundled):
             "This project requires Rust \(required), newer than bundled rustc \(bundled)."
+        case let .invalidLocalPatch(detail):
+            "The local package patch is invalid: \(detail)"
         }
     }
+}
+
+private struct ProjectCratePatch: Sendable {
+    let relativeDirectory: String
+    let manifest: CratePackageManifest
+    let sourceTreeHash: String
+    let files: [String: String]
+}
+
+private struct PreparedCrate: Sendable {
+    let registry: MaterializedCrate
+    let patch: ProjectCratePatch?
+
+    var manifest: CratePackageManifest { patch?.manifest ?? registry.manifest }
 }
 
 /// Resolves, downloads and plans a project's Cargo dependencies.
@@ -164,6 +196,7 @@ actor CargoPackageManager {
         manifestSource: String,
         lockfileSource: String? = nil,
         mode: CargoResolutionMode = .normal,
+        projectFiles: [String: String] = [:],
         onStage: (@Sendable (CargoPreparationStage) -> Void)? = nil
     ) async throws -> CargoWorkspaceSnapshot {
         let manifest = try CratePackageManifest.parse(manifestSource)
@@ -234,14 +267,19 @@ actor CargoPackageManager {
             )
         }
 
-        let plan = buildPlan(
+        let prepared = try preparedCrates(
             graph: graph,
             materialized: materialized,
+            projectFiles: projectFiles
+        )
+        let plan = buildPlan(
+            graph: graph,
+            prepared: prepared,
             resolverVersion: manifest.resolverVersion
         )
         let statuses = self.statuses(
             graph: graph,
-            materialized: materialized,
+            prepared: prepared,
             plan: plan
         )
         let lockfile = CargoLockfile(
@@ -257,6 +295,13 @@ actor CargoPackageManager {
             warnings: graph.warnings.map(\.message),
             lockfile: lockfile,
             isOfflineReady: statuses.allSatisfy(\.isDownloaded),
+            isOfflinePinned: !statuses.isEmpty && statuses.allSatisfy {
+                store.isPinned(
+                    name: $0.name,
+                    version: $0.version,
+                    checksum: $0.checksum
+                )
+            },
             unresolvedDependencies: unresolved
         )
     }
@@ -265,14 +310,14 @@ actor CargoPackageManager {
 
     private func buildPlan(
         graph: ResolvedGraph,
-        materialized: [PackageID: MaterializedCrate],
+        prepared: [PackageID: PreparedCrate],
         resolverVersion: CargoResolverVersion
     ) -> CargoBuildPlan {
         var fingerprints: [PackageID: String] = [:]
         var units: [CargoBuildUnit] = []
 
         for id in graph.buildOrder {
-            guard let package = graph.packages[id], let crate = materialized[id] else { continue }
+            guard let package = graph.packages[id], let crate = prepared[id] else { continue }
             // A crate Crabrix cannot compile also cannot be a build unit; its
             // dependents will be reported as blocked rather than mis-built.
             guard let libraryPath = libraryPath(for: crate) else { continue }
@@ -280,7 +325,7 @@ actor CargoPackageManager {
             let externs: [CargoExtern] = package.dependencies
                 .compactMap { alias, dependencyID in
                     guard let fingerprint = fingerprints[dependencyID],
-                          let dependencyCrate = materialized[dependencyID]
+                          let dependencyCrate = prepared[dependencyID]
                     else {
                         return nil
                     }
@@ -299,7 +344,8 @@ actor CargoPackageManager {
                 compilerFlags: CargoFingerprint.dependencyCompilerFlags,
                 targetTriple: target.triple,
                 resolverVersion: resolverVersion,
-                packageSource: CargoLockfile.registrySource,
+                packageSource: crate.patch.map { "project-patch:\($0.sourceTreeHash)" }
+                    ?? CargoLockfile.registrySource,
                 package: id,
                 checksum: package.checksum,
                 crateName: crate.manifest.libraryCrateName,
@@ -318,6 +364,12 @@ actor CargoPackageManager {
                     edition: crate.manifest.edition,
                     features: package.sortedFeatures,
                     libraryPath: libraryPath,
+                    source: crate.patch.map {
+                        .projectPatch(
+                            relativeDirectory: $0.relativeDirectory,
+                            registryDirectoryName: "\(id.name)-\(id.version)"
+                        )
+                    } ?? .registry(directoryName: "\(id.name)-\(id.version)"),
                     externs: externs,
                     authors: "",
                     description: "",
@@ -330,7 +382,7 @@ actor CargoPackageManager {
 
         let rootExterns: [CargoExtern] = graph.rootDependencies
             .compactMap { alias, id in
-                guard let fingerprint = fingerprints[id], let crate = materialized[id] else {
+                guard let fingerprint = fingerprints[id], let crate = prepared[id] else {
                     return nil
                 }
                 return CargoExtern(
@@ -346,28 +398,31 @@ actor CargoPackageManager {
 
     /// Cargo's default library target is `src/lib.rs` unless `[lib] path` says
     /// otherwise. A crate with neither has no library to link.
-    private func libraryPath(for crate: MaterializedCrate) -> String? {
+    private func libraryPath(for crate: PreparedCrate) -> String? {
         if crate.manifest.isProcMacro || crate.manifest.requiresUnsupportedCrateType {
             return nil
         }
         if let explicit = crate.manifest.library.path {
             let normalized = explicit.replacingOccurrences(of: "\\", with: "/")
             guard isSafeRelativePath(normalized),
-                  FileManager.default.fileExists(
-                      atPath: crate.sourceDirectory.appending(path: normalized).path
-                  )
+                  sourceFileExists(normalized, in: crate)
             else {
                 return nil
             }
             return normalized
         }
         let standard = "src/lib.rs"
-        guard FileManager.default.fileExists(
-            atPath: crate.sourceDirectory.appending(path: standard).path
-        ) else {
+        guard sourceFileExists(standard, in: crate) else {
             return nil
         }
         return standard
+    }
+
+    private func sourceFileExists(_ path: String, in crate: PreparedCrate) -> Bool {
+        if crate.patch?.files[path] != nil { return true }
+        return FileManager.default.fileExists(
+            atPath: crate.registry.sourceDirectory.appending(path: path).path
+        )
     }
 
     private func isSafeRelativePath(_ path: String) -> Bool {
@@ -381,13 +436,10 @@ actor CargoPackageManager {
 
     private func statuses(
         graph: ResolvedGraph,
-        materialized: [PackageID: MaterializedCrate],
+        prepared: [PackageID: PreparedCrate],
         plan: CargoBuildPlan
     ) -> [CratePackageStatus] {
         let directIDs = Set(graph.rootDependencies.values)
-        let builtFingerprints = Set(
-            plan.units.filter { isArtifactPresent($0) }.map(\.fingerprint)
-        )
         let plannedByPackage = Dictionary(
             plan.units.map { ($0.package, $0) },
             uniquingKeysWith: { first, _ in first }
@@ -395,18 +447,19 @@ actor CargoPackageManager {
 
         return graph.buildOrder.compactMap { id -> CratePackageStatus? in
             guard let package = graph.packages[id] else { return nil }
-            let crate = materialized[id]
+            let crate = prepared[id]
             let compatibility = self.compatibility(
                 package: package,
                 crate: crate,
-                unit: plannedByPackage[id],
-                builtFingerprints: builtFingerprints
+                unit: plannedByPackage[id]
             )
             return CratePackageStatus(
                 package: id,
+                checksum: package.checksum,
                 features: package.sortedFeatures,
                 compatibility: compatibility,
                 isDownloaded: crate != nil,
+                isLocallyPatched: crate?.patch != nil,
                 isDirect: directIDs.contains(id)
             )
         }
@@ -417,9 +470,8 @@ actor CargoPackageManager {
 
     private func compatibility(
         package: ResolvedPackage,
-        crate: MaterializedCrate?,
-        unit: CargoBuildUnit?,
-        builtFingerprints: Set<String>
+        crate: PreparedCrate?,
+        unit: CargoBuildUnit?
     ) -> CrateCompatibility {
         if let links = package.links, !links.isEmpty {
             return .unsupported("links the native library \"\(links)\"")
@@ -436,34 +488,138 @@ actor CargoPackageManager {
         guard let unit else { return .unsupported("has no library target to link") }
         // A real build result always outranks static inspection.
         switch ledger.outcome(forFingerprint: unit.fingerprint) {
+        case .checked: return .checkVerified
         case .built: return .verified
         case let .failed(reason): return .unsupported(reason)
         case nil: break
         }
-        if builtFingerprints.contains(unit.fingerprint) { return .verified }
+        if let evidence = artifactEvidence(for: unit) { return evidence }
         if let buildScript = crate.manifest.buildScriptPath {
             return .review("runs \(buildScript), which Crabrix does not execute")
         }
         return .expected
     }
 
-    private func isArtifactPresent(_ unit: CargoBuildUnit) -> Bool {
+    // MARK: - Editable local package overlays
+
+    private func preparedCrates(
+        graph: ResolvedGraph,
+        materialized: [PackageID: MaterializedCrate],
+        projectFiles: [String: String]
+    ) throws -> [PackageID: PreparedCrate] {
+        var result: [PackageID: PreparedCrate] = [:]
+        for id in graph.buildOrder {
+            guard let registry = materialized[id] else { continue }
+            let patch = try projectPatch(
+                for: id,
+                registryManifest: registry.manifest,
+                projectFiles: projectFiles
+            )
+            result[id] = PreparedCrate(registry: registry, patch: patch)
+        }
+        return result
+    }
+
+    private func projectPatch(
+        for id: PackageID,
+        registryManifest: CratePackageManifest,
+        projectFiles: [String: String]
+    ) throws -> ProjectCratePatch? {
+        let root = "vendor/\(id.name)-\(id.version)"
+        let prefix = root + "/"
+        let patchFiles: [String: String] = Dictionary(
+            uniqueKeysWithValues: projectFiles.compactMap { path, contents in
+                guard path.hasPrefix(prefix) else { return nil }
+                return (String(path.dropFirst(prefix.count)), contents)
+            }
+        )
+        guard let manifestSource = patchFiles["Cargo.toml"] else { return nil }
+
+        var manifest: CratePackageManifest
+        do {
+            manifest = try CratePackageManifest.parse(manifestSource)
+                .detectingImplicitBuildScript(fileExists: patchFiles["build.rs"] != nil)
+        } catch {
+            throw CargoPackageManagerError.invalidLocalPatch(
+                "\(id.name) \(id.version) Cargo.toml: \(error.localizedDescription)"
+            )
+        }
+        guard manifest.packageName == id.name, manifest.version == id.version else {
+            throw CargoPackageManagerError.invalidLocalPatch(
+                "vendor/\(id.name)-\(id.version) must keep package name and version unchanged"
+            )
+        }
+        guard manifest.dependencies == registryManifest.dependencies,
+              manifest.features == registryManifest.features,
+              manifest.edition == registryManifest.edition
+        else {
+            throw CargoPackageManagerError.invalidLocalPatch(
+                "\(id.name) may edit source locally, but dependency, feature, and edition changes are not yet supported"
+            )
+        }
+
+        return ProjectCratePatch(
+            relativeDirectory: root,
+            manifest: manifest,
+            sourceTreeHash: sourceTreeHash(patchFiles),
+            files: patchFiles
+        )
+    }
+
+    private func sourceTreeHash(_ files: [String: String]) -> String {
+        var hasher = SHA256()
+        for path in files.keys.sorted() {
+            for value in [path, files[path] ?? ""] {
+                let data = Data(value.utf8)
+                var count = UInt64(data.count).bigEndian
+                withUnsafeBytes(of: &count) { hasher.update(bufferPointer: $0) }
+                hasher.update(data: data)
+            }
+        }
+        return hasher.finalize().map { String(format: "%02x", $0) }.joined()
+    }
+
+    private func artifactEvidence(for unit: CargoBuildUnit) -> CrateCompatibility? {
         guard let directory = CrateStorageLayout.artifactDirectory?
             .appending(path: toolchainVersion, directoryHint: .isDirectory)
             .appending(path: CargoFingerprint.schemaVersion, directoryHint: .isDirectory)
         else {
-            return false
+            return nil
         }
-        for emit in [CargoEmitKind.link, .metadata] {
-            let url = directory.appending(path: "lib\(unit.crateName)-\(unit.fingerprint).\(emit.fileExtension)")
-            if FileManager.default.fileExists(atPath: url.path) { return true }
+        let base = "lib\(unit.crateName)-\(unit.fingerprint)"
+        if FileManager.default.fileExists(
+            atPath: directory.appending(path: "\(base).rlib").path
+        ) {
+            return .verified
         }
-        return false
+        if FileManager.default.fileExists(
+            atPath: directory.appending(path: "\(base).rmeta").path
+        ) {
+            return .checkVerified
+        }
+        return nil
     }
 
     // MARK: - Storage
 
     func storageUsage() -> CrateStorageUsage { CrateStorageUsage.measure() }
+
+    /// Makes the exact resolved graph resilient to iOS cache eviction by
+    /// persisting every checksum-verified `.crate` archive in Application
+    /// Support. Cargo.lock remains the graph identity inside the project.
+    func pinForOffline(_ packages: [CratePackageStatus]) async throws {
+        for package in packages {
+            try await store.pinForOffline(
+                name: package.name,
+                version: package.version,
+                checksum: package.checksum
+            )
+        }
+    }
+
+    func clearOfflinePins() async throws {
+        try await store.removeOfflinePins()
+    }
 
     func clearBuildArtifacts() throws {
         ledger.removeAll()
@@ -476,12 +632,12 @@ actor CargoPackageManager {
     }
 
     func clearPackageCache() async throws {
+        // Keep the compact registry index and explicit offline pins. They live
+        // in Application Support rather than Caches and have their own
+        // lifecycle; retaining the index lets a pinned lockfile graph resolve
+        // and rehydrate without contacting the registry.
         try await store.removeAllSources()
         try clearBuildArtifacts()
-        if let index = CrateStorageLayout.indexCacheDirectory,
-           FileManager.default.fileExists(atPath: index.path) {
-            try FileManager.default.removeItem(at: index)
-        }
     }
 
     func clearDownloadedArchives() async throws {

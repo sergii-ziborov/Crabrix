@@ -463,6 +463,9 @@ final class CompilerViewModel: ObservableObject {
         activity = mode
         result = nil
         let project = projectSnapshot()
+        var projectFiles = project.supporting
+        projectFiles[project.entryPath] = project.main
+        let compilerProject = compilerProjectSnapshot(from: project)
         let manifestSource = manifestSource(in: project)
         let lockfileSource = project.entryPath == "Cargo.lock"
             ? project.main
@@ -479,6 +482,7 @@ final class CompilerViewModel: ObservableObject {
                     let snapshot = try await resolveWorkspace(
                         manifestSource: manifestSource,
                         lockfileSource: lockfileSource,
+                        projectFiles: projectFiles,
                         revision: revision
                     )
                     guard activeCompilationID == compilationID, isCurrent(revision) else {
@@ -537,18 +541,18 @@ final class CompilerViewModel: ObservableObject {
             let value = switch mode {
             case .checking:
                 await compiler.check(
-                    source: project.main,
-                    sourcePath: project.entryPath,
-                    supportingFiles: project.supporting,
+                    source: compilerProject.main,
+                    sourcePath: compilerProject.entryPath,
+                    supportingFiles: compilerProject.supporting,
                     edition: rootEdition,
                     plan: plan,
                     onDependencyProgress: plan.isEmpty ? nil : progress
                 )
             default:
                 await compiler.run(
-                    source: project.main,
-                    sourcePath: project.entryPath,
-                    supportingFiles: project.supporting,
+                    source: compilerProject.main,
+                    sourcePath: compilerProject.entryPath,
+                    supportingFiles: compilerProject.supporting,
                     edition: rootEdition,
                     plan: plan,
                     onDependencyProgress: plan.isEmpty ? nil : progress
@@ -572,6 +576,7 @@ final class CompilerViewModel: ObservableObject {
                 _ = try? await resolveWorkspace(
                     manifestSource: manifestSource,
                     lockfileSource: lockfileSource,
+                    projectFiles: projectFiles,
                     revision: revision
                 )
             }
@@ -594,6 +599,22 @@ final class CompilerViewModel: ObservableObject {
         return manifest.edition
     }
 
+    /// Algorithm learners edit only `solution.rs`. Inputs and expected values
+    /// are inserted as an app-private main module for this compilation, so the
+    /// editable project cannot pass by copying a literal from its own harness.
+    private func compilerProjectSnapshot(
+        from project: (entryPath: String, main: String, supporting: [String: String])
+    ) -> (entryPath: String, main: String, supporting: [String: String]) {
+        guard let activeLessonID,
+              let challenge = AlgorithmCourseCatalog.challenge(for: activeLessonID)
+        else { return project }
+
+        var supporting = project.supporting
+        supporting["solution.rs"] = project.main
+        supporting.removeValue(forKey: "main.rs")
+        return ("main.rs", challenge.verificationSource, supporting)
+    }
+
     var cargoManifestSource: String? {
         var files = fileContents
         files[selectedFile] = source
@@ -607,6 +628,7 @@ final class CompilerViewModel: ObservableObject {
         manifestSource: String,
         lockfileSource: String?,
         mode: CargoResolutionMode = .normal,
+        projectFiles: [String: String],
         revision: WorkspaceRevision
     ) async throws -> CargoWorkspaceSnapshot {
         guard isCurrent(revision) else { throw CancellationError() }
@@ -625,6 +647,7 @@ final class CompilerViewModel: ObservableObject {
             manifestSource: manifestSource,
             lockfileSource: lockfileSource,
             mode: mode,
+            projectFiles: projectFiles,
             onStage: handler
         )
         guard !Task.isCancelled, isCurrent(revision) else { throw CancellationError() }
@@ -645,6 +668,7 @@ final class CompilerViewModel: ObservableObject {
             return
         }
         let revision = workspaceRevision
+        let projectFiles = currentProject().files
         // The editor buffer is authoritative for the selected file. Do not
         // resolve against an older in-memory Cargo.lock while the user is
         // actively editing it.
@@ -658,6 +682,7 @@ final class CompilerViewModel: ObservableObject {
                 let snapshot = try await resolveWorkspace(
                     manifestSource: manifestSource,
                     lockfileSource: lockfileSource,
+                    projectFiles: projectFiles,
                     revision: revision
                 )
                 if let lockfile = snapshot.lockfile, !snapshot.packages.isEmpty {
@@ -701,6 +726,164 @@ final class CompilerViewModel: ObservableObject {
         refreshCargoWorkspace()
     }
 
+    /// Explicitly moves the exact verified archives for the current lock graph
+    /// out of purgeable Caches. Builds may still regenerate source/artifacts,
+    /// but they no longer need the network after iOS cache eviction.
+    func pinDependenciesForOffline() {
+        guard !isBusy, !cargoWorkspace.packages.isEmpty else { return }
+        let revision = workspaceRevision
+        let packages = cargoWorkspace.packages
+        cargoTask?.cancel()
+        cargoStage = .downloading(name: "offline archive set", index: 0, total: packages.count)
+        cargoTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                try await packageManager.pinForOffline(packages)
+                guard !Task.isCancelled, isCurrent(revision) else { return }
+                cargoWorkspace.isOfflinePinned = true
+                cargoStage = .ready
+                projectTransfer = .ready(
+                    "Offline pinned. Cargo.lock and \(packages.count) verified package archives can survive cache eviction."
+                )
+            } catch is CancellationError {
+                return
+            } catch {
+                guard isCurrent(revision) else { return }
+                cargoStage = .failed(error.localizedDescription)
+                projectTransfer = .failed(error.localizedDescription)
+            }
+            await refreshCargoStorage()
+        }
+    }
+
+    /// Copies every editable source file from the verified registry tree into
+    /// `vendor/<name>-<version>` in the current project. The registry cache is
+    /// never changed; Cargo planning notices this exact directory and gives the
+    /// edited tree a new content fingerprint.
+    @discardableResult
+    func vendorCrate(name: String, version: SemanticVersion) -> Bool {
+        guard !isBusy, !isProjectOperationInProgress else { return false }
+        let root = "vendor/\(name)-\(version)"
+        let prefix = root + "/"
+        fileContents[selectedFile] = source
+
+        if fileContents.keys.contains(where: { $0.hasPrefix(prefix) }) {
+            return openVendoredCrate(name: name, version: version)
+        }
+
+        do {
+            let editable = try CrateSourceBrowser.vendorableFiles(name: name, version: version)
+            guard fileContents.count + editable.count <= LocalProjectLoader.maximumFileCount else {
+                throw CrateSourceBrowser.VendorError.tooManyEditableFiles
+            }
+            let existingBytes = fileContents.values.reduce(0) { $0 + $1.utf8.count }
+            let patchBytes = editable.values.reduce(0) { $0 + $1.utf8.count }
+            guard existingBytes + patchBytes <= LocalProjectLoader.maximumProjectBytes else {
+                throw CrateSourceBrowser.VendorError.editableTreeTooLarge
+            }
+
+            suppressAutosave = true
+            for (path, contents) in editable {
+                fileContents["\(root)/\(path)"] = contents
+            }
+            let selection = preferredVendoredFile(root: root, files: fileContents)
+            fileNames = fileContents.keys.sorted(by: projectFileOrder)
+            selectedFile = selection
+            source = fileContents[selection] ?? ""
+            suppressAutosave = false
+
+            workspaceGeneration &+= 1
+            result = nil
+            lastDiagnostic = nil
+            lastBuild = nil
+            completedStages = []
+            compatibilityReport = ProjectCompatibilityReport.scan(currentProject())
+            resetCargoWorkspace()
+            projectTransfer = .ready(
+                "Vendored \(name) \(version). Registry source remains immutable; edits now build as a local patch."
+            )
+            let project = currentProject()
+            Task { await remember(project, lastBuild: nil) }
+            refreshCargoWorkspace()
+            return true
+        } catch {
+            suppressAutosave = false
+            projectTransfer = .failed(error.localizedDescription)
+            return false
+        }
+    }
+
+    @discardableResult
+    func openVendoredCrate(name: String, version: SemanticVersion) -> Bool {
+        guard !isBusy else { return false }
+        fileContents[selectedFile] = source
+        let root = "vendor/\(name)-\(version)"
+        let selection = preferredVendoredFile(root: root, files: fileContents)
+        guard fileContents[selection] != nil else { return false }
+        selectedFile = selection
+        source = fileContents[selection] ?? ""
+        return true
+    }
+
+    @discardableResult
+    func resetVendoredCrate(name: String, version: SemanticVersion) -> Bool {
+        guard !isBusy, !isProjectOperationInProgress else { return false }
+        fileContents[selectedFile] = source
+        let root = "vendor/\(name)-\(version)"
+        let prefix = root + "/"
+        let removed = fileContents.keys.filter { $0.hasPrefix(prefix) }
+        guard !removed.isEmpty else { return false }
+
+        suppressAutosave = true
+        for path in removed { fileContents.removeValue(forKey: path) }
+        if removed.contains(selectedFile) {
+            selectedFile = fileContents[entryFile] != nil
+                ? entryFile
+                : fileContents.keys.sorted(by: projectFileOrder).first ?? entryFile
+            source = fileContents[selectedFile] ?? ""
+        }
+        fileNames = fileContents.keys.sorted(by: projectFileOrder)
+        suppressAutosave = false
+
+        workspaceGeneration &+= 1
+        result = nil
+        lastDiagnostic = nil
+        lastBuild = nil
+        completedStages = []
+        compatibilityReport = ProjectCompatibilityReport.scan(currentProject())
+        resetCargoWorkspace()
+        projectTransfer = .ready(
+            "Reset \(name) \(version) to its checksum-verified registry source."
+        )
+        let project = currentProject()
+        Task { await remember(project, lastBuild: nil) }
+        refreshCargoWorkspace()
+        return true
+    }
+
+    func vendoredFiles(name: String, version: SemanticVersion) -> [String: String] {
+        var files = fileContents
+        files[selectedFile] = source
+        let prefix = "vendor/\(name)-\(version)/"
+        return Dictionary<String, String>(
+            uniqueKeysWithValues: files.compactMap { path, contents in
+                guard path.hasPrefix(prefix) else { return nil }
+                return (String(path.dropFirst(prefix.count)), contents)
+            }
+        )
+    }
+
+    private func preferredVendoredFile(root: String, files: [String: String]) -> String {
+        for candidate in ["src/lib.rs", "src/main.rs", "Cargo.toml"] {
+            let path = "\(root)/\(candidate)"
+            if files[path] != nil { return path }
+        }
+        return files.keys
+            .filter { $0.hasPrefix(root + "/") && $0.hasSuffix(".rs") }
+            .sorted()
+            .first ?? "\(root)/Cargo.toml"
+    }
+
     func refreshCargoStorage() async {
         cargoStorage = await packageManager.storageUsage()
     }
@@ -719,6 +902,7 @@ final class CompilerViewModel: ObservableObject {
     func clearCargoPackageCache() async {
         let revision = workspaceRevision
         try? await packageManager.clearPackageCache()
+        await compiler.clearProjectArtifacts()
         guard isCurrent(revision) else { return }
         resolvedManifestSource = nil
         resolvedWorkspaceRevision = nil
@@ -731,6 +915,14 @@ final class CompilerViewModel: ObservableObject {
         let revision = workspaceRevision
         try? await packageManager.clearDownloadedArchives()
         guard isCurrent(revision) else { return }
+        await refreshCargoStorage()
+    }
+
+    func clearCargoOfflinePins() async {
+        let revision = workspaceRevision
+        try? await packageManager.clearOfflinePins()
+        guard isCurrent(revision) else { return }
+        cargoWorkspace.isOfflinePinned = false
         await refreshCargoStorage()
     }
 
@@ -776,7 +968,12 @@ final class CompilerViewModel: ObservableObject {
     }
 
     func loadAlgorithmLessonSample(projectName: String, source: String) {
-        loadProject(name: projectName, files: ["main.rs": source])
+        loadProject(
+            name: projectName,
+            files: ["solution.rs": source],
+            entryFile: "solution.rs",
+            kind: .learning
+        )
     }
 
     func beginLesson(_ id: String, isReview: Bool = false) {

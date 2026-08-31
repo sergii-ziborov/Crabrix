@@ -52,7 +52,7 @@ Source and license: https://github.com/apple/swift-system/tree/1.8.1
 ## Transitive Swift package dependencies
 
 These packages are resolved transitively through WasmKit. Their exact pinned
-versions are recorded in `Package.resolved`:
+versions are recorded in `Dependencies/Package.resolved`:
 
 - Swift Argument Parser 1.8.2 — Apache-2.0 — https://github.com/apple/swift-argument-parser
 - Swift Atomics 1.3.1 — Apache-2.0 — https://github.com/apple/swift-atomics

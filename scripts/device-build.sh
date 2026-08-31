@@ -25,12 +25,15 @@ if [[ -z "$TEAM" ]]; then
   exit 1
 fi
 
+"$SCRIPT_DIR/bootstrap.sh"
+
 DERIVED="${CRABRIX_DERIVED_DATA:-$ROOT/DerivedDataDevice}"
 BUNDLE_ID=com.sergiiziborov.Crabrix
 
 echo "==> building for device (team $TEAM)"
 xcodebuild -project Crabrix.xcodeproj -scheme Crabrix -configuration Release \
   -destination 'generic/platform=iOS' -derivedDataPath "$DERIVED" \
+  -onlyUsePackageVersionsFromResolvedFile \
   -allowProvisioningUpdates "DEVELOPMENT_TEAM=$TEAM" build
 
 APP="$DERIVED/Build/Products/Release-iphoneos/Crabrix.app"

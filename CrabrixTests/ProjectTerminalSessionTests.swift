@@ -219,16 +219,20 @@ final class ProjectTerminalCargoTreeTests: XCTestCase {
     func testRendersTheResolvedGraphWithCompatibilityMarkers() {
         let direct = CratePackageStatus(
             package: PackageID(name: "smallvec", version: SemanticVersion("1.15.2")!),
+            checksum: String(repeating: "a", count: 64),
             features: ["default"],
             compatibility: .verified,
             isDownloaded: true,
+            isLocallyPatched: false,
             isDirect: true
         )
         let transitive = CratePackageStatus(
             package: PackageID(name: "cfg-if", version: SemanticVersion("1.0.4")!),
+            checksum: String(repeating: "b", count: 64),
             features: [],
             compatibility: .review("runs build.rs, which Crabrix does not execute"),
             isDownloaded: true,
+            isLocallyPatched: false,
             isDirect: false
         )
         let workspace = CargoWorkspaceSnapshot(
@@ -237,6 +241,7 @@ final class ProjectTerminalCargoTreeTests: XCTestCase {
             warnings: [],
             lockfile: nil,
             isOfflineReady: true,
+            isOfflinePinned: true,
             unresolvedDependencies: []
         )
 
@@ -245,8 +250,8 @@ final class ProjectTerminalCargoTreeTests: XCTestCase {
             workspace: workspace
         )
 
-        XCTAssertTrue(rendered.contains("├── smallvec v1.15.2 [built]"))
+        XCTAssertTrue(rendered.contains("├── smallvec v1.15.2 [link-verified]"))
         XCTAssertTrue(rendered.contains("└── cfg-if v1.0.4 [review] (transitive)"))
-        XCTAssertTrue(rendered.contains("offline ready"))
+        XCTAssertTrue(rendered.contains("offline pinned"))
     }
 }

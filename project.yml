@@ -9,7 +9,6 @@ options:
 
 settings:
   base:
-    DEVELOPMENT_TEAM: XMS5ZC28UJ
     SWIFT_VERSION: "6.0"
     IPHONEOS_DEPLOYMENT_TARGET: "18.0"
     TARGETED_DEVICE_FAMILY: "1,2"
@@ -173,9 +172,14 @@ schemes:
             - BundledCompilerGateTests/testBundledRustcProducesE0502()
             - BundledCompilerGateTests/testBundledRustcCompilesAndRunsRepairedProgram()
             - BundledCompilerGateTests/testBundledRustcCompilesMultiFileProject()
+            - BundledCompilerGateTests/testRootCargoPackageEnvironmentComesFromTheManifest()
+            - BundledCompilerGateTests/testAlgorithmSolutionRunsOnlyThroughThePrivateHarness()
             - BundledCompilerGateTests/testBundledRustcSurvivesRepeatedBuilds()
+            - BundledCompilerGateTests/testEveryGuidedShowcasePassesBundledRustcCheck()
             - BundledCompilerGateTests/testUserProgramCannotGrowPastSandboxMemoryLimit()
             - BundledCompilerGateTests/testResolvesDownloadsAndLinksARealCratesIOPackage()
+            - BundledCompilerGateTests/testVendoredCrateBuildsFromAProjectLocalPatch()
+            - BundledCompilerGateTests/testOfflinePinRehydratesSourcesAfterPurgeableCacheEviction()
             - BundledCompilerGateTests/testStopInterruptsARunningCompile()
             - BundledCompilerGateTests/testViewModelStopReenablesBuildAfterWorkerDrains()
             - BundledCompilerGateTests/testVisualPixelSunsetRendersAValidatedCanvas()
@@ -200,9 +204,14 @@ schemes:
             - BundledCompilerGateTests/testBundledRustcProducesE0502()
             - BundledCompilerGateTests/testBundledRustcCompilesAndRunsRepairedProgram()
             - BundledCompilerGateTests/testBundledRustcCompilesMultiFileProject()
+            - BundledCompilerGateTests/testRootCargoPackageEnvironmentComesFromTheManifest()
+            - BundledCompilerGateTests/testAlgorithmSolutionRunsOnlyThroughThePrivateHarness()
             - BundledCompilerGateTests/testBundledRustcSurvivesRepeatedBuilds()
+            - BundledCompilerGateTests/testEveryGuidedShowcasePassesBundledRustcCheck()
             - BundledCompilerGateTests/testUserProgramCannotGrowPastSandboxMemoryLimit()
             - BundledCompilerGateTests/testResolvesDownloadsAndLinksARealCratesIOPackage()
+            - BundledCompilerGateTests/testVendoredCrateBuildsFromAProjectLocalPatch()
+            - BundledCompilerGateTests/testOfflinePinRehydratesSourcesAfterPurgeableCacheEviction()
             - BundledCompilerGateTests/testStopInterruptsARunningCompile()
             - BundledCompilerGateTests/testViewModelStopReenablesBuildAfterWorkerDrains()
             - BundledCompilerGateTests/testVisualPixelSunsetRendersAValidatedCanvas()

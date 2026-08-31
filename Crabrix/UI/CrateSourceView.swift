@@ -4,17 +4,25 @@ import SwiftUI
 ///
 /// This exists because Crabrix downloads code. App Store guideline 2.5.2 permits
 /// that for an app that teaches or develops code only while the source stays
-/// fully viewable, so every file the package manager extracts is readable here —
-/// not just the ones the build happened to compile.
+/// completely viewable and editable. Every extracted path is listed here; all
+/// UTF-8 source can be copied into the editable project overlay through Vendor
+/// & Edit, while binary assets remain visible as bounded metadata.
 struct CrateSourceView: View {
+    @Environment(\.dismiss) private var dismiss
+
     let name: String
     let version: SemanticVersion
+    let localPatch: [String: String]
+    let onVendor: () -> Bool
+    let onOpenVendor: () -> Bool
+    let onResetVendor: () -> Bool
 
     @State private var entries: [CrateSourceBrowser.Entry] = []
     @State private var selected: CrateSourceBrowser.Entry?
     @State private var contents: String?
     @State private var guide: CrateGuide?
     @State private var hasLoaded = false
+    @State private var isResetConfirmationPresented = false
 
     var body: some View {
         Group {
@@ -45,10 +53,24 @@ struct CrateSourceView: View {
         .navigationDestination(item: $selected) { entry in
             fileViewer(entry)
         }
+        .confirmationDialog(
+            "Reset this local patch?",
+            isPresented: $isResetConfirmationPresented,
+            titleVisibility: .visible
+        ) {
+            Button("Reset to Registry Source", role: .destructive) {
+                if onResetVendor() { dismiss() }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Editable vendor files are removed. The checksum-verified original stays unchanged.")
+        }
     }
 
     private var fileList: some View {
         List {
+            sourceStatusSection
+
             if let guide, guide.hasAnything {
                 guideSection(guide)
             }
@@ -83,11 +105,62 @@ struct CrateSourceView: View {
             } header: {
                 Text("\(entries.count) files, exactly as downloaded from crates.io")
             } footer: {
-                Text("Crabrix compiles this source on your device. Nothing here is hidden from you.")
+                Text(
+                    localPatch.isEmpty
+                        ? "The checksum-verified registry tree is immutable. Use Vendor & Edit to create an editable project-local overlay."
+                        : "The registry tree remains immutable. Your edited overlay receives a new source hash and build fingerprint."
+                )
             }
         }
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
+    }
+
+    @ViewBuilder
+    private var sourceStatusSection: some View {
+        Section {
+            Label("Registry source checksum verified", systemImage: "checkmark.seal.fill")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(CrabrixTheme.mint)
+
+            if localPatch.isEmpty {
+                Button {
+                    if onVendor() { dismiss() }
+                } label: {
+                    Label("Vendor & Edit", systemImage: "square.and.pencil")
+                        .font(.subheadline.bold())
+                }
+                .tint(CrabrixTheme.coral)
+            } else {
+                Label("Using Local Patch", systemImage: "hammer.circle.fill")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(CrabrixTheme.amber)
+
+                Button {
+                    if onOpenVendor() { dismiss() }
+                } label: {
+                    Label("Open Editable Source", systemImage: "doc.text.fill")
+                }
+
+                NavigationLink {
+                    CratePatchDiffView(
+                        name: name,
+                        version: version,
+                        localPatch: localPatch
+                    )
+                } label: {
+                    Label("View Diff", systemImage: "arrow.left.arrow.right")
+                }
+
+                Button(role: .destructive) {
+                    isResetConfirmationPresented = true
+                } label: {
+                    Label("Reset to Registry Source", systemImage: "arrow.counterclockwise")
+                }
+            }
+        } header: {
+            Text(localPatch.isEmpty ? "Verified Registry Source" : "Locally Patched")
+        }
     }
 
     /// What the crate says about itself, above its files.
@@ -203,5 +276,86 @@ struct CrateSourceView: View {
         .background(CrabrixTheme.background.ignoresSafeArea())
         .navigationTitle(entry.name)
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+private struct CratePatchDiffView: View {
+    let name: String
+    let version: SemanticVersion
+    let localPatch: [String: String]
+
+    private var changedPaths: [String] {
+        localPatch.keys.filter { path in
+            CrateSourceBrowser.contents(name: name, version: version, path: path)
+                != localPatch[path]
+        }
+        .sorted()
+    }
+
+    var body: some View {
+        Group {
+            if changedPaths.isEmpty {
+                ContentUnavailableView(
+                    "No local edits yet",
+                    systemImage: "equal.circle",
+                    description: Text("The editable overlay still matches the verified registry source.")
+                )
+            } else {
+                List(changedPaths, id: \.self) { path in
+                    NavigationLink {
+                        CratePatchFileComparison(
+                            path: path,
+                            original: CrateSourceBrowser.contents(
+                                name: name,
+                                version: version,
+                                path: path
+                            ) ?? "",
+                            patched: localPatch[path] ?? ""
+                        )
+                    } label: {
+                        Label(path, systemImage: "doc.badge.ellipsis")
+                            .font(.caption.monospaced())
+                            .lineLimit(1)
+                    }
+                }
+                .listStyle(.insetGrouped)
+            }
+        }
+        .background(CrabrixTheme.background.ignoresSafeArea())
+        .navigationTitle("Local Patch Diff")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+private struct CratePatchFileComparison: View {
+    let path: String
+    let original: String
+    let patched: String
+
+    var body: some View {
+        ScrollView([.vertical, .horizontal]) {
+            VStack(alignment: .leading, spacing: 18) {
+                sourceBlock(title: "REGISTRY · READ ONLY", source: original, tint: CrabrixTheme.muted)
+                sourceBlock(title: "LOCAL PATCH · EDITABLE", source: patched, tint: CrabrixTheme.amber)
+            }
+            .padding(14)
+        }
+        .background(CrabrixTheme.background.ignoresSafeArea())
+        .navigationTitle((path as NSString).lastPathComponent)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func sourceBlock(title: String, source: String, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .foregroundStyle(tint)
+            Text(SyntaxTheme.attributedString(source, filePath: path, fontSize: 12))
+                .textSelection(.enabled)
+                .fixedSize(horizontal: true, vertical: true)
+                .padding(10)
+                .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 10))
+                .overlay { RoundedRectangle(cornerRadius: 10).stroke(CrabrixTheme.border) }
+        }
     }
 }

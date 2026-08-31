@@ -67,9 +67,12 @@ final class AlgorithmCourseCatalogTests: XCTestCase {
                 AlgorithmCourseCatalog.challenge(for: pattern.lessonID(.challenge)),
                 pattern.id
             )
-            XCTAssertTrue(challenge.source.contains("fn solve"), pattern.id)
-            XCTAssertTrue(challenge.source.contains("assert_eq!"), pattern.id)
+            XCTAssertTrue(challenge.source.contains("pub fn solve"), pattern.id)
+            XCTAssertFalse(challenge.source.contains("assert_eq!"), pattern.id)
+            XCTAssertFalse(challenge.source.contains("let expected ="), pattern.id)
             XCTAssertTrue(challenge.source.contains("todo!(\"implement"), pattern.id)
+            XCTAssertTrue(challenge.verificationSource.contains("assert_eq!"), pattern.id)
+            XCTAssertTrue(challenge.verificationSource.contains(pattern.expectedAnswer), pattern.id)
             XCTAssertEqual(challenge.expectedOutput, "PASS \(pattern.id)\n")
         }
     }
@@ -134,14 +137,14 @@ final class AlgorithmCourseCatalogTests: XCTestCase {
         XCTAssertEqual(RustCourseCatalog.lessonCount, 742)
     }
 
-    func testAlgorithmValidatorRejectsPlaceholderAndAcceptsEditedVisibleCase() throws {
+    func testAlgorithmValidatorRejectsPlaceholderAndLiteralAnswer() throws {
         let pattern = try XCTUnwrap(patterns.first)
         let lesson = try XCTUnwrap(RustCourseCatalog.lesson(id: pattern.lessonID(.challenge)))
         let challenge = try XCTUnwrap(AlgorithmCourseCatalog.challenge(for: lesson.id))
         let starter = CrabrixProject(
             name: challenge.projectName,
-            files: ["main.rs": challenge.source],
-            entryFile: "main.rs",
+            files: ["solution.rs": challenge.source],
+            entryFile: "solution.rs",
             provenance: nil
         )
         let run = CompilationResult(
@@ -165,16 +168,61 @@ final class AlgorithmCourseCatalogTests: XCTestCase {
         )
         XCTAssertFalse(unchanged.passed)
 
-        let solvedSource = challenge.source.replacingOccurrences(
+        let hardcodedSource = challenge.source.replacingOccurrences(
             of: "todo!(\"implement \(pattern.title)\")",
             with: "\"\(pattern.expectedAnswer)\".to_string()"
         )
-        let solved = CrabrixProject(
+        let hardcoded = CrabrixProject(
             name: challenge.projectName,
-            files: ["main.rs": solvedSource],
-            entryFile: "main.rs",
+            files: ["solution.rs": hardcodedSource],
+            entryFile: "solution.rs",
             provenance: nil
         )
+        let rejected = LessonEvidenceValidator.validateCompilerAttempt(
+            lesson: lesson,
+            result: run,
+            project: hardcoded,
+            initialSourceTreeHash: "before",
+            currentSourceTreeHash: "after",
+            observedDiagnosticCodes: []
+        )
+        XCTAssertFalse(rejected.passed, rejected.detail)
+    }
+
+    func testAlgorithmValidatorAcceptsAnEditedSolutionAfterPrivateHarnessPasses() throws {
+        let pattern = try XCTUnwrap(patterns.first)
+        let lesson = try XCTUnwrap(RustCourseCatalog.lesson(id: pattern.lessonID(.challenge)))
+        let challenge = try XCTUnwrap(AlgorithmCourseCatalog.challenge(for: lesson.id))
+        let solvedSource = challenge.source.replacingOccurrences(
+            of: "let _ = input;\n    todo!(\"implement \(pattern.title)\")",
+            with: """
+            let values: Vec<i32> = input
+                .trim_matches(['[', ']'])
+                .split(',')
+                .map(|part| part.trim().parse().unwrap())
+                .collect();
+            values.iter().position(|value| *value < 0)
+                .map(|index| index.to_string())
+                .unwrap_or_else(|| (-1).to_string())
+            """
+        )
+        let solved = CrabrixProject(
+            name: challenge.projectName,
+            files: ["solution.rs": solvedSource],
+            entryFile: "solution.rs",
+            provenance: nil
+        )
+        let run = CompilationResult(
+            succeeded: true,
+            phase: .run,
+            exitCode: 0,
+            diagnostics: [],
+            stdout: challenge.expectedOutput,
+            stderr: "",
+            duration: .milliseconds(1),
+            detail: "private harness fixture"
+        )
+
         let accepted = LessonEvidenceValidator.validateCompilerAttempt(
             lesson: lesson,
             result: run,

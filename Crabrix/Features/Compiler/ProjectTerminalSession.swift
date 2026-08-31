@@ -268,13 +268,17 @@ final class ProjectTerminalSession: ObservableObject {
             lines.append("\(isLast ? "└── " : "├── ")\(package.name) v\(package.version) \(marker(for: package)) (transitive)")
         }
         lines.append("")
-        lines.append(workspace.summary + (workspace.isOfflineReady ? " · offline ready" : " · download pending"))
+        let offline = workspace.isOfflinePinned
+            ? " · offline pinned"
+            : (workspace.isOfflineReady ? " · offline while cached" : " · download pending")
+        lines.append(workspace.summary + offline)
         return lines.joined(separator: "\n")
     }
 
     private nonisolated static func marker(for package: CratePackageStatus) -> String {
         switch package.compatibility {
-        case .verified: "[built]"
+        case .verified: "[link-verified]"
+        case .checkVerified: "[check-verified]"
         case .expected: "[ready]"
         case .review: "[review]"
         case .unsupported: "[unsupported]"

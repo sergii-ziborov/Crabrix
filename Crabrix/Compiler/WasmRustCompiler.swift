@@ -282,6 +282,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                     emit: action.emit,
                     toolchain: toolchain,
                     jobRoot: jobRoot,
+                    workURL: workURL,
                     tempURL: tempURL,
                     interrupter: interrupter,
                     started: started,
@@ -324,6 +325,10 @@ final class WasmRustCompiler: @unchecked Sendable {
                         .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path),
                         .init(guestPath: "/work", hostPath: workURL.path),
                     ] + registryPreopens(for: plan),
+                    environment: rootCargoEnvironment(
+                        sourcePath: sourcePath,
+                        supportingFiles: supportingFiles
+                    ),
                     interrupter: interrupter
                 )
             } catch is WasmExecutionCancelled {
@@ -432,6 +437,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         emit: CargoEmitKind,
         toolchain: BundledToolchain,
         jobRoot: URL,
+        workURL: URL,
         tempURL: URL,
         interrupter: WasmInterrupter,
         started: ContinuousClock.Instant,
@@ -481,9 +487,26 @@ final class WasmRustCompiler: @unchecked Sendable {
                 )
             )
 
+            let patchRoot: URL?
+            do {
+                patchRoot = try materializeProjectPatch(
+                    for: unit,
+                    workURL: workURL,
+                    registryRoot: registryRoot,
+                    jobRoot: jobRoot
+                )
+            } catch {
+                return dependencyFailure(
+                    unit: unit,
+                    detail: "could not prepare the local patch: \(error.localizedDescription)",
+                    stderr: "",
+                    started: started
+                )
+            }
+
             var arguments = [
                 "rustc",
-                "/registry/\(unit.sourceDirectoryName)/\(unit.libraryPath)",
+                "\(unit.guestSourceDirectory)/\(unit.libraryPath)",
                 "--sysroot", "/sysroot",
                 "--target", "wasm32-wasip1",
                 "--edition", unit.edition,
@@ -516,7 +539,9 @@ final class WasmRustCompiler: @unchecked Sendable {
                         .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path),
                         .init(guestPath: "/registry", hostPath: registryRoot.path),
                         .init(guestPath: "/artifacts", hostPath: artifacts.path),
-                    ],
+                    ] + (patchRoot.map {
+                        [.init(guestPath: "/patches", hostPath: $0.path)]
+                    } ?? []),
                     environment: cargoEnvironment(for: unit),
                     interrupter: interrupter
                 )
@@ -554,9 +579,76 @@ final class WasmRustCompiler: @unchecked Sendable {
                     started: started
                 )
             }
-            ledger.record(package: unit.package, fingerprint: unit.fingerprint, outcome: .built)
+            ledger.record(
+                package: unit.package,
+                fingerprint: unit.fingerprint,
+                outcome: emit == .metadata ? .checked : .built
+            )
         }
         return nil
+    }
+
+    /// Builds a private merged tree for an editable dependency overlay.
+    /// Registry bytes are copied, never modified; editable project files then
+    /// replace their matching paths in the temporary tree.
+    private func materializeProjectPatch(
+        for unit: CargoBuildUnit,
+        workURL: URL,
+        registryRoot: URL,
+        jobRoot: URL
+    ) throws -> URL? {
+        guard case let .projectPatch(relativeDirectory, registryDirectoryName) = unit.source else {
+            return nil
+        }
+        let patchesRoot = jobRoot.appending(path: "patches", directoryHint: .isDirectory)
+        let destination = patchesRoot.appending(path: unit.fingerprint, directoryHint: .isDirectory)
+        let original = registryRoot.appending(path: registryDirectoryName, directoryHint: .isDirectory)
+        let overlay = workURL.appending(path: relativeDirectory, directoryHint: .isDirectory)
+        guard FileManager.default.fileExists(atPath: original.path),
+              FileManager.default.fileExists(atPath: overlay.path)
+        else {
+            throw CocoaError(.fileNoSuchFile)
+        }
+
+        try FileManager.default.createDirectory(at: patchesRoot, withIntermediateDirectories: true)
+        if FileManager.default.fileExists(atPath: destination.path) {
+            try FileManager.default.removeItem(at: destination)
+        }
+        try FileManager.default.copyItem(at: original, to: destination)
+
+        let overlayRoot = overlay.standardizedFileURL.path
+        guard let walker = FileManager.default.enumerator(
+            at: overlay,
+            includingPropertiesForKeys: [.isRegularFileKey, .isSymbolicLinkKey],
+            options: [.skipsPackageDescendants]
+        ) else {
+            throw CocoaError(.fileReadUnknown)
+        }
+        for case let fileURL as URL in walker {
+            let values = try fileURL.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
+            guard values.isSymbolicLink != true else {
+                if values.isRegularFile != true { walker.skipDescendants() }
+                continue
+            }
+            guard values.isRegularFile == true else { continue }
+            let standardized = fileURL.standardizedFileURL.path
+            guard standardized.hasPrefix(overlayRoot + "/") else {
+                throw CocoaError(.fileReadInvalidFileName)
+            }
+            let relative = String(standardized.dropFirst(overlayRoot.count + 1))
+            guard let target = projectFileURL(relativePath: relative, under: destination) else {
+                throw ProjectLayoutError.invalidPath(relative)
+            }
+            try FileManager.default.createDirectory(
+                at: target.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            if FileManager.default.fileExists(atPath: target.path) {
+                try FileManager.default.removeItem(at: target)
+            }
+            try FileManager.default.copyItem(at: fileURL, to: target)
+        }
+        return patchesRoot
     }
 
     /// Picks the first `error: …` line out of raw rustc output.
@@ -610,13 +702,53 @@ final class WasmRustCompiler: @unchecked Sendable {
             "CARGO_PKG_LICENSE": unit.license,
             "CARGO_PKG_LICENSE_FILE": "",
             "CARGO_PKG_RUST_VERSION": "",
-            "CARGO_MANIFEST_DIR": "/registry/\(unit.sourceDirectoryName)",
+            "CARGO_MANIFEST_DIR": unit.guestSourceDirectory,
         ]
         for feature in unit.features {
             let key = feature.uppercased()
                 .replacingOccurrences(of: "-", with: "_")
                 .replacingOccurrences(of: ".", with: "_")
             environment["CARGO_FEATURE_\(key)"] = "1"
+        }
+        return environment
+    }
+
+    /// Cargo projects commonly use `env!("CARGO_PKG_…")` in their own root
+    /// target too. These values come from the exact project manifest rather
+    /// than being present only while dependencies compile.
+    private func rootCargoEnvironment(
+        sourcePath: String,
+        supportingFiles: [String: String]
+    ) -> [String: String] {
+        var environment = ["CLIF2WASM_OBJECT": "1"]
+        guard let manifestSource = supportingFiles["Cargo.toml"],
+              let manifest = try? CratePackageManifest.parse(manifestSource),
+              !manifest.packageName.isEmpty
+        else { return environment }
+
+        let version = manifest.version ?? SemanticVersion(major: 0, minor: 0, patch: 0)
+        let crateName = CratePackageManifest.crateIdentifier(for: manifest.packageName)
+        environment.merge([
+            "CARGO_CRATE_NAME": crateName,
+            "CARGO_BIN_NAME": crateName,
+            "CARGO_PKG_NAME": manifest.packageName,
+            "CARGO_PKG_VERSION": version.description,
+            "CARGO_PKG_VERSION_MAJOR": String(version.major),
+            "CARGO_PKG_VERSION_MINOR": String(version.minor),
+            "CARGO_PKG_VERSION_PATCH": String(version.patch),
+            "CARGO_PKG_VERSION_PRE": version.prerelease.joined(separator: "."),
+            "CARGO_PKG_AUTHORS": "",
+            "CARGO_PKG_DESCRIPTION": "",
+            "CARGO_PKG_REPOSITORY": "",
+            "CARGO_PKG_HOMEPAGE": "",
+            "CARGO_PKG_LICENSE": "",
+            "CARGO_PKG_LICENSE_FILE": "",
+            "CARGO_PKG_RUST_VERSION": manifest.rustVersion ?? "",
+            "CARGO_MANIFEST_DIR": "/work",
+            "CARGO_PRIMARY_PACKAGE": "1",
+        ]) { _, exact in exact }
+        if sourcePath.hasSuffix("lib.rs") {
+            environment.removeValue(forKey: "CARGO_BIN_NAME")
         }
         return environment
     }

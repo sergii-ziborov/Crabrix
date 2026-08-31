@@ -28,27 +28,32 @@ Simulator success is necessary but not sufficient. A release decision requires t
 | Infinite loop | Run `fn main() { loop {} }` | Work is terminated and CPU returns to idle |
 | Cargo first build | Create the Cargo Packages template and Run | Packages download, compile, and the program prints; record wall-clock and peak memory |
 | Cargo offline rebuild | Enable airplane mode and Run the same project again | The build reuses cached artifacts and succeeds with no network |
+| Cargo cache-eviction rebuild | Tap **Pin exact graph for offline**, remove purgeable Cargo cache, enable airplane mode, and Run | Exact pinned archives rehydrate source and the locked build succeeds without network |
+| Vendor & Edit | Vendor a downloaded crate, add a harmless source edit, Run, inspect Diff, then Reset | Patched fingerprint builds, registry source stays unchanged, and Reset restores registry identity |
 
-## Interruption: what is solved and what is not
+## Interruption architecture and remaining proof
 
-Crabrix now wraps every WASI host function the guest imports, so cancelling
-traps the guest on its next syscall. That covers the cases that matter in
-practice — `rustc` performs continuous file I/O, and a runaway user program that
-prints or touches files is stopped immediately. The automated gate asserts that
-a compile which normally takes 15–20 s returns inside 40 s of a Stop; it
-currently returns in about 3 s.
+Crabrix wraps every WASI host function the guest imports, so cancelling traps a
+guest on its next syscall. The pinned vendored WasmKit fork additionally calls
+an `InstructionLimiter` after each deterministic batch of 4,096 guest
+instructions. The same interrupter therefore reaches a pure compute guest that
+never calls WASI. Runtime budgets also cap wall-clock time, output, writable
+bytes/files, memory, and tables.
 
-The remaining hole is a guest that spins without ever calling into the host, of
-which `fn main() { loop {} }` is the pure case. WasmKit 0.3.1 exposes no
-fuel/epoch interruption, so that specific program still cannot be killed.
+Automated tests prove both instruction-budget exhaustion and explicit
+cancellation of a handcrafted pure-compute Wasm loop. They also prove the UI
+Run gate reopens after the compiler worker drains. The old statement that
+`loop {}` cannot be killed is no longer true for this source tree.
 
-Before App Store work, choose and verify one of:
+What remains is physical evidence, not a missing interruption mechanism:
 
-1. add a bounded-instruction/fuel mechanism to the interpreter;
-2. use an iOS-safe interpreter runtime with proven interruption support;
-3. instrument emitted Wasm with cooperative budget checks.
+1. `loop {}` stops promptly on every device class;
+2. CPU returns to baseline rather than merely hiding UI state;
+3. memory is released;
+4. the immediately following Check/Run starts and completes;
+5. repeated stop cycles do not accumulate orphan work.
 
-Do not replace this test with a simulated timeout.
+Do not replace these observations with a simulated UI timeout.
 
 ## Automated evidence already available
 
@@ -62,10 +67,20 @@ The dedicated Release test scheme now proves the following before a physical-dev
 - path validation and a single writable `/sandbox` preopen for the user program;
 - resolution, checksum-verified download, extraction, compilation, and linking of
   a real crates.io package, followed by running the linked program;
-- interruption of a running compile within the asserted window.
+- interruption of a running compile within the asserted window;
+- deterministic instruction-budget and explicit-cancel traps for a pure loop;
+- private Algorithm Atlas verifier injection (expected values are not in the
+  editable project);
+- crates.io **Vendor & Edit**, including a distinct patch fingerprint and real
+  patched dependency link;
+- offline pinning followed by deletion of purgeable source/archive cache and a
+  successful frozen rehydrate;
+- root `CARGO_PKG_*` environment values from the project manifest;
+- separate persisted evidence for metadata Check and full Link.
 
 These tests reduce device-session risk. They do not replace the 20-run memory,
-thermal, airplane-mode, lifecycle, or infinite-loop checks above.
+thermal, airplane-mode, lifecycle, CPU-idle, or immediate-second-run checks
+above.
 
 The App Group requirement was added with the GitHub Share Extension. A
 profile/entitlement mismatch is a provisioning blocker, not evidence for or

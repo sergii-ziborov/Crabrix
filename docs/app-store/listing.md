@@ -53,11 +53,12 @@ A REAL PACKAGE MANAGER
 • Sparse index resolution, SemVer ranges, and feature unification
 • SHA-256 checksums verified before anything is written to disk
 • Every downloaded crate is readable inside the app, file by file
-• Once fetched, a project rebuilds with the network off
+• Vendor & Edit creates a project-local editable patch with Diff and Reset
+• Cached graphs rebuild offline; Pin for Offline survives iOS cache eviction
 
 AN EDITOR BUILT FOR A PHONE
 • Rust syntax highlighting, line numbers, and no line wrapping
-• Completion, a symbol jump list, and a keyboard row that fits your thumbs
+• Completion, diagnostic navigation, and a keyboard row that fits your thumbs
 • Multi-file Cargo projects, a file tree, and a project terminal
 • Import from GitHub or Files, export as a package or a plain ZIP
 
@@ -90,9 +91,11 @@ device. Crabrix detects these and tells you, instead of failing halfway. There
 is no debugger yet. Compilation is interpreted WebAssembly, so a first build is
 slower than on a laptop.
 
-The compiler, curriculum, local projects, and already-fetched supported
-dependencies work offline. GitHub import, first-time crate downloads, and the
-optional online boards require a connection.
+The compiler, curriculum, and local projects work offline. Supported
+dependencies work offline while cached; an explicit offline pin keeps their
+exact verified archives durable after iOS cache eviction. GitHub import and
+first-time crate downloads require a connection. Online boards are dormant in
+production 1.0.
 ```
 
 ## Keywords (100, comma separated, no spaces)
@@ -110,8 +113,9 @@ A real Rust compiler on your iPhone and iPad, with a real crates.io package
 manager, an editor built for a phone, 142 guided Rust lessons, and a separate
 200-pattern Algorithm Atlas with compiler-backed challenges.
 
-The compiler, curriculum, local projects, and already-fetched dependencies work
-offline. First-time package downloads and online services require a connection.
+The compiler, curriculum, and local projects work offline. Cached dependencies
+rebuild offline, and exact graphs can be pinned durably. First-time package
+downloads require a connection; online boards are dormant in production 1.0.
 ```
 
 ## App Privacy answers — production 1.0
@@ -153,13 +157,25 @@ explicit request, and it is used solely to build the user's own project inside
 the app.
 
 All such source is fully viewable in the app: Build → Packages → tap any
-downloaded crate to browse every extracted file, with syntax highlighting. The
-user's own source is fully viewable and editable throughout.
+downloaded crate to browse every extracted file. Tap Vendor & Edit to copy its
+editable source into the current project, edit it in the normal project editor,
+review the local diff, compile the patched fingerprint, or Reset to the original
+checksum-backed registry source. The immutable registry copy is never modified.
 
 Programs execute inside a WebAssembly sandbox in the app's own process, with a
-memory cap, no network access, and one writable directory. Crabrix spawns no
+memory/instruction/output/storage caps, no network access, and one writable directory. Crabrix spawns no
 host processes; the "terminal" is a simulated shell over the in-app project
 files only.
+
+REVIEWER PROOF PATH
+1. Open the included Hello Rust project and Run it with no network.
+2. Open the E0502 borrowing sample, inspect the diagnostic, repair, and Run.
+3. Add the supported smallvec package and build it locally.
+4. Open smallvec under Build → Packages, tap Vendor & Edit, add a harmless
+   comment, inspect Diff, Run, then Reset to Registry Source.
+5. Pin the exact graph for offline, disable networking, clear purgeable package
+   cache, and rebuild.
+6. Run `fn main() { loop {} }`, tap Stop, then immediately Run Hello Rust.
 
 ONLINE BOARDS
 Game Center and the Crabrix Rust Board implementations are dormant in the
@@ -172,7 +188,9 @@ support@crabrix.com
 
 ## Screenshots
 
-Captured at exactly the sizes App Store Connect requires, ready to upload:
+The folders below contain the previous capture set. They are **not approved for
+upload** until every frame is recaptured from the exact signed release candidate
+after the latest Projects/Learn/profile cleanup.
 
 | Folder | Device | Size |
 | --- | --- | --- |
@@ -184,8 +202,8 @@ Upload order for the iPhone set, which tells the story in the right sequence:
 1. `01-build` — the workspace, editor and build inspector
 2. `03-learn` — Learn hub: rating, vitals, courses
 3. `05-lesson` — a lesson with its highlighted example and the energy cost
-4. `06-profile` — achievements, lifetime stats, the public board
-5. `02-projects` — the dashboard with rating and vitals in the header
+4. `06-profile` — local profile, avatar, rating, vitals, and lifetime stats
+5. `02-projects` — the dashboard and My Projects organization
 6. `07-library` — the project library
 7. `04-course` — a course path
 8. `08-settings` — settings and About
@@ -208,7 +226,9 @@ xcrun simctl launch <device> com.sergiiziborov.Crabrix \
 
 - [x] `support@crabrix.com` delivers mail — Cloudflare Email Routing enabled on the zone, forwarding to the verified destination, with a catch-all so nothing to the domain is dropped
 - [ ] Game Center capability enabled on the App ID, or the feature stays dormant
-- [x] Screenshots captured at the two required sizes (`docs/app-store/screenshots/`)
+- [ ] Screenshots recaptured from the exact signed RC at both required sizes
+- [ ] Physical iPhone/iPad matrix and release-evidence bundle complete
+- [ ] App Review 2.5.2 consultation/reviewer proof path confirmed
 - [ ] App Privacy answers entered to match the privacy manifest
 - [ ] Export compliance answered
 - [ ] Age rating questionnaire completed as 4+

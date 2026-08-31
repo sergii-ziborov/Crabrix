@@ -215,7 +215,12 @@ struct ContentView: View {
                                     onNewFile: { projectItemCreation = .rustFile },
                                     onNewFolder: { projectItemCreation = .moduleFolder },
                                     onResolvePackages: model.refreshCargoWorkspace,
-                                    onAddPackage: { isCargoCatalogPresented = true }
+                                    onPinPackages: model.pinDependenciesForOffline,
+                                    onAddPackage: { isCargoCatalogPresented = true },
+                                    vendoredFiles: model.vendoredFiles,
+                                    onVendor: model.vendorCrate,
+                                    onOpenVendor: model.openVendoredCrate,
+                                    onResetVendor: model.resetVendoredCrate
                                 )
                                 .frame(width: projectSidebarWidth)
                                 .transition(.move(edge: .leading).combined(with: .opacity))
@@ -276,6 +281,7 @@ struct ContentView: View {
                 onRefreshStorage: model.refreshCargoStorage,
                 onClearBuildArtifacts: model.clearCargoBuildArtifacts,
                 onClearDownloadedArchives: model.clearCargoDownloadedArchives,
+                onClearOfflinePins: model.clearCargoOfflinePins,
                 onClearPackageCache: model.clearCargoPackageCache
             )
             .tabItem { Label("Settings", systemImage: "gearshape.fill") }
@@ -767,7 +773,12 @@ struct ContentView: View {
                             onNewFile: { projectItemCreation = .rustFile },
                             onNewFolder: { projectItemCreation = .moduleFolder },
                             onResolvePackages: model.refreshCargoWorkspace,
-                            onAddPackage: { isCargoCatalogPresented = true }
+                            onPinPackages: model.pinDependenciesForOffline,
+                            onAddPackage: { isCargoCatalogPresented = true },
+                            vendoredFiles: model.vendoredFiles,
+                            onVendor: model.vendorCrate,
+                            onOpenVendor: model.openVendoredCrate,
+                            onResetVendor: model.resetVendoredCrate
                         )
                     }
                     .frame(width: min(geometry.size.width * 0.86, 340))
@@ -1326,7 +1337,12 @@ private struct ProjectSidebar: View {
     let onNewFile: () -> Void
     let onNewFolder: () -> Void
     let onResolvePackages: () -> Void
+    let onPinPackages: () -> Void
     let onAddPackage: () -> Void
+    let vendoredFiles: (String, SemanticVersion) -> [String: String]
+    let onVendor: (String, SemanticVersion) -> Bool
+    let onOpenVendor: (String, SemanticVersion) -> Bool
+    let onResetVendor: (String, SemanticVersion) -> Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -1390,7 +1406,12 @@ private struct ProjectSidebar: View {
                         manifest: manifest,
                         isBusy: isBusy,
                         onRefresh: onResolvePackages,
-                        onAddDependency: onAddPackage
+                        onPinForOffline: onPinPackages,
+                        onAddDependency: onAddPackage,
+                        vendoredFiles: vendoredFiles,
+                        onVendor: onVendor,
+                        onOpenVendor: onOpenVendor,
+                        onResetVendor: onResetVendor
                     )
 
                     Divider().overlay(CrabrixTheme.border).padding(.vertical, 6)

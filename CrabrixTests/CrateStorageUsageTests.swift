@@ -12,6 +12,7 @@ final class CrateStorageUsageTests: XCTestCase {
         let artifacts = root.appending(path: "artifacts", directoryHint: .isDirectory)
         let projectArtifacts = root.appending(path: "programs", directoryHint: .isDirectory)
         let index = root.appending(path: "index", directoryHint: .isDirectory)
+        let pinned = root.appending(path: "pinned", directoryHint: .isDirectory)
 
         try write(bytes: 11, to: archives.appending(path: "demo.crate"))
         try write(bytes: 13, to: sources.appending(path: "demo-1.0.0/Cargo.toml"))
@@ -19,13 +20,15 @@ final class CrateStorageUsageTests: XCTestCase {
         try write(bytes: 7, to: artifacts.appending(path: "libdemo.rlib"))
         try write(bytes: 19, to: projectArtifacts.appending(path: "program.wasm"))
         try write(bytes: 5, to: index.appending(path: "de/mo/demo"))
+        try write(bytes: 23, to: pinned.appending(path: "demo-1.0.0.crate"))
 
         let usage = CrateStorageUsage.measure(
             archiveDirectory: archives,
             sourceDirectory: sources,
             artifactDirectory: artifacts,
             projectArtifactDirectory: projectArtifacts,
-            indexDirectory: index
+            indexDirectory: index,
+            pinnedArchiveDirectory: pinned
         )
 
         XCTAssertEqual(usage.archiveBytes, 11)
@@ -34,7 +37,8 @@ final class CrateStorageUsageTests: XCTestCase {
         XCTAssertEqual(usage.projectArtifactBytes, 19)
         XCTAssertEqual(usage.buildArtifactBytes, 26)
         XCTAssertEqual(usage.indexBytes, 5)
-        XCTAssertEqual(usage.totalBytes, 72)
+        XCTAssertEqual(usage.pinnedArchiveBytes, 23)
+        XCTAssertEqual(usage.totalBytes, 95)
         XCTAssertEqual(usage.packageCount, 1)
     }
 

@@ -16,6 +16,7 @@ struct SettingsView: View {
     let onRefreshStorage: () async -> Void
     let onClearBuildArtifacts: () async -> Void
     let onClearDownloadedArchives: () async -> Void
+    let onClearOfflinePins: () async -> Void
     let onClearPackageCache: () async -> Void
 
     private let columns = [GridItem(.adaptive(minimum: 150), spacing: 12)]
@@ -251,12 +252,24 @@ struct SettingsView: View {
     private var cargoStorageSection: some View {
         SettingsSection(
             title: "Local build storage",
-            detail: "Compiled projects, Cargo packages, and downloaded sources live in the app cache."
+            detail: "Build outputs and downloaded sources are cacheable. Explicit offline pins are durable and managed separately."
         ) {
             SettingsFactRow(
                 title: "Downloaded archives",
                 value: Self.formatted(storage.archiveBytes),
                 icon: "arrow.down.circle.fill",
+                tint: CrabrixTheme.blue
+            )
+            SettingsFactRow(
+                title: "Offline pinned archives",
+                value: Self.formatted(storage.pinnedArchiveBytes),
+                icon: "pin.fill",
+                tint: CrabrixTheme.mint
+            )
+            SettingsFactRow(
+                title: "Registry index",
+                value: Self.formatted(storage.indexBytes),
+                icon: "list.bullet.rectangle.fill",
                 tint: CrabrixTheme.blue
             )
             SettingsFactRow(
@@ -302,16 +315,25 @@ struct SettingsView: View {
             .buttonStyle(.bordered)
             .tint(CrabrixTheme.blue)
 
+            Button {
+                Task { await onClearOfflinePins() }
+            } label: {
+                Label("Remove offline pins", systemImage: "pin.slash")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .tint(CrabrixTheme.amber)
+
             Button(role: .destructive) {
                 Task { await onClearPackageCache() }
             } label: {
-                Label("Clear the whole package cache", systemImage: "trash")
+                Label("Clear source and build caches", systemImage: "trash")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
 
             Label(
-                "Clearing artifacts removes cached project programs and forgets recorded package build results, so the next Run recompiles them. Clearing the whole cache also removes offline packages, and a project that used them needs the network again.",
+                "Clearing cache data removes extracted sources, downloaded archives, and build artifacts. The compact registry index and explicit offline pins remain durable; remove pins separately when you want to reclaim those verified archives.",
                 systemImage: "exclamationmark.triangle"
             )
             .font(.caption2)
@@ -326,7 +348,7 @@ struct SettingsView: View {
     private var compilerSection: some View {
         SettingsSection(
             title: "Local compiler",
-            detail: "The proof-of-concept toolchain is included in the app bundle."
+            detail: "The pinned Rust toolchain is included in the app bundle and verified by hash."
         ) {
             SettingsFactRow(
                 title: "Status",

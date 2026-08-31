@@ -7,6 +7,12 @@ on the device.
 
 > Real Rust. Real Cargo. Built locally on iPhone and iPad.
 
+> **Release status:** the code-level candidate is under active hardening. A
+> production 1.0 tag is fail-closed until the full physical iPhone/iPad matrix,
+> final screenshots, signing/App Store configuration, and the remaining
+> multi-case Algorithm Atlas evidence are recorded. See
+> [Release readiness](docs/RELEASE-READINESS.md).
+
 [**crabrix.com**](https://crabrix.com) · [About](https://crabrix.com/about) ·
 [Support](https://crabrix.com/support) ·
 [Privacy](https://crabrix.com/privacy) · [Terms](https://crabrix.com/terms)
@@ -35,7 +41,10 @@ on the device.
 - **Teaches from the compiler.** 142 guided Rust lessons across six language courses, plus a 200-pattern Algorithm Atlas with two explanations and one local Rust challenge per pattern.
 - **Achievements have ladders.** 36 families of five tiers each — Bronze to Diamond — including an overall Algorithm Atlas ladder and one ladder for each of its 20 solution methods.
 - **Rating follows the diff.** A successful run is scored on how much Rust actually changed since the last one, so pressing Run on an untouched sample is worth almost nothing and real editing is worth real points.
-- **Works offline.** Once a project's packages are cached, it rebuilds with the network off.
+- **Offline with honest durability.** Cached packages rebuild without a network
+  while iOS retains the cache. **Pin exact graph for offline** stores the
+  checksum-verified archives outside purgeable Caches, so Cargo can rehydrate
+  them after cache eviction.
 
 The app embeds:
 
@@ -51,15 +60,27 @@ The app embeds:
 - bounded public GitHub snapshot import for repository and branch URLs, Cargo-root discovery, and stored source provenance;
 - an iOS Share Extension that queues GitHub URLs through an App Group and never tries to foreground the host app;
 - six courses covering the language end to end — foundations, ownership, data modelling, abstractions, Cargo projects, smart pointers, concurrency, async, macros, and systems Rust — plus interview prep that reaches past the language into memory, networking, databases, and distributed systems: 142 guided Rust lessons in total;
-- a seventh Algorithms course with 20 independent solution-method chapters, 200 reusable patterns, and 600 steps ordered inside each method: HOW, WHEN, then a compiler-backed Rust challenge;
+- a seventh Algorithms course with 20 independent solution-method chapters,
+  200 reusable patterns, and 600 steps ordered inside each method: HOW, WHEN,
+  then a compiler-backed Rust challenge. The editable solution contains no
+  expected value or assertion; Crabrix injects the verifier privately at build
+  time. A full multi-case hidden-test bank remains a release gate rather than a
+  finished claim;
 - Quick Practice, Term Train (practice and timed modes, streaks, accuracy), and Code Recall, a memory drill that hides a snippet and asks you to rebuild it — all three generated from the lesson content and scheduled with SM-2 spaced repetition;
 - a rating earned across every part of the app, 36 achievement ladders of five tiers each, with algorithm-category mastery tracked idempotently, a tiered unlock animation, and health/energy that scale with rank — all stored on device;
-- a project library of 20 std-only projects across eight categories, searchable and filterable by difficulty, every one verified to compile and run with the bundled toolchain;
+- a project library of **46** Cargo-shaped projects across eight categories,
+  including at least 26 guided projects and **6 bounded visual canvases**,
+  searchable and filterable by difficulty;
 - draggable/collapsible project and diagnostic panels on iPad, plus stable full-height `Code / Problems / Output / Terminal` workspace tabs with highlighted streams/commands and live build state on both the workspace and project library;
 - a review-before-insert Rust completion action: deterministic offline suggestions everywhere and optional Apple Foundation Models completion on eligible iOS 26+ devices;
 - Auto, Light, and Dark themes, adjustable editor text, build keep-awake control, and a searchable crates.io catalog with owner/download metadata and per-package version selection;
 - **a working Cargo package manager**: sparse-index resolution, SemVer and feature unification, checksum-verified `.crate` downloads, bounded extraction, dependency compilation to `.rlib`/`.rmeta`, and `--extern` linking into the final program;
-- a per-package compatibility view backed by a persisted ledger of real build results, plus Cargo storage accounting and cache controls in Settings;
+- immutable checksum-backed registry source plus **Vendor & Edit**, which creates
+  an editable project-local overlay with Diff/Reset and a distinct build
+  fingerprint;
+- a per-package compatibility view backed by a persisted ledger that keeps
+  `Check verified` separate from stronger `Link verified` evidence, plus Cargo
+  storage accounting, durable offline pins, and cache controls in Settings;
 - a bounded guest runtime with 64 MiB linear-memory and table-growth limits, `/sandbox` as the only writable preopen, and no network imports.
 
 ## Cargo package manager
@@ -85,7 +106,10 @@ What the resolver implements:
 - feature resolution with `default`, `dep:name`, `name/feature`, weak `name?/feature`, and implicit optional-dependency features;
 - `[target.'cfg(...)'.dependencies]` evaluation against `wasm32-wasip1`, which keeps Windows- and Linux-only crates out of the graph;
 - dev- and build-dependency exclusion, renamed dependencies (`package = "..."`), and yanked-version avoidance;
-- a generated `Cargo.lock` in Cargo's current format.
+- `Cargo.lock`-driven normal/locked/offline/frozen/update modes, including exact
+  pin validation and refusal to silently rewrite a frozen graph;
+- root editions 2015/2018/2021/2024, MSRV-aware selection, explicit unknown
+  feature errors, and tri-state target-cfg evaluation instead of guessing.
 
 Compilation caches per build unit. A unit's fingerprint covers the toolchain,
 crate version, checksum, edition, resolved features, library path, and the
@@ -111,11 +135,21 @@ linker, which constrains what can compile:
 - the codegen backend has real gaps. `ryu 1.0.23` and `itoa 1.0.18` currently fail with `umulhi on i64` and `ireduce i16 -> i8` respectively, while `arrayvec`, `cfg-if`, `either`, `itoa 1.0.11`, `log`, `memchr`, `once_cell`, and `smallvec` build and link.
 
 Because static inspection cannot predict a codegen gap, Crabrix records the
-outcome of every dependency build in a local ledger and shows `Verified`,
-`Expected compatible`, `Needs review`, or `Unsupported` with the compiler's own
-reason.
+outcome of every dependency build in a local ledger and shows `Check verified`,
+`Link verified`, `Expected compatible`, `Needs review`, or `Unsupported` with
+the compiler's own reason. A metadata-only Check never masquerades as proof that
+the package can codegen and link.
+
+Registry source is immutable. **Vendor & Edit** copies its editable text files
+into `vendor/<crate>-<version>` in the user's project; the compiler overlays
+those files onto a private copy of the verified registry tree, fingerprints the
+new source hash, shows a diff, and always offers Reset. Binary assets remain in
+the verified tree and are never exposed as corrupt text.
 
 The toolchain is downloaded **at build time**, verified by SHA-256, and copied into the app bundle. The running app never downloads compiler components.
+The generated Xcode project is not committed, but `Dependencies/Package.resolved`
+is: `scripts/bootstrap.sh` restores that audited SwiftPM graph after every
+XcodeGen run, and release/CI builds refuse to float package versions.
 
 Runtime network access is limited to explicit user actions: public GitHub snapshot import, crates.io package discovery, and Cargo dependency resolution and download. Every `.crate` archive is verified against the SHA-256 checksum published in the registry index before it is written to disk, and both GitHub and crate archives are rejected when they contain traversal paths, symlinks, non-regular entries, too many files, or exceed the compressed/expanded size limits. Imported programs still execute in the network-free Wasm sandbox.
 
@@ -165,7 +199,7 @@ Crabrix does about each:
 
 | Guideline | How Crabrix satisfies it |
 | --- | --- |
-| **2.5.2** — self-contained code | The compiler and standard library are **bundled**, not downloaded. The only code fetched at runtime is crates.io package source, at the user's explicit request, used only to build their own project. Every extracted file is readable in-app (Build → Packages → tap a crate), which is the condition the educational carve-out attaches. |
+| **2.5.2** — self-contained code | The compiler and standard library are **bundled**, not downloaded. The only code fetched at runtime is crates.io package source, at the user's explicit request, used only to build their own project. Extracted source is completely viewable in Build → Packages and editable through **Vendor & Edit**; registry bytes remain immutable and Reset is always available. Final acceptance still belongs to App Review, so the reviewer path is tested and documented rather than assumed. |
 | **2.5.1** — private APIs, process spawning | No host processes are spawned. The project terminal is a simulated shell over the in-app project files. Guest programs run in a WebAssembly sandbox with a memory cap, one writable preopen, and no network imports. |
 | **1.2** — user-generated content | Production 1.0 exposes no public board or display-name input. The retained board code stays dormant until report/hide/moderation are release-ready. |
 | **5.1.1(v)** — account deletion | There is no account and production 1.0 creates no server-side profile. |
@@ -214,9 +248,9 @@ or by Apple.
 
 ## Build
 
-Requirements:
+Development requirements for the current vendored WasmKit revision:
 
-- Xcode 27 beta or newer (Swift 6.3+ is required by WasmKit 0.3.1);
+- Xcode 27 beta or newer (the local package declares Swift tools 6.3);
 - XcodeGen;
 - `zstd` on the build Mac.
 
@@ -230,6 +264,11 @@ DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
 ```
 
 Simulator builds need no signing configuration.
+
+The Xcode/SDK accepted by App Store Connect is a submission-time release gate,
+not inferred from the development build. Before upload, record the exact Xcode
+build and re-check Apple's current
+[upload requirements](https://developer.apple.com/help/app-store-connect/manage-builds/upload-builds).
 
 ### Building for a device
 
@@ -275,7 +314,8 @@ DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
   test
 ```
 
-Measured on the iPad Pro 13-inch (M5) Simulator used for this spike:
+Evidence captured during development (not a substitute for the current release
+matrix):
 
 - optimized Release multi-file compile/run with safe token threading: 3.3 seconds;
 - unoptimized Debug compile/run: approximately 50–59 seconds;
@@ -300,11 +340,12 @@ public `ResourceLimiter` protocol is exposed while `Store.resourceLimiter` is
 still SPI. This is tracked as a dependency-integration debt, not hidden as a
 production-stable API.
 
-The current Stop button immediately releases the app UI, ignores the stale
-compiler result, and reports sandbox cleanup. WasmKit 0.3.1 does not expose a
-safe hard-interruption/fuel API for an already-running interpreter, so Crabrix
-does not start a second compiler job until that worker has drained. A true
-hard-timeout remains part of the physical-device gate.
+Crabrix vendors a pinned WasmKit patch that calls an instruction limiter every
+4,096 guest instructions. Together with host-call cancellation, wall-clock and
+resource watchdogs, this reaches pure-compute `loop {}` guests rather than only
+printing/file-I/O loops. Automated tests prove the instruction and UI state
+paths; physical proof that CPU returns to idle and a second Run starts promptly
+is still required on every release device class.
 
 These numbers prove the native integration path, not physical-device performance.
 
@@ -319,7 +360,10 @@ The compiler gate passes only when all of these are demonstrated on a physical i
 5. repeated checks stay within an acceptable memory/thermal envelope;
 6. a non-terminating program can be stopped without leaving runaway work.
 
-Items 1, 5 and 6 cannot be claimed from a Simulator run. See [docs/DEVICE-GATE.md](docs/DEVICE-GATE.md).
+Items 1, 5 and 6 cannot be claimed from a Simulator run. The current evidence
+set is deliberately incomplete, so this repository does **not** yet claim a
+production-ready 1.0. See [docs/DEVICE-GATE.md](docs/DEVICE-GATE.md) and
+[docs/RELEASE-READINESS.md](docs/RELEASE-READINESS.md).
 
 ## Repository history
 

@@ -1,28 +1,42 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-08-29T23:33:12Z",
+  "capturedAt": "2026-08-31T09:11:45Z",
   "candidate": {
     "version": "1.0",
     "build": "1",
     "branch": "release/1.0-app-store",
-    "baseCommit": "74ffeebd0487380365d224653b4019395f95ab2d",
-    "workingTree": "uncommitted release-hardening changes"
+    "auditBaseCommit": "1b45367d5e3273752bbc5bc36f8c45465788c679",
+    "sourceIdentity": "release branch hardening candidate; immutable release tag pending"
   },
   "simulator": {
     "model": "iPhone 17 Pro",
     "osVersion": "26.5 (23F77)",
     "architecture": "arm64",
-    "testCount": 315,
-    "passed": 315,
+    "testCount": 347,
+    "passed": 347,
     "failed": 0,
     "skipped": 0,
     "runtimeWarnings": 0,
     "result": "passed"
   },
+  "currentCandidateSigning": {
+    "configuration": "Release-iphoneos",
+    "appSizeMiB": 171,
+    "codesignVerification": "passed",
+    "appAndShareExtensionAppGroupMatch": true,
+    "gameCenterEntitlement": "absent as required by dormant production feature flag",
+    "profileKind": "development",
+    "getTaskAllow": true,
+    "profileExpiration": "2026-09-03T16:11:57+03:00",
+    "install": "pending because the registered iPhone is currently unavailable",
+    "productionArchiveEligible": false
+  },
   "physicalDevices": [
     {
       "model": "iPhone 13 mini",
       "architecture": "arm64",
+      "sourceCommit": "1b45367d5e3273752bbc5bc36f8c45465788c679",
+      "includesCurrentHardening": false,
       "signedBuild": "passed",
       "install": "passed",
       "launch": "passed",
@@ -37,6 +51,7 @@
     }
   ],
   "requiredButNotYetCaptured": [
+    "install and exercise the final immutable hardening candidate",
     "older supported iPhone runtime matrix",
     "current standard iPhone runtime matrix",
     "Pro iPhone runtime matrix",

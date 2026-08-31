@@ -25,6 +25,16 @@ final class CrateSourceBrowserTests: XCTestCase {
         try "[package]\nname = \"browsertest\"\n".write(
             to: root.appending(path: "Cargo.toml"), atomically: true, encoding: .utf8
         )
+        try Data([0x00, 0xff, 0x80]).write(to: root.appending(path: "fixture.bin"))
+        try FileManager.default.createDirectory(
+            at: root.appending(path: ".cargo"),
+            withIntermediateDirectories: true
+        )
+        try "[build]\ntarget = \"wasm32-wasip1\"\n".write(
+            to: root.appending(path: ".cargo/config.toml"),
+            atomically: true,
+            encoding: .utf8
+        )
     }
 
     override func tearDownWithError() throws {
@@ -35,13 +45,16 @@ final class CrateSourceBrowserTests: XCTestCase {
         let entries = CrateSourceBrowser.entries(name: "browsertest", version: version)
         let paths = Set(entries.map(\.path))
         // Not only the files the build compiles: everything that was extracted.
-        XCTAssertEqual(paths, ["src/lib.rs", "src/helper.rs", "Cargo.toml"])
+        XCTAssertEqual(
+            paths,
+            ["src/lib.rs", "src/helper.rs", ".cargo/config.toml", "Cargo.toml", "fixture.bin"]
+        )
     }
 
     func testSourceFilesAreListedBeforeMetadata() {
         let entries = CrateSourceBrowser.entries(name: "browsertest", version: version)
         XCTAssertTrue(entries.first?.path.hasPrefix("src/") == true)
-        XCTAssertEqual(entries.last?.path, "Cargo.toml")
+        XCTAssertEqual(entries.last?.path, "fixture.bin")
     }
 
     func testAFileCanBeReadBackAsText() {
@@ -76,8 +89,21 @@ final class CrateSourceBrowserTests: XCTestCase {
 
     func testSummaryCountsRustFiles() throws {
         let summary = try XCTUnwrap(CrateSourceBrowser.summary(name: "browsertest", version: version))
-        XCTAssertTrue(summary.contains("3 files"), summary)
+        XCTAssertTrue(summary.contains("5 files"), summary)
         XCTAssertTrue(summary.contains("2 Rust"), summary)
+    }
+
+    func testVendorAndEditCopiesEveryEditableSourceButNotBinaryAssets() throws {
+        let files = try CrateSourceBrowser.vendorableFiles(
+            name: "browsertest",
+            version: version
+        )
+
+        XCTAssertEqual(files["Cargo.toml"], "[package]\nname = \"browsertest\"\n")
+        XCTAssertEqual(files["src/lib.rs"], "pub fn one() -> u32 { 1 }\n")
+        XCTAssertEqual(files["src/helper.rs"], "pub mod helper;\n")
+        XCTAssertEqual(files[".cargo/config.toml"], "[build]\ntarget = \"wasm32-wasip1\"\n")
+        XCTAssertNil(files["fixture.bin"])
     }
 }
 

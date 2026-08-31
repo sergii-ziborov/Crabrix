@@ -201,10 +201,54 @@ struct VersionRequirement: Hashable, Sendable, CustomStringConvertible {
         if take("<") { return SemanticVersion(padding: body).map { .less($0) } }
         if take("=") { return SemanticVersion(padding: body).map { .exact($0) } }
         if take("~") { return tilde(body).map { Comparator.range(lower: $0.0, upper: $0.1) } }
-        _ = take("^")
+        let hasExplicitCaret = take("^")
 
         if body == "*" || body.isEmpty { return .some(nil) }
+        let versionCore = body.split(separator: "-", maxSplits: 1).first.map(String.init) ?? body
+        let hasWildcardComponent = versionCore
+            .split(separator: ".", omittingEmptySubsequences: false)
+            .map(String.init)
+            .contains(where: isWildcard)
+        if hasWildcardComponent {
+            guard !hasExplicitCaret, let bounds = wildcard(body) else { return nil }
+            return .some(.range(lower: bounds.0, upper: bounds.1))
+        }
         return caret(body).map { Comparator.range(lower: $0.0, upper: $0.1) }
+    }
+
+    /// Cargo wildcards constrain exactly the component where the wildcard is
+    /// written: `1.*` ends before 2.0, while `1.2.*` ends before 1.3. This is
+    /// deliberately separate from caret parsing because `1.2` and `1.2.*`
+    /// have different upper bounds.
+    private static func wildcard(_ body: String) -> (SemanticVersion, SemanticVersion)? {
+        let components = body
+            .split(separator: ".", omittingEmptySubsequences: false)
+            .map(String.init)
+        guard components.count == 2 || components.count == 3,
+              components.last.map(isWildcard) == true,
+              !components.dropLast().contains(where: isWildcard),
+              let major = Int(components[0]),
+              major >= 0
+        else {
+            return nil
+        }
+
+        if components.count == 2 {
+            return (
+                SemanticVersion(major: major, minor: 0, patch: 0),
+                SemanticVersion(major: major + 1, minor: 0, patch: 0)
+            )
+        }
+
+        guard let minor = Int(components[1]), minor >= 0 else { return nil }
+        return (
+            SemanticVersion(major: major, minor: minor, patch: 0),
+            SemanticVersion(major: major, minor: minor + 1, patch: 0)
+        )
+    }
+
+    private static func isWildcard(_ component: String) -> Bool {
+        component == "*" || component.lowercased() == "x"
     }
 
     /// `^` semantics, including Cargo's zero-version narrowing.
@@ -254,7 +298,7 @@ struct VersionRequirement: Hashable, Sendable, CustomStringConvertible {
         var prerelease: [String] = []
     }
 
-    /// Splits `1.2.3-beta.1` while tolerating the `1.*` and `1.2.x` wildcards.
+    /// Splits numeric caret/tilde requirements such as `1.2.3-beta.1`.
     private static func numericParts(_ body: String) -> NumericParts? {
         var text = body
         var prerelease: [String] = []
@@ -267,19 +311,15 @@ struct VersionRequirement: Hashable, Sendable, CustomStringConvertible {
         let components = text.split(separator: ".", omittingEmptySubsequences: false).map(String.init)
         guard (1...3).contains(components.count) else { return nil }
 
-        var numbers: [Int?] = []
+        var numbers: [Int] = []
         for component in components {
-            if component == "*" || component.lowercased() == "x" {
-                numbers.append(nil)
-                continue
-            }
             guard let value = Int(component), value >= 0 else { return nil }
             numbers.append(value)
         }
-        guard let major = numbers.first, let major else { return nil }
+        guard let major = numbers.first else { return nil }
         var parts = NumericParts(major: major, prerelease: prerelease)
         if numbers.count > 1 { parts.minor = numbers[1] }
-        if numbers.count > 2, parts.minor != nil { parts.patch = numbers[2] }
+        if numbers.count > 2 { parts.patch = numbers[2] }
         return parts
     }
 }

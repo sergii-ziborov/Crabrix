@@ -8,7 +8,12 @@ struct CargoPackagesPanel: View {
     let manifest: CargoManifest?
     let isBusy: Bool
     let onRefresh: () -> Void
+    let onPinForOffline: () -> Void
     let onAddDependency: () -> Void
+    let vendoredFiles: (String, SemanticVersion) -> [String: String]
+    let onVendor: (String, SemanticVersion) -> Bool
+    let onOpenVendor: (String, SemanticVersion) -> Bool
+    let onResetVendor: (String, SemanticVersion) -> Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -92,14 +97,34 @@ struct CargoPackagesPanel: View {
     }
 
     private var offlineBanner: some View {
-        Label(
-            workspace.isOfflineReady
-                ? "\(workspace.summary) · offline ready"
-                : "\(workspace.summary) · download pending",
-            systemImage: workspace.isOfflineReady ? "wifi.slash" : "arrow.down.circle"
-        )
-        .font(.caption2.monospaced())
-        .foregroundStyle(workspace.isOfflineReady ? CrabrixTheme.mint : CrabrixTheme.amber)
+        VStack(alignment: .leading, spacing: 7) {
+            Label(offlineLabel, systemImage: offlineSystemImage)
+                .font(.caption2.monospaced())
+                .foregroundStyle(offlineTint)
+            if workspace.isOfflineReady, !workspace.isOfflinePinned {
+                Button(action: onPinForOffline) {
+                    Label("Pin exact graph for offline", systemImage: "pin.fill")
+                        .font(.caption2.weight(.semibold))
+                }
+                .buttonStyle(.bordered)
+                .tint(CrabrixTheme.mint)
+                .disabled(isBusy || stage.isWorking)
+            }
+        }
+    }
+
+    private var offlineLabel: String {
+        if workspace.isOfflinePinned { return "\(workspace.summary) · offline pinned" }
+        if workspace.isOfflineReady { return "\(workspace.summary) · offline while cached" }
+        return "\(workspace.summary) · download pending"
+    }
+
+    private var offlineSystemImage: String {
+        workspace.isOfflinePinned ? "pin.fill" : (workspace.isOfflineReady ? "wifi.slash" : "arrow.down.circle")
+    }
+
+    private var offlineTint: Color {
+        workspace.isOfflinePinned ? CrabrixTheme.mint : (workspace.isOfflineReady ? CrabrixTheme.blue : CrabrixTheme.amber)
     }
 
     private var packageList: some View {
@@ -108,7 +133,14 @@ struct CargoPackagesPanel: View {
                 if package.isDownloaded {
                     // Downloaded code has to be readable — see CrateSourceView.
                     NavigationLink {
-                        CrateSourceView(name: package.name, version: package.version)
+                        CrateSourceView(
+                            name: package.name,
+                            version: package.version,
+                            localPatch: vendoredFiles(package.name, package.version),
+                            onVendor: { onVendor(package.name, package.version) },
+                            onOpenVendor: { onOpenVendor(package.name, package.version) },
+                            onResetVendor: { onResetVendor(package.name, package.version) }
+                        )
                     } label: {
                         CargoPackageRow(status: package, isBrowsable: true)
                     }
@@ -172,6 +204,14 @@ struct CargoPackageRow: View {
                     .font(.caption2.monospaced())
                     .foregroundStyle(CrabrixTheme.blue)
                 Spacer(minLength: 0)
+                if status.isLocallyPatched {
+                    Text("LOCAL PATCH")
+                        .font(.system(size: 8, weight: .bold, design: .monospaced))
+                        .foregroundStyle(CrabrixTheme.amber)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(CrabrixTheme.amber.opacity(0.12), in: Capsule())
+                }
                 if !status.isDownloaded {
                     Image(systemName: "arrow.down.circle")
                         .font(.caption2)
@@ -215,6 +255,7 @@ extension CrateCompatibility {
     var tint: Color {
         switch self {
         case .verified: CrabrixTheme.mint
+        case .checkVerified: CrabrixTheme.blue
         case .expected: CrabrixTheme.blue
         case .review: CrabrixTheme.amber
         case .unsupported: CrabrixTheme.coral
@@ -224,6 +265,7 @@ extension CrateCompatibility {
     var systemImage: String {
         switch self {
         case .verified: "checkmark.seal.fill"
+        case .checkVerified: "checkmark.circle.fill"
         case .expected: "circle.dashed"
         case .review: "exclamationmark.triangle.fill"
         case .unsupported: "xmark.octagon.fill"

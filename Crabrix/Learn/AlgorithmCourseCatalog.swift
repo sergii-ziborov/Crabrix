@@ -72,9 +72,14 @@ struct AlgorithmChallenge: Equatable, Sendable {
     let lessonID: String
     let patternID: String
     let projectName: String
+    /// The only source the learner sees and edits. Test inputs and expected
+    /// answers deliberately stay out of this file.
     let source: String
+    /// App-private executable harness supplied to rustc at build time.
+    let verificationSource: String
     let expectedOutput: String
     let requiredSourceFragments: [String]
+    let forbiddenSourceFragments: [String]
 }
 
 enum AlgorithmCourseCatalog {
@@ -167,8 +172,14 @@ enum AlgorithmCourseCatalog {
             patternID: pattern.id,
             projectName: "algorithm-\(pattern.id)",
             source: challengeSource(for: pattern),
+            verificationSource: verificationSource(for: pattern),
             expectedOutput: output,
-            requiredSourceFragments: ["fn solve", "assert_eq!", pattern.expectedAnswer]
+            requiredSourceFragments: ["pub fn solve", "input: &str", "-> String"],
+            forbiddenSourceFragments: [
+                "todo!(\"implement",
+                "\"\(rustStringLiteral(pattern.expectedAnswer))\".to_string()",
+                "String::from(\"\(rustStringLiteral(pattern.expectedAnswer))\")",
+            ]
         )
     }
 
@@ -225,8 +236,8 @@ enum AlgorithmCourseCatalog {
         case .challenge:
             RustLessonWriting(
                 summary: pattern.task,
-                explanation: "This is an original Crabrix exercise in the same problem family as common interview-platform questions. Visible input: \(pattern.visibleInput). Expected answer: \(pattern.expectedAnswer). Implement solve instead of printing the expected value directly; the local harness checks the visible case and rustc checks the program.",
-                exampleCaption: "Starter harness · edit solve(), then Run",
+                explanation: "This is an original Crabrix exercise in the same problem family as common interview-platform questions. Visible input: \(pattern.visibleInput). Expected answer: \(pattern.expectedAnswer). Implement solve instead of printing the expected value directly; Crabrix supplies the verification harness privately when you Run.",
+                exampleCaption: "Editable solution · verification data stays outside the project",
                 exampleCode: challengeSource(for: pattern),
                 task: pattern.task,
                 success: "The harness prints PASS \(pattern.id), and your explanation still meets \(pattern.complexity).",
@@ -246,20 +257,26 @@ enum AlgorithmCourseCatalog {
 
     private static func challengeSource(for pattern: AlgorithmPattern) -> String {
         let task = rustComment(pattern.task)
-        let input = rustRawString(pattern.visibleInput)
-        let answer = rustRawString(pattern.expectedAnswer)
         return """
-        fn solve(input: &str) -> String {
+        pub fn solve(input: &str) -> String {
             // \(task)
             // Parse the visible input into the structures your algorithm needs.
             let _ = input;
             todo!("implement \(pattern.title)")
         }
+        """
+    }
+
+    private static func verificationSource(for pattern: AlgorithmPattern) -> String {
+        let input = rustRawString(pattern.visibleInput)
+        let answer = rustRawString(pattern.expectedAnswer)
+        return """
+        mod solution;
 
         fn main() {
             let input = r#"\(input)"#;
             let expected = r#"\(answer)"#;
-            let actual = solve(input);
+            let actual = solution::solve(input);
             assert_eq!(actual, expected);
             println!("PASS \(pattern.id)");
         }
@@ -272,6 +289,13 @@ enum AlgorithmCourseCatalog {
 
     private static func rustRawString(_ value: String) -> String {
         value.replacingOccurrences(of: "\"#", with: "\" #")
+    }
+
+    private static func rustStringLiteral(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+            .replacingOccurrences(of: "\n", with: "\\n")
     }
 }
 
