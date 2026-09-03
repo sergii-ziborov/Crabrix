@@ -807,6 +807,12 @@ final class WasmRustCompiler: @unchecked Sendable {
         interrupter: WasmInterrupter
     ) throws -> WasmProcessResult {
         let module = try runtime.rustcModule(at: toolchain.rustcURL)
+        // Parsing the bundled rustc module is the one phase no interrupter can
+        // reach into: it is host work, not guest execution. Ask once it is done
+        // rather than starting a compile the user already stopped.
+        if let reason = interrupter.stopReason {
+            throw WasmExecutionCancelled(reason: reason)
+        }
         return try runtime.run(
             module: module,
             arguments: arguments,

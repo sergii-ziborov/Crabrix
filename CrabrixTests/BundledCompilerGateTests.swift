@@ -546,6 +546,30 @@ final class BundledCompilerGateTests: XCTestCase {
             userDefaults: defaults
         )
         model.source = "fn main() { println!(\"stop-state-\(identifier)\"); }"
+
+        // The first stop of a session may have to wait out one uninterruptible
+        // phase: reading and parsing the bundled rustc module. That happens
+        // once per compiler instance, so it is given room rather than pretended
+        // away.
+        let firstDrain = try await stopAndMeasureDrain(model: model, allowing: .seconds(120))
+        XCTAssertNotNil(firstDrain, "The cancelled worker never released the Run gate.")
+        XCTAssertTrue(model.canStartBuild, "Run stayed disabled after the compiler worker exited.")
+
+        // Every stop after it is the one users actually repeat, and it has to
+        // be prompt: the module is parsed, so only the guest has to trap.
+        let secondDrain = try await stopAndMeasureDrain(model: model, allowing: .seconds(10))
+        let warm = try XCTUnwrap(secondDrain, "A warm stop left Run disabled past 10 seconds.")
+        XCTAssertLessThan(warm, .seconds(5), "A warm stop should free Run in seconds, not tens")
+        XCTAssertTrue(model.canStartBuild)
+    }
+
+    /// Starts a check, stops it, and reports how long Run stayed disabled.
+    /// Returns nil when the worker never drained inside `budget`.
+    @MainActor
+    private func stopAndMeasureDrain(
+        model: CompilerViewModel,
+        allowing budget: Duration
+    ) async throws -> Duration? {
         model.check()
         try await Task.sleep(for: .milliseconds(100))
         XCTAssertTrue(model.isBusy, "The compiler finished before the stop gate could exercise it.")
@@ -555,12 +579,11 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertFalse(model.canStartBuild)
 
         let clock = ContinuousClock()
-        let deadline = clock.now.advanced(by: .seconds(10))
+        let started = clock.now
+        let deadline = started.advanced(by: budget)
         while model.isCompilerDraining, clock.now < deadline {
             try await Task.sleep(for: .milliseconds(20))
         }
-
-        XCTAssertFalse(model.isCompilerDraining, "The cancelled worker never released the Run gate.")
-        XCTAssertTrue(model.canStartBuild, "Run stayed disabled after the compiler worker exited.")
+        return model.isCompilerDraining ? nil : started.duration(to: clock.now)
     }
 }
