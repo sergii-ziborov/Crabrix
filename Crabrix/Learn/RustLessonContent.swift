@@ -137,7 +137,7 @@ enum RustLessonLibrary {
         ),
         "ownership": RustLessonWriting(
             summary: "Ownership gives every value one clear cleanup responsibility.",
-            explanation: "Moves transfer that responsibility to a new binding and make the old one unusable. Copy types duplicate instead of moving, and Drop runs the moment the owner leaves scope — which is how Rust frees memory with no garbage collector and no possibility of a double free.",
+            explanation: "Moves transfer that responsibility to a new binding and make the old one unusable. Copy types duplicate instead of moving, and Drop runs the moment the owner leaves scope — which is how Rust frees memory with no garbage collector and no possibility of a double free. When you genuinely need two usable values, clone() makes a second one that owns its own data.",
             exampleCaption: "The move is what makes a double free impossible.",
             exampleCode: """
             let first = String::from("crab");
@@ -411,7 +411,7 @@ enum RustLessonLibrary {
         ),
         "traits": RustLessonWriting(
             summary: "Traits define shared behaviour independently of a concrete type.",
-            explanation: "A generic bound is resolved at compile time, so the call is direct and inlinable. dyn Trait defers the choice to runtime through a vtable, which costs an indirection but lets you store different concrete types together in one collection.",
+            explanation: "A generic bound is resolved at compile time, so the call is direct and inlinable. dyn Trait defers the choice to runtime through a vtable, which costs an indirection but lets you store different concrete types together in one collection. A dyn value has no size the compiler can plan for, so it lives behind a pointer: Box<dyn Trait> is what goes into a Vec.",
             exampleCaption: "The same trait, reached two different ways.",
             exampleCode: """
             trait Shape {
@@ -646,7 +646,7 @@ enum RustLessonLibrary {
         ),
         "q-deadlock": RustLessonWriting(
             summary: "Rust prevents data races, not deadlocks.",
-            explanation: "The borrow checker knows nothing about the order in which you take locks, so two threads taking A then B and B then A will still hang. The standard answers are a global lock order, holding one lock at a time, using try_lock with a timeout, or removing shared state entirely by moving to channels. Knowing Rust does not solve this is the point of the question.",
+            explanation: "The borrow checker knows nothing about the order in which you take locks, so two threads taking Mutex A then Mutex B, and B then A, will still hang. The standard answers are a global lock order, holding one lock at a time, using try_lock with a timeout, or removing shared state entirely by moving to channels. Knowing Rust does not solve this is the point of the question.",
             exampleCaption: "Two orders, one hang. The types all check out.",
             exampleCode: """
             // thread 1
@@ -909,7 +909,7 @@ enum RustLessonLibrary {
         ),
         "q-tls": RustLessonWriting(
             summary: "TLS gives confidentiality, integrity, and identity — in that order of confusion.",
-            explanation: "The handshake authenticates the server through a certificate chain, agrees on keys with an ephemeral exchange, and switches to symmetric encryption because it is far faster. Forward secrecy means recording traffic today and stealing the key tomorrow reveals nothing. Certificate pinning, mTLS, and SNI are the follow-up questions.",
+            explanation: "The handshake authenticates the server through a certificate chain, agrees on keys with an ephemeral exchange, and switches to symmetric encryption because it is far faster. Skip the certificate check and a machine in the middle (MITM) can answer in the server's place, decrypt everything, and forward it on. Forward secrecy means recording traffic today and stealing the key tomorrow reveals nothing. Certificate pinning, mTLS, and SNI are the follow-up questions.",
             exampleCaption: "Verification is the part people disable and regret.",
             exampleCode: """
             let config = ClientConfig::builder()

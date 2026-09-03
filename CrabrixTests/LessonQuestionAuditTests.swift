@@ -76,19 +76,23 @@ final class LessonQuestionAuditTests: XCTestCase {
                 writing.exampleCaption, writing.exampleCode, writing.task,
                 writing.practiceCode, writing.question,
             ].joined(separator: " ").lowercased()
-            let keywords = Self.keywords(of: correct)
-            let covered = keywords.filter { material.contains($0) }
-            if !keywords.isEmpty, covered.isEmpty {
+            // Only the API the answer names. English wording differs between
+            // an answer and an explanation all the time; a method or type the
+            // lesson never shows is a real hole.
+            let apiTerms = Self.apiTerms(of: correct)
+            let missing = apiTerms.filter { !material.contains($0.lowercased()) }
+            if !missing.isEmpty {
                 unanswerable.append(
                     Finding(
                         lessonID: lesson.id,
-                        detail: "nothing in the lesson mentions \(keywords.sorted().joined(separator: ", "))"
+                        detail: "answer names \(missing.sorted().joined(separator: ", ")), "
+                            + "which the lesson never shows"
                     )
                 )
             }
         }
 
-        func report(_ title: String, _ findings: [Finding], limit: Int = 12) {
+        func report(_ title: String, _ findings: [Finding], limit: Int = 200) {
             print("\n=== \(title): \(findings.count)")
             for finding in findings.prefix(limit) {
                 print("  \(finding.lessonID): \(finding.detail)")
@@ -104,21 +108,38 @@ final class LessonQuestionAuditTests: XCTestCase {
         report("Duplicate questions", duplicateQuestions)
     }
 
-    /// Content words worth looking for, ignoring the filler that appears in
-    /// every sentence.
-    private static func keywords(of answer: String) -> Set<String> {
-        let stopWords: Set<String> = [
-            "the", "and", "that", "with", "from", "into", "before", "after",
-            "while", "when", "which", "must", "then", "this", "they", "them",
-            "have", "only", "each", "same", "does", "your", "value", "values",
-            "code", "compiler", "rust", "type", "types", "because", "there",
-            "cannot", "would", "could", "still", "every", "other", "another",
-        ]
-        return Set(
-            answer.lowercased()
-                .split(whereSeparator: { !$0.isLetter })
-                .map(String.init)
-                .filter { $0.count >= 5 && !stopWords.contains($0) }
-        )
+    /// The Rust the answer actually names: `entry()`, `clone`, `PhantomData`,
+    /// `cargo`. Plain prose is deliberately ignored — an answer may say
+    /// "looks the key up once" while the lesson says "one lookup", and that is
+    /// writing, not a gap.
+    private static func apiTerms(of answer: String) -> Set<String> {
+        let words = answer.split(whereSeparator: { !$0.isLetter && $0 != "_" })
+            .map(String.init)
+        var terms: Set<String> = []
+        for word in words {
+            let isCall = answer.contains(word + "(")
+            let isSnake = word.contains("_") && word.lowercased() == word
+            let isTypeName = word.count > 2
+                && word.first?.isUppercase == true
+                && word.dropFirst().contains(where: \.isUppercase)
+            let isToolOrMethod = Self.knownRustTerms.contains(word)
+            if isCall || isSnake || isTypeName || isToolOrMethod {
+                terms.insert(word)
+            }
+        }
+        return terms
     }
+
+    /// Names a learner cannot guess: if the answer depends on one and the
+    /// lesson never shows it, the question is unanswerable from the page.
+    ///
+    /// Matched case-sensitively and kept to concrete API. Words like `drop`,
+    /// `lifetime` or `trait` also exist in ordinary English — "drop the clone",
+    /// "tied to the input's lifetime" — and flagging those produced noise
+    /// rather than gaps.
+    private static let knownRustTerms: Set<String> = [
+        "Box", "Mutex", "RwLock", "Arc", "Rc", "Weak", "RefCell", "Cell",
+        "Cow", "Vec", "HashMap", "BTreeMap", "Pin", "PhantomData", "Result",
+        "cargo", "clone", "rustc", "clippy",
+    ]
 }

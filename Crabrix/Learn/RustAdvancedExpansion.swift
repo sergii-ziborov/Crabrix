@@ -571,7 +571,7 @@ enum RustAdvancedExpansion {
             title: "Executable Documentation",
             concept: "Keep API examples checked by the test suite",
             minutes: 9,
-            insight: "Rust documentation code blocks can compile and run as tests. A small realistic example teaches usage and fails when an API change makes the documentation stale.",
+            insight: "Rust documentation code blocks can compile and run as tests: cargo test builds every ``` block in a doc comment and runs it. A small realistic example teaches usage and fails when an API change makes the documentation stale.",
             code: """
             /// Adds one.
             ///
