@@ -99,9 +99,9 @@ enum RustLessonLibrary {
             """,
             question: "What happens with that index?",
             answers: [
-                "It returns 0",
+                "It compiles and panics at runtime with an index error",
                 "The compiler rejects an index it can prove is out of range",
-                "It wraps around",
+                "It wraps around to the first element like a ring buffer",
             ],
             correctAnswer: 1,
             feedback: "A constant index past a known length is a compile error, not a runtime surprise."
@@ -128,9 +128,9 @@ enum RustLessonLibrary {
             """,
             question: "Why is that rejected?",
             answers: [
-                "flag must be a number",
+                "The condition must be an integer, not a bool",
                 "The branches produce different types",
-                "if cannot be assigned",
+                "An if expression cannot be bound with let",
             ],
             correctAnswer: 1,
             feedback: "An if expression has one type, so every branch has to match."
@@ -277,9 +277,9 @@ enum RustLessonLibrary {
             """,
             question: "What is wrong with that receiver?",
             answers: [
-                "Nothing",
+                "Nothing — a method may take self by value freely",
                 "self consumes the counter, so it cannot be used again",
-                "It should return Self",
+                "It should return Self so the call can be chained",
             ],
             correctAnswer: 1,
             feedback: "&self or &mut self keeps the value usable after the call."
@@ -314,9 +314,9 @@ enum RustLessonLibrary {
             """,
             question: "What does the wildcard cost you?",
             answers: [
-                "Nothing, it is good practice",
+                "Nothing — a wildcard arm keeps the match exhaustive",
                 "A new variant silently falls into it instead of erroring",
-                "It slows the match down",
+                "It makes the match slower by adding a runtime check",
             ],
             correctAnswer: 1,
             feedback: "A catch-all removes the compiler's help exactly when you add a state."
@@ -1528,9 +1528,9 @@ enum RustLessonLibrary {
             """,
             question: "Why does that function fail to compile?",
             answers: [
-                "i32 cannot be multiplied",
+                "Multiplication needs both operands to be the same width",
                 "The semicolon discards the value, so it returns ()",
-                "Parameters must be mutable",
+                "The parameters must be declared mut to be read twice",
             ],
             correctAnswer: 1,
             feedback: "A trailing semicolon turns an expression into a statement, and the function then returns ()."
@@ -1564,9 +1564,9 @@ enum RustLessonLibrary {
             """,
             question: "What happens when you run cargo test on that?",
             answers: [
-                "Nothing, comments are ignored",
+                "Nothing runs; doc comments are stripped before tests",
                 "The doc test fails because 2 + 2 is not 5",
-                "It only warns",
+                "It prints a warning but the test suite still passes",
             ],
             correctAnswer: 1,
             feedback: "Doc examples are compiled and asserted, so a wrong example is a failing test."

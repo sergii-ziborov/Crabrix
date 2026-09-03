@@ -50,9 +50,20 @@ final class LessonQuestionAuditTests: XCTestCase {
                 }
             }
 
-            if writing.answers.allSatisfy({ $0 == correct || $0.count < correct.count }) {
+            // Being one word longer is nothing. Being half again as long is a
+            // tell: the option that looks "most complete" wins without any
+            // Rust being read.
+            let longestDistractor = writing.answers.enumerated()
+                .filter { $0.offset != writing.correctAnswer }
+                .map(\.element.count)
+                .max() ?? 0
+            if correct.count >= longestDistractor + 12,
+               Double(correct.count) >= Double(longestDistractor) * 1.35 {
                 longestIsCorrect.append(
-                    Finding(lessonID: lesson.id, detail: "correct answer is the longest option")
+                    Finding(
+                        lessonID: lesson.id,
+                        detail: "correct \(correct.count) chars vs \(longestDistractor) — “\(correct)”"
+                    )
                 )
             }
 

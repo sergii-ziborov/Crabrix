@@ -219,8 +219,8 @@ enum RustBasicsExpansion {
             question: "Why is the call rejected?",
             answers: [
                 "The argument is &str but the parameter is u32",
-                "Functions cannot accept literals",
-                "double must return String",
+                "A literal has to be bound to a variable first",
+                "double must return the same type it accepts",
             ],
             correctAnswer: 0,
             feedback: "The call site must provide the u32 promised by the parameter type."
