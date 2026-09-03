@@ -48,9 +48,9 @@ enum RustLessonLibrary {
             """,
             question: "Why does println! end with an exclamation mark?",
             answers: [
-                "It prints more loudly",
+                "It returns a Result the caller has to handle",
                 "It is a macro, expanded into code before compilation",
-                "It can fail",
+                "It writes to stderr rather than stdout",
             ],
             correctAnswer: 1,
             feedback: "Macros expand at compile time, which is how the format string is verified."

@@ -870,7 +870,11 @@ enum RustAdvancedExpansion {
             println!("{:?}", start.elapsed());
             """,
             question: "What should happen before optimization?",
-            answers: ["Measure a workload", "Add unsafe", "Raise opt-level blindly"],
+            answers: [
+                "Measure a workload",
+                "Rewrite the hot loop from intuition",
+                "Raise opt-level blindly",
+            ],
             correctAnswer: 0,
             term: "Performance baseline",
             termDescription: "A repeatable measurement before a code change."
