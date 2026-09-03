@@ -3,274 +3,39 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Crabrix Leaderboard — global Rust learning rating</title>
-<meta name="description" content="The global Crabrix rating board. Points are earned by finishing lessons, changing real Rust code, repairing diagnostics, and training.">
-<meta property="og:title" content="Crabrix Leaderboard">
-<meta property="og:description" content="Global rating across lessons, real compiled code, and training.">
-<meta property="og:type" content="website">
+<title>Leaderboard — not in Crabrix 1.0</title>
+<meta name="description" content="Crabrix 1.0 has no public leaderboard. Rating is earned and stored on your own device.">
+<meta name="robots" content="noindex">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦀</text></svg>">
 <style>
-  :root {
-    --bg: #0b0f14;
-    --panel: #121821;
-    --raised: #18202b;
-    --border: #232e3d;
-    --text: #eaf0f7;
-    --muted: #93a4b8;
-    --coral: #ff6b4a;
-    --mint: #4fd1a5;
-    --blue: #4aa8ff;
-    --amber: #ffb648;
-    --radius: 16px;
-    --max: 1080px;
-  }
-  * { box-sizing: border-box; }
   body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
+    margin: 0; min-height: 100vh; display: grid; place-items: center;
+    background: #0b0f14; color: #eaf0f7; text-align: center; padding: 24px;
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   }
-  a { color: var(--blue); }
-  code, .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; }
-  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 22px; }
-  header {
-    position: sticky; top: 0; z-index: 10;
-    backdrop-filter: blur(14px);
-    background: rgba(11,15,20,.82);
-    border-bottom: 1px solid var(--border);
-  }
-  .nav { display: flex; align-items: center; gap: 18px; height: 62px; }
-  .brand {
-    display: flex; align-items: center; gap: 10px;
-    font-weight: 700; letter-spacing: -.01em;
-    color: var(--text); text-decoration: none;
-  }
-  .brand .mark { font-size: 24px; }
-  .nav a.link { color: var(--muted); text-decoration: none; font-size: 14px; transition: color .2s; }
-  .nav a.link:hover, .nav a.link[aria-current] { color: var(--text); }
-  .nav .spacer { flex: 1; }
-
-  /* At phone widths the brand plus four links overflow a single 62px row,
-     which pushed the whole page sideways. Brand on its own line, links below. */
-  @media (max-width: 560px) {
-    .nav { height: auto; min-height: 56px; flex-wrap: wrap; gap: 14px; padding: 11px 0; }
-    .nav .spacer { display: none; }
-    .brand { width: 100%; }
-  }
-
-  .head { padding: 60px 0 30px; }
-  .eyebrow {
-    font: 600 12px/1 ui-monospace, monospace; letter-spacing: .12em;
-    color: var(--mint); text-transform: uppercase; margin-bottom: 14px;
-  }
-  h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.06; letter-spacing: -.03em; margin: 0 0 14px; font-weight: 800; }
-  .lede { color: var(--muted); max-width: 62ch; margin: 0; }
-
-  .board { padding-bottom: 70px; }
-  .table-shell {
-    border: 1px solid var(--border); border-radius: var(--radius);
-    background: var(--panel); overflow: hidden;
-  }
-  /* Narrow screens scroll the table itself rather than the page sideways. */
-  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  table { border-collapse: collapse; width: 100%; min-width: 620px; }
-  th, td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--border); }
-  th {
-    font: 600 11px/1 ui-monospace, monospace; letter-spacing: .1em;
-    text-transform: uppercase; color: var(--muted); background: var(--raised);
-  }
-  tbody tr:last-child td { border-bottom: none; }
-  tbody tr { transition: background .15s; }
-  tbody tr:hover { background: rgba(74,168,255,.05); }
-  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: ui-monospace, monospace; }
-  .rank { font-family: ui-monospace, monospace; color: var(--muted); width: 68px; }
-  .rank.top { color: var(--amber); font-weight: 700; }
-  .who { display: flex; align-items: center; gap: 11px; }
-  .pip {
-    width: 30px; height: 30px; border-radius: 50%; flex: 0 0 auto;
-    display: grid; place-items: center; font-size: 13px; font-weight: 700;
-    background: rgba(79,209,165,.14); color: var(--mint);
-  }
-  .title { color: var(--muted); font-size: 13px; }
-  .points { color: var(--amber); font-weight: 700; }
-
-  .state { padding: 42px 18px; text-align: center; color: var(--muted); }
-  .state.error { color: var(--coral); }
-
-  .legend {
-    margin-top: 26px; display: grid; gap: 12px;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  }
-  .legend div {
-    border: 1px solid var(--border); border-radius: 13px;
-    background: var(--panel); padding: 14px 16px; font-size: 14px; color: var(--muted);
-  }
-  .legend strong { color: var(--text); display: block; margin-bottom: 3px; font-size: 15px; }
-
-  footer { border-top: 1px solid var(--border); padding: 30px 0 46px; color: var(--muted); font-size: 14px; }
-  .foot-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
-  .foot-row .spacer { flex: 1; }
-  footer a { color: var(--muted); text-decoration: none; }
-  footer a:hover { color: var(--text); }
-
-  tbody tr { animation: rise .4s ease both; }
-  @media (prefers-reduced-motion: reduce) {
-    tbody tr { animation: none; }
-  }
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: none; }
+  main { max-width: 560px; }
+  .mark { font-size: 44px; }
+  h1 { font-size: 26px; margin: 14px 0 10px; letter-spacing: -.02em; }
+  p { color: #93a4b8; margin: 0 0 18px; }
+  a.button {
+    display: inline-block; text-decoration: none; font-weight: 650; margin-top: 8px;
+    padding: 11px 20px; border-radius: 999px; background: #ff6b4a; color: #16110f;
   }
 </style>
 </head>
 <body>
-
-<header>
-  <div class="wrap nav">
-    <a class="brand" href="/"><span class="mark">🦀</span> Crabrix</a>
-    <div class="spacer"></div>
-    <a class="link" href="/about">About</a>
-    <a class="link" href="/leaderboard" aria-current="page">Leaderboard</a>
-    <a class="link" href="/support">Support</a>
-    <a class="link" href="/#price">Price</a>
-  </div>
-</header>
-
-<main>
-  <div class="wrap head">
-    <div class="eyebrow">Global rating</div>
-    <h1>Leaderboard</h1>
-    <p class="lede">
-      One rating, earned everywhere in the app: finishing lessons, changing real Rust
-      and compiling it on device, repairing diagnostics, and training. Publishing is
-      opt-in from the app's profile screen — there is no account, no email, and no password.
+  <main>
+    <div class="mark">🦀</div>
+    <h1>There is no leaderboard in Crabrix 1.0</h1>
+    <p>
+      Your rating, ranks and achievements are earned and kept on your own device.
+      Crabrix 1.0 publishes nothing: no account, no display name, no public board.
     </p>
-  </div>
-
-  <div class="wrap board">
-    <div class="table-shell">
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th class="rank">#</th>
-              <th>Player</th>
-              <th class="num">Rating</th>
-              <th class="num">Lessons</th>
-              <th class="num">Lines</th>
-              <th class="num">Badges</th>
-            </tr>
-          </thead>
-          <tbody id="rows">
-            <tr><td colspan="6"><div class="state">Loading the board…</div></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="legend">
-      <div><strong>Rating</strong>Lessons, successful runs scored on the code you changed, repaired diagnostics, crates compiled, and training.</div>
-      <div><strong>Lines</strong>Rust actually modified across your projects. Re-running untouched code is worth almost nothing.</div>
-      <div><strong>Badges</strong>Achievements unlocked out of the full set.</div>
-      <div><strong>Something wrong?</strong>Names are filtered before they appear. Report anything offensive from the <a href="/support">support page</a> and it will be removed.</div>
-    </div>
-  </div>
-</main>
-
-<footer>
-  <div class="wrap foot-row">
-    <div>© 2026 Serhii Ziborov. All rights reserved.</div>
-    <div class="spacer"></div>
-    <a href="/about">About</a>
-    <a href="/support">Support</a>
-    <a href="/privacy">Privacy</a>
-    <a href="/terms">Terms</a>
-    <a href="https://github.com/sergii-ziborov/Crabrix">GitHub</a>
-  </div>
-</footer>
-
-<script>
-  // Everything on this page is rendered from text, never from HTML, so a
-  // display name is a label and can never become markup.
-  const rows = document.getElementById("rows");
-
-  function cell(text, className) {
-    const td = document.createElement("td");
-    if (className) td.className = className;
-    td.textContent = text;
-    return td;
-  }
-
-  function initial(name) {
-    const first = Array.from(name.trim())[0];
-    return first ? first.toUpperCase() : "?";
-  }
-
-  function message(text, isError) {
-    rows.replaceChildren();
-    const tr = document.createElement("tr");
-    const td = document.createElement("td");
-    td.colSpan = 6;
-    const div = document.createElement("div");
-    div.className = isError ? "state error" : "state";
-    div.textContent = text;
-    td.append(div);
-    tr.append(td);
-    rows.append(tr);
-  }
-
-  function render(entries) {
-    if (!entries.length) {
-      message("No one has published a rating yet. Be first.");
-      return;
-    }
-
-    rows.replaceChildren();
-    entries.forEach((entry, index) => {
-      const tr = document.createElement("tr");
-      tr.style.animationDelay = Math.min(index, 12) * 25 + "ms";
-
-      const rank = cell("#" + entry.rank, index < 3 ? "rank top" : "rank");
-      tr.append(rank);
-
-      const who = document.createElement("td");
-      const wrap = document.createElement("div");
-      wrap.className = "who";
-      const pip = document.createElement("div");
-      pip.className = "pip";
-      pip.textContent = initial(entry.name);
-      const names = document.createElement("div");
-      const name = document.createElement("div");
-      name.textContent = entry.name;
-      const title = document.createElement("div");
-      title.className = "title";
-      title.textContent = entry.title;
-      names.append(name, title);
-      wrap.append(pip, names);
-      who.append(wrap);
-      tr.append(who);
-
-      const points = cell(entry.points.toLocaleString(), "num");
-      points.classList.add("points");
-      tr.append(points);
-      tr.append(cell(String(entry.lessons), "num"));
-      tr.append(cell(entry.linesChanged.toLocaleString(), "num"));
-      tr.append(cell(String(entry.achievements), "num"));
-
-      rows.append(tr);
-    });
-  }
-
-  fetch("/api/leaderboard?limit=50")
-    .then((response) => {
-      if (!response.ok) throw new Error(String(response.status));
-      return response.json();
-    })
-    .then((data) => render(data.entries ?? []))
-    .catch(() => message("The board is unavailable right now. Try again shortly.", true));
-</script>
-
+    <p>
+      If a future version ever adds one, it will be opt-in and the privacy policy
+      will be updated before it ships.
+    </p>
+    <a class="button" href="/">Back to Crabrix</a>
+  </main>
 </body>
 </html>

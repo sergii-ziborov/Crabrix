@@ -227,7 +227,6 @@
     <div class="spacer"></div>
     <a class="link" href="#what">What it is</a>
     <a class="link" href="/about">About</a>
-    <a class="link" href="/leaderboard">Leaderboard</a>
     <a class="link" href="/support">Support</a>
     <a class="link" href="#price">Price</a>
   </div>
@@ -268,7 +267,9 @@
           <h3>Resolves real crates.io packages</h3>
           <p>Sparse-index resolution, SemVer and feature unification, target filtering,
           SHA-256-verified downloads, dependency compilation, and <code>--extern</code>
-          linking. It writes a real <code>Cargo.lock</code>, and cached packages rebuild offline.</p>
+          linking. It writes a real <code>Cargo.lock</code>. Cached dependencies rebuild
+          while iOS retains them, and <strong>Pin for Offline</strong> keeps their exact
+          verified archives durable after a cache eviction.</p>
         </div>
         <div class="card">
           <span class="ic">🎓</span>
@@ -292,7 +293,7 @@
       <p class="section-lede">Adaptive layout: a workspace on iPad, drawers on iPhone.</p>
       <div class="shots reveal-group">
         <figure><img src="screenshots/iphone-projects.png" alt="Projects dashboard"><figcaption>Projects</figcaption></figure>
-        <figure><img src="screenshots/iphone-library.png" alt="Project library"><figcaption>Library — 20 projects</figcaption></figure>
+        <figure><img src="screenshots/iphone-library.png" alt="Project library"><figcaption>Library — 46 projects</figcaption></figure>
         <figure><img src="screenshots/iphone-build.png" alt="Build workspace"><figcaption>Build</figcaption></figure>
         <figure><img src="screenshots/iphone-learn.png" alt="Learn tab"><figcaption>Learn</figcaption></figure>
       </div>
@@ -325,7 +326,7 @@
         <div class="unit"><strong>Algorithm Atlas</strong><span>20 independent methods, 200 patterns, HOW → WHEN → Rust challenge</span></div>
       </div>
       <p class="section-lede" style="margin-top:28px">
-        Plus Quick Practice, Term Train with a timed mode, Code Recall, 70 achievement tiers, and a rating you earn across everything you do.
+        Plus Quick Practice, Term Train with a timed mode, Code Recall, 37 achievement ladders of five tiers each, and a rating you earn across everything you do.
       </p>
     </div>
   </section>
@@ -386,7 +387,12 @@
 
       <details>
         <summary>Do I need an account?</summary>
-        <p>No. There is no sign-in, no cloud sync, and no analytics. Your projects, your progress, and your rating live on your device.</p>
+        <p>No. There is no sign-in, no cloud sync, no analytics, and no leaderboard. Your projects, your progress, and your rating live on your device.</p>
+      </details>
+
+      <details>
+        <summary>Does it work offline?</summary>
+        <p>The compiler, curriculum, and local projects work offline. Cached dependencies rebuild while iOS retains them; <strong>Pin for Offline</strong> keeps their exact verified archives durable after a cache eviction. First-time package downloads and GitHub imports require a connection.</p>
       </details>
 
       <details>
@@ -433,7 +439,6 @@
     <a href="/support">Support</a>
     <a href="/privacy">Privacy</a>
     <a href="/terms">Terms</a>
-    <a href="/leaderboard">Leaderboard</a>
     <a href="https://github.com/sergii-ziborov/Crabrix">GitHub</a>
   </div>
   <div class="wrap" style="margin-top:14px; font-size:13px; opacity:.75">

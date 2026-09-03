@@ -165,7 +165,6 @@
     <a class="brand" href="/"><span class="mark">&#129408;</span> Crabrix</a>
     <div class="spacer"></div>
     <a class="link" href="/about" aria-current="page">About</a>
-    <a class="link" href="/leaderboard">Leaderboard</a>
     <a class="link" href="/support">Support</a>
     <a class="link" href="/#price">Price</a>
   </div>
@@ -188,16 +187,15 @@
       between you and the compiler.
     </p>
     <p>
-      That distinction is the whole point. Every other way to run code on an iPhone
-      either sends it somewhere else or runs an interpreter written to look like the real
-      thing. Crabrix ships the actual Rust compiler.
+      That distinction is the whole point. Crabrix bundles and runs a real Rust compiler
+      locally instead of relying on a cloud compilation service.
     </p>
 
     <h2>How it actually works</h2>
     <div class="grid2">
       <div><strong>A real rustc</strong>The app bundles a WebAssembly build of the Rust
-        compiler and standard library. It is the same compiler front end, producing the
-        same diagnostics, with the same error codes.</div>
+        compiler and standard library. Diagnostics are real rustc diagnostics from
+        Crabrix's pinned bundled toolchain, with the same error codes.</div>
       <div><strong>Running in Swift</strong>That WebAssembly module is executed by
         WasmKit, a WebAssembly interpreter written in Swift, inside the app's own
         process. No JIT, no dynamic code loading, no daemon.</div>
@@ -211,6 +209,23 @@
     <p>
       Every crate Crabrix downloads is fully readable inside the app, file by file, in
       the Packages screen. Nothing that runs on your device is hidden from you.
+    </p>
+
+    <h2>The exact toolchain</h2>
+    <p>
+      Crabrix pins one compiler build and ships it in the app. Nothing is downloaded at
+      runtime to compile your code, and the same values are shown in the app under
+      Settings &rarr; Runtime:
+    </p>
+    <ul>
+      <li>Bundled <code>rustc</code>: <code>1.96.0-dev</code></li>
+      <li>Target: <code>wasm32-wasip1</code></li>
+      <li>Toolchain artifact: <code>artifacts-test-7</code></li>
+    </ul>
+    <p>
+      A pinned compiler is older than the current Rust release, so code that relies on an
+      API stabilised after 1.96 will not compile here even though a current laptop
+      toolchain accepts it.
     </p>
 
     <h2>What it cannot do</h2>
@@ -240,8 +255,10 @@
       path, and every pattern is taught through a mental model, recognition guide, and local Rust challenge.
     </p>
     <p>
-      Each lesson has a short written explanation, a syntax-highlighted example, and a
-      lab checked by the compiler that ships in the app. Three drills &mdash; Quick
+      Each lesson has a short written explanation and a syntax-highlighted example.
+      Crabrix includes compiler-backed labs across the Rust curriculum, and every
+      Algorithm Atlas pattern ends in a local Rust challenge the bundled compiler has to
+      accept. Three drills &mdash; Quick
       Practice, Term Train, and Code Recall &mdash; are generated from that same
       curriculum and scheduled with SM-2 spaced repetition, so what you are weakest at
       comes back soonest.
