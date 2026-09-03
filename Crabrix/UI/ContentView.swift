@@ -1526,6 +1526,52 @@ private struct GitHubImportSheet: View {
     }
 }
 
+/// A persistent statement of what this screen is.
+///
+/// Crabrix is a programming environment, and Apple's Developer Program License
+/// Agreement asks such an app to say so conspicuously rather than leaving the
+/// user to infer it from an editor. It doubles as the honest toolchain label:
+/// the compiler is pinned and bundled, and its exact version is not hidden.
+struct ProgrammingEnvironmentBar: View {
+    private var toolchainDetail: String {
+        "rustc \(CargoToolchain.semanticVersionLabel) · \(RustTargetSpec.wasm32WasiP1.triple)"
+    }
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "chevron.left.forwardslash.chevron.right")
+                .font(.system(size: 9, weight: .bold))
+                .foregroundStyle(CrabrixTheme.coral)
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 6) {
+                    label
+                    Spacer(minLength: 8)
+                    Text(toolchainDetail)
+                        .font(.system(size: 9, design: .monospaced))
+                        .foregroundStyle(CrabrixTheme.muted)
+                        .lineLimit(1)
+                }
+                label
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 5)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(CrabrixTheme.panel)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            "Rust programming environment. Bundled \(toolchainDetail)."
+        )
+    }
+
+    private var label: some View {
+        Text("RUST PROGRAMMING ENVIRONMENT")
+            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .foregroundStyle(CrabrixTheme.primary)
+            .lineLimit(1)
+    }
+}
+
 private struct EditorToolbar: View {
     let activity: CompilerViewModel.Activity
     let cargoStage: CargoPreparationStage
@@ -1562,6 +1608,9 @@ private struct EditorToolbar: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            ProgrammingEnvironmentBar()
+            Divider().overlay(CrabrixTheme.border)
+
             HStack(spacing: 8) {
                 PanelToolbarButton(
                     title: isProjectSidebarCollapsed ? "Show files" : "Hide files",

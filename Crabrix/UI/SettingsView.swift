@@ -357,6 +357,24 @@ struct SettingsView: View {
                 tint: toolchain.isReady ? CrabrixTheme.mint : CrabrixTheme.amber
             )
             SettingsFactRow(
+                title: "Bundled rustc",
+                value: CargoToolchain.semanticVersionLabel,
+                icon: "hammer.fill",
+                tint: CrabrixTheme.coral
+            )
+            SettingsFactRow(
+                title: "Target",
+                value: RustTargetSpec.wasm32WasiP1.triple,
+                icon: "target",
+                tint: CrabrixTheme.mint
+            )
+            SettingsFactRow(
+                title: "Toolchain artifact",
+                value: CargoToolchain.bundledVersion,
+                icon: "shippingbox.fill",
+                tint: CrabrixTheme.amber
+            )
+            SettingsFactRow(
                 title: "Runtime",
                 value: "WasmKit in a background queue",
                 icon: "cpu.fill",
