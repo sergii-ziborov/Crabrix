@@ -61,6 +61,14 @@ versions are recorded in `Dependencies/Package.resolved`:
 - SwiftNIO 2.101.3 — Apache-2.0 — https://github.com/apple/swift-nio
 
 Swift Log and SwiftNIO carry additional upstream attribution in their
-respective `NOTICE.txt` files. The license and NOTICE files shipped with the
-resolved source packages are authoritative; this summary does not replace
-their terms.
+respective `NOTICE.txt` files.
+
+## Where the full texts are
+
+This page is a summary. The complete, verbatim licence and notice files for
+every component above are bundled inside the app and readable with no network:
+
+**Settings → About Crabrix → Open-source licenses → any component.**
+
+They are also in the repository under `Crabrix/Resources/Licenses/`. Those
+files are authoritative; this summary does not replace their terms.
