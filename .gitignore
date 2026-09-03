@@ -4,6 +4,7 @@
 .artifact-cache/
 .build/
 DerivedData*/
+build/
 Crabrix.xcodeproj/
 Crabrix/Resources/Toolchain/artifacts-test-7/
 Crabrix/Resources/Toolchain/.stage.*/

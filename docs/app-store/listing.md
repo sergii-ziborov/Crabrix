@@ -220,14 +220,19 @@ support@crabrix.com
 
 ## Screenshots
 
-The folders below contain the previous capture set. They are **not approved for
-upload** until every frame is recaptured from the exact signed release candidate
-after the latest Projects/Learn/profile cleanup.
+Recaptured on 2026-09-03 from the Release build of the 1.0 (2) candidate, in
+dark appearance, on a clean install. The device archive differs from these
+builds only in signing, so re-capture is needed only if the interface changes
+again before submission.
 
 | Folder | Device | Size |
 | --- | --- | --- |
 | `docs/app-store/screenshots/iphone-6.9/` | iPhone 17 Pro Max | 1320 × 2868 |
 | `docs/app-store/screenshots/ipad-13/` | iPad Pro 13-inch (M4) | 2064 × 2752 |
+
+Every frame shows the shipped interface: the persistent programming-environment
+label, the split Rust/Atlas counters, the rescaled rank ladder, 185 achievement
+tiers, and no board, display name or Game Center control anywhere.
 
 Upload order for the iPhone set, which tells the story in the right sequence:
 
@@ -257,8 +262,8 @@ xcrun simctl launch <device> com.sergiiziborov.Crabrix \
 ## Pre-submission checklist
 
 - [x] `support@crabrix.com` delivers mail — Cloudflare Email Routing enabled on the zone, forwarding to the verified destination, with a catch-all so nothing to the domain is dropped
-- [ ] Game Center capability enabled on the App ID, or the feature stays dormant
-- [ ] Screenshots recaptured from the exact signed RC at both required sizes
+- [x] Game Center is not in the production build, so no capability is needed on the App ID
+- [x] Screenshots recaptured from the 1.0 (2) Release candidate at both required sizes
 - [ ] Physical iPhone/iPad matrix and release-evidence bundle complete
 - [ ] App Review 2.5.2 consultation/reviewer proof path confirmed
 - [ ] App Privacy answers entered to match the privacy manifest
