@@ -31,7 +31,6 @@ struct ProjectsHomeView: View {
                 brandHeader
                 hero
                 projectBrowser
-                newProjectBanner
                 LazyVGrid(columns: columns, spacing: 14) {
                     ProjectActionCard(
                         title: "Open from GitHub",
@@ -111,6 +110,15 @@ struct ProjectsHomeView: View {
                         .foregroundStyle(CrabrixTheme.muted)
                 }
                 Spacer(minLength: 0)
+                Button(action: onNewProject) {
+                    Label("New", systemImage: "plus")
+                }
+                .font(.caption.bold())
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+                .tint(CrabrixTheme.coral)
+                .accessibilityLabel("Create a new Rust project from a template")
+
                 Button("Manage", action: onOpenMyProjects)
                     .font(.caption.bold())
                     .buttonStyle(.bordered)
@@ -196,18 +204,20 @@ struct ProjectsHomeView: View {
             }
 
             if filteredProjects.isEmpty {
-                VStack(spacing: 8) {
-                    Image(systemName: allProjects.isEmpty ? "folder.badge.plus" : "magnifyingglass")
-                        .font(.title2)
-                        .foregroundStyle(CrabrixTheme.muted)
-                    Text(allProjects.isEmpty
-                         ? "Projects you create or open will appear here."
-                         : "No projects match these filters.")
-                        .font(.caption)
-                        .foregroundStyle(CrabrixTheme.muted)
+                if allProjects.isEmpty {
+                    firstProjectPrompt
+                } else {
+                    VStack(spacing: 8) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.title2)
+                            .foregroundStyle(CrabrixTheme.muted)
+                        Text("No projects match these filters.")
+                            .font(.caption)
+                            .foregroundStyle(CrabrixTheme.muted)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
             } else {
                 LazyVStack(spacing: 7) {
                     ForEach(Array(filteredProjects.prefix(3))) { item in
@@ -341,38 +351,31 @@ struct ProjectsHomeView: View {
         .accessibilityLabel("Open current project \(projectName)")
     }
 
-    private var newProjectBanner: some View {
-        Button(action: onNewProject) {
-            HStack(spacing: 16) {
-                Image(systemName: "plus")
-                    .font(.system(size: 26, weight: .bold))
-                    .foregroundStyle(.white)
-                    .frame(width: 54, height: 54)
-                    .background(CrabrixTheme.coral, in: RoundedRectangle(cornerRadius: 15))
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("Create New Rust Project")
-                        .font(.title3.bold())
-                        .foregroundStyle(CrabrixTheme.primary)
-                    Text("Empty, Hello Rust, Cargo Modules, a CLI starter, or real crates.io packages")
-                        .font(.subheadline)
-                        .foregroundStyle(CrabrixTheme.muted)
-                }
-                Spacer()
-                Label("NEW", systemImage: "arrow.right.circle.fill")
-                    .font(.caption.monospaced().bold())
-                    .foregroundStyle(CrabrixTheme.coral)
+    /// With nothing saved yet, this *is* the create action: a separate banner
+    /// under the list only repeated what the empty list already implied.
+    private var firstProjectPrompt: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "folder.badge.plus")
+                .font(.title2)
+                .foregroundStyle(CrabrixTheme.coral)
+            Text("Start your first Rust project")
+                .font(.subheadline.weight(.semibold))
+            Text("Empty, Hello Rust, Cargo Modules, a CLI starter, or real crates.io packages")
+                .font(.caption)
+                .foregroundStyle(CrabrixTheme.muted)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+            Button(action: onNewProject) {
+                Label("Create a project", systemImage: "plus")
+                    .font(.caption.bold())
             }
-            .padding(18)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(CrabrixTheme.coral.opacity(0.08))
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(CrabrixTheme.coral.opacity(0.45), lineWidth: 1.5)
-            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+            .tint(CrabrixTheme.coral)
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Create a new Rust project from a template")
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 18)
+        .padding(.horizontal, 6)
     }
 
     private func sectionTitle(_ title: String, detail: String) -> some View {

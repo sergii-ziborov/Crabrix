@@ -662,6 +662,8 @@ struct ContentView: View {
                 tracksTyping: !model.activeLessonIsReview,
                 diagnostics: model.result?.diagnostics ?? [],
                 navigationTarget: editorNavigationTarget,
+                assistantUsesAppleIntelligence: appleIntelligenceCompletion
+                    && RustCompletionSupport.isAppleIntelligenceAvailable,
                 onRequestCompletion: requestEditorAssistant
             )
 

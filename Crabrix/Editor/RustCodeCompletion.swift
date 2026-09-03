@@ -101,6 +101,19 @@ final class RustCompletionController: ObservableObject {
 }
 
 enum RustCompletionSupport {
+    /// Whether Apple Intelligence would actually answer on this device right
+    /// now. The editor asks before showing a sparkle: an Apple Intelligence
+    /// glyph over a deterministic offline completion promises the wrong thing.
+    @MainActor
+    static var isAppleIntelligenceAvailable: Bool {
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, *) {
+            if case .available = SystemLanguageModel.default.availability { return true }
+        }
+        #endif
+        return false
+    }
+
     @MainActor
     static var appleIntelligenceStatus: String {
         #if canImport(FoundationModels)

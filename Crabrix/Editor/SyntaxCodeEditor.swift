@@ -19,6 +19,10 @@ struct SyntaxCodeEditor: UIViewRepresentable {
     let tracksTyping: Bool
     let diagnostics: [RustDiagnostic]
     let navigationTarget: EditorNavigationTarget?
+    /// Whether the assistant key will actually reach Apple Intelligence. When
+    /// it will not, the key still completes Rust offline — it just stops
+    /// wearing Apple Intelligence's sparkle to say so.
+    let assistantUsesAppleIntelligence: Bool
     let onRequestCompletion: () -> Void
 
     init(
@@ -30,6 +34,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         tracksTyping: Bool = true,
         diagnostics: [RustDiagnostic] = [],
         navigationTarget: EditorNavigationTarget?,
+        assistantUsesAppleIntelligence: Bool = false,
         onRequestCompletion: @escaping () -> Void
     ) {
         _text = text
@@ -40,6 +45,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         self.tracksTyping = tracksTyping
         self.diagnostics = diagnostics
         self.navigationTarget = navigationTarget
+        self.assistantUsesAppleIntelligence = assistantUsesAppleIntelligence
         self.onRequestCompletion = onRequestCompletion
     }
 
@@ -74,6 +80,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         textView.text = text
         context.coordinator.textView = textView
         textView.inputAccessoryView = RustKeyboardAccessoryView(
+            usesAppleIntelligence: assistantUsesAppleIntelligence,
             onInsert: { [weak coordinator = context.coordinator] symbol in
                 coordinator?.insert(symbol)
             },
@@ -90,6 +97,8 @@ struct SyntaxCodeEditor: UIViewRepresentable {
 
     func updateUIView(_ textView: UITextView, context: Context) {
         context.coordinator.parent = self
+        (textView.inputAccessoryView as? RustKeyboardAccessoryView)?
+            .setUsesAppleIntelligence(assistantUsesAppleIntelligence)
         textView.isEditable = isEditable
         textView.backgroundColor = UIColor(CrabrixTheme.editor)
         textView.keyboardAppearance = colorScheme == .dark ? .dark : .light
@@ -573,12 +582,15 @@ private final class GutterView: UIView {
 
 private final class RustKeyboardAccessoryView: UIView {
     private let symbols = ["::", "->", "=>", "&", "&mut ", "|", "_", "!", "<", ">", "{", "}", "[", "]", "(", ")", ";"]
+    private let completeButton: UIButton
 
     init(
+        usesAppleIntelligence: Bool,
         onInsert: @escaping (String) -> Void,
         onComplete: @escaping () -> Void,
         onDismiss: @escaping () -> Void
     ) {
+        completeButton = Self.assistantButton(usesAppleIntelligence: usesAppleIntelligence)
         super.init(frame: .zero)
         backgroundColor = .secondarySystemBackground
         autoresizingMask = .flexibleHeight
@@ -593,12 +605,6 @@ private final class RustKeyboardAccessoryView: UIView {
         stack.alignment = .center
         stack.translatesAutoresizingMaskIntoConstraints = false
 
-        let completeButton = accessoryButton(
-            title: nil,
-            systemImage: "sparkles",
-            tint: .systemBlue,
-            accessibilityLabel: "Complete Rust code"
-        )
         completeButton.addAction(UIAction { _ in onComplete() }, for: .touchUpInside)
         completeButton.translatesAutoresizingMaskIntoConstraints = false
         completeButton.setContentHuggingPriority(.required, for: .horizontal)
@@ -667,6 +673,45 @@ private final class RustKeyboardAccessoryView: UIView {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    /// Keeps the key honest when the setting or the device's eligibility
+    /// changes while the keyboard is already on screen.
+    func setUsesAppleIntelligence(_ usesAppleIntelligence: Bool) {
+        Self.applyAssistantAppearance(
+            to: completeButton,
+            usesAppleIntelligence: usesAppleIntelligence
+        )
+    }
+
+    private static func assistantButton(usesAppleIntelligence: Bool) -> UIButton {
+        var configuration = UIButton.Configuration.gray()
+        configuration.imagePadding = 4
+        configuration.cornerStyle = .small
+        configuration.contentInsets = NSDirectionalEdgeInsets(
+            top: 5, leading: 9, bottom: 5, trailing: 9
+        )
+        let button = UIButton(configuration: configuration)
+        applyAssistantAppearance(to: button, usesAppleIntelligence: usesAppleIntelligence)
+        return button
+    }
+
+    /// Apple Intelligence's sparkle only when Apple Intelligence will answer.
+    /// Otherwise the same key completes Rust from the offline model, and says
+    /// so with a plain code glyph rather than borrowing a promise.
+    private static func applyAssistantAppearance(
+        to button: UIButton,
+        usesAppleIntelligence: Bool
+    ) {
+        var configuration = button.configuration ?? UIButton.Configuration.gray()
+        configuration.image = UIImage(
+            systemName: usesAppleIntelligence ? "sparkles" : "curlybraces"
+        )
+        configuration.baseForegroundColor = usesAppleIntelligence ? .systemBlue : .label
+        button.configuration = configuration
+        button.accessibilityLabel = usesAppleIntelligence
+            ? "Complete Rust code with Apple Intelligence"
+            : "Complete Rust code offline"
     }
 
     private func accessoryButton(
