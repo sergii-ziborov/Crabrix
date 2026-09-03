@@ -229,11 +229,11 @@ no feature held back for a second transaction.
 
 | | |
 | --- | --- |
-| Launch price | **$17.99** |
-| Regular price | **$24.99** |
+| Launch price | **$9.99** |
+| Later | Rises as the app grows. A purchase is permanent, so an increase never touches an existing owner |
 | Devices | Universal — iPhone and iPad, one purchase |
 | Accounts | None. No sign-in, no cloud sync, no analytics |
-| Version | 1.0 (build 1) |
+| Version | 1.0 (build 2) |
 | Updates | Included |
 
 The compiler, the package manager, the project library, and the whole curriculum ship

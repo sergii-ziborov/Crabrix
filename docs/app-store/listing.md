@@ -13,7 +13,7 @@ the app cannot drift apart. Character limits are Apple's.
 | SKU | `crabrix-ios-001` |
 | Primary category | Developer Tools |
 | Secondary category | Education |
-| Price | Tier for **$17.99** at launch, moving to **$24.99**. One-time, no IAP. |
+| Price | Tier for **$9.99** at launch, raised as the app grows. One-time, no IAP. |
 | Age rating | 4+ — no objectionable content. Answer "None" to every content question. |
 | Copyright | `2026 Serhii Ziborov` |
 
