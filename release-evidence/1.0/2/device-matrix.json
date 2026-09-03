@@ -5,7 +5,7 @@
     "version": "1.0",
     "build": "2",
     "branch": "release/1.0-app-store",
-    "candidateCommit": "24507ceedd6bd6d42eacdd88710ed30fa3e43229",
+    "candidateCommit": "f4df4c0c0dbdc3f5f4f5653c94a9a670ae3ca8ef",
     "sourceIdentity": "release branch hardening candidate; immutable release tag pending",
     "bundleVersion": "1.0 (2)"
   },
@@ -100,7 +100,7 @@
       "exportOptions": "docs/app-store/ExportOptions-AppStore.plist",
       "method": "app-store-connect",
       "result": "EXPORT SUCCEEDED",
-      "ipaBytes": 51864954,
+      "ipaBytes": 51879066,
       "appSizeMiB": 161,
       "marketingVersion": "1.0",
       "bundleVersion": "2",
@@ -127,7 +127,8 @@
       "gameKitLinked": false,
       "boardEndpointStrings": 0,
       "uploaded": false,
-      "uploadNote": "Deliberately not uploaded. The artefact is signed and validated locally; submission is a separate, explicit step."
+      "uploadNote": "Deliberately not uploaded. The artefact is signed and validated locally; submission is a separate, explicit step.",
+      "rebuiltFor": "the service-free candidate: no first-party board client, API or database binding"
     }
   }
 }
