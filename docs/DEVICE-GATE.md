@@ -2,6 +2,29 @@
 
 Simulator success is necessary but not sufficient. A release decision requires the following run on a supported physical iPhone and iPad.
 
+## Minimum smoke before a 1.0 submission
+
+The full research matrix below is the standard for a confident release claim.
+Submission itself needs the shorter list, run once on a physical iPhone with the
+exact candidate installed. Every line is pass/fail; one failure stops the
+submission.
+
+- [ ] install and cold launch
+- [ ] Hello Rust → Run prints its output
+- [ ] E0502 sample → Check produces the diagnostic on the right lines
+- [ ] apply the repair → Check passes → Run prints
+- [ ] `fn main() { loop {} }` → Run → Stop ends it, CPU returns to idle, and the
+      device is not left warm
+- [ ] immediately Run Hello Rust again and it completes
+- [ ] add `smallvec`, fetch, and build a project that uses it
+- [ ] Vendor & Edit that crate, edit it, Run, view Diff, Reset
+- [ ] Pin for Offline, then rebuild in airplane mode
+- [ ] Share a public GitHub URL from Safari into Crabrix and import it
+- [ ] Settings shows the bundled rustc version, target and toolchain artifact
+- [ ] no board, display name or Game Center control appears anywhere
+
+Record the results in `release-evidence/1.0/<build>/` rather than in a message.
+
 ## Preparation
 
 - Build a Development configuration containing the pinned `artifacts-test-7` toolchain.
