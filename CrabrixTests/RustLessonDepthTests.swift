@@ -34,6 +34,28 @@ struct RustLessonDepthTests {
         }
     }
 
+    /// The correction card sits directly under the answer feedback. When both
+    /// carried the same sentence the card taught nothing, which is what a
+    /// learner on a real device reported.
+    @Test func correctionNeverRepeatsTheAnswerFeedback() {
+        let lessons = RustCourseCatalog.courses
+            .flatMap(\.units)
+            .flatMap(\.lessons)
+
+        for lesson in lessons {
+            guard let writing = RustLessonLibrary.writing(for: lesson.id) else {
+                Issue.record("Missing writing for \(lesson.id)")
+                continue
+            }
+            let depth = RustLessonDepthCatalog.depth(for: lesson)
+            #expect(
+                depth.correction != writing.feedback,
+                "\(lesson.id) shows its feedback twice"
+            )
+            #expect(!depth.correction.isEmpty)
+        }
+    }
+
     @Test func courseSequenceCreatesUsefulConnections() {
         for course in RustCourseCatalog.courses {
             let lessons = course.units.flatMap(\.lessons)

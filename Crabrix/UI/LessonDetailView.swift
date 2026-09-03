@@ -31,6 +31,10 @@ struct LessonDetailView: View {
     /// How many times this lesson's quick check has been answered wrongly, so
     /// a second miss can say more than the first.
     @State private var wrongAttempts = 0
+    /// The first answer this learner actually got wrong. The trap card used to
+    /// strike out whichever wrong answer came first in the list, which was
+    /// often not the one they had picked.
+    @State private var firstWrongChoice: Int?
     /// The last thing that cost or returned something, shown briefly in the header.
     @State private var lastOutcome: VitalsOutcome?
     /// Each horizontally paged step owns a separate vertical scroll position.
@@ -48,6 +52,13 @@ struct LessonDetailView: View {
         if case .planned = lesson.exercise { return false }
         return true
     }
+    /// The wrong answer worth discussing: the learner's own if they picked
+    /// one, otherwise the first alternative the question offers.
+    private var trapAnswerIndex: Int? {
+        firstWrongChoice
+            ?? practice.answers.indices.first { $0 != practice.correctAnswer }
+    }
+
     private var showsNavigationFooter: Bool {
         footerVisibility[page] ?? false
     }
@@ -284,11 +295,14 @@ struct LessonDetailView: View {
             // hint; a second one states the rule that decides the answer.
             if !isQuickCheckAnswered, wrongAttempts > 0 {
                 LessonCard(title: "Hint", systemImage: "lightbulb.fill", tint: CrabrixTheme.amber) {
-                    Text(brief.hint)
+                    // This lesson's own rule, which is what decides the
+                    // question. A generic "read the diagnostic" line would be
+                    // the same sentence in all 142 lessons.
+                    Text(practice.rule)
                         .fixedSize(horizontal: false, vertical: true)
-                    if wrongAttempts > 1 {
+                    if wrongAttempts > 1, let index = firstWrongChoice {
                         Divider().overlay(CrabrixTheme.border)
-                        Text(depth.correction)
+                        Text("“\(practice.answers[index])” is the assumption to drop.")
                             .foregroundStyle(CrabrixTheme.muted)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -296,13 +310,19 @@ struct LessonDetailView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
-            if isQuickCheckAnswered {
-                LessonCard(title: "Why the trap fails", systemImage: "exclamationmark.bubble.fill", tint: CrabrixTheme.amber) {
-                    Text(depth.misconception)
+            if isQuickCheckAnswered, let trap = trapAnswerIndex {
+                LessonCard(
+                    title: firstWrongChoice == nil
+                        ? "Why the tempting answer fails"
+                        : "Why your first answer fails",
+                    systemImage: "exclamationmark.bubble.fill",
+                    tint: CrabrixTheme.amber
+                ) {
+                    Text("“\(practice.answers[trap])”")
                         .font(.headline)
                         .strikethrough(color: CrabrixTheme.coral)
                         .fixedSize(horizontal: false, vertical: true)
-                    Text(depth.correction)
+                    Text(practice.rule)
                         .foregroundStyle(CrabrixTheme.muted)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -401,7 +421,10 @@ struct LessonDetailView: View {
                     lastWrongAnswer = index
                 }
             }
-            if !correct { wrongAttempts += 1 }
+            if !correct {
+                wrongAttempts += 1
+                if firstWrongChoice == nil { firstWrongChoice = index }
+            }
             withAnimation(.easeOut(duration: 0.2)) {
                 lastOutcome = vitals.recordAnswer(
                     correct: correct,

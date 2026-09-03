@@ -59,7 +59,10 @@ enum RustLessonDepthCatalog {
             ],
             misconception: wrongAnswer.map { "“\($0)”" }
                 ?? "Treating the example as syntax to memorise instead of a contract to test.",
-            correction: writing?.feedback
+            // Deliberately the rule, not `feedback`: the feedback is already
+            // shown next to the answer, and a card that repeats the line above
+            // it teaches nothing.
+            correction: writing?.rule
                 ?? "Return to the rule, identify the first conflicting assumption, and verify one intentional change.",
             transferChallenge: method.transferChallenge(for: lesson),
             connections: connections(around: lesson, in: course)
