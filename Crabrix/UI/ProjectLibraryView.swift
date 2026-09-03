@@ -14,7 +14,11 @@ struct ProjectLibraryView: View {
     @State private var query = ""
     @State private var category: RustShowcaseCategory?
     @State private var difficulty: RustShowcaseDifficulty?
-    @State private var visualOnly = false
+    /// `-CrabrixCanvasGallery` opens the library already filtered to the Rust
+    /// Canvas projects, the same way `-CrabrixTab` opens a tab: store frames
+    /// and review walkthroughs then come out of every build identically.
+    @State private var visualOnly = ProcessInfo.processInfo
+        .arguments.contains("-CrabrixCanvasGallery")
 
     let onOpen: (String) -> Void
 
@@ -65,6 +69,9 @@ struct ProjectLibraryView: View {
                 }
             }
             .padding(20)
+            // Room for the last card to clear the floating tab bar instead of
+            // ending underneath it.
+            .padding(.bottom, 24)
             .frame(maxWidth: 1_100)
             .frame(maxWidth: .infinity)
         }
@@ -180,11 +187,15 @@ private struct ProjectLibraryCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             if project.isVisual {
-                VisualProjectThumbnail(projectID: project.id)
-                    .frame(height: 76)
+                VisualShowcaseThumbnail(projectID: project.id)
+                    .frame(height: 104)
                     .clipShape(
-                        RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        RoundedRectangle(cornerRadius: 9, style: .continuous)
                     )
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 9, style: .continuous)
+                            .stroke(CrabrixTheme.border)
+                    }
                     .overlay(alignment: .bottomLeading) {
                         Label("RUST CANVAS", systemImage: "sparkles")
                             .font(.system(
@@ -193,11 +204,12 @@ private struct ProjectLibraryCard: View {
                                 design: .monospaced
                             ))
                             .foregroundStyle(.white)
-                            .padding(.horizontal, 8)
-                            .frame(height: 22)
-                            .background(.black.opacity(0.46), in: Capsule())
-                            .padding(7)
+                            .padding(.horizontal, 7)
+                            .frame(height: 19)
+                            .background(.black.opacity(0.55), in: Capsule())
+                            .padding(6)
                     }
+                    .frame(maxWidth: .infinity)
             }
 
             HStack(spacing: 10) {
@@ -247,47 +259,3 @@ private struct ProjectLibraryCard: View {
     }
 }
 
-private struct VisualProjectThumbnail: View {
-    let projectID: String
-
-    private let colors: [Color] = [
-        Color(red: 0.07, green: 0.10, blue: 0.24),
-        Color(red: 0.13, green: 0.30, blue: 0.88),
-        Color(red: 0.02, green: 0.71, blue: 0.83),
-        Color(red: 0.20, green: 0.83, blue: 0.60),
-        Color(red: 0.98, green: 0.73, blue: 0.10),
-        Color(red: 0.98, green: 0.35, blue: 0.44),
-    ]
-
-    private var seed: Int {
-        projectID.utf8.reduce(17) { partial, byte in
-            (partial * 31 + Int(byte)) % 10_007
-        }
-    }
-
-    var body: some View {
-        Canvas { context, size in
-            let columns = 20
-            let rows = 8
-            let cellWidth = size.width / CGFloat(columns)
-            let cellHeight = size.height / CGFloat(rows)
-            for row in 0..<rows {
-                for column in 0..<columns {
-                    let wave = column * column + row * 7 + seed
-                    let colorIndex = (wave / 3 + column + row) % colors.count
-                    var path = Path()
-                    path.addRect(
-                        CGRect(
-                            x: CGFloat(column) * cellWidth,
-                            y: CGFloat(row) * cellHeight,
-                            width: cellWidth + 0.5,
-                            height: cellHeight + 0.5
-                        )
-                    )
-                    context.fill(path, with: .color(colors[colorIndex]))
-                }
-            }
-        }
-        .accessibilityHidden(true)
-    }
-}

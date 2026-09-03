@@ -289,6 +289,7 @@ xcrun simctl launch <device> com.sergiiziborov.Crabrix \
 `-CrabrixTab` takes `projects`, `build`, `learn`, or `settings`.
 `-CrabrixLearn` takes `profile`, a course id, or a lesson id.
 `-CrabrixLibrary` opens the project library.
+`-CrabrixCanvasGallery` opens it already filtered to the Rust Canvas projects.
 
 ## Pre-submission checklist
 

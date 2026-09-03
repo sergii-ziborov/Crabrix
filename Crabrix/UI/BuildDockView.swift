@@ -544,19 +544,6 @@ private struct RustCanvasPreview: View {
     }
 }
 
-private extension Color {
-    init(crabrixHex value: String) {
-        let hex = String(value.dropFirst())
-        let number = UInt64(hex, radix: 16) ?? 0
-        self.init(
-            .sRGB,
-            red: Double((number >> 16) & 0xFF) / 255,
-            green: Double((number >> 8) & 0xFF) / 255,
-            blue: Double(number & 0xFF) / 255,
-            opacity: 1
-        )
-    }
-}
 
 private struct OutputStreamBlock: View {
     let label: String
