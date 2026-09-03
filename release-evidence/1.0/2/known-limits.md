@@ -1,66 +1,82 @@
 # Crabrix 1.0 build 2 — known release-gate limits
 
-Evidence for commit `adf10fb`. Every measurement here was taken from this
-commit's own tree. Where a result exists only for an older commit it is named as
-inherited and is not counted towards this candidate.
+Evidence for the 1.0 (2) candidate on `release/1.0-app-store`. Every measurement
+here was taken from this candidate's own tree. Where a result exists only for an
+older commit it is named as inherited and is not counted.
 
-## Proven on this commit
+## Proven on this candidate
 
-- The fast release suite passes 364 XCTest cases and 7 Swift Testing cases with
+- The fast release suite passes 370 XCTest cases and 7 Swift Testing cases with
   no failures, skips or runtime warnings, run on **iOS 18.2 — the minimum
   deployment target** rather than the newest available runtime.
-- An unsigned Release build succeeds with no new warnings.
-- A signed optimized `Release-iphoneos` build succeeds, passes strict code-sign
-  verification, carries the same App Group in the app and the Share Extension,
-  and has no Game Center entitlement, as the dormant feature flag requires.
-- The signed product installs on a physical iPhone 13 mini.
-- The bundled `rustc.wasm` and sysroot manifest inside that signed product hash
-  to the pinned `artifacts-test-7` values, and the audited SwiftPM graph,
-  project spec, privacy manifests and third-party notices are byte-identical to
-  build 1.
+- An unsigned Release build succeeds with no new warnings, and `xcodebuild
+  archive` succeeds and produces `1.0 (2)` for both the app and the Share
+  Extension.
+- The root crate is compiled with its own active features. A bundled-rustc gate
+  proves `#[cfg(feature = "fancy")]` and `env!("CARGO_FEATURE_FANCY")` behave as
+  Cargo specifies, and the artefact cache is keyed on the feature set.
+- Cargo resolution distinguishes resolver 1, 2 and 3, honours the root project's
+  `rust-version`, and will not select a version that lacks a requested feature.
 - Downloaded package source is audited against the editor's complete View/Edit
   limits before `rustc` is allowed to use it, so an oversized or non-UTF-8
   source file makes the package `Unsupported` instead of compiling code the app
   cannot fully expose.
-- Cargo resolution distinguishes resolver 1, 2 and 3, honours the root project's
-  `rust-version`, and will not select a version that lacks a requested feature.
+- Game Center and the Crabrix board are **not in the production binary**. The
+  archived app links no GameKit, contains no `crabrix.com/api` string and no
+  Game Center symbols; a CI step fails the build if any of them returns.
+- The Build screen carries a persistent `RUST PROGRAMMING ENVIRONMENT` label
+  with the pinned toolchain beside it, and the source editor measures 66% of the
+  screen on iPhone and 31% on iPad in its most editor-heavy state, against the
+  80% limit. Screenshots and the calculation are in `programming-environment/`.
+- Every redistributed licence and notice ships verbatim inside the app: 15 files
+  in the archived bundle, readable offline, with a test that fails if one goes
+  missing. The inventory is in `dependencies.json`.
 - All 200 Algorithm Atlas patterns verify against a private four-case harness,
   including an independently authored semantic probe.
 - Rating is paid once per exact source revision, the day's run bonus is a
-  separate reward, reward identities for revisions are bounded, the contribution
-  baseline remembers oversized files by digest instead of forgetting them, and
-  the rank ladder is scaled to the whole 742-step curriculum.
+  separate reward, revision identities are bounded, the contribution baseline
+  remembers oversized files by digest, and the rank ladder is scaled to the
+  whole 742-step curriculum.
+- The archived bundle carries both privacy manifests, the pinned
+  `rustc.wasm`/sysroot, `MinimumOSVersion` 18.0, and
+  `ITSAppUsesNonExemptEncryption = false`.
+- The public site, privacy policy, terms and support pages describe this binary:
+  no leaderboard, no account, current counts, one offline wording.
 
-## Not measured on this commit
+## Not measured on this candidate
 
-- The bundled compiler/sandbox suite. Its most recent full 20/20 run was on
-  build 1's tree; the Algorithm Atlas harness gate was last run on `452f209`.
+- The full bundled compiler/sandbox suite. Two targeted gates were re-run here;
+  the complete 20-test run was last done on build 1's tree.
 - Every physical-device runtime measurement: cold check timing, repeated
   check/run cycles, pure-compute stop with CPU-idle and memory observation,
-  Cargo cold/warm/offline-pinned rebuilds, and Vendor & Edit on device. The
-  installed build has not been exercised: the phone was locked when the
-  installer asked for a launch.
+  Cargo cold/warm/offline-pinned rebuilds, and Vendor & Edit on device.
 - Thermal, low-power, background/foreground and memory-warning behaviour.
-- iPad of any class, and a physical device running the minimum supported iOS 18.
+- iPad hardware of any class, and a physical device running the minimum
+  supported iOS 18.
 
-## Still blocking a production release claim
+## Still blocking a production submission
 
-- The available signing profile is a short-lived development profile
-  (`get-task-allow=true`, expires 2026-09-03), not an App Store distribution
-  archive or profile, and the production-supported Xcode toolchain is still
-  required at submission time.
-- The exact signed-RC reviewer walkthrough for guideline 2.5.2, and the App
-  Review consultation about downloaded package source, are outstanding.
-- Canonical-solution validation for all 200 Atlas patterns, and a broader
-  edge/adversarial corpus, remain release gates rather than finished claims.
-- A maintained differential corpus against desktop Cargo does not exist yet, so
-  no claim of universal Cargo parity is made.
-- Airplane-mode, cache-pressure and low-disk offline evidence is pending.
-- App Store screenshots are from an older UI state and must be recaptured from
-  the exact signed release candidate.
-- Branch protection, required remote checks, a current default branch, a signed
-  production tag and an immutable source archive require repository
-  administration.
+- **Production toolchain.** The vendored WasmKit needs Swift 6.3, so the
+  submission build has to run under Xcode 26.6. Only Xcode 27 beta is installed
+  on this machine, which is TestFlight-eligible but not App Store-eligible.
+- **Distribution signing.** No Apple Distribution certificate and no App Store
+  provisioning profile exist here; only an Apple Development identity does. The
+  archive above is therefore development-signed with `get-task-allow=true` and
+  cannot be uploaded. Creating the distribution identity needs the account
+  holder.
+- **Physical smoke of the exact candidate**, per `docs/DEVICE-GATE.md`.
+- **App Store Connect business fields**: age rating, content rights, DSA/trader
+  declaration, export compliance, pricing and availability, review contact.
+- **Repository release identity**: a current default branch, branch protection
+  with required checks, and a signed `v1.0.0` tag.
+
+## Deliberately deferred, not forgotten
+
+A canonical reference solution and a wider edge/adversarial corpus for all 200
+Atlas patterns; stronger verifier isolation; `include!`-reached source in the
+package audit; a differential corpus against desktop Cargo; RustSec/OSV advisory
+evidence; and a toolchain refresh past 1.96.0-dev. None of these is a
+correctness defect in what ships.
 
 No iPhone, iPad, compiler, Cargo, Academy, Atlas, gamification or purchase
 capability was removed to reach this state.

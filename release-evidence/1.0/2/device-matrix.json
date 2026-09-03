@@ -1,26 +1,27 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-08-31T21:22:04Z",
+  "capturedAt": "2026-09-03T07:10:00Z",
   "candidate": {
     "version": "1.0",
     "build": "2",
     "branch": "release/1.0-app-store",
-    "candidateCommit": "adf10fb1566ec89e18c7104e1bd0a45c5b615665",
-    "sourceIdentity": "release branch hardening candidate; immutable release tag pending"
+    "candidateCommit": "f801dfe8c5bdf415bf8362b398805ea16c385090",
+    "sourceIdentity": "release branch hardening candidate; immutable release tag pending",
+    "bundleVersion": "1.0 (2)"
   },
   "simulator": {
     "model": "iPhone 16 Pro",
     "osVersion": "18.2",
     "osNote": "the minimum deployment target, chosen deliberately over the newest runtime",
     "architecture": "arm64",
-    "xctestCount": 364,
+    "xctestCount": 370,
     "swiftTestingCount": 7,
-    "passed": 371,
+    "passed": 377,
     "failed": 0,
     "skipped": 0,
     "runtimeWarnings": 0,
     "result": "passed",
-    "scope": "fast release suite only; the bundled compiler/sandbox suite was not re-run on this commit"
+    "scope": "fast release suite; the bundled compiler/sandbox suite was not re-run in full on this commit"
   },
   "unsignedReleaseBuild": {
     "destination": "iOS Simulator",
@@ -54,18 +55,56 @@
     }
   ],
   "notMeasuredOnThisCommit": [
-    "bundled compiler and sandbox suite (20 tests)",
-    "cold E0502 check timing on a physical device",
-    "20 repeated checks and 20 repeated runs",
-    "pure-compute stop, CPU-idle and memory-release observation",
-    "Cargo cold, warm and offline-pinned rebuilds on a physical device",
-    "Vendor & Edit walkthrough on a physical device",
+    "the full bundled compiler and sandbox suite (20 tests)",
+    "every physical-device runtime measurement: cold check timing, repeated check/run cycles, pure-compute stop with CPU-idle and memory observation, Cargo cold/warm/offline-pinned rebuilds, Vendor & Edit on device",
     "thermal, low-power, background/foreground and memory-warning behaviour",
-    "iPad of any class",
-    "physical device running the minimum supported iOS 18"
+    "iPad hardware of any class, and a physical device running the minimum supported iOS 18",
+    "a build under the production-supported Xcode 26.6 toolchain",
+    "an App Store distribution archive and its privacy report"
   ],
   "inheritedEvidenceNotClaimedHere": {
     "build": "1",
     "note": "Build 1 recorded a 9.2 second cold E0502 check on an iPhone 13 mini and a 20/20 bundled compiler suite. Both were measured on older source and are deliberately not attributed to this candidate."
+  },
+  "compilerGates": {
+    "scope": "targeted, not the full suite",
+    "ranOnCommit": "5d6fd92",
+    "tests": [
+      {
+        "name": "testRootFeaturesReachTheRootCrate",
+        "seconds": 54.8,
+        "result": "passed",
+        "proves": "the root crate compiles with --cfg feature=\"fancy\" and CARGO_FEATURE_FANCY=1 from its own manifest, through real bundled rustc"
+      },
+      {
+        "name": "testRootCargoPackageEnvironmentComesFromTheManifest",
+        "seconds": 56.3,
+        "result": "passed"
+      }
+    ],
+    "notRunOnThisCommit": "the remaining 20 bundled compiler/sandbox gates"
+  },
+  "archive": {
+    "path": "build/Crabrix-1.0-2-dev.xcarchive",
+    "configuration": "Release",
+    "destination": "generic/platform=iOS",
+    "result": "ARCHIVE SUCCEEDED",
+    "marketingVersion": "1.0",
+    "bundleVersion": "2",
+    "shareExtensionBundleVersion": "2",
+    "signingIdentity": "Apple Development",
+    "getTaskAllow": true,
+    "appGroupMatchesShareExtension": true,
+    "gameKitLinked": false,
+    "boardEndpointStrings": 0,
+    "gameCenterSymbols": 0,
+    "privacyManifestPresent": true,
+    "bundledLicenceFiles": 15,
+    "bundledToolchainPresent": true,
+    "minimumOSVersion": "18.0",
+    "usesNonExemptEncryption": false,
+    "appSizeMiB": 161,
+    "productionArchiveEligible": false,
+    "blocker": "no Apple Distribution certificate or App Store provisioning profile exists on this machine; only an Apple Development identity is installed. Creating them needs the developer account holder."
   }
 }
