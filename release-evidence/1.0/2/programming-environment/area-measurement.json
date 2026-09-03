@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-09-03T06:55:00Z",
+  "purpose": "Apple Developer Program License Agreement: an app that is a programming environment must keep executable code within 80% of the viewing area and must indicate the programming environment conspicuously.",
+  "candidateCommit": "15c6112",
+  "method": "The Build screen was launched directly with -CrabrixTab build on a Release build, screenshotted with simctl, and the editor pane's pixel bounds were read from the screenshot's own separator lines. The measured rectangle is the whole source editor, its line-number gutter included, against the entire screen — status bar and home indicator counted as viewing area rather than excluded, which is the conservative direction.",
+  "measurements": [
+    {
+      "device": "iPhone 16 Pro simulator",
+      "osVersion": "18.2",
+      "orientation": "portrait",
+      "state": "maximum editor: Code tab selected, file sidebar and inspector both collapsed",
+      "screenPixels": [1206, 2622],
+      "editorRectPixels": { "x": [0, 1205], "y": [643, 2372] },
+      "editorSharePercent": 66.0,
+      "limitPercent": 80,
+      "result": "passed",
+      "screenshot": "iphone-build-max-editor.png"
+    },
+    {
+      "device": "iPad Pro 13-inch (M4) simulator",
+      "osVersion": "18.2",
+      "orientation": "portrait",
+      "state": "maximum editor: Code tab selected, project sidebar and build inspector both open, which is the default workspace",
+      "screenPixels": [2064, 2752],
+      "editorRectPixels": { "x": [469, 1254], "y": [498, 2751] },
+      "editorSharePercent": 31.2,
+      "limitPercent": 80,
+      "result": "passed",
+      "screenshot": "ipad-build-max-editor.png"
+    }
+  ],
+  "notes": [
+    "Portrait is the worst case on iPhone: the chrome above and below the editor has a fixed height in points, so a shorter landscape screen lowers the editor's share rather than raising it.",
+    "The persistent RUST PROGRAMMING ENVIRONMENT bar sits directly above the editor on both size classes and carries an accessibility label naming the environment and the bundled toolchain.",
+    "Screenshots in this folder are stored at half scale; the pixel bounds above refer to the full-resolution captures."
+  ]
+}
