@@ -76,9 +76,11 @@ defect in what ships:
 - the root crate compiles with its own active features: `--cfg feature="…"` and
   `CARGO_FEATURE_…` now reach the user's own code, proven by a bundled-rustc
   gate, and the artefact cache is keyed on them.
-- Game Center and the Crabrix board are compiled out of the production build.
-  The Release binary links no GameKit and contains no board endpoint, and a CI
-  step fails the build if either returns.
+- The first-party board is gone from the repository: no client, no API, no
+  database binding. Crabrix runs no service of its own, and Game Center — the
+  only online path it will ever have — is compiled out of the production build.
+  The Release binary links no GameKit, and a CI step fails the build if it
+  returns.
 - the Build screen names the programming environment and its exact pinned
   toolchain, and the editor's share of the screen is measured at 66% on iPhone
   and 31% on iPad against the 80% limit.
@@ -100,7 +102,7 @@ defect in what ships:
 | Open-source redistribution | full licence and notice texts bundled and readable offline; inventory in `release-evidence/1.0/2/dependencies.json`; missing-file test | none outstanding | **SHIPPING** |
 | Rust Academy integrity | lesson-specific evidence model and structural QA | expert content sample and remaining compiler-evidence coverage | **PARTIAL** |
 | Algorithm Atlas integrity | four-case private verifier for all 200 patterns; independent semantic probes; literal-answer regression; bundled-rustc harness gate | canonical-solution corpus, deliberately deferred to 1.0.1 | **SHIPPING** |
-| Rating integrity | per-revision build rewards, separate daily bonus, bounded reward identities, digest-backed contribution baseline, curriculum-scaled rank ladder, split Rust/Atlas counters | long-run device economy observation before any public board | **PARTIAL** |
+| Rating integrity | per-revision build rewards, separate daily bonus, bounded reward identities, digest-backed contribution baseline, curriculum-scaled rank ladder, split Rust/Atlas counters | long-run device economy observation before any Game Center submission | **PARTIAL** |
 | Social/privacy | social compiled out of Release; binary carries no GameKit and no board endpoint; CI gate; privacy manifest says no collection | confirm the App Privacy answers against the archived RC's privacy report | **PARTIAL** |
 | Signing/submission | unsigned Release and development-signed device builds pass; App/Share App Group matches | App Store distribution profile/archive, accepted Xcode/SDK, archive validation | **BLOCKED** |
 | Screenshots/metadata | copy is source-controlled and corrected | recapture every frame from exact signed RC | **BLOCKED** |

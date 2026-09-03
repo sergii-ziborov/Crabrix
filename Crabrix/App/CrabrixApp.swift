@@ -2,14 +2,17 @@ import SwiftUI
 
 /// Release capabilities stay explicit and auditable.
 ///
-/// The production 1.0 binary is built without `CRABRIX_SOCIAL`, so Game Center
-/// and the Crabrix board are not merely switched off: their services, their UI
-/// and their network paths are not compiled into the app at all. These flags
-/// remain so development builds, which do compile that code, still keep every
-/// path dormant until provisioning and server evidence satisfy their gates.
+/// Crabrix runs no service of its own. If ranking ever goes online it will be
+/// Game Center, which Apple already operates — there is no Crabrix account, no
+/// Crabrix server, and no first-party board to run, moderate or secure.
+///
+/// The production 1.0 binary is built without `CRABRIX_SOCIAL`, so even Game
+/// Center is not merely switched off: its service, its UI and its network path
+/// are not compiled into the app at all. This flag remains so development
+/// builds, which do compile that code, still keep it dormant until the
+/// provisioning gates pass.
 enum CrabrixReleaseFeatures {
     static let gameCenterEnabled = false
-    static let crabrixBoardEnabled = false
 }
 
 @main
@@ -24,8 +27,6 @@ struct CrabrixApp: App {
     /// Identity and the global board, through Game Center. Optional everywhere:
     /// the app is fully usable without ever signing in.
     @StateObject private var gameCenter = GameCenterService()
-    /// The public board on crabrix.com. Opt-in, and off until asked for.
-    @StateObject private var leaderboard = LeaderboardClient()
     #endif
 
     var body: some Scene {
@@ -47,13 +48,8 @@ struct CrabrixApp: App {
             .onReceive(progress.$state) { state in
                 vitals.refresh(points: state.totalPoints)
                 #if CRABRIX_SOCIAL
-                Task {
-                    if CrabrixReleaseFeatures.gameCenterEnabled {
-                        await gameCenter.submit(state: state)
-                    }
-                    if CrabrixReleaseFeatures.crabrixBoardEnabled {
-                        await leaderboard.publish(state: state)
-                    }
+                if CrabrixReleaseFeatures.gameCenterEnabled {
+                    Task { await gameCenter.submit(state: state) }
                 }
                 #endif
             }
@@ -68,7 +64,6 @@ struct CrabrixApp: App {
         #if CRABRIX_SOCIAL
         content
             .environmentObject(gameCenter)
-            .environmentObject(leaderboard)
             .gameCenterAuthentication(gameCenter)
         #else
         content

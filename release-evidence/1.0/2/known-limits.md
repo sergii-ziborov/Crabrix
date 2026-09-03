@@ -32,9 +32,11 @@ older commit it is named as inherited and is not counted.
   limits before `rustc` is allowed to use it, so an oversized or non-UTF-8
   source file makes the package `Unsupported` instead of compiling code the app
   cannot fully expose.
-- Game Center and the Crabrix board are **not in the production binary**. The
-  archived app links no GameKit, contains no `crabrix.com/api` string and no
-  Game Center symbols; a CI step fails the build if any of them returns.
+- There is **no first-party online service at all**: the board client, its API
+  and its database binding are removed from the repository. Game Center, the one
+  online path Crabrix will ever have, is **not in the production binary** — the
+  archived app links no GameKit, carries no `crabrix.com/api` string and no Game
+  Center symbols, and a CI step fails the build if any of them returns.
 - The Build screen carries a persistent `RUST PROGRAMMING ENVIRONMENT` label
   with the pinned toolchain beside it, and the source editor measures 66% of the
   screen on iPhone and 31% on iPad in its most editor-heavy state, against the

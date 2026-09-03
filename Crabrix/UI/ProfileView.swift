@@ -15,14 +15,12 @@ struct ProfileView: View {
     @EnvironmentObject private var vitals: CrabrixVitalsStore
     #if CRABRIX_SOCIAL
     @EnvironmentObject private var gameCenter: GameCenterService
-    @EnvironmentObject private var leaderboard: LeaderboardClient
     #endif
 
     @StateObject private var avatarStore = LocalAvatarStore()
 
     #if CRABRIX_SOCIAL
     @State private var gameCenterPanel: GameCenterPanel?
-    @State private var isRemovalConfirmed = false
 
     private enum GameCenterPanel: Identifiable {
         case leaderboard
@@ -36,11 +34,6 @@ struct ProfileView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 identityCard
-                #if CRABRIX_SOCIAL
-                if CrabrixReleaseFeatures.crabrixBoardEnabled {
-                    publishCard
-                }
-                #endif
                 VitalsCard(store: vitals)
                 statsCard
                 AchievementsSection(store: progress)
@@ -91,10 +84,6 @@ struct ProfileView: View {
             if CrabrixReleaseFeatures.gameCenterEnabled {
                 gameCenter.authenticate()
                 await gameCenter.submit(state: progress.state)
-            }
-            if CrabrixReleaseFeatures.crabrixBoardEnabled {
-                await leaderboard.publish(state: progress.state)
-                await leaderboard.loadBoard()
             }
         }
         #endif
@@ -315,145 +304,6 @@ struct ProfileView: View {
         return "Everything is stored on this device"
         #endif
     }
-
-    #if CRABRIX_SOCIAL
-    /// Opt-in publishing to the public board on crabrix.com.
-    ///
-    /// Development builds only: the shipped 1.0 app has no board, no display
-    /// name, and no publishing control of any kind.
-    private var publishCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Label("PUBLIC BOARD", systemImage: "globe")
-                    .font(.system(size: 9, weight: .bold, design: .monospaced))
-                    .foregroundStyle(CrabrixTheme.muted)
-                Spacer()
-                Link(destination: LeaderboardClient.boardURL) {
-                    Label("crabrix.com", systemImage: "arrow.up.right.square")
-                        .font(.caption2.monospaced())
-                }
-            }
-
-            Toggle(isOn: $leaderboard.isEnabled) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Publish my rating").font(.subheadline.bold())
-                    Text("A name and your rating only. No account, no email, no password.")
-                        .font(.caption2)
-                        .foregroundStyle(CrabrixTheme.muted)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-            .tint(CrabrixTheme.mint)
-
-            if leaderboard.isEnabled {
-                TextField("Display name", text: $leaderboard.displayName)
-                    .textFieldStyle(.roundedBorder)
-                    .textInputAutocapitalization(.words)
-                    .autocorrectionDisabled()
-                    .submitLabel(.done)
-                    .onSubmit { Task { await leaderboard.publish(state: progress.state, force: true) } }
-
-                HStack(spacing: 10) {
-                    Button {
-                        Task { await leaderboard.publish(state: progress.state, force: true) }
-                    } label: {
-                        Label("Publish now", systemImage: "arrow.up.circle.fill")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(CrabrixTheme.mint)
-                    .disabled(!leaderboard.canPublish)
-
-                    Spacer(minLength: 0)
-                    publishStatus
-                }
-                .font(.caption.bold())
-            }
-
-            // Always offered, whether publishing is currently on or off: the
-            // entry may still exist from an earlier session.
-            Button(role: .destructive) {
-                isRemovalConfirmed = true
-            } label: {
-                Label("Remove my entry from the board", systemImage: "trash")
-                    .font(.caption.bold())
-            }
-            .confirmationDialog(
-                "Remove your entry?",
-                isPresented: $isRemovalConfirmed,
-                titleVisibility: .visible
-            ) {
-                Button("Remove from the board", role: .destructive) {
-                    Task { await leaderboard.stopPublishingAndForget() }
-                }
-                Button("Keep it", role: .cancel) {}
-            } message: {
-                Text("Your name and rating are deleted from crabrix.com. Everything on this device stays exactly as it is.")
-            }
-
-            Text("Names are checked before they appear. Report anything offensive from the support page and it will be removed.")
-                .font(.caption2)
-                .foregroundStyle(CrabrixTheme.muted)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Link(destination: LeaderboardClient.supportURL) {
-                Label("Report a name · Support", systemImage: "exclamationmark.bubble")
-                    .font(.caption2.bold())
-            }
-
-            if !leaderboard.board.isEmpty {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("TOP RIGHT NOW")
-                        .font(.system(size: 9, weight: .bold, design: .monospaced))
-                        .foregroundStyle(CrabrixTheme.muted)
-                    ForEach(leaderboard.board.prefix(5)) { entry in
-                        HStack(spacing: 9) {
-                            Text("#\(entry.rank)")
-                                .font(.caption2.monospaced().bold())
-                                .foregroundStyle(entry.rank <= 3 ? CrabrixTheme.amber : CrabrixTheme.muted)
-                                .frame(width: 26, alignment: .leading)
-                            Text(entry.name).font(.caption)
-                            Spacer(minLength: 0)
-                            Text(CrabrixPointsFormatter.string(entry.points))
-                                .font(.caption.monospaced().bold())
-                                .foregroundStyle(CrabrixTheme.amber)
-                        }
-                    }
-                }
-                .padding(.top, 2)
-            }
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .crabrixPanel(cornerRadius: 16)
-    }
-
-    @ViewBuilder
-    private var publishStatus: some View {
-        switch leaderboard.status {
-        case .idle:
-            EmptyView()
-        case .sending:
-            ProgressView().controlSize(.mini)
-        case let .published(rank, total):
-            Label(Self.publishedLabel(rank: rank, total: total), systemImage: "checkmark.circle.fill")
-                .foregroundStyle(CrabrixTheme.mint)
-        case .removed:
-            Label("Removed", systemImage: "trash")
-                .foregroundStyle(CrabrixTheme.muted)
-        case let .failed(reason):
-            Label(reason, systemImage: "exclamationmark.triangle.fill")
-                .foregroundStyle(CrabrixTheme.amber)
-                .lineLimit(2)
-                .multilineTextAlignment(.trailing)
-        }
-    }
-
-    private static func publishedLabel(rank: Int?, total: Int?) -> String {
-        guard let rank else { return "Published" }
-        guard let total, total > 0 else { return "#\(rank)" }
-        return "#\(rank) of \(total)"
-    }
-    #endif
 
     private var statsCard: some View {
         VStack(alignment: .leading, spacing: 11) {

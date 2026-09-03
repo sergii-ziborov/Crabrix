@@ -128,14 +128,14 @@ Match `Crabrix/Resources/PrivacyInfo.xcprivacy` exactly.
 
 | Question | Answer |
 | --- | --- |
-| Do you collect data from this app? | **No** — the production build is compiled without Game Center or the Crabrix Board |
+| Do you collect data from this app? | **No** — Crabrix runs no service, and the production build is compiled without Game Center |
 | Used for tracking? | **No** |
 | Everything else | **Not collected** |
 
-The production Release configuration is built without `CRABRIX_SOCIAL`, so the
-binary links no GameKit and contains no board endpoint; a CI step fails the
-build if either reappears. If a later release enables an online board, update
-these answers and the review notes from the shipped binary and server behaviour
+Crabrix operates no service of its own, and the production Release
+configuration is built without `CRABRIX_SOCIAL`, so the binary links no GameKit
+either; a CI step fails the build if it reappears. If a later release turns on
+Game Center, update these answers and the review notes from the shipped binary
 before submission.
 
 ## Content rights
@@ -240,10 +240,12 @@ REVIEWER PROOF PATH
 6. Run `fn main() { loop {} }`, tap Stop, then immediately Run Hello Rust.
 
 ONLINE BOARDS
-There are none in this build. Game Center and the Crabrix Rust Board are not
-compiled into the production 1.0 binary: it links no GameKit, contains no board
-endpoint, and has no display-name field or publishing control anywhere in the
-interface. Rating, ranks and achievements are calculated and stored on device.
+There are none, and there is no Crabrix service behind the app at all: no
+account system, no server, no first-party board. Game Center is the only online
+path the app will ever have and it is not compiled into the production 1.0
+binary, which links no GameKit and has no display-name field or publishing
+control anywhere in the interface. Rating, ranks and achievements are
+calculated and stored on device.
 
 CONTACT
 support@crabrix.com

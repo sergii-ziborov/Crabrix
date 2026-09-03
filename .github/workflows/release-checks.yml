@@ -60,12 +60,12 @@ jobs:
             -derivedDataPath "$PWD/DerivedDataCI" \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Verify the Release binary contains no social path
+      - name: Verify the Release binary contains no online path
         run: |
           APP="$PWD/DerivedDataCI/Build/Products/Release-iphonesimulator/Crabrix.app/Crabrix"
           test -f "$APP" || { echo "no Release binary at $APP" >&2; exit 1; }
           if strings "$APP" | grep -q "crabrix.com/api"; then
-            echo "the board endpoint is present in a production build" >&2
+            echo "a first-party service endpoint is present in a production build" >&2
             exit 1
           fi
           if otool -L "$APP" | grep -qi GameKit; then
@@ -76,7 +76,7 @@ jobs:
             echo "Game Center symbols are present in a production build" >&2
             exit 1
           fi
-          echo "Release binary carries no board endpoint and no Game Center path"
+          echo "Release binary carries no service endpoint and no Game Center path"
 
   compiler-gates:
     runs-on: xcode-27

@@ -85,20 +85,12 @@ final class CrabrixProgressStoreTests: XCTestCase {
 
     func testProductionSocialPathsStayDormantUntilReleaseGatesEnableThem() {
         XCTAssertFalse(CrabrixReleaseFeatures.gameCenterEnabled)
-        XCTAssertFalse(CrabrixReleaseFeatures.crabrixBoardEnabled)
 
-        // These types exist only in a development build. The Release
-        // configuration that is archived for the App Store is compiled without
-        // CRABRIX_SOCIAL, so there is nothing here to keep dormant.
+        // Game Center is the only online path Crabrix will ever have, and this
+        // type exists only in a development build: the Release configuration
+        // archived for the App Store is compiled without CRABRIX_SOCIAL, so
+        // there is nothing here to keep dormant.
         #if CRABRIX_SOCIAL
-        let suite = "crabrix.tests.\(UUID().uuidString)"
-        let defaults = UserDefaults(suiteName: suite)!
-        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
-        let board = LeaderboardClient(defaults: defaults)
-        board.isEnabled = true
-        board.displayName = "Ferris"
-        XCTAssertFalse(board.canPublish)
-
         let gameCenter = GameCenterService()
         gameCenter.authenticate()
         XCTAssertEqual(gameCenter.status, .idle)

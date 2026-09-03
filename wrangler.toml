@@ -19,12 +19,5 @@ custom_domain = true
 pattern = "www.crabrix.com"
 custom_domain = true
 
-# The public rating board. There are no accounts behind it: a player is a
-# random key the app keeps in its Keychain, so nothing personal is stored.
-[[d1_databases]]
-binding = "DB"
-database_name = "crabrix-leaderboard"
-database_id = "b6a38237-4213-4f79-aebe-8e2af3375c26"
-
 # The account is supplied by CLOUDFLARE_ACCOUNT_ID rather than committed here,
 # for the same reason the signing team is not in project.yml.

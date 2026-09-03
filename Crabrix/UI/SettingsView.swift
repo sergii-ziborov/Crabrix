@@ -528,7 +528,6 @@ enum CrabrixLinks {
     static let support = URL(string: "https://crabrix.com/support")!
     static let privacy = URL(string: "https://crabrix.com/privacy")!
     static let terms = URL(string: "https://crabrix.com/terms")!
-    static let leaderboard = URL(string: "https://crabrix.com/leaderboard")!
     static let supportEmail = "support@crabrix.com"
 }
 

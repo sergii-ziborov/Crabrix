@@ -190,11 +190,12 @@ The Share Extension and host app use `group.com.sergiiziborov.Crabrix`. A signin
 
 Crabrix has no account, no analytics SDK, no advertising, and no tracking. Your
 code, projects, build output, and progress never leave the device. Game Center
-and the Crabrix Rust Board are not in the production build at all: the Release
-configuration is compiled without `CRABRIX_SOCIAL`, so the binary links no
-GameKit and carries no board endpoint, and a CI step fails the build if either
-returns. Their sources stay in the repository for a later release whose
-provisioning and signed-event/moderation gates pass.
+is not in the production build at all: the Release configuration is compiled
+without `CRABRIX_SOCIAL`, so the binary links no GameKit, and a CI step fails
+the build if it returns. Crabrix operates **no service of its own** — there is
+no Crabrix account, no first-party board and nothing server-side to secure or
+moderate. If ranking ever goes online it will go through Game Center, which
+Apple runs.
 
 The full policy is at [crabrix.com/privacy](https://crabrix.com/privacy), and the
 App Store privacy manifest that has to agree with it is
@@ -209,7 +210,7 @@ Crabrix does about each:
 | --- | --- |
 | **2.5.2** — self-contained code | The compiler and standard library are **bundled**, not downloaded. The only code fetched at runtime is crates.io package source, at the user's explicit request, used only to build their own project. Every extracted path is listed in Build → Packages, and every supported programming-source file is completely viewable and editable through **Vendor & Edit**. Registry bytes remain immutable and Reset is always available. A source file outside the complete View/Edit contract makes the package `Unsupported` before `rustc` runs. Final acceptance still belongs to App Review, so the reviewer path is tested and documented rather than assumed. |
 | **2.5.1** — private APIs, process spawning | No host processes are spawned. The project terminal is a simulated shell over the in-app project files. Guest programs run in a WebAssembly sandbox with a memory cap, one writable preopen, and no network imports. |
-| **1.2** — user-generated content | There is no public board and no display-name input: the production build contains no board code to reach. |
+| **1.2** — user-generated content | There is no board, no display name and no first-party service: nothing a user types can reach another user. |
 | **DPLA programming environment** | The Build screen carries a persistent `RUST PROGRAMMING ENVIRONMENT` label with the pinned toolchain beside it. The editor occupies 66% of the screen on iPhone and 31% on iPad in its most editor-heavy state, measured from Release screenshots in `release-evidence/1.0/2/programming-environment/`. crates.io is reachable only as the open project's dependency manager — nothing is browsable, promoted, or obtainable as another developer's app. |
 | **5.1.1(v)** — account deletion | There is no account and production 1.0 creates no server-side profile. |
 | **5.1.1** — privacy policy | Published at [/privacy](https://crabrix.com/privacy) and linked from Settings → About Crabrix. |
