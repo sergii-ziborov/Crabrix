@@ -52,13 +52,6 @@ struct LessonDetailView: View {
         if case .planned = lesson.exercise { return false }
         return true
     }
-    /// The wrong answer worth discussing: the learner's own if they picked
-    /// one, otherwise the first alternative the question offers.
-    private var trapAnswerIndex: Int? {
-        firstWrongChoice
-            ?? practice.answers.indices.first { $0 != practice.correctAnswer }
-    }
-
     private var showsNavigationFooter: Bool {
         footerVisibility[page] ?? false
     }
@@ -310,11 +303,12 @@ struct LessonDetailView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
-            if isQuickCheckAnswered, let trap = trapAnswerIndex {
+            // Only for a learner who actually picked a wrong answer. Striking
+            // out an option nobody chose read as an accusation of a mistake
+            // that never happened.
+            if isQuickCheckAnswered, let trap = firstWrongChoice {
                 LessonCard(
-                    title: firstWrongChoice == nil
-                        ? "Why the tempting answer fails"
-                        : "Why your first answer fails",
+                    title: "Why your first answer fails",
                     systemImage: "exclamationmark.bubble.fill",
                     tint: CrabrixTheme.amber
                 ) {
@@ -530,6 +524,10 @@ struct LessonDetailView: View {
             )
             .frame(maxWidth: 760)
             .frame(maxWidth: .infinity)
+            // Pinned to the container: a child that refuses to compress used
+            // to widen its own page, so the three steps of one lesson ended up
+            // with three different text widths.
+            .containerRelativeFrame(.horizontal)
         }
         .onScrollGeometryChange(for: Bool.self) { geometry in
             LessonNavigationFooterVisibility.shouldShow(
