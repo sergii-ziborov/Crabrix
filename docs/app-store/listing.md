@@ -125,12 +125,15 @@ Match `Crabrix/Resources/PrivacyInfo.xcprivacy` exactly.
 
 | Question | Answer |
 | --- | --- |
-| Do you collect data from this app? | **No** — Game Center and Crabrix Board are dormant in production 1.0 |
+| Do you collect data from this app? | **No** — the production build is compiled without Game Center or the Crabrix Board |
 | Used for tracking? | **No** |
 | Everything else | **Not collected** |
 
-If either online board is enabled in a later release, update these answers and
-the review notes from the shipped binary/server behavior before submission.
+The production Release configuration is built without `CRABRIX_SOCIAL`, so the
+binary links no GameKit and contains no board endpoint; a CI step fails the
+build if either reappears. If a later release enables an online board, update
+these answers and the review notes from the shipped binary and server behaviour
+before submission.
 
 ## Export compliance
 
@@ -150,6 +153,19 @@ TO SEE IT COMPILE
    The bundled compiler builds and runs it on device; output appears in Output.
 2. Edit the string in main.rs and press Run again to see a fresh compile.
 
+PROGRAMMING ENVIRONMENT
+Every Build screen carries a persistent "RUST PROGRAMMING ENVIRONMENT" label
+with the exact bundled toolchain beside it (rustc 1.96.0-dev, wasm32-wasip1);
+the same values are in Settings → Local compiler. The source editor occupies
+66% of the screen on iPhone and 31% on iPad in its most editor-heavy state,
+measured from Release-build screenshots.
+
+Crabrix is not a store for code. crates.io is reachable only from the project
+you are editing (Build → Packages → Add dependency); there is no catalogue to
+browse, nothing promoted or trending, and no way to obtain a runnable app from
+another developer. It is dependency management for the Rust project open in the
+editor, nothing else.
+
 REGARDING GUIDELINE 2.5.2
 Crabrix is an app designed to teach and develop code. The compiler and standard
 library are bundled in the app, not downloaded. The only code downloaded at
@@ -168,10 +184,19 @@ runs. Binary assets remain visible as file metadata in the immutable registry
 tree and are not misrepresented as editable text. The immutable registry copy is
 never modified.
 
-Programs execute inside a WebAssembly sandbox in the app's own process, with a
-memory/instruction/output/storage caps, no network access, and one writable directory. Crabrix spawns no
-host processes; the "terminal" is a simulated shell over the in-app project
-files only.
+GITHUB IMPORT
+The same rules cover repository import:
+- public repositories only in 1.0, and only after an explicit user action;
+- the downloaded archive becomes an ordinary editable project in the app, under
+  the same bounded file, size and tree limits as any other project;
+- no opaque downloaded binary is executed: source is compiled locally by the
+  bundled rustc;
+- the resulting program runs in the same bounded, network-free sandbox.
+
+Programs execute inside a WebAssembly sandbox in the app's own process, with
+memory/instruction/output/storage caps, no network access, and one writable
+directory. Crabrix spawns no host processes; the "terminal" is a simulated shell
+over the in-app project files only.
 
 REVIEWER PROOF PATH
 1. Open the included Hello Rust project and Run it with no network.
@@ -184,9 +209,10 @@ REVIEWER PROOF PATH
 6. Run `fn main() { loop {} }`, tap Stop, then immediately Run Hello Rust.
 
 ONLINE BOARDS
-Game Center and the Crabrix Rust Board implementations are dormant in the
-production 1.0 configuration. The app does not authenticate, publish a score,
-show board controls, or collect a display name in this build.
+There are none in this build. Game Center and the Crabrix Rust Board are not
+compiled into the production 1.0 binary: it links no GameKit, contains no board
+endpoint, and has no display-name field or publishing control anywhere in the
+interface. Rating, ranks and achievements are calculated and stored on device.
 
 CONTACT
 support@crabrix.com

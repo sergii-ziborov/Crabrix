@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-09-03T07:00:00Z",
+  "candidate": {
+    "version": "1.0",
+    "build": "2",
+    "branch": "release/1.0-app-store"
+  },
+  "note": "Every component Crabrix redistributes, with the exact pinned version and the verbatim licence files shipped in the app under Crabrix/Resources/Licenses and readable offline from Settings, About Crabrix, Open-source licenses.",
+  "swiftPackageResolvedOriginHash": "79d09922fe97885a64b1b839831991d9f1e1673686433ed8ae6ce513d1300030",
+  "components": [
+    {
+      "name": "Rust compiler and standard library",
+      "version": "1.96.0-dev (artifacts-test-7)",
+      "kind": "bundled-binary-toolchain",
+      "license": "Apache-2.0 OR MIT",
+      "source": "https://github.com/rust-lang/rust",
+      "revision": null,
+      "bundledLicenseFiles": [
+        {
+          "file": "Rust-COPYRIGHT.txt",
+          "sha256": "172020dbfd5b53a226dfde77616190a48dcff519b0bc0e6deb91a8450782c4af"
+        },
+        {
+          "file": "Rust-LICENSE-MIT.txt",
+          "sha256": "b71bd43a069ca0641a9ecfe585ca7b3c53b5cc1608f8b68321168698e28b5ea1"
+        },
+        {
+          "file": "Rust-LICENSE-APACHE.txt",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
+        }
+      ]
+    },
+    {
+      "name": "wasm-rustc",
+      "version": "artifacts-test-7",
+      "kind": "bundled-binary-toolchain",
+      "license": "MIT",
+      "source": "https://github.com/AngelOnFira/wasm-rustc/releases/tag/artifacts-test-7",
+      "revision": null,
+      "bundledLicenseFiles": [
+        {
+          "file": "wasm-rustc-LICENSE.txt",
+          "sha256": "bcba9b4483221536f2217cc584da9a487e396c9e4a33f21ba1e08de6cfa16801"
+        }
+      ]
+    },
+    {
+      "name": "WasmKit",
+      "version": "0.3.1 (vendored fork)",
+      "kind": "vendored-source",
+      "license": "MIT",
+      "source": "https://github.com/swiftwasm/WasmKit/tree/0.3.1",
+      "revision": "ee36070acc31878ef727b90d5bdc4c9cc1fff22e",
+      "bundledLicenseFiles": [
+        {
+          "file": "WasmKit-LICENSE.txt",
+          "sha256": "bc2e8c69fd4db72feb2b9400eaf095d136bcb82413945d9a95113e6269f282e0"
+        },
+        {
+          "file": "WasmKit-NOTICE.txt",
+          "sha256": "7331de9d0f1be54888341895d3fe28a9710defd95b4a7b73f07e21fb907e9bd7"
+        }
+      ]
+    },
+    {
+      "name": "ZIPFoundation",
+      "version": "0.9.20",
+      "kind": "swift-package",
+      "license": "MIT",
+      "source": "https://github.com/weichsel/ZIPFoundation.git",
+      "revision": "22787ffb59de99e5dc1fbfe80b19c97a904ad48d",
+      "bundledLicenseFiles": [
+        {
+          "file": "ZIPFoundation-LICENSE.txt",
+          "sha256": "93a5b6f4c4fcfbca71aaf17f5758d249cf205d5d1c237becc37f14e43af09f6b"
+        }
+      ]
+    },
+    {
+      "name": "Swift System",
+      "version": "1.8.1",
+      "kind": "swift-package",
+      "license": "Apache-2.0 with Runtime Library Exception",
+      "source": "https://github.com/apple/swift-system",
+      "revision": "869129b7bf4ecc57b97d0193ad29690ca2134750",
+      "bundledLicenseFiles": [
+        {
+          "file": "swift-system-LICENSE.txt",
+          "sha256": "2245a990b635558be210fb3eb4f8a6f7a49aebc0fefbf5859146a65ddc7ddcf3"
+        }
+      ]
+    },
+    {
+      "name": "Swift Collections",
+      "version": "1.6.0",
+      "kind": "swift-package",
+      "license": "Apache-2.0 with Runtime Library Exception",
+      "source": "https://github.com/apple/swift-collections.git",
+      "revision": "a0cb0954ecb21e4e31b0070e6ed5674e8556685a",
+      "bundledLicenseFiles": [
+        {
+          "file": "swift-collections-LICENSE.txt",
+          "sha256": "770af8291f708538d8ff885a0bbc4e045cd700531741c4f99528d435c14d7f55"
+        }
+      ]
+    },
+    {
+      "name": "Swift Atomics",
+      "version": "1.3.1",
+      "kind": "swift-package",
+      "license": "Apache-2.0 with Runtime Library Exception",
+      "source": "https://github.com/apple/swift-atomics.git",
+      "revision": "0442cb5a3f98ab802acb777929fdb446bda11a34",
+      "bundledLicenseFiles": [
+        {
+          "file": "swift-atomics-LICENSE.txt",
+          "sha256": "770af8291f708538d8ff885a0bbc4e045cd700531741c4f99528d435c14d7f55"
+        }
+      ]
+    },
+    {
+      "name": "Swift Argument Parser",
+      "version": "1.8.2",
+      "kind": "swift-package",
+      "license": "Apache-2.0 with Runtime Library Exception",
+      "source": "https://github.com/apple/swift-argument-parser",
+      "revision": "6a52f3251125d74daf04fcbd5e6f08a75d074382",
+      "bundledLicenseFiles": [
+        {
+          "file": "swift-argument-parser-LICENSE.txt",
+          "sha256": "770af8291f708538d8ff885a0bbc4e045cd700531741c4f99528d435c14d7f55"
+        }
+      ]
+    },
+    {
+      "name": "SwiftLog",
+      "version": "1.15.0",
+      "kind": "swift-package",
+      "license": "Apache-2.0",
+      "source": "https://github.com/apple/swift-log",
+      "revision": "3ffafb9722d5d918c614feb496c8789a3b59d222",
+      "bundledLicenseFiles": [
+        {
+          "file": "swift-log-LICENSE.txt",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "file": "swift-log-NOTICE.txt",
+          "sha256": "879b241d49b407215a0ad8e1c6a71c358d7b29591b090cf379d37a5f50cff918"
+        }
+      ]
+    },
+    {
+      "name": "SwiftNIO",
+      "version": "2.101.3",
+      "kind": "swift-package",
+      "license": "Apache-2.0",
+      "source": "https://github.com/apple/swift-nio",
+      "revision": "0b18836bd8b0162e7e17a995a3fbee20ed8f3b2b",
+      "bundledLicenseFiles": [
+        {
+          "file": "swift-nio-LICENSE.txt",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "file": "swift-nio-NOTICE.txt",
+          "sha256": "d25ed2452b3476c342082d11e4e8bf5459174d2836124f842b499850bcebc50e"
+        }
+      ]
+    }
+  ]
+}
