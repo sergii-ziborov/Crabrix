@@ -59,8 +59,7 @@
     "every physical-device runtime measurement: cold check timing, repeated check/run cycles, pure-compute stop with CPU-idle and memory observation, Cargo cold/warm/offline-pinned rebuilds, Vendor & Edit on device",
     "thermal, low-power, background/foreground and memory-warning behaviour",
     "iPad hardware of any class, and a physical device running the minimum supported iOS 18",
-    "a build under the production-supported Xcode 26.6 toolchain",
-    "an App Store distribution archive and its privacy report"
+    "a build under the production-supported Xcode 26.6 toolchain"
   ],
   "inheritedEvidenceNotClaimedHere": {
     "build": "1",
@@ -85,26 +84,47 @@
     "notRunOnThisCommit": "the remaining 20 bundled compiler/sandbox gates"
   },
   "archive": {
-    "path": "build/Crabrix-1.0-2-dev.xcarchive",
-    "configuration": "Release",
-    "destination": "generic/platform=iOS",
-    "result": "ARCHIVE SUCCEEDED",
-    "marketingVersion": "1.0",
-    "bundleVersion": "2",
-    "shareExtensionBundleVersion": "2",
-    "signingIdentity": "Apple Development",
-    "getTaskAllow": true,
-    "appGroupMatchesShareExtension": true,
-    "gameKitLinked": false,
-    "boardEndpointStrings": 0,
-    "gameCenterSymbols": 0,
-    "privacyManifestPresent": true,
-    "bundledLicenceFiles": 15,
-    "bundledToolchainPresent": true,
-    "minimumOSVersion": "18.0",
-    "usesNonExemptEncryption": false,
-    "appSizeMiB": 161,
-    "productionArchiveEligible": false,
-    "blocker": "no Apple Distribution certificate or App Store provisioning profile exists on this machine; only an Apple Development identity is installed. Creating them needs the developer account holder."
+    "developmentArchive": {
+      "path": "build/Crabrix-1.0-2-dev.xcarchive",
+      "result": "ARCHIVE SUCCEEDED",
+      "signingIdentity": "Apple Development",
+      "getTaskAllow": true,
+      "note": "kept only as the intermediate step; not the submission artefact"
+    },
+    "distribution": {
+      "archivePath": "build/Crabrix-1.0-2.xcarchive",
+      "exportPath": "build/export/Crabrix.ipa",
+      "exportOptions": "docs/app-store/ExportOptions-AppStore.plist",
+      "method": "app-store-connect",
+      "result": "EXPORT SUCCEEDED",
+      "ipaBytes": 51864954,
+      "appSizeMiB": 161,
+      "marketingVersion": "1.0",
+      "bundleVersion": "2",
+      "signingAuthority": "Apple Distribution: Serhii Ziborov (XMS5ZC28UJ)",
+      "shareExtensionSigningAuthority": "Apple Distribution: Serhii Ziborov (XMS5ZC28UJ)",
+      "getTaskAllow": false,
+      "betaReportsActive": true,
+      "appGroup": "group.com.sergiiziborov.Crabrix",
+      "appGroupMatchesShareExtension": true,
+      "embeddedProfile": {
+        "name": "iOS Team Store Provisioning Profile: com.sergiiziborov.Crabrix",
+        "created": "2026-09-03T07:21:17Z",
+        "expires": "2027-09-03T07:11:13Z",
+        "provisionedDevices": 0
+      },
+      "minimumOSVersion": "18.0",
+      "usesNonExemptEncryption": false,
+      "privacyManifests": [
+        "app",
+        "share extension"
+      ],
+      "bundledLicenceFiles": 15,
+      "bundledToolchainPresent": true,
+      "gameKitLinked": false,
+      "boardEndpointStrings": 0,
+      "uploaded": false,
+      "uploadNote": "Deliberately not uploaded. The artefact is signed and validated locally; submission is a separate, explicit step."
+    }
   }
 }

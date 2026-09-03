@@ -9,9 +9,15 @@ older commit it is named as inherited and is not counted.
 - The fast release suite passes 370 XCTest cases and 7 Swift Testing cases with
   no failures, skips or runtime warnings, run on **iOS 18.2 — the minimum
   deployment target** rather than the newest available runtime.
-- An unsigned Release build succeeds with no new warnings, and `xcodebuild
-  archive` succeeds and produces `1.0 (2)` for both the app and the Share
-  Extension.
+- An unsigned Release build succeeds with no new warnings.
+- **A real App Store distribution artefact exists.** `build/export/Crabrix.ipa`
+  is signed `Apple Distribution: Serhii Ziborov (XMS5ZC28UJ)` — app and Share
+  Extension alike — with `get-task-allow=false`, a matching App Group, and an
+  `iOS Team Store Provisioning Profile` carrying zero provisioned devices. It
+  reports `1.0 (2)`, `MinimumOSVersion 18.0`,
+  `ITSAppUsesNonExemptEncryption=false`, both privacy manifests, 15 licence
+  files and the bundled toolchain, and links no GameKit. It has deliberately not
+  been uploaded.
 - The root crate is compiled with its own active features. A bundled-rustc gate
   proves `#[cfg(feature = "fancy")]` and `env!("CARGO_FEATURE_FANCY")` behave as
   Cargo specifies, and the artefact cache is keyed on the feature set.
@@ -59,11 +65,6 @@ older commit it is named as inherited and is not counted.
 - **Production toolchain.** The vendored WasmKit needs Swift 6.3, so the
   submission build has to run under Xcode 26.6. Only Xcode 27 beta is installed
   on this machine, which is TestFlight-eligible but not App Store-eligible.
-- **Distribution signing.** No Apple Distribution certificate and no App Store
-  provisioning profile exist here; only an Apple Development identity does. The
-  archive above is therefore development-signed with `get-task-allow=true` and
-  cannot be uploaded. Creating the distribution identity needs the account
-  holder.
 - **Physical smoke of the exact candidate**, per `docs/DEVICE-GATE.md`.
 - **App Store Connect business fields**: age rating, content rights, DSA/trader
   declaration, export compliance, pricing and availability, review contact.
