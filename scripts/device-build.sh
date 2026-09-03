@@ -41,11 +41,20 @@ APP="$DERIVED/Build/Products/Release-iphoneos/Crabrix.app"
 
 # Pick the first physical, connected device and read its UUID by shape rather
 # than by column position, which shifts with the device name.
-DEVICE="${CRABRIX_DEVICE:-$(xcrun devicectl list devices 2>/dev/null \
-  | grep physical | grep -v unavailable \
-  | grep -oE '[0-9A-Fa-f]{8}(-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}' \
-  | head -1)}"
-[[ -n "$DEVICE" ]] || { echo "No connected device. Plug one in and unlock it." >&2; exit 1; }
+# Kept out of the assignment so `set -e` cannot kill the script before the
+# explanation below is printed: an empty grep is how "no device" looks.
+DEVICE="${CRABRIX_DEVICE:-}"
+if [[ -z "$DEVICE" ]]; then
+  DEVICE="$(xcrun devicectl list devices 2>/dev/null \
+    | grep physical | grep -v unavailable \
+    | grep -oE '[0-9A-Fa-f]{8}(-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}' \
+    | head -1 || true)"
+fi
+if [[ -z "$DEVICE" ]]; then
+  echo "No connected device. Plug one in, unlock it, and trust this Mac." >&2
+  echo "The signed build is ready at $APP, so re-running this only installs it." >&2
+  exit 1
+fi
 
 echo "==> installing on $DEVICE"
 xcrun devicectl device install app --device "$DEVICE" "$APP"
