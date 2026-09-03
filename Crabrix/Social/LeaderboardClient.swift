@@ -1,3 +1,6 @@
+// Compiled only into development builds. The App Store 1.0 binary is built
+// without CRABRIX_SOCIAL, so none of this reaches a shipped app.
+#if CRABRIX_SOCIAL
 import Foundation
 import Security
 import SwiftUI
@@ -236,3 +239,4 @@ struct DeviceKey {
         SecItemAdd(query as CFDictionary, nil)
     }
 }
+#endif

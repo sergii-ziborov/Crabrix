@@ -1,3 +1,6 @@
+// Compiled only into development builds. The App Store 1.0 binary is built
+// without CRABRIX_SOCIAL, so none of this reaches a shipped app.
+#if CRABRIX_SOCIAL
 import Foundation
 import GameKit
 import SwiftUI
@@ -178,3 +181,4 @@ final class GameCenterService: ObservableObject {
         }
     }
 }
+#endif

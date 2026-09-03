@@ -1,37 +1,46 @@
+#if CRABRIX_SOCIAL
 import GameKit
+#endif
 import PhotosUI
 import SwiftUI
 
-/// The player's profile: identity, rating, vitals, and achievements.
+/// The player's profile: rating, vitals, and achievements.
 ///
-/// Identity comes from Game Center, so there is no Crabrix account to create
-/// and no password to handle. Everything on this screen works signed out too —
-/// signing in adds the global leaderboard and the photo, nothing more.
+/// There is no Crabrix account and, in the shipped build, nothing to sign in
+/// to: the profile is local, and the avatar comes from the photo library only.
+/// Development builds add the Game Center and board sections behind
+/// `CRABRIX_SOCIAL`.
 struct ProfileView: View {
     @EnvironmentObject private var progress: CrabrixProgressStore
     @EnvironmentObject private var vitals: CrabrixVitalsStore
+    #if CRABRIX_SOCIAL
     @EnvironmentObject private var gameCenter: GameCenterService
     @EnvironmentObject private var leaderboard: LeaderboardClient
+    #endif
 
     @StateObject private var avatarStore = LocalAvatarStore()
 
+    #if CRABRIX_SOCIAL
     @State private var gameCenterPanel: GameCenterPanel?
     @State private var isRemovalConfirmed = false
-    @State private var selectedAvatarItem: PhotosPickerItem?
 
     private enum GameCenterPanel: Identifiable {
         case leaderboard
         case achievements
         var id: String { self == .leaderboard ? "leaderboard" : "achievements" }
     }
+    #endif
+    @State private var selectedAvatarItem: PhotosPickerItem?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 identityCard
+                #if CRABRIX_SOCIAL
                 if CrabrixReleaseFeatures.crabrixBoardEnabled {
                     publishCard
                 }
+                #endif
                 VitalsCard(store: vitals)
                 statsCard
                 AchievementsSection(store: progress)
@@ -44,14 +53,6 @@ struct ProfileView: View {
         .foregroundStyle(CrabrixTheme.primary)
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(item: $gameCenterPanel) { panel in
-            GameCenterSheet(
-                controller: panel == .leaderboard
-                    ? gameCenter.makeLeaderboardViewController()
-                    : gameCenter.makeAchievementsViewController()
-            )
-            .ignoresSafeArea()
-        }
         .alert(
             "Avatar",
             isPresented: Binding(
@@ -77,6 +78,15 @@ struct ProfileView: View {
                 avatarStore.errorMessage = error.localizedDescription
             }
         }
+        #if CRABRIX_SOCIAL
+        .sheet(item: $gameCenterPanel) { panel in
+            GameCenterSheet(
+                controller: panel == .leaderboard
+                    ? gameCenter.makeLeaderboardViewController()
+                    : gameCenter.makeAchievementsViewController()
+            )
+            .ignoresSafeArea()
+        }
         .task {
             if CrabrixReleaseFeatures.gameCenterEnabled {
                 gameCenter.authenticate()
@@ -87,6 +97,7 @@ struct ProfileView: View {
                 await leaderboard.loadBoard()
             }
         }
+        #endif
     }
 
     private var identityCard: some View {
@@ -95,7 +106,7 @@ struct ProfileView: View {
             HStack(spacing: 15) {
                 avatarPicker
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(gameCenter.isSignedIn ? gameCenter.playerName : "Playing offline")
+                    Text(playerTitle)
                         .font(.title3.bold())
                     Text(subtitle)
                         .font(.caption)
@@ -103,6 +114,7 @@ struct ProfileView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
+                #if CRABRIX_SOCIAL
                 if CrabrixReleaseFeatures.gameCenterEnabled,
                    let rank = gameCenter.globalRank {
                     VStack(spacing: 1) {
@@ -114,6 +126,7 @@ struct ProfileView: View {
                             .foregroundStyle(CrabrixTheme.muted)
                     }
                 }
+                #endif
             }
 
             HStack(spacing: 10) {
@@ -145,6 +158,7 @@ struct ProfileView: View {
             }
             .font(.caption.bold())
 
+            #if CRABRIX_SOCIAL
             if CrabrixReleaseFeatures.gameCenterEnabled, gameCenter.isSignedIn {
                 HStack(spacing: 10) {
                     Button { gameCenterPanel = .leaderboard } label: {
@@ -162,18 +176,11 @@ struct ProfileView: View {
                 }
                 .font(.subheadline.bold())
             } else {
-                // No "Connect Game Center" button here on purpose. Sign-in is
-                // attempted automatically on appear, and offering a button that
-                // cannot work on a build without the entitlement would be a
-                // control that does nothing.
-                Label(
-                    "Your rating, achievements, and progress are saved on this device.",
-                    systemImage: "internaldrive.fill"
-                )
-                .font(.caption)
-                .foregroundStyle(CrabrixTheme.muted)
-                .fixedSize(horizontal: false, vertical: true)
+                localStorageNote
             }
+            #else
+            localStorageNote
+            #endif
 
             Divider().overlay(CrabrixTheme.border)
             combinedProgress
@@ -183,11 +190,37 @@ struct ProfileView: View {
         .crabrixPanel(cornerRadius: 16)
     }
 
+    /// No "Connect Game Center" button here on purpose: offering a control that
+    /// cannot work in this build would be a control that does nothing.
+    private var localStorageNote: some View {
+        Label(
+            "Your rating, achievements, and progress are saved on this device.",
+            systemImage: "internaldrive.fill"
+        )
+        .font(.caption)
+        .foregroundStyle(CrabrixTheme.muted)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    /// The name shown on the card. Without the social build flag there is no
+    /// identity provider at all, which is exactly what the shipped app reports.
+    private var playerTitle: String {
+        #if CRABRIX_SOCIAL
+        gameCenter.isSignedIn ? gameCenter.playerName : "Playing offline"
+        #else
+        "Playing offline"
+        #endif
+    }
+
     private var avatarPicker: some View {
         let customImage = avatarStore.image
+        #if CRABRIX_SOCIAL
         let gameCenterImage = CrabrixReleaseFeatures.gameCenterEnabled
             ? gameCenter.photo
             : nil
+        #else
+        let gameCenterImage: UIImage? = nil
+        #endif
         let hasCustomAvatar = customImage != nil
         return PhotosPicker(
             selection: $selectedAvatarItem,
@@ -268,6 +301,7 @@ struct ProfileView: View {
     private var subtitle: String {
         // Nothing here names Game Center unless it actually connected: an
         // explanation of a feature the build cannot offer reads as a fault.
+        #if CRABRIX_SOCIAL
         guard CrabrixReleaseFeatures.gameCenterEnabled else {
             return "Everything is stored on this device"
         }
@@ -277,12 +311,16 @@ struct ProfileView: View {
         default:
             return "Everything is stored on this device"
         }
+        #else
+        return "Everything is stored on this device"
+        #endif
     }
 
+    #if CRABRIX_SOCIAL
     /// Opt-in publishing to the public board on crabrix.com.
     ///
-    /// Separate from Game Center on purpose: this one works today, needs no
-    /// entitlement, and asks for nothing except a display name.
+    /// Development builds only: the shipped 1.0 app has no board, no display
+    /// name, and no publishing control of any kind.
     private var publishCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -415,6 +453,7 @@ struct ProfileView: View {
         guard let total, total > 0 else { return "#\(rank)" }
         return "#\(rank) of \(total)"
     }
+    #endif
 
     private var statsCard: some View {
         VStack(alignment: .leading, spacing: 11) {
@@ -536,6 +575,7 @@ private struct ProfileMetric: View {
     }
 }
 
+#if CRABRIX_SOCIAL
 /// Hosts Game Center's own leaderboard and achievement screens.
 private struct GameCenterSheet: UIViewControllerRepresentable {
     let controller: GKGameCenterViewController
@@ -588,3 +628,4 @@ extension View {
         modifier(GameCenterAuthenticationPresenter(service: service))
     }
 }
+#endif

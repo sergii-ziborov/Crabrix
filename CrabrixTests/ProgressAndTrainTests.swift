@@ -87,6 +87,10 @@ final class CrabrixProgressStoreTests: XCTestCase {
         XCTAssertFalse(CrabrixReleaseFeatures.gameCenterEnabled)
         XCTAssertFalse(CrabrixReleaseFeatures.crabrixBoardEnabled)
 
+        // These types exist only in a development build. The Release
+        // configuration that is archived for the App Store is compiled without
+        // CRABRIX_SOCIAL, so there is nothing here to keep dormant.
+        #if CRABRIX_SOCIAL
         let suite = "crabrix.tests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!
         defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
@@ -98,6 +102,7 @@ final class CrabrixProgressStoreTests: XCTestCase {
         let gameCenter = GameCenterService()
         gameCenter.authenticate()
         XCTAssertEqual(gameCenter.status, .idle)
+        #endif
     }
 
     func testKeepsTheBestTermTrainNumbersNotTheLatest() {
