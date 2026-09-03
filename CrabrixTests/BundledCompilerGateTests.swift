@@ -318,7 +318,12 @@ final class BundledCompilerGateTests: XCTestCase {
         [dependencies]
         smallvec = "1"
         """
+        // A unique marker keeps the artifact cache from serving a program an
+        // earlier run compiled. Without it this gate could pass while rustc
+        // never ran, and then assert things about dependency artifacts the run
+        // had not produced.
         let source = """
+        // gate \(UUID().uuidString)
         use smallvec::SmallVec;
 
         fn main() {
