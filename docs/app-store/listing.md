@@ -92,11 +92,13 @@ device. Crabrix detects these and tells you, instead of failing halfway. There
 is no debugger yet. Compilation is interpreted WebAssembly, so a first build is
 slower than on a laptop.
 
-The compiler, curriculum, and local projects work offline. Supported
-dependencies work offline while cached; an explicit offline pin keeps their
-exact verified archives durable after iOS cache eviction. GitHub import and
-first-time crate downloads require a connection. Online boards are dormant in
-production 1.0.
+The compiler, curriculum, and local projects work offline. Cached dependencies
+rebuild while iOS retains them; Pin for Offline keeps their exact verified
+archives durable after a cache eviction. First-time package downloads and GitHub
+imports require a connection.
+
+There is no account, no analytics, and no leaderboard. Your rating, ranks and
+achievements stay on your device.
 ```
 
 ## Keywords (100, comma separated, no spaces)
@@ -115,8 +117,9 @@ manager, an editor built for a phone, 142 guided Rust lessons, and a separate
 200-pattern Algorithm Atlas with compiler-backed challenges.
 
 The compiler, curriculum, and local projects work offline. Cached dependencies
-rebuild offline, and exact graphs can be pinned durably. First-time package
-downloads require a connection; online boards are dormant in production 1.0.
+rebuild while iOS retains them; Pin for Offline keeps their exact verified
+archives durable after a cache eviction. First-time package downloads and GitHub
+imports require a connection. There is no account and no leaderboard.
 ```
 
 ## App Privacy answers — production 1.0
@@ -134,6 +137,34 @@ binary links no GameKit and contains no board endpoint; a CI step fails the
 build if either reappears. If a later release enables an online board, update
 these answers and the review notes from the shipped binary and server behaviour
 before submission.
+
+## Content rights
+
+App Store Connect asks whether the app contains, shows, or accesses third-party
+content. Crabrix does: the user can add a crates.io package or import a public
+GitHub repository. Answer accordingly and give this position rather than a bare
+"no":
+
+```
+Crabrix is a programming and dependency tool. Third-party content appears only
+because the user explicitly asks for it: a crates.io package they name, or a
+public GitHub repository URL they provide. Crabrix downloads that source into
+the user's own project so it can be read, edited and compiled locally by the
+bundled Rust compiler.
+
+Crabrix does not host, curate, promote, browse or sell third-party content,
+operates no marketplace or catalogue, and applies no rights of its own to it.
+Each package and repository stays under its own licence, which travels with the
+source. crates.io is the Rust community's public package registry, operated by
+the Rust Foundation.
+```
+
+## DSA / EU trader
+
+The app is paid and commercial, so the trader declaration has to be completed
+before EU availability, and Apple displays a verified trader's address, phone
+and email in EU storefronts. Decide on the address to publish — a business or
+P.O. Box rather than a home address — before enabling EU availability.
 
 ## Export compliance
 
