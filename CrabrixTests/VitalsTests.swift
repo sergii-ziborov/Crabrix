@@ -112,33 +112,59 @@ final class CrabrixVitalsStateTests: XCTestCase {
     }
 
     func testAPageIsNotChargedWhenEnergyIsShort() {
-        var state = CrabrixVitalsState(health: 5, energy: 1, updatedAt: start)
+        // One point short of the page cost, whatever that cost currently is.
+        let short = Double(CrabrixVitalsState.energyPerLessonPage) - 1
+        var state = CrabrixVitalsState(health: 5, energy: short, updatedAt: start)
         XCTAssertEqual(state.chargeLessonPage("ownership#0"), .blocked)
-        XCTAssertEqual(state.energy, 1)
+        XCTAssertEqual(state.energy, short)
         XCTAssertFalse(state.chargedPageIDs.contains("ownership#0"))
     }
 
     func testTheFirstMistakeOfTheDayIsShielded() {
         var state = CrabrixVitalsState(health: 5, energy: 20, updatedAt: start)
-        XCTAssertEqual(state.recordMistake(now: start, capacity: capacity), .shielded)
+        XCTAssertEqual(state.recordMistake(questionID: nil, now: start, capacity: capacity), .shielded)
         XCTAssertEqual(state.health, 5, "a shielded mistake costs no health")
-        XCTAssertEqual(state.recordMistake(now: start, capacity: capacity), .damaged(health: 1))
+        XCTAssertEqual(state.recordMistake(questionID: nil, now: start, capacity: capacity), .damaged(health: 1))
         XCTAssertEqual(state.health, 4)
     }
 
     func testShieldsComeBackTheNextDay() {
         var state = CrabrixVitalsState(health: 5, energy: 20, updatedAt: start)
-        _ = state.recordMistake(now: start, capacity: capacity)
-        _ = state.recordMistake(now: start, capacity: capacity)
+        _ = state.recordMistake(questionID: nil, now: start, capacity: capacity)
+        _ = state.recordMistake(questionID: nil, now: start, capacity: capacity)
         let tomorrow = start.addingTimeInterval(86_400)
-        XCTAssertEqual(state.recordMistake(now: tomorrow, capacity: capacity), .shielded)
+        XCTAssertEqual(state.recordMistake(questionID: nil, now: tomorrow, capacity: capacity), .shielded)
+    }
+
+    func testAQuestionIsChargedOnceHoweverManyTriesItTakes() {
+        var state = CrabrixVitalsState(health: 5, energy: 20, updatedAt: start)
+        state.shieldsUsed = capacity.dailyShields
+        state.shieldDay = start
+
+        XCTAssertEqual(
+            state.recordMistake(questionID: "ownership#quick-check", now: start, capacity: capacity),
+            .damaged(health: 1)
+        )
+        // Working the same question out is not a second mistake.
+        XCTAssertEqual(
+            state.recordMistake(questionID: "ownership#quick-check", now: start, capacity: capacity),
+            .free
+        )
+        XCTAssertEqual(state.health, 4)
+
+        // A different question is its own charge.
+        XCTAssertEqual(
+            state.recordMistake(questionID: "borrowing#quick-check", now: start, capacity: capacity),
+            .damaged(health: 1)
+        )
+        XCTAssertEqual(state.health, 3)
     }
 
     func testHealthNeverGoesNegative() {
         var state = CrabrixVitalsState(health: 0, energy: 20, updatedAt: start)
         state.shieldsUsed = capacity.dailyShields
         state.shieldDay = start
-        XCTAssertEqual(state.recordMistake(now: start, capacity: capacity), .blocked)
+        XCTAssertEqual(state.recordMistake(questionID: nil, now: start, capacity: capacity), .blocked)
         XCTAssertEqual(state.health, 0)
     }
 
@@ -155,7 +181,7 @@ final class CrabrixVitalsStateTests: XCTestCase {
         var state = CrabrixVitalsState(health: 5, energy: 10, updatedAt: start)
         _ = state.recordCorrect(capacity: capacity)
         _ = state.recordCorrect(capacity: capacity)
-        _ = state.recordMistake(now: start, capacity: capacity)
+        _ = state.recordMistake(questionID: nil, now: start, capacity: capacity)
         // The streak restarted, so the next correct answer refunds nothing.
         XCTAssertEqual(state.recordCorrect(capacity: capacity), .free)
     }
@@ -227,7 +253,6 @@ final class CrabrixVitalsStoreTests: XCTestCase {
             .free
         )
         XCTAssertEqual(store.recordAnswer(correct: false, isReview: true), .free)
-        XCTAssertEqual(store.spendOnBuild(isReview: true), .free)
 
         XCTAssertEqual(store.health, health)
         XCTAssertEqual(store.energy, energy)

@@ -67,15 +67,18 @@ struct CrabrixVitalsState: Codable, Equatable, Sendable {
     var updatedAt = Date()
     /// Lesson pages already paid for. Re-reading one is always free.
     var chargedPageIDs: Set<String> = []
+    /// Questions a mistake has already been paid for. Getting the same one
+    /// wrong twice while working it out costs nothing further: the meter is
+    /// there to pace a session, not to punish someone for thinking out loud.
+    var chargedMistakeIDs: Set<String> = []
     /// Correct answers in a row, which earn energy back.
     var flowStreak = 0
     var shieldsUsed = 0
     var shieldDay: Date?
 
-    /// Energy charged per lesson page the first time it is read.
-    static let energyPerLessonPage = 2
-    /// Energy charged for one successful run.
-    static let energyPerBuild = 1
+    /// Energy charged per lesson page the first time it is read. Moving to a
+    /// new page is the only thing that costs energy.
+    static let energyPerLessonPage = 1
     /// Correct answers needed in a row before energy is handed back.
     static let flowStreakForRefund = 3
     /// A longer streak restores health as well, including from free training.
@@ -117,8 +120,20 @@ struct CrabrixVitalsState: Codable, Equatable, Sendable {
     }
 
     /// Applies a wrong answer, spending a daily shield first if one is left.
-    mutating func recordMistake(now: Date, capacity: VitalsCapacity) -> VitalsOutcome {
+    ///
+    /// A question is charged once. Retrying it after a wrong answer is how a
+    /// learner arrives at the rule, and charging every attempt turned that into
+    /// a reason to stop.
+    mutating func recordMistake(
+        questionID: String?,
+        now: Date,
+        capacity: VitalsCapacity
+    ) -> VitalsOutcome {
         flowStreak = 0
+        if let questionID {
+            guard !chargedMistakeIDs.contains(questionID) else { return .free }
+            chargedMistakeIDs.insert(questionID)
+        }
         resetShieldsIfNewDay(now: now)
         if shieldsUsed < capacity.dailyShields {
             shieldsUsed += 1

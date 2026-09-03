@@ -28,6 +28,9 @@ struct LessonDetailView: View {
     @State private var page = 0
     @State private var selectedAnswer: Int?
     @State private var lastWrongAnswer: Int?
+    /// How many times this lesson's quick check has been answered wrongly, so
+    /// a second miss can say more than the first.
+    @State private var wrongAttempts = 0
     /// The last thing that cost or returned something, shown briefly in the header.
     @State private var lastOutcome: VitalsOutcome?
     /// Each horizontally paged step owns a separate vertical scroll position.
@@ -88,11 +91,15 @@ struct LessonDetailView: View {
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(.easeInOut(duration: 0.2), value: isQuickCheckAnswered)
 
-                if showsNavigationFooter {
-                    navigationFooter
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                        .zIndex(1)
-                }
+                // Always in the hierarchy, only ever faded and slid. Inserting
+                // and removing it re-laid out the page, so text and cards
+                // changed width the moment the actions appeared.
+                navigationFooter
+                    .opacity(showsNavigationFooter ? 1 : 0)
+                    .offset(y: showsNavigationFooter ? 0 : 24)
+                    .allowsHitTesting(showsNavigationFooter)
+                    .accessibilityHidden(!showsNavigationFooter)
+                    .zIndex(1)
             }
         }
         // Reading a page costs energy the first time only, so revisiting a
@@ -254,7 +261,7 @@ struct LessonDetailView: View {
                     Label(
                         isQuickCheckAnswered
                             ? "Correct — \(practice.feedback)"
-                            : "Not quite — \(practice.feedback)",
+                            : "Not quite — try again, nothing more is charged.",
                         systemImage: isQuickCheckAnswered
                             ? "checkmark.circle.fill"
                             : "arrow.counterclockwise.circle.fill"
@@ -271,6 +278,23 @@ struct LessonDetailView: View {
             .padding(18)
             .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 18))
             .overlay { RoundedRectangle(cornerRadius: 18).stroke(CrabrixTheme.border) }
+
+            // A learner who is stuck used to get the same one-line feedback
+            // however often they tried. The first miss offers the lesson's own
+            // hint; a second one states the rule that decides the answer.
+            if !isQuickCheckAnswered, wrongAttempts > 0 {
+                LessonCard(title: "Hint", systemImage: "lightbulb.fill", tint: CrabrixTheme.amber) {
+                    Text(brief.hint)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if wrongAttempts > 1 {
+                        Divider().overlay(CrabrixTheme.border)
+                        Text(depth.correction)
+                            .foregroundStyle(CrabrixTheme.muted)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
 
             if isQuickCheckAnswered {
                 LessonCard(title: "Why the trap fails", systemImage: "exclamationmark.bubble.fill", tint: CrabrixTheme.amber) {
@@ -377,8 +401,13 @@ struct LessonDetailView: View {
                     lastWrongAnswer = index
                 }
             }
+            if !correct { wrongAttempts += 1 }
             withAnimation(.easeOut(duration: 0.2)) {
-                lastOutcome = vitals.recordAnswer(correct: correct, isReview: isCompleted)
+                lastOutcome = vitals.recordAnswer(
+                    correct: correct,
+                    questionID: "\(lesson.id)#quick-check",
+                    isReview: isCompleted
+                )
             }
             onAnswer(index, correct)
         } label: {

@@ -88,6 +88,7 @@ struct ContentView: View {
     @AppStorage("crabrix.appearance") private var appearanceRaw = CrabrixAppearance.system.rawValue
     @AppStorage("crabrix.keepAwakeDuringBuild") private var keepAwakeDuringBuild = true
     @AppStorage("crabrix.appleIntelligenceCompletion") private var appleIntelligenceCompletion = true
+    @AppStorage("crabrix.appleIntelligenceDiagnostics") private var appleIntelligenceDiagnostics = true
     @State private var exportDocument = CrabrixProjectDocument(
         project: CrabrixProject(
             name: "hello-crabrix",
@@ -675,6 +676,7 @@ struct ContentView: View {
                     DiagnosticAdvisorQuickButton(
                         diagnostic: diagnostic,
                         state: model.diagnosticAdviceState,
+                        usesAppleIntelligence: diagnosticAdviceUsesAppleIntelligence,
                         action: presentDiagnosticAdvisor
                     )
                 }
@@ -865,6 +867,11 @@ struct ContentView: View {
 
     /// The keyboard sparkle is one contextual assistant action. With a current
     /// compiler error it opens diagnostic help; otherwise it completes code.
+    /// Whether the diagnostic helper will really reach Apple Intelligence.
+    private var diagnosticAdviceUsesAppleIntelligence: Bool {
+        appleIntelligenceDiagnostics && RustCompletionSupport.isAppleIntelligenceAvailable
+    }
+
     private func requestEditorAssistant() {
         if model.primaryDiagnostic != nil {
             presentDiagnosticAdvisor()
@@ -883,7 +890,10 @@ struct ContentView: View {
             for: nil
         )
 
-        if case .idle = model.diagnosticAdviceState {
+        // The Settings switch has to mean something: with it off, the advisor
+        // opens on Crabrix's own explanation and repair rather than quietly
+        // calling Apple Intelligence anyway.
+        if case .idle = model.diagnosticAdviceState, diagnosticAdviceUsesAppleIntelligence {
             model.requestAppleIntelligenceAdvice()
         }
 
@@ -1008,7 +1018,6 @@ struct ContentView: View {
         // to the ledger, and the run neither changes vitals nor earns rating.
         if !model.earnsProgressForCurrentRun {
             lastContribution = nil
-            _ = vitals.spendOnBuild(isReview: true)
             return
         }
         // Rating follows the diff, so re-running an untouched sample earns a
@@ -1027,11 +1036,6 @@ struct ContentView: View {
         let buildRecorded = progress.record(.buildSucceeded(contribution), eventKey: revisionKey)
         if progress.isFirstRunToday() { progress.record(.dailyRunBonus) }
         lastContribution = buildRecorded ? contribution : nil
-
-        // A run costs a little energy, so a loop of builds is not free.
-        // It never blocks the build itself: this is a developer tool, and
-        // being unable to run your own code would be the wrong trade.
-        vitals.spendOnBuild()
 
         // Typing is where most of the rating comes from now.
         let typed = TypingLedger.shared.drainPendingTyped(projectID: model.projectID)
@@ -1730,6 +1734,11 @@ private struct CompactDrawerHeader: View {
 private struct DiagnosticAdvisorQuickButton: View {
     let diagnostic: RustDiagnostic
     let state: RustDiagnosticAdviceState
+    /// False when Apple Intelligence is switched off in Settings or the device
+    /// is not eligible. The button still opens the advisor — Crabrix explains
+    /// the diagnostic and can often repair it on its own — but it stops
+    /// wearing a name that will not answer.
+    let usesAppleIntelligence: Bool
     let action: () -> Void
 
     var body: some View {
@@ -1740,7 +1749,7 @@ private struct DiagnosticAdvisorQuickButton: View {
                         .controlSize(.small)
                         .tint(CrabrixTheme.blue)
                 } else {
-                    Image(systemName: "apple.intelligence")
+                    Image(systemName: usesAppleIntelligence ? "apple.intelligence" : "bandage.fill")
                         .foregroundStyle(CrabrixTheme.blue)
                 }
                 VStack(alignment: .leading, spacing: 2) {
@@ -1767,34 +1776,46 @@ private struct DiagnosticAdvisorQuickButton: View {
             }
         }
         .buttonStyle(.plain)
-        .accessibilityHint("Opens Apple Intelligence analysis for this compiler error")
+        .accessibilityHint(
+            usesAppleIntelligence
+                ? "Opens Apple Intelligence analysis for this compiler error"
+                : "Opens Crabrix's explanation of this compiler error"
+        )
     }
 
     private var title: String {
+        guard usesAppleIntelligence else {
+            return "Explain " + (diagnostic.code ?? "this error")
+        }
         switch state {
         case .idle:
-            "Fix " + (diagnostic.code ?? "error") + " with Apple Intelligence"
+            return "Fix " + (diagnostic.code ?? "error") + " with Apple Intelligence"
         case .generating:
-            "Apple Intelligence is analyzing…"
+            return "Apple Intelligence is analyzing…"
         case .verifying:
-            "Verifying the suggested fix…"
+            return "Verifying the suggested fix…"
         case let .ready(advice):
-            advice.canApply ? "Review verified fix" : "Review Apple Intelligence advice"
+            return advice.canApply ? "Review verified fix" : "Review Apple Intelligence advice"
         case .unavailable:
-            "Apple Intelligence needs attention"
+            return "Apple Intelligence needs attention"
         }
     }
 
     private var detail: String {
+        guard usesAppleIntelligence else {
+            return "Open the diagnostic advisor"
+        }
         switch state {
         case .idle:
-            "Tap to analyze this rustc error"
+            return "Tap to analyze this rustc error"
         case .generating, .verifying:
-            "Tap to view progress"
+            return "Tap to view progress"
         case let .ready(advice):
-            advice.canApply ? "The edit passed the bundled rustc" : "Open the diagnostic advisor"
+            return advice.canApply
+                ? "The edit passed the bundled rustc"
+                : "Open the diagnostic advisor"
         case let .unavailable(message):
-            message
+            return message
         }
     }
 }

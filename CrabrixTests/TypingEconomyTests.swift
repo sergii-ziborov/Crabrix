@@ -199,20 +199,17 @@ final class BuildEnergyTests: XCTestCase {
         return (CrabrixVitalsStore(defaults: UserDefaults(suiteName: suite)!), suite)
     }
 
-    func testARunCostsEnergy() {
+    func testRunningYourOwnCodeCostsNothing() {
         let (store, suite) = makeStore()
         defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
-        let before = store.energy
-        store.spendOnBuild()
-        XCTAssertEqual(store.energy, before - CrabrixVitalsState.energyPerBuild)
-    }
+        let health = store.health
+        let energy = store.energy
 
-    func testAnEmptyPoolNeverBlocksARun() {
-        let (store, suite) = makeStore()
-        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
-        for _ in 0..<(store.capacity.maxEnergy + 5) { store.spendOnBuild() }
-        // Being unable to run your own code would be the wrong trade.
-        XCTAssertGreaterThanOrEqual(store.energy, 0)
-        XCTAssertEqual(store.spendOnBuild(), .free, "out of energy is free, not refused")
+        // Compiling is the point of the app. Charging for it made a failed
+        // build cost the learner twice: once in time, once in meter.
+        store.refresh()
+
+        XCTAssertEqual(store.energy, energy)
+        XCTAssertEqual(store.health, health)
     }
 }

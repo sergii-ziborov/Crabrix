@@ -36,6 +36,30 @@ enum LessonOutputMatcher: Codable, Equatable, Sendable {
         case let .differsFrom(starter): !output.isEmpty && output != starter
         }
     }
+
+    /// What the lesson is actually waiting for, in one line.
+    ///
+    /// The failure used to say only that stdout "does not yet prove the
+    /// requested behavior" — and the lesson text is a screen away by then, so
+    /// there was no way to know which behaviour was meant.
+    var requirement: String {
+        switch self {
+        case let .exact(expected):
+            "Expected stdout: \(Self.quoted(expected))"
+        case let .contains(fragment):
+            "stdout has to contain \(Self.quoted(fragment))"
+        case .differsFrom:
+            "stdout has to change from what the starter project printed"
+        }
+    }
+
+    private static func quoted(_ value: String) -> String {
+        let trimmed = value.trimmingCharacters(in: .newlines)
+        let shortened = trimmed.count > 120
+            ? trimmed.prefix(117) + "…"
+            : trimmed[...]
+        return "“\(shortened)”"
+    }
 }
 
 /// The proof a lesson requires. A successful process exit is only one input;
@@ -118,7 +142,8 @@ enum LessonEvidenceValidator {
             guard output.matches(result.stdout) else {
                 return LessonEvidenceValidation(
                     passed: false,
-                    detail: "The program ran, but stdout does not yet prove the requested behavior."
+                    detail: "The program ran, but its output is not what this lesson asks for. "
+                        + output.requirement + "."
                 )
             }
             return LessonEvidenceValidation(
@@ -151,7 +176,8 @@ enum LessonEvidenceValidator {
             guard output.matches(result.stdout) else {
                 return LessonEvidenceValidation(
                     passed: false,
-                    detail: "The diagnostic is gone, but the expected behavior was not preserved."
+                    detail: "\(code) is gone, but the program no longer behaves as it should. "
+                        + output.requirement + "."
                 )
             }
             return LessonEvidenceValidation(
