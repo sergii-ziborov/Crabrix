@@ -9,6 +9,11 @@ older commit it is named as inherited and is not counted.
 - The fast release suite passes 370 XCTest cases and 7 Swift Testing cases with
   no failures, skips or runtime warnings, run on **iOS 18.2 — the minimum
   deployment target** rather than the newest available runtime.
+- The complete bundled compiler and sandbox suite passes **21 of 21** in 838
+  seconds on the same iOS 18.2 simulator: real rustc diagnostics and repair,
+  root feature flags, the Atlas harness, a real crates.io package compiled and
+  linked, a vendored patch, an offline pin rehydrating after cache eviction,
+  Stop freeing the Run gate, and the sandbox limits.
 - An unsigned Release build succeeds with no new warnings.
 - **A real App Store distribution artefact exists.** `build/export/Crabrix.ipa`
   is signed `Apple Distribution: Serhii Ziborov (XMS5ZC28UJ)` — app and Share
@@ -51,8 +56,6 @@ older commit it is named as inherited and is not counted.
 
 ## Not measured on this candidate
 
-- The full bundled compiler/sandbox suite. Two targeted gates were re-run here;
-  the complete 20-test run was last done on build 1's tree.
 - Every physical-device runtime measurement: cold check timing, repeated
   check/run cycles, pure-compute stop with CPU-idle and memory observation,
   Cargo cold/warm/offline-pinned rebuilds, and Vendor & Edit on device.

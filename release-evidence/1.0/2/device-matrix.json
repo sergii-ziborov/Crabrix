@@ -5,7 +5,7 @@
     "version": "1.0",
     "build": "2",
     "branch": "release/1.0-app-store",
-    "candidateCommit": "f801dfe8c5bdf415bf8362b398805ea16c385090",
+    "candidateCommit": "24507ceedd6bd6d42eacdd88710ed30fa3e43229",
     "sourceIdentity": "release branch hardening candidate; immutable release tag pending",
     "bundleVersion": "1.0 (2)"
   },
@@ -55,7 +55,6 @@
     }
   ],
   "notMeasuredOnThisCommit": [
-    "the full bundled compiler and sandbox suite (20 tests)",
     "every physical-device runtime measurement: cold check timing, repeated check/run cycles, pure-compute stop with CPU-idle and memory observation, Cargo cold/warm/offline-pinned rebuilds, Vendor & Edit on device",
     "thermal, low-power, background/foreground and memory-warning behaviour",
     "iPad hardware of any class, and a physical device running the minimum supported iOS 18",
@@ -66,22 +65,26 @@
     "note": "Build 1 recorded a 9.2 second cold E0502 check on an iPhone 13 mini and a 20/20 bundled compiler suite. Both were measured on older source and are deliberately not attributed to this candidate."
   },
   "compilerGates": {
-    "scope": "targeted, not the full suite",
-    "ranOnCommit": "5d6fd92",
-    "tests": [
-      {
-        "name": "testRootFeaturesReachTheRootCrate",
-        "seconds": 54.8,
-        "result": "passed",
-        "proves": "the root crate compiles with --cfg feature=\"fancy\" and CARGO_FEATURE_FANCY=1 from its own manifest, through real bundled rustc"
-      },
-      {
-        "name": "testRootCargoPackageEnvironmentComesFromTheManifest",
-        "seconds": 56.3,
-        "result": "passed"
-      }
-    ],
-    "notRunOnThisCommit": "the remaining 20 bundled compiler/sandbox gates"
+    "scope": "the complete bundled compiler and sandbox suite",
+    "scheme": "CrabrixCompilerGate",
+    "device": "iPhone 16 Pro simulator",
+    "osVersion": "18.2",
+    "tests": 21,
+    "passed": 21,
+    "failed": 0,
+    "seconds": 838.4,
+    "result": "passed",
+    "proves": [
+      "real bundled rustc produces E0502 and compiles the repaired program",
+      "the root crate receives its own --cfg feature and CARGO_FEATURE_ values",
+      "all 200 Algorithm Atlas patterns verify through the private four-case harness",
+      "a real crates.io package resolves, downloads, compiles, links and leaves reusable artifacts",
+      "a vendored crate builds from a project-local patch under a distinct fingerprint",
+      "an offline pin rehydrates sources after purgeable cache eviction",
+      "Stop interrupts a running compile and frees the Run gate",
+      "guest programs cannot exceed the sandbox memory limit",
+      "every guided showcase and visual canvas passes the bundled compiler"
+    ]
   },
   "archive": {
     "developmentArchive": {
