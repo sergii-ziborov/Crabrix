@@ -395,7 +395,11 @@ actor CargoPackageManager {
             }
             .sorted { $0.alias < $1.alias }
 
-        return CargoBuildPlan(units: units, rootExterns: rootExterns)
+        return CargoBuildPlan(
+            units: units,
+            rootExterns: rootExterns,
+            rootFeatures: graph.rootFeatures
+        )
     }
 
     /// Cargo's default library target is `src/lib.rs` unless `[lib] path` says

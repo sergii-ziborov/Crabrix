@@ -104,6 +104,35 @@ final class CargoResolverTests: XCTestCase {
         XCTAssertEqual(graph.packages.count, 1)
     }
 
+    func testTheRootsOwnActiveFeaturesAreReported() async throws {
+        let index = try StubIndex.make([:])
+        let root = try manifest("""
+        [features]
+        default = ["fancy"]
+        fancy = ["shiny"]
+        shiny = []
+        unused = []
+        """)
+        let graph = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features
+        )
+
+        // Exactly what Cargo would pass to rustc: `default` is itself a feature.
+        XCTAssertEqual(graph.rootFeatures, ["default", "fancy", "shiny"])
+    }
+
+    func testAManifestWithoutFeaturesEnablesNone() async throws {
+        let index = try StubIndex.make([:])
+        let root = try manifest("[dependencies]")
+        let graph = try await CargoResolver(index: index).resolve(
+            rootDependencies: root.dependencies,
+            rootFeatures: root.features
+        )
+
+        XCTAssertTrue(graph.rootFeatures.isEmpty, "no [features] table means no cfg flags")
+    }
+
     func testResolvesTransitiveDependenciesInBuildOrder() async throws {
         let index = try StubIndex.make([
             "top": [indexLine("top", "1.0.0", deps: "[\(dep("mid", "^1"))]")],

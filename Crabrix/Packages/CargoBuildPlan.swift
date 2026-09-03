@@ -88,10 +88,14 @@ struct CargoBuildPlan: Sendable, Equatable {
     let units: [CargoBuildUnit]
     /// The externs the root project itself compiles against.
     let rootExterns: [CargoExtern]
+    /// The root package's own active features, sorted. rustc receives one
+    /// `--cfg feature="…"` per entry and `CARGO_FEATURE_…` for each, so a
+    /// project's own feature gates compile the way its manifest says.
+    let rootFeatures: [String]
 
     var isEmpty: Bool { units.isEmpty }
 
-    static let empty = CargoBuildPlan(units: [], rootExterns: [])
+    static let empty = CargoBuildPlan(units: [], rootExterns: [], rootFeatures: [])
 
     func unit(withFingerprint fingerprint: String) -> CargoBuildUnit? {
         units.first { $0.fingerprint == fingerprint }

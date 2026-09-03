@@ -61,6 +61,10 @@ struct ResolvedGraph: Sendable {
     let packages: [PackageID: ResolvedPackage]
     /// The root project's direct dependencies, keyed by alias.
     let rootDependencies: [String: PackageID]
+    /// The root package's own active features, expanded from its `[features]`
+    /// table. The root crate is compiled with these, exactly as Cargo does, so
+    /// `#[cfg(feature = ...)]` in the user's own code behaves as written.
+    let rootFeatures: [String]
     /// Dependencies first, dependents last.
     let buildOrder: [PackageID]
     let warnings: [ResolutionWarning]
@@ -231,6 +235,7 @@ actor CargoResolver {
         let graph = ResolvedGraph(
             packages: packages,
             rootDependencies: rootMap,
+            rootFeatures: rootExpansion.features.sorted(),
             buildOrder: Self.topologicalOrder(packages: packages, roots: Array(rootMap.values)),
             warnings: warnings.sorted { $0.id < $1.id }
         )

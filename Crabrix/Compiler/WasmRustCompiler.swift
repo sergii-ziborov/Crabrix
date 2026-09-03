@@ -26,7 +26,10 @@ final class WasmRustCompiler: @unchecked Sendable {
     }
 
     static var toolchainVersion: String { CargoToolchain.bundledVersion }
-    private static let cacheSchemaVersion = "fast-dev-2"
+    // Bumped when the root compiler invocation changes shape: artefacts built
+    // before the root crate received its own `--cfg feature="…"` flags must not
+    // be reused for the same manifest.
+    private static let cacheSchemaVersion = "fast-dev-3"
 
     private let bundle: Bundle
     private let ledger: CrateCompatibilityLedger
@@ -301,6 +304,9 @@ final class WasmRustCompiler: @unchecked Sendable {
                 "--error-format=json",
                 "--json=diagnostic-rendered-ansi",
             ]
+            for feature in plan.rootFeatures {
+                arguments += ["--cfg", "feature=\"\(feature)\""]
+            }
             arguments += externArguments(plan.rootExterns, emit: action.emit)
 
             switch action {
@@ -327,7 +333,8 @@ final class WasmRustCompiler: @unchecked Sendable {
                     ] + registryPreopens(for: plan),
                     environment: rootCargoEnvironment(
                         sourcePath: sourcePath,
-                        supportingFiles: supportingFiles
+                        supportingFiles: supportingFiles,
+                        features: plan.rootFeatures
                     ),
                     interrupter: interrupter
                 )
@@ -705,12 +712,16 @@ final class WasmRustCompiler: @unchecked Sendable {
             "CARGO_MANIFEST_DIR": unit.guestSourceDirectory,
         ]
         for feature in unit.features {
-            let key = feature.uppercased()
-                .replacingOccurrences(of: "-", with: "_")
-                .replacingOccurrences(of: ".", with: "_")
-            environment["CARGO_FEATURE_\(key)"] = "1"
+            environment["CARGO_FEATURE_\(Self.featureEnvironmentKey(feature))"] = "1"
         }
         return environment
+    }
+
+    /// Cargo's own spelling: uppercased, with `-` and `.` folded to `_`.
+    private static func featureEnvironmentKey(_ feature: String) -> String {
+        feature.uppercased()
+            .replacingOccurrences(of: "-", with: "_")
+            .replacingOccurrences(of: ".", with: "_")
     }
 
     /// Cargo projects commonly use `env!("CARGO_PKG_…")` in their own root
@@ -718,9 +729,13 @@ final class WasmRustCompiler: @unchecked Sendable {
     /// than being present only while dependencies compile.
     private func rootCargoEnvironment(
         sourcePath: String,
-        supportingFiles: [String: String]
+        supportingFiles: [String: String],
+        features: [String]
     ) -> [String: String] {
         var environment = ["CLIF2WASM_OBJECT": "1"]
+        for feature in features {
+            environment["CARGO_FEATURE_\(Self.featureEnvironmentKey(feature))"] = "1"
+        }
         guard let manifestSource = supportingFiles["Cargo.toml"],
               let manifest = try? CratePackageManifest.parse(manifestSource),
               !manifest.packageName.isEmpty
@@ -997,6 +1012,12 @@ final class WasmRustCompiler: @unchecked Sendable {
             hasher.update(data: Data(path.utf8))
             hasher.update(data: Data([0]))
             hasher.update(data: Data(contents.utf8))
+            hasher.update(data: Data([0]))
+        }
+        // The root's own active features change what compiles, so they are part
+        // of the identity even though they are derived from the manifest above.
+        for feature in plan.rootFeatures {
+            hasher.update(data: Data("feature=\(feature)".utf8))
             hasher.update(data: Data([0]))
         }
         // Dependency identity is part of the key, so adding or changing a crate

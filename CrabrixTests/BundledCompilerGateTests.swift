@@ -90,6 +90,49 @@ final class BundledCompilerGateTests: XCTestCase {
         )
     }
 
+    func testRootFeaturesReachTheRootCrate() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
+            throw XCTSkip("Run the CrabrixCompilerGate scheme for the root feature gate.")
+        }
+        let manifest = """
+        [package]
+        name = "root-feature-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [features]
+        default = ["fancy"]
+        fancy = []
+        """
+        let source = """
+        #[cfg(feature = "fancy")]
+        fn mode() -> &'static str { "fancy" }
+
+        #[cfg(not(feature = "fancy"))]
+        fn mode() -> &'static str { "plain" }
+
+        fn main() {
+            println!("{}:{}", mode(), env!("CARGO_FEATURE_FANCY"));
+        }
+        """
+
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertEqual(snapshot.plan.rootFeatures, ["default", "fancy"])
+
+        let result = await WasmRustCompiler(bundle: .main).run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": manifest],
+            plan: snapshot.plan
+        )
+
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(
+            result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+            "fancy:1"
+        )
+    }
+
     func testAlgorithmSolutionRunsOnlyThroughThePrivateHarness() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
             throw XCTSkip("Run the CrabrixCompilerGate scheme for the algorithm harness gate.")
