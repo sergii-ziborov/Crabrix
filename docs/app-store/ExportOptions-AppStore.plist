@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- App Store export for the Crabrix 1.0 submission archive.
+       Used as:
+         xcodebuild -exportArchive \
+           -archivePath build/Crabrix-1.0-2.xcarchive \
+           -exportPath build/export \
+           -exportOptionsPlist docs/app-store/ExportOptions-AppStore.plist \
+           -allowProvisioningUpdates
+       The team is deliberately not written here; pass it with
+       -allowProvisioningUpdates and the signed-in Xcode account, so nothing
+       account-specific is committed. -->
+  <key>method</key>
+  <string>app-store-connect</string>
+  <key>destination</key>
+  <string>export</string>
+  <key>signingStyle</key>
+  <string>automatic</string>
+  <key>uploadSymbols</key>
+  <true/>
+  <key>manageAppVersionAndBuildNumber</key>
+  <false/>
+</dict>
+</plist>
