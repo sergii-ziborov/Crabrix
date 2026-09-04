@@ -90,11 +90,20 @@ cleanup() {
 }
 trap cleanup EXIT
 
-"$ZSTD_BIN" -dc "$CACHE_DIR/$RUSTC_ARCHIVE" \
-  | /usr/bin/tar -xf - -C "$STAGING" --strip-components 1
-"$ZSTD_BIN" -dc "$CACHE_DIR/$SYSROOT_ARCHIVE" \
-  | /usr/bin/tar -xf - -C "$STAGING" --strip-components 1 \
-      --exclude 'rustc/sysroot-wasip1.bundle'
+# Decompressed to a file rather than piped into tar. When tar closes the pipe
+# first, zstd dies of SIGPIPE and `set -o pipefail` fails the whole bootstrap —
+# which is exactly how CI broke, intermittently and only on the fast runners.
+extract() {
+  local archive="$1"
+  shift
+  local tarball="$STAGING/.extract.tar"
+  "$ZSTD_BIN" -d -f "$CACHE_DIR/$archive" -o "$tarball"
+  /usr/bin/tar -xf "$tarball" -C "$STAGING" --strip-components 1 "$@"
+  rm -f "$tarball"
+}
+
+extract "$RUSTC_ARCHIVE"
+extract "$SYSROOT_ARCHIVE" --exclude 'rustc/sysroot-wasip1.bundle'
 
 if [[ ! -f "$STAGING/rustc.wasm" || ! -d "$STAGING/sysroot-wasip1/lib/rustlib/wasm32-wasip1" ]]; then
   echo "Pinned toolchain archive has an unexpected layout" >&2
