@@ -21,14 +21,15 @@ the app cannot drift apart. Character limits are Apple's.
 
 | Field | Value |
 | --- | --- |
-| Marketing URL | `https://crabrix.com` |
+| Marketing URL | `https://crabrix.com/technology` — the page that answers a reviewer's and a developer's first question: which compiler, under which limits, with which gaps |
 | Support URL | `https://crabrix.com/support` |
 | Privacy Policy URL | `https://crabrix.com/privacy` |
 
 ## Promotional text (170)
 
-> Now with 142 guided Rust lessons, a 200-pattern Algorithm Atlas, tiered
-> achievements, and compiler-backed practice that runs locally.
+> A real bundled rustc and crates.io dependencies, built on device. 142 guided
+> lessons and 200 algorithm patterns, checked by the compiler itself. Works with
+> the network off.
 
 ## Description (4000)
 
