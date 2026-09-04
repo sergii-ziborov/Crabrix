@@ -7,11 +7,15 @@ on the device.
 
 > Real Rust. Real Cargo. Built locally on iPhone and iPad.
 
-> **Release status:** the code-level candidate is under active hardening. A
-> production 1.0 tag is fail-closed until the full physical iPhone/iPad matrix,
-> final screenshots, signing/App Store configuration, and the remaining
-> complete Algorithm Atlas canonical-solution evidence is recorded. See
+> **Release status:** 1.0 is frozen and signed for the App Store. What remains
+> is submission, not development: the physical-device smoke run, the App Store
+> Connect fields, and the signed tag. Everything the code can prove is recorded
+> in [release-evidence/1.0/2](release-evidence/1.0/2/) and
 > [Release readiness](docs/RELEASE-READINESS.md).
+
+> **The source is readable, not reusable.** Crabrix is commercial software
+> published for review and audit. See [LICENSE](LICENSE) before you copy
+> anything.
 
 [**crabrix.com**](https://crabrix.com) · [About](https://crabrix.com/about) ·
 [Support](https://crabrix.com/support) ·
@@ -20,7 +24,7 @@ on the device.
 | | |
 | :--: | :--: |
 | <img src="docs/screenshots/iphone-projects.png" width="260" alt="Projects dashboard on iPhone"> | <img src="docs/screenshots/iphone-library.png" width="260" alt="Project library with search and filters"> |
-| **Projects** — current project, import, and My Projects | **Library** — 46 working projects, 6 visual canvases |
+| **Projects** — current project, My Projects, and one way to create | **Library** — 46 projects; each canvas card previews what its program prints |
 | <img src="docs/screenshots/iphone-build.png" width="260" alt="Build workspace on iPhone"> | <img src="docs/screenshots/iphone-learn.png" width="260" alt="Learn tab with rating and achievements"> |
 | **Build** — editor, packages, diagnostics, terminal | **Learn** — 142 Rust lessons + 200 algorithm patterns |
 

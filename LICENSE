@@ -1,30 +1,59 @@
-Crabrix Proprietary License
+Crabrix — Source-Available License
+Copyright © 2026 Serhii Ziborov. All rights reserved.
 
-Copyright (c) 2026 Serhii Ziborov. All rights reserved.
+Crabrix is commercial proprietary software. The source is published so that it
+can be read, audited and evaluated — not so that it can be reused. Seeing the
+code grants no licence to it beyond what is written below.
 
-Crabrix, including its original source code, application design, branding,
-documentation, learning content, and bundled original assets (collectively,
-the "Software"), is proprietary software.
+WHAT YOU MAY DO
 
-The public availability of this repository is for review, security research,
-and evaluation only. No permission is granted to use, copy, modify, merge,
-publish, distribute, sublicense, sell, commercially exploit, or create
-derivative works from the Software without prior written authorization from
-the copyright holder.
+1. Read, review and audit this source, in whole or in part, including for
+   security research, academic study, journalism, or deciding whether to buy
+   the app.
+2. Quote short excerpts with attribution, for example in a review, an article,
+   a talk, or a bug report.
+3. Build and run this source on your own devices for the sole purpose of
+   evaluating it or verifying a claim made about it.
 
-A legitimately acquired application license grants only the rights stated in
-the applicable purchase terms or end-user license agreement. It does not grant
-rights to the source code or Crabrix branding.
+WHAT YOU MAY NOT DO WITHOUT PRIOR WRITTEN PERMISSION
 
-Third-party components and toolchain artifacts remain governed by their own
-licenses. Their notices are listed in Crabrix/Resources/ThirdPartyNotices.md
-and are not relicensed by this document.
+1. Use this source, or any part of it, in another product or service, whether
+   commercial or not.
+2. Redistribute, sublicense, sell, rent, or publish this source or a modified
+   version of it.
+3. Create derivative works, including ports to other platforms and translations
+   to other languages.
+4. Publish a compiled build of this source to any application store or other
+   distribution channel.
+5. Remove or alter any copyright, licence, or attribution notice.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+THIRD-PARTY COMPONENTS
+
+This repository redistributes third-party components that are covered by their
+own licences, not by this one. Those licences continue to govern those
+components and nothing here restricts a right they grant you. The complete
+texts ship inside the app and live in Crabrix/Resources/Licenses/; the summary
+is in Crabrix/Resources/ThirdPartyNotices.md.
+
+The bundled Rust compiler and standard library are offered by the Rust Project
+under Apache-2.0 or MIT terms, at the recipient's option. Rust and the Rust logo
+are trademarks of the Rust Foundation. Crabrix is an independent project and is
+not affiliated with or endorsed by the Rust Foundation or by Apple.
+
+TRADEMARKS
+
+This licence grants no rights to the Crabrix name, logo, or app icon.
+
+NO WARRANTY
+
+THIS SOURCE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. TO THE MAXIMUM EXTENT
-PERMITTED BY LAW, THE COPYRIGHT HOLDER SHALL NOT BE LIABLE FOR ANY CLAIM,
-DAMAGES, OR OTHER LIABILITY ARISING FROM THE SOFTWARE OR ITS USE.
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THIS SOURCE OR ITS USE.
 
-For commercial licensing inquiries, contact the copyright holder through the
-official Crabrix repository owner profile.
+PERMISSION
+
+To ask for anything this licence does not grant, write to
+support@crabrix.com. Permission is given in writing or not at all.

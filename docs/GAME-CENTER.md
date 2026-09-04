@@ -1,66 +1,43 @@
 # Game Center
 
-Crabrix has no accounts of its own — no password to store, no reset email to
-send, no personal data to hold. Identity, achievements, and the global
-leaderboard come from Game Center, which the player already has.
+**Not in Crabrix 1.0.** This document exists so the code behind
+`Crabrix/Social/` is not mistaken for a shipping feature.
 
-Everything in the app works signed out. Rating, achievements, vitals, and
-progress are stored on the device and are the source of truth. Game Center adds
-a verified display name, a photo, and a global board on top of that.
+## What the production build contains
 
-## Current state
-
-The code is in place (`Crabrix/Social/GameCenterService.swift`) and reports
-`unavailable` at runtime, because the entitlement is not yet on the profile:
+Nothing. The Release configuration is compiled without `CRABRIX_SOCIAL`, so
+`GameCenterService` and `LeaderboardClient` are not in the binary at all. The
+archived app links no GameKit, carries no board endpoint, and has no
+display-name field or publishing control anywhere in the interface. A step in
+`.github/workflows/release-checks.yml` fails the build if any of that returns:
 
 ```
-error: Provisioning profile "iOS Team Provisioning Profile:
-com.sergiiziborov.Crabrix" doesn't include the Game Center capability.
+otool -L Crabrix | grep -i GameKit          → must find nothing
+strings Crabrix | grep crabrix.com/api      → must find nothing
+strings Crabrix | grep GKLocalPlayer        → must find nothing
 ```
 
-The app handles that path deliberately: `GameCenterService.status` becomes
-`.unavailable`, the Profile screen shows "Playing offline", and nothing else
-changes.
+Rating, ranks, achievements, mastery and vitals are calculated and stored on the
+device. There is no account, no display name, and no server that holds anything
+about a player.
 
-## Turning it on
+## Why the code is still here
 
-Needs a paid Apple Developer account, then:
+Development builds define `CRABRIX_SOCIAL`, which compiles the two services and
+their profile UI. That keeps the work reviewable and lets the tests exercise it,
+while `CrabrixReleaseFeatures.gameCenterEnabled` and `.crabrixBoardEnabled`
+remain `false` even there.
 
-1. In the developer portal, enable **Game Center** on the App ID
-   `com.sergiiziborov.Crabrix`.
-2. Add the entitlement to `Crabrix/Crabrix.entitlements`:
+## What a future version would need before enabling it
 
-   ```xml
-   <key>com.apple.developer.game-center</key>
-   <true/>
-   ```
+- the Game Center capability on the App ID and the provisioning profile;
+- a leaderboard and achievement catalogue configured in App Store Connect;
+- App Privacy answers rewritten: publishing a score is data leaving the device,
+  and the current answers say nothing leaves it;
+- the privacy policy, the terms, and the support page updated **before** the
+  version ships, not after;
+- moderation for anything a player can type, if a display name ever exists.
 
-3. In App Store Connect, create one leaderboard with the ID that
-   `GameCenterService.leaderboardID` already uses:
-
-   ```
-   com.sergiiziborov.Crabrix.rating
-   ```
-
-   Type: classic, score format integer, sort high-to-low.
-
-4. Create one Game Center achievement per entry in
-   `CrabrixAchievementCatalog.all`. Achievements are tiered, so an id is
-   `<family>.<tier>` with the tier as a number from 0 (Bronze) to 4 (Diamond) —
-   `builds.0`, `builds.1`, … `recall-lines.4`.
-   `GameCenterService.submitAchievements` reports percentages against those
-   ids, so they must match exactly. Print the full list with:
-
-   ```swift
-   CrabrixAchievementCatalog.all.map(\.id)
-   ```
-
-Nothing in the app needs to change: `authenticate()` starts succeeding and the
-Profile screen switches to the signed-in layout on its own.
-
-## Why the in-app banner stays
-
-`showsCompletionBanner` is `false` on every reported achievement. Crabrix draws
-its own unlock animation (`AchievementCelebrationView`), which fires the moment
-the achievement is earned locally — including offline, where Game Center has
-nothing to say.
+Until all of that is true, the honest description of Crabrix is the one in the
+app, on the site, and in the App Store listing: no account, no leaderboard,
+nothing published.
