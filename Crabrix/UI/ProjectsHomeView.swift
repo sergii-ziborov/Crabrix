@@ -512,6 +512,8 @@ private struct BuildStatusBadge: View {
             }
             .font((compact ? Font.caption2 : Font.caption).monospaced().bold())
             .foregroundStyle(CrabrixTheme.blue)
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
             .background(CrabrixTheme.blue.opacity(0.1), in: Capsule())
@@ -519,14 +521,23 @@ private struct BuildStatusBadge: View {
             Label("Stopping…", systemImage: "stop.circle.fill")
                 .font((compact ? Font.caption2 : Font.caption).monospaced().bold())
                 .foregroundStyle(CrabrixTheme.amber)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
         } else if let record {
+            // "Last run: passed" wrapped to three lines inside its own capsule
+            // on a small iPhone, and the compact form broke mid-word. The badge
+            // keeps its intrinsic width now and the project title, which has
+            // room to wrap, gives way instead.
             Label(
-                compact ? (record.succeeded ? "Passed" : "Failed")
-                    : "Last \(record.phase.rawValue): \(record.succeeded ? "passed" : "failed")",
+                compact
+                    ? (record.succeeded ? "Passed" : "Failed")
+                    : "\(record.phase.rawValue.capitalized) \(record.succeeded ? "passed" : "failed")",
                 systemImage: record.succeeded ? "checkmark.circle.fill" : "xmark.octagon.fill"
             )
             .font((compact ? Font.caption2 : Font.caption).monospaced().bold())
             .foregroundStyle(record.succeeded ? CrabrixTheme.mint : CrabrixTheme.coral)
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
             .background(CrabrixTheme.background.opacity(0.65))
@@ -535,6 +546,8 @@ private struct BuildStatusBadge: View {
             Label(compact ? "Not built" : "No build yet", systemImage: "circle.dashed")
                 .font((compact ? Font.caption2 : Font.caption).monospaced())
                 .foregroundStyle(CrabrixTheme.muted)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
         }
     }
 }
