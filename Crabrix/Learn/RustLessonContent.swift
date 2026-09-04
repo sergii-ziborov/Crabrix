@@ -72,7 +72,7 @@ enum RustLessonLibrary {
             let value = 5;
             value = 6;
             """,
-            question: "Why does that fail?",
+            question: "Why is the reassignment rejected?",
             answers: [
                 "5 and 6 are different types",
                 "value is immutable without mut",
@@ -126,7 +126,7 @@ enum RustLessonLibrary {
             practiceCode: """
             let value = if flag { 1 } else { "two" };
             """,
-            question: "Why is that rejected?",
+            question: "Why do those two branches not type-check?",
             answers: [
                 "The condition must be an integer, not a bool",
                 "The branches produce different types",
@@ -458,7 +458,7 @@ enum RustLessonLibrary {
                 value: &str,
             }
             """,
-            question: "Why is that rejected?",
+            question: "Why is that struct definition rejected?",
             answers: [
                 "A struct field can never hold a &str",
                 "The struct must declare the lifetime it borrows for",
@@ -552,7 +552,7 @@ enum RustLessonLibrary {
                 let result = compute();
             }
             """,
-            question: "What is missing?",
+            question: "What is missing from that test?",
             answers: [
                     "A return type so the harness can read the result",
                 "An assertion — the test passes no matter what compute returns",
@@ -695,7 +695,7 @@ enum RustLessonLibrary {
             // Many producers, one consumer, ordered work.
             let queue = ???;
             """,
-            question: "Which fits better?",
+            question: "Which coordination primitive fits better?",
             answers: ["Arc<Mutex<Vec<Job>>>", "An mpsc channel", "A global static"],
             correctAnswer: 1,
             feedback: "Many-producer, single-consumer is exactly what a channel is."
@@ -881,8 +881,12 @@ enum RustLessonLibrary {
             // Live voice: late audio is worse than none.
             let transport = ???;
             """,
-            question: "Which fits?",
-            answers: ["TCP", "UDP", "Either, it makes no difference"],
+            question: "Which transport fits that workload?",
+            answers: [
+                "TCP, so nothing is ever lost",
+                "UDP, so a late packet is simply skipped",
+                "Either — the difference does not matter here",
+            ],
             correctAnswer: 1,
             feedback: "Retransmitting audio that is already too late only adds delay."
         ),
@@ -902,7 +906,7 @@ enum RustLessonLibrary {
             practiceCode: """
             // One dropped packet, HTTP/2, ten active streams.
             """,
-            question: "How many streams stall?",
+            question: "How many of the ten streams stall?",
             answers: [
                 "One — only the stream that lost the packet",
                 "All ten, because they share one TCP connection",
@@ -1140,7 +1144,7 @@ enum RustLessonLibrary {
             // Keys are HTTP header names from the client.
             let map: HashMap<String, String, FxBuildHasher>
             """,
-            question: "What is the risk?",
+            question: "What is the risk of that hash choice?",
             answers: [
                 "None — a faster hash is strictly better",
                 "Chosen keys can be made to collide, turning lookups linear",
@@ -1253,7 +1257,7 @@ enum RustLessonLibrary {
             drop(name);
             c_use(ptr);
             """,
-            question: "What is wrong there?",
+            question: "What is wrong with that pointer?",
             answers: [
                 "CString cannot hold input of that length",
                 "The buffer is freed before use, so ptr dangles",
@@ -1312,7 +1316,7 @@ enum RustLessonLibrary {
             let r = &mut v;
             let s = &v;
             """,
-            question: "Why is that rejected?",
+            question: "Why does the compiler reject that borrow?",
             answers: [
                 "The vector has to be declared immutable",
                 "A mutable borrow cannot coexist with a shared one",
@@ -1424,7 +1428,7 @@ enum RustLessonLibrary {
             // Shared by several parents, one thread only.
             type Node = ???;
             """,
-            question: "Which fits?",
+            question: "Which pointer type fits that requirement?",
             answers: ["Box<Node>", "Rc<Node>", "Arc<Node>"],
             correctAnswer: 1,
             feedback: "Shared on one thread: Rc. Arc would pay for atomics you do not need."
@@ -1629,7 +1633,7 @@ enum RustLessonLibrary {
             drop(a);
             println!("after explicit drop");
             """,
-            question: "Which line prints last?",
+            question: "Which of those values drops last?",
             answers: ["dropping a", "after explicit drop", "dropping b"],
             correctAnswer: 2,
             feedback: "`a` is dropped early by hand; `b` still drops at the end of the scope."
@@ -1717,7 +1721,7 @@ enum RustLessonLibrary {
                 inner: NoDebug,
             }
             """,
-            question: "Why does that fail?",
+            question: "Why can that struct not be printed?",
             answers: [
                 "A struct cannot derive Debug when it has fields",
                 "NoDebug does not implement Debug, so the field cannot be printed",
@@ -1951,7 +1955,7 @@ enum RustLessonLibrary {
                 Nil,
             }
             """,
-            question: "Why does that fail to compile?",
+            question: "Why does that recursive enum fail to compile?",
             answers: [
                 "An enum can never refer to itself, boxed or not",
                 "The type would have infinite size without an indirection",
@@ -2015,7 +2019,7 @@ enum RustLessonLibrary {
                 fn drop(&mut self) { println!("released"); }
             }
             """,
-            question: "When does that print?",
+            question: "When does that Drop message print?",
             answers: [
                 "Only when you call drop() on it explicitly",
                 "Automatically when the value leaves scope",
@@ -2131,7 +2135,7 @@ enum RustLessonLibrary {
                 *counter.lock().unwrap() += 1;
             });
             """,
-            question: "Why does that fail to compile?",
+            question: "Why can that Rc not cross the thread boundary?",
             answers: [
                 "A Mutex cannot hold a plain integer counter",
                 "Rc is not Send, so it cannot move to another thread",
@@ -2165,7 +2169,7 @@ enum RustLessonLibrary {
                 *cell.borrow_mut() += 1;
             });
             """,
-            question: "What stops that?",
+            question: "What stops that closure moving to a thread?",
             answers: [
                 "RefCell is not Sync, and its runtime check is not atomic",
                 "A closure is not allowed to capture a cell type",
@@ -2199,8 +2203,12 @@ enum RustLessonLibrary {
                 work();
             }
             """,
-            question: "What does that print?",
-            answers: ["working, printed as soon as the future is built", "Nothing — the future is never awaited", "It panics"],
+            question: "What does that print with no await?",
+            answers: [
+                "working, printed as soon as the future is built",
+                "Nothing — the future is never awaited",
+                "It panics because nothing ever polls it",
+            ],
             correctAnswer: 1,
             feedback: "The future is created and dropped without ever being polled."
         ),
@@ -2420,7 +2428,7 @@ enum RustLessonLibrary {
 
             extern "C" { fn distance(p: Point) -> f64; }
             """,
-            question: "What is missing?",
+            question: "What is missing from that struct?",
             answers: [
                     "Nothing — Rust already matches the C layout",
                 "#[repr(C)] — Rust does not guarantee field order otherwise",

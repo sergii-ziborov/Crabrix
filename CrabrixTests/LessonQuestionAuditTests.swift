@@ -1,12 +1,14 @@
 import XCTest
 @testable import Crabrix
 
-/// A report on the quick-check questions, not a gate.
+/// Quality gates for the quick-check questions, plus one report.
 ///
-/// Two complaints from a device session drive it: some questions are guessable
-/// without knowing any Rust, and some cannot be answered from what the lesson
-/// itself says. Both are content defects that structural tests never saw, so
-/// this prints them per lesson and leaves fixing to the catalogue.
+/// Two complaints from a device session started this: some questions were
+/// guessable without knowing any Rust, and some could not be answered from what
+/// the lesson itself said. Those categories are now empty and are asserted, so
+/// the catalogue cannot drift back. Answer length stays a printed report: a
+/// correct answer is sometimes longer because it carries the explanation, and
+/// truncating it to match a distractor would cost more than it buys.
 final class LessonQuestionAuditTests: XCTestCase {
     private struct Finding {
         let lessonID: String
@@ -117,6 +119,25 @@ final class LessonQuestionAuditTests: XCTestCase {
         report("Answer not derivable from the lesson", unanswerable)
         report("Question too short to be specific", shortQuestions)
         report("Duplicate questions", duplicateQuestions)
+
+        // Gates. Each of these was a real defect a learner met on device, and
+        // each is now at zero; the assertion is what keeps it there.
+        XCTAssertEqual(
+            jokeDistractors.count, 0,
+            "a distractor nobody would pick turns the question into a reading test"
+        )
+        XCTAssertEqual(
+            unanswerable.count, 0,
+            "the answer names something the lesson never shows"
+        )
+        XCTAssertEqual(
+            duplicateQuestions.count, 0,
+            "two lessons asking the same sentence means one of them lost its subject"
+        )
+        XCTAssertEqual(
+            shortQuestions.count, 0,
+            "a question this short does not say what it is about"
+        )
     }
 
     /// The Rust the answer actually names: `entry()`, `clone`, `PhantomData`,

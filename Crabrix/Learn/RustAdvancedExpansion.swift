@@ -407,7 +407,7 @@ enum RustAdvancedExpansion {
             };
             announce();
             """,
-            question: "What does move change?",
+            question: "What does move change about the captures?",
             answers: ["Capture ownership", "Return type", "Call syntax"],
             correctAnswer: 0,
             term: "Move closure",
@@ -702,7 +702,7 @@ enum RustAdvancedExpansion {
                 println!("{}", value.len());
             }
             """,
-            question: "What does Pin promise?",
+            question: "What does Pin guarantee about the value?",
             answers: ["Stable location", "Thread safety", "Static lifetime"],
             correctAnswer: 0,
             term: "Pinned value",
@@ -759,7 +759,7 @@ enum RustAdvancedExpansion {
                 () => { $crate::value() };
             }
             """,
-            question: "What does $crate name?",
+            question: "What does $crate resolve to at the call site?",
             answers: ["The defining crate", "The caller variable", "Cargo.lock"],
             correctAnswer: 0,
             term: "Macro hygiene",
@@ -836,7 +836,7 @@ enum RustAdvancedExpansion {
                 length: u32,
             }
             """,
-            question: "Why add repr(C) at FFI?",
+            question: "Why does an FFI struct need repr(C)?",
             answers: ["To define layout", "To allocate on heap", "To add Copy"],
             correctAnswer: 0,
             term: "repr(C) contract",
@@ -855,7 +855,7 @@ enum RustAdvancedExpansion {
             // SAFETY: instances never expose moves.
             unsafe impl StableAddress for FixedBuffer {}
             """,
-            question: "Why is the impl unsafe?",
+            question: "Why must that Send impl be unsafe?",
             answers: ["Callers rely on its promise", "Traits are unchecked", "It uses an array"],
             correctAnswer: 0,
             term: "Unsafe trait contract",
