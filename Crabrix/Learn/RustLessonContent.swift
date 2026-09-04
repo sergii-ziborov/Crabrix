@@ -554,7 +554,7 @@ enum RustLessonLibrary {
             """,
             question: "What is missing?",
             answers: [
-                    "A return type on the test function",
+                    "A return type so the harness can read the result",
                 "An assertion — the test passes no matter what compute returns",
                 "The #[cfg(test)] attribute above the module",
             ],
@@ -613,7 +613,7 @@ enum RustLessonLibrary {
             """,
             question: "What does the compiler ask for?",
             answers: [
-                    "A return type on the closure",
+                    "A return type so the thread can report back",
                 "move, so the closure owns data rather than borrowing it",
                 "The captured data has to be declared mut",
             ],
@@ -641,9 +641,9 @@ enum RustLessonLibrary {
             """,
             question: "When is Relaxed the right choice there?",
             answers: [
-                "Never, counters need SeqCst",
+                "Never — a shared counter always needs SeqCst",
                 "When only the final total matters, not ordering against other data",
-                "Only on a single thread",
+                "Only when a single thread touches the counter",
             ],
             correctAnswer: 1,
             feedback: "A pure statistics counter needs indivisibility, not publication."
@@ -746,7 +746,7 @@ enum RustLessonLibrary {
             """,
             question: "What does that do to the other tasks?",
             answers: [
-                "Nothing, the runtime handles it",
+                "Nothing — the runtime moves it to a blocking pool",
                 "It holds an executor thread, stalling everything queued on it",
                 "It panics because nothing polls the future",
             ],
@@ -773,9 +773,9 @@ enum RustLessonLibrary {
             """,
             question: "What breaks if that is cancelled between the two awaits?",
             answers: [
-                "Nothing, Rust rolls it back",
+                "Nothing — Rust rolls the whole await back",
                 "The bytes already read are dropped and silently lost",
-                "The socket closes",
+                "The socket closes and the peer is notified",
             ],
             correctAnswer: 1,
             feedback: "The buffer lives in the future, so cancelling drops the read data."
@@ -799,9 +799,9 @@ enum RustLessonLibrary {
             """,
             question: "How many bytes does that move copy?",
             answers: [
-                "One million",
+                "One million bytes, the whole buffer",
                 "Three words: pointer, length, capacity",
-                "None, it is a reference",
+                "None at all — a move is just a reference",
             ],
             correctAnswer: 1,
             feedback: "A move copies the handle; the heap allocation never moves."
@@ -825,9 +825,9 @@ enum RustLessonLibrary {
             """,
             question: "What does mapping it twice cost in physical memory?",
             answers: [
-                "Twice the file size",
+                "Twice the file size, once per mapping",
                 "One copy — both mappings share the same page cache frames",
-                "Nothing is loaded ever",
+                "Nothing — mapped pages are never resident",
             ],
             correctAnswer: 1,
             feedback: "Read-only file mappings share frames through the page cache."
@@ -854,9 +854,9 @@ enum RustLessonLibrary {
             """,
             question: "What is wrong with that loop?",
             answers: [
-                "It is not async",
+                "It is not async, so it blocks the task",
                 "One syscall per byte, where one per buffer would do",
-                "write_all can fail",
+                "write_all can fail and is never checked",
             ],
             correctAnswer: 1,
             feedback: "The boundary crossing dominates; batch before you optimise anything else."
@@ -904,9 +904,9 @@ enum RustLessonLibrary {
             """,
             question: "How many streams stall?",
             answers: [
-                "One — the one that lost the packet",
+                "One — only the stream that lost the packet",
                 "All ten, because they share one TCP connection",
-                "None",
+                "None — HTTP/2 streams are independent",
             ],
             correctAnswer: 1,
             feedback: "TCP must deliver in order, so the whole connection waits."
@@ -953,9 +953,9 @@ enum RustLessonLibrary {
             """,
             question: "What does that do under sustained overload?",
             answers: [
-                "Drops the oldest items",
+                "Drops the oldest items to make room",
                 "Grows until the process is killed for using too much memory",
-                "Blocks the producer",
+                "Blocks the producer until a slot frees",
             ],
             correctAnswer: 1,
             feedback: "Unbounded means the only limit is RAM, and it fails all at once."
@@ -982,7 +982,7 @@ enum RustLessonLibrary {
             answers: [
                 "No, a transaction sees one snapshot",
                 "Yes — read committed permits non-repeatable reads",
-                "Only with an explicit lock",
+                "Only when an explicit lock is taken",
             ],
             correctAnswer: 1,
             feedback: "Each statement sees the latest commit, so the value can move."
@@ -1008,9 +1008,9 @@ enum RustLessonLibrary {
             """,
             question: "Does that query use the index?",
             answers: [
-                "Yes, both columns are in it",
+                "Yes — both columns appear in the index",
                 "No — tenant_id is the leftmost column and is not filtered",
-                "Only if at is indexed alone",
+                "Only if created_at is indexed on its own",
             ],
             correctAnswer: 1,
             feedback: "Skipping the leading column means the sorted order no longer helps."
@@ -1088,9 +1088,9 @@ enum RustLessonLibrary {
             """,
             question: "What happens at the moment it expires?",
             answers: [
-                "The cache refills quietly",
+                "The cache refills quietly on the next read",
                 "Every request misses at once and stampedes the origin",
-                "Requests are queued automatically",
+                "Requests queue automatically behind one refill",
             ],
             correctAnswer: 1,
             feedback: "A single flight lock or early refresh is what stops the herd."
@@ -1115,9 +1115,9 @@ enum RustLessonLibrary {
             """,
             question: "What is the cost of one push?",
             answers: [
-                "Always O(1)",
+                "Always O(1), the buffer never moves",
                 "O(1) amortised, with an O(n) copy when it reallocates",
-                "O(log n)",
+                "O(log n), like a balanced tree insert",
             ],
             correctAnswer: 1,
             feedback: "with_capacity removes the reallocation when the size is known."
@@ -1142,9 +1142,9 @@ enum RustLessonLibrary {
             """,
             question: "What is the risk?",
             answers: [
-                "None, it is only faster",
+                "None — a faster hash is strictly better",
                 "Chosen keys can be made to collide, turning lookups linear",
-                "It cannot store Strings",
+                "It can no longer store String keys",
             ],
             correctAnswer: 1,
             feedback: "That is the classic hash-flooding denial of service."
@@ -1170,9 +1170,9 @@ enum RustLessonLibrary {
             """,
             question: "Which finds the crash first?",
             answers: [
-                "More unit tests",
+                "More unit tests around the parser",
                 "A fuzzer driving malformed input at it",
-                "An integration test",
+                "An integration test over the whole flow",
             ],
             correctAnswer: 1,
             feedback: "Fuzzing explores the malformed space no one thinks to write down."
@@ -1199,9 +1199,9 @@ enum RustLessonLibrary {
             """,
             question: "Why can adding a variant break callers?",
             answers: [
-                "It cannot, adding is always safe",
+                "It cannot — adding a variant is always safe",
                 "Their exhaustive matches stop compiling — mark it non_exhaustive",
-                "Enums cannot be extended",
+                "An enum cannot be extended after release",
             ],
             correctAnswer: 1,
             feedback: "non_exhaustive forces a wildcard, which keeps additions non-breaking."
@@ -1226,7 +1226,7 @@ enum RustLessonLibrary {
             answers: [
                     "Nothing — a debug build measures the same code",
                 "It is a debug build — release is often an order of magnitude apart",
-                "cargo bench is required",
+                "cargo bench is required for any timing",
             ],
             correctAnswer: 1,
             feedback: "Debug disables optimisation and keeps every check; the numbers mean nothing."
@@ -1255,9 +1255,9 @@ enum RustLessonLibrary {
             """,
             question: "What is wrong there?",
             answers: [
-                "CString cannot hold that input",
+                "CString cannot hold input of that length",
                 "The buffer is freed before use, so ptr dangles",
-                "as_ptr needs unsafe",
+                "as_ptr has to be called inside unsafe",
             ],
             correctAnswer: 1,
             feedback: "The CString must outlive every use of the pointer it lends out."
@@ -1286,9 +1286,9 @@ enum RustLessonLibrary {
             """,
             question: "Why does the println fail?",
             answers: [
-                "take borrowed s",
+                "take only borrowed s, so it stays usable",
                 "Passing by value moved s into the function",
-                "String cannot be printed twice",
+                "A String cannot be printed more than once",
             ],
             correctAnswer: 1,
             feedback: "A by-value parameter takes ownership; the caller's binding is done."
@@ -1314,9 +1314,9 @@ enum RustLessonLibrary {
             """,
             question: "Why is that rejected?",
             answers: [
-                "v must be immutable",
+                "The vector has to be declared immutable",
                 "A mutable borrow cannot coexist with a shared one",
-                "Vec cannot be borrowed twice",
+                "A Vec cannot be borrowed twice in one scope",
             ],
             correctAnswer: 1,
             feedback: "One writer excludes all readers for as long as it is live."
@@ -1344,9 +1344,9 @@ enum RustLessonLibrary {
             """,
             question: "Why can no annotation fix that?",
             answers: [
-                "The lifetime is too short to name",
+                "The lifetime is simply too short to name here",
                 "s is dropped at the end of the function, so no borrow can be valid",
-                "String cannot be returned",
+                "A String can never be returned from a function",
             ],
             correctAnswer: 1,
             feedback: "Return the String itself; a borrow of a dead local can never be sound."
@@ -1397,8 +1397,8 @@ enum RustLessonLibrary {
             question: "What does the compiler object to?",
             answers: [
                 "Rc is not Send, because its count is not atomic",
-                "The closure needs a return type",
-                "Rc cannot be printed",
+                "The closure is missing an explicit return type",
+                "An Rc value cannot be printed from a thread",
             ],
             correctAnswer: 0,
             feedback: "Arc pays for an atomic count and is therefore Send and Sync."
@@ -1473,9 +1473,9 @@ enum RustLessonLibrary {
             """,
             question: "Why is that function unsound?",
             answers: [
-                "It should return Option",
+                "It should return an Option instead of a value",
                 "A safe caller can pass any index, so the invariant is unchecked",
-                "get_unchecked is deprecated",
+                "get_unchecked has been deprecated for slices",
             ],
             correctAnswer: 1,
             feedback: "A safe signature must make the invariant impossible to break."
@@ -2389,7 +2389,7 @@ enum RustLessonLibrary {
             answers: [
                 "Nothing — unsafe makes any dereference legal",
                 "The pointer is non-null, aligned, and points at a live, initialised value",
-                "The pointer has to be declared mut to deref",
+                "The pointer has to be declared mut before it is dereferenced",
             ],
             correctAnswer: 1,
             feedback: "unsafe moves the obligation to you; it does not remove it."
@@ -2457,7 +2457,7 @@ enum RustLessonLibrary {
             question: "Which change removes the wasted work?",
             answers: [
                 "Take &[String] and drop the clone",
-                "Return a reference",
+                "Return a reference to the first name",
                 "Use a HashMap",
             ],
             correctAnswer: 0,
