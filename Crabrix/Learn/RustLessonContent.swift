@@ -748,7 +748,7 @@ enum RustLessonLibrary {
             answers: [
                 "Nothing, the runtime handles it",
                 "It holds an executor thread, stalling everything queued on it",
-                "It panics",
+                "It panics because nothing polls the future",
             ],
             correctAnswer: 1,
             feedback: "The read is synchronous, so the task never yields while it runs."
@@ -1224,7 +1224,7 @@ enum RustLessonLibrary {
             """,
             question: "What is wrong before the numbers even arrive?",
             answers: [
-                "Nothing",
+                    "Nothing — a debug build measures the same code",
                 "It is a debug build — release is often an order of magnitude apart",
                 "cargo bench is required",
             ],
@@ -2017,9 +2017,9 @@ enum RustLessonLibrary {
             """,
             question: "When does that print?",
             answers: [
-                "When you call drop() only",
+                "Only when you call drop() on it explicitly",
                 "Automatically when the value leaves scope",
-                "At program exit",
+                "At program exit, once main has returned",
             ],
             correctAnswer: 1,
             feedback: "Drop runs at the end of the value's scope; std::mem::drop just ends it sooner."
@@ -2056,9 +2056,9 @@ enum RustLessonLibrary {
             """,
             question: "Why should the parent link be Weak?",
             answers: [
-                "It is faster",
+                "A Weak link is cheaper to clone than an Rc",
                 "Two Rc links in a cycle never reach zero, so nothing is freed",
-                "Weak is required by the compiler",
+                "The compiler refuses to build a cyclic Rc graph",
             ],
             correctAnswer: 1,
             feedback: "Ownership should flow one way; the back-reference observes without owning."
@@ -2095,9 +2095,9 @@ enum RustLessonLibrary {
             """,
             question: "Why might that loop never end?",
             answers: [
-                "Channels are always infinite",
+                "A channel receiver loops forever by design",
                 "The original tx is still alive, so the channel never closes",
-                "rx must be mutable",
+                "The receiver has to be declared mut to iterate",
             ],
             correctAnswer: 1,
             feedback: "Every live sender keeps the channel open; drop the ones you do not use."
@@ -2133,9 +2133,9 @@ enum RustLessonLibrary {
             """,
             question: "Why does that fail to compile?",
             answers: [
-                "Mutex cannot hold an integer",
+                "A Mutex cannot hold a plain integer counter",
                 "Rc is not Send, so it cannot move to another thread",
-                "lock() is unsafe",
+                "lock() is unsafe and needs an unsafe block",
             ],
             correctAnswer: 1,
             feedback: "Rc uses a non-atomic count; Arc is the thread-safe version."
@@ -2168,8 +2168,8 @@ enum RustLessonLibrary {
             question: "What stops that?",
             answers: [
                 "RefCell is not Sync, and its runtime check is not atomic",
-                "Closures cannot capture cells",
-                "borrow_mut is unsafe",
+                "A closure is not allowed to capture a cell type",
+                "borrow_mut needs an unsafe block to compile",
             ],
             correctAnswer: 0,
             feedback: "RefCell's borrow flag is not synchronised, so sharing it across threads is rejected."
@@ -2200,7 +2200,7 @@ enum RustLessonLibrary {
             }
             """,
             question: "What does that print?",
-            answers: ["working", "Nothing — the future is never awaited", "It panics"],
+            answers: ["working, printed as soon as the future is built", "Nothing — the future is never awaited", "It panics"],
             correctAnswer: 1,
             feedback: "The future is created and dropped without ever being polled."
         ),
@@ -2230,9 +2230,9 @@ enum RustLessonLibrary {
             """,
             question: "Why is that not a valid program entry point?",
             answers: [
-                "main cannot print",
+                "main is not allowed to print before awaiting",
                 "main cannot be async without a runtime to poll it",
-                "async is not stable",
+                "async fn is still unstable in this edition",
             ],
             correctAnswer: 1,
             feedback: "Something has to drive the future, and that something is the runtime."
@@ -2262,9 +2262,9 @@ enum RustLessonLibrary {
             """,
             question: "What is wrong with that if the two are independent?",
             answers: [
-                "Nothing at all",
+                "Nothing — two awaits already overlap by default",
                 "They run one after the other, so the waits add up",
-                "await cannot be used twice",
+                "await cannot appear twice in one function",
             ],
             correctAnswer: 1,
             feedback: "Sequential awaits serialise work that could have overlapped."
@@ -2327,9 +2327,9 @@ enum RustLessonLibrary {
             """,
             question: "What does that derive need at build time?",
             answers: [
-                "Only the serde crate",
+                "Only the serde crate as a normal dependency",
                 "A proc-macro crate compiled for and run on the host",
-                "Nothing special",
+                "Nothing special — derives are built into rustc",
             ],
             correctAnswer: 1,
             feedback: "serde_derive is a program the compiler runs, not just a library it links."
@@ -2358,9 +2358,9 @@ enum RustLessonLibrary {
             """,
             question: "What does `default-features = false` do at the call site?",
             answers: [
-                "Disables the crate",
+                "Disables the crate for this build entirely",
                 "Skips the default feature set, so `std` is not enabled",
-                "Enables every feature",
+                "Enables every feature the crate declares",
             ],
             correctAnswer: 1,
             feedback: "You then opt back in to exactly the features you want."
@@ -2387,9 +2387,9 @@ enum RustLessonLibrary {
             """,
             question: "What must be true for that to be sound?",
             answers: [
-                "Nothing, unsafe allows it",
+                "Nothing — unsafe makes any dereference legal",
                 "The pointer is non-null, aligned, and points at a live, initialised value",
-                "The pointer is mutable",
+                "The pointer has to be declared mut to deref",
             ],
             correctAnswer: 1,
             feedback: "unsafe moves the obligation to you; it does not remove it."
@@ -2422,9 +2422,9 @@ enum RustLessonLibrary {
             """,
             question: "What is missing?",
             answers: [
-                "Nothing",
+                    "Nothing — Rust already matches the C layout",
                 "#[repr(C)] — Rust does not guarantee field order otherwise",
-                "The struct must be public",
+                "The struct has to be declared pub for the C side",
             ],
             correctAnswer: 1,
             feedback: "Without repr(C) the layout is unspecified and the C side may read the wrong bytes."
@@ -2492,7 +2492,7 @@ enum RustLessonLibrary {
             answers: [
                 "Nothing, the arguments are the same type",
                 "Distinct types make a wrong argument order a compile error",
-                "It makes it faster",
+                "It removes a runtime check, so it is faster",
             ],
             correctAnswer: 1,
             feedback: "Three bare u64s are interchangeable; AccountId and Amount are not."
