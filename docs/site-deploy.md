@@ -4,7 +4,14 @@ A single self-contained landing page. No build step, no dependencies, no JavaScr
 
 ```
 site/
-  index.html          the whole page, styles inlined
+  index.html          the landing page, styles inlined
+  about.html          what it is, how it works, what it cannot do
+  technology.html     the pinned toolchain, the limits, the gaps
+  privacy.html        what stays on device and what leaves it
+  terms.html          licence terms for the app
+  support.html        contact and the common questions
+  leaderboard.html    a notice that 1.0 has no board
+  404.html
   screenshots/*.png   captured from the simulator
 ```
 
