@@ -267,7 +267,11 @@ enum RustAdvancedExpansion {
             }
             """,
             question: "Why does first need no named lifetime?",
-            answers: ["&str is static", "One input determines output", "unwrap adds it"],
+            answers: [
+                "Every &str already has a static lifetime",
+                "One input determines output",
+                "unwrap supplies the missing lifetime",
+            ],
             correctAnswer: 1,
             term: "Elision rule",
             termDescription: "Inference rules for common borrow signatures."

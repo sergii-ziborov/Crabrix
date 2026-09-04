@@ -211,9 +211,9 @@ enum RustLessonLibrary {
             """,
             question: "What does that return type mean?",
             answers: [
-                "A new owned String",
+                "A newly allocated String the caller owns",
                 "A borrowed view tied to the input's lifetime",
-                "A copy of three bytes",
+                "A copy of the first three bytes of the input",
             ],
             correctAnswer: 1,
             feedback: "The returned &str borrows from text, so it cannot outlive it."
@@ -245,8 +245,8 @@ enum RustLessonLibrary {
             question: "Why does that need an annotation?",
             answers: [
                 "Two inputs mean the compiler cannot tell which one the result borrows from",
-                "&str is always ambiguous",
-                "Functions must always annotate lifetimes",
+                "A &str return always needs an annotation",
+                "Every function that borrows must annotate its lifetimes",
             ],
             correctAnswer: 0,
             feedback: "With one input reference it is inferred; with two the relationship must be stated."
@@ -370,9 +370,9 @@ enum RustLessonLibrary {
             """,
             question: "Why is entry() better here?",
             answers: [
-                "It is shorter to type",
+                "It is shorter to type than a match on get()",
                 "It looks the key up once instead of twice",
-                "It sorts the map",
+                "It keeps the map sorted by insertion order",
             ],
             correctAnswer: 1,
             feedback: "entry avoids a second lookup and the borrow conflict that comes with it."
@@ -402,9 +402,9 @@ enum RustLessonLibrary {
             """,
             question: "What is wrong with those bounds?",
             answers: [
-                "Nothing",
+                "Nothing — extra bounds cost the caller nothing",
                 "Only Debug is used, so the rest exclude callers for no reason",
-                "Debug should be removed",
+                "Debug should be dropped and the rest kept",
             ],
             correctAnswer: 1,
             feedback: "Every unnecessary bound is a caller you turned away."
@@ -460,9 +460,9 @@ enum RustLessonLibrary {
             """,
             question: "Why is that rejected?",
             answers: [
-                "&str cannot be a field",
+                "A struct field can never hold a &str",
                 "The struct must declare the lifetime it borrows for",
-                "value must be mutable",
+                "The value field has to be declared mut",
             ],
             correctAnswer: 1,
             feedback: "Write struct Holder<'a> { value: &'a str } so the relationship is stated."
@@ -485,7 +485,11 @@ enum RustLessonLibrary {
             println!("done");
             """,
             question: "What work has been done by that point?",
-            answers: ["Every name is uppercased", "None — nothing consumed the iterator", "Only the first"],
+            answers: [
+                "Every name has already been uppercased",
+                "None — nothing consumed the iterator",
+                "Only the first element has been mapped",
+            ],
             correctAnswer: 1,
             feedback: "map returns a lazy adapter; without a consumer it never runs."
         ),
@@ -517,9 +521,9 @@ enum RustLessonLibrary {
             """,
             question: "Why can't main call helper?",
             answers: [
-                "It is in another file",
+                "It lives in a different file from main",
                 "Items are private by default, so it needs pub",
-                "It must return Result",
+                "A module function has to return a Result",
             ],
             correctAnswer: 1,
             feedback: "Privacy is the default; pub fn helper makes it reachable."
@@ -550,9 +554,9 @@ enum RustLessonLibrary {
             """,
             question: "What is missing?",
             answers: [
-                "A return type",
+                    "A return type on the test function",
                 "An assertion — the test passes no matter what compute returns",
-                "The #[cfg(test)] attribute",
+                "The #[cfg(test)] attribute above the module",
             ],
             correctAnswer: 1,
             feedback: "A test with no assertion only proves the code did not panic."
@@ -581,7 +585,7 @@ enum RustLessonLibrary {
             answers: [
                 "Returns an empty string on failure",
                 "Ends the process, removing any chance to recover",
-                "Logs a warning",
+                "Logs a warning and carries on with a default",
             ],
             correctAnswer: 1,
             feedback: "Returning Result hands the decision to whoever knows what to do."
@@ -609,9 +613,9 @@ enum RustLessonLibrary {
             """,
             question: "What does the compiler ask for?",
             answers: [
-                "A return type",
+                    "A return type on the closure",
                 "move, so the closure owns data rather than borrowing it",
-                "data must be mutable",
+                "The captured data has to be declared mut",
             ],
             correctAnswer: 1,
             feedback: "The thread may outlive this scope, so a borrow is not enough."
@@ -1682,9 +1686,9 @@ enum RustLessonLibrary {
             """,
             question: "What does the `if n % 2 == 0` part do?",
             answers: [
-                "Replaces the pattern",
+                "It replaces the pattern that precedes it",
                 "Adds a condition the arm must also satisfy",
-                "Makes the match non-exhaustive",
+                "It makes the match non-exhaustive on its own",
             ],
             correctAnswer: 1,
             feedback: "A guard is an extra condition; exhaustiveness is still checked across the arms."
@@ -1715,9 +1719,9 @@ enum RustLessonLibrary {
             """,
             question: "Why does that fail?",
             answers: [
-                "Structs cannot derive Debug",
+                "A struct cannot derive Debug when it has fields",
                 "NoDebug does not implement Debug, so the field cannot be printed",
-                "Debug must be implemented by hand",
+                "Debug always has to be written by hand for structs",
             ],
             correctAnswer: 1,
             feedback: "A derived impl is only as available as the traits of its fields."
@@ -1862,9 +1866,9 @@ enum RustLessonLibrary {
             """,
             question: "Why does .into() work without writing an Into impl?",
             answers: [
-                "Into is derived",
+                "Into is derived alongside From automatically",
                 "A blanket impl gives Into to everything that implements From",
-                "It is a compiler special case",
+                "The compiler special-cases .into() for every type",
             ],
             correctAnswer: 1,
             feedback: "The standard library has impl<T, U: From<T>> Into<U> for T."
@@ -1949,9 +1953,9 @@ enum RustLessonLibrary {
             """,
             question: "Why does that fail to compile?",
             answers: [
-                "Enums cannot be recursive at all",
+                "An enum can never refer to itself, boxed or not",
                 "The type would have infinite size without an indirection",
-                "i32 is not allowed in an enum",
+                "An i32 payload is not allowed inside an enum",
             ],
             correctAnswer: 1,
             feedback: "Box<List> makes the recursive field pointer-sized and the type finite."
