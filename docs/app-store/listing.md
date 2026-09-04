@@ -302,6 +302,13 @@ xcrun simctl launch <device> com.sergiiziborov.Crabrix \
 `-CrabrixLibrary` opens the project library.
 `-CrabrixCanvasGallery` opens it already filtered to the Rust Canvas projects.
 
+## Launch assets
+
+Featuring nomination, custom product pages, the Show HN and community drafts,
+the video shot list, and the reviewer-outreach note live in
+[launch.md](launch.md). They are written ahead of the submission so nothing is
+drafted on the day.
+
 ## Pre-submission checklist
 
 - [x] `support@crabrix.com` delivers mail — Cloudflare Email Routing enabled on the zone, forwarding to the verified destination, with a catch-all so nothing to the domain is dropped

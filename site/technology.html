@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>About Crabrix</title>
-<meta name="description" content="Crabrix runs the real Rust compiler on iPhone and iPad. What it is, how it works, what it cannot do, and who builds it.">
-<meta property="og:title" content="About Crabrix">
-<meta property="og:description" content="Crabrix runs the real Rust compiler on iPhone and iPad. What it is, how it works, what it cannot do, and who builds it.">
+<title>Crabrix technology</title>
+<meta name="description" content="Exactly what Crabrix ships: the pinned rustc build, the sandbox budgets, what Cargo supports, and what it cannot do.">
+<meta property="og:title" content="Crabrix technology">
+<meta property="og:description" content="The pinned toolchain, sandbox limits, Cargo support and honest gaps — in one table.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#129408;</text></svg>">
 <style>
@@ -164,8 +164,8 @@
   <div class="wrap nav">
     <a class="brand" href="/"><span class="mark">&#129408;</span> Crabrix</a>
     <div class="spacer"></div>
-    <a class="link" href="/about" aria-current="page">About</a>
-    <a class="link" href="/technology">Technology</a>
+    <a class="link" href="/about">About</a>
+    <a class="link" href="/technology" aria-current="page">Technology</a>
     <a class="link" href="/support">Support</a>
     <a class="link" href="/#price">Price</a>
   </div>
@@ -173,140 +173,100 @@
 
 <main>
   <div class="wrap head">
-    <div class="eyebrow">About</div>
-    <h1>About Crabrix</h1>
-    <p class="lede">A real Rust compiler on a phone, an honest account of its limits, and one developer behind it.</p>
+    <div class="eyebrow">Technology</div>
+    <h1>What is actually inside</h1>
+    <p class="lede">
+      Most of this page is a list of limits. That is deliberate: a compiler on a
+      phone is only interesting if you can tell exactly which compiler, running
+      under exactly which budgets, and where it stops.
+    </p>
   </div>
 
   <div class="wrap prose">
-
-    <h2>What Crabrix is</h2>
-    <p>
-      Crabrix is a Rust workspace for iPhone and iPad. You write Rust, add real
-      dependencies from crates.io, press Run, and the code compiles and executes on the
-      device in your hand. There is no server doing the work and no account standing
-      between you and the compiler.
-    </p>
-    <p>
-      That distinction is the whole point. Crabrix bundles and runs a real Rust compiler
-      locally instead of relying on a cloud compilation service.
-    </p>
-
-    <h2>How it actually works</h2>
-    <div class="grid2">
-      <div><strong>A real rustc</strong>The app bundles a WebAssembly build of the Rust
-        compiler and standard library. Diagnostics are real rustc diagnostics from
-        Crabrix's pinned bundled toolchain, with the same error codes.</div>
-      <div><strong>Running in Swift</strong>That WebAssembly module is executed by
-        WasmKit, a WebAssembly interpreter written in Swift, inside the app's own
-        process. No JIT, no dynamic code loading, no daemon.</div>
-      <div><strong>A real package manager</strong>Crabrix speaks the crates.io sparse
-        index protocol, resolves SemVer ranges, unifies features, verifies SHA-256
-        checksums, extracts the sources, and compiles and links them.</div>
-      <div><strong>Sandboxed by construction</strong>Your program runs inside the
-        WebAssembly sandbox with a memory cap, no network, and a single writable
-        directory. It cannot reach the rest of your device.</div>
+    <h2>The toolchain</h2>
+    <div class="table-scroll">
+      <table class="plain">
+        <tbody>
+          <tr><td>Bundled <code>rustc</code></td><td><code>1.96.0-dev</code></td></tr>
+          <tr><td>Target</td><td><code>wasm32-wasip1</code></td></tr>
+          <tr><td>Toolchain artifact</td><td><code>artifacts-test-7</code></td></tr>
+          <tr><td>Downloaded at runtime</td><td>Nothing. The compiler ships in the app bundle and is verified by SHA-256 at build time.</td></tr>
+          <tr><td>Interpreter</td><td>WasmKit, in the app's own process. No JIT, no dynamic code loading, no daemon.</td></tr>
+        </tbody>
+      </table>
     </div>
     <p>
-      Every crate Crabrix downloads is fully readable inside the app, file by file, in
-      the Packages screen. Nothing that runs on your device is hidden from you.
+      A pinned compiler is older than the current Rust release. Code that relies
+      on an API stabilised after 1.96 will not build here even though a current
+      laptop toolchain accepts it. The version is shown in the app under
+      Settings &rarr; Local compiler, not buried.
     </p>
 
-    <h2>The exact toolchain</h2>
+    <h2>What your program is allowed to do</h2>
+    <div class="table-scroll">
+      <table class="plain">
+        <tbody>
+          <tr><td>Network from your program</td><td>None. There are no socket imports to call.</td></tr>
+          <tr><td>Memory</td><td>Capped, and the guest is stopped when it exceeds the cap.</td></tr>
+          <tr><td>Writable filesystem</td><td>One directory, with byte and file-count limits.</td></tr>
+          <tr><td>Output</td><td>Bounded, so a runaway loop cannot fill storage.</td></tr>
+          <tr><td>Wall clock and instructions</td><td>Both budgeted. <code>fn main() { loop {} }</code> is stopped by Stop, not left to run.</td></tr>
+          <tr><td>Host processes</td><td>None are spawned. The project terminal is a simulated shell over the project's own files.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Cargo, and the part of it that works</h2>
     <p>
-      Crabrix pins one compiler build and ships it in the app. Nothing is downloaded at
-      runtime to compile your code, and the same values are shown in the app under
-      Settings &rarr; Runtime:
+      Crabrix implements the dependency pipeline itself rather than shipping
+      Cargo: sparse-index resolution against crates.io, SemVer ranges, feature
+      unification, resolver 1/2/3 semantics, <code>rust-version</code> checks,
+      target <code>cfg</code> filtering, a real <code>Cargo.lock</code>,
+      SHA-256-verified downloads, dependency compilation, and
+      <code>--extern</code> linking.
     </p>
-    <ul>
-      <li>Bundled <code>rustc</code>: <code>1.96.0-dev</code></li>
-      <li>Target: <code>wasm32-wasip1</code></li>
-      <li>Toolchain artifact: <code>artifacts-test-7</code></li>
-    </ul>
+    <div class="table-scroll">
+      <table class="plain">
+        <tbody>
+          <tr><td>Registry</td><td>crates.io sparse index, source verified by checksum before anything is written</td></tr>
+          <tr><td>Dependency source</td><td>Completely viewable in the app; <strong>Vendor &amp; Edit</strong> copies it into your project and compiles your patched copy</td></tr>
+          <tr><td>Offline</td><td>Cached graphs rebuild with no network; <strong>Pin for Offline</strong> keeps the exact verified archives after iOS purges its caches</td></tr>
+          <tr><td>Build scripts (<code>build.rs</code>)</td><td>Not executed</td></tr>
+          <tr><td>Procedural macros</td><td>Not supported — they need a host compiler the app does not bundle</td></tr>
+          <tr><td>Native C or system libraries</td><td>Not supported; there is no native linker for this target</td></tr>
+        </tbody>
+      </table>
+    </div>
     <p>
-      A pinned compiler is older than the current Rust release, so code that relies on an
-      API stabilised after 1.96 will not compile here even though a current laptop
-      toolchain accepts it.
+      Every package is labelled from real build outcomes: <em>Link verified</em>
+      when its artefacts linked, <em>Check verified</em> when only metadata was
+      produced, <em>Needs review</em>, or <em>Unsupported</em> with the reason.
     </p>
 
     <h2>What it cannot do</h2>
-    <p>
-      Being honest about the edges is more useful than a feature list. The bundled
-      compiler targets <code>wasm32-wasip1</code> and has no native linker, so:
-    </p>
     <ul>
-      <li>Crates with C dependencies, build scripts, or procedural macros generally
-        cannot build. Crabrix detects these and says so instead of failing halfway.</li>
-      <li>Compilation is interpreted WebAssembly, so a first build is slower than on a
-        laptop. Repeat builds come from a local artifact cache.</li>
-      <li>There is no debugger and no <code>cargo test</code> harness yet.</li>
+      <li>No debugger.</li>
+      <li>No <code>cargo test</code> harness yet.</li>
+      <li>No Git commit or push — import and export only.</li>
+      <li>A first compile is interpreted WebAssembly, so it is slower than a laptop. Identical repeat runs come from a local artifact cache.</li>
     </ul>
+
+    <h2>Privacy, stated as a property of the build</h2>
     <p>
-      The Packages screen labels every dependency verified, expected to work, needs
-      review, or unsupported, based on real build outcomes recorded on device.
+      There is no account, no analytics SDK, no advertising, and no tracking.
+      Game Center and any leaderboard are not switched off in this version —
+      they are not compiled into it, and a continuous-integration step fails the
+      build if either returns. The only network requests are the package and
+      repository downloads you ask for.
     </p>
 
-    <h2>Learning, not just tooling</h2>
+    <h2>How to check any of this</h2>
     <p>
-      Crabrix contains a full Rust course &mdash; 142 lessons across six language courses, from
-      <code>fn main</code> through ownership, traits, and async to macros, unsafe, and
-      FFI, plus interview preparation that reaches past the language into memory,
-      networking, databases, and distributed systems. A separate Algorithm Atlas adds
-      200 reusable patterns across 20 independent solution methods. Each method has its own
-      path, and every pattern is taught through a mental model, recognition guide, and local Rust challenge.
+      The source is on
+      <a href="https://github.com/sergii-ziborov/Crabrix">GitHub</a>, and each
+      release carries an evidence folder with toolchain hashes, dependency
+      inventory, test results and the measurements behind these claims.
     </p>
-    <p>
-      Each lesson has a short written explanation and a syntax-highlighted example.
-      Crabrix includes compiler-backed labs across the Rust curriculum, and every
-      Algorithm Atlas pattern ends in a local Rust challenge the bundled compiler has to
-      accept. Three drills &mdash; Quick
-      Practice, Term Train, and Code Recall &mdash; are generated from that same
-      curriculum and scheduled with SM-2 spaced repetition, so what you are weakest at
-      comes back soonest.
-    </p>
-    <p>
-      Rating is earned across everything, and a successful run is scored on how much Rust
-      actually changed since the last one. Pressing Run on an untouched sample is not
-      work, and the app does not pretend otherwise.
-    </p>
-
-    <h2>Who makes it</h2>
-    <p>
-      Crabrix is built by <strong>Serhii Ziborov</strong>, an independent developer. It is
-      not a company, it has no investors, and it has nobody's growth targets to hit. That
-      is why it is a one-time purchase with no subscription, no advertising, no analytics,
-      and no account.
-    </p>
-    <p>
-      The source is on <a href="https://github.com/sergii-ziborov/Crabrix">GitHub</a> for
-      review. Questions, bugs, and disagreements are welcome at
-      <a href="mailto:support@crabrix.com">support@crabrix.com</a>.
-    </p>
-
-    <h2>Credits</h2>
-    <p>
-      Crabrix stands on work by other people, all of it open source and attributed in
-      full inside the app under Settings &rarr; About Crabrix &rarr; Open-source
-      licenses:
-    </p>
-    <ul>
-      <li><strong>The Rust Project</strong> &mdash; the compiler and standard library,
-        under Apache-2.0 or MIT.</li>
-      <li><strong>WasmKit</strong> by Akio Yasui &mdash; the Swift WebAssembly
-        interpreter, MIT.</li>
-      <li><strong>wasm-rustc</strong> by Forest Anderson &mdash; the WebAssembly build of
-        the toolchain, MIT.</li>
-      <li><strong>ZIPFoundation</strong> by Thomas Zoechling &mdash; archive reading and
-        writing, MIT.</li>
-      <li><strong>Swift System, Collections, Atomics, Argument Parser, Log, and NIO</strong>
-        &mdash; Apache-2.0.</li>
-    </ul>
-    <p>
-      Rust and the Rust logo are trademarks of the Rust Foundation. Crabrix is an
-      independent project, not affiliated with or endorsed by the Rust Foundation or by
-      Apple.
-    </p>
-
   </div>
 </main>
 
@@ -315,7 +275,6 @@
     <div>&copy; 2026 Serhii Ziborov. All rights reserved.</div>
     <div class="spacer"></div>
     <a href="/about">About</a>
-    <a href="/technology">Technology</a>
     <a href="/support">Support</a>
     <a href="/privacy">Privacy</a>
     <a href="/terms">Terms</a>
