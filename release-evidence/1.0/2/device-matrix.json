@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-09-03T07:10:00Z",
+  "capturedAt": "2026-09-04T12:00:00Z",
   "candidate": {
     "version": "1.0",
     "build": "2",
     "branch": "release/1.0-app-store",
-    "candidateCommit": "f4df4c0c0dbdc3f5f4f5653c94a9a670ae3ca8ef",
+    "candidateCommit": "9ceab5784b5a9873c325142b90ad235d65769dfe",
     "sourceIdentity": "release branch hardening candidate; immutable release tag pending",
     "bundleVersion": "1.0 (2)"
   },
@@ -100,19 +100,20 @@
       "exportOptions": "docs/app-store/ExportOptions-AppStore.plist",
       "method": "app-store-connect",
       "result": "EXPORT SUCCEEDED",
-      "ipaBytes": 51879066,
+      "ipaBytes": 51891461,
+      "ipaSHA256": "731bd6d9cb68776c084bf64d0f2dc59a4cf79d51e4c20760f2c6627a8e70bdf8",
       "appSizeMiB": 161,
       "marketingVersion": "1.0",
       "bundleVersion": "2",
       "signingAuthority": "Apple Distribution: Serhii Ziborov (XMS5ZC28UJ)",
       "shareExtensionSigningAuthority": "Apple Distribution: Serhii Ziborov (XMS5ZC28UJ)",
       "getTaskAllow": false,
+      "shareExtensionGetTaskAllow": false,
       "betaReportsActive": true,
       "appGroup": "group.com.sergiiziborov.Crabrix",
       "appGroupMatchesShareExtension": true,
       "embeddedProfile": {
         "name": "iOS Team Store Provisioning Profile: com.sergiiziborov.Crabrix",
-        "created": "2026-09-03T07:21:17Z",
         "expires": "2027-09-03T07:11:13Z",
         "provisionedDevices": 0
       },
@@ -123,12 +124,14 @@
         "share extension"
       ],
       "bundledLicenceFiles": 15,
-      "bundledToolchainPresent": true,
+      "bundledToolchain": [
+        "rustc.wasm",
+        "sysroot-wasip1"
+      ],
       "gameKitLinked": false,
       "boardEndpointStrings": 0,
       "uploaded": false,
-      "uploadNote": "Deliberately not uploaded. The artefact is signed and validated locally; submission is a separate, explicit step.",
-      "rebuiltFor": "the service-free candidate: no first-party board client, API or database binding"
+      "note": "Built from the frozen source at this commit, after the lesson-question and iPad layout work. Signed and verified locally; submission is a separate, explicit step."
     }
   }
 }
