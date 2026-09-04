@@ -105,13 +105,18 @@ struct ProjectsHomeView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("My Projects")
                         .font(.headline)
+                        .fixedSize(horizontal: false, vertical: true)
                     Text("\(allProjects.count) saved · \(projectFolderCount) folders")
                         .font(.caption2.monospaced())
                         .foregroundStyle(CrabrixTheme.muted)
                 }
                 Spacer(minLength: 0)
+            }
+
+            HStack(spacing: 8) {
                 Button(action: onNewProject) {
                     Label("New", systemImage: "plus")
+                        .frame(maxWidth: .infinity)
                 }
                 .font(.caption.bold())
                 .buttonStyle(.borderedProminent)
@@ -119,10 +124,12 @@ struct ProjectsHomeView: View {
                 .tint(CrabrixTheme.coral)
                 .accessibilityLabel("Create a new Rust project from a template")
 
-                Button("Manage", action: onOpenMyProjects)
-                    .font(.caption.bold())
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
+                Button(action: onOpenMyProjects) {
+                    Text("Manage").frame(maxWidth: .infinity)
+                }
+                .font(.caption.bold())
+                .buttonStyle(.bordered)
+                .controlSize(.small)
             }
 
             HStack(spacing: 8) {
@@ -528,26 +535,49 @@ private struct BuildStatusBadge: View {
             // on a small iPhone, and the compact form broke mid-word. The badge
             // keeps its intrinsic width now and the project title, which has
             // room to wrap, gives way instead.
-            Label(
-                compact
-                    ? (record.succeeded ? "Passed" : "Failed")
-                    : "\(record.phase.rawValue.capitalized) \(record.succeeded ? "passed" : "failed")",
-                systemImage: record.succeeded ? "checkmark.circle.fill" : "xmark.octagon.fill"
-            )
-            .font((compact ? Font.caption2 : Font.caption).monospaced().bold())
+            Group {
+                if compact {
+                    Label(
+                        record.succeeded ? "Passed" : "Failed",
+                        systemImage: record.succeeded
+                            ? "checkmark.circle.fill"
+                            : "xmark.octagon.fill"
+                    )
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                } else {
+                    // The mark alone. Spelling it out crowded the card and
+                    // truncated the project's name to make room for a word the
+                    // icon already carries.
+                    Image(
+                        systemName: record.succeeded
+                            ? "checkmark.circle.fill"
+                            : "xmark.octagon.fill"
+                    )
+                }
+            }
+            .font((compact ? Font.caption2 : Font.callout).monospaced().bold())
             .foregroundStyle(record.succeeded ? CrabrixTheme.mint : CrabrixTheme.coral)
-            .lineLimit(1)
-            .fixedSize(horizontal: true, vertical: false)
-            .padding(.horizontal, 10)
+            .padding(.horizontal, compact ? 10 : 8)
             .padding(.vertical, 7)
             .background(CrabrixTheme.background.opacity(0.65))
             .clipShape(Capsule())
+            .accessibilityLabel(
+                "\(record.phase.rawValue) \(record.succeeded ? "passed" : "failed")"
+            )
         } else {
-            Label(compact ? "Not built" : "No build yet", systemImage: "circle.dashed")
-                .font((compact ? Font.caption2 : Font.caption).monospaced())
-                .foregroundStyle(CrabrixTheme.muted)
-                .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
+            Group {
+                if compact {
+                    Label("Not built", systemImage: "circle.dashed")
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                } else {
+                    Image(systemName: "circle.dashed")
+                }
+            }
+            .font((compact ? Font.caption2 : Font.callout).monospaced())
+            .foregroundStyle(CrabrixTheme.muted)
+            .accessibilityLabel("No build yet")
         }
     }
 }
