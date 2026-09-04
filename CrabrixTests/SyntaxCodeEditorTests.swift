@@ -32,6 +32,14 @@ final class SyntaxCodeEditorHostedTests: XCTestCase {
         return nil
     }
 
+    private func findCanvas(_ view: UIView) -> CodeEditorCanvas? {
+        if let canvas = view as? CodeEditorCanvas { return canvas }
+        for subview in view.subviews {
+            if let found = findCanvas(subview) { return found }
+        }
+        return nil
+    }
+
     func testRealEditorHighlightsTextInsertedThroughUIKit() throws {
         let box = Box()
         let controller = UIHostingController(rootView: Host(box: box))
@@ -139,7 +147,8 @@ final class SyntaxCodeEditorHostedTests: XCTestCase {
         RunLoop.main.run(until: Date().addingTimeInterval(0.2))
         controller.view.layoutIfNeeded()
 
-        let textView = try XCTUnwrap(findTextView(controller.view))
+        let canvas = try XCTUnwrap(findCanvas(controller.view))
+        let textView = canvas.textView
 
         var fragments = 0
         let full = NSRange(location: 0, length: textView.textStorage.length)
@@ -154,7 +163,7 @@ final class SyntaxCodeEditorHostedTests: XCTestCase {
             "the container must not track the view width, or text wraps"
         )
         XCTAssertGreaterThan(
-            textView.contentSize.width, textView.bounds.width,
+            textView.bounds.width, canvas.bounds.width,
             "content should be horizontally scrollable"
         )
     }
@@ -210,8 +219,16 @@ final class EditorScrollingTests: XCTestCase {
         return nil
     }
 
+    private func findCanvas(_ view: UIView) -> CodeEditorCanvas? {
+        if let canvas = view as? CodeEditorCanvas { return canvas }
+        for subview in view.subviews {
+            if let found = findCanvas(subview) { return found }
+        }
+        return nil
+    }
+
     /// A file long enough to scroll and wide enough to need sideways scrolling.
-    private func makeEditor(lines: Int = 400) throws -> (UITextView, UIWindow) {
+    private func makeEditor(lines: Int = 400) throws -> (CodeEditorCanvas, UIWindow) {
         let box = Box()
         box.text = (0..<lines)
             .map { "    let value_\($0) = compute_something_with_a_long_name(\($0), \"argument\");" }
@@ -225,79 +242,121 @@ final class EditorScrollingTests: XCTestCase {
         window.isHidden = false
         controller.view.layoutIfNeeded()
 
-        let textView = try XCTUnwrap(findTextView(controller.view), "no UITextView was created")
-        textView.layoutIfNeeded()
-        return (textView, window)
+        let canvas = try XCTUnwrap(findCanvas(controller.view), "no editor was created")
+        canvas.layoutIfNeeded()
+        return (canvas, window)
     }
 
     func testALongFileScrollsPastTheFirstLineAndStaysThere() throws {
-        let (textView, window) = try makeEditor()
+        let (canvas, window) = try makeEditor()
         defer { window.isHidden = true }
 
         XCTAssertGreaterThan(
-            textView.contentSize.height, textView.bounds.height,
+            canvas.textView.bounds.height, canvas.bounds.height,
             "a 400-line file has to be taller than the viewport to scroll at all"
         )
 
-        textView.contentOffset = CGPoint(x: 0, y: 1_200)
+        canvas.scrollOffset = CGPoint(x: 0, y: 1_200)
         // Several layout passes, which is what scrolling actually causes.
-        for _ in 0..<4 { textView.layoutIfNeeded() }
+        for _ in 0..<4 { canvas.layoutIfNeeded() }
 
         XCTAssertEqual(
-            textView.contentOffset.y, 1_200, accuracy: 1,
+            canvas.scrollOffset.y, 1_200, accuracy: 1,
             "layout must not drag the reader back to the first line"
         )
     }
 
     func testHorizontalScrollPositionSurvivesLayout() throws {
-        let (textView, window) = try makeEditor()
+        let (canvas, window) = try makeEditor()
         defer { window.isHidden = true }
 
         XCTAssertGreaterThan(
-            textView.contentSize.width, textView.bounds.width,
+            canvas.textView.bounds.width, canvas.bounds.width,
             "long lines have to make the content wider than the viewport"
         )
 
-        textView.contentOffset = CGPoint(x: 220, y: 600)
-        for _ in 0..<4 { textView.layoutIfNeeded() }
+        canvas.scrollOffset = CGPoint(x: 220, y: 600)
+        for _ in 0..<4 { canvas.layoutIfNeeded() }
 
-        XCTAssertEqual(textView.contentOffset.x, 220, accuracy: 1)
-        XCTAssertEqual(textView.contentOffset.y, 600, accuracy: 1)
+        XCTAssertEqual(canvas.scrollOffset.x, 220, accuracy: 1)
+        XCTAssertEqual(canvas.scrollOffset.y, 600, accuracy: 1)
     }
 
     func testTheGutterStaysOverTheVisibleLeftEdgeWhenScrolledSideways() throws {
-        let (textView, window) = try makeEditor()
+        let (canvas, window) = try makeEditor()
         defer { window.isHidden = true }
 
-        textView.contentOffset = CGPoint(x: 260, y: 400)
-        textView.layoutIfNeeded()
+        canvas.scrollOffset = CGPoint(x: 260, y: 400)
+        canvas.layoutIfNeeded()
 
-        // The gutter is a subview so the text cannot composite over it; it has
-        // to travel with the viewport rather than staying at content x = 0.
+        // The gutter sits beside the scrolling text rather than inside it, so
+        // the code slides underneath and the numbers stay at the left edge.
         let gutter = try XCTUnwrap(
-            textView.subviews.first { String(describing: type(of: $0)).contains("Gutter") }
+            canvas.subviews.first { String(describing: type(of: $0)).contains("Gutter") }
         )
-        XCTAssertEqual(gutter.frame.minX, 260, accuracy: 1, "the gutter must follow the viewport")
-        XCTAssertEqual(gutter.frame.minY, 400, accuracy: 1)
+        XCTAssertEqual(gutter.frame.minX, 0, accuracy: 1, "the gutter must stay at the left edge")
+        XCTAssertEqual(gutter.frame.minY, 0, accuracy: 1)
         XCTAssertNotNil(gutter.backgroundColor, "a transparent gutter lets code show through")
         XCTAssertEqual(
-            textView.subviews.last, gutter,
+            canvas.subviews.last, gutter,
             "the gutter has to stay in front of the text"
         )
     }
 
-    func testTypingDoesNotResetTheScrollPosition() throws {
-        let (textView, window) = try makeEditor()
+    func testTheGutterNumbersFollowTheScrolledLines() throws {
+        let (canvas, window) = try makeEditor()
         defer { window.isHidden = true }
 
-        textView.contentOffset = CGPoint(x: 0, y: 900)
-        textView.layoutIfNeeded()
+        canvas.scrollOffset = CGPoint(x: 0, y: 1_200)
+        canvas.layoutIfNeeded()
+
+        let visible = CGRect(origin: canvas.scrollOffset, size: canvas.bounds.size)
+        let numbers = canvas.textView.lineNumbers(in: visible).map(\.number)
+
+        XCTAssertFalse(numbers.isEmpty, "the gutter numbered nothing")
+        XCTAssertEqual(numbers, numbers.sorted(), "line numbers must run downwards")
+        XCTAssertEqual(Set(numbers).count, numbers.count, "each line is numbered once")
+        XCTAssertGreaterThan(
+            try XCTUnwrap(numbers.first), 40,
+            "scrolled well down the file, the top line is not line 1"
+        )
+    }
+
+    func testTypingWhereTheReaderIsLookingKeepsThemThere() throws {
+        let (canvas, window) = try makeEditor()
+        defer { window.isHidden = true }
+        let textView = canvas.textView
+
+        canvas.scrollOffset = CGPoint(x: 0, y: 900)
+        canvas.layoutIfNeeded()
+
+        // The caret goes where the reader is looking, which is what typing in
+        // a scrolled file means.
+        let line = try XCTUnwrap(
+            textView.characterRange(at: CGPoint(x: 80, y: 940))
+        )
+        textView.selectedTextRange = line
         textView.insertText("// a comment\n")
-        textView.layoutIfNeeded()
+        canvas.layoutIfNeeded()
+
+        XCTAssertEqual(
+            canvas.scrollOffset.y, 900, accuracy: 120,
+            "editing where the reader is looking must not move them somewhere else"
+        )
+    }
+
+    func testTypingPastTheRightEdgeFollowsTheCaret() throws {
+        let (canvas, window) = try makeEditor(lines: 3)
+        defer { window.isHidden = true }
+        let textView = canvas.textView
+
+        textView.selectedRange = NSRange(location: (textView.text as NSString).length, length: 0)
+        textView.insertText(String(repeating: "x", count: 200))
+        canvas.layoutIfNeeded()
 
         XCTAssertGreaterThan(
-            textView.contentOffset.y, 0,
-            "editing must not jump the reader back to the top"
+            canvas.scrollOffset.x, 0,
+            "typing off the right edge has to bring the caret back into view"
         )
     }
 }
@@ -331,6 +390,14 @@ final class EditorRepaintScrollTests: XCTestCase {
         return nil
     }
 
+    private func findCanvas(_ view: UIView) -> CodeEditorCanvas? {
+        if let canvas = view as? CodeEditorCanvas { return canvas }
+        for subview in view.subviews {
+            if let found = findCanvas(subview) { return found }
+        }
+        return nil
+    }
+
     func testRepaintingDoesNotDragTheReaderBackToTheFirstLine() throws {
         let box = Box()
         box.text = (0..<500).map { "let value_\($0) = \($0);" }.joined(separator: "\n")
@@ -342,22 +409,23 @@ final class EditorRepaintScrollTests: XCTestCase {
         defer { window.isHidden = true }
         controller.view.layoutIfNeeded()
 
-        let textView = try XCTUnwrap(findTextView(controller.view))
+        let canvas = try XCTUnwrap(findCanvas(controller.view))
+        let textView = canvas.textView
         let coordinator = try XCTUnwrap(textView.delegate as? SyntaxCodeEditor.Coordinator)
 
         // Caret near the top, reader scrolled well past it — the situation
         // where re-applying the selection is visibly wrong.
         textView.selectedRange = NSRange(location: 0, length: 0)
-        textView.layoutIfNeeded()
-        textView.contentOffset = CGPoint(x: 0, y: 2_000)
-        textView.layoutIfNeeded()
+        canvas.layoutIfNeeded()
+        canvas.scrollOffset = CGPoint(x: 0, y: 2_000)
+        canvas.layoutIfNeeded()
 
         // A repaint — theme change, font change, a re-render from anywhere.
         coordinator.applyHighlighting(to: textView, filePath: "src/main.rs")
-        textView.layoutIfNeeded()
+        canvas.layoutIfNeeded()
 
         XCTAssertEqual(
-            textView.contentOffset.y, 2_000, accuracy: 1,
+            canvas.scrollOffset.y, 2_000, accuracy: 1,
             "re-applying the selection scrolled it into view, yanking the reader to line 1"
         )
     }
