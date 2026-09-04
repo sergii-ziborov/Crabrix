@@ -198,8 +198,7 @@ struct ContentView: View {
 
                     if horizontalSizeClass == .regular {
                         HStack(spacing: 0) {
-                            if !isProjectSidebarCollapsed {
-                                ProjectSidebar(
+                            ProjectSidebar(
                                     projectName: model.projectName,
                                     files: model.fileNames,
                                     selectedFile: model.selectedFile,
@@ -223,16 +222,15 @@ struct ContentView: View {
                                     onOpenVendor: model.openVendoredCrate,
                                     onResetVendor: model.resetVendoredCrate
                                 )
-                                .frame(width: projectSidebarWidth)
-                                .transition(.move(edge: .leading).combined(with: .opacity))
-                            }
+                            .frame(width: projectSidebarWidth)
 
                             ResizablePanelDivider(
                                 edge: .leading,
                                 width: $projectSidebarWidth,
                                 isCollapsed: $isProjectSidebarCollapsed,
                                 minimumWidth: 170,
-                                maximumWidth: 360
+                                maximumWidth: 360,
+                                canCollapse: false
                             )
 
                             editorPane
@@ -586,17 +584,16 @@ struct ContentView: View {
                 files: model.fileNames,
                 selectedFile: model.selectedFile,
                 isProjectSidebarCollapsed: horizontalSizeClass == .regular
-                    ? isProjectSidebarCollapsed
+                    ? false
                     : !isCompactProjectDrawerPresented,
+                showsProjectSidebarToggle: horizontalSizeClass != .regular,
                 isInspectorCollapsed: horizontalSizeClass == .regular
                     ? isInspectorCollapsed
                     : !isCompactInspectorDrawerPresented,
                 onSelectFile: selectEditorFile,
                 onToggleProjectSidebar: {
                     if horizontalSizeClass == .regular {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            isProjectSidebarCollapsed.toggle()
-                        }
+                        // The files panel does not hide on iPad.
                     } else {
                         withAnimation(.easeInOut(duration: 0.22)) {
                             isCompactProjectDrawerPresented.toggle()
@@ -1286,6 +1283,11 @@ private struct ResizablePanelDivider: View {
     @Binding var isCollapsed: Bool
     let minimumWidth: CGFloat
     let maximumWidth: CGFloat
+    /// A panel that has to stay on screen still resizes, it just cannot be
+    /// hidden. The iPad file sidebar is one: keeping it visible is what holds
+    /// the editor's share of the window under the programming-environment
+    /// limit Apple's developer agreement sets.
+    var canCollapse = true
     @State private var dragStartWidth: CGFloat?
 
     private var collapseIcon: String {
@@ -1312,20 +1314,22 @@ private struct ResizablePanelDivider: View {
                 .fill(CrabrixTheme.muted.opacity(isCollapsed ? 0 : 0.45))
                 .frame(width: 3, height: 34)
 
-            Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isCollapsed.toggle()
+            if canCollapse {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        isCollapsed.toggle()
+                    }
+                } label: {
+                    Image(systemName: collapseIcon)
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(CrabrixTheme.primary)
+                        .frame(width: 22, height: 22)
+                        .background(CrabrixTheme.raised, in: Circle())
+                        .overlay { Circle().stroke(CrabrixTheme.border) }
                 }
-            } label: {
-                Image(systemName: collapseIcon)
-                    .font(.system(size: 9, weight: .bold))
-                    .foregroundStyle(CrabrixTheme.primary)
-                    .frame(width: 22, height: 22)
-                    .background(CrabrixTheme.raised, in: Circle())
-                    .overlay { Circle().stroke(CrabrixTheme.border) }
+                .buttonStyle(.plain)
+                .accessibilityLabel(accessibilityTitle)
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(accessibilityTitle)
         }
         .frame(width: 28)
         .contentShape(Rectangle())
@@ -1585,6 +1589,8 @@ private struct EditorToolbar: View {
     let files: [String]
     let selectedFile: String
     let isProjectSidebarCollapsed: Bool
+    /// iPad keeps the files panel on screen, so it offers no button to hide it.
+    var showsProjectSidebarToggle = true
     let isInspectorCollapsed: Bool
     let onSelectFile: (String) -> Void
     let onToggleProjectSidebar: () -> Void
@@ -1618,13 +1624,15 @@ private struct EditorToolbar: View {
             Divider().overlay(CrabrixTheme.border)
 
             HStack(spacing: 8) {
-                PanelToolbarButton(
-                    title: isProjectSidebarCollapsed ? "Show files" : "Hide files",
-                    systemImage: "sidebar.left",
-                    isCollapsed: isProjectSidebarCollapsed,
-                    visibleTitle: isProjectSidebarCollapsed ? "Files" : nil,
-                    action: onToggleProjectSidebar
-                )
+                if showsProjectSidebarToggle {
+                    PanelToolbarButton(
+                        title: isProjectSidebarCollapsed ? "Show files" : "Hide files",
+                        systemImage: "sidebar.left",
+                        isCollapsed: isProjectSidebarCollapsed,
+                        visibleTitle: isProjectSidebarCollapsed ? "Files" : nil,
+                        action: onToggleProjectSidebar
+                    )
+                }
 
                 Menu {
                     ForEach(files, id: \.self) { file in

@@ -8,13 +8,13 @@ the app cannot drift apart. Character limits are Apple's.
 | Field | Value |
 | --- | --- |
 | Name (30) | `Crabrix: Rust Compiler` |
-| Subtitle (30) | `Write and run Rust offline` |
+| Subtitle (30) | `Cargo IDE, offline on-device` — 28 characters. The name already carries "Rust" and "Compiler", so the subtitle spends its room on the words it does not: Cargo, IDE, offline, on-device. |
 | Bundle ID | `com.sergiiziborov.Crabrix` |
 | SKU | `crabrix-ios-001` |
 | Primary category | Developer Tools |
 | Secondary category | Education |
 | Price | Tier for **$9.99** at launch, raised as the app grows. One-time, no IAP. |
-| Age rating | 4+ — no objectionable content. Answer "None" to every content question. |
+| Age rating | Answer the current questionnaire honestly, question by question; the app has no objectionable content, so the computed rating should come out low. Do not paste an expected result. |
 | Copyright | `2026 Serhii Ziborov` |
 
 ### URLs
@@ -33,14 +33,15 @@ the app cannot drift apart. Character limits are Apple's.
 ## Description (4000)
 
 ```
-Crabrix runs the real Rust compiler on your iPhone and iPad.
+Crabrix runs a real bundled Rust compiler locally on your iPhone and iPad.
+Build multi-file projects, add crates.io dependencies, read and edit the source
+of those dependencies, learn from real compiler errors, and keep working with
+the network off — with no cloud compiler and no account.
 
 Not a sandbox that sends your code to a server. Not an interpreter written to
 look like the real thing. Crabrix bundles an actual build of rustc and the Rust
-standard library, and executes it on your device — with the same diagnostics and
-the same error codes you get on a laptop.
-
-Turn off Wi-Fi and it still compiles.
+standard library, and executes it on your device — real rustc diagnostics with
+the standard rustc error codes, from the toolchain pinned inside the app.
 
 REAL COMPILATION, ON DEVICE
 • A bundled build of the Rust compiler and standard library
@@ -103,9 +104,16 @@ achievements stay on your device.
 
 ## Keywords (100, comma separated, no spaces)
 
+Apple already indexes the app name and subtitle, and tells developers not to
+repeat those words here. With the name carrying `Rust` and `Compiler` and the
+subtitle carrying `Cargo`, `IDE`, `offline` and `on-device`, the field is spent
+on everything else a search might use:
+
 ```
-rust,compiler,rustc,cargo,crates,code,programming,ide,editor,learn,offline,wasm,develop,tutorial
+crates,rustc,learn,programming,editor,wasm,ownership,borrowing,lifetimes,algorithm,tutorial,code
 ```
+
+95 characters. No competitor app names: Apple rejects those.
 
 ## What's New (4000) — version 1.0
 
@@ -192,10 +200,11 @@ the same values are in Settings → Local compiler. The source editor occupies
 measured from Release-build screenshots.
 
 Crabrix is not a store for code. crates.io is reachable only from the project
-you are editing (Build → Packages → Add dependency); there is no catalogue to
-browse, nothing promoted or trending, and no way to obtain a runnable app from
-another developer. It is dependency management for the Rust project open in the
-editor, nothing else.
+you are editing (Build → Packages → Add dependency). Searching crates.io by name
+is part of choosing a dependency; what Crabrix does not offer is a standalone
+marketplace, a promoted or trending feed, or any way to obtain a runnable app or
+executable from another developer. It is dependency management for the Rust
+project open in the editor, nothing else.
 
 REGARDING GUIDELINE 2.5.2
 Crabrix is an app designed to teach and develop code. The compiler and standard

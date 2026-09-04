@@ -126,8 +126,9 @@ Do not create or push a `1.0` production tag until all of these are attached to
 5. cold, warm, frozen/offline-pinned, interrupted-download and corruption Cargo
    scenarios;
 6. App Review 2.5.2 Vendor & Edit walkthrough;
-7. multi-case validators and verified canonical solution for every advertised
-   Algorithm Atlas challenge;
+7. multi-case validators for every advertised Algorithm Atlas challenge. A
+   verified canonical solution for all 200 is **not** a 1.0 gate — it is
+   deferred to 1.0.1, as recorded under "Deliberately deferred past 1.0";
 8. exact final screenshots and App Store metadata review;
 9. protected source branch, green required checks, immutable source archive,
    SBOM/license inventory, and signed tag.
