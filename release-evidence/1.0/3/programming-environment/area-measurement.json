@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 2,
+  "capturedAt": "2026-09-06T16:35:00Z",
+  "purpose": "Apple Developer Program License Agreement: an app that is a programming environment must keep the area for viewing and editing executable code within 80% of the app's viewing area, and must indicate the programming environment conspicuously.",
+  "screenshotsFromCommit": "a4e10bb08c661a145ef6b10866033ff12396b54f",
+  "screenshotsFromCommitNote": "Release build of this commit, captured on a freshly erased simulator. The submitted binary differs from it only by CURRENT_PROJECT_VERSION, which changes no layout.",
+  "method": "The Build screen was opened directly with -CrabrixTab build on a Release build, captured with simctl, and the editor pane's bounds were read from the image by exact colour match against CrabrixTheme.editor (13, 18, 23 in dark appearance). The measured rectangle is the whole editor pane - its line-number gutter and its Code/Problems/Output/Terminal strip included - against the entire screen, with the status bar and home indicator counted as viewing area rather than subtracted from it. Both choices make the reported share larger than a narrower reading would. Every percentage here is computed from the pixel rectangle beside it, so the two cannot disagree.",
+  "measurements": [
+    {
+      "device": "iPhone 17 Pro Max simulator",
+      "osVersion": "26.5",
+      "orientation": "portrait",
+      "state": "the editor at its largest on iPhone: Code tab selected, no keyboard, the inspector reached by the Build toggle rather than shown beside it",
+      "screenPixels": [
+        1320,
+        2868
+      ],
+      "editorRectPixels": {
+        "x": [
+          0,
+          1320
+        ],
+        "y": [
+          528,
+          2619
+        ]
+      },
+      "editorWidthPercent": 100.0,
+      "editorHeightPercent": 72.9,
+      "editorSharePercent": 72.9,
+      "limitPercent": 80,
+      "result": "passed",
+      "screenshot": "iphone-build-editor.png"
+    },
+    {
+      "device": "iPad Pro 13-inch simulator",
+      "osVersion": "26.5",
+      "orientation": "portrait",
+      "state": "as the app opens: file sidebar 220 pt, build inspector 390 pt, both shown beside the editor",
+      "screenPixels": [
+        2064,
+        2752
+      ],
+      "editorRectPixels": {
+        "x": [
+          496,
+          1228
+        ],
+        "y": [
+          421,
+          2752
+        ]
+      },
+      "editorWidthPercent": 35.5,
+      "editorHeightPercent": 84.7,
+      "editorSharePercent": 30.0,
+      "limitPercent": 80,
+      "result": "passed",
+      "screenshot": "ipad-build-editor.png"
+    },
+    {
+      "device": "iPad Pro 13-inch simulator",
+      "orientation": "portrait",
+      "state": "the largest the editor can be made: file sidebar dragged to its 170 pt minimum and the build inspector collapsed",
+      "kind": "derived",
+      "derivation": "1032 pt window - 170 pt sidebar minimum - 28 pt leading divider - 28 pt trailing divider = 806 pt of editor width, 78.1% of the window. The sidebar minimum and both divider widths are the values passed to ResizablePanelDivider in Crabrix/UI/ContentView.swift:231 and :243; the divider cannot be dragged narrower and offers no collapse on a regular size class.",
+      "editorWidthPercent": 78.1,
+      "editorHeightPercent": 84.7,
+      "editorSharePercent": 66.2,
+      "limitPercent": 80,
+      "result": "passed"
+    }
+  ],
+  "notes": [
+    "Portrait is the worst case on iPhone: the chrome above and below the editor has a fixed height in points, so a shorter landscape screen lowers the editor's share rather than raising it.",
+    "The persistent RUST PROGRAMMING ENVIRONMENT bar sits directly above the editor on both size classes, names the bundled toolchain and its target, and carries an accessibility label saying the same.",
+    "The code area proper is smaller than what is recorded here. Excluding the 44 pt line-number gutter and the tab strip, the iPhone figure falls to 62.0%.",
+    "The iPad row marked derived is arithmetic over the layout's own constants rather than a capture: the sidebar cannot be collapsed on a regular size class and the drag has to be performed by hand, so the state cannot be reached from a launch argument. Its height share is the measured one."
+  ]
+}

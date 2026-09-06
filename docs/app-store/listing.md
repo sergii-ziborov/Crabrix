@@ -288,10 +288,12 @@ support@crabrix.com
 
 ## Screenshots
 
-Recaptured on 2026-09-03 from the Release build of the 1.0 (2) candidate, in
-dark appearance, on a clean install. The device archive differs from these
-builds only in signing, so re-capture is needed only if the interface changes
-again before submission.
+Recaptured on 2026-09-06 from the Release build of the 1.0 (3) candidate, in
+dark appearance, on freshly erased simulators. The device archive differs from
+these builds only in signing and architecture, so re-capture is needed only if
+the interface changes again before submission. The Settings frame shows the top
+of the screen; the Help & problems section added in this build sits below its
+fold and is not visible in it.
 
 | Folder | Device | Size |
 | --- | --- | --- |
@@ -339,7 +341,10 @@ drafted on the day.
 
 - [x] `support@crabrix.com` delivers mail — Cloudflare Email Routing enabled on the zone, forwarding to the verified destination, with a catch-all so nothing to the domain is dropped
 - [x] Game Center is not in the production build, so no capability is needed on the App ID
-- [x] Screenshots recaptured from the 1.0 (2) Release candidate at both required sizes
+- [x] Screenshots recaptured from the 1.0 (3) Release build at both required sizes, on freshly erased simulators
+- [x] Programming-environment area re-measured on this build — 72.9% iPhone, 66.2% iPad at its widest, against an 80% limit
+- [ ] App Store artifact exported — blocked on an Xcode account session, see [submission-status.md](submission-status.md)
+- [ ] Report a problem exercised once on the physical phone
 - [ ] Physical iPhone/iPad matrix and release-evidence bundle complete
 - [ ] App Review 2.5.2 consultation/reviewer proof path confirmed
 - [ ] App Privacy answers entered to match the privacy manifest

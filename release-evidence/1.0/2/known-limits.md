@@ -1,5 +1,11 @@
 # Crabrix 1.0 build 2 — known release-gate limits
 
+> **Superseded by build 3.** Kept as the record of what was true for the 1.0 (2)
+> candidate. One thing has since changed on disk rather than in the record: the
+> `build/export/Crabrix.ipa` described below was deleted during a later rebuild,
+> so the artefact it verifies no longer exists even though the export it
+> describes did happen. See `release-evidence/1.0/3/`.
+
 Evidence for the 1.0 (2) candidate on `release/1.0-app-store`. Every measurement
 here was taken from this candidate's own tree. Where a result exists only for an
 older commit it is named as inherited and is not counted.

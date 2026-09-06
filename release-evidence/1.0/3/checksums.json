@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 2,
+  "capturedAt": "2026-09-06T17:10:00Z",
+  "candidate": {
+    "version": "1.0",
+    "build": "3",
+    "sourceCommit": "a4e10bb08c661a145ef6b10866033ff12396b54f",
+    "note": "The commit that adds this file necessarily comes after the build, so it cannot appear here. sourceCommit is the tree the archive was built from; nothing outside release-evidence/ changed after it."
+  },
+  "tooling": {
+    "xcodeVersion": "26.6",
+    "xcodeBuild": "17F113",
+    "swiftVersion": "6.3.3",
+    "note": "Xcode 26.6 is the App Store-accepted release on this Mac. Xcode-beta 27.0 is also installed and was NOT used for this archive.",
+    "wasmKitVersion": "0.3.1"
+  },
+  "toolchain": {
+    "id": "artifacts-test-7",
+    "rustcSHA256": "41412081eefc3e08ec5664ed0748902a7e575e1f267898dcc64d412702df7e83",
+    "verifiedFrom": "the Toolchain directory inside the archived Crabrix.app built from this commit"
+  },
+  "sourceControlledReleaseInputs": {
+    "projectYMLSHA256": "a0a36132b1c78407b93d92c86d7cb83b37b2a2cf8300c6b1c9357f02aa199727",
+    "packageResolvedSHA256": null
+  },
+  "artifacts": {
+    "archive": {
+      "path": "build/Crabrix-1.0-3.xcarchive (not committed: 161 MiB)",
+      "appBinarySHA256": "ce42b4f6d12dd82027f2b98c0e7cb370b3830b88f3a9e7c8575a490d7634f542",
+      "appSizeMiB": 161,
+      "signature": "Apple Development: sergii.ziborov@gmail.com (VXSL3A36W6)",
+      "getTaskAllow": true,
+      "note": "An archive is development-signed by design; the App Store export re-signs it with the distribution certificate and flips get-task-allow to false. This is therefore NOT the shipping artifact."
+    },
+    "appStoreIPA": {
+      "sha256": null,
+      "status": "PENDING",
+      "blocker": "xcodebuild -exportArchive fails with 'No Accounts / No signing certificate iOS Distribution found'. The distribution certificate is Apple-managed, so it needs an authenticated Xcode account session; no provisioning profiles are installed on this Mac either. Owner action: open Xcode, confirm the account under Settings > Accounts, then export from Organizer (or re-run the export)."
+    }
+  },
+  "verification": {
+    "gameKitLinked": false,
+    "gkLocalPlayerStrings": 0,
+    "appGroup": "group.com.sergiiziborov.Crabrix present on the app",
+    "bundleVersion": "1.0 (3)",
+    "fastSuite": {
+      "tests": 390,
+      "failures": 0,
+      "xcode": "26.6",
+      "destination": "iPhone 17 Pro Max simulator, iOS 26.5"
+    }
+  },
+  "screenshots": {
+    "appStoreSetSHA256": "518565524b0e674425066ebcf7a307e73a60baa80c6cfb6f0ed41f85d6e52fde",
+    "capturedFrom": "a Release simulator build of this commit's tree on a freshly erased simulator; the device archive differs from it in signing and architecture, so their binaries do not share a hash"
+  }
+}

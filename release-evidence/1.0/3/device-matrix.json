@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 2,
+  "capturedAt": "2026-09-06T17:15:00Z",
+  "candidate": {
+    "version": "1.0",
+    "build": "3",
+    "branch": "release/1.0-app-store",
+    "sourceCommit": "a4e10bb08c661a145ef6b10866033ff12396b54f",
+    "bundleVersion": "1.0 (3)",
+    "buildNumberNote": "Raised from 2 because this binary is not the one the 1.0 (2) archive holds - it adds Report a problem and the editor's horizontal-scroll rework. Whether 1.0 (2) was ever uploaded is not visible from here; 3 is safe either way. If App Store Connect already lists a build 3, raise it again rather than reusing it."
+  },
+  "simulator": {
+    "model": "iPhone 17 Pro Max",
+    "osVersion": "26.5",
+    "architecture": "arm64",
+    "xcode": "26.6 (17F113), Swift 6.3.3",
+    "tests": 390,
+    "failures": 0,
+    "skipped": 0,
+    "result": "passed",
+    "scope": "the fast release suite. The bundled-compiler gate suite is skipped in this scheme and was last run in full on an earlier commit; the compiler itself is unchanged since."
+  },
+  "releaseBuild": {
+    "destination": "generic/platform=iOS",
+    "configuration": "Release",
+    "result": "archived",
+    "errors": 0,
+    "archive": "build/Crabrix-1.0-3.xcarchive"
+  },
+  "physicalDevice": {
+    "status": "USER_ATTESTED",
+    "attestation": "The owner reports having run the app on their iPhone and that it works, including projects that use libraries. Recorded as stated: no automated run backs it, and no device model, duration, crate list or timing is claimed here beyond what was said.",
+    "installsPerformedFromThisMac": [
+      {
+        "date": "2026-09-05",
+        "commit": "7f19356",
+        "contains": "the editor horizontal-scroll rework",
+        "install": "succeeded over Wi-Fi",
+        "launch": "not launched from here - the device was locked; the owner opens it themselves"
+      },
+      {
+        "date": "2026-09-06",
+        "commit": "a6249b1",
+        "contains": "Report a problem",
+        "install": "not performed - the device was unavailable on the network",
+        "launch": null
+      }
+    ],
+    "deltaStillUnverifiedOnDevice": [
+      "Report a problem: composing a report, the mail draft opening with the right text, the environment toggle removing the four detail lines, Copy, and cancelling the draft without the app claiming anything was sent. It is verified by unit tests and rendered in a hosted snapshot, but it has not been touched on the phone."
+    ],
+    "verifiedOnDeviceEarlier": "The editor rework was installed on the phone on 2026-09-05. Everything else in this candidate predates the owner's own testing."
+  },
+  "programmingEnvironment": {
+    "evidence": "release-evidence/1.0/3/programming-environment/area-measurement.json",
+    "iphoneEditorSharePercent": 72.9,
+    "ipadEditorSharePercent": 30.0,
+    "ipadMaximumEditorSharePercent": 66.2,
+    "limitPercent": 80
+  }
+}
