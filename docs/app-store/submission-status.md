@@ -59,6 +59,7 @@ Copy, then cancel the draft and confirm the app never claims anything was sent.
 | Programming-environment evidence | done | `release-evidence/1.0/3/programming-environment/area-measurement.json` |
 | Screenshots match the shipping interface | done | `docs/app-store/screenshots/`, recaptured from this tree |
 | Provenance from source to artifact | partial | `release-evidence/1.0/3/checksums.json` — the IPA hash waits on blocker 1 |
+| The URLs App Store Connect points at | done | all six pages answer 200, checked against the live site |
 | App Store Connect fields | owner-only | not visible from this machine |
 
 ### Metadata lengths, counted rather than estimated
@@ -76,6 +77,17 @@ Copy, then cancel the draft and confirm the app never claims anything was sent.
 Review notes sit 14 bytes under the cap. Adding a sentence in App Store Connect
 will overflow it — edit `listing.md` and re-count instead of typing into the
 field.
+
+## The site was two weeks behind
+
+`crabrix.com/privacy` was still serving the 28 August text, and
+`crabrix.com/technology` — the Marketing URL in the listing — answered **404**,
+because the Worker had not been deployed since those pages were written.
+Deployed on 6 September with the owner's go-ahead; `/`, `/technology`,
+`/support`, `/privacy`, `/terms` and `/about` all answer 200, the policy shows
+6 September, and the support page carries the in-app reporting route. Re-check
+after any further site edit: nothing deploys the site automatically, it is
+`npx wrangler deploy` by hand.
 
 ## Claims that were corrected on the way here
 
