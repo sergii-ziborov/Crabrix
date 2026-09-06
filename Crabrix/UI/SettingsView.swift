@@ -31,6 +31,7 @@ struct SettingsView: View {
                     cargoSection
                     cargoStorageSection
                     compilerSection
+                    helpSection
                     aboutSection
                 }
                 .padding(22)
@@ -389,10 +390,48 @@ struct SettingsView: View {
         }
     }
 
+    private var helpSection: some View {
+        SettingsSection(
+            title: "Help & problems",
+            detail: "Something broken, something confusing, or something missing — this is where it goes."
+        ) {
+            NavigationLink {
+                ProblemReportView(toolchainIsReady: toolchain.isReady)
+            } label: {
+                SettingsLinkRow(
+                    title: "Report a problem",
+                    detail: "Describe it here; it opens as a mail draft you read before sending",
+                    icon: "ladybug.fill",
+                    tint: CrabrixTheme.coral,
+                    isExternal: false
+                )
+            }
+            .buttonStyle(.plain)
+
+            Divider().overlay(CrabrixTheme.border)
+
+            Link(destination: CrabrixLinks.support) {
+                SettingsLinkRow(
+                    title: "Support page",
+                    detail: "Known issues, release notes, and answers to the usual questions",
+                    icon: "lifepreserver.fill",
+                    tint: CrabrixTheme.mint,
+                    isExternal: true
+                )
+            }
+
+            Text("Crabrix has no account and no reporting service. A report is an email you write and send yourself.")
+                .font(.caption2)
+                .foregroundStyle(CrabrixTheme.muted)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 4)
+        }
+    }
+
     private var aboutSection: some View {
         SettingsSection(
             title: "About Crabrix",
-            detail: "Version, licences, and where to reach a human."
+            detail: "Version, licences, and the legal small print."
         ) {
             SettingsFactRow(
                 title: "Version",
@@ -425,16 +464,6 @@ struct SettingsView: View {
 
             // These are the URLs App Store Connect points at, kept in one place
             // so the app and the listing can never disagree.
-            Link(destination: CrabrixLinks.support) {
-                SettingsLinkRow(
-                    title: "Support",
-                    detail: "Questions, release notes, and bug reports",
-                    icon: "lifepreserver.fill",
-                    tint: CrabrixTheme.mint,
-                    isExternal: true
-                )
-            }
-
             Link(destination: CrabrixLinks.privacy) {
                 SettingsLinkRow(
                     title: "Privacy Policy",
