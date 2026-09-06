@@ -20,8 +20,8 @@ whether or not it can land on launch day.
 > An independent developer project that bundles a real Rust compiler and builds
 > crates.io dependencies locally on iPhone and iPad, with no cloud compilation
 > service and no account. It combines a native programming environment, a
-> 142-lesson Rust curriculum, and a 200-pattern algorithm course. User code
-> never leaves the device.
+> 142-lesson Rust curriculum, and a 200-pattern algorithm course. User code is
+> never uploaded for compilation.
 
 **Why it is worth featuring**, in the order Apple's own guidance cares about:
 

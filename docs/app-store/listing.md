@@ -28,8 +28,12 @@ the app cannot drift apart. Character limits are Apple's.
 ## Promotional text (170)
 
 > A real bundled rustc and crates.io dependencies, built on device. 142 guided
-> lessons and 200 algorithm patterns, checked by the compiler itself. Works with
-> the network off.
+> lessons and 200 algorithm patterns, practised against the real compiler. Works
+> offline.
+
+164 characters. Not "checked by the compiler itself": the exercises are compiled
+and the answers are graded, but there is no canonical proof over all 200 patterns
+and the text must not imply one.
 
 ## Description (4000)
 
@@ -53,7 +57,7 @@ REAL COMPILATION, ON DEVICE
 A REAL PACKAGE MANAGER
 • Add dependencies from crates.io by name and version
 • Sparse index resolution, SemVer ranges, and feature unification
-• SHA-256 checksums verified before anything is written to disk
+• SHA-256 checksums verified before any source is extracted or trusted
 • Every extracted crate path is listed; supported source is completely viewable
   and editable, or the package is blocked before compilation
 • Vendor & Edit creates a project-local editable patch with Diff and Reset
@@ -85,7 +89,8 @@ otherwise. Rating and achievements remain local in the production 1.0 build.
 
 NO ACCOUNT. NO SUBSCRIPTION. NO TRACKING.
 Buy it once. There is no sign-up, no password, no advertising, no analytics
-SDK, and no data sold to anyone. Your code never leaves your device.
+SDK, and no data sold to anyone. Your code is never uploaded to compile it: it
+leaves the device only if you export it or attach it to a support message.
 
 WHAT IT CANNOT DO
 The bundled compiler targets wasm32-wasip1 and has no native linker, so crates
@@ -114,7 +119,7 @@ on everything else a search might use:
 crates,rustc,learn,programming,editor,wasm,ownership,borrowing,lifetimes,algorithm,tutorial,code
 ```
 
-95 characters. No competitor app names: Apple rejects those.
+96 characters. No competitor app names: Apple rejects those.
 
 ## What's New (4000) — version 1.0
 
@@ -147,6 +152,23 @@ either; a CI step fails the build if it reappears. If a later release turns on
 Game Center, update these answers and the review notes from the shipped binary
 before submission.
 
+**Report a problem does not change the answer, and here is why.** The screen
+composes the report on device and hands it to the reader's own mail app through
+a `mailto:` URL, or to the pasteboard. The app opens no connection, transmits
+nothing, and receives nothing back; whether a message ever exists is decided in
+a different app, by the person, who can edit or discard the draft. Nothing is
+attached automatically beyond four lines of version and hardware facts the
+reader can switch off, and no identifier unique to the person or the install is
+among them. Data the app never collects is not data collected from this app.
+
+What the correspondence does create is an email a human holds afterwards, which
+is why `site/privacy.html` describes it, what it contains, how long it is kept
+and how to have it deleted. Owner to confirm before submission: the retention
+sentence there matches what will actually be done. If a future version ever
+sends a report from inside the app, these answers change to Contact Info →
+Email Address and Diagnostics, both **Customer Support**, not linked to
+identity and not used for tracking.
+
 ## Content rights
 
 App Store Connect asks whether the app contains, shows, or accesses third-party
@@ -161,9 +183,12 @@ public GitHub repository URL they provide. Crabrix downloads that source into
 the user's own project so it can be read, edited and compiled locally by the
 bundled Rust compiler.
 
-Crabrix does not host, curate, promote, browse or sell third-party content,
-operates no marketplace or catalogue, and applies no rights of its own to it.
-Each package and repository stays under its own licence, which travels with the
+Crabrix does not host, curate, promote or sell third-party content, operates no
+marketplace or storefront, and applies no rights of its own to it. The one
+browsing surface is a search over the public crates.io index, reached from the
+open project's dependency list and used only to name a package to add — there is
+no catalogue to wander, nothing is ranked or promoted, and nothing is sold. Each
+package and repository stays under its own licence, which travels with the
 source. crates.io is the Rust community's public package registry, operated by
 the Rust Foundation.
 ```

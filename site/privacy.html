@@ -175,18 +175,20 @@
   <div class="wrap head">
     <div class="eyebrow">Privacy</div>
     <h1>Privacy Policy</h1>
-    <p class="lede">No account. No analytics. No tracking. No leaderboard. This page describes exactly what leaves your device, which is almost nothing.</p>
+    <p class="lede">No account. No analytics. No tracking. No leaderboard. This page describes exactly what leaves your device, which is almost nothing &mdash; and what happens if you write to support.</p>
   </div>
 
   <div class="wrap prose">
 
-    <p class="updated">LAST UPDATED 3 SEPTEMBER 2026</p>
+    <p class="updated">LAST UPDATED 6 SEPTEMBER 2026</p>
 
     <div class="callout">
       <p><strong>The short version.</strong> Crabrix 1.0 has no account, no analytics
       and no leaderboard. Your code, your projects, your rating and your progress stay on
-      your device and are never transmitted. The only network requests Crabrix makes are
-      the package and repository downloads you explicitly ask for.</p>
+      your device: the app never transmits them. The only network requests Crabrix makes
+      are the package and repository downloads you explicitly ask for. If you write to
+      support &mdash; including through <em>Report a problem</em> &mdash; that email
+      reaches a person, and this page says what happens to it.</p>
     </div>
 
     <h2>Who is responsible</h2>
@@ -197,7 +199,7 @@
     </p>
 
     <h2>What stays on your device</h2>
-    <p>All of this is stored locally and is never transmitted anywhere:</p>
+    <p>All of this is stored locally, and Crabrix never transmits any of it:</p>
     <ul>
       <li><strong>Your Rust code and projects</strong> &mdash; files you write, import from
         GitHub, or open from the Files app.</li>
@@ -212,7 +214,8 @@
     </ul>
     <p>
       Deleting the app removes all of it. Crabrix keeps no copy and has no way to
-      recover it.
+      recover it. The only way any of it reaches anyone else is if you export it or
+      paste it into a message yourself.
     </p>
 
     <h2>What leaves your device</h2>
@@ -233,8 +236,40 @@
     </p>
 
     <p>
-      That is the complete list. Both are requests for public files that you start
-      yourself, and neither carries an identifier.
+      That is the complete list of requests the app makes. Both are for public files,
+      both are started by you, and neither carries an identifier.
+    </p>
+
+    <h2>Optional support correspondence</h2>
+    <p>
+      If you choose <strong>Report a problem</strong> in Settings, Crabrix composes the
+      report on your device and opens it in your own mail app, or copies the text when
+      you ask it to. The app sends nothing: no message exists anywhere until you press
+      send in your mail app, and you can edit or discard the draft first.
+    </p>
+    <p>
+      When you do send it, I receive the address you send from and whatever you chose to
+      include. The report contains what you typed and, unless you switch the toggle off,
+      four lines of technical detail: the app version and build, your iOS version and
+      hardware model (for example <code>iPhone14,4</code>), the bundled compiler version
+      and target, and whether the toolchain is installed. Crabrix does not attach your
+      project files, your source code, your device name, or any identifier unique to
+      you or your install. Anything else in the message is there because you put it
+      there &mdash; so please remove passwords, tokens and private source before sending.
+    </p>
+    <p>
+      Support messages are used to answer you and to fix the problem, and for nothing
+      else: no advertising, no mailing list, no profiling. They are kept while the
+      problem is being worked on and deleted once it is closed, apart from any
+      de-identified technical note needed to keep the fix from regressing. Write to
+      <a href="mailto:support@crabrix.com">support@crabrix.com</a> to ask for a copy of
+      your correspondence, a correction, or its deletion. Your mail provider and mine
+      handle delivery under their own terms.
+    </p>
+    <p>
+      A public <a href="https://github.com/sergii-ziborov/Crabrix">GitHub</a> issue is a
+      different, public channel: anything you post there is visible to everyone, so do
+      not put secrets or private project code in one.
     </p>
 
     <h2>What Crabrix 1.0 does not have</h2>
@@ -263,27 +298,41 @@
       <li>No access to your photos, camera, microphone, location, contacts, or health
         data. The app requests none of these permissions.</li>
       <li>No reading of your code by anyone but you. It is compiled on your device by a
-        compiler that ships inside the app.</li>
+        compiler that ships inside the app, and it is never uploaded to compile it. The
+        exception is the obvious one: code you export yourself, or paste into a support
+        message.</li>
     </ul>
 
     <h2>Children</h2>
     <p>
-      Crabrix is a programming tool suitable for all ages and collects no personal data
-      from anyone, of any age. There is nothing to sign up for, nothing to publish, and
-      no way for one user of the app to see another.
+      Crabrix is a programming tool suitable for all ages. The app itself collects no
+      personal data from anyone, of any age: there is nothing to sign up for, nothing to
+      publish, and no way for one user of the app to see another. Writing to support is
+      the one thing that reaches a person, it is entirely optional, and it is an email
+      the sender writes themselves.
     </p>
 
     <h2>Legal basis and your rights</h2>
     <p>
-      Where the GDPR applies, there is no personal data processing to describe: Crabrix
-      1.0 stores no personal data on any server, so there is no controller-held record to
-      access, correct, port or erase. Everything the app knows about you is on your own
-      device, and deleting the app deletes it. For any question, write to
-      <a href="mailto:support@crabrix.com">support@crabrix.com</a>.
+      Where the GDPR applies: Crabrix 1.0 runs no service and stores nothing about you on
+      any server, so the app itself creates no controller-held record. Everything it
+      knows about you is on your own device, and deleting the app deletes it.
     </p>
     <p>
-      There is no data retention schedule to describe, because nothing is retained
-      anywhere but on your device.
+      The one exception is support correspondence. If you write to me, I hold that email
+      &mdash; your address and what you chose to send &mdash; as the controller, in order
+      to answer you and fix the problem. The lawful basis is legitimate interest in
+      supporting the software you bought; you can object at any time by asking me to
+      delete the correspondence. You may ask for access, correction, a copy, or erasure
+      of it: write to
+      <a href="mailto:support@crabrix.com">support@crabrix.com</a>. There is no other
+      personal data to describe, because there is nowhere else it is held.
+    </p>
+    <p>
+      Retention: nothing the app stores is retained anywhere but on your device. Support
+      emails are kept while the problem is open and deleted when it is closed, except for
+      de-identified technical notes &mdash; a compiler version, a crate name, a stack
+      shape &mdash; that carry no address and no personal detail.
     </p>
 
     <h2>Changes to this policy</h2>
