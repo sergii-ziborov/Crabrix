@@ -36,7 +36,14 @@ or, more reliably, Window → Organizer → the 1.0 (3) archive → Distribute A
 App Store Connect. Export produces the artifact; **uploading is a separate
 decision and has not been made here.**
 
-### 2. Report a problem has never run on the phone
+### 2. The App Review contact needs a phone number
+
+Everything else on the version page is saved. App Store Connect requires a
+phone number for the review contact, and it silently discards the entire App
+Review Information block — contact, notes, and the sign-in checkbox — when the
+field is empty. Fill it in and the notes below go in with it.
+
+### 3. Report a problem has never run on the phone
 
 The owner's device testing predates the feature, and the build containing it
 could not be installed on 2026-09-06 — the iPhone was not reachable on the
@@ -60,7 +67,11 @@ Copy, then cancel the draft and confirm the app never claims anything was sent.
 | Screenshots match the shipping interface | done | `docs/app-store/screenshots/`, recaptured from this tree |
 | Provenance from source to artifact | partial | `release-evidence/1.0/3/checksums.json` — the IPA hash waits on blocker 1 |
 | The URLs App Store Connect points at | done | all six pages answer 200, checked against the live site |
-| App Store Connect fields | owner-only | not visible from this machine |
+| App Store Connect record | done | app created: `Crabrix: Rust Compiler`, Apple ID 6809502653 |
+| Price and availability | done | $9.99 base USD, 175 storefronts, manual release after approval |
+| Metadata, screenshots, age rating, App Privacy | done | entered and saved; privacy published as Data Not Collected |
+| App Review contact | blocked | Apple requires a phone number; the whole block refuses to save without it |
+| App Store Connect payment setup | owner-done | Paid Apps Agreement, bank account, W-8BEN and the DSA declaration were all already active |
 
 ### Metadata lengths, counted rather than estimated
 

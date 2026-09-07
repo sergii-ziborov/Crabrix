@@ -27,85 +27,88 @@ the app cannot drift apart. Character limits are Apple's.
 
 ## Promotional text (170)
 
-> A real bundled rustc and crates.io dependencies, built on device. 142 guided
-> lessons and 200 algorithm patterns, practised against the real compiler. Works
-> offline.
+> The compiler is in the app, not on a server. Build Rust projects, add crates.io packages, and learn from real diagnostics — on your phone, with the network off.
 
-164 characters. Not "checked by the compiler itself": the exercises are compiled
-and the answers are graded, but there is no canonical proof over all 200 patterns
-and the text must not imply one.
+160 characters. It leads with the one thing no competitor page can
+claim casually — the compiler is inside the app — because the store page is the
+only place this is being sold from.
 
 ## Description (4000)
 
 ```
-Crabrix runs a real bundled Rust compiler locally on your iPhone and iPad.
-Build multi-file projects, add crates.io dependencies, read and edit the source
-of those dependencies, learn from real compiler errors, and keep working with
-the network off — with no cloud compiler and no account.
+A real Rust compiler in your pocket. Not a playground. Not a preview. Not a
+server that compiles for you and sends the answer back. rustc itself, running
+on your iPhone, with the network off.
 
-Not a sandbox that sends your code to a server. Not an interpreter written to
-look like the real thing. Crabrix bundles an actual build of rustc and the Rust
-standard library, and executes it on your device — real rustc diagnostics with
-the standard rustc error codes, from the toolchain pinned inside the app.
+Write a project on the train. Add a crates.io dependency at the airport. Press
+Run and watch a genuine compiler produce genuine diagnostics — the same error
+codes, the same spans, the same borrow checker that would stop you on a laptop.
+
+WHY THIS IS DIFFERENT
+Your code is never uploaded to be compiled, because there is nowhere to upload
+it to. Crabrix runs no service. The compiler and the Rust standard library are
+bundled inside the app and executed on your device. That is the whole product:
+a real toolchain that happens to fit in a pocket.
 
 REAL COMPILATION, ON DEVICE
-• A bundled build of the Rust compiler and standard library
-• Real rustc diagnostics, with the error codes you can look up
-• Your program runs in a sandbox with a memory cap and no network
-• First builds do the work; identical repeat runs come from a local cache
+• A bundled build of rustc and the standard library — pinned, verified by hash
+• Real diagnostics with the error codes you can look up, not friendly guesses
+• Multi-file Cargo projects with a real Cargo.toml and a real Cargo.lock
+• Your program runs in a sandbox: memory capped, no network, one writable folder
+• First builds do the work; an unchanged rerun comes back from a local cache
 
-A REAL PACKAGE MANAGER
+REAL PACKAGES, RESOLVED PROPERLY
 • Add dependencies from crates.io by name and version
-• Sparse index resolution, SemVer ranges, and feature unification
-• SHA-256 checksums verified before any source is extracted or trusted
-• Every extracted crate path is listed; supported source is completely viewable
-  and editable, or the package is blocked before compilation
-• Vendor & Edit creates a project-local editable patch with Diff and Reset
-• Cached graphs rebuild offline; Pin for Offline survives iOS cache eviction
+• Sparse index resolution, SemVer ranges, feature unification, MSRV filtering
+• SHA-256 verified before any source is extracted or trusted
+• Read the actual source of everything you depend on, file by file
+• Vendor & Edit copies a crate into your project so you can patch it, diff it,
+  compile the patch, and reset to the registry source when you are done
+• Pin for Offline keeps verified archives alive when iOS clears its caches
 
-AN EDITOR BUILT FOR A PHONE
-• Rust syntax highlighting, line numbers, and no line wrapping
-• Completion, diagnostic navigation, and a keyboard row that fits your thumbs
-• Multi-file Cargo projects, a file tree, and a project terminal
-• Import from GitHub or Files, export as a package or a plain ZIP
+AN EDITOR THAT FITS A PHONE
+• Syntax highlighting, line numbers, and lines that scroll instead of wrapping
+• A keyboard row with the symbols Rust actually needs, under your thumbs
+• Jump straight from a diagnostic to the line that caused it
+• A file tree, a project terminal, import from GitHub or Files, export as ZIP
+• The same workspace on iPad, with the file sidebar and inspector beside it
 
-LEARN RUST PROPERLY
-• 142 lessons across six courses: from fn main to unsafe, FFI, and async
-• 142 guided lessons with written explanations and highlighted examples
-• A separate Algorithm Atlas: 20 independent solution-method chapters, 200 patterns, and 600 steps ordered within their method
-• Every pattern has a mental model, use-case guide, and local Rust challenge
-• Compiler-backed labs across the curriculum use the bundled rustc as evidence
-• Interview preparation that goes past the language: memory, atomics,
-  networking, databases, and distributed systems
-• Quick Practice, Term Train, and Code Recall — all generated from the same
-  curriculum, all scheduled with SM-2 spaced repetition
-• Health and energy that scale with your rank, and training that never costs
-  either, so there is always a way to keep going
+LEARN FROM THE COMPILER, NOT FROM A QUIZ
+142 guided lessons take you from fn main to ownership, lifetimes, traits,
+error handling, concurrency, unsafe, FFI and async. Exercises are compiled by
+the bundled rustc, so when a lesson says your borrow is wrong, it is the borrow
+checker saying it — with the real E0502 in front of you, and the repair a line
+away.
 
-RATING THAT MEANS SOMETHING
-A successful run is scored on how much Rust actually changed since the last one.
-Pressing Run on an untouched sample is not work, and Crabrix does not pretend
-otherwise. Rating and achievements remain local in the production 1.0 build.
+200 ALGORITHM PATTERNS
+A separate Algorithm Atlas: 20 chapters of solution methods, 200 patterns, 600
+ordered steps. Every pattern gives you the mental model, when to reach for it,
+and a Rust challenge you solve on device.
 
-NO ACCOUNT. NO SUBSCRIPTION. NO TRACKING.
-Buy it once. There is no sign-up, no password, no advertising, no analytics
-SDK, and no data sold to anyone. Your code is never uploaded to compile it: it
-leaves the device only if you export it or attach it to a support message.
+PROGRESS YOU ACTUALLY EARNED
+Rating is scored on how much Rust changed since your last successful run —
+pressing Run on an untouched sample is not work, and Crabrix will not pretend
+it was. Spaced repetition brings back what you are about to forget. Ranks,
+health and energy stay on your device; training never costs either.
 
-WHAT IT CANNOT DO
+PRIVATE BY CONSTRUCTION, NOT BY PROMISE
+No account. No sign-up. No analytics SDK. No advertising. No tracking. Nothing
+is sold to anyone, because nothing is collected. Your projects, your progress
+and your rating live on your device and leave it only if you export them.
+
+WHAT IT CANNOT DO — SAID PLAINLY
 The bundled compiler targets wasm32-wasip1 and has no native linker, so crates
-needing C code, build scripts, or procedural macros generally cannot build on
-device. Crabrix detects these and tells you, instead of failing halfway. There
-is no debugger yet. Compilation is interpreted WebAssembly, so a first build is
-slower than on a laptop.
+needing C code, build scripts or procedural macros generally cannot build on
+device; Crabrix detects them and says so instead of failing halfway. There is
+no debugger yet. Compilation runs in an interpreter, so a first build is slower
+than on a laptop. First-time package downloads and GitHub imports need a
+connection — everything after that does not.
 
-The compiler, curriculum, and local projects work offline. Cached dependencies
-rebuild while iOS retains them; Pin for Offline keeps their exact verified
-archives durable after a cache eviction. First-time package downloads and GitHub
-imports require a connection.
+ONE PURCHASE
+Buy it once. No subscription, no in-app purchases, no feature held back for a
+second transaction. Free training is always available inside the app.
 
-There is no account, no analytics, and no leaderboard. Your rating, ranks and
-achievements stay on your device.
+Real Rust. Real Cargo. On the device in your hand.
 ```
 
 ## Keywords (100, comma separated, no spaces)
@@ -221,16 +224,15 @@ TO SEE IT COMPILE
 PROGRAMMING ENVIRONMENT
 Every Build screen carries a persistent "RUST PROGRAMMING ENVIRONMENT" label
 with the exact bundled toolchain beside it (rustc 1.96.0-dev, wasm32-wasip1);
-the same values are in Settings → Local compiler. The source editor occupies
-66% of the screen on iPhone and 31% on iPad in its most editor-heavy state,
-measured from Release-build screenshots.
+the same values are in Settings → Local compiler. The editor pane occupies
+72.9% of the screen on iPhone, and on iPad 30.0% as the app opens or 66.2% in
+the widest arrangement the layout allows, measured from Release-build
+screenshots of this build.
 
 Crabrix is not a store for code. crates.io is reachable only from the project
-you are editing (Build → Packages → Add dependency). Searching crates.io by name
-is part of choosing a dependency; what Crabrix does not offer is a standalone
-marketplace, a promoted or trending feed, or any way to obtain a runnable app or
-executable from another developer. It is dependency management for the Rust
-project open in the editor, nothing else.
+you are editing (Build → Packages → Add dependency). Searching it by name is
+part of choosing a dependency; there is no standalone marketplace, no promoted
+or trending feed, and no way to obtain a runnable app from another developer.
 
 REGARDING GUIDELINE 2.5.2
 Crabrix is an app designed to teach and develop code. The compiler and standard
@@ -282,10 +284,6 @@ binary, which links no GameKit and has no display-name field or publishing
 control anywhere in the interface. Rating, ranks and achievements are
 calculated and stored on device.
 
-CONTACT
-https://crabrix.com/support — the contact form there opens a mail draft
-addressed to the developer. The same address is in the App Store Connect
-support and review-contact fields.
 ```
 
 ## Screenshots
