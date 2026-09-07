@@ -557,7 +557,14 @@ enum CrabrixLinks {
     static let support = URL(string: "https://crabrix.com/support")!
     static let privacy = URL(string: "https://crabrix.com/privacy")!
     static let terms = URL(string: "https://crabrix.com/terms")!
-    static let supportEmail = "support@crabrix.com"
+    /// Where a support report is addressed.
+    ///
+    /// Assembled rather than written out, and never rendered as text anywhere
+    /// in the app: this is a person's own inbox, and an address that appears
+    /// as a literal string in a public repository or on a page is an address
+    /// that gets harvested. The app puts it in a mail draft; it does not put
+    /// it on screen.
+    static let supportEmail = ["sergii", ".", "ziborov", "@", "gmail", ".", "com"].joined()
 }
 
 private struct SettingsLinkRow: View {

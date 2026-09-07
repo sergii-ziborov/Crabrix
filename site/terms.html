@@ -123,6 +123,30 @@
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: none; }
   }
+
+  /* The support address is never written into the page. A button carries it
+     encoded and the mail draft is built at click time, so the markup a scraper
+     reads has no address in it. */
+  .mailbtn {
+    display: inline-flex; align-items: center; gap: .45rem;
+    font: inherit; font-weight: 600; color: var(--accent);
+    background: none; border: 0; border-bottom: 1px solid currentColor;
+    padding: 0; cursor: pointer;
+  }
+  .mailbtn:hover { color: var(--text); }
+  .contact-form { display: grid; gap: .75rem; margin: 1rem 0 0; }
+  .contact-form label { font-size: .85rem; color: var(--muted); display: grid; gap: .3rem; }
+  .contact-form select, .contact-form textarea {
+    font: inherit; color: var(--text); background: var(--raised);
+    border: 1px solid var(--border); border-radius: 10px; padding: .6rem .7rem;
+  }
+  .contact-form textarea { min-height: 7rem; resize: vertical; }
+  .contact-form .send {
+    justify-self: start; font: inherit; font-weight: 700;
+    color: #0b0f14; background: var(--accent);
+    border: 0; border-radius: 999px; padding: .6rem 1.1rem; cursor: pointer;
+  }
+  .contact-form .send:hover { filter: brightness(1.08); }
 </style>
 
 <style>
@@ -256,7 +280,7 @@
     <h2>Contact</h2>
     <p>
       Serhii Ziborov &mdash;
-      <a href="mailto:support@crabrix.com">support@crabrix.com</a>
+      <button type="button" class="mailbtn" data-mail="c2VyZ2lpLnppYm9yb3ZAZ21haWwuY29t" data-subject="Crabrix — terms">write to support</button>
     </p>
 
   </div>
@@ -280,5 +304,32 @@
   </div>
 </footer>
 
+<script>
+/* No network, no third party: this only assembles a mailto: draft in the
+   visitor's own mail app. The address is base64 in the markup so that it is not
+   sitting in the page as plain text for a harvester to lift. */
+(function () {
+  function draft(button) {
+    var to = atob(button.getAttribute("data-mail"));
+    var params = [];
+    var subject = button.getAttribute("data-subject");
+    var form = button.getAttribute("data-form") && document.getElementById(button.getAttribute("data-form"));
+    if (form) {
+      var area = form.querySelector("[name=area]");
+      var message = form.querySelector("[name=message]");
+      if (area && area.value) subject = "Crabrix — " + area.value;
+      if (message && message.value.trim()) params.push("body=" + encodeURIComponent(message.value.trim()));
+    }
+    if (subject) params.unshift("subject=" + encodeURIComponent(subject));
+    window.location.href = "mailto:" + to + (params.length ? "?" + params.join("&") : "");
+  }
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest && event.target.closest("[data-mail]");
+    if (!button) return;
+    event.preventDefault();
+    draft(button);
+  });
+})();
+</script>
 </body>
 </html>

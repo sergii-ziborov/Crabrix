@@ -123,6 +123,30 @@
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: none; }
   }
+
+  /* The support address is never written into the page. A button carries it
+     encoded and the mail draft is built at click time, so the markup a scraper
+     reads has no address in it. */
+  .mailbtn {
+    display: inline-flex; align-items: center; gap: .45rem;
+    font: inherit; font-weight: 600; color: var(--accent);
+    background: none; border: 0; border-bottom: 1px solid currentColor;
+    padding: 0; cursor: pointer;
+  }
+  .mailbtn:hover { color: var(--text); }
+  .contact-form { display: grid; gap: .75rem; margin: 1rem 0 0; }
+  .contact-form label { font-size: .85rem; color: var(--muted); display: grid; gap: .3rem; }
+  .contact-form select, .contact-form textarea {
+    font: inherit; color: var(--text); background: var(--raised);
+    border: 1px solid var(--border); border-radius: 10px; padding: .6rem .7rem;
+  }
+  .contact-form textarea { min-height: 7rem; resize: vertical; }
+  .contact-form .send {
+    justify-self: start; font: inherit; font-weight: 700;
+    color: #0b0f14; background: var(--accent);
+    border: 0; border-radius: 999px; padding: .6rem 1.1rem; cursor: pointer;
+  }
+  .contact-form .send:hover { filter: brightness(1.08); }
 </style>
 
 <style>
@@ -195,7 +219,7 @@
     <p>
       Crabrix is made by Serhii Ziborov, an independent developer. There is no company,
       no investor, and no third party with access to anything described on this page.
-      Contact: <a href="mailto:support@crabrix.com">support@crabrix.com</a>.
+      Contact: <button type="button" class="mailbtn" data-mail="c2VyZ2lpLnppYm9yb3ZAZ21haWwuY29t" data-subject="Crabrix — privacy">write to support</button>.
     </p>
 
     <h2>What stays on your device</h2>
@@ -261,8 +285,8 @@
       Support messages are used to answer you and to fix the problem, and for nothing
       else: no advertising, no mailing list, no profiling. They are kept while the
       problem is being worked on and deleted once it is closed, apart from any
-      de-identified technical note needed to keep the fix from regressing. Write to
-      <a href="mailto:support@crabrix.com">support@crabrix.com</a> to ask for a copy of
+      de-identified technical note needed to keep the fix from regressing. Use
+      <button type="button" class="mailbtn" data-mail="c2VyZ2lpLnppYm9yb3ZAZ21haWwuY29t" data-subject="Crabrix — my support correspondence">write to support</button> to ask for a copy of
       your correspondence, a correction, or its deletion. Your mail provider and mine
       handle delivery under their own terms.
     </p>
@@ -324,8 +348,8 @@
       to answer you and fix the problem. The lawful basis is legitimate interest in
       supporting the software you bought; you can object at any time by asking me to
       delete the correspondence. You may ask for access, correction, a copy, or erasure
-      of it: write to
-      <a href="mailto:support@crabrix.com">support@crabrix.com</a>. There is no other
+      of it:
+      <button type="button" class="mailbtn" data-mail="c2VyZ2lpLnppYm9yb3ZAZ21haWwuY29t" data-subject="Crabrix — data request">write to support</button>. There is no other
       personal data to describe, because there is nowhere else it is held.
     </p>
     <p>
@@ -363,5 +387,32 @@
   </div>
 </footer>
 
+<script>
+/* No network, no third party: this only assembles a mailto: draft in the
+   visitor's own mail app. The address is base64 in the markup so that it is not
+   sitting in the page as plain text for a harvester to lift. */
+(function () {
+  function draft(button) {
+    var to = atob(button.getAttribute("data-mail"));
+    var params = [];
+    var subject = button.getAttribute("data-subject");
+    var form = button.getAttribute("data-form") && document.getElementById(button.getAttribute("data-form"));
+    if (form) {
+      var area = form.querySelector("[name=area]");
+      var message = form.querySelector("[name=message]");
+      if (area && area.value) subject = "Crabrix — " + area.value;
+      if (message && message.value.trim()) params.push("body=" + encodeURIComponent(message.value.trim()));
+    }
+    if (subject) params.unshift("subject=" + encodeURIComponent(subject));
+    window.location.href = "mailto:" + to + (params.length ? "?" + params.join("&") : "");
+  }
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest && event.target.closest("[data-mail]");
+    if (!button) return;
+    event.preventDefault();
+    draft(button);
+  });
+})();
+</script>
 </body>
 </html>

@@ -83,11 +83,11 @@ final class ProblemReportTests: XCTestCase {
     }
 
     func testTheMailDraftAddressesSupportAndCarriesTheReport() throws {
-        let url = try XCTUnwrap(filledReport().mailURL(environment, to: "support@crabrix.com"))
+        let url = try XCTUnwrap(filledReport().mailURL(environment, to: CrabrixLinks.supportEmail))
         XCTAssertEqual(url.scheme, "mailto")
 
         let components = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
-        XCTAssertEqual(components.path, "support@crabrix.com")
+        XCTAssertEqual(components.path, CrabrixLinks.supportEmail)
 
         let items = try XCTUnwrap(components.queryItems)
         let subject = try XCTUnwrap(items.first { $0.name == "subject" }?.value)
@@ -105,7 +105,7 @@ final class ProblemReportTests: XCTestCase {
     func testAPlusInTheReportSurvivesTheMailDraft() throws {
         var report = filledReport()
         report.whatHappened = "let total = a + b; panics"
-        let url = try XCTUnwrap(report.mailURL(environment, to: "support@crabrix.com"))
+        let url = try XCTUnwrap(report.mailURL(environment, to: CrabrixLinks.supportEmail))
 
         XCTAssertFalse(
             url.absoluteString.contains("a+%2B+b") || url.absoluteString.contains("a + b"),
@@ -114,6 +114,15 @@ final class ProblemReportTests: XCTestCase {
         let components = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
         let body = try XCTUnwrap(components.queryItems?.first { $0.name == "body" }?.value)
         XCTAssertTrue(body.contains("a + b"), "the plus has to come out the other side intact")
+    }
+
+    /// The address is a person's own inbox. It belongs in a mail draft, not
+    /// in a string a screenshot or a scraper can carry away.
+    func testTheSupportAddressIsAWorkingAddressAndIsNotAWebsiteOne() {
+        let address = CrabrixLinks.supportEmail
+        XCTAssertTrue(address.contains("@"), "not an address at all")
+        XCTAssertFalse(address.hasSuffix("@crabrix.com"), "the domain inbox is gone; this must not point at it")
+        XCTAssertFalse(address.contains(" "), "an address with a space in it reaches nobody")
     }
 
     func testEveryAreaHasItsOwnPromptAndIcon() {

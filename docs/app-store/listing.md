@@ -283,7 +283,9 @@ control anywhere in the interface. Rating, ranks and achievements are
 calculated and stored on device.
 
 CONTACT
-support@crabrix.com
+https://crabrix.com/support — the contact form there opens a mail draft
+addressed to the developer. The same address is in the App Store Connect
+support and review-contact fields.
 ```
 
 ## Screenshots
@@ -339,7 +341,7 @@ drafted on the day.
 
 ## Pre-submission checklist
 
-- [x] `support@crabrix.com` delivers mail — Cloudflare Email Routing enabled on the zone, forwarding to the verified destination, with a catch-all so nothing to the domain is dropped
+- [x] Support reaches a person — the site's contact form and the app's Report a problem both open a mail draft addressed to the developer's own inbox. The address is never rendered as text: it is decoded at click time, so it is not sitting on a public page to be harvested. Enter it directly in the App Store Connect support and review-contact fields.
 - [x] Game Center is not in the production build, so no capability is needed on the App ID
 - [x] Screenshots recaptured from the 1.0 (3) Release build at both required sizes, on freshly erased simulators
 - [x] Programming-environment area re-measured on this build — 72.9% iPhone, 66.2% iPad at its widest, against an 80% limit

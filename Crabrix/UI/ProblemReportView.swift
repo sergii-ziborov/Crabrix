@@ -152,6 +152,7 @@ struct ProblemReportView: View {
     @State private var environment = ProblemReportEnvironment.current(toolchainIsReady: true)
     @State private var isShowingDetails = false
     @State private var copied = false
+    @State private var addressCopied = false
     @State private var mailUnavailable = false
     @Environment(\.openURL) private var openURL
 
@@ -346,7 +347,7 @@ struct ProblemReportView: View {
             .disabled(!report.isReady)
 
             if mailUnavailable {
-                Text("No mail app answered. The report is on the clipboard instead — send it to \(CrabrixLinks.supportEmail) from anywhere.")
+                Text("No mail app answered. The report is on the clipboard instead, and the button below puts the support address there too, so you can send it from anywhere.")
                     .font(.caption2)
                     .foregroundStyle(CrabrixTheme.amber)
                     .fixedSize(horizontal: false, vertical: true)
@@ -371,10 +372,22 @@ struct ProblemReportView: View {
                     .foregroundStyle(CrabrixTheme.blue)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            Text(CrabrixLinks.supportEmail)
-                .font(.caption.monospaced())
-                .foregroundStyle(CrabrixTheme.muted)
-                .textSelection(.enabled)
+            // The address is behind a button rather than printed here. It is
+            // one person's inbox, and a screen full of plain-text addresses is
+            // what scrapers and screenshots carry away.
+            Button {
+                UIPasteboard.general.string = CrabrixLinks.supportEmail
+                withAnimation { addressCopied = true }
+            } label: {
+                Label(
+                    addressCopied ? "Support address copied" : "Copy the support address",
+                    systemImage: addressCopied ? "checkmark" : "envelope"
+                )
+                .font(.caption)
+                .foregroundStyle(addressCopied ? CrabrixTheme.mint : CrabrixTheme.blue)
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Copies the email address that support reports are sent to")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)

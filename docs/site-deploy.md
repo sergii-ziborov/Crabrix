@@ -1,6 +1,8 @@
 # Crabrix site
 
-A single self-contained landing page. No build step, no dependencies, no JavaScript.
+Six self-contained pages. Each one carries its own styles, and the copy here is
+the source of truth: the hosted site is built from these files rather than
+edited in place.
 
 ```
 site/
@@ -17,14 +19,21 @@ site/
 
 ## Deploy
 
-Cloudflare Pages, from this directory:
+The site is hosted on Lovable, which serves these pages from a project that
+imports each file's markup verbatim rather than re-typing it:
 
-```bash
-npx wrangler pages deploy site --project-name crabrix
-```
+- project: https://lovable.dev/projects/a22788fb-a840-487d-8a0e-e2b741b50a40
+- published: https://crabrix.lovable.app
 
-Or as a Worker with static assets, with a `wrangler.toml` pointing `assets.directory`
-at `site/`.
+Changing a page means editing it here, uploading it to that project, and asking
+it to replace the file in `src/pages/html/` byte for byte. Nothing about the
+copy is authored on the hosting side.
+
+The domain still resolves through Cloudflare DNS, because the domain is
+registered with Cloudflare Registrar and a Registrar domain has to keep
+Cloudflare's nameservers; it cannot be transferred away until the ICANN 60-day
+lock expires. The old Cloudflare Worker (`wrangler.toml`, `worker/`) served the
+same files and is kept only until the domain points at Lovable.
 
 ## Refreshing the screenshots
 
@@ -39,16 +48,22 @@ xcrun simctl io <device> screenshot site/screenshots/iphone-learn.png
 Valid tabs are `projects`, `build`, `learn`, and `settings`. Adding `-CrabrixLibrary`
 opens the project library.
 
-## Email routing
+## Reaching support
 
-`support@crabrix.com` is published on the site, in the app (Settings → About
-Crabrix), and in the App Store listing, so it has to deliver. Cloudflare Email
-Routing handles it on the `crabrix.com` zone:
+There is no longer an address on the page. The support page carries a form and
+the other pages carry a button; both decode the destination at click time and
+open a draft in the visitor's own mail app. Nothing is posted anywhere and
+nothing is stored — the site has no backend, which is what lets the privacy
+page say the site calls no third party.
 
-| Rule | Destination |
-| --- | --- |
-| `support@crabrix.com` | the verified personal inbox |
-| catch-all | the same inbox |
+The destination is the developer's own inbox, held in one place in the app
+(`CrabrixLinks.supportEmail`) and base64 in the pages' `data-mail` attributes.
+Neither is a secret; both exist so the address is not published as plain text
+for a harvester to lift.
+
+`support@crabrix.com` on Cloudflare Email Routing still exists while the zone
+does, and mail sent there still arrives. It is simply no longer the address the
+product points at.
 
 The catch-all is there so a message to any other address at the domain — a typo,
 or an old address on a screenshot — is forwarded rather than bounced.
