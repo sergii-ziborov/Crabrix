@@ -8,7 +8,8 @@
 <meta property="og:title" content="Support — Crabrix">
 <meta property="og:description" content="Contact, content reporting, and answers to common questions about compiling Rust on iPhone and iPad with Crabrix.">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#129408;</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+<link rel="canonical" href="https://crabrix.com/support"><text y='.9em' font-size='90'>&#129408;</text></svg>">
 <style>
   :root {
     --bg: #0b0f14;
@@ -179,6 +180,38 @@
   table.plain th { color: var(--muted); font: 600 11px/1 ui-monospace, monospace; letter-spacing: .09em; text-transform: uppercase; }
   table.plain td { color: var(--muted); }
   .table-scroll { overflow-x: auto; }
+
+  /* ---- Light appearance ------------------------------------------------ */
+  /* Follows the operating system only: no toggle, no switch, no stored
+     preference. The dark values above stay the default. */
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f7f9fc;
+      --panel: #eef2f7;
+      --raised: #e5ebf3;
+      --border: #d2dbe8;
+      --text: #0e1620;
+      --muted: #3f5062;
+      --coral: #b8350f;
+      --mint: #0c6349;
+      --blue: #0a52a6;
+      --amber: #7a4e00;
+    }
+    header { background: rgba(247,249,252,.86); }
+    code {
+      background: var(--raised); border: 1px solid var(--border);
+      border-radius: 5px; padding: .06em .32em;
+    }
+    .eyebrow { color: var(--mint); }
+    tbody tr:hover { background: rgba(10,82,166,.06); }
+    .pip { background: rgba(12,99,73,.12); }
+    .rank.top { color: var(--amber); }
+    .contact-form .send { color: #fff; }
+    .contact-form select, .contact-form textarea { background: #fff; }
+    .shot img, .shots img, figure img, main img {
+      border: 1px solid var(--border); border-radius: 14px; background: var(--raised);
+    }
+  }
 </style>
 
 </head>
