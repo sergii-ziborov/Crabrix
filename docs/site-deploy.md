@@ -31,16 +31,22 @@ image optimization, canonical metadata and presentation fixes. Compare visible
 copy after normalizing HTML entities and whitespace; full-file byte equality is
 not expected across the two renderers. Product and legal wording must match.
 
-As verified on 8 September 2026, **crabrix.com and www.crabrix.com still serve
-the Cloudflare Worker**, while crabrix.lovable.app serves Lovable. The corrected
-privacy/support/technology copy is deployed to both. The custom-domain migration
-has not happened yet.
+As verified on 8 September 2026, **crabrix.com serves Lovable** and is Active
+and primary in Lovable. All six principal HTTPS pages were checked against the
+canonical copy. `www.crabrix.com` still needs its separate DNS setup.
 
-The domain still resolves through Cloudflare DNS, because the domain is
-registered with Cloudflare Registrar and a Registrar domain has to keep
-Cloudflare's nameservers; it cannot be transferred away until the ICANN 60-day
-lock expires. The Cloudflare Worker (`wrangler.toml`, `worker/`) serves the
-same files and is kept only until the domain points at Lovable.
+Cloudflare retains domain registration and authoritative DNS for now; the owner
+plans to transfer registration later. Hosting has moved independently of that.
+The old `crabrix-site` Worker is retained but inactive: both custom-domain
+bindings were detached, no zone routes remain, workers.dev and preview URLs are
+disabled, and there are no scheduled triggers. `wrangler.toml` also disables
+public routing so a future deploy will not reclaim these domains.
+
+Lovable promotional branding is disabled and absent from the rendered site.
+Visitor analytics is still enabled at the platform level (`/~flock.js` observed);
+turn off General → Publishing → Visitor analytics and republish before claiming
+that the hosted website has no analytics. This does not change the native app's
+no-analytics implementation. See `release-evidence/site-migration-2026-09-08/`.
 
 ## Refreshing the screenshots
 
@@ -61,9 +67,8 @@ opens the project library.
   values are the default and a `@media (prefers-color-scheme: light)` block in
   each page's own `<style>` redefines the same variables.
 - **A canonical link per page**, plus `robots.txt` and `sitemap.xml`.
-- **No third-party requests at all** — no font CDN, no analytics, no image host.
-  This is the claim `/privacy` makes, so it has to keep being true; check it
-  after any change with a request-by-request look at the served page.
+- **No external font CDN or image host in the source pages.** Platform-injected
+  visitor analytics is a separate hosting setting; see its current status above.
 - The favicon is a **percent-encoded** SVG data URI. It must stay encoded: with
   raw `<` and `>` in the attribute, the parser closes `<link>` at the first `>`
   inside the SVG and the rest of it — a crab emoji and a stray `">` — renders in

@@ -1,0 +1,49 @@
+{
+  "observed_at": "2026-09-08T12:11:32.716446+00:00",
+  "host": "crabrix.com",
+  "hosting": "Lovable",
+  "pages": [
+    {
+      "route": "/",
+      "http_ok": true,
+      "visible_copy_matches": true,
+      "lovable_analytics_script": true,
+      "lovable_badge": false
+    },
+    {
+      "route": "/about",
+      "http_ok": true,
+      "visible_copy_matches": true,
+      "lovable_analytics_script": true,
+      "lovable_badge": false
+    },
+    {
+      "route": "/technology",
+      "http_ok": true,
+      "visible_copy_matches": true,
+      "lovable_analytics_script": true,
+      "lovable_badge": false
+    },
+    {
+      "route": "/privacy",
+      "http_ok": true,
+      "visible_copy_matches": true,
+      "lovable_analytics_script": true,
+      "lovable_badge": false
+    },
+    {
+      "route": "/terms",
+      "http_ok": true,
+      "visible_copy_matches": true,
+      "lovable_analytics_script": true,
+      "lovable_badge": false
+    },
+    {
+      "route": "/support",
+      "http_ok": true,
+      "visible_copy_matches": true,
+      "lovable_analytics_script": true,
+      "lovable_badge": false
+    }
+  ]
+}

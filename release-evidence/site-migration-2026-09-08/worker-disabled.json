@@ -1,0 +1,13 @@
+{
+  "domains": [],
+  "subdomain": {
+    "enabled": false,
+    "previews_enabled": false
+  },
+  "schedules": {
+    "schedules": []
+  },
+  "routes": [],
+  "scripts": true,
+  "observed_at": "2026-09-08T12:08:33.640871+00:00"
+}
