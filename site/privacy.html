@@ -236,13 +236,14 @@
 
   <div class="wrap prose">
 
-    <p class="updated">LAST UPDATED 6 SEPTEMBER 2026</p>
+    <p class="updated">LAST UPDATED 8 SEPTEMBER 2026</p>
 
     <div class="callout">
       <p><strong>The short version.</strong> Crabrix 1.0 has no account, no analytics
       and no leaderboard. Your code, your projects, your rating and your progress stay on
       your device: the app never transmits them. The only network requests Crabrix makes
-      are the package and repository downloads you explicitly ask for. If you write to
+      are the package discovery, and the package and repository downloads, that you
+      explicitly ask for. If you write to
       support &mdash; including through <em>Report a problem</em> &mdash; that email
       reaches a person, and this page says what happens to it.</p>
     </div>
@@ -265,6 +266,8 @@
         rating, achievements, health and energy.</li>
       <li><strong>Preferences</strong> &mdash; appearance, editor font size, and the rest of
         Settings.</li>
+      <li><strong>Optional profile photo</strong> &mdash; chosen through the system photo
+        picker, processed and stored locally, and never uploaded by Crabrix.</li>
       <li><strong>Downloaded crates</strong> &mdash; package sources and compiled artifacts,
         cached so a project rebuilds offline.</li>
     </ul>
@@ -276,24 +279,33 @@
 
     <h2>What leaves your device</h2>
 
-    <h3>1. Package downloads (crates.io)</h3>
+    <h3>1. Package discovery and downloads (crates.io)</h3>
     <p>
-      When you add a dependency, Crabrix fetches it from the crates.io registry
-      (<code>index.crates.io</code> and <code>static.crates.io</code>) over HTTPS. These are
-      ordinary requests for public files. Crabrix sends no identifier with them and
-      crates.io is operated by the Rust Foundation under its own privacy policy.
+      When you search for or add a dependency, Crabrix talks to the crates.io registry
+      over HTTPS: searches and package and owner metadata through the crates.io API,
+      the sparse index at <code>index.crates.io</code>, and package archives at
+      <code>static.crates.io</code>. Requests contain the search terms or package names
+      needed for the action you asked for; Crabrix adds no account or device identifier.
+      These services are operated by the Rust Foundation and its providers under their
+      own privacy policies, and like any web service they receive normal connection
+      information such as your IP address as part of serving the request.
     </p>
 
     <h3>2. Repository import (GitHub)</h3>
     <p>
       If you import a public repository, Crabrix downloads its archive from
-      <code>github.com</code> over HTTPS. Only the URL you typed is sent. No credentials
-      are involved and no private repositories are accessed.
+      <code>github.com</code> over HTTPS. The request identifies the public repository
+      or archive you selected; it carries no account credentials, and no private
+      repositories are accessed. GitHub is operated under its own privacy policy and,
+      like any web service, receives normal connection information such as your IP
+      address as part of serving the request.
     </p>
 
     <p>
-      That is the complete list of requests the app makes. Both are for public files,
-      both are started by you, and neither carries an identifier.
+      That is the complete list of requests the app makes: package discovery and public
+      file downloads, all initiated by you. As with any HTTPS request on the internet,
+      the receiving service sees your connection, including your IP address; Crabrix
+      itself adds no account or device identifier.
     </p>
 
     <h2>Optional support correspondence</h2>
@@ -351,8 +363,9 @@
         into the app.</li>
       <li>No selling or sharing of data. There is nobody to sell it to and nothing to
         sell.</li>
-      <li>No access to your photos, camera, microphone, location, contacts, or health
-        data. The app requests none of these permissions.</li>
+      <li>No broad photo-library access: the only photo Crabrix ever sees is the one
+        you explicitly select as a local avatar through the system photo picker. No
+        camera, microphone, location, contacts, or health permissions are requested.</li>
       <li>No reading of your code by anyone but you. It is compiled on your device by a
         compiler that ships inside the app, and it is never uploaded to compile it. The
         exception is the obvious one: code you export yourself, or paste into a support

@@ -7,15 +7,14 @@ on the device.
 
 > Real Rust. Real Cargo. Built locally on iPhone and iPad.
 
-> **Release status (8 September 2026):** App Store metadata is prepared for
-> 1.0. The latest inspected archive is build 3; App Store Connect currently
-> shows **No Builds** in TestFlight. The final audit found a missing App Group
-> privacy reason, now corrected in source, so submission needs a rebuilt archive.
-> Fresh Simulator verification: 391 fast tests passed; 20 compiler gates passed
-> in the full run, with the Stop gate passing separately after its test delay was
-> corrected for Release speed. The privacy and test corrections are local pending
-> publication. The nonstandard-source editability edge described below is still
-> open. Older evidence is not a pass for a new build.
+> **Release status (8 September 2026):** Build 1.0 (5), built with stable
+> Xcode 26.6, is uploaded to App Store Connect. All **398 fast tests and 21 real
+> compiler gates pass** on the iOS 26.5 Simulator. The App Group privacy reasons
+> and nonstandard-source editability gap are corrected. The bundled WASI sysroot
+> is a checksum-verified ZIP resource, extracted locally before compilation;
+> its 43 files match the pinned inputs byte for byte. Review submission is still
+> pending. See [the final audit](docs/app-store/final-audit-2026-09-08.md) and
+> [build 5 evidence](release-evidence/1.0/5).
 
 > **The source is readable, not reusable.** Crabrix is commercial software
 > published for review and audit. See [LICENSE](LICENSE) before you copy
@@ -218,7 +217,7 @@ Crabrix does about each:
 
 | Guideline | Implementation and verification limits |
 | --- | --- |
-| **2.5.2** — self-contained code | The compiler and standard library are bundled. User-requested crates.io source and public GitHub imports build locally. Package source is listed and supported text can be copied into the project through **Vendor & Edit**. The source audit covers recognised Rust/configuration files and explicit manifest targets; nonstandard source reached through `include!` remains a coverage gap identified in the 8 September audit. Complete compliance is not inferred from passing compiler tests. |
+| **2.5.2** — self-contained code | The compiler and standard library are bundled. User-requested crates.io source and public GitHub imports build locally. Package source is listed and supported text can be copied into the project through **Vendor & Edit**. Before compilation, the source audit requires every UTF-8 file (regardless of extension) to fit the editable file/count/tree limits. This includes macro-selected `include!` and `#[path]` source. Oversized text packages are rejected rather than silently omitting files from Vendor & Edit; binary assets remain in the registry overlay. |
 | **2.5.1** — private APIs, process spawning | No host processes are spawned. The project terminal is a simulated shell over the in-app project files. Guest programs run in a WebAssembly sandbox with a memory cap, one writable preopen, and no network imports. |
 | **1.2** — user-generated content | There is no board, no display name and no first-party service: nothing a user types can reach another user. |
 | **DPLA programming environment** | The Build screen carries a persistent `RUST PROGRAMMING ENVIRONMENT` label with the pinned toolchain beside it. The recorded build-3 screenshots measure the editor at 72.9% on iPhone, 30.0% on iPad initially, and 66.2% at the widest measured iPad arrangement; see `release-evidence/1.0/3/programming-environment/`. These measurements do not cover every device or orientation. crates.io is reachable only as the open project's dependency manager — there is no standalone app marketplace or promoted app feed. |

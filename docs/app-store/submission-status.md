@@ -1,3 +1,10 @@
+> Update — 8 September 2026: Build 1.0 (5) uploaded successfully through Xcode
+> Organizer after build 4 failed bundle-structure validation. Final verification:
+> 398 fast tests + 21 compiler gates passed. The new archive includes corrected
+> privacy reasons and a bundled compressed WASI sysroot. Review submission is
+> pending metadata verification; see [the current audit](final-audit-2026-09-08.md).
+> The build 3 notes below are historical.
+
 # Submission status — 1.0 (3)
 
 Where the submission actually stands, written so that nothing here needs to be

@@ -40,8 +40,6 @@ defect in what ships:
   compiler gate runs that harness. The wider corpus is 1.0.1 QA work;
 - stronger verifier isolation, so a challenge solution cannot read the private
   harness through compile-time tricks such as `include_str!`;
-- extending the package source audit to executable text reached through
-  `include!` from a non-`.rs` filename;
 - a maintained differential corpus against desktop Cargo;
 - RustSec/OSV advisory evidence on the Packages screen;
 - a toolchain refresh past the pinned 1.96.0-dev.
@@ -53,8 +51,8 @@ defect in what ships:
 - crates.io registry source remains immutable; **Vendor & Edit** creates a
   project-local source overlay, a distinct content fingerprint, Diff, Reset,
   and a real patched dependency build.
-- every extracted crate path is listed; programming source, including hidden
-  paths and explicit nonstandard lib/build targets, is audited against the
+- every extracted crate path is listed; all UTF-8 files, including hidden
+  paths and nonstandard macro-selected include files, are audited against the
   complete View/Edit contract before rustc can use it. Oversized or non-UTF-8
   source fails closed, while binary assets remain in the immutable verified tree.
 - `cargo check` evidence is labelled **Check verified** and cannot be mistaken

@@ -1,0 +1,21 @@
+{
+  "sourceCommit": "5a35a1aac3c73614c66272972469b5109c0c3419",
+  "version": "1.0",
+  "build": "5",
+  "xcode": "17F113",
+  "sdk": "iphoneos26.5",
+  "archivePath": "build/Crabrix-1.0-5-final.xcarchive",
+  "distributionStatus": "Xcode Organizer: App upload complete; Crabrix 1.0 (5) uploaded",
+  "reviewStatus": "Not submitted yet",
+  "looseStaticLibraries": 0,
+  "sysrootFilesByteIdentical": 43,
+  "sha256": {
+    "Crabrix": "9aaa7ba482090e4e66b0d5bbf65baa03d2d1b9508405f62b4498fb9255402ec5",
+    "Info.plist": "5db3510b05fa8d039afd6c4ab088f2e2415ad07b710d489c5788bf681473b233",
+    "PrivacyInfo.xcprivacy": "5b5ad3dfe641e7691b918b47c5b874f08af62051fbb61d102b6fbea3adf4cc10",
+    "PlugIns/CrabrixShare.appex/PrivacyInfo.xcprivacy": "cdb69be40518155fa7eb4b1a4658947205fbceadb43971b8c4c342cbac9cd310",
+    "Toolchain/artifacts-test-7/rustc.wasm": "41412081eefc3e08ec5664ed0748902a7e575e1f267898dcc64d412702df7e83",
+    "Toolchain/artifacts-test-7/sysroot-wasip1.zip": "33347afea47e119e48189c7b199c67b64581ca944bbc2cb17a48f2411f587629",
+    "Toolchain/artifacts-test-7/sysroot-wasip1.sha256": "9efd8d4f94b54710c1bba060a1954661c10a45b778860625e5792f3eedc05fd1"
+  }
+}

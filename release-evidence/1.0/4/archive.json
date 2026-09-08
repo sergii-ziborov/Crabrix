@@ -1,0 +1,16 @@
+{
+  "sourceCommit": "20408d079e0631569d141c79b440957f896eb8da",
+  "version": "1.0",
+  "build": "4",
+  "xcode": "17F113",
+  "sdk": "iphoneos26.5",
+  "archivePath": "build/Crabrix-1.0-4.xcarchive",
+  "distributionStatus": "CLI authentication failed; Organizer authenticated successfully but Apple rejected loose WASI .rlib/.a resources as Invalid bundle structure. Superseded by build 5.",
+  "sha256": {
+    "Crabrix": "bf3dabd3ee8c3c294714599ba8c8f9e88258086155465fd116d6e339b807ea61",
+    "Info.plist": "dacdc08cacfffffa9e56badc2eef95c3f963a9e39e0ac46192586db5050d77ee",
+    "PrivacyInfo.xcprivacy": "5b5ad3dfe641e7691b918b47c5b874f08af62051fbb61d102b6fbea3adf4cc10",
+    "PlugIns/CrabrixShare.appex/CrabrixShare": "694f38cfc3292b0e61a9cd0ce716389808a83e1599a2c7d5948ca40ffae4e696",
+    "PlugIns/CrabrixShare.appex/PrivacyInfo.xcprivacy": "cdb69be40518155fa7eb4b1a4658947205fbceadb43971b8c4c342cbac9cd310"
+  }
+}

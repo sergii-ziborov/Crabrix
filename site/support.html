@@ -247,8 +247,9 @@
     <p>
       Crabrix compiles to <code>wasm32-wasip1</code> with a bundled compiler that has no
       linker for native code. Crates that need C code, procedural macros, or a build
-      script generally cannot build on device, and Crabrix marks them as unsupported
-      rather than failing halfway. The Packages screen says which of your dependencies
+      script generally cannot build on device. Checks flag known incompatibilities
+      before compilation. Some compiler backend gaps can still cause build errors.
+      The Packages screen says which of your dependencies
       are verified, expected to work, or blocked, and why.
     </p>
 

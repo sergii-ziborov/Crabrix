@@ -1,0 +1,70 @@
+Crabrix is a Rust development environment. No account or subscription is needed,
+and there are no in-app purchases. Free training is always available.
+
+TO SEE IT COMPILE
+1. Projects → "Hello Rust" chip → Build tab → Run.
+   The bundled compiler builds and runs it on device; output appears in Output.
+2. Edit the string in main.rs and press Run again to see a fresh compile.
+
+PROGRAMMING ENVIRONMENT
+Every Build screen carries a persistent "RUST PROGRAMMING ENVIRONMENT" label
+with the exact bundled toolchain beside it (rustc 1.96.0-dev, wasm32-wasip1);
+the same values are in Settings → Local compiler. The editor pane occupies
+72.9% of the screen on iPhone, and on iPad 30.0% as the app opens or 66.2% in
+the widest arrangement the layout allows, measured from Release-build
+screenshots; the layout is unchanged in build 5.
+
+Crabrix is not a store for code. crates.io is reachable only from the project
+you are editing (Build → Packages → Add dependency). Searching it by name is
+part of choosing a dependency; there is no standalone marketplace, no promoted
+or trending feed, and no way to obtain a runnable app from another developer.
+
+BUNDLED COMPILER DATA
+The WASI sysroot is a bundled ZIP resource, extracted locally before compiling.
+Its .rlib/.a files target WebAssembly, not iOS; no native library is dynamically
+loaded and no toolchain code is downloaded.
+
+REGARDING GUIDELINE 2.5.2
+Crabrix is an app designed to teach and develop code. The compiler and standard
+library are bundled in the app, not downloaded. At the user's request, Rust package source is downloaded from crates.io,
+and public repositories can be imported from GitHub. This source is used solely
+to build the user's own project inside the app.
+
+Every extracted path is listed in the app: Build → Packages → tap any downloaded
+crate. For a supported package, every UTF-8 text file is fully viewable
+and can be copied with Vendor & Edit into the current project, edited in the
+normal project editor, reviewed as a local diff, compiled under a distinct
+patched fingerprint, or Reset to the checksum-backed registry source. If a
+text file exceeds the editor's complete file/count/tree limits, or known
+programming source is not valid UTF-8, Crabrix labels the package Unsupported and blocks it before rustc
+runs. Binary assets remain visible as file metadata in the immutable registry
+tree and are not misrepresented as editable text. The immutable registry copy is
+never modified.
+
+GITHUB IMPORT
+The same rules cover repository import:
+- public repositories only in 1.0, and only after an explicit user action;
+- the downloaded archive becomes an ordinary editable project in the app, under
+  the same bounded file, size and tree limits as any other project;
+- no opaque downloaded binary is executed: source is compiled locally by the
+  bundled rustc;
+- the resulting program runs in the same bounded, network-free sandbox.
+
+Programs execute inside a WebAssembly sandbox in the app's own process, with
+memory/instruction/output/storage caps, no network access, and one writable
+directory. Crabrix spawns no host processes; the "terminal" is a simulated shell
+over the in-app project files only.
+
+REVIEWER PROOF PATH
+1. Open the included Hello Rust project and Run it with no network.
+2. Open the E0502 borrowing sample, inspect the diagnostic, repair, and Run.
+3. Add the supported smallvec package and build it locally.
+4. Open smallvec under Build → Packages, tap Vendor & Edit, add a harmless
+   comment, inspect Diff, Run, then Reset to Registry Source.
+5. Pin the exact graph for offline, disable networking, clear purgeable package
+   cache, and rebuild.
+6. Run `fn main() { loop {} }`, tap Stop, then immediately Run Hello Rust.
+
+ONLINE BOARDS
+No accounts, leaderboard or Crabrix server. Game Center is excluded from 1.0;
+the binary links no GameKit. Rating, ranks and achievements stay on device.

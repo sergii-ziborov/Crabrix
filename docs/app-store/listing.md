@@ -99,16 +99,17 @@ and your rating live on your device and leave it only if you export them.
 WHAT IT CANNOT DO — SAID PLAINLY
 The bundled compiler targets wasm32-wasip1 and has no native linker, so crates
 needing C code, build scripts or procedural macros generally cannot build on
-device; Crabrix detects them and says so instead of failing halfway. There is
+device. Checks flag known incompatibilities; compiler backend gaps can still
+cause build errors. There is
 no debugger yet. Compilation runs in an interpreter, so a first build is slower
 than on a laptop. First-time package downloads and GitHub imports need a
-connection — everything after that does not.
+connection. Cached packages work offline while retained; Pin for Offline
+preserves verified package archives.
 
 ONE PURCHASE
 Buy it once. No subscription, no in-app purchases, no feature held back for a
 second transaction. Free training is always available inside the app.
 
-Real Rust. Real Cargo. On the device in your hand.
 ```
 
 ## Keywords (100, comma separated, no spaces)
@@ -232,27 +233,31 @@ with the exact bundled toolchain beside it (rustc 1.96.0-dev, wasm32-wasip1);
 the same values are in Settings → Local compiler. The editor pane occupies
 72.9% of the screen on iPhone, and on iPad 30.0% as the app opens or 66.2% in
 the widest arrangement the layout allows, measured from Release-build
-screenshots of this build.
+screenshots; the layout is unchanged in build 5.
 
 Crabrix is not a store for code. crates.io is reachable only from the project
 you are editing (Build → Packages → Add dependency). Searching it by name is
 part of choosing a dependency; there is no standalone marketplace, no promoted
 or trending feed, and no way to obtain a runnable app from another developer.
 
+BUNDLED COMPILER DATA
+The WASI sysroot is a bundled ZIP resource, extracted locally before compiling.
+Its .rlib/.a files target WebAssembly, not iOS; no native library is dynamically
+loaded and no toolchain code is downloaded.
+
 REGARDING GUIDELINE 2.5.2
 Crabrix is an app designed to teach and develop code. The compiler and standard
-library are bundled in the app, not downloaded. The only code downloaded at
-runtime is Rust package source from the public crates.io registry, at the user's
-explicit request, and it is used solely to build the user's own project inside
-the app.
+library are bundled in the app, not downloaded. At the user's request, Rust package source is downloaded from crates.io,
+and public repositories can be imported from GitHub. This source is used solely
+to build the user's own project inside the app.
 
 Every extracted path is listed in the app: Build → Packages → tap any downloaded
-crate. For a supported package, every programming-source file is fully viewable
+crate. For a supported package, every UTF-8 text file is fully viewable
 and can be copied with Vendor & Edit into the current project, edited in the
 normal project editor, reviewed as a local diff, compiled under a distinct
 patched fingerprint, or Reset to the checksum-backed registry source. If a
-programming-source file exceeds the editor's complete file/tree limits or is not
-valid UTF-8, Crabrix labels the package Unsupported and blocks it before rustc
+text file exceeds the editor's complete file/count/tree limits, or known
+programming source is not valid UTF-8, Crabrix labels the package Unsupported and blocks it before rustc
 runs. Binary assets remain visible as file metadata in the immutable registry
 tree and are not misrepresented as editable text. The immutable registry copy is
 never modified.
@@ -282,13 +287,8 @@ REVIEWER PROOF PATH
 6. Run `fn main() { loop {} }`, tap Stop, then immediately Run Hello Rust.
 
 ONLINE BOARDS
-There are none, and there is no Crabrix service behind the app at all: no
-account system, no server, no first-party board. Game Center is the only online
-path the app will ever have and it is not compiled into the production 1.0
-binary, which links no GameKit and has no display-name field or publishing
-control anywhere in the interface. Rating, ranks and achievements are
-calculated and stored on device.
-
+No accounts, leaderboard or Crabrix server. Game Center is excluded from 1.0;
+the binary links no GameKit. Rating, ranks and achievements stay on device.
 ```
 
 ## Screenshots

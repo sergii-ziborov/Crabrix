@@ -1,0 +1,2119 @@
+{
+  "date": "2026-09-08",
+  "sourceCommit": "5a35a1aac3c73614c66272972469b5109c0c3419",
+  "configuration": "Release",
+  "device": "iPhone 17 Pro Max Simulator iOS 26.5",
+  "suites": [
+    {
+      "suite": "fast",
+      "passed": 398,
+      "failed": 0,
+      "xcresult": "/tmp/crabrix-build5-fast-final.xcresult",
+      "tests": [
+        {
+          "test": "CrabrixTests.AchievementMigrationTests testANewTierStillCelebratesAfterMigration",
+          "status": "passed",
+          "seconds": 0.005
+        },
+        {
+          "test": "CrabrixTests.AchievementMigrationTests testAnOlderStateAdoptsTheTieredCatalogueWithoutCelebrating",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.AchievementTierTests testATierIsOnlyEarnedOnceItsThresholdIsMet",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.AchievementTierTests testAtlasStudyHasItsOwnLadder",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.AchievementTierTests testCourseworkMeasuresTheRustPathAlone",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.AchievementTierTests testEveryFamilyHasAscendingThresholds",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.AchievementTierTests testEveryFamilyHasDistinctTitlesAndIcons",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.AchievementTierTests testOneRunNoLongerFinishesTheFamily",
+          "status": "passed",
+          "seconds": 0.007
+        },
+        {
+          "test": "CrabrixTests.AchievementTierTests testProgressIsClampedToTheTarget",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.AchievementTierTests testRecallDepthIsAchievable",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.AchievementTierTests testTheRatingLadderMatchesTheTopOfTheRankLadder",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.AchievementTierTests testTierIdentifiersAreUniqueAndStable",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.AlgorithmAchievementTests testEachMethodHasAFiveTierLadderPlusOverallAtlas",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.AlgorithmAchievementTests testPatternMasteryIsIdempotentAndPersists",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.AlgorithmAchievementTests testThreeUniqueMethodSolutionsUnlockOnlyThatMethodSilverTier",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.AlgorithmCourseCatalogTests testAlgorithmValidatorAcceptsAnEditedSolutionAfterPrivateHarnessPasses",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.AlgorithmCourseCatalogTests testAlgorithmValidatorRejectsPlaceholderAndLiteralAnswer",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.AlgorithmCourseCatalogTests testCanonicalSolutionMethodsAreFirstClassChapters",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.AlgorithmCourseCatalogTests testCatalogContainsTwentyMethodChaptersAndTwoHundredPatterns",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.AlgorithmCourseCatalogTests testContinueNeverCrossesFromOneMethodIntoAnother",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.AlgorithmCourseCatalogTests testCourseThemesAreStableAndUnique",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.AlgorithmCourseCatalogTests testDifficultyNeverMovesBackwardsInsideAMethod",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.AlgorithmCourseCatalogTests testEveryMethodStartsIndependentlyAndAdvancesOnlyInsideIt",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.AlgorithmCourseCatalogTests testEveryPatternHasCompleteOriginalTeachingMaterial",
+          "status": "passed",
+          "seconds": 0.013
+        },
+        {
+          "test": "CrabrixTests.AlgorithmCourseCatalogTests testEveryPatternHasIndependentPrivateVerificationCases",
+          "status": "passed",
+          "seconds": 0.005
+        },
+        {
+          "test": "CrabrixTests.AlgorithmCourseCatalogTests testEveryPatternHasModelRecognitionAndCompilerChallenge",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.BorrowRepairTests testMovesLastReferenceUseBeforeMutation",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.BuildEnergyTests testRunningYourOwnCodeCostsNothing",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.BundledLicenseTests testEveryComponentNamesAtLeastOneDocument",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.BundledLicenseTests testEveryDeclaredLicenceTextShipsInsideTheApp",
+          "status": "passed",
+          "seconds": 0.004
+        },
+        {
+          "test": "CrabrixTests.BundledLicenseTests testTheNoticesFileIsAlsoBundled",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.BundledLicenseTests testTheRedistributedToolchainLicencesAreTheRealTexts",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.BundledSysrootTests testBundledDataInstallsAndRehydratesAfterCacheEviction",
+          "status": "passed",
+          "seconds": 0.018
+        },
+        {
+          "test": "CrabrixTests.BundledSysrootTests testCorruptBundledArchiveCannotBecomeAnInstalledToolchain",
+          "status": "passed",
+          "seconds": 0.004
+        },
+        {
+          "test": "CrabrixTests.BundledSysrootTests testInterruptedInstallationIsReplacedFromBundledData",
+          "status": "passed",
+          "seconds": 0.011
+        },
+        {
+          "test": "CrabrixTests.BundledSysrootTests testPartialCacheEvictionRehydratesMissingLibrary",
+          "status": "passed",
+          "seconds": 0.017
+        },
+        {
+          "test": "CrabrixTests.CargoFingerprintTests testChangesWhenDependencyAliasChanges",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoFingerprintTests testChangesWithEveryInputThatChangesTheArtifact",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoFingerprintTests testExternFileNamesMatchTheArtifactLayout",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CargoFingerprintTests testIsStableAcrossFeatureOrdering",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CargoLockfileTests testParsesALockfileWrittenByDesktopCargo",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CargoLockfileTests testRejectsUnsupportedRegistrySourceAndMalformedChecksum",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoLockfileTests testRendersAndParsesBackTheSameGraph",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CargoManifestTests testParsesPackageAndDependencySources",
+          "status": "passed",
+          "seconds": 0.008
+        },
+        {
+          "test": "CrabrixTests.CargoManifestTests testRequiresPackageName",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testAManifestWithoutFeaturesEnablesNone",
+          "status": "passed",
+          "seconds": 0.005
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testDevAndBuildDependenciesAreNotResolved",
+          "status": "passed",
+          "seconds": 0.046
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testFeaturesPropagateToDependenciesAndUnify",
+          "status": "passed",
+          "seconds": 0.012
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testFrozenResolutionRequiresCachedExactLockfileGraph",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testKeepsIncompatibleMajorVersionsSideBySide",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testLateFeatureUnificationCanReselectAnOlderCompatibleVersion",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testLockedResolutionRejectsManifestThatWouldChangeLockfile",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testMissingCrateSurfacesAsAResolutionError",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testMSRVFailureNamesRequiredAndBundledVersions",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testMSRVSelectsNewestVersionSupportedByBundledRustc",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testNormalResolutionPreservesCompatibleCargoLockPin",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testOfflineResolutionNamesMissingCachedIndex",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testOfflineResolutionUsesOnlyCachedIndexData",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testOptionalDependencyIsActivatedOnlyByItsFeature",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testRenamedDependencyResolvesThePublishedPackage",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testReportsUnsatisfiableRequirements",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testRequestedFeatureSelectsNewestVersionThatStillDefinesIt",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testResolverOneUnifiesInactiveTargetFeaturesButResolverTwoDoesNot",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testResolverThreeFallsBackWhenRequirementHasNoRootMSRVCompatibleRelease",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testResolverThreePrefersRootMSRVCompatibleRelease",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testResolvesTransitiveDependenciesInBuildOrder",
+          "status": "passed",
+          "seconds": 0.004
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testSelectsHighestCompatibleVersionAndSkipsYanked",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testTargetPredicatesFilterOutForeignPlatformDependencies",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testTheRootsOwnActiveFeaturesAreReported",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testUnifiesRequirementsOntoOneCompatibleVersion",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testUnknownRequestedFeatureIsAnError",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testUpdateModeIgnoresOldPin",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testWarnsAboutNativeLibraryAndUnsupportedSources",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CargoResolverTests testWeakFeatureOnlyAppliesWhenTheDependencyIsActive",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoTemplateTests testEveryTemplateProducesAParsableManifest",
+          "status": "passed",
+          "seconds": 0.008
+        },
+        {
+          "test": "CrabrixTests.CargoTemplateTests testPackagesTemplateWritesResolvableRegistryDependencies",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CargoWorkspaceEvidenceTests testDependencyFreeWorkspaceIsNotReportedAsOfflinePinned",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CargoWorkspaceEvidenceTests testSummaryKeepsCheckAndLinkEvidenceDistinct",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CodeBlockHeightTests testALongSnippetAsksForItsFullHeight",
+          "status": "passed",
+          "seconds": 0.484
+        },
+        {
+          "test": "CrabrixTests.CodeBlockHeightTests testHeightGrowsWithTheNumberOfLines",
+          "status": "passed",
+          "seconds": 0.013
+        },
+        {
+          "test": "CrabrixTests.CodeContributionLedgerTests testABaselineWrittenByAnOlderBuildIsKeptRatherThanDiscarded",
+          "status": "passed",
+          "seconds": 0.006
+        },
+        {
+          "test": "CrabrixTests.CodeContributionLedgerTests testALargeUntouchedFileIsNotRescoredOnEveryRun",
+          "status": "passed",
+          "seconds": 0.062
+        },
+        {
+          "test": "CrabrixTests.CodeContributionLedgerTests testProjectsAreMeasuredIndependently",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CodeContributionLedgerTests testSameNamedProjectsCannotShareABaseline",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CodeContributionLedgerTests testTheSecondRunIsMeasuredAgainstTheFirst",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CodeContributionTests testAddedAndRemovedLinesAreCountedSeparately",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CodeContributionTests testADeletedFileStillCountsAsWork",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CodeContributionTests testAFileRememberedOnlyByDigestIsNotMistakenForNewWork",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CodeContributionTests testANewFileCountsAsItsWholeContent",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CodeContributionTests testAnInPlaceEditOfAForgottenFileStillCountsAsWork",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CodeContributionTests testAnUntouchedProjectMeasuresNoChange",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CodeContributionTests testAVeryLargeFileStillProducesAMeasurement",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CodeContributionTests testDiffIgnoresUnchangedSurroundingLines",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CodeContributionTests testPointsGrowWithTheSizeOfTheChangeButStayBounded",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CodeContributionTests testRerunningUntouchedCodeEarnsFarLessThanEditingIt",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CodeContributionTests testTheFirstRunOfAProjectIsMarked",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CodeRecallDeckTests testAWindowNeverExceedsTheSnippet",
+          "status": "passed",
+          "seconds": 0.005
+        },
+        {
+          "test": "CrabrixTests.CodeRecallDeckTests testEverySnippetIsLongEnoughAndHasNoRepeatedLines",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CodeRecallDeckTests testScoringRewardsDepthOverVolume",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CodeRecallDeckTests testTheDeckIsDerivedFromLessonsAndIsNotEmpty",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CodeRecallDeckTests testTheNextSnippetAvoidsOnesAlreadySeen",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CrabrixProgressStoreTests testAtlasStepsAreWorthLessThanALanguageLesson",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrabrixProgressStoreTests testKeepsTheBestTermTrainNumbersNotTheLatest",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.CrabrixProgressStoreTests testPersistsAcrossInstances",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.CrabrixProgressStoreTests testProductionSocialPathsStayDormantUntilReleaseGatesEnableThem",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrabrixProgressStoreTests testRanksAdvanceWithPointsAndReportRemainingDistance",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrabrixProgressStoreTests testResetClearsEverything",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CrabrixProgressStoreTests testStableRewardEventIsAppliedOnceAcrossRelaunch",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CrabrixProgressStoreTests testStartsEmptyAndAccumulatesAcrossEveryFeature",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.CrabrixProgressStoreTests testTheRankLadderIsScaledToTheCurriculumThatExists",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrabrixProgressStoreTests testTheTwoPathsAreCountedSeparately",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.CrabrixProgressStoreTests testUnlocksAchievementsOnceAndReportsThemForCelebration",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStateTests testAClockMovedBackwardsNeverDrains",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStateTests testALessonPageIsChargedOnceAndThenFree",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStateTests testAMistakeBreaksTheFlowStreak",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStateTests testAPageIsNotChargedWhenEnergyIsShort",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStateTests testAQuestionIsChargedOnceHoweverManyTriesItTakes",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStateTests testARunOfCorrectAnswersHandsEnergyBack",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStateTests testCountdownReportsTimeToTheNextWholePoint",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStateTests testHealthNeverGoesNegative",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStateTests testPartialRegenerationAccumulatesRatherThanRounding",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStateTests testRegenerationIsProportionalToElapsedTime",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStateTests testRegenerationStopsAtCapacity",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStateTests testShieldsComeBackTheNextDay",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStateTests testSixCorrectAnswersRestoreHealthAndEnergy",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStateTests testTheFirstMistakeOfTheDayIsShielded",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStoreTests testAFreshStoreStartsFull",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStoreTests testCompletedLessonReviewNeverChangesVitals",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStoreTests testHealthComesBackWhileTheAppIsClosed",
+          "status": "passed",
+          "seconds": 0.004
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStoreTests testLessonsPauseButTrainingDoesNotWhenHealthRunsOut",
+          "status": "passed",
+          "seconds": 0.004
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStoreTests testRatingRaisesTheCeiling",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStoreTests testReadingAPageTwiceChargesOnce",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStoreTests testTrainingNeverCostsAnything",
+          "status": "passed",
+          "seconds": 0.008
+        },
+        {
+          "test": "CrabrixTests.CrabrixVitalsStoreTests testVitalsSurviveARelaunch",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.CrateArchiveTests testChecksumsAreComparedAgainstTheDownloadedBytes",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrateArchiveTests testCompletedSourceDetectsTamperingAndRepairsFromVerifiedArchive",
+          "status": "passed",
+          "seconds": 0.039
+        },
+        {
+          "test": "CrabrixTests.CrateArchiveTests testEnforcesTheEntryCountLimit",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CrateArchiveTests testEnforcesTheExpandedSizeLimit",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrateArchiveTests testReadsRegularFilesFromAGzippedTar",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrateArchiveTests testReadsValidatedPositiveBase256Size",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrateArchiveTests testRejectsCorruptedGzipBytes",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrateArchiveTests testRejectsDuplicatePaths",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrateArchiveTests testRejectsNonGzipInput",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrateArchiveTests testRejectsSymlinkAndOtherNonRegularEntries",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrateArchiveTests testRejectsTarHeaderChecksumMismatch",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrateArchiveTests testRejectsTraversalAbsoluteAndForeignRootPaths",
+          "status": "passed",
+          "seconds": 0.006
+        },
+        {
+          "test": "CrabrixTests.CrateArchiveTests testRejectsTruncatedEndMarkerAndPAXMetadata",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CrateCompatibilityLedgerTests testIgnoresRecordsFromAnotherToolchain",
+          "status": "passed",
+          "seconds": 0.004
+        },
+        {
+          "test": "CrabrixTests.CrateCompatibilityLedgerTests testRemembersBuildOutcomesAcrossInstances",
+          "status": "passed",
+          "seconds": 0.007
+        },
+        {
+          "test": "CrabrixTests.CrateCompatibilityLedgerTests testRemoveAllClearsStoredKnowledge",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CrateGuideTests testAnUndownloadedCrateHasNoGuide",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CrateGuideTests testDescriptionAndMetadataComeFromTheCratesOwnManifest",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.CrateGuideTests testDocsRsIsOfferedEvenWithoutADocumentationKey",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.CrateGuideTests testExamplesAreListed",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CrateGuideTests testTheReadmeIsTheGuide",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CratePackageManifestTests testDefaultsEditionAndDerivesCrateNameFromPackageName",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CratePackageManifestTests testDetectsImplicitBuildScriptUnlessManifestDisablesIt",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CratePackageManifestTests testDetectsProcMacroAndUnsupportedCrateTypes",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CratePackageManifestTests testReadsPackageLibraryAndFeatureTables",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CratePackageManifestTests testRecognisesAVirtualWorkspaceRoot",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CratePackageManifestTests testRejectsWorkspaceInheritanceAndInvalidDependencyRequirements",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.CratePackageManifestTests testSeparatesDependencyKindsAndTargetPredicates",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CratePackageManifestTests testValidatesEditionAndResolverVersion",
+          "status": "passed",
+          "seconds": 0.007
+        },
+        {
+          "test": "CrabrixTests.CrateSourceBrowserTests testAFileCanBeReadBackAsText",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.CrateSourceBrowserTests testAMissingCrateListsNothingRatherThanFailing",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CrateSourceBrowserTests testAPathCannotEscapeTheCrateDirectory",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CrateSourceBrowserTests testEveryExtractedFileIsListed",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.CrateSourceBrowserTests testExplicitLibraryPathIsAuditedEvenWithoutRustExtension",
+          "status": "passed",
+          "seconds": 0.005
+        },
+        {
+          "test": "CrabrixTests.CrateSourceBrowserTests testInvalidUTF8ProgrammingSourceFailsClosed",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.CrateSourceBrowserTests testNonstandardIncludedSourceIsFullyEditable",
+          "status": "passed",
+          "seconds": 0.004
+        },
+        {
+          "test": "CrabrixTests.CrateSourceBrowserTests testNonstandardTextFilesCannotBeSilentlyDroppedAtFileLimit",
+          "status": "passed",
+          "seconds": 0.181
+        },
+        {
+          "test": "CrabrixTests.CrateSourceBrowserTests testOversizedBinaryAssetDoesNotPretendToBeEditableSource",
+          "status": "passed",
+          "seconds": 0.007
+        },
+        {
+          "test": "CrabrixTests.CrateSourceBrowserTests testOversizedNonstandardSourceFailsBeforeBuildAndVendor",
+          "status": "passed",
+          "seconds": 0.006
+        },
+        {
+          "test": "CrabrixTests.CrateSourceBrowserTests testOversizedProgrammingSourceFailsClosedBeforeBuildOrVendor",
+          "status": "passed",
+          "seconds": 0.006
+        },
+        {
+          "test": "CrabrixTests.CrateSourceBrowserTests testSourceFilesAreListedBeforeMetadata",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.CrateSourceBrowserTests testSummaryCountsRustFiles",
+          "status": "passed",
+          "seconds": 0.006
+        },
+        {
+          "test": "CrabrixTests.CrateSourceBrowserTests testVendorAndEditCopiesEveryEditableSourceButNotBinaryAssets",
+          "status": "passed",
+          "seconds": 0.004
+        },
+        {
+          "test": "CrabrixTests.CrateStorageUsageTests testMeasuresDependencyAndProjectBuildCachesTogether",
+          "status": "passed",
+          "seconds": 0.004
+        },
+        {
+          "test": "CrabrixTests.CratesIOClientTests testAllVisibleSortsMapToRegistryValues",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CratesIOClientTests testDecodesCratesIOSearchFields",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.CratesIOClientTests testSearchURLContainsQuerySortAndBoundedPageSize",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CurriculumCoverageTests testEveryGeneralDrillDrawsFromTheWholeLanguageCurriculum",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CurriculumCoverageTests testEveryLanguageLessonHasATermTrainPair",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CurriculumCoverageTests testNoTwoCardsShareATermOrADescription",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.CurriculumCoverageTests testTheInterviewCourseCoversTheTopicsThatShipWithRust",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.EditorHorizontalScrollTests testLongLineIsNotWrapped",
+          "status": "passed",
+          "seconds": 0.012
+        },
+        {
+          "test": "CrabrixTests.EditorHorizontalScrollTests testScrollableWidthReachesTheEndOfTheLongestLine",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.EditorHorizontalScrollTests testTheEndOfTheLongestLineIsDrawnWhenScrolledToIt",
+          "status": "passed",
+          "seconds": 0.099
+        },
+        {
+          "test": "CrabrixTests.EditorHorizontalScrollTests testTheGutterKeepsItsNumbersWhenScrolledSideways",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.EditorRepaintScrollTests testRepaintingDoesNotDragTheReaderBackToTheFirstLine",
+          "status": "passed",
+          "seconds": 0.072
+        },
+        {
+          "test": "CrabrixTests.EditorScrollingTests testALongFileScrollsPastTheFirstLineAndStaysThere",
+          "status": "passed",
+          "seconds": 0.053
+        },
+        {
+          "test": "CrabrixTests.EditorScrollingTests testHorizontalScrollPositionSurvivesLayout",
+          "status": "passed",
+          "seconds": 0.05
+        },
+        {
+          "test": "CrabrixTests.EditorScrollingTests testTheGutterNumbersFollowTheScrolledLines",
+          "status": "passed",
+          "seconds": 0.051
+        },
+        {
+          "test": "CrabrixTests.EditorScrollingTests testTheGutterStaysOverTheVisibleLeftEdgeWhenScrolledSideways",
+          "status": "passed",
+          "seconds": 0.053
+        },
+        {
+          "test": "CrabrixTests.EditorScrollingTests testTypingPastTheRightEdgeFollowsTheCaret",
+          "status": "passed",
+          "seconds": 0.011
+        },
+        {
+          "test": "CrabrixTests.EditorScrollingTests testTypingWhereTheReaderIsLookingKeepsThemThere",
+          "status": "passed",
+          "seconds": 0.096
+        },
+        {
+          "test": "CrabrixTests.GitHubRepositoryReferenceTests testAcceptsGitSuffixAndURLWithoutScheme",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.GitHubRepositoryReferenceTests testParsesRepositoryAndNestedBranchReference",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.GitHubRepositoryReferenceTests testRejectsNonGitHubHost",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.LessonMapLayoutTests testLessonLabelsStayInsideCompactAndRegularWidths",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.LessonMapLayoutTests testNodesStayInsideTheirContainer",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.LessonQuestionAuditTests testAuditQuickCheckQuestions",
+          "status": "passed",
+          "seconds": 0.004
+        },
+        {
+          "test": "CrabrixTests.LocalAvatarStoreTests testAvatarIsDownsampledPersistedAndReloaded",
+          "status": "passed",
+          "seconds": 0.059
+        },
+        {
+          "test": "CrabrixTests.LocalAvatarStoreTests testAvatarRejectsInvalidAndOversizedInput",
+          "status": "passed",
+          "seconds": 0.004
+        },
+        {
+          "test": "CrabrixTests.MarkdownRendererTests testAnUnterminatedFenceStillRenders",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.MarkdownRendererTests testAVeryLongReadmeIsTruncatedRatherThanLaidOutInFull",
+          "status": "passed",
+          "seconds": 0.015
+        },
+        {
+          "test": "CrabrixTests.MarkdownRendererTests testCodeInsideAFenceIsNotTreatedAsMarkdown",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.MarkdownRendererTests testHeadingsListsAndCodeBecomeSeparateBlocks",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.MarkdownRendererTests testParagraphsSurviveWithTheirInlineFormatting",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.ProblemReportTests testAnEmptyExpectationLeavesNoEmptyHeading",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.ProblemReportTests testAnEmptyReportCannotBeSent",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ProblemReportTests testAPlusInTheReportSurvivesTheMailDraft",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.ProblemReportTests testDeviceDetailsAreAttachedOnlyWhenAsked",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ProblemReportTests testEveryAreaHasItsOwnPromptAndIcon",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ProblemReportTests testTheDeviceNameIsNeverAttached",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ProblemReportTests testTheMailDraftAddressesSupportAndCarriesTheReport",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ProblemReportTests testTheModelIdentifierIsTheHardwareString",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ProblemReportTests testTheReportCarriesWhatWasWrittenAndTheArea",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ProblemReportTests testTheSupportAddressIsAWorkingAddressAndIsNotAWebsiteOne",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ProgressStateCompatibilityTests testAPayloadFromAnOlderBuildStillDecodes",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ProgressStateCompatibilityTests testRoundTripKeepsEveryField",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.ProjectAuthoringTests testBundledProjectLibraryHasRunnableEntries",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.ProjectAuthoringTests testCargoDependencyIsInsertedAndUpdated",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.ProjectAuthoringTests testCreatesRustFileAndPersistentModuleFolder",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.ProjectAuthoringTests testLessonAnswerAndReviewStateSurviveTheExpectedTransitions",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.ProjectAuthoringTests testNewProjectCreatesCargoLayout",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.ProjectAuthoringTests testNewProjectPersistsOrganizationMetadata",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.ProjectAuthoringTests testProjectTemplatesProvideDistinctRunnableLayouts",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.ProjectAuthoringTests testReviewLabCanUseAFreshProjectWithoutReusingTheOriginalName",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.ProjectImportTests testCompatibilityScannerFlagsDependenciesAndBuildScript",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ProjectImportTests testCorruptCurrentSnapshotFallsBackToPreviousValidState",
+          "status": "passed",
+          "seconds": 0.012
+        },
+        {
+          "test": "CrabrixTests.ProjectImportTests testCorruptIndexRebuildsFromIndependentProjectDirectories",
+          "status": "passed",
+          "seconds": 0.017
+        },
+        {
+          "test": "CrabrixTests.ProjectImportTests testDurableStoreKeepsEveryProjectBeyondRecentLimit",
+          "status": "passed",
+          "seconds": 0.434
+        },
+        {
+          "test": "CrabrixTests.ProjectImportTests testInterruptedTransactionRestoresPreviousSnapshot",
+          "status": "passed",
+          "seconds": 0.007
+        },
+        {
+          "test": "CrabrixTests.ProjectImportTests testLegacyRecentProjectsMigrateWithoutChangingIdentity",
+          "status": "passed",
+          "seconds": 0.01
+        },
+        {
+          "test": "CrabrixTests.ProjectImportTests testLoadsCargoFolderAndIgnoresBuildArtifacts",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.ProjectImportTests testOrganizingProjectPersistsMetadataWithoutChangingRecentOrder",
+          "status": "passed",
+          "seconds": 0.016
+        },
+        {
+          "test": "CrabrixTests.ProjectImportTests testProjectsWithSameNameRemainSeparate",
+          "status": "passed",
+          "seconds": 0.01
+        },
+        {
+          "test": "CrabrixTests.ProjectImportTests testRecentProjectLibraryPersistsBuildStatus",
+          "status": "passed",
+          "seconds": 0.005
+        },
+        {
+          "test": "CrabrixTests.ProjectImportTests testRenamePreservesProjectIdentity",
+          "status": "passed",
+          "seconds": 0.008
+        },
+        {
+          "test": "CrabrixTests.ProjectImportTests testSavedCrabrixPackageRoundTripsEditableFilesAndProvenance",
+          "status": "passed",
+          "seconds": 0.005
+        },
+        {
+          "test": "CrabrixTests.ProjectImportTests testWorkspaceGenerationPreventsABARevisionReuse",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.ProjectImportTests testWorkspaceRevisionUsesCanonicalSourceTreeAndCargoHashes",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.ProjectImportTests testZipArchiveRoundTripsProjectFiles",
+          "status": "passed",
+          "seconds": 0.013
+        },
+        {
+          "test": "CrabrixTests.ProjectTerminalCargoTreeTests testFallsBackToDeclaredDependenciesBeforeResolution",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ProjectTerminalCargoTreeTests testRendersTheResolvedGraphWithCompatibilityMarkers",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ProjectTerminalCargoTreeTests testReportsNoDependenciesForAPlainProject",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ProjectTerminalSessionTests testCargoRunInvokesBuildCallback",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.ProjectTerminalSessionTests testLinuxStyleListingAndNavigation",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.ProjectTerminalSessionTests testMutationCommandsReplaceProjectSnapshot",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ProjectTerminalSessionTests testSameNamedProjectsKeepIndependentTerminalState",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ProjectTerminalSessionTests testSearchCommandsInspectProjectFiles",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.ProjectTerminalSessionTests testTerminalCommandsUseCurrentProjectSnapshot",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ProjectTerminalSessionTests testTerminalKeepsIndependentProjectBuffers",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RunRewardEconomyTests testHandWrittenCodeIsWorthMoreThanTheSameCodePasted",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RunRewardEconomyTests testRevisionIdentitiesStayBoundedWhileLessonIdentitiesDoNot",
+          "status": "passed",
+          "seconds": 0.108
+        },
+        {
+          "test": "CrabrixTests.RunRewardEconomyTests testTheDailyRunRewardResetsTheNextDay",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.RunRewardEconomyTests testTheSameRevisionIsPaidOnceHoweverOftenItIsRun",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.RunRewardEconomyTests testTypingIsWhereTheRatingComesFrom",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RunRewardEconomyTests testTypingRatingScalesWithVolume",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustCanvasOutputTests testInvalidCanvasRemainsVisibleAsPlainOutput",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.RustCanvasOutputTests testRejectsUnknownPaletteIndexAndMalformedColor",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustCanvasOutputTests testValidCanvasIsSeparatedFromPlainOutput",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustCompletionTests testCompletesCommonRustConstructsFromTwoCharacters",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.RustCompletionTests testCompletesPrintlnPrefixWithoutUsingAModel",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustCompletionTests testDoesNotInventCompletionWithoutKnownRustContext",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustCurriculumCoverageTests testCurriculumCoversTheCoreOfTheLanguage",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustCurriculumCoverageTests testEveryLessonDeclaresAnExplicitEvidenceType",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.RustCurriculumCoverageTests testEveryLessonHasNonEmptyMetadata",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.RustCurriculumCoverageTests testEveryUnitIsReachableFromACourse",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustCurriculumCoverageTests testLessonIdentifiersAreUnique",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustCurriculumCoverageTests testWrittenLessonContentIsComplete",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.RustDeclarationCompletionTests testBareKeywordWithATrailingSpaceStillUsesTheDefaultTemplate",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.RustDeclarationCompletionTests testCompletesADescriptivelyNamedFunction",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustDeclarationCompletionTests testCompletesTypeDeclarations",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustDeclarationCompletionTests testDoesNotScaffoldAnUnfinishedOrNonDeclarationLine",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustDeclarationCompletionTests testEveryFunctionScaffoldIsBalanced",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustDeclarationCompletionTests testHandlesVisibilityAndAsyncModifiers",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustDiagnosticParserTests testIgnoresSummaryDiagnosticsWithoutSeverity",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.RustDiagnosticParserTests testKeepsSupportingFilePathForEditorNavigation",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.RustDiagnosticParserTests testParsesStructuredE0502AndSpans",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustLessonProgressionNextStepTests testAnUnknownLessonStillYieldsAConcreteStep",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.RustLessonProgressionNextStepTests testContinuesIntoTheNextCourseAtACourseBoundary",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustLessonProgressionNextStepTests testFallsBackToAnEarlierGapWhenEverythingAfterIsDone",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustLessonProgressionNextStepTests testGoesToTheLessonRightAfterTheOneJustFinished",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustLessonProgressionNextStepTests testReviewingDoesNotSkipTheImmediatelyFollowingCompletedLesson",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustLessonProgressionNextStepTests testWithoutAnActiveLessonItPicksTheFirstUnfinishedOne",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustLessonProgressionTests testBorrowRepairRequiresOriginalDiagnosticAndPreservedBehavior",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustLessonProgressionTests testCatalogFindsCourseAndLessonByStableIdentifiers",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustLessonProgressionTests testCatalogReturnsNilForUnknownIdentifiers",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustLessonProgressionTests testCourseCompletesWhenEveryLessonIDIsRecorded",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustLessonProgressionTests testEditedHelloOutputPassesItsSpecificValidator",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustLessonProgressionTests testRustBasicsIsAFullGradualTwentyEightLessonCourse",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustLessonProgressionTests testSuccessfulFirstLessonUnlocksVariables",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustLessonProgressionTests testSuccessfulRunDoesNotCompleteUnchangedHelloStarter",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustQuestionBankTests testARoundDrawsDistinctQuestions",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustQuestionBankTests testEveryLanguageLessonContributesAQuestion",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustQuestionBankTests testEveryQuestionCarriesTheSnippetItAsksAbout",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.RustQuestionBankTests testEveryQuestionIsWellFormed",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustQuestionBankTests testQuestionTopicsMatchRealLessons",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustQuestionBankTests testTopicsAreUniqueSoARoundCannotRepeatItself",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustSourcePatchTests testAppliesMultipleEditsUsingOriginalLineNumbers",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustSourcePatchTests testRejectsLineOutsideOriginalSnapshot",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.RustSourcePatchTests testRejectsOverlappingEdits",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.RustSourcePatchTests testRemovesMarkdownFenceFromGeneratedReplacement",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.SemanticVersionTests testBestMatchPicksTheHighestSatisfyingVersion",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.SemanticVersionTests testCaretCompatibilityBuckets",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.SemanticVersionTests testCaretRequirementsFollowCargoZeroRules",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.SemanticVersionTests testCargoWildcardMatrixUsesTheWildcardBoundary",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.SemanticVersionTests testMalformedOrOperatorPrefixedWildcardsAreRejected",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.SemanticVersionTests testParsesAndOrdersVersions",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.SemanticVersionTests testPrereleasesOnlyMatchWhenExplicitlyRequested",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.SemanticVersionTests testTildeExactWildcardAndRangeRequirements",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.SparseRegistryIndexTests testIndexPathsFollowTheCratesIOLayout",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.SparseRegistryIndexTests testParsesNewlineDelimitedIndexEntries",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.SparseRegistryIndexTests testRejectsAnEmptyOrUnreadableIndexFile",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.SparseRegistryIndexTests testRejectsCrateNamesThatCouldEscapeTheIndexLayout",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.SyntaxCodeEditorHostedTests testHighlightsACargoManifestTypedByTheUser",
+          "status": "passed",
+          "seconds": 0.114
+        },
+        {
+          "test": "CrabrixTests.SyntaxCodeEditorHostedTests testLongLinesDoNotWrap",
+          "status": "passed",
+          "seconds": 0.214
+        },
+        {
+          "test": "CrabrixTests.SyntaxCodeEditorHostedTests testRealEditorHighlightsProgrammaticallyInsertedText",
+          "status": "passed",
+          "seconds": 0.113
+        },
+        {
+          "test": "CrabrixTests.SyntaxCodeEditorHostedTests testRealEditorHighlightsTextInsertedThroughUIKit",
+          "status": "passed",
+          "seconds": 0.11
+        },
+        {
+          "test": "CrabrixTests.SyntaxCodeEditorHostedTests testShortLinesStillLayOutNormally",
+          "status": "passed",
+          "seconds": 0.213
+        },
+        {
+          "test": "CrabrixTests.SyntaxContrastTests testEveryTokenKindIsReadableInBothThemes",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.SyntaxContrastTests testPlainCodeTextIsReadableOnTheCodeBackground",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.SyntaxContrastTests testTheOldFixedPaletteWouldHaveFailedInLightMode",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.SyntaxContrastTests testTokenColoursAreDistinctFromEachOtherInBothThemes",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.SyntaxHighlighterTests testHighlightsCargoManifestSectionsAndKeys",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.SyntaxHighlighterTests testHighlightsRustWithoutColoringKeywordsInsideStringsOrComments",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.TOMLParserTests testParsesArraysOfTablesAndMultiLineArrays",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.TOMLParserTests testParsesQuotedKeysAndStringForms",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.TOMLParserTests testParsesTablesDottedKeysAndInlineTables",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.TOMLParserTests testRejectsDuplicateKeys",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.TOMLParserTests testRejectsOversizedInput",
+          "status": "passed",
+          "seconds": 0.035
+        },
+        {
+          "test": "CrabrixTests.TargetCfgExpressionTests testMatchesBooleanCombinators",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TargetCfgExpressionTests testMatchesKeyValuePredicates",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TargetCfgExpressionTests testMatchesLiteralTriples",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TargetCfgExpressionTests testUnknownPropagatesThroughNotAllAndAny",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TargetCfgExpressionTests testUnparseablePredicatesDoNotMatch",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TermTrainDeckTests testAccuracyIsZeroForARunWithNoAttempts",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TermTrainDeckTests testDealsAFullBoardOfDistinctPairs",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TermTrainDeckTests testEveryPairHasBothSidesFilledIn",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TermTrainDeckTests testExcludesPairsAlreadyOnTheBoard",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TermTrainDeckTests testFallsBackToTheFullDeckWhenEverythingIsUsed",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.TermTrainDeckTests testModesDifferInClockAndPenalty",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TermTrainDeckTests testRunResultScoresSpeedOnlyForTimedRuns",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TermTrainTopicTests testBoardLeansTowardsWeakTopics",
+          "status": "passed",
+          "seconds": 0.007
+        },
+        {
+          "test": "CrabrixTests.TermTrainTopicTests testEveryPairPointsAtARealLesson",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TermTrainTopicTests testTermsAndDescriptionsAreUnique",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TermTrainTopicTests testTheDeckGrewWithTheCurriculum",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ThemeContrastTests testMutedTextStaysLegibleOnEveryPanel",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ThemeContrastTests testPrimaryTextIsReadableOnEveryPanelInBothThemes",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ThemeContrastTests testTheLockedLessonIconIsVisibleInBothThemes",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.ThemeContrastTests testWhiteWouldHaveFailedInLightMode",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TopicMasteryRecordTests testAnUnseenTopicSitsInTheMiddleAndIsDue",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TopicMasteryRecordTests testAWrongAnswerResetsTheScheduleToTomorrow",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.TopicMasteryRecordTests testCorrectAnswersFollowTheSM2Intervals",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TopicMasteryRecordTests testEaseNeverFallsBelowTheSM2Floor",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TopicMasteryRecordTests testStrengthRewardsAccuracyAndStreak",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TopicMasteryStoreTests testRecordsAnswersAndPersistsThem",
+          "status": "passed",
+          "seconds": 0.004
+        },
+        {
+          "test": "CrabrixTests.TopicMasteryStoreTests testResetClearsEverything",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.TopicMasteryStoreTests testSummaryCountsStrongAndWeakSeparately",
+          "status": "passed",
+          "seconds": 0.005
+        },
+        {
+          "test": "CrabrixTests.TopicMasteryStoreTests testWeakestReportsOnlyAttemptedTopics",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.TopicSchedulerTests testAnOverdueTopicGainsUrgency",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TopicSchedulerTests testPickCannotAskForMoreThanExists",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TopicSchedulerTests testPickNeverRepeatsAndRespectsTheCount",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TopicSchedulerTests testUnseenTopicsOutrankMasteredOnes",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TopicSchedulerTests testWeakTopicsAreChosenMoreOftenOverManyRounds",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.TopicSchedulerTests testWeakTopicsOutrankStrongOnes",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.TypingLedgerTests testAProjectWithNoHistoryIsNeitherRewardedNorPunished",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.TypingLedgerTests testPastedCharactersEarnNoTypingRating",
+          "status": "passed",
+          "seconds": 0.004
+        },
+        {
+          "test": "CrabrixTests.TypingLedgerTests testPendingCharactersCannotDrainAcrossProjects",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.TypingLedgerTests testPendingTypedCharactersDrainOnce",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.TypingLedgerTests testProjectsAreCountedSeparately",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.TypingLedgerTests testShortInsertionsCountAsTypedAndLongOnesDoNot",
+          "status": "passed",
+          "seconds": 0.004
+        },
+        {
+          "test": "CrabrixTests.TypingLedgerTests testTheAccessoryRowStillCountsAsTyping",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.VisualShowcaseThumbnailTests testEachThumbnailMatchesTheCanvasItsProgramDeclares",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.VisualShowcaseThumbnailTests testEveryPixelIndexIsInsideItsPalette",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.VisualShowcaseThumbnailTests testEveryVisualProjectHasAThumbnail",
+          "status": "passed",
+          "seconds": 0.006
+        },
+        {
+          "test": "CrabrixTests.VisualShowcaseThumbnailTests testTwoProjectsNeverShowTheSamePicture",
+          "status": "passed",
+          "seconds": 0.001
+        },
+        {
+          "test": "CrabrixTests.VitalsCapacityTests testAFullRefillGetsFasterAtEveryRank",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.VitalsCapacityTests testCapacityAndRegenerationGrowWithRank",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.VitalsCapacityTests testCapacityIsDerivedFromRatingPoints",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.VitalsCapacityTests testCapacityIsMonotonicAcrossEveryRank",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.VitalsRecoveryReportingTests testAFullPoolReportsNoCountdown",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.VitalsRecoveryReportingTests testCountdownIsReadableAtEveryScale",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.VitalsRecoveryReportingTests testRecoveryRateReadsAsAWholeNumberWhenItIsOne",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.VitalsRecoveryReportingTests testTheStoreCanAnswerHowLongUntilFull",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.WasmSandboxPolicyTests testInstructionBudgetStopsPureComputeGuestWithoutHostCalls",
+          "status": "passed",
+          "seconds": 0.008
+        },
+        {
+          "test": "CrabrixTests.WasmSandboxPolicyTests testMemoryAndTableGrowthAreBounded",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.WasmSandboxPolicyTests testOutputQuotaCancelsGuest",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.WasmSandboxPolicyTests testUserStopInterruptsPureComputeGuestAndNextRunStarts",
+          "status": "passed",
+          "seconds": 0.026
+        },
+        {
+          "test": "CrabrixTests.WasmSandboxPolicyTests testWritableByteAndFileCountQuotasCancelGuest",
+          "status": "passed",
+          "seconds": 0.083
+        },
+        {
+          "test": "CrabrixTests.WeakTopicDeduplicationTests testATopicListedTwiceIsRecommendedOnce",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.WeakTopicDeduplicationTests testDeduplicationKeepsTheFirstAppearanceOrder",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.WeakTopicDeduplicationTests testDueTopicsAlsoCollapseRepeats",
+          "status": "passed",
+          "seconds": 0.002
+        },
+        {
+          "test": "CrabrixTests.WeakTopicDeduplicationTests testTheRealCardInputContainsRepeatsThatMustBeCollapsed",
+          "status": "passed",
+          "seconds": 0.0
+        },
+        {
+          "test": "CrabrixTests.WorkspaceRevisionViewModelTests testActiveProjectKeepsIdentityWhileEditsAdvanceRevision",
+          "status": "passed",
+          "seconds": 0.003
+        },
+        {
+          "test": "CrabrixTests.WorkspaceRevisionViewModelTests testLoadingANewProjectChangesIdentityAndRevision",
+          "status": "passed",
+          "seconds": 0.002
+        }
+      ]
+    },
+    {
+      "suite": "compiler",
+      "passed": 21,
+      "failed": 0,
+      "xcresult": "/tmp/crabrix-build5-compiler.xcresult",
+      "tests": [
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testAlgorithmSolutionRunsOnlyThroughThePrivateHarness",
+          "status": "passed",
+          "seconds": 0.606
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testBundledRustcCompilesAndRunsRepairedProgram",
+          "status": "passed",
+          "seconds": 0.015
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testBundledRustcCompilesMultiFileProject",
+          "status": "passed",
+          "seconds": 0.013
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testBundledRustcProducesE0502",
+          "status": "passed",
+          "seconds": 3.348
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testBundledRustcSurvivesRepeatedBuilds",
+          "status": "passed",
+          "seconds": 0.039
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testEveryGuidedShowcasePassesBundledRustcCheck",
+          "status": "passed",
+          "seconds": 66.325
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testOfflinePinRehydratesSourcesAfterPurgeableCacheEviction",
+          "status": "passed",
+          "seconds": 0.556
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testResolvesDownloadsAndLinksARealCratesIOPackage",
+          "status": "passed",
+          "seconds": 27.836
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testRootCargoPackageEnvironmentComesFromTheManifest",
+          "status": "passed",
+          "seconds": 0.008
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testRootFeaturesReachTheRootCrate",
+          "status": "passed",
+          "seconds": 0.008
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testStopInterruptsARunningCompile",
+          "status": "passed",
+          "seconds": 0.132
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testUserProgramCannotGrowPastSandboxMemoryLimit",
+          "status": "passed",
+          "seconds": 0.008
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testVendoredCrateBuildsFromAProjectLocalPatch",
+          "status": "passed",
+          "seconds": 0.093
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testViewModelStopReenablesBuildAfterWorkerDrains",
+          "status": "passed",
+          "seconds": 0.28
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testVisualCellularGardenRendersAValidatedCanvas",
+          "status": "passed",
+          "seconds": 0.032
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testVisualColorWavesRendersAValidatedCanvas",
+          "status": "passed",
+          "seconds": 0.015
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testVisualConstellationRendersAValidatedCanvas",
+          "status": "passed",
+          "seconds": 0.012
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testVisualCreateTemplateRendersAValidatedCanvas",
+          "status": "passed",
+          "seconds": 0.012
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testVisualMandelbrotRendersAValidatedCanvas",
+          "status": "passed",
+          "seconds": 0.014
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testVisualPixelSunsetRendersAValidatedCanvas",
+          "status": "passed",
+          "seconds": 0.011
+        },
+        {
+          "test": "CrabrixTests.BundledCompilerGateTests testVisualTerrainRendersAValidatedCanvas",
+          "status": "passed",
+          "seconds": 0.012
+        }
+      ]
+    }
+  ]
+}

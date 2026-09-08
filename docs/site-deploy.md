@@ -19,7 +19,7 @@ site/
 
 ## Deploy
 
-The site is hosted on Lovable, which serves these pages from a project that
+The Lovable deployment serves these pages from a project that
 imports each file's markup verbatim rather than re-typing it:
 
 - project: https://lovable.dev/projects/a22788fb-a840-487d-8a0e-e2b741b50a40
@@ -28,6 +28,11 @@ imports each file's markup verbatim rather than re-typing it:
 Changing a page means editing it here, uploading it to that project, and asking
 it to replace the file in `src/pages/html/` byte for byte. Nothing about the
 copy is authored on the hosting side.
+
+As verified on 8 September 2026, **crabrix.com and www.crabrix.com still serve
+the Cloudflare Worker**, while crabrix.lovable.app serves Lovable. The corrected
+privacy/support/technology copy is deployed to both. The custom-domain migration
+has not happened yet.
 
 The domain still resolves through Cloudflare DNS, because the domain is
 registered with Cloudflare Registrar and a Registrar domain has to keep
