@@ -13,7 +13,7 @@ the app cannot drift apart. Character limits are Apple's.
 | SKU | `crabrix-ios-001` |
 | Primary category | Developer Tools |
 | Secondary category | Education |
-| Price | **$9.99** base (United States, USD), one-time, no IAP. **Ukraine is set to $2.99** as a manual override — Apple's own comparable price there was $11.99, which is not what that market pays. |
+| Price | **$9.99** base (United States, USD), one-time, no IAP. **Ukraine is set to $4.99** as a manual override — Apple's own comparable price there was $11.99, which is not what that market pays, and $2.99 was tried first and judged too low to be worth the proceeds. |
 | Age rating | Answer the current questionnaire honestly, question by question; the app has no objectionable content, so the computed rating should come out low. Do not paste an expected result. |
 | Copyright | `2026 Serhii Ziborov` |
 
