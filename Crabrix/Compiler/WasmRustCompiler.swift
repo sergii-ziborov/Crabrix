@@ -194,6 +194,16 @@ final class WasmRustCompiler: @unchecked Sendable {
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?
     ) -> CompilationResult {
         let started = clock.now
+        let interrupter = WasmInterrupter()
+        interrupterLock.lock()
+        activeInterrupter = interrupter
+        interrupterLock.unlock()
+        defer {
+            interrupterLock.lock()
+            activeInterrupter = nil
+            interrupterLock.unlock()
+        }
+
         guard let toolchain else {
             return .failure(phase: .setup, detail: "Bundled Rust toolchain is missing.")
         }
@@ -204,14 +214,10 @@ final class WasmRustCompiler: @unchecked Sendable {
             )
         }
 
-        let interrupter = WasmInterrupter()
-        interrupterLock.lock()
-        activeInterrupter = interrupter
-        interrupterLock.unlock()
-        defer {
-            interrupterLock.lock()
-            activeInterrupter = nil
-            interrupterLock.unlock()
+        // The first build may install bundled compiler data. Remember a Stop
+        // pressed during that preparation and do not start a guest afterwards.
+        if let reason = interrupter.stopReason {
+            return cancelledResult(phase: .setup, started: started, cancellation: .init(reason: reason))
         }
 
         let cacheKey = artifactKey(
