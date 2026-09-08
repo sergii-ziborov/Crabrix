@@ -13,7 +13,7 @@ the app cannot drift apart. Character limits are Apple's.
 | SKU | `crabrix-ios-001` |
 | Primary category | Developer Tools |
 | Secondary category | Education |
-| Price | Tier for **$9.99** at launch, raised as the app grows. One-time, no IAP. |
+| Price | **$9.99** base (United States, USD), one-time, no IAP. **Ukraine is set to $2.99** as a manual override — Apple's own comparable price there was $11.99, which is not what that market pays. |
 | Age rating | Answer the current questionnaire honestly, question by question; the app has no objectionable content, so the computed rating should come out low. Do not paste an expected result. |
 | Copyright | `2026 Serhii Ziborov` |
 
@@ -27,11 +27,11 @@ the app cannot drift apart. Character limits are Apple's.
 
 ## Promotional text (170)
 
-> The compiler is in the app, not on a server. Build Rust projects, add crates.io packages, and learn from real diagnostics — on your phone, with the network off.
+> The compiler ships inside the app, not on a server. Build multi-file projects, resolve crates.io packages, edit their source, and learn from real rustc errors — offline.
 
-160 characters. It leads with the one thing no competitor page can
-claim casually — the compiler is inside the app — because the store page is the
-only place this is being sold from.
+169 characters, and the field's whole budget. It leads with the one line
+no competitor page can write casually — the compiler is inside the app — because
+the store page is the only place this is being sold from.
 
 ## Description (4000)
 
@@ -119,10 +119,15 @@ subtitle carrying `Cargo`, `IDE`, `offline` and `on-device`, the field is spent
 on everything else a search might use:
 
 ```
-crates,rustc,learn,programming,editor,wasm,ownership,borrowing,lifetimes,algorithm,tutorial,code
+rustc,crates,code,coding,developer,compile,editor,learn,programming,algorithms,interview,wasm,course
 ```
 
-96 characters. No competitor app names: Apple rejects those.
+100 characters — the whole field. Apple indexes the name, the subtitle and this,
+and nothing else, so it spends its room on terms people actually type: `coding`,
+`developer`, `code`, `compile`, `algorithms`, `interview`, `course`. The
+long-tail Rust words that were here before (`ownership`, `borrowing`,
+`lifetimes`, `tutorial`) were dropped: they are already in the description, and
+almost nobody searches them. No competitor app names: Apple rejects those.
 
 ## What's New (4000) — version 1.0
 
