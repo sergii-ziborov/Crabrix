@@ -1,4 +1,10 @@
-> Update — 8 September 2026: Build 1.0 (5) uploaded successfully through Xcode
+> Latest update — 8 September 2026: Apple rejected build 1.0 (5) with
+> ITMS-90111 (unsupported SDK or Xcode version). Build 6 is in preparation and
+> has not been uploaded. Xcode Cloud setup awaits GitHub authentication and
+> repository connection; Apple account authentication has completed.
+> The earlier Waiting for Review observation below is historical.
+
+> Earlier update — 8 September 2026: Build 1.0 (5) uploaded successfully through Xcode
 > Organizer after build 4 failed bundle-structure validation. Final verification:
 > 398 fast tests + 21 compiler gates passed. The new archive includes corrected
 > privacy reasons and a bundled compressed WASI sysroot. Submitted to Apple on

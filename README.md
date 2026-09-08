@@ -7,8 +7,10 @@ on the device.
 
 > Real Rust. Real Cargo. Built locally on iPhone and iPad.
 
-> **Release status (8 September 2026):** Build 1.0 (5), built with stable
-> Xcode 26.6, is **Waiting for Review** in App Store Connect. All **398 fast tests and 21 real
+> **Release status (8 September 2026):** Apple subsequently rejected build 1.0 (5)
+> with **ITMS-90111: Unsupported SDK or Xcode version**. A replacement build 6
+> is being prepared; it has not been uploaded. Build 5 used Xcode 26.6 on
+> macOS 27 beta and was uploaded through Xcode beta. All **398 fast tests and 21 real
 > compiler gates pass** on the iOS 26.5 Simulator. The App Group privacy reasons
 > and nonstandard-source editability gap are corrected. The bundled WASI sysroot
 > is a checksum-verified ZIP resource, extracted locally before compilation;
