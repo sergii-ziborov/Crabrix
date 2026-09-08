@@ -7,11 +7,15 @@ on the device.
 
 > Real Rust. Real Cargo. Built locally on iPhone and iPad.
 
-> **Release status:** 1.0 is frozen and signed for the App Store. What remains
-> is submission, not development: the physical-device smoke run, the App Store
-> Connect fields, and the signed tag. Everything the code can prove is recorded
-> in [release-evidence/1.0/2](release-evidence/1.0/2/) and
-> [Release readiness](docs/RELEASE-READINESS.md).
+> **Release status (8 September 2026):** App Store metadata is prepared for
+> 1.0. The latest inspected archive is build 3; App Store Connect currently
+> shows **No Builds** in TestFlight. The final audit found a missing App Group
+> privacy reason, now corrected in source, so submission needs a rebuilt archive.
+> Fresh Simulator verification: 391 fast tests passed; 20 compiler gates passed
+> in the full run, with the Stop gate passing separately after its test delay was
+> corrected for Release speed. The privacy and test corrections are local pending
+> publication. The nonstandard-source editability edge described below is still
+> open. Older evidence is not a pass for a new build.
 
 > **The source is readable, not reusable.** Crabrix is commercial software
 > published for review and audit. See [LICENSE](LICENSE) before you copy
@@ -193,7 +197,9 @@ The Share Extension and host app use `group.com.sergiiziborov.Crabrix`. A signin
 ## Privacy
 
 Crabrix has no account, no analytics SDK, no advertising, and no tracking. Your
-code, projects, build output, and progress never leave the device. Game Center
+code, projects, build output, and progress stay on the device unless you export
+them or include them in a message yourself. Support reports are prepared locally
+and sent only through your mail app at your request. Game Center
 is not in the production build at all: the Release configuration is compiled
 without `CRABRIX_SOCIAL`, so the binary links no GameKit, and a CI step fails
 the build if it returns. Crabrix operates **no service of its own** — there is
@@ -210,12 +216,12 @@ App Store privacy manifest that has to agree with it is
 The App Store review guidelines that actually bite for an app like this, and what
 Crabrix does about each:
 
-| Guideline | How Crabrix satisfies it |
+| Guideline | Implementation and verification limits |
 | --- | --- |
-| **2.5.2** — self-contained code | The compiler and standard library are **bundled**, not downloaded. The only code fetched at runtime is crates.io package source, at the user's explicit request, used only to build their own project. Every extracted path is listed in Build → Packages, and every supported programming-source file is completely viewable and editable through **Vendor & Edit**. Registry bytes remain immutable and Reset is always available. A source file outside the complete View/Edit contract makes the package `Unsupported` before `rustc` runs. Final acceptance still belongs to App Review, so the reviewer path is tested and documented rather than assumed. |
+| **2.5.2** — self-contained code | The compiler and standard library are bundled. User-requested crates.io source and public GitHub imports build locally. Package source is listed and supported text can be copied into the project through **Vendor & Edit**. The source audit covers recognised Rust/configuration files and explicit manifest targets; nonstandard source reached through `include!` remains a coverage gap identified in the 8 September audit. Complete compliance is not inferred from passing compiler tests. |
 | **2.5.1** — private APIs, process spawning | No host processes are spawned. The project terminal is a simulated shell over the in-app project files. Guest programs run in a WebAssembly sandbox with a memory cap, one writable preopen, and no network imports. |
 | **1.2** — user-generated content | There is no board, no display name and no first-party service: nothing a user types can reach another user. |
-| **DPLA programming environment** | The Build screen carries a persistent `RUST PROGRAMMING ENVIRONMENT` label with the pinned toolchain beside it. The editor occupies 66% of the screen on iPhone and 31% on iPad in its most editor-heavy state, measured from Release screenshots in `release-evidence/1.0/2/programming-environment/`. crates.io is reachable only as the open project's dependency manager — nothing is browsable, promoted, or obtainable as another developer's app. |
+| **DPLA programming environment** | The Build screen carries a persistent `RUST PROGRAMMING ENVIRONMENT` label with the pinned toolchain beside it. The recorded build-3 screenshots measure the editor at 72.9% on iPhone, 30.0% on iPad initially, and 66.2% at the widest measured iPad arrangement; see `release-evidence/1.0/3/programming-environment/`. These measurements do not cover every device or orientation. crates.io is reachable only as the open project's dependency manager — there is no standalone app marketplace or promoted app feed. |
 | **5.1.1(v)** — account deletion | There is no account and production 1.0 creates no server-side profile. |
 | **5.1.1** — privacy policy | Published at [/privacy](https://crabrix.com/privacy) and linked from Settings → About Crabrix. |
 | **Privacy manifest** | `PrivacyInfo.xcprivacy` ships in both the app and the Share extension, declares the required UserDefaults/file-timestamp reasons, and declares no collected data for production 1.0. |
@@ -265,15 +271,16 @@ or by Apple.
 
 Development requirements for the current vendored WasmKit revision:
 
-- Xcode 27 beta or newer (the local package declares Swift tools 6.3);
+- Xcode 26.6 with Swift 6.3 or a newer supported release;
 - XcodeGen;
 - `zstd` on the build Mac.
 
 ```bash
 ./scripts/bootstrap.sh
-DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   xcodebuild -project Crabrix.xcodeproj \
   -scheme Crabrix \
+  -configuration Release \
   -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=26.5' \
   build
 ```
@@ -309,24 +316,30 @@ with an entitlement mismatch on both targets.
 
 ## Verification
 
-The normal test scheme excludes the expensive compiler gates:
+The normal test scheme excludes the expensive compiler gates. Release tests
+need `ENABLE_TESTABILITY=YES` for the existing `@testable import` tests; this
+override is for testing, not the distribution archive:
 
 ```bash
-DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   xcodebuild -project Crabrix.xcodeproj \
   -scheme Crabrix \
+  -configuration Release \
   -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=26.5' \
-  test
+  ENABLE_TESTABILITY=YES ONLY_ACTIVE_ARCH=YES \
+  -onlyUsePackageVersionsFromResolvedFile test
 ```
 
 Run the real bundled-compiler gates with the dedicated scheme:
 
 ```bash
-DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   xcodebuild -project Crabrix.xcodeproj \
   -scheme CrabrixCompilerGate \
+  -configuration Release \
   -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=26.5' \
-  test
+  ENABLE_TESTABILITY=YES ONLY_ACTIVE_ARCH=YES \
+  -onlyUsePackageVersionsFromResolvedFile test
 ```
 
 Evidence captured during development (not a substitute for the current release
