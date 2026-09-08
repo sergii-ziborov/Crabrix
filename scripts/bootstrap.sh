@@ -13,7 +13,7 @@ fi
 /usr/bin/python3 "$SCRIPT_DIR/package_toolchain.py"
 xcodegen generate --spec "$PROJECT_ROOT/project.yml" --project "$PROJECT_ROOT"
 
-# XcodeGen intentionally keeps the generated project out of Git. Restore the
+# The shared generated project is tracked for Xcode Cloud discovery. Restore the
 # audited SwiftPM graph after generation so clean CI/device builds cannot float
 # transitive dependency versions.
 RESOLVED_SOURCE="$PROJECT_ROOT/Dependencies/Package.resolved"

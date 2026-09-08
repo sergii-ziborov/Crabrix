@@ -5,7 +5,8 @@
 .build/
 DerivedData*/
 build/
-Crabrix.xcodeproj/
+Crabrix.xcodeproj/xcuserdata/
+Crabrix.xcodeproj/project.xcworkspace/xcuserdata/
 Crabrix/Resources/Toolchain/artifacts-test-7/
 Crabrix/Resources/Toolchain/.stage.*/
 *.xcresult

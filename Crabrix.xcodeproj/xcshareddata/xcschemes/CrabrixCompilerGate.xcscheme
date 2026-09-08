@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1430"
+   version = "1.7">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES"
+      runPostActionsOnFailure = "NO">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "BDA58CBA9BF4A4013D082A3F"
+               BuildableName = "Crabrix.app"
+               BlueprintName = "Crabrix"
+               ReferencedContainer = "container:Crabrix.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "7B515BB1F0FFBE8409A70175"
+               BuildableName = "CrabrixTests.xctest"
+               BlueprintName = "CrabrixTests"
+               ReferencedContainer = "container:Crabrix.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "NO"
+      onlyGenerateCoverageForSpecifiedTargets = "NO">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "BDA58CBA9BF4A4013D082A3F"
+            BuildableName = "Crabrix.app"
+            BlueprintName = "Crabrix"
+            ReferencedContainer = "container:Crabrix.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+      <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO"
+            useTestSelectionWhitelist = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "7B515BB1F0FFBE8409A70175"
+               BuildableName = "CrabrixTests.xctest"
+               BlueprintName = "CrabrixTests"
+               ReferencedContainer = "container:Crabrix.xcodeproj">
+            </BuildableReference>
+            <SelectedTests>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testBundledRustcProducesE0502()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testBundledRustcCompilesAndRunsRepairedProgram()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testBundledRustcCompilesMultiFileProject()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testRootCargoPackageEnvironmentComesFromTheManifest()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testRootFeaturesReachTheRootCrate()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testAlgorithmSolutionRunsOnlyThroughThePrivateHarness()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testBundledRustcSurvivesRepeatedBuilds()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testEveryGuidedShowcasePassesBundledRustcCheck()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testUserProgramCannotGrowPastSandboxMemoryLimit()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testResolvesDownloadsAndLinksARealCratesIOPackage()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testVendoredCrateBuildsFromAProjectLocalPatch()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testOfflinePinRehydratesSourcesAfterPurgeableCacheEviction()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testStopInterruptsARunningCompile()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testViewModelStopReenablesBuildAfterWorkerDrains()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testVisualPixelSunsetRendersAValidatedCanvas()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testVisualCellularGardenRendersAValidatedCanvas()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testVisualMandelbrotRendersAValidatedCanvas()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testVisualConstellationRendersAValidatedCanvas()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testVisualTerrainRendersAValidatedCanvas()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testVisualColorWavesRendersAValidatedCanvas()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testVisualCreateTemplateRendersAValidatedCanvas()">
+               </Test>
+            </SelectedTests>
+         </TestableReference>
+      </Testables>
+      <CommandLineArguments>
+      </CommandLineArguments>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "CRABRIX_RUN_COMPILER_GATE"
+            value = "1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "BDA58CBA9BF4A4013D082A3F"
+            BuildableName = "Crabrix.app"
+            BlueprintName = "Crabrix"
+            ReferencedContainer = "container:Crabrix.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </LaunchAction>
+   <ProfileAction
+      buildConfiguration = "Release"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      debugDocumentVersioning = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "BDA58CBA9BF4A4013D082A3F"
+            BuildableName = "Crabrix.app"
+            BlueprintName = "Crabrix"
+            ReferencedContainer = "container:Crabrix.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Debug">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>
