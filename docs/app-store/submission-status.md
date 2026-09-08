@@ -1,3 +1,10 @@
+> Current status — 8 September 2026, 16:37: Build **1.0 (6)** resubmitted and
+> **Waiting for Review**. Xcode Cloud build/archive succeeded using Xcode
+> 26.6 (17F113), macOS 26.6.2 (25G83), source commit `0457171`.
+> TestFlight binary state: **Validated**. Manual release remains selected.
+> See [build 6 evidence](../../release-evidence/1.0/6/cloud-build.json).
+> All updates below describe earlier stages.
+
 > Latest update — 8 September 2026: Apple rejected build 1.0 (5) with
 > ITMS-90111 (unsupported SDK or Xcode version). Build 6 is in preparation and
 > has not been uploaded. Xcode Cloud setup awaits GitHub authentication and

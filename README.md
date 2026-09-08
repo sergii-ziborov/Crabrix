@@ -7,16 +7,16 @@ on the device.
 
 > Real Rust. Real Cargo. Built locally on iPhone and iPad.
 
-> **Release status (8 September 2026):** Apple subsequently rejected build 1.0 (5)
-> with **ITMS-90111: Unsupported SDK or Xcode version**. A replacement build 6
-> is being prepared; it has not been uploaded. Build 5 used Xcode 26.6 on
-> macOS 27 beta and was uploaded through Xcode beta. All **398 fast tests and 21 real
-> compiler gates pass** on the iOS 26.5 Simulator. The App Group privacy reasons
-> and nonstandard-source editability gap are corrected. The bundled WASI sysroot
-> is a checksum-verified ZIP resource, extracted locally before compilation;
-> its 43 files match the pinned inputs byte for byte. Submitted on 8 September;
-> release after approval remains manual. See [the final audit](docs/app-store/final-audit-2026-09-08.md) and
-> [build 5 evidence](release-evidence/1.0/5).
+> **Release status (8 September 2026):** Build **1.0 (6)** is **Waiting for Review**
+> after resubmission at 16:37. Xcode Cloud built and archived it successfully with
+> Xcode 26.6 (17F113) on stable macOS 26.6.2 (25G83); App Store Connect reports
+> the binary as **Validated**. Build 5 was rejected with ITMS-90111 after being
+> built on macOS 27 beta and uploaded through Xcode beta. Build 6 changes the
+> release environment and build number, with no app source changes. The prior
+> **398 fast tests and 21 real compiler gates** remain the app test evidence;
+> these tests were not rerun in the Cloud workflow. Release after approval is
+> manual. See [build 6 evidence](release-evidence/1.0/6) and the
+> [final audit](docs/app-store/final-audit-2026-09-08.md).
 
 > **The source is readable, not reusable.** Crabrix is commercial software
 > published for review and audit. See [LICENSE](LICENSE) before you copy

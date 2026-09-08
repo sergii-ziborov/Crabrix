@@ -1,3 +1,9 @@
+> Release update: Build 5 subsequently received ITMS-90111. Replacement
+> build 6 was built and archived in Xcode Cloud on stable macOS 26.6.2 with
+> Xcode 26.6, validated, and resubmitted at 16:37 on 8 September 2026.
+> App Store Connect now shows **Waiting for Review**; release remains manual.
+> The tests below are build 5 evidence; no app source changed for build 6.
+
 # Crabrix pre-review audit — 8 September 2026
 
 ## Current status

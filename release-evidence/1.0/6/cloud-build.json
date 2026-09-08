@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "build": 6,
+  "source_commit": "0457171b9e6f60a460d3d5dcb5f3c60c22f7d875",
+  "xcode": "26.6 (17F113)",
+  "macos": "26.6.2 (25G83)",
+  "cloud_build_id": "0b1c34d3-46fa-46d9-a551-cc20db44be29",
+  "build_result": "Succeeded",
+  "archive_result": "Succeeded",
+  "testflight_build_id": "16964639-6b42-4846-bc61-1d95b69b7565",
+  "binary_state": "Validated",
+  "upload_date": "2026-09-08 16:33",
+  "sdk_build": "23F81a",
+  "review_submission": "Waiting for Review",
+  "validation": "Observed in App Store Connect UI. App source unchanged since build 5; 419 tests are prior build 5 evidence, not a fresh cloud test run.",
+  "submission_time": "2026-09-08 16:37 Asia/Jerusalem",
+  "submission_id": "67fcdbd6-987a-4865-ae9e-1726e08331a2",
+  "manual_release": true
+}
