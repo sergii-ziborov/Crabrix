@@ -6,7 +6,10 @@
   "sdk": "iphoneos26.5",
   "archivePath": "build/Crabrix-1.0-5-final.xcarchive",
   "distributionStatus": "Xcode Organizer: App upload complete; Crabrix 1.0 (5) uploaded",
-  "reviewStatus": "Not submitted yet",
+  "reviewStatus": "Waiting for Review",
+  "reviewStatusObservedDate": "2026-09-08",
+  "releaseMode": "Manual after approval",
+  "reviewNotesVerifiedCharacters": 3882,
   "looseStaticLibraries": 0,
   "sysrootFilesByteIdentical": 43,
   "sha256": {

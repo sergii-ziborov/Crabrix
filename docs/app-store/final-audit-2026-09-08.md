@@ -2,13 +2,15 @@
 
 ## Current status
 
-**Build 1.0 (5) uploaded successfully through Xcode Organizer.** All 398 fast
+**Build 1.0 (5) submitted to Apple: Waiting for Review.** All 398 fast
 and 21 real compiler tests pass (419 total). Apple rejected build 4's loose
 WASI static library resources; build 5 packages the same compiler data in a
-bundled ZIP and passed upload validation. Review submission is pending final
-metadata verification. The Notes field was corrupted by automated keyboard
-input; the complete 3882-character replacement is in `review-notes.txt` and
-requires verification after a reliable paste and server reload.
+bundled ZIP and passed upload validation. App Store Connect confirmed Waiting
+for Review on 8 September 2026 after selecting build 5 and submitting the draft.
+Release after approval remains manual. The Notes field was corrupted by automated
+keyboard input, then restored: all 3882 characters match `review-notes.txt` after
+server reload and navigation away and back. The description was also verified
+unchanged. No fresh physical-device test was performed in this final pass.
 
 ## Initial decision for build 3
 

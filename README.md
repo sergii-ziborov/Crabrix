@@ -8,12 +8,12 @@ on the device.
 > Real Rust. Real Cargo. Built locally on iPhone and iPad.
 
 > **Release status (8 September 2026):** Build 1.0 (5), built with stable
-> Xcode 26.6, is uploaded to App Store Connect. All **398 fast tests and 21 real
+> Xcode 26.6, is **Waiting for Review** in App Store Connect. All **398 fast tests and 21 real
 > compiler gates pass** on the iOS 26.5 Simulator. The App Group privacy reasons
 > and nonstandard-source editability gap are corrected. The bundled WASI sysroot
 > is a checksum-verified ZIP resource, extracted locally before compilation;
-> its 43 files match the pinned inputs byte for byte. Review submission is still
-> pending. See [the final audit](docs/app-store/final-audit-2026-09-08.md) and
+> its 43 files match the pinned inputs byte for byte. Submitted on 8 September;
+> release after approval remains manual. See [the final audit](docs/app-store/final-audit-2026-09-08.md) and
 > [build 5 evidence](release-evidence/1.0/5).
 
 > **The source is readable, not reusable.** Crabrix is commercial software
