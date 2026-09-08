@@ -164,7 +164,7 @@ The generated Xcode project is not committed, but `Dependencies/Package.resolved
 is: `scripts/bootstrap.sh` restores that audited SwiftPM graph after every
 XcodeGen run, and release/CI builds refuse to float package versions.
 
-Runtime network access is limited to explicit user actions: public GitHub snapshot import, crates.io package discovery, and Cargo dependency resolution and download. Every `.crate` archive is verified against the SHA-256 checksum published in the registry index before it is written to disk, and both GitHub and crate archives are rejected when they contain traversal paths, symlinks, non-regular entries, too many files, or exceed the compressed/expanded size limits. Imported programs still execute in the network-free Wasm sandbox.
+Runtime network access is limited to explicit user actions: public GitHub snapshot import, crates.io package discovery, and Cargo dependency resolution and download. Every `.crate` archive is verified against the SHA-256 checksum published in the registry index before extraction or trust, and both GitHub and crate archives are rejected when they contain traversal paths, symlinks, non-regular entries, too many files, or exceed the compressed/expanded size limits. Imported programs still execute in the network-free Wasm sandbox.
 
 The project terminal is an app-scoped command console, not an arbitrary iOS
 shell. It keeps a separate transcript per project and maps `cargo check`,

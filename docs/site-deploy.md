@@ -26,8 +26,10 @@ imports each file's markup verbatim rather than re-typing it:
 - published: https://crabrix.lovable.app
 
 Changing a page means editing it here, uploading it to that project, and asking
-it to replace the file in `src/pages/html/` byte for byte. Nothing about the
-copy is authored on the hosting side.
+it to update the matching file in `src/pages/html/`, preserving its existing
+image optimization, canonical metadata and presentation fixes. Compare visible
+copy after normalizing HTML entities and whitespace; full-file byte equality is
+not expected across the two renderers. Product and legal wording must match.
 
 As verified on 8 September 2026, **crabrix.com and www.crabrix.com still serve
 the Cloudflare Worker**, while crabrix.lovable.app serves Lovable. The corrected
@@ -37,7 +39,7 @@ has not happened yet.
 The domain still resolves through Cloudflare DNS, because the domain is
 registered with Cloudflare Registrar and a Registrar domain has to keep
 Cloudflare's nameservers; it cannot be transferred away until the ICANN 60-day
-lock expires. The old Cloudflare Worker (`wrangler.toml`, `worker/`) served the
+lock expires. The Cloudflare Worker (`wrangler.toml`, `worker/`) serves the
 same files and is kept only until the domain points at Lovable.
 
 ## Refreshing the screenshots
