@@ -58,7 +58,9 @@ final class WasmRustCompiler: @unchecked Sendable {
     }
 
     func probe() -> ToolchainStatus {
-        guard let toolchain else {
+        guard let toolchain = BundledToolchain.locate(
+            in: bundle, version: Self.toolchainVersion, prepareSysroot: false
+        ) else {
             return ToolchainStatus(
                 isReady: false,
                 rustcSize: 0,

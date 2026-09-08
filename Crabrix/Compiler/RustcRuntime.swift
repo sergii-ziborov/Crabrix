@@ -1,4 +1,6 @@
 import Foundation
+import CryptoKit
+import ZIPFoundation
 import SystemPackage
 @_spi(Fuzzing) import WasmKit
 import WasmKitWASI
@@ -11,7 +13,8 @@ struct BundledToolchain: Sendable {
 
     static func locate(
         in bundle: Bundle,
-        version: String
+        version: String,
+        prepareSysroot: Bool = true
     ) -> BundledToolchain? {
         guard let root = bundle.resourceURL?
             .appending(path: "Toolchain", directoryHint: .isDirectory)
@@ -20,16 +23,63 @@ struct BundledToolchain: Sendable {
             return nil
         }
         let rustc = root.appending(path: "rustc.wasm")
-        let sysroot = root.appending(path: "sysroot-wasip1", directoryHint: .isDirectory)
-        var isDirectory: ObjCBool = false
+        let archive = root.appending(path: "sysroot-wasip1.zip")
         guard FileManager.default.fileExists(atPath: rustc.path),
-              FileManager.default.fileExists(atPath: sysroot.path, isDirectory: &isDirectory),
-              isDirectory.boolValue
-        else {
-            return nil
+              FileManager.default.fileExists(atPath: archive.path),
+              let checksum = try? String(contentsOf: root.appending(path: "sysroot-wasip1.sha256"), encoding: .utf8),
+              let cache = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
+        else { return nil }
+        let destination = cache.appending(path: "Crabrix/BundledToolchains/" + version)
+        let sysroot = destination.appending(path: "sysroot-wasip1", directoryHint: .isDirectory)
+        // Probe is used by the UI: extraction happens only on the compiler queue.
+        if prepareSysroot {
+            guard (try? BundledSysroot.prepare(archive: archive, checksum: checksum, at: destination)) != nil
+            else { return nil }
         }
+
         return BundledToolchain(rustcURL: rustc, sysrootURL: sysroot, version: version)
     }
+}
+
+/// Installs only the signed app's bundled WASI compiler data, never remote code.
+/// The sysroot is compressed to satisfy app bundle structure requirements for
+/// resource data; it contains WASM-target archives, not loadable iOS libraries.
+enum BundledSysroot {
+    private static let lock = NSLock()
+
+    static func prepare(archive: URL, checksum: String, at destination: URL) throws {
+        lock.lock()
+        defer { lock.unlock() }
+        let fm = FileManager.default
+        let marker = destination.appending(path: ".complete")
+        if (try? String(contentsOf: marker, encoding: .utf8)) == checksum,
+           isComplete(at: destination) { return }
+        let data = try Data(contentsOf: archive, options: [.mappedIfSafe])
+        let actual = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+        guard actual == checksum else { throw CocoaError(.fileReadCorruptFile) }
+        let parent = destination.deletingLastPathComponent()
+        try fm.createDirectory(at: parent, withIntermediateDirectories: true)
+        let staging = parent.appending(path: ".stage-" + UUID().uuidString)
+        defer { try? fm.removeItem(at: staging) }
+        try fm.unzipItem(at: archive, to: staging)
+        guard isComplete(at: staging)
+        else { throw CocoaError(.fileReadCorruptFile) }
+        try checksum.write(to: staging.appending(path: ".complete"), atomically: true, encoding: .utf8)
+        if fm.fileExists(atPath: destination.path) { try fm.removeItem(at: destination) }
+        try fm.moveItem(at: staging, to: destination)
+    }
+
+    private static func isComplete(at root: URL) -> Bool {
+        let sysroot = root.appending(path: "sysroot-wasip1")
+        guard let data = try? Data(contentsOf: sysroot.appending(path: "manifest.json")),
+              let manifest = try? JSONDecoder().decode([String: [String]].self, from: data),
+              let files = manifest["files"], !files.isEmpty
+        else { return false }
+        return files.allSatisfy {
+            FileManager.default.fileExists(atPath: sysroot.appending(path: $0).path)
+        }
+    }
+
 }
 
 /// The result of one guest process.

@@ -10,6 +10,7 @@ if ! command -v xcodegen >/dev/null 2>&1; then
 fi
 
 "$SCRIPT_DIR/fetch_toolchain.sh"
+/usr/bin/python3 "$SCRIPT_DIR/package_toolchain.py"
 xcodegen generate --spec "$PROJECT_ROOT/project.yml" --project "$PROJECT_ROOT"
 
 # XcodeGen intentionally keeps the generated project out of Git. Restore the

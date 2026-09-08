@@ -41,7 +41,7 @@ targets:
       - path: Crabrix
         excludes:
           - Resources/Toolchain
-      - path: Crabrix/Resources/Toolchain
+      - path: build/Resources/Toolchain
         type: folder
         buildPhase: resources
       - path: CrabrixShared
@@ -98,13 +98,14 @@ targets:
       - name: Prepare bundled Rust toolchain
         script: |
           "$SRCROOT/scripts/fetch_toolchain.sh"
+          /usr/bin/python3 "$SRCROOT/scripts/package_toolchain.py"
         basedOnDependencyAnalysis: false
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix
         PRODUCT_NAME: Crabrix
         MARKETING_VERSION: 1.0
-        CURRENT_PROJECT_VERSION: 4
+        CURRENT_PROJECT_VERSION: 5
         CODE_SIGN_ENTITLEMENTS: Crabrix/Crabrix.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
@@ -145,7 +146,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix.Share
         PRODUCT_NAME: CrabrixShare
         MARKETING_VERSION: 1.0
-        CURRENT_PROJECT_VERSION: 4
+        CURRENT_PROJECT_VERSION: 5
         CODE_SIGN_ENTITLEMENTS: CrabrixShare/CrabrixShare.entitlements
         CODE_SIGN_STYLE: Automatic
         APPLICATION_EXTENSION_API_ONLY: YES
