@@ -168,6 +168,43 @@ final class CrateSourceBrowserTests: XCTestCase {
         )
     }
 
+    func testNonstandardIncludedSourceIsFullyEditable() throws {
+        try "include!(concat!(\"../generated\", \".txt\"));".write(
+            to: root.appending(path: "src/lib.rs"), atomically: true, encoding: .utf8
+        )
+        let source = "pub fn generated() -> u32 { 42 }"
+        try source.write(to: root.appending(path: "generated.txt"), atomically: true, encoding: .utf8)
+        XCTAssertNil(CrateSourceBrowser.sourceAccessIssue(in: root))
+        XCTAssertEqual(
+            try CrateSourceBrowser.vendorableFiles(name: "browsertest", version: version)["generated.txt"],
+            source
+        )
+    }
+
+    func testOversizedNonstandardSourceFailsBeforeBuildAndVendor() throws {
+        try "#[path = \"../generated.data\"] mod generated;".write(
+            to: root.appending(path: "src/lib.rs"), atomically: true, encoding: .utf8
+        )
+        let size = CrateSourceBrowser.maximumEditableSourceBytes + 1
+        try Data(repeating: 0x20, count: size).write(to: root.appending(path: "generated.data"))
+        XCTAssertEqual(CrateSourceBrowser.sourceAccessIssue(in: root), .sourceTooLarge(
+            path: "generated.data", byteCount: size, limit: CrateSourceBrowser.maximumEditableSourceBytes
+        ))
+        XCTAssertThrowsError(try CrateSourceBrowser.vendorableFiles(name: "browsertest", version: version))
+    }
+
+    func testNonstandardTextFilesCannotBeSilentlyDroppedAtFileLimit() throws {
+        for index in 0..<LocalProjectLoader.maximumFileCount {
+            try "// Rust source".write(
+                to: root.appending(path: "part-\(index).inc"), atomically: true, encoding: .utf8
+            )
+        }
+        XCTAssertEqual(CrateSourceBrowser.sourceAccessIssue(in: root), .tooManySourceFiles(
+            count: LocalProjectLoader.maximumFileCount + 4, limit: LocalProjectLoader.maximumFileCount
+        ))
+        XCTAssertThrowsError(try CrateSourceBrowser.vendorableFiles(name: "browsertest", version: version))
+    }
+
     func testOversizedBinaryAssetDoesNotPretendToBeEditableSource() throws {
         try Data(
             repeating: 0xff,

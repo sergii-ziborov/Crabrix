@@ -10,7 +10,7 @@
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
 
-	<!-- Production 1.0 keeps Game Center and the Crabrix Board dormant. No
+	<!-- Production 1.0 excludes Game Center and online boards. No
 	     profile, score, analytics, or source code is collected by this build. -->
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array/>
@@ -26,6 +26,7 @@
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
 				<string>CA92.1</string>
+				<string>1C8F.1</string>
 			</array>
 		</dict>
 		<dict>

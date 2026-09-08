@@ -20,9 +20,9 @@ enum CrateSourceBrowser {
             case let .sourceIsNotUTF8(path):
                 "\(path) is programming source but is not valid UTF-8, so Crabrix cannot show and edit it completely."
             case let .tooManySourceFiles(count, limit):
-                "The package contains \(count) programming-source files; Crabrix can completely edit at most \(limit)."
+                "The package contains \(count) editable text files; Crabrix can completely edit at most \(limit)."
             case let .sourceTreeTooLarge(byteCount, limit):
-                "The package's programming source is \(Self.size(byteCount)); Crabrix can completely edit at most \(Self.size(limit))."
+                "The package's editable text is \(Self.size(byteCount)); Crabrix can completely edit at most \(Self.size(limit))."
             }
         }
 
@@ -162,7 +162,23 @@ enum CrateSourceBrowser {
                 requiredPaths.insert("build.rs")
             }
         }
-        let sourceEntries = entries.filter { requiredPaths.contains($0.path) }
+        // Rust can load source using include! or #[path] with any extension,
+        // including paths produced by macros. Auditing only .rs files or parsing
+        // literal includes cannot prove completeness. Treat every UTF-8 file as
+        // potentially executable source; only non-source binary assets may stay
+        // outside the editable overlay. This deliberately also bounds docs.
+        var sourceEntries: [Entry] = []
+        for entry in entries {
+            let url = root.appending(path: entry.path)
+            guard let data = try? Data(contentsOf: url, options: [.mappedIfSafe]) else {
+                return .sourceIsNotUTF8(entry.path)
+            }
+            if String(data: data, encoding: .utf8) != nil {
+                sourceEntries.append(entry)
+            } else if requiredPaths.contains(entry.path) {
+                return .sourceIsNotUTF8(entry.path)
+            }
+        }
         if sourceEntries.count > LocalProjectLoader.maximumFileCount {
             return .tooManySourceFiles(
                 count: sourceEntries.count,
@@ -209,29 +225,21 @@ enum CrateSourceBrowser {
 
         var candidates: [(entry: Entry, text: String)] = []
         let allEntries = entries(name: name, version: version)
-        // Required source comes first. Optional textual documentation is added
-        // only while it fits; binary/oversized assets remain in the immutable
-        // registry tree used as the overlay base.
-        let orderedEntries = allEntries.filter(\.isProgrammingSource)
-            + allEntries.filter { !$0.isProgrammingSource }
-        for entry in orderedEntries {
+        // The audit bounds ALL UTF-8 files, including nonstandard include!
+        // inputs. Never silently omit a text file from the editable overlay.
+        for entry in allEntries {
             guard let text = contents(name: name, version: version, path: entry.path) else {
-                continue // binary asset, retained by the private registry overlay
+                continue // non-UTF-8 binary asset, retained by the registry overlay
             }
             if entry.byteCount > LocalProjectLoader.maximumFileBytes {
-                if entry.isProgrammingSource {
-                    throw VendorError.sourceTooLarge(entry.path)
-                }
-                continue
+                throw VendorError.sourceTooLarge(entry.path)
             }
             if candidates.count >= LocalProjectLoader.maximumFileCount {
-                if entry.isProgrammingSource { throw VendorError.tooManyEditableFiles }
-                continue
+                throw VendorError.tooManyEditableFiles
             }
             let nextTotal = candidates.reduce(0) { $0 + $1.entry.byteCount } + entry.byteCount
             if nextTotal > LocalProjectLoader.maximumProjectBytes {
-                if entry.isProgrammingSource { throw VendorError.editableTreeTooLarge }
-                continue
+                throw VendorError.editableTreeTooLarge
             }
             candidates.append((entry, text))
         }

@@ -512,7 +512,10 @@ final class BundledCompilerGateTests: XCTestCase {
 
         let started = ContinuousClock.now
         async let result = compiler.check(source: source)
-        try await Task.sleep(for: .seconds(3))
+        // Optimised Release checks can finish before three seconds. Request
+        // Stop early, as the view-model drain gate below does, so this tests
+        // cancellation rather than cancelling an already completed compile.
+        try await Task.sleep(for: .milliseconds(100))
         compiler.cancel()
 
         let value = await result
@@ -523,8 +526,8 @@ final class BundledCompilerGateTests: XCTestCase {
             value.detail.contains("stopped"),
             "expected a stop result, got: \(value.detail)"
         )
-        // The bare compile takes far longer than this; a real interruption is
-        // the only way the call returns inside the window.
+        // Includes the initial module parse, which is not interruptible.
+        // The stopped result above distinguishes cancellation from completion.
         XCTAssertLessThan(elapsed, .seconds(40), "Stop did not interrupt the guest promptly")
     }
 
