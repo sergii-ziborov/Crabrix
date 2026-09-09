@@ -1,8 +1,13 @@
-> Current status — 9 September 2026: Apple rejected **1.0 (6)** under
-> guideline 2.1 pending additional information and a physical-device recording
-> (review message provided by the owner). Build **1.0 (7)** is being prepared
-> with three device QA fixes. No new review submission has been made.
-> See [device QA fixes](device-qa-2026-09-09.md).
+> Current status — 9 September 2026: **1.0 (7)** uploaded at 12:37,
+> **Validated** in App Store Connect, and added to the **Internal QA** group
+> (one tester). What to Test was saved and verified after a server reload.
+> Local Release validation: **414 fast tests + 24 real compiler gates passed**.
+> Xcode Cloud Build and Archive both succeeded on stable Xcode 26.6 / macOS
+> 26.6.2. Build 7 has **not** been resubmitted to App Review: the owner must
+> repeat device QA and supply the recording/information requested for build 6
+> under guideline 2.1. Manual release remains selected.
+> See [device QA fixes](device-qa-2026-09-09.md) and
+> [build 7 evidence](../../release-evidence/1.0/7/cloud-build.json).
 > The entries below are historical.
 
 > Current status — 8 September 2026, 16:37: Build **1.0 (6)** resubmitted and

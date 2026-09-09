@@ -1,0 +1,7 @@
+Build 7 fixes from device testing:
+
+1. In the Borrowing lesson, trigger E0502, then use code that compiles but does not meet the lesson requirements. The old error prompt should disappear and the lesson should remain incomplete.
+2. Switch between project files during Check or Run. File selection should work and the build result should still appear.
+3. Add hashbrown 0.17.1 and run a HashMap example. Open its downloaded source, then remove the dependency with the trash button in Packages. Update any imports before running again.
+
+After retesting, capture the app walkthrough on a physical device for App Review.

@@ -7,15 +7,16 @@ on the device.
 
 > Real Rust. Real Cargo. Built locally on iPhone and iPad.
 
-> **Release status (9 September 2026):** Apple requested additional review
-> information for **1.0 (6)** under guideline 2.1, including a recording on a
-> physical device. **1.0 (7)** is being prepared with fixes from device testing:
+> **Release status (9 September 2026):** Build **1.0 (7)** is uploaded,
+> **Validated**, and available to the **Internal QA** TestFlight group. It fixes
 > stale lesson diagnostics, file navigation during compilation, and Cargo
 > source paths and dependency removal. All **414 fast tests and 24 compiler
-> gates** passed locally. Repeat physical-device QA and capture
-> the requested recording before resubmitting. Manual release remains selected.
+> gates** passed locally. Xcode Cloud Build and Archive succeeded on stable
+> Xcode 26.6 / macOS 26.6.2. Apple requested additional information for build 6
+> under guideline 2.1; retest build 7 on a physical device and capture the
+> requested recording before resubmitting. Release remains manual.
 > See [device QA fixes](docs/app-store/device-qa-2026-09-09.md) and
-> [build 6 evidence](release-evidence/1.0/6).
+> [build 7 evidence](release-evidence/1.0/7).
 
 > **The source is readable, not reusable.** Crabrix is commercial software
 > published for review and audit. See [LICENSE](LICENSE) before you copy

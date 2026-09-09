@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "build": 7,
+  "source_commit": "671f070d9d2cfdd1b49111b18e00bc87783c0143",
+  "xcode": "26.6 (17F113)",
+  "macos": "26.6.2 (25G83)",
+  "sdk_build": "23F81a",
+  "cloud_build_id": "f73f93b5-37b1-45d6-b464-be3a77eeab10",
+  "build_result": "Succeeded",
+  "archive_result": "Succeeded",
+  "testflight_build_id": "355ff2cd-9eef-414f-93cd-e16faa7e9b20",
+  "binary_state": "Validated",
+  "upload_date": "2026-09-09 12:37 Asia/Jerusalem",
+  "internal_testing_group": "Internal QA",
+  "group_tester_count": 1,
+  "testflight_notes_verified_after_reload": true,
+  "app_review_submission": "Not resubmitted; owner device QA, recording, and requested review information pending",
+  "validation": "Observed in App Store Connect UI; cloud Build and Archive also report success in GitHub. 414 fast tests and 24 real compiler gates passed locally in Release."
+}
