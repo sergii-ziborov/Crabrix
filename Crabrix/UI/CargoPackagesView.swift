@@ -10,6 +10,7 @@ struct CargoPackagesPanel: View {
     let onRefresh: () -> Void
     let onPinForOffline: () -> Void
     let onAddDependency: () -> Void
+    let onRemoveDependency: (String) -> Bool
     let vendoredFiles: (String, SemanticVersion) -> [String: String]
     let onVendor: (String, SemanticVersion) -> Bool
     let onOpenVendor: (String, SemanticVersion) -> Bool
@@ -18,6 +19,34 @@ struct CargoPackagesPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             header
+            if let dependencies = manifest?.dependencies, !dependencies.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("ADDED TO PROJECT")
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .foregroundStyle(CrabrixTheme.muted)
+                    ForEach(dependencies) { dependency in
+                        HStack(spacing: 8) {
+                            Text(dependency.name)
+                                .font(.caption.monospaced().weight(.semibold))
+                            Text(dependency.requirement ?? dependency.source.rawValue)
+                                .font(.caption2.monospaced())
+                                .foregroundStyle(CrabrixTheme.muted)
+                            Spacer(minLength: 0)
+                            Button(role: .destructive) {
+                                _ = onRemoveDependency(dependency.name)
+                            } label: {
+                                Image(systemName: "trash")
+                                    .frame(minWidth: 44, minHeight: 44)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(CrabrixTheme.coral)
+                            .disabled(isBusy)
+                            .accessibilityLabel("Remove \(dependency.name) from this project")
+                        }
+                    }
+                }
+            }
             if stage.isWorking {
                 stageRow
             }

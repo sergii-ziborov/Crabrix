@@ -12,6 +12,7 @@
 		08CA3D0D4FD1367DC21D5281 /* FeatureResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9793C201E70D1B6AD35202 /* FeatureResolver.swift */; };
 		0EEBBA473ED5C6ACE3500C17 /* SharedImportQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9357EF87952821B79459AE36 /* SharedImportQueue.swift */; };
 		135473F79A5F994AFECF654A /* LocalProjectLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F2E28AF633C57EFB91DF034 /* LocalProjectLoader.swift */; };
+		1496FF7AFC1782BE02233B61 /* CargoManifestEditorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 403C553DF49D8A3EDFEEAE4A /* CargoManifestEditorTests.swift */; };
 		168F68F03C1D7878723D2E35 /* swift-log-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F5105E60F4F01CBE3743844 /* swift-log-LICENSE.txt */; };
 		174103D1F25E41077BC10B8C /* CargoManifestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D750FF719EB5B0AC11A7ECBF /* CargoManifestTests.swift */; };
 		176D4AA2F72B07A0A78FCB1E /* CrateArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E77E8ACA6B7156FA97662E /* CrateArchive.swift */; };
@@ -44,6 +45,7 @@
 		3678B1AFA13BEEC4505BA950 /* AppleIntelligenceDiagnosticAdvisor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F573D6026476C150C5CA1696 /* AppleIntelligenceDiagnosticAdvisor.swift */; };
 		376D4021B4FB4071CAD1B8C1 /* CratesIOClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D1D5EDD67676C767C0FF0E3 /* CratesIOClientTests.swift */; };
 		3BD2CC466071F1AEE79D6F6D /* RustCanvasOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1893C7EE28568FD5B41AC3 /* RustCanvasOutput.swift */; };
+		3C7DE8EAB650ACCCE0150A93 /* CargoManifestEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0ACD34E769B0AB48E9132A5 /* CargoManifestEditor.swift */; };
 		3E77536EC5C27544F072DB4C /* RustCompletionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4775CE41B31CD63B5B25459E /* RustCompletionTests.swift */; };
 		3F424536659F85C395E74D90 /* RustShowcaseExpansionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACDA09F6220F6C22CDDD446D /* RustShowcaseExpansionCatalog.swift */; };
 		3F8C6C5A2B1C8A3766C0F454 /* TypingLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = E77E2A29DC1E65C2BD1E0BE4 /* TypingLedger.swift */; };
@@ -239,6 +241,7 @@
 		3EA05660FAC54CECF075853F /* ProgressAndTrainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressAndTrainTests.swift; sourceTree = "<group>"; };
 		3F2DA7BB9D2572998F404B0A /* RustCodeCompletion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustCodeCompletion.swift; sourceTree = "<group>"; };
 		3F84AB4318432025CA06FD68 /* CrabrixShare.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = CrabrixShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		403C553DF49D8A3EDFEEAE4A /* CargoManifestEditorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoManifestEditorTests.swift; sourceTree = "<group>"; };
 		40429472D2BAD0BF75F1C46A /* TOMLValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOMLValue.swift; sourceTree = "<group>"; };
 		41A5B9EA24490E8E2ADABA38 /* CratesIOClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CratesIOClient.swift; sourceTree = "<group>"; };
 		43BC9814A5A0BBC245A4BFB6 /* CargoPackagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoPackagesView.swift; sourceTree = "<group>"; };
@@ -360,6 +363,7 @@
 		ED805A32682154958D4A1EC2 /* BorrowRepairTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BorrowRepairTests.swift; sourceTree = "<group>"; };
 		EE9793C201E70D1B6AD35202 /* FeatureResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureResolver.swift; sourceTree = "<group>"; };
 		EFB95E5F0B1274A060145AB0 /* TypingEconomyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingEconomyTests.swift; sourceTree = "<group>"; };
+		F0ACD34E769B0AB48E9132A5 /* CargoManifestEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoManifestEditor.swift; sourceTree = "<group>"; };
 		F4060928D903E08DF95C877F /* CrabrixApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrabrixApp.swift; sourceTree = "<group>"; };
 		F45E02B45E3816073DFEB4F9 /* SyntaxHighlighterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntaxHighlighterTests.swift; sourceTree = "<group>"; };
 		F49AA1772EADFFDD4CDEF91E /* RustAdvancedExpansion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustAdvancedExpansion.swift; sourceTree = "<group>"; };
@@ -495,6 +499,7 @@
 			children = (
 				A9F0FB50E1462BCBC86DF551 /* CargoBuildPlan.swift */,
 				54941194910930A95296DE96 /* CargoLockfile.swift */,
+				F0ACD34E769B0AB48E9132A5 /* CargoManifestEditor.swift */,
 				34454EEDE1F2D70EF3FC91BA /* CargoPackageManager.swift */,
 				970CA0FF8CF731730722B227 /* CargoResolver.swift */,
 				16E77E8ACA6B7156FA97662E /* CrateArchive.swift */,
@@ -573,6 +578,7 @@
 				56AA1284DFED9057782C150A /* BundledCompilerGateTests.swift */,
 				8D8034113D3EF6270CBF8F84 /* BundledLicenseTests.swift */,
 				A201213590F9ECED7CE983FC /* BundledSysrootTests.swift */,
+				403C553DF49D8A3EDFEEAE4A /* CargoManifestEditorTests.swift */,
 				D750FF719EB5B0AC11A7ECBF /* CargoManifestTests.swift */,
 				3837839E6347618EB4FA6AAF /* CargoRegistryAndPlanTests.swift */,
 				E59CCACF0B58534D0C509F99 /* CargoResolverTests.swift */,
@@ -915,6 +921,7 @@
 				BD946DAC662608A85827D7BE /* CargoDependencyCatalogSheet.swift in Sources */,
 				77C9A62FCFC3C6C0B4D8B183 /* CargoLockfile.swift in Sources */,
 				8386DA69D1A47B3DB60FC45C /* CargoManifest.swift in Sources */,
+				3C7DE8EAB650ACCCE0150A93 /* CargoManifestEditor.swift in Sources */,
 				53C0F03750BFF241447304AE /* CargoPackageManager.swift in Sources */,
 				57F8DDBE4EA1018D31596DDD /* CargoPackagesView.swift in Sources */,
 				EB81AD60B278FAA2FEF472B9 /* CargoResolver.swift in Sources */,
@@ -1011,6 +1018,7 @@
 				B53A042015AC822CCE2CCDFA /* BundledCompilerGateTests.swift in Sources */,
 				496103BB6AAEBCD5D49F0625 /* BundledLicenseTests.swift in Sources */,
 				C56EA75AEB015034CDCF4A1B /* BundledSysrootTests.swift in Sources */,
+				1496FF7AFC1782BE02233B61 /* CargoManifestEditorTests.swift in Sources */,
 				174103D1F25E41077BC10B8C /* CargoManifestTests.swift in Sources */,
 				731E86AC6C2DF5E0CB922563 /* CargoRegistryAndPlanTests.swift in Sources */,
 				998B333FB9F8378B69B146E1 /* CargoResolverTests.swift in Sources */,
@@ -1082,7 +1090,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = CrabrixShare/CrabrixShare.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				INFOPLIST_FILE = CrabrixShare/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1205,7 +1213,7 @@
 				CODE_SIGN_ENTITLEMENTS = Crabrix/Crabrix.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Crabrix/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Crabrix;
@@ -1234,7 +1242,7 @@
 				CODE_SIGN_ENTITLEMENTS = Crabrix/Crabrix.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Crabrix/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Crabrix;
@@ -1321,7 +1329,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = CrabrixShare/CrabrixShare.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				INFOPLIST_FILE = CrabrixShare/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

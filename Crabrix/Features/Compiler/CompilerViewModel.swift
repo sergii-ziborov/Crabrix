@@ -164,7 +164,6 @@ final class CompilerViewModel: ObservableObject {
     private var resolvedManifestSource: String?
     private var resolvedWorkspaceRevision: WorkspaceRevision?
     private var cargoTask: Task<Void, Never>?
-    private var lastDiagnostic: RustDiagnostic?
     private var unresolvedDiagnosticEvidence: (signature: String, beforeHash: String)?
     private var activeLessonInitialSourceTreeHash: String?
     private var activeLessonObservedDiagnosticCodes: Set<String> = []
@@ -236,7 +235,6 @@ final class CompilerViewModel: ObservableObject {
     var primaryDiagnostic: RustDiagnostic? {
         result?.diagnostics.first(where: { $0.level == "error" })
             ?? result?.diagnostics.first
-            ?? lastDiagnostic
     }
     var cargoManifest: CargoManifest? {
         var files = fileContents
@@ -685,7 +683,7 @@ final class CompilerViewModel: ObservableObject {
                     projectFiles: projectFiles,
                     revision: revision
                 )
-                if let lockfile = snapshot.lockfile, !snapshot.packages.isEmpty {
+                if let lockfile = snapshot.lockfile, !snapshot.packages.isEmpty || lockfileSource != nil {
                     writeLockfile(lockfile, expectedRevision: revision)
                 }
             } catch is CancellationError {
@@ -794,7 +792,6 @@ final class CompilerViewModel: ObservableObject {
 
             workspaceGeneration &+= 1
             result = nil
-            lastDiagnostic = nil
             lastBuild = nil
             completedStages = []
             compatibilityReport = ProjectCompatibilityReport.scan(currentProject())
@@ -847,7 +844,6 @@ final class CompilerViewModel: ObservableObject {
 
         workspaceGeneration &+= 1
         result = nil
-        lastDiagnostic = nil
         lastBuild = nil
         completedStages = []
         compatibilityReport = ProjectCompatibilityReport.scan(currentProject())
@@ -1219,7 +1215,6 @@ final class CompilerViewModel: ObservableObject {
         }
         fileNames = fileContents.keys.sorted(by: projectFileOrder)
         result = nil
-        lastDiagnostic = nil
         lastBuild = nil
         compatibilityReport = ProjectCompatibilityReport.scan(currentProject())
         projectTransfer = .ready("Added \(name) \(requirement) to Cargo.toml.")
@@ -1229,11 +1224,52 @@ final class CompilerViewModel: ObservableObject {
         return true
     }
 
+    @discardableResult
+    func removeCargoDependency(name: String) -> Bool {
+        guard !isBusy, !isProjectOperationInProgress,
+              let manifest = cargoManifestSource,
+              cargoManifest?.dependencies.contains(where: { $0.name == name }) == true
+        else { return false }
+
+        do {
+            let updated = try CargoManifestEditor.removingDependency(name, from: manifest)
+            guard updated != manifest,
+                  CargoManifest.parse(updated)?.dependencies.contains(where: { $0.name == name }) == false
+            else {
+                projectTransfer = .failed("Open Cargo.toml to remove this dependency declaration.")
+                return false
+            }
+            resetDiagnosticAdvice()
+            fileContents[selectedFile] = source
+            fileContents["Cargo.toml"] = updated
+            if selectedFile == "Cargo.toml" {
+                source = updated
+            } else {
+                workspaceDidChange()
+            }
+            result = nil
+            lastBuild = nil
+            resetCargoWorkspace()
+            compatibilityReport = ProjectCompatibilityReport.scan(currentProject())
+            projectTransfer = .ready("Removed \(name) from Cargo.toml. Update any code that imports it.")
+            refreshCargoWorkspace()
+            return true
+        } catch {
+            projectTransfer = .failed("Could not update Cargo.toml: \(error.localizedDescription)")
+            return false
+        }
+    }
+
     func selectFile(_ name: String) {
-        guard !isBusy, name != selectedFile, fileContents[name] != nil else { return }
+        guard !isProjectOperationInProgress, name != selectedFile, fileContents[name] != nil else { return }
         fileContents[selectedFile] = source
         selectedFile = name
+        // Navigation does not change the source tree. In particular it must
+        // not invalidate the immutable revision of an in-flight compilation.
+        let wasSuppressed = suppressAutosave
+        suppressAutosave = true
         source = fileContents[name] ?? ""
+        suppressAutosave = wasSuppressed
     }
 
     @discardableResult
@@ -1260,7 +1296,6 @@ final class CompilerViewModel: ObservableObject {
         fileNames = files.keys.sorted(by: projectFileOrder)
         source = files[selectedFile] ?? ""
         result = nil
-        lastDiagnostic = nil
         lastBuild = nil
         completedStages = []
         compatibilityReport = ProjectCompatibilityReport.scan(currentProject())
@@ -1317,7 +1352,6 @@ final class CompilerViewModel: ObservableObject {
             )
         )
         result = nil
-        lastDiagnostic = nil
         unresolvedDiagnosticEvidence = nil
         repairRewardEventKey = nil
         completedStages = []
@@ -1620,7 +1654,6 @@ final class CompilerViewModel: ObservableObject {
         selectedFile = path
         source = newSource
         result = nil
-        lastDiagnostic = nil
         unresolvedDiagnosticEvidence = nil
         repairRewardEventKey = nil
         lastBuild = nil
@@ -1711,8 +1744,7 @@ final class CompilerViewModel: ObservableObject {
 
         let errorDiagnostic = value.diagnostics.first(where: { $0.level == "error" })
         activeLessonObservedDiagnosticCodes.formUnion(value.diagnostics.compactMap(\.code))
-        if let diagnostic = errorDiagnostic ?? value.diagnostics.first {
-            lastDiagnostic = diagnostic
+        if !value.diagnostics.isEmpty {
             completedStages.insert(.diagnostic)
             completedStages.insert(.explanation)
         }

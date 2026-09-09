@@ -7,16 +7,15 @@ on the device.
 
 > Real Rust. Real Cargo. Built locally on iPhone and iPad.
 
-> **Release status (8 September 2026):** Build **1.0 (6)** is **Waiting for Review**
-> after resubmission at 16:37. Xcode Cloud built and archived it successfully with
-> Xcode 26.6 (17F113) on stable macOS 26.6.2 (25G83); App Store Connect reports
-> the binary as **Validated**. Build 5 was rejected with ITMS-90111 after being
-> built on macOS 27 beta and uploaded through Xcode beta. Build 6 changes the
-> release environment and build number, with no app source changes. The prior
-> **398 fast tests and 21 real compiler gates** remain the app test evidence;
-> these tests were not rerun in the Cloud workflow. Release after approval is
-> manual. See [build 6 evidence](release-evidence/1.0/6) and the
-> [final audit](docs/app-store/final-audit-2026-09-08.md).
+> **Release status (9 September 2026):** Apple requested additional review
+> information for **1.0 (6)** under guideline 2.1, including a recording on a
+> physical device. **1.0 (7)** is being prepared with fixes from device testing:
+> stale lesson diagnostics, file navigation during compilation, and Cargo
+> source paths and dependency removal. All **414 fast tests and 24 compiler
+> gates** passed locally. Repeat physical-device QA and capture
+> the requested recording before resubmitting. Manual release remains selected.
+> See [device QA fixes](docs/app-store/device-qa-2026-09-09.md) and
+> [build 6 evidence](release-evidence/1.0/6).
 
 > **The source is readable, not reusable.** Crabrix is commercial software
 > published for review and audit. See [LICENSE](LICENSE) before you copy
@@ -45,7 +44,7 @@ on the device.
 ## What it does
 
 - **Compiles Rust on device.** A pinned WASI build of `rustc` runs inside a Swift WebAssembly interpreter. The first compile is real; identical repeat runs come from a local artifact cache.
-- **Resolves and builds crates.io packages.** Sparse-index resolution, SemVer and feature unification, checksum-verified downloads, dependency compilation, and `--extern` linking — all on the device.
+- **Resolves and builds crates.io packages.** Sparse-index resolution, SemVer and feature unification, checksum-verified downloads, dependency compilation, and `--extern` linking — all on the device. Remove direct dependencies from the Packages panel, including packages that failed to resolve; Cargo feature references and the lockfile are updated.
 - **Health and energy, scaled by rating.** Wrong answers in a lesson cost health; a new lesson page costs energy, once ever. Both refill on their own, and a higher rank means a bigger pool *and* a faster refill. Training — Quick Practice, Term Train, Code Recall — never costs anything, so there is always a way to keep learning.
 - **Teaches from the compiler.** 142 guided Rust lessons across six language courses, plus a 200-pattern Algorithm Atlas with two explanations and one local Rust challenge per pattern.
 - **Achievements have ladders.** 37 families of five tiers each — Bronze to Diamond — including an overall Algorithm Atlas ladder, an Atlas study ladder, and one ladder for each of its 20 solution methods.

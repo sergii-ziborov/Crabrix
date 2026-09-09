@@ -85,6 +85,23 @@ enum TOMLParser {
         return try scanner.parseDocument()
     }
 
+    /// Character offsets retain comments and formatting when editing one
+    /// manifest entry, including quoted keys and multiline values.
+    struct Statement {
+        let path: [String]
+        let range: Range<Int>
+        let valueRange: Range<Int>?
+        let value: TOMLValue?
+    }
+
+    static func statements(in source: String) throws -> [Statement] {
+        guard source.utf8.count <= maximumInputBytes else { throw TOMLParseError.tooLarge }
+        var scanner = Scanner(source: Array(source))
+        scanner.recordsStatements = true
+        _ = try scanner.parseDocument()
+        return scanner.statements
+    }
+
     private struct Scanner {
         let source: [Character]
         var index = 0
@@ -94,6 +111,9 @@ enum TOMLParser {
         var root: [String: TOMLValue] = [:]
         /// Path of the table that plain `key = value` lines currently target.
         var currentPath: [String] = []
+        var recordsStatements = false
+        var statements: [Statement] = []
+        var lastValueRange: Range<Int> = 0..<0
 
         init(source: [Character]) {
             self.source = source
@@ -113,11 +133,18 @@ enum TOMLParser {
             while true {
                 skipWhitespaceAndComments(includingNewlines: true)
                 guard let character = current else { break }
+                let start = index
                 if character == "[" {
                     try parseTableHeader()
+                    if recordsStatements {
+                        statements.append(Statement(path: currentPath, range: start..<index, valueRange: nil, value: nil))
+                    }
                 } else {
                     let (path, value) = try parseKeyValue()
                     try insert(value, at: currentPath + path, allowMerge: false)
+                    if recordsStatements {
+                        statements.append(Statement(path: currentPath + path, range: start..<index, valueRange: lastValueRange, value: value))
+                    }
                 }
             }
             return root
@@ -157,7 +184,9 @@ enum TOMLParser {
             guard current == "=" else { throw TOMLParseError.invalidKey(line: line) }
             advance()
             skipInlineWhitespace()
+            let valueStart = index
             let value = try parseValue()
+            lastValueRange = valueStart..<index
             try requireEndOfLine()
             return (path, value)
         }

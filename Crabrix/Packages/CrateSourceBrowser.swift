@@ -102,10 +102,16 @@ enum CrateSourceBrowser {
         path: String
     ) -> String? {
         guard let root = CrateStorageLayout.sourceDirectory(name: name, version: version) else { return nil }
+        return contents(in: root, path: path)
+    }
+
+    static func contents(in root: URL, path: String) -> String? {
         // The path comes from `entries`, but it is still joined defensively:
         // a traversal here would read outside the crate directory.
-        let url = root.appending(path: path)
-        guard url.path.hasPrefix(root.path + "/") else { return nil }
+        guard !path.hasPrefix("/"), !path.split(separator: "/").contains("..") else { return nil }
+        let root = root.resolvingSymlinksInPath().standardizedFileURL
+        let url = root.appending(path: path).resolvingSymlinksInPath().standardizedFileURL
+        guard relativePath(of: url, in: root) != nil else { return nil }
 
         guard let values = try? url.resourceValues(forKeys: [.fileSizeKey]),
               (values.fileSize ?? 0) <= maximumViewableBytes,
@@ -258,7 +264,8 @@ enum CrateSourceBrowser {
         return result
     }
 
-    private static func entries(in root: URL) -> [Entry] {
+    static func entries(in root: URL) -> [Entry] {
+        let root = root.resolvingSymlinksInPath().standardizedFileURL
         let keys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey]
         guard let walker = FileManager.default.enumerator(
             at: root,
@@ -272,7 +279,7 @@ enum CrateSourceBrowser {
             guard values?.isRegularFile == true,
                   url.lastPathComponent != ".crabrix-complete.json"
             else { continue }
-            let relative = url.path.replacingOccurrences(of: root.path + "/", with: "")
+            guard let relative = relativePath(of: url, in: root) else { continue }
             found.append(Entry(path: relative, byteCount: values?.fileSize ?? 0))
         }
         return found.sorted { lhs, rhs in
@@ -281,5 +288,15 @@ enum CrateSourceBrowser {
             if leftIsSource != rightIsSource { return leftIsSource }
             return lhs.path.localizedStandardCompare(rhs.path) == .orderedAscending
         }
+    }
+
+    static func relativePath(of file: URL, in root: URL) -> String? {
+        // On devices the cache URL may start with /var while enumeration
+        // returns /private/var. Normalize both sides before removing a prefix;
+        // replacing a substring used to produce /private/.cargo_vcs_info.json.
+        let prefix = root.resolvingSymlinksInPath().standardizedFileURL.path + "/"
+        let path = file.resolvingSymlinksInPath().standardizedFileURL.path
+        guard path.hasPrefix(prefix) else { return nil }
+        return String(path.dropFirst(prefix.count))
     }
 }

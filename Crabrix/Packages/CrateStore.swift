@@ -562,36 +562,36 @@ actor CrateStore {
             && actual.sourceTreeHash == completion.sourceTreeHash
     }
 
-    private nonisolated static func sourceTreeEvidence(
+    nonisolated static func sourceTreeEvidence(
         at directory: URL
     ) -> (fileCount: Int, expandedBytes: Int64, sourceTreeHash: String) {
+        let directory = directory.resolvingSymlinksInPath().standardizedFileURL
         guard let enumerator = FileManager.default.enumerator(
             at: directory,
             includingPropertiesForKeys: [.isRegularFileKey, .fileSizeKey],
             options: [.skipsPackageDescendants]
         ) else { return (0, 0, Self.sha256(Data())) }
-        var regularFiles: [URL] = []
+        var regularFiles: [(url: URL, path: String)] = []
         for case let url as URL in enumerator {
             guard url.lastPathComponent != CrateSourceCompletion.fileName,
                   let values = try? url.resourceValues(forKeys: [.isRegularFileKey]),
                   values.isRegularFile == true
             else { continue }
-            regularFiles.append(url)
+            guard let relative = CrateSourceBrowser.relativePath(of: url, in: directory) else {
+                return (-1, -1, "outside-source-tree")
+            }
+            regularFiles.append((url, "/" + relative))
         }
-        regularFiles.sort {
-            $0.path.replacingOccurrences(of: directory.path, with: "")
-                < $1.path.replacingOccurrences(of: directory.path, with: "")
-        }
+        regularFiles.sort { $0.path < $1.path }
 
         var count = 0
         var bytes: Int64 = 0
         var hasher = SHA256()
-        for url in regularFiles {
-            guard let data = try? Data(contentsOf: url) else {
+        for file in regularFiles {
+            guard let data = try? Data(contentsOf: file.url) else {
                 return (-1, -1, "unreadable")
             }
-            let relativePath = String(url.path.dropFirst(directory.path.count))
-            hasher.update(data: Data(relativePath.utf8))
+            hasher.update(data: Data(file.path.utf8))
             hasher.update(data: Data([0]))
             hasher.update(data: data)
             hasher.update(data: Data([0]))

@@ -57,6 +57,46 @@ final class CrateSourceBrowserTests: XCTestCase {
         XCTAssertEqual(entries.last?.path, "fixture.bin")
     }
 
+    func testDeviceStyleAliasedRootKeepsMetadataPathsRelativeAndReadable() throws {
+        let metadata = "{\"git\":{\"sha1\":\"test\"}}"
+        try metadata.write(to: root.appending(path: ".cargo_vcs_info.json"), atomically: true, encoding: .utf8)
+        let alias = FileManager.default.temporaryDirectory.appending(path: "crate-alias-\(UUID())")
+        try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: root)
+        defer { try? FileManager.default.removeItem(at: alias) }
+        let canonical = root.resolvingSymlinksInPath()
+
+        // /var vs /private/var on an iPhone is the same situation: the root
+        // and enumerated child use different names for the same directory.
+        XCTAssertEqual(CrateSourceBrowser.relativePath(
+            of: canonical.appending(path: ".cargo_vcs_info.json"), in: alias
+        ), ".cargo_vcs_info.json")
+        XCTAssertEqual(Set(CrateSourceBrowser.entries(in: alias).map(\.path)), [
+            "src/lib.rs", "src/helper.rs", ".cargo/config.toml", "Cargo.toml",
+            "fixture.bin", ".cargo_vcs_info.json",
+        ])
+        XCTAssertNil(CrateSourceBrowser.sourceAccessIssue(in: alias))
+        XCTAssertEqual(CrateSourceBrowser.contents(in: alias, path: ".cargo_vcs_info.json"), metadata)
+        XCTAssertNotNil(CrateSourceBrowser.contents(in: alias, path: "src/lib.rs"))
+
+        let before = CrateStore.sourceTreeEvidence(at: canonical)
+        let after = CrateStore.sourceTreeEvidence(at: alias)
+        XCTAssertEqual(before.fileCount, 6)
+        XCTAssertEqual(after.fileCount, before.fileCount)
+        XCTAssertEqual(after.expandedBytes, before.expandedBytes)
+        XCTAssertEqual(after.sourceTreeHash, before.sourceTreeHash)
+    }
+
+    func testReadableSourceCannotFollowASymlinkOutsideItsCrate() throws {
+        let outside = root.deletingLastPathComponent().appending(path: "outside-\(UUID()).rs")
+        try "private source".write(to: outside, atomically: true, encoding: .utf8)
+        defer { try? FileManager.default.removeItem(at: outside) }
+        try FileManager.default.createSymbolicLink(at: root.appending(path: "escape.rs"), withDestinationURL: outside)
+
+        XCTAssertNil(CrateSourceBrowser.contents(in: root, path: "escape.rs"))
+        XCTAssertNil(CrateSourceBrowser.contents(in: root, path: "../\(outside.lastPathComponent)"))
+        XCTAssertNil(CrateSourceBrowser.relativePath(of: outside, in: root))
+    }
+
     func testAFileCanBeReadBackAsText() {
         let text = CrateSourceBrowser.contents(
             name: "browsertest",

@@ -2,6 +2,110 @@ import XCTest
 @testable import Crabrix
 
 final class BundledCompilerGateTests: XCTestCase {
+    @MainActor
+    func testSuccessfulLessonRunClearsPreviousErrorWithoutCompletingLesson() async throws {
+        try Self.requireCompilerGate()
+        let model = makeRegressionModel()
+        model.loadBorrowDiagnosticSample()
+        model.beginLesson("borrowing")
+        model.run()
+        try await waitForBuild(model)
+        XCTAssertEqual(model.primaryDiagnostic?.code, "E0502")
+
+        model.source = "fn main() { println!(\"different output\"); }"
+        model.run()
+        XCTAssertNil(model.primaryDiagnostic, "A new build must not display a stale repair prompt")
+        try await waitForBuild(model)
+        XCTAssertTrue(model.result?.succeeded == true, model.result?.detail ?? "No result")
+        XCTAssertNil(model.primaryDiagnostic, "A successful run must clear the previous compiler error")
+        XCTAssertEqual(model.diagnosticAdviceState, .idle)
+        XCTAssertFalse(model.completedLessonIDs.contains("borrowing"))
+        XCTAssertTrue(model.lessonEvidenceMessage?.contains("repair removed required behavior") == true)
+    }
+
+    @MainActor
+    func testSwitchingFilesDuringCompilationKeepsItsResult() async throws {
+        try Self.requireCompilerGate()
+        let model = makeRegressionModel()
+        model.createProject(name: "navigation-gate", template: .modules)
+        model.source += "\n// \(UUID())"
+        let revision = model.workspaceRevision
+        let files = model.exportProject().files
+        model.run()
+        XCTAssertTrue(model.isBusy)
+        model.selectFile("src/greeter.rs")
+        XCTAssertEqual(model.selectedFile, "src/greeter.rs")
+        XCTAssertEqual(model.source, files["src/greeter.rs"])
+        XCTAssertEqual(model.workspaceRevision, revision)
+        await Task.yield()
+        model.selectFile("Cargo.toml")
+        XCTAssertEqual(model.selectedFile, "Cargo.toml")
+        XCTAssertEqual(model.workspaceRevision, revision)
+        try await waitForBuild(model)
+        XCTAssertTrue(model.result?.succeeded == true, model.result?.detail ?? "Compilation result was discarded")
+        XCTAssertEqual(model.result?.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "Hello from a Rust module!")
+        XCTAssertEqual(model.selectedFile, "Cargo.toml")
+        XCTAssertEqual(model.exportProject().files, files)
+    }
+
+    func testHashbrownFromDeviceReportResolvesAndRuns() async throws {
+        try Self.requireCompilerGate()
+        let manifest = """
+        [package]
+        name = "hashbrown-device-regression"
+        version = "0.1.0"
+        edition = "2024"
+        [dependencies]
+        hashbrown = "=0.17.1"
+        """
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertTrue(snapshot.blockingPackages.isEmpty, snapshot.blockingPackages.map {
+            "\($0.name): \($0.compatibility.detail ?? "")"
+        }.joined(separator: "\n"))
+        XCTAssertTrue(snapshot.packages.contains { $0.name == "hashbrown" && $0.version.description == "0.17.1" })
+        let source = """
+        // \(UUID())
+        use hashbrown::HashMap;
+        fn main() {
+            let mut values = HashMap::new();
+            values.insert("answer", 42);
+            println!("{}", values["answer"]);
+        }
+        """
+        let result = await WasmRustCompiler(bundle: .main).run(
+            source: source, sourcePath: "src/main.rs", supportingFiles: ["Cargo.toml": manifest], plan: snapshot.plan
+        )
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "42")
+    }
+
+    @MainActor
+    private func makeRegressionModel() -> CompilerViewModel {
+        let identifier = UUID().uuidString
+        let defaultsName = "crabrix.regression.\(identifier)"
+        let defaults = UserDefaults(suiteName: defaultsName)!
+        defaults.set(false, forKey: "crabrix.appleIntelligenceDiagnostics")
+        let root = FileManager.default.temporaryDirectory.appending(path: defaultsName)
+        addTeardownBlock {
+            UserDefaults(suiteName: defaultsName)?.removePersistentDomain(forName: defaultsName)
+            try? FileManager.default.removeItem(at: root)
+        }
+        return CompilerViewModel(
+            projectLibrary: ProjectLibrary(storageURL: root.appending(path: "projects.json")), userDefaults: defaults
+        )
+    }
+
+    @MainActor
+    private func waitForBuild(_ model: CompilerViewModel) async throws {
+        let deadline = ContinuousClock.now.advanced(by: .seconds(180))
+        while model.isBusy, ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(20))
+        }
+        XCTAssertFalse(model.isBusy, "Build did not finish within three minutes")
+        if model.isBusy { model.cancelBuild() }
+        XCTAssertNotNil(model.result)
+    }
+
     func testBundledRustcProducesE0502() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
             throw XCTSkip("Set CRABRIX_RUN_COMPILER_GATE=1 for the expensive bundled compiler gate.")

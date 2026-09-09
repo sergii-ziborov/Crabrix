@@ -104,6 +104,68 @@ final class ProjectAuthoringTests: XCTestCase {
         }
     }
 
+    func testSwitchingFilesPreservesRevisionAndUnsavedEdits() {
+        let model = CompilerViewModel()
+        model.createProject(name: "navigation", template: .modules)
+        model.source += "\n// unsaved main edit"
+        let revision = model.workspaceRevision
+        let files = model.exportProject().files
+
+        model.selectFile("src/greeter.rs")
+        XCTAssertEqual(model.selectedFile, "src/greeter.rs")
+        XCTAssertEqual(model.workspaceRevision, revision)
+        XCTAssertEqual(model.exportProject().files, files)
+        model.source += "\n// helper edit"
+        XCTAssertNotEqual(model.workspaceRevision, revision)
+        model.selectFile("src/main.rs")
+        XCTAssertEqual(model.source, files["src/main.rs"])
+        XCTAssertTrue(model.exportProject().files["src/greeter.rs"]?.contains("helper edit") == true)
+    }
+
+    func testRemovingTheLastDependencyUpdatesSelectedManifestAndLockfile() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "removal-\(UUID())")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let model = CompilerViewModel(projectLibrary: ProjectLibrary(storageURL: root.appending(path: "projects.json")))
+        model.createProject(name: "remove-test", template: .empty)
+        let source = """
+        [package]
+        name = "remove-test"
+        version = "0.1.0"
+        edition = "2024"
+        [dependencies]
+        hashbrown = "=0.17.1"
+        """
+        var files = model.exportProject().files
+        files["Cargo.toml"] = source
+        files["Cargo.lock"] = """
+        version = 4
+        [[package]]
+        name = "remove-test"
+        version = "0.1.0"
+        dependencies = ["hashbrown"]
+        [[package]]
+        name = "hashbrown"
+        version = "0.17.1"
+        source = "registry+https://github.com/rust-lang/crates.io-index"
+        checksum = "\(String(repeating: "0", count: 64))"
+        """
+        _ = try CargoLockfile.parseValidated(try XCTUnwrap(files["Cargo.lock"]))
+        XCTAssertTrue(model.replaceProjectFilesFromTerminal(files, selecting: "Cargo.toml"))
+        XCTAssertTrue(model.removeCargoDependency(name: "hashbrown"))
+        XCTAssertTrue(model.cargoManifest?.dependencies.isEmpty == true)
+        XCTAssertEqual(model.source, model.cargoManifestSource)
+        XCTAssertEqual(model.exportProject().files["src/main.rs"], files["src/main.rs"])
+        XCTAssertFalse(model.removeCargoDependency(name: "missing"))
+
+        let deadline = ContinuousClock.now.advanced(by: .seconds(10))
+        while model.exportProject().files["Cargo.lock"]?.contains("hashbrown") == true,
+              ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(20))
+        }
+        XCTAssertFalse(model.exportProject().files["Cargo.lock"]?.contains("hashbrown") == true, "\(model.cargoStage)")
+        XCTAssertTrue(model.cargoWorkspace.packages.isEmpty)
+    }
+
     func testReviewLabCanUseAFreshProjectWithoutReusingTheOriginalName() {
         let model = CompilerViewModel(
             userDefaults: UserDefaults(suiteName: "crabrix.tests.\(UUID().uuidString)")!

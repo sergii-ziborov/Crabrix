@@ -217,6 +217,7 @@ struct ContentView: View {
                                     onResolvePackages: model.refreshCargoWorkspace,
                                     onPinPackages: model.pinDependenciesForOffline,
                                     onAddPackage: { isCargoCatalogPresented = true },
+                                    onRemovePackage: model.removeCargoDependency,
                                     vendoredFiles: model.vendoredFiles,
                                     onVendor: model.vendorCrate,
                                     onOpenVendor: model.openVendoredCrate,
@@ -776,6 +777,7 @@ struct ContentView: View {
                             onResolvePackages: model.refreshCargoWorkspace,
                             onPinPackages: model.pinDependenciesForOffline,
                             onAddPackage: { isCargoCatalogPresented = true },
+                            onRemovePackage: model.removeCargoDependency,
                             vendoredFiles: model.vendoredFiles,
                             onVendor: model.vendorCrate,
                             onOpenVendor: model.openVendoredCrate,
@@ -1366,6 +1368,7 @@ private struct ProjectSidebar: View {
     let onResolvePackages: () -> Void
     let onPinPackages: () -> Void
     let onAddPackage: () -> Void
+    let onRemovePackage: (String) -> Bool
     let vendoredFiles: (String, SemanticVersion) -> [String: String]
     let onVendor: (String, SemanticVersion) -> Bool
     let onOpenVendor: (String, SemanticVersion) -> Bool
@@ -1435,6 +1438,7 @@ private struct ProjectSidebar: View {
                         onRefresh: onResolvePackages,
                         onPinForOffline: onPinPackages,
                         onAddDependency: onAddPackage,
+                        onRemoveDependency: onRemovePackage,
                         vendoredFiles: vendoredFiles,
                         onVendor: onVendor,
                         onOpenVendor: onOpenVendor,
@@ -1465,16 +1469,6 @@ private struct ProjectSidebar: View {
                 }
             }
 
-            VStack(alignment: .leading, spacing: 7) {
-                Label("Physical device gate", systemImage: "iphone.gen3")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(CrabrixTheme.amber)
-                Text("Simulator proves integration, not memory, thermal behavior, or airplane-mode operation.")
-                    .font(.caption2)
-                    .foregroundStyle(CrabrixTheme.muted)
-            }
-            .padding(11)
-            .crabrixPanel(cornerRadius: 9)
         }
         .padding(14)
         .background(CrabrixTheme.panel)

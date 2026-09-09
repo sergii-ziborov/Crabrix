@@ -1,0 +1,36 @@
+{
+  "app": "Crabrix",
+  "version": "1.0",
+  "build": 7,
+  "date": "2026-09-09",
+  "configuration": "Release",
+  "xcode": "26.6 (17F113)",
+  "simulator": "iPhone 17 Pro Max, iOS 26.5",
+  "code_signing_allowed": false,
+  "enable_testability": true,
+  "tests": {
+    "fast": {
+      "title": "Test - Crabrix",
+      "result": "Passed",
+      "totalTestCount": 414,
+      "passedTests": 414,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "finishTime": 1788945969.21,
+      "local_result_bundle": "/tmp/crabrix-build7-fast.xcresult"
+    },
+    "compiler": {
+      "title": "Test - CrabrixCompilerGate",
+      "result": "Passed",
+      "totalTestCount": 24,
+      "passedTests": 24,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "finishTime": 1788946190.17,
+      "local_result_bundle": "/tmp/crabrix-build7-compiler.xcresult"
+    }
+  },
+  "total_passed": 438,
+  "physical_device_verification": "Pending owner verification on the new TestFlight build",
+  "app_review": "Not resubmitted; physical-device recording and requested review information remain pending"
+}

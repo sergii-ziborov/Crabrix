@@ -66,6 +66,15 @@
             </BuildableReference>
             <SelectedTests>
                <Test
+                  Identifier = "BundledCompilerGateTests/testSuccessfulLessonRunClearsPreviousErrorWithoutCompletingLesson()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testSwitchingFilesDuringCompilationKeepsItsResult()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testHashbrownFromDeviceReportResolvesAndRuns()">
+               </Test>
+               <Test
                   Identifier = "BundledCompilerGateTests/testBundledRustcProducesE0502()">
                </Test>
                <Test

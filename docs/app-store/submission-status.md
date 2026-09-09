@@ -1,3 +1,10 @@
+> Current status — 9 September 2026: Apple rejected **1.0 (6)** under
+> guideline 2.1 pending additional information and a physical-device recording
+> (review message provided by the owner). Build **1.0 (7)** is being prepared
+> with three device QA fixes. No new review submission has been made.
+> See [device QA fixes](device-qa-2026-09-09.md).
+> The entries below are historical.
+
 > Current status — 8 September 2026, 16:37: Build **1.0 (6)** resubmitted and
 > **Waiting for Review**. Xcode Cloud build/archive succeeded using Xcode
 > 26.6 (17F113), macOS 26.6.2 (25G83), source commit `0457171`.
