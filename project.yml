@@ -255,3 +255,4 @@ schemes:
         - name: CrabrixTests
           selectedTests:
             - CourseDeliveryGateTests/testPublicSignedCatalogAndCourseInstall()
+            - CourseDeliveryGateTests/testPublicArchiveResumesFromPersistedRange()

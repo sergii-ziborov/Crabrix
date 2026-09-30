@@ -7,6 +7,10 @@ private final class CourseDownloadURLProtocol: URLProtocol {
     private static let lock = NSLock()
     nonisolated(unsafe) private static var responses: [String: Data] = [:]
     nonisolated(unsafe) private static var requests: [String: Int] = [:]
+    nonisolated(unsafe) private static var interruptOnce: Set<String> = []
+    nonisolated(unsafe) private static var invalidRangeOnce: Set<String> = []
+    nonisolated(unsafe) private static var ignoreRangeOnce: Set<String> = []
+    nonisolated(unsafe) private static var rangeRequests: [String: [String]] = [:]
 
     static func supply(_ data: Data, at url: URL) {
         lock.withLock { responses[url.absoluteString] = data }
@@ -14,6 +18,22 @@ private final class CourseDownloadURLProtocol: URLProtocol {
 
     static func count(for url: URL) -> Int {
         lock.withLock { requests[url.absoluteString] ?? 0 }
+    }
+
+    static func interruptFirstTransfer(at url: URL) {
+        lock.withLock { _ = interruptOnce.insert(url.absoluteString) }
+    }
+
+    static func ranges(for url: URL) -> [String] {
+        lock.withLock { rangeRequests[url.absoluteString] ?? [] }
+    }
+
+    static func invalidateNextRange(at url: URL) {
+        lock.withLock { _ = invalidRangeOnce.insert(url.absoluteString) }
+    }
+
+    static func ignoreNextRange(at url: URL) {
+        lock.withLock { _ = ignoreRangeOnce.insert(url.absoluteString) }
     }
 
     override class func canInit(with request: URLRequest) -> Bool {
@@ -24,16 +44,48 @@ private final class CourseDownloadURLProtocol: URLProtocol {
 
     override func startLoading() {
         guard let url = request.url else { return }
-        let body = Self.lock.withLock { () -> Data? in
+        let range = request.value(forHTTPHeaderField: "Range")
+        let (body, interrupted, invalidRange, ignoreRange) = Self.lock.withLock {
+            () -> (Data?, Bool, Bool, Bool) in
             Self.requests[url.absoluteString, default: 0] += 1
-            return Self.responses[url.absoluteString]
+            if let range {
+                Self.rangeRequests[url.absoluteString, default: []].append(range)
+            }
+            let interrupted = range == nil && Self.interruptOnce.remove(url.absoluteString) != nil
+            let invalidRange = range != nil
+                && Self.invalidRangeOnce.remove(url.absoluteString) != nil
+            let ignoreRange = range != nil
+                && Self.ignoreRangeOnce.remove(url.absoluteString) != nil
+            return (Self.responses[url.absoluteString], interrupted, invalidRange, ignoreRange)
         }
+        var payload = body
+        var headers: [String: String] = [
+            "ETag": "\"course-archive-v1\"", "Accept-Ranges": "bytes"
+        ]
+        var status = body == nil ? 404 : 200
+        if let range, let body, !ignoreRange,
+           range.hasPrefix("bytes="), range.hasSuffix("-"),
+           let start = Int(range.dropFirst(6).dropLast()), start < body.count {
+            status = 206
+            payload = body.subdata(in: start..<body.count)
+            headers["Content-Range"] = "bytes \(start)-\(body.count - 1)/\(invalidRange ? body.count + 1 : body.count)"
+        }
+        if let payload { headers["Content-Length"] = String(payload.count) }
         let response = HTTPURLResponse(
-            url: url, statusCode: body == nil ? 404 : 200,
-            httpVersion: nil, headerFields: nil
+            url: url, statusCode: status,
+            httpVersion: nil, headerFields: headers
         )!
         client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-        if let body { client?.urlProtocol(self, didLoad: body) }
+        if interrupted, let payload {
+            client?.urlProtocol(self, didLoad: payload.prefix(70_000))
+            // Give AsyncBytes time to deliver the first chunk before the mock
+            // connection fails; an immediate fail can discard buffered bytes.
+            DispatchQueue.global().asyncAfter(deadline: .now() + .milliseconds(200)) {
+                self.client?.urlProtocol(self, didFailWithError: URLError(.networkConnectionLost))
+            }
+            return
+        }
+        if let payload { client?.urlProtocol(self, didLoad: payload) }
         client?.urlProtocolDidFinishLoading(self)
     }
 
@@ -67,7 +119,7 @@ final class CourseDownloadManagerTests: XCTestCase {
         )
     }
 
-    func testCorruptResumeRecordFallsBackToVerifiedFreshDownload() async throws {
+    func testLegacyResumeBlobIsDiscardedBeforeVerifiedFreshDownload() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
@@ -99,6 +151,94 @@ final class CourseDownloadManagerTests: XCTestCase {
             XCTFail("An oversized descriptor was accepted")
         } catch CoursePackError.sizeLimit {
             XCTAssertEqual(CourseDownloadURLProtocol.count(for: entry.archiveURL), 0)
+        }
+    }
+
+    func testInterruptedArchiveResumesFromPersistedBytesAfterManagerRelaunch() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let descriptor = try Data(contentsOf: fixture("basics.descriptor.json"))
+        let archive = try Data(contentsOf: fixture("basics-1.0.1.zip"))
+        let entry = entry(descriptor: descriptor, archive: archive, root: UUID().uuidString)
+        CourseDownloadURLProtocol.interruptFirstTransfer(at: entry.archiveURL)
+        let firstManager = try CourseDownloadManager(cacheRoot: root, session: session())
+
+        do {
+            _ = try await firstManager.download(entry)
+            XCTFail("An interrupted transfer was accepted")
+        } catch {
+            let partial = root.appending(path: "\(entry.archiveSHA256).partial")
+            let bytes = try XCTUnwrap(partial.resourceValues(forKeys: [.fileSizeKey]).fileSize)
+            XCTAssertGreaterThan(bytes, 0)
+            XCTAssertLessThan(bytes, archive.count)
+
+            let relaunchedManager = try CourseDownloadManager(cacheRoot: root, session: session())
+            let downloaded = try await relaunchedManager.download(entry)
+            XCTAssertEqual(try Data(contentsOf: downloaded.archive), archive)
+            XCTAssertEqual(CourseDownloadURLProtocol.ranges(for: entry.archiveURL), ["bytes=\(bytes)-"])
+            XCTAssertFalse(FileManager.default.fileExists(atPath: partial.path))
+            XCTAssertFalse(FileManager.default.fileExists(
+                atPath: root.appending(path: "\(entry.archiveSHA256).transfer.json").path
+            ))
+        }
+    }
+
+    func testRangeIgnoredReplacesPartialWithFullSignedArchive() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let descriptor = try Data(contentsOf: fixture("basics.descriptor.json"))
+        let archive = try Data(contentsOf: fixture("basics-1.0.1.zip"))
+        let entry = entry(descriptor: descriptor, archive: archive, root: UUID().uuidString)
+        try Data(archive.prefix(70_000)).write(
+            to: root.appending(path: "\(entry.archiveSHA256).partial")
+        )
+        let transfer: [String: Any] = [
+            "archiveSHA256": entry.archiveSHA256,
+            "archiveBytes": entry.archiveBytes,
+            "strongETag": NSNull()
+        ]
+        try JSONSerialization.data(withJSONObject: transfer).write(
+            to: root.appending(path: "\(entry.archiveSHA256).transfer.json"), options: .atomic
+        )
+        CourseDownloadURLProtocol.ignoreNextRange(at: entry.archiveURL)
+        let manager = try CourseDownloadManager(cacheRoot: root, session: session())
+
+        let downloaded = try await manager.download(entry)
+
+        XCTAssertEqual(try Data(contentsOf: downloaded.archive), archive)
+        XCTAssertEqual(CourseDownloadURLProtocol.ranges(for: entry.archiveURL), ["bytes=70000-"])
+    }
+
+    func testMismatchedContentRangeCannotActivatePartialArchive() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let descriptor = try Data(contentsOf: fixture("basics.descriptor.json"))
+        let archive = try Data(contentsOf: fixture("basics-1.0.1.zip"))
+        let entry = entry(descriptor: descriptor, archive: archive, root: UUID().uuidString)
+        let partial = root.appending(path: "\(entry.archiveSHA256).partial")
+        try Data(archive.prefix(70_000)).write(to: partial)
+        let transfer: [String: Any] = [
+            "archiveSHA256": entry.archiveSHA256,
+            "archiveBytes": entry.archiveBytes,
+            "strongETag": NSNull()
+        ]
+        try JSONSerialization.data(withJSONObject: transfer).write(
+            to: root.appending(path: "\(entry.archiveSHA256).transfer.json"), options: .atomic
+        )
+        CourseDownloadURLProtocol.invalidateNextRange(at: entry.archiveURL)
+        let manager = try CourseDownloadManager(cacheRoot: root, session: session())
+
+        do {
+            _ = try await manager.download(entry)
+            XCTFail("A mismatched Content-Range was accepted")
+        } catch CoursePackError.archiveDigestMismatch {
+            XCTAssertEqual(CourseDownloadURLProtocol.ranges(for: entry.archiveURL), ["bytes=70000-"])
+            XCTAssertEqual(try Data(contentsOf: partial), Data(archive.prefix(70_000)))
+            XCTAssertFalse(FileManager.default.fileExists(
+                atPath: root.appending(path: "\(entry.archiveSHA256).zip").path
+            ))
         }
     }
 

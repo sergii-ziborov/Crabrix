@@ -68,6 +68,9 @@
                <Test
                   Identifier = "CourseDeliveryGateTests/testPublicSignedCatalogAndCourseInstall()">
                </Test>
+               <Test
+                  Identifier = "CourseDeliveryGateTests/testPublicArchiveResumesFromPersistedRange()">
+               </Test>
             </SelectedTests>
          </TestableReference>
       </Testables>
