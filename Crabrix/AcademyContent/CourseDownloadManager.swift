@@ -10,7 +10,7 @@ actor CourseDownloadManager {
     private let cacheRoot: URL
     private let session: URLSession
 
-    init(cacheRoot: URL? = nil) throws {
+    init(cacheRoot: URL? = nil, session: URLSession? = nil) throws {
         if let cacheRoot {
             self.cacheRoot = cacheRoot
         } else {
@@ -23,7 +23,7 @@ actor CourseDownloadManager {
         configuration.timeoutIntervalForRequest = 30
         configuration.timeoutIntervalForResource = 15 * 60
         configuration.httpMaximumConnectionsPerHost = 2
-        session = URLSession(configuration: configuration)
+        self.session = session ?? URLSession(configuration: configuration)
     }
 
     func download(_ entry: CourseCatalogPayload.Entry,
@@ -35,20 +35,30 @@ actor CourseDownloadManager {
               entry.archiveBytes <= CoursePackVerifier.maximumArchiveBytes else {
             throw CoursePackError.sizeLimit
         }
-        let identity = try Self.component(entry.courseID) + "-" + Self.component(entry.language)
-        let version = try Self.component(entry.contentVersion)
+        _ = try Self.component(entry.courseID)
+        _ = try Self.component(entry.language)
+        _ = try Self.component(entry.contentVersion)
         guard Self.isDigest(entry.archiveSHA256), Self.isDigest(entry.descriptorSHA256) else {
             throw CoursePackError.invalidCatalog
         }
-        let resumeURL = cacheRoot.appending(path: "\(identity)-\(version).resume")
+        // A resume record belongs to exact signed bytes, not just a mutable
+        // course name/version pair.
+        let resumeURL = cacheRoot.appending(path: "\(entry.archiveSHA256).resume")
         let archiveURL = cacheRoot.appending(path: "\(entry.archiveSHA256).zip")
 
         let descriptorGuard = CourseAssetTransferGuard(hosts: Self.hosts, maximumBytes: 1_000_000)
-        let (descriptor, descriptorResponse) = try await session.data(
+        let (descriptorStream, descriptorResponse) = try await session.bytes(
             for: URLRequest(url: entry.descriptorURL), delegate: descriptorGuard
         )
-        guard Self.ok(descriptorResponse), descriptor.count <= 1_000_000,
-              Self.hex(SHA256.hash(data: descriptor)) == entry.descriptorSHA256 else {
+        guard (descriptorResponse as? HTTPURLResponse)?.statusCode == 200 else {
+            throw CoursePackError.archiveDigestMismatch
+        }
+        var descriptor = Data()
+        for try await byte in descriptorStream {
+            guard descriptor.count < 1_000_000 else { throw CoursePackError.sizeLimit }
+            descriptor.append(byte)
+        }
+        guard Self.hex(SHA256.hash(data: descriptor)) == entry.descriptorSHA256 else {
             throw CoursePackError.archiveDigestMismatch
         }
         if let attributes = try? FileManager.default.attributesOfItem(atPath: archiveURL.path),
@@ -60,11 +70,35 @@ actor CourseDownloadManager {
         let guarder = CourseAssetTransferGuard(
             hosts: Self.hosts, maximumBytes: entry.archiveBytes, progress: progress
         )
-        let resumeData = try? Data(contentsOf: resumeURL)
+        let resumeData: Data?
+        if let bytes = try? resumeURL.resourceValues(forKeys: [.fileSizeKey]).fileSize,
+           bytes > 0, bytes <= 1_000_000 {
+            resumeData = try? Data(contentsOf: resumeURL)
+        } else {
+            resumeData = nil
+            try? FileManager.default.removeItem(at: resumeURL)
+        }
         do {
             let (temporary, response): (URL, URLResponse)
             if let resumeData {
-                (temporary, response) = try await session.download(resumeFrom: resumeData, delegate: guarder)
+                do {
+                    (temporary, response) = try await session.download(
+                        resumeFrom: resumeData, delegate: guarder
+                    )
+                } catch {
+                    if !Task.isCancelled, !guarder.exceeded {
+                        // Opaque URLSession resume data may become unusable after
+                        // relaunch or cache eviction. One clean retry restores
+                        // the normal Download action instead of trapping Resume.
+                        try? FileManager.default.removeItem(at: resumeURL)
+                        try await Task.sleep(for: .milliseconds(300))
+                        (temporary, response) = try await session.download(
+                            for: URLRequest(url: entry.archiveURL), delegate: guarder
+                        )
+                    } else {
+                        throw error
+                    }
+                }
             } else {
                 (temporary, response) = try await session.download(
                     for: URLRequest(url: entry.archiveURL), delegate: guarder
@@ -82,8 +116,7 @@ actor CourseDownloadManager {
             try? FileManager.default.removeItem(at: resumeURL)
             return (descriptor, archiveURL)
         } catch {
-            if let bytes = (error as NSError).userInfo[NSURLSessionDownloadTaskResumeData] as? Data,
-               bytes.count <= 1_000_000 {
+            if let bytes = Self.resumeBytes(from: error) {
                 try? bytes.write(to: resumeURL, options: .atomic)
             }
             throw guarder.exceeded ? CoursePackError.sizeLimit : error
@@ -110,6 +143,12 @@ actor CourseDownloadManager {
 
     private static func isDigest(_ value: String) -> Bool {
         value.range(of: "^[0-9a-f]{64}$", options: .regularExpression) != nil
+    }
+
+    private static func resumeBytes(from error: Error) -> Data? {
+        guard let bytes = (error as NSError).userInfo[NSURLSessionDownloadTaskResumeData] as? Data,
+              !bytes.isEmpty, bytes.count <= 1_000_000 else { return nil }
+        return bytes
     }
 
     private static func hashFile(_ url: URL) throws -> String {
