@@ -32,9 +32,13 @@ copy after normalizing HTML entities and whitespace; full-file byte equality is
 not expected across the two renderers. Product and legal wording must match.
 
 The 30 September 2026 CoursePack and runtime wording has been updated in these
-local source pages. It has not yet been verified on the published Lovable site;
-the published pages may still describe the previous app build. Treat the local
-files as proposed copy until an upload and public fetch confirm the change.
+local source pages and in five matching Lovable draft pages. The draft preview
+shows the revised homepage and the individual draft files contain the expected
+course/runtime/privacy/support wording. Lovable exhausted its build credits
+before its own final verification step. The changed pages have **not** been
+published or verified on `crabrix.com`; the live site may still describe the
+previous app build. Publish only with the matching app release and verify the
+public pages after deployment.
 
 As verified on 8 September 2026, **crabrix.com serves Lovable** and is Active
 and primary in Lovable. All six principal HTTPS pages were checked against the
