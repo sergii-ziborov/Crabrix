@@ -86,4 +86,31 @@ final class CourseInstallerTests: XCTestCase {
             XCTAssertTrue(installed.isEmpty)
         }
     }
+
+    func testOversizedCachedArchiveRejectsBeforeStaging() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let installer = try CourseInstaller(root: root, appVersion: SemanticVersion("1.1"))
+        let archive = root.appending(path: "oversized.zip")
+        XCTAssertTrue(FileManager.default.createFile(atPath: archive.path, contents: nil))
+        let handle = try FileHandle(forWritingTo: archive)
+        try handle.truncate(atOffset: UInt64(CoursePackVerifier.maximumArchiveBytes + 1))
+        try handle.close()
+        let keys = try JSONDecoder().decode(CourseKeyring.self,
+                                            from: Data(contentsOf: fixture("production-keyring.json")))
+
+        do {
+            _ = try await installer.install(
+                descriptorBytes: Data(contentsOf: fixture("basics.descriptor.json")),
+                downloadedArchive: archive, keyring: keys
+            )
+            XCTFail("An oversized cache file was accepted")
+        } catch CoursePackError.sizeLimit {
+            XCTAssertFalse(FileManager.default.fileExists(
+                atPath: root.appending(path: ".staging").path
+            ))
+            let installed = try await installer.installed()
+            XCTAssertTrue(installed.isEmpty)
+        }
+    }
 }

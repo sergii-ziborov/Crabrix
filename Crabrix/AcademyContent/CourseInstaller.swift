@@ -87,6 +87,10 @@ actor CourseInstaller {
         let language = try component(descriptor.language)
         let version = try component(descriptor.contentVersion)
         let archiveName = try component(descriptor.archiveName)
+        guard descriptor.archiveBytes > 0,
+              descriptor.archiveBytes <= CoursePackVerifier.maximumArchiveBytes else {
+            throw CoursePackError.sizeLimit
+        }
         let key = "\(courseID)|\(language)"
         let target = root.appending(path: "\(courseID)/\(language)/\(version)", directoryHint: .isDirectory)
         let record = InstalledCourseRecord(
@@ -104,6 +108,19 @@ actor CourseInstaller {
         guard !fileManager.fileExists(atPath: target.path) else {
             throw CoursePackError.immutableVersionConflict
         }
+        let source = try downloadedArchive.resourceValues(
+            forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey]
+        )
+        guard source.isRegularFile == true, source.isSymbolicLink != true else {
+            throw CoursePackError.unsafeArchive(downloadedArchive.lastPathComponent)
+        }
+        guard let sourceBytes = source.fileSize else { throw CoursePackError.archiveDigestMismatch }
+        guard sourceBytes <= CoursePackVerifier.maximumArchiveBytes else {
+            throw CoursePackError.sizeLimit
+        }
+        guard sourceBytes == descriptor.archiveBytes else {
+            throw CoursePackError.archiveDigestMismatch
+        }
 
         let staging = root.appending(path: ".staging/\(UUID().uuidString)", directoryHint: .isDirectory)
         let payloadRoot = staging.appending(path: "payload", directoryHint: .isDirectory)
@@ -111,7 +128,10 @@ actor CourseInstaller {
         try fileManager.createDirectory(at: payloadRoot, withIntermediateDirectories: true)
         do {
             try Task.checkCancellation()
-            try fileManager.copyItem(at: downloadedArchive, to: cacheArchive)
+            try copyVerifiedArchive(
+                from: downloadedArchive, to: cacheArchive,
+                expectedBytes: descriptor.archiveBytes, expectedSHA256: descriptor.archiveSHA256
+            )
             let verified = try CoursePackVerifier.verify(
                 descriptorBytes: descriptorBytes, archiveURL: cacheArchive, keyring: keyring
             )
@@ -141,6 +161,30 @@ actor CourseInstaller {
             try? recover()
             try? fileManager.removeItem(at: staging)
             throw error
+        }
+    }
+
+    /// Caps bytes as they arrive, even if the cache file changes after its size check.
+    private func copyVerifiedArchive(from source: URL, to destination: URL,
+                                     expectedBytes: Int, expectedSHA256: String) throws {
+        let input = try FileHandle(forReadingFrom: source)
+        defer { try? input.close() }
+        guard fileManager.createFile(atPath: destination.path, contents: nil) else {
+            throw CoursePackError.archiveDigestMismatch
+        }
+        let output = try FileHandle(forWritingTo: destination)
+        defer { try? output.close() }
+        var received = 0
+        var digest = SHA256()
+        while let chunk = try input.read(upToCount: 64 * 1024), !chunk.isEmpty {
+            try Task.checkCancellation()
+            guard chunk.count <= expectedBytes - received else { throw CoursePackError.sizeLimit }
+            received += chunk.count
+            digest.update(data: chunk)
+            try output.write(contentsOf: chunk)
+        }
+        guard received == expectedBytes, digest.finalize().hexString == expectedSHA256 else {
+            throw CoursePackError.archiveDigestMismatch
         }
     }
 
