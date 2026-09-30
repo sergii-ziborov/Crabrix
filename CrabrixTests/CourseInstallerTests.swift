@@ -4,9 +4,12 @@ import XCTest
 
 final class CourseInstallerTests: XCTestCase {
     private func fixture(_ name: String) throws -> URL {
-        try XCTUnwrap(Bundle(for: Self.self).url(
-            forResource: name, withExtension: nil, subdirectory: "CoursePack"
+        let packs = try XCTUnwrap(Bundle.main.url(
+            forResource: "MigrationCoursePacks", withExtension: nil
         ))
+        let url = packs.appending(path: name)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: url.path))
+        return url
     }
 
     func testInstallPreservesActiveVersionAfterTamperedDownload() async throws {
