@@ -80,6 +80,10 @@ jobs:
           echo "Release binary carries no service endpoint and no Game Center path"
 
   compiler-gates:
+    # Full bundled-rustc/Cargo runs are deliberately separate from every PR.
+    # Run this workflow manually for an integration candidate; main/release
+    # pushes also exercise the gate after the reviewed changes land.
+    if: github.event_name != 'pull_request'
     runs-on: xcode-27
     timeout-minutes: 90
     steps:
