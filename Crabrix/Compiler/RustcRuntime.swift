@@ -148,7 +148,10 @@ final class RustcRuntime: @unchecked Sendable {
     func rustcModule(at url: URL) throws -> Module {
         if let cachedRustcModule { return cachedRustcModule }
         let started = ContinuousClock.now
-        let module = try parseWasm(bytes: [UInt8](Data(contentsOf: url)))
+        // WasmKit's file parser reads the module in bounded chunks. The parser
+        // owns and closes its descriptor, and the returned Module retains its
+        // parsed code, so no whole-file Data -> [UInt8] copy is needed here.
+        let module = try parseWasm(filePath: url.path)
         CompilerPhaseTrace.emit("rustc-parse", since: started)
         cachedRustcModule = module
         return module

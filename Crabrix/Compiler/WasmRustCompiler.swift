@@ -420,8 +420,8 @@ final class WasmRustCompiler: @unchecked Sendable {
                 )
             }
 
+            let programModule = try parseWasm(filePath: programURL.path)
             let programData = try Data(contentsOf: programURL)
-            let programModule = try parseWasm(bytes: [UInt8](programData))
             runtime.cacheProgramModule(programModule, for: cacheKey)
             persistProgramArtifact(programData, for: cacheKey)
 
@@ -1098,7 +1098,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             return nil
         }
         do {
-            let module = try parseWasm(bytes: [UInt8](Data(contentsOf: url)))
+            let module = try parseWasm(filePath: url.path)
             runtime.cacheProgramModule(module, for: key)
             return module
         } catch {
