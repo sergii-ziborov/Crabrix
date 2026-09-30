@@ -158,6 +158,25 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "crab")
     }
 
+    func testFreshRevisionCompilesAndRunsWithoutArtifactCache() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
+            throw XCTSkip("Run the CrabrixCompilerGate scheme for the fresh compiler gate.")
+        }
+
+        // A unique source body forces the real compiler and program paths on
+        // every invocation, even when the simulator's artifact cache is warm.
+        let marker = UUID().uuidString
+        let source = """
+        fn main() {
+            let marker = "\(marker)";
+            println!("{}", marker);
+        }
+        """
+        let result = await WasmRustCompiler(bundle: .main).run(source: source)
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), marker)
+    }
+
     func testUserProgramOutputStopsAtWASIWriteBudget() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
             throw XCTSkip("Run the CrabrixCompilerGate scheme for the output stress gate.")

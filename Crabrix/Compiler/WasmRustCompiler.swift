@@ -859,6 +859,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             fuelBudget: CompilerHostPolicy.fuelBudget,
             wallClockLimit: CompilerHostPolicy.wallClockLimit,
             interrupter: interrupter,
+            softwareMemoryReservationBytes: CompilerHostPolicy.memoryLimitBytes,
             capturedOutputLimitBytes: CompilerHostPolicy.outputLimitBytes
         )
     }
@@ -901,6 +902,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                 fuelBudget: WasmSandboxPolicy.userProgramInstructionBudget,
                 wallClockLimit: WasmSandboxPolicy.userProgramWallClockLimit,
                 interrupter: interrupter,
+                softwareMemoryReservationBytes: WasmSandboxPolicy.userProgramMemoryLimitBytes,
                 capturedOutputLimitBytes: WasmSandboxPolicy.userProgramOutputLimitBytes
             )
         } catch let cancellation as WasmExecutionCancelled {

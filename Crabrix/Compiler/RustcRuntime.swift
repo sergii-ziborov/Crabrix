@@ -128,7 +128,7 @@ final class RustcRuntime: @unchecked Sendable {
         let estimatedCostBytes: Int
     }
 
-    private var cachedEngine: Engine?
+    private var cachedEngines: [Int: Engine] = [:]
     private var cachedRustcModule: Module?
     private var cachedProgramModules: [String: CachedProgramModule] = [:]
     private var programModuleRecency: [String] = []
@@ -145,8 +145,9 @@ final class RustcRuntime: @unchecked Sendable {
         self.programModuleCacheCostLimitBytes = programModuleCacheCostLimitBytes
     }
 
-    func engine() -> Engine {
-        if let cachedEngine { return cachedEngine }
+    func engine(softwareMemoryReservationBytes: Int?) -> Engine {
+        let cacheKey = softwareMemoryReservationBytes ?? 0
+        if let cached = cachedEngines[cacheKey] { return cached }
         let configuration = EngineConfiguration(
             // WasmKit 0.3.1's direct-threaded interpreter crashed in optimized
             // iOS Simulator builds while executing the bundled rustc module.
@@ -156,10 +157,13 @@ final class RustcRuntime: @unchecked Sendable {
             compilationMode: .lazy,
             stackSize: 16 * 1024 * 1024,
             memoryBoundsChecking: .software,
-            fuelMetering: true
+            fuelMetering: true,
+            // Reserve address space only; committed pages still obey the
+            // current guest's resource limit.
+            softwareMemoryReservationBytes: softwareMemoryReservationBytes
         )
         let engine = Engine(configuration: configuration)
-        cachedEngine = engine
+        cachedEngines[cacheKey] = engine
         return engine
     }
 
@@ -229,6 +233,7 @@ final class RustcRuntime: @unchecked Sendable {
         fuelBudget: UInt64? = nil,
         wallClockLimit: Duration? = nil,
         interrupter: WasmInterrupter? = nil,
+        softwareMemoryReservationBytes: Int? = nil,
         capturedOutputLimitBytes: Int? = nil
     ) throws -> WasmProcessResult {
         let started = ContinuousClock.now
@@ -263,7 +268,8 @@ final class RustcRuntime: @unchecked Sendable {
             CompilerPhaseTrace.emit("wasi-setup", since: started)
             exitCode = try wasi.runAndClose { wasi in
                 let instantiateStarted = ContinuousClock.now
-                let store = Store(engine: engine())
+                let store = Store(engine: engine(
+                    softwareMemoryReservationBytes: softwareMemoryReservationBytes))
                 if let resourceLimiter { store.resourceLimiter = resourceLimiter }
                 if let fuelBudget { store.fuel = Fuel(remaining: fuelBudget) }
                 if let wallClockLimit { interrupter?.setDeadline(after: wallClockLimit) }
