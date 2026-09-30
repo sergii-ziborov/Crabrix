@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "status": "engineering observation; not a device benchmark or speed claim",
+  "workload": {
+    "id": "warning-check-v1",
+    "sourceSHA256": "0f76d31e5afd38dc54aefef96ed3c05b1c3f407b8e3d590ab241c457bc13013d",
+    "operation": "new compiler instance: first Check, then unchanged Check",
+    "dependencies": "bundled only"
+  },
+  "environment": {
+    "device": "iOS 18.2 arm64 simulator on Apple Silicon Mac",
+    "xcode": "27.0 (27A5228h)",
+    "configuration": "Debug",
+    "runtimeRevision": "731d09b7c779e62fd42832312c42d29f69475361",
+    "toolchainIdentity": "41412081eefc3e08ec5664ed0748902a7e575e1f267898dcc64d412702df7e83:a89ba732c649a983126750112268614c80b6e7d6bba8c60980cbfd32e04d9892",
+    "peakRSS": null,
+    "thermalState": null
+  },
+  "observations": [
+    {
+      "candidate": "ace7424b6bede6c43d49e1199f9190938ed5d45c",
+      "localTime": "2026-09-30 15:49 Asia/Jerusalem",
+      "firstCheckMilliseconds": 10972.356041,
+      "unchangedCheckMilliseconds": 1.194083,
+      "firstWarningCount": 2,
+      "unchangedWarningCount": 0
+    },
+    {
+      "candidate": "check snapshot and no-workspace-write changes on top of ace7424",
+      "localTime": "2026-09-30 15:52 Asia/Jerusalem",
+      "firstCheckMilliseconds": 10499.158708,
+      "unchangedCheckMilliseconds": 0.744041,
+      "firstWarningCount": 2,
+      "unchangedWarningCount": 2
+    }
+  ],
+  "interpretation": "The correctness defect on unchanged Check is fixed. One simulator sample per revision cannot establish a cold compiler speedup, and the short cache-hit times are not compiler throughput. Release-mode physical-device A/B/C measurements remain required."
+}

@@ -29,7 +29,8 @@ final class WasmRustCompiler: @unchecked Sendable {
     // Bumped when the root compiler invocation changes shape: artefacts built
     // before the root crate received its own `--cfg feature="…"` flags must not
     // be reused for the same manifest.
-    private static let cacheSchemaVersion = "fast-dev-3"
+    private static let cacheSchemaVersion = "fast-dev-4"
+    private static let checkCacheLimit = 24
 
     private let bundle: Bundle
     private let ledger: CrateCompatibilityLedger
@@ -42,7 +43,11 @@ final class WasmRustCompiler: @unchecked Sendable {
         autoreleaseFrequency: .workItem
     )
     private let clock = ContinuousClock()
-    private var successfulCheckKeys: Set<String> = []
+    // Keep the complete check result: a cache hit must retain warnings and spans.
+    // Both the entry count and diagnostic bytes are bounded to avoid retaining
+    // arbitrarily large compiler output in memory.
+    private var successfulChecks: [String: CompilationResult] = [:]
+    private var checkCacheOrder: [String] = []
     private let interrupterLock = NSLock()
     private var activeInterrupter: WasmInterrupter?
 
@@ -134,7 +139,8 @@ final class WasmRustCompiler: @unchecked Sendable {
     func clearProjectArtifacts() async {
         await withCheckedContinuation { continuation in
             queue.async { [self] in
-                successfulCheckKeys.removeAll(keepingCapacity: false)
+                successfulChecks.removeAll(keepingCapacity: false)
+                checkCacheOrder.removeAll(keepingCapacity: false)
                 runtime.clearProgramModules()
                 if let directory = CrateStorageLayout.projectArtifactDirectory,
                    FileManager.default.fileExists(atPath: directory.path) {
@@ -229,6 +235,19 @@ final class WasmRustCompiler: @unchecked Sendable {
             plan: plan
         )
 
+        if action == .check, let cached = cachedCheck(for: cacheKey) {
+            return CompilationResult(
+                succeeded: cached.succeeded,
+                phase: cached.phase,
+                exitCode: cached.exitCode,
+                diagnostics: cached.diagnostics,
+                stdout: cached.stdout,
+                stderr: cached.stderr,
+                duration: started.duration(to: clock.now),
+                detail: "Unchanged snapshot accepted from the local check cache."
+            )
+        }
+
         let fileManager = FileManager.default
         let jobRoot = fileManager.temporaryDirectory
             .appending(path: "CrabrixCompiler", directoryHint: .isDirectory)
@@ -238,42 +257,6 @@ final class WasmRustCompiler: @unchecked Sendable {
         defer { try? fileManager.removeItem(at: jobRoot) }
 
         do {
-            try fileManager.createDirectory(at: workURL, withIntermediateDirectories: true)
-            try fileManager.createDirectory(at: tempURL, withIntermediateDirectories: true)
-            try writeProject(
-                source: source,
-                sourcePath: sourcePath,
-                supportingFiles: supportingFiles,
-                into: workURL
-            )
-        } catch let error as ProjectLayoutError {
-            return .failure(
-                phase: .setup,
-                detail: error.localizedDescription,
-                duration: started.duration(to: clock.now)
-            )
-        } catch {
-            return .failure(
-                phase: .setup,
-                detail: "Could not create the compiler sandbox: \(error.localizedDescription)",
-                duration: started.duration(to: clock.now)
-            )
-        }
-
-        do {
-            if action == .check, successfulCheckKeys.contains(cacheKey) {
-                return CompilationResult(
-                    succeeded: true,
-                    phase: .check,
-                    exitCode: 0,
-                    diagnostics: [],
-                    stdout: "",
-                    stderr: "",
-                    duration: started.duration(to: clock.now),
-                    detail: "Unchanged snapshot accepted from the local check cache."
-                )
-            }
-
             // Dependencies must exist before the cached-program fast path, because
             // a cached program.wasm already has them linked in.
             if action == .run, let cachedProgram = loadCachedProgramModule(for: cacheKey) {
@@ -284,6 +267,29 @@ final class WasmRustCompiler: @unchecked Sendable {
                     started: started,
                     interrupter: interrupter,
                     successDetail: "Executed a cached local build artifact inside the bounded WasmKit sandbox."
+                )
+            }
+
+            do {
+                try fileManager.createDirectory(at: workURL, withIntermediateDirectories: true)
+                try fileManager.createDirectory(at: tempURL, withIntermediateDirectories: true)
+                try writeProject(
+                    source: source,
+                    sourcePath: sourcePath,
+                    supportingFiles: supportingFiles,
+                    into: workURL
+                )
+            } catch let error as ProjectLayoutError {
+                return .failure(
+                    phase: .setup,
+                    detail: error.localizedDescription,
+                    duration: started.duration(to: clock.now)
+                )
+            } catch {
+                return .failure(
+                    phase: .setup,
+                    detail: "Could not create the compiler sandbox: \(error.localizedDescription)",
+                    duration: started.duration(to: clock.now)
                 )
             }
 
@@ -388,8 +394,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             }
 
             guard action == .run else {
-                successfulCheckKeys.insert(cacheKey)
-                return CompilationResult(
+                let result = CompilationResult(
                     succeeded: true,
                     phase: .check,
                     exitCode: compilerOutput.exitCode,
@@ -401,6 +406,8 @@ final class WasmRustCompiler: @unchecked Sendable {
                         ? "Real bundled rustc accepted the program."
                         : "Real bundled rustc accepted the program and \(plan.units.count) dependencies."
                 )
+                cacheCheck(result, for: cacheKey)
+                return result
             }
 
             let programURL = workURL.appending(path: outputName)
@@ -959,6 +966,29 @@ final class WasmRustCompiler: @unchecked Sendable {
 
     // MARK: - Project layout
 
+    private func cachedCheck(for key: String) -> CompilationResult? {
+        guard let result = successfulChecks[key] else { return nil }
+        checkCacheOrder.removeAll { $0 == key }
+        checkCacheOrder.append(key)
+        return result
+    }
+
+    private func cacheCheck(_ result: CompilationResult, for key: String) {
+        let diagnosticBytes = result.diagnostics.reduce(0) { total, diagnostic in
+            total + diagnostic.message.utf8.count + diagnostic.rendered.utf8.count
+                + diagnostic.spans.reduce(0) { $0 + $1.sourceLine.utf8.count }
+        }
+        guard result.diagnostics.count <= 128,
+              result.stdout.utf8.count + result.stderr.utf8.count + diagnosticBytes <= 256 * 1024
+        else { return }
+        successfulChecks[key] = result
+        checkCacheOrder.removeAll { $0 == key }
+        checkCacheOrder.append(key)
+        if checkCacheOrder.count > Self.checkCacheLimit {
+            successfulChecks.removeValue(forKey: checkCacheOrder.removeFirst())
+        }
+    }
+
     private enum ProjectLayoutError: LocalizedError {
         case invalidPath(String)
 
@@ -1023,7 +1053,8 @@ final class WasmRustCompiler: @unchecked Sendable {
         var hasher = SHA256()
         let actionLabel = action == .check ? "check" : "run"
         for value in [
-            Self.toolchainVersion, Self.cacheSchemaVersion, actionLabel, edition, sourcePath, source,
+            CargoToolchain.artifactIdentity, Self.cacheSchemaVersion,
+            actionLabel, edition, sourcePath, source,
         ] {
             hasher.update(data: Data(value.utf8))
             hasher.update(data: Data([0]))
