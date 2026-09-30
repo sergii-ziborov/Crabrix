@@ -125,6 +125,27 @@ final class CourseBootstrapTests: XCTestCase {
         }
     }
 
+    func testProfileTotalsReflectInstalledPacksAfterAtlasRemoval() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let bootstrap = try CourseBootstrap(
+            bundle: .main, root: root, appVersion: SemanticVersion("1.1")
+        )
+        let complete = try await bootstrap.activateBundledBaseline()
+        XCTAssertEqual(complete.learningTotals(), CourseLearningTotals(
+            installedLessons: 742, rustLessons: 142,
+            atlasStudySteps: 400, atlasChallenges: 200
+        ))
+
+        let installer = try CourseInstaller(root: root, appVersion: SemanticVersion("1.1"))
+        try await installer.uninstall(courseID: "algorithms", language: "en")
+        let remaining = try await bootstrap.loadInstalled()
+        XCTAssertEqual(remaining.learningTotals(), CourseLearningTotals(
+            installedLessons: 142, rustLessons: 142,
+            atlasStudySteps: 0, atlasChallenges: 0
+        ))
+    }
+
     @MainActor
     func testAtlasAchievementsUseInstalledMethodMetadataWithoutReaward() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)

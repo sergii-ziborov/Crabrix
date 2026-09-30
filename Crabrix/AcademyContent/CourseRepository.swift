@@ -14,7 +14,27 @@ protocol CourseRepository: Sendable {
     func termPairs() -> [CourseTermPairDTO]
 }
 
+struct CourseLearningTotals: Equatable, Sendable {
+    let installedLessons: Int
+    let rustLessons: Int
+    let atlasStudySteps: Int
+    let atlasChallenges: Int
+}
+
 extension CourseRepository {
+    func learningTotals() -> CourseLearningTotals {
+        let rust = courses.filter { $0.id != "algorithms" }
+            .flatMap { $0.units.flatMap(\.lessons) }.count
+        let atlas = course(id: "algorithms")?.units.flatMap(\.lessons).count ?? 0
+        let challenges = algorithmMethods().reduce(0) { $0 + $1.patternIDs.count }
+        return CourseLearningTotals(
+            installedLessons: rust + atlas,
+            rustLessons: rust,
+            atlasStudySteps: max(0, atlas - challenges),
+            atlasChallenges: challenges
+        )
+    }
+
     func course(id: String) -> RustCourse? {
         courses.first { $0.id == id }
     }

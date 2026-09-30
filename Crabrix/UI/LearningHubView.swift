@@ -315,7 +315,7 @@ struct LearningHubView: View {
             }
 
         case .profile:
-            ProfileView()
+            ProfileView(completedLessonIDs: completedLessonIDs)
 
         case let .lesson(lessonID):
             if let repository = lessonSession?.repository ?? academy.repository,

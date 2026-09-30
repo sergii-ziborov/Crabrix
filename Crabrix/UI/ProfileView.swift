@@ -12,6 +12,8 @@ import SwiftUI
 /// `CRABRIX_SOCIAL`.
 struct ProfileView: View {
     @EnvironmentObject private var progress: CrabrixProgressStore
+    @EnvironmentObject private var academy: AcademyContentStore
+    let completedLessonIDs: Set<String>
     #if CRABRIX_SOCIAL
     @EnvironmentObject private var gameCenter: GameCenterService
     #endif
@@ -227,13 +229,10 @@ struct ProfileView: View {
 
     private var combinedProgress: some View {
         let rank = progress.rank
-        // Every step the Learn tab offers, the Algorithm Atlas included.
-        let lessonTotal = RustCourseCatalog.lessonCount
-        let lessonCompleted = min(progress.state.lessonsCompleted, lessonTotal)
-        let rustLessons = min(
-            progress.state.rustLessonsCompleted,
-            RustCourseCatalog.academyLessonCount
-        )
+        let courses = academy.repository?.courses ?? []
+        let lessonIDs = Set(courses.flatMap { $0.units.flatMap(\.lessons).map(\.id) })
+        let lessonTotal = academy.repository?.learningTotals().installedLessons ?? 0
+        let lessonCompleted = completedLessonIDs.intersection(lessonIDs).count
         let lessonProgress = lessonTotal == 0
             ? 0
             : Double(lessonCompleted) / Double(lessonTotal)
@@ -252,9 +251,9 @@ struct ProfileView: View {
                 Divider()
 
                 ProfileMetric(
-                    title: "LEARN RUST",
-                    value: "\(lessonCompleted)/\(lessonTotal)",
-                    detail: "\(Int((lessonProgress * 100).rounded()))% complete",
+                    title: "INSTALLED LESSONS",
+                    value: lessonTotal == 0 ? "—" : "\(lessonCompleted)/\(lessonTotal)",
+                    detail: "\(progress.state.lessonsCompleted) lifetime completions",
                     systemImage: "map.fill",
                     tint: CrabrixTheme.mint,
                     progress: lessonProgress
@@ -279,9 +278,9 @@ struct ProfileView: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
             "Rating \(progress.state.totalPoints), rank \(rank.title). "
-                + "\(lessonCompleted) of \(lessonTotal) learning steps complete, "
-                + "including \(rustLessons) of "
-                + "\(RustCourseCatalog.academyLessonCount) Rust lessons."
+                + "\(lessonCompleted) of \(lessonTotal) installed learning steps complete; "
+                + "\(progress.state.lessonsCompleted) lifetime completions, including "
+                + "\(progress.state.rustLessonsCompleted) Rust lessons."
         )
     }
 
@@ -311,17 +310,17 @@ struct ProfileView: View {
             let state = progress.state
             statRow(
                 "Rust lessons",
-                "\(state.rustLessonsCompleted)/\(RustCourseCatalog.academyLessonCount)",
+                "\(state.rustLessonsCompleted)",
                 "graduationcap.fill"
             )
             statRow(
                 "Atlas study steps",
-                "\(state.algorithmStudySteps)/\(AlgorithmCourseCatalog.studyStepCount)",
+                "\(state.algorithmStudySteps)",
                 "book.pages.fill"
             )
             statRow(
                 "Algorithms mastered",
-                "\(state.solvedAlgorithmPatternIDs.count)/\(AlgorithmCourseCatalog.challengeCount)",
+                "\(state.solvedAlgorithmPatternIDs.count)",
                 "function"
             )
             statRow("Successful runs", "\(state.buildsSucceeded)", "play.circle.fill")
