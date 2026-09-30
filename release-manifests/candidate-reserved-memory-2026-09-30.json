@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "status": "development-candidate-not-submitted",
+  "app": {
+    "repository": "https://github.com/sergii-ziborov/Crabrix",
+    "sourceCommit": "09510dc52226c149f502bd1dd3f13d3f4f327592",
+    "bundleID": "com.sergiiziborov.Crabrix",
+    "marketingVersion": "1.1",
+    "buildNumber": "9",
+    "ipaSHA256": null,
+    "packageResolvedSHA256": "33c12e90bb7cefb09deb1238a45ad06bcff32ee49f79e9cba216566caf562254"
+  },
+  "runtime": {
+    "repository": "https://github.com/sergii-ziborov/crabrix-runtime",
+    "commit": "6f9e307c9c3069560d1a00a277dce51964309bdc",
+    "upstreamCommit": "a0471eaee817c523b8023d8ebb1c70ff70b7950a"
+  },
+  "toolchain": {
+    "id": "artifacts-test-7",
+    "source": "https://github.com/AngelOnFira/wasm-rustc/releases/tag/artifacts-test-7",
+    "rustcWasmSHA256": "41412081eefc3e08ec5664ed0748902a7e575e1f267898dcc64d412702df7e83",
+    "sysrootManifestSHA256": "a89ba732c649a983126750112268614c80b6e7d6bba8c60980cbfd32e04d9892",
+    "builtByCrabrix": false
+  },
+  "courses": {
+    "repository": "https://github.com/sergii-ziborov/crabrix-courses",
+    "releaseTag": "coursepack-v1.0.1",
+    "catalogSequence": 2,
+    "catalogEnvelopeSHA256": "e6f5650055d064e570e219e55945217b5e00035575664cf729055978855325b9",
+    "archives": {
+      "algorithms": "50877cc9eb94c9443d5690eb309361793ac5ad904640b2e98d96f07d922212fa",
+      "basics": "8498d05c7b52dc205b05911ff5981d019707b67c529467414ed5b07ed50ec51d",
+      "concurrency": "b12c89976e26160345420bd2b95b29d62e8f1e455a1dffee24557e1f52ee7980",
+      "interview": "7b54a3f4a8837b7822ffbc6ff36207eec46dfacc6804f896eec44ac282ede9ab",
+      "ownership": "8a9f26fa8f9c60e213cc52f31af0b14974c9999fddfcfe4cbd5778c64b88d942",
+      "projects": "e4636c190ac7a10b7c8f2f9e2571b98f2e46b49d03fff21f03bd49567ac767aa",
+      "systems": "076c2cabaa1297da71a983f35ac006ef9644fd667c69690cb5e9e52facd1ac40"
+    }
+  },
+  "performanceEvidence": "docs/performance/2026-09-30-reserved-memory-simulator.json"
+}
