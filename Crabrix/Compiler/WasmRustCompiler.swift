@@ -336,7 +336,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                     capturePrefix: "compiler",
                     preopens: [
                         .init(guestPath: "/tmp", hostPath: tempURL.path),
-                        .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path),
+                        .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path, readOnly: true),
                         .init(guestPath: "/work", hostPath: workURL.path),
                     ] + registryPreopens(for: plan),
                     environment: rootCargoEnvironment(
@@ -551,11 +551,11 @@ final class WasmRustCompiler: @unchecked Sendable {
                     capturePrefix: "dep-\(unit.fingerprint)",
                     preopens: [
                         .init(guestPath: "/tmp", hostPath: tempURL.path),
-                        .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path),
-                        .init(guestPath: "/registry", hostPath: registryRoot.path),
+                        .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path, readOnly: true),
+                        .init(guestPath: "/registry", hostPath: registryRoot.path, readOnly: true),
                         .init(guestPath: "/artifacts", hostPath: artifacts.path),
                     ] + (patchRoot.map {
-                        [.init(guestPath: "/patches", hostPath: $0.path)]
+                        [.init(guestPath: "/patches", hostPath: $0.path, readOnly: true)]
                     } ?? []),
                     environment: cargoEnvironment(for: unit),
                     interrupter: interrupter
@@ -790,7 +790,7 @@ final class WasmRustCompiler: @unchecked Sendable {
 
     private func registryPreopens(for plan: CargoBuildPlan) -> [WASIBridgeToHost.Preopen] {
         guard !plan.rootExterns.isEmpty, let artifacts = artifactsDirectory else { return [] }
-        return [.init(guestPath: "/artifacts", hostPath: artifacts.path)]
+        return [.init(guestPath: "/artifacts", hostPath: artifacts.path, readOnly: true)]
     }
 
     private func artifactFileName(_ unit: CargoBuildUnit, emit: CargoEmitKind) -> String {
