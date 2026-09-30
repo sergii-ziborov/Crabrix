@@ -42,6 +42,21 @@ final class AchievementTierTests: XCTestCase {
         XCTAssertEqual(family.earnedTier(in: state), .diamond)
     }
 
+    func testAwardedMethodTierSurvivesChangedPatternMembership() {
+        let method = AlgorithmMethodDTO(
+            id: "example", title: "Example", subtitle: "", systemImage: "checkmark",
+            achievementTitle: "Example master", patternIDs: ["replacement"]
+        )
+        let family = try! XCTUnwrap(CrabrixAchievementCatalog.families(for: [method])
+            .first { $0.id == "algorithm-example" })
+        var state = CrabrixProgressState()
+        state.unlockedAchievementIDs.insert("algorithm-example.0")
+
+        XCTAssertNil(family.earnedTier(in: state))
+        XCTAssertEqual(family.awardedTier(in: state), .bronze)
+        XCTAssertEqual(family.nextUnawardedTarget(in: state)?.tier, .silver)
+    }
+
     func testOneRunNoLongerFinishesTheFamily() {
         // The whole point of the change: trying it once is Bronze, not done.
         var state = CrabrixProgressState()

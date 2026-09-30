@@ -271,7 +271,15 @@ final class AlgorithmCourseCatalogTests: XCTestCase {
 @MainActor
 final class AlgorithmAchievementTests: XCTestCase {
     func testEachMethodHasAFiveTierLadderPlusOverallAtlas() {
-        let families = CrabrixAchievementCatalog.families.filter { $0.group == .algorithms }
+        let methods = AlgorithmCourseCatalog.categories.map { category in
+            AlgorithmMethodDTO(
+                id: category.id, title: category.title, subtitle: category.subtitle,
+                systemImage: category.systemImage, achievementTitle: category.achievementTitle,
+                patternIDs: category.patterns.map(\.id)
+            )
+        }
+        let families = CrabrixAchievementCatalog.families(for: methods)
+            .filter { $0.group == .algorithms }
         // Every method, plus the overall Atlas ladder and the study ladder.
         XCTAssertEqual(families.count, AlgorithmCourseCatalog.categories.count + 2)
         XCTAssertEqual(families.first { $0.id == "algorithm-atlas" }?.thresholds, [1, 25, 75, 150, 200])
@@ -307,23 +315,30 @@ final class AlgorithmAchievementTests: XCTestCase {
         XCTAssertFalse(reopened.recordAlgorithmSolved(challenge: challenge))
     }
 
-    func testThreeUniqueMethodSolutionsUnlockOnlyThatMethodSilverTier() throws {
+    func testThreeUniqueMethodSolutionsUnlockOnlyThatMethodSilverTier() async throws {
         let suite = "crabrix.tests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
-        let category = try XCTUnwrap(AlgorithmCourseCatalog.categories.first)
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = try await CourseBootstrap(
+            bundle: .main, root: root, appVersion: SemanticVersion("1.1")
+        ).activateBundledBaseline()
+        let methods = repository.algorithmMethods()
+        let method = try XCTUnwrap(methods.first)
         let store = CrabrixProgressStore(defaults: defaults)
+        store.configureAcademy(repository: repository)
 
-        for pattern in category.patterns.prefix(3) {
-            let challenge = try XCTUnwrap(AlgorithmCourseCatalog.challenge(
-                for: pattern.lessonID(.challenge)
+        for patternID in method.patternIDs.prefix(3) {
+            let challenge = try XCTUnwrap(repository.challenge(
+                for: "algorithm.\(patternID).challenge"
             ))
             store.recordAlgorithmSolved(challenge: challenge)
         }
 
         XCTAssertTrue(store.state.unlockedAchievementIDs.contains("algorithm-atlas.0"))
-        XCTAssertTrue(store.state.unlockedAchievementIDs.contains("algorithm-\(category.id).1"))
-        let another = try XCTUnwrap(AlgorithmCourseCatalog.categories.dropFirst().first)
+        XCTAssertTrue(store.state.unlockedAchievementIDs.contains("algorithm-\(method.id).1"))
+        let another = try XCTUnwrap(methods.dropFirst().first)
         XCTAssertFalse(store.state.unlockedAchievementIDs.contains("algorithm-\(another.id).0"))
     }
 }

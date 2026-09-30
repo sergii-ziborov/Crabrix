@@ -8,9 +8,9 @@ import SwiftUI
 @MainActor
 final class CrabrixProgressStore: ObservableObject {
     @Published private(set) var state: CrabrixProgressState
-    @Published private(set) var achievementFamilies = CrabrixAchievementCatalog.families
-    @Published private(set) var atlasPatternCount = AlgorithmCourseCatalog.challengeCount
-    @Published private(set) var atlasMethodCount = AlgorithmCourseCatalog.categories.count
+    @Published private(set) var achievementFamilies: [CrabrixAchievementFamily]
+    @Published private(set) var atlasPatternCount: Int
+    @Published private(set) var atlasMethodCount: Int
     /// Achievements unlocked by the most recent event, for a one-shot banner.
     @Published var pendingCelebration: [CrabrixAchievement] = []
 
@@ -19,7 +19,11 @@ final class CrabrixProgressStore: ObservableObject {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        state = Self.load(from: defaults)
+        let loaded = Self.load(from: defaults)
+        state = loaded
+        achievementFamilies = CrabrixAchievementCatalog.families(for: loaded.achievementMethods)
+        atlasPatternCount = loaded.achievementMethods.reduce(0) { $0 + $1.patternIDs.count }
+        atlasMethodCount = loaded.achievementMethods.count
         adoptCatalogIfNeeded()
     }
 
@@ -33,11 +37,13 @@ final class CrabrixProgressStore: ObservableObject {
         guard state.achievementCatalogVersion < CrabrixAchievementCatalog.version else { return }
 
         var updated = state
-        // Ids from the previous catalogue no longer name anything; drop them so
-        // the earned count reflects the ladders that actually exist.
-        let known = Set(CrabrixAchievementCatalog.all.map(\.id))
-        updated.unlockedAchievementIDs = updated.unlockedAchievementIDs.intersection(known)
-        for achievement in CrabrixAchievementCatalog.all where achievement.isEarned(in: updated) {
+        // Drop obsolete pre-tier ids. Keep earned Atlas method tiers while
+        // their signed metadata is being loaded from the transition pack.
+        let known = Set(allAchievements.map(\.id))
+        updated.unlockedAchievementIDs = updated.unlockedAchievementIDs.filter {
+            known.contains($0) || ($0.hasPrefix("algorithm-") && Self.isTieredAchievementID($0))
+        }
+        for achievement in allAchievements where achievement.isEarned(in: updated) {
             updated.unlockedAchievementIDs.insert(achievement.id)
         }
         updated.achievementCatalogVersion = CrabrixAchievementCatalog.version
@@ -52,17 +58,20 @@ final class CrabrixProgressStore: ObservableObject {
     func configureAcademy(repository: InstalledCourseRepository) {
         let methods = repository.algorithmMethods()
         guard !methods.isEmpty else { return }
+        let currentIDs = Set(methods.map(\.id))
+        let earnedPrevious = state.achievementMethods.filter { method in
+            !currentIDs.contains(method.id)
+                && state.unlockedAchievementIDs.contains {
+                    $0.hasPrefix("algorithm-\(method.id).")
+                }
+        }
+        let preservedMethods = methods + earnedPrevious
         atlasPatternCount = methods.reduce(0) { $0 + $1.patternIDs.count }
         atlasMethodCount = methods.count
-        let refreshed = CrabrixAchievementCatalog.families(for: methods)
-        let refreshedIDs = Set(refreshed.map(\.id))
-        let earnedPrevious = achievementFamilies.filter {
-            !refreshedIDs.contains($0.id)
-                && $0.achievements.contains { state.unlockedAchievementIDs.contains($0.id) }
-        }
-        achievementFamilies = refreshed + earnedPrevious
+        achievementFamilies = CrabrixAchievementCatalog.families(for: preservedMethods)
 
         var updated = state
+        updated.achievementMethods = preservedMethods
         for achievement in allAchievements where achievement.isEarned(in: updated) {
             updated.unlockedAchievementIDs.insert(achievement.id)
         }
@@ -78,7 +87,7 @@ final class CrabrixProgressStore: ObservableObject {
 
     /// The highest tier reached in each family, for a compact summary.
     var earnedTiers: [(family: CrabrixAchievementFamily, tier: AchievementTier?)] {
-        achievementFamilies.map { ($0, $0.earnedTier(in: state)) }
+        achievementFamilies.map { ($0, $0.awardedTier(in: state)) }
     }
 
     var rank: CrabrixRank { CrabrixRank.rank(for: state.totalPoints) }
@@ -223,6 +232,9 @@ final class CrabrixProgressStore: ObservableObject {
     /// Resets everything. Only reachable from an explicit Settings action.
     func reset() {
         state = CrabrixProgressState()
+        achievementFamilies = CrabrixAchievementCatalog.families
+        atlasPatternCount = 0
+        atlasMethodCount = 0
         pendingCelebration = []
         defaults.removeObject(forKey: Self.storageKey)
     }
@@ -230,6 +242,15 @@ final class CrabrixProgressStore: ObservableObject {
     private func persist() {
         guard let data = try? JSONEncoder().encode(state) else { return }
         defaults.set(data, forKey: Self.storageKey)
+    }
+
+    private static func isTieredAchievementID(_ id: String) -> Bool {
+        guard let separator = id.lastIndex(of: "."), separator > id.startIndex else {
+            return false
+        }
+        return Int(id[id.index(after: separator)...]).map {
+            (0..<AchievementTier.allCases.count).contains($0)
+        } ?? false
     }
 
     private static func load(from defaults: UserDefaults) -> CrabrixProgressState {

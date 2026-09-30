@@ -88,8 +88,8 @@ struct AchievementFamilyRow: View {
     let state: CrabrixProgressState
 
     var body: some View {
-        let earned = family.earnedTier(in: state)
-        let next = family.nextTarget(in: state)
+        let earned = family.awardedTier(in: state)
+        let next = family.nextUnawardedTarget(in: state)
         let value = next?.progress(state)
 
         return HStack(spacing: 12) {
@@ -246,9 +246,15 @@ struct AchievementsSection: View {
                         Text("ALGORITHM ACHIEVEMENTS")
                             .font(.caption.monospaced().bold())
                             .foregroundStyle(CrabrixTheme.primary)
-                        Text("\(store.state.solvedAlgorithmPatternIDs.count)/\(store.atlasPatternCount) patterns · \(store.atlasMethodCount) independent methods")
-                            .font(.caption2)
-                            .foregroundStyle(CrabrixTheme.muted)
+                        if store.atlasMethodCount > 0 {
+                            Text("\(store.state.solvedAlgorithmPatternIDs.count)/\(store.atlasPatternCount) patterns · \(store.atlasMethodCount) independent methods")
+                                .font(.caption2)
+                                .foregroundStyle(CrabrixTheme.muted)
+                        } else {
+                            Text("Install Algorithm Atlas to see method achievements.")
+                                .font(.caption2)
+                                .foregroundStyle(CrabrixTheme.muted)
+                        }
                     }
                 }
 
@@ -273,8 +279,8 @@ struct AchievementsSection: View {
 
     private func sorted(_ families: [CrabrixAchievementFamily]) -> [CrabrixAchievementFamily] {
         families.sorted { lhs, rhs in
-            let left = lhs.earnedTier(in: store.state)?.rawValue ?? -1
-            let right = rhs.earnedTier(in: store.state)?.rawValue ?? -1
+            let left = lhs.awardedTier(in: store.state)?.rawValue ?? -1
+            let right = rhs.awardedTier(in: store.state)?.rawValue ?? -1
             return left == right ? lhs.title < rhs.title : left > right
         }
     }

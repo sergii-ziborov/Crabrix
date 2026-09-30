@@ -55,6 +55,10 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
     /// once daily and the rest of the rating comes from writing.
     var lastRunRewardDay: Date?
     var unlockedAchievementIDs: Set<String> = []
+    /// Last verified Atlas achievement definitions. These preserve earned
+    /// badges after a downloadable CoursePack is removed or while it reloads.
+    /// They do not provide lessons, validators, or project source.
+    var achievementMethods: [AlgorithmMethodDTO] = []
     var lastActiveAt: Date?
     /// Which achievement catalogue this state was last reconciled against, so
     /// a reshaped catalogue can be adopted without replaying old unlocks.
@@ -122,6 +126,8 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
             .decodeIfPresent([String].self, forKey: .recentBuildRevisions) ?? []
         unlockedAchievementIDs = try container
             .decodeIfPresent(Set<String>.self, forKey: .unlockedAchievementIDs) ?? []
+        achievementMethods = try container
+            .decodeIfPresent([AlgorithmMethodDTO].self, forKey: .achievementMethods) ?? []
         lastActiveAt = try container.decodeIfPresent(Date.self, forKey: .lastActiveAt)
     }
 }
@@ -352,9 +358,19 @@ struct CrabrixAchievementFamily: Identifiable, Sendable {
         achievements.last { $0.isEarned(in: state) }?.tier
     }
 
+    /// Awarded tiers remain earned if a later CoursePack changes the pattern
+    /// membership used to calculate current progress.
+    func awardedTier(in state: CrabrixProgressState) -> AchievementTier? {
+        achievements.last { state.unlockedAchievementIDs.contains($0.id) }?.tier
+    }
+
     /// The next rung, for a progress bar. Nil once the family is complete.
     func nextTarget(in state: CrabrixProgressState) -> CrabrixAchievement? {
         achievements.first { !$0.isEarned(in: state) }
+    }
+
+    func nextUnawardedTarget(in state: CrabrixProgressState) -> CrabrixAchievement? {
+        achievements.first { !state.unlockedAchievementIDs.contains($0.id) }
     }
 }
 
@@ -502,18 +518,6 @@ enum CrabrixAchievementCatalog {
         ),
     ]
 
-    /// Keep the old catalogue as the synchronous launch fallback. Once signed
-    /// CoursePacks load, the progress store replaces these method definitions
-    /// with the verified method metadata from the installed Atlas.
-    private static let algorithmFamilies: [CrabrixAchievementFamily] =
-        makeAlgorithmFamilies(methods: AlgorithmCourseCatalog.categories.map { category in
-            AlgorithmMethodDTO(
-                id: category.id, title: category.title, subtitle: category.subtitle,
-                systemImage: category.systemImage, achievementTitle: category.achievementTitle,
-                patternIDs: category.patterns.map(\.id)
-            )
-        })
-
     private static func makeAlgorithmFamilies(methods: [AlgorithmMethodDTO])
         -> [CrabrixAchievementFamily] {
         let overall = CrabrixAchievementFamily(
@@ -563,7 +567,9 @@ enum CrabrixAchievementCatalog {
         return [overall, study] + categories
     }
 
-    static let families: [CrabrixAchievementFamily] = generalFamilies + algorithmFamilies
+    /// The static policy only defines general and overall Atlas ladders.
+    /// Per-method definitions come from a verified installed CoursePack.
+    static let families: [CrabrixAchievementFamily] = families(for: [])
 
     static func families(for methods: [AlgorithmMethodDTO]) -> [CrabrixAchievementFamily] {
         generalFamilies + makeAlgorithmFamilies(methods: methods)

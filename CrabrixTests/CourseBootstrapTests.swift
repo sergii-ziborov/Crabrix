@@ -181,6 +181,38 @@ final class CourseBootstrapTests: XCTestCase {
         XCTAssertEqual(store.state.unlockedAchievementIDs, earned)
         XCTAssertTrue(store.pendingCelebration.isEmpty)
         XCTAssertFalse(store.recordAlgorithmSolved(challenge: challenge))
+
+        let reopened = CrabrixProgressStore(defaults: defaults)
+        XCTAssertEqual(reopened.atlasMethodCount, methods.count)
+        XCTAssertEqual(reopened.atlasPatternCount, 200)
+        XCTAssertTrue(reopened.earnedAchievements.contains {
+            $0.id == "algorithm-\(methods[0].id).0"
+        })
+        let installer = try CourseInstaller(root: root, appVersion: SemanticVersion("1.1"))
+        try await installer.uninstall(courseID: "algorithms", language: "en")
+        let withoutAtlas = try await CourseBootstrap(
+            bundle: .main, root: root, appVersion: SemanticVersion("1.1")
+        ).loadInstalled()
+        reopened.configureAcademy(repository: withoutAtlas)
+        XCTAssertEqual(reopened.atlasMethodCount, methods.count)
+        XCTAssertEqual(reopened.state.unlockedAchievementIDs, earned)
+        XCTAssertTrue(reopened.pendingCelebration.isEmpty)
+
+        // A pre-CoursePack state has no metadata snapshot yet. Preserve its
+        // earned id until the verified bundled Atlas supplies the definition.
+        let legacySuite = "crabrix.atlas.legacy.\(UUID().uuidString)"
+        let legacyDefaults = try XCTUnwrap(UserDefaults(suiteName: legacySuite))
+        defer { legacyDefaults.removePersistentDomain(forName: legacySuite) }
+        let earnedID = "algorithm-\(methods[0].id).0"
+        var legacy = CrabrixProgressState()
+        legacy.achievementCatalogVersion = CrabrixAchievementCatalog.version - 1
+        legacy.unlockedAchievementIDs = [earnedID]
+        legacyDefaults.set(try JSONEncoder().encode(legacy), forKey: "crabrix.progress.state.v1")
+        let migrated = CrabrixProgressStore(defaults: legacyDefaults)
+        XCTAssertTrue(migrated.state.unlockedAchievementIDs.contains(earnedID))
+        migrated.configureAcademy(repository: repository)
+        XCTAssertTrue(migrated.earnedAchievements.contains { $0.id == earnedID })
+        XCTAssertTrue(migrated.pendingCelebration.isEmpty)
     }
 
     func testDeletingLocalMaterialDoesNotReactivateItOnRelaunch() async throws {

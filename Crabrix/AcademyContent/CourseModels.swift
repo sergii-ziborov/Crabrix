@@ -26,7 +26,7 @@ struct CourseUnitDTO: Decodable, Sendable {
     let algorithmMethod: AlgorithmMethodDTO?
 }
 
-struct AlgorithmMethodDTO: Decodable, Equatable, Sendable {
+struct AlgorithmMethodDTO: Codable, Equatable, Sendable {
     let id: String
     let title: String
     let subtitle: String
