@@ -71,16 +71,6 @@ struct ProjectMetadataFields: View {
             .lineLimit(2...4)
             .textFieldStyle(.roundedBorder)
 
-            fieldLabel("Type", systemImage: draft.kind.systemImage)
-            Picker("Project type", selection: $draft.kind) {
-                ForEach(CrabrixProject.Kind.allCases) { kind in
-                    Label(kind.title, systemImage: kind.systemImage)
-                        .tag(kind)
-                }
-            }
-            .pickerStyle(.menu)
-            .tint(CrabrixTheme.blue)
-
             fieldLabel("Folder", systemImage: "folder.fill")
             TextField("Unfiled", text: $draft.folder)
                 .textInputAutocapitalization(.words)

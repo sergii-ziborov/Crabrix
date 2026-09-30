@@ -27,6 +27,11 @@ private enum CrabrixDestination: Hashable {
     }
 }
 
+private enum ProjectImportSource {
+    case github
+    case files
+}
+
 private struct ArchiveShareItem: Identifiable {
     let id = UUID()
     let url: URL
@@ -66,6 +71,7 @@ struct ContentView: View {
     @State private var archiveShareItem: ArchiveShareItem?
     @State private var isGitHubImporterPresented = false
     @State private var isNewProjectPresented = false
+    @State private var pendingNewProjectImport: ProjectImportSource?
     @State private var isProjectActionsPresented = false
     @State private var isCargoCatalogPresented = false
     @State private var projectsPath: [ProjectsRoute] =
@@ -100,32 +106,21 @@ struct ContentView: View {
     )
 
     var body: some View {
-        TabView(selection: $selectedDestination) {
+        Group {
+            if selectedDestination == .build {
+                buildWorkspace
+            } else {
+                TabView(selection: $selectedDestination) {
             NavigationStack(path: $projectsPath) {
                 ProjectsHomeView(
-                projectID: model.projectID,
-                projectName: model.projectName,
-                fileCount: model.fileNames.count,
-                lastBuild: model.lastBuild,
-                activity: model.activity,
-                isCompilerDraining: model.isCompilerDraining,
-                recentProjects: model.recentProjects,
-                allProjects: model.allProjects,
-                onOpenCurrentProject: { selectedDestination = .build },
+                    projectName: model.projectName,
+                    fileCount: model.fileNames.count,
+                    lastBuild: model.lastBuild,
+                    activity: model.activity,
+                    isCompilerDraining: model.isCompilerDraining,
+                    projectCount: model.allProjects.count,
+                onOpenCurrentProject: openCodeWorkspace,
                 onNewProject: { isNewProjectPresented = true },
-                onOpenGitHub: { isGitHubImporterPresented = true },
-                onOpenFiles: { isFileImporterPresented = true },
-                onOpenRecent: { id in
-                    Task {
-                        if await model.openRecentProject(id: id) {
-                            selectedDestination = .build
-                        }
-                    }
-                },
-                onOpenShowcase: { id in
-                    model.loadShowcaseProject(id: id)
-                    selectedDestination = .build
-                },
                 onOpenLibrary: { projectsPath = [.library] },
                 onOpenMyProjects: { projectsPath = [.myProjects] }
                 )
@@ -138,7 +133,7 @@ struct ContentView: View {
                                 Task {
                                     if await model.openRecentProject(id: id) {
                                         projectsPath = []
-                                        selectedDestination = .build
+                                        openCodeWorkspace()
                                     }
                                 }
                             },
@@ -164,101 +159,13 @@ struct ContentView: View {
                         ProjectLibraryView { id in
                             model.loadShowcaseProject(id: id)
                             projectsPath = []
-                            selectedDestination = .build
+                            openCodeWorkspace()
                         }
                     }
                 }
             }
             .tabItem { Label("Projects", systemImage: "folder.fill") }
             .tag(CrabrixDestination.projects)
-
-            ZStack {
-                CrabrixTheme.background.ignoresSafeArea()
-
-                VStack(spacing: 0) {
-                    AppHeader(
-                        toolchain: model.toolchain,
-                        transfer: model.projectTransfer,
-                        activity: model.activity,
-                        canRun: model.canStartBuild && !model.isProjectOperationInProgress,
-                        onRun: model.run,
-                        onCancelBuild: model.cancelBuild,
-                        onOpenProjects: { selectedDestination = .projects },
-                        onCloseWorkspace: closeBuildWorkspace,
-                        onNewProject: { isNewProjectPresented = true },
-                        onOpenFiles: { isFileImporterPresented = true },
-                        onOpenGitHub: { isGitHubImporterPresented = true },
-                        onProjectActions: {
-                            isProjectActionsPresented = true
-                        }
-                    )
-                    if model.projectTransfer.isWorking || model.projectTransfer.isFailure {
-                        ProjectTransferStrip(transfer: model.projectTransfer)
-                    }
-                    Divider().overlay(CrabrixTheme.border)
-
-                    if horizontalSizeClass == .regular {
-                        HStack(spacing: 0) {
-                            ProjectSidebar(
-                                    projectName: model.projectName,
-                                    files: model.fileNames,
-                                    selectedFile: model.selectedFile,
-                                    manifest: model.cargoManifest,
-                                    report: model.compatibilityReport,
-                                    provenance: model.provenance,
-                                    cargoStage: model.cargoStage,
-                                    cargoWorkspace: model.cargoWorkspace,
-                                    isBusy: model.isBusy,
-                                    onProjectActions: {
-                                        isProjectActionsPresented = true
-                                    },
-                                    onSelect: selectEditorFile,
-                                    onNewFile: { projectItemCreation = .rustFile },
-                                    onNewFolder: { projectItemCreation = .moduleFolder },
-                                    onResolvePackages: model.refreshCargoWorkspace,
-                                    onPinPackages: model.pinDependenciesForOffline,
-                                    onAddPackage: { isCargoCatalogPresented = true },
-                                    onRemovePackage: model.removeCargoDependency,
-                                    vendoredFiles: model.vendoredFiles,
-                                    onVendor: model.vendorCrate,
-                                    onOpenVendor: model.openVendoredCrate,
-                                    onResetVendor: model.resetVendoredCrate
-                                )
-                            .frame(width: projectSidebarWidth)
-
-                            ResizablePanelDivider(
-                                edge: .leading,
-                                width: $projectSidebarWidth,
-                                isCollapsed: $isProjectSidebarCollapsed,
-                                minimumWidth: 170,
-                                maximumWidth: 360,
-                                canCollapse: false
-                            )
-
-                            editorPane
-                                .frame(minWidth: 340)
-
-                            ResizablePanelDivider(
-                                edge: .trailing,
-                                width: $inspectorWidth,
-                                isCollapsed: $isInspectorCollapsed,
-                                minimumWidth: 320,
-                                maximumWidth: 560
-                            )
-
-                            if !isInspectorCollapsed {
-                                inspectorPane
-                                    .frame(width: inspectorWidth)
-                                    .transition(.move(edge: .trailing).combined(with: .opacity))
-                            }
-                        }
-                    } else {
-                        compactBuildWorkspace
-                    }
-                }
-            }
-            .tabItem { Label("Build", systemImage: "hammer.fill") }
-            .tag(CrabrixDestination.build)
 
             LearningHubView(
                 navigationPath: $learningPath,
@@ -275,10 +182,7 @@ struct ContentView: View {
 
             SettingsView(
                 toolchain: model.toolchain,
-                manifest: model.cargoManifest,
-                workspace: model.cargoWorkspace,
                 storage: model.cargoStorage,
-                onAddDependency: model.addCargoDependency,
                 onRefreshStorage: model.refreshCargoStorage,
                 onClearBuildArtifacts: model.clearCargoBuildArtifacts,
                 onClearDownloadedArchives: model.clearCargoDownloadedArchives,
@@ -287,8 +191,10 @@ struct ContentView: View {
             )
             .tabItem { Label("Settings", systemImage: "gearshape.fill") }
             .tag(CrabrixDestination.settings)
+                }
+                .tabViewStyle(.sidebarAdaptable)
+            }
         }
-        .tabViewStyle(.sidebarAdaptable)
         .tint(CrabrixTheme.coral)
         .foregroundStyle(CrabrixTheme.primary)
         .preferredColorScheme(
@@ -297,11 +203,21 @@ struct ContentView: View {
         .sheet(isPresented: $isCargoCatalogPresented) {
             CargoDependencyCatalogSheet(onAdd: model.addCargoDependency)
         }
-        .sheet(isPresented: $isNewProjectPresented) {
-            NewProjectSheet { request in
-                model.createProject(request)
-                selectedDestination = .build
-            }
+        .sheet(isPresented: $isNewProjectPresented, onDismiss: presentPendingProjectImport) {
+            NewProjectSheet(
+                onCreate: { request in
+                    model.createProject(request)
+                    openCodeWorkspace()
+                },
+                onOpenGitHub: {
+                    pendingNewProjectImport = .github
+                    isNewProjectPresented = false
+                },
+                onOpenFiles: {
+                    pendingNewProjectImport = .files
+                    isNewProjectPresented = false
+                }
+            )
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
@@ -350,7 +266,7 @@ struct ContentView: View {
                     let imported = await model.importGitHub(rawURL)
                     if imported {
                         isGitHubImporterPresented = false
-                        selectedDestination = .build
+                        openCodeWorkspace()
                     }
                 }
             )
@@ -376,7 +292,7 @@ struct ContentView: View {
                 Task {
                     await model.openProject(from: url)
                     if case .ready = model.projectTransfer {
-                        selectedDestination = .build
+                        openCodeWorkspace()
                     }
                 }
             case let .failure(error):
@@ -402,16 +318,16 @@ struct ContentView: View {
             }
             if arguments.contains("--crabrix-auto-multifile") {
                 model.loadMultiFileSample()
-                selectedDestination = .build
+                openCodeWorkspace()
             }
             if arguments.contains("--crabrix-auto-borrow") {
                 model.loadBorrowDiagnosticSample()
-                selectedDestination = .build
+                openCodeWorkspace()
             }
             if let githubArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-github=") }) {
                 let rawURL = String(githubArgument.dropFirst("--crabrix-auto-github=".count))
                 if await model.importGitHub(rawURL) {
-                    selectedDestination = .build
+                    openCodeWorkspace()
                 }
             }
             if arguments.contains("--crabrix-auto-learn") {
@@ -438,7 +354,7 @@ struct ContentView: View {
             if let showcaseArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-showcase=") }) {
                 let id = String(showcaseArgument.dropFirst("--crabrix-auto-showcase=".count))
                 model.loadShowcaseProject(id: id)
-                selectedDestination = .build
+                openCodeWorkspace()
             }
             if arguments.contains("--crabrix-auto-run") {
                 model.run()
@@ -448,7 +364,7 @@ struct ContentView: View {
             if !arguments.contains(where: { $0.hasPrefix("--crabrix-auto-") }) {
                 await model.consumePendingSharedImport()
                 if case .ready = model.projectTransfer {
-                    selectedDestination = .build
+                    openCodeWorkspace()
                 }
             }
         }
@@ -461,6 +377,7 @@ struct ContentView: View {
         }
         .onChange(of: model.projectID) { _, _ in
             terminal.attach(to: model.exportProject())
+            selectedBuildDockTab = .code
         }
         .onChange(of: model.activity) { oldValue, newValue in
             terminal.activityChanged(
@@ -550,6 +467,20 @@ struct ContentView: View {
         }
     }
 
+    private func openCodeWorkspace() {
+        selectedBuildDockTab = .code
+        selectedDestination = .build
+    }
+
+    private func presentPendingProjectImport() {
+        guard let source = pendingNewProjectImport else { return }
+        pendingNewProjectImport = nil
+        switch source {
+        case .github: isGitHubImporterPresented = true
+        case .files: isFileImporterPresented = true
+        }
+    }
+
     private func startLesson(_ lesson: RustLesson, session: CourseSession) {
         guard let content = CourseLessonExecution(lesson: lesson, session: session) else { return }
         let isReview = model.completedLessonIDs.contains(lesson.id)
@@ -584,7 +515,7 @@ struct ContentView: View {
             return
         } }
         model.beginLesson(lesson.id, isReview: isReview, content: content)
-        selectedDestination = .build
+        openCodeWorkspace()
     }
 
     private var editorPane: some View {
@@ -709,6 +640,94 @@ struct ContentView: View {
                 }
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+        }
+    }
+
+    private var buildWorkspace: some View {
+        ZStack {
+            CrabrixTheme.background.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                AppHeader(
+                    toolchain: model.toolchain,
+                    transfer: model.projectTransfer,
+                    activity: model.activity,
+                    canRun: model.canStartBuild && !model.isProjectOperationInProgress,
+                    onRun: model.run,
+                    onCancelBuild: model.cancelBuild,
+                    onOpenProjects: { selectedDestination = .projects },
+                    onCloseWorkspace: closeBuildWorkspace,
+                    onNewProject: { isNewProjectPresented = true },
+                    onOpenFiles: { isFileImporterPresented = true },
+                    onOpenGitHub: { isGitHubImporterPresented = true },
+                    onProjectActions: {
+                        isProjectActionsPresented = true
+                    }
+                )
+                if model.projectTransfer.isWorking || model.projectTransfer.isFailure {
+                    ProjectTransferStrip(transfer: model.projectTransfer)
+                }
+                Divider().overlay(CrabrixTheme.border)
+
+                if horizontalSizeClass == .regular {
+                    HStack(spacing: 0) {
+                        ProjectSidebar(
+                                projectName: model.projectName,
+                                files: model.fileNames,
+                                selectedFile: model.selectedFile,
+                                manifest: model.cargoManifest,
+                                report: model.compatibilityReport,
+                                provenance: model.provenance,
+                                cargoStage: model.cargoStage,
+                                cargoWorkspace: model.cargoWorkspace,
+                                isBusy: model.isBusy,
+                                onProjectActions: {
+                                    isProjectActionsPresented = true
+                                },
+                                onSelect: selectEditorFile,
+                                onNewFile: { projectItemCreation = .rustFile },
+                                onNewFolder: { projectItemCreation = .moduleFolder },
+                                onResolvePackages: model.refreshCargoWorkspace,
+                                onPinPackages: model.pinDependenciesForOffline,
+                                onAddPackage: { isCargoCatalogPresented = true },
+                                onRemovePackage: model.removeCargoDependency,
+                                vendoredFiles: model.vendoredFiles,
+                                onVendor: model.vendorCrate,
+                                onOpenVendor: model.openVendoredCrate,
+                                onResetVendor: model.resetVendoredCrate
+                            )
+                        .frame(width: projectSidebarWidth)
+
+                        ResizablePanelDivider(
+                            edge: .leading,
+                            width: $projectSidebarWidth,
+                            isCollapsed: $isProjectSidebarCollapsed,
+                            minimumWidth: 170,
+                            maximumWidth: 360,
+                            canCollapse: false
+                        )
+
+                        editorPane
+                            .frame(minWidth: 340)
+
+                        ResizablePanelDivider(
+                            edge: .trailing,
+                            width: $inspectorWidth,
+                            isCollapsed: $isInspectorCollapsed,
+                            minimumWidth: 320,
+                            maximumWidth: 560
+                        )
+
+                        if !isInspectorCollapsed {
+                            inspectorPane
+                                .frame(width: inspectorWidth)
+                                .transition(.move(edge: .trailing).combined(with: .opacity))
+                        }
+                    }
+                } else {
+                    compactBuildWorkspace
+                }
             }
         }
     }

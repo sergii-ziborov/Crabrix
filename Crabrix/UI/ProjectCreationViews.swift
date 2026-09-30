@@ -41,6 +41,8 @@ struct NewProjectSheet: View {
     @State private var template: RustProjectTemplate = .hello
 
     let onCreate: (NewRustProjectRequest) -> Void
+    let onOpenGitHub: () -> Void
+    let onOpenFiles: () -> Void
 
     var body: some View {
         NavigationStack {
@@ -53,6 +55,20 @@ struct NewProjectSheet: View {
                     Text("Choose a starting structure. Every template stays editable and builds with the bundled compiler.")
                         .font(.subheadline)
                         .foregroundStyle(CrabrixTheme.muted)
+
+                    HStack(spacing: 10) {
+                        Button(action: onOpenGitHub) {
+                            Label("GitHub", systemImage: "arrow.down.circle")
+                                .frame(maxWidth: .infinity)
+                        }
+                        Button(action: onOpenFiles) {
+                            Label("iCloud Drive / Files", systemImage: "folder")
+                                .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .buttonStyle(.bordered)
+
+                    Divider().overlay(CrabrixTheme.border)
 
                     TextField("Project name", text: $draft.name)
                         .textInputAutocapitalization(.never)

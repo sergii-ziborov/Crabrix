@@ -6,13 +6,8 @@ struct SettingsView: View {
     @AppStorage("crabrix.keepAwakeDuringBuild") private var keepAwakeDuringBuild = true
     @AppStorage("crabrix.appleIntelligenceCompletion") private var appleIntelligenceCompletion = true
     @AppStorage("crabrix.appleIntelligenceDiagnostics") private var appleIntelligenceDiagnostics = true
-    @State private var isAddingDependency = false
-
     let toolchain: ToolchainStatus
-    let manifest: CargoManifest?
-    let workspace: CargoWorkspaceSnapshot
     let storage: CrateStorageUsage
-    let onAddDependency: (String, String) -> Bool
     let onRefreshStorage: () async -> Void
     let onClearBuildArtifacts: () async -> Void
     let onClearDownloadedArchives: () async -> Void
@@ -28,7 +23,6 @@ struct SettingsView: View {
                     settingsHeader
                     appearanceSection
                     editorSection
-                    cargoSection
                     cargoStorageSection
                     compilerSection
                     helpSection
@@ -43,11 +37,6 @@ struct SettingsView: View {
             .navigationTitle("Settings")
         }
         .task { await onRefreshStorage() }
-        .sheet(isPresented: $isAddingDependency) {
-            CargoDependencyCatalogSheet(onAdd: onAddDependency)
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
-        }
     }
 
     private var settingsHeader: some View {
@@ -166,86 +155,6 @@ struct SettingsView: View {
                     }
                 }
                 .tint(CrabrixTheme.blue)
-            }
-        }
-    }
-
-    private var cargoSection: some View {
-        SettingsSection(
-            title: "Cargo package",
-            detail: manifest == nil
-                ? "Open or create a Cargo project to manage its manifest."
-                : "Changes are written to the editable Cargo.toml in this project."
-        ) {
-            if let manifest {
-                HStack {
-                    Label(manifest.name, systemImage: "shippingbox.fill")
-                        .font(.headline)
-                        .foregroundStyle(CrabrixTheme.amber)
-                    Spacer()
-                    Text("edition \(manifest.edition ?? "—")")
-                        .font(.caption.monospaced())
-                        .foregroundStyle(CrabrixTheme.muted)
-                }
-
-                if manifest.dependencies.isEmpty {
-                    Text("No dependencies yet")
-                        .font(.caption)
-                        .foregroundStyle(CrabrixTheme.muted)
-                } else {
-                    ForEach(manifest.dependencies) { dependency in
-                        HStack {
-                            Image(systemName: "cube.fill")
-                                .foregroundStyle(CrabrixTheme.blue)
-                            Text(dependency.name)
-                                .font(.subheadline.monospaced().bold())
-                            Spacer()
-                            Text(dependency.requirement ?? dependency.source.rawValue)
-                                .font(.caption.monospaced())
-                                .foregroundStyle(CrabrixTheme.muted)
-                        }
-                        .padding(.vertical, 3)
-                    }
-                }
-
-                Button {
-                    isAddingDependency = true
-                } label: {
-                    Label("Add Cargo dependency", systemImage: "plus.circle.fill")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(CrabrixTheme.blue)
-
-                if !workspace.packages.isEmpty {
-                    Divider().overlay(CrabrixTheme.border)
-                    HStack {
-                        Label("Resolved graph", systemImage: "point.3.filled.connected.trianglepath.dotted")
-                            .font(.caption.bold())
-                        Spacer()
-                        Text(workspace.summary)
-                            .font(.caption2.monospaced())
-                            .foregroundStyle(CrabrixTheme.muted)
-                    }
-                    ForEach(workspace.packages) { package in
-                        CargoPackageRow(status: package)
-                            .padding(.vertical, 2)
-                    }
-                }
-
-                Label(
-                    "Crabrix downloads packages from crates.io, verifies each SHA-256 checksum, and compiles them with the bundled rustc. Builds run locally.",
-                    systemImage: "info.circle"
-                )
-                .font(.caption2)
-                .foregroundStyle(CrabrixTheme.muted)
-            } else {
-                ContentUnavailableView(
-                    "No Cargo.toml",
-                    systemImage: "shippingbox",
-                    description: Text("New Rust Project creates one automatically.")
-                )
-                .foregroundStyle(CrabrixTheme.muted)
             }
         }
     }
