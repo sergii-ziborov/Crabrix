@@ -5,7 +5,12 @@ import XCTest
 final class CoursePackVerifierTests: XCTestCase {
     private func fixture(_ name: String) throws -> URL {
         let bundle = Bundle(for: Self.self)
-        return try XCTUnwrap(bundle.url(forResource: name, withExtension: nil, subdirectory: "CoursePack"))
+        // XcodeGen flattens resource folders in the generated test bundle.
+        // Keep the nested lookup for projects that preserve the directory.
+        return try XCTUnwrap(
+            bundle.url(forResource: name, withExtension: nil, subdirectory: "CoursePack")
+                ?? bundle.url(forResource: name, withExtension: nil)
+        )
     }
 
     private func keyring() throws -> CourseKeyring {
