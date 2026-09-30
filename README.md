@@ -18,7 +18,7 @@ For Cargo projects, Crabrix resolves a supported subset of crates.io dependencie
 
 ## Runtime and compiler
 
-The app pins [CrabrixRuntime](https://github.com/sergii-ziborov/crabrix-runtime) at `731d09b7c779e62fd42832312c42d29f69475361`, derived from WasmKit **0.4.1** (`a0471eaee817c523b8023d8ebb1c70ff70b7950a`). The adapter uses upstream fuel metering, a separate cancellation/deadline probe, read-only compiler inputs, and fresh execution stores. The Wasm guest has no network import. [Runtime integration](docs/runtime-integration.md) records the tested paths and remaining security gates.
+The app pins [CrabrixRuntime](https://github.com/sergii-ziborov/crabrix-runtime) at `719f94d7d27368549502828217e3dbc7e6738852`, derived from WasmKit **0.4.1** (`a0471eaee817c523b8023d8ebb1c70ff70b7950a`). The adapter uses upstream fuel metering, a separate cancellation/deadline probe, read-only compiler inputs, bounded WASI output, and fresh execution stores. The Wasm guest has no network import. [Runtime integration](docs/runtime-integration.md) records the tested paths and remaining security gates.
 
 The current app bundle still contains the pinned `artifacts-test-7` WASI `rustc` and `wasm32-wasip1` sysroot. They are fetched and hash checked on the **build machine**, then included in the app; the phone does not download compiler or runtime updates. [crabrix-toolchain](https://github.com/sergii-ziborov/crabrix-toolchain) is the public source locked builder. Its own compiler artifacts are not yet the app's release input; see [toolchain status](docs/toolchain.md). Source availability and a lock file are not evidence of a completed source build.
 

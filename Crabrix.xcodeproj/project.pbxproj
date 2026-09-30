@@ -131,6 +131,7 @@
 		9B4E113026A2A4D2B054AE8E /* CrabrixApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4060928D903E08DF95C877F /* CrabrixApp.swift */; };
 		9BE2366D615746FCD0FA9E29 /* RustLessonProgression.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4BBA0B03501D7E47698809C /* RustLessonProgression.swift */; };
 		9F22D3FE5EDB6F45D89EBEEB /* CoursePackVerifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E974AA588AEAB526FF75C14 /* CoursePackVerifierTests.swift */; };
+		A2F5E5D31700F19C82F66E5B /* RustcRuntimeCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C77AD3B175C77EC406E52254 /* RustcRuntimeCacheTests.swift */; };
 		A7359AA071BD84A0B0199135 /* SyntaxCodeEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BAB1D7F07AC65B0B69D9260 /* SyntaxCodeEditor.swift */; };
 		A770F53B02D624E5EA6E5005 /* CourseInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25E300C5C48E25EFC49EB364 /* CourseInstaller.swift */; };
 		AB5272E92033B88001FAA52F /* swift-log-NOTICE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 791FEBF16BDA5999BCA244DF /* swift-log-NOTICE.txt */; };
@@ -376,6 +377,7 @@
 		C47D79BBDE68DFCC732EF6AC /* LocalAvatarStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAvatarStoreTests.swift; sourceTree = "<group>"; };
 		C621B6A608B74B2DCB8B6A0F /* CourseCatalogClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseCatalogClient.swift; sourceTree = "<group>"; };
 		C667F0B03C5208C296B57556 /* CrabrixShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CrabrixShare.entitlements; sourceTree = "<group>"; };
+		C77AD3B175C77EC406E52254 /* RustcRuntimeCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustcRuntimeCacheTests.swift; sourceTree = "<group>"; };
 		C8B0903AB1A17FB1FEAA4301 /* Rust-COPYRIGHT.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Rust-COPYRIGHT.txt"; sourceTree = "<group>"; };
 		CA1D24127CCCD6858FC76A21 /* TopicMastery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopicMastery.swift; sourceTree = "<group>"; };
 		CA5866457924F7521705CCD1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -691,6 +693,7 @@
 				44ABFA97B5DA7FD2FADA63C6 /* ProjectTerminalSessionTests.swift */,
 				7531DAE2F4A321871F1FDA9E /* RustCanvasOutputTests.swift */,
 				4775CE41B31CD63B5B25459E /* RustCompletionTests.swift */,
+				C77AD3B175C77EC406E52254 /* RustcRuntimeCacheTests.swift */,
 				02D5F2FB12886D9E89DDD12A /* RustDiagnosticParserTests.swift */,
 				E99B3257756AEEA188EB639C /* RustLessonDepthTests.swift */,
 				A19951F6B509DE6C56E27216 /* RustLessonProgressionTests.swift */,
@@ -1156,6 +1159,7 @@
 				1BD651B7A17437422E9F0198 /* RustLessonDepthTests.swift in Sources */,
 				F18AFE001FA97304AEA1A402 /* RustLessonProgressionTests.swift in Sources */,
 				972149CB1D1FD1EFD7A83D7B /* RustSourcePatchTests.swift in Sources */,
+				A2F5E5D31700F19C82F66E5B /* RustcRuntimeCacheTests.swift in Sources */,
 				CB5D1D144064727B02CE7DD0 /* SemanticVersionTests.swift in Sources */,
 				67D60A5B69DCD830E71A841F /* SyntaxCodeEditorTests.swift in Sources */,
 				1D8F90248920034745A225EE /* SyntaxHighlighterTests.swift in Sources */,

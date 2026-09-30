@@ -123,9 +123,27 @@ struct WasmExecutionCancelled: Error, Sendable {
 /// would dominate a multi-crate build, so the module is cached for the lifetime
 /// of the host.
 final class RustcRuntime: @unchecked Sendable {
+    private struct CachedProgramModule {
+        let module: Module
+        let estimatedCostBytes: Int
+    }
+
     private var cachedEngine: Engine?
     private var cachedRustcModule: Module?
-    private var cachedProgramModules: [String: Module] = [:]
+    private var cachedProgramModules: [String: CachedProgramModule] = [:]
+    private var programModuleRecency: [String] = []
+    private var programModuleEstimatedBytes = 0
+    private let programModuleCacheEntryLimit: Int
+    private let programModuleCacheCostLimitBytes: Int
+
+    init(
+        programModuleCacheEntryLimit: Int = 8,
+        programModuleCacheCostLimitBytes: Int = 64 * 1024 * 1024
+    ) {
+        precondition(programModuleCacheEntryLimit > 0 && programModuleCacheCostLimitBytes > 0)
+        self.programModuleCacheEntryLimit = programModuleCacheEntryLimit
+        self.programModuleCacheCostLimitBytes = programModuleCacheCostLimitBytes
+    }
 
     func engine() -> Engine {
         if let cachedEngine { return cachedEngine }
@@ -157,14 +175,46 @@ final class RustcRuntime: @unchecked Sendable {
         return module
     }
 
-    func programModule(for key: String) -> Module? { cachedProgramModules[key] }
+    /// These calls run on the compiler's serial queue. A cached Module is
+    /// immutable parsed state; each execution still creates a fresh Store.
+    func programModule(for key: String) -> Module? {
+        guard let entry = cachedProgramModules[key] else { return nil }
+        programModuleRecency.removeAll { $0 == key }
+        programModuleRecency.append(key)
+        return entry.module
+    }
 
-    func cacheProgramModule(_ module: Module, for key: String) {
-        cachedProgramModules[key] = module
+    func cacheProgramModule(_ module: Module, for key: String, wasmFileBytes: Int) {
+        // WasmKit does not expose parsed-state allocation size. Four times the
+        // source file size is a conservative admission proxy, combined with a
+        // strict entry count. This is not a measured RSS bound.
+        let minimumCost = 64 * 1024
+        guard wasmFileBytes >= 0,
+              wasmFileBytes <= programModuleCacheCostLimitBytes / 4
+        else { return }
+        let cost = max(minimumCost, wasmFileBytes * 4)
+        guard cost <= programModuleCacheCostLimitBytes else { return }
+
+        if let old = cachedProgramModules.removeValue(forKey: key) {
+            programModuleEstimatedBytes -= old.estimatedCostBytes
+            programModuleRecency.removeAll { $0 == key }
+        }
+        while cachedProgramModules.count >= programModuleCacheEntryLimit
+            || programModuleEstimatedBytes > programModuleCacheCostLimitBytes - cost {
+            let oldest = programModuleRecency.removeFirst()
+            if let evicted = cachedProgramModules.removeValue(forKey: oldest) {
+                programModuleEstimatedBytes -= evicted.estimatedCostBytes
+            }
+        }
+        cachedProgramModules[key] = CachedProgramModule(module: module, estimatedCostBytes: cost)
+        programModuleRecency.append(key)
+        programModuleEstimatedBytes += cost
     }
 
     func clearProgramModules() {
         cachedProgramModules.removeAll(keepingCapacity: false)
+        programModuleRecency.removeAll(keepingCapacity: false)
+        programModuleEstimatedBytes = 0
     }
 
     /// Runs a WASI module to completion, capturing stdout and stderr.

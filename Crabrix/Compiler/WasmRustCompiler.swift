@@ -1,5 +1,6 @@
 import Foundation
 import CryptoKit
+import UIKit
 @_spi(Fuzzing) import WasmKit
 import WasmKitWASI
 
@@ -50,10 +51,25 @@ final class WasmRustCompiler: @unchecked Sendable {
     private var checkCacheOrder: [String] = []
     private let interrupterLock = NSLock()
     private var activeInterrupter: WasmInterrupter?
+    private var memoryWarningObserver: NSObjectProtocol?
 
     init(bundle: Bundle = .main, ledger: CrateCompatibilityLedger = .shared) {
         self.bundle = bundle
         self.ledger = ledger
+        memoryWarningObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didReceiveMemoryWarningNotification,
+            object: nil,
+            queue: nil
+        ) { [weak self] _ in
+            guard let self else { return }
+            self.queue.async { self.runtime.clearProgramModules() }
+        }
+    }
+
+    deinit {
+        if let memoryWarningObserver {
+            NotificationCenter.default.removeObserver(memoryWarningObserver)
+        }
     }
 
     // MARK: - Toolchain
@@ -421,9 +437,10 @@ final class WasmRustCompiler: @unchecked Sendable {
             }
 
             let programModule = try parseWasm(filePath: programURL.path)
-            let programData = try Data(contentsOf: programURL)
-            runtime.cacheProgramModule(programModule, for: cacheKey)
-            persistProgramArtifact(programData, for: cacheKey)
+            if let byteCount = try? programURL.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+                runtime.cacheProgramModule(programModule, for: cacheKey, wasmFileBytes: byteCount)
+            }
+            persistProgramArtifact(at: programURL, for: cacheKey)
 
             return try executeProgram(
                 module: programModule,
@@ -1104,7 +1121,9 @@ final class WasmRustCompiler: @unchecked Sendable {
         }
         do {
             let module = try parseWasm(filePath: url.path)
-            runtime.cacheProgramModule(module, for: key)
+            if let byteCount = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+                runtime.cacheProgramModule(module, for: key, wasmFileBytes: byteCount)
+            }
             return module
         } catch {
             try? FileManager.default.removeItem(at: url)
@@ -1112,11 +1131,15 @@ final class WasmRustCompiler: @unchecked Sendable {
         }
     }
 
-    private func persistProgramArtifact(_ data: Data, for key: String) {
+    private func persistProgramArtifact(at source: URL, for key: String) {
         guard let directory = programCacheURL, let url = programArtifactURL(for: key) else { return }
+        let staging = directory.appending(path: ".\(key)-\(UUID().uuidString).stage")
+        defer { try? FileManager.default.removeItem(at: staging) }
         do {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            try data.write(to: url, options: .atomic)
+            if FileManager.default.fileExists(atPath: url.path) { return }
+            try FileManager.default.copyItem(at: source, to: staging)
+            try FileManager.default.moveItem(at: staging, to: url)
         } catch {
             // A cache write must never turn a successful local compilation into a failure.
         }
