@@ -8,13 +8,16 @@ TO SEE IT COMPILE
 1. Projects → current project card → Run. The project workspace opens on Code;
    the result appears in Output. Select a different file to return to Code.
 2. Edit the string in main.rs and Run again to see a fresh local compilation.
-3. Open the bundled borrowing lesson in Learn, open its starter as a project,
-   inspect the E0502 diagnostic, repair the source, and Run. Lesson hints are
-   available in Output.
+3. Open the bundled Basics course in Learn. To inspect the borrowing lesson,
+   download Ownership after confirming its shown size, open its starter as a
+   project, inspect the E0502 diagnostic, repair the source, and Run. Lesson
+   hints are available in Output.
 
 COURSES AND DOWNLOADS
-Learn contains six Rust courses and Algorithm Atlas, all included in the
-transition build for offline access. Learn → Check for course updates reads a
+Learn lists six Rust courses and Algorithm Atlas. A fresh installation opens
+Basics offline and offers the other six as downloads. An update with legacy
+progress activates all seven transition packs offline from the app bundle.
+Learn → Check for course updates reads a
 signed public catalog. A new version shows its download size before the user
 confirms. A verified CoursePack contains learning data, media, and editable
 Rust starter source; it cannot update the compiler, runtime, or executable

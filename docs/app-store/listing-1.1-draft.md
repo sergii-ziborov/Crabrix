@@ -19,11 +19,13 @@ there is no cloud compiler or required account.
 LEARN WITH THE FULL ACADEMY
 Seven courses cover Rust fundamentals through systems and interview topics,
 plus Algorithm Atlas: 742 lessons and steps, 200 algorithm challenges, source
-projects, questions, explanations, and practice material. Lessons can open
-starter code as a separate editable project. Course downloads show their size,
+projects, questions, explanations, and practice material. A new installation
+starts with Basics; choose and download the other courses from the catalog.
+Existing learners retain all seven transition courses offline after updating.
+Lessons can open starter code as a separate editable project. Course downloads show their size,
 are checked before installation, and leave your projects and progress in place
-when you update or delete course material. The included transition courses are
-readable offline. New course versions need a connection for their first download.
+when you update or delete course material. Installed courses are readable
+offline. New course versions need a connection for their first download.
 
 BUILD YOUR OWN PROJECT
 The project workspace has a native file tree, syntax-aware editor, Code and

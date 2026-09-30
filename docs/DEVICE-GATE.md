@@ -5,7 +5,7 @@ Simulator results are recorded in [VALIDATION.md](VALIDATION.md). Release accept
 ## Academy path
 
 1. Upgrade an installation with legacy progress while offline. The transition packs must activate from the new app bundle, and the prior course, progress, achievements, and projects must still open.
-2. Cold install and open all seven baseline courses. Check a representative language lesson and Atlas challenge against the signed 1.0.1 package data.
+2. Cold install: Basics should open offline. The other six courses should be offered for size-confirmed download. Download Ownership and Algorithm Atlas, then check a representative language lesson and Atlas challenge against the signed 1.0.1 package data.
 3. Check for updates. Show the archive size, cancel during download, relaunch, resume or retry, and confirm the old course remains readable until activation.
 4. Open a lesson while an update activates. Its text, answer, validator, and starter project must remain tied to the original content version until that session closes.
 5. Create a project from a starter, edit it, restart offline, update or remove course material, and confirm the project and attempt are still durable. Reinstallation must not award completion twice.
@@ -23,4 +23,4 @@ Simulator results are recorded in [VALIDATION.md](VALIDATION.md). Release accept
 
 ## Current state
 
-The new Academy reader, public signed fetch, runtime fuel/Stop, and E0502 Check have Simulator evidence. Compiler read-only preopens and write-time output bounds, clean own toolchain production, warning snapshot parity, device measurements, and the interruption/crash matrix are still open. No physical gate is marked passed merely because its test procedure is written here.
+The new Academy reader, first-launch selection, public signed fetch, compiler read-only preopens, write-time output bounds, runtime fuel/Stop, E0502 Check, and warning snapshot parity have Simulator evidence. Clean own toolchain production, device measurements, and the interruption/crash matrix are still open. No physical gate is marked passed merely because its test procedure is written here.
