@@ -77,6 +77,7 @@ extension CourseRepository {
 
 struct LoadedCourse: Sendable {
     let course: RustCourse
+    let language: String
     let order: Int
     let writing: [String: RustLessonWriting]
     let depth: [String: RustLessonDepth]

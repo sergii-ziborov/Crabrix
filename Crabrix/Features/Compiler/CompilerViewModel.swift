@@ -1816,6 +1816,7 @@ final class CompilerViewModel: ObservableObject {
             lessonEvidenceMessage = validation.detail
             appendLessonAttemptEvidence(
                 lessonID: activeLessonID,
+                content: content,
                 revision: revision,
                 result: value,
                 passed: validation.passed
@@ -1834,6 +1835,7 @@ final class CompilerViewModel: ObservableObject {
 
     private func appendLessonAttemptEvidence(
         lessonID: String,
+        content: CourseLessonExecution,
         revision: WorkspaceRevision,
         result: CompilationResult,
         passed: Bool
@@ -1849,7 +1851,18 @@ final class CompilerViewModel: ObservableObject {
                 stdoutHash: result.stdout.isEmpty
                     ? nil
                     : WorkspaceRevision.contentHash(result.stdout),
-                completedAt: Date()
+                completedAt: Date(),
+                identity: LessonAttemptIdentity(
+                    courseID: content.courseID,
+                    language: content.language,
+                    contentVersion: content.contentVersion,
+                    lessonID: lessonID,
+                    exerciseID: lessonID,
+                    validatorVersion: LessonAttemptEvidence.validatorVersion,
+                    toolchainID: revision.toolchainID,
+                    projectID: revision.projectID,
+                    projectRevision: revision.sourceTreeHash
+                )
             )
         )
         if lessonAttemptEvidence.count > 500 {

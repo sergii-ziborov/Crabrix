@@ -156,7 +156,8 @@ struct InstalledCourseRepository: CourseRepository {
             theme: theme, units: units
         )
         return LoadedCourse(
-            course: runtime, order: source.order, writing: writings, depth: depths, evidence: evidence,
+            course: runtime, language: language, order: source.order,
+            writing: writings, depth: depths, evidence: evidence,
             projects: projects, challenges: challenges, terms: terms,
             contentVersion: version, archiveSHA256: record.archiveSHA256
         )

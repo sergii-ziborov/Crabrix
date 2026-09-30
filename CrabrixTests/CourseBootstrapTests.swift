@@ -130,4 +130,42 @@ final class CourseBootstrapTests: XCTestCase {
         ))
         XCTAssertEqual(afterRelaunch.courses.count, first.courses.count - 1)
     }
+
+    func testAttemptEvidenceDecodesOldRecordsWithoutInventingCourseVersion() throws {
+        let evidence = LessonAttemptEvidence(
+            lessonID: "borrowing", projectRevision: "source-hash",
+            validatorVersion: LessonAttemptEvidence.validatorVersion,
+            compilerVersion: "legacy-rustc", result: .passed,
+            diagnosticCodes: [], stdoutHash: nil, completedAt: Date(timeIntervalSince1970: 0)
+        )
+        let encoded = try JSONEncoder().encode(evidence)
+        var legacyObject = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: encoded) as? [String: Any]
+        )
+        legacyObject.removeValue(forKey: "identity")
+        let legacyBytes = try JSONSerialization.data(withJSONObject: legacyObject)
+        let restored = try JSONDecoder().decode(LessonAttemptEvidence.self, from: legacyBytes)
+
+        XCTAssertEqual(restored.lessonID, "borrowing")
+        XCTAssertEqual(restored.projectRevision, "source-hash")
+        XCTAssertNil(restored.identity)
+
+        let identity = LessonAttemptIdentity(
+            courseID: "ownership", language: "en", contentVersion: "1.0.1",
+            lessonID: "borrowing", exerciseID: "borrowing",
+            validatorVersion: LessonAttemptEvidence.validatorVersion,
+            toolchainID: "artifacts-test-7", projectID: UUID(),
+            projectRevision: "source-hash"
+        )
+        let modern = LessonAttemptEvidence(
+            lessonID: evidence.lessonID, projectRevision: evidence.projectRevision,
+            validatorVersion: evidence.validatorVersion,
+            compilerVersion: evidence.compilerVersion, result: evidence.result,
+            diagnosticCodes: evidence.diagnosticCodes, stdoutHash: evidence.stdoutHash,
+            completedAt: evidence.completedAt, identity: identity
+        )
+        XCTAssertEqual(try JSONDecoder().decode(
+            LessonAttemptEvidence.self, from: JSONEncoder().encode(modern)
+        ), modern)
+    }
 }

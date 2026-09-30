@@ -6,6 +6,7 @@ import Foundation
 struct CourseSession: Sendable {
     let token: UUID
     let courseID: String
+    let language: String
     let lessonID: String
     let contentVersion: String
     let archiveSHA256: String
@@ -16,6 +17,7 @@ struct CourseSession: Sendable {
               let loaded = repository.loaded[course.id] else { return nil }
         token = UUID()
         courseID = course.id
+        language = loaded.language
         self.lessonID = lessonID
         contentVersion = loaded.contentVersion
         archiveSHA256 = loaded.archiveSHA256
@@ -26,6 +28,7 @@ struct CourseSession: Sendable {
 struct CourseLessonExecution: Sendable {
     let sessionToken: UUID
     let courseID: String
+    let language: String
     let contentVersion: String
     let lesson: RustLesson
     let evidence: LessonEvidence
@@ -37,6 +40,7 @@ struct CourseLessonExecution: Sendable {
               let evidence = session.repository.evidence(for: lesson.id) else { return nil }
         sessionToken = session.token
         courseID = session.courseID
+        language = session.language
         contentVersion = session.contentVersion
         self.lesson = lesson
         self.evidence = evidence

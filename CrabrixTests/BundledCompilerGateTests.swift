@@ -30,6 +30,16 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertEqual(model.diagnosticAdviceState, .idle)
         XCTAssertFalse(model.completedLessonIDs.contains("borrowing"))
         XCTAssertTrue(model.lessonEvidenceMessage?.contains("repair removed required behavior") == true)
+        let identity = try XCTUnwrap(model.lessonAttemptEvidence.last?.identity)
+        XCTAssertEqual(identity.courseID, session.courseID)
+        XCTAssertEqual(identity.language, session.language)
+        XCTAssertEqual(identity.contentVersion, session.contentVersion)
+        XCTAssertEqual(identity.lessonID, session.lessonID)
+        XCTAssertEqual(identity.exerciseID, session.lessonID)
+        XCTAssertEqual(identity.validatorVersion, LessonAttemptEvidence.validatorVersion)
+        XCTAssertEqual(identity.projectID, model.projectID)
+        XCTAssertEqual(identity.projectRevision, model.workspaceRevision.sourceTreeHash)
+        XCTAssertEqual(identity.toolchainID, model.workspaceRevision.toolchainID)
     }
 
     @MainActor
