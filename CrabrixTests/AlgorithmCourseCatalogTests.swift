@@ -191,7 +191,7 @@ final class AlgorithmCourseCatalogTests: XCTestCase {
         )
 
         let unchanged = LessonEvidenceValidator.validateCompilerAttempt(
-            lesson: lesson,
+            evidence: lesson.evidence,
             result: run,
             project: starter,
             initialSourceTreeHash: "same",
@@ -211,7 +211,7 @@ final class AlgorithmCourseCatalogTests: XCTestCase {
             provenance: nil
         )
         let rejected = LessonEvidenceValidator.validateCompilerAttempt(
-            lesson: lesson,
+            evidence: lesson.evidence,
             result: run,
             project: hardcoded,
             initialSourceTreeHash: "before",
@@ -257,7 +257,7 @@ final class AlgorithmCourseCatalogTests: XCTestCase {
         )
 
         let accepted = LessonEvidenceValidator.validateCompilerAttempt(
-            lesson: lesson,
+            evidence: lesson.evidence,
             result: run,
             project: solved,
             initialSourceTreeHash: "before",

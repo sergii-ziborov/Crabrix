@@ -99,7 +99,7 @@ final class RustLessonProgressionTests: XCTestCase {
         ).sourceTreeHash
 
         let validation = LessonEvidenceValidator.validateCompilerAttempt(
-            lesson: lesson,
+            evidence: lesson.evidence,
             result: successfulRun(stdout: "Hello, Crabrix!\n"),
             project: project,
             initialSourceTreeHash: hash,
@@ -120,7 +120,7 @@ final class RustLessonProgressionTests: XCTestCase {
             provenance: nil
         )
         let validation = LessonEvidenceValidator.validateCompilerAttempt(
-            lesson: lesson,
+            evidence: lesson.evidence,
             result: successfulRun(stdout: "Hello, Ferris!\n"),
             project: project,
             initialSourceTreeHash: "starter-hash",
@@ -140,7 +140,7 @@ final class RustLessonProgressionTests: XCTestCase {
             provenance: nil
         )
         let withoutDiagnostic = LessonEvidenceValidator.validateCompilerAttempt(
-            lesson: lesson,
+            evidence: lesson.evidence,
             result: successfulRun(stdout: "crab\n"),
             project: project,
             initialSourceTreeHash: "before",
@@ -150,7 +150,7 @@ final class RustLessonProgressionTests: XCTestCase {
         XCTAssertFalse(withoutDiagnostic.passed)
 
         let provenRepair = LessonEvidenceValidator.validateCompilerAttempt(
-            lesson: lesson,
+            evidence: lesson.evidence,
             result: successfulRun(stdout: "crab\n"),
             project: project,
             initialSourceTreeHash: "before",

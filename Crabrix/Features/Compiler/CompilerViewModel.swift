@@ -1805,7 +1805,6 @@ final class CompilerViewModel: ObservableObject {
            let activeLessonID,
            let content = activeLessonContent {
             let validation = LessonEvidenceValidator.validateCompilerAttempt(
-                lesson: content.lesson,
                 evidence: content.evidence,
                 result: value,
                 project: currentProject(),

@@ -71,7 +71,7 @@ enum RustLessonProgression {
     static func nextStep(
         after lessonID: String?,
         completedLessonIDs: Set<String>,
-        courses: [RustCourse] = RustCourseCatalog.courses
+        courses: [RustCourse]
     ) -> Step? {
         let order = catalogOrder(courses: courses)
         guard !order.isEmpty else { return nil }
