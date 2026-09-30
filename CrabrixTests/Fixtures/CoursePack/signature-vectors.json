@@ -1,0 +1,16 @@
+{
+  "cases": {
+    "catalog": {
+      "domainPrefixUTF8": "Crabrix.CourseCatalog.v1\n",
+      "signatureBase64": "ABf3M9GmYO+AVKKpkQ1s2l5W91hQcQo3xHnxGPLqOf0+peZLiMFm3oJ4aGC8BuT07QSAaGbd13pzaC/Hms8VCw=="
+    },
+    "descriptor": {
+      "domainPrefixUTF8": "Crabrix.CourseDescriptor.v1\n",
+      "signatureBase64": "Q16e8TWKd9tmb4PheXLbwI8m19CcAgGQIjnMU0Doy1F4KBa+H/dVcSMpebaWU4LoO8ivdmruULwUhWzGxuzUDQ=="
+    }
+  },
+  "keyID": "test-2026-09",
+  "payloadBase64": "eyJzY2hlbWFWZXJzaW9uIjoxLCJjb3Vyc2VJRCI6InRlc3QiLCJsYW5ndWFnZSI6ImVuIiwiY29udGVudFZlcnNpb24iOiIxLjAuMCJ9",
+  "publicKeyBase64": "PPjo8pZ82I46qCxHp5orY01aPvm34VDix7NkU1aU7fY=",
+  "warning": "PUBLIC TEST KEY ONLY; never accepted in release app"
+}

@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A860C62CF0A246B0888A0104 /* CoursePackVerifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0105 /* CoursePackVerifierTests.swift */; };
+		A860C62CF0A246B0888A0106 /* CoursePack in Resources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0107 /* CoursePack */; };
+		A860C62CF0A246B0888A0101 /* CoursePackVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0102 /* CoursePackVerifier.swift */; };
 		009994261D14A5AB525D7C4B /* ProjectTerminalSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB2D37D461D0EDF4F84DD855 /* ProjectTerminalSession.swift */; };
 		03886B8D78DCEDCE1A159287 /* AlgorithmCourseCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19F2B8BCB656C03FB95DB696 /* AlgorithmCourseCatalog.swift */; };
 		08CA3D0D4FD1367DC21D5281 /* FeatureResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9793C201E70D1B6AD35202 /* FeatureResolver.swift */; };
@@ -209,6 +212,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A860C62CF0A246B0888A0105 /* CoursePackVerifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePackVerifierTests.swift; sourceTree = "<group>"; };
+		A860C62CF0A246B0888A0107 /* CoursePack */ = {isa = PBXFileReference; lastKnownFileType = folder; name = CoursePack; path = Fixtures/CoursePack; sourceTree = "<group>"; };
+		A860C62CF0A246B0888A0102 /* CoursePackVerifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePackVerifier.swift; sourceTree = "<group>"; };
 		009E3BADFF63E9923F87995B /* GameCenterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCenterService.swift; sourceTree = "<group>"; };
 		00CAF54248F14F3CBC57F350 /* CratePackageManifestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CratePackageManifestTests.swift; sourceTree = "<group>"; };
 		02D5F2FB12886D9E89DDD12A /* RustDiagnosticParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustDiagnosticParserTests.swift; sourceTree = "<group>"; };
@@ -394,6 +400,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A860C62CF0A246B0888A0103 /* AcademyContent */ = {
+			isa = PBXGroup;
+			children = (
+				A860C62CF0A246B0888A0102 /* CoursePackVerifier.swift */,
+			);
+			path = AcademyContent;
+			sourceTree = "<group>";
+		};
 		017EF58F174C5A132310D96C /* Compiler */ = {
 			isa = PBXGroup;
 			children = (
@@ -532,6 +546,7 @@
 			children = (
 				ECC4D007E00753BF5342A699 /* Crabrix.entitlements */,
 				390525A61D573113DBE63930 /* App */,
+				A860C62CF0A246B0888A0103 /* AcademyContent */,
 				017EF58F174C5A132310D96C /* Compiler */,
 				9514F2C92D8F4EBCA224E2A5 /* Editor */,
 				22563812228A86A8D4F1A8AE /* Features */,
@@ -572,6 +587,8 @@
 		9148689B17692A2B66CA2E57 /* CrabrixTests */ = {
 			isa = PBXGroup;
 			children = (
+				A860C62CF0A246B0888A0105 /* CoursePackVerifierTests.swift */,
+				A860C62CF0A246B0888A0107 /* CoursePack */,
 				67D67D2D0A1619040A96DC9A /* AchievementTierTests.swift */,
 				1067DEB86E13480FF37A47CB /* AlgorithmCourseCatalogTests.swift */,
 				ED805A32682154958D4A1EC2 /* BorrowRepairTests.swift */,
@@ -762,6 +779,7 @@
 			buildConfigurationList = 89373A5854615CBBDE7A6835 /* Build configuration list for PBXNativeTarget "CrabrixTests" */;
 			buildPhases = (
 				C7FE9C1CF2929D21910CC6FA /* Sources */,
+				A860C62CF0A246B0888A0108 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -845,6 +863,14 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		A860C62CF0A246B0888A0108 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A860C62CF0A246B0888A0106 /* CoursePack in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A813937DD21CE41A7CB0C58A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -908,6 +934,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A860C62CF0A246B0888A0101 /* CoursePackVerifier.swift in Sources */,
 				DD74E3CFB5C4836F4B571E46 /* AchievementCelebrationView.swift in Sources */,
 				03886B8D78DCEDCE1A159287 /* AlgorithmCourseCatalog.swift in Sources */,
 				2A129C11FCE30742F1CD2CE4 /* AlgorithmCourseData.swift in Sources */,
@@ -1012,6 +1039,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A860C62CF0A246B0888A0104 /* CoursePackVerifierTests.swift in Sources */,
 				236C594F43D32B64EF77B7A6 /* AchievementTierTests.swift in Sources */,
 				907271D59A799311162F4CF6 /* AlgorithmCourseCatalogTests.swift in Sources */,
 				ABDFFA5263492E9C914C3C6B /* BorrowRepairTests.swift in Sources */,
