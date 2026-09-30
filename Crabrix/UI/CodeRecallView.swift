@@ -427,7 +427,7 @@ struct CodeRecallView: View {
         )
         let before = progress.state.unlockedAchievementIDs
         progress.record(outcome.progressEvent)
-        unlockedThisRun = CrabrixAchievementCatalog.all.filter {
+        unlockedThisRun = progress.allAchievements.filter {
             progress.state.unlockedAchievementIDs.contains($0.id) && !before.contains($0.id)
         }
         withAnimation(.easeInOut(duration: 0.25)) { phase = .finished }

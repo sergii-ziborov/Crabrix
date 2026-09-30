@@ -263,7 +263,7 @@ struct ProfileView: View {
 
             HStack {
                 Label(
-                    "\(progress.earnedAchievements.count)/\(CrabrixAchievementCatalog.all.count) achievements",
+                    "\(progress.earnedAchievements.count)/\(progress.allAchievements.count) achievements",
                     systemImage: "rosette"
                 )
                 Spacer(minLength: 0)

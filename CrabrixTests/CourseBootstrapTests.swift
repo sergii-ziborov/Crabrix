@@ -125,6 +125,43 @@ final class CourseBootstrapTests: XCTestCase {
         }
     }
 
+    @MainActor
+    func testAtlasAchievementsUseInstalledMethodMetadataWithoutReaward() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = try await CourseBootstrap(
+            bundle: .main, root: root, appVersion: SemanticVersion("1.1")
+        ).activateBundledBaseline()
+        let suite = "crabrix.atlas.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = CrabrixProgressStore(defaults: defaults)
+        store.configureAcademy(repository: repository)
+        let methods = repository.algorithmMethods()
+
+        XCTAssertEqual(store.atlasMethodCount, methods.count)
+        XCTAssertEqual(store.atlasPatternCount, 200)
+        for method in methods {
+            let family = try XCTUnwrap(store.achievementFamilies.first {
+                $0.id == "algorithm-\(method.id)"
+            })
+            XCTAssertEqual(family.title, method.achievementTitle)
+            XCTAssertEqual(family.systemImage, method.systemImage)
+        }
+
+        let firstPattern = try XCTUnwrap(methods.first?.patternIDs.first)
+        let challenge = try XCTUnwrap(repository.challenge(
+            for: "algorithm.\(firstPattern).challenge"
+        ))
+        XCTAssertTrue(store.recordAlgorithmSolved(challenge: challenge))
+        let earned = store.state.unlockedAchievementIDs
+        store.clearCelebration()
+        store.configureAcademy(repository: repository)
+        XCTAssertEqual(store.state.unlockedAchievementIDs, earned)
+        XCTAssertTrue(store.pendingCelebration.isEmpty)
+        XCTAssertFalse(store.recordAlgorithmSolved(challenge: challenge))
+    }
+
     func testDeletingLocalMaterialDoesNotReactivateItOnRelaunch() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }

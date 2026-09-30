@@ -26,7 +26,7 @@ struct RatingSummaryCard: View {
                     Text(rank.title)
                         .font(.subheadline.bold())
                         .foregroundStyle(CrabrixTheme.mint)
-                    Text("\(store.earnedAchievements.count)/\(CrabrixAchievementCatalog.all.count) achievements")
+                    Text("\(store.earnedAchievements.count)/\(store.allAchievements.count) achievements")
                         .font(.caption2.monospaced())
                         .foregroundStyle(CrabrixTheme.muted)
                 }
@@ -228,7 +228,7 @@ struct AchievementsSection: View {
                     .font(.system(size: 9, weight: .bold, design: .monospaced))
                     .foregroundStyle(CrabrixTheme.muted)
                 Spacer()
-                Text("\(store.earnedAchievements.count) of \(CrabrixAchievementCatalog.all.count) tiers")
+                Text("\(store.earnedAchievements.count) of \(store.allAchievements.count) tiers")
                     .font(.caption2.monospaced())
                     .foregroundStyle(CrabrixTheme.muted)
             }
@@ -246,7 +246,7 @@ struct AchievementsSection: View {
                         Text("ALGORITHM ACHIEVEMENTS")
                             .font(.caption.monospaced().bold())
                             .foregroundStyle(CrabrixTheme.primary)
-                        Text("\(store.state.solvedAlgorithmPatternIDs.count)/200 patterns · 20 independent methods")
+                        Text("\(store.state.solvedAlgorithmPatternIDs.count)/\(store.atlasPatternCount) patterns · \(store.atlasMethodCount) independent methods")
                             .font(.caption2)
                             .foregroundStyle(CrabrixTheme.muted)
                     }
@@ -264,11 +264,11 @@ struct AchievementsSection: View {
     /// Families with something earned come first, deepest first, so the ladder
     /// you are actually climbing is at the top.
     private var sortedGeneralFamilies: [CrabrixAchievementFamily] {
-        sorted(CrabrixAchievementCatalog.families.filter { $0.group == .general })
+        sorted(store.achievementFamilies.filter { $0.group == .general })
     }
 
     private var sortedAlgorithmFamilies: [CrabrixAchievementFamily] {
-        sorted(CrabrixAchievementCatalog.families.filter { $0.group == .algorithms })
+        sorted(store.achievementFamilies.filter { $0.group == .algorithms })
     }
 
     private func sorted(_ families: [CrabrixAchievementFamily]) -> [CrabrixAchievementFamily] {

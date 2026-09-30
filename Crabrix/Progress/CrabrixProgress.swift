@@ -502,7 +502,20 @@ enum CrabrixAchievementCatalog {
         ),
     ]
 
-    private static let algorithmFamilies: [CrabrixAchievementFamily] = {
+    /// Keep the old catalogue as the synchronous launch fallback. Once signed
+    /// CoursePacks load, the progress store replaces these method definitions
+    /// with the verified method metadata from the installed Atlas.
+    private static let algorithmFamilies: [CrabrixAchievementFamily] =
+        makeAlgorithmFamilies(methods: AlgorithmCourseCatalog.categories.map { category in
+            AlgorithmMethodDTO(
+                id: category.id, title: category.title, subtitle: category.subtitle,
+                systemImage: category.systemImage, achievementTitle: category.achievementTitle,
+                patternIDs: category.patterns.map(\.id)
+            )
+        })
+
+    private static func makeAlgorithmFamilies(methods: [AlgorithmMethodDTO])
+        -> [CrabrixAchievementFamily] {
         let overall = CrabrixAchievementFamily(
             id: "algorithm-atlas",
             title: "Algorithm Atlas",
@@ -521,7 +534,7 @@ enum CrabrixAchievementCatalog {
             id: "algorithm-study",
             title: "Pattern Study",
             systemImage: "book.pages.fill",
-            thresholds: [10, 50, 150, 300, AlgorithmCourseCatalog.studyStepCount],
+            thresholds: [10, 50, 150, 300, 400],
             measure: { $0.algorithmStudySteps },
             requirement: {
                 "Finish \($0) Algorithm Atlas mental-model or recognition steps."
@@ -529,28 +542,32 @@ enum CrabrixAchievementCatalog {
             group: .algorithms
         )
 
-        let categories = AlgorithmCourseCatalog.categories.map { category in
-            let patternIDs = Set(category.patterns.map(\.id))
+        let categories = methods.map { method in
+            let patternIDs = Set(method.patternIDs)
             return CrabrixAchievementFamily(
-                id: "algorithm-\(category.id)",
-                title: category.achievementTitle,
-                systemImage: category.systemImage,
+                id: "algorithm-\(method.id)",
+                title: method.achievementTitle,
+                systemImage: method.systemImage,
                 thresholds: [1, 3, 5, 8, 10],
                 measure: { state in
                     state.solvedAlgorithmPatternIDs.intersection(patternIDs).count
                 },
                 requirement: {
                     $0 == 1
-                        ? "Solve one challenge in \(category.title)."
-                        : "Solve \($0) unique challenges in \(category.title)."
+                        ? "Solve one challenge in \(method.title)."
+                        : "Solve \($0) unique challenges in \(method.title)."
                 },
                 group: .algorithms
             )
         }
         return [overall, study] + categories
-    }()
+    }
 
     static let families: [CrabrixAchievementFamily] = generalFamilies + algorithmFamilies
+
+    static func families(for methods: [AlgorithmMethodDTO]) -> [CrabrixAchievementFamily] {
+        generalFamilies + makeAlgorithmFamilies(methods: methods)
+    }
 
     static let all: [CrabrixAchievement] = families.flatMap(\.achievements)
 

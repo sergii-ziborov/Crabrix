@@ -8,6 +8,9 @@ import SwiftUI
 @MainActor
 final class CrabrixProgressStore: ObservableObject {
     @Published private(set) var state: CrabrixProgressState
+    @Published private(set) var achievementFamilies = CrabrixAchievementCatalog.families
+    @Published private(set) var atlasPatternCount = AlgorithmCourseCatalog.challengeCount
+    @Published private(set) var atlasMethodCount = AlgorithmCourseCatalog.categories.count
     /// Achievements unlocked by the most recent event, for a one-shot banner.
     @Published var pendingCelebration: [CrabrixAchievement] = []
 
@@ -43,9 +46,39 @@ final class CrabrixProgressStore: ObservableObject {
         persist()
     }
 
+    /// Switch method achievements to the signed installed Atlas metadata.
+    /// Any already satisfied rung is recorded silently, so loading or updating
+    /// a pack never creates a second reward celebration.
+    func configureAcademy(repository: InstalledCourseRepository) {
+        let methods = repository.algorithmMethods()
+        guard !methods.isEmpty else { return }
+        atlasPatternCount = methods.reduce(0) { $0 + $1.patternIDs.count }
+        atlasMethodCount = methods.count
+        let refreshed = CrabrixAchievementCatalog.families(for: methods)
+        let refreshedIDs = Set(refreshed.map(\.id))
+        let earnedPrevious = achievementFamilies.filter {
+            !refreshedIDs.contains($0.id)
+                && $0.achievements.contains { state.unlockedAchievementIDs.contains($0.id) }
+        }
+        achievementFamilies = refreshed + earnedPrevious
+
+        var updated = state
+        for achievement in allAchievements where achievement.isEarned(in: updated) {
+            updated.unlockedAchievementIDs.insert(achievement.id)
+        }
+        if updated != state {
+            state = updated
+            persist()
+        }
+    }
+
+    var allAchievements: [CrabrixAchievement] {
+        achievementFamilies.flatMap(\.achievements)
+    }
+
     /// The highest tier reached in each family, for a compact summary.
     var earnedTiers: [(family: CrabrixAchievementFamily, tier: AchievementTier?)] {
-        CrabrixAchievementCatalog.families.map { ($0, $0.earnedTier(in: state)) }
+        achievementFamilies.map { ($0, $0.earnedTier(in: state)) }
     }
 
     var rank: CrabrixRank { CrabrixRank.rank(for: state.totalPoints) }
@@ -57,11 +90,11 @@ final class CrabrixProgressStore: ObservableObject {
     }
 
     var earnedAchievements: [CrabrixAchievement] {
-        CrabrixAchievementCatalog.all.filter { state.unlockedAchievementIDs.contains($0.id) }
+        allAchievements.filter { state.unlockedAchievementIDs.contains($0.id) }
     }
 
     var lockedAchievements: [CrabrixAchievement] {
-        CrabrixAchievementCatalog.all.filter { !state.unlockedAchievementIDs.contains($0.id) }
+        allAchievements.filter { !state.unlockedAchievementIDs.contains($0.id) }
     }
 
     /// Applies an event: adds its points, updates the counters it affects, then
@@ -113,7 +146,9 @@ final class CrabrixProgressStore: ObservableObject {
         }
 
         // Points can themselves unlock an achievement, so evaluate afterwards.
-        let unlocked = CrabrixAchievementCatalog.newlyEarned(in: updated)
+        let unlocked = allAchievements.filter {
+            $0.isEarned(in: updated) && !updated.unlockedAchievementIDs.contains($0.id)
+        }
         for achievement in unlocked {
             updated.unlockedAchievementIDs.insert(achievement.id)
         }
@@ -169,7 +204,9 @@ final class CrabrixProgressStore: ObservableObject {
         var updated = state
         updated.solvedAlgorithmPatternIDs.insert(patternID)
         updated.lastActiveAt = Date()
-        let unlocked = CrabrixAchievementCatalog.newlyEarned(in: updated)
+        let unlocked = allAchievements.filter {
+            $0.isEarned(in: updated) && !updated.unlockedAchievementIDs.contains($0.id)
+        }
         for achievement in unlocked {
             updated.unlockedAchievementIDs.insert(achievement.id)
         }

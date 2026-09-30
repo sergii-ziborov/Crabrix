@@ -507,7 +507,7 @@ struct TermMatchTrainView: View {
         withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) { isFinished = true }
         let before = progress.state.unlockedAchievementIDs
         progress.record(outcome.progressEvent)
-        unlockedThisRun = CrabrixAchievementCatalog.all.filter {
+        unlockedThisRun = progress.allAchievements.filter {
             progress.state.unlockedAchievementIDs.contains($0.id) && !before.contains($0.id)
         }
         onComplete()

@@ -427,6 +427,7 @@ struct ContentView: View {
             // activating. Backfill their verified Atlas identities once the
             // repository arrives; the store deduplicates every pattern.
             guard let repository else { return }
+            progress.configureAcademy(repository: repository)
             for lessonID in model.completedLessonIDs {
                 if let challenge = repository.challenge(for: lessonID) {
                     progress.recordAlgorithmSolved(challenge: challenge)

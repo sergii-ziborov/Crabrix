@@ -463,7 +463,7 @@ struct LearningHubView: View {
                     .minimumScaleFactor(0.75)
                 ProgressView(value: rank.progress(points: progress.state.totalPoints))
                     .tint(CrabrixTheme.amber)
-                Text("\(progress.earnedAchievements.count)/\(CrabrixAchievementCatalog.all.count) achievements")
+                Text("\(progress.earnedAchievements.count)/\(progress.allAchievements.count) achievements")
                     .font(.caption2.monospaced())
                     .foregroundStyle(CrabrixTheme.muted)
                     .lineLimit(1)
