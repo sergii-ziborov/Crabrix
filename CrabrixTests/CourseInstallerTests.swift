@@ -113,4 +113,40 @@ final class CourseInstallerTests: XCTestCase {
             XCTAssertTrue(installed.isEmpty)
         }
     }
+
+    func testSeparateInstallersKeepEveryConcurrentCourseActive() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let names = [
+            "algorithms", "basics", "concurrency", "interview",
+            "ownership", "projects", "systems"
+        ]
+        let inputs = try names.map { name in
+            (try Data(contentsOf: fixture("\(name).descriptor.json")),
+             try fixture("\(name)-1.0.1.zip"))
+        }
+        let keys = try JSONDecoder().decode(CourseKeyring.self,
+                                            from: Data(contentsOf: fixture("production-keyring.json")))
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            for (descriptor, archive) in inputs {
+                group.addTask {
+                    let installer = try CourseInstaller(
+                        root: root, appVersion: SemanticVersion("1.1")
+                    )
+                    _ = try await installer.install(
+                        descriptorBytes: descriptor, downloadedArchive: archive, keyring: keys
+                    )
+                }
+            }
+            try await group.waitForAll()
+        }
+
+        let installer = try CourseInstaller(root: root, appVersion: SemanticVersion("1.1"))
+        let active = try await installer.installed()
+        XCTAssertEqual(Set(active.map(\.courseID)), Set(names))
+        let repository = try await installer.loadRepository(keyring: keys)
+        XCTAssertEqual(repository.courses.count, names.count)
+        XCTAssertEqual(repository.courses.flatMap { $0.units.flatMap(\.lessons) }.count, 742)
+    }
 }

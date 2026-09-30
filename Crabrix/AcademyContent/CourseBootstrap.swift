@@ -126,16 +126,12 @@ struct CourseBootstrap {
         ]
         try JSONSerialization.data(withJSONObject: marker, options: [.sortedKeys])
             .write(to: activationMarker, options: .atomic)
-        return try InstalledCourseRepository(
-            root: root, records: installed, keyring: keyring
-        )
+        return try await installer.loadRepository(keyring: keyring)
     }
 
     func loadInstalled() async throws -> InstalledCourseRepository {
         let installer = try CourseInstaller(root: root, appVersion: appVersion)
-        return try InstalledCourseRepository(
-            root: root, records: await installer.installed(), keyring: keyring()
-        )
+        return try await installer.loadRepository(keyring: keyring())
     }
 
     func keyring() throws -> CourseKeyring {

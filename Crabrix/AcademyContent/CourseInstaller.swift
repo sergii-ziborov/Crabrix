@@ -26,6 +26,9 @@ private struct CourseInstallJournal: Codable {
 /// Serializes installation and atomically changes only the active-version index.
 /// Old versions remain on disk, so a pinned lesson session can keep using them.
 actor CourseInstaller {
+    /// Callers construct separate installer actors for downloads and bootstrap.
+    /// Their index and journal still belong to the same on-disk transaction.
+    private static let coordinationLock = NSRecursiveLock()
     private let root: URL
     private let fileManager = FileManager.default
     private let appVersion: SemanticVersion
@@ -50,6 +53,18 @@ actor CourseInstaller {
     }
 
     func installed() throws -> [InstalledCourseRecord] {
+        try Self.coordinationLock.withLock { try installedUnderLock() }
+    }
+
+    func loadRepository(keyring: CourseKeyring) throws -> InstalledCourseRepository {
+        try Self.coordinationLock.withLock {
+            try InstalledCourseRepository(
+                root: root, records: installedUnderLock(), keyring: keyring
+            )
+        }
+    }
+
+    private func installedUnderLock() throws -> [InstalledCourseRecord] {
         try recover()
         return try readIndex().active.values.sorted {
             $0.courseID == $1.courseID ? $0.language < $1.language : $0.courseID < $1.courseID
@@ -61,6 +76,12 @@ actor CourseInstaller {
     /// values retain a fully decoded snapshot, and user projects/progress are
     /// stored outside this root.
     func uninstall(courseID: String, language: String) throws {
+        try Self.coordinationLock.withLock {
+            try uninstallUnderLock(courseID: courseID, language: language)
+        }
+    }
+
+    private func uninstallUnderLock(courseID: String, language: String) throws {
         try recover()
         let safeCourse = try component(courseID)
         let safeLanguage = try component(language)
@@ -74,7 +95,16 @@ actor CourseInstaller {
         }
     }
 
-    func install(descriptorBytes: Data, downloadedArchive: URL, keyring: CourseKeyring) async throws
+    func install(descriptorBytes: Data, downloadedArchive: URL, keyring: CourseKeyring) throws
+        -> InstalledCourseRecord {
+        try Self.coordinationLock.withLock {
+            try installUnderLock(descriptorBytes: descriptorBytes,
+                                 downloadedArchive: downloadedArchive, keyring: keyring)
+        }
+    }
+
+    private func installUnderLock(descriptorBytes: Data, downloadedArchive: URL,
+                                  keyring: CourseKeyring) throws
         -> InstalledCourseRecord {
         try recover()
         let (payload, keyID) = try CoursePackVerifier.signedPayload(
