@@ -13,7 +13,7 @@ This is a technical handoff for the 30 September 2026 development candidate. It 
 
 | Repository | Current development identity | Result |
 | --- | --- | --- |
-| [Crabrix](https://github.com/sergii-ziborov/Crabrix) | Stacked draft PRs [#1](https://github.com/sergii-ziborov/Crabrix/pull/1) through [#12](https://github.com/sergii-ziborov/Crabrix/pull/12), with current app-input commit `9d9fc56334e27f8754cfb4e9f937657ed10b2b7f` | Academy reader, signed delivery, first-launch transition, product simplification, runtime adapter and bounded output/cache changes are reviewable. The serialized installer branch follows #12. |
+| [Crabrix](https://github.com/sergii-ziborov/Crabrix) | Stacked draft PRs [#1](https://github.com/sergii-ziborov/Crabrix/pull/1) through [#13](https://github.com/sergii-ziborov/Crabrix/pull/13), with current app-input commit `e625cb7bffb31e4c6986a59f1e1903c568e6b6b9` | Academy reader, signed delivery, first-launch transition, product simplification, runtime adapter and bounded output/cache changes are reviewable. The new attempt-identity branch follows #13. |
 | [crabrix-courses](https://github.com/sergii-ziborov/crabrix-courses) | `663f22ac`, release `coursepack-v1.0.1` | Seven signed packs; 48 units, 742 lessons, 200 challenges, 46 gallery projects and 358 term pairs. |
 | [crabrix-runtime](https://github.com/sergii-ziborov/crabrix-runtime) | App-pinned `719f94d7d27368549502828217e3dbc7e6738852`, draft [output-bound PR](https://github.com/sergii-ziborov/crabrix-runtime/pull/1) | WasmKit-derived fork with read-only preopens, cancellation adapter, and bounded WASI stdout/stderr writes. |
 | [crabrix-toolchain](https://github.com/sergii-ziborov/crabrix-toolchain) | Source-locked builder branch `d624c59` | Build recipe and lock validation exist; no Crabrix-built rustc/sysroot release yet. |
@@ -23,7 +23,7 @@ The four repos are public. The course release and signed catalog have a verified
 ## Observed checks
 
 - Executed Swift-model export and CoursePack semantic parity: `missing=0`, `unexpected=0`, `unapprovedChanges=0`. This checks transport parity, not every learner solution.
-- iOS 18.2 Simulator full fast suite on app-input commit `9d9fc563`: 404 passed, 2 opt-in compiler gates skipped, 0 failures. All five installer tests passed, including rejection of an over-limit archive before staging and concurrent activation of seven packs through separate installers. Selected compiler gates separately passed E0502 Check, repaired Run, multi-file Run, output stress, and a pinned CourseSession repair flow at their recorded stacked revisions. The full seven-course practice deck matched the legacy question/snippet/Rust-term snapshot.
+- iOS 18.2 Simulator full fast suite on app-input commit `e625cb7b`: 405 passed, 2 opt-in compiler gates skipped, 0 failures. All five installer tests passed, including rejection of an over-limit archive before staging and concurrent activation of seven packs through separate installers. A selected compiler gate also verified that a Run attempt stores exact CoursePack/session and workspace identity. Earlier compiler gates separately passed E0502 Check, repaired Run, multi-file Run, and output stress at their recorded stacked revisions. The full seven-course practice deck matched the legacy question/snippet/Rust-term snapshot.
 - Runtime fork: 121 WASI tests and two bounded-stdio tests passed. The app's synthetic `fd_write` test confirmed write-time refusal, typed stop, empty capture, and successful next Run.
 - The candidate input manifest verifies the app source commit, SwiftPM graph digest, exact runtime revision, old toolchain hashes, and signed course catalog sequence. It has no IPA hash.
 
@@ -35,7 +35,7 @@ The application now avoids a whole-file `Data` to `[UInt8]` copy during Wasm par
 
 ## Remaining acceptance work
 
-1. Migrate achievement/category policy and profile totals without revoking earned rewards; then remove legacy content declarations from the production target. Historical attempts still need their full course/content/validator/toolchain/project identity and idempotent migration.
+1. Migrate achievement/category policy and profile totals without revoking earned rewards; then remove legacy content declarations from the production target. New Run attempts have full course/content/validator/toolchain/project identity. Historical unversioned attempts still need exact legacy-snapshot attribution and an idempotent migration.
 2. Complete CoursePack interruption, crash-boundary, disk-full, guaranteed resume, skipped-upgrade, and offline dependency gates. Do not infer them from happy-path installation.
 3. Build rustc and sysroot from the pinned sources on a controlled Linux x86_64 builder, record all bootstrap/environment digests, compare two clean builds, publish notices and artifacts, then validate the same compiler/Cargo corpus on the candidate runtime.
 4. Run the A/B/C performance and security corpus on physical iPhone and iPad, including cold Check, changed Check/Run, cancellation, output/disk stress, RSS/thermal, and memory-pressure recovery. Only publish a several-fold claim if measurements support it.
