@@ -130,8 +130,12 @@ enum CoursePackVerifier {
         else { throw CoursePackError.invalidCatalog }
         guard catalog.sequence > lastAcceptedSequence else { throw CoursePackError.rollback }
         var versions = acceptedVersions
+        var inThisCatalog = Set<String>()
         for course in catalog.courses {
             let identity = "\(course.courseID)|\(course.language)|\(course.contentVersion)"
+            guard inThisCatalog.insert(identity).inserted else {
+                throw CoursePackError.invalidCatalog
+            }
             if let existing = versions[identity], existing != course.archiveSHA256 {
                 throw CoursePackError.immutableVersionConflict
             }

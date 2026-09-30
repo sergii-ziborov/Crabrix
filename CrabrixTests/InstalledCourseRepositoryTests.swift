@@ -4,7 +4,7 @@ import XCTest
 
 final class InstalledCourseRepositoryTests: XCTestCase {
     func testAllBundledPacksReadAsExistingAcademyModels() async throws {
-        let bundle = Bundle(for: Self.self)
+        let bundle = Bundle.main
         let packs = try XCTUnwrap(bundle.url(forResource: "MigrationCoursePacks", withExtension: nil))
         let keyring = try JSONDecoder().decode(
             CourseKeyring.self,
@@ -26,6 +26,14 @@ final class InstalledCourseRepositoryTests: XCTestCase {
         XCTAssertEqual(repository.termPairs().count, 358)
         XCTAssertEqual(repository.loaded.values.reduce(0) { $0 + $1.challenges.count }, 200)
         XCTAssertEqual(repository.loaded.values.reduce(0) { $0 + $1.projects.count }, 204)
+        for pattern in AlgorithmCourseCatalog.patterns {
+            let lessonID = pattern.lessonID(.challenge)
+            XCTAssertEqual(
+                repository.challenge(for: lessonID),
+                AlgorithmCourseCatalog.challenge(for: lessonID),
+                "Atlas validator changed for \(pattern.id)"
+            )
+        }
 
         for (currentCourse, oldCourse) in zip(repository.courses, RustCourseCatalog.courses) {
             XCTAssertEqual(currentCourse.title, oldCourse.title)

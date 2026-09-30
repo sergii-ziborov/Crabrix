@@ -41,7 +41,7 @@ struct InstalledCourseRepository: CourseRepository {
         loaded.values.lazy.compactMap { $0.projects[lessonID] }.first
     }
 
-    func challenge(for lessonID: String) -> CourseChallengeDTO? {
+    func challenge(for lessonID: String) -> AlgorithmChallenge? {
         loaded.values.lazy.compactMap { $0.challenges[lessonID] }.first
     }
 
@@ -89,7 +89,7 @@ struct InstalledCourseRepository: CourseRepository {
         var depths: [String: RustLessonDepth] = [:]
         var evidence: [String: LessonEvidence] = [:]
         var projects: [String: CourseProjectTemplate] = [:]
-        var challenges: [String: CourseChallengeDTO] = [:]
+        var challenges: [String: AlgorithmChallenge] = [:]
         for (unitOrder, unitID) in source.unitIDs.enumerated() {
             let safeUnit = try component(unitID)
             let unit: CourseUnitDTO = try decode("units/\(safeUnit).json", as: CourseUnitDTO.self)
@@ -122,7 +122,7 @@ struct InstalledCourseRepository: CourseRepository {
                     guard challenge.lessonID == lessonID else {
                         throw CoursePackError.manifestMismatch("challenge \(lessonID)")
                     }
-                    challenges[lessonID] = challenge
+                    challenges[lessonID] = try challenge.runtimeChallenge()
                 }
                 if manifest.files.contains(where: { $0.path == "projects/\(lessonID)/project.json" }) {
                     struct Metadata: Decodable { let name: String; let entryFile: String }

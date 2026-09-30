@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 
 /// Versioned transport DTOs. No Swift enum representation is stored in CoursePacks.
@@ -169,8 +170,8 @@ struct CourseEvidenceDTO: Decodable, Sendable {
 
 struct CourseCheckDTO: Decodable, Sendable {
     let evidence: CourseEvidenceDTO
-    /// The Atlas challenge is retained as a raw, data-only JSON object until
-    /// its existing project/verification UI is migrated to this repository.
+    /// Data-only Atlas validation becomes the existing runtime model only
+    /// after the installed package and its case kinds have been validated.
     let challenge: CourseChallengeDTO?
 }
 
@@ -189,12 +190,43 @@ struct CourseChallengeDTO: Decodable, Sendable {
     let expectedOutput: String
     let requiredSourceFragments: [String]
     let forbiddenSourceFragments: [String]
+
+    func runtimeChallenge() throws -> AlgorithmChallenge {
+        let cases = try verificationCases.map { item -> AlgorithmVerificationCase in
+            guard let kind = AlgorithmVerificationCaseKind(rawValue: item.kind) else {
+                throw CoursePackError.incompatibleCapability("verification case \(item.kind)")
+            }
+            return AlgorithmVerificationCase(
+                kind: kind, input: item.input, expectedAnswer: item.expectedAnswer
+            )
+        }
+        return AlgorithmChallenge(
+            lessonID: lessonID, patternID: patternID, projectName: projectName,
+            source: source, verificationSource: verificationSource,
+            verificationCases: cases, expectedOutput: expectedOutput,
+            requiredSourceFragments: requiredSourceFragments,
+            forbiddenSourceFragments: forbiddenSourceFragments
+        )
+    }
 }
 
 struct CourseProjectTemplate: Sendable {
     let name: String
     let entryFile: String
     let files: [String: String]
+
+    var templateHash: String {
+        var digest = SHA256()
+        for path in files.keys.sorted() {
+            let source = files[path] ?? ""
+            for value in [path, source] {
+                let bytes = Data(value.utf8)
+                digest.update(data: Data("\(bytes.count):".utf8))
+                digest.update(data: bytes)
+            }
+        }
+        return digest.finalize().map { String(format: "%02x", $0) }.joined()
+    }
 }
 
 struct CourseTermPairDTO: Decodable, Sendable {

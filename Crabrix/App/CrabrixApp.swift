@@ -20,6 +20,7 @@ struct CrabrixApp: App {
     /// Rating and achievements are earned everywhere, so the store is owned once
     /// at the root and handed to every feature that reports progress.
     @StateObject private var progress = CrabrixProgressStore()
+    @StateObject private var academyContent = AcademyContentStore()
     /// Health and energy live beside it, kept in step with rating because rank
     /// is what sets the size of both pools.
     @StateObject private var vitals = CrabrixVitalsStore()
@@ -34,10 +35,12 @@ struct CrabrixApp: App {
             socialEnvironment(
                 ContentView()
                     .environmentObject(progress)
+                    .environmentObject(academyContent)
                     .environmentObject(vitals)
                     .achievementCelebrations(store: progress)
             )
             .task {
+                await academyContent.prepare()
                 vitals.refresh(points: progress.state.totalPoints)
                 #if CRABRIX_SOCIAL
                 if CrabrixReleaseFeatures.gameCenterEnabled {

@@ -55,6 +55,7 @@ struct ContentView: View {
     @StateObject private var completion = RustCompletionController()
     @StateObject private var terminal = ProjectTerminalSession()
     @EnvironmentObject private var progress: CrabrixProgressStore
+    @EnvironmentObject private var academy: AcademyContentStore
     @EnvironmentObject private var vitals: CrabrixVitalsStore
     /// Lessons already turned into rating, seeded from persisted progress so a
     /// relaunch never re-awards them.
@@ -80,7 +81,7 @@ struct ContentView: View {
     @State private var isCompactProjectDrawerPresented = false
     @State private var isCompactInspectorDrawerPresented = false
     @State private var selectedBuildDockTab: BuildDockTab = .code
-    @State private var learningPath: [LearningRoute] = LearningRoute.launchArgument
+    @State private var learningPath: [LearningRoute] = []
     @State private var editorCursorOffset = 0
     /// What the last successful run was scored on, shown in the build dock.
     @State private var lastContribution: CodeContribution?
@@ -394,7 +395,11 @@ struct ContentView: View {
             }
         }
         .task {
+            await academy.prepare()
             let arguments = ProcessInfo.processInfo.arguments
+            if let repository = academy.repository {
+                learningPath = LearningRoute.launchArgument(repository: repository)
+            }
             if arguments.contains("--crabrix-auto-multifile") {
                 model.loadMultiFileSample()
                 selectedDestination = .build
@@ -414,8 +419,8 @@ struct ContentView: View {
             }
             if let lessonArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-lesson=") }) {
                 let lessonID = String(lessonArgument.dropFirst("--crabrix-auto-lesson=".count))
-                if let lesson = RustCourseCatalog.lesson(id: lessonID),
-                   let course = RustCourseCatalog.course(containingLessonID: lesson.id) {
+                if let lesson = academy.repository?.lesson(id: lessonID),
+                   let course = academy.repository?.course(containing: lesson.id) {
                     selectedDestination = .learn
                     learningPath = [.course(course.id), .lesson(lesson.id)]
                 }
@@ -481,8 +486,8 @@ struct ContentView: View {
             guard let scored = scoredLessonIDs else {
                 scoredLessonIDs = ids
                 for lessonID in ids {
-                    if let pattern = AlgorithmCourseCatalog.pattern(forChallengeLessonID: lessonID) {
-                        progress.recordAlgorithmSolved(patternID: pattern.id)
+                    if let challenge = academy.repository?.challenge(for: lessonID) {
+                        progress.recordAlgorithmSolved(patternID: challenge.patternID)
                     }
                 }
                 return
@@ -492,11 +497,11 @@ struct ContentView: View {
             scoredLessonIDs = ids
             for lessonID in fresh {
                 progress.record(
-                    Self.progressEvent(forLessonID: lessonID),
+                    progressEvent(forLessonID: lessonID),
                     eventKey: "lesson:\(lessonID):first-completion"
                 )
-                if let pattern = AlgorithmCourseCatalog.pattern(forChallengeLessonID: lessonID) {
-                    progress.recordAlgorithmSolved(patternID: pattern.id)
+                if let challenge = academy.repository?.challenge(for: lessonID) {
+                    progress.recordAlgorithmSolved(patternID: challenge.patternID)
                 }
             }
         }
@@ -537,7 +542,7 @@ struct ContentView: View {
 
     private func closeBuildWorkspace() {
         if let lessonID = model.activeLessonID,
-           let course = RustCourseCatalog.course(containingLessonID: lessonID) {
+           let course = academy.repository?.course(containing: lessonID) {
             selectedDestination = .learn
             learningPath = [.course(course.id), .lesson(lessonID)]
         } else {
@@ -545,10 +550,16 @@ struct ContentView: View {
         }
     }
 
-    private func startLesson(_ lesson: RustLesson) {
+    private func startLesson(_ lesson: RustLesson, session: CourseSession) {
+        guard let content = CourseLessonExecution(lesson: lesson, session: session) else { return }
         let isReview = model.completedLessonIDs.contains(lesson.id)
         let reviewProjectName = "review-\(lesson.id)"
-        switch lesson.exercise {
+        if let template = session.repository.starterProject(for: lesson.id) {
+            model.loadCourseStarter(
+                template, session: session,
+                projectName: isReview ? reviewProjectName : nil
+            )
+        } else { switch lesson.exercise {
         case .runnable:
             model.loadHelloLessonSample(
                 projectName: isReview ? reviewProjectName : "hello-crabrix"
@@ -562,7 +573,7 @@ struct ContentView: View {
                 projectName: isReview ? reviewProjectName : "modules-lab"
             )
         case .algorithmChallenge:
-            guard let challenge = AlgorithmCourseCatalog.challenge(for: lesson.id) else {
+            guard let challenge = content.challenge else {
                 return
             }
             model.loadAlgorithmLessonSample(
@@ -571,8 +582,8 @@ struct ContentView: View {
             )
         case .planned:
             return
-        }
-        model.beginLesson(lesson.id, isReview: isReview)
+        } }
+        model.beginLesson(lesson.id, isReview: isReview, content: content)
         selectedDestination = .build
     }
 
@@ -1002,12 +1013,12 @@ struct ContentView: View {
     /// of its 600 steps like a Rust lesson would have made the rank ladder a
     /// formality. Reading a pattern is a quarter of a lesson; proving one to
     /// the compiler is worth more than either.
-    private static func progressEvent(forLessonID lessonID: String) -> CrabrixProgressEvent {
-        switch AlgorithmCourseCatalog.stage(forLessonID: lessonID) {
-        case .model, .recognize: .algorithmStudyStepCompleted
-        case .challenge: .algorithmChallengeSolved
-        case nil: .lessonCompleted
+    private func progressEvent(forLessonID lessonID: String) -> CrabrixProgressEvent {
+        guard academy.repository?.course(containing: lessonID)?.id == "algorithms" else {
+            return .lessonCompleted
         }
+        return academy.repository?.challenge(for: lessonID) == nil
+            ? .algorithmStudyStepCompleted : .algorithmChallengeSolved
     }
 
     /// Turns a finished build into rating, once per result.
@@ -1058,8 +1069,12 @@ struct ContentView: View {
     private func continueLearning() {
         selectedDestination = .learn
         if let lessonID = model.activeLessonID,
-           AlgorithmCourseCatalog.pattern(forLessonID: lessonID) != nil {
-            if let next = AlgorithmCourseCatalog.nextLessonInSameMethod(after: lessonID) {
+           let course = academy.repository?.course(containing: lessonID),
+           course.id == "algorithms" {
+            let methodLessons = course.units.first { $0.lessons.contains { $0.id == lessonID } }?.lessons ?? []
+            if let position = methodLessons.firstIndex(where: { $0.id == lessonID }),
+               methodLessons.indices.contains(position + 1) {
+                let next = methodLessons[position + 1]
                 learningPath = [.course("algorithms"), .lesson(next.id)]
             } else {
                 learningPath = [.course("algorithms")]
@@ -1068,10 +1083,12 @@ struct ContentView: View {
         }
         // Land on the next lesson itself, not on the course list: after finishing
         // something, "what is next" is a specific screen.
-        guard let step = RustLessonProgression.nextStep(
-            after: model.activeLessonID,
-            completedLessonIDs: model.completedLessonIDs
-        ) else {
+        guard let courses = academy.repository?.courses,
+              let step = RustLessonProgression.nextStep(
+                after: model.activeLessonID,
+                completedLessonIDs: model.completedLessonIDs,
+                courses: courses
+              ) else {
             learningPath = []
             return
         }

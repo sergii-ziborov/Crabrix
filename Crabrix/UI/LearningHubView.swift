@@ -8,7 +8,7 @@ enum LearningRoute: Hashable {
     /// Opens a Learn screen straight from a launch argument, the same way
     /// `-CrabrixTab` opens a tab. Store screenshots are captured this way so
     /// the same frames come out of every build.
-    static var launchArgument: [LearningRoute] {
+    static func launchArgument(repository: any CourseRepository) -> [LearningRoute] {
         let arguments = ProcessInfo.processInfo.arguments
         guard let index = arguments.firstIndex(of: "-CrabrixLearn"),
               index + 1 < arguments.count
@@ -16,9 +16,9 @@ enum LearningRoute: Hashable {
 
         let value = arguments[index + 1]
         if value == "profile" { return [.profile] }
-        if let course = RustCourseCatalog.course(id: value) { return [.course(course.id)] }
-        if let lesson = RustCourseCatalog.lesson(id: value),
-           let course = RustCourseCatalog.course(containingLessonID: lesson.id) {
+        if let course = repository.course(id: value) { return [.course(course.id)] }
+        if let lesson = repository.lesson(id: value),
+           let course = repository.course(containing: lesson.id) {
             return [.course(course.id), .lesson(lesson.id)]
         }
         return []
@@ -27,6 +27,7 @@ enum LearningRoute: Hashable {
 
 struct LearningHubView: View {
     @Binding var navigationPath: [LearningRoute]
+    @EnvironmentObject private var academy: AcademyContentStore
     @EnvironmentObject private var progress: CrabrixProgressStore
     @EnvironmentObject private var vitals: CrabrixVitalsStore
     @AppStorage("crabrix.learn.trainingSessions") private var trainingSessions = 0
@@ -34,9 +35,11 @@ struct LearningHubView: View {
     /// Training is the always-open route, so anything that blocks lessons
     /// offers it directly rather than leaving the reader at a dead end.
     @State private var isTrainingPresented = false
+    @State private var lessonSession: CourseSession?
+    @State private var pendingDownload: CourseCatalogPayload.Entry?
     let completedLessonIDs: Set<String>
     let lessonAnswerIndices: [String: Int]
-    let onStartLesson: (RustLesson) -> Void
+    let onStartLesson: (RustLesson, CourseSession) -> Void
     let onCompleteLesson: (RustLesson) -> Void
     let onAnswerLesson: (RustLesson, Int, Bool) -> Void
 
@@ -49,8 +52,9 @@ struct LearningHubView: View {
                     hero
                     VitalsCard(store: vitals) { navigationPath = []; isTrainingPresented = true }
                     WeakTopicsCard { topic in
-                        guard let lesson = RustCourseCatalog.lesson(id: topic),
-                              let course = RustCourseCatalog.course(containingLessonID: topic)
+                        guard let repository = academy.repository,
+                              let lesson = repository.lesson(id: topic),
+                              let course = repository.course(containing: topic)
                         else { return }
                         navigationPath = [.course(course.id), .lesson(lesson.id)]
                     }
@@ -104,15 +108,49 @@ struct LearningHubView: View {
                         Text("Start with the level you need. Each course has its own visual lesson path.")
                             .font(.subheadline)
                             .foregroundStyle(CrabrixTheme.muted)
+                        Button("Check for course updates") {
+                            Task { await academy.checkForUpdates() }
+                        }
+                        .font(.subheadline)
+                        if let error = academy.catalogError {
+                            Text("Update check unavailable: \(error)")
+                                .font(.caption)
+                                .foregroundStyle(CrabrixTheme.muted)
+                        }
                     }
 
                     LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(RustCourseCatalog.courses) { course in
-                            NavigationLink(value: LearningRoute.course(course.id)) {
-                                CourseCard(course: course)
+                        ForEach(academy.repository?.courses ?? []) { course in
+                            VStack(alignment: .leading, spacing: 8) {
+                                NavigationLink(value: LearningRoute.course(course.id)) {
+                                    CourseCard(course: course)
+                                }
+                                .buttonStyle(.plain)
+                                HStack {
+                                    let version = academy.repository?.loaded[course.id]?.contentVersion ?? "—"
+                                    Text("Installed · English · v\(version)")
+                                        .font(.caption)
+                                        .foregroundStyle(CrabrixTheme.muted)
+                                    Spacer()
+                                    if let entry = availableUpdate(for: course.id, installedVersion: version) {
+                                        Button("Update") { pendingDownload = entry }
+                                            .font(.caption.bold())
+                                    }
+                                }
+                                if let transfer = academy.transfers[course.id + "|en"] {
+                                    transferView(transfer, courseID: course.id)
+                                }
                             }
-                            .buttonStyle(.plain)
                         }
+                    }
+                    if let error = academy.errorMessage {
+                        ContentUnavailableView(
+                            "Academy unavailable", systemImage: "exclamationmark.triangle",
+                            description: Text(error)
+                        )
+                        Button("Retry") { Task { await academy.prepare() } }
+                    } else if academy.repository == nil {
+                        ProgressView("Preparing Academy")
                     }
                 }
                 .padding(22)
@@ -126,15 +164,87 @@ struct LearningHubView: View {
                 destination(for: route)
             }
             .sheet(isPresented: $isTrainingPresented) { trainingSheet }
+            .confirmationDialog(
+                "Download course update?", isPresented: Binding(
+                    get: { pendingDownload != nil },
+                    set: { if !$0 { pendingDownload = nil } }
+                ), titleVisibility: .visible
+            ) {
+                if let entry = pendingDownload {
+                    Button("Download \(ByteCountFormatter.string(fromByteCount: Int64(entry.archiveBytes), countStyle: .file))") {
+                        academy.download(entry)
+                        pendingDownload = nil
+                    }
+                }
+                Button("Cancel", role: .cancel) { pendingDownload = nil }
+            } message: {
+                Text("The course remains available while its signed update downloads and verifies.")
+            }
             .task { vitals.refresh(points: progress.state.totalPoints) }
+            .onChange(of: navigationPath) { _, path in
+                if case let .lesson(lessonID) = path.last {
+                    if lessonSession?.lessonID != lessonID,
+                       let repository = academy.repository {
+                        lessonSession = CourseSession(lessonID: lessonID, repository: repository)
+                    }
+                } else {
+                    lessonSession = nil
+                }
+            }
+            .onChange(of: academy.repository?.courses.count) { _, _ in
+                if lessonSession == nil,
+                   case let .lesson(lessonID) = navigationPath.last,
+                   let repository = academy.repository {
+                    lessonSession = CourseSession(lessonID: lessonID, repository: repository)
+                }
+            }
         }
+    }
+
+    @ViewBuilder
+    private func transferView(_ state: AcademyContentStore.TransferState,
+                              courseID: String) -> some View {
+        switch state {
+        case let .downloading(received, total):
+            HStack {
+                ProgressView(value: Double(received), total: Double(max(total, 1)))
+                Button("Pause") { academy.cancelDownload(courseID: courseID, language: "en") }
+            }
+        case .verifying:
+            ProgressView("Verifying course")
+        case .installed:
+            Text("Update installed")
+                .font(.caption)
+                .foregroundStyle(CrabrixTheme.mint)
+        case let .failed(message):
+            HStack {
+                Text(message).font(.caption).foregroundStyle(CrabrixTheme.muted)
+                if let entry = academy.catalog?.courses.first(where: {
+                    $0.courseID == courseID && $0.language == "en"
+                }) {
+                    Button("Resume") { pendingDownload = entry }
+                }
+            }
+        }
+    }
+
+    private func availableUpdate(for courseID: String,
+                                 installedVersion: String) -> CourseCatalogPayload.Entry? {
+        guard let current = SemanticVersion(installedVersion) else { return nil }
+        return academy.catalog?.courses
+            .filter { $0.courseID == courseID && $0.language == "en" }
+            .filter { SemanticVersion($0.contentVersion).map { $0 > current } ?? false }
+            .max { lhs, rhs in
+                (SemanticVersion(lhs.contentVersion) ?? current)
+                    < (SemanticVersion(rhs.contentVersion) ?? current)
+            }
     }
 
     @ViewBuilder
     private func destination(for route: LearningRoute) -> some View {
         switch route {
         case let .course(courseID):
-            if let course = RustCourseCatalog.course(id: courseID) {
+            if let course = academy.repository?.course(id: courseID) {
                 LearnPathView(
                     units: course.units,
                     courseTitle: course.title,
@@ -153,7 +263,12 @@ struct LearningHubView: View {
             ProfileView()
 
         case let .lesson(lessonID):
-            if let lesson = RustCourseCatalog.lesson(id: lessonID) {
+            if let repository = lessonSession?.repository ?? academy.repository,
+               let lesson = repository.lesson(id: lessonID),
+               let writing = repository.writing(for: lessonID),
+               let depth = repository.depth(for: lessonID),
+               let course = repository.course(containing: lessonID),
+               let session = lessonSession ?? CourseSession(lessonID: lessonID, repository: repository) {
                 let isReview = completedLessonIDs.contains(lesson.id)
                 // Vitals gate entry, not the middle of a lesson: being cut off
                 // halfway through a page you already paid for would be worse
@@ -168,9 +283,12 @@ struct LearningHubView: View {
                 } else {
                     LessonDetailView(
                         lesson: lesson,
+                        writing: writing,
+                        lessonDepth: depth,
+                        courseTheme: course.theme,
                         isCompleted: isReview,
                         savedAnswer: lessonAnswerIndices[lesson.id],
-                        onStart: { onStartLesson(lesson) },
+                        onStart: { onStartLesson(lesson, session) },
                         onComplete: {
                             completeAndContinue(from: lesson)
                         },
@@ -178,7 +296,7 @@ struct LearningHubView: View {
                             onAnswerLesson(lesson, index, correct)
                         }
                     )
-                    .id(lesson.id)
+                    .id(session.token)
                 }
             } else {
                 ContentUnavailableView("Lesson unavailable", systemImage: "book.closed")
@@ -194,7 +312,7 @@ struct LearningHubView: View {
     }
 
     private func returnToCourse(containing lesson: RustLesson) {
-        guard let course = RustCourseCatalog.course(containingLessonID: lesson.id) else {
+        guard let course = academy.repository?.course(containing: lesson.id) else {
             navigationPath = []
             return
         }
@@ -204,18 +322,22 @@ struct LearningHubView: View {
     private func completeAndContinue(from lesson: RustLesson) {
         onCompleteLesson(lesson)
         let completed = completedLessonIDs.union([lesson.id])
-        if AlgorithmCourseCatalog.pattern(forLessonID: lesson.id) != nil {
-            if let next = AlgorithmCourseCatalog.nextLessonInSameMethod(after: lesson.id) {
+        if let course = academy.repository?.course(containing: lesson.id),
+           course.id == "algorithms" {
+            let methodLessons = course.units.first { $0.lessons.contains { $0.id == lesson.id } }?.lessons ?? []
+            if let position = methodLessons.firstIndex(where: { $0.id == lesson.id }),
+               methodLessons.indices.contains(position + 1) {
+                let next = methodLessons[position + 1]
                 navigationPath = [.course("algorithms"), .lesson(next.id)]
             } else {
                 navigationPath = [.course("algorithms")]
             }
             return
         }
-        guard let step = RustLessonProgression.nextStep(
-            after: lesson.id,
-            completedLessonIDs: completed
-        ), step.lessonID != lesson.id else {
+        guard let courses = academy.repository?.courses,
+              let step = RustLessonProgression.nextStep(
+                after: lesson.id, completedLessonIDs: completed, courses: courses
+              ), step.lessonID != lesson.id else {
             returnToCourse(containing: lesson)
             return
         }
@@ -325,11 +447,11 @@ struct LearningHubView: View {
     }
 
     private var totalLessonCount: Int {
-        RustCourseCatalog.courses.flatMap(\.units).flatMap(\.lessons).count
+        academy.repository?.courses.flatMap(\.units).flatMap(\.lessons).count ?? 0
     }
 
     private var completedLessonCount: Int {
-        let allLessonIDs = Set(RustCourseCatalog.courses.flatMap(\.units).flatMap(\.lessons).map(\.id))
+        let allLessonIDs = Set(academy.repository?.courses.flatMap(\.units).flatMap(\.lessons).map(\.id) ?? [])
         return completedLessonIDs.intersection(allLessonIDs).count
     }
 

@@ -9,8 +9,24 @@ protocol CourseRepository: Sendable {
     func depth(for lessonID: String) -> RustLessonDepth?
     func evidence(for lessonID: String) -> LessonEvidence?
     func starterProject(for lessonID: String) -> CourseProjectTemplate?
-    func challenge(for lessonID: String) -> CourseChallengeDTO?
+    func challenge(for lessonID: String) -> AlgorithmChallenge?
     func termPairs() -> [CourseTermPairDTO]
+}
+
+extension CourseRepository {
+    func course(id: String) -> RustCourse? {
+        courses.first { $0.id == id }
+    }
+
+    func course(containing lessonID: String) -> RustCourse? {
+        courses.first { course in
+            course.units.contains { unit in unit.lessons.contains { $0.id == lessonID } }
+        }
+    }
+
+    func lesson(id: String) -> RustLesson? {
+        courses.lazy.flatMap(\.units).flatMap(\.lessons).first { $0.id == id }
+    }
 }
 
 struct LoadedCourse: Sendable {
@@ -20,7 +36,7 @@ struct LoadedCourse: Sendable {
     let depth: [String: RustLessonDepth]
     let evidence: [String: LessonEvidence]
     let projects: [String: CourseProjectTemplate]
-    let challenges: [String: CourseChallengeDTO]
+    let challenges: [String: AlgorithmChallenge]
     let terms: [CourseTermPairDTO]
     let contentVersion: String
     let archiveSHA256: String

@@ -111,6 +111,7 @@ struct LessonEvidenceValidation: Equatable, Sendable {
 enum LessonEvidenceValidator {
     static func validateCompilerAttempt(
         lesson: RustLesson,
+        evidence: LessonEvidence? = nil,
         result: CompilationResult,
         project: CrabrixProject,
         initialSourceTreeHash: String?,
@@ -124,7 +125,7 @@ enum LessonEvidenceValidator {
             )
         }
 
-        switch lesson.evidence {
+        switch evidence ?? lesson.evidence {
         case let .compilerRun(output, requiresSourceChange, requiredFiles):
             if requiresSourceChange, initialSourceTreeHash == currentSourceTreeHash {
                 return LessonEvidenceValidation(

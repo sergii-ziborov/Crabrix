@@ -140,6 +140,7 @@ final class CompilerViewModel: ObservableObject {
     @Published private(set) var completedLessonIDs: Set<String>
     @Published private(set) var lessonAnswerIndices: [String: Int]
     @Published private(set) var activeLessonID: String?
+    private var activeLessonContent: CourseLessonExecution?
     @Published private(set) var activeLessonIsReview = false
     @Published private(set) var projectTransfer: ProjectTransfer = .idle
     @Published private(set) var compatibilityReport: ProjectCompatibilityReport
@@ -604,7 +605,8 @@ final class CompilerViewModel: ObservableObject {
         from project: (entryPath: String, main: String, supporting: [String: String])
     ) -> (entryPath: String, main: String, supporting: [String: String]) {
         guard let activeLessonID,
-              let challenge = AlgorithmCourseCatalog.challenge(for: activeLessonID)
+              let challenge = activeLessonContent?.challenge
+                ?? AlgorithmCourseCatalog.challenge(for: activeLessonID)
         else { return project }
 
         var supporting = project.supporting
@@ -972,8 +974,21 @@ final class CompilerViewModel: ObservableObject {
         )
     }
 
-    func beginLesson(_ id: String, isReview: Bool = false) {
+    func loadCourseStarter(_ template: CourseProjectTemplate, session: CourseSession,
+                           projectName: String? = nil) {
+        loadProject(
+            name: projectName ?? template.name,
+            files: template.files,
+            entryFile: template.entryFile,
+            provenance: .academy(session: session, templateHash: template.templateHash),
+            kind: .learning
+        )
+    }
+
+    func beginLesson(_ id: String, isReview: Bool = false,
+                     content: CourseLessonExecution? = nil) {
         activeLessonID = id
+        activeLessonContent = content
         activeLessonIsReview = isReview
         activeLessonInitialSourceTreeHash = workspaceRevision.sourceTreeHash
         activeLessonObservedDiagnosticCodes = []
@@ -1357,6 +1372,7 @@ final class CompilerViewModel: ObservableObject {
         completedStages = []
         practiceCompleted = false
         activeLessonID = nil
+        activeLessonContent = nil
         activeLessonIsReview = false
         activeLessonInitialSourceTreeHash = nil
         activeLessonObservedDiagnosticCodes = []
@@ -1782,9 +1798,10 @@ final class CompilerViewModel: ObservableObject {
         }
         if value.phase == .run,
            let activeLessonID,
-           let lesson = RustCourseCatalog.lesson(id: activeLessonID) {
+           let lesson = activeLessonContent?.lesson ?? RustCourseCatalog.lesson(id: activeLessonID) {
             let validation = LessonEvidenceValidator.validateCompilerAttempt(
                 lesson: lesson,
+                evidence: activeLessonContent?.evidence,
                 result: value,
                 project: currentProject(),
                 initialSourceTreeHash: activeLessonInitialSourceTreeHash,
