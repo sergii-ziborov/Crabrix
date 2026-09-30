@@ -9,6 +9,8 @@ final class CompilerPerformanceProbeTests: XCTestCase {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
             throw XCTSkip("Use the CrabrixCompilerGate scheme for the compiler probe.")
         }
+        setenv("CRABRIX_PERF_TRACE", "1", 1)
+        defer { unsetenv("CRABRIX_PERF_TRACE") }
 
         let compiler = WasmRustCompiler(bundle: .main)
         let source = """
@@ -19,14 +21,16 @@ final class CompilerPerformanceProbeTests: XCTestCase {
         """
         let first = await compiler.check(source: source)
         let unchanged = await compiler.check(source: source)
+        let changed = await compiler.check(source: source.replacingOccurrences(of: "hello", with: "hello changed"))
         XCTAssertTrue(first.succeeded, first.detail)
         XCTAssertTrue(unchanged.succeeded, unchanged.detail)
+        XCTAssertTrue(changed.succeeded, changed.detail)
         XCTAssertFalse(first.diagnostics.filter { $0.level == "warning" }.isEmpty)
         XCTAssertEqual(unchanged.diagnostics, first.diagnostics)
         XCTAssertEqual(unchanged.stdout, first.stdout)
         XCTAssertEqual(unchanged.stderr, first.stderr)
 
-        for (phase, result) in [("first", first), ("unchanged", unchanged)] {
+        for (phase, result) in [("first", first), ("unchanged", unchanged), ("changed", changed)] {
             let parts = result.duration.components
             let milliseconds = Double(parts.seconds) * 1_000
                 + Double(parts.attoseconds) / 1_000_000_000_000_000

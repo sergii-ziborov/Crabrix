@@ -130,10 +130,10 @@ final class RustcRuntime: @unchecked Sendable {
     func engine() -> Engine {
         if let cachedEngine { return cachedEngine }
         let configuration = EngineConfiguration(
-            // WasmKit 0.3.1's direct-threaded interpreter crashes in optimized
+            // WasmKit 0.3.1's direct-threaded interpreter crashed in optimized
             // iOS Simulator builds while executing the bundled rustc module.
-            // Token threading is the supported fallback and remains stable in
-            // both Debug and Release configurations.
+            // Token threading remains the supported mode until the new engine's
+            // direct mode passes Release/device correctness and speed gates.
             threadingModel: .token,
             compilationMode: .lazy,
             stackSize: 16 * 1024 * 1024,
@@ -147,7 +147,9 @@ final class RustcRuntime: @unchecked Sendable {
 
     func rustcModule(at url: URL) throws -> Module {
         if let cachedRustcModule { return cachedRustcModule }
+        let started = ContinuousClock.now
         let module = try parseWasm(bytes: [UInt8](Data(contentsOf: url)))
+        CompilerPhaseTrace.emit("rustc-parse", since: started)
         cachedRustcModule = module
         return module
     }
@@ -176,6 +178,7 @@ final class RustcRuntime: @unchecked Sendable {
         interrupter: WasmInterrupter? = nil,
         capturedOutputLimitBytes: Int? = nil
     ) throws -> WasmProcessResult {
+        let started = ContinuousClock.now
         let capture = try Capture(directory: captureDirectory, prefix: capturePrefix)
         var exitCode: UInt32 = 0
         var thrown: (any Error)?
@@ -187,7 +190,9 @@ final class RustcRuntime: @unchecked Sendable {
                 stdout: capture.stdoutHandle.fileDescriptor,
                 stderr: capture.stderrHandle.fileDescriptor
             )
+            CompilerPhaseTrace.emit("wasi-setup", since: started)
             exitCode = try wasi.runAndClose { wasi in
+                let instantiateStarted = ContinuousClock.now
                 let store = Store(engine: engine())
                 if let resourceLimiter { store.resourceLimiter = resourceLimiter }
                 if let fuelBudget { store.fuel = Fuel(remaining: fuelBudget) }
@@ -200,12 +205,17 @@ final class RustcRuntime: @unchecked Sendable {
                     wasi.link(to: &imports, store: store)
                 }
                 let instance = try module.instantiate(store: store, imports: imports)
-                return try wasi.start(instance)
+                CompilerPhaseTrace.emit("instantiate", since: instantiateStarted)
+                let guestStarted = ContinuousClock.now
+                let exitCode = try wasi.start(instance)
+                CompilerPhaseTrace.emit("guest-execution", since: guestStarted)
+                return exitCode
             }
         } catch {
             thrown = error
         }
         let output = try capture.finish(maxBytesPerStream: capturedOutputLimitBytes)
+        CompilerPhaseTrace.emit("wasi-total", since: started)
         if let thrown {
             if let reason = interrupter?.stopReason {
                 throw WasmExecutionCancelled(
@@ -261,6 +271,18 @@ final class RustcRuntime: @unchecked Sendable {
             defer { try? handle.close() }
             return (try? handle.read(upToCount: max(0, limit))) ?? Data()
         }
+    }
+}
+
+/// Local opt-in phase observations for compiler investigations. The test probe
+/// enables this only for its process; no source or diagnostics leave the device.
+private enum CompilerPhaseTrace {
+    static func emit(_ phase: String, since started: ContinuousClock.Instant) {
+        guard ProcessInfo.processInfo.environment["CRABRIX_PERF_TRACE"] == "1" else { return }
+        let parts = started.duration(to: ContinuousClock.now).components
+        let milliseconds = Double(parts.seconds) * 1_000
+            + Double(parts.attoseconds) / 1_000_000_000_000_000
+        print("CRABRIX_PHASE \(phase) \(milliseconds)")
     }
 }
 

@@ -4,7 +4,8 @@
   "workload": {
     "id": "warning-check-v1",
     "sourceSHA256": "0f76d31e5afd38dc54aefef96ed3c05b1c3f407b8e3d590ab241c457bc13013d",
-    "operation": "new compiler instance: first Check, then unchanged Check",
+    "changedSourceSHA256": "c0e8c5d2945d4afafb552674387e21c77a2951aa528cbe933a89db410f996f06",
+    "operation": "new compiler instance: first Check, unchanged Check, then changed Check",
     "dependencies": "bundled only"
   },
   "environment": {
@@ -34,5 +35,43 @@
       "unchangedWarningCount": 2
     }
   ],
-  "interpretation": "The correctness defect on unchanged Check is fixed. One simulator sample per revision cannot establish a cold compiler speedup, and the short cache-hit times are not compiler throughput. Release-mode physical-device A/B/C measurements remain required."
+  "phaseObservation": {
+    "configuration": "Debug, token dispatch, fuel and cancellation enabled",
+    "rustcParseMilliseconds": 420.225042,
+    "instantiateMilliseconds": 308.88525,
+    "guestExecutionMilliseconds": 10001.580166,
+    "firstCheckMilliseconds": 10753.435667,
+    "changedCheckMilliseconds": 11025.964,
+    "note": "Separate nearby runs, not a paired statistical comparison. The changed Check reuses the parsed module but starts a fresh Store and instance."
+  },
+  "releaseObservation": {
+    "configuration": "Release simulator, token dispatch, fuel and cancellation enabled, ENABLE_TESTABILITY=YES",
+    "firstCheckMilliseconds": 1676.612792,
+    "unchangedCheckMilliseconds": 0.730667,
+    "changedCheckMilliseconds": 1173.370875,
+    "firstWarningCount": 2,
+    "unchangedWarningCount": 2,
+    "rustcParseMilliseconds": 130.772417,
+    "firstGuestExecutionMilliseconds": 1490.737959,
+    "changedGuestExecutionMilliseconds": 1135.536833,
+    "note": "Single Apple Silicon simulator observation. Debug/Release difference is a build-configuration effect, not an improvement credited to a Crabrix patch."
+  },
+  "exploratorySingleRuns": [
+    {
+      "configuration": "Debug, direct dispatch, guards enabled",
+      "firstCheckMilliseconds": 12589.747125,
+      "disposition": "not enabled; slower than nearby token observations and unverified in Release/device"
+    },
+    {
+      "configuration": "Debug, token dispatch, cancellation probe temporarily disabled",
+      "firstCheckMilliseconds": 11074.777167,
+      "disposition": "safety experiment only; cancellation probe restored"
+    },
+    {
+      "configuration": "Debug, token dispatch, fuel temporarily disabled",
+      "firstCheckMilliseconds": 10199.945375,
+      "disposition": "safety experiment only; fuel restored"
+    }
+  ],
+  "interpretation": "The correctness defect on unchanged Check is fixed. A local CPU sample placed most compiler-thread samples within WasmKit lazy function translation, but it was a Debug simulator sample and is not a user-device speed claim. One simulator sample per revision cannot establish a cold compiler speedup; the short cache-hit times are not compiler throughput. Release-mode physical-device A/B/C measurements remain required."
 }
