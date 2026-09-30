@@ -480,7 +480,7 @@ struct TermMatchTrainView: View {
     }
 
     private func recordMastery(pairID: String, correct: Bool) {
-        guard let pair = TermTrainDeck.all.first(where: { $0.id == pairID }) else { return }
+        guard let pair = allPairs.first(where: { $0.id == pairID }) else { return }
         mastery.record(topic: pair.topic, correct: correct)
     }
 
