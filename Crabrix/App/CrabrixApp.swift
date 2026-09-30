@@ -20,14 +20,28 @@ struct CrabrixApp: App {
     @Environment(\.scenePhase) private var scenePhase
     /// Rating and achievements are earned everywhere, so the store is owned once
     /// at the root and handed to every feature that reports progress.
-    @StateObject private var progress = CrabrixProgressStore()
-    @StateObject private var academyContent = AcademyContentStore()
-    @StateObject private var appLock = AppLockController()
+    @StateObject private var progress: CrabrixProgressStore
+    @StateObject private var academyContent: AcademyContentStore
+    @StateObject private var appLock: AppLockController
     #if CRABRIX_SOCIAL
     /// Identity and the global board, through Game Center. Optional everywhere:
     /// the app is fully usable without ever signing in.
-    @StateObject private var gameCenter = GameCenterService()
+    @StateObject private var gameCenter: GameCenterService
     #endif
+
+    init() {
+        // Decide before CrabrixProgressStore can write its current schema to
+        // UserDefaults. Otherwise a fresh install can look like an upgrade.
+        let initialInstallMode = CourseLaunchPolicy.resolve()
+        _progress = StateObject(wrappedValue: CrabrixProgressStore())
+        _academyContent = StateObject(wrappedValue: AcademyContentStore(
+            initialInstallMode: initialInstallMode
+        ))
+        _appLock = StateObject(wrappedValue: AppLockController())
+        #if CRABRIX_SOCIAL
+        _gameCenter = StateObject(wrappedValue: GameCenterService())
+        #endif
+    }
 
     var body: some Scene {
         WindowGroup {

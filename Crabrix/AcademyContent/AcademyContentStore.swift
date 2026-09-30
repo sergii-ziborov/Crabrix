@@ -16,8 +16,13 @@ final class AcademyContentStore: ObservableObject {
     @Published private(set) var catalog: CourseCatalogPayload?
     @Published private(set) var catalogError: String?
     @Published private(set) var transfers: [String: TransferState] = [:]
+    private let initialInstallMode: CourseInitialInstallMode
     private var preparing: Task<InstalledCourseRepository, Error>?
     private var downloadTasks: [String: Task<Void, Never>] = [:]
+
+    init(initialInstallMode: CourseInitialInstallMode) {
+        self.initialInstallMode = initialInstallMode
+    }
 
     func prepare() async {
         guard repository == nil else { return }
@@ -28,7 +33,7 @@ final class AcademyContentStore: ObservableObject {
         loading = true
         let task = Task {
             let bootstrap = try CourseBootstrap()
-            return try await bootstrap.activateBundledBaseline()
+            return try await bootstrap.activateBundledBaseline(for: initialInstallMode)
         }
         preparing = task
         defer { loading = false; preparing = nil }
