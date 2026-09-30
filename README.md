@@ -4,13 +4,13 @@ Crabrix is a native Rust learning workspace for iPhone and iPad: edit a project,
 
 [Website](https://crabrix.com) · [Support](https://crabrix.com/support) · [Privacy](https://crabrix.com/privacy) · [App license](LICENSE)
 
-| Projects | Build | Academy |
-| :--: | :--: | :--: |
-| <img src="docs/screenshots/iphone-projects.png" width="250" alt="Projects dashboard"> | <img src="docs/screenshots/iphone-build.png" width="250" alt="Native editor and build result"> | <img src="docs/screenshots/iphone-learn.png" width="250" alt="Academy course list"> |
+<img src="docs/screenshots/iphone-cyberpunk-settings.png" width="280" alt="Cyberpunk appearance and optional device authentication in Crabrix Settings">
 
 ## Use Crabrix
 
-Open **Learn**, choose a course, and read a lesson or open its starter as an editable project. In **Build**, use **Check** to see compiler diagnostics, then **Run** to execute the program. A project is a durable copy: editing or deleting course material does not edit that project.
+Open **Learn**, choose a course, and read a lesson or open its starter as an editable project. In the project workspace, use **Check** to see compiler diagnostics, then **Run** to execute the program. Hints appear in **Output** for lesson projects. A project is a durable copy: editing or deleting course material does not edit that project.
+
+**Projects** opens a short entry screen. **My Projects** opens the project manager; GitHub and Files/iCloud Drive imports live under **New Project**. The workspace opens on **Code** and returns to Code when you select another file. Project dependencies stay with that project. Settings offer Auto, Light, Dark, and a global Cyberpunk appearance, plus optional Face ID or device-passcode app protection. Rating and achievements remain local; Health and Energy are no longer part of learning or practice.
 
 The Academy contains seven courses: six Rust language courses and Algorithm Atlas. The signed 1.0.1 baseline contains **742 lessons** (142 Rust lessons and 600 Atlas steps), **200 Atlas challenges**, source projects, questions, answers, depth material, and 358 term pairs. All seven baseline CoursePacks are bundled for offline transition and activated locally on first launch. **Check for course updates** reads the signed public catalog; an update shows its size before download and leaves the installed version usable until verification and activation finish. Course sources, build tools, manifests, and release archives are public in [crabrix-courses](https://github.com/sergii-ziborov/crabrix-courses). The course text and media have their own [content terms](https://github.com/sergii-ziborov/crabrix-courses/blob/main/CONTENT-LICENSE.md).
 
@@ -18,7 +18,7 @@ For Cargo projects, Crabrix resolves a supported subset of crates.io dependencie
 
 ## Runtime and compiler
 
-The app pins [CrabrixRuntime](https://github.com/sergii-ziborov/crabrix-runtime) at `9dc0ef77c101d2b1f1433ece34a0e47889770335`, derived from WasmKit **0.4.1** (`a0471eaee817c523b8023d8ebb1c70ff70b7950a`). The adapter uses upstream fuel metering, a separate cancellation/deadline probe, and fresh execution stores. The Wasm guest has no network import. [Runtime integration](docs/runtime-integration.md) records the tested paths and remaining security gates.
+The app pins [CrabrixRuntime](https://github.com/sergii-ziborov/crabrix-runtime) at `731d09b7c779e62fd42832312c42d29f69475361`, derived from WasmKit **0.4.1** (`a0471eaee817c523b8023d8ebb1c70ff70b7950a`). The adapter uses upstream fuel metering, a separate cancellation/deadline probe, read-only compiler inputs, and fresh execution stores. The Wasm guest has no network import. [Runtime integration](docs/runtime-integration.md) records the tested paths and remaining security gates.
 
 The current app bundle still contains the pinned `artifacts-test-7` WASI `rustc` and `wasm32-wasip1` sysroot. They are fetched and hash checked on the **build machine**, then included in the app; the phone does not download compiler or runtime updates. [crabrix-toolchain](https://github.com/sergii-ziborov/crabrix-toolchain) is the public source locked builder. Its own compiler artifacts are not yet the app's release input; see [toolchain status](docs/toolchain.md). Source availability and a lock file are not evidence of a completed source build.
 
@@ -56,7 +56,7 @@ The named Simulator is a local development device; choose an installed iOS Simul
 
 - The bundled compiler targets `wasm32-wasip1`. Rust procedural macros, native linking, and executable Cargo build scripts are outside the supported local Cargo subset.
 - Crate compatibility is measured per package. A successful metadata Check does not prove code generation or linking.
-- Compiler guest filesystem rights, compiler output stress, course update crash injection, and device performance still need their release gates. [Current validation](docs/VALIDATION.md) lists them explicitly.
+- Compiler output stress, course update crash injection, device performance, and physical Face ID behavior still need their release gates. [Current validation](docs/VALIDATION.md) lists them explicitly.
 - Internet is needed for course catalog/update fetches, crate discovery/downloads, and user requested GitHub imports. Compilation and program execution stay on device.
 
 ## Privacy, support, and licenses

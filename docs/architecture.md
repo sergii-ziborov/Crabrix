@@ -7,9 +7,9 @@ Learn UI -> AcademyContentStore -> InstalledCourseRepository -> verified CourseP
                                    ^
 signed catalog -> download cache -> CourseInstaller (staging + active index)
 
-Build UI -> CompilerViewModel -> Cargo resolver -> bundled rustc.wasm
-                                  |                  -> bundled wasip1 sysroot
-                                  -> CrabrixRuntime -> fresh WASI Store -> program.wasm
+Project workspace -> CompilerViewModel -> Cargo resolver -> bundled rustc.wasm
+                                           |                  -> bundled wasip1 sysroot
+                                           -> CrabrixRuntime -> fresh WASI Store -> program.wasm
 
 durable ProjectStore <----------- copied course starter / user edits
 durable progress store <--------- lesson and build evidence
@@ -23,7 +23,7 @@ The transition baseline is currently included for every installation to preserve
 
 ## Runtime boundary
 
-The application pins the public fork at `9dc0ef77c101d2b1f1433ece34a0e47889770335`. The app's `RustcRuntime` creates a fresh WasmKit `Store` for each invocation and sets fuel, cancellation, deadline, and resource limits. The compiler and the student's program have separate numeric policies. The program guest has no network import. Cache and workspace identities remain separate from course attempt identity.
+The application pins the public fork at `731d09b7c779e62fd42832312c42d29f69475361`. The app's `RustcRuntime` creates a fresh WasmKit `Store` for each invocation and sets fuel, cancellation, deadline, and resource limits. Compiler sysroot, source, and registry inputs use read-only host preopens, while output and temporary paths remain writable. The compiler and the student's program have separate numeric policies. The program guest has no network import. Cache and workspace identities remain separate from course attempt identity.
 
 ## Release boundaries
 
