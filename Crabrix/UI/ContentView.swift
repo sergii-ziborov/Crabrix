@@ -404,7 +404,7 @@ struct ContentView: View {
                 scoredLessonIDs = ids
                 for lessonID in ids {
                     if let challenge = academy.repository?.challenge(for: lessonID) {
-                        progress.recordAlgorithmSolved(patternID: challenge.patternID)
+                        progress.recordAlgorithmSolved(challenge: challenge)
                     }
                 }
                 return
@@ -418,7 +418,18 @@ struct ContentView: View {
                     eventKey: "lesson:\(lessonID):first-completion"
                 )
                 if let challenge = academy.repository?.challenge(for: lessonID) {
-                    progress.recordAlgorithmSolved(patternID: challenge.patternID)
+                    progress.recordAlgorithmSolved(challenge: challenge)
+                }
+            }
+        }
+        .onReceive(academy.$repository) { repository in
+            // Progress may load before the offline transition packs finish
+            // activating. Backfill their verified Atlas identities once the
+            // repository arrives; the store deduplicates every pattern.
+            guard let repository else { return }
+            for lessonID in model.completedLessonIDs {
+                if let challenge = repository.challenge(for: lessonID) {
+                    progress.recordAlgorithmSolved(challenge: challenge)
                 }
             }
         }

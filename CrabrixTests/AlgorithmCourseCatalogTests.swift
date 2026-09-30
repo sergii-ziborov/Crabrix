@@ -292,16 +292,19 @@ final class AlgorithmAchievementTests: XCTestCase {
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
         let pattern = try XCTUnwrap(AlgorithmCourseCatalog.patterns.first)
+        let challenge = try XCTUnwrap(AlgorithmCourseCatalog.challenge(
+            for: pattern.lessonID(.challenge)
+        ))
 
         let store = CrabrixProgressStore(defaults: defaults)
-        XCTAssertTrue(store.recordAlgorithmSolved(patternID: pattern.id))
-        XCTAssertFalse(store.recordAlgorithmSolved(patternID: pattern.id))
+        XCTAssertTrue(store.recordAlgorithmSolved(challenge: challenge))
+        XCTAssertFalse(store.recordAlgorithmSolved(challenge: challenge))
         XCTAssertEqual(store.state.solvedAlgorithmPatternIDs, [pattern.id])
         XCTAssertEqual(store.state.totalPoints, 0, "the lesson already owns the rating reward")
 
         let reopened = CrabrixProgressStore(defaults: defaults)
         XCTAssertEqual(reopened.state.solvedAlgorithmPatternIDs, [pattern.id])
-        XCTAssertFalse(reopened.recordAlgorithmSolved(patternID: pattern.id))
+        XCTAssertFalse(reopened.recordAlgorithmSolved(challenge: challenge))
     }
 
     func testThreeUniqueMethodSolutionsUnlockOnlyThatMethodSilverTier() throws {
@@ -312,7 +315,10 @@ final class AlgorithmAchievementTests: XCTestCase {
         let store = CrabrixProgressStore(defaults: defaults)
 
         for pattern in category.patterns.prefix(3) {
-            store.recordAlgorithmSolved(patternID: pattern.id)
+            let challenge = try XCTUnwrap(AlgorithmCourseCatalog.challenge(
+                for: pattern.lessonID(.challenge)
+            ))
+            store.recordAlgorithmSolved(challenge: challenge)
         }
 
         XCTAssertTrue(store.state.unlockedAchievementIDs.contains("algorithm-atlas.0"))

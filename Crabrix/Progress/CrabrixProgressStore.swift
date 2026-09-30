@@ -157,8 +157,12 @@ final class CrabrixProgressStore: ObservableObject {
     /// the challenge lesson, so this method unlocks solution-method ladders without
     /// creating a second reward that could be farmed by rerunning the project.
     @discardableResult
-    func recordAlgorithmSolved(patternID: String) -> Bool {
-        guard AlgorithmCourseCatalog.pattern(id: patternID) != nil,
+    func recordAlgorithmSolved(challenge: AlgorithmChallenge) -> Bool {
+        // The caller supplies a challenge from a verified CourseSession or
+        // InstalledCourseRepository. Reward identity is the stable pattern ID,
+        // so a pack update or reinstallation cannot pay it twice.
+        let patternID = challenge.patternID
+        guard !patternID.isEmpty,
               !state.solvedAlgorithmPatternIDs.contains(patternID)
         else { return false }
 
