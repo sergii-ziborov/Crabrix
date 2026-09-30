@@ -19,44 +19,14 @@ enum WasmSandboxPolicy {
     }
 }
 
-/// Fuel/deadline enforcement called directly by WasmKit's token dispatch loop.
-/// It does not depend on the guest performing a host call.
-final class WasmInstructionBudgetLimiter: InstructionLimiter, @unchecked Sendable {
-    private let lock = NSLock()
-    private var remainingInstructions: UInt64
-    private let deadline: ContinuousClock.Instant
-    private let interrupter: WasmInterrupter
-    private let clock = ContinuousClock()
-
-    init(
-        interrupter: WasmInterrupter,
-        instructionBudget: UInt64 = WasmSandboxPolicy.userProgramInstructionBudget,
-        wallClockLimit: Duration = WasmSandboxPolicy.userProgramWallClockLimit
-    ) {
-        self.interrupter = interrupter
-        self.remainingInstructions = instructionBudget
-        self.deadline = ContinuousClock().now.advanced(by: wallClockLimit)
-    }
-
-    func consume(instructionCount: UInt64) throws {
-        if let reason = interrupter.stopReason {
-            throw WasmExecutionCancelled(reason: reason)
-        }
-        if clock.now >= deadline {
-            interrupter.cancel(reason: .wallClock)
-            throw WasmExecutionCancelled(reason: .wallClock)
-        }
-
-        let exhausted = lock.withLock {
-            guard instructionCount <= remainingInstructions else { return true }
-            remainingInstructions -= instructionCount
-            return false
-        }
-        if exhausted {
-            interrupter.cancel(reason: .instructionBudget)
-            throw WasmExecutionCancelled(reason: .instructionBudget)
-        }
-    }
+/// The compiler is a separate, larger guest workload. These limits remain
+/// subject to device and Cargo gate measurements before a release.
+enum CompilerHostPolicy {
+    static let memoryLimitBytes = 2 * 1024 * 1024 * 1024
+    static let tableElementLimit = 65_536
+    static let fuelBudget: UInt64 = 100_000_000_000
+    static let wallClockLimit: Duration = .seconds(20 * 60)
+    static let outputLimitBytes = 16 * 1024 * 1024
 }
 
 /// Watches filesystem-backed output and the writable preopen while a user
@@ -145,13 +115,21 @@ final class WasmSandboxResourceLimiter: ResourceLimiter, @unchecked Sendable {
 
     private let lock = NSLock()
     private var storedDeniedResource: DeniedResource?
+    private let memoryLimitBytes: Int
+    private let tableElementLimit: Int
+
+    init(memoryLimitBytes: Int = WasmSandboxPolicy.userProgramMemoryLimitBytes,
+         tableElementLimit: Int = WasmSandboxPolicy.userProgramTableElementLimit) {
+        self.memoryLimitBytes = memoryLimitBytes
+        self.tableElementLimit = tableElementLimit
+    }
 
     var deniedResource: DeniedResource? {
         lock.withLock { storedDeniedResource }
     }
 
     func limitMemoryGrowth(to desired: Int) throws -> Bool {
-        let allowed = desired <= WasmSandboxPolicy.userProgramMemoryLimitBytes
+        let allowed = desired <= memoryLimitBytes
         if !allowed {
             lock.withLock { storedDeniedResource = .memory }
         }
@@ -159,7 +137,7 @@ final class WasmSandboxResourceLimiter: ResourceLimiter, @unchecked Sendable {
     }
 
     func limitTableGrowth(to desired: Int) throws -> Bool {
-        let allowed = desired <= WasmSandboxPolicy.userProgramTableElementLimit
+        let allowed = desired <= tableElementLimit
         if !allowed {
             lock.withLock { storedDeniedResource = .table }
         }

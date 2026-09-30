@@ -6,7 +6,7 @@ open-source licenses.
 
 ## Bundled compiler runtime and toolchain
 
-### WasmKit 0.3.1
+### CrabrixRuntime, derived from WasmKit 0.4.1
 
 Copyright (c) 2020 Akio Yasui. Licensed under the MIT License.
 
@@ -14,7 +14,10 @@ WasmKit includes derived utility code from Swift System and a derived Swift
 keyword list from Swift Syntax; both are licensed under Apache-2.0. See the
 upstream `NOTICE.txt` for those attributions.
 
-Source and license: https://github.com/swiftwasm/WasmKit/tree/0.3.1
+Upstream source and license: https://github.com/swiftwasm/WasmKit/tree/0.4.1
+
+Crabrix fork and patch history:
+https://github.com/sergii-ziborov/crabrix-runtime/tree/9dc0ef77c101d2b1f1433ece34a0e47889770335
 
 ### wasm-rustc / Weblings artifacts-test-7
 
@@ -51,17 +54,12 @@ Source and license: https://github.com/apple/swift-system/tree/1.8.1
 
 ## Transitive Swift package dependencies
 
-These packages are resolved transitively through WasmKit. Their exact pinned
-versions are recorded in `Dependencies/Package.resolved`:
+The selected app targets resolve the following packages through the runtime.
+Exact versions and the fork revision are recorded in
+`Dependencies/Package.resolved`:
 
 - Swift Argument Parser 1.8.2 — Apache-2.0 — https://github.com/apple/swift-argument-parser
-- Swift Atomics 1.3.1 — Apache-2.0 — https://github.com/apple/swift-atomics
-- Swift Collections 1.6.0 — Apache-2.0 — https://github.com/apple/swift-collections
-- Swift Log 1.15.0 — Apache-2.0 — https://github.com/apple/swift-log
-- SwiftNIO 2.101.3 — Apache-2.0 — https://github.com/apple/swift-nio
-
-Swift Log and SwiftNIO carry additional upstream attribution in their
-respective `NOTICE.txt` files.
+- Swift Syntax 604.0.0 — Apache-2.0 — https://github.com/swiftlang/swift-syntax
 
 ## Where the full texts are
 

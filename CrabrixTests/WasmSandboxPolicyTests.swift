@@ -22,11 +22,6 @@ final class WasmSandboxPolicyTests: XCTestCase {
         let module = try parseWasm(bytes: Self.infiniteLoopModule)
         let runtime = RustcRuntime()
         let interrupter = WasmInterrupter()
-        let limiter = WasmInstructionBudgetLimiter(
-            interrupter: interrupter,
-            instructionBudget: 8_192,
-            wallClockLimit: .seconds(5)
-        )
         let directory = FileManager.default.temporaryDirectory
             .appending(path: "CrabrixPureLoopTest-\(UUID().uuidString)", directoryHint: .isDirectory)
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -39,7 +34,8 @@ final class WasmSandboxPolicyTests: XCTestCase {
                 preopens: [],
                 captureDirectory: directory,
                 capturePrefix: "pure-loop",
-                instructionLimiter: limiter,
+                fuelBudget: 8_192,
+                wallClockLimit: .seconds(5),
                 interrupter: interrupter
             )
         ) { error in
@@ -52,11 +48,6 @@ final class WasmSandboxPolicyTests: XCTestCase {
         let runtime = RustcRuntime()
         let module = try parseWasm(bytes: Self.infiniteLoopModule)
         let interrupter = WasmInterrupter()
-        let limiter = WasmInstructionBudgetLimiter(
-            interrupter: interrupter,
-            instructionBudget: .max,
-            wallClockLimit: .seconds(5)
-        )
         let directory = FileManager.default.temporaryDirectory
             .appending(path: "CrabrixUserStopTest-\(UUID().uuidString)", directoryHint: .isDirectory)
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -70,7 +61,8 @@ final class WasmSandboxPolicyTests: XCTestCase {
                     preopens: [],
                     captureDirectory: directory,
                     capturePrefix: "stopped",
-                    instructionLimiter: limiter,
+                    fuelBudget: .max,
+                    wallClockLimit: .seconds(5),
                     interrupter: interrupter
                 )
             }

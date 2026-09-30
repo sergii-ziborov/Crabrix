@@ -362,7 +362,6 @@
 		CA5866457924F7521705CCD1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CB010148795840226D61C11F /* RustLessonContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustLessonContent.swift; sourceTree = "<group>"; };
 		CB910906AEB3103C7C9E6F7D /* CodeContributionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeContributionTests.swift; sourceTree = "<group>"; };
-		CE28E6BB29C4DAE968D97A10 /* WasmKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = WasmKit; path = Vendor/WasmKit; sourceTree = SOURCE_ROOT; };
 		CF605A50A6EB406DF55C4E57 /* CodeRecallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeRecallView.swift; sourceTree = "<group>"; };
 		CFA00659D0D6FAD5318CE39C /* swift-atomics-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-atomics-LICENSE.txt"; sourceTree = "<group>"; };
 		D17C0F44F9A525F94B586EE7 /* GitHubProjectImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubProjectImporter.swift; sourceTree = "<group>"; };
@@ -737,7 +736,6 @@
 		C90BA78614D553B55994B6F2 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				CE28E6BB29C4DAE968D97A10 /* WasmKit */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -873,7 +871,7 @@
 			packageReferences = (
 				8E7AFC4ED9E7FE8EF8D49AF6 /* XCRemoteSwiftPackageReference "swift-system" */,
 				06925429AE9E9619735498E6 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
-				3247B987E161B2AF422E9E83 /* XCLocalSwiftPackageReference "Vendor/WasmKit" */,
+				3247B987E161B2AF422E9E83 /* XCRemoteSwiftPackageReference "crabrix-runtime" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A5076AEEF014A5EA52501CDC /* Products */;
@@ -1448,14 +1446,15 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		3247B987E161B2AF422E9E83 /* XCLocalSwiftPackageReference "Vendor/WasmKit" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = Vendor/WasmKit;
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
+		3247B987E161B2AF422E9E83 /* XCRemoteSwiftPackageReference "crabrix-runtime" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sergii-ziborov/crabrix-runtime.git";
+			requirement = {
+				kind = revision;
+				revision = 9dc0ef77c101d2b1f1433ece34a0e47889770335;
+			};
+		};
 		06925429AE9E9619735498E6 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/weichsel/ZIPFoundation.git";
@@ -1477,6 +1476,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		47ADF588ACB23434742BF9DC /* WasmKit */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 3247B987E161B2AF422E9E83 /* XCRemoteSwiftPackageReference "crabrix-runtime" */;
 			productName = WasmKit;
 		};
 		5FF229CB96783B625B672CB7 /* SystemPackage */ = {
@@ -1486,6 +1486,7 @@
 		};
 		6E683BBD11D8232CD6BB8038 /* WasmKitWASI */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 3247B987E161B2AF422E9E83 /* XCRemoteSwiftPackageReference "crabrix-runtime" */;
 			productName = WasmKitWASI;
 		};
 		D9F926F434104202BA3A1800 /* ZIPFoundation */ = {

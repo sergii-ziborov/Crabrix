@@ -828,6 +828,12 @@ final class WasmRustCompiler: @unchecked Sendable {
             preopens: preopens,
             captureDirectory: jobRoot,
             capturePrefix: capturePrefix,
+            resourceLimiter: WasmSandboxResourceLimiter(
+                memoryLimitBytes: CompilerHostPolicy.memoryLimitBytes,
+                tableElementLimit: CompilerHostPolicy.tableElementLimit
+            ),
+            fuelBudget: CompilerHostPolicy.fuelBudget,
+            wallClockLimit: CompilerHostPolicy.wallClockLimit,
             interrupter: interrupter
         )
     }
@@ -843,7 +849,6 @@ final class WasmRustCompiler: @unchecked Sendable {
         let sandboxURL = jobRoot.appending(path: "sandbox", directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: sandboxURL, withIntermediateDirectories: true)
         let resourceLimiter = WasmSandboxResourceLimiter()
-        let instructionLimiter = WasmInstructionBudgetLimiter(interrupter: interrupter)
         let quotaMonitor = WasmSandboxQuotaMonitor(
             captureDirectory: jobRoot,
             capturePrefix: "program",
@@ -868,7 +873,8 @@ final class WasmRustCompiler: @unchecked Sendable {
                 captureDirectory: jobRoot,
                 capturePrefix: "program",
                 resourceLimiter: resourceLimiter,
-                instructionLimiter: instructionLimiter,
+                fuelBudget: WasmSandboxPolicy.userProgramInstructionBudget,
+                wallClockLimit: WasmSandboxPolicy.userProgramWallClockLimit,
                 interrupter: interrupter,
                 capturedOutputLimitBytes: WasmSandboxPolicy.userProgramOutputLimitBytes
             )

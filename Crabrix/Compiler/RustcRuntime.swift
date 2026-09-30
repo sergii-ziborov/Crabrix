@@ -137,7 +137,8 @@ final class RustcRuntime: @unchecked Sendable {
             threadingModel: .token,
             compilationMode: .lazy,
             stackSize: 16 * 1024 * 1024,
-            memoryBoundsChecking: .software
+            memoryBoundsChecking: .software,
+            fuelMetering: true
         )
         let engine = Engine(configuration: configuration)
         cachedEngine = engine
@@ -170,7 +171,8 @@ final class RustcRuntime: @unchecked Sendable {
         captureDirectory: URL,
         capturePrefix: String,
         resourceLimiter: (any ResourceLimiter)? = nil,
-        instructionLimiter: (any InstructionLimiter)? = nil,
+        fuelBudget: UInt64? = nil,
+        wallClockLimit: Duration? = nil,
         interrupter: WasmInterrupter? = nil,
         capturedOutputLimitBytes: Int? = nil
     ) throws -> WasmProcessResult {
@@ -182,16 +184,21 @@ final class RustcRuntime: @unchecked Sendable {
                 args: arguments,
                 environment: environment,
                 preopens: preopens,
-                stdout: FileDescriptor(rawValue: capture.stdoutHandle.fileDescriptor),
-                stderr: FileDescriptor(rawValue: capture.stderrHandle.fileDescriptor)
+                stdout: capture.stdoutHandle.fileDescriptor,
+                stderr: capture.stderrHandle.fileDescriptor
             )
             exitCode = try wasi.runAndClose { wasi in
                 let store = Store(engine: engine())
                 if let resourceLimiter { store.resourceLimiter = resourceLimiter }
-                store.instructionLimiter = instructionLimiter
+                if let fuelBudget { store.fuel = Fuel(remaining: fuelBudget) }
+                if let wallClockLimit { interrupter?.setDeadline(after: wallClockLimit) }
+                store.cancellationProbe = interrupter
                 var imports = Imports()
-                wasi.link(to: &imports, store: store)
-                interrupter?.wrapHostFunctions(of: wasi, into: &imports, store: store)
+                if let interrupter {
+                    interrupter.wrapHostFunctions(of: wasi, into: &imports, store: store)
+                } else {
+                    wasi.link(to: &imports, store: store)
+                }
                 let instance = try module.instantiate(store: store, imports: imports)
                 return try wasi.start(instance)
             }
@@ -205,6 +212,12 @@ final class RustcRuntime: @unchecked Sendable {
                     reason: reason,
                     stdout: output.stdout,
                     stderr: output.stderr
+                )
+            }
+            if let trap = thrown as? Trap, trap.isOutOfFuel {
+                interrupter?.cancel(reason: .instructionBudget)
+                throw WasmExecutionCancelled(
+                    reason: .instructionBudget, stdout: output.stdout, stderr: output.stderr
                 )
             }
             throw RustcRuntimeFailure(underlying: thrown, stdout: output.stdout, stderr: output.stderr)
@@ -258,10 +271,9 @@ struct RustcRuntimeFailure: Error, @unchecked Sendable {
     let stderr: String
 }
 
-/// Stops a running guest. Host calls are guarded here; pure-compute code is
-/// guarded by `WasmInstructionBudgetLimiter` through the vendored WasmKit
-/// instruction-boundary hook.
-final class WasmInterrupter: @unchecked Sendable {
+/// Stops a running guest. The fork's fuel checkpoints read this thread-safe
+/// probe even when the guest makes no host calls.
+final class WasmInterrupter: ExecutionCancellation, @unchecked Sendable {
     private let state = AtomicStopState()
 
     var wasCancelled: Bool { state.reason != nil }
@@ -271,11 +283,16 @@ final class WasmInterrupter: @unchecked Sendable {
         state.cancel(reason: reason)
     }
 
+    func setDeadline(after duration: Duration) {
+        state.setDeadline(after: duration)
+    }
+
+    var isCancelled: Bool { state.reason != nil }
+
     /// Re-defines each WASI import as a guard that checks cancellation first.
     func wrapHostFunctions(of wasi: WASIBridgeToHost, into imports: inout Imports, store: Store) {
-        let state = state
         wasi.link(to: &imports, store: store) {
-            if let reason = state.reason {
+            if let reason = self.state.reason {
                 throw WasmExecutionCancelled(reason: reason)
             }
         }
@@ -287,11 +304,20 @@ final class WasmInterrupter: @unchecked Sendable {
 final class AtomicStopState: @unchecked Sendable {
     private let lock = NSLock()
     private var storedReason: WasmStopReason?
+    private var deadline: ContinuousClock.Instant?
+    private let clock = ContinuousClock()
 
     var reason: WasmStopReason? {
         lock.lock()
         defer { lock.unlock() }
+        if storedReason == nil, let deadline, clock.now >= deadline {
+            storedReason = .wallClock
+        }
         return storedReason
+    }
+
+    func setDeadline(after duration: Duration) {
+        lock.withLock { deadline = clock.now.advanced(by: duration) }
     }
 
     func cancel(reason: WasmStopReason) {

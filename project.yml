@@ -23,9 +23,9 @@ settings:
 
 packages:
   WasmKit:
-    # Pinned local fork of upstream 0.3.1 (ee36070). Crabrix adds only the
-    # instruction-boundary limiter required to stop pure-compute guests.
-    path: Vendor/WasmKit
+    # Public Crabrix fork of WasmKit 0.4.1, pinned to the tested integration patch.
+    url: https://github.com/sergii-ziborov/crabrix-runtime.git
+    revision: 9dc0ef77c101d2b1f1433ece34a0e47889770335
   SwiftSystem:
     url: https://github.com/apple/swift-system.git
     exactVersion: 1.8.1
