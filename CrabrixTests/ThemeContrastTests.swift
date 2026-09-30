@@ -3,7 +3,7 @@ import SwiftUI
 import UIKit
 @testable import Crabrix
 
-/// Colour choices that have to survive both themes.
+/// Colour choices that have to survive every appearance.
 ///
 /// The locked lesson circle is nearly white in the light theme, so an icon
 /// picked to sit on a dark background disappeared on it entirely. These tests
@@ -91,6 +91,22 @@ final class ThemeContrastTests: XCTestCase {
             }
         }
     }
+
+    func testCyberpunkPaletteKeepsCoreTextReadable() {
+        let previous = UserDefaults.standard.object(forKey: "crabrix.appearance")
+        UserDefaults.standard.set(CrabrixAppearance.cyberpunk.rawValue, forKey: "crabrix.appearance")
+        defer { UserDefaults.standard.set(previous, forKey: "crabrix.appearance") }
+
+        for surface in [
+            CrabrixTheme.background,
+            CrabrixTheme.panel,
+            CrabrixTheme.raised,
+            CrabrixTheme.editor,
+        ] {
+            XCTAssertGreaterThan(contrast(resolve(CrabrixTheme.primary, style: .dark), resolve(surface, style: .dark)), 7.0)
+            XCTAssertGreaterThan(contrast(resolve(CrabrixTheme.muted, style: .dark), resolve(surface, style: .dark)), 4.5)
+        }
+    }
 }
 
 /// Syntax colours have to be readable on the surface code is drawn on, in both
@@ -171,6 +187,18 @@ final class SyntaxContrastTests: XCTestCase {
                     )
                 }
             }
+        }
+    }
+
+    func testCyberpunkSyntaxPaletteIsReadable() {
+        let previous = UserDefaults.standard.object(forKey: "crabrix.appearance")
+        UserDefaults.standard.set(CrabrixAppearance.cyberpunk.rawValue, forKey: "crabrix.appearance")
+        defer { UserDefaults.standard.set(previous, forKey: "crabrix.appearance") }
+
+        let background = resolve(SyntaxTheme.background, style: .dark)
+        for kind in SyntaxTokenKind.allCases {
+            let token = resolve(SyntaxTheme.color(for: kind), style: .dark)
+            XCTAssertGreaterThan(contrast(token, background), 4.5, "\(kind.rawValue) is unreadable")
         }
     }
 }

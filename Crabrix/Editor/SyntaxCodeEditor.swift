@@ -11,6 +11,7 @@ struct EditorNavigationTarget: Equatable {
 struct SyntaxCodeEditor: UIViewRepresentable {
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("crabrix.editorFontSize") private var editorFontSize = 14.0
+    @AppStorage("crabrix.appearance") private var appearanceRaw = CrabrixAppearance.system.rawValue
     @Binding var text: String
     @Binding var cursorOffset: Int
     let projectID: UUID?
@@ -101,6 +102,8 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             .setUsesAppleIntelligence(assistantUsesAppleIntelligence)
         textView.isEditable = isEditable
         canvas.backgroundColor = UIColor(CrabrixTheme.editor)
+        textView.textColor = UIColor(CrabrixTheme.primary)
+        textView.tintColor = UIColor(CrabrixTheme.blue)
         textView.keyboardAppearance = colorScheme == .dark ? .dark : .light
         canvas.lineNumberColor = UIColor(CrabrixTheme.muted).withAlphaComponent(0.82)
         canvas.gutterSeparatorColor = UIColor(CrabrixTheme.border)
@@ -116,6 +119,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             || context.coordinator.highlightedFilePath != filePath
             || context.coordinator.highlightedFontSize != editorFontSize
             || context.coordinator.highlightedColorScheme != colorScheme
+            || context.coordinator.highlightedAppearanceRaw != appearanceRaw
             || context.coordinator.highlightedDiagnosticsSignature != diagnosticsSignature {
             context.coordinator.applyHighlighting(to: textView, filePath: filePath)
         }
@@ -134,6 +138,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         var highlightedFilePath = ""
         var highlightedFontSize = 0.0
         var highlightedColorScheme: ColorScheme?
+        var highlightedAppearanceRaw: String?
         var highlightedDiagnosticsSignature = ""
         weak var textView: UITextView?
         weak var canvas: CodeEditorCanvas?
@@ -270,6 +275,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             highlightedFilePath = filePath
             highlightedFontSize = parent.editorFontSize
             highlightedColorScheme = parent.colorScheme
+            highlightedAppearanceRaw = parent.appearanceRaw
             highlightedDiagnosticsSignature = parent.diagnosticsSignature
         }
 

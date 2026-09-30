@@ -194,6 +194,7 @@ struct ContentView: View {
                 .tabViewStyle(.sidebarAdaptable)
             }
         }
+        .id(appearanceRaw)
         .tint(CrabrixTheme.coral)
         .foregroundStyle(CrabrixTheme.primary)
         .preferredColorScheme(

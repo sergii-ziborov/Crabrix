@@ -59,7 +59,7 @@ struct SettingsView: View {
     private var appearanceSection: some View {
         SettingsSection(
             title: "Appearance",
-            detail: "Auto follows the device setting immediately."
+            detail: "Auto follows the device. Cyberpunk uses the RepoLens-inspired neon palette throughout Crabrix."
         ) {
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(CrabrixAppearance.allCases) { appearance in
