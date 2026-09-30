@@ -135,7 +135,7 @@ enum LegacyAcademyExport {
             return entry
         }
         let termPairs = (
-            RustBasicsExpansion.termPairs + RustAdvancedExpansion.termPairs + AlgorithmCourseCatalog.termPairs
+            TermTrainDeck.all + AlgorithmCourseCatalog.termPairs
         ).enumerated().map { index, pair -> [String: Any] in
             ["id": pair.id, "order": index, "term": pair.term,
              "description": pair.description, "topic": pair.topic]

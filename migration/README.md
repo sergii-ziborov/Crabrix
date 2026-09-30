@@ -13,7 +13,7 @@ records every field that the migration reads, plus per-object SHA-256 digests.
 The baseline at source commit
 `c38423e7503a56d6cd97e3a6c17651d5a5c33d62` contains 7 courses, 48 units,
 742 lessons, 200 Algorithm Atlas patterns/challenges, 46 gallery projects, and
-259 term pairs. Its integrity report has no ID collisions, missing writing, or
+358 term pairs. Its integrity report has no ID collisions, missing writing, or
 missing challenges. The complete authoring tree, deterministic CoursePacks,
 signed catalog, and parity report live in
 [crabrix-courses](https://github.com/sergii-ziborov/crabrix-courses).

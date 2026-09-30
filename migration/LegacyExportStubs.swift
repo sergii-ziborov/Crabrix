@@ -27,15 +27,12 @@ struct CompilationResult {
     let diagnostics: [Diagnostic]
 }
 
-struct TermTrainPair {
-    let id: String
-    let term: String
-    let description: String
-    let topic: String
-    init(id: String, term: String, description: String, topic: String? = nil) {
-        self.id = id
-        self.term = term
-        self.description = description
-        self.topic = topic ?? id
+struct TopicMasteryRecord: Sendable {}
+enum TopicScheduler {
+    static func pick(count: Int, from topics: [String], records: [String: TopicMasteryRecord], now: Date) -> [String] {
+        Array(topics.prefix(count))
     }
+}
+enum CrabrixProgressEvent: Sendable, Equatable {
+    case termTrainFinished(pairs: Int, streak: Int, seconds: Int?)
 }

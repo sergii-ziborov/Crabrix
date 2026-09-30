@@ -1,10 +1,10 @@
 {
-  "contentDigest" : "344b495783a459e40703343bef9e3063616832c7eccd43aa8a6cc9bf8f82ffb0",
-  "contentVersion" : "1.0.0",
+  "contentDigest" : "ca5d61fb708303120c8c87f573daf73e66823641dc0b77fee3736c3f2f6bc1a4",
+  "contentVersion" : "1.0.1",
   "courses" : [
     {
-      "contentDigest" : "7b76ce990e3f2c399c07d181123b6f8846c1f501bbfd36003eb2d885498c4c53",
-      "contentVersion" : "1.0.0",
+      "contentDigest" : "862703d4c686b00eeb4e89ef4cd899993f7930f72c354fd9e9f3301a6ee6af30",
+      "contentVersion" : "1.0.1",
       "id" : "basics",
       "language" : "en",
       "level" : "BEGINNER",
@@ -1829,8 +1829,8 @@
       ]
     },
     {
-      "contentDigest" : "f677724abc1c810ec87ee31dbc16dd8cfaae4425752d46e7f35f622b1a0bdd3a",
-      "contentVersion" : "1.0.0",
+      "contentDigest" : "70b7922fc59056490633790414566424e4751489d1545daf6caa8938393dd214",
+      "contentVersion" : "1.0.1",
       "id" : "algorithms",
       "language" : "en",
       "level" : "EASY → HARD",
@@ -60633,8 +60633,8 @@
       ]
     },
     {
-      "contentDigest" : "f9117570bcad12694ead009c65cbb0b67928a0fc9a97f508c8975344d8d751d6",
-      "contentVersion" : "1.0.0",
+      "contentDigest" : "6e781f1be2e006ad12be03a5660526011e1dc24a4d948fb483f1809ee9e690c6",
+      "contentVersion" : "1.0.1",
       "id" : "ownership",
       "language" : "en",
       "level" : "INTERMEDIATE",
@@ -62460,8 +62460,8 @@
       ]
     },
     {
-      "contentDigest" : "44756423dc554b788d0227a2b70371783af36cfb4a79667cbba018796c05b6c6",
-      "contentVersion" : "1.0.0",
+      "contentDigest" : "e11e72d10297879b17b707e97a24bbfc30a3a66757698d3896fef594ff74367d",
+      "contentVersion" : "1.0.1",
       "id" : "projects",
       "language" : "en",
       "level" : "ADVANCED",
@@ -63660,8 +63660,8 @@
       ]
     },
     {
-      "contentDigest" : "ac79b9de389a1e6b7acd8038d7d8e5a03083a5254ca31df3fbc30c13bd1f8420",
-      "contentVersion" : "1.0.0",
+      "contentDigest" : "ea09dc49257e265bfd292d8b6bfcc6903c36f3f8cf53224ac51e2f28281b1c9e",
+      "contentVersion" : "1.0.1",
       "id" : "concurrency",
       "language" : "en",
       "level" : "ADVANCED",
@@ -64590,8 +64590,8 @@
       ]
     },
     {
-      "contentDigest" : "ce988d56f9781fa62ad890da40ca8b85edc408d5753be4849887ec6a6aa3ba24",
-      "contentVersion" : "1.0.0",
+      "contentDigest" : "5702c9572ae5603cd418cc2f1117f858e03cc9d85dd2074c5a31bd5325b87ad6",
+      "contentVersion" : "1.0.1",
       "id" : "systems",
       "language" : "en",
       "level" : "EXPERT",
@@ -65520,8 +65520,8 @@
       ]
     },
     {
-      "contentDigest" : "d3b6588d054ef0f7129d11256aa4056f54b38a9d0a1053af83ac35ebb8093404",
-      "contentVersion" : "1.0.0",
+      "contentDigest" : "dbe32f7545efc8eb30fd98fa5ad7322af3260a1df3f991e446fb4dc8aa0165b2",
+      "contentVersion" : "1.0.1",
       "id" : "interview",
       "language" : "en",
       "level" : "CAREER",
@@ -69252,1815 +69252,2508 @@
   "sourceSHA" : "c38423e7503a56d6cd97e3a6c17651d5a5c33d62",
   "termPairs" : [
     {
+      "description" : "One value has one owner; dropping the owner releases it.",
+      "id" : "ownership",
+      "order" : 0,
+      "term" : "Ownership",
+      "topic" : "ownership"
+    },
+    {
+      "description" : "Use a value through a reference without taking ownership.",
+      "id" : "borrow",
+      "order" : 1,
+      "term" : "Borrow",
+      "topic" : "borrowing"
+    },
+    {
+      "description" : "Explicitly allows a binding or reference to change a value.",
+      "id" : "mutable",
+      "order" : 2,
+      "term" : "mut",
+      "topic" : "variables"
+    },
+    {
+      "description" : "Represents either a successful value or a recoverable error.",
+      "id" : "result",
+      "order" : 3,
+      "term" : "Result<T, E>",
+      "topic" : "option-result"
+    },
+    {
+      "description" : "Defines shared behavior that multiple types can implement.",
+      "id" : "trait",
+      "order" : 4,
+      "term" : "Trait",
+      "topic" : "traits"
+    },
+    {
+      "description" : "Models a value that may be absent, without using null.",
+      "id" : "option",
+      "order" : 5,
+      "term" : "Option<T>",
+      "topic" : "option-result"
+    },
+    {
+      "description" : "Names how long a reference stays valid relative to others.",
+      "id" : "lifetime",
+      "order" : 6,
+      "term" : "Lifetime",
+      "topic" : "lifetimes"
+    },
+    {
+      "description" : "Transfers ownership so the original binding can no longer be used.",
+      "id" : "move",
+      "order" : 7,
+      "term" : "Move",
+      "topic" : "ownership"
+    },
+    {
+      "description" : "Makes an explicit deep copy when sharing a reference is not enough.",
+      "id" : "clone",
+      "order" : 8,
+      "term" : "Clone",
+      "topic" : "copy-clone"
+    },
+    {
+      "description" : "A borrowed view over a contiguous run of elements.",
+      "id" : "slice",
+      "order" : 9,
+      "term" : "Slice",
+      "topic" : "slices"
+    },
+    {
+      "description" : "A type that is exactly one of several named variants.",
+      "id" : "enum",
+      "order" : 10,
+      "term" : "enum",
+      "topic" : "enums"
+    },
+    {
+      "description" : "Branches on a value and forces every case to be handled.",
+      "id" : "match",
+      "order" : 11,
+      "term" : "match",
+      "topic" : "pattern-matching"
+    },
+    {
+      "description" : "Produces items one at a time and stays lazy until consumed.",
+      "id" : "iterator",
+      "order" : 12,
+      "term" : "Iterator",
+      "topic" : "iterators"
+    },
+    {
+      "description" : "Resolves dependencies, builds crates, and runs the test suite.",
+      "id" : "cargo",
+      "order" : 13,
+      "term" : "Cargo",
+      "topic" : "dependencies"
+    },
+    {
+      "description" : "The unit a Rust compilation and a published package are made of.",
+      "id" : "crate",
+      "order" : 14,
+      "term" : "Crate",
+      "topic" : "modules"
+    },
+    {
+      "description" : "Stores a value on the heap behind a single owning pointer.",
+      "id" : "box",
+      "order" : 15,
+      "term" : "Box<T>",
+      "topic" : "box"
+    },
+    {
+      "description" : "Shares ownership across threads with atomic reference counting.",
+      "id" : "arc",
+      "order" : 16,
+      "term" : "Arc<T>",
+      "topic" : "shared-state"
+    },
+    {
+      "description" : "Returns early from a function when a Result or Option is empty.",
+      "id" : "question",
+      "order" : 17,
+      "term" : "?",
+      "topic" : "errors"
+    },
+    {
+      "description" : "Re-declares a name with a new binding, possibly of another type.",
+      "id" : "shadowing",
+      "order" : 18,
+      "term" : "Shadowing",
+      "topic" : "variables"
+    },
+    {
+      "description" : "Groups a fixed number of values that may have different types.",
+      "id" : "tuple",
+      "order" : 19,
+      "term" : "Tuple",
+      "topic" : "types"
+    },
+    {
+      "description" : "Returns None instead of wrapping or panicking on overflow.",
+      "id" : "overflow",
+      "order" : 20,
+      "term" : "checked_add",
+      "topic" : "operators"
+    },
+    {
+      "description" : "The final value of a block, returned when the semicolon is omitted.",
+      "id" : "expression",
+      "order" : 21,
+      "term" : "Tail expression",
+      "topic" : "functions"
+    },
+    {
+      "description" : "An example inside \/\/\/ that cargo test compiles and runs.",
+      "id" : "doc-test",
+      "order" : 22,
+      "term" : "Doc test",
+      "topic" : "comments-docs"
+    },
+    {
+      "description" : "Duplicates on assignment instead of moving, for cheap values.",
+      "id" : "copy",
+      "order" : 23,
+      "term" : "Copy",
+      "topic" : "copy-clone"
+    },
+    {
+      "description" : "Runs cleanup deterministically when a value leaves scope.",
+      "id" : "drop",
+      "order" : 24,
+      "term" : "Drop",
+      "topic" : "drop-order"
+    },
+    {
+      "description" : "A borrowed view into UTF-8 text that owns nothing.",
+      "id" : "str",
+      "order" : 25,
+      "term" : "&str",
+      "topic" : "strings"
+    },
+    {
+      "description" : "An extra condition an arm must satisfy to be chosen.",
+      "id" : "guard",
+      "order" : 26,
+      "term" : "Match guard",
+      "topic" : "pattern-matching"
+    },
+    {
+      "description" : "Generates a mechanical trait implementation for each field.",
+      "id" : "derive",
+      "order" : 27,
+      "term" : "#[derive]",
+      "topic" : "derive"
+    },
+    {
+      "description" : "A closure that mutably borrows what it captured.",
+      "id" : "closure",
+      "order" : 28,
+      "term" : "FnMut",
+      "topic" : "closures"
+    },
+    {
+      "description" : "Fixes one output type per trait implementation.",
+      "id" : "assoc",
+      "order" : 29,
+      "term" : "Associated type",
+      "topic" : "associated-types"
+    },
+    {
+      "description" : "Defines a conversion, and grants Into for free.",
+      "id" : "from",
+      "order" : 30,
+      "term" : "From",
+      "topic" : "operator-traits"
+    },
+    {
+      "description" : "States the capability a generic body needs from its type.",
+      "id" : "generic",
+      "order" : 31,
+      "term" : "Trait bound",
+      "topic" : "generics"
+    },
+    {
+      "description" : "Decides what escapes a module's boundary.",
+      "id" : "module",
+      "order" : 32,
+      "term" : "pub",
+      "topic" : "modules"
+    },
+    {
+      "description" : "Marks a function compiled only for the test harness.",
+      "id" : "test-attr",
+      "order" : 33,
+      "term" : "#[test]",
+      "topic" : "testing"
+    },
+    {
+      "description" : "\"1.2\" means at least 1.2.0 and below 2.0.0.",
+      "id" : "semver",
+      "order" : 34,
+      "term" : "SemVer",
+      "topic" : "dependencies"
+    },
+    {
+      "description" : "Several crates resolved against one shared lockfile.",
+      "id" : "workspace",
+      "order" : 35,
+      "term" : "Workspace",
+      "topic" : "workspaces"
+    },
+    {
+      "description" : "Moves the borrow rules to runtime; a violation panics.",
+      "id" : "refcell",
+      "order" : 36,
+      "term" : "RefCell<T>",
+      "topic" : "rc-refcell"
+    },
+    {
+      "description" : "Shares ownership on a single thread by counting handles.",
+      "id" : "rc",
+      "order" : 37,
+      "term" : "Rc<T>",
+      "topic" : "rc-refcell"
+    },
+    {
+      "description" : "Observes without owning, so a cycle cannot leak.",
+      "id" : "weak",
+      "order" : 38,
+      "term" : "Weak<T>",
+      "topic" : "cycles"
+    },
+    {
+      "description" : "Lets a wrapper be used where the inner reference is expected.",
+      "id" : "deref",
+      "order" : 39,
+      "term" : "Deref",
+      "topic" : "deref-drop"
+    },
+    {
+      "description" : "Moves values from many senders to one receiver.",
+      "id" : "channel",
+      "order" : 40,
+      "term" : "mpsc",
+      "topic" : "channels"
+    },
+    {
+      "description" : "Holds the data itself, so unlocked access cannot be written.",
+      "id" : "mutex",
+      "order" : 41,
+      "term" : "Mutex<T>",
+      "topic" : "shared-state"
+    },
+    {
+      "description" : "Marks a type that may be moved to another thread.",
+      "id" : "send",
+      "order" : 42,
+      "term" : "Send",
+      "topic" : "send-sync"
+    },
+    {
+      "description" : "Marks a type whose reference may be shared across threads.",
+      "id" : "sync",
+      "order" : 43,
+      "term" : "Sync",
+      "topic" : "send-sync"
+    },
+    {
+      "description" : "Describes work that makes progress only when polled.",
+      "id" : "future",
+      "order" : 44,
+      "term" : "Future",
+      "topic" : "futures"
+    },
+    {
+      "description" : "The library that actually polls futures to completion.",
+      "id" : "runtime",
+      "order" : 45,
+      "term" : "Executor",
+      "topic" : "async-runtime"
+    },
+    {
+      "description" : "Runs several futures at once and waits for all of them.",
+      "id" : "join",
+      "order" : 46,
+      "term" : "join!",
+      "topic" : "async-patterns"
+    },
+    {
+      "description" : "Expands matched token patterns into code before type checking.",
+      "id" : "macro-rules",
+      "order" : 47,
+      "term" : "macro_rules!",
+      "topic" : "declarative-macros"
+    },
+    {
+      "description" : "A program the compiler runs, built for the host machine.",
+      "id" : "proc-macro",
+      "order" : 48,
+      "term" : "Proc macro",
+      "topic" : "proc-macros"
+    },
+    {
+      "description" : "Removes code from the build before it is type checked.",
+      "id" : "cfg",
+      "order" : 49,
+      "term" : "#[cfg]",
+      "topic" : "cfg-features"
+    },
+    {
+      "description" : "Unlocks five operations; the borrow checker still applies.",
+      "id" : "unsafe-kw",
+      "order" : 50,
+      "term" : "unsafe",
+      "topic" : "unsafe"
+    },
+    {
+      "description" : "Fixes field order so a struct matches its C counterpart.",
+      "id" : "repr-c",
+      "order" : 51,
+      "term" : "#[repr(C)]",
+      "topic" : "ffi"
+    },
+    {
+      "description" : "Wraps a primitive so the type system can tell values apart.",
+      "id" : "newtype",
+      "order" : 52,
+      "term" : "Newtype",
+      "topic" : "idioms"
+    },
+    {
+      "description" : "Allocates once up front instead of resizing repeatedly.",
+      "id" : "capacity",
+      "order" : 53,
+      "term" : "with_capacity",
+      "topic" : "performance"
+    },
+    {
+      "description" : "A growable, heap-allocated sequence that owns its elements.",
+      "id" : "vec",
+      "order" : 54,
+      "term" : "Vec<T>",
+      "topic" : "collections"
+    },
+    {
+      "description" : "Inserts a default only when a key is missing, then hands back a reference.",
+      "id" : "hashmap",
+      "order" : 55,
+      "term" : "entry",
+      "topic" : "collections"
+    },
+    {
+      "description" : "The entry point every Rust binary starts executing from.",
+      "id" : "main-fn",
+      "order" : 56,
+      "term" : "fn main",
+      "topic" : "hello-rust"
+    },
+    {
+      "description" : "Every branch must produce the same type, because it yields a value.",
+      "id" : "if-expression",
+      "order" : 57,
+      "term" : "if as an expression",
+      "topic" : "control-flow"
+    },
+    {
+      "description" : "The rules that let most signatures omit lifetime annotations.",
+      "id" : "elision",
+      "order" : 58,
+      "term" : "Lifetime elision",
+      "topic" : "lifetimes-intro"
+    },
+    {
+      "description" : "Attaches methods and constructors to a type.",
+      "id" : "impl-block",
+      "order" : 59,
+      "term" : "impl",
+      "topic" : "structs"
+    },
+    {
+      "description" : "A method receiver that borrows the value in order to change it.",
+      "id" : "receiver",
+      "order" : 60,
+      "term" : "&mut self",
+      "topic" : "structs"
+    },
+    {
+      "description" : "The single method a custom iterator has to implement.",
+      "id" : "iterator-trait",
+      "order" : 61,
+      "term" : "Iterator::next",
+      "topic" : "iterator-impl"
+    },
+    {
+      "description" : "Starts a thread whose closure must own everything it uses.",
+      "id" : "spawn",
+      "order" : 62,
+      "term" : "thread::spawn",
+      "topic" : "concurrency"
+    },
+    {
+      "description" : "Waits for a thread and hands back what it returned.",
+      "id" : "thread-join",
+      "order" : 63,
+      "term" : "JoinHandle::join",
+      "topic" : "concurrency"
+    },
+    {
+      "description" : "The bug single ownership makes impossible to write.",
+      "id" : "double-free",
+      "order" : 64,
+      "term" : "Double free",
+      "topic" : "q-ownership"
+    },
+    {
+      "description" : "A borrow ends at its last use, not at the end of the block.",
+      "id" : "nll",
+      "order" : 65,
+      "term" : "Non-lexical lifetimes",
+      "topic" : "q-borrowing"
+    },
+    {
+      "description" : "A borrow of data that has already been dropped, which Rust rejects.",
+      "id" : "dangling",
+      "order" : 66,
+      "term" : "Dangling reference",
+      "topic" : "q-lifetimes"
+    },
+    {
+      "description" : "Turns an absent Option into a Result with a reason attached.",
+      "id" : "ok-or",
+      "order" : 67,
+      "term" : "ok_or",
+      "topic" : "q-option-result"
+    },
+    {
+      "description" : "Rejected while compiling: its count is not atomic.",
+      "id" : "rc-not-send",
+      "order" : 68,
+      "term" : "Rc across threads",
+      "topic" : "q-send-sync"
+    },
+    {
+      "description" : "A shared reference to it is itself safe to send.",
+      "id" : "sync-rule",
+      "order" : 69,
+      "term" : "T is Sync when",
+      "topic" : "q-send-sync"
+    },
+    {
+      "description" : "What Arc pays for and Rc deliberately does not.",
+      "id" : "atomic-count",
+      "order" : 70,
+      "term" : "Atomic refcount",
+      "topic" : "q-box-rc-arc"
+    },
+    {
+      "description" : "One specialised copy of a generic per concrete type.",
+      "id" : "monomorphisation",
+      "order" : 71,
+      "term" : "Monomorphisation",
+      "topic" : "q-dyn-generics"
+    },
+    {
+      "description" : "The pointer table a trait object dispatches through at runtime.",
+      "id" : "vtable",
+      "order" : 72,
+      "term" : "vtable",
+      "topic" : "q-dyn-generics"
+    },
+    {
+      "description" : "A safe API no caller can use to reach undefined behaviour.",
+      "id" : "soundness",
+      "order" : 73,
+      "term" : "Sound abstraction",
+      "topic" : "q-unsafe"
+    },
+    {
+      "description" : "Pairs so writes before the release are visible after the acquire.",
+      "id" : "acquire-release",
+      "order" : 74,
+      "term" : "Acquire\/Release",
+      "topic" : "q-atomics"
+    },
+    {
+      "description" : "The strongest ordering: one global sequence, and the highest cost.",
+      "id" : "seqcst",
+      "order" : 75,
+      "term" : "SeqCst",
+      "topic" : "q-atomics"
+    },
+    {
+      "description" : "Always taking locks in one fixed order, which removes the cycle.",
+      "id" : "lock-order",
+      "order" : 76,
+      "term" : "Lock ordering",
+      "topic" : "q-deadlock"
+    },
+    {
+      "description" : "Many producers, one consumer, ownership moving between them.",
+      "id" : "mpsc",
+      "order" : 77,
+      "term" : "mpsc channel",
+      "topic" : "q-channels-vs-mutex"
+    },
+    {
+      "description" : "Work that computes rather than waits, so parallelism is what helps.",
+      "id" : "cpu-bound",
+      "order" : 78,
+      "term" : "CPU-bound",
+      "topic" : "q-async-vs-threads"
+    },
+    {
+      "description" : "Moves a synchronous call off the executor threads.",
+      "id" : "spawn-blocking",
+      "order" : 79,
+      "term" : "spawn_blocking",
+      "topic" : "q-blocking-async"
+    },
+    {
+      "description" : "A future can be dropped at an await without losing state.",
+      "id" : "cancel-safety",
+      "order" : 80,
+      "term" : "Cancel safety",
+      "topic" : "q-cancellation"
+    },
+    {
+      "description" : "Holds values sized at runtime, and needs an owner to free them.",
+      "id" : "heap",
+      "order" : 81,
+      "term" : "Heap",
+      "topic" : "q-stack-heap"
+    },
+    {
+      "description" : "The trap that makes the kernel back an address with a real frame.",
+      "id" : "page-fault",
+      "order" : 82,
+      "term" : "Page fault",
+      "topic" : "q-virtual-memory"
+    },
+    {
+      "description" : "A privilege-boundary crossing that costs far more than a call.",
+      "id" : "syscall",
+      "order" : 83,
+      "term" : "Syscall",
+      "topic" : "q-syscalls"
+    },
+    {
+      "description" : "A message that may be lost, duplicated, or arrive out of order.",
+      "id" : "datagram",
+      "order" : 84,
+      "term" : "Datagram",
+      "topic" : "q-tcp-udp"
+    },
+    {
+      "description" : "One stalled item holding up everything queued behind it.",
+      "id" : "hol-blocking",
+      "order" : 85,
+      "term" : "Head-of-line blocking",
+      "topic" : "q-http-versions"
+    },
+    {
+      "description" : "Recorded traffic stays unreadable even if the key leaks later.",
+      "id" : "forward-secrecy",
+      "order" : 86,
+      "term" : "Forward secrecy",
+      "topic" : "q-tls"
+    },
+    {
+      "description" : "A limit that makes a producer wait instead of exhausting memory.",
+      "id" : "bounded-queue",
+      "order" : 87,
+      "term" : "Bounded queue",
+      "topic" : "q-backpressure"
+    },
+    {
+      "description" : "The level that behaves as if transactions ran one at a time.",
+      "id" : "isolation",
+      "order" : 88,
+      "term" : "Serializable",
+      "topic" : "q-acid"
+    },
+    {
+      "description" : "The only column order a composite index can actually serve.",
+      "id" : "leftmost",
+      "order" : 89,
+      "term" : "Leftmost prefix",
+      "topic" : "q-indexes"
+    },
+    {
+      "description" : "The split that forces the choice between consistency and availability.",
+      "id" : "partition",
+      "order" : 90,
+      "term" : "Network partition",
+      "topic" : "q-cap"
+    },
+    {
+      "description" : "Lets a repeated request return the first result instead of redoing it.",
+      "id" : "idempotent",
+      "order" : 91,
+      "term" : "Idempotency key",
+      "topic" : "q-idempotency"
+    },
+    {
+      "description" : "Every request missing at once the moment a hot key expires.",
+      "id" : "stampede",
+      "order" : 92,
+      "term" : "Cache stampede",
+      "topic" : "q-caching"
+    },
+    {
+      "description" : "Cheap on average, with an occasional expensive reallocation.",
+      "id" : "amortised",
+      "order" : 93,
+      "term" : "Amortised O(1)",
+      "topic" : "q-complexity"
+    },
+    {
+      "description" : "Chosen colliding keys turning a map lookup linear.",
+      "id" : "hash-flooding",
+      "order" : 94,
+      "term" : "Hash flooding",
+      "topic" : "q-hashmap"
+    },
+    {
+      "description" : "Checks an invariant over generated inputs, not three examples.",
+      "id" : "property-test",
+      "order" : 95,
+      "term" : "Property test",
+      "topic" : "q-testing-strategy"
+    },
+    {
+      "description" : "Forces a wildcard arm so adding a variant is not a breaking change.",
+      "id" : "non-exhaustive",
+      "order" : 96,
+      "term" : "non_exhaustive",
+      "topic" : "q-api-design"
+    },
+    {
+      "description" : "The only build whose timings are worth comparing.",
+      "id" : "release-build",
+      "order" : 97,
+      "term" : "Release build",
+      "topic" : "q-perf-profiling"
+    },
+    {
+      "description" : "The binary contract two compiled languages agree on.",
+      "id" : "abi",
+      "order" : 98,
+      "term" : "ABI",
+      "topic" : "q-ffi-abi"
+    },
+    {
       "description" : "A compile-checked slot such as {name} inside println!.",
       "id" : "format-placeholder",
-      "order" : 0,
+      "order" : 99,
       "term" : "Format placeholder",
       "topic" : "print-formatting"
     },
     {
       "description" : "A literal ending such as 10_u8 that fixes its concrete type.",
       "id" : "numeric-suffix",
-      "order" : 1,
+      "order" : 100,
       "term" : "Numeric suffix",
       "topic" : "number-types"
     },
     {
       "description" : "A comparison or logical combination whose type is exactly bool.",
       "id" : "boolean-expression",
-      "order" : 2,
+      "order" : 101,
       "term" : "Boolean expression",
       "topic" : "booleans-comparisons"
     },
     {
       "description" : "One Unicode scalar value, written with single quotes.",
       "id" : "unicode-char",
-      "order" : 3,
+      "order" : 102,
       "term" : "char",
       "topic" : "chars-and-text"
     },
     {
       "description" : "The source range a diagnostic labels as evidence for an error.",
       "id" : "compiler-span",
-      "order" : 4,
+      "order" : 103,
       "term" : "Compiler span",
       "topic" : "compiler-feedback"
     },
     {
       "description" : "The final expression produced when its semicolon is omitted.",
       "id" : "block-value",
-      "order" : 5,
+      "order" : 104,
       "term" : "Block value",
       "topic" : "block-expressions"
     },
     {
       "description" : "A typed name in a definition that every argument must satisfy.",
       "id" : "function-parameter",
-      "order" : 6,
+      "order" : 105,
       "term" : "Function parameter",
       "topic" : "function-parameters"
     },
     {
       "description" : "The a..=b form whose upper endpoint belongs to the iteration.",
       "id" : "inclusive-range",
-      "order" : 7,
+      "order" : 106,
       "term" : "Inclusive range",
       "topic" : "ranges"
     },
     {
       "description" : "Unconditional repetition that can produce a value through break.",
       "id" : "loop-expression",
-      "order" : 8,
+      "order" : 107,
       "term" : "loop",
       "topic" : "loops"
     },
     {
       "description" : "Converts text toward an explicit target type and returns Result.",
       "id" : "parse-target",
-      "order" : 9,
+      "order" : 108,
       "term" : "parse::<T>()",
       "topic" : "parsing"
     },
     {
       "description" : "An &T borrow that permits reading without taking ownership.",
       "id" : "shared-reference",
-      "order" : 10,
+      "order" : 109,
       "term" : "Shared reference",
       "topic" : "references-intro"
     },
     {
       "description" : "A dot call whose self parameter reveals borrowing or consumption.",
       "id" : "method-syntax",
-      "order" : 11,
+      "order" : 110,
       "term" : "Method syntax",
       "topic" : "methods-intro"
     },
     {
       "description" : "An expected failure represented as Err so the caller can respond.",
       "id" : "recoverable-error",
-      "order" : 12,
+      "order" : 111,
       "term" : "Recoverable error",
       "topic" : "recoverable-errors"
     },
     {
       "description" : "Prints a source location and Debug value to stderr, then returns it.",
       "id" : "debug-macro",
-      "order" : 13,
+      "order" : 112,
       "term" : "dbg!",
       "topic" : "debugging-values"
     },
     {
       "description" : "A by-value parameter becomes the new owner.",
       "id" : "advanced-move-functions",
-      "order" : 14,
+      "order" : 113,
       "term" : "Taking ownership",
       "topic" : "move-functions"
     },
     {
       "description" : "A temporary reference that permits one writer.",
       "id" : "advanced-mutable-borrows",
-      "order" : 15,
+      "order" : 114,
       "term" : "Exclusive borrow",
       "topic" : "mutable-borrows"
     },
     {
       "description" : "A shorter borrow made from an existing borrow.",
       "id" : "advanced-reborrowing",
-      "order" : 16,
+      "order" : 115,
       "term" : "Reborrow",
       "topic" : "reborrowing"
     },
     {
       "description" : "Moving one field without moving every field.",
       "id" : "advanced-partial-moves",
-      "order" : 17,
+      "order" : 116,
       "term" : "Partial move",
       "topic" : "partial-moves"
     },
     {
       "description" : "Mutation behind a shared outer value.",
       "id" : "advanced-interior-mutability-intro",
-      "order" : 18,
+      "order" : 117,
       "term" : "Interior mutability",
       "topic" : "interior-mutability-intro"
     },
     {
       "description" : "Inference rules for common borrow signatures.",
       "id" : "advanced-lifetime-elision",
-      "order" : 19,
+      "order" : 118,
       "term" : "Elision rule",
       "topic" : "lifetime-elision"
     },
     {
       "description" : "The API point that decides who owns output.",
       "id" : "advanced-owned-or-borrowed",
-      "order" : 20,
+      "order" : 119,
       "term" : "Ownership boundary",
       "topic" : "owned-or-borrowed"
     },
     {
       "description" : "Selecting a trait method through a vtable.",
       "id" : "advanced-trait-objects",
-      "order" : 21,
+      "order" : 120,
       "term" : "Dynamic dispatch",
       "topic" : "trait-objects"
     },
     {
       "description" : "One implementation covering a bounded type set.",
       "id" : "advanced-blanket-impls",
-      "order" : 22,
+      "order" : 121,
       "term" : "Blanket impl",
       "topic" : "blanket-impls"
     },
     {
       "description" : "A trait method body implementations inherit.",
       "id" : "advanced-default-trait-methods",
-      "order" : 23,
+      "order" : 122,
       "term" : "Default method",
       "topic" : "default-trait-methods"
     },
     {
       "description" : "A lifetime relationship independent of data type.",
       "id" : "advanced-generic-lifetimes",
-      "order" : 24,
+      "order" : 123,
       "term" : "Generic borrow",
       "topic" : "generic-lifetimes"
     },
     {
       "description" : "An operation that drives a lazy iterator.",
       "id" : "advanced-iterator-adapters",
-      "order" : 25,
+      "order" : 124,
       "term" : "Iterator consumer",
       "topic" : "iterator-adapters"
     },
     {
       "description" : "A closure that takes ownership of captures.",
       "id" : "advanced-closure-capture-modes",
-      "order" : 26,
+      "order" : 125,
       "term" : "Move closure",
       "topic" : "closure-capture-modes"
     },
     {
       "description" : "A zero-sized marker carrying type information.",
       "id" : "advanced-phantom-data",
-      "order" : 27,
+      "order" : 126,
       "term" : "PhantomData",
       "topic" : "phantom-data"
     },
     {
       "description" : "Conventional paths that define build targets.",
       "id" : "advanced-package-layout",
-      "order" : 28,
+      "order" : 127,
       "term" : "Cargo target layout",
       "topic" : "package-layout"
     },
     {
       "description" : "Using the cheapest command for current evidence.",
       "id" : "advanced-cargo-command-cycle",
-      "order" : 29,
+      "order" : 128,
       "term" : "Cargo check cycle",
       "topic" : "cargo-command-cycle"
     },
     {
       "description" : "A crate used by tests, examples, or benches.",
       "id" : "advanced-dependency-kinds",
-      "order" : 30,
+      "order" : 129,
       "term" : "Dev dependency",
       "topic" : "dependency-kinds"
     },
     {
       "description" : "A feature that adds capability without conflict.",
       "id" : "advanced-feature-design",
-      "order" : 31,
+      "order" : 130,
       "term" : "Additive feature",
       "topic" : "feature-design"
     },
     {
       "description" : "Exact package versions selected for a build.",
       "id" : "advanced-lockfile-reproducibility",
-      "order" : 32,
+      "order" : 131,
       "term" : "Locked graph",
       "topic" : "lockfile-reproducibility"
     },
     {
       "description" : "A separate test target using only public API.",
       "id" : "advanced-integration-tests",
-      "order" : 33,
+      "order" : 132,
       "term" : "Integration test crate",
       "topic" : "integration-tests"
     },
     {
       "description" : "The layer that adds operation-specific meaning.",
       "id" : "advanced-error-context",
-      "order" : 34,
+      "order" : 133,
       "term" : "Error context boundary",
       "topic" : "error-context"
     },
     {
       "description" : "Documentation examples compiled as tests.",
       "id" : "advanced-doc-examples",
-      "order" : 35,
+      "order" : 134,
       "term" : "Executable docs",
       "topic" : "doc-examples"
     },
     {
       "description" : "Cargo settings for optimized build artifacts.",
       "id" : "advanced-release-profiles",
-      "order" : 36,
+      "order" : 135,
       "term" : "Release profile",
       "topic" : "release-profiles"
     },
     {
       "description" : "A thread joined before borrowed locals expire.",
       "id" : "advanced-scoped-threads",
-      "order" : 37,
+      "order" : 136,
       "term" : "Scoped thread",
       "topic" : "scoped-threads"
     },
     {
       "description" : "A lock whose previous holder unwound in panic.",
       "id" : "advanced-mutex-poisoning",
-      "order" : 38,
+      "order" : 137,
       "term" : "Poisoned mutex",
       "topic" : "mutex-poisoning"
     },
     {
       "description" : "Rules for visibility around atomic operations.",
       "id" : "advanced-atomics-basics",
-      "order" : 39,
+      "order" : 138,
       "term" : "Atomic ordering",
       "topic" : "atomics-basics"
     },
     {
       "description" : "A global sequence for acquiring multiple locks.",
       "id" : "advanced-deadlock-avoidance",
-      "order" : 40,
+      "order" : 139,
       "term" : "Global lock order",
       "topic" : "deadlock-avoidance"
     },
     {
       "description" : "A value promised not to move from its location.",
       "id" : "advanced-pinning-intuition",
-      "order" : 41,
+      "order" : 140,
       "term" : "Pinned value",
       "topic" : "pinning-intuition"
     },
     {
       "description" : "A suspension where a future may be dropped.",
       "id" : "advanced-async-cancellation",
-      "order" : 42,
+      "order" : 141,
       "term" : "Cancellation point",
       "topic" : "async-cancellation"
     },
     {
       "description" : "Blocking workers so futures cannot be polled.",
       "id" : "advanced-blocking-async",
-      "order" : 43,
+      "order" : 142,
       "term" : "Executor starvation",
       "topic" : "blocking-async"
     },
     {
       "description" : "Context-aware resolution of generated names.",
       "id" : "advanced-macro-hygiene",
-      "order" : 44,
+      "order" : 143,
       "term" : "Macro hygiene",
       "topic" : "macro-hygiene"
     },
     {
       "description" : "Balanced syntax tokens consumed by a macro.",
       "id" : "advanced-token-trees",
-      "order" : 45,
+      "order" : 144,
       "term" : "Token tree",
       "topic" : "token-trees"
     },
     {
       "description" : "Compile-time code executed for the build host.",
       "id" : "advanced-proc-macro-boundaries",
-      "order" : 46,
+      "order" : 145,
       "term" : "Host proc macro",
       "topic" : "proc-macro-boundaries"
     },
     {
       "description" : "Validity facts required before dereferencing.",
       "id" : "advanced-raw-pointers",
-      "order" : 47,
+      "order" : 146,
       "term" : "Raw pointer invariant",
       "topic" : "raw-pointers"
     },
     {
       "description" : "A C-compatible field layout promise.",
       "id" : "advanced-repr-layout",
-      "order" : 48,
+      "order" : 147,
       "term" : "repr(C) contract",
       "topic" : "repr-layout"
     },
     {
       "description" : "An invariant trusted by other unsafe code.",
       "id" : "advanced-unsafe-traits",
-      "order" : 49,
+      "order" : 148,
       "term" : "Unsafe trait contract",
       "topic" : "unsafe-traits"
     },
     {
       "description" : "A repeatable measurement before a code change.",
       "id" : "advanced-benchmarking-profiling",
-      "order" : 50,
+      "order" : 149,
       "term" : "Performance baseline",
       "topic" : "benchmarking-profiling"
     },
     {
       "description" : "Explicit input, output, and edge-case rules.",
       "id" : "advanced-q-two-sum-rust",
-      "order" : 51,
+      "order" : 150,
       "term" : "Live-coding contract",
       "topic" : "q-two-sum-rust"
     },
     {
       "description" : "An order structure updated on every access.",
       "id" : "advanced-q-lru-design",
-      "order" : 52,
+      "order" : 151,
       "term" : "LRU recency index",
       "topic" : "q-lru-design"
     },
     {
       "description" : "Input coordinates carried into diagnostics.",
       "id" : "advanced-q-parser-design",
-      "order" : 53,
+      "order" : 152,
       "term" : "Parser source span",
       "topic" : "q-parser-design"
     },
     {
       "description" : "One fact that can disprove a debug hypothesis.",
       "id" : "advanced-q-debugging-session",
-      "order" : 54,
+      "order" : 153,
       "term" : "Discriminating observation",
       "topic" : "q-debugging-session"
     },
     {
       "description" : "A constraint that can change a technical choice.",
       "id" : "advanced-q-tradeoff-communication",
-      "order" : 55,
+      "order" : 154,
       "term" : "Decision criterion",
       "topic" : "q-tradeoff-communication"
     },
     {
       "description" : "A constraint that narrows the design space.",
       "id" : "advanced-q-requirements",
-      "order" : 56,
+      "order" : 155,
       "term" : "Requirement boundary",
       "topic" : "q-requirements"
     },
     {
       "description" : "Correctness before maintainability before style.",
       "id" : "advanced-q-code-review",
-      "order" : 57,
+      "order" : 156,
       "term" : "Review severity order",
       "topic" : "q-code-review"
     },
     {
       "description" : "A control that prevents or detects recurrence.",
       "id" : "advanced-q-postmortem",
-      "order" : 58,
+      "order" : 157,
       "term" : "Durable corrective action",
       "topic" : "q-postmortem"
     },
     {
       "description" : "Visit every element once and stop when the predicate is satisfied.",
       "id" : "algorithm-term-linear-scan",
-      "order" : 59,
+      "order" : 158,
       "term" : "Linear Scan",
       "topic" : "algorithm.linear-scan.recognize"
     },
     {
       "description" : "Carry the best value seen so far and update it from each element.",
       "id" : "algorithm-term-min-max-tracking",
-      "order" : 60,
+      "order" : 159,
       "term" : "Min\/Max Tracking",
       "topic" : "algorithm.min-max-tracking.recognize"
     },
     {
       "description" : "Turn repeated observations into counts keyed by the observed value.",
       "id" : "algorithm-term-frequency-counting",
-      "order" : 61,
+      "order" : 160,
       "term" : "Frequency Counting",
       "topic" : "algorithm.frequency-counting.recognize"
     },
     {
       "description" : "Fold a stream into one state such as a sum, product, checksum, or balance.",
       "id" : "algorithm-term-running-accumulator",
-      "order" : 62,
+      "order" : 161,
       "term" : "Running Accumulator",
       "topic" : "algorithm.running-accumulator.recognize"
     },
     {
       "description" : "Compare each item with its predecessor while keeping only local context.",
       "id" : "algorithm-term-adjacent-pair-scan",
-      "order" : 63,
+      "order" : 162,
       "term" : "Adjacent Pair Scan",
       "topic" : "algorithm.adjacent-pair-scan.recognize"
     },
     {
       "description" : "Write kept elements forward so their relative order survives removal.",
       "id" : "algorithm-term-stable-compaction",
-      "order" : 64,
+      "order" : 163,
       "term" : "Stable Compaction",
       "topic" : "algorithm.stable-compaction.recognize"
     },
     {
       "description" : "Maintain a boundary between items that satisfy a predicate and those that do not.",
       "id" : "algorithm-term-predicate-partition",
-      "order" : 65,
+      "order" : 164,
       "term" : "Predicate Partition",
       "topic" : "algorithm.predicate-partition.recognize"
     },
     {
       "description" : "Cancel different values in pairs so a strict majority remains as the candidate.",
       "id" : "algorithm-term-boyer-moore-majority",
-      "order" : 66,
+      "order" : 165,
       "term" : "Boyer–Moore Majority Vote",
       "topic" : "algorithm.boyer-moore-majority.recognize"
     },
     {
       "description" : "Replace a fixed reservoir with decreasing probability while streaming unknown-length input.",
       "id" : "algorithm-term-reservoir-sampling",
-      "order" : 67,
+      "order" : 166,
       "term" : "Reservoir Sampling",
       "topic" : "algorithm.reservoir-sampling.recognize"
     },
     {
       "description" : "Advance one state once and another twice; their meeting proves a cycle without a visited set.",
       "id" : "algorithm-term-floyd-state-cycle",
-      "order" : 68,
+      "order" : 167,
       "term" : "Floyd State Cycle Detection",
       "topic" : "algorithm.floyd-state-cycle.recognize"
     },
     {
       "description" : "Store seen keys so later membership checks are expected constant time.",
       "id" : "algorithm-term-hash-membership",
-      "order" : 69,
+      "order" : 168,
       "term" : "Hash Membership",
       "topic" : "algorithm.hash-membership.recognize"
     },
     {
       "description" : "Map each key to its number of occurrences in one pass.",
       "id" : "algorithm-term-hash-frequency",
-      "order" : 70,
+      "order" : 169,
       "term" : "Hash Frequency Map",
       "topic" : "algorithm.hash-frequency.recognize"
     },
     {
       "description" : "For each number, ask whether target - number has already appeared.",
       "id" : "algorithm-term-complement-lookup",
-      "order" : 71,
+      "order" : 170,
       "term" : "Complement Lookup",
       "topic" : "algorithm.complement-lookup.recognize"
     },
     {
       "description" : "Transform each item to a stable key and collect items sharing that key.",
       "id" : "algorithm-term-group-by-key",
-      "order" : 72,
+      "order" : 171,
       "term" : "Group by Canonical Key",
       "topic" : "algorithm.group-by-key.recognize"
     },
     {
       "description" : "Remember the latest or earliest position associated with each value.",
       "id" : "algorithm-term-index-map",
-      "order" : 73,
+      "order" : 172,
       "term" : "Value-to-Index Map",
       "topic" : "algorithm.index-map.recognize"
     },
     {
       "description" : "Replace large ordered values with dense ranks while preserving comparisons.",
       "id" : "algorithm-term-coordinate-compression",
-      "order" : 74,
+      "order" : 173,
       "term" : "Coordinate Compression",
       "topic" : "algorithm.coordinate-compression.recognize"
     },
     {
       "description" : "Start only at values with no predecessor, then walk each consecutive run once.",
       "id" : "algorithm-term-longest-consecutive-set",
-      "order" : 75,
+      "order" : 174,
       "term" : "Longest Consecutive Set Run",
       "topic" : "algorithm.longest-consecutive-set.recognize"
     },
     {
       "description" : "Maintain both key-to-value and value-to-key constraints to enforce a bijection.",
       "id" : "algorithm-term-bidirectional-map",
-      "order" : 76,
+      "order" : 175,
       "term" : "Bidirectional Mapping",
       "topic" : "algorithm.bidirectional-map.recognize"
     },
     {
       "description" : "Combine a dense vector with a value-to-index map; delete by swapping with the last item.",
       "id" : "algorithm-term-randomized-set",
-      "order" : 77,
+      "order" : 176,
       "term" : "Indexed Randomized Set",
       "topic" : "algorithm.randomized-set.recognize"
     },
     {
       "description" : "Update a window hash by removing the outgoing contribution and adding the incoming one.",
       "id" : "algorithm-term-rolling-fingerprint",
-      "order" : 78,
+      "order" : 177,
       "term" : "Rolling Fingerprint",
       "topic" : "algorithm.rolling-fingerprint.recognize"
     },
     {
       "description" : "Store the sum before every boundary so a range is one subtraction.",
       "id" : "algorithm-term-prefix-sum",
-      "order" : 79,
+      "order" : 178,
       "term" : "Prefix Sum",
       "topic" : "algorithm.prefix-sum.recognize"
     },
     {
       "description" : "Precompute information from right to left for queries about everything after a position.",
       "id" : "algorithm-term-suffix-aggregate",
-      "order" : 80,
+      "order" : 179,
       "term" : "Suffix Aggregate",
       "topic" : "algorithm.suffix-aggregate.recognize"
     },
     {
       "description" : "Compare cumulative left state with total-minus-current-minus-left state.",
       "id" : "algorithm-term-equilibrium-index",
-      "order" : 81,
+      "order" : 180,
       "term" : "Prefix\/Suffix Balance",
       "topic" : "algorithm.equilibrium-index.recognize"
     },
     {
       "description" : "Mark only where a range update starts and stops, then integrate once.",
       "id" : "algorithm-term-difference-array",
-      "order" : 82,
+      "order" : 181,
       "term" : "Difference Array",
       "topic" : "algorithm.difference-array.recognize"
     },
     {
       "description" : "Combine the product before and after each index without division.",
       "id" : "algorithm-term-prefix-suffix-product",
-      "order" : 83,
+      "order" : 182,
       "term" : "Prefix\/Suffix Product",
       "topic" : "algorithm.prefix-suffix-product.recognize"
     },
     {
       "description" : "Use XOR self-cancellation so a range value is two prefix states combined.",
       "id" : "algorithm-term-prefix-xor",
-      "order" : 84,
+      "order" : 183,
       "term" : "Prefix XOR",
       "topic" : "algorithm.prefix-xor.recognize"
     },
     {
       "description" : "Store each rectangle from the origin and use inclusion-exclusion for any subrectangle.",
       "id" : "algorithm-term-prefix-sum-2d",
-      "order" : 85,
+      "order" : 184,
       "term" : "2D Prefix Sum",
       "topic" : "algorithm.prefix-sum-2d.recognize"
     },
     {
       "description" : "Record interval starts and ends, then sweep a running active count.",
       "id" : "algorithm-term-imos-sweep",
-      "order" : 86,
+      "order" : 185,
       "term" : "Imos Sweep",
       "topic" : "algorithm.imos-sweep.recognize"
     },
     {
       "description" : "Store partial sums in power-of-two ranges and move indexes by their lowest set bit.",
       "id" : "algorithm-term-fenwick-tree",
-      "order" : 87,
+      "order" : 186,
       "term" : "Fenwick Tree",
       "topic" : "algorithm.fenwick-tree.recognize"
     },
     {
       "description" : "Represent intervals as a binary tree so a query visits only canonical covering nodes.",
       "id" : "algorithm-term-segment-tree",
-      "order" : 88,
+      "order" : 187,
       "term" : "Segment Tree",
       "topic" : "algorithm.segment-tree.recognize"
     },
     {
       "description" : "Move inward from both ends when ordering tells which side cannot improve.",
       "id" : "algorithm-term-opposite-ends",
-      "order" : 89,
+      "order" : 188,
       "term" : "Opposite-End Pointers",
       "topic" : "algorithm.opposite-ends.recognize"
     },
     {
       "description" : "Let a read pointer inspect every item while a write pointer marks the kept prefix.",
       "id" : "algorithm-term-same-direction",
-      "order" : 90,
+      "order" : 189,
       "term" : "Same-Direction Pointers",
       "topic" : "algorithm.same-direction.recognize"
     },
     {
       "description" : "Advance pointers at different rates so relative motion reveals a midpoint or cycle.",
       "id" : "algorithm-term-slow-fast",
-      "order" : 91,
+      "order" : 190,
       "term" : "Slow\/Fast Pointers",
       "topic" : "algorithm.slow-fast.recognize"
     },
     {
       "description" : "Compare the end-pair sum with the target and discard one impossible endpoint.",
       "id" : "algorithm-term-sorted-two-sum",
-      "order" : 92,
+      "order" : 191,
       "term" : "Sorted Two-Sum",
       "topic" : "algorithm.sorted-two-sum.recognize"
     },
     {
       "description" : "Compare normalized symbols from the outside inward and skip irrelevant input.",
       "id" : "algorithm-term-palindrome-pointers",
-      "order" : 93,
+      "order" : 192,
       "term" : "Palindrome Pointers",
       "topic" : "algorithm.palindrome-pointers.recognize"
     },
     {
       "description" : "Sort, fix one value, and solve the remaining target with two pointers while skipping duplicates.",
       "id" : "algorithm-term-three-sum",
-      "order" : 94,
+      "order" : 193,
       "term" : "Three-Sum Reduction",
       "topic" : "algorithm.three-sum.recognize"
     },
     {
       "description" : "Maintain less-than, unknown, and greater-than regions with three boundaries.",
       "id" : "algorithm-term-dutch-flag",
-      "order" : 95,
+      "order" : 194,
       "term" : "Dutch National Flag",
       "topic" : "algorithm.dutch-flag.recognize"
     },
     {
       "description" : "The shorter boundary limits area, so only moving that boundary can improve the result.",
       "id" : "algorithm-term-container-area",
-      "order" : 96,
+      "order" : 195,
       "term" : "Container Area",
       "topic" : "algorithm.container-area.recognize"
     },
     {
       "description" : "Fill free capacity from the end so unread source values are never overwritten.",
       "id" : "algorithm-term-in-place-merge",
-      "order" : 97,
+      "order" : 196,
       "term" : "Backward In-Place Merge",
       "topic" : "algorithm.in-place-merge.recognize"
     },
     {
       "description" : "The smaller side has a settled bound; accumulate its deficit before moving inward.",
       "id" : "algorithm-term-trapping-water",
-      "order" : 98,
+      "order" : 197,
       "term" : "Two-Pointer Rainwater",
       "topic" : "algorithm.trapping-water.recognize"
     },
     {
       "description" : "Add the entering item and remove the leaving item instead of recomputing each range.",
       "id" : "algorithm-term-fixed-window",
-      "order" : 99,
+      "order" : 198,
       "term" : "Fixed-Size Window",
       "topic" : "algorithm.fixed-window.recognize"
     },
     {
       "description" : "Expand until a constraint fails, then shrink until it is valid again.",
       "id" : "algorithm-term-variable-window",
-      "order" : 100,
+      "order" : 199,
       "term" : "Variable-Size Window",
       "topic" : "algorithm.variable-window.recognize"
     },
     {
       "description" : "Jump the left boundary past a repeated symbol using its latest position.",
       "id" : "algorithm-term-unique-window",
-      "order" : 101,
+      "order" : 200,
       "term" : "Last-Seen Unique Window",
       "topic" : "algorithm.unique-window.recognize"
     },
     {
       "description" : "Keep a frequency state and shrink while more than k distinct values are present.",
       "id" : "algorithm-term-at-most-k",
-      "order" : 102,
+      "order" : 201,
       "term" : "At-Most-K Window",
       "topic" : "algorithm.at-most-k.recognize"
     },
     {
       "description" : "Count windows with at most k and subtract those with at most k-1.",
       "id" : "algorithm-term-exactly-k-difference",
-      "order" : 103,
+      "order" : 202,
       "term" : "Exactly-K by Difference",
       "topic" : "algorithm.exactly-k-difference.recognize"
     },
     {
       "description" : "Track the dominant count so replacements needed equal window length minus that count.",
       "id" : "algorithm-term-frequency-balanced-window",
-      "order" : 104,
+      "order" : 203,
       "term" : "Frequency-Balanced Window",
       "topic" : "algorithm.frequency-balanced-window.recognize"
     },
     {
       "description" : "Expand until all required multiplicities are covered, then shrink while coverage remains.",
       "id" : "algorithm-term-minimum-cover-window",
-      "order" : 105,
+      "order" : 204,
       "term" : "Minimum Cover Window",
       "topic" : "algorithm.minimum-cover-window.recognize"
     },
     {
       "description" : "Keep candidate indexes in decreasing value order and evict those outside the window.",
       "id" : "algorithm-term-monotonic-deque-window",
-      "order" : 106,
+      "order" : 205,
       "term" : "Monotonic Deque Window",
       "topic" : "algorithm.monotonic-deque-window.recognize"
     },
     {
       "description" : "Update sufficient statistics as samples enter and leave rather than retaining every computation.",
       "id" : "algorithm-term-rolling-window-statistic",
-      "order" : 107,
+      "order" : 206,
       "term" : "Rolling Mean and Variance",
       "topic" : "algorithm.rolling-window-statistic.recognize"
     },
     {
       "description" : "Balance lower and upper heaps while lazily deleting values that leave the window.",
       "id" : "algorithm-term-dual-heap-window-median",
-      "order" : 108,
+      "order" : 207,
       "term" : "Sliding Median with Two Heaps",
       "topic" : "algorithm.dual-heap-window-median.recognize"
     },
     {
       "description" : "Push open delimiters and require every close to match the most recent open.",
       "id" : "algorithm-term-delimiter-stack",
-      "order" : 109,
+      "order" : 208,
       "term" : "Delimiter Stack",
       "topic" : "algorithm.delimiter-stack.recognize"
     },
     {
       "description" : "Push operands and reduce the latest operands whenever an operator arrives.",
       "id" : "algorithm-term-postfix-evaluation",
-      "order" : 110,
+      "order" : 209,
       "term" : "Postfix Evaluation",
       "topic" : "algorithm.postfix-evaluation.recognize"
     },
     {
       "description" : "Store each value together with the minimum at the moment it is pushed.",
       "id" : "algorithm-term-min-stack",
-      "order" : 111,
+      "order" : 210,
       "term" : "Min Stack",
       "topic" : "algorithm.min-stack.recognize"
     },
     {
       "description" : "Reverse the input stack into an output stack only when the output side is empty.",
       "id" : "algorithm-term-queue-with-stacks",
-      "order" : 112,
+      "order" : 211,
       "term" : "Queue from Two Stacks",
       "topic" : "algorithm.queue-with-stacks.recognize"
     },
     {
       "description" : "Keep unresolved indexes in decreasing value order and resolve them when a larger value appears.",
       "id" : "algorithm-term-next-greater-stack",
-      "order" : 113,
+      "order" : 212,
       "term" : "Next Greater Element",
       "topic" : "algorithm.next-greater-stack.recognize"
     },
     {
       "description" : "Pop larger candidates so the stack represents the nearest smaller boundary.",
       "id" : "algorithm-term-monotonic-increasing-stack",
-      "order" : 114,
+      "order" : 213,
       "term" : "Monotonic Increasing Stack",
       "topic" : "algorithm.monotonic-increasing-stack.recognize"
     },
     {
       "description" : "Pop smaller candidates so unresolved values remain in decreasing order.",
       "id" : "algorithm-term-monotonic-decreasing-stack",
-      "order" : 115,
+      "order" : 214,
       "term" : "Monotonic Decreasing Stack",
       "topic" : "algorithm.monotonic-decreasing-stack.recognize"
     },
     {
       "description" : "Traverse indexes twice while storing each unresolved position only once.",
       "id" : "algorithm-term-circular-monotonic-stack",
-      "order" : 116,
+      "order" : 215,
       "term" : "Circular Monotonic Stack",
       "topic" : "algorithm.circular-monotonic-stack.recognize"
     },
     {
       "description" : "Use an operator stack to emit operations only when precedence and associativity allow.",
       "id" : "algorithm-term-expression-shunting-yard",
-      "order" : 117,
+      "order" : 216,
       "term" : "Shunting-Yard Parsing",
       "topic" : "algorithm.expression-shunting-yard.recognize"
     },
     {
       "description" : "When height decreases, pop bars whose right boundary is now known and compute their maximal width.",
       "id" : "algorithm-term-largest-histogram",
-      "order" : 118,
+      "order" : 217,
       "term" : "Largest Histogram Rectangle",
       "topic" : "algorithm.largest-histogram.recognize"
     },
     {
       "description" : "Grow a sorted prefix by shifting each new item to its insertion position.",
       "id" : "algorithm-term-insertion-sort",
-      "order" : 119,
+      "order" : 218,
       "term" : "Insertion Sort",
       "topic" : "algorithm.insertion-sort.recognize"
     },
     {
       "description" : "Select the minimum remaining value and place it at the next boundary.",
       "id" : "algorithm-term-selection-sort",
-      "order" : 120,
+      "order" : 219,
       "term" : "Selection Sort",
       "topic" : "algorithm.selection-sort.recognize"
     },
     {
       "description" : "Sort halves independently, then merge two ordered streams without backtracking.",
       "id" : "algorithm-term-merge-sort",
-      "order" : 121,
+      "order" : 220,
       "term" : "Merge Sort",
       "topic" : "algorithm.merge-sort.recognize"
     },
     {
       "description" : "Partition around a pivot, then recurse only on the two unresolved regions.",
       "id" : "algorithm-term-quicksort",
-      "order" : 122,
+      "order" : 221,
       "term" : "Quicksort",
       "topic" : "algorithm.quicksort.recognize"
     },
     {
       "description" : "Build a max heap and repeatedly move the maximum into its final suffix position.",
       "id" : "algorithm-term-heap-sort",
-      "order" : 123,
+      "order" : 222,
       "term" : "Heap Sort",
       "topic" : "algorithm.heap-sort.recognize"
     },
     {
       "description" : "Count every key in a small known range and emit keys by frequency.",
       "id" : "algorithm-term-counting-sort",
-      "order" : 124,
+      "order" : 223,
       "term" : "Counting Sort",
       "topic" : "algorithm.counting-sort.recognize"
     },
     {
       "description" : "Apply a stable bucket pass from the least significant digit toward the most significant.",
       "id" : "algorithm-term-radix-sort",
-      "order" : 125,
+      "order" : 224,
       "term" : "LSD Radix Sort",
       "topic" : "algorithm.radix-sort.recognize"
     },
     {
       "description" : "Distribute values into range buckets, sort locally, and concatenate in bucket order.",
       "id" : "algorithm-term-bucket-sort",
-      "order" : 126,
+      "order" : 225,
       "term" : "Bucket Sort",
       "topic" : "algorithm.bucket-sort.recognize"
     },
     {
       "description" : "Partition like quicksort but recurse only into the side containing the requested rank.",
       "id" : "algorithm-term-quickselect",
-      "order" : 127,
+      "order" : 226,
       "term" : "Quickselect",
       "topic" : "algorithm.quickselect.recognize"
     },
     {
       "description" : "Choose a guaranteed-good pivot from medians of small groups before selecting one side.",
       "id" : "algorithm-term-median-of-medians",
-      "order" : 128,
+      "order" : 227,
       "term" : "Median of Medians",
       "topic" : "algorithm.median-of-medians.recognize"
     },
     {
       "description" : "Discard the half that cannot contain the target after comparing the midpoint.",
       "id" : "algorithm-term-binary-exact",
-      "order" : 129,
+      "order" : 228,
       "term" : "Exact Binary Search",
       "topic" : "algorithm.binary-exact.recognize"
     },
     {
       "description" : "Maintain the first position that may still hold a value greater than or equal to target.",
       "id" : "algorithm-term-lower-bound",
-      "order" : 130,
+      "order" : 229,
       "term" : "Lower Bound",
       "topic" : "algorithm.lower-bound.recognize"
     },
     {
       "description" : "Maintain the first position whose value is strictly greater than target.",
       "id" : "algorithm-term-upper-bound",
-      "order" : 131,
+      "order" : 230,
       "term" : "Upper Bound",
       "topic" : "algorithm.upper-bound.recognize"
     },
     {
       "description" : "Run two boundary searches instead of expanding linearly from one match.",
       "id" : "algorithm-term-first-last-position",
-      "order" : 132,
+      "order" : 231,
       "term" : "First and Last Position",
       "topic" : "algorithm.first-last-position.recognize"
     },
     {
       "description" : "At least one half remains sorted; use that fact to choose the viable side.",
       "id" : "algorithm-term-rotated-search",
-      "order" : 133,
+      "order" : 232,
       "term" : "Rotated Sorted Search",
       "topic" : "algorithm.rotated-search.recognize"
     },
     {
       "description" : "Compare adjacent slopes; one side is guaranteed to contain a peak.",
       "id" : "algorithm-term-peak-search",
-      "order" : 134,
+      "order" : 233,
       "term" : "Peak Binary Search",
       "topic" : "algorithm.peak-search.recognize"
     },
     {
       "description" : "Map a flat midpoint back to row and column when rows form one global sorted order.",
       "id" : "algorithm-term-matrix-binary-search",
-      "order" : 135,
+      "order" : 234,
       "term" : "Flattened Matrix Search",
       "topic" : "algorithm.matrix-binary-search.recognize"
     },
     {
       "description" : "Search a numeric answer space whose feasibility predicate changes only once.",
       "id" : "algorithm-term-binary-search-answer",
-      "order" : 136,
+      "order" : 235,
       "term" : "Binary Search on the Answer",
       "topic" : "algorithm.binary-search-answer.recognize"
     },
     {
       "description" : "Double the search boundary until it brackets the target, then binary-search that finite range.",
       "id" : "algorithm-term-exponential-search",
-      "order" : 137,
+      "order" : 236,
       "term" : "Exponential Search",
       "topic" : "algorithm.exponential-search.recognize"
     },
     {
       "description" : "Binary-search a partition where every left-side value is no larger than every right-side value.",
       "id" : "algorithm-term-partition-median",
-      "order" : 138,
+      "order" : 237,
       "term" : "Partition Median",
       "topic" : "algorithm.partition-median.recognize"
     },
     {
       "description" : "Detach the next link before redirecting the current node toward the reversed prefix.",
       "id" : "algorithm-term-list-reversal",
-      "order" : 139,
+      "order" : 238,
       "term" : "Iterative List Reversal",
       "topic" : "algorithm.list-reversal.recognize"
     },
     {
       "description" : "Move one pointer once and another twice so the slow pointer reaches the middle.",
       "id" : "algorithm-term-list-middle",
-      "order" : 140,
+      "order" : 239,
       "term" : "Middle by Slow\/Fast",
       "topic" : "algorithm.list-middle.recognize"
     },
     {
       "description" : "Different pointer speeds meet inside a cycle but never in a finite acyclic list.",
       "id" : "algorithm-term-list-cycle",
-      "order" : 141,
+      "order" : 240,
       "term" : "Linked Cycle Detection",
       "topic" : "algorithm.list-cycle.recognize"
     },
     {
       "description" : "Always detach the smaller head and append it to the merged tail.",
       "id" : "algorithm-term-merge-two-lists",
-      "order" : 142,
+      "order" : 241,
       "term" : "Merge Two Sorted Lists",
       "topic" : "algorithm.merge-two-lists.recognize"
     },
     {
       "description" : "Keep a fixed gap so the leading pointer reaching the end positions the trailing pointer before the target.",
       "id" : "algorithm-term-remove-nth-from-end",
-      "order" : 143,
+      "order" : 242,
       "term" : "Gap Pointer Removal",
       "topic" : "algorithm.remove-nth-from-end.recognize"
     },
     {
       "description" : "Switch each pointer to the other head so both traverse equal combined distance.",
       "id" : "algorithm-term-list-intersection",
-      "order" : 144,
+      "order" : 243,
       "term" : "Pointer-Switch Intersection",
       "topic" : "algorithm.list-intersection.recognize"
     },
     {
       "description" : "Build two stable chains around a pivot and join them after traversal.",
       "id" : "algorithm-term-partition-list",
-      "order" : 145,
+      "order" : 244,
       "term" : "Stable List Partition",
       "topic" : "algorithm.partition-list.recognize"
     },
     {
       "description" : "Find the middle, reverse the second half, then alternate nodes from both halves.",
       "id" : "algorithm-term-reorder-list",
-      "order" : 146,
+      "order" : 245,
       "term" : "Reorder by Split, Reverse, Merge",
       "topic" : "algorithm.reorder-list.recognize"
     },
     {
       "description" : "Map old nodes to new nodes or interleave copies so arbitrary links can be reconstructed.",
       "id" : "algorithm-term-copy-random-list",
-      "order" : 147,
+      "order" : 246,
       "term" : "Copy with Random Links",
       "topic" : "algorithm.copy-random-list.recognize"
     },
     {
       "description" : "Verify a complete group exists, reverse exactly that range, then reconnect both boundaries.",
       "id" : "algorithm-term-reverse-k-group",
-      "order" : 148,
+      "order" : 247,
       "term" : "Reverse Nodes in K-Groups",
       "topic" : "algorithm.reverse-k-group.recognize"
     },
     {
       "description" : "Process the node before its children so parent context is available first.",
       "id" : "algorithm-term-tree-preorder",
-      "order" : 149,
+      "order" : 248,
       "term" : "Preorder DFS",
       "topic" : "algorithm.tree-preorder.recognize"
     },
     {
       "description" : "Visit left, node, then right; in a BST this emits sorted keys.",
       "id" : "algorithm-term-tree-inorder",
-      "order" : 150,
+      "order" : 249,
       "term" : "Inorder DFS",
       "topic" : "algorithm.tree-inorder.recognize"
     },
     {
       "description" : "Process children before the node so child results are complete when combined.",
       "id" : "algorithm-term-tree-postorder",
-      "order" : 151,
+      "order" : 250,
       "term" : "Postorder DFS",
       "topic" : "algorithm.tree-postorder.recognize"
     },
     {
       "description" : "Queue nodes and process exactly the current queue length to preserve level boundaries.",
       "id" : "algorithm-term-tree-level-order",
-      "order" : 152,
+      "order" : 251,
       "term" : "Level-Order BFS",
       "topic" : "algorithm.tree-level-order.recognize"
     },
     {
       "description" : "Return height normally but propagate a sentinel immediately when a subtree is already unbalanced.",
       "id" : "algorithm-term-tree-height-balance",
-      "order" : 153,
+      "order" : 252,
       "term" : "Height with Balance Sentinel",
       "topic" : "algorithm.tree-height-balance.recognize"
     },
     {
       "description" : "Use the ordering invariant to follow one child and preserve it at insertion.",
       "id" : "algorithm-term-bst-search-insert",
-      "order" : 154,
+      "order" : 253,
       "term" : "BST Search and Insert",
       "topic" : "algorithm.bst-search-insert.recognize"
     },
     {
       "description" : "Combine child evidence; the first node reached from both targets is their lowest shared ancestor.",
       "id" : "algorithm-term-lowest-common-ancestor",
-      "order" : 155,
+      "order" : 254,
       "term" : "Lowest Common Ancestor",
       "topic" : "algorithm.lowest-common-ancestor.recognize"
     },
     {
       "description" : "Emit null markers as well as values so structure is reconstructible, not only traversal order.",
       "id" : "algorithm-term-tree-serialize",
-      "order" : 156,
+      "order" : 255,
       "term" : "Tree Serialize\/Deserialize",
       "topic" : "algorithm.tree-serialize.recognize"
     },
     {
       "description" : "At each node combine the two deepest child paths while returning only the deepest one upward.",
       "id" : "algorithm-term-tree-diameter",
-      "order" : 157,
+      "order" : 256,
       "term" : "Tree Diameter",
       "topic" : "algorithm.tree-diameter.recognize"
     },
     {
       "description" : "Compute child-to-parent contributions, then propagate the outside contribution while changing the root.",
       "id" : "algorithm-term-tree-rerooting",
-      "order" : 158,
+      "order" : 257,
       "term" : "Tree Rerooting DP",
       "topic" : "algorithm.tree-rerooting.recognize"
     },
     {
       "description" : "Maintain a complete tree where every parent outranks its children.",
       "id" : "algorithm-term-binary-heap",
-      "order" : 159,
+      "order" : 258,
       "term" : "Binary Heap",
       "topic" : "algorithm.binary-heap.recognize"
     },
     {
       "description" : "Keep a heap of only k winners and evict its smallest whenever it grows.",
       "id" : "algorithm-term-top-k-minheap",
-      "order" : 160,
+      "order" : 259,
       "term" : "Top-K with a Min-Heap",
       "topic" : "algorithm.top-k-minheap.recognize"
     },
     {
       "description" : "Keep k candidates so the heap root is the kth largest value after every insertion.",
       "id" : "algorithm-term-kth-stream",
-      "order" : 161,
+      "order" : 260,
       "term" : "Kth Statistic in a Stream",
       "topic" : "algorithm.kth-stream.recognize"
     },
     {
       "description" : "Push one frontier item per sorted source and advance only the source that wins.",
       "id" : "algorithm-term-k-way-merge",
-      "order" : 162,
+      "order" : 261,
       "term" : "K-Way Heap Merge",
       "topic" : "algorithm.k-way-merge.recognize"
     },
     {
       "description" : "Keep the worst current winner at the root so a better candidate replaces it.",
       "id" : "algorithm-term-closest-k-heap",
-      "order" : 163,
+      "order" : 262,
       "term" : "Bounded Heap for K Closest",
       "topic" : "algorithm.closest-k-heap.recognize"
     },
     {
       "description" : "Keep the lower half in a max-heap and upper half in a min-heap with sizes differing by at most one.",
       "id" : "algorithm-term-two-heap-median",
-      "order" : 164,
+      "order" : 263,
       "term" : "Median from Two Heaps",
       "topic" : "algorithm.two-heap-median.recognize"
     },
     {
       "description" : "Record invalidated values separately and discard stale roots only when they surface.",
       "id" : "algorithm-term-lazy-heap-deletion",
-      "order" : 165,
+      "order" : 264,
       "term" : "Lazy Heap Deletion",
       "topic" : "algorithm.lazy-heap-deletion.recognize"
     },
     {
       "description" : "Order available work by the decision criterion while time controls when work becomes eligible.",
       "id" : "algorithm-term-priority-scheduling",
-      "order" : 166,
+      "order" : 265,
       "term" : "Priority Scheduling",
       "topic" : "algorithm.priority-scheduling.recognize"
     },
     {
       "description" : "Sort by start time and reuse the room whose end time is smallest.",
       "id" : "algorithm-term-meeting-rooms-heap",
-      "order" : 167,
+      "order" : 266,
       "term" : "Meeting Rooms Heap",
       "topic" : "algorithm.meeting-rooms-heap.recognize"
     },
     {
       "description" : "Repeatedly merge the two lightest items; the accumulated merge cost is optimal.",
       "id" : "algorithm-term-huffman-greedy-heap",
-      "order" : 168,
+      "order" : 267,
       "term" : "Huffman Merge Heap",
       "topic" : "algorithm.huffman-greedy-heap.recognize"
     },
     {
       "description" : "Store only existing neighbors so traversal cost follows vertices plus edges.",
       "id" : "algorithm-term-adjacency-list",
-      "order" : 169,
+      "order" : 268,
       "term" : "Adjacency List",
       "topic" : "algorithm.adjacency-list.recognize"
     },
     {
       "description" : "Explore one branch fully while marking nodes before following outgoing edges.",
       "id" : "algorithm-term-graph-dfs",
-      "order" : 170,
+      "order" : 269,
       "term" : "Graph DFS",
       "topic" : "algorithm.graph-dfs.recognize"
     },
     {
       "description" : "Process the frontier in queue order so first discovery has minimum edge count.",
       "id" : "algorithm-term-graph-bfs",
-      "order" : 171,
+      "order" : 270,
       "term" : "Graph BFS",
       "topic" : "algorithm.graph-bfs.recognize"
     },
     {
       "description" : "Start a traversal from every still-unseen node and count starts.",
       "id" : "algorithm-term-connected-components",
-      "order" : 172,
+      "order" : 271,
       "term" : "Connected Components",
       "topic" : "algorithm.connected-components.recognize"
     },
     {
       "description" : "Treat cells as graph nodes and traverse only neighbors satisfying the region predicate.",
       "id" : "algorithm-term-grid-flood-fill",
-      "order" : 173,
+      "order" : 272,
       "term" : "Grid Flood Fill",
       "topic" : "algorithm.grid-flood-fill.recognize"
     },
     {
       "description" : "Assign opposite colors across every edge and reject any edge whose endpoints match.",
       "id" : "algorithm-term-bipartite-coloring",
-      "order" : 174,
+      "order" : 273,
       "term" : "Bipartite Coloring",
       "topic" : "algorithm.bipartite-coloring.recognize"
     },
     {
       "description" : "During traversal ignore the edge back to the parent; any other seen neighbor closes a cycle.",
       "id" : "algorithm-term-undirected-cycle",
-      "order" : 175,
+      "order" : 274,
       "term" : "Undirected Cycle Detection",
       "topic" : "algorithm.undirected-cycle.recognize"
     },
     {
       "description" : "Repeatedly remove zero-indegree nodes and decrement dependents; leftovers prove a cycle.",
       "id" : "algorithm-term-kahn-topological",
-      "order" : 176,
+      "order" : 275,
       "term" : "Kahn Topological Sort",
       "topic" : "algorithm.kahn-topological.recognize"
     },
     {
       "description" : "Append a node after all descendants; a gray-to-gray edge proves a directed cycle.",
       "id" : "algorithm-term-dfs-topological",
-      "order" : 177,
+      "order" : 276,
       "term" : "DFS Topological Sort",
       "topic" : "algorithm.dfs-topological.recognize"
     },
     {
       "description" : "Use finish order plus reversed edges, or low links, to collapse mutual reachability.",
       "id" : "algorithm-term-strong-components",
-      "order" : 178,
+      "order" : 277,
       "term" : "Strongly Connected Components",
       "topic" : "algorithm.strong-components.recognize"
     },
     {
       "description" : "Finalize the smallest tentative distance and relax its non-negative outgoing edges.",
       "id" : "algorithm-term-dijkstra",
-      "order" : 179,
+      "order" : 278,
       "term" : "Dijkstra",
       "topic" : "algorithm.dijkstra.recognize"
     },
     {
       "description" : "Push zero-cost edges to the deque front and unit-cost edges to the back.",
       "id" : "algorithm-term-zero-one-bfs",
-      "order" : 180,
+      "order" : 279,
       "term" : "0–1 BFS",
       "topic" : "algorithm.zero-one-bfs.recognize"
     },
     {
       "description" : "Relax outgoing edges once in topological order because no path can return to an earlier node.",
       "id" : "algorithm-term-dag-shortest-path",
-      "order" : 181,
+      "order" : 280,
       "term" : "DAG Shortest Path",
       "topic" : "algorithm.dag-shortest-path.recognize"
     },
     {
       "description" : "Grow one connected tree by repeatedly choosing the cheapest edge crossing its boundary.",
       "id" : "algorithm-term-prim-mst",
-      "order" : 182,
+      "order" : 281,
       "term" : "Prim Minimum Spanning Tree",
       "topic" : "algorithm.prim-mst.recognize"
     },
     {
       "description" : "Sort edges and add one only when union-find says it joins different components.",
       "id" : "algorithm-term-kruskal-mst",
-      "order" : 183,
+      "order" : 282,
       "term" : "Kruskal Minimum Spanning Tree",
       "topic" : "algorithm.kruskal-mst.recognize"
     },
     {
       "description" : "Relax every edge V-1 times; an improvement on the next pass proves a reachable negative cycle.",
       "id" : "algorithm-term-bellman-ford",
-      "order" : 184,
+      "order" : 283,
       "term" : "Bellman–Ford",
       "topic" : "algorithm.bellman-ford.recognize"
     },
     {
       "description" : "Allow intermediate vertices one by one and combine paths through the newly allowed vertex.",
       "id" : "algorithm-term-floyd-warshall",
-      "order" : 185,
+      "order" : 284,
       "term" : "Floyd–Warshall",
       "topic" : "algorithm.floyd-warshall.recognize"
     },
     {
       "description" : "Prioritize distance-so-far plus an admissible estimate that never overstates remaining cost.",
       "id" : "algorithm-term-a-star",
-      "order" : 186,
+      "order" : 285,
       "term" : "A* Search",
       "topic" : "algorithm.a-star.recognize"
     },
     {
       "description" : "Expand the smaller frontier from each endpoint until the visited sets meet.",
       "id" : "algorithm-term-bidirectional-bfs",
-      "order" : 187,
+      "order" : 286,
       "term" : "Bidirectional BFS",
       "topic" : "algorithm.bidirectional-bfs.recognize"
     },
     {
       "description" : "Build a level graph with BFS and send blocking flows through level-respecting edges.",
       "id" : "algorithm-term-dinic-max-flow",
-      "order" : 188,
+      "order" : 287,
       "term" : "Dinic Maximum Flow",
       "topic" : "algorithm.dinic-max-flow.recognize"
     },
     {
       "description" : "At each item branch on exclude or include, or extend every current subset.",
       "id" : "algorithm-term-subsets",
-      "order" : 189,
+      "order" : 288,
       "term" : "Subset Generation",
       "topic" : "algorithm.subsets.recognize"
     },
     {
       "description" : "Choose one unused item for the next position, recurse, then mark it unused again.",
       "id" : "algorithm-term-permutations",
-      "order" : 190,
+      "order" : 289,
       "term" : "Permutation Backtracking",
       "topic" : "algorithm.permutations.recognize"
     },
     {
       "description" : "Advance the start index so order does not create duplicate selections.",
       "id" : "algorithm-term-combinations",
-      "order" : 191,
+      "order" : 290,
       "term" : "Combination Backtracking",
       "topic" : "algorithm.combinations.recognize"
     },
     {
       "description" : "Choose a candidate again or move forward while pruning when the remaining target is negative.",
       "id" : "algorithm-term-combination-sum",
-      "order" : 192,
+      "order" : 291,
       "term" : "Combination Sum",
       "topic" : "algorithm.combination-sum.recognize"
     },
     {
       "description" : "Add an open symbol while available and a close only when it cannot exceed opens used.",
       "id" : "algorithm-term-parentheses-generation",
-      "order" : 193,
+      "order" : 292,
       "term" : "Valid Parentheses Generation",
       "topic" : "algorithm.parentheses-generation.recognize"
     },
     {
       "description" : "Walk matching neighbors while temporarily marking the current cell unavailable in this path.",
       "id" : "algorithm-term-word-grid-search",
-      "order" : 194,
+      "order" : 293,
       "term" : "Grid Word Search",
       "topic" : "algorithm.word-grid-search.recognize"
     },
     {
       "description" : "Choose each palindromic prefix as the next piece and recurse on the remaining suffix.",
       "id" : "algorithm-term-palindrome-partition",
-      "order" : 195,
+      "order" : 294,
       "term" : "Palindrome Partitioning",
       "topic" : "algorithm.palindrome-partition.recognize"
     },
     {
       "description" : "Place one queen per row and reject occupied columns and both diagonals before recursing.",
       "id" : "algorithm-term-n-queens",
-      "order" : 196,
+      "order" : 295,
       "term" : "N-Queens",
       "topic" : "algorithm.n-queens.recognize"
     },
     {
       "description" : "Choose an empty cell, try allowed symbols, and undo; picking the fewest candidates prunes harder.",
       "id" : "algorithm-term-sudoku",
-      "order" : 197,
+      "order" : 296,
       "term" : "Sudoku Constraint Search",
       "topic" : "algorithm.sudoku.recognize"
     },
     {
       "description" : "Enumerate two half-spaces and combine their summaries instead of exploring the full product directly.",
       "id" : "algorithm-term-meet-in-middle",
-      "order" : 198,
+      "order" : 297,
       "term" : "Meet in the Middle",
       "topic" : "algorithm.meet-in-middle.recognize"
     },
     {
       "description" : "Choose the compatible interval that finishes earliest, leaving maximum room for the future.",
       "id" : "algorithm-term-activity-selection",
-      "order" : 199,
+      "order" : 298,
       "term" : "Activity Selection",
       "topic" : "algorithm.activity-selection.recognize"
     },
     {
       "description" : "Sort by start and extend the current interval while the next one overlaps.",
       "id" : "algorithm-term-merge-intervals",
-      "order" : 200,
+      "order" : 299,
       "term" : "Merge Intervals",
       "topic" : "algorithm.merge-intervals.recognize"
     },
     {
       "description" : "Copy intervals before, merge every overlap, then copy intervals after.",
       "id" : "algorithm-term-insert-interval",
-      "order" : 201,
+      "order" : 300,
       "term" : "Insert into Sorted Intervals",
       "topic" : "algorithm.insert-interval.recognize"
     },
     {
       "description" : "Sort starts and ends as signed events and integrate active state across coordinates.",
       "id" : "algorithm-term-sweep-line-events",
-      "order" : 202,
+      "order" : 301,
       "term" : "Sweep-Line Events",
       "topic" : "algorithm.sweep-line-events.recognize"
     },
     {
       "description" : "Maintain the farthest reachable index and fail only when the scan moves beyond it.",
       "id" : "algorithm-term-jump-game",
-      "order" : 203,
+      "order" : 302,
       "term" : "Greedy Reach Frontier",
       "topic" : "algorithm.jump-game.recognize"
     },
     {
       "description" : "Treat the current reach as a BFS layer and commit a jump when the scan reaches its boundary.",
       "id" : "algorithm-term-jump-game-two",
-      "order" : 204,
+      "order" : 303,
       "term" : "Greedy Layered Jumps",
       "topic" : "algorithm.jump-game-two.recognize"
     },
     {
       "description" : "When running fuel becomes negative, no station in that failed segment can be a valid start.",
       "id" : "algorithm-term-gas-station",
-      "order" : 205,
+      "order" : 304,
       "term" : "Gas Station Reset",
       "topic" : "algorithm.gas-station.recognize"
     },
     {
       "description" : "Extend the current segment to the farthest last occurrence of every symbol encountered.",
       "id" : "algorithm-term-partition-labels",
-      "order" : 206,
+      "order" : 305,
       "term" : "Last-Occurrence Partition",
       "topic" : "algorithm.partition-labels.recognize"
     },
     {
       "description" : "Process jobs by deadline while a heap keeps only the best feasible set.",
       "id" : "algorithm-term-deadline-scheduling",
-      "order" : 207,
+      "order" : 306,
       "term" : "Deadline Profit Scheduling",
       "topic" : "algorithm.deadline-scheduling.recognize"
     },
     {
       "description" : "Sort by interval end and place a point only when the next interval starts after the current point.",
       "id" : "algorithm-term-minimum-arrows",
-      "order" : 208,
+      "order" : 307,
       "term" : "Interval Stabbing",
       "topic" : "algorithm.minimum-arrows.recognize"
     },
     {
       "description" : "Cache a recursive state the first time it is solved so overlapping subproblems run once.",
       "id" : "algorithm-term-memoization",
-      "order" : 209,
+      "order" : 308,
       "term" : "Top-Down Memoization",
       "topic" : "algorithm.memoization.recognize"
     },
     {
       "description" : "Evaluate states in an order where every dependency is already available.",
       "id" : "algorithm-term-tabulation",
-      "order" : 210,
+      "order" : 309,
       "term" : "Bottom-Up Tabulation",
       "topic" : "algorithm.tabulation.recognize"
     },
     {
       "description" : "Discard table entries once no future transition can read them.",
       "id" : "algorithm-term-rolling-dp",
-      "order" : 211,
+      "order" : 310,
       "term" : "Rolling-State DP",
       "topic" : "algorithm.rolling-dp.recognize"
     },
     {
       "description" : "For each item compare skipping it with taking it plus the best compatible earlier state.",
       "id" : "algorithm-term-house-robber",
-      "order" : 212,
+      "order" : 311,
       "term" : "Take-or-Skip DP",
       "topic" : "algorithm.house-robber.recognize"
     },
     {
       "description" : "At each item choose whether to extend the current segment or start a new one.",
       "id" : "algorithm-term-kadane",
-      "order" : 213,
+      "order" : 312,
       "term" : "Kadane Maximum Subarray",
       "topic" : "algorithm.kadane.recognize"
     },
     {
       "description" : "Let each amount state choose one coin plus the best smaller reachable amount.",
       "id" : "algorithm-term-coin-change-min",
-      "order" : 214,
+      "order" : 313,
       "term" : "Coin Change Minimum",
       "topic" : "algorithm.coin-change-min.recognize"
     },
     {
       "description" : "Mark a prefix reachable when an earlier reachable prefix is followed by a dictionary word.",
       "id" : "algorithm-term-word-break-dp",
-      "order" : 215,
+      "order" : 314,
       "term" : "Word Break DP",
       "topic" : "algorithm.word-break-dp.recognize"
     },
     {
       "description" : "Count valid one-symbol and two-symbol predecessors while rejecting leading zero states.",
       "id" : "algorithm-term-decode-ways",
-      "order" : 216,
+      "order" : 315,
       "term" : "Decode Ways DP",
       "topic" : "algorithm.decode-ways.recognize"
     },
     {
       "description" : "Keep the smallest possible tail for an increasing subsequence of every length.",
       "id" : "algorithm-term-lis-patience",
-      "order" : 217,
+      "order" : 316,
       "term" : "Longest Increasing Subsequence",
       "topic" : "algorithm.lis-patience.recognize"
     },
     {
       "description" : "Update capacities backward so each item contributes at most once.",
       "id" : "algorithm-term-zero-one-knapsack",
-      "order" : 218,
+      "order" : 317,
       "term" : "0\/1 Knapsack",
       "topic" : "algorithm.zero-one-knapsack.recognize"
     },
     {
       "description" : "A cell combines ways or cost from the predecessor directions allowed by the movement rule.",
       "id" : "algorithm-term-grid-path-dp",
-      "order" : 219,
+      "order" : 318,
       "term" : "Grid Path DP",
       "topic" : "algorithm.grid-path-dp.recognize"
     },
     {
       "description" : "Track reachable totals and update backward so every item is used at most once.",
       "id" : "algorithm-term-subset-sum",
-      "order" : 220,
+      "order" : 319,
       "term" : "Subset Sum DP",
       "topic" : "algorithm.subset-sum.recognize"
     },
     {
       "description" : "Match equal symbols diagonally; otherwise discard one suffix boundary and keep the better result.",
       "id" : "algorithm-term-longest-common-subsequence",
-      "order" : 221,
+      "order" : 320,
       "term" : "Longest Common Subsequence",
       "topic" : "algorithm.longest-common-subsequence.recognize"
     },
     {
       "description" : "Each state chooses insert, delete, or replace from adjacent smaller prefixes.",
       "id" : "algorithm-term-edit-distance",
-      "order" : 222,
+      "order" : 321,
       "term" : "Edit Distance",
       "topic" : "algorithm.edit-distance.recognize"
     },
     {
       "description" : "Equal interval ends add two; unequal ends discard one boundary and keep the better interval.",
       "id" : "algorithm-term-longest-pal-subsequence",
-      "order" : 223,
+      "order" : 322,
       "term" : "Longest Palindromic Subsequence",
       "topic" : "algorithm.longest-pal-subsequence.recognize"
     },
     {
       "description" : "Try every final split of an interval and combine left cost, right cost, and multiplication cost.",
       "id" : "algorithm-term-matrix-chain",
-      "order" : 224,
+      "order" : 323,
       "term" : "Matrix Chain DP",
       "topic" : "algorithm.matrix-chain.recognize"
     },
     {
       "description" : "Solve increasing interval lengths and choose the last or first action inside each interval.",
       "id" : "algorithm-term-interval-dp",
-      "order" : 225,
+      "order" : 324,
       "term" : "Interval DP",
       "topic" : "algorithm.interval-dp.recognize"
     },
     {
       "description" : "Process digits with position, tight-bound, leading-zero, and property state.",
       "id" : "algorithm-term-digit-dp",
-      "order" : 226,
+      "order" : 325,
       "term" : "Digit DP",
       "topic" : "algorithm.digit-dp.recognize"
     },
     {
       "description" : "Encode the chosen subset in bits and transition by adding one unused item.",
       "id" : "algorithm-term-bitmask-dp",
-      "order" : 227,
+      "order" : 326,
       "term" : "Bitmask DP",
       "topic" : "algorithm.bitmask-dp.recognize"
     },
     {
       "description" : "Return a compact choice summary from each subtree and combine children at their parent.",
       "id" : "algorithm-term-tree-dp",
-      "order" : 228,
+      "order" : 327,
       "term" : "Tree DP",
       "topic" : "algorithm.tree-dp.recognize"
     },
     {
       "description" : "Count the text unit the problem defines: bytes, Unicode scalar values, or grapheme clusters.",
       "id" : "algorithm-term-string-frequency",
-      "order" : 229,
+      "order" : 328,
       "term" : "Character Frequency",
       "topic" : "algorithm.string-frequency.recognize"
     },
     {
       "description" : "Move across symbol boundaries deliberately rather than indexing arbitrary UTF-8 bytes.",
       "id" : "algorithm-term-string-two-pointers",
-      "order" : 230,
+      "order" : 329,
       "term" : "String Two Pointers",
       "topic" : "algorithm.string-two-pointers.recognize"
     },
     {
       "description" : "Group maximal adjacent equal symbols and emit the symbol with its run length.",
       "id" : "algorithm-term-run-length-encoding",
-      "order" : 231,
+      "order" : 330,
       "term" : "Run-Length Encoding",
       "topic" : "algorithm.run-length-encoding.recognize"
     },
     {
       "description" : "Use the pattern's border table to reuse matched-prefix knowledge after a mismatch.",
       "id" : "algorithm-term-kmp",
-      "order" : 232,
+      "order" : 331,
       "term" : "Knuth–Morris–Pratt",
       "topic" : "algorithm.kmp.recognize"
     },
     {
       "description" : "Reuse the rightmost prefix-matching box to compute how much of the prefix matches at every position.",
       "id" : "algorithm-term-z-algorithm",
-      "order" : 233,
+      "order" : 332,
       "term" : "Z Algorithm",
       "topic" : "algorithm.z-algorithm.recognize"
     },
     {
       "description" : "Compare rolling hashes first and verify actual bytes only on hash matches.",
       "id" : "algorithm-term-rabin-karp",
-      "order" : 234,
+      "order" : 333,
       "term" : "Rabin–Karp",
       "topic" : "algorithm.rabin-karp.recognize"
     },
     {
       "description" : "Store one edge per next symbol so shared prefixes occupy shared nodes.",
       "id" : "algorithm-term-trie",
-      "order" : 235,
+      "order" : 334,
       "term" : "Prefix Trie",
       "topic" : "algorithm.trie.recognize"
     },
     {
       "description" : "Add failure links to a trie so one scan reports all pattern suffixes ending at each position.",
       "id" : "algorithm-term-aho-corasick",
-      "order" : 236,
+      "order" : 335,
       "term" : "Aho–Corasick",
       "topic" : "algorithm.aho-corasick.recognize"
     },
     {
       "description" : "Sort suffix ranks by doubling compared prefix length until every suffix has a unique rank.",
       "id" : "algorithm-term-suffix-array",
-      "order" : 237,
+      "order" : 336,
       "term" : "Suffix Array",
       "topic" : "algorithm.suffix-array.recognize"
     },
     {
       "description" : "Mirror known radii inside the rightmost palindrome and expand only beyond its boundary.",
       "id" : "algorithm-term-manacher",
-      "order" : 238,
+      "order" : 337,
       "term" : "Manacher Palindrome Radii",
       "topic" : "algorithm.manacher.recognize"
     },
     {
       "description" : "Replace the larger pair with divisor and remainder without changing their greatest common divisor.",
       "id" : "algorithm-term-euclid-gcd",
-      "order" : 239,
+      "order" : 338,
       "term" : "Euclidean GCD",
       "topic" : "algorithm.euclid-gcd.recognize"
     },
     {
       "description" : "Use each bit as an include\/exclude choice for one item.",
       "id" : "algorithm-term-bitmask-enumeration",
-      "order" : 240,
+      "order" : 339,
       "term" : "Bitmask Enumeration",
       "topic" : "algorithm.bitmask-enumeration.recognize"
     },
     {
       "description" : "Equal values cancel and zero is neutral, leaving an odd-occurring value.",
       "id" : "algorithm-term-xor-cancellation",
-      "order" : 241,
+      "order" : 340,
       "term" : "XOR Cancellation",
       "topic" : "algorithm.xor-cancellation.recognize"
     },
     {
       "description" : "Mark multiples beginning at p squared for each still-prime p.",
       "id" : "algorithm-term-sieve",
-      "order" : 242,
+      "order" : 341,
       "term" : "Sieve of Eratosthenes",
       "topic" : "algorithm.sieve.recognize"
     },
     {
       "description" : "Square the base and consume exponent bits so only logarithmically many multiplications occur.",
       "id" : "algorithm-term-fast-power",
-      "order" : 243,
+      "order" : 342,
       "term" : "Binary Exponentiation",
       "topic" : "algorithm.fast-power.recognize"
     },
     {
       "description" : "Use extended Euclid when gcd is one, or Fermat under a known prime modulus.",
       "id" : "algorithm-term-modular-inverse",
-      "order" : 244,
+      "order" : 343,
       "term" : "Modular Inverse",
       "topic" : "algorithm.modular-inverse.recognize"
     },
     {
       "description" : "Build Pascal recurrence or multiply a shortened numerator while controlling division.",
       "id" : "algorithm-term-binomial-coefficients",
-      "order" : 245,
+      "order" : 344,
       "term" : "Binomial Coefficients",
       "topic" : "algorithm.binomial-coefficients.recognize"
     },
     {
       "description" : "Map i to i xor (i shifted right) so neighboring codes differ by one bit.",
       "id" : "algorithm-term-gray-code",
-      "order" : 246,
+      "order" : 345,
       "term" : "Gray Code",
       "topic" : "algorithm.gray-code.recognize"
     },
     {
       "description" : "Encode a linear recurrence as a matrix and exponentiate the transition by squaring.",
       "id" : "algorithm-term-matrix-exponentiation",
-      "order" : 247,
+      "order" : 346,
       "term" : "Matrix Exponentiation",
       "topic" : "algorithm.matrix-exponentiation.recognize"
     },
     {
       "description" : "Write n-1 as d times a power of two and test whether modular powers witness compositeness.",
       "id" : "algorithm-term-miller-rabin",
-      "order" : 248,
+      "order" : 347,
       "term" : "Miller–Rabin Primality",
       "topic" : "algorithm.miller-rabin.recognize"
     },
     {
       "description" : "Precompute answers for power-of-two blocks and combine two blocks for idempotent queries.",
       "id" : "algorithm-term-sparse-table",
-      "order" : 249,
+      "order" : 348,
       "term" : "Sparse Table",
       "topic" : "algorithm.sparse-table.recognize"
     },
     {
       "description" : "Compress find paths and attach smaller trees beneath larger roots.",
       "id" : "algorithm-term-disjoint-set-union",
-      "order" : 250,
+      "order" : 349,
       "term" : "Disjoint Set Union",
       "topic" : "algorithm.disjoint-set-union.recognize"
     },
     {
       "description" : "Store pending range operations at covering nodes and push them only before descending.",
       "id" : "algorithm-term-lazy-segment-tree",
-      "order" : 251,
+      "order" : 350,
       "term" : "Lazy Segment Tree",
       "topic" : "algorithm.lazy-segment-tree.recognize"
     },
     {
       "description" : "Keep BST order by key and heap order by random priority; split and merge preserve both.",
       "id" : "algorithm-term-treap",
-      "order" : 252,
+      "order" : 351,
       "term" : "Randomized Treap",
       "topic" : "algorithm.treap.recognize"
     },
     {
       "description" : "Promote nodes randomly into sparse express lanes and descend when the next jump overshoots.",
       "id" : "algorithm-term-skip-list",
-      "order" : 253,
+      "order" : 352,
       "term" : "Skip List",
       "topic" : "algorithm.skip-list.recognize"
     },
     {
       "description" : "Record every parent or size mutation so recursion over time can undo unions without path compression.",
       "id" : "algorithm-term-dsu-rollback",
-      "order" : 254,
+      "order" : 353,
       "term" : "Rollback DSU",
       "topic" : "algorithm.dsu-rollback.recognize"
     },
     {
       "description" : "Order offline range queries so adjacent queries move their boundaries only a small distance.",
       "id" : "algorithm-term-mo-algorithm",
-      "order" : 255,
+      "order" : 354,
       "term" : "Mo's Algorithm",
       "topic" : "algorithm.mo-algorithm.recognize"
     },
     {
       "description" : "Choose one heavy child per node so any root path crosses only logarithmically many light edges.",
       "id" : "algorithm-term-heavy-light",
-      "order" : 256,
+      "order" : 355,
       "term" : "Heavy-Light Decomposition",
       "topic" : "algorithm.heavy-light.recognize"
     },
     {
       "description" : "Remove a balancing centroid and recurse on components no larger than half the original.",
       "id" : "algorithm-term-centroid-decomposition",
-      "order" : 257,
+      "order" : 356,
       "term" : "Centroid Decomposition",
       "topic" : "algorithm.centroid-decomposition.recognize"
     },
     {
       "description" : "Extend one character while cloning states when needed to preserve end-position equivalence classes.",
       "id" : "algorithm-term-suffix-automaton",
-      "order" : 258,
+      "order" : 357,
       "term" : "Suffix Automaton",
       "topic" : "algorithm.suffix-automaton.recognize"
     }
@@ -71071,7 +71764,7 @@
     "courses" : 7,
     "lessons" : 742,
     "showcaseProjects" : 46,
-    "termPairs" : 259,
+    "termPairs" : 358,
     "units" : 48
   }
 }

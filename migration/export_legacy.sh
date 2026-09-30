@@ -14,6 +14,7 @@ source_files=(
   Crabrix/Learn/AlgorithmCourseCatalog.swift
   Crabrix/Learn/AlgorithmCourseData.swift
   Crabrix/Learn/AlgorithmVerificationData.swift
+  Crabrix/Learn/TermTrainDeck.swift
   Crabrix/Compiler/RustSamples.swift
   Crabrix/Compiler/RustShowcaseCatalog.swift
   Crabrix/Compiler/RustShowcaseExpansionCatalog.swift
