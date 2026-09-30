@@ -80,6 +80,9 @@
                   Identifier = "BundledCompilerGateTests/testBundledRustcCompilesAndRunsRepairedProgram()">
                </Test>
                <Test
+                  Identifier = "BundledCompilerGateTests/testUserProgramOutputStopsAtWASIWriteBudget()">
+               </Test>
+               <Test
                   Identifier = "BundledCompilerGateTests/testBundledRustcCompilesMultiFileProject()">
                </Test>
                <Test

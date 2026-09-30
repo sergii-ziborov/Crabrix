@@ -110,6 +110,47 @@ final class WasmSandboxPolicyTests: XCTestCase {
         XCTAssertEqual(interrupter.stopReason, .outputLimit)
     }
 
+    func testWASIWriteBudgetStopsBeforeCaptureGrowsAndNextRunSucceeds() throws {
+        // _start calls fd_write(stdout, one eight-byte iovec) and ignores the
+        // returned errno. The host still reports an output-limit stop.
+        let module = try parseWasm(bytes: Self.stdoutWriteModule)
+        let runtime = RustcRuntime()
+        let interrupter = WasmInterrupter()
+        let directory = FileManager.default.temporaryDirectory
+            .appending(path: "CrabrixBoundedOutputTest-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        XCTAssertThrowsError(try runtime.run(
+            module: module,
+            arguments: ["program"],
+            environment: [:],
+            preopens: [],
+            captureDirectory: directory,
+            capturePrefix: "limited",
+            interrupter: interrupter,
+            capturedOutputLimitBytes: 4
+        )) { error in
+            let cancellation = error as? WasmExecutionCancelled
+            XCTAssertEqual(cancellation?.reason, .outputLimit)
+            XCTAssertEqual(cancellation?.stdout, "")
+        }
+        let captured = try Data(contentsOf: directory.appending(path: "limited-stdout.log"))
+        XCTAssertEqual(captured.count, 0)
+
+        let next = try runtime.run(
+            module: module,
+            arguments: ["program"],
+            environment: [:],
+            preopens: [],
+            captureDirectory: directory,
+            capturePrefix: "next",
+            interrupter: WasmInterrupter(),
+            capturedOutputLimitBytes: 8
+        )
+        XCTAssertEqual(next.exitCode, 0)
+        XCTAssertEqual(next.stdout, "abcdefgh")
+    }
+
     func testWritableByteAndFileCountQuotasCancelGuest() throws {
         let byteRoot = try makeQuotaDirectories()
         defer { try? FileManager.default.removeItem(at: byteRoot.capture) }
@@ -164,5 +205,22 @@ final class WasmSandboxPolicyTests: XCTestCase {
         0x03, 0x02, 0x01, 0x00,
         0x07, 0x0A, 0x01, 0x06, 0x5F, 0x73, 0x74, 0x61, 0x72, 0x74, 0x00, 0x00,
         0x0A, 0x04, 0x01, 0x02, 0x00, 0x0B,
+    ]
+
+    private static let stdoutWriteModule: [UInt8] = [
+        0x00, 0x61, 0x73, 0x6D, 0x01, 0x00, 0x00, 0x00,
+        0x01, 0x0C, 0x02, 0x60, 0x04, 0x7F, 0x7F, 0x7F, 0x7F, 0x01, 0x7F, 0x60, 0x00, 0x00,
+        0x02, 0x23, 0x01, 0x16, 0x77, 0x61, 0x73, 0x69, 0x5F, 0x73, 0x6E, 0x61, 0x70,
+        0x73, 0x68, 0x6F, 0x74, 0x5F, 0x70, 0x72, 0x65, 0x76, 0x69, 0x65, 0x77, 0x31,
+        0x08, 0x66, 0x64, 0x5F, 0x77, 0x72, 0x69, 0x74, 0x65, 0x00, 0x00,
+        0x03, 0x02, 0x01, 0x01,
+        0x05, 0x03, 0x01, 0x00, 0x01,
+        0x07, 0x13, 0x02, 0x06, 0x6D, 0x65, 0x6D, 0x6F, 0x72, 0x79, 0x02, 0x00,
+        0x06, 0x5F, 0x73, 0x74, 0x61, 0x72, 0x74, 0x00, 0x01,
+        0x0A, 0x0F, 0x01, 0x0D, 0x00, 0x41, 0x01, 0x41, 0x00, 0x41, 0x01, 0x41, 0x08,
+        0x10, 0x00, 0x1A, 0x0B,
+        0x0B, 0x1B, 0x02, 0x00, 0x41, 0x00, 0x0B, 0x08, 0x10, 0x00, 0x00, 0x00,
+        0x08, 0x00, 0x00, 0x00, 0x00, 0x41, 0x10, 0x0B, 0x08,
+        0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68,
     ]
 }

@@ -139,6 +139,24 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "crab")
     }
 
+    func testUserProgramOutputStopsAtWASIWriteBudget() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
+            throw XCTSkip("Run the CrabrixCompilerGate scheme for the output stress gate.")
+        }
+
+        let result = await WasmRustCompiler(bundle: .main).run(
+            source: #"fn main() { print!("{}", "x".repeat(1_048_577)); }"#
+        )
+
+        XCTAssertFalse(result.succeeded)
+        XCTAssertEqual(result.phase, .run, "\(result.detail)\n\(result.stderr)")
+        XCTAssertTrue(result.detail.contains("output limit"), result.detail)
+        XCTAssertLessThanOrEqual(
+            result.stdout.utf8.count,
+            WasmSandboxPolicy.userProgramOutputLimitBytes
+        )
+    }
+
     func testBundledRustcCompilesMultiFileProject() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
             throw XCTSkip("Run the CrabrixCompilerGate scheme for the expensive multi-file gate.")

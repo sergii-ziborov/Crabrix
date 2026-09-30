@@ -23,7 +23,7 @@ The transition baseline remains in the binary to preserve offline access across 
 
 ## Runtime boundary
 
-The application pins the public fork at `731d09b7c779e62fd42832312c42d29f69475361`. The app's `RustcRuntime` creates a fresh WasmKit `Store` for each invocation and sets fuel, cancellation, deadline, and resource limits. Compiler sysroot, source, and registry inputs use read-only host preopens, while output and temporary paths remain writable. The compiler and the student's program have separate numeric policies. The program guest has no network import. Cache and workspace identities remain separate from course attempt identity.
+The application pins the public fork at `719f94d7d27368549502828217e3dbc7e6738852`. The app's `RustcRuntime` creates a fresh WasmKit `Store` for each invocation and sets fuel, cancellation, deadline, and resource limits. Compiler sysroot, source, and registry inputs use read-only host preopens, while output and temporary paths remain writable. The compiler and the student's program have separate numeric policies, including hard WASI stdout/stderr write budgets. The program guest has no network import. Cache and workspace identities remain separate from course attempt identity.
 
 ## Release boundaries
 

@@ -25,7 +25,7 @@ packages:
   WasmKit:
     # Public Crabrix fork of WasmKit 0.4.1 with read-only host WASI preopens.
     url: https://github.com/sergii-ziborov/crabrix-runtime.git
-    revision: 731d09b7c779e62fd42832312c42d29f69475361
+    revision: 719f94d7d27368549502828217e3dbc7e6738852
   SwiftSystem:
     url: https://github.com/apple/swift-system.git
     exactVersion: 1.8.1
@@ -186,6 +186,7 @@ schemes:
             - BundledCompilerGateTests/testHashbrownFromDeviceReportResolvesAndRuns()
             - BundledCompilerGateTests/testBundledRustcProducesE0502()
             - BundledCompilerGateTests/testBundledRustcCompilesAndRunsRepairedProgram()
+            - BundledCompilerGateTests/testUserProgramOutputStopsAtWASIWriteBudget()
             - BundledCompilerGateTests/testBundledRustcCompilesMultiFileProject()
             - BundledCompilerGateTests/testRootCargoPackageEnvironmentComesFromTheManifest()
             - BundledCompilerGateTests/testRootFeaturesReachTheRootCrate()

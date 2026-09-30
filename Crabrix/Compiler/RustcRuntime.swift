@@ -182,17 +182,34 @@ final class RustcRuntime: @unchecked Sendable {
         capturedOutputLimitBytes: Int? = nil
     ) throws -> WasmProcessResult {
         let started = ContinuousClock.now
+        let outputBudget = try capturedOutputLimitBytes.map { limit in
+            try WASIOutputBudget(maximumBytes: limit) {
+                interrupter?.cancel(reason: .outputLimit)
+            }
+        }
         let capture = try Capture(directory: captureDirectory, prefix: capturePrefix)
         var exitCode: UInt32 = 0
         var thrown: (any Error)?
         do {
-            let wasi = try WASIBridgeToHost(
-                args: arguments,
-                environment: environment,
-                preopens: preopens,
-                stdout: capture.stdoutHandle.fileDescriptor,
-                stderr: capture.stderrHandle.fileDescriptor
-            )
+            let wasi: WASIBridgeToHost
+            if let outputBudget {
+                wasi = try WASIBridgeToHost(
+                    args: arguments,
+                    environment: environment,
+                    preopens: preopens,
+                    stdout: capture.stdoutHandle.fileDescriptor,
+                    stderr: capture.stderrHandle.fileDescriptor,
+                    outputBudget: outputBudget
+                )
+            } else {
+                wasi = try WASIBridgeToHost(
+                    args: arguments,
+                    environment: environment,
+                    preopens: preopens,
+                    stdout: capture.stdoutHandle.fileDescriptor,
+                    stderr: capture.stderrHandle.fileDescriptor
+                )
+            }
             CompilerPhaseTrace.emit("wasi-setup", since: started)
             exitCode = try wasi.runAndClose { wasi in
                 let instantiateStarted = ContinuousClock.now
@@ -219,6 +236,13 @@ final class RustcRuntime: @unchecked Sendable {
         }
         let output = try capture.finish(maxBytesPerStream: capturedOutputLimitBytes)
         CompilerPhaseTrace.emit("wasi-total", since: started)
+        if outputBudget?.wasExceeded == true {
+            throw WasmExecutionCancelled(
+                reason: interrupter?.stopReason ?? .outputLimit,
+                stdout: output.stdout,
+                stderr: output.stderr
+            )
+        }
         if let thrown {
             if let reason = interrupter?.stopReason {
                 throw WasmExecutionCancelled(

@@ -23,4 +23,4 @@ Simulator results are recorded in [VALIDATION.md](VALIDATION.md). Release accept
 
 ## Current state
 
-The new Academy reader, first-launch selection, public signed fetch, compiler read-only preopens, the user-program output quota monitor, runtime fuel/Stop, E0502 Check, and warning snapshot parity have Simulator evidence. A hard write-time bound for compiler stdout/stderr, clean own toolchain production, device measurements, and the interruption/crash matrix are still open. No physical gate is marked passed merely because its test procedure is written here.
+The new Academy reader, first-launch selection, public signed fetch, compiler read-only preopens, write-time WASI stdout/stderr bounds, runtime fuel/Stop, E0502 Check, and warning snapshot parity have Simulator evidence. A large-diagnostic compiler stress case, compiler workspace/tmp disk bounds, clean own toolchain production, device measurements, and the interruption/crash matrix are still open. No physical gate is marked passed merely because its test procedure is written here.

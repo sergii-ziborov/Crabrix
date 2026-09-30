@@ -841,7 +841,8 @@ final class WasmRustCompiler: @unchecked Sendable {
             ),
             fuelBudget: CompilerHostPolicy.fuelBudget,
             wallClockLimit: CompilerHostPolicy.wallClockLimit,
-            interrupter: interrupter
+            interrupter: interrupter,
+            capturedOutputLimitBytes: CompilerHostPolicy.outputLimitBytes
         )
     }
 
@@ -928,8 +929,11 @@ final class WasmRustCompiler: @unchecked Sendable {
         started: ContinuousClock.Instant,
         cancellation: WasmExecutionCancelled = .init(reason: .userRequested)
     ) -> CompilationResult {
+        let runningProgram = phase == .run
         let outputLimitLabel = ByteCountFormatter.string(
-            fromByteCount: Int64(WasmSandboxPolicy.userProgramOutputLimitBytes),
+            fromByteCount: Int64(runningProgram
+                ? WasmSandboxPolicy.userProgramOutputLimitBytes
+                : CompilerHostPolicy.outputLimitBytes),
             countStyle: .file
         )
         let writableLimitLabel = ByteCountFormatter.string(
@@ -944,7 +948,8 @@ final class WasmRustCompiler: @unchecked Sendable {
         case .wallClock:
             "Program stopped at the 30-second local runtime limit. Its sandbox was released."
         case .outputLimit:
-            "Program stopped after producing " + outputLimitLabel + " of output."
+            (runningProgram ? "Program" : "Compiler")
+                + " stopped at the " + outputLimitLabel + " output limit."
         case .fileCountLimit:
             "Program stopped at the sandbox limit of "
                 + String(WasmSandboxPolicy.userProgramFileCountLimit)
