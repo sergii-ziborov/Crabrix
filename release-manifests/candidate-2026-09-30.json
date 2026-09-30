@@ -3,16 +3,16 @@
   "status": "development-candidate-not-submitted",
   "app": {
     "repository": "https://github.com/sergii-ziborov/Crabrix",
-    "sourceCommit": "91f77567f6df69ce5c56fcdf56aa19b569eec2b0",
+    "sourceCommit": "83cfd19d068555ee24e67d1ecba2eeccffa3a6b5",
     "bundleID": "com.sergiiziborov.Crabrix",
     "marketingVersion": "1.1",
     "buildNumber": "9",
     "ipaSHA256": null,
-    "packageResolvedSHA256": "311fee3aadd96358bce9ad217f86e67f505403d1faa314087d21e6b05e8d3ca8"
+    "packageResolvedSHA256": "28e754597dbf5816a4988d10b84865847a2439d6d0d9d661f21757ddf0f3d0ef"
   },
   "runtime": {
     "repository": "https://github.com/sergii-ziborov/crabrix-runtime",
-    "commit": "9dc0ef77c101d2b1f1433ece34a0e47889770335",
+    "commit": "719f94d7d27368549502828217e3dbc7e6738852",
     "upstreamCommit": "a0471eaee817c523b8023d8ebb1c70ff70b7950a"
   },
   "toolchain": {
