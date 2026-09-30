@@ -18,7 +18,12 @@ enum CourseLaunchPolicy {
         "crabrix.mastery.v1",
         "crabrix.typing.v2",
         "crabrix.contribution.v2",
-        "crabrix.contribution.v3"
+        "crabrix.contribution.v3",
+        "crabrix.appearance",
+        "crabrix.editorFontSize",
+        "crabrix.keepAwakeDuringBuild",
+        "crabrix.learn.trainingSessions",
+        "crabrix.learn.recallSessions"
     ]
 
     static func resolve(

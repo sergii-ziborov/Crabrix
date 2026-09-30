@@ -35,6 +35,16 @@ final class CourseBootstrapTests: XCTestCase {
             CourseLaunchPolicy.resolve(defaults: projectDefaults, supportRoot: root),
             .existingLearner
         )
+
+        let settingsSuite = UUID().uuidString
+        let settingsDefaults = try XCTUnwrap(UserDefaults(suiteName: settingsSuite))
+        defer { settingsDefaults.removePersistentDomain(forName: settingsSuite) }
+        settingsDefaults.set("dark", forKey: "crabrix.appearance")
+        XCTAssertEqual(
+            CourseLaunchPolicy.resolve(defaults: settingsDefaults,
+                                       supportRoot: root.appending(path: "empty")),
+            .existingLearner
+        )
     }
 
     func testFreshInstallActivatesStarterAndOffersRemainingCatalog() async throws {
