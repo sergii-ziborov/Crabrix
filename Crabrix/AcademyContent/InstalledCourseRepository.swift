@@ -45,6 +45,10 @@ struct InstalledCourseRepository: CourseRepository {
         loaded.values.lazy.compactMap { $0.challenges[lessonID] }.first
     }
 
+    func algorithmMethods() -> [AlgorithmMethodDTO] {
+        loaded["algorithms"]?.algorithmMethods ?? []
+    }
+
     func termPairs() -> [CourseTermPairDTO] {
         courses.flatMap { course in
             loaded[course.id]?.terms.sorted { $0.order < $1.order } ?? []
@@ -92,6 +96,7 @@ struct InstalledCourseRepository: CourseRepository {
         var evidence: [String: LessonEvidence] = [:]
         var projects: [String: CourseProjectTemplate] = [:]
         var challenges: [String: AlgorithmChallenge] = [:]
+        var algorithmMethods: [AlgorithmMethodDTO] = []
         for (unitOrder, unitID) in source.unitIDs.enumerated() {
             let safeUnit = try component(unitID)
             let unit: CourseUnitDTO = try decode("units/\(safeUnit).json", as: CourseUnitDTO.self)
@@ -144,10 +149,26 @@ struct InstalledCourseRepository: CourseRepository {
                     )
                 }
             }
+            if let method = unit.algorithmMethod {
+                let patterns = lessons.compactMap { challenges[$0.id]?.patternID }
+                guard courseID == "algorithms", unit.id == "algorithms-\(method.id)",
+                      method.title == unit.title, method.subtitle == unit.subtitle,
+                      !method.systemImage.isEmpty, !method.achievementTitle.isEmpty,
+                      !patterns.isEmpty, patterns == method.patternIDs,
+                      Set(patterns).count == patterns.count else {
+                    throw CoursePackError.manifestMismatch("algorithm method \(unit.id)")
+                }
+                algorithmMethods.append(method)
+            } else if courseID == "algorithms" {
+                throw CoursePackError.manifestMismatch("algorithm method \(unit.id)")
+            }
             units.append(RustLearningUnit(
                 id: unit.id, level: unit.level, title: unit.title,
                 subtitle: unit.subtitle, lessons: lessons
             ))
+        }
+        guard Set(algorithmMethods.map(\.id)).count == algorithmMethods.count else {
+            throw CoursePackError.manifestMismatch("duplicate algorithm method")
         }
         let terms: [CourseTermPairDTO] = try decode("terms.json", as: [CourseTermPairDTO].self)
         let runtime = RustCourse(
@@ -158,7 +179,8 @@ struct InstalledCourseRepository: CourseRepository {
         return LoadedCourse(
             course: runtime, language: language, order: source.order,
             writing: writings, depth: depths, evidence: evidence,
-            projects: projects, challenges: challenges, terms: terms,
+            projects: projects, challenges: challenges, algorithmMethods: algorithmMethods,
+            terms: terms,
             contentVersion: version, archiveSHA256: record.archiveSHA256
         )
     }

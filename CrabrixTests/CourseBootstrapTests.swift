@@ -105,6 +105,26 @@ final class CourseBootstrapTests: XCTestCase {
         )
     }
 
+    func testInstalledAtlasMethodMetadataMatchesLegacyBaseline() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = try await CourseBootstrap(
+            bundle: .main, root: root, appVersion: SemanticVersion("1.1")
+        ).activateBundledBaseline()
+        let methods = repository.algorithmMethods()
+        let legacy = AlgorithmCourseCatalog.categories
+
+        XCTAssertEqual(methods.count, legacy.count)
+        for (method, category) in zip(methods, legacy) {
+            XCTAssertEqual(method.id, category.id)
+            XCTAssertEqual(method.title, category.title)
+            XCTAssertEqual(method.subtitle, category.subtitle)
+            XCTAssertEqual(method.systemImage, category.systemImage)
+            XCTAssertEqual(method.achievementTitle, category.achievementTitle)
+            XCTAssertEqual(method.patternIDs, category.patterns.map(\.id))
+        }
+    }
+
     func testDeletingLocalMaterialDoesNotReactivateItOnRelaunch() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }

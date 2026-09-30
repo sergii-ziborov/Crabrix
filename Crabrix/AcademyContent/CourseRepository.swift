@@ -10,6 +10,7 @@ protocol CourseRepository: Sendable {
     func evidence(for lessonID: String) -> LessonEvidence?
     func starterProject(for lessonID: String) -> CourseProjectTemplate?
     func challenge(for lessonID: String) -> AlgorithmChallenge?
+    func algorithmMethods() -> [AlgorithmMethodDTO]
     func termPairs() -> [CourseTermPairDTO]
 }
 
@@ -84,6 +85,7 @@ struct LoadedCourse: Sendable {
     let evidence: [String: LessonEvidence]
     let projects: [String: CourseProjectTemplate]
     let challenges: [String: AlgorithmChallenge]
+    let algorithmMethods: [AlgorithmMethodDTO]
     let terms: [CourseTermPairDTO]
     let contentVersion: String
     let archiveSHA256: String

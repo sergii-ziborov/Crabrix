@@ -23,6 +23,16 @@ struct CourseUnitDTO: Decodable, Sendable {
     let title: String
     let subtitle: String
     let lessonIDs: [String]
+    let algorithmMethod: AlgorithmMethodDTO?
+}
+
+struct AlgorithmMethodDTO: Decodable, Equatable, Sendable {
+    let id: String
+    let title: String
+    let subtitle: String
+    let systemImage: String
+    let achievementTitle: String
+    let patternIDs: [String]
 }
 
 struct CourseLessonDTO: Decodable, Sendable {
