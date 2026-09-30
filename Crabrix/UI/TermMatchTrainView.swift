@@ -32,7 +32,6 @@ struct TermMatchTrainView: View {
 
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var progress: CrabrixProgressStore
-    @EnvironmentObject private var vitals: CrabrixVitalsStore
     private let mastery = TopicMasteryStore.shared
 
     @State private var mode: TermTrainMode?
@@ -466,9 +465,6 @@ struct TermMatchTrainView: View {
     private func recordMastery(pairID: String, correct: Bool) {
         guard let pair = TermTrainDeck.all.first(where: { $0.id == pairID }) else { return }
         mastery.record(topic: pair.topic, correct: correct)
-        // Term Train is training: unlimited by design, so it only feeds the
-        // flow streak and never spends health.
-        vitals.recordTrainingAnswer(correct: correct)
     }
 
     private func tick() {

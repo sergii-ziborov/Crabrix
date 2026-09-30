@@ -312,9 +312,9 @@ tiers, and no board, display name or Game Center control anywhere.
 Upload order for the iPhone set, which tells the story in the right sequence:
 
 1. `01-build` — the workspace, editor and build inspector
-2. `03-learn` — Learn hub: rating, vitals, courses
+2. `03-learn` — Learn hub: rating and courses
 3. `05-lesson` — a lesson with its highlighted example and the energy cost
-4. `06-profile` — local profile, avatar, rating, vitals, and lifetime stats
+4. `06-profile` — local profile, avatar, rating, and lifetime stats
 5. `02-projects` — the dashboard and My Projects organization
 6. `07-library` — the project library
 7. `04-course` — a course path

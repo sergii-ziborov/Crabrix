@@ -10,7 +10,6 @@ struct CodeRecallView: View {
     let onComplete: () -> Void
 
     @EnvironmentObject private var progress: CrabrixProgressStore
-    @EnvironmentObject private var vitals: CrabrixVitalsStore
     @Environment(\.dismiss) private var dismiss
 
     private enum Phase: Equatable {
@@ -129,10 +128,6 @@ struct CodeRecallView: View {
                 .foregroundStyle(CrabrixTheme.muted)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
-
-                Label("Training — never costs health or energy", systemImage: "infinity")
-                    .font(.caption.bold())
-                    .foregroundStyle(CrabrixTheme.mint)
 
                 Button(action: startRun) {
                     Label("Start", systemImage: "play.fill").frame(maxWidth: .infinity)
@@ -404,8 +399,6 @@ struct CodeRecallView: View {
     private func recordTopic(correct: Bool) {
         guard let snippet else { return }
         mastery.record(topic: snippet.topic, correct: correct)
-        // Training: it feeds the flow streak and never spends anything.
-        vitals.recordTrainingAnswer(correct: correct)
     }
 
     private func finish() {

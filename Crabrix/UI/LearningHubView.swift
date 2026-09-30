@@ -29,12 +29,8 @@ struct LearningHubView: View {
     @Binding var navigationPath: [LearningRoute]
     @EnvironmentObject private var academy: AcademyContentStore
     @EnvironmentObject private var progress: CrabrixProgressStore
-    @EnvironmentObject private var vitals: CrabrixVitalsStore
     @AppStorage("crabrix.learn.trainingSessions") private var trainingSessions = 0
     @AppStorage("crabrix.learn.recallSessions") private var recallSessions = 0
-    /// Training is the always-open route, so anything that blocks lessons
-    /// offers it directly rather than leaving the reader at a dead end.
-    @State private var isTrainingPresented = false
     @State private var lessonSession: CourseSession?
     @State private var pendingDownload: CourseCatalogPayload.Entry?
     @State private var isManagingDownloads = false
@@ -51,7 +47,6 @@ struct LearningHubView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     hero
-                    VitalsCard(store: vitals) { navigationPath = []; isTrainingPresented = true }
                     WeakTopicsCard { topic in
                         guard let repository = academy.repository,
                               let lesson = repository.lesson(id: topic),
@@ -187,7 +182,6 @@ struct LearningHubView: View {
             .navigationDestination(for: LearningRoute.self) { route in
                 destination(for: route)
             }
-            .sheet(isPresented: $isTrainingPresented) { trainingSheet }
             .sheet(isPresented: $isManagingDownloads) {
                 NavigationStack {
                     List {
@@ -231,7 +225,6 @@ struct LearningHubView: View {
             } message: {
                 Text("The course remains available while its signed update downloads and verifies.")
             }
-            .task { vitals.refresh(points: progress.state.totalPoints) }
             .onChange(of: navigationPath) { _, path in
                 if case let .lesson(lessonID) = path.last {
                     if lessonSession?.lessonID != lessonID,
@@ -332,44 +325,25 @@ struct LearningHubView: View {
                let course = repository.course(containing: lessonID),
                let session = lessonSession ?? CourseSession(lessonID: lessonID, repository: repository) {
                 let isReview = completedLessonIDs.contains(lesson.id)
-                // Vitals gate entry, not the middle of a lesson: being cut off
-                // halfway through a page you already paid for would be worse
-                // than not letting you start.
-                if vitals.isLessonBlocked,
-                   !vitals.canStartLessonPage(
-                       lessonID: lesson.id,
-                       page: 0,
-                       isReview: isReview
-                   ) {
-                    LessonPausedView(store: vitals) { isTrainingPresented = true }
-                } else {
-                    LessonDetailView(
-                        lesson: lesson,
-                        writing: writing,
-                        lessonDepth: depth,
-                        courseTheme: course.theme,
-                        isCompleted: isReview,
-                        savedAnswer: lessonAnswerIndices[lesson.id],
-                        onStart: { onStartLesson(lesson, session) },
-                        onComplete: {
-                            completeAndContinue(from: lesson)
-                        },
-                        onAnswer: { index, correct in
-                            onAnswerLesson(lesson, index, correct)
-                        }
-                    )
-                    .id(session.token)
-                }
+                LessonDetailView(
+                    lesson: lesson,
+                    writing: writing,
+                    lessonDepth: depth,
+                    courseTheme: course.theme,
+                    isCompleted: isReview,
+                    savedAnswer: lessonAnswerIndices[lesson.id],
+                    onStart: { onStartLesson(lesson, session) },
+                    onComplete: {
+                        completeAndContinue(from: lesson)
+                    },
+                    onAnswer: { index, correct in
+                        onAnswerLesson(lesson, index, correct)
+                    }
+                )
+                .id(session.token)
             } else {
                 ContentUnavailableView("Lesson unavailable", systemImage: "book.closed")
             }
-        }
-    }
-
-    @ViewBuilder
-    fileprivate var trainingSheet: some View {
-        NavigationStack {
-            TermMatchTrainView { trainingSessions += 1 }
         }
     }
 

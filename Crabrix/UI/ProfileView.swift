@@ -4,7 +4,7 @@ import GameKit
 import PhotosUI
 import SwiftUI
 
-/// The player's profile: rating, vitals, and achievements.
+/// The player's profile: rating and achievements.
 ///
 /// There is no Crabrix account and, in the shipped build, nothing to sign in
 /// to: the profile is local, and the avatar comes from the photo library only.
@@ -12,7 +12,6 @@ import SwiftUI
 /// `CRABRIX_SOCIAL`.
 struct ProfileView: View {
     @EnvironmentObject private var progress: CrabrixProgressStore
-    @EnvironmentObject private var vitals: CrabrixVitalsStore
     #if CRABRIX_SOCIAL
     @EnvironmentObject private var gameCenter: GameCenterService
     #endif
@@ -34,7 +33,6 @@ struct ProfileView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 identityCard
-                VitalsCard(store: vitals)
                 statsCard
                 AchievementsSection(store: progress)
             }

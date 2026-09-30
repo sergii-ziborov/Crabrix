@@ -21,9 +21,6 @@ struct CrabrixApp: App {
     /// at the root and handed to every feature that reports progress.
     @StateObject private var progress = CrabrixProgressStore()
     @StateObject private var academyContent = AcademyContentStore()
-    /// Health and energy live beside it, kept in step with rating because rank
-    /// is what sets the size of both pools.
-    @StateObject private var vitals = CrabrixVitalsStore()
     #if CRABRIX_SOCIAL
     /// Identity and the global board, through Game Center. Optional everywhere:
     /// the app is fully usable without ever signing in.
@@ -36,12 +33,10 @@ struct CrabrixApp: App {
                 ContentView()
                     .environmentObject(progress)
                     .environmentObject(academyContent)
-                    .environmentObject(vitals)
                     .achievementCelebrations(store: progress)
             )
             .task {
                 await academyContent.prepare()
-                vitals.refresh(points: progress.state.totalPoints)
                 #if CRABRIX_SOCIAL
                 if CrabrixReleaseFeatures.gameCenterEnabled {
                     gameCenter.authenticate()
@@ -49,7 +44,6 @@ struct CrabrixApp: App {
                 #endif
             }
             .onReceive(progress.$state) { state in
-                vitals.refresh(points: state.totalPoints)
                 #if CRABRIX_SOCIAL
                 if CrabrixReleaseFeatures.gameCenterEnabled {
                     Task { await gameCenter.submit(state: state) }

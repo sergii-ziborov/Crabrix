@@ -17,7 +17,6 @@ enum LessonNavigationFooterVisibility {
 }
 
 struct LessonDetailView: View {
-    @EnvironmentObject private var vitals: CrabrixVitalsStore
     let lesson: RustLesson
     let writing: RustLessonWriting
     let lessonDepth: RustLessonDepth
@@ -38,8 +37,6 @@ struct LessonDetailView: View {
     /// strike out whichever wrong answer came first in the list, which was
     /// often not the one they had picked.
     @State private var firstWrongChoice: Int?
-    /// The last thing that cost or returned something, shown briefly in the header.
-    @State private var lastOutcome: VitalsOutcome?
     /// Each horizontally paged step owns a separate vertical scroll position.
     /// Keeping their footer state separate prevents an action from the previous
     /// step flashing over the next one while its geometry settles.
@@ -115,10 +112,6 @@ struct LessonDetailView: View {
                     .zIndex(1)
             }
         }
-        // Reading a page costs energy the first time only, so revisiting a
-        // lesson to review it never charges twice.
-        .onAppear { chargeCurrentPage() }
-        .onChange(of: page) { _, _ in chargeCurrentPage() }
         .background {
             ZStack {
                 CrabrixTheme.background.ignoresSafeArea()
@@ -156,13 +149,6 @@ struct LessonDetailView: View {
                 }
             }
 
-            HStack {
-                VitalsPill(store: vitals, showsCountdown: false, isInteractive: true)
-                Spacer(minLength: 0)
-                if let lastOutcome {
-                    VitalsOutcomeBadge(outcome: lastOutcome)
-                }
-            }
         }
         .padding(.horizontal, 22)
         .padding(.top, 14)
@@ -274,7 +260,7 @@ struct LessonDetailView: View {
                     Label(
                         isQuickCheckAnswered
                             ? "Correct — \(practice.feedback)"
-                            : "Not quite — try again, nothing more is charged.",
+                            : "Not quite — read the hint and try again.",
                         systemImage: isQuickCheckAnswered
                             ? "checkmark.circle.fill"
                             : "arrow.counterclockwise.circle.fill"
@@ -401,16 +387,6 @@ struct LessonDetailView: View {
         }
     }
 
-    private func chargeCurrentPage() {
-        let outcome = vitals.startLessonPage(
-            lessonID: lesson.id,
-            page: page,
-            isReview: isCompleted
-        )
-        guard outcome != .free else { return }
-        withAnimation(.easeOut(duration: 0.2)) { lastOutcome = outcome }
-    }
-
     private func answerButton(_ answer: String, at index: Int) -> some View {
         let isSelected = selectedAnswer == index || lastWrongAnswer == index
         return Button {
@@ -427,13 +403,6 @@ struct LessonDetailView: View {
             if !correct {
                 wrongAttempts += 1
                 if firstWrongChoice == nil { firstWrongChoice = index }
-            }
-            withAnimation(.easeOut(duration: 0.2)) {
-                lastOutcome = vitals.recordAnswer(
-                    correct: correct,
-                    questionID: "\(lesson.id)#quick-check",
-                    isReview: isCompleted
-                )
             }
             onAnswer(index, correct)
         } label: {

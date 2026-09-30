@@ -2,7 +2,6 @@ import SwiftUI
 
 struct QuickPracticeView: View {
     @EnvironmentObject private var progress: CrabrixProgressStore
-    @EnvironmentObject private var vitals: CrabrixVitalsStore
     @State private var didAward = false
     @Environment(\.dismiss) private var dismiss
     @State private var step = 0
@@ -97,15 +96,8 @@ struct QuickPracticeView: View {
         }
     }
 
-    /// Practice is training: it builds the flow streak that hands energy back,
-    /// but it never spends health, so there is always a way to keep going.
-    private func recordTraining(_ passed: Bool) {
-        vitals.recordTrainingAnswer(correct: passed)
-    }
-
     private func advance(_ passed: Bool) {
         if passed { score += 1 }
-        recordTraining(passed)
         withAnimation(.easeInOut(duration: 0.22)) { step += 1 }
     }
 }

@@ -61,7 +61,6 @@ struct ContentView: View {
     @StateObject private var terminal = ProjectTerminalSession()
     @EnvironmentObject private var progress: CrabrixProgressStore
     @EnvironmentObject private var academy: AcademyContentStore
-    @EnvironmentObject private var vitals: CrabrixVitalsStore
     /// Lessons already turned into rating, seeded from persisted progress so a
     /// relaunch never re-awards them.
     @State private var scoredLessonIDs: Set<String>?
@@ -1044,7 +1043,7 @@ struct ContentView: View {
     private func recordBuildProgress(_ result: CompilationResult) {
         guard result.succeeded, result.phase == .run else { return }
         // A completed lesson is review-only. The editor does not add its typing
-        // to the ledger, and the run neither changes vitals nor earns rating.
+        // to the ledger, and this run earns no additional rating.
         if !model.earnsProgressForCurrentRun {
             lastContribution = nil
             return

@@ -39,7 +39,6 @@
 		28454FB656318E0D5B9E3C3F /* CourseCatalogClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = C621B6A608B74B2DCB8B6A0F /* CourseCatalogClient.swift */; };
 		2A129C11FCE30742F1CD2CE4 /* AlgorithmCourseData.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE8D71E8F886A79DC5EF3FD /* AlgorithmCourseData.swift */; };
 		2B4BE9C0F4102CCB8142F774 /* swift-system-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = E4B798EE784275F9C194D9B5 /* swift-system-LICENSE.txt */; };
-		2D1BA160415105848314F316 /* CrabrixVitals.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB11EA6A2E9BF797897EEE1A /* CrabrixVitals.swift */; };
 		2D5A7B2E04A0D214078674F9 /* CargoBuildPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9F0FB50E1462BCBC86DF551 /* CargoBuildPlan.swift */; };
 		30378E05BFED089463AD93E2 /* InstalledCourseRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD423A006C2A2A962EE2495 /* InstalledCourseRepositoryTests.swift */; };
 		32196C3370B0C09B1AE046F8 /* ProjectImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CB34A35CD75A3A08E600A35 /* ProjectImportTests.swift */; };
@@ -64,7 +63,6 @@
 		496103BB6AAEBCD5D49F0625 /* BundledLicenseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8034113D3EF6270CBF8F84 /* BundledLicenseTests.swift */; };
 		4A293E482B338DF5756C828C /* ProjectAuthoringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95560270A1A9BA1DCE96A9AB /* ProjectAuthoringTests.swift */; };
 		4AEBE02C51FC37BE241D16C9 /* CrabrixTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FE59D76CC8EBC1BF4A988 /* CrabrixTheme.swift */; };
-		4E97754D513738F0EAC57471 /* VitalsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7745AD3C9514CF4C70CA5F7 /* VitalsViews.swift */; };
 		4F0F2BB8BA44F3561B320E78 /* production-keyring.json in Resources */ = {isa = PBXBuildFile; fileRef = EECD124647A0A13CCBE341FE /* production-keyring.json */; };
 		4F2CD25FA774D401FC368E55 /* RustDiagnosticParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D5F2FB12886D9E89DDD12A /* RustDiagnosticParserTests.swift */; };
 		53C0F03750BFF241447304AE /* CargoPackageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34454EEDE1F2D70EF3FC91BA /* CargoPackageManager.swift */; };
@@ -77,7 +75,6 @@
 		595AC021BD0F0125EC04C24D /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2164BBC7A4E923E01EEBBE /* SettingsView.swift */; };
 		59725272FB4F415D7DB276A9 /* GitHubProjectImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17C0F44F9A525F94B586EE7 /* GitHubProjectImporter.swift */; };
 		5991EB1178712B4CDA6BBBB4 /* CrabrixShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3F84AB4318432025CA06FD68 /* CrabrixShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		59CF336685186F321D6DA68D /* CrabrixVitalsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686C413D1E02A387178218B /* CrabrixVitalsStore.swift */; };
 		5A8F5408F2D3C761D5D6E2EF /* SystemPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 5FF229CB96783B625B672CB7 /* SystemPackage */; };
 		60390C36C619675DCA53E9E3 /* CrabrixProject.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE1CA198E7A3ADFE5C61CBE2 /* CrabrixProject.swift */; };
 		60B236289CF2F22BA2F7D31C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AF263BC0BDACD405CDF0BAFF /* PrivacyInfo.xcprivacy */; };
@@ -177,7 +174,6 @@
 		D5050F9D62A3048C30A31F67 /* TopicMastery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1D24127CCCD6858FC76A21 /* TopicMastery.swift */; };
 		D70ECFBCDF8636B011990335 /* ProblemReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15AF611D0815ED4D2805F0C /* ProblemReportTests.swift */; };
 		D86F638C06CE9367C008A2E7 /* WasmKit-NOTICE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 73CFA57D3BA2CCAB16D8C48E /* WasmKit-NOTICE.txt */; };
-		D9B71BB1245B79730318FE59 /* VitalsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2872950BD9E4E2175F62F3 /* VitalsTests.swift */; };
 		DAB88604F8DDD7AEE079AE41 /* TOMLParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B771273BE9E83B35B042C13 /* TOMLParserTests.swift */; };
 		DC76A2B0022B3BD7AF6C91BA /* swift-syntax-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = AD6A06B3CF1D9DA428CCB401 /* swift-syntax-LICENSE.txt */; };
 		DD74E3CFB5C4836F4B571E46 /* AchievementCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BA8750BF5000C8E1AB3AB63 /* AchievementCelebrationView.swift */; };
@@ -238,7 +234,6 @@
 		038C4428EA249D76936D4DEB /* SemanticVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersionTests.swift; sourceTree = "<group>"; };
 		04782359670767CDBCFF020E /* CrateRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrateRegistry.swift; sourceTree = "<group>"; };
 		0563B4A20D9F5691AC9F428F /* CourseSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSession.swift; sourceTree = "<group>"; };
-		0686C413D1E02A387178218B /* CrabrixVitalsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrabrixVitalsStore.swift; sourceTree = "<group>"; };
 		08CF787A36CA91D1C110D707 /* BuildDockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildDockView.swift; sourceTree = "<group>"; };
 		0B894B9DF30A59B897021905 /* Toolchain */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Toolchain; path = build/Resources/Toolchain; sourceTree = SOURCE_ROOT; };
 		0D12CE6E93A5DC5D9852789C /* RustDiagnostic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustDiagnostic.swift; sourceTree = "<group>"; };
@@ -390,12 +385,10 @@
 		D750FF719EB5B0AC11A7ECBF /* CargoManifestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoManifestTests.swift; sourceTree = "<group>"; };
 		D78CFC64D85AAA456A17738E /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		D9DCC4288BCBC22B167ACD45 /* RustCourseCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustCourseCatalog.swift; sourceTree = "<group>"; };
-		DB11EA6A2E9BF797897EEE1A /* CrabrixVitals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrabrixVitals.swift; sourceTree = "<group>"; };
 		DB2D37D461D0EDF4F84DD855 /* ProjectTerminalSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectTerminalSession.swift; sourceTree = "<group>"; };
 		DCA31C6F7A431A34679A02D8 /* swift-argument-parser-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-argument-parser-LICENSE.txt"; sourceTree = "<group>"; };
 		DD24012B04FBCFF20EABAE25 /* ProjectLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectLibrary.swift; sourceTree = "<group>"; };
 		DD744ECF4EA3A11B2F20E456 /* RustShowcaseCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustShowcaseCatalog.swift; sourceTree = "<group>"; };
-		DE2872950BD9E4E2175F62F3 /* VitalsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalsTests.swift; sourceTree = "<group>"; };
 		DEC4EF2B443C45CE8BFF5FBD /* CourseCompatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseCompatibility.swift; sourceTree = "<group>"; };
 		E15AF611D0815ED4D2805F0C /* ProblemReportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemReportTests.swift; sourceTree = "<group>"; };
 		E28616F40A43EF200A8D0265 /* InspectorViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorViews.swift; sourceTree = "<group>"; };
@@ -415,7 +408,6 @@
 		F4ACC16AB86032A8DCE347FD /* Rust-LICENSE-MIT.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Rust-LICENSE-MIT.txt"; sourceTree = "<group>"; };
 		F573D6026476C150C5CA1696 /* AppleIntelligenceDiagnosticAdvisor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleIntelligenceDiagnosticAdvisor.swift; sourceTree = "<group>"; };
 		F5F8A0A5C96A9EDE1C43DA16 /* CrateStorageUsageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrateStorageUsageTests.swift; sourceTree = "<group>"; };
-		F7745AD3C9514CF4C70CA5F7 /* VitalsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalsViews.swift; sourceTree = "<group>"; };
 		F77FAA3BB1D8FEC4282AAA92 /* CodeContribution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeContribution.swift; sourceTree = "<group>"; };
 		F83AABD7E4AC4645DF68D801 /* ProgressViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressViews.swift; sourceTree = "<group>"; };
 		F96C7F0C50046AFC3DAB8F53 /* SyntaxTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntaxTheme.swift; sourceTree = "<group>"; };
@@ -702,7 +694,6 @@
 				8C8353143ECA2D2A68833FC7 /* TopicMasteryTests.swift */,
 				EFB95E5F0B1274A060145AB0 /* TypingEconomyTests.swift */,
 				2297FD30AED71B3863503ED3 /* VisualShowcaseThumbnailTests.swift */,
-				DE2872950BD9E4E2175F62F3 /* VitalsTests.swift */,
 				8832CBE2C15F09166CBB610F /* WasmSandboxPolicyTests.swift */,
 				6E813F931BF1A33E9CC0BCEF /* Fixtures */,
 			);
@@ -751,7 +742,6 @@
 				8E2164BBC7A4E923E01EEBBE /* SettingsView.swift */,
 				559E456A8AD38F60E3A9BAD2 /* TermMatchTrainView.swift */,
 				B38E12A4134EFF1AD3A3F0E0 /* VisualShowcaseThumbnail.swift */,
-				F7745AD3C9514CF4C70CA5F7 /* VitalsViews.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -789,8 +779,6 @@
 				F77FAA3BB1D8FEC4282AAA92 /* CodeContribution.swift */,
 				C17305CBAACACB768E537F24 /* CrabrixProgress.swift */,
 				FB2D4DBF3CAA21D1AF0BB788 /* CrabrixProgressStore.swift */,
-				DB11EA6A2E9BF797897EEE1A /* CrabrixVitals.swift */,
-				0686C413D1E02A387178218B /* CrabrixVitalsStore.swift */,
 				B46F92CEEBDC8BB435442587 /* LocalAvatarStore.swift */,
 				CA1D24127CCCD6858FC76A21 /* TopicMastery.swift */,
 				E77E2A29DC1E65C2BD1E0BE4 /* TypingLedger.swift */,
@@ -1045,8 +1033,6 @@
 				60390C36C619675DCA53E9E3 /* CrabrixProject.swift in Sources */,
 				FE77A6E9CE5D66CE12DA11FD /* CrabrixProjectDocument.swift in Sources */,
 				4AEBE02C51FC37BE241D16C9 /* CrabrixTheme.swift in Sources */,
-				2D1BA160415105848314F316 /* CrabrixVitals.swift in Sources */,
-				59CF336685186F321D6DA68D /* CrabrixVitalsStore.swift in Sources */,
 				176D4AA2F72B07A0A78FCB1E /* CrateArchive.swift in Sources */,
 				861BEAD427E3E475F1331EB1 /* CrateCompatibilityLedger.swift in Sources */,
 				91ECB094FD58185239CF957C /* CrateGuide.swift in Sources */,
@@ -1110,7 +1096,6 @@
 				D5050F9D62A3048C30A31F67 /* TopicMastery.swift in Sources */,
 				3F8C6C5A2B1C8A3766C0F454 /* TypingLedger.swift in Sources */,
 				AD2D2EA2AF20E721DB66BFEB /* VisualShowcaseThumbnail.swift in Sources */,
-				4E97754D513738F0EAC57471 /* VitalsViews.swift in Sources */,
 				E37B94F8E4F4504632FD7863 /* WasmRustCompiler.swift in Sources */,
 				591DA1DC1F80A55E223227F0 /* WasmSandboxPolicy.swift in Sources */,
 				B0D6D375D81EF9E865A0DB17 /* WorkspaceRevision.swift in Sources */,
@@ -1167,7 +1152,6 @@
 				58E2A5D18ADA34C72BE80AEF /* TopicMasteryTests.swift in Sources */,
 				92FEF66418D13E68DA4E0A91 /* TypingEconomyTests.swift in Sources */,
 				6F4B5C7378C09CB074763B56 /* VisualShowcaseThumbnailTests.swift in Sources */,
-				D9B71BB1245B79730318FE59 /* VitalsTests.swift in Sources */,
 				C53ABD73F0DA4F22450B6886 /* WasmSandboxPolicyTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

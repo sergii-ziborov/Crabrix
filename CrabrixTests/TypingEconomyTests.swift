@@ -191,25 +191,3 @@ final class RunRewardEconomyTests: XCTestCase {
         XCTAssertTrue(store.isFirstRunToday(now: tomorrow))
     }
 }
-
-@MainActor
-final class BuildEnergyTests: XCTestCase {
-    private func makeStore() -> (CrabrixVitalsStore, String) {
-        let suite = "crabrix.tests.\(UUID().uuidString)"
-        return (CrabrixVitalsStore(defaults: UserDefaults(suiteName: suite)!), suite)
-    }
-
-    func testRunningYourOwnCodeCostsNothing() {
-        let (store, suite) = makeStore()
-        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
-        let health = store.health
-        let energy = store.energy
-
-        // Compiling is the point of the app. Charging for it made a failed
-        // build cost the learner twice: once in time, once in meter.
-        store.refresh()
-
-        XCTAssertEqual(store.energy, energy)
-        XCTAssertEqual(store.health, health)
-    }
-}
