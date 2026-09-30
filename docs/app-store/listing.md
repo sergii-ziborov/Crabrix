@@ -1,4 +1,8 @@
-# App Store listing
+# App Store listing — historical 1.0 draft
+
+This file records the earlier 1.0 wording and screenshots. It predates the
+CoursePack delivery flow and the simpler Projects workspace. Do not use it as
+the 1.1 submission copy. See [listing-1.1-draft.md](listing-1.1-draft.md).
 
 Everything App Store Connect asks for, kept in the repository so the listing and
 the app cannot drift apart. Character limits are Apple's.
