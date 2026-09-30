@@ -34,6 +34,9 @@ final class AcademyContentStore: ObservableObject {
         defer { loading = false; preparing = nil }
         do {
             repository = try await task.value
+            if catalog == nil, let bootstrap = try? CourseBootstrap() {
+                catalog = try? bootstrap.bundledCatalog()
+            }
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -87,5 +90,23 @@ final class AcademyContentStore: ObservableObject {
 
     func cancelDownload(courseID: String, language: String) {
         downloadTasks[courseID + "|" + language]?.cancel()
+    }
+
+    func deleteInstalled(courseID: String, language: String) async {
+        let key = courseID + "|" + language
+        guard downloadTasks[key] == nil else {
+            errorMessage = "Pause the current course download before removing its local material."
+            return
+        }
+        do {
+            let bootstrap = try CourseBootstrap()
+            let installer = try CourseInstaller(root: bootstrap.root, appVersion: bootstrap.appVersion)
+            try await installer.uninstall(courseID: courseID, language: language)
+            repository = try await bootstrap.loadInstalled()
+            transfers.removeValue(forKey: key)
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }

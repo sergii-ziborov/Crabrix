@@ -37,6 +37,7 @@ struct LearningHubView: View {
     @State private var isTrainingPresented = false
     @State private var lessonSession: CourseSession?
     @State private var pendingDownload: CourseCatalogPayload.Entry?
+    @State private var isManagingDownloads = false
     let completedLessonIDs: Set<String>
     let lessonAnswerIndices: [String: Int]
     let onStartLesson: (RustLesson, CourseSession) -> Void
@@ -112,6 +113,10 @@ struct LearningHubView: View {
                             Task { await academy.checkForUpdates() }
                         }
                         .font(.subheadline)
+                        Button("Manage course downloads") {
+                            isManagingDownloads = true
+                        }
+                        .font(.subheadline)
                         if let error = academy.catalogError {
                             Text("Update check unavailable: \(error)")
                                 .font(.caption)
@@ -142,6 +147,25 @@ struct LearningHubView: View {
                                 }
                             }
                         }
+                        ForEach(availableUninstalled, id: \.courseID) { entry in
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(entry.courseID.replacingOccurrences(of: "-", with: " ").capitalized)
+                                    .font(.headline)
+                                Text("Available · \(entry.language) · v\(entry.contentVersion)")
+                                    .font(.caption)
+                                    .foregroundStyle(CrabrixTheme.muted)
+                                Button("Download · \(ByteCountFormatter.string(fromByteCount: Int64(entry.archiveBytes), countStyle: .file))") {
+                                    pendingDownload = entry
+                                }
+                                .font(.caption.bold())
+                                if let transfer = academy.transfers[entry.courseID + "|" + entry.language] {
+                                    transferView(transfer, courseID: entry.courseID)
+                                }
+                            }
+                            .padding(16)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 16))
+                        }
                     }
                     if let error = academy.errorMessage {
                         ContentUnavailableView(
@@ -164,6 +188,33 @@ struct LearningHubView: View {
                 destination(for: route)
             }
             .sheet(isPresented: $isTrainingPresented) { trainingSheet }
+            .sheet(isPresented: $isManagingDownloads) {
+                NavigationStack {
+                    List {
+                        ForEach(academy.repository?.courses ?? []) { course in
+                            let version = academy.repository?.loaded[course.id]?.contentVersion ?? "—"
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(course.title).font(.headline)
+                                Text("Installed · English · v\(version)")
+                                    .font(.caption)
+                                    .foregroundStyle(CrabrixTheme.muted)
+                                Button("Delete local course material", role: .destructive) {
+                                    Task { await academy.deleteInstalled(courseID: course.id, language: "en") }
+                                }
+                            }
+                        }
+                    }
+                    .navigationTitle("Course downloads")
+                    .toolbar {
+                        Button("Done") { isManagingDownloads = false }
+                    }
+                    .safeAreaInset(edge: .bottom) {
+                        Text("Projects, attempts, and progress stay on this device. An open lesson keeps its current content until you leave it.")
+                            .font(.caption)
+                            .padding()
+                    }
+                }
+            }
             .confirmationDialog(
                 "Download course update?", isPresented: Binding(
                     get: { pendingDownload != nil },
@@ -238,6 +289,17 @@ struct LearningHubView: View {
                 (SemanticVersion(lhs.contentVersion) ?? current)
                     < (SemanticVersion(rhs.contentVersion) ?? current)
             }
+    }
+
+    private var availableUninstalled: [CourseCatalogPayload.Entry] {
+        let installed = Set(academy.repository?.courses.map(\.id) ?? [])
+        let entries = academy.catalog?.courses.filter { !installed.contains($0.courseID) } ?? []
+        return Dictionary(grouping: entries, by: \.courseID).values.compactMap { versions in
+            versions.max { lhs, rhs in
+                (SemanticVersion(lhs.contentVersion) ?? SemanticVersion(major: 0, minor: 0, patch: 0))
+                    < (SemanticVersion(rhs.contentVersion) ?? SemanticVersion(major: 0, minor: 0, patch: 0))
+            }
+        }.sorted { $0.courseID < $1.courseID }
     }
 
     @ViewBuilder

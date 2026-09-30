@@ -56,6 +56,24 @@ actor CourseInstaller {
         }
     }
 
+    /// Removes replaceable course material only. The index is changed first so
+    /// a crash cannot point to a partially deleted tree. Open CourseSession
+    /// values retain a fully decoded snapshot, and user projects/progress are
+    /// stored outside this root.
+    func uninstall(courseID: String, language: String) throws {
+        try recover()
+        let safeCourse = try component(courseID)
+        let safeLanguage = try component(language)
+        let key = "\(safeCourse)|\(safeLanguage)"
+        var index = try readIndex()
+        index.active.removeValue(forKey: key)
+        try writeIndex(index)
+        let directory = root.appending(path: "\(safeCourse)/\(safeLanguage)", directoryHint: .isDirectory)
+        if fileManager.fileExists(atPath: directory.path) {
+            try fileManager.removeItem(at: directory)
+        }
+    }
+
     func install(descriptorBytes: Data, downloadedArchive: URL, keyring: CourseKeyring) async throws
         -> InstalledCourseRecord {
         try recover()

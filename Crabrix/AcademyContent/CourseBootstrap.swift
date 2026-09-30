@@ -24,6 +24,12 @@ struct CourseBootstrap {
     }
 
     func activateBundledBaseline() async throws -> InstalledCourseRepository {
+        // Baseline activation is a one-time migration. A learner can later
+        // remove a local copy without the next launch silently restoring it.
+        let activationMarker = root.appending(path: "baseline-activation-v1.json")
+        if FileManager.default.fileExists(atPath: activationMarker.path) {
+            return try await loadInstalled()
+        }
         guard let packs = bundle.url(forResource: "MigrationCoursePacks", withExtension: nil)
         else { throw CoursePackError.manifestMismatch("bundled migration packs") }
         let keyring = try JSONDecoder().decode(
@@ -56,8 +62,18 @@ struct CourseBootstrap {
                 descriptorBytes: descriptorBytes, downloadedArchive: archiveURL, keyring: keyring
             )
         }
+        let installed = try await installer.installed()
+        let marker: [String: Any] = [
+            "schemaVersion": 1,
+            "catalogSequence": catalog.sequence,
+            "courseDigests": Dictionary(uniqueKeysWithValues: installed.map {
+                ("\($0.courseID)|\($0.language)", $0.archiveSHA256)
+            })
+        ]
+        try JSONSerialization.data(withJSONObject: marker, options: [.sortedKeys])
+            .write(to: activationMarker, options: .atomic)
         return try InstalledCourseRepository(
-            root: root, records: await installer.installed(), keyring: keyring
+            root: root, records: installed, keyring: keyring
         )
     }
 
@@ -74,6 +90,15 @@ struct CourseBootstrap {
         return try JSONDecoder().decode(
             CourseKeyring.self,
             from: Data(contentsOf: packs.appending(path: "production-keyring.json"))
+        )
+    }
+
+    func bundledCatalog() throws -> CourseCatalogPayload {
+        guard let packs = bundle.url(forResource: "MigrationCoursePacks", withExtension: nil)
+        else { throw CoursePackError.manifestMismatch("bundled catalog") }
+        return try CoursePackVerifier.catalog(
+            bytes: Data(contentsOf: packs.appending(path: "catalog.v1.json")),
+            keyring: keyring(), lastAcceptedSequence: 0
         )
     }
 

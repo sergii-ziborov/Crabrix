@@ -21,4 +21,25 @@ final class CourseBootstrapTests: XCTestCase {
             first.loaded.mapValues(\.archiveSHA256), second.loaded.mapValues(\.archiveSHA256)
         )
     }
+
+    func testDeletingLocalMaterialDoesNotReactivateItOnRelaunch() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let bootstrap = try CourseBootstrap(
+            bundle: .main, root: root, appVersion: SemanticVersion("1.1")
+        )
+        let first = try await bootstrap.activateBundledBaseline()
+        let lessonID = try XCTUnwrap(first.course(id: "basics")?.units.first?.lessons.first?.id)
+        let openSession = try XCTUnwrap(CourseSession(lessonID: lessonID, repository: first))
+        let installer = try CourseInstaller(root: root, appVersion: SemanticVersion("1.1"))
+        try await installer.uninstall(courseID: "basics", language: "en")
+
+        let afterRelaunch = try await bootstrap.activateBundledBaseline()
+        XCTAssertNil(afterRelaunch.course(id: "basics"))
+        XCTAssertNotNil(openSession.repository.lesson(id: lessonID))
+        XCTAssertFalse(FileManager.default.fileExists(
+            atPath: root.appending(path: "basics/en/1.0.1/course.json").path
+        ))
+        XCTAssertEqual(afterRelaunch.courses.count, first.courses.count - 1)
+    }
 }
