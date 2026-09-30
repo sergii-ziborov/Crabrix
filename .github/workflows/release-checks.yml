@@ -42,10 +42,11 @@ jobs:
 
       - name: Run fast release suite
         run: |
+          simulator_id="$(scripts/select-ios-simulator.sh)"
           xcodebuild test \
             -project Crabrix.xcodeproj \
             -scheme Crabrix \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0' \
+            -destination "platform=iOS Simulator,id=${simulator_id}" \
             -onlyUsePackageVersionsFromResolvedFile \
             CODE_SIGNING_ALLOWED=NO
 
@@ -95,9 +96,10 @@ jobs:
 
       - name: Run bundled rustc and sandbox gates
         run: |
+          simulator_id="$(scripts/select-ios-simulator.sh)"
           xcodebuild test \
             -project Crabrix.xcodeproj \
             -scheme CrabrixCompilerGate \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0' \
+            -destination "platform=iOS Simulator,id=${simulator_id}" \
             -onlyUsePackageVersionsFromResolvedFile \
             CODE_SIGNING_ALLOWED=NO
