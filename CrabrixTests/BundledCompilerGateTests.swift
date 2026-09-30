@@ -1,3 +1,4 @@
+import Foundation
 import XCTest
 @testable import Crabrix
 
@@ -5,9 +6,17 @@ final class BundledCompilerGateTests: XCTestCase {
     @MainActor
     func testSuccessfulLessonRunClearsPreviousErrorWithoutCompletingLesson() async throws {
         try Self.requireCompilerGate()
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = try await CourseBootstrap(
+            bundle: .main, root: root, appVersion: SemanticVersion("1.1")
+        ).activateBundledBaseline()
+        let session = try XCTUnwrap(CourseSession(lessonID: "borrowing", repository: repository))
+        let lesson = try XCTUnwrap(repository.lesson(id: "borrowing"))
+        let content = try XCTUnwrap(CourseLessonExecution(lesson: lesson, session: session))
         let model = makeRegressionModel()
         model.loadBorrowDiagnosticSample()
-        model.beginLesson("borrowing")
+        model.beginLesson("borrowing", content: content)
         model.run()
         try await waitForBuild(model)
         XCTAssertEqual(model.primaryDiagnostic?.code, "E0502")

@@ -610,9 +610,8 @@ final class CompilerViewModel: ObservableObject {
     private func compilerProjectSnapshot(
         from project: (entryPath: String, main: String, supporting: [String: String])
     ) -> (entryPath: String, main: String, supporting: [String: String]) {
-        guard let activeLessonID,
+        guard activeLessonID != nil,
               let challenge = activeLessonContent?.challenge
-                ?? AlgorithmCourseCatalog.challenge(for: activeLessonID)
         else { return project }
 
         var supporting = project.supporting
@@ -1804,10 +1803,10 @@ final class CompilerViewModel: ObservableObject {
         }
         if value.phase == .run,
            let activeLessonID,
-           let lesson = activeLessonContent?.lesson ?? RustCourseCatalog.lesson(id: activeLessonID) {
+           let content = activeLessonContent {
             let validation = LessonEvidenceValidator.validateCompilerAttempt(
-                lesson: lesson,
-                evidence: activeLessonContent?.evidence,
+                lesson: content.lesson,
+                evidence: content.evidence,
                 result: value,
                 project: currentProject(),
                 initialSourceTreeHash: activeLessonInitialSourceTreeHash,
