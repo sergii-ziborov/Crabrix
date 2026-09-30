@@ -140,6 +140,9 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         var highlightedColorScheme: ColorScheme?
         var highlightedAppearanceRaw: String?
         var highlightedDiagnosticsSignature = ""
+        /// Compiler spans follow intact lines across edits and disappear when
+        /// the source they describe changes before the next build.
+        private var liveSpans: [LiveSpan] = []
         weak var textView: UITextView?
         weak var canvas: CodeEditorCanvas?
         var lastNavigationID: UUID?
@@ -147,6 +150,11 @@ struct SyntaxCodeEditor: UIViewRepresentable {
 
         init(parent: SyntaxCodeEditor) {
             self.parent = parent
+        }
+
+        private struct LiveSpan {
+            let level: String
+            let span: RustDiagnostic.Span
         }
 
         /// Classifies every insertion before it lands.
@@ -219,6 +227,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             preservingScroll: Bool = true
         ) {
             let source = textView.text ?? ""
+            carryDiagnostics(to: source, filePath: filePath)
             let fullRange = NSRange(location: 0, length: (source as NSString).length)
             let selection = textView.selectedRange
             let offsetBefore = canvas?.scrollOffset ?? .zero
@@ -242,23 +251,21 @@ struct SyntaxCodeEditor: UIViewRepresentable {
                     range: token.range
                 )
             }
-            for diagnostic in parent.diagnostics {
-                for span in diagnostic.spans where matches(span.fileName, filePath) {
-                    guard let range = diagnosticRange(for: span, in: source),
-                          NSMaxRange(range) <= fullRange.length
-                    else { continue }
-                    let style: NSUnderlineStyle = span.isPrimary ? .thick : .single
-                    let color = diagnostic.level == "warning"
-                        ? UIColor(CrabrixTheme.amber)
-                        : UIColor(CrabrixTheme.coral)
-                    textView.textStorage.addAttributes(
-                        [
-                            .underlineStyle: style.rawValue,
-                            .underlineColor: color,
-                        ],
-                        range: range
-                    )
-                }
+            for live in liveSpans where matches(live.span.fileName, filePath) {
+                guard let range = diagnosticRange(for: live.span, in: source),
+                      NSMaxRange(range) <= fullRange.length
+                else { continue }
+                let style: NSUnderlineStyle = live.span.isPrimary ? .thick : .single
+                let color = live.level == "warning"
+                    ? UIColor(CrabrixTheme.amber)
+                    : UIColor(CrabrixTheme.coral)
+                textView.textStorage.addAttributes(
+                    [
+                        .underlineStyle: style.rawValue,
+                        .underlineColor: color,
+                    ],
+                    range: range
+                )
             }
             textView.textStorage.endEditing()
             textView.typingAttributes = base
@@ -277,6 +284,23 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             highlightedColorScheme = parent.colorScheme
             highlightedAppearanceRaw = parent.appearanceRaw
             highlightedDiagnosticsSignature = parent.diagnosticsSignature
+        }
+
+        private func carryDiagnostics(to source: String, filePath: String) {
+            if parent.diagnosticsSignature != highlightedDiagnosticsSignature {
+                liveSpans = parent.diagnostics.flatMap { diagnostic in
+                    diagnostic.spans.map { LiveSpan(level: diagnostic.level, span: $0) }
+                }
+                return
+            }
+            guard filePath == highlightedFilePath,
+                  source != highlightedText,
+                  let edit = SourceLineEdit.between(highlightedText, source)
+            else { return }
+            liveSpans = liveSpans.compactMap { live in
+                guard matches(live.span.fileName, filePath) else { return live }
+                return edit.rebase(live.span).map { LiveSpan(level: live.level, span: $0) }
+            }
         }
 
         func reveal(_ target: EditorNavigationTarget, in textView: UITextView) {
