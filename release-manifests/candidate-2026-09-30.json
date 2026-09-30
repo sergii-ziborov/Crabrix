@@ -3,7 +3,7 @@
   "status": "development-candidate-not-submitted",
   "app": {
     "repository": "https://github.com/sergii-ziborov/Crabrix",
-    "sourceCommit": "82bb27818372fc68ea2db70e9404899f8affae97",
+    "sourceCommit": "8cf922657ae40fd489b54d9e159207a0f5af589d",
     "bundleID": "com.sergiiziborov.Crabrix",
     "marketingVersion": "1.1",
     "buildNumber": "9",

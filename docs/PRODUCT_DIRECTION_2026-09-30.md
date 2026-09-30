@@ -35,6 +35,7 @@ The public courses repository contains the complete 742-lesson / 200-Atlas-chall
 ## Implementation notes
 
 - Project home, Build tab removal, import routing, Cargo Settings cleanup, Code reset, Health/Energy removal, Cyberpunk palette, and optional local app lock are implemented in separate commits on `codex/product-simplification-2026-09-30`.
+- Project management now presents file counts instead of the old Type badge on cards; empty descriptions and empty tag rows no longer add placeholder text. The stored project kind remains for old projects and template compatibility.
 - The exercise rule from the pinned `CourseSession` is available as a collapsed Hint in Output. The quick-check hint remains in the lesson because it is needed before a code workspace exists.
 - `NSFaceIDUsageDescription` is in the generated app Info.plist. App lock is a local screen guard; it is not a new encryption layer for project files. A device passcode is required to turn it on.
 - Simulator builds and targeted theme/app-lock tests have passed. Physical Face ID and the full device path remain to be verified.
