@@ -1,0 +1,68 @@
+import Foundation
+import XCTest
+@testable import Crabrix
+
+final class CourseInstallerTests: XCTestCase {
+    private func fixture(_ name: String) throws -> URL {
+        try XCTUnwrap(Bundle(for: Self.self).url(
+            forResource: name, withExtension: nil, subdirectory: "CoursePack"
+        ))
+    }
+
+    func testInstallPreservesActiveVersionAfterTamperedDownload() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let installer = try CourseInstaller(root: root)
+        let descriptor = try Data(contentsOf: fixture("basics.descriptor.json"))
+        let keys = try JSONDecoder().decode(CourseKeyring.self,
+                                            from: Data(contentsOf: fixture("production-keyring.json")))
+        let installed = try await installer.install(
+            descriptorBytes: descriptor,
+            downloadedArchive: fixture("basics-1.0.1.zip"),
+            keyring: keys
+        )
+        XCTAssertEqual(installed.contentVersion, "1.0.1")
+        let course = root.appending(path: "basics/en/1.0.1/course.json")
+        XCTAssertEqual(try JSONSerialization.jsonObject(with: Data(contentsOf: course)) as? [String: Any] != nil,
+                       true)
+
+        var tampered = try Data(contentsOf: fixture("basics-1.0.1.zip"))
+        tampered[tampered.count - 1] ^= 1
+        let badArchive = root.appending(path: "basics-1.0.1.zip")
+        try tampered.write(to: badArchive)
+        XCTAssertThrowsError(try CoursePackVerifier.verify(
+            descriptorBytes: descriptor, archiveURL: badArchive, keyring: keys
+        ))
+        let stillInstalled = try await installer.installed()
+        XCTAssertEqual(stillInstalled.map(\.contentVersion), ["1.0.1"])
+        XCTAssertTrue(FileManager.default.fileExists(atPath: course.path))
+    }
+
+    func testRecoveryDiscardsUncommittedVersionAndKeepsOldPointer() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let installer = try CourseInstaller(root: root)
+        let keys = try JSONDecoder().decode(CourseKeyring.self,
+                                            from: Data(contentsOf: fixture("production-keyring.json")))
+        _ = try await installer.install(
+            descriptorBytes: Data(contentsOf: fixture("basics.descriptor.json")),
+            downloadedArchive: fixture("basics-1.0.1.zip"), keyring: keys
+        )
+        let orphan = root.appending(path: "basics/en/9.9.9")
+        let staging = root.appending(path: ".staging/interrupted")
+        try FileManager.default.createDirectory(at: orphan, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
+        let journal: [String: String] = [
+            "key": "basics|en", "targetPath": orphan.path,
+            "stagingPath": staging.path, "archiveSHA256": String(repeating: "0", count: 64)
+        ]
+        try JSONSerialization.data(withJSONObject: journal).write(
+            to: root.appending(path: "journal.json"), options: .atomic
+        )
+        let active = try await installer.installed()
+        XCTAssertEqual(active.map(\.contentVersion), ["1.0.1"])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: orphan.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: staging.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: root.appending(path: "basics/en/1.0.1/course.json").path))
+    }
+}

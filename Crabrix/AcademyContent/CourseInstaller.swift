@@ -1,0 +1,207 @@
+import CryptoKit
+import Foundation
+import ZIPFoundation
+
+/// The index is the activation pointer. Every course version on disk is immutable.
+struct InstalledCourseRecord: Codable, Sendable {
+    let courseID: String
+    let language: String
+    let contentVersion: String
+    let archiveSHA256: String
+    let keyID: String
+    let descriptorBase64: String
+}
+
+private struct CourseInstallIndex: Codable {
+    var active: [String: InstalledCourseRecord] = [:]
+}
+
+private struct CourseInstallJournal: Codable {
+    let key: String
+    let targetPath: String
+    let stagingPath: String
+    let archiveSHA256: String
+}
+
+/// Serializes installation and atomically changes only the active-version index.
+/// Old versions remain on disk, so a pinned lesson session can keep using them.
+actor CourseInstaller {
+    private let root: URL
+    private let fileManager = FileManager.default
+
+    init(root: URL? = nil) throws {
+        if let root {
+            self.root = root
+        } else {
+            guard let support = FileManager.default.urls(
+                for: .applicationSupportDirectory, in: .userDomainMask
+            ).first else { throw CoursePackError.invalidCatalog }
+            self.root = support.appending(path: "Crabrix/Courses", directoryHint: .isDirectory)
+        }
+        try FileManager.default.createDirectory(at: self.root, withIntermediateDirectories: true)
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        var courseRoot = self.root
+        try courseRoot.setResourceValues(values)
+    }
+
+    func installed() throws -> [InstalledCourseRecord] {
+        try recover()
+        return try readIndex().active.values.sorted {
+            $0.courseID == $1.courseID ? $0.language < $1.language : $0.courseID < $1.courseID
+        }
+    }
+
+    func install(descriptorBytes: Data, downloadedArchive: URL, keyring: CourseKeyring) async throws
+        -> InstalledCourseRecord {
+        try recover()
+        let (payload, keyID) = try CoursePackVerifier.signedPayload(
+            descriptorBytes, domain: CoursePackVerifier.descriptorDomain, keyring: keyring
+        )
+        guard let descriptor = try? JSONDecoder().decode(CourseDescriptorPayload.self, from: payload)
+        else { throw CoursePackError.invalidEnvelope }
+        let courseID = try component(descriptor.courseID)
+        let language = try component(descriptor.language)
+        let version = try component(descriptor.contentVersion)
+        let archiveName = try component(descriptor.archiveName)
+        let key = "\(courseID)|\(language)"
+        let target = root.appending(path: "\(courseID)/\(language)/\(version)", directoryHint: .isDirectory)
+        let record = InstalledCourseRecord(
+            courseID: courseID, language: language, contentVersion: version,
+            archiveSHA256: descriptor.archiveSHA256, keyID: keyID,
+            descriptorBase64: descriptorBytes.base64EncodedString()
+        )
+        let old = try readIndex()
+        if let current = old.active[key], current.contentVersion == version {
+            guard current.archiveSHA256 == descriptor.archiveSHA256 else {
+                throw CoursePackError.immutableVersionConflict
+            }
+            return current
+        }
+        guard !fileManager.fileExists(atPath: target.path) else {
+            throw CoursePackError.immutableVersionConflict
+        }
+
+        let staging = root.appending(path: ".staging/\(UUID().uuidString)", directoryHint: .isDirectory)
+        let payloadRoot = staging.appending(path: "payload", directoryHint: .isDirectory)
+        let cacheArchive = staging.appending(path: archiveName)
+        try fileManager.createDirectory(at: payloadRoot, withIntermediateDirectories: true)
+        do {
+            try Task.checkCancellation()
+            try fileManager.copyItem(at: downloadedArchive, to: cacheArchive)
+            let verified = try CoursePackVerifier.verify(
+                descriptorBytes: descriptorBytes, archiveURL: cacheArchive, keyring: keyring
+            )
+            guard verified.descriptor.courseID == courseID,
+                  verified.descriptor.contentVersion == version,
+                  verified.keyID == keyID else { throw CoursePackError.invalidEnvelope }
+            try extract(verified, to: payloadRoot)
+            try Task.checkCancellation()
+
+            let journal = CourseInstallJournal(
+                key: key, targetPath: target.path, stagingPath: staging.path,
+                archiveSHA256: descriptor.archiveSHA256
+            )
+            try writeJournal(journal)
+            try fileManager.createDirectory(at: target.deletingLastPathComponent(),
+                                            withIntermediateDirectories: true)
+            try fileManager.moveItem(at: payloadRoot, to: target)
+            var updated = old
+            updated.active[key] = record
+            try writeIndex(updated)
+            try? fileManager.removeItem(at: staging)
+            try? fileManager.removeItem(at: journalURL)
+            return record
+        } catch {
+            // A failed activation never changes the old pointer. Recovery also handles a
+            // process kill between the move and index write.
+            try? recover()
+            try? fileManager.removeItem(at: staging)
+            throw error
+        }
+    }
+
+    private func extract(_ pack: VerifiedCoursePack, to destination: URL) throws {
+        let archive = try Archive(url: pack.archiveURL, accessMode: .read)
+        let expected = Dictionary(uniqueKeysWithValues: pack.manifest.files.map { ($0.path, $0) })
+        for entry in archive {
+            try Task.checkCancellation()
+            let path = try CoursePackVerifier.validatedPath(entry.path)
+            let output = destination.appending(path: path)
+            try fileManager.createDirectory(at: output.deletingLastPathComponent(),
+                                            withIntermediateDirectories: true)
+            guard fileManager.createFile(atPath: output.path, contents: nil) else {
+                throw CoursePackError.unsafeArchive(path)
+            }
+            let handle = try FileHandle(forWritingTo: output)
+            defer { try? handle.close() }
+            var bytes = 0
+            var digest = SHA256()
+            _ = try archive.extract(entry, bufferSize: 64 * 1024) { chunk in
+                try Task.checkCancellation()
+                bytes += chunk.count
+                guard bytes <= CoursePackVerifier.maximumFileBytes else { throw CoursePackError.sizeLimit }
+                digest.update(data: chunk)
+                try handle.write(contentsOf: chunk)
+            }
+            if path == "manifest.json" { continue }
+            guard let file = expected[path],
+                  bytes == file.bytes,
+                  digest.finalize().hexString == file.sha256
+            else { throw CoursePackError.manifestMismatch(path) }
+        }
+    }
+
+    private func component(_ value: String) throws -> String {
+        let safe = try CoursePackVerifier.validatedPath(value)
+        guard !safe.contains("/"), safe.range(of: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+                                               options: .regularExpression) != nil
+        else { throw CoursePackError.unsafeArchive(value) }
+        return safe
+    }
+
+    private var indexURL: URL { root.appending(path: "index.json") }
+    private var journalURL: URL { root.appending(path: "journal.json") }
+
+    private func readIndex() throws -> CourseInstallIndex {
+        guard fileManager.fileExists(atPath: indexURL.path) else { return CourseInstallIndex() }
+        return try JSONDecoder().decode(CourseInstallIndex.self, from: Data(contentsOf: indexURL))
+    }
+
+    private func writeIndex(_ index: CourseInstallIndex) throws {
+        try JSONEncoder().encode(index).write(to: indexURL, options: .atomic)
+    }
+
+    private func writeJournal(_ journal: CourseInstallJournal) throws {
+        try JSONEncoder().encode(journal).write(to: journalURL, options: .atomic)
+    }
+
+    private func recover() throws {
+        guard fileManager.fileExists(atPath: journalURL.path) else { return }
+        let journal = try JSONDecoder().decode(
+            CourseInstallJournal.self, from: Data(contentsOf: journalURL)
+        )
+        let target = URL(fileURLWithPath: journal.targetPath)
+        let staging = URL(fileURLWithPath: journal.stagingPath)
+        guard target.standardizedFileURL.path.hasPrefix(root.standardizedFileURL.path + "/"),
+              staging.standardizedFileURL.path.hasPrefix(
+                root.standardizedFileURL.appending(path: ".staging").path + "/"
+              ) else { throw CoursePackError.unsafeArchive("install journal") }
+        let active = try readIndex().active[journal.key]
+        let activePath = active.map {
+            root.appending(path: "\($0.courseID)/\($0.language)/\($0.contentVersion)").path
+        }
+        if activePath != target.path,
+           fileManager.fileExists(atPath: target.path) {
+            try fileManager.removeItem(at: target)
+        }
+        if fileManager.fileExists(atPath: staging.path) {
+            try fileManager.removeItem(at: staging)
+        }
+        try fileManager.removeItem(at: journalURL)
+    }
+}
+
+private extension SHA256.Digest {
+    var hexString: String { map { String(format: "%02x", $0) }.joined() }
+}

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A860C62CF0A246B0888A0111 /* CourseInstallerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0112 /* CourseInstallerTests.swift */; };
+		A860C62CF0A246B0888A0109 /* CourseInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0110 /* CourseInstaller.swift */; };
 		A860C62CF0A246B0888A0104 /* CoursePackVerifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0105 /* CoursePackVerifierTests.swift */; };
 		A860C62CF0A246B0888A0106 /* CoursePack in Resources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0107 /* CoursePack */; };
 		A860C62CF0A246B0888A0101 /* CoursePackVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0102 /* CoursePackVerifier.swift */; };
@@ -212,6 +214,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A860C62CF0A246B0888A0112 /* CourseInstallerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseInstallerTests.swift; sourceTree = "<group>"; };
+		A860C62CF0A246B0888A0110 /* CourseInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseInstaller.swift; sourceTree = "<group>"; };
 		A860C62CF0A246B0888A0105 /* CoursePackVerifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePackVerifierTests.swift; sourceTree = "<group>"; };
 		A860C62CF0A246B0888A0107 /* CoursePack */ = {isa = PBXFileReference; lastKnownFileType = folder; name = CoursePack; path = Fixtures/CoursePack; sourceTree = "<group>"; };
 		A860C62CF0A246B0888A0102 /* CoursePackVerifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePackVerifier.swift; sourceTree = "<group>"; };
@@ -404,6 +408,7 @@
 			isa = PBXGroup;
 			children = (
 				A860C62CF0A246B0888A0102 /* CoursePackVerifier.swift */,
+				A860C62CF0A246B0888A0110 /* CourseInstaller.swift */,
 			);
 			path = AcademyContent;
 			sourceTree = "<group>";
@@ -588,6 +593,7 @@
 			isa = PBXGroup;
 			children = (
 				A860C62CF0A246B0888A0105 /* CoursePackVerifierTests.swift */,
+				A860C62CF0A246B0888A0112 /* CourseInstallerTests.swift */,
 				A860C62CF0A246B0888A0107 /* CoursePack */,
 				67D67D2D0A1619040A96DC9A /* AchievementTierTests.swift */,
 				1067DEB86E13480FF37A47CB /* AlgorithmCourseCatalogTests.swift */,
@@ -935,6 +941,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A860C62CF0A246B0888A0101 /* CoursePackVerifier.swift in Sources */,
+				A860C62CF0A246B0888A0109 /* CourseInstaller.swift in Sources */,
 				DD74E3CFB5C4836F4B571E46 /* AchievementCelebrationView.swift in Sources */,
 				03886B8D78DCEDCE1A159287 /* AlgorithmCourseCatalog.swift in Sources */,
 				2A129C11FCE30742F1CD2CE4 /* AlgorithmCourseData.swift in Sources */,
@@ -1040,6 +1047,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A860C62CF0A246B0888A0104 /* CoursePackVerifierTests.swift in Sources */,
+				A860C62CF0A246B0888A0111 /* CourseInstallerTests.swift in Sources */,
 				236C594F43D32B64EF77B7A6 /* AchievementTierTests.swift in Sources */,
 				907271D59A799311162F4CF6 /* AlgorithmCourseCatalogTests.swift in Sources */,
 				ABDFFA5263492E9C914C3C6B /* BorrowRepairTests.swift in Sources */,
