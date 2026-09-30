@@ -141,6 +141,12 @@ final class CompilerViewModel: ObservableObject {
     @Published private(set) var lessonAnswerIndices: [String: Int]
     @Published private(set) var activeLessonID: String?
     private var activeLessonContent: CourseLessonExecution?
+    var activeLessonHint: CourseHintSnapshot? {
+        guard let content = activeLessonContent,
+              let hint = content.hint,
+              !hint.isEmpty else { return nil }
+        return CourseHintSnapshot(sessionToken: content.sessionToken, text: hint)
+    }
     @Published private(set) var activeLessonIsReview = false
     @Published private(set) var projectTransfer: ProjectTransfer = .idle
     @Published private(set) var compatibilityReport: ProjectCompatibilityReport

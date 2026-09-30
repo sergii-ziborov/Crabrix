@@ -205,9 +205,6 @@ struct LessonDetailView: View {
 
     private var objectives: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("YOU WILL PRACTICE")
-                .font(.caption.monospaced().bold())
-                .foregroundStyle(CrabrixTheme.blue)
             ForEach(brief.objectives, id: \.self) { objective in
                 Label(objective, systemImage: "checkmark.circle.fill")
                     .foregroundStyle(CrabrixTheme.primary)
@@ -342,12 +339,6 @@ struct LessonDetailView: View {
                 )
                 .font(.subheadline)
                 .foregroundStyle(CrabrixTheme.muted)
-            }
-
-            LessonCard(title: "Hint before you go", systemImage: "sparkles", tint: CrabrixTheme.amber) {
-                Text(brief.hint)
-                    .foregroundStyle(CrabrixTheme.muted)
-                    .fixedSize(horizontal: false, vertical: true)
             }
 
             LessonCard(title: "Transfer challenge", systemImage: "arrow.triangle.branch", tint: CrabrixTheme.coral) {
@@ -647,7 +638,6 @@ private struct RustLessonBrief {
     let objectives: [String]
     let task: String
     let success: String
-    let hint: String
     let systemImage: String
     let tint: Color
 }
@@ -686,7 +676,6 @@ private extension RustLesson {
             objectives: [concept, "Read the relevant compiler evidence", "Make one intentional code change"],
             task: writing.task,
             success: writing.success,
-            hint: "Start from the ownership and type of each value. Prefer the smallest edit that makes the compiler agree with your intent.",
             systemImage: lessonIcon,
             tint: theme.primaryColor
         )

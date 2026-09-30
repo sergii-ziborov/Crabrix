@@ -19,7 +19,7 @@ This document records the owner's additions to the Academy, runtime, and toolcha
 ## Learning and editor
 
 - Remove Health and Energy as product mechanics, including gates and visible meters. Preserve completed lessons, ratings, achievements, and existing project/progress identity. Old vitals data may be ignored by the new version without deleting unrelated persisted data.
-- Remove the literal “Go to Practice” label while retaining a discoverable practice action where needed.
+- Remove the literal “YOU WILL PRACTICE” label from lesson objectives while retaining the practice content.
 - Show exercise hints in Output, associated with the same course session and exercise version as the result.
 - Remove the Cargo Packages section from Settings; project dependency controls remain in the project workspace.
 
@@ -31,3 +31,10 @@ This document records the owner's additions to the Academy, runtime, and toolcha
 ## Delivery state at this decision
 
 The public courses repository contains the complete 742-lesson / 200-Atlas-challenge corpus and signed packs. The public runtime fork is based on WasmKit 0.4.1 and the app is pinned to its exact revision. The source-locked toolchain recipe is public, but its own compiler/sysroot production and device performance gates remain open. The owner has not authorized an App Store submission.
+
+## Implementation notes
+
+- Project home, Build tab removal, import routing, Cargo Settings cleanup, Code reset, Health/Energy removal, Cyberpunk palette, and optional local app lock are implemented in separate commits on `codex/product-simplification-2026-09-30`.
+- The exercise rule from the pinned `CourseSession` is available as a collapsed Hint in Output. The quick-check hint remains in the lesson because it is needed before a code workspace exists.
+- `NSFaceIDUsageDescription` is in the generated app Info.plist. App lock is a local screen guard; it is not a new encryption layer for project files. A device passcode is required to turn it on.
+- Simulator builds and targeted theme/app-lock tests have passed. Physical Face ID and the full device path remain to be verified.

@@ -45,6 +45,7 @@ struct BuildDockView<CodeContent: View>: View {
     let onCancel: () -> Void
     let canContinueLearning: Bool
     let lessonEvidenceMessage: String?
+    let lessonHint: CourseHintSnapshot?
     /// What the last successful run was scored on, so the reward is explained
     /// rather than appearing from nowhere.
     let contribution: CodeContribution?
@@ -69,6 +70,7 @@ struct BuildDockView<CodeContent: View>: View {
         onCancel: @escaping () -> Void,
         canContinueLearning: Bool,
         lessonEvidenceMessage: String?,
+        lessonHint: CourseHintSnapshot?,
         contribution: CodeContribution?,
         onOpenDiagnostic: @escaping (RustDiagnostic) -> Void,
         diagnosticAdviceState: RustDiagnosticAdviceState,
@@ -90,6 +92,7 @@ struct BuildDockView<CodeContent: View>: View {
         self.onCancel = onCancel
         self.canContinueLearning = canContinueLearning
         self.lessonEvidenceMessage = lessonEvidenceMessage
+        self.lessonHint = lessonHint
         self.contribution = contribution
         self.onOpenDiagnostic = onOpenDiagnostic
         self.diagnosticAdviceState = diagnosticAdviceState
@@ -169,11 +172,13 @@ struct BuildDockView<CodeContent: View>: View {
                     canStartBuild: canStartBuild,
                     canContinueLearning: canContinueLearning,
                     lessonEvidenceMessage: lessonEvidenceMessage,
+                    lessonHint: lessonHint,
                     contribution: contribution,
                     onRun: onRun,
                     onCancel: onCancel,
                     onContinueLearning: onContinueLearning
                 )
+                .id(lessonHint?.sessionToken)
             case .terminal:
                 TerminalDockContent(
                     terminal: terminal,
@@ -318,11 +323,13 @@ private struct ProblemsDockContent: View {
 }
 
 private struct OutputDockContent: View {
+    @State private var isHintExpanded = false
     let result: CompilationResult?
     let activity: CompilerViewModel.Activity
     let canStartBuild: Bool
     let canContinueLearning: Bool
     let lessonEvidenceMessage: String?
+    let lessonHint: CourseHintSnapshot?
     let contribution: CodeContribution?
     let onRun: () -> Void
     let onCancel: () -> Void
@@ -384,6 +391,7 @@ private struct OutputDockContent: View {
                         )
                     }
                     runButton
+                    hintPanel
 
                     if result.succeeded, result.phase == .run, let contribution {
                         ContributionSummaryRow(contribution: contribution)
@@ -434,6 +442,7 @@ private struct OutputDockContent: View {
                         .multilineTextAlignment(.center)
                     runButton
                         .padding(.top, 4)
+                    hintPanel
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 24)
@@ -449,6 +458,29 @@ private struct OutputDockContent: View {
                 endPoint: .bottomTrailing
             )
         )
+    }
+
+    @ViewBuilder
+    private var hintPanel: some View {
+        if let lessonHint {
+            DisclosureGroup(isExpanded: $isHintExpanded) {
+                Text(lessonHint.text)
+                    .font(.subheadline)
+                    .foregroundStyle(CrabrixTheme.primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 8)
+            } label: {
+                Label("Hint", systemImage: "lightbulb.fill")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(CrabrixTheme.amber)
+            }
+            .padding(12)
+            .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 11))
+            .overlay {
+                RoundedRectangle(cornerRadius: 11)
+                    .stroke(CrabrixTheme.amber.opacity(0.28))
+            }
+        }
     }
 
     /// Output is where you look for a result, so it can also produce one.

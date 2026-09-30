@@ -30,6 +30,7 @@ struct CourseLessonExecution: Sendable {
     let lesson: RustLesson
     let evidence: LessonEvidence
     let challenge: AlgorithmChallenge?
+    let hint: String?
 
     init?(lesson: RustLesson, session: CourseSession) {
         guard lesson.id == session.lessonID,
@@ -40,5 +41,11 @@ struct CourseLessonExecution: Sendable {
         self.lesson = lesson
         self.evidence = evidence
         challenge = session.repository.challenge(for: lesson.id)
+        hint = session.repository.writing(for: lesson.id)?.rule
     }
+}
+
+struct CourseHintSnapshot: Sendable, Equatable {
+    let sessionToken: UUID
+    let text: String
 }

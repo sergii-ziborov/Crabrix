@@ -580,6 +580,7 @@ struct ContentView: View {
                 onCancel: model.cancelBuild,
                 canContinueLearning: model.canContinueFromLessonResult,
                 lessonEvidenceMessage: model.lessonEvidenceMessage,
+                lessonHint: model.activeLessonHint,
                 contribution: lastContribution,
                 onOpenDiagnostic: openDiagnostic,
                 diagnosticAdviceState: model.diagnosticAdviceState,
