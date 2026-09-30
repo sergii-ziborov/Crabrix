@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @EnvironmentObject private var appLock: AppLockController
     @AppStorage("crabrix.appearance") private var appearanceRaw = CrabrixAppearance.system.rawValue
     @AppStorage("crabrix.editorFontSize") private var editorFontSize = 14.0
     @AppStorage("crabrix.keepAwakeDuringBuild") private var keepAwakeDuringBuild = true
@@ -22,6 +23,7 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     settingsHeader
                     appearanceSection
+                    privacySection
                     editorSection
                     cargoStorageSection
                     compilerSection
@@ -155,6 +157,39 @@ struct SettingsView: View {
                     }
                 }
                 .tint(CrabrixTheme.blue)
+            }
+        }
+    }
+
+    private var privacySection: some View {
+        SettingsSection(
+            title: "App protection",
+            detail: "Lock the workspace when Crabrix leaves the foreground. Authentication stays on this device."
+        ) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Label(appLock.methodName, systemImage: "faceid")
+                    Spacer()
+                    Text(appLock.isEnabled ? "On" : "Off")
+                        .font(.caption.bold())
+                        .foregroundStyle(appLock.isEnabled ? CrabrixTheme.mint : CrabrixTheme.muted)
+                }
+                Button {
+                    Task { await appLock.setEnabled(!appLock.isEnabled) }
+                } label: {
+                    Label(
+                        appLock.isEnabled ? "Turn off app protection" : "Turn on app protection",
+                        systemImage: appLock.isEnabled ? "lock.open" : "lock.fill"
+                    )
+                }
+                .buttonStyle(.bordered)
+                .disabled(appLock.isAuthenticating)
+
+                if let error = appLock.errorMessage {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundStyle(CrabrixTheme.amber)
+                }
             }
         }
     }

@@ -59,6 +59,7 @@ targets:
         LSApplicationCategoryType: public.app-category.developer-tools
         LSSupportsOpeningDocumentsInPlace: true
         NSHumanReadableCopyright: "© 2026 Serhii Ziborov. All rights reserved."
+        NSFaceIDUsageDescription: "Unlock your local Crabrix projects and courses."
         UIFileSharingEnabled: true
         UIApplicationSupportsIndirectInputEvents: true
         UILaunchScreen: {}

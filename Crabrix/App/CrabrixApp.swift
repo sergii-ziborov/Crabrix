@@ -17,10 +17,12 @@ enum CrabrixReleaseFeatures {
 
 @main
 struct CrabrixApp: App {
+    @Environment(\.scenePhase) private var scenePhase
     /// Rating and achievements are earned everywhere, so the store is owned once
     /// at the root and handed to every feature that reports progress.
     @StateObject private var progress = CrabrixProgressStore()
     @StateObject private var academyContent = AcademyContentStore()
+    @StateObject private var appLock = AppLockController()
     #if CRABRIX_SOCIAL
     /// Identity and the global board, through Game Center. Optional everywhere:
     /// the app is fully usable without ever signing in.
@@ -29,12 +31,24 @@ struct CrabrixApp: App {
 
     var body: some Scene {
         WindowGroup {
-            socialEnvironment(
-                ContentView()
-                    .environmentObject(progress)
-                    .environmentObject(academyContent)
-                    .achievementCelebrations(store: progress)
-            )
+            ZStack {
+                socialEnvironment(
+                    ContentView()
+                        .environmentObject(progress)
+                        .environmentObject(academyContent)
+                        .environmentObject(appLock)
+                        .achievementCelebrations(store: progress)
+                )
+                .allowsHitTesting(!appLock.isLocked)
+                .accessibilityHidden(appLock.isLocked)
+
+                if appLock.isLocked || (appLock.isEnabled && scenePhase != .active) {
+                    AppLockScreen(controller: appLock)
+                }
+            }
+            .onChange(of: scenePhase, initial: true) { _, phase in
+                appLock.scenePhaseChanged(phase)
+            }
             .task {
                 await academyContent.prepare()
                 #if CRABRIX_SOCIAL
