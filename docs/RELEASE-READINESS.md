@@ -1,5 +1,10 @@
 # Crabrix 1.0 release readiness
 
+> Historical 1.0 planning record from 3 September 2026. It predates the
+> Academy CoursePack migration and WasmKit 0.4.1 fork. For the current branch,
+> use [VALIDATION.md](VALIDATION.md), [MIGRATION.md](MIGRATION.md), and the
+> [candidate manifest](../release-manifests/candidate-2026-09-30.json).
+
 - Last reviewed: 2026-09-03
 - Candidate branch: `release/1.0-app-store`
 - Policy: fail closed — an empty evidence field is **pending**, never inferred

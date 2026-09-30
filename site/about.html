@@ -254,8 +254,8 @@
         compiler and standard library. Diagnostics are real rustc diagnostics from
         Crabrix's pinned bundled toolchain, with the same error codes.</div>
       <div><strong>Running in Swift</strong>That WebAssembly module is executed by
-        WasmKit, a WebAssembly interpreter written in Swift, inside the app's own
-        process. No JIT, no dynamic code loading, no daemon.</div>
+        CrabrixRuntime, a maintained public fork of WasmKit 0.4.1, inside the app's
+        own process. No JIT or daemon.</div>
       <div><strong>A real package manager</strong>Crabrix speaks the crates.io sparse
         index protocol, resolves SemVer ranges, unifies features, verifies SHA-256
         checksums, extracts the sources, and compiles and links them.</div>
@@ -271,18 +271,19 @@
     <h2>The exact toolchain</h2>
     <p>
       Crabrix pins one compiler build and ships it in the app. Nothing is downloaded at
-      runtime to compile your code, and the same values are shown in the app under
+      runtime to compile your code, and the compiler identity is shown under
       Settings &rarr; Runtime:
     </p>
     <ul>
-      <li>Bundled <code>rustc</code>: <code>1.96.0-dev</code></li>
       <li>Target: <code>wasm32-wasip1</code></li>
       <li>Toolchain artifact: <code>artifacts-test-7</code></li>
+      <li>Runtime: <a href="https://github.com/sergii-ziborov/crabrix-runtime">CrabrixRuntime</a> from WasmKit 0.4.1</li>
     </ul>
     <p>
-      A pinned compiler is older than the current Rust release, so code that relies on an
-      API stabilised after 1.96 will not compile here even though a current laptop
-      toolchain accepts it.
+      The public <a href="https://github.com/sergii-ziborov/crabrix-toolchain">toolchain builder</a>
+      is source locked but has not yet supplied the app's compiler artifact. The current
+      binary remains the pinned compatibility input, with its own identity distinct from
+      the runtime fork.
     </p>
 
     <h2>What it cannot do</h2>
@@ -319,6 +320,13 @@
       Practice, Term Train, and Code Recall &mdash; are generated from that same
       curriculum and scheduled with SM-2 spaced repetition, so what you are weakest at
       comes back soonest.
+    </p>
+    <p>
+      The complete seven-course baseline is signed and included for offline access.
+      Later versions are published as data-only CoursePacks from the public
+      <a href="https://github.com/sergii-ziborov/crabrix-courses">course repository</a>.
+      Learn shows the size before a requested update. Opening a starter creates a
+      separate editable project, so an updated course does not replace your work.
     </p>
     <p>
       Rating is earned across everything, and a successful run is scored on how much Rust

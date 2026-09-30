@@ -1,0 +1,11 @@
+# Academy and runtime migration
+
+The original branch and the publicly visible `release/1.0-app-store` branch pointed to `c38423e7503a56d6cd97e3a6c17651d5a5c33d62` at inventory time. That source describes build 7. Apple correspondence refers to build 8, but its exact source mapping was not available; this work did not roll back or overwrite the owner's pre-existing local edits.
+
+The Swift-model exporter executed the legacy models and recorded the immutable 1.0.1 baseline in [`migration/baseline-inventory.json`](../migration/baseline-inventory.json). Seven signed packages in [crabrix-courses](https://github.com/sergii-ziborov/crabrix-courses) preserve 742 lessons and the full supporting corpus. Version 1.0.0 was superseded after finding 99 omitted base Term Train pairs; 1.0.1 restores all 358 term pairs. The parity report records zero missing, unexpected, or unapproved semantic changes.
+
+The app installs the signed 1.0.1 packs from its own bundle on first launch, then reads the activated data through `InstalledCourseRepository`. This does not depend on the old iOS app bundle being present. Projects and progress remain in their existing durable stores. Opening a course starter creates a separate project with course/version/lesson/template provenance; a lesson session pins the content snapshot while it is open.
+
+The main Learn renderer uses installed package data. Training decks, some progress counts, and compiler fallbacks still reference legacy Swift catalogs, so the migration to a single production content source is unfinished. Historical attempts also do not yet carry the full composite course/content/validator/toolchain/project identity specified for final migration. Those paths require additional changes and verification before the legacy catalogs can leave the app target.
+
+The runtime moved from the old vendored 0.3.1 graph to the pinned 0.4.1 public fork. Its old compiler artifact remains as a compatibility baseline. The source locked public builder has not yet produced the replacement compiler. See [runtime integration](runtime-integration.md), [toolchain](toolchain.md), and [validation](VALIDATION.md).

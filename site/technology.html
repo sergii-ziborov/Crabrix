@@ -219,19 +219,19 @@
     <div class="table-scroll">
       <table class="plain">
         <tbody>
-          <tr><td>Bundled <code>rustc</code></td><td><code>1.96.0-dev</code></td></tr>
+          <tr><td>Bundled <code>rustc</code></td><td>Exact version and artifact identity are shown in the app; current build input is <code>artifacts-test-7</code>.</td></tr>
           <tr><td>Target</td><td><code>wasm32-wasip1</code></td></tr>
           <tr><td>Toolchain artifact</td><td><code>artifacts-test-7</code></td></tr>
           <tr><td>Downloaded at runtime</td><td>Nothing. The compiler ships in the app bundle and is verified by SHA-256 at build time.</td></tr>
-          <tr><td>Interpreter</td><td>WasmKit, in the app's own process. No JIT, no dynamic code loading, no daemon.</td></tr>
+          <tr><td>Runtime</td><td><a href="https://github.com/sergii-ziborov/crabrix-runtime">CrabrixRuntime</a>, derived from WasmKit 0.4.1, pinned to a public commit. No JIT or daemon.</td></tr>
         </tbody>
       </table>
     </div>
     <p>
-      A pinned compiler is older than the current Rust release. Code that relies
-      on an API stabilised after 1.96 will not build here even though a current
-      laptop toolchain accepts it. The version is shown in the app under
-      Settings &rarr; Local compiler, not buried.
+      The app currently uses the pinned Weblings compatibility artifact.
+      The public <a href="https://github.com/sergii-ziborov/crabrix-toolchain">Crabrix toolchain builder</a>
+      has source locks and build scripts, but has not yet supplied a verified
+      replacement compiler release. The runtime and compiler have separate identities.
     </p>
 
     <h2>What your program is allowed to do</h2>
@@ -241,12 +241,23 @@
           <tr><td>Network from your program</td><td>None. There are no socket imports to call.</td></tr>
           <tr><td>Memory</td><td>Capped, and the guest is stopped when it exceeds the cap.</td></tr>
           <tr><td>Writable filesystem</td><td>One directory, with byte and file-count limits.</td></tr>
-          <tr><td>Output</td><td>Bounded, so a runaway loop cannot fill storage.</td></tr>
+          <tr><td>Output</td><td>Monitored against a limit; compiler output stress remains a release gate.</td></tr>
           <tr><td>Wall clock and instructions</td><td>Both budgeted. <code>fn main() { loop {} }</code> is stopped by Stop, not left to run.</td></tr>
           <tr><td>Host processes</td><td>None are spawned. The project terminal is a simulated shell over the project's own files.</td></tr>
         </tbody>
       </table>
     </div>
+
+    <h2>Academy content</h2>
+    <p>
+      The full seven-course baseline is included in the app for offline access.
+      Later course versions are data-only signed CoursePacks from the public
+      <a href="https://github.com/sergii-ziborov/crabrix-courses">course repository</a>.
+      The app shows the size before a requested update, verifies its signature and
+      file hashes, then switches the installed version. A CoursePack cannot update
+      the compiler or runtime. An installed course remains readable without a network;
+      crate exercises also need their Cargo dependencies prepared for offline builds.
+    </p>
 
     <h2>Cargo, and the part of it that works</h2>
     <p>
@@ -288,16 +299,16 @@
       There is no account, no analytics SDK, no advertising, and no tracking.
       Game Center and any leaderboard are not switched off in this version —
       they are not compiled into it, and a continuous-integration step fails the
-      build if either returns. The only network requests are the package and
-      repository downloads you ask for.
+      build if either returns. Network requests include course catalog/update fetches,
+      package downloads and repository imports you ask for.
     </p>
 
     <h2>How to check any of this</h2>
     <p>
-      The source is on
-      <a href="https://github.com/sergii-ziborov/Crabrix">GitHub</a>, and each
-      release carries an evidence folder with toolchain hashes, dependency
-      inventory, test results and the measurements behind these claims.
+      App source and the current validation record are on
+      <a href="https://github.com/sergii-ziborov/Crabrix">GitHub</a>. The
+      <a href="https://github.com/sergii-ziborov/Crabrix/blob/codex/academy-migration-2026-09-30/docs/VALIDATION.md">validation record</a>
+      separates observed tests from pending device and source-build gates.
     </p>
   </div>
 </main>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Crabrix — a real Rust compiler on your iPhone and iPad</title>
-<meta name="description" content="Crabrix compiles and runs real Rust on iPhone and iPad. Real rustc, crates.io packages, 142 Rust lessons, and 200 algorithm patterns.">
+<meta name="description" content="Crabrix compiles and runs Rust on iPhone and iPad. Native editor, Cargo packages, seven courses, 742 lessons and Atlas steps, and signed course updates.">
 <meta property="og:title" content="Crabrix — a real Rust compiler on your iPhone and iPad">
 <meta property="og:description" content="Write Rust. Add real crates.io packages. Compile and run them. On a phone. Offline.">
 <meta property="og:type" content="website">
@@ -307,8 +307,9 @@
         <div class="card">
           <span class="ic">🎓</span>
           <h3>Teaches from the compiler</h3>
-          <p>142 guided Rust lessons plus a 200-pattern Algorithm Atlas. Every algorithm
-          moves from mental model to use cases to a local Rust challenge.</p>
+          <p>Seven courses: 142 guided Rust lessons and a 200-pattern Algorithm Atlas
+          with 600 steps. The signed baseline is installed offline; later course
+          versions can be requested from a public catalog.</p>
         </div>
         <div class="card">
           <span class="ic">✈️</span>
@@ -378,13 +379,13 @@
           <li>Buy at the launch price and later increases never touch you</li>
           <li>Universal: iPhone and iPad, one buy</li>
           <li>No in-app purchases and no paywalled features</li>
-          <li>No ads, no analytics, no tracking, no account required</li>
+          <li>No ads or analytics SDK in the app; no account required</li>
           <li>Free updates</li>
         </ul>
       </div>
       <p class="section-lede" style="margin-top:24px">
-        The compiler, the package manager, and the whole curriculum are in the app you buy.
-        Nothing is held back for a second transaction.
+        The compiler, package manager, and full baseline curriculum are in the app you buy.
+        Course updates are public and do not add a second transaction.
       </p>
     </div>
   </section>
@@ -399,7 +400,7 @@
         <li><strong>Procedural macros do not run.</strong> They need a host-native compiler, so <code>serde</code>'s <code>derive</code> feature and anything like it is reported as unsupported rather than silently mis-built.</li>
         <li><strong>Build scripts are not executed.</strong> Many crates whose <code>build.rs</code> only probes compiler features still work, and those are flagged for review rather than blocked.</li>
         <li><strong>Crates that link native C libraries are out of reach</strong>, as are ones that build only as <code>cdylib</code> or <code>staticlib</code>.</li>
-        <li><strong>Builds take minutes, not seconds.</strong> <code>rustc</code> runs in an interpreter. A first build with one package is around five minutes; the identical rebuild is under a second from cache.</li>
+        <li><strong>Cold builds take time.</strong> <code>rustc</code> runs in an interpreter. Cached identical runs avoid recompiling; actual timings depend on the project, dependencies, device, and cache state.</li>
         <li><strong>The codegen backend has gaps.</strong> A few crates hit unimplemented 64-bit operations. Crabrix records the real outcome of every dependency build and shows it, with the compiler's own reason.</li>
       </ul>
     </div>
@@ -411,7 +412,7 @@
 
       <details>
         <summary>Is this really compiling, or is it sending my code to a server?</summary>
-        <p>Really compiling. The <code>rustc</code> binary and its <code>wasm32-wasip1</code> sysroot are inside the app bundle, verified by SHA-256 at build time. Turn on airplane mode and it still compiles. The only network calls are ones you start: importing a public GitHub snapshot, searching crates.io, and downloading packages.</p>
+        <p>Really compiling. The <code>rustc</code> binary and its <code>wasm32-wasip1</code> sysroot are inside the app bundle, verified by SHA-256 at build time. Turn on airplane mode and it still compiles. Network requests also occur when you check for course updates, download a signed course version, import a public GitHub snapshot, or search and download crates.</p>
       </details>
 
       <details>
@@ -421,12 +422,17 @@
 
       <details>
         <summary>Do I need an account?</summary>
-        <p>No. There is no sign-in, no cloud sync, no analytics, and no leaderboard. Your projects, your progress, and your rating live on your device.</p>
+        <p>No. The app has no sign-in, cloud sync, analytics SDK, or leaderboard. Your projects, progress, and rating live on your device. The public website's hosting is described in its privacy policy.</p>
       </details>
 
       <details>
         <summary>Does it work offline?</summary>
-        <p>The compiler, curriculum, and local projects work offline. Cached dependencies rebuild while iOS retains them; <strong>Pin for Offline</strong> keeps their exact verified archives durable after a cache eviction. First-time package downloads and GitHub imports require a connection.</p>
+        <p>The compiler, installed courses, and local projects work offline. A crate exercise also needs its dependencies prepared; <strong>Pin for Offline</strong> keeps exact verified crate archives durable after cache eviction. Course updates, first-time package downloads, and GitHub imports require a connection.</p>
+      </details>
+
+      <details>
+        <summary>Can I update a course without losing my project?</summary>
+        <p>Yes. Learn shows the installed version and the size of a newer signed CoursePack before you download it. The existing course stays active during transfer and verification. A starter becomes a separate editable project, and course updates do not overwrite your files or progress.</p>
       </details>
 
       <details>

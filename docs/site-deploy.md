@@ -31,6 +31,11 @@ image optimization, canonical metadata and presentation fixes. Compare visible
 copy after normalizing HTML entities and whitespace; full-file byte equality is
 not expected across the two renderers. Product and legal wording must match.
 
+The 30 September 2026 CoursePack and runtime wording has been updated in these
+local source pages. It has not yet been verified on the published Lovable site;
+the published pages may still describe the previous app build. Treat the local
+files as proposed copy until an upload and public fetch confirm the change.
+
 As verified on 8 September 2026, **crabrix.com serves Lovable** and is Active
 and primary in Lovable. All six principal HTTPS pages were checked against the
 canonical copy. `www.crabrix.com` still needs its separate DNS setup.
@@ -83,8 +88,8 @@ opens the project library.
 There is no longer an address on the page. The support page carries a form and
 the other pages carry a button; both decode the destination at click time and
 open a draft in the visitor's own mail app. Nothing is posted anywhere and
-nothing is stored — the site has no backend, which is what lets the privacy
-page say the site calls no third party.
+nothing is stored by a contact-form backend. Page requests and the platform's
+visitor analytics still reach its hosting infrastructure, as described above.
 
 The destination is the developer's own inbox, held in one place in the app
 (`CrabrixLinks.supportEmail`) and base64 in the pages' `data-mail` attributes.
