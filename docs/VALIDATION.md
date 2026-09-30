@@ -1,15 +1,16 @@
 # Validation record — 30 September 2026
 
-This records observed results for the current development branch. It is not an App Store submission or physical-device certification. The latest full fast suite used the `codex/runtime-cache-bounds-2026-09-30` build inputs with fork revision `719f94d7`; older gate results explicitly name their earlier input. Documentation commits may differ without changing build inputs.
+This records observed results for the current development branch. It is not an App Store submission or physical-device certification. The latest full fast suite used the `codex/academy-practice-reader-2026-09-30` build inputs with fork revision `719f94d7`; older gate results explicitly name their earlier input. Documentation commits may differ without changing build inputs.
 
 | Area | Observed result |
 | --- | --- |
 | Course export | Seven courses, 48 units, 742 lessons, 200 Atlas challenges, 46 gallery projects, 358 term pairs from executed Swift models. |
 | Course semantic parity | `missing=0`, `unexpected=0`, `unapprovedChanges=0` for signed CoursePack 1.0.1. |
 | Course reader | Simulator test installed seven bundled packs, read 742 lessons, compared written content and all 200 runtime Atlas validators to legacy models; passed. |
+| Practice from installed courses | Simulator gate compared all seven installed courses' Quick Practice questions, Code Recall snippets, and Rust Term Train pairs with the legacy snapshot; passed. Atlas term pairs remained in their pack but outside Rust Term Train. A clean-install gate confirmed Basics alone supplies the available practice topics. |
 | Offline bootstrap | Simulator test activated bundled packs twice and retained the same version/hash identities; passed. |
 | First-launch selection | At `e6f1f60`, five `CourseBootstrapTests` passed on iOS 18.2 Simulator: fresh install selects Basics, legacy progress, projects, or saved settings select all seven packs, the decision remains stable after new progress is written, and relaunch/removal behavior is preserved. |
-| Full fast app suite | `xcodebuild test -project Crabrix.xcodeproj -scheme Crabrix -configuration Debug -destination 'platform=iOS Simulator,id=3FAF353F-BA0C-4F22-9443-92F60E557BF6' -onlyUsePackageVersionsFromResolvedFile CODE_SIGNING_ALLOWED=NO` on this branch: 401 passed, 2 opt-in gates skipped, 0 failures. This includes the bounded WASI output, parsed-module LRU, and CoursePack signature/archive checks. |
+| Full fast app suite | `xcodebuild test -project Crabrix.xcodeproj -scheme Crabrix -configuration Debug -destination 'platform=iOS Simulator,id=3FAF353F-BA0C-4F22-9443-92F60E557BF6' -onlyUsePackageVersionsFromResolvedFile CODE_SIGNING_ALLOWED=NO` on this branch: 402 passed, 2 opt-in gates skipped, 0 failures. This includes bounded WASI output, parsed-module LRU, installed practice parity, and CoursePack signature/archive checks. |
 | Public course fetch | `CrabrixCourseDeliveryGate` fetched the signed public catalog and `basics` release, verified and installed it on Simulator; passed. |
 | Clean source checkout | The pushed `ecd2af0` commit built successfully in an isolated checkout without the owner's unrelated local edits. Its offline bootstrap, full reader/Atlas parity, and five sandbox tests passed there. |
 | Local course removal | Clean checkout at `91f7756` built and passed two bootstrap tests (including delete/relaunch/open-session retention) and three installer tests for tamper, compatibility, and interrupted activation. |

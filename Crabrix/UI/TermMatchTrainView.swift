@@ -31,10 +31,12 @@ struct TermMatchTrainView: View {
     }
 
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var academy: AcademyContentStore
     @EnvironmentObject private var progress: CrabrixProgressStore
     private let mastery = TopicMasteryStore.shared
 
     @State private var mode: TermTrainMode?
+    @State private var allPairs: [TermTrainPair] = []
     @State private var board: [TermTrainPair] = []
     @State private var descriptionOrder: [TermTrainPair] = []
     @State private var termOrder: [TermTrainPair] = []
@@ -63,11 +65,6 @@ struct TermMatchTrainView: View {
     /// Starts straight into a mode instead of showing the picker.
     init(startingIn mode: TermTrainMode? = nil, onComplete: @escaping () -> Void) {
         _mode = State(initialValue: mode)
-        _board = State(
-            initialValue: mode == nil
-                ? []
-                : TermTrainDeck.board(records: TopicMasteryStore.shared.records)
-        )
         self.onComplete = onComplete
     }
 
@@ -79,6 +76,14 @@ struct TermMatchTrainView: View {
                 if isFinished {
                     completion
                         .transition(.scale(scale: 0.94).combined(with: .opacity))
+                } else if board.isEmpty {
+                    if let error = academy.errorMessage {
+                        ContentUnavailableView("Courses unavailable", systemImage: "books.vertical",
+                                               description: Text(error))
+                    } else {
+                        ProgressView("Preparing installed course terms…")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
                 } else {
                     playfield(mode: mode)
                 }
@@ -91,9 +96,13 @@ struct TermMatchTrainView: View {
         .navigationTitle("Term Train")
         .navigationBarTitleDisplayMode(.inline)
         .task {
+            await academy.prepare()
+            guard allPairs.isEmpty, let repository = academy.repository else { return }
+            allPairs = repository.trainableTermPairs()
             // A run started directly (rather than from the picker) still needs
             // its two independently shuffled columns.
-            if mode != nil, descriptionOrder.isEmpty, !board.isEmpty {
+            if mode != nil, board.isEmpty, !allPairs.isEmpty {
+                board = TermTrainDeck.board(from: allPairs, records: mastery.records)
                 descriptionOrder = board.shuffled()
                 termOrder = board.shuffled()
                 secondsRemaining = mode?.duration ?? 0
@@ -124,6 +133,12 @@ struct TermMatchTrainView: View {
 
                 RatingSummaryCard(store: progress)
 
+                if allPairs.isEmpty {
+                    Text(academy.errorMessage ?? "Preparing terms from installed courses…")
+                        .font(.caption)
+                        .foregroundStyle(CrabrixTheme.muted)
+                }
+
                 VStack(spacing: 11) {
                     ForEach(TermTrainMode.allCases) { option in
                         Button { start(option) } label: {
@@ -153,6 +168,7 @@ struct TermMatchTrainView: View {
                             .crabrixPanel(cornerRadius: 15)
                         }
                         .buttonStyle(.plain)
+                        .disabled(allPairs.isEmpty)
                     }
                 }
             }
@@ -432,9 +448,10 @@ struct TermMatchTrainView: View {
     // MARK: - Run control
 
     private func start(_ selected: TermTrainMode) {
+        guard !allPairs.isEmpty else { return }
         withAnimation(.easeInOut(duration: 0.22)) {
             mode = selected
-            board = TermTrainDeck.board(records: mastery.records)
+            board = TermTrainDeck.board(from: allPairs, records: mastery.records)
             descriptionOrder = board.shuffled()
             termOrder = board.shuffled()
             selectedDescription = nil
@@ -550,6 +567,7 @@ struct TermMatchTrainView: View {
 
         if mode == .timed,
            let replacement = TermTrainDeck.replacement(
+               from: allPairs,
                excluding: Set(board.map(\.id)),
                records: mastery.records
            ) {

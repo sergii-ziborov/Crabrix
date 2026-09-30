@@ -46,7 +46,9 @@ struct InstalledCourseRepository: CourseRepository {
     }
 
     func termPairs() -> [CourseTermPairDTO] {
-        loaded.values.flatMap(\.terms).sorted { $0.order < $1.order }
+        courses.flatMap { course in
+            loaded[course.id]?.terms.sorted { $0.order < $1.order } ?? []
+        }
     }
 
     private static func load(root: URL, record: InstalledCourseRecord,

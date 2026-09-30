@@ -282,23 +282,27 @@ struct AchievementsSection: View {
 
 /// What the learner is weakest at, and what practice will focus on next.
 struct WeakTopicsCard: View {
+    @EnvironmentObject private var academy: AcademyContentStore
     var store: TopicMasteryStore = .shared
     /// Tapping a topic should take you to the lesson it came from; without it
     /// the card names your weak spots and then leaves you to find them.
     var onSelect: ((String) -> Void)?
 
     private var weakest: [(topic: String, strength: Double)] {
-        store.weakest(from: RustQuestionBank.topics + TermTrainDeck.all.map(\.topic), limit: 4)
+        guard let repository = academy.repository else { return [] }
+        let topics = repository.practiceQuestions().map(\.topic)
+            + repository.trainableTermPairs().map(\.topic)
+        return store.weakest(from: topics, limit: 4)
     }
 
     private func title(for topic: String) -> String {
-        RustCourseCatalog.lesson(id: topic)?.title ?? topic
+        academy.repository?.lesson(id: topic)?.title ?? topic
     }
 
     /// Shown beside the title so two lessons with similar names are still
     /// tellable apart at a glance.
     private func courseTitle(for topic: String) -> String? {
-        RustCourseCatalog.course(containingLessonID: topic)?.title.uppercased()
+        academy.repository?.course(containing: topic)?.title.uppercased()
     }
 
     var body: some View {

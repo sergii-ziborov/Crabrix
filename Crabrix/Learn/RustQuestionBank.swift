@@ -64,13 +64,23 @@ enum RustQuestionBank {
         records: [String: TopicMasteryRecord],
         now: Date = Date()
     ) -> [RustQuestion] {
+        round(count: count, from: all, records: records, now: now)
+    }
+
+    static func round(
+        count: Int,
+        from questions: [RustQuestion],
+        records: [String: TopicMasteryRecord],
+        now: Date = Date()
+    ) -> [RustQuestion] {
         let picked = TopicScheduler.pick(
             count: count,
-            from: topics,
+            from: questions.map(\.topic),
             records: records,
             now: now
         )
-        return picked.compactMap(question(for:))
+        let byTopic = Dictionary(uniqueKeysWithValues: questions.map { ($0.topic, $0) })
+        return picked.compactMap { byTopic[$0] }
     }
 
     /// Deterministic variant, for tests.
@@ -80,8 +90,20 @@ enum RustQuestionBank {
         now: Date = Date(),
         using generator: inout some RandomNumberGenerator
     ) -> [RustQuestion] {
-        TopicScheduler
-            .pick(count: count, from: topics, records: records, now: now, using: &generator)
-            .compactMap(question(for:))
+        round(count: count, from: all, records: records, now: now, using: &generator)
+    }
+
+    static func round(
+        count: Int,
+        from questions: [RustQuestion],
+        records: [String: TopicMasteryRecord],
+        now: Date = Date(),
+        using generator: inout some RandomNumberGenerator
+    ) -> [RustQuestion] {
+        let byTopic = Dictionary(uniqueKeysWithValues: questions.map { ($0.topic, $0) })
+        return TopicScheduler
+            .pick(count: count, from: questions.map(\.topic), records: records,
+                  now: now, using: &generator)
+            .compactMap { byTopic[$0] }
     }
 }

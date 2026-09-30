@@ -55,6 +55,17 @@ final class CourseBootstrapTests: XCTestCase {
         )
         let installed = try await bootstrap.activateBundledBaseline(for: .newLearner)
         XCTAssertEqual(installed.courses.map(\.id), ["basics"])
+        let installedLessonIDs = Set(installed.courses.flatMap(\.units).flatMap(\.lessons).map(\.id))
+        XCTAssertFalse(installed.practiceQuestions().isEmpty)
+        XCTAssertTrue(installed.practiceQuestions().allSatisfy {
+            installedLessonIDs.contains($0.topic)
+        })
+        XCTAssertTrue(installed.recallSnippets().allSatisfy {
+            installedLessonIDs.contains($0.topic)
+        })
+        XCTAssertTrue(installed.trainableTermPairs().allSatisfy {
+            installedLessonIDs.contains($0.topic)
+        })
         XCTAssertEqual(try bootstrap.bundledCatalog().courses.count, 7)
         let afterRelaunch = try await bootstrap.activateBundledBaseline(for: .newLearner)
         XCTAssertEqual(afterRelaunch.courses.map(\.id), ["basics"])
@@ -76,6 +87,21 @@ final class CourseBootstrapTests: XCTestCase {
         XCTAssertEqual(first.courses.flatMap(\.units).flatMap(\.lessons).count, 742)
         XCTAssertEqual(
             first.loaded.mapValues(\.archiveSHA256), second.loaded.mapValues(\.archiveSHA256)
+        )
+    }
+
+    func testInstalledPracticeDecksMatchCompleteLegacyBaseline() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = try await CourseBootstrap(
+            bundle: .main, root: root, appVersion: SemanticVersion("1.1")
+        ).activateBundledBaseline()
+
+        XCTAssertEqual(repository.practiceQuestions(), RustQuestionBank.all)
+        XCTAssertEqual(repository.recallSnippets(), CodeRecallDeck.all)
+        XCTAssertEqual(
+            repository.trainableTermPairs().sorted { $0.id < $1.id },
+            TermTrainDeck.all.sorted { $0.id < $1.id }
         )
     }
 

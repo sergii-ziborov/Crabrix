@@ -9,6 +9,7 @@ import Combine
 struct CodeRecallView: View {
     let onComplete: () -> Void
 
+    @EnvironmentObject private var academy: AcademyContentStore
     @EnvironmentObject private var progress: CrabrixProgressStore
     @Environment(\.dismiss) private var dismiss
 
@@ -22,6 +23,7 @@ struct CodeRecallView: View {
 
     @State private var phase: Phase = .idle
     @State private var snippet: CodeRecallSnippet?
+    @State private var snippets: [CodeRecallSnippet] = []
     @State private var level = CodeRecallDeck.minimumLines
     @State private var target: [String] = []
     @State private var tiles: [String] = []
@@ -53,6 +55,13 @@ struct CodeRecallView: View {
         .foregroundStyle(CrabrixTheme.primary)
         .navigationTitle("Code Recall")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            guard snippets.isEmpty else { return }
+            await academy.prepare()
+            if let repository = academy.repository {
+                snippets = repository.recallSnippets()
+            }
+        }
         .onReceive(timer) { _ in tick() }
     }
 
@@ -135,6 +144,12 @@ struct CodeRecallView: View {
                 .font(.headline)
                 .buttonStyle(.borderedProminent)
                 .tint(CrabrixTheme.coral)
+                .disabled(snippets.isEmpty)
+                if snippets.isEmpty {
+                    Text(academy.errorMessage ?? "Preparing snippets from installed courses…")
+                        .font(.caption)
+                        .foregroundStyle(CrabrixTheme.muted)
+                }
             }
             .padding(24)
         }
@@ -333,6 +348,7 @@ struct CodeRecallView: View {
     // MARK: - Run control
 
     private func startRun() {
+        guard !snippets.isEmpty else { return }
         level = CodeRecallDeck.minimumLines
         roundsCleared = 0
         linesRecalled = 0
@@ -343,7 +359,9 @@ struct CodeRecallView: View {
     }
 
     private func nextRound() {
-        guard let picked = CodeRecallDeck.next(records: mastery.records, excluding: usedTopics) else {
+        guard let picked = CodeRecallDeck.next(
+            from: snippets, records: mastery.records, excluding: usedTopics
+        ) else {
             finish()
             return
         }

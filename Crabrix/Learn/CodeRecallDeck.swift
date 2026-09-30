@@ -64,8 +64,19 @@ enum CodeRecallDeck {
         now: Date = Date(),
         using generator: inout some RandomNumberGenerator
     ) -> CodeRecallSnippet? {
-        let pool = all.filter { !used.contains($0.topic) }
-        let candidates = pool.isEmpty ? all : pool
+        next(from: all, records: records, excluding: used,
+             now: now, using: &generator)
+    }
+
+    static func next(
+        from snippets: [CodeRecallSnippet],
+        records: [String: TopicMasteryRecord],
+        excluding used: Set<String> = [],
+        now: Date = Date(),
+        using generator: inout some RandomNumberGenerator
+    ) -> CodeRecallSnippet? {
+        let pool = snippets.filter { !used.contains($0.topic) }
+        let candidates = pool.isEmpty ? snippets : pool
         guard !candidates.isEmpty else { return nil }
         let picked = TopicScheduler.pick(
             count: 1,
@@ -75,7 +86,7 @@ enum CodeRecallDeck {
             using: &generator
         )
         guard let topic = picked.first else { return candidates.first }
-        return snippet(topic: topic)
+        return candidates.first { $0.topic == topic }
     }
 
     static func next(
@@ -84,7 +95,19 @@ enum CodeRecallDeck {
         now: Date = Date()
     ) -> CodeRecallSnippet? {
         var generator = SystemRandomNumberGenerator()
-        return next(records: records, excluding: used, now: now, using: &generator)
+        return next(from: all, records: records, excluding: used,
+                    now: now, using: &generator)
+    }
+
+    static func next(
+        from snippets: [CodeRecallSnippet],
+        records: [String: TopicMasteryRecord],
+        excluding used: Set<String> = [],
+        now: Date = Date()
+    ) -> CodeRecallSnippet? {
+        var generator = SystemRandomNumberGenerator()
+        return next(from: snippets, records: records, excluding: used,
+                    now: now, using: &generator)
     }
 }
 

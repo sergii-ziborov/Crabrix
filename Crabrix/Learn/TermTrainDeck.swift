@@ -192,8 +192,20 @@ enum TermTrainDeck {
         now: Date = Date(),
         shuffled: Bool = true
     ) -> [TermTrainPair] {
-        let available = all.filter { !used.contains($0.id) }
-        let pool = available.count >= size ? available : all
+        board(from: all, excluding: used, size: size, records: records,
+              now: now, shuffled: shuffled)
+    }
+
+    static func board(
+        from pairs: [TermTrainPair],
+        excluding used: Set<String> = [],
+        size: Int = boardSize,
+        records: [String: TopicMasteryRecord] = [:],
+        now: Date = Date(),
+        shuffled: Bool = true
+    ) -> [TermTrainPair] {
+        let available = pairs.filter { !used.contains($0.id) }
+        let pool = available.count >= size ? available : pairs
         guard shuffled else { return Array(pool.prefix(size)) }
         guard !records.isEmpty else { return Array(pool.shuffled().prefix(size)) }
 
@@ -229,7 +241,18 @@ enum TermTrainDeck {
         now: Date = Date(),
         shuffled: Bool = true
     ) -> TermTrainPair? {
-        let available = all.filter { !used.contains($0.id) }
+        replacement(from: all, excluding: used, records: records,
+                    now: now, shuffled: shuffled)
+    }
+
+    static func replacement(
+        from pairs: [TermTrainPair],
+        excluding used: Set<String>,
+        records: [String: TopicMasteryRecord] = [:],
+        now: Date = Date(),
+        shuffled: Bool = true
+    ) -> TermTrainPair? {
+        let available = pairs.filter { !used.contains($0.id) }
         guard !available.isEmpty else { return nil }
         guard shuffled else { return available.first }
         guard !records.isEmpty else { return available.randomElement() }
