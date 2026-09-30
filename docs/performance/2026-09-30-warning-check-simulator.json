@@ -56,6 +56,43 @@
     "changedGuestExecutionMilliseconds": 1135.536833,
     "note": "Single Apple Silicon simulator observation. Debug/Release difference is a build-configuration effect, not an improvement credited to a Crabrix patch."
   },
+  "runtimeComparison": {
+    "baselineAppRevision": "c38423e7503a56d6cd97e3a6c17651d5a5c33d62",
+    "baselineRuntime": "vendored WasmKit 0.3.1 with Crabrix patches",
+    "candidateAppCodeRevision": "84bc49c0a3df34b7e96b291dd596e9f1a30f05a7",
+    "candidateRuntimeRevision": "731d09b7c779e62fd42832312c42d29f69475361",
+    "configuration": "Release iOS 18.2 arm64 simulator, Xcode 27.0 beta, ENABLE_TESTABILITY=YES",
+    "sameToolchainIdentity": "41412081eefc3e08ec5664ed0748902a7e575e1f267898dcc64d412702df7e83:a89ba732c649a983126750112268614c80b6e7d6bba8c60980cbfd32e04d9892",
+    "iterations": 5,
+    "relaunchBetweenIterations": true,
+    "order": "baseline, then candidate",
+    "baselineMilliseconds": {
+      "first": [2061.172875, 2219.061708, 1933.207541, 2069.131916, 1845.045792],
+      "unchanged": [1.263291, 1.249042, 1.1155, 1.185125, 1.230334],
+      "changed": [1572.5965, 1588.4985, 1548.291541, 1657.12, 1733.529334]
+    },
+    "candidateMilliseconds": {
+      "first": [1838.910583, 1803.256, 1874.103542, 2448.042834, 2135.1365],
+      "unchanged": [1.04025, 0.774583, 0.754459, 0.822208, 0.747541],
+      "changed": [1264.024208, 1177.190584, 1753.925, 1496.261333, 1444.6305]
+    },
+    "medianMilliseconds": {
+      "baselineFirst": 2061.172875,
+      "candidateFirst": 1874.103542,
+      "baselineUnchanged": 1.230334,
+      "candidateUnchanged": 0.774583,
+      "baselineChanged": 1588.4985,
+      "candidateChanged": 1444.6305
+    },
+    "warningCounts": {
+      "baselineFirst": 2,
+      "baselineUnchanged": 0,
+      "candidateFirst": 2,
+      "candidateUnchanged": 2
+    },
+    "baselineTestAdaptation": "A scratch copy of the same probe omitted only the candidate-only warning-parity assertions; the unmodified probe first failed on baseline and passed on candidate.",
+    "limits": "Five samples do not support a p95 claim. Thermal state and peak RSS were not captured; the simulator is not a physical iPhone. This is A versus C, not the clean-0.4.1 B baseline."
+  },
   "exploratorySingleRuns": [
     {
       "configuration": "Debug, direct dispatch, guards enabled",
@@ -73,5 +110,5 @@
       "disposition": "safety experiment only; fuel restored"
     }
   ],
-  "interpretation": "The correctness defect on unchanged Check is fixed. A local CPU sample placed most compiler-thread samples within WasmKit lazy function translation, but it was a Debug simulator sample and is not a user-device speed claim. One simulator sample per revision cannot establish a cold compiler speedup; the short cache-hit times are not compiler throughput. Release-mode physical-device A/B/C measurements remain required."
+  "interpretation": "The correctness defect on unchanged Check is fixed. In the five-run Release simulator A/C comparison, first and changed Check medians improved only about 1.1x; unchanged cache-hit median improved about 1.6x, which is not compiler throughput. No several-fold compilation improvement is demonstrated. A local Debug CPU sample placed most compiler-thread samples within WasmKit lazy function translation, but it is not a user-device speed claim. Release-mode physical-device A/B/C measurements remain required."
 }
