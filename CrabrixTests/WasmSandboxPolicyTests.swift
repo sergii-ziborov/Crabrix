@@ -3,6 +3,24 @@ import XCTest
 @testable import Crabrix
 
 final class WasmSandboxPolicyTests: XCTestCase {
+    func testSoftwareBoundsRejectDirectDispatcherAndTrapAtFirstUncommittedByte() throws {
+        let module = try parseWasm(bytes: Self.firstOutOfBoundsLoadModule)
+        let engine = Engine(configuration: .init(
+            threadingModel: .direct,
+            memoryBoundsChecking: .software,
+            softwareMemoryReservationBytes: WasmSandboxPolicy.userProgramMemoryLimitBytes
+        ))
+        guard case .token = engine.configuration.threadingModel else {
+            return XCTFail("Software bounds must use the checked token dispatcher.")
+        }
+        let store = Store(engine: engine)
+        let instance = try module.instantiate(store: store)
+        let start = try XCTUnwrap(instance.exports[function: "_start"])
+        XCTAssertThrowsError(try start()) { error in
+            XCTAssertTrue(error is Trap, "Expected a guest trap, got \(error)")
+        }
+    }
+
     func testMemoryAndTableGrowthAreBounded() throws {
         let limiter = WasmSandboxResourceLimiter()
 
@@ -197,6 +215,17 @@ final class WasmSandboxPolicyTests: XCTestCase {
         0x03, 0x02, 0x01, 0x00,
         0x07, 0x0A, 0x01, 0x06, 0x5F, 0x73, 0x74, 0x61, 0x72, 0x74, 0x00, 0x00,
         0x0A, 0x09, 0x01, 0x07, 0x00, 0x03, 0x40, 0x0C, 0x00, 0x0B, 0x0B,
+    ]
+
+    // (module (memory 1) (func (export "_start")
+    //   (drop (i32.load (i32.const 65536)))))
+    private static let firstOutOfBoundsLoadModule: [UInt8] = [
+        0x00, 0x61, 0x73, 0x6D, 0x01, 0x00, 0x00, 0x00,
+        0x01, 0x04, 0x01, 0x60, 0x00, 0x00,
+        0x03, 0x02, 0x01, 0x00,
+        0x05, 0x03, 0x01, 0x00, 0x01,
+        0x07, 0x0A, 0x01, 0x06, 0x5F, 0x73, 0x74, 0x61, 0x72, 0x74, 0x00, 0x00,
+        0x0A, 0x0C, 0x01, 0x0A, 0x00, 0x41, 0x80, 0x80, 0x04, 0x28, 0x02, 0x00, 0x1A, 0x0B,
     ]
 
     private static let emptyStartModule: [UInt8] = [
