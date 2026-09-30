@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "status": "engineering observation; simulator only; no physical-device or whole-app speed claim",
+  "date": "2026-09-30",
+  "workload": "warning-check-v1",
+  "sourceSHA256": "0f76d31e5afd38dc54aefef96ed3c05b1c3f407b8e3d590ab241c457bc13013d",
+  "environment": {
+    "device": "iOS 18.2 arm64 simulator on Apple Silicon Mac",
+    "xcode": "27.0 (27A5228h)",
+    "configuration": "Release; ENABLE_TESTABILITY=YES; CODE_SIGNING_ALLOWED=NO",
+    "toolchainIdentity": "41412081eefc3e08ec5664ed0748902a7e575e1f267898dcc64d412702df7e83:a89ba732c649a983126750112268614c80b6e7d6bba8c60980cbfd32e04d9892",
+    "peakRSS": null,
+    "thermalState": null,
+    "sampleCountPerRevision": 5,
+    "sampleIsolation": "five separate xcodebuild test processes; the first candidate process built the changed package revision before running"
+  },
+  "baseline": {
+    "runtimeCommit": "719f94d7d27368549502828217e3dbc7e6738852",
+    "appBaseCommit": "2bed561bc99ea0506366f2f5fe110e5aa9aedae7",
+    "observationsMilliseconds": [
+      {
+        "first": 1228.261,
+        "unchanged": 0.725,
+        "changed": 1066.634
+      },
+      {
+        "first": 1203.933,
+        "unchanged": 0.75,
+        "changed": 1265.372
+      },
+      {
+        "first": 1844.511,
+        "unchanged": 0.75,
+        "changed": 1143.668
+      },
+      {
+        "first": 1224.291,
+        "unchanged": 0.763,
+        "changed": 1215.584
+      },
+      {
+        "first": 1471.237,
+        "unchanged": 0.763,
+        "changed": 1132.809
+      }
+    ],
+    "mediansMilliseconds": {
+      "first": 1228.261,
+      "unchanged": 0.75,
+      "changed": 1143.668
+    }
+  },
+  "candidate": {
+    "runtimeCommit": "fbe46d928a4592ca274e5fdf07fdbafcf9538868",
+    "appSourceCommit": "ece70b0280148488806a3edbfd5063ea6b0e87a5",
+    "appPatch": "same reserved-memory Check path with explicit token dispatch; runtime additionally forces token for all software bounds after a direct-dispatch OOB regression",
+    "observationsMilliseconds": [
+      {
+        "first": 1244.382,
+        "unchanged": 0.767,
+        "changed": 588.595
+      },
+      {
+        "first": 989.581,
+        "unchanged": 1.073,
+        "changed": 599.351
+      },
+      {
+        "first": 781.317,
+        "unchanged": 0.797,
+        "changed": 564.544
+      },
+      {
+        "first": 802.435,
+        "unchanged": 0.836,
+        "changed": 553.276
+      },
+      {
+        "first": 859.161,
+        "unchanged": 1.088,
+        "changed": 566.34
+      }
+    ],
+    "mediansMilliseconds": {
+      "first": 859.161,
+      "unchanged": 0.836,
+      "changed": 566.34
+    }
+  },
+  "medianRatiosBaselineOverCandidate": {
+    "first": 1.43,
+    "unchanged": 0.897,
+    "changed": 2.019
+  },
+  "historicalApp031Reference": {
+    "sourceReport": "docs/performance/2026-09-30-warning-check-simulator.json",
+    "appSourceCommit": "c38423e7503a56d6cd97e3a6c17651d5a5c33d62",
+    "runtime": "vendored WasmKit 0.3.1 with Crabrix patches",
+    "mediansMilliseconds": {
+      "first": 2061.172875,
+      "unchanged": 1.230334,
+      "changed": 1588.4985
+    },
+    "medianRatiosHistoricalOverCurrent": {
+      "first": 2.399,
+      "unchanged": 1.472,
+      "changed": 2.805
+    },
+    "limit": "Historical A and current candidate ran in separate sessions on different app source snapshots; useful product context, not an isolated runtime-patch comparison."
+  },
+  "correctness": "All five candidate probe tests passed with two warnings in each first and changed Check; unchanged Check retained identical diagnostics, stdout and stderr. Four reserved-memory runtime tests and the full 462-test runtime suite passed after the token fallback.",
+  "interpretation": "Changed Check improved against the preceding fork by about 2.02x on this Simulator workload. First Check improved by about 1.43x, with wider variation. The old 0.3.1 app snapshot is an earlier separate comparison. Physical-device, peak-RSS, thermal, Cargo, and p95 results are not established."
+}
