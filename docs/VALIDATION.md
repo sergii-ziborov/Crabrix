@@ -1,6 +1,6 @@
 # Validation record — 30 September 2026
 
-This records observed results for the current development branch. It is not an App Store submission or physical-device certification. The first-launch tests initially used app source commit `3fb8986`; `f791bc1` adds recognition of saved settings, pending a repeat run. Older gate results explicitly name their earlier input. Documentation commits may differ without changing build inputs.
+This records observed results for the current development branch. It is not an App Store submission or physical-device certification. The latest full fast suite used app source commit `e6f1f60`; older gate results explicitly name their earlier input. Documentation commits may differ without changing build inputs.
 
 | Area | Observed result |
 | --- | --- |
@@ -8,7 +8,8 @@ This records observed results for the current development branch. It is not an A
 | Course semantic parity | `missing=0`, `unexpected=0`, `unapprovedChanges=0` for signed CoursePack 1.0.1. |
 | Course reader | Simulator test installed seven bundled packs, read 742 lessons, compared written content and all 200 runtime Atlas validators to legacy models; passed. |
 | Offline bootstrap | Simulator test activated bundled packs twice and retained the same version/hash identities; passed. |
-| First-launch selection | At `3fb8986`, five `CourseBootstrapTests` passed on iOS 18.2 Simulator: fresh install selects Basics, legacy progress or projects select all seven packs, the decision remains stable after new progress is written, and relaunch/removal behavior is preserved. `f791bc1` also recognizes saved settings; its repeat test is pending. |
+| First-launch selection | At `e6f1f60`, five `CourseBootstrapTests` passed on iOS 18.2 Simulator: fresh install selects Basics, legacy progress, projects, or saved settings select all seven packs, the decision remains stable after new progress is written, and relaunch/removal behavior is preserved. |
+| Full fast app suite | `xcodebuild test -project Crabrix.xcodeproj -scheme Crabrix -configuration Debug -destination 'platform=iOS Simulator,id=3FAF353F-BA0C-4F22-9443-92F60E557BF6' -onlyUsePackageVersionsFromResolvedFile CODE_SIGNING_ALLOWED=NO` at `e6f1f60`: 393 tests executed, 2 opt-in gates skipped, 0 failures. This includes three CoursePack signature/archive checks after correcting the fixture lookup for XcodeGen's flat bundle layout. |
 | Public course fetch | `CrabrixCourseDeliveryGate` fetched the signed public catalog and `basics` release, verified and installed it on Simulator; passed. |
 | Clean source checkout | The pushed `ecd2af0` commit built successfully in an isolated checkout without the owner's unrelated local edits. Its offline bootstrap, full reader/Atlas parity, and five sandbox tests passed there. |
 | Local course removal | Clean checkout at `91f7756` built and passed two bootstrap tests (including delete/relaunch/open-session retention) and three installer tests for tamper, compatibility, and interrupted activation. |
