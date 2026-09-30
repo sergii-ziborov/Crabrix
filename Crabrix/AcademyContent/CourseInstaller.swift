@@ -274,28 +274,37 @@ actor CourseInstaller {
     }
 
     private func recover() throws {
-        guard fileManager.fileExists(atPath: journalURL.path) else { return }
-        let journal = try JSONDecoder().decode(
-            CourseInstallJournal.self, from: Data(contentsOf: journalURL)
-        )
-        let target = URL(fileURLWithPath: journal.targetPath)
-        let staging = URL(fileURLWithPath: journal.stagingPath)
-        guard target.standardizedFileURL.path.hasPrefix(root.standardizedFileURL.path + "/"),
-              staging.standardizedFileURL.path.hasPrefix(
-                root.standardizedFileURL.appending(path: ".staging").path + "/"
-              ) else { throw CoursePackError.unsafeArchive("install journal") }
-        let active = try readIndex().active[journal.key]
-        let activePath = active.map {
-            root.appending(path: "\($0.courseID)/\($0.language)/\($0.contentVersion)").path
+        if fileManager.fileExists(atPath: journalURL.path) {
+            let journal = try JSONDecoder().decode(
+                CourseInstallJournal.self, from: Data(contentsOf: journalURL)
+            )
+            let target = URL(fileURLWithPath: journal.targetPath)
+            let staging = URL(fileURLWithPath: journal.stagingPath)
+            guard target.standardizedFileURL.path.hasPrefix(root.standardizedFileURL.path + "/"),
+                  staging.standardizedFileURL.path.hasPrefix(
+                    root.standardizedFileURL.appending(path: ".staging").path + "/"
+                  ) else { throw CoursePackError.unsafeArchive("install journal") }
+            let active = try readIndex().active[journal.key]
+            let activePath = active.map {
+                root.appending(path: "\($0.courseID)/\($0.language)/\($0.contentVersion)").path
+            }
+            if activePath != target.path,
+               fileManager.fileExists(atPath: target.path) {
+                try fileManager.removeItem(at: target)
+            }
+            if fileManager.fileExists(atPath: staging.path) {
+                try fileManager.removeItem(at: staging)
+            }
+            try fileManager.removeItem(at: journalURL)
         }
-        if activePath != target.path,
-           fileManager.fileExists(atPath: target.path) {
-            try fileManager.removeItem(at: target)
+
+        // A process can die during copy or extraction, before the activation
+        // journal exists. The install lock guarantees no other installer actor
+        // in this process is using staging while recovery runs.
+        let stagingRoot = root.appending(path: ".staging", directoryHint: .isDirectory)
+        if fileManager.fileExists(atPath: stagingRoot.path) {
+            try fileManager.removeItem(at: stagingRoot)
         }
-        if fileManager.fileExists(atPath: staging.path) {
-            try fileManager.removeItem(at: staging)
-        }
-        try fileManager.removeItem(at: journalURL)
     }
 }
 

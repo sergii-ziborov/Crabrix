@@ -69,6 +69,31 @@ final class CourseInstallerTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: root.appending(path: "basics/en/1.0.1/course.json").path))
     }
 
+    func testRecoveryRemovesPreJournalStagingAndKeepsInstalledCourse() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let installer = try CourseInstaller(root: root, appVersion: SemanticVersion("1.1"))
+        let keys = try JSONDecoder().decode(CourseKeyring.self,
+                                            from: Data(contentsOf: fixture("production-keyring.json")))
+        _ = try await installer.install(
+            descriptorBytes: Data(contentsOf: fixture("basics.descriptor.json")),
+            downloadedArchive: fixture("basics-1.0.1.zip"), keyring: keys
+        )
+        let interrupted = root.appending(path: ".staging/interrupted/payload")
+        try FileManager.default.createDirectory(at: interrupted, withIntermediateDirectories: true)
+        try Data("partial archive".utf8).write(to: interrupted.appending(path: "course.json"))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: root.appending(path: "journal.json").path))
+
+        let afterRelaunch = try CourseInstaller(root: root, appVersion: SemanticVersion("1.1"))
+        let active = try await afterRelaunch.installed()
+
+        XCTAssertEqual(active.map(\.contentVersion), ["1.0.1"])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: root.appending(path: ".staging").path))
+        XCTAssertTrue(FileManager.default.fileExists(
+            atPath: root.appending(path: "basics/en/1.0.1/course.json").path
+        ))
+    }
+
     func testMinimumAppVersionRejectsBeforeStaging() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
