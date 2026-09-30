@@ -17,7 +17,7 @@ jobs:
     runs-on: xcode-27
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - name: Record toolchain
         run: |
@@ -42,10 +42,11 @@ jobs:
 
       - name: Run fast release suite
         run: |
+          simulator_id="$(scripts/select-ios-simulator.sh)"
           xcodebuild test \
             -project Crabrix.xcodeproj \
             -scheme Crabrix \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0' \
+            -destination "platform=iOS Simulator,id=${simulator_id}" \
             -onlyUsePackageVersionsFromResolvedFile \
             CODE_SIGNING_ALLOWED=NO
 
@@ -82,7 +83,7 @@ jobs:
     runs-on: xcode-27
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - name: Install project-generation tools
         run: |
@@ -95,9 +96,10 @@ jobs:
 
       - name: Run bundled rustc and sandbox gates
         run: |
+          simulator_id="$(scripts/select-ios-simulator.sh)"
           xcodebuild test \
             -project Crabrix.xcodeproj \
             -scheme CrabrixCompilerGate \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0' \
+            -destination "platform=iOS Simulator,id=${simulator_id}" \
             -onlyUsePackageVersionsFromResolvedFile \
             CODE_SIGNING_ALLOWED=NO
