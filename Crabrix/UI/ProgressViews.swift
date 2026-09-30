@@ -304,16 +304,10 @@ struct WeakTopicsCard: View {
     var body: some View {
         let summary = store.summary
         return VStack(alignment: .leading, spacing: 11) {
-            HStack {
-                Label("WHAT TO PRACTISE", systemImage: "target")
-                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+            if summary.seen > 0 {
+                Text("\(summary.strong) strong · \(summary.weak) weak")
+                    .font(.caption2.monospaced())
                     .foregroundStyle(CrabrixTheme.muted)
-                Spacer()
-                if summary.seen > 0 {
-                    Text("\(summary.strong) strong · \(summary.weak) weak")
-                        .font(.caption2.monospaced())
-                        .foregroundStyle(CrabrixTheme.muted)
-                }
             }
 
             if weakest.isEmpty {
