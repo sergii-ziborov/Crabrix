@@ -138,7 +138,6 @@ enum CoursePackVerifier {
             versions[identity] = course.archiveSHA256
             guard course.descriptorURL.scheme == "https", course.archiveURL.scheme == "https",
                   course.archiveBytes > 0 else { throw CoursePackError.invalidCatalog }
-            try checkCapabilities(course.requiredCapabilities)
         }
         return catalog
     }

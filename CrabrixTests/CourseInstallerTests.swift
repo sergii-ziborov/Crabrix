@@ -12,7 +12,7 @@ final class CourseInstallerTests: XCTestCase {
     func testInstallPreservesActiveVersionAfterTamperedDownload() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
-        let installer = try CourseInstaller(root: root)
+        let installer = try CourseInstaller(root: root, appVersion: SemanticVersion("1.1"))
         let descriptor = try Data(contentsOf: fixture("basics.descriptor.json"))
         let keys = try JSONDecoder().decode(CourseKeyring.self,
                                             from: Data(contentsOf: fixture("production-keyring.json")))
@@ -41,7 +41,7 @@ final class CourseInstallerTests: XCTestCase {
     func testRecoveryDiscardsUncommittedVersionAndKeepsOldPointer() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
-        let installer = try CourseInstaller(root: root)
+        let installer = try CourseInstaller(root: root, appVersion: SemanticVersion("1.1"))
         let keys = try JSONDecoder().decode(CourseKeyring.self,
                                             from: Data(contentsOf: fixture("production-keyring.json")))
         _ = try await installer.install(
@@ -64,5 +64,23 @@ final class CourseInstallerTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: orphan.path))
         XCTAssertFalse(FileManager.default.fileExists(atPath: staging.path))
         XCTAssertTrue(FileManager.default.fileExists(atPath: root.appending(path: "basics/en/1.0.1/course.json").path))
+    }
+
+    func testMinimumAppVersionRejectsBeforeStaging() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let installer = try CourseInstaller(root: root, appVersion: SemanticVersion("1.0"))
+        let keys = try JSONDecoder().decode(CourseKeyring.self,
+                                            from: Data(contentsOf: fixture("production-keyring.json")))
+        do {
+            _ = try await installer.install(
+                descriptorBytes: Data(contentsOf: fixture("basics.descriptor.json")),
+                downloadedArchive: fixture("basics-1.0.1.zip"), keyring: keys
+            )
+            XCTFail("An incompatible course became installed")
+        } catch CoursePackError.incompatibleCapability {
+            let installed = try await installer.installed()
+            XCTAssertTrue(installed.isEmpty)
+        }
     }
 }

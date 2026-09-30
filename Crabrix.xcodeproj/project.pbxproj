@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A860C62CF0A246B0888A0124 /* CourseCompatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0125 /* CourseCompatibility.swift */; };
+		A860C62CF0A246B0888A0122 /* InstalledCourseRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0123 /* InstalledCourseRepositoryTests.swift */; };
+		A860C62CF0A246B0888A0119 /* MigrationCoursePacks in Resources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0120 /* MigrationCoursePacks */; };
+		A860C62CF0A246B0888A0121 /* MigrationCoursePacks in Resources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0120 /* MigrationCoursePacks */; };
+		A860C62CF0A246B0888A0117 /* InstalledCourseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0118 /* InstalledCourseRepository.swift */; };
+		A860C62CF0A246B0888A0115 /* CourseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0116 /* CourseRepository.swift */; };
+		A860C62CF0A246B0888A0113 /* CourseModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0114 /* CourseModels.swift */; };
 		A860C62CF0A246B0888A0111 /* CourseInstallerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0112 /* CourseInstallerTests.swift */; };
 		A860C62CF0A246B0888A0109 /* CourseInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0110 /* CourseInstaller.swift */; };
 		A860C62CF0A246B0888A0104 /* CoursePackVerifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A860C62CF0A246B0888A0105 /* CoursePackVerifierTests.swift */; };
@@ -214,6 +221,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A860C62CF0A246B0888A0125 /* CourseCompatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseCompatibility.swift; sourceTree = "<group>"; };
+		A860C62CF0A246B0888A0123 /* InstalledCourseRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledCourseRepositoryTests.swift; sourceTree = "<group>"; };
+		A860C62CF0A246B0888A0120 /* MigrationCoursePacks */ = {isa = PBXFileReference; lastKnownFileType = folder; path = MigrationCoursePacks; sourceTree = "<group>"; };
+		A860C62CF0A246B0888A0118 /* InstalledCourseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledCourseRepository.swift; sourceTree = "<group>"; };
+		A860C62CF0A246B0888A0116 /* CourseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseRepository.swift; sourceTree = "<group>"; };
+		A860C62CF0A246B0888A0114 /* CourseModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseModels.swift; sourceTree = "<group>"; };
 		A860C62CF0A246B0888A0112 /* CourseInstallerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseInstallerTests.swift; sourceTree = "<group>"; };
 		A860C62CF0A246B0888A0110 /* CourseInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseInstaller.swift; sourceTree = "<group>"; };
 		A860C62CF0A246B0888A0105 /* CoursePackVerifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePackVerifierTests.swift; sourceTree = "<group>"; };
@@ -409,6 +422,10 @@
 			children = (
 				A860C62CF0A246B0888A0102 /* CoursePackVerifier.swift */,
 				A860C62CF0A246B0888A0110 /* CourseInstaller.swift */,
+				A860C62CF0A246B0888A0118 /* InstalledCourseRepository.swift */,
+				A860C62CF0A246B0888A0125 /* CourseCompatibility.swift */,
+				A860C62CF0A246B0888A0116 /* CourseRepository.swift */,
+				A860C62CF0A246B0888A0114 /* CourseModels.swift */,
 			);
 			path = AcademyContent;
 			sourceTree = "<group>";
@@ -594,6 +611,7 @@
 			children = (
 				A860C62CF0A246B0888A0105 /* CoursePackVerifierTests.swift */,
 				A860C62CF0A246B0888A0112 /* CourseInstallerTests.swift */,
+				A860C62CF0A246B0888A0123 /* InstalledCourseRepositoryTests.swift */,
 				A860C62CF0A246B0888A0107 /* CoursePack */,
 				67D67D2D0A1619040A96DC9A /* AchievementTierTests.swift */,
 				1067DEB86E13480FF37A47CB /* AlgorithmCourseCatalogTests.swift */,
@@ -751,6 +769,7 @@
 			isa = PBXGroup;
 			children = (
 				CA5866457924F7521705CCD1 /* Assets.xcassets */,
+				A860C62CF0A246B0888A0120 /* MigrationCoursePacks */,
 				B2888F23BE9517E3AC3CA427 /* Info.plist */,
 				6166C001764BC9D14984D241 /* PrivacyInfo.xcprivacy */,
 				89EA67014F3DD1B2E42E0EDE /* ThirdPartyNotices.md */,
@@ -874,6 +893,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A860C62CF0A246B0888A0106 /* CoursePack in Resources */,
+				A860C62CF0A246B0888A0121 /* MigrationCoursePacks in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -890,6 +910,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F8F1E02965F5C0146D69DD89 /* Assets.xcassets in Resources */,
+				A860C62CF0A246B0888A0119 /* MigrationCoursePacks in Resources */,
 				3504D6529B169202FB4FDC61 /* PrivacyInfo.xcprivacy in Resources */,
 				DF3BD723C27443199DCA4948 /* Rust-COPYRIGHT.txt in Resources */,
 				1A9A04A8AFF14ECB8DEB7D4B /* Rust-LICENSE-APACHE.txt in Resources */,
@@ -942,6 +963,10 @@
 			files = (
 				A860C62CF0A246B0888A0101 /* CoursePackVerifier.swift in Sources */,
 				A860C62CF0A246B0888A0109 /* CourseInstaller.swift in Sources */,
+				A860C62CF0A246B0888A0117 /* InstalledCourseRepository.swift in Sources */,
+				A860C62CF0A246B0888A0124 /* CourseCompatibility.swift in Sources */,
+				A860C62CF0A246B0888A0115 /* CourseRepository.swift in Sources */,
+				A860C62CF0A246B0888A0113 /* CourseModels.swift in Sources */,
 				DD74E3CFB5C4836F4B571E46 /* AchievementCelebrationView.swift in Sources */,
 				03886B8D78DCEDCE1A159287 /* AlgorithmCourseCatalog.swift in Sources */,
 				2A129C11FCE30742F1CD2CE4 /* AlgorithmCourseData.swift in Sources */,
@@ -1048,6 +1073,7 @@
 			files = (
 				A860C62CF0A246B0888A0104 /* CoursePackVerifierTests.swift in Sources */,
 				A860C62CF0A246B0888A0111 /* CourseInstallerTests.swift in Sources */,
+				A860C62CF0A246B0888A0122 /* InstalledCourseRepositoryTests.swift in Sources */,
 				236C594F43D32B64EF77B7A6 /* AchievementTierTests.swift in Sources */,
 				907271D59A799311162F4CF6 /* AlgorithmCourseCatalogTests.swift in Sources */,
 				ABDFFA5263492E9C914C3C6B /* BorrowRepairTests.swift in Sources */,

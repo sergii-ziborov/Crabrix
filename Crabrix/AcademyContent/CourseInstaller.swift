@@ -28,8 +28,9 @@ private struct CourseInstallJournal: Codable {
 actor CourseInstaller {
     private let root: URL
     private let fileManager = FileManager.default
+    private let appVersion: SemanticVersion
 
-    init(root: URL? = nil) throws {
+    init(root: URL? = nil, appVersion: SemanticVersion? = nil) throws {
         if let root {
             self.root = root
         } else {
@@ -43,6 +44,9 @@ actor CourseInstaller {
         values.isExcludedFromBackup = true
         var courseRoot = self.root
         try courseRoot.setResourceValues(values)
+        let bundleVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+        self.appVersion = appVersion ?? SemanticVersion(bundleVersion ?? "0")
+            ?? SemanticVersion(major: 0, minor: 0, patch: 0)
     }
 
     func installed() throws -> [InstalledCourseRecord] {
@@ -60,6 +64,7 @@ actor CourseInstaller {
         )
         guard let descriptor = try? JSONDecoder().decode(CourseDescriptorPayload.self, from: payload)
         else { throw CoursePackError.invalidEnvelope }
+        try CourseCompatibility.requireSupported(descriptor, appVersion: appVersion)
         let courseID = try component(descriptor.courseID)
         let language = try component(descriptor.language)
         let version = try component(descriptor.contentVersion)
