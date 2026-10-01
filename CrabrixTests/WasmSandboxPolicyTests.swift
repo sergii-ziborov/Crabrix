@@ -62,6 +62,34 @@ final class WasmSandboxPolicyTests: XCTestCase {
         XCTAssertEqual(interrupter.stopReason, .instructionBudget)
     }
 
+    func testWallClockStopsPureComputeGuestWithSampledFuelProbe() throws {
+        let module = try parseWasm(bytes: Self.infiniteLoopModule)
+        let runtime = RustcRuntime()
+        let interrupter = WasmInterrupter()
+        let directory = FileManager.default.temporaryDirectory
+            .appending(path: "CrabrixDeadlineTest-\(UUID().uuidString)", directoryHint: .isDirectory)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let started = ContinuousClock.now
+        XCTAssertThrowsError(
+            try runtime.run(
+                module: module,
+                arguments: ["program"],
+                environment: [:],
+                preopens: [],
+                captureDirectory: directory,
+                capturePrefix: "deadline",
+                fuelBudget: .max,
+                wallClockLimit: .milliseconds(20),
+                interrupter: interrupter
+            )
+        ) { error in
+            XCTAssertEqual((error as? WasmExecutionCancelled)?.reason, .wallClock)
+        }
+        XCTAssertEqual(interrupter.stopReason, .wallClock)
+        XCTAssertLessThan(started.duration(to: ContinuousClock.now), .seconds(2))
+    }
+
     func testUserStopInterruptsPureComputeGuestAndNextRunStarts() async throws {
         let runtime = RustcRuntime()
         let module = try parseWasm(bytes: Self.infiniteLoopModule)

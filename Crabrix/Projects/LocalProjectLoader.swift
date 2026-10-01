@@ -25,7 +25,10 @@ enum LocalProjectLoader {
     }
 
     static let maximumFileCount = 512
-    static let maximumFileBytes = 1_500_000
+    // Match CrateSourceBrowser's 2 MiB viewing cap. Published crates can
+    // contain a large text fixture even when their library source is small;
+    // keep that file viewable and editable under the existing 16 MB tree cap.
+    static let maximumFileBytes = 2 * 1_024 * 1_024
     static let maximumProjectBytes = 16_000_000
 
     private static let ignoredDirectories: Set<String> = [

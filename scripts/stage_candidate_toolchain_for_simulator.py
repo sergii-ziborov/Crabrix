@@ -32,7 +32,12 @@ CANDIDATE_PROBES = {
     "BundledCompilerGateTests/testMultiFileClapRegexCollectionsAppBuildsAndRuns()",
     "BundledCompilerGateTests/testSourceBuiltCompilerCheckedI64Multiplication()",
     "BundledCompilerGateTests/testSourceBuiltCompilerI128ByteSwap()",
+    "BundledCompilerGateTests/testSourceBuiltCompilerI128ImmediateComparison()",
     "BundledCompilerGateTests/testSourceBuiltCompilerRegexDependencyBuildsAndRuns()",
+    "BundledCompilerGateTests/testMultiFileRoutePlannerWithGraphCratesBuildsAndRuns()",
+    "WasmSandboxPolicyTests/testInstructionBudgetStopsPureComputeGuestWithoutHostCalls()",
+    "WasmSandboxPolicyTests/testUserStopInterruptsPureComputeGuestAndNextRunStarts()",
+    "WasmSandboxPolicyTests/testWallClockStopsPureComputeGuestWithSampledFuelProbe()",
 }
 
 

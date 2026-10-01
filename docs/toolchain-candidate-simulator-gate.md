@@ -142,3 +142,31 @@ catalog SHA-256 values (`15a05aba1a08ac5f576e3e088036a61a23219e30c7001463e82435f
 and the ZIP digest above). The CoursePack verifier accepted all 212 Projects
 payload files. This checks the published bytes; it is separate from the
 Simulator installation and compiler gates.
+
+On 2 October the third stripped compiler and sampled-runtime fork were used
+for a new three-file route-planner probe with `clap 4.5.50`, `regex 1.13.1`,
+`petgraph 0.8.3`, and `itertools 0.14.0`. The first run **failed** (one executed,
+four XCTest assertions failed, 173.087 seconds). Source policy rejected
+`petgraph` because its published `tests/res/graph_1000n_1000e_iso.txt` is
+1,999,999 bytes, above the app's former 1,500,000-byte editable-file cap.
+The archive's 147 UTF-8 files total about 5.4 MB, below the unchanged 16 MB
+tree cap. The candidate app now raises the per-file cap to 2 MiB, matching
+the existing source-view cap. Its Release Simulator test host built successfully,
+but the graph gate has not yet passed with the new limit. Independently, the
+compiler reached `petgraph` codegen and failed at
+`icmp_imm.i128 slt` in `core::num::overflowing_add`: the CLIF-to-Wasm emitter
+tried to map a two-word i128 to one Wasm value. The next source-locked builder
+patch sign-extends that immediate into two i64 halves and uses the existing
+i128 comparison lowering. Its own compiler build and app gates are pending.
+An isolated `i128` immediate comparison and `overflowing_add` test reproduced
+that exact backend error on the old stripped candidate (one executed, two
+assertion failures, 4.664-second test body). This confirms the regression
+test exercises the failing path before the next candidate is staged.
+
+The sampled runtime fork passed the prior three-file
+`clap`/`regex`/`hashbrown`/`smallvec` CLI in an A/B/A Simulator comparison
+against its preceding revision. [Sanitized raw phase and wall-time
+observations](performance/2026-10-02-sampled-cancellation-heavy-cli-simulator.json)
+record 345.835 s (sampled), 563.758 s (prior), and 351.106 s (sampled).
+This is about 1.61–1.63× on that selected workload, with missing thermal,
+peak-RSS and physical-device measurements. It is not a whole-app speed claim.

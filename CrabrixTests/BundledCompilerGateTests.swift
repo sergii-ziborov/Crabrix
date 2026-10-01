@@ -398,6 +398,35 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "true")
     }
 
+    func testSourceBuiltCompilerI128ImmediateComparison() async throws {
+        try Self.requireCompilerGate()
+        let source = """
+        // fresh revision: \(UUID())
+        fn main() {
+            let signs: String = [-1_i128, 0, 1].into_iter().map(|value| {
+                if std::hint::black_box(value) < 0 { 'n' } else { 'p' }
+            }).collect();
+            let below_minus_one: String = [-2_i128, -1, 0].into_iter().map(|value| {
+                if std::hint::black_box(value) < -1 { 'n' } else { 'p' }
+            }).collect();
+            let cases = [
+                (i128::MAX, 1_i128), (i128::MIN, -1),
+                (-1, 1), (i128::MAX, 0),
+            ];
+            let overflows: String = cases.into_iter().map(|(a, b)| {
+                let (_, overflow) =
+                    std::hint::black_box(a).overflowing_add(std::hint::black_box(b));
+                if overflow { '1' } else { '0' }
+            }).collect();
+            println!("s={signs};t={below_minus_one};o={overflows}");
+        }
+        """
+        let result = await WasmRustCompiler(bundle: .main).run(source: source)
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+                       "s=npp;t=npp;o=1100")
+    }
+
     func testSourceBuiltCompilerRegexDependencyBuildsAndRuns() async throws {
         try Self.requireCompilerGate()
         let manifest = """
@@ -943,6 +972,110 @@ final class BundledCompilerGateTests: XCTestCase {
                       "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)")
         XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
                        "api=2,worker=1;issues=cache miss,timeout")
+        XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
+    }
+
+    func testMultiFileRoutePlannerWithGraphCratesBuildsAndRuns() async throws {
+        try Self.requireCompilerGate()
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"] == "1" else {
+            throw XCTSkip("Run the opt-in source-built toolchain gate for the graph application.")
+        }
+        let manifest = """
+        [package]
+        name = "route-planner-multifile-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        clap = "=4.5.50"
+        regex = "=1.13.1"
+        petgraph = "=0.8.3"
+        itertools = "=0.14.0"
+        """
+        let source = """
+        // fresh application revision: \(UUID())
+        mod routes;
+        mod report;
+        use clap::{Arg, Command};
+
+        fn main() {
+            let matches = Command::new("routes")
+                .arg(Arg::new("origin").long("origin").required(true).num_args(1))
+                .try_get_matches_from(["routes", "--origin", "api"])
+                .unwrap();
+            let origin = matches.get_one::<String>("origin").unwrap();
+            let edges = "api -> worker : 3\\napi -> cache : 1\\ncache -> worker : 1\\nworker -> store : 2";
+            let distances = routes::shortest_paths(edges, origin);
+            println!("{}", report::summarize(&distances));
+        }
+        """
+        let routes = """
+        use std::collections::HashMap;
+        use petgraph::algo::dijkstra;
+        use petgraph::graph::{DiGraph, NodeIndex};
+        use regex::Regex;
+
+        pub fn shortest_paths(input: &str, origin: &str) -> Vec<(String, u32)> {
+            let row = Regex::new(r"^(\\w+) -> (\\w+) : (\\d+)$").unwrap();
+            let mut graph = DiGraph::<String, u32>::new();
+            let mut nodes: HashMap<String, NodeIndex> = HashMap::new();
+            for line in input.lines() {
+                let captures = row.captures(line).unwrap();
+                let mut index_for = |name: &str| {
+                    if let Some(&index) = nodes.get(name) {
+                        index
+                    } else {
+                        let index = graph.add_node(name.to_owned());
+                        nodes.insert(name.to_owned(), index);
+                        index
+                    }
+                };
+                let from = index_for(&captures[1]);
+                let to = index_for(&captures[2]);
+                drop(index_for);
+                graph.add_edge(from, to, captures[3].parse().unwrap());
+            }
+            let start = nodes[origin];
+            dijkstra(&graph, start, None, |edge| *edge.weight())
+                .into_iter()
+                .map(|(index, cost)| (graph[index].clone(), cost))
+                .collect()
+        }
+        """
+        let report = """
+        use itertools::Itertools;
+
+        pub fn summarize(paths: &[(String, u32)]) -> String {
+            paths.iter()
+                .sorted_by_key(|(name, _)| name.as_str())
+                .map(|(name, cost)| format!("{name}={cost}"))
+                .join(",")
+        }
+        """
+
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertTrue(snapshot.isOfflineReady)
+        XCTAssertTrue(snapshot.blockingPackages.isEmpty, snapshot.blockingPackages.map(\.id).joined(separator: ", "))
+        XCTAssertGreaterThanOrEqual(snapshot.plan.units.count, 10)
+        XCTAssertEqual(Set(snapshot.plan.rootExterns.map(\.alias)),
+                       ["clap", "regex", "petgraph", "itertools"])
+        XCTAssertNotNil(snapshot.lockfile)
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        let result = await compiler.run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: [
+                "Cargo.toml": manifest,
+                "src/routes.rs": routes,
+                "src/report.rs": report,
+            ],
+            plan: snapshot.plan
+        )
+        XCTAssertTrue(result.succeeded,
+                      "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+                       "api=0,cache=1,store=4,worker=2")
         XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
     }
 
