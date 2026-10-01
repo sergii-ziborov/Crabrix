@@ -24,7 +24,10 @@ enum WasmSandboxPolicy {
 enum CompilerHostPolicy {
     static let memoryLimitBytes = 2 * 1024 * 1024 * 1024
     static let tableElementLimit = 65_536
-    static let fuelBudget: UInt64 = 100_000_000_000
+    // clap_builder 4.5.50 reaches codegen after its smaller dependencies have
+    // built, but 100 billion fuel stops that single compiler invocation. Keep
+    // the host budget separate from the one-billion-fuel user Run policy.
+    static let fuelBudget: UInt64 = 300_000_000_000
     static let wallClockLimit: Duration = .seconds(20 * 60)
     static let outputLimitBytes = 16 * 1024 * 1024
 }
