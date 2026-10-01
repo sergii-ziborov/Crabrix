@@ -84,6 +84,8 @@ because `serde_core` needs `OUT_DIR/private.rs` from a build script, which the
 Cargo subset does not execute. Those dependency-rich gates remain failed; a
 new source-built backend candidate is required before repeating them.
 
+The second source-built candidate, `61478aefaa4d26e1de217dcf427b68d09203695f9055b92689011014bcd61e16`, reused the byte-identical sysroot ZIP above. Its `checked_mul` regression passed on iOS 18.2 Release Simulator (one executed test, zero failures, 4.625 seconds), proving the former `smulhi.i64` failure was resolved for that workload. The same four-crate CLI then failed after 515.204 seconds while emitting `regex-automata 0.4.18`: `bswap.i128` tried to use a two-word i128 as one Wasm value. The exact result is a failed heavy-crate gate, not a compatible package claim. A new source patch and `u128::swap_bytes()` regression are pending candidate execution.
+
 With the 300-billion compiler-host policy and the first source-built candidate,
 the Stop gate completed in 0.666 seconds and the 64 MiB user-program memory
 limit gate passed in 5.701 seconds (2 executed, 0 failures). These do not

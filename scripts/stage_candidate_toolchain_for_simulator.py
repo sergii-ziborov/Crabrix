@@ -31,6 +31,7 @@ CANDIDATE_PROBES = {
     "BundledCompilerGateTests/testClapRegexJSONCommandLineAppBuildsAndRuns()",
     "BundledCompilerGateTests/testMultiFileClapRegexCollectionsAppBuildsAndRuns()",
     "BundledCompilerGateTests/testSourceBuiltCompilerCheckedI64Multiplication()",
+    "BundledCompilerGateTests/testSourceBuiltCompilerI128ByteSwap()",
 }
 
 

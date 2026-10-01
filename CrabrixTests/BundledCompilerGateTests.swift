@@ -383,6 +383,21 @@ final class BundledCompilerGateTests: XCTestCase {
                        "s=01101;u=0101")
     }
 
+    func testSourceBuiltCompilerI128ByteSwap() async throws {
+        try Self.requireCompilerGate()
+        let source = """
+        // fresh revision: \(UUID())
+        fn main() {
+            let value = std::hint::black_box(0x00112233445566778899aabbccddeeffu128);
+            let swapped = value.swap_bytes();
+            println!("{}", swapped == 0xffeeddccbbaa99887766554433221100u128);
+        }
+        """
+        let result = await WasmRustCompiler(bundle: .main).run(source: source)
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "true")
+    }
+
     func testEveryInstalledAcademyExampleBuildsAndRuns() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
             throw XCTSkip("Set CRABRIX_RUN_COMPILER_GATE=1 for the Academy example gate.")
