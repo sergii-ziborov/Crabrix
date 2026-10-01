@@ -83,6 +83,18 @@ struct CrabrixProject: Codable, Equatable, Sendable {
                 )
             )
         }
+
+        static func academyExample(id: String, contentVersion: String,
+                                   templateHash: String) -> Provenance {
+            Provenance(
+                source: .academy, owner: nil, repository: nil,
+                reference: nil, commit: nil, importedAt: Date(),
+                course: CourseOrigin(
+                    courseID: "projects", contentVersion: contentVersion,
+                    lessonID: "example/\(id)", templateHash: templateHash
+                )
+            )
+        }
     }
 
     /// Durable identity. Names, GitHub refs, and paths may all change without

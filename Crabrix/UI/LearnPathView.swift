@@ -577,7 +577,7 @@ private struct LessonMapNode: View {
     private var nodeIconColor: Color {
         switch state {
         case .completed: CrabrixTheme.background
-        case .ready: .white
+        case .ready: CrabrixTheme.isCyberpunk ? CrabrixTheme.background : .white
         case .locked: CrabrixTheme.muted
         }
     }
@@ -585,7 +585,9 @@ private struct LessonMapNode: View {
     private var nodeGradient: LinearGradient {
         switch state {
         case .completed:
-            LinearGradient(colors: [CrabrixTheme.mint, Color(red: 0.24, green: 0.69, blue: 0.50)], startPoint: .top, endPoint: .bottom)
+            LinearGradient(colors: [RustCourseTheme.basics.primaryColor,
+                                    RustCourseTheme.basics.secondaryColor],
+                           startPoint: .top, endPoint: .bottom)
         case .ready:
             LinearGradient(colors: [palette.primary, palette.secondary], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .locked:
@@ -689,15 +691,20 @@ private struct LearningPalette {
     static func palette(for level: Int) -> LearningPalette {
         switch level {
         case 1:
-            LearningPalette(primary: CrabrixTheme.blue, secondary: Color(red: 0.25, green: 0.48, blue: 0.94), symbol: "sparkles")
+            LearningPalette(primary: RustCourseTheme.projects.primaryColor,
+                            secondary: RustCourseTheme.projects.secondaryColor, symbol: "sparkles")
         case 2:
-            LearningPalette(primary: CrabrixTheme.coral, secondary: Color(red: 0.82, green: 0.22, blue: 0.27), symbol: "link")
+            LearningPalette(primary: RustCourseTheme.ownership.primaryColor,
+                            secondary: RustCourseTheme.ownership.secondaryColor, symbol: "link")
         case 3:
-            LearningPalette(primary: Color(red: 0.72, green: 0.47, blue: 0.98), secondary: Color(red: 0.43, green: 0.32, blue: 0.82), symbol: "shippingbox.fill")
+            LearningPalette(primary: RustCourseTheme.systems.primaryColor,
+                            secondary: RustCourseTheme.systems.secondaryColor, symbol: "shippingbox.fill")
         case 4:
-            LearningPalette(primary: CrabrixTheme.amber, secondary: Color(red: 0.84, green: 0.45, blue: 0.14), symbol: "function")
+            LearningPalette(primary: RustCourseTheme.concurrency.primaryColor,
+                            secondary: RustCourseTheme.concurrency.secondaryColor, symbol: "function")
         default:
-            LearningPalette(primary: CrabrixTheme.mint, secondary: Color(red: 0.20, green: 0.61, blue: 0.55), symbol: "flag.checkered")
+            LearningPalette(primary: RustCourseTheme.basics.primaryColor,
+                            secondary: RustCourseTheme.basics.secondaryColor, symbol: "flag.checkered")
         }
     }
 }

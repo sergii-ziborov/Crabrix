@@ -2,6 +2,8 @@
 
 The authored corpus, schema, exporter, parity report, and seven published 1.0.1 archives live in [crabrix-courses](https://github.com/sergii-ziborov/crabrix-courses). The app bundles the same signed packs as migration resources. Its public catalog URL is `https://raw.githubusercontent.com/sergii-ziborov/crabrix-courses/main/catalog.v1.json`; release descriptors and archives are served by GitHub Releases.
 
+The Projects CoursePack also contains 46 Academy Examples under `library-projects/`. The verified installed repository reads their JSON metadata and Rust files. The Academy gallery takes a snapshot of that installed version while open. Opening an example copies its files into the durable ProjectStore with a new ProjectID and course provenance; deleting the download leaves the copy intact. The source files are not Swift literals or separate compiled catalogs in the app target. Six Canvas examples use the same general Canvas renderer as user projects; their former example-specific Swift thumbnail implementations were removed from the binary.
+
 ## Format and trust
 
 The catalog and each descriptor use Ed25519 over the exact payload bytes with different domain prefixes. The built-in public keyring verifies them. Catalog entries name exact descriptor/archive hashes; the descriptor names the ZIP hash and version. Each ZIP manifest lists payload paths, lengths, and SHA-256 values, with no self hash. A repeated `(courseID, language, contentVersion)` with a new digest and a network sequence rollback are rejected.

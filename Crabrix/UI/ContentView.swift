@@ -73,8 +73,7 @@ struct ContentView: View {
     @State private var pendingNewProjectImport: ProjectImportSource?
     @State private var isProjectActionsPresented = false
     @State private var isCargoCatalogPresented = false
-    @State private var projectsPath: [ProjectsRoute] =
-        ProcessInfo.processInfo.arguments.contains("-CrabrixLibrary") ? [.library] : []
+    @State private var projectsPath: [ProjectsRoute] = []
     @State private var projectItemCreation: ProjectItemCreation?
     @State private var githubURL = ""
     @State private var selectedDestination: CrabrixDestination =
@@ -120,7 +119,6 @@ struct ContentView: View {
                     projectCount: model.allProjects.count,
                 onOpenCurrentProject: openCodeWorkspace,
                 onNewProject: { isNewProjectPresented = true },
-                onOpenLibrary: { projectsPath = [.library] },
                 onOpenMyProjects: { projectsPath = [.myProjects] }
                 )
                 .navigationDestination(for: ProjectsRoute.self) { route in
@@ -154,12 +152,6 @@ struct ContentView: View {
                                 )
                             }
                         )
-                    case .library:
-                        ProjectLibraryView { id in
-                            model.loadShowcaseProject(id: id)
-                            projectsPath = []
-                            openCodeWorkspace()
-                        }
                     }
                 }
             }
@@ -174,6 +166,10 @@ struct ContentView: View {
                 onCompleteLesson: { lesson in model.completeLesson(lesson.id) },
                 onAnswerLesson: { lesson, answer, correct in
                     if correct { model.recordLessonAnswer(answer, for: lesson.id) }
+                },
+                onOpenExample: { project, contentVersion in
+                    model.openAcademyExample(project, contentVersion: contentVersion)
+                    openCodeWorkspace()
                 }
             )
             .tabItem { Label("Learn", systemImage: "graduationcap.fill") }
@@ -192,6 +188,8 @@ struct ContentView: View {
             .tag(CrabrixDestination.settings)
                 }
                 .tabViewStyle(.sidebarAdaptable)
+                .toolbarBackground(CrabrixTheme.panel, for: .tabBar)
+                .toolbarBackground(.visible, for: .tabBar)
             }
         }
         .id(appearanceRaw)
@@ -316,6 +314,10 @@ struct ContentView: View {
             if let repository = academy.repository {
                 learningPath = LearningRoute.launchArgument(repository: repository)
             }
+            if arguments.contains("-CrabrixLibrary") || arguments.contains("-CrabrixCanvasGallery") {
+                selectedDestination = .learn
+                learningPath = [.examples]
+            }
             if arguments.contains("--crabrix-auto-multifile") {
                 model.loadMultiFileSample()
                 openCodeWorkspace()
@@ -353,8 +355,13 @@ struct ContentView: View {
             }
             if let showcaseArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-showcase=") }) {
                 let id = String(showcaseArgument.dropFirst("--crabrix-auto-showcase=".count))
-                model.loadShowcaseProject(id: id)
-                openCodeWorkspace()
+                if let installed = academy.repository?.loaded["projects"],
+                   let project = installed.showcases.first(where: { $0.id == id }) {
+                    model.openAcademyExample(project, contentVersion: installed.contentVersion)
+                    openCodeWorkspace()
+                } else {
+                    selectedDestination = .learn
+                }
             }
             if arguments.contains("--crabrix-auto-run") {
                 model.run()

@@ -98,7 +98,7 @@
                   Identifier = "BundledCompilerGateTests/testBundledRustcSurvivesRepeatedBuilds()">
                </Test>
                <Test
-                  Identifier = "BundledCompilerGateTests/testEveryGuidedShowcasePassesBundledRustcCheck()">
+                  Identifier = "BundledCompilerGateTests/testEveryInstalledAcademyExampleBuildsAndRuns()">
                </Test>
                <Test
                   Identifier = "BundledCompilerGateTests/testUserProgramCannotGrowPastSandboxMemoryLimit()">

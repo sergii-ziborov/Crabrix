@@ -1015,13 +1015,23 @@ final class CompilerViewModel: ObservableObject {
         userDefaults.set(lessonAnswerIndices, forKey: Self.lessonAnswersKey)
     }
 
-    func loadShowcaseProject(id: String) {
-        guard let showcase = RustShowcaseLibrary.projects.first(where: { $0.id == id }) else {
-            projectTransfer = .failed("That library project is unavailable.")
-            return
-        }
-        loadProject(showcase.project)
-        projectTransfer = .ready("Opened \(showcase.title) from the project library.")
+    func openAcademyExample(_ showcase: RustShowcaseProject, contentVersion: String) {
+        let template = showcase.project
+        let copy = CrabrixProject(
+            name: template.name,
+            files: template.files,
+            entryFile: template.entryFile,
+            provenance: .academyExample(
+                id: showcase.id, contentVersion: contentVersion,
+                templateHash: showcase.contentDigest
+            ),
+            projectDescription: showcase.detail,
+            tags: showcase.concepts,
+            folder: template.folder,
+            kind: template.kind
+        )
+        loadProject(copy)
+        projectTransfer = .ready("Created \(showcase.title) in My Projects.")
     }
 
     func createProject(name: String, template: RustProjectTemplate) {

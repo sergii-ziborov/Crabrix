@@ -1,6 +1,21 @@
 import SwiftUI
 import UIKit
 
+/// Render the validated Rust Canvas output palette in the native Output view.
+extension Color {
+    init(crabrixHex value: String) {
+        let hex = String(value.dropFirst())
+        let number = UInt64(hex, radix: 16) ?? 0
+        self.init(
+            .sRGB,
+            red: Double((number >> 16) & 0xFF) / 255,
+            green: Double((number >> 8) & 0xFF) / 255,
+            blue: Double(number & 0xFF) / 255,
+            opacity: 1
+        )
+    }
+}
+
 enum CrabrixAppearance: String, CaseIterable, Identifiable {
     case system
     case light

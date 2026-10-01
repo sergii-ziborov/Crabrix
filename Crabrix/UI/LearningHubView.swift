@@ -3,6 +3,7 @@ import SwiftUI
 enum LearningRoute: Hashable {
     case course(String)
     case lesson(String)
+    case examples
     case profile
 
     /// Opens a Learn screen straight from a launch argument, the same way
@@ -16,6 +17,7 @@ enum LearningRoute: Hashable {
 
         let value = arguments[index + 1]
         if value == "profile" { return [.profile] }
+        if value == "examples" { return [.examples] }
         if let course = repository.course(id: value) { return [.course(course.id)] }
         if let lesson = repository.lesson(id: value),
            let course = repository.course(containing: lesson.id) {
@@ -32,6 +34,7 @@ struct LearningHubView: View {
     @AppStorage("crabrix.learn.trainingSessions") private var trainingSessions = 0
     @AppStorage("crabrix.learn.recallSessions") private var recallSessions = 0
     @State private var lessonSession: CourseSession?
+    @State private var examplesSnapshot: LoadedCourse?
     @State private var pendingDownload: CourseCatalogPayload.Entry?
     @State private var isManagingDownloads = false
     let completedLessonIDs: Set<String>
@@ -39,6 +42,7 @@ struct LearningHubView: View {
     let onStartLesson: (RustLesson, CourseSession) -> Void
     let onCompleteLesson: (RustLesson) -> Void
     let onAnswerLesson: (RustLesson, Int, Bool) -> Void
+    let onOpenExample: (RustShowcaseProject, String) -> Void
 
     private let columns = [GridItem(.adaptive(minimum: 260), spacing: 16)]
 
@@ -47,6 +51,7 @@ struct LearningHubView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     hero
+                    examplesCard
                     WeakTopicsCard { topic in
                         guard let repository = academy.repository,
                               let lesson = repository.lesson(id: topic),
@@ -142,7 +147,7 @@ struct LearningHubView: View {
                                 }
                             }
                         }
-                        ForEach(availableUninstalled, id: \.courseID) { entry in
+                        ForEach(availableUninstalled.filter { $0.courseID != "projects" }, id: \.courseID) { entry in
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(entry.courseID.replacingOccurrences(of: "-", with: " ").capitalized)
                                     .font(.headline)
@@ -226,6 +231,11 @@ struct LearningHubView: View {
                 Text("The course remains available while its signed update downloads and verifies.")
             }
             .onChange(of: navigationPath) { _, path in
+                if case .examples = path.last {
+                    if examplesSnapshot == nil { examplesSnapshot = academy.repository?.loaded["projects"] }
+                } else {
+                    examplesSnapshot = nil
+                }
                 if case let .lesson(lessonID) = path.last {
                     if lessonSession?.lessonID != lessonID,
                        let repository = academy.repository {
@@ -296,8 +306,54 @@ struct LearningHubView: View {
     }
 
     @ViewBuilder
+    private var examplesCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Examples", systemImage: "curlybraces.square")
+                .font(.title3.bold())
+            if let installed = academy.repository?.loaded["projects"] {
+                Text("\(installed.showcases.count) editable Rust examples · installed v\(installed.contentVersion)")
+                    .font(.subheadline)
+                    .foregroundStyle(CrabrixTheme.muted)
+                NavigationLink(value: LearningRoute.examples) {
+                    Label("Open examples", systemImage: "arrow.right")
+                }
+                .font(.subheadline.bold())
+                if let update = availableUpdate(for: "projects", installedVersion: installed.contentVersion) {
+                    Button("Update · \(ByteCountFormatter.string(fromByteCount: Int64(update.archiveBytes), countStyle: .file))") {
+                        pendingDownload = update
+                    }
+                    .font(.caption)
+                }
+            } else if let entry = availableUninstalled.first(where: { $0.courseID == "projects" }) {
+                Text("Install the Projects course and its editable examples. Source stays in the Academy package until you copy an example into My Projects.")
+                    .font(.subheadline)
+                    .foregroundStyle(CrabrixTheme.muted)
+                Button("Download · \(ByteCountFormatter.string(fromByteCount: Int64(entry.archiveBytes), countStyle: .file))") {
+                    pendingDownload = entry
+                }
+                .font(.subheadline.bold())
+            }
+            if let transfer = academy.transfers["projects|en"] {
+                transferView(transfer, courseID: "projects")
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    @ViewBuilder
     private func destination(for route: LearningRoute) -> some View {
         switch route {
+        case .examples:
+            if let snapshot = examplesSnapshot ?? academy.repository?.loaded["projects"],
+               !snapshot.showcases.isEmpty {
+                ProjectLibraryView(projects: snapshot.showcases) { project in
+                    onOpenExample(project, snapshot.contentVersion)
+                }
+            } else {
+                ContentUnavailableView("Examples unavailable", systemImage: "square.stack.3d.up.slash")
+            }
         case let .course(courseID):
             if let course = academy.repository?.course(id: courseID) {
                 LearnPathView(

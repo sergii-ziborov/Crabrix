@@ -63,12 +63,12 @@ The app accepts launch arguments so a given tab can be captured directly:
 
 ```bash
 xcrun simctl launch <device> com.sergiiziborov.Crabrix -CrabrixTab learn
-xcrun simctl launch <device> com.sergiiziborov.Crabrix -CrabrixTab projects -CrabrixLibrary
+xcrun simctl launch <device> com.sergiiziborov.Crabrix -CrabrixTab learn -CrabrixLibrary
 xcrun simctl io <device> screenshot site/screenshots/iphone-learn.png
 ```
 
 Valid tabs are `projects`, `build`, `learn`, and `settings`. Adding `-CrabrixLibrary`
-opens the project library.
+opens Academy Examples after the Projects CoursePack has been installed.
 
 ## What the pages carry now
 

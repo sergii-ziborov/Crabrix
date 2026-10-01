@@ -63,8 +63,10 @@ final class CourseDeliveryGateTests: XCTestCase {
         let catalog = try await client.refresh()
         XCTAssertGreaterThanOrEqual(catalog.courses.count, 7)
         let basics = try XCTUnwrap(catalog.courses.first { $0.courseID == "basics" })
+        let examples = try XCTUnwrap(catalog.courses.first { $0.courseID == "projects" })
         let manager = try CourseDownloadManager(cacheRoot: root.appending(path: "downloads"))
         let asset = try await manager.download(basics)
+        let examplesAsset = try await manager.download(examples)
         let installer = try CourseInstaller(
             root: root.appending(path: "installed"), appVersion: SemanticVersion("1.1")
         )
@@ -72,11 +74,16 @@ final class CourseDeliveryGateTests: XCTestCase {
             descriptorBytes: asset.descriptor, downloadedArchive: asset.archive,
             keyring: keyring
         )
+        _ = try await installer.install(
+            descriptorBytes: examplesAsset.descriptor,
+            downloadedArchive: examplesAsset.archive, keyring: keyring
+        )
         let repository = try InstalledCourseRepository(
             root: root.appending(path: "installed"),
             records: await installer.installed(), keyring: keyring
         )
-        XCTAssertEqual(repository.courses.map(\.id), ["basics"])
+        XCTAssertEqual(repository.courses.map(\.id), ["basics", "projects"])
         XCTAssertNotNil(repository.lesson(id: "hello-rust"))
+        XCTAssertEqual(repository.showcaseProjects().count, 46)
     }
 }

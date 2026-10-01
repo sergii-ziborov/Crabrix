@@ -1,5 +1,11 @@
 # Validation record — 30 September 2026
 
+## 1 October 2026 Academy Examples candidate
+
+The candidate moves all 46 authored examples from compiled Swift catalogs into the existing signed Projects CoursePack and opens the gallery from Academy. On iOS 18.2 arm64 Simulator, Release `testEveryInstalledAcademyExampleBuildsAndRuns` loaded the installed signed pack and successfully compiled and ran all 46 entries in 161.840 seconds (one test, zero failures). Debug `testInstalledAcademyExamplesHaveRunnableEntries` verified 46 unique IDs, six Canvas projects, source/Cargo files, a new copy ID, pinned course provenance, and source-copy isolation (one test, zero failures). Debug `testPublicSignedCatalogAndCourseInstall` fetched and installed both Basics and Projects from the public catalog and read 46 examples (one test, zero failures). A separate public fetch matched the catalog's ZIP and descriptor SHA-256 values and verified all 212 Projects payload files. The source migration parity was rerun and reported `missing=0`, `unexpected=0`, `unapprovedChanges=0`.
+
+The final selected Debug rerun passed 11 tests (one example-copy test plus five theme and five syntax-contrast tests), zero failures. The complete fast Debug suite then executed 421 tests, with four opt-in skips and zero failures. The existing Cyberpunk Settings screenshot was visually inspected; theme tokens are app-wide, and the Academy path and tab bar now use them. A fresh candidate screenshot and physical-device appearance pass remain pending. The compiler's independent `regex`/`serde_json` backend failures are recorded in [the complex-crate gate](compiler-complex-gate-2026-10-01.md); these 46 examples use the standard library and do not establish broad crates.io compatibility.
+
 This records observed results for the current development branch. It is not an App Store submission or physical-device certification. The latest completed hosted full fast suite used app-input commit `ef5f72b` with fork revision `6f9e307c`; its later safety-gated revision `fbe46d9` has a separate 462-test runtime suite, nine selected Release Simulator app gates, and five-sample Check measurements below. Older gate results explicitly name their earlier input. Documentation commits may differ without changing build inputs.
 
 | Area | Observed result |

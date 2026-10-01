@@ -348,19 +348,25 @@ final class BundledCompilerGateTests: XCTestCase {
         }
     }
 
-    func testEveryGuidedShowcasePassesBundledRustcCheck() async throws {
+    func testEveryInstalledAcademyExampleBuildsAndRuns() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
-            throw XCTSkip("Set CRABRIX_RUN_COMPILER_GATE=1 for the guided-project gate.")
+            throw XCTSkip("Set CRABRIX_RUN_COMPILER_GATE=1 for the Academy example gate.")
         }
 
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = try await CourseBootstrap(
+            bundle: .main, root: root, appVersion: SemanticVersion("1.1")
+        ).activateBundledBaseline()
+        XCTAssertEqual(repository.showcaseProjects().count, 46)
         let compiler = WasmRustCompiler(bundle: .main)
-        for showcase in RustShowcaseExpansionCatalog.projects {
+        for showcase in repository.showcaseProjects() {
             var supporting = showcase.project.files
             let source = try XCTUnwrap(
                 supporting.removeValue(forKey: showcase.project.entryFile),
                 showcase.id
             )
-            let result = await compiler.check(
+            let result = await compiler.run(
                 source: source,
                 sourcePath: showcase.project.entryFile,
                 supportingFiles: supporting
@@ -412,8 +418,13 @@ final class BundledCompilerGateTests: XCTestCase {
 
     private static func assertVisualShowcase(_ id: String) async throws {
         try requireCompilerGate()
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = try await CourseBootstrap(
+            bundle: .main, root: root, appVersion: SemanticVersion("1.1")
+        ).activateBundledBaseline()
         let showcase = try XCTUnwrap(
-            RustVisualShowcaseCatalog.projects.first { $0.id == id }
+            repository.showcaseProjects().first { $0.id == id }
         )
         try await assertCanvas(project: showcase.project, id: id)
     }

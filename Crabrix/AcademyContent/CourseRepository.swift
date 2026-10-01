@@ -12,6 +12,7 @@ protocol CourseRepository: Sendable {
     func challenge(for lessonID: String) -> AlgorithmChallenge?
     func algorithmMethods() -> [AlgorithmMethodDTO]
     func termPairs() -> [CourseTermPairDTO]
+    func showcaseProjects() -> [RustShowcaseProject]
 }
 
 struct CourseLearningTotals: Equatable, Sendable {
@@ -107,6 +108,7 @@ struct LoadedCourse: Sendable {
     let challenges: [String: AlgorithmChallenge]
     let algorithmMethods: [AlgorithmMethodDTO]
     let terms: [CourseTermPairDTO]
+    let showcases: [RustShowcaseProject]
     let contentVersion: String
     let archiveSHA256: String
 }

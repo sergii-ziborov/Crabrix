@@ -9,7 +9,6 @@ struct ProjectsHomeView: View {
     let projectCount: Int
     let onOpenCurrentProject: () -> Void
     let onNewProject: () -> Void
-    let onOpenLibrary: () -> Void
     let onOpenMyProjects: () -> Void
 
     private let columns = [GridItem(.adaptive(minimum: 230), spacing: 14)]
@@ -35,13 +34,6 @@ struct ProjectsHomeView: View {
                         action: onNewProject
                     )
                 }
-                actionCard(
-                    title: "Project Library",
-                    detail: "\(RustShowcaseLibrary.projects.count) editable Rust examples",
-                    systemImage: "books.vertical.fill",
-                    tint: CrabrixTheme.mint,
-                    action: onOpenLibrary
-                )
             }
             .padding(22)
             .frame(maxWidth: 1100)

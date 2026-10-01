@@ -309,20 +309,22 @@ fold and is not visible in it.
 | `docs/app-store/screenshots/iphone-6.9/` | iPhone 17 Pro Max | 1320 × 2868 |
 | `docs/app-store/screenshots/ipad-13/` | iPad Pro 13-inch (M4) | 2064 × 2752 |
 
-Every frame shows the shipped interface: the persistent programming-environment
-label, the split Rust/Atlas counters, the rescaled rank ladder, 185 achievement
-tiers, and no board, display name or Game Center control anywhere.
+These existing frames predate the current Academy Examples and navigation changes.
+Regenerate the set from the candidate binary, then inspect every frame before
+upload. The Store description and screenshots must match the same build.
 
 Upload order for the iPhone set, which tells the story in the right sequence:
 
 1. `01-build` — the workspace, editor and build inspector
 2. `03-learn` — Learn hub: rating and courses
-3. `05-lesson` — a lesson with its highlighted example and the energy cost
+3. `05-lesson` — a lesson with its highlighted example and hints in Output
 4. `06-profile` — local profile, avatar, rating, and lifetime stats
 5. `02-projects` — the dashboard and My Projects organization
-6. `07-library` — the project library
+6. `07-library` — Academy Examples after the Projects CoursePack is installed
 7. `04-course` — a course path
 8. `08-settings` — settings and About
+
+In particular, `07-library` must show the installed Academy Examples gallery, not the removed Projects library card.
 
 ### Reproducing them
 
@@ -335,9 +337,9 @@ xcrun simctl launch <device> com.sergiiziborov.Crabrix \
 ```
 
 `-CrabrixTab` takes `projects`, `build`, `learn`, or `settings`.
-`-CrabrixLearn` takes `profile`, a course id, or a lesson id.
-`-CrabrixLibrary` opens the project library.
-`-CrabrixCanvasGallery` opens it already filtered to the Rust Canvas projects.
+`-CrabrixLearn` takes `profile`, `examples`, a course id, or a lesson id.
+`-CrabrixLibrary` opens Academy Examples after the Projects CoursePack is installed.
+`-CrabrixCanvasGallery` opens that gallery filtered to the Rust Canvas projects.
 
 ## Launch assets
 

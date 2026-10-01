@@ -55,6 +55,10 @@ struct InstalledCourseRepository: CourseRepository {
         }
     }
 
+    func showcaseProjects() -> [RustShowcaseProject] {
+        loaded["projects"]?.showcases ?? []
+    }
+
     private static func load(root: URL, record: InstalledCourseRecord,
                              keyring: CourseKeyring) throws -> LoadedCourse {
         let courseID = try component(record.courseID)
@@ -171,6 +175,47 @@ struct InstalledCourseRepository: CourseRepository {
             throw CoursePackError.manifestMismatch("duplicate algorithm method")
         }
         let terms: [CourseTermPairDTO] = try decode("terms.json", as: [CourseTermPairDTO].self)
+        let galleryFiles = manifest.files.map(\.path).filter { $0.hasPrefix("library-projects/") }
+        guard courseID == "projects" || galleryFiles.isEmpty else {
+            throw CoursePackError.manifestMismatch("library project outside projects course")
+        }
+        var galleryIDs = Set<String>()
+        for path in galleryFiles {
+            let segments = path.split(separator: "/", omittingEmptySubsequences: false)
+            guard segments.count >= 3, segments[0] == "library-projects" else {
+                throw CoursePackError.manifestMismatch("library project path \(path)")
+            }
+            galleryIDs.insert(try component(String(segments[1])))
+        }
+        var orderedShowcases: [(order: Int, project: RustShowcaseProject)] = []
+        for id in galleryIDs {
+            let prefix = "library-projects/\(id)/"
+            let metadataPath = prefix + "project.json"
+            guard galleryFiles.contains(metadataPath) else {
+                throw CoursePackError.manifestMismatch("library project metadata \(id)")
+            }
+            let metadata: ShowcaseProjectDTO = try decode(metadataPath, as: ShowcaseProjectDTO.self)
+            guard metadata.id == id, metadata.order >= 0,
+                  metadata.order < galleryIDs.count else {
+                throw CoursePackError.manifestMismatch("library project identity \(id)")
+            }
+            let entryFile = try CoursePackVerifier.validatedPath(metadata.project.entryFile)
+            guard entryFile == metadata.project.entryFile else {
+                throw CoursePackError.manifestMismatch("library project entry \(id)")
+            }
+            var files: [String: String] = [:]
+            for path in galleryFiles where path.hasPrefix(prefix) && path != metadataPath {
+                let relative = String(path.dropFirst(prefix.count))
+                files[relative] = try String(
+                    contentsOf: directory.appending(path: path), encoding: .utf8
+                )
+            }
+            orderedShowcases.append((metadata.order, try metadata.runtimeProject(files: files)))
+        }
+        orderedShowcases.sort { $0.order < $1.order }
+        guard orderedShowcases.enumerated().allSatisfy({ $0.offset == $0.element.order }) else {
+            throw CoursePackError.manifestMismatch("library project order")
+        }
         let runtime = RustCourse(
             id: source.id, level: source.level, title: source.title,
             subtitle: source.subtitle, systemImage: source.systemImage,
@@ -180,7 +225,7 @@ struct InstalledCourseRepository: CourseRepository {
             course: runtime, language: language, order: source.order,
             writing: writings, depth: depths, evidence: evidence,
             projects: projects, challenges: challenges, algorithmMethods: algorithmMethods,
-            terms: terms,
+            terms: terms, showcases: orderedShowcases.map { $0.project },
             contentVersion: version, archiveSHA256: record.archiveSHA256
         )
     }
