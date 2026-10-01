@@ -846,7 +846,7 @@ struct ContentView: View {
 
                 if isCompactInspectorDrawerPresented {
                     VStack(spacing: 0) {
-                        CompactDrawerHeader(title: "Build inspector", systemImage: "sidebar.right") {
+                        CompactDrawerHeader(title: "Project details", systemImage: "sidebar.right") {
                             withAnimation(.easeOut(duration: 0.2)) {
                                 isCompactInspectorDrawerPresented = false
                             }
@@ -1650,7 +1650,7 @@ private struct EditorToolbar: View {
         result?.diagnostics.contains(where: { $0.level == "error" }) == true
     }
 
-    /// Build controls live in the Build inspector. What stays above the editor
+    /// Build controls live in the project details inspector. What stays above the editor
     /// is a read-only line, so a multi-minute build is never silent while the
     /// inspector is closed.
     private var buildStatus: some View {
@@ -1713,7 +1713,7 @@ private struct EditorToolbar: View {
                         : "sidebar.right",
                     isCollapsed: isInspectorCollapsed,
                     visibleTitle: isInspectorCollapsed
-                        ? (hasCompilerError ? "Fix" : "Build")
+                        ? (hasCompilerError ? "Fix" : "Details")
                         : nil,
                     action: onToggleInspector
                 )
