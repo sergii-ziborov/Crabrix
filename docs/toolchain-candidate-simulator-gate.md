@@ -51,14 +51,24 @@ Seven staging unit tests passed, including tampering, traversal, a malformed
 checksum sidecar, a wrong test host and signed-bundle rejection. The first
 source-built candidate reached this test path on 1 October 2026.
 
-Use `xcodebuild test-without-building` with the generated candidate test-run
-file and explicit `-only-testing:CrabrixTests/...` selectors. First run the
+Use `scripts/run_candidate_gate.py` with the generated candidate test-run
+file and exact test identifiers. It writes a temporary single-selection
+`xctestrun` and rejects Xcode's possible green result with zero executed tests:
+
+```sh
+python3 scripts/run_candidate_gate.py \
+  --xctestrun "$products/CrabrixCompilerGate_iphonesimulator27.0-arm64-candidate.xctestrun" \
+  --destination 'platform=iOS Simulator,id=<SIMULATOR-UDID>' \
+  --result-bundle /tmp/crabrix-candidate-e0502.xcresult \
+  --test 'BundledCompilerGateTests/testBundledRustcProducesE0502()'
+```
+
+First run the
 release-manifest hash test, a fresh E0502 Check/repair, all 46 installed
 Academy Examples, the three-file four-crate app, and the Clap/Regex/JSON CLI.
 The generated xctestrun adds these opt-in probes to the scheme's fixed test
 selection; setting the environment variable alone would leave them filtered
-out. Always inspect the XCTest result for executed test counts, not only an
-overall green result.
+out. The runner requires the requested number of actually executed tests.
 Then run the remaining compiler/Cargo/Stop/Vendor/offline gates and performance
 probes. Record every observed pass, failure, skip, compiler SHA, sysroot SHA,
 runtime revision, app SHA, device/OS, and build configuration separately.
@@ -74,7 +84,22 @@ because `serde_core` needs `OUT_DIR/private.rs` from a build script, which the
 Cargo subset does not execute. Those dependency-rich gates remain failed; a
 new source-built backend candidate is required before repeating them.
 
+With the 300-billion compiler-host policy and the first source-built candidate,
+the Stop gate completed in 0.666 seconds and the 64 MiB user-program memory
+limit gate passed in 5.701 seconds (2 executed, 0 failures). These do not
+replace the new compiler candidate's regression run.
+
 The same runtime and Release Simulator gave the former compiler 1378.780 ms
 for first Check and 666.594 ms for a changed Check; the source-built candidate
 gave 1208.577 ms and 623.111 ms. These are one probe each, not a device
 benchmark or a several-fold speed claim. Normal release inputs are unchanged.
+
+The separate opt-in public delivery gate fetched the signed catalog, downloaded
+the Basics and Projects/Examples archives, installed both and read all 46
+Examples. It passed in 2.927 seconds on the same simulator. This checks the
+remote Examples path; the 46-project compiler gate above used the signed
+bundled transition pack to keep that test independent of network availability.
+The public `projects` 1.0.1 entry and the bundled transition archive both have
+SHA-256 `e4636c190ac7a10b7c8f2f9e2571b98f2e46b49d03fff21f03bd49567ac767aa`,
+so the compiled Examples are the same archive bytes offered for download at
+this catalog version.
