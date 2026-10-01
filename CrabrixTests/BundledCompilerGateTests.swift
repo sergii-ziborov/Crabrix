@@ -398,6 +398,49 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "true")
     }
 
+    func testSourceBuiltCompilerRegexDependencyBuildsAndRuns() async throws {
+        try Self.requireCompilerGate()
+        let manifest = """
+        [package]
+        name = "regex-backend-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        regex = "=1.13.1"
+        """
+        let source = """
+        // fresh revision: \(UUID())
+        use regex::Regex;
+
+        fn main() {
+            let pattern = Regex::new(r"^WARN\\s+(.+)$").unwrap();
+            let input = "WARN cache miss\\nINFO start\\nWARN timeout";
+            let issues: Vec<String> = input.lines().filter_map(|line| {
+                pattern.captures(line).map(|capture| capture[1].to_owned())
+            }).collect();
+            println!("{}", issues.join(","));
+        }
+        """
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertTrue(snapshot.isOfflineReady)
+        XCTAssertTrue(snapshot.blockingPackages.isEmpty,
+                      snapshot.blockingPackages.map(\.id).joined(separator: ", "))
+        XCTAssertGreaterThanOrEqual(snapshot.plan.units.count, 5)
+        XCTAssertEqual(snapshot.plan.rootExterns.map(\.alias), ["regex"])
+
+        let result = await WasmRustCompiler(bundle: .main).run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": manifest],
+            plan: snapshot.plan
+        )
+        XCTAssertTrue(result.succeeded,
+                      "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+                       "cache miss,timeout")
+    }
+
     func testEveryInstalledAcademyExampleBuildsAndRuns() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
             throw XCTSkip("Set CRABRIX_RUN_COMPILER_GATE=1 for the Academy example gate.")

@@ -32,6 +32,7 @@ CANDIDATE_PROBES = {
     "BundledCompilerGateTests/testMultiFileClapRegexCollectionsAppBuildsAndRuns()",
     "BundledCompilerGateTests/testSourceBuiltCompilerCheckedI64Multiplication()",
     "BundledCompilerGateTests/testSourceBuiltCompilerI128ByteSwap()",
+    "BundledCompilerGateTests/testSourceBuiltCompilerRegexDependencyBuildsAndRuns()",
 }
 
 
