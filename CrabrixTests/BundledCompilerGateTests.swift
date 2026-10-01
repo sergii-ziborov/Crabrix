@@ -427,6 +427,24 @@ final class BundledCompilerGateTests: XCTestCase {
                        "s=npp;t=npp;o=1100")
     }
 
+    func testSourceBuiltCompilerFloatToI128BuiltinsUseWasmABI() async throws {
+        try Self.requireCompilerGate()
+        let source = """
+        // fresh revision: \(UUID())
+        fn main() {
+            let a = std::hint::black_box(4.75_f32) as u128;
+            let b = std::hint::black_box(-2.5_f32) as i128;
+            let c = std::hint::black_box(9.75_f64) as u128;
+            let d = std::hint::black_box(-7.25_f64) as i128;
+            println!("{a},{b},{c},{d}");
+        }
+        """
+        let result = await WasmRustCompiler(bundle: .main).run(source: source)
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+                       "4,-2,9,-7")
+    }
+
     func testSourceBuiltCompilerRegexDependencyBuildsAndRuns() async throws {
         try Self.requireCompilerGate()
         let manifest = """

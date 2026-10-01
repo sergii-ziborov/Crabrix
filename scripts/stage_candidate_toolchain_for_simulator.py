@@ -33,6 +33,7 @@ CANDIDATE_PROBES = {
     "BundledCompilerGateTests/testSourceBuiltCompilerCheckedI64Multiplication()",
     "BundledCompilerGateTests/testSourceBuiltCompilerI128ByteSwap()",
     "BundledCompilerGateTests/testSourceBuiltCompilerI128ImmediateComparison()",
+    "BundledCompilerGateTests/testSourceBuiltCompilerFloatToI128BuiltinsUseWasmABI()",
     "BundledCompilerGateTests/testSourceBuiltCompilerRegexDependencyBuildsAndRuns()",
     "BundledCompilerGateTests/testMultiFileRoutePlannerWithGraphCratesBuildsAndRuns()",
     "WasmSandboxPolicyTests/testInstructionBudgetStopsPureComputeGuestWithoutHostCalls()",

@@ -64,8 +64,9 @@ python3 scripts/run_candidate_gate.py \
 ```
 
 First run the
-release-manifest hash test, a fresh E0502 Check/repair, all 46 installed
-Academy Examples, the three-file four-crate app, and the Clap/Regex/JSON CLI.
+release-manifest hash test, a fresh E0502 Check/repair, the direct i128 and
+float-to-i128 regressions, all 46 installed Academy Examples, the three-file
+four-crate apps, and the Clap/Regex/JSON CLI.
 The generated xctestrun adds these opt-in probes to the scheme's fixed test
 selection; setting the environment variable alone would leave them filtered
 out. The runner requires the requested number of actually executed tests.
@@ -157,11 +158,15 @@ compiler reached `petgraph` codegen and failed at
 `icmp_imm.i128 slt` in `core::num::overflowing_add`: the CLIF-to-Wasm emitter
 tried to map a two-word i128 to one Wasm value. The next source-locked builder
 patch sign-extends that immediate into two i64 halves and uses the existing
-i128 comparison lowering. Its own compiler build and app gates are pending.
+i128 comparison lowering. The next candidate's results follow.
 An isolated `i128` immediate comparison and `overflowing_add` test reproduced
 that exact backend error on the old stripped candidate (one executed, two
 assertion failures, 4.664-second test body). This confirms the regression
 test exercises the failing path before the next candidate is staged.
+
+The fourth source-built candidate, `cbf85af252b4abcaadd1a1d740746838c733761cf11a4ce20085287a1fae9e7c`, passed that exact isolated regression on iOS 18.2 Release Simulator (one executed, zero failures, 3.480 seconds). Its sysroot ZIP remained byte-identical to the prior candidate. The route planner then compiled its dependency graph but **failed at link time** after 474.615 seconds: `riwl` found that the Cranelift object imported `__fixunssfti` as `(f32) -> (i64, i64)`, while LLVM-built `compiler_builtins` defined `(i32 return_area, f32) -> ()`. The linker correctly rejected the ABI mismatch. A fifth pinned source patch changes the four f32/f64-to-i128 library calls to the wasm32 C return-area ABI. Its new source build and gates are pending; the fourth candidate must not be described as passing the graph application.
+
+An isolated four-conversion test (`f32/f64` to signed/unsigned `i128`) reproduced the same `__fixunssfti` link mismatch on the fourth candidate (one executed, two assertion failures, 3.887-second test body). This is the fast regression to run before repeating the eight-minute dependency graph.
 
 The sampled runtime fork passed the prior three-file
 `clap`/`regex`/`hashbrown`/`smallvec` CLI in an A/B/A Simulator comparison
