@@ -12,3 +12,5 @@ Crabrix/Resources/Toolchain/.stage.*/
 *.xcresult
 .wrangler/
 node_modules/
+__pycache__/
+*.pyc

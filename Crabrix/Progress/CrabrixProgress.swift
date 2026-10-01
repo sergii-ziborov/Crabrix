@@ -1,5 +1,11 @@
 import Foundation
 
+/// Lesson count in the immutable pre-CoursePack Rust Academy snapshot. Decoding
+/// old aggregate progress must use that snapshot, never a newer downloaded pack.
+private enum LegacyRustAcademySnapshot {
+    static let lessonCount = 142
+}
+
 /// Everything the learner has done, in one place.
 ///
 /// Rating is deliberately a single number earned across the whole app — lessons,
@@ -114,7 +120,7 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
             let challenges = solvedAlgorithmPatternIDs.count
             rustLessonsCompleted = min(
                 max(0, lessonsCompleted - challenges),
-                RustCourseCatalog.academyLessonCount
+                LegacyRustAcademySnapshot.lessonCount
             )
             algorithmStudySteps = max(0, lessonsCompleted - challenges - rustLessonsCompleted)
         }
@@ -408,7 +414,7 @@ enum CrabrixAchievementCatalog {
             // The Rust path only, and its top rung is the path itself. Atlas
             // steps have their own ladders; counting them here let a language
             // badge be finished without opening a language lesson.
-            thresholds: [1, 5, 25, 75, RustCourseCatalog.academyLessonCount],
+            thresholds: [1, 5, 25, 75, LegacyRustAcademySnapshot.lessonCount],
             measure: { $0.rustLessonsCompleted },
             requirement: {
                 $0 == 1

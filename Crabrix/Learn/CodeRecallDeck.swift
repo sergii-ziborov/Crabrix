@@ -16,15 +16,14 @@ struct CodeRecallSnippet: Identifiable, Equatable, Sendable {
     }
 }
 
-/// The deck for Code Recall, built from lesson example code.
-///
-/// Nothing is hand-written here: adding a lesson adds a snippet, in the same way
-/// adding a lesson adds a question. The game cannot drift from the curriculum.
+/// Builds Code Recall rounds from installed CourseRepository snippets.
+/// The frozen pre-CoursePack list below exists only for exporter parity tests.
 enum CodeRecallDeck {
     /// The shortest and longest snippets a round can use.
     static let minimumLines = 3
     static let maximumLines = 8
 
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
     static let all: [CodeRecallSnippet] = {
         RustCourseCatalog.courses
             .flatMap { $0.units.flatMap(\.lessons) }
@@ -39,6 +38,7 @@ enum CodeRecallDeck {
                 )
             }
     }()
+#endif
 
     /// Lines worth showing: no blanks, and no repeats — a repeated line would
     /// make the correct order ambiguous and the round unfair.
@@ -53,11 +53,14 @@ enum CodeRecallDeck {
         return result
     }
 
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
     static func snippet(topic: String) -> CodeRecallSnippet? {
         all.first { $0.topic == topic }
     }
+#endif
 
     /// Picks the next snippet, favouring the topics the learner is weakest at.
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
     static func next(
         records: [String: TopicMasteryRecord],
         excluding used: Set<String> = [],
@@ -67,6 +70,7 @@ enum CodeRecallDeck {
         next(from: all, records: records, excluding: used,
              now: now, using: &generator)
     }
+#endif
 
     static func next(
         from snippets: [CodeRecallSnippet],
@@ -89,6 +93,7 @@ enum CodeRecallDeck {
         return candidates.first { $0.topic == topic }
     }
 
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
     static func next(
         records: [String: TopicMasteryRecord],
         excluding used: Set<String> = [],
@@ -98,6 +103,7 @@ enum CodeRecallDeck {
         return next(from: all, records: records, excluding: used,
                     now: now, using: &generator)
     }
+#endif
 
     static func next(
         from snippets: [CodeRecallSnippet],

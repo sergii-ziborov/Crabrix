@@ -1,5 +1,6 @@
 import Foundation
 
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
 /// Two hundred deliberately small pattern records grouped by the solution
 /// method a learner should recognise. The prose and challenges are original;
 /// the coverage mirrors common interview-study families without copying any
@@ -648,3 +649,4 @@ enum AlgorithmCourseData {
         ]
     )
 }
+#endif

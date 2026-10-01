@@ -266,7 +266,10 @@ extension RustLesson {
         if case .planned = exercise { return false }
         return true
     }
+}
 
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
+extension RustLesson {
     var evidence: LessonEvidence {
         switch exercise {
         case .runnable:
@@ -439,3 +442,4 @@ enum RustLearningPath {
         ),
     ] + RustAdvancedExpansion.allUnits
 }
+#endif

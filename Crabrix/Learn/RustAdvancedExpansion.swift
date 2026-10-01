@@ -1,5 +1,6 @@
 import Foundation
 
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
 /// Slower bridge lessons for every course after Rust Basics.
 ///
 /// Existing unit and lesson identifiers stay untouched. These units are
@@ -1035,6 +1036,7 @@ enum RustAdvancedExpansion {
         ),
     ]
 }
+#endif
 
 private struct AdvancedLessonSpec: Sendable {
     let id: String

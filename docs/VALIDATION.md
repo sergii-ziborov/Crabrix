@@ -1,5 +1,20 @@
 # Validation record — 30 September 2026
 
+## 1 October 2026 Release Academy source boundary
+
+An unsigned iOS Simulator Release app build succeeded after the legacy Swift
+Academy catalogs were guarded for Debug and fixture-only test builds. Three
+distinct legacy lesson/term strings were absent from the Release executable;
+the signed transition CoursePacks remain bundled for offline migration. The
+installed repository, baseline bootstrap, and achievement migration ran in a
+selected iOS 18.2 Debug suite: 22 tests, zero failures. The historical exporter
+materialized source commit `c38423e7503a56d6cd97e3a6c17651d5a5c33d62`,
+executed the models, and reproduced `migration/baseline-inventory.json`
+byte for byte, including 742 lessons, 200 patterns and 46 Examples. A second
+Release Example gate on this branch is pending; the earlier 46-Example result
+below used the pre-guard candidate. These checks do not use the source-built
+Crabrix compiler, which is still in progress.
+
 ## 1 October 2026 Academy Examples candidate
 
 The candidate moves all 46 authored examples from compiled Swift catalogs into the existing signed Projects CoursePack and opens the gallery from Academy. On iOS 18.2 arm64 Simulator, Release `testEveryInstalledAcademyExampleBuildsAndRuns` loaded the installed signed pack and successfully compiled and ran all 46 entries in 161.840 seconds (one test, zero failures). Debug `testInstalledAcademyExamplesHaveRunnableEntries` verified 46 unique IDs, six Canvas projects, source/Cargo files, a new copy ID, pinned course provenance, and source-copy isolation (one test, zero failures). Debug `testPublicSignedCatalogAndCourseInstall` fetched and installed both Basics and Projects from the public catalog and read 46 examples (one test, zero failures). A separate public fetch matched the catalog's ZIP and descriptor SHA-256 values and verified all 212 Projects payload files. The source migration parity was rerun and reported `missing=0`, `unexpected=0`, `unapprovedChanges=0`.
@@ -50,4 +65,4 @@ This records observed results for the current development branch. It is not an A
 
 The Simulator used for the app gates was an iOS 18.2 device with Xcode 27.0 beta (`27A5228h`). Logs from local gates are not copied verbatim into public docs because they can contain machine paths; counts above come from completed command output. Re-run commands from the README and the repository CI before a release.
 
-Outstanding: full course update interruption/crash/disk-full matrix including actual process-kill resume, attribution of old unversioned attempts to the exact legacy snapshot, removal of the duplicate production Swift catalogs, large-diagnostic compiler output stress and compiler workspace/tmp bounds, physical-device memory/thermal/Stop gates, a clean upstream 0.4.1 B baseline and device measurements, own source-built toolchain, and a final release manifest linked to an actual IPA. The [safety-gated candidate manifest](../release-manifests/candidate-reserved-memory-safety-2026-09-30.json) maps app source commit `ece70b0` to runtime `fbe46d9`, the unchanged old toolchain, and the signed course catalog; it has no IPA hash. The [earlier memory-patch manifest](../release-manifests/candidate-reserved-memory-2026-09-30.json) remains historical. The current comparison above measures one Check workload; it does not establish a several-fold whole-app speedup.
+Outstanding: full course update interruption/crash/disk-full matrix including actual process-kill resume, attribution of old unversioned attempts to the exact legacy snapshot, large-diagnostic compiler output stress and compiler workspace/tmp bounds, physical-device memory/thermal/Stop gates, a clean upstream 0.4.1 B baseline and device measurements, own source-built toolchain, and a final release manifest linked to an actual IPA. The [safety-gated candidate manifest](../release-manifests/candidate-reserved-memory-safety-2026-09-30.json) maps app source commit `ece70b0` to runtime `fbe46d9`, the unchanged old toolchain, and the signed course catalog; it has no IPA hash. The [earlier memory-patch manifest](../release-manifests/candidate-reserved-memory-2026-09-30.json) remains historical. The current comparison above measures one Check workload; it does not establish a several-fold whole-app speedup.

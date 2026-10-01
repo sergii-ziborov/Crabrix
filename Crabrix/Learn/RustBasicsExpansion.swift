@@ -1,5 +1,6 @@
 import Foundation
 
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
 /// The bridge between the first two bindings and Rust's data-modeling tools.
 /// Stable lesson identifiers keep existing progress intact while the beginner
 /// course grows from two short chapters into a gradual four-chapter path.
@@ -426,3 +427,4 @@ enum RustBasicsExpansion {
         TermTrainPair(id: "debug-macro", term: "dbg!", description: "Prints a source location and Debug value to stderr, then returns it.", topic: "debugging-values"),
     ]
 }
+#endif

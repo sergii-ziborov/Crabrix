@@ -25,11 +25,10 @@ struct RustQuestion: Identifiable, Sendable, Equatable {
     }
 }
 
-/// Every question in the app, derived from the curriculum.
-///
-/// Quick Practice does not keep its own list: adding a lesson with written
-/// content adds a question here automatically, so the two can never drift apart.
+/// Schedules a round from questions supplied by the installed CourseRepository.
+/// The frozen pre-CoursePack list below exists only for exporter parity tests.
 enum RustQuestionBank {
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
     static let all: [RustQuestion] = {
         RustCourseCatalog.courses
             // Algorithms has its own 600-step progression. Mixing all of those
@@ -66,6 +65,7 @@ enum RustQuestionBank {
     ) -> [RustQuestion] {
         round(count: count, from: all, records: records, now: now)
     }
+#endif
 
     static func round(
         count: Int,
@@ -84,6 +84,7 @@ enum RustQuestionBank {
     }
 
     /// Deterministic variant, for tests.
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
     static func round(
         count: Int,
         records: [String: TopicMasteryRecord],
@@ -92,6 +93,7 @@ enum RustQuestionBank {
     ) -> [RustQuestion] {
         round(count: count, from: all, records: records, now: now, using: &generator)
     }
+#endif
 
     static func round(
         count: Int,

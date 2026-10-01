@@ -6,7 +6,7 @@ price, and device gates before using it in App Store Connect.
 
 ## Promotional text
 
-> Learn and build Rust on iPhone and iPad. The compiler runs on your device, with a native editor, full Academy, Cargo projects, and no required account.
+> Learn Rust on device: 742 Academy steps, 46 downloadable Examples, editable Cargo projects, and a bundled compiler. No account or cloud compilation.
 
 ## Description
 
@@ -25,7 +25,10 @@ Existing learners retain all seven transition courses offline after updating.
 Lessons can open starter code as a separate editable project. Course downloads show their size,
 are checked before installation, and leave your projects and progress in place
 when you update or delete course material. Installed courses are readable
-offline. New course versions need a connection for their first download.
+offline. The Projects course also supplies 46 downloadable Rust Examples in
+Academy. Open one to create your own editable project; its source is visible
+and the course copy stays unchanged. New course versions need a connection for
+their first download.
 
 BUILD YOUR OWN PROJECT
 The project workspace has a native file tree, syntax-aware editor, Code and

@@ -73,6 +73,10 @@ jobs:
             echo "GameKit is linked into a production build" >&2
             exit 1
           fi
+          if strings "$APP" | grep -Fq 'Every Rust program starts at main, but the lesson is the whole loop.'; then
+            echo "legacy Swift Academy content is present in the production executable" >&2
+            exit 1
+          fi
           if strings "$APP" | grep -qi "GKLocalPlayer\|GKGameCenterViewController"; then
             echo "Game Center symbols are present in a production build" >&2
             exit 1

@@ -66,6 +66,7 @@ enum TermTrainDeck {
     /// How many pairs are on the board at once.
     static let boardSize = 5
 
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
     static let all: [TermTrainPair] = [
         TermTrainPair(id: "ownership", term: "Ownership", description: "One value has one owner; dropping the owner releases it.", topic: "ownership"),
         TermTrainPair(id: "borrow", term: "Borrow", description: "Use a value through a reference without taking ownership.", topic: "borrowing"),
@@ -180,11 +181,13 @@ enum TermTrainDeck {
         TermTrainPair(id: "abi", term: "ABI", description: "The binary contract two compiled languages agree on.", topic: "q-ffi-abi"),
     ] + RustBasicsExpansion.termPairs
         + RustAdvancedExpansion.termPairs
+#endif
 
     /// A fresh board, excluding anything already on screen.
     ///
     /// When mastery records are supplied the board leans towards terms the
     /// learner is weak on or that are due for review, rather than picking evenly.
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
     static func board(
         excluding used: Set<String> = [],
         size: Int = boardSize,
@@ -195,6 +198,7 @@ enum TermTrainDeck {
         board(from: all, excluding: used, size: size, records: records,
               now: now, shuffled: shuffled)
     }
+#endif
 
     static func board(
         from pairs: [TermTrainPair],
@@ -235,6 +239,7 @@ enum TermTrainDeck {
     }
 
     /// One replacement pair for the timed board, avoiding what is on screen.
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
     static func replacement(
         excluding used: Set<String>,
         records: [String: TopicMasteryRecord] = [:],
@@ -244,6 +249,7 @@ enum TermTrainDeck {
         replacement(from: all, excluding: used, records: records,
                     now: now, shuffled: shuffled)
     }
+#endif
 
     static func replacement(
         from pairs: [TermTrainPair],
