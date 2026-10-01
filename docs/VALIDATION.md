@@ -6,6 +6,8 @@ The candidate moves all 46 authored examples from compiled Swift catalogs into t
 
 The final selected Debug rerun passed 11 tests (one example-copy test plus five theme and five syntax-contrast tests), zero failures. The complete fast Debug suite then executed 421 tests, with four opt-in skips and zero failures. The existing Cyberpunk Settings screenshot was visually inspected; theme tokens are app-wide, and the Academy path and tab bar now use them. A fresh candidate screenshot and physical-device appearance pass remain pending. The compiler's independent `regex`/`serde_json` backend failures are recorded in [the complex-crate gate](compiler-complex-gate-2026-10-01.md); these 46 examples use the standard library and do not establish broad crates.io compatibility.
 
+A later empty-catalog explanation on the Examples card was built successfully in Debug for iOS 18.2 Simulator at app-input commit `6e38422e9ba419130180f2888ff84d5780325fce`. The 46-example run and 421-test suite preceded this text-only change and were not rerun for it.
+
 This records observed results for the current development branch. It is not an App Store submission or physical-device certification. The latest completed hosted full fast suite used app-input commit `ef5f72b` with fork revision `6f9e307c`; its later safety-gated revision `fbe46d9` has a separate 462-test runtime suite, nine selected Release Simulator app gates, and five-sample Check measurements below. Older gate results explicitly name their earlier input. Documentation commits may differ without changing build inputs.
 
 | Area | Observed result |
