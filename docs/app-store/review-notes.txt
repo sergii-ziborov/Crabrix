@@ -12,10 +12,15 @@ TO SEE IT COMPILE
    download Ownership after confirming its shown size, open its starter as a
    project, inspect the E0502 diagnostic, repair the source, and Run. Lesson
    hints are available in Output.
+4. Learn → Examples opens 46 editable Rust projects from the signed Projects
+   CoursePack. On a fresh install, confirm the shown size to download that
+   pack first. Open an example to create a separate copy in My Projects;
+   edit and Run that copy. Its Rust source is visible to the user.
 
 COURSES AND DOWNLOADS
-Learn lists six Rust courses and Algorithm Atlas. A fresh installation opens
-Basics offline and offers the other six as downloads. An update with legacy
+Learn lists six Rust courses and Algorithm Atlas, with Examples under Academy
+rather than Projects. A fresh installation opens Basics offline and offers
+the other six as downloads. An update with legacy
 progress activates all seven transition packs offline from the app bundle.
 Learn → Check for course updates reads a
 signed public catalog. A new version shows its download size before the user
