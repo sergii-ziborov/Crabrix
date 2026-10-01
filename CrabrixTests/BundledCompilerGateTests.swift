@@ -753,6 +753,66 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
     }
 
+    func testClapRegexJSONCommandLineAppBuildsAndRuns() async throws {
+        try Self.requireCompilerGate()
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"] == "1" else {
+            throw XCTSkip("The pinned compiler has not passed this dependency-heavy CLI gate.")
+        }
+        let manifest = """
+        [package]
+        name = "logscan-cli-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        clap = "=4.5.50"
+        regex = "=1.13.1"
+        serde_json = "=1.0.151"
+        """
+        let source = """
+        // fresh application revision: \(UUID())
+        use clap::{Arg, Command};
+        use regex::Regex;
+        use serde_json::Value;
+
+        fn main() {
+            let args = Command::new("logscan")
+                .arg(Arg::new("pattern").long("pattern").required(true).num_args(1))
+                .try_get_matches_from(["logscan", "--pattern", r"^WARN\\s+(.+)$"])
+                .unwrap();
+            let warning = Regex::new(args.get_one::<String>("pattern").unwrap()).unwrap();
+            let rows: Value = serde_json::from_str(
+                r#"[{"line":"WARN cache"},{"line":"INFO ready"},{"line":"WARN timeout"}]"#
+            ).unwrap();
+            let messages: Vec<String> = rows.as_array().unwrap().iter().filter_map(|row| {
+                let line = row.get("line")?.as_str()?;
+                Some(warning.captures(line)?[1].to_owned())
+            }).collect();
+            println!("{}:{}", messages.len(), messages.join(","));
+        }
+        """
+
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertTrue(snapshot.isOfflineReady)
+        XCTAssertTrue(snapshot.blockingPackages.isEmpty, snapshot.blockingPackages.map(\.id).joined(separator: ", "))
+        XCTAssertGreaterThanOrEqual(snapshot.plan.units.count, 10)
+        XCTAssertEqual(Set(snapshot.plan.rootExterns.map(\.alias)), ["clap", "regex", "serde_json"])
+        XCTAssertNotNil(snapshot.lockfile)
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        let result = await compiler.run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": manifest],
+            plan: snapshot.plan
+        )
+        XCTAssertTrue(result.succeeded,
+                      "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+                       "2:cache,timeout")
+        XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
+    }
+
     func testVendoredCrateBuildsFromAProjectLocalPatch() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
             throw XCTSkip("Run the CrabrixCompilerGate scheme for the Vendor & Edit gate.")
