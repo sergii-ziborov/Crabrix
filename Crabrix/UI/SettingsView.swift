@@ -8,12 +8,6 @@ struct SettingsView: View {
     @AppStorage("crabrix.appleIntelligenceCompletion") private var appleIntelligenceCompletion = true
     @AppStorage("crabrix.appleIntelligenceDiagnostics") private var appleIntelligenceDiagnostics = true
     let toolchain: ToolchainStatus
-    let storage: CrateStorageUsage
-    let onRefreshStorage: () async -> Void
-    let onClearBuildArtifacts: () async -> Void
-    let onClearDownloadedArchives: () async -> Void
-    let onClearOfflinePins: () async -> Void
-    let onClearPackageCache: () async -> Void
 
     private let columns = [GridItem(.adaptive(minimum: 150), spacing: 12)]
 
@@ -25,7 +19,6 @@ struct SettingsView: View {
                     appearanceSection
                     privacySection
                     editorSection
-                    cargoStorageSection
                     compilerSection
                     helpSection
                     aboutSection
@@ -38,7 +31,6 @@ struct SettingsView: View {
             .foregroundStyle(CrabrixTheme.primary)
             .navigationTitle("Settings")
         }
-        .task { await onRefreshStorage() }
     }
 
     private var settingsHeader: some View {
@@ -194,102 +186,6 @@ struct SettingsView: View {
         }
     }
 
-    private var cargoStorageSection: some View {
-        SettingsSection(
-            title: "Local build storage",
-            detail: "Build outputs and downloaded sources are cacheable. Explicit offline pins are durable and managed separately."
-        ) {
-            SettingsFactRow(
-                title: "Downloaded archives",
-                value: Self.formatted(storage.archiveBytes),
-                icon: "arrow.down.circle.fill",
-                tint: CrabrixTheme.blue
-            )
-            SettingsFactRow(
-                title: "Offline pinned archives",
-                value: Self.formatted(storage.pinnedArchiveBytes),
-                icon: "pin.fill",
-                tint: CrabrixTheme.mint
-            )
-            SettingsFactRow(
-                title: "Registry index",
-                value: Self.formatted(storage.indexBytes),
-                icon: "list.bullet.rectangle.fill",
-                tint: CrabrixTheme.blue
-            )
-            SettingsFactRow(
-                title: "Extracted sources",
-                value: "\(Self.formatted(storage.sourceBytes)) · \(storage.packageCount) packages",
-                icon: "folder.fill",
-                tint: CrabrixTheme.amber
-            )
-            SettingsFactRow(
-                title: "Package artifacts",
-                value: Self.formatted(storage.artifactBytes),
-                icon: "cube.transparent.fill",
-                tint: CrabrixTheme.mint
-            )
-            SettingsFactRow(
-                title: "Project builds",
-                value: Self.formatted(storage.projectArtifactBytes),
-                icon: "hammer.circle.fill",
-                tint: CrabrixTheme.amber
-            )
-            SettingsFactRow(
-                title: "Total",
-                value: Self.formatted(storage.totalBytes),
-                icon: "internaldrive.fill",
-                tint: CrabrixTheme.coral
-            )
-
-            Button {
-                Task { await onClearBuildArtifacts() }
-            } label: {
-                Label("Clear build artifacts and results", systemImage: "cube.transparent")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-            .tint(CrabrixTheme.mint)
-
-            Button {
-                Task { await onClearDownloadedArchives() }
-            } label: {
-                Label("Remove downloaded archives", systemImage: "archivebox")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-            .tint(CrabrixTheme.blue)
-
-            Button {
-                Task { await onClearOfflinePins() }
-            } label: {
-                Label("Remove offline pins", systemImage: "pin.slash")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-            .tint(CrabrixTheme.amber)
-
-            Button(role: .destructive) {
-                Task { await onClearPackageCache() }
-            } label: {
-                Label("Clear source and build caches", systemImage: "trash")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-
-            Label(
-                "Clearing cache data removes extracted sources, downloaded archives, and build artifacts. The compact registry index and explicit offline pins remain durable; remove pins separately when you want to reclaim those verified archives.",
-                systemImage: "exclamationmark.triangle"
-            )
-            .font(.caption2)
-            .foregroundStyle(CrabrixTheme.muted)
-        }
-    }
-
-    private static func formatted(_ bytes: Int64) -> String {
-        ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
-    }
-
     private var compilerSection: some View {
         SettingsSection(
             title: "Local compiler",
@@ -443,6 +339,134 @@ struct SettingsView: View {
     private var appBuild: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"
     }
+}
+
+struct ProjectPackageStorageSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let storage: CrateStorageUsage
+    let onRefreshStorage: () async -> Void
+    let onClearBuildArtifacts: () async -> Void
+    let onClearDownloadedArchives: () async -> Void
+    let onClearOfflinePins: () async -> Void
+    let onClearPackageCache: () async -> Void
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                cargoStorageSection
+                    .padding(20)
+                    .frame(maxWidth: 700)
+                    .frame(maxWidth: .infinity)
+            }
+            .background(CrabrixTheme.background.ignoresSafeArea())
+            .foregroundStyle(CrabrixTheme.primary)
+            .navigationTitle("Package storage")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        .task { await onRefreshStorage() }
+    }
+
+    private var cargoStorageSection: some View {
+        SettingsSection(
+            title: "Local build storage",
+            detail: "Build outputs and downloaded sources are cacheable. Explicit offline pins are durable and managed separately."
+        ) {
+            SettingsFactRow(
+                title: "Downloaded archives",
+                value: Self.formatted(storage.archiveBytes),
+                icon: "arrow.down.circle.fill",
+                tint: CrabrixTheme.blue
+            )
+            SettingsFactRow(
+                title: "Offline pinned archives",
+                value: Self.formatted(storage.pinnedArchiveBytes),
+                icon: "pin.fill",
+                tint: CrabrixTheme.mint
+            )
+            SettingsFactRow(
+                title: "Registry index",
+                value: Self.formatted(storage.indexBytes),
+                icon: "list.bullet.rectangle.fill",
+                tint: CrabrixTheme.blue
+            )
+            SettingsFactRow(
+                title: "Extracted sources",
+                value: "\(Self.formatted(storage.sourceBytes)) · \(storage.packageCount) packages",
+                icon: "folder.fill",
+                tint: CrabrixTheme.amber
+            )
+            SettingsFactRow(
+                title: "Package artifacts",
+                value: Self.formatted(storage.artifactBytes),
+                icon: "cube.transparent.fill",
+                tint: CrabrixTheme.mint
+            )
+            SettingsFactRow(
+                title: "Project builds",
+                value: Self.formatted(storage.projectArtifactBytes),
+                icon: "hammer.circle.fill",
+                tint: CrabrixTheme.amber
+            )
+            SettingsFactRow(
+                title: "Total",
+                value: Self.formatted(storage.totalBytes),
+                icon: "internaldrive.fill",
+                tint: CrabrixTheme.coral
+            )
+
+            Button {
+                Task { await onClearBuildArtifacts() }
+            } label: {
+                Label("Clear build artifacts and results", systemImage: "cube.transparent")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .tint(CrabrixTheme.mint)
+
+            Button {
+                Task { await onClearDownloadedArchives() }
+            } label: {
+                Label("Remove downloaded archives", systemImage: "archivebox")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .tint(CrabrixTheme.blue)
+
+            Button {
+                Task { await onClearOfflinePins() }
+            } label: {
+                Label("Remove offline pins", systemImage: "pin.slash")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .tint(CrabrixTheme.amber)
+
+            Button(role: .destructive) {
+                Task { await onClearPackageCache() }
+            } label: {
+                Label("Clear source and build caches", systemImage: "trash")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+
+            Label(
+                "Clearing cache data removes extracted sources, downloaded archives, and build artifacts. The compact registry index and explicit offline pins remain durable; remove pins separately when you want to reclaim those verified archives.",
+                systemImage: "exclamationmark.triangle"
+            )
+            .font(.caption2)
+            .foregroundStyle(CrabrixTheme.muted)
+        }
+    }
+
+    private static func formatted(_ bytes: Int64) -> String {
+        ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
+    }
+
 }
 
 private struct SettingsSection<Content: View>: View {

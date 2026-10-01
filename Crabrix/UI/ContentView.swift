@@ -73,6 +73,7 @@ struct ContentView: View {
     @State private var pendingNewProjectImport: ProjectImportSource?
     @State private var isProjectActionsPresented = false
     @State private var isCargoCatalogPresented = false
+    @State private var isPackageStoragePresented = false
     @State private var projectsPath: [ProjectsRoute] = []
     @State private var projectItemCreation: ProjectItemCreation?
     @State private var githubURL = ""
@@ -176,13 +177,7 @@ struct ContentView: View {
             .tag(CrabrixDestination.learn)
 
             SettingsView(
-                toolchain: model.toolchain,
-                storage: model.cargoStorage,
-                onRefreshStorage: model.refreshCargoStorage,
-                onClearBuildArtifacts: model.clearCargoBuildArtifacts,
-                onClearDownloadedArchives: model.clearCargoDownloadedArchives,
-                onClearOfflinePins: model.clearCargoOfflinePins,
-                onClearPackageCache: model.clearCargoPackageCache
+                toolchain: model.toolchain
             )
             .tabItem { Label("Settings", systemImage: "gearshape.fill") }
             .tag(CrabrixDestination.settings)
@@ -200,6 +195,16 @@ struct ContentView: View {
         )
         .sheet(isPresented: $isCargoCatalogPresented) {
             CargoDependencyCatalogSheet(onAdd: model.addCargoDependency)
+        }
+        .sheet(isPresented: $isPackageStoragePresented) {
+            ProjectPackageStorageSheet(
+                storage: model.cargoStorage,
+                onRefreshStorage: model.refreshCargoStorage,
+                onClearBuildArtifacts: model.clearCargoBuildArtifacts,
+                onClearDownloadedArchives: model.clearCargoDownloadedArchives,
+                onClearOfflinePins: model.clearCargoOfflinePins,
+                onClearPackageCache: model.clearCargoPackageCache
+            )
         }
         .sheet(isPresented: $isNewProjectPresented, onDismiss: presentPendingProjectImport) {
             NewProjectSheet(
@@ -711,6 +716,7 @@ struct ContentView: View {
                                 onResolvePackages: model.refreshCargoWorkspace,
                                 onPinPackages: model.pinDependenciesForOffline,
                                 onAddPackage: { isCargoCatalogPresented = true },
+                                onManagePackageStorage: { isPackageStoragePresented = true },
                                 onRemovePackage: model.removeCargoDependency,
                                 vendoredFiles: model.vendoredFiles,
                                 onVendor: model.vendorCrate,
@@ -827,6 +833,7 @@ struct ContentView: View {
                             onResolvePackages: model.refreshCargoWorkspace,
                             onPinPackages: model.pinDependenciesForOffline,
                             onAddPackage: { isCargoCatalogPresented = true },
+                            onManagePackageStorage: { isPackageStoragePresented = true },
                             onRemovePackage: model.removeCargoDependency,
                             vendoredFiles: model.vendoredFiles,
                             onVendor: model.vendorCrate,
@@ -1424,6 +1431,7 @@ private struct ProjectSidebar: View {
     let onResolvePackages: () -> Void
     let onPinPackages: () -> Void
     let onAddPackage: () -> Void
+    let onManagePackageStorage: () -> Void
     let onRemovePackage: (String) -> Bool
     let vendoredFiles: (String, SemanticVersion) -> [String: String]
     let onVendor: (String, SemanticVersion) -> Bool
@@ -1494,6 +1502,7 @@ private struct ProjectSidebar: View {
                         onRefresh: onResolvePackages,
                         onPinForOffline: onPinPackages,
                         onAddDependency: onAddPackage,
+                        onManageStorage: onManagePackageStorage,
                         onRemoveDependency: onRemovePackage,
                         vendoredFiles: vendoredFiles,
                         onVendor: onVendor,

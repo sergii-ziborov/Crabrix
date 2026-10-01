@@ -10,6 +10,7 @@ struct CargoPackagesPanel: View {
     let onRefresh: () -> Void
     let onPinForOffline: () -> Void
     let onAddDependency: () -> Void
+    let onManageStorage: () -> Void
     let onRemoveDependency: (String) -> Bool
     let vendoredFiles: (String, SemanticVersion) -> [String: String]
     let onVendor: (String, SemanticVersion) -> Bool
@@ -78,6 +79,12 @@ struct CargoPackagesPanel: View {
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
                 .foregroundStyle(CrabrixTheme.muted)
             Spacer(minLength: 0)
+            Button(action: onManageStorage) {
+                Image(systemName: "externaldrive.fill")
+                    .foregroundStyle(CrabrixTheme.amber)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Manage package storage")
             Button(action: onAddDependency) {
                 Image(systemName: "plus.circle.fill").foregroundStyle(CrabrixTheme.mint)
             }
