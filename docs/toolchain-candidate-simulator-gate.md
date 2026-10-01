@@ -55,6 +55,10 @@ Use `xcodebuild test-without-building` with the generated candidate test-run
 file and explicit `-only-testing:CrabrixTests/...` selectors. First run the
 release-manifest hash test, a fresh E0502 Check/repair, all 46 installed
 Academy Examples, the three-file four-crate app, and the Clap/Regex/JSON CLI.
+The generated xctestrun adds these opt-in probes to the scheme's fixed test
+selection; setting the environment variable alone would leave them filtered
+out. Always inspect the XCTest result for executed test counts, not only an
+overall green result.
 Then run the remaining compiler/Cargo/Stop/Vendor/offline gates and performance
 probes. Record every observed pass, failure, skip, compiler SHA, sysroot SHA,
 runtime revision, app SHA, device/OS, and build configuration separately.

@@ -32,6 +32,9 @@ class CandidateStagingTests(unittest.TestCase):
         self.test_run.write_bytes(plistlib.dumps({"CrabrixTests": {
             "TestHostPath": "__TESTROOT__/Release-iphonesimulator/Crabrix.app",
             "EnvironmentVariables": {"CRABRIX_RUN_COMPILER_GATE": "1"},
+            "OnlyTestIdentifiers": [
+                "BundledCompilerGateTests/testBundledRustcProducesE0502()",
+            ],
         }}))
         self.write_candidate()
 
@@ -94,9 +97,14 @@ class CandidateStagingTests(unittest.TestCase):
     def test_prepares_opt_in_heavy_probe_in_a_new_test_configuration(self):
         destination, contents = staging.prepared_test_run(self.test_run, self.app)
         self.assertEqual(destination.name, "CrabrixCompilerGate-candidate.xctestrun")
-        environment = plistlib.loads(contents)["CrabrixTests"]["EnvironmentVariables"]
+        candidate = plistlib.loads(contents)["CrabrixTests"]
+        environment = candidate["EnvironmentVariables"]
         self.assertEqual(environment["CRABRIX_RUN_COMPILER_GATE"], "1")
         self.assertEqual(environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"], "1")
+        self.assertEqual(set(candidate["OnlyTestIdentifiers"]),
+                         staging.CANDIDATE_PROBES | {
+                             "BundledCompilerGateTests/testBundledRustcProducesE0502()",
+                         })
         self.assertNotIn(b"CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE", self.test_run.read_bytes())
 
     def test_rejects_test_configuration_for_a_different_app(self):

@@ -22,6 +22,14 @@ import zipfile
 SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 MAX_SYSROOT_FILES = 4096
 MAX_SYSROOT_UNCOMPRESSED_BYTES = 2 * 1024 * 1024 * 1024
+CANDIDATE_PROBES = {
+    "AppToolchainReleaseTests/testReleaseInputMatchesBundledCompilerAndSysroot()",
+    "CompilerPerformanceProbeTests/testColdEngineAndUnchangedWarningCheck()",
+    "BundledCompilerGateTests/testMultiCrateCollectionsAndJSONApplicationBuildsAndRuns()",
+    "BundledCompilerGateTests/testRegexAndJSONLogAnalyzerBuildsAndRuns()",
+    "BundledCompilerGateTests/testMultiFileDependencyRichLogMonitorBuildsAndRuns()",
+    "BundledCompilerGateTests/testClapRegexJSONCommandLineAppBuildsAndRuns()",
+}
 
 
 def sha256(path):
@@ -167,6 +175,16 @@ def prepared_test_run(source, app):
         raise ValueError("xctestrun has no test environment")
     environment["CRABRIX_RUN_COMPILER_GATE"] = "1"
     environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"] = "1"
+    # The compiler-gate scheme writes a fixed OnlyTestIdentifiers list into the
+    # xctestrun. Environment opt-in alone cannot make omitted probes runnable.
+    selected = test.get("OnlyTestIdentifiers")
+    if selected is not None:
+        if not isinstance(selected, list) or any(not isinstance(value, str) for value in selected):
+            raise ValueError("xctestrun has malformed test selection")
+        disabled = test.get("DisabledTests", [])
+        if not isinstance(disabled, list) or CANDIDATE_PROBES.intersection(disabled):
+            raise ValueError("candidate probes are disabled in xctestrun")
+        test["OnlyTestIdentifiers"] = sorted(set(selected) | CANDIDATE_PROBES)
     output = source.with_name(source.stem + "-candidate.xctestrun")
     if output.exists():
         raise ValueError("candidate xctestrun already exists; use fresh build products")
