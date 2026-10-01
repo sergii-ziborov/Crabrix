@@ -278,12 +278,7 @@ actor CourseInstaller {
             let journal = try JSONDecoder().decode(
                 CourseInstallJournal.self, from: Data(contentsOf: journalURL)
             )
-            let target = URL(fileURLWithPath: journal.targetPath)
-            let staging = URL(fileURLWithPath: journal.stagingPath)
-            guard target.standardizedFileURL.path.hasPrefix(root.standardizedFileURL.path + "/"),
-                  staging.standardizedFileURL.path.hasPrefix(
-                    root.standardizedFileURL.appending(path: ".staging").path + "/"
-                  ) else { throw CoursePackError.unsafeArchive("install journal") }
+            let (target, staging) = try validatedJournalPaths(journal)
             let active = try readIndex().active[journal.key]
             let activePath = active.map {
                 root.appending(path: "\($0.courseID)/\($0.language)/\($0.contentVersion)").path
@@ -305,6 +300,43 @@ actor CourseInstaller {
         if fileManager.fileExists(atPath: stagingRoot.path) {
             try fileManager.removeItem(at: stagingRoot)
         }
+    }
+
+    /// A journal is local state, but corruption must never let recovery remove
+    /// another course's active tree or follow a substituted directory symlink.
+    private func validatedJournalPaths(_ journal: CourseInstallJournal) throws -> (URL, URL) {
+        let parts = journal.key.split(separator: "|", omittingEmptySubsequences: false)
+        guard parts.count == 2,
+              let course = try? component(String(parts[0])),
+              let language = try? component(String(parts[1])),
+              journal.archiveSHA256.count == 64,
+              journal.archiveSHA256.allSatisfy({ "0123456789abcdef".contains($0) })
+        else { throw CoursePackError.unsafeArchive("install journal") }
+
+        let target = URL(fileURLWithPath: journal.targetPath)
+        let targetParts = target.pathComponents
+        guard let version = targetParts.last.flatMap({ try? component($0) }),
+              target.standardizedFileURL.path == root.appending(
+                path: "\(course)/\(language)/\(version)"
+              ).standardizedFileURL.path
+        else { throw CoursePackError.unsafeArchive("install journal") }
+
+        let staging = URL(fileURLWithPath: journal.stagingPath)
+        guard let identifier = UUID(uuidString: staging.lastPathComponent),
+              staging.standardizedFileURL.path == root.appending(
+                path: ".staging/\(identifier.uuidString)"
+              ).standardizedFileURL.path
+        else { throw CoursePackError.unsafeArchive("install journal") }
+
+        let canonicalRoot = root.resolvingSymlinksInPath().standardizedFileURL
+        guard target.resolvingSymlinksInPath().standardizedFileURL.path == canonicalRoot.appending(
+                path: "\(course)/\(language)/\(version)"
+              ).path,
+              staging.resolvingSymlinksInPath().standardizedFileURL.path == canonicalRoot.appending(
+                path: ".staging/\(identifier.uuidString)"
+              ).path
+        else { throw CoursePackError.unsafeArchive("install journal") }
+        return (target, staging)
     }
 }
 

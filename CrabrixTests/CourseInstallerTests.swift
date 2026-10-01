@@ -52,7 +52,7 @@ final class CourseInstallerTests: XCTestCase {
             downloadedArchive: fixture("basics-1.0.1.zip"), keyring: keys
         )
         let orphan = root.appending(path: "basics/en/9.9.9")
-        let staging = root.appending(path: ".staging/interrupted")
+        let staging = root.appending(path: ".staging/\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: orphan, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
         let journal: [String: String] = [
@@ -92,6 +92,101 @@ final class CourseInstallerTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(
             atPath: root.appending(path: "basics/en/1.0.1/course.json").path
         ))
+    }
+
+    func testRecoveryRejectsJournalThatTargetsAnotherActiveCourse() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let installer = try CourseInstaller(root: root, appVersion: SemanticVersion("1.1"))
+        let keys = try JSONDecoder().decode(CourseKeyring.self,
+                                            from: Data(contentsOf: fixture("production-keyring.json")))
+        _ = try await installer.install(
+            descriptorBytes: Data(contentsOf: fixture("basics.descriptor.json")),
+            downloadedArchive: fixture("basics-1.0.1.zip"), keyring: keys
+        )
+        let active = root.appending(path: "basics/en/1.0.1/course.json")
+        let malicious: [String: String] = [
+            "key": "ownership|en",
+            "targetPath": active.deletingLastPathComponent().path,
+            "stagingPath": root.appending(path: ".staging/\(UUID().uuidString)").path,
+            "archiveSHA256": String(repeating: "0", count: 64)
+        ]
+        try JSONSerialization.data(withJSONObject: malicious).write(
+            to: root.appending(path: "journal.json"), options: .atomic
+        )
+
+        do {
+            _ = try await installer.installed()
+            XCTFail("A mismatched journal was accepted")
+        } catch CoursePackError.unsafeArchive {
+            XCTAssertTrue(FileManager.default.fileExists(atPath: active.path))
+            XCTAssertNotNil(try JSONSerialization.jsonObject(with: Data(contentsOf: active)))
+        }
+    }
+
+    func testRecoveryKeepsCommittedVersionAfterIndexWrite() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let installer = try CourseInstaller(root: root, appVersion: SemanticVersion("1.1"))
+        let keys = try JSONDecoder().decode(CourseKeyring.self,
+                                            from: Data(contentsOf: fixture("production-keyring.json")))
+        let record = try await installer.install(
+            descriptorBytes: Data(contentsOf: fixture("basics.descriptor.json")),
+            downloadedArchive: fixture("basics-1.0.1.zip"), keyring: keys
+        )
+        let target = root.appending(path: "basics/en/1.0.1")
+        let staging = root.appending(path: ".staging/\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
+        let journal: [String: String] = [
+            "key": "basics|en", "targetPath": target.path,
+            "stagingPath": staging.path, "archiveSHA256": record.archiveSHA256
+        ]
+        try JSONSerialization.data(withJSONObject: journal).write(
+            to: root.appending(path: "journal.json"), options: .atomic
+        )
+
+        let afterRelaunch = try CourseInstaller(root: root, appVersion: SemanticVersion("1.1"))
+        let active = try await afterRelaunch.installed()
+        XCTAssertEqual(active.map(\.contentVersion), ["1.0.1"])
+        XCTAssertTrue(FileManager.default.fileExists(atPath: target.appending(path: "course.json").path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: staging.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: root.appending(path: "journal.json").path))
+    }
+
+    func testRecoveryRejectsJournalThroughCourseDirectorySymlink() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        let outside = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer {
+            try? FileManager.default.removeItem(at: root)
+            try? FileManager.default.removeItem(at: outside)
+        }
+        let installer = try CourseInstaller(root: root, appVersion: SemanticVersion("1.1"))
+        let externalVersion = outside.appending(path: "9.9.9")
+        try FileManager.default.createDirectory(at: externalVersion, withIntermediateDirectories: true)
+        let evidence = externalVersion.appending(path: "proof.txt")
+        try Data("keep".utf8).write(to: evidence)
+        try FileManager.default.createDirectory(
+            at: root.appending(path: "ownership"), withIntermediateDirectories: true
+        )
+        try FileManager.default.createSymbolicLink(
+            at: root.appending(path: "ownership/en"), withDestinationURL: outside
+        )
+        let malicious: [String: String] = [
+            "key": "ownership|en",
+            "targetPath": root.appending(path: "ownership/en/9.9.9").path,
+            "stagingPath": root.appending(path: ".staging/\(UUID().uuidString)").path,
+            "archiveSHA256": String(repeating: "0", count: 64)
+        ]
+        try JSONSerialization.data(withJSONObject: malicious).write(
+            to: root.appending(path: "journal.json"), options: .atomic
+        )
+
+        do {
+            _ = try await installer.installed()
+            XCTFail("A symlinked journal target was accepted")
+        } catch CoursePackError.unsafeArchive {
+            XCTAssertEqual(try Data(contentsOf: evidence), Data("keep".utf8))
+        }
     }
 
     func testMinimumAppVersionRejectsBeforeStaging() async throws {
