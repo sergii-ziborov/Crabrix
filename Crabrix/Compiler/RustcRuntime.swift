@@ -33,8 +33,15 @@ struct BundledToolchain: Sendable {
         let sysroot = destination.appending(path: "sysroot-wasip1", directoryHint: .isDirectory)
         // Probe is used by the UI: extraction happens only on the compiler queue.
         if prepareSysroot {
-            guard (try? BundledSysroot.prepare(archive: archive, checksum: checksum, at: destination)) != nil
-            else { return nil }
+            do {
+                try BundledSysroot.prepare(archive: archive, checksum: checksum, at: destination)
+            } catch {
+                #if DEBUG || CRABRIX_LEGACY_FIXTURES
+                let failure = error as NSError
+                print("CRABRIX_SYSROOT_PREPARE_FAILURE \(failure.domain) \(failure.code): \(failure.localizedDescription)")
+                #endif
+                return nil
+            }
         }
 
         return BundledToolchain(rustcURL: rustc, sysrootURL: sysroot, version: version)
