@@ -57,7 +57,7 @@ class CandidateStagingTests(unittest.TestCase):
             {"schemaVersion": 1, "files": inventory}))
         (self.candidate / "rustc.wasm").write_bytes(b"\0asm\1\0\0\0candidate")
         (self.candidate / "sysroot-wasip1.sha256").write_text(
-            staging.sha256(self.candidate / "sysroot-wasip1.zip") + "\n")
+            staging.sha256(self.candidate / "sysroot-wasip1.zip"))
         (self.candidate / "toolchain-provenance.json").write_text(json.dumps(
             {"candidate": True, "rustVersion": "1.96.0-dev"}))
         (self.candidate / "CANDIDATE-NOT-FOR-RELEASE.txt").write_text("test only\n")
@@ -80,6 +80,14 @@ class CandidateStagingTests(unittest.TestCase):
     def test_rejects_artifact_tampering_before_app_mutation(self):
         (self.candidate / "rustc.wasm").write_bytes(b"changed")
         with self.assertRaisesRegex(ValueError, "digest mismatch"):
+            staging.stage(self.candidate, self.app)
+        self.assertEqual((self.app / "toolchain.lock.json").read_bytes(), self.original_manifest)
+
+    def test_rejects_checksum_newline_that_the_app_cannot_install(self):
+        checksum = self.candidate / "sysroot-wasip1.sha256"
+        checksum.write_text(checksum.read_text() + "\n")
+        self.refresh_checksums()
+        with self.assertRaisesRegex(ValueError, "checksum file disagrees"):
             staging.stage(self.candidate, self.app)
         self.assertEqual((self.app / "toolchain.lock.json").read_bytes(), self.original_manifest)
 

@@ -68,7 +68,9 @@ def verify_candidate(directory):
         raise ValueError("candidate rustc has no Wasm header")
     archive = directory / "sysroot-wasip1.zip"
     archive_digest = sha256(archive)
-    if (directory / "sysroot-wasip1.sha256").read_text().strip() != archive_digest:
+    # The in-app sysroot installer compares these exact 64 bytes with SHA-256.
+    # Accepting a newline here would stage an archive that fails at runtime.
+    if (directory / "sysroot-wasip1.sha256").read_text() != archive_digest:
         raise ValueError("candidate sysroot checksum file disagrees")
     inventory = json.loads((directory / "sysroot-files.json").read_text())
     if inventory.get("schemaVersion") != 1 or not isinstance(inventory.get("files"), list):
