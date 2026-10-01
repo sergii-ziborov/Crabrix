@@ -30,6 +30,9 @@ jobs:
           brew install xcodegen
           if ! command -v zstd >/dev/null 2>&1; then brew install zstd; fi
 
+      - name: Validate app toolchain release input
+        run: python3 scripts/toolchain_manifest.py validate
+
       - name: Generate project and verify bundled toolchain hashes
         run: scripts/bootstrap.sh
 

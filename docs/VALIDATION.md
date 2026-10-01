@@ -1,5 +1,19 @@
 # Validation record — 30 September 2026
 
+## 1 October 2026 app toolchain release input
+
+The app now reads the bundled `Crabrix/Resources/toolchain.lock.json` for its
+compiler version and Cargo artifact identity; the fetch and package scripts
+read the same file. The manifest validator and cached-asset fetch completed.
+On iOS 18.2 Simulator, the selected Debug test compared the bundled
+`rustc.wasm` and sysroot ZIP SHA-256 values with that release input and passed
+(one test, zero failures). An unsigned Simulator Release build also passed;
+its app bundle contains the release input and pinned compiler resource, while
+three legacy lesson text sentinels remained absent from the executable. This
+validates the old pinned baseline, not a
+Crabrix-built compiler release. The own LLVM+Cranelift source build remains in
+progress on the controlled Docker candidate.
+
 ## 1 October 2026 Release Academy source boundary
 
 An unsigned iOS Simulator Release app build succeeded after the legacy Swift

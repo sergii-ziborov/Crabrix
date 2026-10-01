@@ -8,9 +8,11 @@ import hashlib
 import shutil
 import zipfile
 from pathlib import Path
+from toolchain_manifest import load_manifest
 
 project = Path(__file__).resolve().parent.parent
-version = 'artifacts-test-7'
+release = load_manifest()
+version = release['toolchainID']
 source = project / 'Crabrix/Resources/Toolchain' / version
 output = project / 'build/Resources/Toolchain' / version
 output.mkdir(parents=True, exist_ok=True)
@@ -33,8 +35,14 @@ if not archive.exists() or not marker.exists() or marker.read_text() != identity
             packaged.writestr(info, path.read_bytes())
     temporary.replace(archive)
     marker.write_text(identity)
-(output / 'sysroot-wasip1.sha256').write_text(hashlib.sha256(archive.read_bytes()).hexdigest())
+archive_digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+if archive_digest != release['sysrootArchiveSHA256']:
+    raise SystemExit('Packaged sysroot differs from the app release manifest')
+(output / 'sysroot-wasip1.sha256').write_text(archive_digest)
 compiler = output / 'rustc.wasm'
+compiler_digest = hashlib.sha256((source / 'rustc.wasm').read_bytes()).hexdigest()
+if compiler_digest != release['rustcSHA256']:
+    raise SystemExit('Bundled rustc differs from the app release manifest')
 if not compiler.exists() or hashlib.sha256(compiler.read_bytes()).digest() != hashlib.sha256((source / 'rustc.wasm').read_bytes()).digest():
     shutil.copyfile(source / 'rustc.wasm', compiler)
 print('Packaged bundled compiler resources:', output)
