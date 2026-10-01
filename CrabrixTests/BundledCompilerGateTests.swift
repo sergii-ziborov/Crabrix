@@ -753,6 +753,106 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
     }
 
+    func testMultiFileClapRegexCollectionsAppBuildsAndRuns() async throws {
+        try Self.requireCompilerGate()
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"] == "1" else {
+            throw XCTSkip("Run the opt-in source-built toolchain gate for the dependency-rich CLI.")
+        }
+        let manifest = """
+        [package]
+        name = "logscan-multifile-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        clap = "=4.5.50"
+        regex = "=1.13.1"
+        hashbrown = "=0.17.1"
+        smallvec = "=1.15.1"
+        """
+        let source = """
+        // fresh application revision: \(UUID())
+        mod ingest;
+        mod report;
+        use clap::{Arg, Command};
+
+        fn main() {
+            let args = Command::new("logscan")
+                .arg(Arg::new("pattern").long("pattern").required(true).num_args(1))
+                .try_get_matches_from(["logscan", "--pattern", r"^WARN\\s+(.+)$"])
+                .unwrap();
+            let pattern = args.get_one::<String>("pattern").unwrap();
+            let input = "api WARN cache miss\nworker INFO started\napi WARN timeout\nworker WARN cache miss";
+            let incidents = ingest::scan(input, pattern);
+            println!("{}", report::summarize(&incidents));
+        }
+        """
+        let ingest = """
+        use regex::Regex;
+
+        pub struct Incident {
+            pub source: String,
+            pub message: String,
+        }
+
+        pub fn scan(input: &str, pattern: &str) -> Vec<Incident> {
+            let warning = Regex::new(pattern).unwrap();
+            input.lines().filter_map(|line| {
+                let (source, message) = line.split_once(' ')?;
+                let captures = warning.captures(message)?;
+                Some(Incident {
+                    source: source.to_owned(),
+                    message: captures[1].to_owned(),
+                })
+            }).collect()
+        }
+        """
+        let report = """
+        use hashbrown::HashMap;
+        use smallvec::SmallVec;
+        use crate::ingest::Incident;
+
+        pub fn summarize(events: &[Incident]) -> String {
+            let mut counts: HashMap<&str, usize> = HashMap::new();
+            let mut issues: SmallVec<[String; 4]> = SmallVec::new();
+            for event in events {
+                *counts.entry(event.source.as_str()).or_default() += 1;
+                if !issues.iter().any(|existing| existing == &event.message) {
+                    issues.push(event.message.clone());
+                }
+            }
+            issues.sort();
+            format!("api={},worker={};issues={}",
+                counts["api"], counts["worker"], issues.join(","))
+        }
+        """
+
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertTrue(snapshot.isOfflineReady)
+        XCTAssertTrue(snapshot.blockingPackages.isEmpty, snapshot.blockingPackages.map(\.id).joined(separator: ", "))
+        XCTAssertGreaterThanOrEqual(snapshot.plan.units.count, 10)
+        XCTAssertEqual(Set(snapshot.plan.rootExterns.map(\.alias)),
+                       ["clap", "regex", "hashbrown", "smallvec"])
+        XCTAssertNotNil(snapshot.lockfile)
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        let result = await compiler.run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: [
+                "Cargo.toml": manifest,
+                "src/ingest.rs": ingest,
+                "src/report.rs": report,
+            ],
+            plan: snapshot.plan
+        )
+        XCTAssertTrue(result.succeeded,
+                      "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+                       "api=2,worker=1;issues=cache miss,timeout")
+        XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
+    }
+
     func testClapRegexJSONCommandLineAppBuildsAndRuns() async throws {
         try Self.requireCompilerGate()
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"] == "1" else {
