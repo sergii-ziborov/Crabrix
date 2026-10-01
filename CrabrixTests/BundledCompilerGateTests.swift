@@ -585,6 +585,60 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
     }
 
+    func testRegexAndJSONLogAnalyzerBuildsAndRuns() async throws {
+        try Self.requireCompilerGate()
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"] == "1" else {
+            throw XCTSkip("The pinned compiler fails in the regex dependency graph; see docs/compiler-complex-gate-2026-10-01.md.")
+        }
+        let manifest = """
+        [package]
+        name = "log-analyzer-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        regex = "=1.13.1"
+        serde_json = "=1.0.151"
+        """
+        let source = """
+        // fresh application revision: \(UUID())
+        use regex::Regex;
+        use serde_json::Value;
+
+        fn main() {
+            let input = r#"[{"line":"WARN disk almost full"},{"line":"INFO started"},{"line":"WARN retrying"}]"#;
+            let records: Value = serde_json::from_str(input).unwrap();
+            let warning = Regex::new(r"^WARN\\s+(.+)$").unwrap();
+            let mut messages = Vec::new();
+            for record in records.as_array().unwrap() {
+                let line = record["line"].as_str().unwrap();
+                if let Some(captures) = warning.captures(line) {
+                    messages.push(captures[1].to_owned());
+                }
+            }
+            println!("{}:{}", messages.len(), messages.join(","));
+        }
+        """
+
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertTrue(snapshot.isOfflineReady)
+        XCTAssertTrue(snapshot.blockingPackages.isEmpty, snapshot.blockingPackages.map(\.id).joined(separator: ", "))
+        XCTAssertGreaterThanOrEqual(snapshot.plan.units.count, 8)
+        XCTAssertEqual(Set(snapshot.plan.rootExterns.map(\.alias)), ["regex", "serde_json"])
+        XCTAssertNotNil(snapshot.lockfile)
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        let result = await compiler.run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": manifest],
+            plan: snapshot.plan
+        )
+        XCTAssertTrue(result.succeeded, "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "2:disk almost full,retrying")
+        XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
+    }
+
     func testVendoredCrateBuildsFromAProjectLocalPatch() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
             throw XCTSkip("Run the CrabrixCompilerGate scheme for the Vendor & Edit gate.")
