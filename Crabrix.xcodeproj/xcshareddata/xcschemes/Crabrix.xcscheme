@@ -107,6 +107,9 @@
                   Identifier = "BundledCompilerGateTests/testResolvesDownloadsAndLinksARealCratesIOPackage()">
                </Test>
                <Test
+                  Identifier = "BundledCompilerGateTests/testMultiCrateCollectionsAndJSONApplicationBuildsAndRuns()">
+               </Test>
+               <Test
                   Identifier = "BundledCompilerGateTests/testVendoredCrateBuildsFromAProjectLocalPatch()">
                </Test>
                <Test

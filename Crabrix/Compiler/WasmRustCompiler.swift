@@ -368,8 +368,12 @@ final class WasmRustCompiler: @unchecked Sendable {
                     ),
                     interrupter: interrupter
                 )
-            } catch is WasmExecutionCancelled {
-                return cancelledResult(phase: action == .check ? .check : .compile, started: started)
+            } catch let cancellation as WasmExecutionCancelled {
+                return cancelledResult(
+                    phase: action == .check ? .check : .compile,
+                    started: started,
+                    cancellation: cancellation
+                )
             } catch let failure as RustcRuntimeFailure {
                 let diagnostics = RustDiagnosticParser.parse(stderr: failure.stderr)
                 if let diagnostic = diagnostics.first {
@@ -503,7 +507,10 @@ final class WasmRustCompiler: @unchecked Sendable {
 
         for (index, unit) in plan.units.enumerated() {
             if interrupter.wasCancelled {
-                return cancelledResult(phase: .compile, started: started)
+                return cancelledResult(
+                    phase: .compile, started: started,
+                    cancellation: .init(reason: interrupter.stopReason ?? .userRequested)
+                )
             }
             let outputURL = artifacts.appending(path: artifactFileName(unit, emit: emit))
             if FileManager.default.fileExists(atPath: outputURL.path) {
@@ -584,8 +591,10 @@ final class WasmRustCompiler: @unchecked Sendable {
                     environment: cargoEnvironment(for: unit),
                     interrupter: interrupter
                 )
-            } catch is WasmExecutionCancelled {
-                return cancelledResult(phase: .compile, started: started)
+            } catch let cancellation as WasmExecutionCancelled {
+                return cancelledResult(
+                    phase: .compile, started: started, cancellation: cancellation
+                )
             } catch let failure as RustcRuntimeFailure {
                 // A codegen gap in the bundled backend prints a normal JSON
                 // diagnostic and *then* aborts, so the useful message is in the
@@ -963,9 +972,13 @@ final class WasmRustCompiler: @unchecked Sendable {
         case .userRequested:
             "Build stopped. The Wasm guest was interrupted and its sandbox released."
         case .instructionBudget:
-            "Program stopped at the local instruction budget. Its sandbox was released."
+            (runningProgram ? "Program" : "Compiler")
+                + " stopped at the local instruction budget. Its sandbox was released."
         case .wallClock:
-            "Program stopped at the 30-second local runtime limit. Its sandbox was released."
+            (runningProgram
+                ? "Program stopped at the 30-second local runtime limit."
+                : "Compiler stopped at the 20-minute local build limit.")
+                + " Its sandbox was released."
         case .outputLimit:
             (runningProgram ? "Program" : "Compiler")
                 + " stopped at the " + outputLimitLabel + " output limit."
