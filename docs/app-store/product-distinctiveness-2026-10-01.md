@@ -11,6 +11,18 @@ This is an internal check of the candidate app workflow. The Apple message avail
 
 The app's differentiation is the combination of the complete Academy corpus, local Rust compiler and Cargo subset, editable course-to-project handoff, offline state, and maintained runtime. The bundle ID is unchanged. Runtime provenance and a new theme are facts about the implementation; neither alone proves that Apple will consider the app distinct. The compiler in the current app bundle is still the older pinned artifact, and the source-built Crabrix toolchain is not yet a release input.
 
+## Public product comparison
+
+Checked public App Store descriptions on 1 October 2026. These are published product claims, not a comparison of binaries or evidence that Apple used any of these apps for the build-8 decision.
+
+| App | Published overlap | Crabrix workflow to demonstrate |
+| --- | --- | --- |
+| [Syntactic](https://apps.apple.com/us/app/syntactic/id6787757494?platform=ipad) | On-device Rust compilation, a built-in Rust Book, quizzes, and 66 challenges. The broad “learn and compile Rust offline” pitch overlaps substantially. | Seven signed and versioned course packs containing 742 existing lessons, 200 Atlas patterns, and 46 editable source projects; course download/update, progress preservation, and durable project copy with Cargo dependency work. Do not frame the presence of a compiler alone as a unique feature. |
+| [EdT365 Rust Playground](https://apps.apple.com/us/app/edt365-rust-playground/id6788741388) | Rust editor, learning material, diagnostics, and Files import; its listing describes compilation through the public or a self-hosted Rust Playground API. | The compiler and supported Cargo graph run on device, and Academy packages update as signed data while the compiler remains bundled. |
+| [Code Runner](https://apps.apple.com/us/app/code-runner-app-compiler-ide/id6450535928) | Mobile editor, Rust support, GitHub and code management among many languages. | Crabrix is a Rust-specific Academy and native project workspace, with the actual course-to-project lifecycle and local compiler as the user path. |
+
+The public listings do not establish whether their unlisted capabilities match or differ from Crabrix. No direct visual comparison of another app's screens was completed. On a clean iOS 18.2 Simulator install of the candidate binary, the Projects landing screen showed only Current Project, My Projects and New Project; Examples were absent there. A separate Academy view showed Examples under Learn, and the Cyberpunk palette was observed on the Projects screen. This is local simulator observation, not App Review evidence or a physical-device result.
+
 ## Before a submission
 
 - Capture new screenshots from the candidate binary. Existing `07-library` material predates the Academy move; screenshots must show the download and open path that reviewers will actually see.
