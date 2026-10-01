@@ -1,0 +1,162 @@
+{
+  "compiler": {
+    "sourceRevision": "abc48c0b8aba37d3f3862a9d5c76eb4e78f90e88",
+    "strippedBytes": 87833739,
+    "strippedSHA256": "5da690fe77625d55602e400ebdb0d57fb496c1f3e26d1376c1a8ef0e56e378bd",
+    "strippedSections": "name and .debug_* only; producers retained",
+    "sysrootZipSHA256": "df1c69c31ce5730ff945d6aff5193a037b0ef3bad9495bbc24875dcf57b4cab3",
+    "unstrippedBytes": 129337658,
+    "unstrippedSHA256": "e7c94685d0f6cc217d57f9d1ae1d2b005ddd718f03f6ff30bfa1596730aae775"
+  },
+  "date": "2026-10-02",
+  "environment": {
+    "appBuildInputCommit": "041b4d9e4c48a4f4ffa336b521698eed7328e47f",
+    "buildConfiguration": "Release",
+    "device": "iOS 18.2 arm64 Simulator",
+    "memoryMetric": "not recorded",
+    "runtimeRevision": "fbe46d928a4592ca274e5fdf07fdbafcf9538868",
+    "thermalState": "not recorded; Simulator",
+    "xcode": "27.0 beta (27A5228h)"
+  },
+  "limitations": [
+    "All samples ran on Simulator, not a physical device.",
+    "Unstripped samples preceded stripped samples; run order and thermal state were not controlled.",
+    "Each test passed warning parity, but diagnostic digests were not exported by this probe.",
+    "Unchanged Check is a local cache hit, not a rustc speed measurement.",
+    "This single small Check workload does not establish whole-app or heavy-crate speed."
+  ],
+  "medianMs": {
+    "stripped": {
+      "changedCheckMs": 566.800167,
+      "firstCheckMs": 686.758208,
+      "rustcParseMs": 108.671042,
+      "unchangedCachedCheckMs": 0.837833
+    },
+    "unstripped": {
+      "changedCheckMs": 581.459459,
+      "firstCheckMs": 838.347333,
+      "rustcParseMs": 148.51475,
+      "unchangedCachedCheckMs": 0.790041
+    }
+  },
+  "rawObservations": [
+    {
+      "changedCheckMs": 581.575958,
+      "firstCheckMs": 838.347333,
+      "rustcParseMs": 148.51475,
+      "sample": 1,
+      "testResult": "passed",
+      "toolchainID": "e7c94685d0f6cc217d57f9d1ae1d2b005ddd718f03f6ff30bfa1596730aae775:4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c",
+      "unchangedCachedCheckMs": 0.785958,
+      "variant": "unstripped",
+      "warningCount": 2
+    },
+    {
+      "changedCheckMs": 550.709292,
+      "firstCheckMs": 900.789959,
+      "rustcParseMs": 198.35575,
+      "sample": 2,
+      "testResult": "passed",
+      "toolchainID": "e7c94685d0f6cc217d57f9d1ae1d2b005ddd718f03f6ff30bfa1596730aae775:4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c",
+      "unchangedCachedCheckMs": 0.784,
+      "variant": "unstripped",
+      "warningCount": 2
+    },
+    {
+      "changedCheckMs": 706.429709,
+      "firstCheckMs": 855.011459,
+      "rustcParseMs": 152.991375,
+      "sample": 3,
+      "testResult": "passed",
+      "toolchainID": "e7c94685d0f6cc217d57f9d1ae1d2b005ddd718f03f6ff30bfa1596730aae775:4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c",
+      "unchangedCachedCheckMs": 0.790041,
+      "variant": "unstripped",
+      "warningCount": 2
+    },
+    {
+      "changedCheckMs": 581.459459,
+      "firstCheckMs": 710.939458,
+      "rustcParseMs": 129.439708,
+      "sample": 4,
+      "testResult": "passed",
+      "toolchainID": "e7c94685d0f6cc217d57f9d1ae1d2b005ddd718f03f6ff30bfa1596730aae775:4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c",
+      "unchangedCachedCheckMs": 0.837459,
+      "variant": "unstripped",
+      "warningCount": 2
+    },
+    {
+      "changedCheckMs": 569.255,
+      "firstCheckMs": 737.520666,
+      "rustcParseMs": 121.435125,
+      "sample": 5,
+      "testResult": "passed",
+      "toolchainID": "e7c94685d0f6cc217d57f9d1ae1d2b005ddd718f03f6ff30bfa1596730aae775:4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c",
+      "unchangedCachedCheckMs": 0.981,
+      "variant": "unstripped",
+      "warningCount": 2
+    },
+    {
+      "changedCheckMs": 552.828917,
+      "firstCheckMs": 819.505,
+      "rustcParseMs": 141.294,
+      "sample": 1,
+      "testResult": "passed",
+      "toolchainID": "5da690fe77625d55602e400ebdb0d57fb496c1f3e26d1376c1a8ef0e56e378bd:4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c",
+      "unchangedCachedCheckMs": 0.754708,
+      "variant": "stripped",
+      "warningCount": 2
+    },
+    {
+      "changedCheckMs": 576.134417,
+      "firstCheckMs": 686.699208,
+      "rustcParseMs": 89.303875,
+      "sample": 2,
+      "testResult": "passed",
+      "toolchainID": "5da690fe77625d55602e400ebdb0d57fb496c1f3e26d1376c1a8ef0e56e378bd:4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c",
+      "unchangedCachedCheckMs": 0.8755,
+      "variant": "stripped",
+      "warningCount": 2
+    },
+    {
+      "changedCheckMs": 566.800167,
+      "firstCheckMs": 799.878166,
+      "rustcParseMs": 187.9705,
+      "sample": 3,
+      "testResult": "passed",
+      "toolchainID": "5da690fe77625d55602e400ebdb0d57fb496c1f3e26d1376c1a8ef0e56e378bd:4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c",
+      "unchangedCachedCheckMs": 0.837833,
+      "variant": "stripped",
+      "warningCount": 2
+    },
+    {
+      "changedCheckMs": 571.297083,
+      "firstCheckMs": 686.449125,
+      "rustcParseMs": 108.671042,
+      "sample": 4,
+      "testResult": "passed",
+      "toolchainID": "5da690fe77625d55602e400ebdb0d57fb496c1f3e26d1376c1a8ef0e56e378bd:4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c",
+      "unchangedCachedCheckMs": 0.759375,
+      "variant": "stripped",
+      "warningCount": 2
+    },
+    {
+      "changedCheckMs": 555.37375,
+      "firstCheckMs": 686.758208,
+      "rustcParseMs": 98.491208,
+      "sample": 5,
+      "testResult": "passed",
+      "toolchainID": "5da690fe77625d55602e400ebdb0d57fb496c1f3e26d1376c1a8ef0e56e378bd:4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c",
+      "unchangedCachedCheckMs": 0.847458,
+      "variant": "stripped",
+      "warningCount": 2
+    }
+  ],
+  "schemaVersion": 1,
+  "unstrippedOverStrippedMedianRatio": {
+    "changedCheckMs": 1.0258632457318948,
+    "firstCheckMs": 1.2207314353642207,
+    "rustcParseMs": 1.3666451270431361,
+    "unchangedCachedCheckMs": 0.9429576061100481
+  },
+  "workload": "warning-check-v1"
+}

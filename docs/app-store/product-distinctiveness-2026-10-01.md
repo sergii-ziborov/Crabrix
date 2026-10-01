@@ -28,11 +28,13 @@ The public listings do not establish whether their unlisted capabilities match o
 
 A second description search on 1 October found further overlap with Forma and Learn Rust Coding Tutorials. It also confirmed that Syntactic explicitly advertises an on-device compiler and offline Rust Book. Those descriptions reinforce that Crabrix should present its actual content delivery, Cargo and durable project workflows. No additional visual comparison was possible from that search; none of these listings identifies Apple's unknown build-8 comparator.
 
+On 2 October the official App Store search listings were checked again. Syntactic still advertises its on-device compiler, offline Rust Book and 66 challenges, and now also describes an optional on-device AI error explanation; this strengthens the overlap in the broad offline Rust pitch. Learning Rust and EdT365 continue to advertise lessons plus an editor and a Rust editor plus remote Playground respectively. Direct page fetches returned access errors or HTTP 429, so this pass used the indexed official descriptions and did not produce a new screenshot comparison. No listing provides evidence about Apple's unnamed comparator or a future review decision.
+
 On a clean iOS 18.2 Simulator install of the candidate binary, the Projects landing screen showed only Current Project, My Projects and New Project; Examples were absent there. A separate Academy view showed Examples under Learn. Cyberpunk colours were visually checked on Projects, Academy, and the code editor. This is local simulator observation, not App Review evidence or a physical-device result.
 
 ## Before a submission
 
 - Capture new screenshots from the candidate binary. Existing `07-library` material predates the Academy move; screenshots must show the download and open path that reviewers will actually see.
 - Verify the public catalog, descriptor, archive, and all linked URLs are reachable during review; verify a fresh installation can reach Examples without a special reviewer-only path.
-- Describe the Academy Examples workflow, on-device compiler, supported Cargo subset, and current runtime/toolchain identities precisely in release notes. Do not claim a several-fold whole-app speedup from a Check microbenchmark or claim broad heavy-crate support while backend probes fail.
+- Describe the Academy Examples workflow, on-device compiler, supported Cargo subset, and current runtime/toolchain identities precisely in release notes. Do not claim a several-fold whole-app speedup from a Check microbenchmark or universal heavy-crate support from the selected `clap`/`regex`/`hashbrown`/`smallvec` candidate gate. Build-script-dependent `serde_json` still fails in the current Cargo subset.
 - Keep the known compatibility failures and unfinished source-built toolchain in technical validation notes. A reviewer can use the same ordinary app controls as a customer.

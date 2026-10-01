@@ -90,6 +90,30 @@ The third source-built candidate, `e7c94685d0f6cc217d57f9d1ae1d2b005ddd718f03f6f
 
 On that same candidate, all 46 installed Academy Examples compiled and ran in 182.447 seconds. The nine-test regression selection passed with zero failures or skips in 220.904 seconds: Examples, E0502, repaired Run, a real `smallvec` crate, offline pin rehydration, root features, compile Stop, the 64 MiB user-program memory limit, and Vendor & Edit. These are completed Simulator gates for this compiler SHA, not physical-device or general crates.io compatibility claims. The `serde_json` build-script limitation remains.
 
+A separate **candidate-only size experiment** stripped only Wasm `name` and
+`.debug_*` custom sections from this third compiler. The output SHA-256 is
+`5da690fe77625d55602e400ebdb0d57fb496c1f3e26d1376c1a8ef0e56e378bd`:
+87,833,739 bytes versus 129,337,658 bytes for the original. `producers`,
+`target_features`, and all executable sections were retained. The artifact
+checksum and all 43 sysroot ZIP entries verified. On the same iOS 18.2 Release
+Simulator, E0502 and the `u128::swap_bytes()` regression passed (2/2, 16.997
+seconds); all 46 installed Examples passed in 160.318 seconds; and the
+three-file `clap`/`regex`/`hashbrown`/`smallvec` CLI passed with exact output
+in 588.873 seconds (the latter two were one 2/2, 749.191-second run). The
+CLI times of 284.911 and 588.873 seconds are **not a controlled speed
+comparison**: staging the second artifact changed the compiler cache identity
+and forced dependency rebuilds, and network/system cache state was not held
+constant.
+
+[Two sets of five raw warning-Check observations](performance/2026-10-02-source-built-strip-simulator.json)
+measured median rustc parse at 148.515 ms original versus 108.671 ms stripped
+(1.37×), first Check at 838.347 versus 686.758 ms (1.22×), and changed Check
+at 581.459 versus 566.800 ms (1.03×). All ten probes passed with two warnings
+and unchanged-cache diagnostic parity. The run used Simulator in fixed
+original-then-stripped order and did not measure thermal state, peak RSS, or
+whole-app responsiveness. The release packager still uses the unstripped
+compiler; the stripped artifact is only a candidate.
+
 With the 300-billion compiler-host policy and the first source-built candidate,
 the Stop gate completed in 0.666 seconds and the 64 MiB user-program memory
 limit gate passed in 5.701 seconds (2 executed, 0 failures). These do not
@@ -109,3 +133,12 @@ The public `projects` 1.0.1 entry and the bundled transition archive both have
 SHA-256 `e4636c190ac7a10b7c8f2f9e2571b98f2e46b49d03fff21f03bd49567ac767aa`,
 so the compiled Examples are the same archive bytes offered for download at
 this catalog version.
+
+On 2 October, a separate public fetch rechecked the signed catalog at
+`https://raw.githubusercontent.com/sergii-ziborov/crabrix-courses/main/catalog.v1.json`:
+the production keyring accepted sequence 2 with seven course versions. The
+public Projects descriptor and ZIP downloaded successfully and matched their
+catalog SHA-256 values (`15a05aba1a08ac5f576e3e088036a61a23219e30c7001463e82435ffa8de4f5e`
+and the ZIP digest above). The CoursePack verifier accepted all 212 Projects
+payload files. This checks the published bytes; it is separate from the
+Simulator installation and compiler gates.
