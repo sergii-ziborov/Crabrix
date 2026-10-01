@@ -30,6 +30,7 @@ CANDIDATE_PROBES = {
     "BundledCompilerGateTests/testMultiFileDependencyRichLogMonitorBuildsAndRuns()",
     "BundledCompilerGateTests/testClapRegexJSONCommandLineAppBuildsAndRuns()",
     "BundledCompilerGateTests/testMultiFileClapRegexCollectionsAppBuildsAndRuns()",
+    "BundledCompilerGateTests/testSourceBuiltCompilerCheckedI64Multiplication()",
 }
 
 

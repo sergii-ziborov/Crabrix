@@ -47,9 +47,9 @@ The script verifies the candidate marker, artifact SHA-256 values, Wasm
 header, every sysroot ZIP entry and its app manifest, then writes candidate
 identity and hashes only inside the built `.app`. It creates a separate
 `-candidate.xctestrun` with the heavy-crate opt-in environment variable.
-Six staging unit tests passed, including tampering, traversal, a wrong test
-host and signed-bundle rejection. A real candidate has **not yet** reached
-this step.
+Seven staging unit tests passed, including tampering, traversal, a malformed
+checksum sidecar, a wrong test host and signed-bundle rejection. The first
+source-built candidate reached this test path on 1 October 2026.
 
 Use `xcodebuild test-without-building` with the generated candidate test-run
 file and explicit `-only-testing:CrabrixTests/...` selectors. First run the
@@ -62,5 +62,19 @@ overall green result.
 Then run the remaining compiler/Cargo/Stop/Vendor/offline gates and performance
 probes. Record every observed pass, failure, skip, compiler SHA, sysroot SHA,
 runtime revision, app SHA, device/OS, and build configuration separately.
-The `xcodebuild test-without-building` mechanism was smoke-tested against the
-baseline app; candidate results remain pending.
+The first candidate compiler was `f8409434ef8f3e804b6842161b1aa1cb59ad9a8d8d2a7870f52ef9fc38a17090`
+with sysroot ZIP `df1c69c31ce5730ff945d6aff5193a037b0ef3bad9495bbc24875dcf57b4cab3`.
+On an iOS 18.2 Release Simulator, its manifest/hash test, fresh E0502 and
+repair, and Check/Run for all 46 Academy Examples passed. The 46-example test
+ran for 179.938 seconds. A cold three-file `clap`/`regex`/`hashbrown`/`smallvec`
+app first exhausted the 100-billion compiler-host fuel budget. With 300
+billion, it reached `clap_builder` codegen and failed because the source fork's
+Wasm emitter lacks `smulhi.i64` lowering. A current `serde_json` probe failed
+because `serde_core` needs `OUT_DIR/private.rs` from a build script, which the
+Cargo subset does not execute. Those dependency-rich gates remain failed; a
+new source-built backend candidate is required before repeating them.
+
+The same runtime and Release Simulator gave the former compiler 1378.780 ms
+for first Check and 666.594 ms for a changed Check; the source-built candidate
+gave 1208.577 ms and 623.111 ms. These are one probe each, not a device
+benchmark or a several-fold speed claim. Normal release inputs are unchanged.

@@ -348,6 +348,41 @@ final class BundledCompilerGateTests: XCTestCase {
         }
     }
 
+    func testSourceBuiltCompilerCheckedI64Multiplication() async throws {
+        try Self.requireCompilerGate()
+        let source = """
+        // fresh revision: \(UUID())
+        fn main() {
+            let signed: [(i64, i64); 5] = [
+                (i64::MIN, -1), (i64::MAX, 1), (-2, 3),
+                (i64::MAX, 2), (-1, -1),
+            ];
+            let unsigned: [(u64, u64); 4] = [
+                (u64::MAX, 2), (1 << 63, 1), (1 << 63, 2), (u64::MAX, 1),
+            ];
+            let signed_results: String = signed.into_iter().map(|(a, b)| {
+                if std::hint::black_box(a).checked_mul(std::hint::black_box(b)).is_some() {
+                    '1'
+                } else {
+                    '0'
+                }
+            }).collect();
+            let unsigned_results: String = unsigned.into_iter().map(|(a, b)| {
+                if std::hint::black_box(a).checked_mul(std::hint::black_box(b)).is_some() {
+                    '1'
+                } else {
+                    '0'
+                }
+            }).collect();
+            println!("s={signed_results};u={unsigned_results}");
+        }
+        """
+        let result = await WasmRustCompiler(bundle: .main).run(source: source)
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+                       "s=01101;u=0101")
+    }
+
     func testEveryInstalledAcademyExampleBuildsAndRuns() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
             throw XCTSkip("Set CRABRIX_RUN_COMPILER_GATE=1 for the Academy example gate.")
