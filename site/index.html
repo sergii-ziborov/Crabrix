@@ -8,7 +8,7 @@
 <meta property="og:title" content="Crabrix — a real Rust compiler on your iPhone and iPad">
 <meta property="og:description" content="Write Rust. Add real crates.io packages. Compile and run them. On a phone. Offline.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="/screenshots/ipad-build.png">
+<meta property="og:image" content="/screenshots/iphone-academy.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20y%3D%27.9em%27%20font-size%3D%2790%27%3E%F0%9F%A6%80%3C%2Ftext%3E%3C%2Fsvg%3E">
 <style>
@@ -308,8 +308,9 @@
           <span class="ic">🎓</span>
           <h3>Teaches from the compiler</h3>
           <p>Seven courses: 142 guided Rust lessons and a 200-pattern Algorithm Atlas
-          with 600 steps. The signed baseline is installed offline; later course
-          versions can be requested from a public catalog.</p>
+          with 600 steps. Basics opens offline on a new install; the other
+          courses and 46 editable Examples can be downloaded from a signed catalog.
+          Existing learners retain all seven courses offline after updating.</p>
         </div>
         <div class="card">
           <span class="ic">✈️</span>
@@ -324,18 +325,11 @@
   <section id="screens">
     <div class="wrap">
       <h2>On the device</h2>
-      <p class="section-lede">Adaptive layout: a workspace on iPad, drawers on iPhone.</p>
+      <p class="section-lede">The current Academy, Examples, and Cyberpunk appearance on iPhone.</p>
       <div class="shots reveal-group">
-        <figure><img src="screenshots/iphone-projects.png" alt="Projects dashboard"><figcaption>Projects</figcaption></figure>
-        <figure><img src="screenshots/iphone-library.png" alt="Project library"><figcaption>Library — 46 projects</figcaption></figure>
-        <figure><img src="screenshots/iphone-build.png" alt="Build workspace"><figcaption>Build</figcaption></figure>
-        <figure><img src="screenshots/iphone-learn.png" alt="Learn tab"><figcaption>Learn</figcaption></figure>
-      </div>
-      <div class="wide">
-        <figure>
-          <img src="screenshots/ipad-build.png" alt="Crabrix workspace on iPad">
-          <figcaption>The iPad workspace: files and resolved packages, editor, build inspector.</figcaption>
-        </figure>
+        <figure><img src="screenshots/iphone-academy.png" alt="Crabrix Academy showing progress and Examples"><figcaption>Academy</figcaption></figure>
+        <figure><img src="screenshots/iphone-examples.png" alt="46 editable Examples inside Academy"><figcaption>Academy Examples</figcaption></figure>
+        <figure><img src="screenshots/iphone-cyberpunk-settings.png" alt="Cyberpunk appearance and local app protection in Settings"><figcaption>Cyberpunk and app protection</figcaption></figure>
       </div>
     </div>
   </section>
@@ -384,8 +378,11 @@
         </ul>
       </div>
       <p class="section-lede" style="margin-top:24px">
-        The compiler, package manager, and full baseline curriculum are in the app you buy.
-        Course updates are public and do not add a second transaction.
+        The compiler and package manager ship in the app. Basics opens offline
+        on a new install; all seven courses are included in the purchase, and
+        the other six are available from the signed public catalog. Existing
+        learners keep the full baseline offline. Course updates do not add a
+        second transaction.
       </p>
     </div>
   </section>
@@ -401,7 +398,7 @@
         <li><strong>Build scripts are not executed.</strong> Many crates whose <code>build.rs</code> only probes compiler features still work, and those are flagged for review rather than blocked.</li>
         <li><strong>Crates that link native C libraries are out of reach</strong>, as are ones that build only as <code>cdylib</code> or <code>staticlib</code>.</li>
         <li><strong>Cold builds take time.</strong> <code>rustc</code> runs in an interpreter. Cached identical runs avoid recompiling; actual timings depend on the project, dependencies, device, and cache state.</li>
-        <li><strong>The codegen backend has gaps.</strong> A few crates hit unimplemented 64-bit operations. Crabrix records the real outcome of every dependency build and shows it, with the compiler's own reason.</li>
+        <li><strong>The codegen backend has gaps.</strong> Some crates hit unimplemented integer operations. Crabrix records the real outcome of every dependency build and shows it, with the compiler's own reason.</li>
       </ul>
     </div>
   </section>
