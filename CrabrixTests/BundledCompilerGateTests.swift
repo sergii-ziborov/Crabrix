@@ -521,6 +521,70 @@ final class BundledCompilerGateTests: XCTestCase {
         )
     }
 
+    func testMultiCrateCollectionsAndJSONApplicationBuildsAndRuns() async throws {
+        try Self.requireCompilerGate()
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"] == "1" else {
+            throw XCTSkip("The pinned compiler backend cannot lower itoa 1.x; see docs/compiler-complex-gate-2026-10-01.md.")
+        }
+        let manifest = """
+        [package]
+        name = "event-analyzer-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        hashbrown = "=0.17.1"
+        smallvec = "=1.15.1"
+        serde_json = "=1.0.151"
+        """
+        let source = """
+        // fresh application revision: \(UUID())
+        use hashbrown::HashMap;
+        use serde_json::Value;
+        use smallvec::SmallVec;
+
+        fn main() {
+            let input = r#"[{"kind":"warn","message":"cache"},{"kind":"info","message":"start"},{"kind":"warn","message":"timeout"}]"#;
+            let events: Value = serde_json::from_str(input).unwrap();
+            let mut counts: HashMap<&str, usize> = HashMap::new();
+            let mut warnings: SmallVec<[String; 4]> = SmallVec::new();
+            for event in events.as_array().unwrap() {
+                if let (Some(kind), Some(message)) =
+                    (event["kind"].as_str(), event["message"].as_str()) {
+                    *counts.entry(kind).or_default() += 1;
+                    if kind == "warn" { warnings.push(message.to_owned()); }
+                }
+            }
+            println!("{}:{}", counts["warn"], warnings.join(","));
+        }
+        """
+
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertTrue(snapshot.isOfflineReady, "resolved source archives must be available locally")
+        XCTAssertGreaterThanOrEqual(snapshot.plan.units.count, 6, "exercise a real dependency graph")
+        XCTAssertTrue(
+            snapshot.blockingPackages.isEmpty,
+            snapshot.blockingPackages.map { "\($0.name): \($0.compatibility.detail ?? "")" }
+                .joined(separator: "\n")
+        )
+        XCTAssertEqual(Set(snapshot.plan.rootExterns.map(\.alias)), ["hashbrown", "smallvec", "serde_json"])
+        XCTAssertNotNil(snapshot.lockfile)
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        let result = await compiler.run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": manifest],
+            plan: snapshot.plan
+        )
+        XCTAssertTrue(
+            result.succeeded,
+            "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)"
+        )
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "2:cache,timeout")
+        XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
+    }
+
     func testVendoredCrateBuildsFromAProjectLocalPatch() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
             throw XCTSkip("Run the CrabrixCompilerGate scheme for the Vendor & Edit gate.")

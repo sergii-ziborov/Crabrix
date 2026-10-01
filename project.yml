@@ -195,6 +195,7 @@ schemes:
             - BundledCompilerGateTests/testEveryGuidedShowcasePassesBundledRustcCheck()
             - BundledCompilerGateTests/testUserProgramCannotGrowPastSandboxMemoryLimit()
             - BundledCompilerGateTests/testResolvesDownloadsAndLinksARealCratesIOPackage()
+            - BundledCompilerGateTests/testMultiCrateCollectionsAndJSONApplicationBuildsAndRuns()
             - BundledCompilerGateTests/testVendoredCrateBuildsFromAProjectLocalPatch()
             - BundledCompilerGateTests/testOfflinePinRehydratesSourcesAfterPurgeableCacheEviction()
             - BundledCompilerGateTests/testStopInterruptsARunningCompile()
