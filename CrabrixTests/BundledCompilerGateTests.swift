@@ -653,6 +653,106 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
     }
 
+    func testMultiFileDependencyRichLogMonitorBuildsAndRuns() async throws {
+        try Self.requireCompilerGate()
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"] == "1" else {
+            throw XCTSkip("The pinned compiler has unresolved multi-crate backend failures; see docs/compiler-complex-gate-2026-10-01.md.")
+        }
+        let manifest = """
+        [package]
+        name = "log-monitor-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        regex = "=1.13.1"
+        serde_json = "=1.0.151"
+        hashbrown = "=0.17.1"
+        smallvec = "=1.15.1"
+        """
+        let source = """
+        // fresh application revision: \(UUID())
+        mod ingest;
+        mod report;
+
+        fn main() {
+            let input = r#"[
+              {"source":"api","line":"WARN cache miss"},
+              {"source":"worker","line":"INFO started"},
+              {"source":"api","line":"WARN timeout"},
+              {"source":"worker","line":"WARN cache miss"}
+            ]"#;
+            let incidents = ingest::read(input);
+            println!("{}", report::summarize(&incidents));
+        }
+        """
+        let ingest = """
+        use regex::Regex;
+        use serde_json::Value;
+
+        pub struct Incident {
+            pub source: String,
+            pub message: String,
+        }
+
+        pub fn read(input: &str) -> Vec<Incident> {
+            let rows: Value = serde_json::from_str(input).unwrap();
+            let warning = Regex::new(r"^WARN\\s+(.+)$").unwrap();
+            rows.as_array().unwrap().iter().filter_map(|row| {
+                let source = row.get("source")?.as_str()?;
+                let line = row.get("line")?.as_str()?;
+                let captures = warning.captures(line)?;
+                Some(Incident {
+                    source: source.to_owned(),
+                    message: captures[1].to_owned(),
+                })
+            }).collect()
+        }
+        """
+        let report = """
+        use hashbrown::HashMap;
+        use smallvec::SmallVec;
+        use crate::ingest::Incident;
+
+        pub fn summarize(events: &[Incident]) -> String {
+            let mut counts: HashMap<&str, usize> = HashMap::new();
+            let mut issues: SmallVec<[String; 4]> = SmallVec::new();
+            for event in events {
+                *counts.entry(event.source.as_str()).or_default() += 1;
+                if !issues.iter().any(|existing| existing == &event.message) {
+                    issues.push(event.message.clone());
+                }
+            }
+            issues.sort();
+            format!("api={},worker={};issues={}",
+                counts["api"], counts["worker"], issues.join(","))
+        }
+        """
+
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertTrue(snapshot.isOfflineReady)
+        XCTAssertTrue(snapshot.blockingPackages.isEmpty, snapshot.blockingPackages.map(\.id).joined(separator: ", "))
+        XCTAssertGreaterThanOrEqual(snapshot.plan.units.count, 8)
+        XCTAssertEqual(Set(snapshot.plan.rootExterns.map(\.alias)), ["regex", "serde_json", "hashbrown", "smallvec"])
+        XCTAssertNotNil(snapshot.lockfile)
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        let result = await compiler.run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: [
+                "Cargo.toml": manifest,
+                "src/ingest.rs": ingest,
+                "src/report.rs": report,
+            ],
+            plan: snapshot.plan
+        )
+        XCTAssertTrue(result.succeeded, "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+                       "api=2,worker=1;issues=cache miss,timeout")
+        XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
+    }
+
     func testVendoredCrateBuildsFromAProjectLocalPatch() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
             throw XCTSkip("Run the CrabrixCompilerGate scheme for the Vendor & Edit gate.")
