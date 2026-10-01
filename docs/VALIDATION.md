@@ -10,9 +10,12 @@ On iOS 18.2 Simulator, the selected Debug test compared the bundled
 (one test, zero failures). An unsigned Simulator Release build also passed;
 its app bundle contains the release input and pinned compiler resource, while
 three legacy lesson text sentinels remained absent from the executable. This
-validates the old pinned baseline, not a
-Crabrix-built compiler release. The own LLVM+Cranelift source build remains in
-progress on the controlled Docker candidate.
+validates the old pinned baseline, not a Crabrix-built compiler release. A
+separate Docker candidate produced two source-built compiler binaries; their
+observed compatibility and remaining failures are recorded in
+[the candidate gate](toolchain-candidate-simulator-gate.md). Neither is a
+signed release input. A third candidate with a backend byte-swap fix is in
+progress.
 
 ## 1 October 2026 Release Academy source boundary
 
@@ -78,7 +81,7 @@ This records observed results for the current development branch. It is not an A
 | iOS software-bounds OOB regression | A separate Release iOS 18.2 Simulator gate requested direct dispatch with a 64 MiB virtual reservation and software bounds; the engine selected token dispatch and trapped on an `i32.load` at byte 65,536 of a one-page memory. One test passed, zero failures. This checks the app's linked runtime configuration rather than only the macOS fork test. |
 | Pinned runtime speed | [Five raw Release Simulator observations](performance/2026-09-30-reserved-memory-safety-simulator.json) measured changed-Check medians of 1143.668 ms at the preceding fork and 566.340 ms at pinned `fbe46d9` (2.02×), with the same compiler artifact and warning-Check source. First Check was 1228.261 ms versus 859.161 ms (1.43×); the candidate first samples varied more. All five candidate probes retained two warnings and unchanged diagnostics. A separate earlier 0.3.1 app snapshot had a 1588.499 ms changed-Check median, about 2.81× the current candidate, but app source and session differed. These are Simulator workload observations, not a device or whole-app claim. |
 | Hosted fast CI for memory patch | [Run 36765123054](https://github.com/sergii-ziborov/Crabrix/actions/runs/36765123054) on app commit `ef5f72b` and runtime `6f9e307c`: 424 tests executed, four opt-in tests skipped, zero failures; unsigned Release build and binary-path check passed. The app's subsequent pin to `fbe46d9` has not yet had hosted CI at the time of this record. |
-| Source-built toolchain | Not run. The public builder is source locked but has no released Crabrix-built compiler artifact. |
+| Source-built toolchain | Two source-built candidate compilers were produced and exercised on Release iOS 18.2 Simulator. The first passed all 46 Academy Examples but failed the four-crate CLI at `smulhi.i64`; the second passed checked multiplication and `smallvec` but failed that CLI at `bswap.i128`. The [candidate gate](toolchain-candidate-simulator-gate.md) records exact digests and timings. No source-built toolchain is a signed release input yet. |
 
 The Simulator used for the app gates was an iOS 18.2 device with Xcode 27.0 beta (`27A5228h`). Logs from local gates are not copied verbatim into public docs because they can contain machine paths; counts above come from completed command output. Re-run commands from the README and the repository CI before a release.
 
