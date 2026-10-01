@@ -332,6 +332,10 @@ struct LearningHubView: View {
                     pendingDownload = entry
                 }
                 .font(.subheadline.bold())
+            } else {
+                Text("Connect to check the course catalog and download the Projects examples. Installed material stays available offline.")
+                    .font(.subheadline)
+                    .foregroundStyle(CrabrixTheme.muted)
             }
             if let transfer = academy.transfers["projects|en"] {
                 transferView(transfer, courseID: "projects")
