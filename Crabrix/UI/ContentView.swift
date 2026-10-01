@@ -675,7 +675,6 @@ struct ContentView: View {
 
             VStack(spacing: 0) {
                 AppHeader(
-                    toolchain: model.toolchain,
                     transfer: model.projectTransfer,
                     activity: model.activity,
                     canRun: model.canStartBuild && !model.isProjectOperationInProgress,
@@ -684,8 +683,6 @@ struct ContentView: View {
                     onOpenProjects: { selectedDestination = .projects },
                     onCloseWorkspace: closeBuildWorkspace,
                     onNewProject: { isNewProjectPresented = true },
-                    onOpenFiles: { isFileImporterPresented = true },
-                    onOpenGitHub: { isGitHubImporterPresented = true },
                     onProjectActions: {
                         isProjectActionsPresented = true
                     }
@@ -1172,7 +1169,6 @@ private struct CompactEdgeSwipeZone: View {
 
 private struct AppHeader: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    let toolchain: ToolchainStatus
     let transfer: CompilerViewModel.ProjectTransfer
     let activity: CompilerViewModel.Activity
     let canRun: Bool
@@ -1181,8 +1177,6 @@ private struct AppHeader: View {
     let onOpenProjects: () -> Void
     let onCloseWorkspace: () -> Void
     let onNewProject: () -> Void
-    let onOpenFiles: () -> Void
-    let onOpenGitHub: () -> Void
     let onProjectActions: () -> Void
 
     private var isPhone: Bool {
@@ -1213,13 +1207,7 @@ private struct AppHeader: View {
 
                 Menu {
                     Button(action: onNewProject) {
-                        Label("New Rust Project", systemImage: "plus")
-                    }
-                    Button(action: onOpenGitHub) {
-                        Label("Open from GitHub", systemImage: "arrow.down.circle")
-                    }
-                    Button(action: onOpenFiles) {
-                        Label("Open from Files", systemImage: "folder")
+                        Label("New Project", systemImage: "plus")
                     }
                     Button(action: onProjectActions) {
                         Label("Project Details & Share", systemImage: "ellipsis.circle")
@@ -1234,15 +1222,6 @@ private struct AppHeader: View {
                     }
                 }
                 .disabled(transfer.isWorking)
-
-                Label("NO WEBVIEW", systemImage: "swift")
-                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(CrabrixTheme.mint)
-                    .accessibilityLabel("Native SwiftUI")
-                Label(toolchain.isReady ? "OFFLINE READY" : "MISSING", systemImage: toolchain.isReady ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(toolchain.isReady ? CrabrixTheme.mint : CrabrixTheme.amber)
-                    .accessibilityLabel(toolchain.isReady ? "Offline compiler ready" : "Compiler missing")
             } else {
                 if isPhone {
                     Button(action: onProjectActions) {
