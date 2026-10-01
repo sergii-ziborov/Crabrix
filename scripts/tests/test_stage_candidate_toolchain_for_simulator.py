@@ -4,6 +4,7 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import plistlib
 import tempfile
 import unittest
 import zipfile
@@ -27,6 +28,11 @@ class CandidateStagingTests(unittest.TestCase):
         self.app.mkdir(parents=True)
         (self.app / "toolchain.lock.json").write_bytes(SOURCE_MANIFEST.read_bytes())
         self.original_manifest = SOURCE_MANIFEST.read_bytes()
+        self.test_run = self.app.parent.parent / "CrabrixCompilerGate.xctestrun"
+        self.test_run.write_bytes(plistlib.dumps({"CrabrixTests": {
+            "TestHostPath": "__TESTROOT__/Release-iphonesimulator/Crabrix.app",
+            "EnvironmentVariables": {"CRABRIX_RUN_COMPILER_GATE": "1"},
+        }}))
         self.write_candidate()
 
     def write_candidate(self, entries=None):
@@ -84,6 +90,22 @@ class CandidateStagingTests(unittest.TestCase):
         (self.app / "_CodeSignature").mkdir()
         with self.assertRaisesRegex(ValueError, "signed app"):
             staging.stage(self.candidate, self.app)
+
+    def test_prepares_opt_in_heavy_probe_in_a_new_test_configuration(self):
+        destination, contents = staging.prepared_test_run(self.test_run, self.app)
+        self.assertEqual(destination.name, "CrabrixCompilerGate-candidate.xctestrun")
+        environment = plistlib.loads(contents)["CrabrixTests"]["EnvironmentVariables"]
+        self.assertEqual(environment["CRABRIX_RUN_COMPILER_GATE"], "1")
+        self.assertEqual(environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"], "1")
+        self.assertNotIn(b"CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE", self.test_run.read_bytes())
+
+    def test_rejects_test_configuration_for_a_different_app(self):
+        self.test_run.write_bytes(plistlib.dumps({"CrabrixTests": {
+            "TestHostPath": "__TESTROOT__/Release-iphonesimulator/Other.app",
+            "EnvironmentVariables": {},
+        }}))
+        with self.assertRaisesRegex(ValueError, "does not target"):
+            staging.prepared_test_run(self.test_run, self.app)
 
 
 if __name__ == "__main__":

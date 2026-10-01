@@ -11,6 +11,7 @@ import hashlib
 import json
 import os
 from pathlib import Path, PurePosixPath
+import plistlib
 import re
 import shutil
 import sys
@@ -153,13 +154,41 @@ def stage(directory, app):
     print(f"TEST ONLY: staged {identity} in unsigned Simulator app; source manifest unchanged")
 
 
+def prepared_test_run(source, app):
+    if source.suffix != ".xctestrun" or source.parent.resolve() != app.parent.parent.resolve():
+        raise ValueError("xctestrun must sit beside the Simulator build products")
+    configuration = plistlib.loads(source.read_bytes())
+    test = configuration.get("CrabrixTests")
+    if not isinstance(test, dict) or test.get("TestHostPath") != \
+            "__TESTROOT__/Release-iphonesimulator/Crabrix.app":
+        raise ValueError("xctestrun does not target the Release Simulator test app")
+    environment = test.get("EnvironmentVariables")
+    if not isinstance(environment, dict):
+        raise ValueError("xctestrun has no test environment")
+    environment["CRABRIX_RUN_COMPILER_GATE"] = "1"
+    environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"] = "1"
+    output = source.with_name(source.stem + "-candidate.xctestrun")
+    if output.exists():
+        raise ValueError("candidate xctestrun already exists; use fresh build products")
+    return output, plistlib.dumps(configuration)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate-dir", type=Path, required=True)
     parser.add_argument("--app-bundle", type=Path, required=True)
+    parser.add_argument("--xctestrun", type=Path, required=True)
     args = parser.parse_args()
     try:
-        stage(args.candidate_dir.resolve(), args.app_bundle.resolve())
+        app = args.app_bundle.resolve()
+        test_run, test_run_bytes = prepared_test_run(args.xctestrun.resolve(), app)
+        stage(args.candidate_dir.resolve(), app)
+        with tempfile.NamedTemporaryFile("wb", dir=test_run.parent, prefix=".candidate-test-run.",
+                                         suffix=".tmp", delete=False) as output:
+            temporary = Path(output.name)
+            output.write(test_run_bytes)
+        os.replace(temporary, test_run)
+        print(f"Candidate test configuration: {test_run}")
     except (OSError, ValueError, KeyError, TypeError, zipfile.BadZipFile, json.JSONDecodeError) as error:
         raise SystemExit(f"candidate staging rejected: {error}") from error
 
