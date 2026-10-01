@@ -123,6 +123,8 @@ final class CargoLockfileTests: XCTestCase {
 
 final class CargoFingerprintTests: XCTestCase {
     private func fingerprint(
+        toolchainID: String = "artifacts-test-7",
+        toolchainArtifactHash: String = "toolchain-hash",
         version: String = "1.0.0",
         checksum: String = "abc",
         edition: String = "2021",
@@ -132,8 +134,8 @@ final class CargoFingerprintTests: XCTestCase {
         dependencies: [CargoExtern] = []
     ) -> String {
         CargoFingerprint.compute(
-            toolchainID: "artifacts-test-7",
-            toolchainArtifactHash: "toolchain-hash",
+            toolchainID: toolchainID,
+            toolchainArtifactHash: toolchainArtifactHash,
             toolchainSemanticVersion: "1.96.0-dev",
             compilerFlags: CargoFingerprint.dependencyCompilerFlags,
             targetTriple: "wasm32-wasip1",
@@ -159,6 +161,8 @@ final class CargoFingerprintTests: XCTestCase {
 
     func testChangesWithEveryInputThatChangesTheArtifact() {
         let base = fingerprint()
+        XCTAssertNotEqual(base, fingerprint(toolchainID: "candidate-1234"))
+        XCTAssertNotEqual(base, fingerprint(toolchainArtifactHash: "new-rustc-and-sysroot-sha"))
         XCTAssertNotEqual(base, fingerprint(version: "1.0.1"))
         XCTAssertNotEqual(base, fingerprint(checksum: "def"))
         XCTAssertNotEqual(base, fingerprint(edition: "2018"))
