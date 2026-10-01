@@ -10,16 +10,19 @@ installed repository, baseline bootstrap, and achievement migration ran in a
 selected iOS 18.2 Debug suite: 22 tests, zero failures. The historical exporter
 materialized source commit `c38423e7503a56d6cd97e3a6c17651d5a5c33d62`,
 executed the models, and reproduced `migration/baseline-inventory.json`
-byte for byte, including 742 lessons, 200 patterns and 46 Examples. A second
-Release Example gate on this branch is pending; the earlier 46-Example result
-below used the pre-guard candidate. These checks do not use the source-built
-Crabrix compiler, which is still in progress.
+byte for byte, including 742 lessons, 200 patterns and 46 Examples. On this
+branch, the iOS 18.2 arm64 Simulator Release gate loaded the installed signed
+pack, forced a new source revision for each of the 46 Examples, and compiled
+and ran all 46 successfully in 238.925 seconds (one test, zero failures).
+The earlier 46-Example result below used the pre-guard candidate. These checks
+still use the older pinned compiler artifact; the source-built Crabrix compiler
+is in progress.
 
 ## 1 October 2026 Academy Examples candidate
 
 The candidate moves all 46 authored examples from compiled Swift catalogs into the existing signed Projects CoursePack and opens the gallery from Academy. On iOS 18.2 arm64 Simulator, Release `testEveryInstalledAcademyExampleBuildsAndRuns` loaded the installed signed pack and successfully compiled and ran all 46 entries in 161.840 seconds (one test, zero failures). Debug `testInstalledAcademyExamplesHaveRunnableEntries` verified 46 unique IDs, six Canvas projects, source/Cargo files, a new copy ID, pinned course provenance, and source-copy isolation (one test, zero failures). Debug `testPublicSignedCatalogAndCourseInstall` fetched and installed both Basics and Projects from the public catalog and read 46 examples (one test, zero failures). A separate public fetch matched the catalog's ZIP and descriptor SHA-256 values and verified all 212 Projects payload files. The source migration parity was rerun and reported `missing=0`, `unexpected=0`, `unapprovedChanges=0`.
 
-The final selected Debug rerun passed 11 tests (one example-copy test plus five theme and five syntax-contrast tests), zero failures. The complete fast Debug suite then executed 421 tests, with four opt-in skips and zero failures. The existing Cyberpunk Settings screenshot was visually inspected; theme tokens are app-wide, and the Academy path and tab bar now use them. A fresh candidate screenshot and physical-device appearance pass remain pending. The compiler's independent `regex`/`serde_json` backend failures are recorded in the [complex-crate gate PR](https://github.com/sergii-ziborov/Crabrix/pull/27); these 46 examples use the standard library and do not establish broad crates.io compatibility.
+The final selected Debug rerun passed 11 tests (one example-copy test plus five theme and five syntax-contrast tests), zero failures. The complete fast Debug suite then executed 421 tests, with four opt-in skips and zero failures. Cyberpunk was visually inspected in Settings, Academy, Projects and the code editor on Simulator; theme tokens and syntax colours are app-wide. A physical-device appearance pass remains pending. The compiler's independent `regex`/`serde_json` backend failures are recorded in the [complex-crate gate PR](https://github.com/sergii-ziborov/Crabrix/pull/27); these 46 examples use the standard library and do not establish broad crates.io compatibility.
 
 A later empty-catalog explanation on the Examples card was built successfully in Debug for iOS 18.2 Simulator at app-input commit `6e38422e9ba419130180f2888ff84d5780325fce`. The 46-example run and 421-test suite preceded this text-only change and were not rerun for it.
 

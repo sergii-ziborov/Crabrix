@@ -362,10 +362,13 @@ final class BundledCompilerGateTests: XCTestCase {
         let compiler = WasmRustCompiler(bundle: .main)
         for showcase in repository.showcaseProjects() {
             var supporting = showcase.project.files
-            let source = try XCTUnwrap(
+            let originalSource = try XCTUnwrap(
                 supporting.removeValue(forKey: showcase.project.entryFile),
                 showcase.id
             )
+            // A new revision makes this a compiler gate even after a previous
+            // simulator run populated all 46 cached program artifacts.
+            let source = originalSource + "\n// academy-example-gate-\(UUID().uuidString)\n"
             let result = await compiler.run(
                 source: source,
                 sourcePath: showcase.project.entryFile,
