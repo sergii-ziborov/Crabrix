@@ -82,6 +82,10 @@ class CrabrixToolchainFetchTests(unittest.TestCase):
                 descriptor.write_text(json.dumps(envelope))
                 with self.assertRaisesRegex(ValueError, "signature is invalid"):
                     own.verify_descriptor(descriptor, release)
+                descriptor.write_text('{"keyID":"public-test-key","keyID":"public-test-key",'
+                                      '"payloadBase64":"x","signatureBase64":"y"}')
+                with self.assertRaisesRegex(ValueError, "duplicate JSON key"):
+                    own.verify_descriptor(descriptor, release)
 
     def test_sysroot_inventory_rejects_extra_and_tampered_entries(self):
         with tempfile.TemporaryDirectory(prefix="crabrix-sysroot-test-") as temporary:
@@ -109,6 +113,12 @@ class CrabrixToolchainFetchTests(unittest.TestCase):
                                     "bytes": 0, "sha256": "0" * 64})
             inventory.write_text(json.dumps(broken))
             with self.assertRaisesRegex(ValueError, "invalid sysroot inventory"):
+                own.verify_sysroot(archive, inventory, manifest_sha)
+            broken["files"].pop()
+            broken["files"].append({"path": "sysroot-wasip1/LIB/libstd-test.rlib",
+                                    "bytes": 0, "sha256": "0" * 64})
+            inventory.write_text(json.dumps(broken))
+            with self.assertRaisesRegex(ValueError, "colliding sysroot paths"):
                 own.verify_sysroot(archive, inventory, manifest_sha)
 
     def test_packager_copies_verified_own_assets_without_rewriting_zip(self):

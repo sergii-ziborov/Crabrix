@@ -11,6 +11,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import unicodedata
 import uuid
 import zipfile
@@ -56,7 +57,9 @@ def cache_root():
         return Path(override)
     result = subprocess.run(["getconf", "DARWIN_USER_CACHE_DIR"],
                             capture_output=True, text=True, check=False)
-    base = result.stdout.strip() if result.returncode == 0 else f"/tmp/crabrix-cache-{os.getuid()}"
+    base = result.stdout.strip() if result.returncode == 0 else ""
+    if not base:
+        base = f"/tmp/crabrix-cache-{os.getuid()}"
     return Path(base) / "com.sergiiziborov.Crabrix" / "signed-toolchain"
 
 
@@ -66,7 +69,9 @@ def download(source, key, destination):
             sha256(destination) == asset["sha256"]:
         return
     destination.parent.mkdir(parents=True, exist_ok=True)
-    partial = destination.with_name(destination.name + ".partial")
+    with tempfile.NamedTemporaryFile(dir=destination.parent, prefix=".download-",
+                                     suffix=".partial", delete=False) as temporary:
+        partial = Path(temporary.name)
     try:
         subprocess.run([
             "curl", "--fail", "--location", "--retry", "3", "--max-redirs", "5",
@@ -83,6 +88,11 @@ def download(source, key, destination):
 
 def verify_descriptor(path, release):
     source = release["source"]
+    envelope = unique_json(path.read_bytes())
+    if not isinstance(envelope, dict) or set(envelope) != {
+        "keyID", "payloadBase64", "signatureBase64"
+    } or envelope["keyID"] != source["keyID"]:
+        raise ValueError("invalid toolchain descriptor envelope")
     keys = unique_json(KEYRING.read_bytes())
     if not isinstance(keys, dict) or keys.get("schemaVersion") != 1 or not isinstance(keys.get("keys"), list):
         raise ValueError("invalid built-in toolchain keyring")
