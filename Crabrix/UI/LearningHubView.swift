@@ -325,7 +325,7 @@ private struct CourseLibraryView: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(course.title)
                                     .font(.headline)
-                                    .lineLimit(1)
+                                    .lineLimit(2)
                                 Label("Offline", systemImage: "checkmark.circle.fill")
                                     .font(.caption)
                                     .foregroundStyle(CrabrixTheme.mint)
