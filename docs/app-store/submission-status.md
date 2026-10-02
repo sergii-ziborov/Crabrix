@@ -1,13 +1,17 @@
-> Current status — 2 October 2026: **1.1 (10)** was archived and exported with
+> Current status — 2 October 2026: **1.1 (11)** was archived and exported with
 > stable Xcode 27.0 (27A266a). Apple validation and upload succeeded. App Store
 > Connect processed the build as **VALID** and reports **IN_BETA_TESTING** for
 > the existing Internal QA group (one tester); its What to Test text was saved
 > and read back. The 1.1 English listing and all 14 current screenshots were
 > uploaded and verified separately. The App Store version has **not** been
 > resubmitted for review. Physical-device tester results are pending. See
-> [the build manifest](../releases/1.1-build10.json) and
+> [the build manifest](../releases/1.1-build11.json) and
 > [screenshot upload evidence](asset-upload-2026-10-02.json). The entries below
-> describe earlier 1.0 attempts.
+> describe earlier builds.
+
+> Earlier 2 October status: **1.1 (10)** was uploaded and processed as VALID
+> for Internal QA. Build 11 replaces it as the current tester candidate; its
+> signed, source-built toolchain and exact artifact mapping are recorded above.
 
 > Current status — 9 September 2026: **1.0 (7)** uploaded at 12:37,
 > **Validated** in App Store Connect, and added to the **Internal QA** group

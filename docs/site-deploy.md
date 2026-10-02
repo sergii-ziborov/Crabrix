@@ -31,26 +31,27 @@ image optimization, canonical metadata and presentation fixes. Compare visible
 copy after normalizing HTML entities and whitespace; full-file byte equality is
 not expected across the two renderers. Product and legal wording must match.
 
-The 30 September 2026 CoursePack and runtime wording has been updated in these
-local source pages and in five matching Lovable draft pages. The draft preview
-shows the revised homepage and the individual draft files contain the expected
-course/runtime/privacy/support wording. Lovable exhausted its build credits
-before its own final verification step. The changed pages have **not** been
-published or verified on `crabrix.com`; the live site may still describe the
-previous app build. Publish only with the matching app release and verify the
-public pages after deployment.
+On 2 October, the 1.1 site copy and current screenshots were synchronized into
+the Lovable project at commit `de69e539aabc192db81440b07b7a004933ba2d51`.
+Its `npm run build` preview succeeded and deployment
+`fa24ceb3-c046-4b43-a4a0-aee98de3de2b` published to the existing project.
+Fresh public HTTPS requests returned 200 for the home, technology, privacy and
+support pages on `crabrix.com`. The returned pages showed Academy Examples,
+toolchain `crabrix-rust-2026-10-02.1` and the course-hosting privacy copy;
+four current Academy, Examples, Cyberpunk and iPad screenshot assets also
+returned 200. These pages describe build 11's unchanged app UI and the exact
+toolchain in its [release manifest](releases/1.1-build11.json).
 
-On 2 October, the local `site/screenshots/` copies were recaptured from the
-1.1 (10) Release Simulator source build and the local product copy was updated.
-They are committed with the app, but the Lovable site has not been republished:
-the live `iphone-library.png` still returned the previous 1206 × 2622 image
-when checked on 2 October. The inactive Cloudflare Worker must not be deployed
-to bypass Lovable. The next Lovable publish needs these new image files and
-the current local page copy, followed by a public fetch check.
+One hosted support FAQ still says “Crabrix 1.0” in a sentence about accounts;
+the canonical source page here uses the version-neutral wording. A follow-up
+Lovable edit was blocked when the project ran out of credits. This is a copy
+discrepancy, not a change in account behavior. The inactive Cloudflare Worker
+must not be deployed to bypass Lovable.
 
-As verified on 8 September 2026, **crabrix.com serves Lovable** and is Active
-and primary in Lovable. All six principal HTTPS pages were checked against the
-canonical copy. `www.crabrix.com` still needs its separate DNS setup.
+**crabrix.com serves Lovable** and is Active and primary in Lovable. The four
+principal pages named above were fetched after the 2 October deployment;
+the earlier six-page comparison was on 8 September. `www.crabrix.com` still
+needs its separate DNS setup.
 
 Cloudflare retains domain registration and authoritative DNS for now; the owner
 plans to transfer registration later. Hosting has moved independently of that.
