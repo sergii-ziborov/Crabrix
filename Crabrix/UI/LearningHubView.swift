@@ -32,13 +32,9 @@ enum LearningRoute: Hashable {
 struct LearningHubView: View {
     @Binding var navigationPath: [LearningRoute]
     @EnvironmentObject private var academy: AcademyContentStore
-    @EnvironmentObject private var progress: CrabrixProgressStore
-    @AppStorage("crabrix.learn.trainingSessions") private var trainingSessions = 0
-    @AppStorage("crabrix.learn.recallSessions") private var recallSessions = 0
     @State private var lessonSession: CourseSession?
     @State private var examplesSnapshot: LoadedCourse?
     @State private var appliedLaunchRoute = false
-    @State private var initialCatalogRoot: Bool?
     let completedLessonIDs: Set<String>
     let lessonAnswerIndices: [String: Int]
     let onStartLesson: (RustLesson, CourseSession) -> Void
@@ -47,110 +43,13 @@ struct LearningHubView: View {
     let onAnswerLesson: (RustLesson, Int, Bool) -> Void
     let onOpenExample: (RustShowcaseProject, String) -> Void
 
-    private let columns = [GridItem(.adaptive(minimum: 260), spacing: 16)]
-
     var body: some View {
         NavigationStack(path: $navigationPath) {
-            Group {
-            if initialCatalogRoot == true {
-                CourseLibraryView()
-            } else {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    if !(academy.repository?.courses.isEmpty ?? true) { hero }
-                    NavigationLink(value: LearningRoute.courses) {
-                        HStack(spacing: 14) {
-                            Image(systemName: "books.vertical.fill")
-                                .font(.title2)
-                                .foregroundStyle(CrabrixTheme.coral)
-                                .frame(width: 48, height: 48)
-                                .background(CrabrixTheme.coral.opacity(0.12), in: RoundedRectangle(cornerRadius: 13))
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text("Courses").font(.headline)
-                                Text("Choose and download for offline learning")
-                                    .font(.caption)
-                                    .foregroundStyle(CrabrixTheme.muted)
-                            }
-                            Spacer(minLength: 4)
-                            Image(systemName: "chevron.right")
-                                .foregroundStyle(CrabrixTheme.coral)
-                        }
-                        .padding(16)
-                        .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 16))
-                    }
-                    .buttonStyle(.plain)
-                    if !(academy.repository?.courses.isEmpty ?? true) {
-                    WeakTopicsCard { topic in
-                        guard let repository = academy.repository,
-                              let lesson = repository.lesson(id: topic),
-                              let course = repository.course(containing: topic)
-                        else { return }
-                        navigationPath = [.course(course.id), .lesson(lesson.id)]
-                    }
-
-                    LazyVGrid(columns: columns, spacing: 14) {
-                        NavigationLink {
-                            QuickPracticeView()
-                        } label: {
-                            LearningPracticeCard(
-                                title: "Quick Practice",
-                                subtitle: "Choose · match · arrange code by dragging",
-                                badge: "5 MIN",
-                                systemImage: "bolt.fill",
-                                tint: CrabrixTheme.amber
-                            )
-                        }
-                        .buttonStyle(.plain)
-
-                        NavigationLink {
-                            TermMatchTrainView { trainingSessions += 1 }
-                        } label: {
-                            LearningPracticeCard(
-                                title: "Term Train",
-                                subtitle: "Connect Rust terms with short descriptions",
-                                badge: trainingSessions == 0 ? "NEW" : "\(trainingSessions) RUNS",
-                                systemImage: "link",
-                                tint: CrabrixTheme.mint
-                            )
-                        }
-                        .buttonStyle(.plain)
-
-                        NavigationLink {
-                            CodeRecallView { recallSessions += 1 }
-                        } label: {
-                            LearningPracticeCard(
-                                title: "Code Recall",
-                                subtitle: "Memorise a snippet, then rebuild it line by line",
-                                badge: progress.state.codeRecallBestLevel > 0
-                                    ? "BEST \(progress.state.codeRecallBestLevel)"
-                                    : "NEW",
-                                systemImage: "brain.head.profile",
-                                tint: CrabrixTheme.blue
-                            )
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    }
-
-                    if let error = academy.errorMessage {
-                        ContentUnavailableView(
-                            "Academy unavailable", systemImage: "exclamationmark.triangle",
-                            description: Text(error)
-                        )
-                        Button("Retry") { Task { await academy.prepare() } }
-                    } else if academy.repository == nil {
-                        ProgressView("Preparing Academy")
-                    }
-                }
-                .padding(22)
-                .frame(maxWidth: 920)
-                .frame(maxWidth: .infinity)
-            }
-            .background(CrabrixTheme.background.ignoresSafeArea())
-            .foregroundStyle(CrabrixTheme.primary)
-            .navigationTitle("Learn Rust")
-            }
-            }
+            CourseLibraryView(
+                completedLessonIDs: completedLessonIDs,
+                showsPractice: true,
+                onOpenWeakTopic: openWeakTopic
+            )
             .navigationDestination(for: LearningRoute.self) { route in
                 destination(for: route)
             }
@@ -177,9 +76,6 @@ struct LearningHubView: View {
                 }
             }
             .task(id: academy.repository?.courses.count) {
-                if initialCatalogRoot == nil, let repository = academy.repository {
-                    initialCatalogRoot = repository.courses.isEmpty
-                }
                 guard !appliedLaunchRoute,
                       let repository = academy.repository else { return }
                 let arguments = ProcessInfo.processInfo.arguments
@@ -195,7 +91,7 @@ struct LearningHubView: View {
                     }
                 }
                 guard !route.isEmpty else { return }
-                if route == [.courses], initialCatalogRoot == true {
+                if route == [.courses] {
                     appliedLaunchRoute = true
                     return
                 }
@@ -211,7 +107,11 @@ struct LearningHubView: View {
     private func destination(for route: LearningRoute) -> some View {
         switch route {
         case .courses:
-            CourseLibraryView()
+            CourseLibraryView(
+                completedLessonIDs: completedLessonIDs,
+                showsPractice: false,
+                onOpenWeakTopic: openWeakTopic
+            )
         case .examples:
             if let snapshot = examplesSnapshot ?? academy.repository?.loaded["projects"],
                !snapshot.showcases.isEmpty {
@@ -281,6 +181,14 @@ struct LearningHubView: View {
         navigationPath = [.course(course.id)]
     }
 
+    private func openWeakTopic(_ topic: String) {
+        guard let repository = academy.repository,
+              let lesson = repository.lesson(id: topic),
+              let course = repository.course(containing: topic)
+        else { return }
+        navigationPath = [.course(course.id), .lesson(lesson.id)]
+    }
+
     private func completeAndContinue(from lesson: RustLesson) {
         onCompleteLesson(lesson)
         let completed = completedLessonIDs.union([lesson.id])
@@ -306,129 +214,19 @@ struct LearningHubView: View {
         navigationPath = [.course(step.courseID), .lesson(step.lessonID)]
     }
 
-    private var hero: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 18) {
-                Image(systemName: "map.fill")
-                    .font(.system(size: 32, weight: .bold))
-                    .foregroundStyle(CrabrixTheme.mint)
-                    .frame(width: 70, height: 70)
-                    .background(CrabrixTheme.mint.opacity(0.13), in: RoundedRectangle(cornerRadius: 20))
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("CRABRIX ACADEMY")
-                        .font(.caption.monospaced().bold())
-                        .foregroundStyle(CrabrixTheme.coral)
-                    Text("Learn Rust by building")
-                        .font(.system(size: 30, weight: .heavy, design: .rounded))
-                        .minimumScaleFactor(0.6)
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Text("Short explanations, compiler-backed labs across the curriculum, and a visible next step.")
-                        .foregroundStyle(CrabrixTheme.muted)
-                }
-                Spacer(minLength: 0)
-            }
-
-            if !(academy.repository?.courses.isEmpty ?? true) {
-            VStack(spacing: 7) {
-                HStack {
-                    Label("OVERALL PROGRESS", systemImage: "chart.line.uptrend.xyaxis")
-                    Spacer()
-                    Text("\(completedLessonCount) / \(totalLessonCount) lessons · \(progressPercent)%")
-                }
-                .font(.caption.monospaced().bold())
-                .foregroundStyle(CrabrixTheme.muted)
-                ProgressView(value: Double(completedLessonCount), total: Double(max(totalLessonCount, 1)))
-                    .tint(CrabrixTheme.mint)
-            }
-
-            Divider().overlay(CrabrixTheme.border)
-
-            NavigationLink(value: LearningRoute.profile) {
-                ratingStrip
-            }
-            .buttonStyle(.plain)
-            }
-        }
-        .padding(20)
-        .background(
-            LinearGradient(
-                colors: [CrabrixTheme.blue.opacity(0.12), CrabrixTheme.panel],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay { RoundedRectangle(cornerRadius: 20).stroke(CrabrixTheme.border) }
-    }
-
-    private var ratingStrip: some View {
-        let rank = progress.rank
-        return HStack(spacing: 12) {
-            Image(systemName: rank.systemImage)
-                .font(.headline)
-                .foregroundStyle(CrabrixTheme.amber)
-                .frame(width: 38, height: 38)
-                .background(
-                    CrabrixTheme.amber.opacity(0.14),
-                    in: RoundedRectangle(cornerRadius: 11)
-                )
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text("RATING")
-                    .font(.system(size: 9, weight: .bold, design: .monospaced))
-                    .foregroundStyle(CrabrixTheme.muted)
-                Text(CrabrixPointsFormatter.string(progress.state.totalPoints))
-                    .font(.title3.bold())
-                    .monospacedDigit()
-            }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(rank.title)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(CrabrixTheme.mint)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-                ProgressView(value: rank.progress(points: progress.state.totalPoints))
-                    .tint(CrabrixTheme.amber)
-                Text("\(progress.earnedAchievements.count)/\(progress.allAchievements.count) achievements")
-                    .font(.caption2.monospaced())
-                    .foregroundStyle(CrabrixTheme.muted)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.72)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            Image(systemName: "chevron.right")
-                .font(.caption.bold())
-                .foregroundStyle(CrabrixTheme.muted)
-        }
-        .contentShape(Rectangle())
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(
-            "Rating \(progress.state.totalPoints), rank \(rank.title). Open profile."
-        )
-    }
-
-    private var totalLessonCount: Int {
-        academy.repository?.courses.flatMap(\.units).flatMap(\.lessons).count ?? 0
-    }
-
-    private var completedLessonCount: Int {
-        let allLessonIDs = Set(academy.repository?.courses.flatMap(\.units).flatMap(\.lessons).map(\.id) ?? [])
-        return completedLessonIDs.intersection(allLessonIDs).count
-    }
-
-    private var progressPercent: Int {
-        guard totalLessonCount > 0 else { return 0 }
-        return Int((Double(completedLessonCount) / Double(totalLessonCount) * 100).rounded())
-    }
-
 }
 
 private struct CourseLibraryView: View {
     @EnvironmentObject private var academy: AcademyContentStore
+    @EnvironmentObject private var progress: CrabrixProgressStore
+    @AppStorage("crabrix.learn.trainingSessions") private var trainingSessions = 0
+    @AppStorage("crabrix.learn.recallSessions") private var recallSessions = 0
     @State private var pendingDownload: CourseCatalogPayload.Entry?
+    let completedLessonIDs: Set<String>
+    let showsPractice: Bool
+    let onOpenWeakTopic: (String) -> Void
+
+    private let columns = [GridItem(.adaptive(minimum: 260), spacing: 14)]
 
     private var installed: [RustCourse] { academy.repository?.courses ?? [] }
 
@@ -448,87 +246,35 @@ private struct CourseLibraryView: View {
             VStack(alignment: .leading, spacing: 24) {
                 if !installed.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Downloaded").font(.title2.bold())
+                        Text("My courses").font(.title2.bold())
                         ForEach(installed) { course in
-                            HStack(spacing: 10) {
-                                NavigationLink(value: LearningRoute.course(course.id)) {
-                                    HStack(spacing: 12) {
-                                        icon(course.systemImage, tint: course.theme.primaryColor)
-                                        VStack(alignment: .leading, spacing: 3) {
-                                            Text(course.title).font(.headline)
-                                            Label("Available offline", systemImage: "checkmark.circle.fill")
-                                                .font(.caption)
-                                                .foregroundStyle(CrabrixTheme.mint)
-                                        }
-                                        Spacer(minLength: 0)
-                                        Image(systemName: "chevron.right")
-                                            .font(.caption.bold())
-                                            .foregroundStyle(CrabrixTheme.muted)
-                                    }
-                                }
-                                .buttonStyle(.plain)
-                                Menu {
-                                    Button("Remove download", role: .destructive) {
-                                        Task { await academy.deleteInstalled(courseID: course.id, language: "en") }
-                                    }
-                                } label: {
-                                    Image(systemName: "ellipsis")
-                                        .frame(width: 36, height: 36)
-                                }
-                                .accessibilityLabel("Manage download for \(course.title)")
-                            }
-                            .padding(12)
-                            .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 14))
-                            if course.id == "projects" {
-                                NavigationLink("Open 46 Examples", value: LearningRoute.examples)
-                                    .font(.caption.weight(.semibold))
-                                    .padding(.leading, 12)
-                            }
+                            installedRow(course)
                         }
                     }
                 }
 
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Available").font(.title2.bold())
-                    ForEach(available, id: \.courseID) { entry in
-                        let preview = Self.preview(entry.courseID)
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack(spacing: 12) {
-                                icon(preview.icon, tint: CrabrixTheme.coral)
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text(preview.title).font(.headline)
-                                    Text(preview.subtitle)
-                                        .font(.caption)
-                                        .foregroundStyle(CrabrixTheme.muted)
-                                        .lineLimit(2)
-                                }
-                                Spacer(minLength: 0)
-                                VStack(spacing: 3) {
-                                    Button {
-                                        pendingDownload = entry
-                                    } label: {
-                                        Label("Download", systemImage: "arrow.down.circle.fill")
-                                    }
-                                    .buttonStyle(.bordered)
-                                    .tint(CrabrixTheme.coral)
-                                    .font(.caption.bold())
-                                    .accessibilityLabel("Download \(preview.title) for offline use")
-                                    Text(ByteCountFormatter.string(fromByteCount: Int64(entry.archiveBytes), countStyle: .file))
-                                        .font(.caption2.monospaced())
-                                        .foregroundStyle(CrabrixTheme.muted)
-                                }
-                            }
-                            if let transfer = academy.transfers[entry.courseID + "|" + entry.language] {
-                                transferView(transfer, entry: entry)
-                            }
-                        }
-                        .padding(14)
-                        .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 14))
+                if showsPractice && !installed.isEmpty {
+                    practiceGrid
+                    if TopicMasteryStore.shared.summary.seen > 0 {
+                        WeakTopicsCard(onSelect: onOpenWeakTopic)
                     }
-                    if available.isEmpty && installed.isEmpty {
-                        ContentUnavailableView("Course list unavailable", systemImage: "wifi.slash")
-                        Button("Retry") { Task { await academy.checkForUpdates() } }
-                    }
+                }
+
+                if !available.isEmpty {
+                    availableSection
+                }
+
+                if let error = academy.errorMessage {
+                    ContentUnavailableView(
+                        "Academy unavailable", systemImage: "exclamationmark.triangle",
+                        description: Text(error)
+                    )
+                    Button("Retry") { Task { await academy.prepare() } }
+                } else if academy.repository == nil {
+                    ProgressView("Preparing Academy")
+                } else if available.isEmpty && installed.isEmpty {
+                    ContentUnavailableView("Course list unavailable", systemImage: "wifi.slash")
+                    Button("Retry") { Task { await academy.checkForUpdates() } }
                 }
             }
             .padding(20)
@@ -536,8 +282,19 @@ private struct CourseLibraryView: View {
             .frame(maxWidth: .infinity)
         }
         .background(CrabrixTheme.background.ignoresSafeArea())
-        .navigationTitle("Courses")
+        .foregroundStyle(CrabrixTheme.primary)
+        .navigationTitle(showsPractice ? "Learn" : "Courses")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if showsPractice && !installed.isEmpty {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink(value: LearningRoute.profile) {
+                        Image(systemName: "person.crop.circle")
+                    }
+                    .accessibilityLabel("Learning profile")
+                }
+            }
+        }
         .confirmationDialog(
             "Download course?", isPresented: Binding(
                 get: { pendingDownload != nil },
@@ -553,6 +310,149 @@ private struct CourseLibraryView: View {
             Button("Cancel", role: .cancel) { pendingDownload = nil }
         } message: {
             Text("The selected course will be available offline after verification.")
+        }
+    }
+
+    private func installedRow(_ course: RustCourse) -> some View {
+        let lessons = course.units.flatMap(\.lessons)
+        let completed = lessons.filter { completedLessonIDs.contains($0.id) }.count
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                NavigationLink(value: LearningRoute.course(course.id)) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack(spacing: 12) {
+                            icon(course.systemImage, tint: course.theme.primaryColor)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(course.title)
+                                    .font(.headline)
+                                    .lineLimit(1)
+                                Label("Offline", systemImage: "checkmark.circle.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(CrabrixTheme.mint)
+                            }
+                            Spacer(minLength: 4)
+                            Text(completed == 0 ? "Start" : (completed == lessons.count ? "Review" : "Continue"))
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(course.theme.primaryColor)
+                            Image(systemName: "chevron.right")
+                                .font(.caption.bold())
+                                .foregroundStyle(course.theme.primaryColor)
+                        }
+                        HStack {
+                            Text("\(completed) of \(lessons.count) lessons")
+                            Spacer()
+                            Text("\(Int((Double(completed) / Double(max(lessons.count, 1)) * 100).rounded()))%")
+                        }
+                        .font(.caption.monospaced())
+                        .foregroundStyle(CrabrixTheme.muted)
+                        ProgressView(value: Double(completed), total: Double(max(lessons.count, 1)))
+                            .tint(course.theme.primaryColor)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Open \(course.title), \(completed) of \(lessons.count) lessons complete, available offline")
+                Menu {
+                    Button("Remove download", role: .destructive) {
+                        Task { await academy.deleteInstalled(courseID: course.id, language: "en") }
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .frame(width: 36, height: 44)
+                }
+                .accessibilityLabel("Manage download for \(course.title)")
+            }
+            if course.id == "projects" {
+                NavigationLink("Open 46 Examples", value: LearningRoute.examples)
+                    .font(.caption.weight(.semibold))
+            }
+        }
+        .padding(15)
+        .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var availableSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(installed.isEmpty ? "Choose a course" : "Explore courses")
+                .font(.title2.bold())
+            ForEach(available, id: \.courseID) { entry in
+                let preview = Self.preview(entry.courseID)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 12) {
+                        icon(preview.icon, tint: CrabrixTheme.coral)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(preview.title).font(.headline)
+                            Text(preview.subtitle)
+                                .font(.caption)
+                                .foregroundStyle(CrabrixTheme.muted)
+                                .lineLimit(2)
+                        }
+                        Spacer(minLength: 0)
+                        VStack(spacing: 3) {
+                            Button { pendingDownload = entry } label: {
+                                Label("Download", systemImage: "arrow.down.circle.fill")
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(CrabrixTheme.coral)
+                            .font(.caption.bold())
+                            .accessibilityLabel("Download \(preview.title) for offline use")
+                            Text(ByteCountFormatter.string(fromByteCount: Int64(entry.archiveBytes), countStyle: .file))
+                                .font(.caption2.monospaced())
+                                .foregroundStyle(CrabrixTheme.muted)
+                        }
+                    }
+                    if let transfer = academy.transfers[entry.courseID + "|" + entry.language] {
+                        transferView(transfer, entry: entry)
+                    }
+                }
+                .padding(14)
+                .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 14))
+            }
+        }
+    }
+
+    private var practiceGrid: some View {
+        LazyVGrid(columns: columns, spacing: 14) {
+            NavigationLink {
+                QuickPracticeView()
+            } label: {
+                LearningPracticeCard(
+                    title: "Quick Practice",
+                    subtitle: "Choose · match · arrange code by dragging",
+                    badge: "5 MIN",
+                    systemImage: "bolt.fill",
+                    tint: CrabrixTheme.amber
+                )
+            }
+            .buttonStyle(.plain)
+
+            NavigationLink {
+                TermMatchTrainView { trainingSessions += 1 }
+            } label: {
+                LearningPracticeCard(
+                    title: "Term Train",
+                    subtitle: "Connect Rust terms with short descriptions",
+                    badge: trainingSessions == 0 ? "NEW" : "\(trainingSessions) RUNS",
+                    systemImage: "link",
+                    tint: CrabrixTheme.mint
+                )
+            }
+            .buttonStyle(.plain)
+
+            NavigationLink {
+                CodeRecallView { recallSessions += 1 }
+            } label: {
+                LearningPracticeCard(
+                    title: "Code Recall",
+                    subtitle: "Memorise a snippet, then rebuild it line by line",
+                    badge: progress.state.codeRecallBestLevel > 0
+                        ? "BEST \(progress.state.codeRecallBestLevel)"
+                        : "NEW",
+                    systemImage: "brain.head.profile",
+                    tint: CrabrixTheme.blue
+                )
+            }
+            .buttonStyle(.plain)
         }
     }
 

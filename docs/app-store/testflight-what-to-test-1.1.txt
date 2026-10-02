@@ -1,12 +1,13 @@
-Crabrix 1.1 release candidate (build 14). Please test the lesson result screen and course progress reset on a physical iPhone or iPad.
+Crabrix 1.1 release candidate (build 15). Please test the Learn dashboard after a course download on a physical iPhone or iPad.
 
-1. On a fresh install, open Learn. No course should be preinstalled. Download only the Projects course after checking its displayed size, then open one of the 46 Academy Examples as a separate editable project. Edit, Check, and Run it.
-2. In My Projects, confirm the project manager opens. Start a new project and inspect the GitHub and Files/iCloud Drive import choices. Cargo packages are managed inside the project.
-3. In a project, tap the three-dot button beside Check. Confirm project settings, Save to Files, and Share open. The compiler evidence Details screen should stay absent. Code/Problems/Output/Terminal sit at the bottom; Check is beside Run. Switch to Output and select another source file; the editor should return to Code. Lesson hints appear in Output.
-4. Build a project with a supported crates.io dependency. Pin its dependencies for offline use, restart without network, and try the prepared project again.
-5. Stop a long compile or program, then Check and Run again. Confirm the next execution works and reports a useful stop reason.
-6. Use the row menu to remove one downloaded course, then download it again. Separate projects and progress must remain. Existing learners should find their transition courses available offline after updating.
-7. Check Cyberpunk across Learn, Projects, and the editor. On a physical device, optionally enable Face ID or device-passcode protection and verify the app locks after leaving it.
-8. In Rust Basics, answer a quick check and tap Review result. The third step should show its summary and an action button. In the course screen, reset its progress. Confirm the lesson count and saved answers restart while projects, other courses, and earned rewards stay. The old chapters/live labs/local badges should be absent.
+1. On a fresh install, open Learn. No course should be preinstalled. Download Rust Basics. It should immediately move into My courses with Offline status, progress and Start, without an app restart. Other courses stay available below; practice cards follow My courses without an introductory banner. Restart offline and confirm Rust Basics remains there.
+2. Download the Projects course, then open one of its 46 Academy Examples as a separate editable project. Edit, Check, and Run it.
+3. In My Projects, confirm the project manager opens. Start a new project and inspect the GitHub and Files/iCloud Drive import choices. Cargo packages are managed inside the project.
+4. In a project, tap the three-dot button beside Check. Confirm project settings, Save to Files, and Share open. The compiler evidence Details screen should stay absent. Code/Problems/Output/Terminal sit at the bottom; Check is beside Run. Switch to Output and select another source file; the editor should return to Code. Lesson hints appear in Output.
+5. Build a project with a supported crates.io dependency. Pin its dependencies for offline use, restart without network, and try the prepared project again.
+6. Stop a long compile or program, then Check and Run again. Confirm the next execution works and reports a useful stop reason.
+7. Use the row menu to remove one downloaded course, then download it again. Separate projects and progress must remain. Existing learners should find their transition courses available offline after updating.
+8. Check Cyberpunk across Learn, Projects, and the editor. On a physical device, optionally enable Face ID or device-passcode protection and verify the app locks after leaving it.
+9. In Rust Basics, answer a quick check and tap Review result. The third step should show its summary and an action button. In the course screen, reset its progress. Confirm the lesson count and saved answers restart while projects, other courses, and earned rewards stay. The old chapters/live labs/local badges should be absent.
 
 Please report the device, iOS version, course/version, project type, and steps to reproduce. Attach source code only if you choose to share it. The compiler and runtime are bundled; courses contain readable learning data and editable Rust source, not executable updates.
