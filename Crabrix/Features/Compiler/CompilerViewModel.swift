@@ -1007,6 +1007,22 @@ final class CompilerViewModel: ObservableObject {
         persistCompletedLessons()
     }
 
+    /// Restarts only this course's lesson path. Earned rating, achievements,
+    /// attempt evidence and editable projects remain intact.
+    func resetCourseProgress(lessonIDs: Set<String>) {
+        guard !lessonIDs.isEmpty else { return }
+        completedLessonIDs.subtract(lessonIDs)
+        lessonAnswerIndices = lessonAnswerIndices.filter { !lessonIDs.contains($0.key) }
+        persistCompletedLessons()
+        userDefaults.set(lessonAnswerIndices, forKey: Self.lessonAnswersKey)
+        if let activeLessonID, lessonIDs.contains(activeLessonID) {
+            self.activeLessonID = nil
+            activeLessonContent = nil
+            activeLessonIsReview = false
+            lessonEvidenceMessage = nil
+        }
+    }
+
     /// Keeps the first committed quick-check answer so reopening a lesson is
     /// review, not a second attempt that can spend or earn resources again.
     func recordLessonAnswer(_ index: Int, for lessonID: String) {

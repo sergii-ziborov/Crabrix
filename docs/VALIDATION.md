@@ -1,5 +1,15 @@
 # Validation record — 2 October 2026
 
+## Build 14 lesson result and course progress
+
+Build 14 replaces the conditional lesson pager with a stable page switch. The Review result step has explicit content and an action, and navigation still requires a correct quick-check answer. A Release iPhone 17 Pro Simulator build passed; the on-device transition from answer to result remains for the tester.
+
+The course header now shows lesson progress and a reset action without the chapters, live labs and local metric badges. A Release Simulator screenshot was visually checked. `ProjectAuthoringTests/testResetCourseProgressKeepsOtherCourseAndProject` passed (1 test, 0 failures): the reset clears only that course's completed lessons and saved answers, retains another course and the project, and persists after relaunch. Projects and earned rewards are not modified by the reset method.
+
+Xcode 27.0 stable produced a signed 1.1 (14) archive from app input commit `fbb47c1`. The 56,224,255-byte IPA has SHA-256 `2c16f73b5a0113c8ad0186da9cb0e9a3f982d3085e4cef360a453db479ae0e50`; ZIP integrity, deep code signature and Apple `altool --validate-app` passed. Its embedded compiler, sysroot and toolchain lock match the pinned release digests. Apple accepted the upload with delivery ID `c61a0387-76bf-480d-9b5c-9ec9048ec986`; App Store Connect processed build 14 as `VALID`, placed it `IN_BETA_TESTING` for Internal QA, and returned the saved What to Test text. This does not constitute a physical-device pass or an App Review submission.
+
+All 14 screenshots were recaptured from the build 14 Release Simulator app. Three changed iPhone images were uploaded to App Store Connect, unchanged images were retained, and both iPhone and iPad screenshot sets were verified in display order. The [build 14 manifest](releases/1.1-build14.json) links the app, runtime, toolchain, catalog and [screenshot evidence](app-store/asset-upload-2026-10-02-build14.json). [PR run 37008258930](https://github.com/sergii-ziborov/Crabrix/actions/runs/37008258930) passed the hosted Swift test job; its compiler job was skipped by the workflow's PR policy because compiler inputs did not change.
+
 ## Build 13 project settings correction
 
 The build 12 phone editor had lost the three-dot project settings button. Build 13 restores it beside the compact Check control and routes it to the existing project settings, save and share sheet. A Release iPhone Simulator build passed; visual inspection of its editor screenshot found the three-dot, Check, Run and Close controls fitting on one row. The project settings sheet is reached by the same `onProjectActions` handler used elsewhere in the editor. Physical-device tapping and layout remain for the tester.

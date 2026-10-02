@@ -53,7 +53,7 @@ struct LessonDetailView: View {
         return true
     }
     private var showsNavigationFooter: Bool {
-        footerVisibility[page] ?? false
+        page == 2 || (footerVisibility[page] ?? false)
     }
 
     init(
@@ -88,18 +88,19 @@ struct LessonDetailView: View {
             progressHeader
 
             ZStack(alignment: .bottom) {
-                TabView(selection: $page) {
-                    conceptPage.tag(0)
-                    practicePage.tag(1)
-                    // The last page only exists once the quick check is answered.
-                    // Disabling the footer button was not enough on its own: a
-                    // right-to-left swipe walked straight past the question.
-                    if isQuickCheckAnswered {
-                        readyPage.tag(2)
-                    }
-                }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .animation(.easeInOut(duration: 0.2), value: isQuickCheckAnswered)
+                currentPage
+                    .id(page)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .simultaneousGesture(
+                        DragGesture(minimumDistance: 30)
+                            .onEnded { value in
+                                let horizontal = value.translation.width
+                                guard abs(horizontal) > 70,
+                                      abs(horizontal) > abs(value.translation.height) * 1.4
+                                else { return }
+                                moveToPage(page + (horizontal < 0 ? 1 : -1))
+                            }
+                    )
 
                 // Always in the hierarchy, only ever faded and slid. Inserting
                 // and removing it re-laid out the page, so text and cards
@@ -126,6 +127,23 @@ struct LessonDetailView: View {
         .foregroundStyle(CrabrixTheme.primary)
         .navigationTitle(lesson.title)
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    @ViewBuilder
+    private var currentPage: some View {
+        switch page {
+        case 0: conceptPage
+        case 1: practicePage
+        default: readyPage
+        }
+    }
+
+    private func moveToPage(_ next: Int) {
+        guard (0...2).contains(next), next < 2 || isQuickCheckAnswered else { return }
+        withAnimation(.easeInOut(duration: 0.2)) {
+            footerVisibility[next] = false
+            page = next
+        }
     }
 
     private var progressHeader: some View {
@@ -433,7 +451,7 @@ struct LessonDetailView: View {
             HStack(spacing: 12) {
                 if page > 0 {
                     Button {
-                        withAnimation(.easeInOut) { page -= 1 }
+                        moveToPage(page - 1)
                     } label: {
                         Label("Back", systemImage: "arrow.left")
                             .frame(minWidth: 90)
@@ -445,7 +463,7 @@ struct LessonDetailView: View {
 
                 if page < 2 {
                     Button {
-                        withAnimation(.easeInOut) { page += 1 }
+                        moveToPage(page + 1)
                     } label: {
                         Label(
                             page == 0 ? "Try a quick check" : "Review result",

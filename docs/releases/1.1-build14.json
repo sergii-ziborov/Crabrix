@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "release": {
+    "version": "1.1",
+    "build": "14",
+    "channel": "TestFlight Internal QA"
+  },
+  "app": {
+    "repository": "https://github.com/sergii-ziborov/Crabrix",
+    "buildInputCommit": "fbb47c152eb3964dc31cb20b873b0d53ca9aa6af",
+    "buildInputNote": "Later documentation and evidence commits do not change the archived app inputs.",
+    "bundleID": "com.sergiiziborov.Crabrix",
+    "configuration": "Release",
+    "xcode": {
+      "version": "27.0",
+      "build": "27A266a"
+    },
+    "ipaBytes": 56224255,
+    "ipaSHA256": "2c16f73b5a0113c8ad0186da9cb0e9a3f982d3085e4cef360a453db479ae0e50",
+    "signingTeamID": "XMS5ZC28UJ"
+  },
+  "runtime": {
+    "repository": "https://github.com/sergii-ziborov/crabrix-runtime",
+    "revision": "d996f0d11dff54734b5670d58062e22c6e01f949",
+    "upstream": "swiftwasm/WasmKit 0.4.1",
+    "upstreamCommit": "a0471eaee817c523b8023d8ebb1c70ff70b7950a"
+  },
+  "bundledToolchain": {
+    "toolchainID": "crabrix-rust-2026-10-02.1",
+    "target": "wasm32-wasip1",
+    "rustVersion": "1.96.0-dev",
+    "rustcSHA256": "0286dc52064283ef78ba153a554d86ae742e6c8cd638aea8662e07d3529233fc",
+    "sysrootArchiveSHA256": "085fece5602fdd3af4efde3e08388090928c33b03fc874d99aba741a0b85283b",
+    "sysrootManifestSHA256": "4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c",
+    "lockSHA256": "caa4865ec549854d13fb0f0eaa040255c66ce8f353662fa3db4955df89b88cc7",
+    "origin": "Signed source-built Crabrix release toolchain-2026-10-02.1; built from source input 079b2dabbac02f8e5de452765c4bb89e0c4fc6ff.",
+    "releaseURL": "https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1",
+    "sourceLockSHA256": "7c44029b80757b80fe5bfb54614bc09e967917506bc28a275dc694eb404bf97a",
+    "descriptorSHA256": "aa73af686793a6242e3b084207cb94b2edf2b49031cad9756c9d590091c922e7",
+    "descriptorKeyID": "crabrix-toolchain-2026-10"
+  },
+  "courseCatalog": {
+    "repository": "https://github.com/sergii-ziborov/crabrix-courses",
+    "repositoryCommit": "eb1dabf7322b1cdd8aa9213dddbec8e167061262",
+    "releaseTag": "coursepack-v1.0.1",
+    "publicCatalogURL": "https://raw.githubusercontent.com/sergii-ziborov/crabrix-courses/main/catalog.v1.json",
+    "catalogSHA256": "e6f5650055d064e570e219e55945217b5e00035575664cf729055978855325b9",
+    "sequence": 2,
+    "signedKeyID": "crabrix-course-2026-09",
+    "transitionPacks": [
+      {
+        "courseID": "algorithms",
+        "language": "en",
+        "contentVersion": "1.0.1",
+        "descriptorSHA256": "5311a9874d788c6ac9ffec3edc73bbbc377d5abb012d5e4712c1f2ecd8e21505",
+        "archiveSHA256": "50877cc9eb94c9443d5690eb309361793ac5ad904640b2e98d96f07d922212fa",
+        "archiveBytes": 3871076
+      },
+      {
+        "courseID": "basics",
+        "language": "en",
+        "contentVersion": "1.0.1",
+        "descriptorSHA256": "c253894278b404fb7cd2258f687c3432317d04012d957ebbf8ca82ee21999e04",
+        "archiveSHA256": "8498d05c7b52dc205b05911ff5981d019707b67c529467414ed5b07ed50ec51d",
+        "archiveBytes": 105555
+      },
+      {
+        "courseID": "concurrency",
+        "language": "en",
+        "contentVersion": "1.0.1",
+        "descriptorSHA256": "e6c5b53974f898cd79dc44c8ea1f235779f97527be60209103fde2cc8d25fffa",
+        "archiveSHA256": "b12c89976e26160345420bd2b95b29d62e8f1e455a1dffee24557e1f52ee7980",
+        "archiveBytes": 55296
+      },
+      {
+        "courseID": "interview",
+        "language": "en",
+        "contentVersion": "1.0.1",
+        "descriptorSHA256": "add6f32c56f62ea3080d93fb56383db294f96d1f99da36a93f468fce361b11e8",
+        "archiveSHA256": "7b54a3f4a8837b7822ffbc6ff36207eec46dfacc6804f896eec44ac282ede9ab",
+        "archiveBytes": 155587
+      },
+      {
+        "courseID": "ownership",
+        "language": "en",
+        "contentVersion": "1.0.1",
+        "descriptorSHA256": "3cfca80fcb76286808ee22fe7ed1366a1fce73688b64c6688ace704ae89a4c0a",
+        "archiveSHA256": "8a9f26fa8f9c60e213cc52f31af0b14974c9999fddfcfe4cbd5778c64b88d942",
+        "archiveBytes": 105091
+      },
+      {
+        "courseID": "projects",
+        "language": "en",
+        "contentVersion": "1.0.1",
+        "descriptorSHA256": "15a05aba1a08ac5f576e3e088036a61a23219e30c7001463e82435ffa8de4f5e",
+        "archiveSHA256": "e4636c190ac7a10b7c8f2f9e2571b98f2e46b49d03fff21f03bd49567ac767aa",
+        "archiveBytes": 197284
+      },
+      {
+        "courseID": "systems",
+        "language": "en",
+        "contentVersion": "1.0.1",
+        "descriptorSHA256": "1f12345dfb6fed1f884d48388c904aed90840f9eddeeb58f273c250f094162b8",
+        "archiveSHA256": "076c2cabaa1297da71a983f35ac006ef9644fd667c69690cb5e9e52facd1ac40",
+        "archiveBytes": 55375
+      }
+    ]
+  },
+  "appStoreConnect": {
+    "appID": "6809502653",
+    "appStoreVersionID": "2bc0ae1f-ca26-41e6-a0a9-700628e7bf14",
+    "buildID": "c61a0387-76bf-480d-9b5c-9ec9048ec986",
+    "deliveryID": "c61a0387-76bf-480d-9b5c-9ec9048ec986",
+    "processingState": "VALID",
+    "internalBuildState": "IN_BETA_TESTING",
+    "betaGroupID": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "betaGroup": "Internal QA",
+    "whatToTestLocalizationID": "3b0d99ed-339f-4a6d-a5aa-c462f087b4f3",
+    "screenshotEvidence": "docs/app-store/asset-upload-2026-10-02-build14.json"
+  },
+  "verified": [
+    "Release iPhone 17 Pro Simulator build succeeded; the compact Rust Basics course screen was visually checked with reset visible and chapter/live lab/local badges absent.",
+    "ProjectAuthoringTests/testResetCourseProgressKeepsOtherCourseAndProject passed (1/1) on iPhone 17 Pro Simulator: selected course progress and answers reset, another course and project persist after relaunch.",
+    "Xcode 27.0 stable produced a signed iOS archive and exported IPA for build 14; ZIP integrity, deep code signature and Apple altool validation passed.",
+    "Embedded rustc.wasm, sysroot ZIP and toolchain lock match the published pinned digests; seven transition CoursePacks use the unchanged build 13 release inputs.",
+    "Apple altool upload succeeded; App Store Connect processed build 14 as VALID and placed it IN_BETA_TESTING for Internal QA; What to Test was read back.",
+    "All 14 release screenshots were captured from the build 14 Release Simulator app; three changed iPhone images were uploaded, unchanged images retained, and both App Store Connect screenshot sets were verified in display order."
+  ],
+  "pending": [
+    "Physical-device tester confirmation that Review result displays content and its action after answering a quick check, and that course reset behaves as intended.",
+    "App Review submission and public App Store release.",
+    "Build 14 site source and screenshots are not yet deployed to Lovable; the live site still serves the prior deployment."
+  ],
+  "website": {
+    "publicURL": "https://crabrix.com",
+    "currentDeploymentID": "fa24ceb3-c046-4b43-a4a0-aee98de3de2b",
+    "currentDeploymentForBuild": "11",
+    "build14SourcePath": "site/",
+    "build14DeploymentStatus": "pending; Lovable project credits exhausted"
+  }
+}

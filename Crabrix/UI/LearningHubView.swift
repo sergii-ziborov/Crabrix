@@ -43,6 +43,7 @@ struct LearningHubView: View {
     let lessonAnswerIndices: [String: Int]
     let onStartLesson: (RustLesson, CourseSession) -> Void
     let onCompleteLesson: (RustLesson) -> Void
+    let onResetCourseProgress: (Set<String>) -> Void
     let onAnswerLesson: (RustLesson, Int, Bool) -> Void
     let onOpenExample: (RustShowcaseProject, String) -> Void
 
@@ -228,6 +229,9 @@ struct LearningHubView: View {
                     courseTheme: course.theme,
                     completedLessonIDs: completedLessonIDs,
                     unlockScope: course.id == "algorithms" ? .independentUnits : .course,
+                    onResetProgress: {
+                        onResetCourseProgress(Set(course.units.flatMap(\.lessons).map(\.id)))
+                    },
                     onOpenLesson: { lesson in
                         navigationPath.append(.lesson(lesson.id))
                     }
