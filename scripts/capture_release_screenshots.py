@@ -112,12 +112,14 @@ def copy_for_docs() -> None:
         "iphone-build.png": "iphone-6.9/01-build.png",
         "iphone-projects.png": "iphone-6.9/02-projects.png",
         "iphone-learn.png": "iphone-6.9/03-learn.png",
+        "iphone-my-courses.png": "iphone-6.9/09-my-courses.png",
         "iphone-academy.png": "iphone-6.9/03-learn.png",
         "iphone-library.png": "iphone-6.9/07-library.png",
         "iphone-settings.png": "iphone-6.9/08-settings.png",
         "iphone-cyberpunk-settings.png": "iphone-6.9/08-settings.png",
         "ipad-build.png": "ipad-13/01-build.png",
         "ipad-learn.png": "ipad-13/03-learn.png",
+        "ipad-my-courses.png": "ipad-13/07-my-courses.png",
         "ipad-library.png": "ipad-13/06-library.png",
     }
     for name, source in sources.items():
@@ -136,6 +138,7 @@ def main() -> None:
     capture_set(app, "Crabrix Shots 6.9", "iphone-6.9", [
         ("01-build.png", ("--crabrix-auto-borrow",)),
         ("02-projects.png", ("-CrabrixTab", "projects")),
+        ("09-my-courses.png", ("-CrabrixTab", "learn")),
         ("04-course.png", ("-CrabrixTab", "learn", "-CrabrixLearn", "basics")),
         ("05-lesson.png", ("-CrabrixTab", "learn", "-CrabrixLearn", "borrowing")),
         ("06-profile.png", ("-CrabrixTab", "learn", "-CrabrixLearn", "profile")),
@@ -145,6 +148,7 @@ def main() -> None:
     capture_set(app, "Crabrix Dev iPad", "ipad-13", [
         ("01-build.png", ("--crabrix-auto-multifile",)),
         ("02-projects.png", ("-CrabrixTab", "projects")),
+        ("07-my-courses.png", ("-CrabrixTab", "learn")),
         ("04-lesson.png", ("-CrabrixTab", "learn", "-CrabrixLearn", "borrowing")),
         ("05-profile.png", ("-CrabrixTab", "learn", "-CrabrixLearn", "profile")),
         ("06-library.png", ("-CrabrixTab", "learn", "-CrabrixLearn", "examples")),
