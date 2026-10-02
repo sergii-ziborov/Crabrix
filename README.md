@@ -5,9 +5,10 @@
 [Website](https://crabrix.com) · [Support](https://crabrix.com/support) · [Privacy](https://crabrix.com/privacy) · [App license](LICENSE)
 
 <p>
-  <img src="docs/screenshots/iphone-learn.png" width="240" alt="Crabrix course library with individual downloads">
-  <img src="docs/screenshots/iphone-build.png" width="240" alt="Rust code editor and compiler workspace">
-  <img src="docs/screenshots/iphone-cyberpunk-settings.png" width="240" alt="Cyberpunk appearance and optional Face ID protection">
+  <img src="docs/screenshots/iphone-learn.png" width="200" alt="Crabrix course library with individual downloads">
+  <img src="docs/app-store/screenshots/iphone-6.9/04-course.png" width="200" alt="Course lessons, progress, and reset action">
+  <img src="docs/screenshots/iphone-build.png" width="200" alt="Rust code editor and compiler workspace">
+  <img src="docs/screenshots/iphone-cyberpunk-settings.png" width="200" alt="Cyberpunk appearance and optional Face ID protection">
 </p>
 
 ## Use Crabrix
@@ -26,7 +27,7 @@ Crabrix 1.1 pins [CrabrixRuntime](https://github.com/sergii-ziborov/crabrix-runt
 
 In an A/B/A Release Simulator measurement using the same compiler and a heavy multi-crate CLI project, this runtime completed the selected workload **about 1.6× faster** than the preceding Crabrix runtime. The [raw observations](docs/performance/2026-10-02-sampled-cancellation-heavy-cli-simulator.json) document the source graph, output checks, cache preparation, and measurement limits. This result describes that workload on Simulator; other projects and devices need their own measurements. [Runtime integration](docs/runtime-integration.md) explains the implementation.
 
-Build 13 pins the [Crabrix source-built Rust toolchain](https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1), `crabrix-rust-2026-10-02.1`. Its `rustc.wasm` and `wasm32-wasip1` sysroot are built from locked source and published with a signed descriptor, notices, compatibility results, and a two-build difference report. The build Mac verifies the descriptor and every artifact before bundling them; the phone does not download compiler or runtime updates. The two source builds have different raw digests, so the release claims source-pinned inputs rather than byte-identical reproducibility. See [toolchain provenance and limits](docs/toolchain.md).
+Build 14 pins the [Crabrix source-built Rust toolchain](https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1), `crabrix-rust-2026-10-02.1`. Its `rustc.wasm` and `wasm32-wasip1` sysroot are built from locked source and published with a signed descriptor, notices, compatibility results, and a two-build difference report. The build Mac verifies the descriptor and every artifact before bundling them; the phone does not download compiler or runtime updates. The two source builds have different raw digests, so the release claims source-pinned inputs rather than byte-identical reproducibility. See [toolchain provenance and limits](docs/toolchain.md).
 
 The release graph has one runtime dependency. CoursePacks contain data, text, media, and editable Rust source; they cannot replace the compiler or install executable plugins. [Architecture](docs/architecture.md) and [course delivery](docs/course-delivery.md) explain the boundaries.
 
