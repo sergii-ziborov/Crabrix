@@ -215,6 +215,32 @@ final class ProjectAuthoringTests: XCTestCase {
         let reopened = CompilerViewModel(userDefaults: defaults)
         XCTAssertEqual(reopened.lessonAnswerIndices["hello-rust"], 2)
     }
+
+    func testResetCourseProgressKeepsOtherCourseAndProject() {
+        let suite = "crabrix.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let model = CompilerViewModel(userDefaults: defaults)
+        let projectID = model.projectID
+        model.completeLesson("basics-1")
+        model.completeLesson("ownership-1")
+        model.recordLessonAnswer(1, for: "basics-1")
+        model.recordLessonAnswer(2, for: "ownership-1")
+        model.beginLesson("basics-1", isReview: true)
+
+        model.resetCourseProgress(lessonIDs: ["basics-1"])
+
+        XCTAssertFalse(model.completedLessonIDs.contains("basics-1"))
+        XCTAssertTrue(model.completedLessonIDs.contains("ownership-1"))
+        XCTAssertNil(model.lessonAnswerIndices["basics-1"])
+        XCTAssertEqual(model.lessonAnswerIndices["ownership-1"], 2)
+        XCTAssertNil(model.activeLessonID)
+        XCTAssertEqual(model.projectID, projectID)
+
+        let reopened = CompilerViewModel(userDefaults: defaults)
+        XCTAssertEqual(reopened.completedLessonIDs, ["ownership-1"])
+        XCTAssertEqual(reopened.lessonAnswerIndices, ["ownership-1": 2])
+    }
 }
 
 @MainActor

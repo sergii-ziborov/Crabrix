@@ -1,4 +1,4 @@
-Crabrix 1.1 release candidate (build 13). Please test the restored project settings button, course downloads, and source-built local compiler workflow on a physical iPhone or iPad.
+Crabrix 1.1 release candidate (build 14). Please test the lesson result screen and course progress reset on a physical iPhone or iPad.
 
 1. On a fresh install, open Learn. No course should be preinstalled. Download only the Projects course after checking its displayed size, then open one of the 46 Academy Examples as a separate editable project. Edit, Check, and Run it.
 2. In My Projects, confirm the project manager opens. Start a new project and inspect the GitHub and Files/iCloud Drive import choices. Cargo packages are managed inside the project.
@@ -7,5 +7,6 @@ Crabrix 1.1 release candidate (build 13). Please test the restored project setti
 5. Stop a long compile or program, then Check and Run again. Confirm the next execution works and reports a useful stop reason.
 6. Use the row menu to remove one downloaded course, then download it again. Separate projects and progress must remain. Existing learners should find their transition courses available offline after updating.
 7. Check Cyberpunk across Learn, Projects, and the editor. On a physical device, optionally enable Face ID or device-passcode protection and verify the app locks after leaving it.
+8. In Rust Basics, answer a quick check and tap Review result. The third step should show its summary and an action button. In the course screen, reset its progress. Confirm the lesson count and saved answers restart while projects, other courses, and earned rewards stay. The old chapters/live labs/local badges should be absent.
 
 Please report the device, iOS version, course/version, project type, and steps to reproduce. Attach source code only if you choose to share it. The compiler and runtime are bundled; courses contain readable learning data and editable Rust source, not executable updates.

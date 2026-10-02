@@ -165,6 +165,7 @@ struct ContentView: View {
                 lessonAnswerIndices: model.lessonAnswerIndices,
                 onStartLesson: startLesson,
                 onCompleteLesson: { lesson in model.completeLesson(lesson.id) },
+                onResetCourseProgress: model.resetCourseProgress,
                 onAnswerLesson: { lesson, answer, correct in
                     if correct { model.recordLessonAnswer(answer, for: lesson.id) }
                 },
@@ -436,8 +437,8 @@ struct ContentView: View {
                 return
             }
             let fresh = ids.subtracting(scored)
-            guard !fresh.isEmpty else { return }
             scoredLessonIDs = ids
+            guard !fresh.isEmpty else { return }
             for lessonID in fresh {
                 progress.record(
                     progressEvent(forLessonID: lessonID),

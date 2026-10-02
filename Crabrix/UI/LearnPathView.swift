@@ -1,11 +1,14 @@
 import SwiftUI
 
 struct LearnPathView: View {
+    @State private var isResetConfirmationPresented = false
+
     let units: [RustLearningUnit]
     let courseTitle: String
     let courseTheme: RustCourseTheme
     let completedLessonIDs: Set<String>
     var unlockScope: RustLessonProgression.UnlockScope = .course
+    let onResetProgress: () -> Void
     let onOpenLesson: (RustLesson) -> Void
 
     private var completedLessonCount: Int {
@@ -38,23 +41,33 @@ struct LearnPathView: View {
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 30) {
-                LearningHero(
-                    completedLessonCount: completedLessonCount,
-                    totalLessonCount: lessons.count,
-                    chapterCount: units.count,
-                    liveLessonCount: lessons.filter(\.hasCompilerLab).count,
-                    actionTitle: isCourseCompleted
-                        ? "Review course from start"
-                        : (completedLessonCount == 0 ? "Start course" : "Continue course"),
-                    actionSystemImage: isCourseCompleted
-                        ? "arrow.counterclockwise"
-                        : "arrow.right",
-                    theme: courseTheme,
-                    onAction: {
-                        guard let courseEntryLesson else { return }
-                        onOpenLesson(courseEntryLesson)
+                VStack(spacing: 12) {
+                    LearningHero(
+                        completedLessonCount: completedLessonCount,
+                        totalLessonCount: lessons.count,
+                        actionTitle: isCourseCompleted
+                            ? "Review course from start"
+                            : (completedLessonCount == 0 ? "Start course" : "Continue course"),
+                        actionSystemImage: isCourseCompleted
+                            ? "arrow.counterclockwise"
+                            : "arrow.right",
+                        theme: courseTheme,
+                        onAction: {
+                            guard let courseEntryLesson else { return }
+                            onOpenLesson(courseEntryLesson)
+                        }
+                    )
+
+                    Button {
+                        isResetConfirmationPresented = true
+                    } label: {
+                        Label("Reset course progress", systemImage: "arrow.counterclockwise")
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity, alignment: .trailing)
                     }
-                )
+                    .buttonStyle(.plain)
+                    .foregroundStyle(CrabrixTheme.coral)
+                }
 
                 ForEach(units) { unit in
                     LearningUnitMap(
@@ -86,17 +99,21 @@ struct LearnPathView: View {
         }
         .foregroundStyle(CrabrixTheme.primary)
         .navigationTitle(courseTitle)
+        .navigationBarTitleDisplayMode(.inline)
+        .confirmationDialog(
+            "Reset progress in \(courseTitle)?",
+            isPresented: $isResetConfirmationPresented
+        ) {
+            Button("Reset course progress", role: .destructive, action: onResetProgress)
+        } message: {
+            Text("Lessons and answers restart. Projects and earned rewards stay.")
+        }
     }
 }
 
 private struct LearningHero: View {
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
     let completedLessonCount: Int
     let totalLessonCount: Int
-    let chapterCount: Int
-    let liveLessonCount: Int
     let actionTitle: String
     let actionSystemImage: String
     let theme: RustCourseTheme
@@ -108,18 +125,19 @@ private struct LearningHero: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            if usesCompactHeader {
-                compactHeader
-            } else {
-                regularHeader
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("\(completedLessonCount) of \(totalLessonCount) lessons")
+                    .font(.headline)
+                Spacer(minLength: 8)
+                Text("\(Int((progress * 100).rounded()))%")
+                    .font(.subheadline.monospaced().bold())
+                    .foregroundStyle(CrabrixTheme.muted)
             }
 
-            HStack(spacing: 10) {
-                JourneyMetric(icon: "flag.checkered", value: "\(chapterCount)", label: "chapters", tint: CrabrixTheme.blue)
-                JourneyMetric(icon: "hammer.fill", value: "\(liveLessonCount)", label: "live labs", tint: CrabrixTheme.coral)
-                JourneyMetric(icon: "wifi.slash", value: "100%", label: "local", tint: CrabrixTheme.mint)
-            }
+            ProgressView(value: progress)
+                .tint(theme.primaryColor)
+                .accessibilityLabel("\(completedLessonCount) of \(totalLessonCount) lessons complete")
 
             Button(action: onAction) {
                 Label(actionTitle, systemImage: actionSystemImage)
@@ -129,135 +147,19 @@ private struct LearningHero: View {
             .buttonStyle(.borderedProminent)
             .tint(theme.primaryColor)
         }
-        .padding(22)
-        .background {
-            ZStack(alignment: .topTrailing) {
-                LinearGradient(
-                    colors: [theme.primaryColor.opacity(0.24), CrabrixTheme.panel],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                Circle()
-                    .fill(theme.primaryColor.opacity(0.17))
-                    .frame(width: 180, height: 180)
-                    .offset(x: 65, y: -90)
-                Circle()
-                    .fill(theme.secondaryColor.opacity(0.13))
-                    .frame(width: 120, height: 120)
-                    .offset(x: -235, y: 155)
-            }
-        }
+        .padding(20)
+        .background(
+            LinearGradient(
+                colors: [theme.primaryColor.opacity(0.13), CrabrixTheme.panel],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .stroke(CrabrixTheme.border, lineWidth: 1)
         }
-    }
-
-    private var usesCompactHeader: Bool {
-        horizontalSizeClass == .compact || dynamicTypeSize.isAccessibilitySize
-    }
-
-    private var compactHeader: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .center, spacing: 10) {
-                Label("YOUR RUST JOURNEY", systemImage: "map.fill")
-                    .font(.caption.monospaced().bold())
-                    .foregroundStyle(theme.primaryColor)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.72)
-                Spacer(minLength: 4)
-                progressRing(size: 70, lineWidth: 7)
-            }
-
-            Text("Build fearless Rust instincts")
-                .font(.system(size: 30, weight: .heavy, design: .rounded))
-                .fixedSize(horizontal: false, vertical: true)
-
-            journeyDescription
-                .font(.footnote)
-        }
-    }
-
-    private var regularHeader: some View {
-        HStack(alignment: .top, spacing: 14) {
-            VStack(alignment: .leading, spacing: 8) {
-                Label("YOUR RUST JOURNEY", systemImage: "map.fill")
-                    .font(.caption.monospaced().bold())
-                    .foregroundStyle(theme.primaryColor)
-
-                Text("Build fearless\nRust instincts")
-                    .font(.system(size: 34, weight: .heavy, design: .rounded))
-                    .minimumScaleFactor(0.8)
-
-                journeyDescription
-                    .font(.subheadline)
-            }
-
-            Spacer(minLength: 4)
-            progressRing(size: 88, lineWidth: 8)
-        }
-    }
-
-    private var journeyDescription: some View {
-        Text("Follow the map from your first compile to real Cargo projects. Live labs are verified by the compiler inside Crabrix.")
-            .foregroundStyle(CrabrixTheme.muted)
-            .fixedSize(horizontal: false, vertical: true)
-    }
-
-    private func progressRing(size: CGFloat, lineWidth: CGFloat) -> some View {
-        ZStack {
-            Circle()
-                .stroke(CrabrixTheme.border, lineWidth: lineWidth)
-            Circle()
-                .trim(from: 0, to: max(progress, 0.025))
-                .stroke(
-                    AngularGradient(
-                        colors: [theme.primaryColor, theme.secondaryColor, theme.primaryColor],
-                        center: .center
-                    ),
-                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
-                )
-                .rotationEffect(.degrees(-90))
-            VStack(spacing: 1) {
-                Text("\(completedLessonCount)")
-                    .font(.headline.monospaced().bold())
-                Text("of \(totalLessonCount)")
-                    .font(.caption2.monospaced())
-                    .foregroundStyle(CrabrixTheme.muted)
-            }
-        }
-        .frame(width: size, height: size)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(completedLessonCount) of \(totalLessonCount) lessons complete")
-    }
-}
-
-private struct JourneyMetric: View {
-    let icon: String
-    let value: String
-    let label: String
-    let tint: Color
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.caption.bold())
-                .foregroundStyle(tint)
-                .frame(width: 26, height: 26)
-                .background(tint.opacity(0.13), in: Circle())
-            VStack(alignment: .leading, spacing: 0) {
-                Text(value)
-                    .font(.caption.monospaced().bold())
-                Text(label)
-                    .font(.caption2)
-                    .foregroundStyle(CrabrixTheme.muted)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 9)
-        .background(.black.opacity(0.16), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 
