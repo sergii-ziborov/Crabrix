@@ -36,6 +36,7 @@ CANDIDATE_PROBES = {
     "BundledCompilerGateTests/testSourceBuiltCompilerFloatToI128BuiltinsUseWasmABI()",
     "BundledCompilerGateTests/testSourceBuiltCompilerRegexDependencyBuildsAndRuns()",
     "BundledCompilerGateTests/testMultiFileRoutePlannerWithGraphCratesBuildsAndRuns()",
+    "BundledCompilerGateTests/testUserProgramOutputStopsAtWASIWriteBudget()",
     "WasmSandboxPolicyTests/testInstructionBudgetStopsPureComputeGuestWithoutHostCalls()",
     "WasmSandboxPolicyTests/testUserStopInterruptsPureComputeGuestAndNextRunStarts()",
     "WasmSandboxPolicyTests/testWallClockStopsPureComputeGuestWithSampledFuelProbe()",
