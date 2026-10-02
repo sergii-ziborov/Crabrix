@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "status": "engineering observation; simulator only; not an App Store or device performance claim",
+  "date": "2026-09-30",
+  "workload": "warning-check-v1",
+  "sourceSHA256": "0f76d31e5afd38dc54aefef96ed3c05b1c3f407b8e3d590ab241c457bc13013d",
+  "environment": {
+    "device": "iOS 18.2 arm64 simulator on Apple Silicon Mac",
+    "xcode": "27.0 (27A5228h)",
+    "configuration": "Release; ENABLE_TESTABILITY=YES; CODE_SIGNING_ALLOWED=NO",
+    "toolchainIdentity": "41412081eefc3e08ec5664ed0748902a7e575e1f267898dcc64d412702df7e83:a89ba732c649a983126750112268614c80b6e7d6bba8c60980cbfd32e04d9892",
+    "peakRSS": null,
+    "thermalState": null,
+    "sampleCountPerRevision": 5,
+    "sampleIsolation": "separate xcodebuild test process per observation; samples were not interleaved"
+  },
+  "baseline": {
+    "runtimeCommit": "719f94d7d27368549502828217e3dbc7e6738852",
+    "appBaseCommit": "2bed561bc99ea0506366f2f5fe110e5aa9aedae7",
+    "observationsMilliseconds": [
+      {
+        "first": 1228.261,
+        "unchanged": 0.725,
+        "changed": 1066.634
+      },
+      {
+        "first": 1203.933,
+        "unchanged": 0.75,
+        "changed": 1265.372
+      },
+      {
+        "first": 1844.511,
+        "unchanged": 0.75,
+        "changed": 1143.668
+      },
+      {
+        "first": 1224.291,
+        "unchanged": 0.763,
+        "changed": 1215.584
+      },
+      {
+        "first": 1471.237,
+        "unchanged": 0.763,
+        "changed": 1132.809
+      }
+    ],
+    "mediansMilliseconds": {
+      "first": 1228.261,
+      "unchanged": 0.75,
+      "changed": 1143.668
+    }
+  },
+  "candidate": {
+    "runtimeCommit": "6f9e307c9c3069560d1a00a277dce51964309bdc",
+    "appPatch": "separate cached engines with 2 GiB compiler and 64 MiB user-program virtual reservation hints; same fuel, token dispatcher, compiler artifact and workload",
+    "observationsMilliseconds": [
+      {
+        "first": 695.26,
+        "unchanged": 0.735,
+        "changed": 543.636
+      },
+      {
+        "first": 663.15,
+        "unchanged": 0.776,
+        "changed": 562.934
+      },
+      {
+        "first": 705.168,
+        "unchanged": 0.732,
+        "changed": 622.351
+      },
+      {
+        "first": 696.862,
+        "unchanged": 0.765,
+        "changed": 601.456
+      },
+      {
+        "first": 813.201,
+        "unchanged": 0.773,
+        "changed": 706.364
+      }
+    ],
+    "mediansMilliseconds": {
+      "first": 696.862,
+      "unchanged": 0.765,
+      "changed": 601.456
+    }
+  },
+  "medianRatiosBaselineOverCandidate": {
+    "first": 1.763,
+    "unchanged": 0.98,
+    "changed": 1.901
+  },
+  "correctness": "All ten probe tests passed; each candidate first/changed Check reported two warnings; unchanged Check retained identical diagnostics, stdout and stderr.",
+  "interpretation": "The measured changed-Check median improved by about 1.90x and first-Check median by about 1.76x on this simulator workload. Device, Cargo, memory-pressure and long-run results are separate gates. Five samples do not support a p95 claim."
+}

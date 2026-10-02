@@ -6,7 +6,7 @@ open-source licenses.
 
 ## Bundled compiler runtime and toolchain
 
-### WasmKit 0.3.1
+### CrabrixRuntime, derived from WasmKit 0.4.1
 
 Copyright (c) 2020 Akio Yasui. Licensed under the MIT License.
 
@@ -14,20 +14,29 @@ WasmKit includes derived utility code from Swift System and a derived Swift
 keyword list from Swift Syntax; both are licensed under Apache-2.0. See the
 upstream `NOTICE.txt` for those attributions.
 
-Source and license: https://github.com/swiftwasm/WasmKit/tree/0.3.1
+Upstream source and license: https://github.com/swiftwasm/WasmKit/tree/0.4.1
 
-### wasm-rustc / Weblings artifacts-test-7
+Crabrix fork and patch history:
+https://github.com/sergii-ziborov/crabrix-runtime/tree/d996f0d11dff54734b5670d58062e22c6e01f949
 
-Copyright (c) 2026 Forest Anderson. Licensed under the MIT License.
+### Crabrix source-built Rust toolchain
 
-Source and license: https://github.com/AngelOnFira/wasm-rustc/tree/artifacts-test-7
+The build recipe is a fork of AngelOnFira/wasm-rustc. Copyright (c) 2026
+Forest Anderson. The builder recipe remains under the MIT License. The
+compiler, sysroot and their dependencies retain separate licenses.
+
+Source, lock, licenses and release notices:
+https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1
+
+Builder upstream and license: https://github.com/AngelOnFira/wasm-rustc
 
 ### Rust compiler and standard library
 
 Copyright (c) The Rust Project Contributors. Except where otherwise noted,
 Rust is offered under Apache-2.0 or MIT terms, at the recipient's option.
 Rust binary distributions also contain separately attributed third-party
-materials documented by the Rust project's generated copyright inventory.
+materials. This source-built release publishes a `vendor-notices.zip`
+inventory of its exact vendored crates and their notice texts.
 
 Copyright and license sources:
 
@@ -51,24 +60,21 @@ Source and license: https://github.com/apple/swift-system/tree/1.8.1
 
 ## Transitive Swift package dependencies
 
-These packages are resolved transitively through WasmKit. Their exact pinned
-versions are recorded in `Dependencies/Package.resolved`:
+The selected app targets resolve the following packages through the runtime.
+Exact versions and the fork revision are recorded in
+`Dependencies/Package.resolved`:
 
 - Swift Argument Parser 1.8.2 — Apache-2.0 — https://github.com/apple/swift-argument-parser
-- Swift Atomics 1.3.1 — Apache-2.0 — https://github.com/apple/swift-atomics
-- Swift Collections 1.6.0 — Apache-2.0 — https://github.com/apple/swift-collections
-- Swift Log 1.15.0 — Apache-2.0 — https://github.com/apple/swift-log
-- SwiftNIO 2.101.3 — Apache-2.0 — https://github.com/apple/swift-nio
-
-Swift Log and SwiftNIO carry additional upstream attribution in their
-respective `NOTICE.txt` files.
+- Swift Syntax 604.0.0 — Apache-2.0 — https://github.com/swiftlang/swift-syntax
 
 ## Where the full texts are
 
-This page is a summary. The complete, verbatim licence and notice files for
-every component above are bundled inside the app and readable with no network:
+This page is a summary. Primary license and notice texts are bundled inside
+the app and readable with no network:
 
 **Settings → About Crabrix → Open-source licenses → any component.**
 
-They are also in the repository under `Crabrix/Resources/Licenses/`. Those
-files are authoritative; this summary does not replace their terms.
+They are also in this repository under `Crabrix/Resources/Licenses/`.
+The complete vendored toolchain notice archive and its provenance are public
+assets of the pinned toolchain release linked above. This summary does not
+replace any component's terms.

@@ -17,7 +17,7 @@ strings Crabrix | grep crabrix.com/api      → must find nothing
 strings Crabrix | grep GKLocalPlayer        → must find nothing
 ```
 
-Rating, ranks, achievements, mastery and vitals are calculated and stored on the
+Rating, ranks, achievements, and mastery are calculated and stored on the
 device. There is no account, no display name, and no server that holds anything
 about a player.
 

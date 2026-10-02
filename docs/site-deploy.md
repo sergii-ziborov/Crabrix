@@ -31,9 +31,27 @@ image optimization, canonical metadata and presentation fixes. Compare visible
 copy after normalizing HTML entities and whitespace; full-file byte equality is
 not expected across the two renderers. Product and legal wording must match.
 
-As verified on 8 September 2026, **crabrix.com serves Lovable** and is Active
-and primary in Lovable. All six principal HTTPS pages were checked against the
-canonical copy. `www.crabrix.com` still needs its separate DNS setup.
+On 2 October, the 1.1 site copy and current screenshots were synchronized into
+the Lovable project at commit `de69e539aabc192db81440b07b7a004933ba2d51`.
+Its `npm run build` preview succeeded and deployment
+`fa24ceb3-c046-4b43-a4a0-aee98de3de2b` published to the existing project.
+Fresh public HTTPS requests returned 200 for the home, technology, privacy and
+support pages on `crabrix.com`. The returned pages showed Academy Examples,
+toolchain `crabrix-rust-2026-10-02.1` and the course-hosting privacy copy;
+four current Academy, Examples, Cyberpunk and iPad screenshot assets also
+returned 200. These pages describe build 11's unchanged app UI and the exact
+toolchain in its [release manifest](releases/1.1-build11.json).
+
+One hosted support FAQ still says “Crabrix 1.0” in a sentence about accounts;
+the canonical source page here uses the version-neutral wording. A follow-up
+Lovable edit was blocked when the project ran out of credits. This is a copy
+discrepancy, not a change in account behavior. The inactive Cloudflare Worker
+must not be deployed to bypass Lovable.
+
+**crabrix.com serves Lovable** and is Active and primary in Lovable. The four
+principal pages named above were fetched after the 2 October deployment;
+the earlier six-page comparison was on 8 September. `www.crabrix.com` still
+needs its separate DNS setup.
 
 Cloudflare retains domain registration and authoritative DNS for now; the owner
 plans to transfer registration later. Hosting has moved independently of that.
@@ -50,16 +68,19 @@ no-analytics implementation. See `release-evidence/site-migration-2026-09-08/`.
 
 ## Refreshing the screenshots
 
-The app accepts launch arguments so a given tab can be captured directly:
+Capture the full iPhone and iPad set from the Release Simulator app. The script
+creates and deletes only its own temporary simulators, records fresh install and
+existing learner states, and copies the finished images to this site's source:
 
 ```bash
-xcrun simctl launch <device> com.sergiiziborov.Crabrix -CrabrixTab learn
-xcrun simctl launch <device> com.sergiiziborov.Crabrix -CrabrixTab projects -CrabrixLibrary
-xcrun simctl io <device> screenshot site/screenshots/iphone-learn.png
+python3 scripts/capture_release_screenshots.py \
+  /absolute/path/to/Release-iphonesimulator/Crabrix.app
 ```
 
-Valid tabs are `projects`, `build`, `learn`, and `settings`. Adding `-CrabrixLibrary`
-opens the project library.
+The required templates are an iPhone 17 Pro Max named `Crabrix Shots 6.9` and an
+iPad Pro 13-inch named `Crabrix Dev iPad`. Inspect each generated frame before
+uploading it. The remaining launch arguments select Projects, Learn, Settings,
+an installed course, a lesson, or Academy Examples.
 
 ## What the pages carry now
 
@@ -83,8 +104,8 @@ opens the project library.
 There is no longer an address on the page. The support page carries a form and
 the other pages carry a button; both decode the destination at click time and
 open a draft in the visitor's own mail app. Nothing is posted anywhere and
-nothing is stored — the site has no backend, which is what lets the privacy
-page say the site calls no third party.
+nothing is stored by a contact-form backend. Page requests and the platform's
+visitor analytics still reach its hosting infrastructure, as described above.
 
 The destination is the developer's own inbox, held in one place in the app
 (`CrabrixLinks.supportEmail`) and base64 in the pages' `data-mail` attributes.

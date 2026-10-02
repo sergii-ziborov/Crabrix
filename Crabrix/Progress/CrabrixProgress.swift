@@ -1,5 +1,11 @@
 import Foundation
 
+/// Lesson count in the immutable pre-CoursePack Rust Academy snapshot. Decoding
+/// old aggregate progress must use that snapshot, never a newer downloaded pack.
+private enum LegacyRustAcademySnapshot {
+    static let lessonCount = 142
+}
+
 /// Everything the learner has done, in one place.
 ///
 /// Rating is deliberately a single number earned across the whole app — lessons,
@@ -55,6 +61,10 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
     /// once daily and the rest of the rating comes from writing.
     var lastRunRewardDay: Date?
     var unlockedAchievementIDs: Set<String> = []
+    /// Last verified Atlas achievement definitions. These preserve earned
+    /// badges after a downloadable CoursePack is removed or while it reloads.
+    /// They do not provide lessons, validators, or project source.
+    var achievementMethods: [AlgorithmMethodDTO] = []
     var lastActiveAt: Date?
     /// Which achievement catalogue this state was last reconciled against, so
     /// a reshaped catalogue can be adopted without replaying old unlocks.
@@ -110,7 +120,7 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
             let challenges = solvedAlgorithmPatternIDs.count
             rustLessonsCompleted = min(
                 max(0, lessonsCompleted - challenges),
-                RustCourseCatalog.academyLessonCount
+                LegacyRustAcademySnapshot.lessonCount
             )
             algorithmStudySteps = max(0, lessonsCompleted - challenges - rustLessonsCompleted)
         }
@@ -122,6 +132,8 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
             .decodeIfPresent([String].self, forKey: .recentBuildRevisions) ?? []
         unlockedAchievementIDs = try container
             .decodeIfPresent(Set<String>.self, forKey: .unlockedAchievementIDs) ?? []
+        achievementMethods = try container
+            .decodeIfPresent([AlgorithmMethodDTO].self, forKey: .achievementMethods) ?? []
         lastActiveAt = try container.decodeIfPresent(Date.self, forKey: .lastActiveAt)
     }
 }
@@ -352,9 +364,19 @@ struct CrabrixAchievementFamily: Identifiable, Sendable {
         achievements.last { $0.isEarned(in: state) }?.tier
     }
 
+    /// Awarded tiers remain earned if a later CoursePack changes the pattern
+    /// membership used to calculate current progress.
+    func awardedTier(in state: CrabrixProgressState) -> AchievementTier? {
+        achievements.last { state.unlockedAchievementIDs.contains($0.id) }?.tier
+    }
+
     /// The next rung, for a progress bar. Nil once the family is complete.
     func nextTarget(in state: CrabrixProgressState) -> CrabrixAchievement? {
         achievements.first { !$0.isEarned(in: state) }
+    }
+
+    func nextUnawardedTarget(in state: CrabrixProgressState) -> CrabrixAchievement? {
+        achievements.first { !state.unlockedAchievementIDs.contains($0.id) }
     }
 }
 
@@ -392,7 +414,7 @@ enum CrabrixAchievementCatalog {
             // The Rust path only, and its top rung is the path itself. Atlas
             // steps have their own ladders; counting them here let a language
             // badge be finished without opening a language lesson.
-            thresholds: [1, 5, 25, 75, RustCourseCatalog.academyLessonCount],
+            thresholds: [1, 5, 25, 75, LegacyRustAcademySnapshot.lessonCount],
             measure: { $0.rustLessonsCompleted },
             requirement: {
                 $0 == 1
@@ -502,7 +524,8 @@ enum CrabrixAchievementCatalog {
         ),
     ]
 
-    private static let algorithmFamilies: [CrabrixAchievementFamily] = {
+    private static func makeAlgorithmFamilies(methods: [AlgorithmMethodDTO])
+        -> [CrabrixAchievementFamily] {
         let overall = CrabrixAchievementFamily(
             id: "algorithm-atlas",
             title: "Algorithm Atlas",
@@ -521,7 +544,7 @@ enum CrabrixAchievementCatalog {
             id: "algorithm-study",
             title: "Pattern Study",
             systemImage: "book.pages.fill",
-            thresholds: [10, 50, 150, 300, AlgorithmCourseCatalog.studyStepCount],
+            thresholds: [10, 50, 150, 300, 400],
             measure: { $0.algorithmStudySteps },
             requirement: {
                 "Finish \($0) Algorithm Atlas mental-model or recognition steps."
@@ -529,28 +552,34 @@ enum CrabrixAchievementCatalog {
             group: .algorithms
         )
 
-        let categories = AlgorithmCourseCatalog.categories.map { category in
-            let patternIDs = Set(category.patterns.map(\.id))
+        let categories = methods.map { method in
+            let patternIDs = Set(method.patternIDs)
             return CrabrixAchievementFamily(
-                id: "algorithm-\(category.id)",
-                title: category.achievementTitle,
-                systemImage: category.systemImage,
+                id: "algorithm-\(method.id)",
+                title: method.achievementTitle,
+                systemImage: method.systemImage,
                 thresholds: [1, 3, 5, 8, 10],
                 measure: { state in
                     state.solvedAlgorithmPatternIDs.intersection(patternIDs).count
                 },
                 requirement: {
                     $0 == 1
-                        ? "Solve one challenge in \(category.title)."
-                        : "Solve \($0) unique challenges in \(category.title)."
+                        ? "Solve one challenge in \(method.title)."
+                        : "Solve \($0) unique challenges in \(method.title)."
                 },
                 group: .algorithms
             )
         }
         return [overall, study] + categories
-    }()
+    }
 
-    static let families: [CrabrixAchievementFamily] = generalFamilies + algorithmFamilies
+    /// The static policy only defines general and overall Atlas ladders.
+    /// Per-method definitions come from a verified installed CoursePack.
+    static let families: [CrabrixAchievementFamily] = families(for: [])
+
+    static func families(for methods: [AlgorithmMethodDTO]) -> [CrabrixAchievementFamily] {
+        generalFamilies + makeAlgorithmFamilies(methods: methods)
+    }
 
     static let all: [CrabrixAchievement] = families.flatMap(\.achievements)
 

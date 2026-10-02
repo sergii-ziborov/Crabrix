@@ -19,6 +19,8 @@ struct RustLessonWriting: Sendable {
     let feedback: String
 }
 
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
+/// Frozen content is compiled only for parity tests and exporter tooling.
 enum RustLessonLibrary {
     static func writing(for id: String) -> RustLessonWriting? {
         entries[id]
@@ -2507,3 +2509,4 @@ enum RustLessonLibrary {
         ),
     ]
 }
+#endif

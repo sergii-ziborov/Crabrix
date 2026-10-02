@@ -1,3 +1,4 @@
+import Foundation
 import XCTest
 @testable import Crabrix
 
@@ -5,9 +6,17 @@ final class BundledCompilerGateTests: XCTestCase {
     @MainActor
     func testSuccessfulLessonRunClearsPreviousErrorWithoutCompletingLesson() async throws {
         try Self.requireCompilerGate()
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = try await CourseBootstrap(
+            bundle: .main, root: root, appVersion: SemanticVersion("1.1")
+        ).activateBundledBaseline()
+        let session = try XCTUnwrap(CourseSession(lessonID: "borrowing", repository: repository))
+        let lesson = try XCTUnwrap(repository.lesson(id: "borrowing"))
+        let content = try XCTUnwrap(CourseLessonExecution(lesson: lesson, session: session))
         let model = makeRegressionModel()
         model.loadBorrowDiagnosticSample()
-        model.beginLesson("borrowing")
+        model.beginLesson("borrowing", content: content)
         model.run()
         try await waitForBuild(model)
         XCTAssertEqual(model.primaryDiagnostic?.code, "E0502")
@@ -21,6 +30,16 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertEqual(model.diagnosticAdviceState, .idle)
         XCTAssertFalse(model.completedLessonIDs.contains("borrowing"))
         XCTAssertTrue(model.lessonEvidenceMessage?.contains("repair removed required behavior") == true)
+        let identity = try XCTUnwrap(model.lessonAttemptEvidence.last?.identity)
+        XCTAssertEqual(identity.courseID, session.courseID)
+        XCTAssertEqual(identity.language, session.language)
+        XCTAssertEqual(identity.contentVersion, session.contentVersion)
+        XCTAssertEqual(identity.lessonID, session.lessonID)
+        XCTAssertEqual(identity.exerciseID, session.lessonID)
+        XCTAssertEqual(identity.validatorVersion, LessonAttemptEvidence.validatorVersion)
+        XCTAssertEqual(identity.projectID, model.projectID)
+        XCTAssertEqual(identity.projectRevision, model.workspaceRevision.sourceTreeHash)
+        XCTAssertEqual(identity.toolchainID, model.workspaceRevision.toolchainID)
     }
 
     @MainActor
@@ -137,6 +156,43 @@ final class BundledCompilerGateTests: XCTestCase {
             "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)"
         )
         XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "crab")
+    }
+
+    func testFreshRevisionCompilesAndRunsWithoutArtifactCache() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
+            throw XCTSkip("Run the CrabrixCompilerGate scheme for the fresh compiler gate.")
+        }
+
+        // A unique source body forces the real compiler and program paths on
+        // every invocation, even when the simulator's artifact cache is warm.
+        let marker = UUID().uuidString
+        let source = """
+        fn main() {
+            let marker = "\(marker)";
+            println!("{}", marker);
+        }
+        """
+        let result = await WasmRustCompiler(bundle: .main).run(source: source)
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), marker)
+    }
+
+    func testUserProgramOutputStopsAtWASIWriteBudget() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
+            throw XCTSkip("Run the CrabrixCompilerGate scheme for the output stress gate.")
+        }
+
+        let result = await WasmRustCompiler(bundle: .main).run(
+            source: #"fn main() { print!("{}", "x".repeat(1_048_577)); }"#
+        )
+
+        XCTAssertFalse(result.succeeded)
+        XCTAssertEqual(result.phase, .run, "\(result.detail)\n\(result.stderr)")
+        XCTAssertTrue(result.detail.contains("output limit"), result.detail)
+        XCTAssertLessThanOrEqual(
+            result.stdout.utf8.count,
+            WasmSandboxPolicy.userProgramOutputLimitBytes
+        )
     }
 
     func testBundledRustcCompilesMultiFileProject() async throws {
@@ -292,19 +348,168 @@ final class BundledCompilerGateTests: XCTestCase {
         }
     }
 
-    func testEveryGuidedShowcasePassesBundledRustcCheck() async throws {
+    func testSourceBuiltCompilerCheckedI64Multiplication() async throws {
+        try Self.requireCompilerGate()
+        let source = """
+        // fresh revision: \(UUID())
+        fn main() {
+            let signed: [(i64, i64); 5] = [
+                (i64::MIN, -1), (i64::MAX, 1), (-2, 3),
+                (i64::MAX, 2), (-1, -1),
+            ];
+            let unsigned: [(u64, u64); 4] = [
+                (u64::MAX, 2), (1 << 63, 1), (1 << 63, 2), (u64::MAX, 1),
+            ];
+            let signed_results: String = signed.into_iter().map(|(a, b)| {
+                if std::hint::black_box(a).checked_mul(std::hint::black_box(b)).is_some() {
+                    '1'
+                } else {
+                    '0'
+                }
+            }).collect();
+            let unsigned_results: String = unsigned.into_iter().map(|(a, b)| {
+                if std::hint::black_box(a).checked_mul(std::hint::black_box(b)).is_some() {
+                    '1'
+                } else {
+                    '0'
+                }
+            }).collect();
+            println!("s={signed_results};u={unsigned_results}");
+        }
+        """
+        let result = await WasmRustCompiler(bundle: .main).run(source: source)
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+                       "s=01101;u=0101")
+    }
+
+    func testSourceBuiltCompilerI128ByteSwap() async throws {
+        try Self.requireCompilerGate()
+        let source = """
+        // fresh revision: \(UUID())
+        fn main() {
+            let value = std::hint::black_box(0x00112233445566778899aabbccddeeffu128);
+            let swapped = value.swap_bytes();
+            println!("{}", swapped == 0xffeeddccbbaa99887766554433221100u128);
+        }
+        """
+        let result = await WasmRustCompiler(bundle: .main).run(source: source)
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "true")
+    }
+
+    func testSourceBuiltCompilerI128ImmediateComparison() async throws {
+        try Self.requireCompilerGate()
+        let source = """
+        // fresh revision: \(UUID())
+        fn main() {
+            let signs: String = [-1_i128, 0, 1].into_iter().map(|value| {
+                if std::hint::black_box(value) < 0 { 'n' } else { 'p' }
+            }).collect();
+            let below_minus_one: String = [-2_i128, -1, 0].into_iter().map(|value| {
+                if std::hint::black_box(value) < -1 { 'n' } else { 'p' }
+            }).collect();
+            let cases = [
+                (i128::MAX, 1_i128), (i128::MIN, -1),
+                (-1, 1), (i128::MAX, 0),
+            ];
+            let overflows: String = cases.into_iter().map(|(a, b)| {
+                let (_, overflow) =
+                    std::hint::black_box(a).overflowing_add(std::hint::black_box(b));
+                if overflow { '1' } else { '0' }
+            }).collect();
+            println!("s={signs};t={below_minus_one};o={overflows}");
+        }
+        """
+        let result = await WasmRustCompiler(bundle: .main).run(source: source)
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+                       "s=npp;t=npp;o=1100")
+    }
+
+    func testSourceBuiltCompilerFloatToI128BuiltinsUseWasmABI() async throws {
+        try Self.requireCompilerGate()
+        let source = """
+        // fresh revision: \(UUID())
+        fn main() {
+            let a = std::hint::black_box(4.75_f32) as u128;
+            let b = std::hint::black_box(-2.5_f32) as i128;
+            let c = std::hint::black_box(9.75_f64) as u128;
+            let d = std::hint::black_box(-7.25_f64) as i128;
+            println!("{a},{b},{c},{d}");
+        }
+        """
+        let result = await WasmRustCompiler(bundle: .main).run(source: source)
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+                       "4,-2,9,-7")
+    }
+
+    func testSourceBuiltCompilerRegexDependencyBuildsAndRuns() async throws {
+        try Self.requireCompilerGate()
+        let manifest = """
+        [package]
+        name = "regex-backend-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        regex = "=1.13.1"
+        """
+        let source = """
+        // fresh revision: \(UUID())
+        use regex::Regex;
+
+        fn main() {
+            let pattern = Regex::new(r"^WARN\\s+(.+)$").unwrap();
+            let input = "WARN cache miss\\nINFO start\\nWARN timeout";
+            let issues: Vec<String> = input.lines().filter_map(|line| {
+                pattern.captures(line).map(|capture| capture[1].to_owned())
+            }).collect();
+            println!("{}", issues.join(","));
+        }
+        """
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertTrue(snapshot.isOfflineReady)
+        XCTAssertTrue(snapshot.blockingPackages.isEmpty,
+                      snapshot.blockingPackages.map(\.id).joined(separator: ", "))
+        XCTAssertGreaterThanOrEqual(snapshot.plan.units.count, 5)
+        XCTAssertEqual(snapshot.plan.rootExterns.map(\.alias), ["regex"])
+
+        let result = await WasmRustCompiler(bundle: .main).run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": manifest],
+            plan: snapshot.plan
+        )
+        XCTAssertTrue(result.succeeded,
+                      "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+                       "cache miss,timeout")
+    }
+
+    func testEveryInstalledAcademyExampleBuildsAndRuns() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
-            throw XCTSkip("Set CRABRIX_RUN_COMPILER_GATE=1 for the guided-project gate.")
+            throw XCTSkip("Set CRABRIX_RUN_COMPILER_GATE=1 for the Academy example gate.")
         }
 
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = try await CourseBootstrap(
+            bundle: .main, root: root, appVersion: SemanticVersion("1.1")
+        ).activateBundledBaseline()
+        XCTAssertEqual(repository.showcaseProjects().count, 46)
         let compiler = WasmRustCompiler(bundle: .main)
-        for showcase in RustShowcaseExpansionCatalog.projects {
+        for showcase in repository.showcaseProjects() {
             var supporting = showcase.project.files
-            let source = try XCTUnwrap(
+            let originalSource = try XCTUnwrap(
                 supporting.removeValue(forKey: showcase.project.entryFile),
                 showcase.id
             )
-            let result = await compiler.check(
+            // A new revision makes this a compiler gate even after a previous
+            // simulator run populated all 46 cached program artifacts.
+            let source = originalSource + "\n// academy-example-gate-\(UUID().uuidString)\n"
+            let result = await compiler.run(
                 source: source,
                 sourcePath: showcase.project.entryFile,
                 supportingFiles: supporting
@@ -356,8 +561,13 @@ final class BundledCompilerGateTests: XCTestCase {
 
     private static func assertVisualShowcase(_ id: String) async throws {
         try requireCompilerGate()
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = try await CourseBootstrap(
+            bundle: .main, root: root, appVersion: SemanticVersion("1.1")
+        ).activateBundledBaseline()
         let showcase = try XCTUnwrap(
-            RustVisualShowcaseCatalog.projects.first { $0.id == id }
+            repository.showcaseProjects().first { $0.id == id }
         )
         try await assertCanvas(project: showcase.project, id: id)
     }
@@ -463,6 +673,488 @@ final class BundledCompilerGateTests: XCTestCase {
             compiler.isPlanCached(snapshot.plan, emit: .link),
             "dependency artifacts should be reusable after a successful build"
         )
+    }
+
+    func testMultiCrateCollectionsAndJSONApplicationBuildsAndRuns() async throws {
+        try Self.requireCompilerGate()
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"] == "1" else {
+            throw XCTSkip("The pinned compiler backend cannot lower itoa 1.x; see docs/compiler-complex-gate-2026-10-01.md.")
+        }
+        let manifest = """
+        [package]
+        name = "event-analyzer-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        hashbrown = "=0.17.1"
+        smallvec = "=1.15.1"
+        serde_json = "=1.0.151"
+        """
+        let source = """
+        // fresh application revision: \(UUID())
+        use hashbrown::HashMap;
+        use serde_json::Value;
+        use smallvec::SmallVec;
+
+        fn main() {
+            let input = r#"[{"kind":"warn","message":"cache"},{"kind":"info","message":"start"},{"kind":"warn","message":"timeout"}]"#;
+            let events: Value = serde_json::from_str(input).unwrap();
+            let mut counts: HashMap<&str, usize> = HashMap::new();
+            let mut warnings: SmallVec<[String; 4]> = SmallVec::new();
+            for event in events.as_array().unwrap() {
+                if let (Some(kind), Some(message)) =
+                    (event["kind"].as_str(), event["message"].as_str()) {
+                    *counts.entry(kind).or_default() += 1;
+                    if kind == "warn" { warnings.push(message.to_owned()); }
+                }
+            }
+            println!("{}:{}", counts["warn"], warnings.join(","));
+        }
+        """
+
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertTrue(snapshot.isOfflineReady, "resolved source archives must be available locally")
+        XCTAssertGreaterThanOrEqual(snapshot.plan.units.count, 6, "exercise a real dependency graph")
+        XCTAssertTrue(
+            snapshot.blockingPackages.isEmpty,
+            snapshot.blockingPackages.map { "\($0.name): \($0.compatibility.detail ?? "")" }
+                .joined(separator: "\n")
+        )
+        XCTAssertEqual(Set(snapshot.plan.rootExterns.map(\.alias)), ["hashbrown", "smallvec", "serde_json"])
+        XCTAssertNotNil(snapshot.lockfile)
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        let result = await compiler.run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": manifest],
+            plan: snapshot.plan
+        )
+        XCTAssertTrue(
+            result.succeeded,
+            "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)"
+        )
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "2:cache,timeout")
+        XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
+    }
+
+    func testRegexAndJSONLogAnalyzerBuildsAndRuns() async throws {
+        try Self.requireCompilerGate()
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"] == "1" else {
+            throw XCTSkip("The pinned compiler fails in the regex dependency graph; see docs/compiler-complex-gate-2026-10-01.md.")
+        }
+        let manifest = """
+        [package]
+        name = "log-analyzer-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        regex = "=1.13.1"
+        serde_json = "=1.0.151"
+        """
+        let source = """
+        // fresh application revision: \(UUID())
+        use regex::Regex;
+        use serde_json::Value;
+
+        fn main() {
+            let input = r#"[{"line":"WARN disk almost full"},{"line":"INFO started"},{"line":"WARN retrying"}]"#;
+            let records: Value = serde_json::from_str(input).unwrap();
+            let warning = Regex::new(r"^WARN\\s+(.+)$").unwrap();
+            let mut messages = Vec::new();
+            for record in records.as_array().unwrap() {
+                let line = record["line"].as_str().unwrap();
+                if let Some(captures) = warning.captures(line) {
+                    messages.push(captures[1].to_owned());
+                }
+            }
+            println!("{}:{}", messages.len(), messages.join(","));
+        }
+        """
+
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertTrue(snapshot.isOfflineReady)
+        XCTAssertTrue(snapshot.blockingPackages.isEmpty, snapshot.blockingPackages.map(\.id).joined(separator: ", "))
+        XCTAssertGreaterThanOrEqual(snapshot.plan.units.count, 8)
+        XCTAssertEqual(Set(snapshot.plan.rootExterns.map(\.alias)), ["regex", "serde_json"])
+        XCTAssertNotNil(snapshot.lockfile)
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        let result = await compiler.run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": manifest],
+            plan: snapshot.plan
+        )
+        XCTAssertTrue(result.succeeded, "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "2:disk almost full,retrying")
+        XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
+    }
+
+    func testMultiFileDependencyRichLogMonitorBuildsAndRuns() async throws {
+        try Self.requireCompilerGate()
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"] == "1" else {
+            throw XCTSkip("The pinned compiler has unresolved multi-crate backend failures; see docs/compiler-complex-gate-2026-10-01.md.")
+        }
+        let manifest = """
+        [package]
+        name = "log-monitor-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        regex = "=1.13.1"
+        serde_json = "=1.0.151"
+        hashbrown = "=0.17.1"
+        smallvec = "=1.15.1"
+        """
+        let source = """
+        // fresh application revision: \(UUID())
+        mod ingest;
+        mod report;
+
+        fn main() {
+            let input = r#"[
+              {"source":"api","line":"WARN cache miss"},
+              {"source":"worker","line":"INFO started"},
+              {"source":"api","line":"WARN timeout"},
+              {"source":"worker","line":"WARN cache miss"}
+            ]"#;
+            let incidents = ingest::read(input);
+            println!("{}", report::summarize(&incidents));
+        }
+        """
+        let ingest = """
+        use regex::Regex;
+        use serde_json::Value;
+
+        pub struct Incident {
+            pub source: String,
+            pub message: String,
+        }
+
+        pub fn read(input: &str) -> Vec<Incident> {
+            let rows: Value = serde_json::from_str(input).unwrap();
+            let warning = Regex::new(r"^WARN\\s+(.+)$").unwrap();
+            rows.as_array().unwrap().iter().filter_map(|row| {
+                let source = row.get("source")?.as_str()?;
+                let line = row.get("line")?.as_str()?;
+                let captures = warning.captures(line)?;
+                Some(Incident {
+                    source: source.to_owned(),
+                    message: captures[1].to_owned(),
+                })
+            }).collect()
+        }
+        """
+        let report = """
+        use hashbrown::HashMap;
+        use smallvec::SmallVec;
+        use crate::ingest::Incident;
+
+        pub fn summarize(events: &[Incident]) -> String {
+            let mut counts: HashMap<&str, usize> = HashMap::new();
+            let mut issues: SmallVec<[String; 4]> = SmallVec::new();
+            for event in events {
+                *counts.entry(event.source.as_str()).or_default() += 1;
+                if !issues.iter().any(|existing| existing == &event.message) {
+                    issues.push(event.message.clone());
+                }
+            }
+            issues.sort();
+            format!("api={},worker={};issues={}",
+                counts["api"], counts["worker"], issues.join(","))
+        }
+        """
+
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertTrue(snapshot.isOfflineReady)
+        XCTAssertTrue(snapshot.blockingPackages.isEmpty, snapshot.blockingPackages.map(\.id).joined(separator: ", "))
+        XCTAssertGreaterThanOrEqual(snapshot.plan.units.count, 8)
+        XCTAssertEqual(Set(snapshot.plan.rootExterns.map(\.alias)), ["regex", "serde_json", "hashbrown", "smallvec"])
+        XCTAssertNotNil(snapshot.lockfile)
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        let result = await compiler.run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: [
+                "Cargo.toml": manifest,
+                "src/ingest.rs": ingest,
+                "src/report.rs": report,
+            ],
+            plan: snapshot.plan
+        )
+        XCTAssertTrue(result.succeeded, "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+                       "api=2,worker=1;issues=cache miss,timeout")
+        XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
+    }
+
+    func testMultiFileClapRegexCollectionsAppBuildsAndRuns() async throws {
+        try Self.requireCompilerGate()
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"] == "1" else {
+            throw XCTSkip("Run the opt-in source-built toolchain gate for the dependency-rich CLI.")
+        }
+        let manifest = """
+        [package]
+        name = "logscan-multifile-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        clap = "=4.5.50"
+        regex = "=1.13.1"
+        hashbrown = "=0.17.1"
+        smallvec = "=1.15.1"
+        """
+        let source = """
+        // fresh application revision: \(UUID())
+        mod ingest;
+        mod report;
+        use clap::{Arg, Command};
+
+        fn main() {
+            let args = Command::new("logscan")
+                .arg(Arg::new("pattern").long("pattern").required(true).num_args(1))
+                .try_get_matches_from(["logscan", "--pattern", r"^WARN\\s+(.+)$"])
+                .unwrap();
+            let pattern = args.get_one::<String>("pattern").unwrap();
+            let input = "api WARN cache miss\nworker INFO started\napi WARN timeout\nworker WARN cache miss";
+            let incidents = ingest::scan(input, pattern);
+            println!("{}", report::summarize(&incidents));
+        }
+        """
+        let ingest = """
+        use regex::Regex;
+
+        pub struct Incident {
+            pub source: String,
+            pub message: String,
+        }
+
+        pub fn scan(input: &str, pattern: &str) -> Vec<Incident> {
+            let warning = Regex::new(pattern).unwrap();
+            input.lines().filter_map(|line| {
+                let (source, message) = line.split_once(' ')?;
+                let captures = warning.captures(message)?;
+                Some(Incident {
+                    source: source.to_owned(),
+                    message: captures[1].to_owned(),
+                })
+            }).collect()
+        }
+        """
+        let report = """
+        use hashbrown::HashMap;
+        use smallvec::SmallVec;
+        use crate::ingest::Incident;
+
+        pub fn summarize(events: &[Incident]) -> String {
+            let mut counts: HashMap<&str, usize> = HashMap::new();
+            let mut issues: SmallVec<[String; 4]> = SmallVec::new();
+            for event in events {
+                *counts.entry(event.source.as_str()).or_default() += 1;
+                if !issues.iter().any(|existing| existing == &event.message) {
+                    issues.push(event.message.clone());
+                }
+            }
+            issues.sort();
+            format!("api={},worker={};issues={}",
+                counts["api"], counts["worker"], issues.join(","))
+        }
+        """
+
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertTrue(snapshot.isOfflineReady)
+        XCTAssertTrue(snapshot.blockingPackages.isEmpty, snapshot.blockingPackages.map(\.id).joined(separator: ", "))
+        XCTAssertGreaterThanOrEqual(snapshot.plan.units.count, 10)
+        XCTAssertEqual(Set(snapshot.plan.rootExterns.map(\.alias)),
+                       ["clap", "regex", "hashbrown", "smallvec"])
+        XCTAssertNotNil(snapshot.lockfile)
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        let result = await compiler.run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: [
+                "Cargo.toml": manifest,
+                "src/ingest.rs": ingest,
+                "src/report.rs": report,
+            ],
+            plan: snapshot.plan
+        )
+        XCTAssertTrue(result.succeeded,
+                      "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+                       "api=2,worker=1;issues=cache miss,timeout")
+        XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
+    }
+
+    func testMultiFileRoutePlannerWithGraphCratesBuildsAndRuns() async throws {
+        try Self.requireCompilerGate()
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"] == "1" else {
+            throw XCTSkip("Run the opt-in source-built toolchain gate for the graph application.")
+        }
+        let manifest = """
+        [package]
+        name = "route-planner-multifile-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        clap = "=4.5.50"
+        regex = "=1.13.1"
+        petgraph = "=0.8.3"
+        itertools = "=0.14.0"
+        """
+        let source = """
+        // fresh application revision: \(UUID())
+        mod routes;
+        mod report;
+        use clap::{Arg, Command};
+
+        fn main() {
+            let matches = Command::new("routes")
+                .arg(Arg::new("origin").long("origin").required(true).num_args(1))
+                .try_get_matches_from(["routes", "--origin", "api"])
+                .unwrap();
+            let origin = matches.get_one::<String>("origin").unwrap();
+            let edges = "api -> worker : 3\\napi -> cache : 1\\ncache -> worker : 1\\nworker -> store : 2";
+            let distances = routes::shortest_paths(edges, origin);
+            println!("{}", report::summarize(&distances));
+        }
+        """
+        let routes = """
+        use std::collections::HashMap;
+        use petgraph::algo::dijkstra;
+        use petgraph::graph::{DiGraph, NodeIndex};
+        use regex::Regex;
+
+        pub fn shortest_paths(input: &str, origin: &str) -> Vec<(String, u32)> {
+            let row = Regex::new(r"^(\\w+) -> (\\w+) : (\\d+)$").unwrap();
+            let mut graph = DiGraph::<String, u32>::new();
+            let mut nodes: HashMap<String, NodeIndex> = HashMap::new();
+            for line in input.lines() {
+                let captures = row.captures(line).unwrap();
+                let mut index_for = |name: &str| {
+                    if let Some(&index) = nodes.get(name) {
+                        index
+                    } else {
+                        let index = graph.add_node(name.to_owned());
+                        nodes.insert(name.to_owned(), index);
+                        index
+                    }
+                };
+                let from = index_for(&captures[1]);
+                let to = index_for(&captures[2]);
+                drop(index_for);
+                graph.add_edge(from, to, captures[3].parse().unwrap());
+            }
+            let start = nodes[origin];
+            dijkstra(&graph, start, None, |edge| *edge.weight())
+                .into_iter()
+                .map(|(index, cost)| (graph[index].clone(), cost))
+                .collect()
+        }
+        """
+        let report = """
+        use itertools::Itertools;
+
+        pub fn summarize(paths: &[(String, u32)]) -> String {
+            paths.iter()
+                .sorted_by_key(|(name, _)| name.as_str())
+                .map(|(name, cost)| format!("{name}={cost}"))
+                .join(",")
+        }
+        """
+
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertTrue(snapshot.isOfflineReady)
+        XCTAssertTrue(snapshot.blockingPackages.isEmpty, snapshot.blockingPackages.map(\.id).joined(separator: ", "))
+        XCTAssertGreaterThanOrEqual(snapshot.plan.units.count, 10)
+        XCTAssertEqual(Set(snapshot.plan.rootExterns.map(\.alias)),
+                       ["clap", "regex", "petgraph", "itertools"])
+        XCTAssertNotNil(snapshot.lockfile)
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        let result = await compiler.run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: [
+                "Cargo.toml": manifest,
+                "src/routes.rs": routes,
+                "src/report.rs": report,
+            ],
+            plan: snapshot.plan
+        )
+        XCTAssertTrue(result.succeeded,
+                      "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+                       "api=0,cache=1,store=4,worker=2")
+        XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
+    }
+
+    func testClapRegexJSONCommandLineAppBuildsAndRuns() async throws {
+        try Self.requireCompilerGate()
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"] == "1" else {
+            throw XCTSkip("The pinned compiler has not passed this dependency-heavy CLI gate.")
+        }
+        let manifest = """
+        [package]
+        name = "logscan-cli-gate"
+        version = "0.1.0"
+        edition = "2024"
+
+        [dependencies]
+        clap = "=4.5.50"
+        regex = "=1.13.1"
+        serde_json = "=1.0.151"
+        """
+        let source = """
+        // fresh application revision: \(UUID())
+        use clap::{Arg, Command};
+        use regex::Regex;
+        use serde_json::Value;
+
+        fn main() {
+            let args = Command::new("logscan")
+                .arg(Arg::new("pattern").long("pattern").required(true).num_args(1))
+                .try_get_matches_from(["logscan", "--pattern", r"^WARN\\s+(.+)$"])
+                .unwrap();
+            let warning = Regex::new(args.get_one::<String>("pattern").unwrap()).unwrap();
+            let rows: Value = serde_json::from_str(
+                r#"[{"line":"WARN cache"},{"line":"INFO ready"},{"line":"WARN timeout"}]"#
+            ).unwrap();
+            let messages: Vec<String> = rows.as_array().unwrap().iter().filter_map(|row| {
+                let line = row.get("line")?.as_str()?;
+                Some(warning.captures(line)?[1].to_owned())
+            }).collect();
+            println!("{}:{}", messages.len(), messages.join(","));
+        }
+        """
+
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertTrue(snapshot.isOfflineReady)
+        XCTAssertTrue(snapshot.blockingPackages.isEmpty, snapshot.blockingPackages.map(\.id).joined(separator: ", "))
+        XCTAssertGreaterThanOrEqual(snapshot.plan.units.count, 10)
+        XCTAssertEqual(Set(snapshot.plan.rootExterns.map(\.alias)), ["clap", "regex", "serde_json"])
+        XCTAssertNotNil(snapshot.lockfile)
+
+        let compiler = WasmRustCompiler(bundle: .main)
+        let result = await compiler.run(
+            source: source,
+            sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": manifest],
+            plan: snapshot.plan
+        )
+        XCTAssertTrue(result.succeeded,
+                      "phase: \(result.phase.rawValue)\ndetail: \(result.detail)\nstderr: \(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
+                       "2:cache,timeout")
+        XCTAssertTrue(compiler.isPlanCached(snapshot.plan, emit: .link))
     }
 
     func testVendoredCrateBuildsFromAProjectLocalPatch() async throws {

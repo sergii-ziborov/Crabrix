@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "status": "engineering observation; no device or multi-fold speed claim",
+  "workload": "warning-check-v1",
+  "sourceSHA256": "0f76d31e5afd38dc54aefef96ed3c05b1c3f407b8e3d590ab241c457bc13013d",
+  "environment": {
+    "device": "iOS 18.2 arm64 simulator on Apple Silicon Mac",
+    "xcode": "27.0 (27A5228h)",
+    "configuration": "Release; ENABLE_TESTABILITY=YES",
+    "runtimeRevision": "731d09b7c779e62fd42832312c42d29f69475361",
+    "toolchainIdentity": "41412081eefc3e08ec5664ed0748902a7e575e1f267898dcc64d412702df7e83:a89ba732c649a983126750112268614c80b6e7d6bba8c60980cbfd32e04d9892",
+    "relaunchBetweenIterations": true,
+    "peakRSS": null,
+    "thermalState": null
+  },
+  "fileParserToken": {
+    "appCodeRevision": "ee2f690",
+    "rustcParseMilliseconds": [133.902, 173.957, 334.498, 90.833, 282.423],
+    "firstCheckMilliseconds": [1658.641, 1878.934, 1683.868, 1494.727, 2017.853],
+    "unchangedCheckMilliseconds": [0.745, 0.771, 0.762, 0.735, 0.932],
+    "changedCheckMilliseconds": [1239.89, 1399.492, 1449.577, 1471.284, 2135.881],
+    "mediansMilliseconds": {
+      "rustcParse": 173.957,
+      "firstCheck": 1683.868,
+      "unchangedCheck": 0.762,
+      "changedCheck": 1449.577
+    },
+    "warningCountFirstAndUnchanged": 2,
+    "correctnessGate": "Debug Simulator E0502 Check, repaired Run, and multi-file Run: 3 tests passed",
+    "disposition": "retained: eliminates full-file Data-to-Array conversion without changing interpreter or sandbox policy"
+  },
+  "fileParserDirectDispatch": {
+    "appCodeRevision": "ee2f690 with one temporary uncommitted threadingModel change",
+    "rustcParseMilliseconds": [89.176, 120.938, 128.289, 206.741, 210.176],
+    "firstCheckMilliseconds": [1228.036, 1395.914, 1339.118, 1502.053, 1387.808],
+    "unchangedCheckMilliseconds": [0.721, 0.725, 0.953, 0.768, 0.733],
+    "changedCheckMilliseconds": [1318.594, 1251.623, 1230.829, 1026.626, 1234.008],
+    "mediansMilliseconds": {
+      "rustcParse": 128.289,
+      "firstCheck": 1387.808,
+      "unchangedCheck": 0.733,
+      "changedCheck": 1234.008
+    },
+    "warningCountFirstAndUnchanged": 2,
+    "disposition": "not enabled: the short Check probe passed, but Run/Cargo, sandbox regressions, and physical-device correctness are not established; old 0.3.1 direct dispatch crashed in Crabrix"
+  },
+  "comparison": "Direct dispatch was about 1.2x faster than token on this five-run Check probe, below the requested several-fold target. The file parser's first-Check median was lower than the earlier token/array-parser series, but runs were not interleaved and thermal/RSS observations are absent; do not attribute a precise speedup to the parser. Changed Check remained approximately 1.45 s with token dispatch. Five samples do not support a p95 claim."
+}

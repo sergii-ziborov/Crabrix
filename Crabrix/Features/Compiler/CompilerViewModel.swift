@@ -140,6 +140,13 @@ final class CompilerViewModel: ObservableObject {
     @Published private(set) var completedLessonIDs: Set<String>
     @Published private(set) var lessonAnswerIndices: [String: Int]
     @Published private(set) var activeLessonID: String?
+    private var activeLessonContent: CourseLessonExecution?
+    var activeLessonHint: CourseHintSnapshot? {
+        guard let content = activeLessonContent,
+              let hint = content.hint,
+              !hint.isEmpty else { return nil }
+        return CourseHintSnapshot(sessionToken: content.sessionToken, text: hint)
+    }
     @Published private(set) var activeLessonIsReview = false
     @Published private(set) var projectTransfer: ProjectTransfer = .idle
     @Published private(set) var compatibilityReport: ProjectCompatibilityReport
@@ -603,8 +610,8 @@ final class CompilerViewModel: ObservableObject {
     private func compilerProjectSnapshot(
         from project: (entryPath: String, main: String, supporting: [String: String])
     ) -> (entryPath: String, main: String, supporting: [String: String]) {
-        guard let activeLessonID,
-              let challenge = AlgorithmCourseCatalog.challenge(for: activeLessonID)
+        guard activeLessonID != nil,
+              let challenge = activeLessonContent?.challenge
         else { return project }
 
         var supporting = project.supporting
@@ -972,8 +979,21 @@ final class CompilerViewModel: ObservableObject {
         )
     }
 
-    func beginLesson(_ id: String, isReview: Bool = false) {
+    func loadCourseStarter(_ template: CourseProjectTemplate, session: CourseSession,
+                           projectName: String? = nil) {
+        loadProject(
+            name: projectName ?? template.name,
+            files: template.files,
+            entryFile: template.entryFile,
+            provenance: .academy(session: session, templateHash: template.templateHash),
+            kind: .learning
+        )
+    }
+
+    func beginLesson(_ id: String, isReview: Bool = false,
+                     content: CourseLessonExecution? = nil) {
         activeLessonID = id
+        activeLessonContent = content
         activeLessonIsReview = isReview
         activeLessonInitialSourceTreeHash = workspaceRevision.sourceTreeHash
         activeLessonObservedDiagnosticCodes = []
@@ -995,13 +1015,23 @@ final class CompilerViewModel: ObservableObject {
         userDefaults.set(lessonAnswerIndices, forKey: Self.lessonAnswersKey)
     }
 
-    func loadShowcaseProject(id: String) {
-        guard let showcase = RustShowcaseLibrary.projects.first(where: { $0.id == id }) else {
-            projectTransfer = .failed("That library project is unavailable.")
-            return
-        }
-        loadProject(showcase.project)
-        projectTransfer = .ready("Opened \(showcase.title) from the project library.")
+    func openAcademyExample(_ showcase: RustShowcaseProject, contentVersion: String) {
+        let template = showcase.project
+        let copy = CrabrixProject(
+            name: template.name,
+            files: template.files,
+            entryFile: template.entryFile,
+            provenance: .academyExample(
+                id: showcase.id, contentVersion: contentVersion,
+                templateHash: showcase.contentDigest
+            ),
+            projectDescription: showcase.detail,
+            tags: showcase.concepts,
+            folder: template.folder,
+            kind: template.kind
+        )
+        loadProject(copy)
+        projectTransfer = .ready("Created \(showcase.title) in My Projects.")
     }
 
     func createProject(name: String, template: RustProjectTemplate) {
@@ -1357,6 +1387,7 @@ final class CompilerViewModel: ObservableObject {
         completedStages = []
         practiceCompleted = false
         activeLessonID = nil
+        activeLessonContent = nil
         activeLessonIsReview = false
         activeLessonInitialSourceTreeHash = nil
         activeLessonObservedDiagnosticCodes = []
@@ -1782,9 +1813,9 @@ final class CompilerViewModel: ObservableObject {
         }
         if value.phase == .run,
            let activeLessonID,
-           let lesson = RustCourseCatalog.lesson(id: activeLessonID) {
+           let content = activeLessonContent {
             let validation = LessonEvidenceValidator.validateCompilerAttempt(
-                lesson: lesson,
+                evidence: content.evidence,
                 result: value,
                 project: currentProject(),
                 initialSourceTreeHash: activeLessonInitialSourceTreeHash,
@@ -1794,6 +1825,7 @@ final class CompilerViewModel: ObservableObject {
             lessonEvidenceMessage = validation.detail
             appendLessonAttemptEvidence(
                 lessonID: activeLessonID,
+                content: content,
                 revision: revision,
                 result: value,
                 passed: validation.passed
@@ -1812,6 +1844,7 @@ final class CompilerViewModel: ObservableObject {
 
     private func appendLessonAttemptEvidence(
         lessonID: String,
+        content: CourseLessonExecution,
         revision: WorkspaceRevision,
         result: CompilationResult,
         passed: Bool
@@ -1827,7 +1860,18 @@ final class CompilerViewModel: ObservableObject {
                 stdoutHash: result.stdout.isEmpty
                     ? nil
                     : WorkspaceRevision.contentHash(result.stdout),
-                completedAt: Date()
+                completedAt: Date(),
+                identity: LessonAttemptIdentity(
+                    courseID: content.courseID,
+                    language: content.language,
+                    contentVersion: content.contentVersion,
+                    lessonID: lessonID,
+                    exerciseID: lessonID,
+                    validatorVersion: LessonAttemptEvidence.validatorVersion,
+                    toolchainID: revision.toolchainID,
+                    projectID: revision.projectID,
+                    projectRevision: revision.sourceTreeHash
+                )
             )
         )
         if lessonAttemptEvidence.count > 500 {

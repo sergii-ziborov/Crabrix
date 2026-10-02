@@ -33,8 +33,15 @@ struct BundledToolchain: Sendable {
         let sysroot = destination.appending(path: "sysroot-wasip1", directoryHint: .isDirectory)
         // Probe is used by the UI: extraction happens only on the compiler queue.
         if prepareSysroot {
-            guard (try? BundledSysroot.prepare(archive: archive, checksum: checksum, at: destination)) != nil
-            else { return nil }
+            do {
+                try BundledSysroot.prepare(archive: archive, checksum: checksum, at: destination)
+            } catch {
+                #if DEBUG || CRABRIX_LEGACY_FIXTURES
+                let failure = error as NSError
+                print("CRABRIX_SYSROOT_PREPARE_FAILURE \(failure.domain) \(failure.code): \(failure.localizedDescription)")
+                #endif
+                return nil
+            }
         }
 
         return BundledToolchain(rustcURL: rustc, sysrootURL: sysroot, version: version)
@@ -123,42 +130,102 @@ struct WasmExecutionCancelled: Error, Sendable {
 /// would dominate a multi-crate build, so the module is cached for the lifetime
 /// of the host.
 final class RustcRuntime: @unchecked Sendable {
-    private var cachedEngine: Engine?
-    private var cachedRustcModule: Module?
-    private var cachedProgramModules: [String: Module] = [:]
+    private struct CachedProgramModule {
+        let module: Module
+        let estimatedCostBytes: Int
+    }
 
-    func engine() -> Engine {
-        if let cachedEngine { return cachedEngine }
+    private var cachedEngines: [Int: Engine] = [:]
+    private var cachedRustcModule: Module?
+    private var cachedProgramModules: [String: CachedProgramModule] = [:]
+    private var programModuleRecency: [String] = []
+    private var programModuleEstimatedBytes = 0
+    private let programModuleCacheEntryLimit: Int
+    private let programModuleCacheCostLimitBytes: Int
+
+    init(
+        programModuleCacheEntryLimit: Int = 8,
+        programModuleCacheCostLimitBytes: Int = 64 * 1024 * 1024
+    ) {
+        precondition(programModuleCacheEntryLimit > 0 && programModuleCacheCostLimitBytes > 0)
+        self.programModuleCacheEntryLimit = programModuleCacheEntryLimit
+        self.programModuleCacheCostLimitBytes = programModuleCacheCostLimitBytes
+    }
+
+    func engine(softwareMemoryReservationBytes: Int?) -> Engine {
+        let cacheKey = softwareMemoryReservationBytes ?? 0
+        if let cached = cachedEngines[cacheKey] { return cached }
         let configuration = EngineConfiguration(
-            // WasmKit 0.3.1's direct-threaded interpreter crashes in optimized
+            // WasmKit 0.3.1's direct-threaded interpreter crashed in optimized
             // iOS Simulator builds while executing the bundled rustc module.
-            // Token threading is the supported fallback and remains stable in
-            // both Debug and Release configurations.
+            // Token threading remains the supported mode until the new engine's
+            // direct mode passes Release/device correctness and speed gates.
             threadingModel: .token,
             compilationMode: .lazy,
             stackSize: 16 * 1024 * 1024,
-            memoryBoundsChecking: .software
+            memoryBoundsChecking: .software,
+            fuelMetering: true,
+            // Reserve address space only; committed pages still obey the
+            // current guest's resource limit.
+            softwareMemoryReservationBytes: softwareMemoryReservationBytes
         )
         let engine = Engine(configuration: configuration)
-        cachedEngine = engine
+        cachedEngines[cacheKey] = engine
         return engine
     }
 
     func rustcModule(at url: URL) throws -> Module {
         if let cachedRustcModule { return cachedRustcModule }
-        let module = try parseWasm(bytes: [UInt8](Data(contentsOf: url)))
+        let started = ContinuousClock.now
+        // WasmKit's file parser reads the module in bounded chunks. The parser
+        // owns and closes its descriptor, and the returned Module retains its
+        // parsed code, so no whole-file Data -> [UInt8] copy is needed here.
+        let module = try parseWasm(filePath: url.path)
+        CompilerPhaseTrace.emit("rustc-parse", since: started)
         cachedRustcModule = module
         return module
     }
 
-    func programModule(for key: String) -> Module? { cachedProgramModules[key] }
+    /// These calls run on the compiler's serial queue. A cached Module is
+    /// immutable parsed state; each execution still creates a fresh Store.
+    func programModule(for key: String) -> Module? {
+        guard let entry = cachedProgramModules[key] else { return nil }
+        programModuleRecency.removeAll { $0 == key }
+        programModuleRecency.append(key)
+        return entry.module
+    }
 
-    func cacheProgramModule(_ module: Module, for key: String) {
-        cachedProgramModules[key] = module
+    func cacheProgramModule(_ module: Module, for key: String, wasmFileBytes: Int) {
+        // WasmKit does not expose parsed-state allocation size. Four times the
+        // source file size is a conservative admission proxy, combined with a
+        // strict entry count. This is not a measured RSS bound.
+        let minimumCost = 64 * 1024
+        guard wasmFileBytes >= 0,
+              wasmFileBytes <= programModuleCacheCostLimitBytes / 4
+        else { return }
+        let cost = max(minimumCost, wasmFileBytes * 4)
+        guard cost <= programModuleCacheCostLimitBytes else { return }
+
+        if let old = cachedProgramModules.removeValue(forKey: key) {
+            programModuleEstimatedBytes -= old.estimatedCostBytes
+            programModuleRecency.removeAll { $0 == key }
+        }
+        while cachedProgramModules.count >= programModuleCacheEntryLimit
+            || programModuleEstimatedBytes > programModuleCacheCostLimitBytes - cost {
+            let oldest = programModuleRecency.removeFirst()
+            if let evicted = cachedProgramModules.removeValue(forKey: oldest) {
+                programModuleEstimatedBytes -= evicted.estimatedCostBytes
+            }
+        }
+        cachedProgramModules[key] = CachedProgramModule(module: module, estimatedCostBytes: cost)
+        programModuleRecency.append(key)
+        programModuleEstimatedBytes += cost
     }
 
     func clearProgramModules() {
         cachedProgramModules.removeAll(keepingCapacity: false)
+        programModuleRecency.removeAll(keepingCapacity: false)
+        programModuleEstimatedBytes = 0
     }
 
     /// Runs a WASI module to completion, capturing stdout and stderr.
@@ -170,41 +237,87 @@ final class RustcRuntime: @unchecked Sendable {
         captureDirectory: URL,
         capturePrefix: String,
         resourceLimiter: (any ResourceLimiter)? = nil,
-        instructionLimiter: (any InstructionLimiter)? = nil,
+        fuelBudget: UInt64? = nil,
+        wallClockLimit: Duration? = nil,
         interrupter: WasmInterrupter? = nil,
+        softwareMemoryReservationBytes: Int? = nil,
         capturedOutputLimitBytes: Int? = nil
     ) throws -> WasmProcessResult {
+        let started = ContinuousClock.now
+        let outputBudget = try capturedOutputLimitBytes.map { limit in
+            try WASIOutputBudget(maximumBytes: limit) {
+                interrupter?.cancel(reason: .outputLimit)
+            }
+        }
         let capture = try Capture(directory: captureDirectory, prefix: capturePrefix)
         var exitCode: UInt32 = 0
         var thrown: (any Error)?
         do {
-            let wasi = try WASIBridgeToHost(
-                args: arguments,
-                environment: environment,
-                preopens: preopens,
-                stdout: FileDescriptor(rawValue: capture.stdoutHandle.fileDescriptor),
-                stderr: FileDescriptor(rawValue: capture.stderrHandle.fileDescriptor)
-            )
+            let wasi: WASIBridgeToHost
+            if let outputBudget {
+                wasi = try WASIBridgeToHost(
+                    args: arguments,
+                    environment: environment,
+                    preopens: preopens,
+                    stdout: capture.stdoutHandle.fileDescriptor,
+                    stderr: capture.stderrHandle.fileDescriptor,
+                    outputBudget: outputBudget
+                )
+            } else {
+                wasi = try WASIBridgeToHost(
+                    args: arguments,
+                    environment: environment,
+                    preopens: preopens,
+                    stdout: capture.stdoutHandle.fileDescriptor,
+                    stderr: capture.stderrHandle.fileDescriptor
+                )
+            }
+            CompilerPhaseTrace.emit("wasi-setup", since: started)
             exitCode = try wasi.runAndClose { wasi in
-                let store = Store(engine: engine())
+                let instantiateStarted = ContinuousClock.now
+                let store = Store(engine: engine(
+                    softwareMemoryReservationBytes: softwareMemoryReservationBytes))
                 if let resourceLimiter { store.resourceLimiter = resourceLimiter }
-                store.instructionLimiter = instructionLimiter
+                if let fuelBudget { store.fuel = Fuel(remaining: fuelBudget) }
+                if let wallClockLimit { interrupter?.setDeadline(after: wallClockLimit) }
+                store.cancellationProbe = interrupter
                 var imports = Imports()
-                wasi.link(to: &imports, store: store)
-                interrupter?.wrapHostFunctions(of: wasi, into: &imports, store: store)
+                if let interrupter {
+                    interrupter.wrapHostFunctions(of: wasi, into: &imports, store: store)
+                } else {
+                    wasi.link(to: &imports, store: store)
+                }
                 let instance = try module.instantiate(store: store, imports: imports)
-                return try wasi.start(instance)
+                CompilerPhaseTrace.emit("instantiate", since: instantiateStarted)
+                let guestStarted = ContinuousClock.now
+                let exitCode = try wasi.start(instance)
+                CompilerPhaseTrace.emit("guest-execution", since: guestStarted)
+                return exitCode
             }
         } catch {
             thrown = error
         }
         let output = try capture.finish(maxBytesPerStream: capturedOutputLimitBytes)
+        CompilerPhaseTrace.emit("wasi-total", since: started)
+        if outputBudget?.wasExceeded == true {
+            throw WasmExecutionCancelled(
+                reason: interrupter?.stopReason ?? .outputLimit,
+                stdout: output.stdout,
+                stderr: output.stderr
+            )
+        }
         if let thrown {
             if let reason = interrupter?.stopReason {
                 throw WasmExecutionCancelled(
                     reason: reason,
                     stdout: output.stdout,
                     stderr: output.stderr
+                )
+            }
+            if let trap = thrown as? Trap, trap.isOutOfFuel {
+                interrupter?.cancel(reason: .instructionBudget)
+                throw WasmExecutionCancelled(
+                    reason: .instructionBudget, stdout: output.stdout, stderr: output.stderr
                 )
             }
             throw RustcRuntimeFailure(underlying: thrown, stdout: output.stdout, stderr: output.stderr)
@@ -251,6 +364,18 @@ final class RustcRuntime: @unchecked Sendable {
     }
 }
 
+/// Local opt-in phase observations for compiler investigations. The test probe
+/// enables this only for its process; no source or diagnostics leave the device.
+private enum CompilerPhaseTrace {
+    static func emit(_ phase: String, since started: ContinuousClock.Instant) {
+        guard ProcessInfo.processInfo.environment["CRABRIX_PERF_TRACE"] == "1" else { return }
+        let parts = started.duration(to: ContinuousClock.now).components
+        let milliseconds = Double(parts.seconds) * 1_000
+            + Double(parts.attoseconds) / 1_000_000_000_000_000
+        print("CRABRIX_PHASE \(phase) \(milliseconds)")
+    }
+}
+
 /// A guest trap plus whatever the process managed to print first.
 struct RustcRuntimeFailure: Error, @unchecked Sendable {
     let underlying: any Error
@@ -258,10 +383,9 @@ struct RustcRuntimeFailure: Error, @unchecked Sendable {
     let stderr: String
 }
 
-/// Stops a running guest. Host calls are guarded here; pure-compute code is
-/// guarded by `WasmInstructionBudgetLimiter` through the vendored WasmKit
-/// instruction-boundary hook.
-final class WasmInterrupter: @unchecked Sendable {
+/// Stops a running guest. The fork's fuel checkpoints read this thread-safe
+/// probe even when the guest makes no host calls.
+final class WasmInterrupter: ExecutionCancellation, @unchecked Sendable {
     private let state = AtomicStopState()
 
     var wasCancelled: Bool { state.reason != nil }
@@ -271,11 +395,16 @@ final class WasmInterrupter: @unchecked Sendable {
         state.cancel(reason: reason)
     }
 
+    func setDeadline(after duration: Duration) {
+        state.setDeadline(after: duration)
+    }
+
+    var isCancelled: Bool { state.reason != nil }
+
     /// Re-defines each WASI import as a guard that checks cancellation first.
     func wrapHostFunctions(of wasi: WASIBridgeToHost, into imports: inout Imports, store: Store) {
-        let state = state
         wasi.link(to: &imports, store: store) {
-            if let reason = state.reason {
+            if let reason = self.state.reason {
                 throw WasmExecutionCancelled(reason: reason)
             }
         }
@@ -287,11 +416,20 @@ final class WasmInterrupter: @unchecked Sendable {
 final class AtomicStopState: @unchecked Sendable {
     private let lock = NSLock()
     private var storedReason: WasmStopReason?
+    private var deadline: ContinuousClock.Instant?
+    private let clock = ContinuousClock()
 
     var reason: WasmStopReason? {
         lock.lock()
         defer { lock.unlock() }
+        if storedReason == nil, let deadline, clock.now >= deadline {
+            storedReason = .wallClock
+        }
         return storedReason
+    }
+
+    func setDeadline(after duration: Duration) {
+        lock.withLock { deadline = clock.now.advanced(by: duration) }
     }
 
     func cancel(reason: WasmStopReason) {

@@ -85,6 +85,7 @@ struct AlgorithmChallenge: Equatable, Sendable {
     let forbiddenSourceFragments: [String]
 }
 
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
 enum AlgorithmCourseCatalog {
     /// Stable, independent method families. `categories` remains as a
     /// compatibility name so saved progress and achievement IDs do not change
@@ -393,3 +394,4 @@ struct AlgorithmCategorySeed: Sendable {
         )
     }
 }
+#endif

@@ -1,12 +1,7 @@
 import Foundation
 
-/// A second teaching layer shared by every lesson.
-///
-/// `RustLessonWriting` owns the lesson-specific explanation and example. This
-/// model turns that material into an active learning loop: trace the example,
-/// reject a tempting misconception, transfer the rule, and connect it to the
-/// surrounding curriculum. Keeping it derived means a newly added lesson cannot
-/// silently fall back to the old one-card/one-question experience.
+/// A second teaching layer shared by every lesson. Installed CoursePacks carry
+/// this depth explicitly; the old derived catalog remains for parity tests.
 struct RustLessonDepth: Equatable, Sendable {
     struct TraceStep: Equatable, Sendable {
         let title: String
@@ -31,6 +26,7 @@ struct RustLessonDepth: Equatable, Sendable {
     let connections: [Connection]
 }
 
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
 enum RustLessonDepthCatalog {
     static func depth(for lesson: RustLesson) -> RustLessonDepth {
         let writing = RustLessonLibrary.writing(for: lesson.id)
@@ -149,6 +145,7 @@ enum RustLessonDepthCatalog {
         }
     }
 }
+#endif
 
 private struct LearningMethod: Sendable {
     let inventoryTitle: String

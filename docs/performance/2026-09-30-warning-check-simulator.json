@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "status": "engineering observation; not a device benchmark or speed claim",
+  "workload": {
+    "id": "warning-check-v1",
+    "sourceSHA256": "0f76d31e5afd38dc54aefef96ed3c05b1c3f407b8e3d590ab241c457bc13013d",
+    "changedSourceSHA256": "c0e8c5d2945d4afafb552674387e21c77a2951aa528cbe933a89db410f996f06",
+    "operation": "new compiler instance: first Check, unchanged Check, then changed Check",
+    "dependencies": "bundled only"
+  },
+  "environment": {
+    "device": "iOS 18.2 arm64 simulator on Apple Silicon Mac",
+    "xcode": "27.0 (27A5228h)",
+    "configuration": "Debug",
+    "runtimeRevision": "731d09b7c779e62fd42832312c42d29f69475361",
+    "toolchainIdentity": "41412081eefc3e08ec5664ed0748902a7e575e1f267898dcc64d412702df7e83:a89ba732c649a983126750112268614c80b6e7d6bba8c60980cbfd32e04d9892",
+    "peakRSS": null,
+    "thermalState": null
+  },
+  "observations": [
+    {
+      "candidate": "ace7424b6bede6c43d49e1199f9190938ed5d45c",
+      "localTime": "2026-09-30 15:49 Asia/Jerusalem",
+      "firstCheckMilliseconds": 10972.356041,
+      "unchangedCheckMilliseconds": 1.194083,
+      "firstWarningCount": 2,
+      "unchangedWarningCount": 0
+    },
+    {
+      "candidate": "check snapshot and no-workspace-write changes on top of ace7424",
+      "localTime": "2026-09-30 15:52 Asia/Jerusalem",
+      "firstCheckMilliseconds": 10499.158708,
+      "unchangedCheckMilliseconds": 0.744041,
+      "firstWarningCount": 2,
+      "unchangedWarningCount": 2
+    }
+  ],
+  "phaseObservation": {
+    "configuration": "Debug, token dispatch, fuel and cancellation enabled",
+    "rustcParseMilliseconds": 420.225042,
+    "instantiateMilliseconds": 308.88525,
+    "guestExecutionMilliseconds": 10001.580166,
+    "firstCheckMilliseconds": 10753.435667,
+    "changedCheckMilliseconds": 11025.964,
+    "note": "Separate nearby runs, not a paired statistical comparison. The changed Check reuses the parsed module but starts a fresh Store and instance."
+  },
+  "releaseObservation": {
+    "configuration": "Release simulator, token dispatch, fuel and cancellation enabled, ENABLE_TESTABILITY=YES",
+    "firstCheckMilliseconds": 1676.612792,
+    "unchangedCheckMilliseconds": 0.730667,
+    "changedCheckMilliseconds": 1173.370875,
+    "firstWarningCount": 2,
+    "unchangedWarningCount": 2,
+    "rustcParseMilliseconds": 130.772417,
+    "firstGuestExecutionMilliseconds": 1490.737959,
+    "changedGuestExecutionMilliseconds": 1135.536833,
+    "note": "Single Apple Silicon simulator observation. Debug/Release difference is a build-configuration effect, not an improvement credited to a Crabrix patch."
+  },
+  "runtimeComparison": {
+    "baselineAppRevision": "c38423e7503a56d6cd97e3a6c17651d5a5c33d62",
+    "baselineRuntime": "vendored WasmKit 0.3.1 with Crabrix patches",
+    "candidateAppCodeRevision": "84bc49c0a3df34b7e96b291dd596e9f1a30f05a7",
+    "candidateRuntimeRevision": "731d09b7c779e62fd42832312c42d29f69475361",
+    "configuration": "Release iOS 18.2 arm64 simulator, Xcode 27.0 beta, ENABLE_TESTABILITY=YES",
+    "sameToolchainIdentity": "41412081eefc3e08ec5664ed0748902a7e575e1f267898dcc64d412702df7e83:a89ba732c649a983126750112268614c80b6e7d6bba8c60980cbfd32e04d9892",
+    "iterations": 5,
+    "relaunchBetweenIterations": true,
+    "order": "baseline, then candidate",
+    "baselineMilliseconds": {
+      "first": [2061.172875, 2219.061708, 1933.207541, 2069.131916, 1845.045792],
+      "unchanged": [1.263291, 1.249042, 1.1155, 1.185125, 1.230334],
+      "changed": [1572.5965, 1588.4985, 1548.291541, 1657.12, 1733.529334]
+    },
+    "candidateMilliseconds": {
+      "first": [1838.910583, 1803.256, 1874.103542, 2448.042834, 2135.1365],
+      "unchanged": [1.04025, 0.774583, 0.754459, 0.822208, 0.747541],
+      "changed": [1264.024208, 1177.190584, 1753.925, 1496.261333, 1444.6305]
+    },
+    "medianMilliseconds": {
+      "baselineFirst": 2061.172875,
+      "candidateFirst": 1874.103542,
+      "baselineUnchanged": 1.230334,
+      "candidateUnchanged": 0.774583,
+      "baselineChanged": 1588.4985,
+      "candidateChanged": 1444.6305
+    },
+    "warningCounts": {
+      "baselineFirst": 2,
+      "baselineUnchanged": 0,
+      "candidateFirst": 2,
+      "candidateUnchanged": 2
+    },
+    "baselineTestAdaptation": "A scratch copy of the same probe omitted only the candidate-only warning-parity assertions; the unmodified probe first failed on baseline and passed on candidate.",
+    "limits": "Five samples do not support a p95 claim. Thermal state and peak RSS were not captured; the simulator is not a physical iPhone. This is A versus C, not the clean-0.4.1 B baseline."
+  },
+  "exploratorySingleRuns": [
+    {
+      "configuration": "Debug, direct dispatch, guards enabled",
+      "firstCheckMilliseconds": 12589.747125,
+      "disposition": "not enabled; slower than nearby token observations and unverified in Release/device"
+    },
+    {
+      "configuration": "Debug, token dispatch, cancellation probe temporarily disabled",
+      "firstCheckMilliseconds": 11074.777167,
+      "disposition": "safety experiment only; cancellation probe restored"
+    },
+    {
+      "configuration": "Debug, token dispatch, fuel temporarily disabled",
+      "firstCheckMilliseconds": 10199.945375,
+      "disposition": "safety experiment only; fuel restored"
+    }
+  ],
+  "interpretation": "The correctness defect on unchanged Check is fixed. In the five-run Release simulator A/C comparison, first and changed Check medians improved only about 1.1x; unchanged cache-hit median improved about 1.6x, which is not compiler throughput. No several-fold compilation improvement is demonstrated. A local Debug CPU sample placed most compiler-thread samples within WasmKit lazy function translation, but it is not a user-device speed claim. Release-mode physical-device A/B/C measurements remain required."
+}

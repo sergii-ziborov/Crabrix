@@ -17,7 +17,7 @@ jobs:
     runs-on: xcode-27
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - name: Record toolchain
         run: |
@@ -29,6 +29,9 @@ jobs:
           brew untap aws/tap >/dev/null 2>&1 || true
           brew install xcodegen
           if ! command -v zstd >/dev/null 2>&1; then brew install zstd; fi
+
+      - name: Validate app toolchain release input
+        run: python3 scripts/toolchain_manifest.py validate
 
       - name: Generate project and verify bundled toolchain hashes
         run: scripts/bootstrap.sh
@@ -42,10 +45,11 @@ jobs:
 
       - name: Run fast release suite
         run: |
+          simulator_id="$(scripts/select-ios-simulator.sh)"
           xcodebuild test \
             -project Crabrix.xcodeproj \
             -scheme Crabrix \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0' \
+            -destination "platform=iOS Simulator,id=${simulator_id}" \
             -onlyUsePackageVersionsFromResolvedFile \
             CODE_SIGNING_ALLOWED=NO
 
@@ -72,6 +76,10 @@ jobs:
             echo "GameKit is linked into a production build" >&2
             exit 1
           fi
+          if strings "$APP" | grep -Fq 'Every Rust program starts at main, but the lesson is the whole loop.'; then
+            echo "legacy Swift Academy content is present in the production executable" >&2
+            exit 1
+          fi
           if strings "$APP" | grep -qi "GKLocalPlayer\|GKGameCenterViewController"; then
             echo "Game Center symbols are present in a production build" >&2
             exit 1
@@ -79,10 +87,14 @@ jobs:
           echo "Release binary carries no service endpoint and no Game Center path"
 
   compiler-gates:
+    # Full bundled-rustc/Cargo runs are deliberately separate from every PR.
+    # Run this workflow manually for an integration candidate; main/release
+    # pushes also exercise the gate after the reviewed changes land.
+    if: github.event_name != 'pull_request'
     runs-on: xcode-27
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - name: Install project-generation tools
         run: |
@@ -95,9 +107,10 @@ jobs:
 
       - name: Run bundled rustc and sandbox gates
         run: |
+          simulator_id="$(scripts/select-ios-simulator.sh)"
           xcodebuild test \
             -project Crabrix.xcodeproj \
             -scheme CrabrixCompilerGate \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0' \
+            -destination "platform=iOS Simulator,id=${simulator_id}" \
             -onlyUsePackageVersionsFromResolvedFile \
             CODE_SIGNING_ALLOWED=NO

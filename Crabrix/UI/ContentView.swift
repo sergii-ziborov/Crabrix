@@ -27,6 +27,11 @@ private enum CrabrixDestination: Hashable {
     }
 }
 
+private enum ProjectImportSource {
+    case github
+    case files
+}
+
 private struct ArchiveShareItem: Identifiable {
     let id = UUID()
     let url: URL
@@ -55,7 +60,7 @@ struct ContentView: View {
     @StateObject private var completion = RustCompletionController()
     @StateObject private var terminal = ProjectTerminalSession()
     @EnvironmentObject private var progress: CrabrixProgressStore
-    @EnvironmentObject private var vitals: CrabrixVitalsStore
+    @EnvironmentObject private var academy: AcademyContentStore
     /// Lessons already turned into rating, seeded from persisted progress so a
     /// relaunch never re-awards them.
     @State private var scoredLessonIDs: Set<String>?
@@ -65,10 +70,11 @@ struct ContentView: View {
     @State private var archiveShareItem: ArchiveShareItem?
     @State private var isGitHubImporterPresented = false
     @State private var isNewProjectPresented = false
+    @State private var pendingNewProjectImport: ProjectImportSource?
     @State private var isProjectActionsPresented = false
     @State private var isCargoCatalogPresented = false
-    @State private var projectsPath: [ProjectsRoute] =
-        ProcessInfo.processInfo.arguments.contains("-CrabrixLibrary") ? [.library] : []
+    @State private var isPackageStoragePresented = false
+    @State private var projectsPath: [ProjectsRoute] = []
     @State private var projectItemCreation: ProjectItemCreation?
     @State private var githubURL = ""
     @State private var selectedDestination: CrabrixDestination =
@@ -80,7 +86,7 @@ struct ContentView: View {
     @State private var isCompactProjectDrawerPresented = false
     @State private var isCompactInspectorDrawerPresented = false
     @State private var selectedBuildDockTab: BuildDockTab = .code
-    @State private var learningPath: [LearningRoute] = LearningRoute.launchArgument
+    @State private var learningPath: [LearningRoute] = []
     @State private var editorCursorOffset = 0
     /// What the last successful run was scored on, shown in the build dock.
     @State private var lastContribution: CodeContribution?
@@ -99,33 +105,21 @@ struct ContentView: View {
     )
 
     var body: some View {
-        TabView(selection: $selectedDestination) {
+        Group {
+            if selectedDestination == .build {
+                buildWorkspace
+            } else {
+                TabView(selection: $selectedDestination) {
             NavigationStack(path: $projectsPath) {
                 ProjectsHomeView(
-                projectID: model.projectID,
-                projectName: model.projectName,
-                fileCount: model.fileNames.count,
-                lastBuild: model.lastBuild,
-                activity: model.activity,
-                isCompilerDraining: model.isCompilerDraining,
-                recentProjects: model.recentProjects,
-                allProjects: model.allProjects,
-                onOpenCurrentProject: { selectedDestination = .build },
+                    projectName: model.projectName,
+                    fileCount: model.fileNames.count,
+                    lastBuild: model.lastBuild,
+                    activity: model.activity,
+                    isCompilerDraining: model.isCompilerDraining,
+                    projectCount: model.allProjects.count,
+                onOpenCurrentProject: openCodeWorkspace,
                 onNewProject: { isNewProjectPresented = true },
-                onOpenGitHub: { isGitHubImporterPresented = true },
-                onOpenFiles: { isFileImporterPresented = true },
-                onOpenRecent: { id in
-                    Task {
-                        if await model.openRecentProject(id: id) {
-                            selectedDestination = .build
-                        }
-                    }
-                },
-                onOpenShowcase: { id in
-                    model.loadShowcaseProject(id: id)
-                    selectedDestination = .build
-                },
-                onOpenLibrary: { projectsPath = [.library] },
                 onOpenMyProjects: { projectsPath = [.myProjects] }
                 )
                 .navigationDestination(for: ProjectsRoute.self) { route in
@@ -137,7 +131,7 @@ struct ContentView: View {
                                 Task {
                                     if await model.openRecentProject(id: id) {
                                         projectsPath = []
-                                        selectedDestination = .build
+                                        openCodeWorkspace()
                                     }
                                 }
                             },
@@ -159,105 +153,11 @@ struct ContentView: View {
                                 )
                             }
                         )
-                    case .library:
-                        ProjectLibraryView { id in
-                            model.loadShowcaseProject(id: id)
-                            projectsPath = []
-                            selectedDestination = .build
-                        }
                     }
                 }
             }
             .tabItem { Label("Projects", systemImage: "folder.fill") }
             .tag(CrabrixDestination.projects)
-
-            ZStack {
-                CrabrixTheme.background.ignoresSafeArea()
-
-                VStack(spacing: 0) {
-                    AppHeader(
-                        toolchain: model.toolchain,
-                        transfer: model.projectTransfer,
-                        activity: model.activity,
-                        canRun: model.canStartBuild && !model.isProjectOperationInProgress,
-                        onRun: model.run,
-                        onCancelBuild: model.cancelBuild,
-                        onOpenProjects: { selectedDestination = .projects },
-                        onCloseWorkspace: closeBuildWorkspace,
-                        onNewProject: { isNewProjectPresented = true },
-                        onOpenFiles: { isFileImporterPresented = true },
-                        onOpenGitHub: { isGitHubImporterPresented = true },
-                        onProjectActions: {
-                            isProjectActionsPresented = true
-                        }
-                    )
-                    if model.projectTransfer.isWorking || model.projectTransfer.isFailure {
-                        ProjectTransferStrip(transfer: model.projectTransfer)
-                    }
-                    Divider().overlay(CrabrixTheme.border)
-
-                    if horizontalSizeClass == .regular {
-                        HStack(spacing: 0) {
-                            ProjectSidebar(
-                                    projectName: model.projectName,
-                                    files: model.fileNames,
-                                    selectedFile: model.selectedFile,
-                                    manifest: model.cargoManifest,
-                                    report: model.compatibilityReport,
-                                    provenance: model.provenance,
-                                    cargoStage: model.cargoStage,
-                                    cargoWorkspace: model.cargoWorkspace,
-                                    isBusy: model.isBusy,
-                                    onProjectActions: {
-                                        isProjectActionsPresented = true
-                                    },
-                                    onSelect: selectEditorFile,
-                                    onNewFile: { projectItemCreation = .rustFile },
-                                    onNewFolder: { projectItemCreation = .moduleFolder },
-                                    onResolvePackages: model.refreshCargoWorkspace,
-                                    onPinPackages: model.pinDependenciesForOffline,
-                                    onAddPackage: { isCargoCatalogPresented = true },
-                                    onRemovePackage: model.removeCargoDependency,
-                                    vendoredFiles: model.vendoredFiles,
-                                    onVendor: model.vendorCrate,
-                                    onOpenVendor: model.openVendoredCrate,
-                                    onResetVendor: model.resetVendoredCrate
-                                )
-                            .frame(width: projectSidebarWidth)
-
-                            ResizablePanelDivider(
-                                edge: .leading,
-                                width: $projectSidebarWidth,
-                                isCollapsed: $isProjectSidebarCollapsed,
-                                minimumWidth: 170,
-                                maximumWidth: 360,
-                                canCollapse: false
-                            )
-
-                            editorPane
-                                .frame(minWidth: 340)
-
-                            ResizablePanelDivider(
-                                edge: .trailing,
-                                width: $inspectorWidth,
-                                isCollapsed: $isInspectorCollapsed,
-                                minimumWidth: 320,
-                                maximumWidth: 560
-                            )
-
-                            if !isInspectorCollapsed {
-                                inspectorPane
-                                    .frame(width: inspectorWidth)
-                                    .transition(.move(edge: .trailing).combined(with: .opacity))
-                            }
-                        }
-                    } else {
-                        compactBuildWorkspace
-                    }
-                }
-            }
-            .tabItem { Label("Build", systemImage: "hammer.fill") }
-            .tag(CrabrixDestination.build)
 
             LearningHubView(
                 navigationPath: $learningPath,
@@ -267,27 +167,27 @@ struct ContentView: View {
                 onCompleteLesson: { lesson in model.completeLesson(lesson.id) },
                 onAnswerLesson: { lesson, answer, correct in
                     if correct { model.recordLessonAnswer(answer, for: lesson.id) }
+                },
+                onOpenExample: { project, contentVersion in
+                    model.openAcademyExample(project, contentVersion: contentVersion)
+                    openCodeWorkspace()
                 }
             )
             .tabItem { Label("Learn", systemImage: "graduationcap.fill") }
             .tag(CrabrixDestination.learn)
 
             SettingsView(
-                toolchain: model.toolchain,
-                manifest: model.cargoManifest,
-                workspace: model.cargoWorkspace,
-                storage: model.cargoStorage,
-                onAddDependency: model.addCargoDependency,
-                onRefreshStorage: model.refreshCargoStorage,
-                onClearBuildArtifacts: model.clearCargoBuildArtifacts,
-                onClearDownloadedArchives: model.clearCargoDownloadedArchives,
-                onClearOfflinePins: model.clearCargoOfflinePins,
-                onClearPackageCache: model.clearCargoPackageCache
+                toolchain: model.toolchain
             )
             .tabItem { Label("Settings", systemImage: "gearshape.fill") }
             .tag(CrabrixDestination.settings)
+                }
+                .tabViewStyle(.sidebarAdaptable)
+                .toolbarBackground(CrabrixTheme.panel, for: .tabBar)
+                .toolbarBackground(.visible, for: .tabBar)
+            }
         }
-        .tabViewStyle(.sidebarAdaptable)
+        .id(appearanceRaw)
         .tint(CrabrixTheme.coral)
         .foregroundStyle(CrabrixTheme.primary)
         .preferredColorScheme(
@@ -296,11 +196,31 @@ struct ContentView: View {
         .sheet(isPresented: $isCargoCatalogPresented) {
             CargoDependencyCatalogSheet(onAdd: model.addCargoDependency)
         }
-        .sheet(isPresented: $isNewProjectPresented) {
-            NewProjectSheet { request in
-                model.createProject(request)
-                selectedDestination = .build
-            }
+        .sheet(isPresented: $isPackageStoragePresented) {
+            ProjectPackageStorageSheet(
+                storage: model.cargoStorage,
+                onRefreshStorage: model.refreshCargoStorage,
+                onClearBuildArtifacts: model.clearCargoBuildArtifacts,
+                onClearDownloadedArchives: model.clearCargoDownloadedArchives,
+                onClearOfflinePins: model.clearCargoOfflinePins,
+                onClearPackageCache: model.clearCargoPackageCache
+            )
+        }
+        .sheet(isPresented: $isNewProjectPresented, onDismiss: presentPendingProjectImport) {
+            NewProjectSheet(
+                onCreate: { request in
+                    model.createProject(request)
+                    openCodeWorkspace()
+                },
+                onOpenGitHub: {
+                    pendingNewProjectImport = .github
+                    isNewProjectPresented = false
+                },
+                onOpenFiles: {
+                    pendingNewProjectImport = .files
+                    isNewProjectPresented = false
+                }
+            )
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
@@ -349,7 +269,7 @@ struct ContentView: View {
                     let imported = await model.importGitHub(rawURL)
                     if imported {
                         isGitHubImporterPresented = false
-                        selectedDestination = .build
+                        openCodeWorkspace()
                     }
                 }
             )
@@ -375,7 +295,7 @@ struct ContentView: View {
                 Task {
                     await model.openProject(from: url)
                     if case .ready = model.projectTransfer {
-                        selectedDestination = .build
+                        openCodeWorkspace()
                     }
                 }
             case let .failure(error):
@@ -394,31 +314,30 @@ struct ContentView: View {
             }
         }
         .task {
+            await academy.prepare()
             let arguments = ProcessInfo.processInfo.arguments
+            if arguments.contains("-CrabrixLibrary") || arguments.contains("-CrabrixCanvasGallery") {
+                selectedDestination = .learn
+            }
             if arguments.contains("--crabrix-auto-multifile") {
                 model.loadMultiFileSample()
-                selectedDestination = .build
+                openCodeWorkspace()
             }
             if arguments.contains("--crabrix-auto-borrow") {
                 model.loadBorrowDiagnosticSample()
-                selectedDestination = .build
+                openCodeWorkspace()
             }
             if let githubArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-github=") }) {
                 let rawURL = String(githubArgument.dropFirst("--crabrix-auto-github=".count))
                 if await model.importGitHub(rawURL) {
-                    selectedDestination = .build
+                    openCodeWorkspace()
                 }
             }
             if arguments.contains("--crabrix-auto-learn") {
                 selectedDestination = .learn
             }
-            if let lessonArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-lesson=") }) {
-                let lessonID = String(lessonArgument.dropFirst("--crabrix-auto-lesson=".count))
-                if let lesson = RustCourseCatalog.lesson(id: lessonID),
-                   let course = RustCourseCatalog.course(containingLessonID: lesson.id) {
-                    selectedDestination = .learn
-                    learningPath = [.course(course.id), .lesson(lesson.id)]
-                }
+            if arguments.contains(where: { $0.hasPrefix("--crabrix-auto-lesson=") }) {
+                selectedDestination = .learn
             }
             if arguments.contains("--crabrix-auto-settings") {
                 selectedDestination = .settings
@@ -432,8 +351,13 @@ struct ContentView: View {
             }
             if let showcaseArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-showcase=") }) {
                 let id = String(showcaseArgument.dropFirst("--crabrix-auto-showcase=".count))
-                model.loadShowcaseProject(id: id)
-                selectedDestination = .build
+                if let installed = academy.repository?.loaded["projects"],
+                   let project = installed.showcases.first(where: { $0.id == id }) {
+                    model.openAcademyExample(project, contentVersion: installed.contentVersion)
+                    openCodeWorkspace()
+                } else {
+                    selectedDestination = .learn
+                }
             }
             if arguments.contains("--crabrix-auto-run") {
                 model.run()
@@ -443,7 +367,7 @@ struct ContentView: View {
             if !arguments.contains(where: { $0.hasPrefix("--crabrix-auto-") }) {
                 await model.consumePendingSharedImport()
                 if case .ready = model.projectTransfer {
-                    selectedDestination = .build
+                    openCodeWorkspace()
                 }
             }
         }
@@ -456,6 +380,7 @@ struct ContentView: View {
         }
         .onChange(of: model.projectID) { _, _ in
             terminal.attach(to: model.exportProject())
+            selectedBuildDockTab = .code
         }
         .onChange(of: model.activity) { oldValue, newValue in
             terminal.activityChanged(
@@ -481,8 +406,8 @@ struct ContentView: View {
             guard let scored = scoredLessonIDs else {
                 scoredLessonIDs = ids
                 for lessonID in ids {
-                    if let pattern = AlgorithmCourseCatalog.pattern(forChallengeLessonID: lessonID) {
-                        progress.recordAlgorithmSolved(patternID: pattern.id)
+                    if let challenge = academy.repository?.challenge(for: lessonID) {
+                        progress.recordAlgorithmSolved(challenge: challenge)
                     }
                 }
                 return
@@ -492,11 +417,23 @@ struct ContentView: View {
             scoredLessonIDs = ids
             for lessonID in fresh {
                 progress.record(
-                    Self.progressEvent(forLessonID: lessonID),
+                    progressEvent(forLessonID: lessonID),
                     eventKey: "lesson:\(lessonID):first-completion"
                 )
-                if let pattern = AlgorithmCourseCatalog.pattern(forChallengeLessonID: lessonID) {
-                    progress.recordAlgorithmSolved(patternID: pattern.id)
+                if let challenge = academy.repository?.challenge(for: lessonID) {
+                    progress.recordAlgorithmSolved(challenge: challenge)
+                }
+            }
+        }
+        .onReceive(academy.$repository) { repository in
+            // Progress may load before the offline transition packs finish
+            // activating. Backfill their verified Atlas identities once the
+            // repository arrives; the store deduplicates every pattern.
+            guard let repository else { return }
+            progress.configureAcademy(repository: repository)
+            for lessonID in model.completedLessonIDs {
+                if let challenge = repository.challenge(for: lessonID) {
+                    progress.recordAlgorithmSolved(challenge: challenge)
                 }
             }
         }
@@ -537,7 +474,7 @@ struct ContentView: View {
 
     private func closeBuildWorkspace() {
         if let lessonID = model.activeLessonID,
-           let course = RustCourseCatalog.course(containingLessonID: lessonID) {
+           let course = academy.repository?.course(containing: lessonID) {
             selectedDestination = .learn
             learningPath = [.course(course.id), .lesson(lessonID)]
         } else {
@@ -545,10 +482,30 @@ struct ContentView: View {
         }
     }
 
-    private func startLesson(_ lesson: RustLesson) {
+    private func openCodeWorkspace() {
+        selectedBuildDockTab = .code
+        selectedDestination = .build
+    }
+
+    private func presentPendingProjectImport() {
+        guard let source = pendingNewProjectImport else { return }
+        pendingNewProjectImport = nil
+        switch source {
+        case .github: isGitHubImporterPresented = true
+        case .files: isFileImporterPresented = true
+        }
+    }
+
+    private func startLesson(_ lesson: RustLesson, session: CourseSession) {
+        guard let content = CourseLessonExecution(lesson: lesson, session: session) else { return }
         let isReview = model.completedLessonIDs.contains(lesson.id)
         let reviewProjectName = "review-\(lesson.id)"
-        switch lesson.exercise {
+        if let template = session.repository.starterProject(for: lesson.id) {
+            model.loadCourseStarter(
+                template, session: session,
+                projectName: isReview ? reviewProjectName : nil
+            )
+        } else { switch lesson.exercise {
         case .runnable:
             model.loadHelloLessonSample(
                 projectName: isReview ? reviewProjectName : "hello-crabrix"
@@ -562,7 +519,7 @@ struct ContentView: View {
                 projectName: isReview ? reviewProjectName : "modules-lab"
             )
         case .algorithmChallenge:
-            guard let challenge = AlgorithmCourseCatalog.challenge(for: lesson.id) else {
+            guard let challenge = content.challenge else {
                 return
             }
             model.loadAlgorithmLessonSample(
@@ -571,9 +528,9 @@ struct ContentView: View {
             )
         case .planned:
             return
-        }
-        model.beginLesson(lesson.id, isReview: isReview)
-        selectedDestination = .build
+        } }
+        model.beginLesson(lesson.id, isReview: isReview, content: content)
+        openCodeWorkspace()
     }
 
     private var editorPane: some View {
@@ -638,6 +595,7 @@ struct ContentView: View {
                 onCancel: model.cancelBuild,
                 canContinueLearning: model.canContinueFromLessonResult,
                 lessonEvidenceMessage: model.lessonEvidenceMessage,
+                lessonHint: model.activeLessonHint,
                 contribution: lastContribution,
                 onOpenDiagnostic: openDiagnostic,
                 diagnosticAdviceState: model.diagnosticAdviceState,
@@ -698,6 +656,92 @@ struct ContentView: View {
                 }
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+        }
+    }
+
+    private var buildWorkspace: some View {
+        ZStack {
+            CrabrixTheme.background.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                AppHeader(
+                    transfer: model.projectTransfer,
+                    activity: model.activity,
+                    canRun: model.canStartBuild && !model.isProjectOperationInProgress,
+                    onRun: model.run,
+                    onCancelBuild: model.cancelBuild,
+                    onOpenProjects: { selectedDestination = .projects },
+                    onCloseWorkspace: closeBuildWorkspace,
+                    onNewProject: { isNewProjectPresented = true },
+                    onProjectActions: {
+                        isProjectActionsPresented = true
+                    }
+                )
+                if model.projectTransfer.isWorking || model.projectTransfer.isFailure {
+                    ProjectTransferStrip(transfer: model.projectTransfer)
+                }
+                Divider().overlay(CrabrixTheme.border)
+
+                if horizontalSizeClass == .regular {
+                    HStack(spacing: 0) {
+                        ProjectSidebar(
+                                projectName: model.projectName,
+                                files: model.fileNames,
+                                selectedFile: model.selectedFile,
+                                manifest: model.cargoManifest,
+                                report: model.compatibilityReport,
+                                provenance: model.provenance,
+                                cargoStage: model.cargoStage,
+                                cargoWorkspace: model.cargoWorkspace,
+                                isBusy: model.isBusy,
+                                onProjectActions: {
+                                    isProjectActionsPresented = true
+                                },
+                                onSelect: selectEditorFile,
+                                onNewFile: { projectItemCreation = .rustFile },
+                                onNewFolder: { projectItemCreation = .moduleFolder },
+                                onResolvePackages: model.refreshCargoWorkspace,
+                                onPinPackages: model.pinDependenciesForOffline,
+                                onAddPackage: { isCargoCatalogPresented = true },
+                                onManagePackageStorage: { isPackageStoragePresented = true },
+                                onRemovePackage: model.removeCargoDependency,
+                                vendoredFiles: model.vendoredFiles,
+                                onVendor: model.vendorCrate,
+                                onOpenVendor: model.openVendoredCrate,
+                                onResetVendor: model.resetVendoredCrate
+                            )
+                        .frame(width: projectSidebarWidth)
+
+                        ResizablePanelDivider(
+                            edge: .leading,
+                            width: $projectSidebarWidth,
+                            isCollapsed: $isProjectSidebarCollapsed,
+                            minimumWidth: 170,
+                            maximumWidth: 360,
+                            canCollapse: false
+                        )
+
+                        editorPane
+                            .frame(minWidth: 340)
+
+                        ResizablePanelDivider(
+                            edge: .trailing,
+                            width: $inspectorWidth,
+                            isCollapsed: $isInspectorCollapsed,
+                            minimumWidth: 320,
+                            maximumWidth: 560
+                        )
+
+                        if !isInspectorCollapsed {
+                            inspectorPane
+                                .frame(width: inspectorWidth)
+                                .transition(.move(edge: .trailing).combined(with: .opacity))
+                        }
+                    }
+                } else {
+                    compactBuildWorkspace
+                }
             }
         }
     }
@@ -777,6 +821,7 @@ struct ContentView: View {
                             onResolvePackages: model.refreshCargoWorkspace,
                             onPinPackages: model.pinDependenciesForOffline,
                             onAddPackage: { isCargoCatalogPresented = true },
+                            onManagePackageStorage: { isPackageStoragePresented = true },
                             onRemovePackage: model.removeCargoDependency,
                             vendoredFiles: model.vendoredFiles,
                             onVendor: model.vendorCrate,
@@ -796,7 +841,7 @@ struct ContentView: View {
 
                 if isCompactInspectorDrawerPresented {
                     VStack(spacing: 0) {
-                        CompactDrawerHeader(title: "Build inspector", systemImage: "sidebar.right") {
+                        CompactDrawerHeader(title: "Project details", systemImage: "sidebar.right") {
                             withAnimation(.easeOut(duration: 0.2)) {
                                 isCompactInspectorDrawerPresented = false
                             }
@@ -1002,19 +1047,19 @@ struct ContentView: View {
     /// of its 600 steps like a Rust lesson would have made the rank ladder a
     /// formality. Reading a pattern is a quarter of a lesson; proving one to
     /// the compiler is worth more than either.
-    private static func progressEvent(forLessonID lessonID: String) -> CrabrixProgressEvent {
-        switch AlgorithmCourseCatalog.stage(forLessonID: lessonID) {
-        case .model, .recognize: .algorithmStudyStepCompleted
-        case .challenge: .algorithmChallengeSolved
-        case nil: .lessonCompleted
+    private func progressEvent(forLessonID lessonID: String) -> CrabrixProgressEvent {
+        guard academy.repository?.course(containing: lessonID)?.id == "algorithms" else {
+            return .lessonCompleted
         }
+        return academy.repository?.challenge(for: lessonID) == nil
+            ? .algorithmStudyStepCompleted : .algorithmChallengeSolved
     }
 
     /// Turns a finished build into rating, once per result.
     private func recordBuildProgress(_ result: CompilationResult) {
         guard result.succeeded, result.phase == .run else { return }
         // A completed lesson is review-only. The editor does not add its typing
-        // to the ledger, and the run neither changes vitals nor earns rating.
+        // to the ledger, and this run earns no additional rating.
         if !model.earnsProgressForCurrentRun {
             lastContribution = nil
             return
@@ -1058,8 +1103,12 @@ struct ContentView: View {
     private func continueLearning() {
         selectedDestination = .learn
         if let lessonID = model.activeLessonID,
-           AlgorithmCourseCatalog.pattern(forLessonID: lessonID) != nil {
-            if let next = AlgorithmCourseCatalog.nextLessonInSameMethod(after: lessonID) {
+           let course = academy.repository?.course(containing: lessonID),
+           course.id == "algorithms" {
+            let methodLessons = course.units.first { $0.lessons.contains { $0.id == lessonID } }?.lessons ?? []
+            if let position = methodLessons.firstIndex(where: { $0.id == lessonID }),
+               methodLessons.indices.contains(position + 1) {
+                let next = methodLessons[position + 1]
                 learningPath = [.course("algorithms"), .lesson(next.id)]
             } else {
                 learningPath = [.course("algorithms")]
@@ -1068,10 +1117,12 @@ struct ContentView: View {
         }
         // Land on the next lesson itself, not on the course list: after finishing
         // something, "what is next" is a specific screen.
-        guard let step = RustLessonProgression.nextStep(
-            after: model.activeLessonID,
-            completedLessonIDs: model.completedLessonIDs
-        ) else {
+        guard let courses = academy.repository?.courses,
+              let step = RustLessonProgression.nextStep(
+                after: model.activeLessonID,
+                completedLessonIDs: model.completedLessonIDs,
+                courses: courses
+              ) else {
             learningPath = []
             return
         }
@@ -1109,7 +1160,6 @@ private struct CompactEdgeSwipeZone: View {
 
 private struct AppHeader: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    let toolchain: ToolchainStatus
     let transfer: CompilerViewModel.ProjectTransfer
     let activity: CompilerViewModel.Activity
     let canRun: Bool
@@ -1118,8 +1168,6 @@ private struct AppHeader: View {
     let onOpenProjects: () -> Void
     let onCloseWorkspace: () -> Void
     let onNewProject: () -> Void
-    let onOpenFiles: () -> Void
-    let onOpenGitHub: () -> Void
     let onProjectActions: () -> Void
 
     private var isPhone: Bool {
@@ -1150,13 +1198,7 @@ private struct AppHeader: View {
 
                 Menu {
                     Button(action: onNewProject) {
-                        Label("New Rust Project", systemImage: "plus")
-                    }
-                    Button(action: onOpenGitHub) {
-                        Label("Open from GitHub", systemImage: "arrow.down.circle")
-                    }
-                    Button(action: onOpenFiles) {
-                        Label("Open from Files", systemImage: "folder")
+                        Label("New Project", systemImage: "plus")
                     }
                     Button(action: onProjectActions) {
                         Label("Project Details & Share", systemImage: "ellipsis.circle")
@@ -1171,15 +1213,6 @@ private struct AppHeader: View {
                     }
                 }
                 .disabled(transfer.isWorking)
-
-                Label("NO WEBVIEW", systemImage: "swift")
-                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(CrabrixTheme.mint)
-                    .accessibilityLabel("Native SwiftUI")
-                Label(toolchain.isReady ? "OFFLINE READY" : "MISSING", systemImage: toolchain.isReady ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(toolchain.isReady ? CrabrixTheme.mint : CrabrixTheme.amber)
-                    .accessibilityLabel(toolchain.isReady ? "Offline compiler ready" : "Compiler missing")
             } else {
                 if isPhone {
                     Button(action: onProjectActions) {
@@ -1368,6 +1401,7 @@ private struct ProjectSidebar: View {
     let onResolvePackages: () -> Void
     let onPinPackages: () -> Void
     let onAddPackage: () -> Void
+    let onManagePackageStorage: () -> Void
     let onRemovePackage: (String) -> Bool
     let vendoredFiles: (String, SemanticVersion) -> [String: String]
     let onVendor: (String, SemanticVersion) -> Bool
@@ -1438,6 +1472,7 @@ private struct ProjectSidebar: View {
                         onRefresh: onResolvePackages,
                         onPinForOffline: onPinPackages,
                         onAddDependency: onAddPackage,
+                        onManageStorage: onManagePackageStorage,
                         onRemoveDependency: onRemovePackage,
                         vendoredFiles: vendoredFiles,
                         onVendor: onVendor,
@@ -1594,7 +1629,7 @@ private struct EditorToolbar: View {
         result?.diagnostics.contains(where: { $0.level == "error" }) == true
     }
 
-    /// Build controls live in the Build inspector. What stays above the editor
+    /// Build controls live in the project details inspector. What stays above the editor
     /// is a read-only line, so a multi-minute build is never silent while the
     /// inspector is closed.
     private var buildStatus: some View {
@@ -1657,7 +1692,7 @@ private struct EditorToolbar: View {
                         : "sidebar.right",
                     isCollapsed: isInspectorCollapsed,
                     visibleTitle: isInspectorCollapsed
-                        ? (hasCompilerError ? "Fix" : "Build")
+                        ? (hasCompilerError ? "Fix" : "Details")
                         : nil,
                     action: onToggleInspector
                 )

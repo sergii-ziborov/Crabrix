@@ -103,15 +103,18 @@ struct CargoBuildPlan: Sendable, Equatable {
 }
 
 enum CargoToolchain {
-    /// The pinned WASI rustc build the app ships and every artefact is keyed to.
-    static let bundledVersion = "artifacts-test-7"
-    /// Captured from the bundled module itself (`rustc --version`).
-    static let semanticVersionLabel = "1.96.0-dev"
-    /// Cargo's `rust-version` comparison uses the release components; the
-    /// bundled development compiler implements the 1.96 language surface.
-    static let semanticVersion = SemanticVersion(major: 1, minor: 96, patch: 0)
-    static let rustcSHA256 = "41412081eefc3e08ec5664ed0748902a7e575e1f267898dcc64d412702df7e83"
-    static let sysrootManifestSHA256 = "a89ba732c649a983126750112268614c80b6e7d6bba8c60980cbfd32e04d9892"
+    /// Build scripts, the app bundle, Cargo fingerprints, and About read the
+    /// same checked release input. An invalid bundle fails closed at probe.
+    static let release = AppToolchainRelease.load()
+    static let bundledVersion = release?.toolchainID ?? "unavailable"
+    static let semanticVersionLabel = release?.rustVersion ?? "unavailable"
+    static let semanticVersion = SemanticVersion(
+        major: release?.rustVersionComponents.major ?? 0,
+        minor: release?.rustVersionComponents.minor ?? 0,
+        patch: release?.rustVersionComponents.patch ?? 0
+    )
+    static let rustcSHA256 = release?.rustcSHA256 ?? "unavailable"
+    static let sysrootManifestSHA256 = release?.sysrootManifestSHA256 ?? "unavailable"
     static let artifactIdentity = rustcSHA256 + ":" + sysrootManifestSHA256
 }
 

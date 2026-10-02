@@ -25,11 +25,10 @@ struct RustQuestion: Identifiable, Sendable, Equatable {
     }
 }
 
-/// Every question in the app, derived from the curriculum.
-///
-/// Quick Practice does not keep its own list: adding a lesson with written
-/// content adds a question here automatically, so the two can never drift apart.
+/// Schedules a round from questions supplied by the installed CourseRepository.
+/// The frozen pre-CoursePack list below exists only for exporter parity tests.
 enum RustQuestionBank {
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
     static let all: [RustQuestion] = {
         RustCourseCatalog.courses
             // Algorithms has its own 600-step progression. Mixing all of those
@@ -64,24 +63,49 @@ enum RustQuestionBank {
         records: [String: TopicMasteryRecord],
         now: Date = Date()
     ) -> [RustQuestion] {
+        round(count: count, from: all, records: records, now: now)
+    }
+#endif
+
+    static func round(
+        count: Int,
+        from questions: [RustQuestion],
+        records: [String: TopicMasteryRecord],
+        now: Date = Date()
+    ) -> [RustQuestion] {
         let picked = TopicScheduler.pick(
             count: count,
-            from: topics,
+            from: questions.map(\.topic),
             records: records,
             now: now
         )
-        return picked.compactMap(question(for:))
+        let byTopic = Dictionary(uniqueKeysWithValues: questions.map { ($0.topic, $0) })
+        return picked.compactMap { byTopic[$0] }
     }
 
     /// Deterministic variant, for tests.
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
     static func round(
         count: Int,
         records: [String: TopicMasteryRecord],
         now: Date = Date(),
         using generator: inout some RandomNumberGenerator
     ) -> [RustQuestion] {
-        TopicScheduler
-            .pick(count: count, from: topics, records: records, now: now, using: &generator)
-            .compactMap(question(for:))
+        round(count: count, from: all, records: records, now: now, using: &generator)
+    }
+#endif
+
+    static func round(
+        count: Int,
+        from questions: [RustQuestion],
+        records: [String: TopicMasteryRecord],
+        now: Date = Date(),
+        using generator: inout some RandomNumberGenerator
+    ) -> [RustQuestion] {
+        let byTopic = Dictionary(uniqueKeysWithValues: questions.map { ($0.topic, $0) })
+        return TopicScheduler
+            .pick(count: count, from: questions.map(\.topic), records: records,
+                  now: now, using: &generator)
+            .compactMap { byTopic[$0] }
     }
 }

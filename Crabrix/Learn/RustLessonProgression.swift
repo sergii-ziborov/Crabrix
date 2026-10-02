@@ -56,8 +56,8 @@ enum RustLessonProgression {
     }
 
     /// Every lesson in catalog order, paired with the course it belongs to.
-    private static func catalogOrder() -> [Step] {
-        RustCourseCatalog.courses.flatMap { course in
+    private static func catalogOrder(courses: [RustCourse]) -> [Step] {
+        courses.flatMap { course in
             course.units.flatMap(\.lessons).map { Step(courseID: course.id, lessonID: $0.id) }
         }
     }
@@ -70,9 +70,10 @@ enum RustLessonProgression {
     /// Finishing a course still continues into the next course.
     static func nextStep(
         after lessonID: String?,
-        completedLessonIDs: Set<String>
+        completedLessonIDs: Set<String>,
+        courses: [RustCourse]
     ) -> Step? {
-        let order = catalogOrder()
+        let order = catalogOrder(courses: courses)
         guard !order.isEmpty else { return nil }
 
         if let lessonID, let index = order.firstIndex(where: { $0.lessonID == lessonID }) {

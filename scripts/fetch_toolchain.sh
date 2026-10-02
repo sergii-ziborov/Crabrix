@@ -3,18 +3,24 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-TOOLCHAIN_TAG="artifacts-test-7"
+SOURCE_KIND="$(/usr/bin/python3 "$SCRIPT_DIR/toolchain_manifest.py" kind)"
+if [[ "$SOURCE_KIND" == crabrix-release-v1 ]]; then
+  exec /usr/bin/python3 "$SCRIPT_DIR/fetch_crabrix_toolchain.py"
+fi
+[[ "$SOURCE_KIND" == legacy-tar-zstd ]] || {
+  echo "Unsupported toolchain source kind: $SOURCE_KIND" >&2
+  exit 1
+}
+IFS=$'\t' read -r TOOLCHAIN_TAG BASE_URL RUSTC_ARCHIVE RUSTC_SHA \
+  SYSROOT_ARCHIVE SYSROOT_SHA RUSTC_FILE_SHA SYSROOT_MANIFEST_SHA \
+  < <(python3 "$SCRIPT_DIR/toolchain_manifest.py" legacy-tsv)
+[[ -n "$TOOLCHAIN_TAG" && -n "$SYSROOT_MANIFEST_SHA" ]] || {
+  echo "The app toolchain release manifest is incomplete" >&2
+  exit 1
+}
 TOOLCHAIN_ROOT="$PROJECT_ROOT/Crabrix/Resources/Toolchain"
 VERSION_DIR="$TOOLCHAIN_ROOT/$TOOLCHAIN_TAG"
 MARKER="$VERSION_DIR/.complete"
-
-RUSTC_ARCHIVE="rustc-wasm.tar.zst"
-SYSROOT_ARCHIVE="wasip1-sysroot.tar.zst"
-RUSTC_SHA="a96f6d53afff3c95d6387def27f6ddb53a02575679dc6c981d60797c32dcd022"
-SYSROOT_SHA="4eedff7b0cd4330bfe226734b67751a97fac5572ac55392e93f9d3e4886a277d"
-RUSTC_FILE_SHA="41412081eefc3e08ec5664ed0748902a7e575e1f267898dcc64d412702df7e83"
-SYSROOT_MANIFEST_SHA="a89ba732c649a983126750112268614c80b6e7d6bba8c60980cbfd32e04d9892"
-BASE_URL="https://github.com/AngelOnFira/wasm-rustc/releases/download/$TOOLCHAIN_TAG"
 
 verify_installed_toolchain() {
   local root="$1"

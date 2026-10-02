@@ -26,7 +26,7 @@ struct RatingSummaryCard: View {
                     Text(rank.title)
                         .font(.subheadline.bold())
                         .foregroundStyle(CrabrixTheme.mint)
-                    Text("\(store.earnedAchievements.count)/\(CrabrixAchievementCatalog.all.count) achievements")
+                    Text("\(store.earnedAchievements.count)/\(store.allAchievements.count) achievements")
                         .font(.caption2.monospaced())
                         .foregroundStyle(CrabrixTheme.muted)
                 }
@@ -88,8 +88,8 @@ struct AchievementFamilyRow: View {
     let state: CrabrixProgressState
 
     var body: some View {
-        let earned = family.earnedTier(in: state)
-        let next = family.nextTarget(in: state)
+        let earned = family.awardedTier(in: state)
+        let next = family.nextUnawardedTarget(in: state)
         let value = next?.progress(state)
 
         return HStack(spacing: 12) {
@@ -228,7 +228,7 @@ struct AchievementsSection: View {
                     .font(.system(size: 9, weight: .bold, design: .monospaced))
                     .foregroundStyle(CrabrixTheme.muted)
                 Spacer()
-                Text("\(store.earnedAchievements.count) of \(CrabrixAchievementCatalog.all.count) tiers")
+                Text("\(store.earnedAchievements.count) of \(store.allAchievements.count) tiers")
                     .font(.caption2.monospaced())
                     .foregroundStyle(CrabrixTheme.muted)
             }
@@ -246,9 +246,15 @@ struct AchievementsSection: View {
                         Text("ALGORITHM ACHIEVEMENTS")
                             .font(.caption.monospaced().bold())
                             .foregroundStyle(CrabrixTheme.primary)
-                        Text("\(store.state.solvedAlgorithmPatternIDs.count)/200 patterns · 20 independent methods")
-                            .font(.caption2)
-                            .foregroundStyle(CrabrixTheme.muted)
+                        if store.atlasMethodCount > 0 {
+                            Text("\(store.state.solvedAlgorithmPatternIDs.count)/\(store.atlasPatternCount) patterns · \(store.atlasMethodCount) independent methods")
+                                .font(.caption2)
+                                .foregroundStyle(CrabrixTheme.muted)
+                        } else {
+                            Text("Install Algorithm Atlas to see method achievements.")
+                                .font(.caption2)
+                                .foregroundStyle(CrabrixTheme.muted)
+                        }
                     }
                 }
 
@@ -264,17 +270,17 @@ struct AchievementsSection: View {
     /// Families with something earned come first, deepest first, so the ladder
     /// you are actually climbing is at the top.
     private var sortedGeneralFamilies: [CrabrixAchievementFamily] {
-        sorted(CrabrixAchievementCatalog.families.filter { $0.group == .general })
+        sorted(store.achievementFamilies.filter { $0.group == .general })
     }
 
     private var sortedAlgorithmFamilies: [CrabrixAchievementFamily] {
-        sorted(CrabrixAchievementCatalog.families.filter { $0.group == .algorithms })
+        sorted(store.achievementFamilies.filter { $0.group == .algorithms })
     }
 
     private func sorted(_ families: [CrabrixAchievementFamily]) -> [CrabrixAchievementFamily] {
         families.sorted { lhs, rhs in
-            let left = lhs.earnedTier(in: store.state)?.rawValue ?? -1
-            let right = rhs.earnedTier(in: store.state)?.rawValue ?? -1
+            let left = lhs.awardedTier(in: store.state)?.rawValue ?? -1
+            let right = rhs.awardedTier(in: store.state)?.rawValue ?? -1
             return left == right ? lhs.title < rhs.title : left > right
         }
     }
@@ -282,38 +288,36 @@ struct AchievementsSection: View {
 
 /// What the learner is weakest at, and what practice will focus on next.
 struct WeakTopicsCard: View {
+    @EnvironmentObject private var academy: AcademyContentStore
     var store: TopicMasteryStore = .shared
     /// Tapping a topic should take you to the lesson it came from; without it
     /// the card names your weak spots and then leaves you to find them.
     var onSelect: ((String) -> Void)?
 
     private var weakest: [(topic: String, strength: Double)] {
-        store.weakest(from: RustQuestionBank.topics + TermTrainDeck.all.map(\.topic), limit: 4)
+        guard let repository = academy.repository else { return [] }
+        let topics = repository.practiceQuestions().map(\.topic)
+            + repository.trainableTermPairs().map(\.topic)
+        return store.weakest(from: topics, limit: 4)
     }
 
     private func title(for topic: String) -> String {
-        RustCourseCatalog.lesson(id: topic)?.title ?? topic
+        academy.repository?.lesson(id: topic)?.title ?? topic
     }
 
     /// Shown beside the title so two lessons with similar names are still
     /// tellable apart at a glance.
     private func courseTitle(for topic: String) -> String? {
-        RustCourseCatalog.course(containingLessonID: topic)?.title.uppercased()
+        academy.repository?.course(containing: topic)?.title.uppercased()
     }
 
     var body: some View {
         let summary = store.summary
         return VStack(alignment: .leading, spacing: 11) {
-            HStack {
-                Label("WHAT TO PRACTISE", systemImage: "target")
-                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+            if summary.seen > 0 {
+                Text("\(summary.strong) strong · \(summary.weak) weak")
+                    .font(.caption2.monospaced())
                     .foregroundStyle(CrabrixTheme.muted)
-                Spacer()
-                if summary.seen > 0 {
-                    Text("\(summary.strong) strong · \(summary.weak) weak")
-                        .font(.caption2.monospaced())
-                        .foregroundStyle(CrabrixTheme.muted)
-                }
             }
 
             if weakest.isEmpty {

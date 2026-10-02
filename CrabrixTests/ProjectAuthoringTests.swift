@@ -82,26 +82,46 @@ final class ProjectAuthoringTests: XCTestCase {
         XCTAssertEqual(CargoManifest.parse(manifest)?.dependencies.count, 1)
     }
 
-    func testBundledProjectLibraryHasRunnableEntries() {
-        XCTAssertEqual(RustShowcaseLibrary.projects.count, 46)
-        XCTAssertEqual(Set(RustShowcaseLibrary.projects.map(\.id)).count, 46)
+    func testInstalledAcademyExamplesHaveRunnableEntries() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = try await CourseBootstrap(
+            bundle: .main, root: root, appVersion: SemanticVersion("1.1")
+        ).activateBundledBaseline()
+        let projects = repository.showcaseProjects()
+        XCTAssertEqual(projects.count, 46)
+        XCTAssertEqual(Set(projects.map(\.id)).count, 46)
         XCTAssertGreaterThanOrEqual(
-            RustShowcaseLibrary.projects.filter(\.isGuided).count,
+            projects.filter(\.isGuided).count,
             26
         )
         XCTAssertEqual(
-            RustShowcaseLibrary.projects.filter(\.isVisual).count,
+            projects.filter(\.isVisual).count,
             6
         )
-        for showcase in RustShowcaseLibrary.projects {
+        for showcase in projects {
             XCTAssertNotNil(showcase.project.files[showcase.project.entryFile])
             XCTAssertNotNil(showcase.project.files["Cargo.toml"])
         }
-        for showcase in RustShowcaseLibrary.projects.filter(\.isVisual) {
+        for showcase in projects.filter(\.isVisual) {
             XCTAssertEqual(showcase.project.kind, .visual)
             XCTAssertEqual(showcase.project.folder, "Visual Gallery")
             XCTAssertNotNil(showcase.project.files["README.md"])
         }
+        let example = try XCTUnwrap(projects.first)
+        let model = CompilerViewModel(projectLibrary: ProjectLibrary(
+            storageURL: root.appending(path: "projects.json")
+        ))
+        model.openAcademyExample(example, contentVersion: "1.0.1")
+        let firstCopy = model.exportProject()
+        XCTAssertNotEqual(firstCopy.id, example.project.id)
+        XCTAssertEqual(firstCopy.provenance?.course?.courseID, "projects")
+        XCTAssertEqual(firstCopy.provenance?.course?.contentVersion, "1.0.1")
+        XCTAssertEqual(firstCopy.provenance?.course?.templateHash, example.contentDigest)
+        model.source += "\n// local change"
+        XCTAssertNotEqual(model.exportProject().files, example.project.files)
+        model.openAcademyExample(example, contentVersion: "1.0.1")
+        XCTAssertNotEqual(model.exportProject().id, firstCopy.id)
     }
 
     func testSwitchingFilesPreservesRevisionAndUnsavedEdits() {

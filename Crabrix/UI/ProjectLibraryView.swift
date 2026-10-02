@@ -3,13 +3,9 @@ import SwiftUI
 /// Navigation targets inside the Projects tab.
 enum ProjectsRoute: Hashable {
     case myProjects
-    case library
 }
 
-/// The full project catalogue, with search and category filters.
-///
-/// The dashboard links here instead of listing everything, so the library can
-/// keep growing without turning the first screen into a wall of cards.
+/// The installed Academy example gallery, with search and category filters.
 struct ProjectLibraryView: View {
     @State private var query = ""
     @State private var category: RustShowcaseCategory?
@@ -20,13 +16,14 @@ struct ProjectLibraryView: View {
     @State private var visualOnly = ProcessInfo.processInfo
         .arguments.contains("-CrabrixCanvasGallery")
 
-    let onOpen: (String) -> Void
+    let projects: [RustShowcaseProject]
+    let onOpen: (RustShowcaseProject) -> Void
 
     private let columns = [GridItem(.adaptive(minimum: 260), spacing: 14)]
 
     private var results: [RustShowcaseProject] {
         let needle = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        return RustShowcaseLibrary.projects.filter { project in
+        return projects.filter { project in
             if let category, project.category != category { return false }
             if let difficulty, project.difficulty != difficulty { return false }
             if visualOnly, !project.isVisual { return false }
@@ -37,16 +34,16 @@ struct ProjectLibraryView: View {
 
     /// Categories that actually have something in them right now.
     private var availableCategories: [RustShowcaseCategory] {
-        let present = Set(RustShowcaseLibrary.projects.map(\.category))
+        let present = Set(projects.map(\.category))
         return RustShowcaseCategory.allCases.filter { present.contains($0) }
     }
 
     private var guidedCount: Int {
-        RustShowcaseLibrary.projects.filter(\.isGuided).count
+        projects.filter(\.isGuided).count
     }
 
     private var visualCount: Int {
-        RustShowcaseLibrary.projects.filter(\.isVisual).count
+        projects.filter(\.isVisual).count
     }
 
     var body: some View {
@@ -60,7 +57,7 @@ struct ProjectLibraryView: View {
                 } else {
                     LazyVGrid(columns: columns, spacing: 14) {
                         ForEach(results) { project in
-                            Button { onOpen(project.id) } label: {
+                            Button { onOpen(project) } label: {
                                 ProjectLibraryCard(project: project)
                             }
                             .buttonStyle(.plain)
@@ -77,19 +74,19 @@ struct ProjectLibraryView: View {
         }
         .background(CrabrixTheme.background.ignoresSafeArea())
         .foregroundStyle(CrabrixTheme.primary)
-        .navigationTitle("Project Library")
+        .navigationTitle("Examples")
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $query, prompt: "Search projects, concepts, categories")
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("\(RustShowcaseLibrary.projects.count) PROJECTS · \(guidedCount) GUIDED · \(visualCount) VISUAL")
+            Text("\(projects.count) EXAMPLES · \(guidedCount) GUIDED · \(visualCount) VISUAL")
                 .font(.caption.monospaced().bold())
                 .foregroundStyle(CrabrixTheme.mint)
-            Text("Open a working Rust project")
+            Text("Open an Academy example")
                 .font(.system(size: 26, weight: .bold, design: .rounded))
-            Text("Every project builds with the bundled compiler, uses only the standard library, and is yours to edit.")
+            Text("Copy an installed Rust example into your projects and edit it. The signed Academy package stays unchanged.")
                 .font(.subheadline)
                 .foregroundStyle(CrabrixTheme.muted)
         }
@@ -187,29 +184,11 @@ private struct ProjectLibraryCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             if project.isVisual {
-                VisualShowcaseThumbnail(projectID: project.id)
-                    .frame(height: 104)
-                    .clipShape(
-                        RoundedRectangle(cornerRadius: 9, style: .continuous)
-                    )
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 9, style: .continuous)
-                            .stroke(CrabrixTheme.border)
-                    }
-                    .overlay(alignment: .bottomLeading) {
-                        Label("RUST CANVAS", systemImage: "sparkles")
-                            .font(.system(
-                                size: 8,
-                                weight: .bold,
-                                design: .monospaced
-                            ))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 7)
-                            .frame(height: 19)
-                            .background(.black.opacity(0.55), in: Capsule())
-                            .padding(6)
-                    }
-                    .frame(maxWidth: .infinity)
+                Label("RUST CANVAS", systemImage: "paintpalette.fill")
+                    .font(.caption.monospaced().bold())
+                    .foregroundStyle(CrabrixTheme.cyan)
+                    .frame(maxWidth: .infinity, minHeight: 72)
+                    .background(CrabrixTheme.raised, in: RoundedRectangle(cornerRadius: 9))
             }
 
             HStack(spacing: 10) {
@@ -258,4 +237,3 @@ private struct ProjectLibraryCard: View {
         .accessibilityLabel("\(project.title), \(project.difficulty.title), \(project.detail)")
     }
 }
-

@@ -17,28 +17,54 @@ enum CrabrixReleaseFeatures {
 
 @main
 struct CrabrixApp: App {
+    @Environment(\.scenePhase) private var scenePhase
     /// Rating and achievements are earned everywhere, so the store is owned once
     /// at the root and handed to every feature that reports progress.
-    @StateObject private var progress = CrabrixProgressStore()
-    /// Health and energy live beside it, kept in step with rating because rank
-    /// is what sets the size of both pools.
-    @StateObject private var vitals = CrabrixVitalsStore()
+    @StateObject private var progress: CrabrixProgressStore
+    @StateObject private var academyContent: AcademyContentStore
+    @StateObject private var appLock: AppLockController
     #if CRABRIX_SOCIAL
     /// Identity and the global board, through Game Center. Optional everywhere:
     /// the app is fully usable without ever signing in.
-    @StateObject private var gameCenter = GameCenterService()
+    @StateObject private var gameCenter: GameCenterService
     #endif
+
+    init() {
+        // Decide before CrabrixProgressStore can write its current schema to
+        // UserDefaults. Otherwise a fresh install can look like an upgrade.
+        let initialInstallMode = CourseLaunchPolicy.resolve()
+        _progress = StateObject(wrappedValue: CrabrixProgressStore())
+        _academyContent = StateObject(wrappedValue: AcademyContentStore(
+            initialInstallMode: initialInstallMode
+        ))
+        _appLock = StateObject(wrappedValue: AppLockController())
+        #if CRABRIX_SOCIAL
+        _gameCenter = StateObject(wrappedValue: GameCenterService())
+        #endif
+    }
 
     var body: some Scene {
         WindowGroup {
-            socialEnvironment(
-                ContentView()
-                    .environmentObject(progress)
-                    .environmentObject(vitals)
-                    .achievementCelebrations(store: progress)
-            )
+            ZStack {
+                socialEnvironment(
+                    ContentView()
+                        .environmentObject(progress)
+                        .environmentObject(academyContent)
+                        .environmentObject(appLock)
+                        .achievementCelebrations(store: progress)
+                )
+                .allowsHitTesting(!appLock.isLocked)
+                .accessibilityHidden(appLock.isLocked)
+
+                if appLock.isLocked || (appLock.isEnabled && scenePhase != .active) {
+                    AppLockScreen(controller: appLock)
+                }
+            }
+            .onChange(of: scenePhase, initial: true) { _, phase in
+                appLock.scenePhaseChanged(phase)
+            }
             .task {
-                vitals.refresh(points: progress.state.totalPoints)
+                await academyContent.prepare()
                 #if CRABRIX_SOCIAL
                 if CrabrixReleaseFeatures.gameCenterEnabled {
                     gameCenter.authenticate()
@@ -46,7 +72,6 @@ struct CrabrixApp: App {
                 #endif
             }
             .onReceive(progress.$state) { state in
-                vitals.refresh(points: state.totalPoints)
                 #if CRABRIX_SOCIAL
                 if CrabrixReleaseFeatures.gameCenterEnabled {
                     Task { await gameCenter.submit(state: state) }

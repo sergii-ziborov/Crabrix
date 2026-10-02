@@ -23,9 +23,9 @@ settings:
 
 packages:
   WasmKit:
-    # Pinned local fork of upstream 0.3.1 (ee36070). Crabrix adds only the
-    # instruction-boundary limiter required to stop pure-compute guests.
-    path: Vendor/WasmKit
+    # Public Crabrix fork of WasmKit 0.4.1 with read-only host WASI preopens.
+    url: https://github.com/sergii-ziborov/crabrix-runtime.git
+    revision: d996f0d11dff54734b5670d58062e22c6e01f949
   SwiftSystem:
     url: https://github.com/apple/swift-system.git
     exactVersion: 1.8.1
@@ -41,6 +41,10 @@ targets:
       - path: Crabrix
         excludes:
           - Resources/Toolchain
+          - Resources/MigrationCoursePacks
+      - path: Crabrix/Resources/MigrationCoursePacks
+        type: folder
+        buildPhase: resources
       - path: build/Resources/Toolchain
         type: folder
         buildPhase: resources
@@ -55,6 +59,7 @@ targets:
         LSApplicationCategoryType: public.app-category.developer-tools
         LSSupportsOpeningDocumentsInPlace: true
         NSHumanReadableCopyright: "© 2026 Serhii Ziborov. All rights reserved."
+        NSFaceIDUsageDescription: "Unlock your local Crabrix projects and courses."
         UIFileSharingEnabled: true
         UIApplicationSupportsIndirectInputEvents: true
         UILaunchScreen: {}
@@ -104,8 +109,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix
         PRODUCT_NAME: Crabrix
-        MARKETING_VERSION: 1.0
-        CURRENT_PROJECT_VERSION: 7
+        MARKETING_VERSION: 1.1
+        CURRENT_PROJECT_VERSION: 11
         CODE_SIGN_ENTITLEMENTS: Crabrix/Crabrix.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
@@ -145,8 +150,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix.Share
         PRODUCT_NAME: CrabrixShare
-        MARKETING_VERSION: 1.0
-        CURRENT_PROJECT_VERSION: 7
+        MARKETING_VERSION: 1.1
+        CURRENT_PROJECT_VERSION: 11
         CODE_SIGN_ENTITLEMENTS: CrabrixShare/CrabrixShare.entitlements
         CODE_SIGN_STYLE: Automatic
         APPLICATION_EXTENSION_API_ONLY: YES
@@ -181,14 +186,16 @@ schemes:
             - BundledCompilerGateTests/testHashbrownFromDeviceReportResolvesAndRuns()
             - BundledCompilerGateTests/testBundledRustcProducesE0502()
             - BundledCompilerGateTests/testBundledRustcCompilesAndRunsRepairedProgram()
+            - BundledCompilerGateTests/testUserProgramOutputStopsAtWASIWriteBudget()
             - BundledCompilerGateTests/testBundledRustcCompilesMultiFileProject()
             - BundledCompilerGateTests/testRootCargoPackageEnvironmentComesFromTheManifest()
             - BundledCompilerGateTests/testRootFeaturesReachTheRootCrate()
             - BundledCompilerGateTests/testAlgorithmSolutionRunsOnlyThroughThePrivateHarness()
             - BundledCompilerGateTests/testBundledRustcSurvivesRepeatedBuilds()
-            - BundledCompilerGateTests/testEveryGuidedShowcasePassesBundledRustcCheck()
+            - BundledCompilerGateTests/testEveryInstalledAcademyExampleBuildsAndRuns()
             - BundledCompilerGateTests/testUserProgramCannotGrowPastSandboxMemoryLimit()
             - BundledCompilerGateTests/testResolvesDownloadsAndLinksARealCratesIOPackage()
+            - BundledCompilerGateTests/testMultiCrateCollectionsAndJSONApplicationBuildsAndRuns()
             - BundledCompilerGateTests/testVendoredCrateBuildsFromAProjectLocalPatch()
             - BundledCompilerGateTests/testOfflinePinRehydratesSourcesAfterPurgeableCacheEviction()
             - BundledCompilerGateTests/testStopInterruptsARunningCompile()
@@ -222,7 +229,7 @@ schemes:
             - BundledCompilerGateTests/testRootFeaturesReachTheRootCrate()
             - BundledCompilerGateTests/testAlgorithmSolutionRunsOnlyThroughThePrivateHarness()
             - BundledCompilerGateTests/testBundledRustcSurvivesRepeatedBuilds()
-            - BundledCompilerGateTests/testEveryGuidedShowcasePassesBundledRustcCheck()
+            - BundledCompilerGateTests/testEveryInstalledAcademyExampleBuildsAndRuns()
             - BundledCompilerGateTests/testUserProgramCannotGrowPastSandboxMemoryLimit()
             - BundledCompilerGateTests/testResolvesDownloadsAndLinksARealCratesIOPackage()
             - BundledCompilerGateTests/testVendoredCrateBuildsFromAProjectLocalPatch()
@@ -236,3 +243,17 @@ schemes:
             - BundledCompilerGateTests/testVisualTerrainRendersAValidatedCanvas()
             - BundledCompilerGateTests/testVisualColorWavesRendersAValidatedCanvas()
             - BundledCompilerGateTests/testVisualCreateTemplateRendersAValidatedCanvas()
+
+  CrabrixCourseDeliveryGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+    test:
+      environmentVariables:
+        CRABRIX_RUN_COURSE_FETCH: "1"
+      targets:
+        - name: CrabrixTests
+          selectedTests:
+            - CourseDeliveryGateTests/testPublicSignedCatalogAndCourseInstall()
+            - CourseDeliveryGateTests/testPublicArchiveResumesFromPersistedRange()

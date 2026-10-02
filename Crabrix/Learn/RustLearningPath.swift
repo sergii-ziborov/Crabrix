@@ -88,6 +88,20 @@ enum LessonAttemptResult: String, Codable, Equatable, Sendable {
     case failed
 }
 
+/// The exact course session and workspace used to check one exercise. A pack
+/// update cannot retroactively change this evidence's validator or toolchain.
+struct LessonAttemptIdentity: Codable, Equatable, Sendable {
+    let courseID: String
+    let language: String
+    let contentVersion: String
+    let lessonID: String
+    let exerciseID: String
+    let validatorVersion: String
+    let toolchainID: String
+    let projectID: UUID
+    let projectRevision: String
+}
+
 /// Persisted evidence contains hashes and compiler facts, never the learner's
 /// source code.
 struct LessonAttemptEvidence: Codable, Equatable, Sendable {
@@ -101,6 +115,25 @@ struct LessonAttemptEvidence: Codable, Equatable, Sendable {
     let diagnosticCodes: [String]
     let stdoutHash: String?
     let completedAt: Date
+    /// Absent only on evidence written before CoursePack identity was stored.
+    /// Those records must be attributed to a verified legacy snapshot, not
+    /// silently assigned the latest downloaded content version.
+    let identity: LessonAttemptIdentity?
+
+    init(lessonID: String, projectRevision: String, validatorVersion: String,
+         compilerVersion: String?, result: LessonAttemptResult,
+         diagnosticCodes: [String], stdoutHash: String?, completedAt: Date,
+         identity: LessonAttemptIdentity? = nil) {
+        self.lessonID = lessonID
+        self.projectRevision = projectRevision
+        self.validatorVersion = validatorVersion
+        self.compilerVersion = compilerVersion
+        self.result = result
+        self.diagnosticCodes = diagnosticCodes
+        self.stdoutHash = stdoutHash
+        self.completedAt = completedAt
+        self.identity = identity
+    }
 }
 
 struct LessonEvidenceValidation: Equatable, Sendable {
@@ -110,7 +143,7 @@ struct LessonEvidenceValidation: Equatable, Sendable {
 
 enum LessonEvidenceValidator {
     static func validateCompilerAttempt(
-        lesson: RustLesson,
+        evidence: LessonEvidence,
         result: CompilationResult,
         project: CrabrixProject,
         initialSourceTreeHash: String?,
@@ -124,7 +157,7 @@ enum LessonEvidenceValidator {
             )
         }
 
-        switch lesson.evidence {
+        switch evidence {
         case let .compilerRun(output, requiresSourceChange, requiredFiles):
             if requiresSourceChange, initialSourceTreeHash == currentSourceTreeHash {
                 return LessonEvidenceValidation(
@@ -233,7 +266,10 @@ extension RustLesson {
         if case .planned = exercise { return false }
         return true
     }
+}
 
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
+extension RustLesson {
     var evidence: LessonEvidence {
         switch exercise {
         case .runnable:
@@ -406,3 +442,4 @@ enum RustLearningPath {
         ),
     ] + RustAdvancedExpansion.allUnits
 }
+#endif

@@ -80,6 +80,9 @@
                   Identifier = "BundledCompilerGateTests/testBundledRustcCompilesAndRunsRepairedProgram()">
                </Test>
                <Test
+                  Identifier = "BundledCompilerGateTests/testUserProgramOutputStopsAtWASIWriteBudget()">
+               </Test>
+               <Test
                   Identifier = "BundledCompilerGateTests/testBundledRustcCompilesMultiFileProject()">
                </Test>
                <Test
@@ -95,13 +98,16 @@
                   Identifier = "BundledCompilerGateTests/testBundledRustcSurvivesRepeatedBuilds()">
                </Test>
                <Test
-                  Identifier = "BundledCompilerGateTests/testEveryGuidedShowcasePassesBundledRustcCheck()">
+                  Identifier = "BundledCompilerGateTests/testEveryInstalledAcademyExampleBuildsAndRuns()">
                </Test>
                <Test
                   Identifier = "BundledCompilerGateTests/testUserProgramCannotGrowPastSandboxMemoryLimit()">
                </Test>
                <Test
                   Identifier = "BundledCompilerGateTests/testResolvesDownloadsAndLinksARealCratesIOPackage()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testMultiCrateCollectionsAndJSONApplicationBuildsAndRuns()">
                </Test>
                <Test
                   Identifier = "BundledCompilerGateTests/testVendoredCrateBuildsFromAProjectLocalPatch()">

@@ -17,8 +17,10 @@ enum LessonNavigationFooterVisibility {
 }
 
 struct LessonDetailView: View {
-    @EnvironmentObject private var vitals: CrabrixVitalsStore
     let lesson: RustLesson
+    let writing: RustLessonWriting
+    let lessonDepth: RustLessonDepth
+    let courseTheme: RustCourseTheme
     let isCompleted: Bool
     let onStart: () -> Void
     let onComplete: () -> Void
@@ -35,16 +37,14 @@ struct LessonDetailView: View {
     /// strike out whichever wrong answer came first in the list, which was
     /// often not the one they had picked.
     @State private var firstWrongChoice: Int?
-    /// The last thing that cost or returned something, shown briefly in the header.
-    @State private var lastOutcome: VitalsOutcome?
     /// Each horizontally paged step owns a separate vertical scroll position.
     /// Keeping their footer state separate prevents an action from the previous
     /// step flashing over the next one while its geometry settles.
     @State private var footerVisibility: [Int: Bool] = [:]
 
-    private var brief: RustLessonBrief { lesson.brief }
-    private var practice: RustLessonPractice { lesson.lessonPractice }
-    private var depth: RustLessonDepth { RustLessonDepthCatalog.depth(for: lesson) }
+    private var brief: RustLessonBrief { lesson.brief(writing: writing, theme: courseTheme) }
+    private var practice: RustLessonPractice { lesson.lessonPractice(writing: writing) }
+    private var depth: RustLessonDepth { lessonDepth }
     /// The quick check gates the rest of the lesson, so it needs an answer
     /// before the summary page becomes reachable at all.
     private var isQuickCheckAnswered: Bool { selectedAnswer == practice.correctAnswer }
@@ -58,6 +58,9 @@ struct LessonDetailView: View {
 
     init(
         lesson: RustLesson,
+        writing: RustLessonWriting,
+        lessonDepth: RustLessonDepth,
+        courseTheme: RustCourseTheme,
         isCompleted: Bool,
         savedAnswer: Int? = nil,
         onStart: @escaping () -> Void,
@@ -65,13 +68,16 @@ struct LessonDetailView: View {
         onAnswer: @escaping (Int, Bool) -> Void = { _, _ in }
     ) {
         self.lesson = lesson
+        self.writing = writing
+        self.lessonDepth = lessonDepth
+        self.courseTheme = courseTheme
         self.isCompleted = isCompleted
         self.onStart = onStart
         self.onComplete = onComplete
         self.onAnswer = onAnswer
         // Older installations did not persist the chosen answer. A completed
         // lesson still opens as answered, using its known correct choice.
-        let correct = lesson.lessonPractice.correctAnswer
+        let correct = writing.correctAnswer
         let restored = savedAnswer ?? (isCompleted ? correct : nil)
         _selectedAnswer = State(initialValue: restored == correct ? correct : nil)
         _lastWrongAnswer = State(initialValue: restored == correct ? nil : restored)
@@ -106,10 +112,6 @@ struct LessonDetailView: View {
                     .zIndex(1)
             }
         }
-        // Reading a page costs energy the first time only, so revisiting a
-        // lesson to review it never charges twice.
-        .onAppear { chargeCurrentPage() }
-        .onChange(of: page) { _, _ in chargeCurrentPage() }
         .background {
             ZStack {
                 CrabrixTheme.background.ignoresSafeArea()
@@ -147,13 +149,6 @@ struct LessonDetailView: View {
                 }
             }
 
-            HStack {
-                VitalsPill(store: vitals, showsCountdown: false, isInteractive: true)
-                Spacer(minLength: 0)
-                if let lastOutcome {
-                    VitalsOutcomeBadge(outcome: lastOutcome)
-                }
-            }
         }
         .padding(.horizontal, 22)
         .padding(.top, 14)
@@ -210,9 +205,6 @@ struct LessonDetailView: View {
 
     private var objectives: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("YOU WILL PRACTICE")
-                .font(.caption.monospaced().bold())
-                .foregroundStyle(CrabrixTheme.blue)
             ForEach(brief.objectives, id: \.self) { objective in
                 Label(objective, systemImage: "checkmark.circle.fill")
                     .foregroundStyle(CrabrixTheme.primary)
@@ -265,7 +257,7 @@ struct LessonDetailView: View {
                     Label(
                         isQuickCheckAnswered
                             ? "Correct — \(practice.feedback)"
-                            : "Not quite — try again, nothing more is charged.",
+                            : "Not quite — read the hint and try again.",
                         systemImage: isQuickCheckAnswered
                             ? "checkmark.circle.fill"
                             : "arrow.counterclockwise.circle.fill"
@@ -349,12 +341,6 @@ struct LessonDetailView: View {
                 .foregroundStyle(CrabrixTheme.muted)
             }
 
-            LessonCard(title: "Hint before you go", systemImage: "sparkles", tint: CrabrixTheme.amber) {
-                Text(brief.hint)
-                    .foregroundStyle(CrabrixTheme.muted)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
             LessonCard(title: "Transfer challenge", systemImage: "arrow.triangle.branch", tint: CrabrixTheme.coral) {
                 Text(depth.transferChallenge)
                     .font(.headline)
@@ -392,16 +378,6 @@ struct LessonDetailView: View {
         }
     }
 
-    private func chargeCurrentPage() {
-        let outcome = vitals.startLessonPage(
-            lessonID: lesson.id,
-            page: page,
-            isReview: isCompleted
-        )
-        guard outcome != .free else { return }
-        withAnimation(.easeOut(duration: 0.2)) { lastOutcome = outcome }
-    }
-
     private func answerButton(_ answer: String, at index: Int) -> some View {
         let isSelected = selectedAnswer == index || lastWrongAnswer == index
         return Button {
@@ -418,13 +394,6 @@ struct LessonDetailView: View {
             if !correct {
                 wrongAttempts += 1
                 if firstWrongChoice == nil { firstWrongChoice = index }
-            }
-            withAnimation(.easeOut(duration: 0.2)) {
-                lastOutcome = vitals.recordAnswer(
-                    correct: correct,
-                    questionID: "\(lesson.id)#quick-check",
-                    isReview: isCompleted
-                )
             }
             onAnswer(index, correct)
         } label: {
@@ -669,7 +638,6 @@ private struct RustLessonBrief {
     let objectives: [String]
     let task: String
     let success: String
-    let hint: String
     let systemImage: String
     let tint: Color
 }
@@ -689,22 +657,7 @@ private struct RustLessonPractice {
 }
 
 private extension RustLesson {
-    /// Both of these read from `RustLessonLibrary`, which is the single place
-    /// lesson copy lives. The fallbacks only matter for a lesson added to the
-    /// catalogue before its writing lands, so they stay deliberately generic
-    /// rather than duplicating content that would then drift.
-    var lessonPractice: RustLessonPractice {
-        guard let writing = RustLessonLibrary.writing(for: id) else {
-            return RustLessonPractice(
-                rule: brief.explanation,
-                code: "// Build the smallest example for:\n// \(concept)",
-                question: "What is the best next step when your model and rustc disagree?",
-                answers: ["Add unsafe", "Read the diagnostic and make one intentional edit", "Ignore the warning"],
-                correctAnswer: 1,
-                feedback: "Small, evidence-driven changes make the compiler part of the learning loop."
-            )
-        }
-
+    func lessonPractice(writing: RustLessonWriting) -> RustLessonPractice {
         return RustLessonPractice(
             rule: writing.rule,
             code: writing.practiceCode,
@@ -715,25 +668,16 @@ private extension RustLesson {
         )
     }
 
-    var brief: RustLessonBrief {
-        let writing = RustLessonLibrary.writing(for: id)
-
+    func brief(writing: RustLessonWriting, theme: RustCourseTheme) -> RustLessonBrief {
         return RustLessonBrief(
-            summary: writing?.summary
-                ?? "This lesson isolates one Rust idea so you can reason about it before writing a larger program.",
-            explanation: writing?.explanation
-                ?? "Use the compiler feedback as evidence: read the message, change one assumption, and check again.",
-            example: writing.map {
-                RustLessonExample(caption: $0.exampleCaption, code: $0.exampleCode)
-            },
+            summary: writing.summary,
+            explanation: writing.explanation,
+            example: RustLessonExample(caption: writing.exampleCaption, code: writing.exampleCode),
             objectives: [concept, "Read the relevant compiler evidence", "Make one intentional code change"],
-            task: writing?.task
-                ?? "Explain \(concept.lowercased()) in your own words, then sketch the smallest code example.",
-            success: writing?.success
-                ?? "The example compiles and its result matches your explanation.",
-            hint: "Start from the ownership and type of each value. Prefer the smallest edit that makes the compiler agree with your intent.",
+            task: writing.task,
+            success: writing.success,
             systemImage: lessonIcon,
-            tint: lessonTint
+            tint: theme.primaryColor
         )
     }
 
@@ -747,8 +691,4 @@ private extension RustLesson {
         }
     }
 
-    private var lessonTint: Color {
-        RustCourseCatalog.course(containingLessonID: id)?.theme.primaryColor
-            ?? CrabrixTheme.mint
-    }
 }

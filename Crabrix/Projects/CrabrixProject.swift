@@ -42,6 +42,14 @@ struct CrabrixProject: Codable, Equatable, Sendable {
             case files
             case github
             case crabrixPackage
+            case academy
+        }
+
+        struct CourseOrigin: Codable, Equatable, Sendable {
+            let courseID: String
+            let contentVersion: String
+            let lessonID: String
+            let templateHash: String
         }
 
         let source: Source
@@ -50,6 +58,7 @@ struct CrabrixProject: Codable, Equatable, Sendable {
         let reference: String?
         let commit: String?
         let importedAt: Date
+        var course: CourseOrigin? = nil
 
         static func files() -> Provenance {
             Provenance(
@@ -59,6 +68,31 @@ struct CrabrixProject: Codable, Equatable, Sendable {
                 reference: nil,
                 commit: nil,
                 importedAt: Date()
+            )
+        }
+
+        static func academy(session: CourseSession, templateHash: String) -> Provenance {
+            Provenance(
+                source: .academy, owner: nil, repository: nil,
+                reference: nil, commit: nil, importedAt: Date(),
+                course: CourseOrigin(
+                    courseID: session.courseID,
+                    contentVersion: session.contentVersion,
+                    lessonID: session.lessonID,
+                    templateHash: templateHash
+                )
+            )
+        }
+
+        static func academyExample(id: String, contentVersion: String,
+                                   templateHash: String) -> Provenance {
+            Provenance(
+                source: .academy, owner: nil, repository: nil,
+                reference: nil, commit: nil, importedAt: Date(),
+                course: CourseOrigin(
+                    courseID: "projects", contentVersion: contentVersion,
+                    lessonID: "example/\(id)", templateHash: templateHash
+                )
             )
         }
     }

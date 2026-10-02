@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "toolchainID": "crabrix-rust-2026-10-02.1",
+  "target": "wasm32-wasip1",
+  "rustVersion": "1.96.0-dev",
+  "rustVersionComponents": {
+    "major": 1,
+    "minor": 96,
+    "patch": 0
+  },
+  "source": {
+    "kind": "crabrix-release-v1",
+    "baseURL": "https://github.com/sergii-ziborov/crabrix-toolchain/releases/download/toolchain-2026-10-02.1",
+    "keyID": "crabrix-toolchain-2026-10",
+    "sourceLockSHA256": "7c44029b80757b80fe5bfb54614bc09e967917506bc28a275dc694eb404bf97a",
+    "builderSourceCommit": "079b2dabbac02f8e5de452765c4bb89e0c4fc6ff",
+    "compilerAsset": {
+      "name": "rustc.wasm",
+      "sha256": "0286dc52064283ef78ba153a554d86ae742e6c8cd638aea8662e07d3529233fc"
+    },
+    "sysrootAsset": {
+      "name": "sysroot-wasip1.zip",
+      "sha256": "085fece5602fdd3af4efde3e08388090928c33b03fc874d99aba741a0b85283b"
+    },
+    "inventoryAsset": {
+      "name": "sysroot-files.json",
+      "sha256": "6f91fe3517cbb1a194f38a9031fcb69fa528678f3bc27b0dd454bc54e123eab1"
+    },
+    "descriptorAsset": {
+      "name": "toolchain.descriptor.json",
+      "sha256": "aa73af686793a6242e3b084207cb94b2edf2b49031cad9756c9d590091c922e7"
+    }
+  },
+  "rustcSHA256": "0286dc52064283ef78ba153a554d86ae742e6c8cd638aea8662e07d3529233fc",
+  "sysrootManifestSHA256": "4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c",
+  "sysrootArchiveSHA256": "085fece5602fdd3af4efde3e08388090928c33b03fc874d99aba741a0b85283b"
+}

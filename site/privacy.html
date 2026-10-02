@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Privacy Policy — Crabrix</title>
-<meta name="description" content="Crabrix has no account, no analytics and no leaderboard. Your code and progress stay on your device; the only network requests are package and repository downloads you ask for.">
+<meta name="description" content="Crabrix has no required account or cloud compiler. Your code and progress stay on your device; course, package and repository requests go to public hosting providers.">
 <meta property="og:title" content="Privacy Policy — Crabrix">
-<meta property="og:description" content="Crabrix has no account, no analytics and no leaderboard. Your code and progress stay on your device; the only network requests are package and repository downloads you ask for.">
+<meta property="og:description" content="Crabrix has no required account or cloud compiler. Your code and progress stay on your device; course, package and repository requests go to public hosting providers.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20y%3D%27.9em%27%20font-size%3D%2790%27%3E%F0%9F%A6%80%3C%2Ftext%3E%3C%2Fsvg%3E">
 <style>
@@ -231,19 +231,19 @@
   <div class="wrap head">
     <div class="eyebrow">Privacy</div>
     <h1>Privacy Policy</h1>
-    <p class="lede">No account. No analytics. No tracking. No leaderboard. This page describes exactly what leaves your device, which is almost nothing &mdash; and what happens if you write to support.</p>
+    <p class="lede">No required account or cloud compiler. The app has no analytics SDK. This page describes course and package requests, website hosting, and optional support.</p>
   </div>
 
   <div class="wrap prose">
 
-    <p class="updated">LAST UPDATED 8 SEPTEMBER 2026</p>
+    <p class="updated">LAST UPDATED 2 OCTOBER 2026</p>
 
     <div class="callout">
-      <p><strong>The short version.</strong> Crabrix 1.0 has no account, no analytics
+      <p><strong>The short version.</strong> Crabrix has no required account or in-app analytics SDK
       and no leaderboard. Your code, your projects, your rating and your progress stay on
       your device: the app never transmits them. The only network requests Crabrix makes
-      are the package discovery, and the package and repository downloads, that you
-      explicitly ask for. If you write to
+      are requested course catalog/update fetches, package discovery and downloads,
+      and repository imports. If you write to
       support &mdash; including through <em>Report a problem</em> &mdash; that email
       reaches a person, and this page says what happens to it.</p>
     </div>
@@ -251,7 +251,8 @@
     <h2>Who is responsible</h2>
     <p>
       Crabrix is made by Serhii Ziborov, an independent developer. There is no company,
-      no investor, and no third party with access to anything described on this page.
+      no investor. Hosting providers receive ordinary requests for the public assets
+      described below; they do not receive your source or learning progress from Crabrix.
       Contact: <button type="button" class="mailbtn" data-mail="c2VyZ2lpLnppYm9yb3ZAZ21haWwuY29t" data-subject="Crabrix — privacy">write to support</button>.
     </p>
 
@@ -263,13 +264,15 @@
       <li><strong>Build output</strong> &mdash; compiler diagnostics, program stdout and stderr,
         and cached build artifacts.</li>
       <li><strong>Learning progress</strong> &mdash; lessons completed, answers, topic mastery,
-        rating, achievements, health and energy.</li>
+        rating and achievements.</li>
       <li><strong>Preferences</strong> &mdash; appearance, editor font size, and the rest of
         Settings.</li>
       <li><strong>Optional profile photo</strong> &mdash; chosen through the system photo
         picker, processed and stored locally, and never uploaded by Crabrix.</li>
       <li><strong>Downloaded crates</strong> &mdash; package sources and compiled artifacts,
         cached so a project rebuilds offline.</li>
+      <li><strong>Installed CoursePacks</strong> &mdash; lesson text, media, starter source,
+        and checks, stored separately from your progress and projects.</li>
     </ul>
     <p>
       Deleting the app removes all of it. Crabrix keeps no copy and has no way to
@@ -301,11 +304,32 @@
       address as part of serving the request.
     </p>
 
+    <h3>3. Course catalog and updates (GitHub)</h3>
     <p>
-      That is the complete list of requests the app makes: package discovery and public
-      file downloads, all initiated by you. As with any HTTPS request on the internet,
+      When you choose <strong>Check for course updates</strong>, Crabrix requests the
+      signed public catalog from <code>raw.githubusercontent.com</code>. A course update
+      you approve is downloaded from <code>github.com</code> and GitHub's release
+      asset hosts. The request identifies the public catalog or course asset and
+      carries no Crabrix account, tracking ID, project code, answers, or progress.
+      GitHub and its delivery providers receive normal connection information,
+      including your IP address, and may keep access logs under their own policies.
+      Crabrix does not control those provider logs.
+    </p>
+
+    <p>
+      That is the complete list of this app's content and import requests: course updates,
+      package discovery, and public file downloads. As with any HTTPS request,
       the receiving service sees your connection, including your IP address; Crabrix
       itself adds no account or device identifier.
+    </p>
+
+    <h2>This website</h2>
+    <p>
+      <code>crabrix.com</code> is served by Lovable. Its hosting infrastructure receives
+      ordinary page requests and may keep access logs. The platform's visitor analytics
+      setting was enabled at the last hosting audit; this is separate from the iOS app,
+      which has no analytics SDK. A later change to that hosting setting must be checked
+      on the published site before this statement changes.
     </p>
 
     <h2>Optional support correspondence</h2>
@@ -340,21 +364,20 @@
       not put secrets or private project code in one.
     </p>
 
-    <h2>What Crabrix 1.0 does not have</h2>
+    <h2>What the iOS app does not have</h2>
     <p>
       There is no Crabrix account, no leaderboard, no display name, no Game Center
-      publishing, no online profile, and no server that stores anything about you. Your
+      publishing, no online profile, and no Crabrix account or progress server. Your
       rating, ranks and achievements are calculated and kept on your own device. Your
       source code is never uploaded for compilation: the compiler runs inside the app.
     </p>
     <p>
-      Crabrix runs no service of its own — there is no Crabrix server, no account
-      system and no board to store anything on. If ranking ever goes online, it will
-      go through Apple's Game Center rather than through anything I operate, and this
-      page will be updated before that version ships.
+      Crabrix has no remote compiler, required account, or server that stores your
+      projects and learning progress. Public course files are delivered by GitHub
+      and its asset hosts; their request logs are described above.
     </p>
 
-    <h2>What Crabrix never does</h2>
+    <h2>What the iOS app does not do</h2>
     <ul>
       <li>No tracking, in the App Store sense or any other. Your activity is not linked
         to data from other apps or websites.</li>
@@ -374,18 +397,18 @@
 
     <h2>Children</h2>
     <p>
-      Crabrix is a programming tool suitable for all ages. The app itself collects no
-      personal data from anyone, of any age: there is nothing to sign up for, nothing to
-      publish, and no way for one user of the app to see another. Writing to support is
-      the one thing that reaches a person, it is entirely optional, and it is an email
-      the sender writes themselves.
+      Crabrix is a programming tool suitable for all ages. The app has no account or
+      public profile, and one user cannot see another's projects or progress. Public
+      asset hosts receive ordinary request information as described above. Writing to
+      support is optional and is an email the sender writes themselves.
     </p>
 
     <h2>Legal basis and your rights</h2>
     <p>
-      Where the GDPR applies: Crabrix 1.0 runs no service and stores nothing about you on
-      any server, so the app itself creates no controller-held record. Everything it
-      knows about you is on your own device, and deleting the app deletes it.
+      Where the GDPR applies: Crabrix keeps your projects, source code, and learning
+      progress on your device. Public content providers and the website host may keep
+      request logs under their own policies. Deleting the app removes its local copy;
+      it does not erase logs already held by those providers.
     </p>
     <p>
       The one exception is support correspondence. If you write to me, I hold that email
@@ -395,7 +418,7 @@
       delete the correspondence. You may ask for access, correction, a copy, or erasure
       of it:
       <button type="button" class="mailbtn" data-mail="c2VyZ2lpLnppYm9yb3ZAZ21haWwuY29t" data-subject="Crabrix — data request">write to support</button>. There is no other
-      personal data to describe, because there is nowhere else it is held.
+      account or profile database operated by Crabrix.
     </p>
     <p>
       Retention: nothing the app stores is retained anywhere but on your device. Support

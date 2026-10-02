@@ -460,3 +460,221 @@ final class CodeBlockHeightTests: XCTestCase {
         XCTAssertGreaterThan(forty, ten * 3)
     }
 }
+
+final class SourceLineEditTests: XCTestCase {
+    private let source = "fn main() {\n    let x: i32 = \"a\";\n    println!(\"{x}\");\n}"
+
+    private func span(_ lineStart: Int, to lineEnd: Int? = nil) -> RustDiagnostic.Span {
+        RustDiagnostic.Span(
+            lineStart: lineStart,
+            lineEnd: lineEnd ?? lineStart,
+            columnStart: 18,
+            columnEnd: 21,
+            isPrimary: true,
+            label: nil,
+            sourceLine: ""
+        )
+    }
+
+    private func edit(_ old: String, _ new: String) throws -> SourceLineEdit {
+        try XCTUnwrap(SourceLineEdit.between(old, new), "the texts differ, so there is an edit")
+    }
+
+    func testUnchangedTextIsNoEdit() {
+        XCTAssertNil(SourceLineEdit.between(source, source))
+    }
+
+    func testTypingOnTheReportedLineDropsItsSpan() throws {
+        let edit = try edit(source, source.replacingOccurrences(of: "\"a\";", with: "\"a\".len();"))
+        XCTAssertNil(edit.rebase(span(2)), "the line being fixed must lose its marker")
+        XCTAssertEqual(edit.rebase(span(1)), span(1))
+        XCTAssertEqual(edit.rebase(span(3)), span(3), "a line that did not move keeps its marker")
+    }
+
+    func testTypingOnAnotherLineKeepsTheSpan() throws {
+        let edit = try edit(source, source.replacingOccurrences(of: "{x}", with: "{x}!"))
+        XCTAssertEqual(edit.rebase(span(2)), span(2))
+        XCTAssertNil(edit.rebase(span(3)))
+    }
+
+    func testALineInsertedAboveMovesTheSpanDown() throws {
+        // Return pressed at the end of the first line.
+        let edit = try edit(source, source.replacingOccurrences(of: "{\n", with: "{\n\n"))
+        XCTAssertEqual(edit.rebase(span(1)), span(1))
+        XCTAssertEqual(edit.rebase(span(2)), span(3))
+    }
+
+    func testAnIndentedLinePastedAboveMovesTheSpanDown() throws {
+        // The pasted line shares its indentation with the one below, so the
+        // change could be read as starting inside that line. It must not be.
+        let edit = try edit(source, source.replacingOccurrences(of: "{\n", with: "{\n    // note\n"))
+        XCTAssertEqual(edit.rebase(span(2)), span(3))
+    }
+
+    func testAnIndentedLineDeletedAboveMovesTheSpanUp() throws {
+        let longer = source.replacingOccurrences(of: "{\n", with: "{\n    // note\n")
+        let edit = try edit(longer, source)
+        XCTAssertNil(edit.rebase(span(2)), "the deleted line's own marker goes with it")
+        XCTAssertEqual(edit.rebase(span(3)), span(2))
+    }
+
+    func testReturnAtTheEndOfTheReportedLineKeepsItsSpan() throws {
+        let edit = try edit(source, source.replacingOccurrences(of: "\"a\";\n", with: "\"a\";\n\n"))
+        XCTAssertEqual(edit.rebase(span(2)), span(2))
+        XCTAssertEqual(edit.rebase(span(3)), span(4))
+    }
+
+    func testReturnAtTheEndOfTheFileKeepsTheLastLinesSpan() throws {
+        let edit = try edit(source, source + "\n")
+        XCTAssertEqual(edit.rebase(span(4)), span(4))
+    }
+
+    func testJoiningTwoLinesDropsBothTheirSpans() throws {
+        let edit = try edit(
+            source,
+            source.replacingOccurrences(of: "\"a\";\n    println", with: "\"a\"; println")
+        )
+        XCTAssertNil(edit.rebase(span(2)))
+        XCTAssertNil(edit.rebase(span(3)))
+        XCTAssertEqual(edit.rebase(span(4)), span(3))
+    }
+
+    func testASpanAcrossTheEditedLineIsDropped() throws {
+        let edit = try edit(source, source.replacingOccurrences(of: "{x}", with: "{x}!"))
+        XCTAssertNil(edit.rebase(span(2, to: 4)))
+    }
+
+    func testAMultiLineSpanGrowsAroundALineInsertedInsideIt() throws {
+        let edit = try edit(source, source.replacingOccurrences(of: "\"a\";\n", with: "\"a\";\n\n"))
+        XCTAssertEqual(edit.rebase(span(1, to: 4)), span(1, to: 5))
+    }
+}
+
+@MainActor
+final class EditorDiagnosticMarkerTests: XCTestCase {
+    private final class Box: ObservableObject {
+        @Published var text = "fn main() {\n    let x: i32 = \"a\";\n    println!(\"{x}\");\n}"
+        @Published var cursor = 0
+        @Published var diagnostics: [RustDiagnostic] = []
+    }
+
+    private struct Host: View {
+        @ObservedObject var box: Box
+        var body: some View {
+            SyntaxCodeEditor(
+                text: $box.text,
+                cursorOffset: $box.cursor,
+                filePath: "main.rs",
+                isEditable: true,
+                diagnostics: box.diagnostics,
+                navigationTarget: nil,
+                onRequestCompletion: {}
+            )
+        }
+    }
+
+    private func findTextView(_ view: UIView) -> UITextView? {
+        if let textView = view as? UITextView { return textView }
+        for subview in view.subviews {
+            if let found = findTextView(subview) { return found }
+        }
+        return nil
+    }
+
+    /// rustc's E0308 for the second line: `"a"` is columns 18 to 21.
+    private func mismatchedTypes(columnEnd: Int = 21) -> RustDiagnostic {
+        RustDiagnostic(
+            level: "error",
+            message: "mismatched types",
+            code: "E0308",
+            rendered: "error[E0308]: mismatched types",
+            spans: [
+                RustDiagnostic.Span(
+                    fileName: "main.rs",
+                    lineStart: 2,
+                    lineEnd: 2,
+                    columnStart: 18,
+                    columnEnd: columnEnd,
+                    isPrimary: true,
+                    label: "expected `i32`, found `&str`",
+                    sourceLine: "    let x: i32 = \"a\";"
+                ),
+            ]
+        )
+    }
+
+    private func makeEditor(_ box: Box) throws -> (UITextView, UIWindow) {
+        let controller = UIHostingController(rootView: Host(box: box))
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 500, height: 700))
+        window.rootViewController = controller
+        window.isHidden = false
+        controller.view.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        let textView = try XCTUnwrap(findTextView(controller.view), "no UITextView was created")
+        return (textView, window)
+    }
+
+    /// The text under every diagnostic underline, in order.
+    private func underlined(in textView: UITextView) -> [String] {
+        var found: [String] = []
+        let storage = textView.textStorage
+        storage.enumerateAttribute(
+            .underlineStyle,
+            in: NSRange(location: 0, length: storage.length)
+        ) { value, range, _ in
+            guard let style = value as? Int, style != 0 else { return }
+            found.append(storage.attributedSubstring(from: range).string)
+        }
+        return found
+    }
+
+    private func line(of substring: String, in textView: UITextView) -> Int {
+        let text = textView.text as NSString
+        let range = text.range(of: substring)
+        return 1 + text.substring(to: range.location).filter { $0 == "\n" }.count
+    }
+
+    func testFixingTheReportedLineClearsItsUnderlineUntilTheNextBuild() throws {
+        let box = Box()
+        box.diagnostics = [mismatchedTypes()]
+        let (textView, window) = try makeEditor(box)
+        defer { window.isHidden = true }
+        XCTAssertEqual(underlined(in: textView), ["\"a\""], "the build's span is underlined")
+
+        // The reader fixes the line the compiler complained about.
+        let literal = (textView.text as NSString).range(of: "\"a\"")
+        textView.selectedRange = NSRange(location: NSMaxRange(literal), length: 0)
+        textView.insertText(".len() as i32")
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+
+        XCTAssertEqual(box.text, textView.text)
+        XCTAssertEqual(underlined(in: textView), [], "an edited line must not stay marked")
+        XCTAssertFalse(box.diagnostics.isEmpty, "only the marker goes; the problem list is the build's")
+
+        // The next build reports against the new text, and its marks show.
+        box.diagnostics = [mismatchedTypes(columnEnd: 34)]
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        XCTAssertEqual(underlined(in: textView), ["\"a\".len() as i32"])
+    }
+
+    func testTheUnderlineFollowsItsLineWhenLinesAreInsertedAbove() throws {
+        let box = Box()
+        box.diagnostics = [mismatchedTypes()]
+        let (textView, window) = try makeEditor(box)
+        defer { window.isHidden = true }
+        XCTAssertEqual(line(of: "\"a\"", in: textView), 2)
+
+        // Return at the end of the first line, then a comment on the new one.
+        let brace = (textView.text as NSString).range(of: "{")
+        textView.selectedRange = NSRange(location: NSMaxRange(brace), length: 0)
+        textView.insertText("\n")
+        textView.insertText("    // the type is the problem")
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+
+        XCTAssertEqual(line(of: "\"a\"", in: textView), 3)
+        XCTAssertEqual(
+            underlined(in: textView), ["\"a\""],
+            "the mark stays on the line it was reported for"
+        )
+    }
+}

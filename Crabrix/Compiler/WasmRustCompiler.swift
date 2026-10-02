@@ -1,5 +1,6 @@
 import Foundation
 import CryptoKit
+import UIKit
 @_spi(Fuzzing) import WasmKit
 import WasmKitWASI
 
@@ -29,7 +30,8 @@ final class WasmRustCompiler: @unchecked Sendable {
     // Bumped when the root compiler invocation changes shape: artefacts built
     // before the root crate received its own `--cfg feature="…"` flags must not
     // be reused for the same manifest.
-    private static let cacheSchemaVersion = "fast-dev-3"
+    private static let cacheSchemaVersion = "fast-dev-4"
+    private static let checkCacheLimit = 24
 
     private let bundle: Bundle
     private let ledger: CrateCompatibilityLedger
@@ -42,13 +44,32 @@ final class WasmRustCompiler: @unchecked Sendable {
         autoreleaseFrequency: .workItem
     )
     private let clock = ContinuousClock()
-    private var successfulCheckKeys: Set<String> = []
+    // Keep the complete check result: a cache hit must retain warnings and spans.
+    // Both the entry count and diagnostic bytes are bounded to avoid retaining
+    // arbitrarily large compiler output in memory.
+    private var successfulChecks: [String: CompilationResult] = [:]
+    private var checkCacheOrder: [String] = []
     private let interrupterLock = NSLock()
     private var activeInterrupter: WasmInterrupter?
+    private var memoryWarningObserver: NSObjectProtocol?
 
     init(bundle: Bundle = .main, ledger: CrateCompatibilityLedger = .shared) {
         self.bundle = bundle
         self.ledger = ledger
+        memoryWarningObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didReceiveMemoryWarningNotification,
+            object: nil,
+            queue: nil
+        ) { [weak self] _ in
+            guard let self else { return }
+            self.queue.async { self.runtime.clearProgramModules() }
+        }
+    }
+
+    deinit {
+        if let memoryWarningObserver {
+            NotificationCenter.default.removeObserver(memoryWarningObserver)
+        }
     }
 
     // MARK: - Toolchain
@@ -134,7 +155,8 @@ final class WasmRustCompiler: @unchecked Sendable {
     func clearProjectArtifacts() async {
         await withCheckedContinuation { continuation in
             queue.async { [self] in
-                successfulCheckKeys.removeAll(keepingCapacity: false)
+                successfulChecks.removeAll(keepingCapacity: false)
+                checkCacheOrder.removeAll(keepingCapacity: false)
                 runtime.clearProgramModules()
                 if let directory = CrateStorageLayout.projectArtifactDirectory,
                    FileManager.default.fileExists(atPath: directory.path) {
@@ -229,6 +251,19 @@ final class WasmRustCompiler: @unchecked Sendable {
             plan: plan
         )
 
+        if action == .check, let cached = cachedCheck(for: cacheKey) {
+            return CompilationResult(
+                succeeded: cached.succeeded,
+                phase: cached.phase,
+                exitCode: cached.exitCode,
+                diagnostics: cached.diagnostics,
+                stdout: cached.stdout,
+                stderr: cached.stderr,
+                duration: started.duration(to: clock.now),
+                detail: "Unchanged snapshot accepted from the local check cache."
+            )
+        }
+
         let fileManager = FileManager.default
         let jobRoot = fileManager.temporaryDirectory
             .appending(path: "CrabrixCompiler", directoryHint: .isDirectory)
@@ -238,42 +273,6 @@ final class WasmRustCompiler: @unchecked Sendable {
         defer { try? fileManager.removeItem(at: jobRoot) }
 
         do {
-            try fileManager.createDirectory(at: workURL, withIntermediateDirectories: true)
-            try fileManager.createDirectory(at: tempURL, withIntermediateDirectories: true)
-            try writeProject(
-                source: source,
-                sourcePath: sourcePath,
-                supportingFiles: supportingFiles,
-                into: workURL
-            )
-        } catch let error as ProjectLayoutError {
-            return .failure(
-                phase: .setup,
-                detail: error.localizedDescription,
-                duration: started.duration(to: clock.now)
-            )
-        } catch {
-            return .failure(
-                phase: .setup,
-                detail: "Could not create the compiler sandbox: \(error.localizedDescription)",
-                duration: started.duration(to: clock.now)
-            )
-        }
-
-        do {
-            if action == .check, successfulCheckKeys.contains(cacheKey) {
-                return CompilationResult(
-                    succeeded: true,
-                    phase: .check,
-                    exitCode: 0,
-                    diagnostics: [],
-                    stdout: "",
-                    stderr: "",
-                    duration: started.duration(to: clock.now),
-                    detail: "Unchanged snapshot accepted from the local check cache."
-                )
-            }
-
             // Dependencies must exist before the cached-program fast path, because
             // a cached program.wasm already has them linked in.
             if action == .run, let cachedProgram = loadCachedProgramModule(for: cacheKey) {
@@ -284,6 +283,29 @@ final class WasmRustCompiler: @unchecked Sendable {
                     started: started,
                     interrupter: interrupter,
                     successDetail: "Executed a cached local build artifact inside the bounded WasmKit sandbox."
+                )
+            }
+
+            do {
+                try fileManager.createDirectory(at: workURL, withIntermediateDirectories: true)
+                try fileManager.createDirectory(at: tempURL, withIntermediateDirectories: true)
+                try writeProject(
+                    source: source,
+                    sourcePath: sourcePath,
+                    supportingFiles: supportingFiles,
+                    into: workURL
+                )
+            } catch let error as ProjectLayoutError {
+                return .failure(
+                    phase: .setup,
+                    detail: error.localizedDescription,
+                    duration: started.duration(to: clock.now)
+                )
+            } catch {
+                return .failure(
+                    phase: .setup,
+                    detail: "Could not create the compiler sandbox: \(error.localizedDescription)",
+                    duration: started.duration(to: clock.now)
                 )
             }
 
@@ -336,7 +358,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                     capturePrefix: "compiler",
                     preopens: [
                         .init(guestPath: "/tmp", hostPath: tempURL.path),
-                        .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path),
+                        .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path, readOnly: true),
                         .init(guestPath: "/work", hostPath: workURL.path),
                     ] + registryPreopens(for: plan),
                     environment: rootCargoEnvironment(
@@ -346,8 +368,12 @@ final class WasmRustCompiler: @unchecked Sendable {
                     ),
                     interrupter: interrupter
                 )
-            } catch is WasmExecutionCancelled {
-                return cancelledResult(phase: action == .check ? .check : .compile, started: started)
+            } catch let cancellation as WasmExecutionCancelled {
+                return cancelledResult(
+                    phase: action == .check ? .check : .compile,
+                    started: started,
+                    cancellation: cancellation
+                )
             } catch let failure as RustcRuntimeFailure {
                 let diagnostics = RustDiagnosticParser.parse(stderr: failure.stderr)
                 if let diagnostic = diagnostics.first {
@@ -388,8 +414,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             }
 
             guard action == .run else {
-                successfulCheckKeys.insert(cacheKey)
-                return CompilationResult(
+                let result = CompilationResult(
                     succeeded: true,
                     phase: .check,
                     exitCode: compilerOutput.exitCode,
@@ -401,6 +426,8 @@ final class WasmRustCompiler: @unchecked Sendable {
                         ? "Real bundled rustc accepted the program."
                         : "Real bundled rustc accepted the program and \(plan.units.count) dependencies."
                 )
+                cacheCheck(result, for: cacheKey)
+                return result
             }
 
             let programURL = workURL.appending(path: outputName)
@@ -413,10 +440,11 @@ final class WasmRustCompiler: @unchecked Sendable {
                 )
             }
 
-            let programData = try Data(contentsOf: programURL)
-            let programModule = try parseWasm(bytes: [UInt8](programData))
-            runtime.cacheProgramModule(programModule, for: cacheKey)
-            persistProgramArtifact(programData, for: cacheKey)
+            let programModule = try parseWasm(filePath: programURL.path)
+            if let byteCount = try? programURL.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+                runtime.cacheProgramModule(programModule, for: cacheKey, wasmFileBytes: byteCount)
+            }
+            persistProgramArtifact(at: programURL, for: cacheKey)
 
             return try executeProgram(
                 module: programModule,
@@ -479,7 +507,10 @@ final class WasmRustCompiler: @unchecked Sendable {
 
         for (index, unit) in plan.units.enumerated() {
             if interrupter.wasCancelled {
-                return cancelledResult(phase: .compile, started: started)
+                return cancelledResult(
+                    phase: .compile, started: started,
+                    cancellation: .init(reason: interrupter.stopReason ?? .userRequested)
+                )
             }
             let outputURL = artifacts.appending(path: artifactFileName(unit, emit: emit))
             if FileManager.default.fileExists(atPath: outputURL.path) {
@@ -551,17 +582,19 @@ final class WasmRustCompiler: @unchecked Sendable {
                     capturePrefix: "dep-\(unit.fingerprint)",
                     preopens: [
                         .init(guestPath: "/tmp", hostPath: tempURL.path),
-                        .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path),
-                        .init(guestPath: "/registry", hostPath: registryRoot.path),
+                        .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path, readOnly: true),
+                        .init(guestPath: "/registry", hostPath: registryRoot.path, readOnly: true),
                         .init(guestPath: "/artifacts", hostPath: artifacts.path),
                     ] + (patchRoot.map {
-                        [.init(guestPath: "/patches", hostPath: $0.path)]
+                        [.init(guestPath: "/patches", hostPath: $0.path, readOnly: true)]
                     } ?? []),
                     environment: cargoEnvironment(for: unit),
                     interrupter: interrupter
                 )
-            } catch is WasmExecutionCancelled {
-                return cancelledResult(phase: .compile, started: started)
+            } catch let cancellation as WasmExecutionCancelled {
+                return cancelledResult(
+                    phase: .compile, started: started, cancellation: cancellation
+                )
             } catch let failure as RustcRuntimeFailure {
                 // A codegen gap in the bundled backend prints a normal JSON
                 // diagnostic and *then* aborts, so the useful message is in the
@@ -790,7 +823,7 @@ final class WasmRustCompiler: @unchecked Sendable {
 
     private func registryPreopens(for plan: CargoBuildPlan) -> [WASIBridgeToHost.Preopen] {
         guard !plan.rootExterns.isEmpty, let artifacts = artifactsDirectory else { return [] }
-        return [.init(guestPath: "/artifacts", hostPath: artifacts.path)]
+        return [.init(guestPath: "/artifacts", hostPath: artifacts.path, readOnly: true)]
     }
 
     private func artifactFileName(_ unit: CargoBuildUnit, emit: CargoEmitKind) -> String {
@@ -828,7 +861,15 @@ final class WasmRustCompiler: @unchecked Sendable {
             preopens: preopens,
             captureDirectory: jobRoot,
             capturePrefix: capturePrefix,
-            interrupter: interrupter
+            resourceLimiter: WasmSandboxResourceLimiter(
+                memoryLimitBytes: CompilerHostPolicy.memoryLimitBytes,
+                tableElementLimit: CompilerHostPolicy.tableElementLimit
+            ),
+            fuelBudget: CompilerHostPolicy.fuelBudget,
+            wallClockLimit: CompilerHostPolicy.wallClockLimit,
+            interrupter: interrupter,
+            softwareMemoryReservationBytes: CompilerHostPolicy.memoryLimitBytes,
+            capturedOutputLimitBytes: CompilerHostPolicy.outputLimitBytes
         )
     }
 
@@ -843,7 +884,6 @@ final class WasmRustCompiler: @unchecked Sendable {
         let sandboxURL = jobRoot.appending(path: "sandbox", directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: sandboxURL, withIntermediateDirectories: true)
         let resourceLimiter = WasmSandboxResourceLimiter()
-        let instructionLimiter = WasmInstructionBudgetLimiter(interrupter: interrupter)
         let quotaMonitor = WasmSandboxQuotaMonitor(
             captureDirectory: jobRoot,
             capturePrefix: "program",
@@ -868,8 +908,10 @@ final class WasmRustCompiler: @unchecked Sendable {
                 captureDirectory: jobRoot,
                 capturePrefix: "program",
                 resourceLimiter: resourceLimiter,
-                instructionLimiter: instructionLimiter,
+                fuelBudget: WasmSandboxPolicy.userProgramInstructionBudget,
+                wallClockLimit: WasmSandboxPolicy.userProgramWallClockLimit,
                 interrupter: interrupter,
+                softwareMemoryReservationBytes: WasmSandboxPolicy.userProgramMemoryLimitBytes,
                 capturedOutputLimitBytes: WasmSandboxPolicy.userProgramOutputLimitBytes
             )
         } catch let cancellation as WasmExecutionCancelled {
@@ -915,8 +957,11 @@ final class WasmRustCompiler: @unchecked Sendable {
         started: ContinuousClock.Instant,
         cancellation: WasmExecutionCancelled = .init(reason: .userRequested)
     ) -> CompilationResult {
+        let runningProgram = phase == .run
         let outputLimitLabel = ByteCountFormatter.string(
-            fromByteCount: Int64(WasmSandboxPolicy.userProgramOutputLimitBytes),
+            fromByteCount: Int64(runningProgram
+                ? WasmSandboxPolicy.userProgramOutputLimitBytes
+                : CompilerHostPolicy.outputLimitBytes),
             countStyle: .file
         )
         let writableLimitLabel = ByteCountFormatter.string(
@@ -927,11 +972,16 @@ final class WasmRustCompiler: @unchecked Sendable {
         case .userRequested:
             "Build stopped. The Wasm guest was interrupted and its sandbox released."
         case .instructionBudget:
-            "Program stopped at the local instruction budget. Its sandbox was released."
+            (runningProgram ? "Program" : "Compiler")
+                + " stopped at the local instruction budget. Its sandbox was released."
         case .wallClock:
-            "Program stopped at the 30-second local runtime limit. Its sandbox was released."
+            (runningProgram
+                ? "Program stopped at the 30-second local runtime limit."
+                : "Compiler stopped at the 20-minute local build limit.")
+                + " Its sandbox was released."
         case .outputLimit:
-            "Program stopped after producing " + outputLimitLabel + " of output."
+            (runningProgram ? "Program" : "Compiler")
+                + " stopped at the " + outputLimitLabel + " output limit."
         case .fileCountLimit:
             "Program stopped at the sandbox limit of "
                 + String(WasmSandboxPolicy.userProgramFileCountLimit)
@@ -952,6 +1002,29 @@ final class WasmRustCompiler: @unchecked Sendable {
     }
 
     // MARK: - Project layout
+
+    private func cachedCheck(for key: String) -> CompilationResult? {
+        guard let result = successfulChecks[key] else { return nil }
+        checkCacheOrder.removeAll { $0 == key }
+        checkCacheOrder.append(key)
+        return result
+    }
+
+    private func cacheCheck(_ result: CompilationResult, for key: String) {
+        let diagnosticBytes = result.diagnostics.reduce(0) { total, diagnostic in
+            total + diagnostic.message.utf8.count + diagnostic.rendered.utf8.count
+                + diagnostic.spans.reduce(0) { $0 + $1.sourceLine.utf8.count }
+        }
+        guard result.diagnostics.count <= 128,
+              result.stdout.utf8.count + result.stderr.utf8.count + diagnosticBytes <= 256 * 1024
+        else { return }
+        successfulChecks[key] = result
+        checkCacheOrder.removeAll { $0 == key }
+        checkCacheOrder.append(key)
+        if checkCacheOrder.count > Self.checkCacheLimit {
+            successfulChecks.removeValue(forKey: checkCacheOrder.removeFirst())
+        }
+    }
 
     private enum ProjectLayoutError: LocalizedError {
         case invalidPath(String)
@@ -1017,7 +1090,8 @@ final class WasmRustCompiler: @unchecked Sendable {
         var hasher = SHA256()
         let actionLabel = action == .check ? "check" : "run"
         for value in [
-            Self.toolchainVersion, Self.cacheSchemaVersion, actionLabel, edition, sourcePath, source,
+            CargoToolchain.artifactIdentity, Self.cacheSchemaVersion,
+            actionLabel, edition, sourcePath, source,
         ] {
             hasher.update(data: Data(value.utf8))
             hasher.update(data: Data([0]))
@@ -1061,8 +1135,10 @@ final class WasmRustCompiler: @unchecked Sendable {
             return nil
         }
         do {
-            let module = try parseWasm(bytes: [UInt8](Data(contentsOf: url)))
-            runtime.cacheProgramModule(module, for: key)
+            let module = try parseWasm(filePath: url.path)
+            if let byteCount = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+                runtime.cacheProgramModule(module, for: key, wasmFileBytes: byteCount)
+            }
             return module
         } catch {
             try? FileManager.default.removeItem(at: url)
@@ -1070,11 +1146,15 @@ final class WasmRustCompiler: @unchecked Sendable {
         }
     }
 
-    private func persistProgramArtifact(_ data: Data, for key: String) {
+    private func persistProgramArtifact(at source: URL, for key: String) {
         guard let directory = programCacheURL, let url = programArtifactURL(for: key) else { return }
+        let staging = directory.appending(path: ".\(key)-\(UUID().uuidString).stage")
+        defer { try? FileManager.default.removeItem(at: staging) }
         do {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            try data.write(to: url, options: .atomic)
+            if FileManager.default.fileExists(atPath: url.path) { return }
+            try FileManager.default.copyItem(at: source, to: staging)
+            try FileManager.default.moveItem(at: staging, to: url)
         } catch {
             // A cache write must never turn a successful local compilation into a failure.
         }

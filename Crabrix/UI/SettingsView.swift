@@ -1,23 +1,13 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @EnvironmentObject private var appLock: AppLockController
     @AppStorage("crabrix.appearance") private var appearanceRaw = CrabrixAppearance.system.rawValue
     @AppStorage("crabrix.editorFontSize") private var editorFontSize = 14.0
     @AppStorage("crabrix.keepAwakeDuringBuild") private var keepAwakeDuringBuild = true
     @AppStorage("crabrix.appleIntelligenceCompletion") private var appleIntelligenceCompletion = true
     @AppStorage("crabrix.appleIntelligenceDiagnostics") private var appleIntelligenceDiagnostics = true
-    @State private var isAddingDependency = false
-
     let toolchain: ToolchainStatus
-    let manifest: CargoManifest?
-    let workspace: CargoWorkspaceSnapshot
-    let storage: CrateStorageUsage
-    let onAddDependency: (String, String) -> Bool
-    let onRefreshStorage: () async -> Void
-    let onClearBuildArtifacts: () async -> Void
-    let onClearDownloadedArchives: () async -> Void
-    let onClearOfflinePins: () async -> Void
-    let onClearPackageCache: () async -> Void
 
     private let columns = [GridItem(.adaptive(minimum: 150), spacing: 12)]
 
@@ -27,9 +17,8 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     settingsHeader
                     appearanceSection
+                    privacySection
                     editorSection
-                    cargoSection
-                    cargoStorageSection
                     compilerSection
                     helpSection
                     aboutSection
@@ -41,12 +30,6 @@ struct SettingsView: View {
             .background(CrabrixTheme.background.ignoresSafeArea())
             .foregroundStyle(CrabrixTheme.primary)
             .navigationTitle("Settings")
-        }
-        .task { await onRefreshStorage() }
-        .sheet(isPresented: $isAddingDependency) {
-            CargoDependencyCatalogSheet(onAdd: onAddDependency)
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
         }
     }
 
@@ -70,7 +53,7 @@ struct SettingsView: View {
     private var appearanceSection: some View {
         SettingsSection(
             title: "Appearance",
-            detail: "Auto follows the device setting immediately."
+            detail: "Auto follows the device. Cyberpunk uses the RepoLens-inspired neon palette throughout Crabrix."
         ) {
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(CrabrixAppearance.allCases) { appearance in
@@ -170,180 +153,37 @@ struct SettingsView: View {
         }
     }
 
-    private var cargoSection: some View {
+    private var privacySection: some View {
         SettingsSection(
-            title: "Cargo package",
-            detail: manifest == nil
-                ? "Open or create a Cargo project to manage its manifest."
-                : "Changes are written to the editable Cargo.toml in this project."
+            title: "App protection",
+            detail: "Lock the workspace when Crabrix leaves the foreground. Authentication stays on this device."
         ) {
-            if let manifest {
+            VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Label(manifest.name, systemImage: "shippingbox.fill")
-                        .font(.headline)
-                        .foregroundStyle(CrabrixTheme.amber)
+                    Label(appLock.methodName, systemImage: "faceid")
                     Spacer()
-                    Text("edition \(manifest.edition ?? "—")")
-                        .font(.caption.monospaced())
-                        .foregroundStyle(CrabrixTheme.muted)
+                    Text(appLock.isEnabled ? "On" : "Off")
+                        .font(.caption.bold())
+                        .foregroundStyle(appLock.isEnabled ? CrabrixTheme.mint : CrabrixTheme.muted)
                 }
-
-                if manifest.dependencies.isEmpty {
-                    Text("No dependencies yet")
-                        .font(.caption)
-                        .foregroundStyle(CrabrixTheme.muted)
-                } else {
-                    ForEach(manifest.dependencies) { dependency in
-                        HStack {
-                            Image(systemName: "cube.fill")
-                                .foregroundStyle(CrabrixTheme.blue)
-                            Text(dependency.name)
-                                .font(.subheadline.monospaced().bold())
-                            Spacer()
-                            Text(dependency.requirement ?? dependency.source.rawValue)
-                                .font(.caption.monospaced())
-                                .foregroundStyle(CrabrixTheme.muted)
-                        }
-                        .padding(.vertical, 3)
-                    }
-                }
-
                 Button {
-                    isAddingDependency = true
+                    Task { await appLock.setEnabled(!appLock.isEnabled) }
                 } label: {
-                    Label("Add Cargo dependency", systemImage: "plus.circle.fill")
-                        .frame(maxWidth: .infinity)
+                    Label(
+                        appLock.isEnabled ? "Turn off app protection" : "Turn on app protection",
+                        systemImage: appLock.isEnabled ? "lock.open" : "lock.fill"
+                    )
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(CrabrixTheme.blue)
+                .buttonStyle(.bordered)
+                .disabled(appLock.isAuthenticating)
 
-                if !workspace.packages.isEmpty {
-                    Divider().overlay(CrabrixTheme.border)
-                    HStack {
-                        Label("Resolved graph", systemImage: "point.3.filled.connected.trianglepath.dotted")
-                            .font(.caption.bold())
-                        Spacer()
-                        Text(workspace.summary)
-                            .font(.caption2.monospaced())
-                            .foregroundStyle(CrabrixTheme.muted)
-                    }
-                    ForEach(workspace.packages) { package in
-                        CargoPackageRow(status: package)
-                            .padding(.vertical, 2)
-                    }
+                if let error = appLock.errorMessage {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundStyle(CrabrixTheme.amber)
                 }
-
-                Label(
-                    "Crabrix downloads packages from crates.io, verifies each SHA-256 checksum, and compiles them with the bundled rustc. Builds run locally.",
-                    systemImage: "info.circle"
-                )
-                .font(.caption2)
-                .foregroundStyle(CrabrixTheme.muted)
-            } else {
-                ContentUnavailableView(
-                    "No Cargo.toml",
-                    systemImage: "shippingbox",
-                    description: Text("New Rust Project creates one automatically.")
-                )
-                .foregroundStyle(CrabrixTheme.muted)
             }
         }
-    }
-
-    private var cargoStorageSection: some View {
-        SettingsSection(
-            title: "Local build storage",
-            detail: "Build outputs and downloaded sources are cacheable. Explicit offline pins are durable and managed separately."
-        ) {
-            SettingsFactRow(
-                title: "Downloaded archives",
-                value: Self.formatted(storage.archiveBytes),
-                icon: "arrow.down.circle.fill",
-                tint: CrabrixTheme.blue
-            )
-            SettingsFactRow(
-                title: "Offline pinned archives",
-                value: Self.formatted(storage.pinnedArchiveBytes),
-                icon: "pin.fill",
-                tint: CrabrixTheme.mint
-            )
-            SettingsFactRow(
-                title: "Registry index",
-                value: Self.formatted(storage.indexBytes),
-                icon: "list.bullet.rectangle.fill",
-                tint: CrabrixTheme.blue
-            )
-            SettingsFactRow(
-                title: "Extracted sources",
-                value: "\(Self.formatted(storage.sourceBytes)) · \(storage.packageCount) packages",
-                icon: "folder.fill",
-                tint: CrabrixTheme.amber
-            )
-            SettingsFactRow(
-                title: "Package artifacts",
-                value: Self.formatted(storage.artifactBytes),
-                icon: "cube.transparent.fill",
-                tint: CrabrixTheme.mint
-            )
-            SettingsFactRow(
-                title: "Project builds",
-                value: Self.formatted(storage.projectArtifactBytes),
-                icon: "hammer.circle.fill",
-                tint: CrabrixTheme.amber
-            )
-            SettingsFactRow(
-                title: "Total",
-                value: Self.formatted(storage.totalBytes),
-                icon: "internaldrive.fill",
-                tint: CrabrixTheme.coral
-            )
-
-            Button {
-                Task { await onClearBuildArtifacts() }
-            } label: {
-                Label("Clear build artifacts and results", systemImage: "cube.transparent")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-            .tint(CrabrixTheme.mint)
-
-            Button {
-                Task { await onClearDownloadedArchives() }
-            } label: {
-                Label("Remove downloaded archives", systemImage: "archivebox")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-            .tint(CrabrixTheme.blue)
-
-            Button {
-                Task { await onClearOfflinePins() }
-            } label: {
-                Label("Remove offline pins", systemImage: "pin.slash")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-            .tint(CrabrixTheme.amber)
-
-            Button(role: .destructive) {
-                Task { await onClearPackageCache() }
-            } label: {
-                Label("Clear source and build caches", systemImage: "trash")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-
-            Label(
-                "Clearing cache data removes extracted sources, downloaded archives, and build artifacts. The compact registry index and explicit offline pins remain durable; remove pins separately when you want to reclaim those verified archives.",
-                systemImage: "exclamationmark.triangle"
-            )
-            .font(.caption2)
-            .foregroundStyle(CrabrixTheme.muted)
-        }
-    }
-
-    private static func formatted(_ bytes: Int64) -> String {
-        ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
     }
 
     private var compilerSection: some View {
@@ -499,6 +339,134 @@ struct SettingsView: View {
     private var appBuild: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"
     }
+}
+
+struct ProjectPackageStorageSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let storage: CrateStorageUsage
+    let onRefreshStorage: () async -> Void
+    let onClearBuildArtifacts: () async -> Void
+    let onClearDownloadedArchives: () async -> Void
+    let onClearOfflinePins: () async -> Void
+    let onClearPackageCache: () async -> Void
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                cargoStorageSection
+                    .padding(20)
+                    .frame(maxWidth: 700)
+                    .frame(maxWidth: .infinity)
+            }
+            .background(CrabrixTheme.background.ignoresSafeArea())
+            .foregroundStyle(CrabrixTheme.primary)
+            .navigationTitle("Package storage")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        .task { await onRefreshStorage() }
+    }
+
+    private var cargoStorageSection: some View {
+        SettingsSection(
+            title: "Local build storage",
+            detail: "Build outputs and downloaded sources are cacheable. Explicit offline pins are durable and managed separately."
+        ) {
+            SettingsFactRow(
+                title: "Downloaded archives",
+                value: Self.formatted(storage.archiveBytes),
+                icon: "arrow.down.circle.fill",
+                tint: CrabrixTheme.blue
+            )
+            SettingsFactRow(
+                title: "Offline pinned archives",
+                value: Self.formatted(storage.pinnedArchiveBytes),
+                icon: "pin.fill",
+                tint: CrabrixTheme.mint
+            )
+            SettingsFactRow(
+                title: "Registry index",
+                value: Self.formatted(storage.indexBytes),
+                icon: "list.bullet.rectangle.fill",
+                tint: CrabrixTheme.blue
+            )
+            SettingsFactRow(
+                title: "Extracted sources",
+                value: "\(Self.formatted(storage.sourceBytes)) · \(storage.packageCount) packages",
+                icon: "folder.fill",
+                tint: CrabrixTheme.amber
+            )
+            SettingsFactRow(
+                title: "Package artifacts",
+                value: Self.formatted(storage.artifactBytes),
+                icon: "cube.transparent.fill",
+                tint: CrabrixTheme.mint
+            )
+            SettingsFactRow(
+                title: "Project builds",
+                value: Self.formatted(storage.projectArtifactBytes),
+                icon: "hammer.circle.fill",
+                tint: CrabrixTheme.amber
+            )
+            SettingsFactRow(
+                title: "Total",
+                value: Self.formatted(storage.totalBytes),
+                icon: "internaldrive.fill",
+                tint: CrabrixTheme.coral
+            )
+
+            Button {
+                Task { await onClearBuildArtifacts() }
+            } label: {
+                Label("Clear build artifacts and results", systemImage: "cube.transparent")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .tint(CrabrixTheme.mint)
+
+            Button {
+                Task { await onClearDownloadedArchives() }
+            } label: {
+                Label("Remove downloaded archives", systemImage: "archivebox")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .tint(CrabrixTheme.blue)
+
+            Button {
+                Task { await onClearOfflinePins() }
+            } label: {
+                Label("Remove offline pins", systemImage: "pin.slash")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .tint(CrabrixTheme.amber)
+
+            Button(role: .destructive) {
+                Task { await onClearPackageCache() }
+            } label: {
+                Label("Clear source and build caches", systemImage: "trash")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+
+            Label(
+                "Clearing cache data removes extracted sources, downloaded archives, and build artifacts. The compact registry index and explicit offline pins remain durable; remove pins separately when you want to reclaim those verified archives.",
+                systemImage: "exclamationmark.triangle"
+            )
+            .font(.caption2)
+            .foregroundStyle(CrabrixTheme.muted)
+        }
+    }
+
+    private static func formatted(_ bytes: Int64) -> String {
+        ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
+    }
+
 }
 
 private struct SettingsSection<Content: View>: View {

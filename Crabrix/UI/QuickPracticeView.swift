@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct QuickPracticeView: View {
+    @EnvironmentObject private var academy: AcademyContentStore
     @EnvironmentObject private var progress: CrabrixProgressStore
-    @EnvironmentObject private var vitals: CrabrixVitalsStore
     @State private var didAward = false
     @Environment(\.dismiss) private var dismiss
     @State private var step = 0
@@ -41,11 +41,28 @@ struct QuickPracticeView: View {
         }
         .background(CrabrixTheme.background.ignoresSafeArea())
         .foregroundStyle(CrabrixTheme.primary)
+        .overlay {
+            if academy.repository == nil {
+                if let error = academy.errorMessage {
+                    ContentUnavailableView("Courses unavailable", systemImage: "books.vertical",
+                                           description: Text(error))
+                        .background(CrabrixTheme.background)
+                } else {
+                    ProgressView("Preparing installed courses…")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(CrabrixTheme.background)
+                }
+            }
+        }
         .navigationTitle("Quick Practice")
         .navigationBarTitleDisplayMode(.inline)
         .task {
             guard questions.isEmpty else { return }
-            questions = RustQuestionBank.round(count: 4, records: mastery.records)
+            await academy.prepare()
+            guard let repository = academy.repository else { return }
+            questions = RustQuestionBank.round(
+                count: 4, from: repository.practiceQuestions(), records: mastery.records
+            )
         }
     }
 
@@ -97,15 +114,8 @@ struct QuickPracticeView: View {
         }
     }
 
-    /// Practice is training: it builds the flow streak that hands energy back,
-    /// but it never spends health, so there is always a way to keep going.
-    private func recordTraining(_ passed: Bool) {
-        vitals.recordTrainingAnswer(correct: passed)
-    }
-
     private func advance(_ passed: Bool) {
         if passed { score += 1 }
-        recordTraining(passed)
         withAnimation(.easeInOut(duration: 0.22)) { step += 1 }
     }
 }

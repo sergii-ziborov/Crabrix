@@ -20,6 +20,8 @@ struct RustCourse: Identifiable, Sendable {
     let units: [RustLearningUnit]
 }
 
+#if DEBUG || CRABRIX_LEGACY_FIXTURES
+/// Frozen pre-CoursePack catalog retained for migration parity and exporter tests.
 enum RustCourseCatalog {
     static let courses: [RustCourse] = [
         RustCourse(
@@ -221,3 +223,4 @@ enum RustCourseCatalog {
         ),
     ]
 }
+#endif

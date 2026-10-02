@@ -71,16 +71,6 @@ struct ProjectMetadataFields: View {
             .lineLimit(2...4)
             .textFieldStyle(.roundedBorder)
 
-            fieldLabel("Type", systemImage: draft.kind.systemImage)
-            Picker("Project type", selection: $draft.kind) {
-                ForEach(CrabrixProject.Kind.allCases) { kind in
-                    Label(kind.title, systemImage: kind.systemImage)
-                        .tag(kind)
-                }
-            }
-            .pickerStyle(.menu)
-            .tint(CrabrixTheme.blue)
-
             fieldLabel("Folder", systemImage: "folder.fill")
             TextField("Unfiled", text: $draft.folder)
                 .textInputAutocapitalization(.words)
@@ -147,7 +137,7 @@ struct ProjectOrganizerSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     HStack(spacing: 12) {
-                        Image(systemName: draft.kind.systemImage)
+                        Image(systemName: "doc.text.fill")
                             .font(.title2)
                             .foregroundStyle(CrabrixTheme.coral)
                             .frame(width: 48, height: 48)
@@ -326,7 +316,7 @@ struct ProjectActionsSheet: View {
 
     private var overview: some View {
         HStack(alignment: .top, spacing: 14) {
-            Image(systemName: draft.kind.systemImage)
+            Image(systemName: "doc.text.fill")
                 .font(.title2)
                 .foregroundStyle(CrabrixTheme.coral)
                 .frame(width: 50, height: 50)
@@ -767,7 +757,7 @@ private struct MyProjectCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
-                Image(systemName: item.project.kind.systemImage)
+                Image(systemName: "doc.text.fill")
                     .font(.headline)
                     .foregroundStyle(CrabrixTheme.coral)
                     .frame(width: 38, height: 38)
@@ -779,12 +769,8 @@ private struct MyProjectCard: View {
                     Text(item.project.name)
                         .font(.headline)
                         .lineLimit(1)
-                    Text(item.project.kind.title.uppercased())
-                        .font(.system(
-                            size: 8,
-                            weight: .bold,
-                            design: .monospaced
-                        ))
+                    Text("\(item.project.files.count) files")
+                        .font(.caption2.monospaced())
                         .foregroundStyle(CrabrixTheme.muted)
                 }
                 Spacer()
@@ -795,41 +781,36 @@ private struct MyProjectCard: View {
                 Color.clear.frame(width: 28, height: 1)
             }
 
-            Text(
-                item.project.projectDescription.isEmpty
-                    ? "No description yet — open Project actions to add one."
-                    : item.project.projectDescription
-            )
-            .font(.caption)
-            .foregroundStyle(CrabrixTheme.muted)
-            .lineLimit(2)
+            if !item.project.projectDescription.isEmpty {
+                Text(item.project.projectDescription)
+                    .font(.caption)
+                    .foregroundStyle(CrabrixTheme.muted)
+                    .lineLimit(2)
+            }
 
-            HStack(spacing: 5) {
-                ForEach(item.project.tags.prefix(3), id: \.self) { tag in
-                    Text("#\(tag)")
-                        .font(.system(size: 9, design: .monospaced))
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 3)
-                        .background(CrabrixTheme.raised, in: Capsule())
-                        .foregroundStyle(CrabrixTheme.blue)
-                }
-                if item.project.tags.isEmpty {
-                    Text("\(item.project.files.count) files")
-                        .font(.caption2.monospaced())
-                        .foregroundStyle(CrabrixTheme.muted)
-                }
-                Spacer()
-                if let build = item.lastBuild {
-                    Image(
-                        systemName: build.succeeded
-                            ? "checkmark.circle.fill"
-                            : "xmark.circle.fill"
-                    )
-                    .foregroundStyle(
-                        build.succeeded
-                            ? CrabrixTheme.mint
-                            : CrabrixTheme.coral
-                    )
+            if !item.project.tags.isEmpty || item.lastBuild != nil {
+                HStack(spacing: 5) {
+                    ForEach(item.project.tags.prefix(3), id: \.self) { tag in
+                        Text("#\(tag)")
+                            .font(.system(size: 9, design: .monospaced))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .background(CrabrixTheme.raised, in: Capsule())
+                            .foregroundStyle(CrabrixTheme.blue)
+                    }
+                    Spacer()
+                    if let build = item.lastBuild {
+                        Image(
+                            systemName: build.succeeded
+                                ? "checkmark.circle.fill"
+                                : "xmark.circle.fill"
+                        )
+                        .foregroundStyle(
+                            build.succeeded
+                                ? CrabrixTheme.mint
+                                : CrabrixTheme.coral
+                        )
+                    }
                 }
             }
         }

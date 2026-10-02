@@ -284,7 +284,8 @@ final class RustLessonProgressionNextStepTests: XCTestCase {
 
         let next = RustLessonProgression.nextStep(
             after: first.lessonID,
-            completedLessonIDs: [first.lessonID]
+            completedLessonIDs: [first.lessonID],
+            courses: RustCourseCatalog.courses
         )
         XCTAssertEqual(next, second)
     }
@@ -296,7 +297,8 @@ final class RustLessonProgressionNextStepTests: XCTestCase {
 
         let next = RustLessonProgression.nextStep(
             after: first.lessonID,
-            completedLessonIDs: [first.lessonID, second.lessonID]
+            completedLessonIDs: [first.lessonID, second.lessonID],
+            courses: RustCourseCatalog.courses
         )
         XCTAssertEqual(next, second)
     }
@@ -308,7 +310,11 @@ final class RustLessonProgressionNextStepTests: XCTestCase {
             steps.last(where: { $0.courseID == firstCourse.id })
         )
         let next = try XCTUnwrap(
-            RustLessonProgression.nextStep(after: lastOfFirst.lessonID, completedLessonIDs: [lastOfFirst.lessonID])
+            RustLessonProgression.nextStep(
+                after: lastOfFirst.lessonID,
+                completedLessonIDs: [lastOfFirst.lessonID],
+                courses: RustCourseCatalog.courses
+            )
         )
         XCTAssertNotEqual(next.courseID, firstCourse.id, "should move on to the next course")
     }
@@ -320,7 +326,8 @@ final class RustLessonProgressionNextStepTests: XCTestCase {
         let completed = Set(steps.dropFirst().map(\.lessonID))
         let next = RustLessonProgression.nextStep(
             after: steps.last?.lessonID,
-            completedLessonIDs: completed
+            completedLessonIDs: completed,
+            courses: RustCourseCatalog.courses
         )
         XCTAssertEqual(next, first)
     }
@@ -331,18 +338,26 @@ final class RustLessonProgressionNextStepTests: XCTestCase {
         let second = try XCTUnwrap(steps.dropFirst().first)
 
         XCTAssertEqual(
-            RustLessonProgression.nextStep(after: nil, completedLessonIDs: []),
+            RustLessonProgression.nextStep(
+                after: nil, completedLessonIDs: [], courses: RustCourseCatalog.courses
+            ),
             first
         )
         XCTAssertEqual(
-            RustLessonProgression.nextStep(after: nil, completedLessonIDs: [first.lessonID]),
+            RustLessonProgression.nextStep(
+                after: nil, completedLessonIDs: [first.lessonID],
+                courses: RustCourseCatalog.courses
+            ),
             second
         )
     }
 
     func testAnUnknownLessonStillYieldsAConcreteStep() {
         XCTAssertNotNil(
-            RustLessonProgression.nextStep(after: "not-a-lesson", completedLessonIDs: [])
+            RustLessonProgression.nextStep(
+                after: "not-a-lesson", completedLessonIDs: [],
+                courses: RustCourseCatalog.courses
+            )
         )
     }
 }
