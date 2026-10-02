@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "appStoreVersionID": "2bc0ae1f-ca26-41e6-a0a9-700628e7bf14",
+  "versionString": "1.1",
+  "localizationID": "a65d398a-7dd6-4135-b2d6-048be8b34dd3",
+  "locale": "en-US",
+  "descriptionSHA256": "b794929998a5b9f912ee4a0cba3aeb2269cf2d649c2225718d8baed141c30756",
+  "promotionalTextSHA256": "b7450078c013d1b8792dcb4e0ef739544878d84f708e8f8871a7f0b97f9c850c",
+  "screenshotSets": [
+    {
+      "id": "9abbb718-2cd9-4aa3-9a3d-8f456be9376b",
+      "displayType": "APP_IPHONE_67",
+      "filesInDisplayOrder": [
+        {
+          "file": "docs/app-store/screenshots/iphone-6.9/01-build.png",
+          "appScreenshotID": "8d400019-5e0c-83bd-8007-20df3e7490e7",
+          "bytes": 134581,
+          "sha256": "72db88cf5e17e4c2f090c8ecee79fdd688bfbd734ac86fe1b8b25ed2243dd019",
+          "md5UploadChecksum": "e316d142904cc9ede971c27c9a718d59",
+          "deliveryState": "COMPLETE"
+        },
+        {
+          "file": "docs/app-store/screenshots/iphone-6.9/03-learn.png",
+          "appScreenshotID": "3f400019-5e0c-83bd-8000-7a81eb2214f0",
+          "bytes": 947312,
+          "sha256": "442591b08597d7a57ab612492a671674b4318b2d118b33b6ddcd53715c7a6951",
+          "md5UploadChecksum": "cc2a93d16a04fa3f56a667be91d802eb",
+          "deliveryState": "COMPLETE"
+        },
+        {
+          "file": "docs/app-store/screenshots/iphone-6.9/05-lesson.png",
+          "appScreenshotID": "1c000019-5e0c-83bd-8031-575218a78a3d",
+          "bytes": 528099,
+          "sha256": "c9c7390fe0789942497bc8b40c304a2b4c70772fae5f02f66a4abcab3ac9ff53",
+          "md5UploadChecksum": "b0b98c1171523e2b1837acb001705275",
+          "deliveryState": "COMPLETE"
+        },
+        {
+          "file": "docs/app-store/screenshots/iphone-6.9/06-profile.png",
+          "appScreenshotID": "d0400019-5e0c-83bd-800e-8362e4e925f8",
+          "bytes": 304726,
+          "sha256": "0b03e7a52c22038991f9236cb062f6e27195ef6857adac6b49edc32ef9ff600f",
+          "md5UploadChecksum": "d5998cf5158b07325b9bed386fd7414c",
+          "deliveryState": "COMPLETE"
+        },
+        {
+          "file": "docs/app-store/screenshots/iphone-6.9/02-projects.png",
+          "appScreenshotID": "dc000019-5e0c-83bd-800d-78212fb59f07",
+          "bytes": 442842,
+          "sha256": "955ed7b40b6825a121aeb87573f78f017de66248c4c0b96a6f09aea28edbcff1",
+          "md5UploadChecksum": "3b6b02973a7b7e4887dafb07a7a946c3",
+          "deliveryState": "COMPLETE"
+        },
+        {
+          "file": "docs/app-store/screenshots/iphone-6.9/07-library.png",
+          "appScreenshotID": "31000019-5e0c-83bd-802c-3d052d4cf776",
+          "bytes": 291796,
+          "sha256": "2494e3dcc862a020896d4af884c29b5462d6d81d0fcfd0b18532652fe4d77f4a",
+          "md5UploadChecksum": "30862302e94b97d7940d3d42b5de4c43",
+          "deliveryState": "COMPLETE"
+        },
+        {
+          "file": "docs/app-store/screenshots/iphone-6.9/04-course.png",
+          "appScreenshotID": "4ac00019-5e0c-83bd-8003-d7dee9703eb4",
+          "bytes": 1560329,
+          "sha256": "6df4ab8db7b21c05130dd3565f198f303099df1b39a3dc0b4cfde547bf75c8ea",
+          "md5UploadChecksum": "19585cea3eb7a2568862fd10b3fc5297",
+          "deliveryState": "COMPLETE"
+        },
+        {
+          "file": "docs/app-store/screenshots/iphone-6.9/08-settings.png",
+          "appScreenshotID": "b2000019-5e0c-83bd-800e-cddc96a473c1",
+          "bytes": 276588,
+          "sha256": "773aa443b32530f2102dccb86abc2e50f779325007e5fe0175b5eeac121a612f",
+          "md5UploadChecksum": "a75aed65173951b3b7a7e7274d0fb272",
+          "deliveryState": "COMPLETE"
+        }
+      ]
+    },
+    {
+      "id": "1c84229c-61cc-46c5-8da2-b318c1783a8b",
+      "displayType": "APP_IPAD_PRO_3GEN_129",
+      "filesInDisplayOrder": [
+        {
+          "file": "docs/app-store/screenshots/ipad-13/01-build.png",
+          "appScreenshotID": "d8400019-5e0c-83bd-8029-a997f5b4ae86",
+          "bytes": 1113376,
+          "sha256": "2d3a3aafb0e29c2bca0674e53387b20c20046f6a7523256986401e35549782e3",
+          "md5UploadChecksum": "ccfcc0178be15a88be26e88ee96fc616",
+          "deliveryState": "COMPLETE"
+        },
+        {
+          "file": "docs/app-store/screenshots/ipad-13/03-learn.png",
+          "appScreenshotID": "03400019-5e0c-83bd-801b-6446e78528ae",
+          "bytes": 923035,
+          "sha256": "bd7e317afbedbc00b31983e28e6fbd800da2482100f8313002ba9f6aaf710907",
+          "md5UploadChecksum": "b7d80f0375fa070e5aa9547a7d4da68d",
+          "deliveryState": "COMPLETE"
+        },
+        {
+          "file": "docs/app-store/screenshots/ipad-13/04-lesson.png",
+          "appScreenshotID": "06800019-5e0c-83bd-8015-ec642f664a6c",
+          "bytes": 882881,
+          "sha256": "be9493bd3c85896ea2f4aacfaf19b178a570b1324c9b41fac0f6088e9fee44b6",
+          "md5UploadChecksum": "ef7973694a3f16e1f3f9f00ab68a7334",
+          "deliveryState": "COMPLETE"
+        },
+        {
+          "file": "docs/app-store/screenshots/ipad-13/05-profile.png",
+          "appScreenshotID": "c6c00019-5e0c-83bd-800a-b5eea0d5ce7c",
+          "bytes": 274123,
+          "sha256": "4c3bf9ac187cb3a6b4f44ef626be7589e2153b58e718122ecb4ebf4a487b37f4",
+          "md5UploadChecksum": "e8d496ae993567be1fbc5faba86ee6c1",
+          "deliveryState": "COMPLETE"
+        },
+        {
+          "file": "docs/app-store/screenshots/ipad-13/02-projects.png",
+          "appScreenshotID": "21400019-5e0c-83bd-8031-3042cdece1e8",
+          "bytes": 409894,
+          "sha256": "04e2f6761fdb4ebd9fec71b3287401c5c6f99d07e3269501e3ad1660e0d1d032",
+          "md5UploadChecksum": "f5083ed453880ac740d0b4cb000d78ed",
+          "deliveryState": "COMPLETE"
+        },
+        {
+          "file": "docs/app-store/screenshots/ipad-13/06-library.png",
+          "appScreenshotID": "75000019-5e0c-83bd-8006-2044156b8bc5",
+          "bytes": 421677,
+          "sha256": "7c2fbd658bc229237ddff6e1bbfe923ef50a40e15d1005a2c9634f8f74a64904",
+          "md5UploadChecksum": "c0a6a819d5168feb5d82af6acd21ddfe",
+          "deliveryState": "COMPLETE"
+        }
+      ]
+    }
+  ]
+}

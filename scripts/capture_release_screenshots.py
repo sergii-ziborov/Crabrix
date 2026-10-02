@@ -13,6 +13,8 @@ import subprocess
 import time
 from pathlib import Path
 
+from PIL import Image
+
 
 BUNDLE_ID = "com.sergiiziborov.Crabrix"
 ROOT = Path(__file__).resolve().parents[1]
@@ -71,6 +73,12 @@ def shot(udid: str, destination: Path, *arguments: str) -> None:
                or any(value.startswith("--crabrix-auto-") for value in arguments) else 6)
     destination.parent.mkdir(parents=True, exist_ok=True)
     run("xcrun", "simctl", "io", udid, "screenshot", "--type=png", str(destination))
+    # Simulator PNGs carry an opaque alpha channel. App Store Connect rejects
+    # alpha channels even when every pixel is fully opaque.
+    with Image.open(destination) as captured:
+        if "A" in captured.getbands() and captured.getchannel("A").getextrema() != (255, 255):
+            raise RuntimeError(f"Screenshot has translucent pixels: {destination}")
+        captured.convert("RGB").save(destination, format="PNG")
     print(destination.relative_to(ROOT), flush=True)
 
 

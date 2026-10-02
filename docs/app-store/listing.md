@@ -328,7 +328,8 @@ In particular, `07-library` must show the installed Academy Examples gallery, no
 
 ### Reproducing them
 
-Capture every frame from one built Release Simulator app with:
+Capture every frame from one built Release Simulator app with Python 3 and
+Pillow installed:
 
 ```bash
 python3 scripts/capture_release_screenshots.py \
@@ -336,7 +337,8 @@ python3 scripts/capture_release_screenshots.py \
 ```
 
 The script uses temporary simulators named from `Crabrix Shots 6.9` and `Crabrix
-Dev iPad` device templates, then updates the Store, README, and site image copies.
+Dev iPad` device templates, removes Simulator's fully opaque alpha channel, then
+updates the Store, README, and site image copies.
 Review the generated images before uploading them to App Store Connect.
 
 ## Launch assets

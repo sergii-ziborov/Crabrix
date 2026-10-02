@@ -1,9 +1,10 @@
-# Crabrix 1.1 App Store copy — draft
+# Crabrix 1.1 App Store copy
 
-This copy describes the 1.1 (10) tester build. It has not been submitted for
-App Review. The 14 iPhone and iPad screenshots were recaptured from its Release
-Simulator source build on 2 October; physical-device testing remains with the
-testers before submission.
+This copy describes the 1.1 (10) tester build. The 1.1 version record and this
+English copy were saved in App Store Connect on 2 October, and all 14 current
+iPhone and iPad screenshots were uploaded and verified. The version has not
+been resubmitted for App Review; physical-device testing remains with the
+testers before submission. See [the upload evidence](asset-upload-2026-10-02.json).
 
 ## Promotional text
 
