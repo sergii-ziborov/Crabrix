@@ -1,5 +1,13 @@
 # Validation record — 2 October 2026
 
+## Build 13 project settings correction
+
+The build 12 phone editor had lost the three-dot project settings button. Build 13 restores it beside the compact Check control and routes it to the existing project settings, save and share sheet. A Release iPhone Simulator build passed; visual inspection of its editor screenshot found the three-dot, Check, Run and Close controls fitting on one row. The project settings sheet is reached by the same `onProjectActions` handler used elsewhere in the editor. Physical-device tapping and layout remain for the tester.
+
+Xcode 27.0 stable produced a signed 1.1 (13) archive. The 56,244,731-byte IPA has SHA-256 `d3add12b43a897ea571c899266968d77f41753f0960e2938072a45ff24d4cc63`; ZIP integrity, deep code signature and Apple `altool --validate-app` passed. The embedded compiler, sysroot, toolchain lock and seven transition packs match the verified build 12 inputs. Apple accepted the upload as `VALID`; build 13 is `IN_BETA_TESTING` in Internal QA with its What to Test read back. Four changed iPhone images were uploaded, the other ten captured images were byte-identical to their existing listing assets, and both screenshot sets were verified in display order. See the [build 13 manifest](releases/1.1-build13.json) and [screenshot evidence](app-store/asset-upload-2026-10-02-build13.json). This is not a physical-device pass or an App Review submission.
+
+[Main run 36992483021](https://github.com/sergii-ziborov/Crabrix/actions/runs/36992483021) passed both the fast Swift suite and compiler gates for the prior build 12 code. The build 13 PR checks are a separate gate.
+
 ## Build 12 course and editor correction
 
 On a clean iOS Simulator install, Learn showed seven separately downloadable courses and no installed CoursePacks. The final 6.9-inch iPhone screenshot shows the download buttons and the Projects, Learn, and Settings tabs together. The editor screenshot shows Code, Problems, Output, and Terminal at the bottom, Check and Run at the top, and no phone Project Details control. The Release Simulator and signed iOS Release archive built successfully. Ten `CourseBootstrapTests` and two public `CourseDeliveryGateTests` passed with zero failures; those tests cover fresh selection, legacy transition, and signed delivery behavior. Physical-device tester results are pending.
