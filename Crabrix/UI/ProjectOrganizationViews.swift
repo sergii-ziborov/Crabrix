@@ -301,7 +301,7 @@ struct ProjectActionsSheet: View {
             }
             .background(CrabrixTheme.background.ignoresSafeArea())
             .foregroundStyle(CrabrixTheme.primary)
-            .navigationTitle("Project")
+            .navigationTitle("Project settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
