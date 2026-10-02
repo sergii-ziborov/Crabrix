@@ -1153,7 +1153,7 @@ private struct AppHeader: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: isPhone ? 7 : 12) {
             Image("CrabrixMark")
                 .resizable()
                 .scaledToFit()
@@ -1195,12 +1195,21 @@ private struct AppHeader: View {
                 .disabled(transfer.isWorking)
             } else {
                 if isPhone {
+                    Button(action: onProjectActions) {
+                        Image(systemName: "ellipsis.circle")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundStyle(CrabrixTheme.primary)
+                            .frame(width: 40, height: 40)
+                            .background(CrabrixTheme.raised, in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Project settings and share")
+
                     Button(action: onCheck) {
-                        Label("Check", systemImage: "checkmark.circle")
-                            .font(.caption.bold())
+                        Image(systemName: "checkmark.circle")
+                            .font(.system(size: 20, weight: .medium))
                             .foregroundStyle(CrabrixTheme.blue)
-                            .padding(.horizontal, 10)
-                            .frame(minHeight: 38)
+                            .frame(width: 40, height: 40)
                             .background(CrabrixTheme.blue.opacity(0.1), in: Capsule())
                     }
                     .buttonStyle(.plain)
@@ -1248,7 +1257,7 @@ private struct AppHeader: View {
                 .accessibilityLabel("Close editor")
             }
         }
-        .padding(.horizontal, 18)
+        .padding(.horizontal, isPhone ? 14 : 18)
         .frame(height: 58)
         .background(CrabrixTheme.background.opacity(0.97))
     }
