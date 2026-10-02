@@ -485,7 +485,7 @@ private struct CourseLibraryView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Available Courses").font(.title2.bold())
+                    Text("Available").font(.title2.bold())
                     ForEach(available, id: \.courseID) { entry in
                         let preview = Self.preview(entry.courseID)
                         VStack(alignment: .leading, spacing: 8) {
@@ -534,7 +534,6 @@ private struct CourseLibraryView: View {
         .background(CrabrixTheme.background.ignoresSafeArea())
         .navigationTitle("Courses")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.hidden, for: .tabBar)
         .confirmationDialog(
             "Download course?", isPresented: Binding(
                 get: { pendingDownload != nil },
