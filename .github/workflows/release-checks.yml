@@ -108,9 +108,15 @@ jobs:
       - name: Run bundled rustc and sandbox gates
         run: |
           simulator_id="$(scripts/select-ios-simulator.sh)"
+          # The source-built compiler's full Academy gate is measured in Release.
+          # Debug execution exceeded the hosted job limit before Examples finished.
           xcodebuild test \
             -project Crabrix.xcodeproj \
             -scheme CrabrixCompilerGate \
+            -configuration Release \
             -destination "platform=iOS Simulator,id=${simulator_id}" \
             -onlyUsePackageVersionsFromResolvedFile \
+            ENABLE_TESTABILITY=YES \
+            ONLY_ACTIVE_ARCH=YES \
+            OTHER_SWIFT_FLAGS='$(inherited) -DCRABRIX_LEGACY_FIXTURES' \
             CODE_SIGNING_ALLOWED=NO
