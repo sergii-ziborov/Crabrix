@@ -1,4 +1,16 @@
-# Validation record — 2 October 2026
+# Validation record
+
+## Build 15 Learn dashboard — 3 October 2026
+
+The previous Learn root chose a catalog-only view on first launch and kept that choice after a course was installed. Build 15 reads the current installed repository on every render: installed courses appear in My courses with offline status, lesson progress and a direct course link; remaining courses keep their Download buttons and sizes on the same screen. The introductory Academy hero is removed, and the empty weak-topic prompt no longer precedes practice.
+
+A Release iPhone 17 Pro Simulator build passed. On an existing-user Simulator with seven installed transition packs, the Learn root visibly showed all seven under My courses. On a separate fresh Simulator, it showed seven individually downloadable courses and no installed course. The live tap-through from Download to My courses, practice placement after installation, and physical-device layout remain for the tester.
+
+Xcode 27.0 stable produced a signed iOS 1.1 (15) archive from app input commit `32c565bc0d093e076f46ae6129395161a80e2973`. The exported IPA is 56,171,527 bytes with SHA-256 `1eda29b93d04d05f288a48191fe3bd607c254d63d0cd0ab67545aeffec09efe4`; ZIP integrity, deep code signature and Apple `altool --validate-app` passed. The bundled compiler, sysroot, toolchain lock, and all seven transition CoursePack archives and descriptors match the pinned build 14 release digests. Apple accepted delivery `0cd0ac2b-de15-404a-a8c8-4eeb42ce0a8f`, processed build 15 as `VALID`, and placed it `IN_BETA_TESTING` for Internal QA. The saved What to Test text was read back.
+
+All 16 iPhone and iPad release screenshots were captured from the build 15 Release Simulator app. Changed images were uploaded, unchanged images retained, and both App Store Connect sets were verified in display order. The [build 15 manifest](releases/1.1-build15.json) links the app, runtime, toolchain, catalog and [screenshot evidence](app-store/asset-upload-2026-10-03-build15.json). This is not an App Review submission or a physical-device pass.
+
+[PR run 37073280765](https://github.com/sergii-ziborov/Crabrix/actions/runs/37073280765) passed 437 Swift tests with 14 opt-in skips and zero failures, built an unsigned Release candidate, and passed its binary-path check. The compiler job was skipped by the PR workflow policy because the compiler inputs did not change.
 
 ## Build 14 lesson result and course progress
 
