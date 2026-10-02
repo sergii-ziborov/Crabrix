@@ -1,6 +1,6 @@
 # Crabrix 1.1 App Store copy
 
-This copy describes the 1.1 (10) tester build. The 1.1 version record and this
+This copy describes the 1.1 (11) tester build. The 1.1 version record and this
 English copy were saved in App Store Connect on 2 October, and all 14 current
 iPhone and iPad screenshots were uploaded and verified. The version has not
 been resubmitted for App Review; physical-device testing remains with the
@@ -36,8 +36,8 @@ BUILD YOUR OWN PROJECT
 The project workspace has a native file tree, syntax-aware editor, Code and
 Output views, and compiler diagnostics that point to source spans. My Projects
 opens the project manager. New Project offers local templates and imports from
-GitHub and Files/iCloud Drive. Check and Run use the compiler bundled with the
-app. Lesson hints appear in Output while you work.
+GitHub and Files/iCloud Drive. Check and Run use Crabrix's source-built Rust
+compiler bundled with the app. Lesson hints appear in Output while you work.
 
 CARGO IN THE PROJECT
 Add supported crates.io dependencies to a project's Cargo.toml. Crabrix

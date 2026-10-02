@@ -6,6 +6,8 @@ The [public release](https://github.com/sergii-ziborov/crabrix-toolchain/release
 
 The compatibility report comes from completed iOS 18.2 Release Simulator `.xcresult` bundles on this compiler and runtime `d996f0d11dff54734b5670d58062e22c6e01f949`. Thirteen selected tests passed, including all 46 Academy Examples, E0502/Run, supported heavy Cargo projects, Stop, output budget and warning-cache parity. A separate `serde_json` probe failed because the current Cargo subset does not run a required build script. Physical-device runtime and performance gates remain separate.
 
+The app's own build 11 Release Simulator `AppToolchainReleaseTests` passed (one test, zero failures): its bundled `rustc.wasm` and sysroot ZIP matched the release input manifest. Xcode 27.0 stable produced a signed iOS 1.1 (11) archive and exported IPA. ZIP integrity, deep code signature, embedded compiler digest and embedded sysroot digest passed local checks; Apple `altool --validate-app` reported no errors. The IPA SHA-256 is `302db78cd686e6b2c9c3691f1f2b64c9a901906354eb7cf92cd1b8f8304aeac7`. Apple processing and tester outcomes are recorded separately after upload.
+
 ## 1 October 2026 app toolchain release input (historical)
 
 The app now reads the bundled `Crabrix/Resources/toolchain.lock.json` for its

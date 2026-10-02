@@ -32,7 +32,7 @@ The release graph has one runtime dependency. CoursePacks contain data, text, me
 
 ## Build from source
 
-The tested development environment for this branch is Xcode 27.0 beta (`27A5228h`) with Swift 6.4, XcodeGen, and `zstd`. The app deployment target is iOS 18. Package versions and the runtime revision are pinned in [Dependencies/Package.resolved](Dependencies/Package.resolved) and [project.yml](project.yml). A signing team is needed only for a physical device; the bundle IDs and App Group remain unchanged.
+The Release Simulator gates used Xcode 27.0 beta (`27A5228h`); the signed iOS archive used Xcode 27.0 stable (`27A266a`). XcodeGen and `zstd` are build tools. The app deployment target is iOS 18. Package versions and the runtime revision are pinned in [Dependencies/Package.resolved](Dependencies/Package.resolved) and [project.yml](project.yml). A signing team is needed only for a physical device; the bundle IDs and App Group remain unchanged.
 
 ```bash
 ./scripts/bootstrap.sh

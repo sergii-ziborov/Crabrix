@@ -1,4 +1,4 @@
-Crabrix 1.1 release candidate (build 10). Please test the new Academy and local compiler workflow on a physical iPhone or iPad.
+Crabrix 1.1 release candidate (build 11). Please test the new Academy and source-built local compiler workflow on a physical iPhone or iPad.
 
 1. On a fresh install, open Learn. Basics is ready offline. Download the Projects course after checking its displayed size, then open one of the 46 Academy Examples as a separate editable project. Edit, Check, and Run it.
 2. In My Projects, confirm the project manager opens. Start a new project and inspect the GitHub and Files/iCloud Drive import choices. Cargo packages are managed inside the project.
