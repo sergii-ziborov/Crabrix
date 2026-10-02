@@ -3,6 +3,14 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SOURCE_KIND="$(/usr/bin/python3 "$SCRIPT_DIR/toolchain_manifest.py" kind)"
+if [[ "$SOURCE_KIND" == crabrix-release-v1 ]]; then
+  exec /usr/bin/python3 "$SCRIPT_DIR/fetch_crabrix_toolchain.py"
+fi
+[[ "$SOURCE_KIND" == legacy-tar-zstd ]] || {
+  echo "Unsupported toolchain source kind: $SOURCE_KIND" >&2
+  exit 1
+}
 IFS=$'\t' read -r TOOLCHAIN_TAG BASE_URL RUSTC_ARCHIVE RUSTC_SHA \
   SYSROOT_ARCHIVE SYSROOT_SHA RUSTC_FILE_SHA SYSROOT_MANIFEST_SHA \
   < <(python3 "$SCRIPT_DIR/toolchain_manifest.py" legacy-tsv)

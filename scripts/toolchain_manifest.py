@@ -33,17 +33,40 @@ def load_manifest():
         if not isinstance(data.get(key), str) or not HEX.fullmatch(data[key]):
             raise ValueError(f"invalid {key}")
     source = data.get("source")
-    if not isinstance(source, dict) or source.get("kind") != "legacy-tar-zstd":
-        raise ValueError("this bootstrap only supports the pinned legacy baseline")
-    legacy_release = "https://github.com/AngelOnFira/wasm-rustc/releases/download/artifacts-test-7"
-    if source.get("baseURL") != legacy_release:
-        raise ValueError("invalid legacy release URL")
-    for key in ("compilerAsset", "sysrootAsset"):
-        asset = source.get(key)
-        if not isinstance(asset, dict) or not isinstance(asset.get("name"), str) or not COMPONENT.fullmatch(asset["name"]):
-            raise ValueError(f"invalid {key} name")
-        if not asset["name"].endswith(".tar.zst") or not isinstance(asset.get("sha256"), str) or not HEX.fullmatch(asset["sha256"]):
-            raise ValueError(f"invalid {key} digest or format")
+    if not isinstance(source, dict):
+        raise ValueError("missing toolchain source")
+    if source.get("kind") == "legacy-tar-zstd":
+        legacy_release = "https://github.com/AngelOnFira/wasm-rustc/releases/download/artifacts-test-7"
+        if source.get("baseURL") != legacy_release:
+            raise ValueError("invalid legacy release URL")
+        for key in ("compilerAsset", "sysrootAsset"):
+            asset = source.get(key)
+            if not isinstance(asset, dict) or not isinstance(asset.get("name"), str) or not COMPONENT.fullmatch(asset["name"]):
+                raise ValueError(f"invalid {key} name")
+            if not asset["name"].endswith(".tar.zst") or not isinstance(asset.get("sha256"), str) or not HEX.fullmatch(asset["sha256"]):
+                raise ValueError(f"invalid {key} digest or format")
+    elif source.get("kind") == "crabrix-release-v1":
+        prefix = "https://github.com/sergii-ziborov/crabrix-toolchain/releases/download/"
+        base = source.get("baseURL")
+        if not isinstance(base, str) or not base.startswith(prefix) or not COMPONENT.fullmatch(base[len(prefix):]):
+            raise ValueError("invalid Crabrix toolchain release URL")
+        if not isinstance(source.get("keyID"), str) or not COMPONENT.fullmatch(source["keyID"]):
+            raise ValueError("invalid toolchain signing key ID")
+        if not isinstance(source.get("sourceLockSHA256"), str) or not HEX.fullmatch(source["sourceLockSHA256"]):
+            raise ValueError("invalid toolchain source lock digest")
+        if not isinstance(source.get("builderSourceCommit"), str) or not re.fullmatch(r"[0-9a-f]{40}", source["builderSourceCommit"]):
+            raise ValueError("invalid toolchain builder source commit")
+        for key, filename in (("compilerAsset", "rustc.wasm"),
+                              ("sysrootAsset", "sysroot-wasip1.zip"),
+                              ("inventoryAsset", "sysroot-files.json"),
+                              ("descriptorAsset", "toolchain.descriptor.json")):
+            asset = source.get(key)
+            if not isinstance(asset, dict) or asset.get("name") != filename or not isinstance(asset.get("sha256"), str) or not HEX.fullmatch(asset["sha256"]):
+                raise ValueError(f"invalid {key} name or digest")
+        if source["compilerAsset"]["sha256"] != data["rustcSHA256"] or source["sysrootAsset"]["sha256"] != data["sysrootArchiveSHA256"]:
+            raise ValueError("Crabrix release assets differ from toolchain identity")
+    else:
+        raise ValueError("unsupported toolchain source kind")
     return data
 
 
@@ -51,8 +74,12 @@ def main():
     data = load_manifest()
     if len(sys.argv) == 2 and sys.argv[1] == "validate":
         print(f'Validated {data["toolchainID"]} release input')
+    elif len(sys.argv) == 2 and sys.argv[1] == "kind":
+        print(data["source"]["kind"])
     elif len(sys.argv) == 2 and sys.argv[1] == "legacy-tsv":
         source = data["source"]
+        if source["kind"] != "legacy-tar-zstd":
+            raise ValueError("legacy-tsv requires legacy-tar-zstd source")
         print("\t".join((
             data["toolchainID"], source["baseURL"],
             source["compilerAsset"]["name"], source["compilerAsset"]["sha256"],
@@ -60,7 +87,7 @@ def main():
             data["rustcSHA256"], data["sysrootManifestSHA256"],
         )))
     else:
-        raise SystemExit("usage: toolchain_manifest.py validate|legacy-tsv")
+        raise SystemExit("usage: toolchain_manifest.py validate|kind|legacy-tsv")
 
 
 if __name__ == "__main__":

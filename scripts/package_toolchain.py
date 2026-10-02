@@ -16,6 +16,22 @@ version = release['toolchainID']
 source = project / 'Crabrix/Resources/Toolchain' / version
 output = project / 'build/Resources/Toolchain' / version
 output.mkdir(parents=True, exist_ok=True)
+if release['source']['kind'] == 'crabrix-release-v1':
+    compiler = source / 'rustc.wasm'
+    archive = source / 'sysroot-wasip1.zip'
+    if hashlib.sha256(compiler.read_bytes()).hexdigest() != release['rustcSHA256']:
+        raise SystemExit('Own source-built rustc differs from the app release manifest')
+    if hashlib.sha256(archive.read_bytes()).hexdigest() != release['sysrootArchiveSHA256']:
+        raise SystemExit('Own source-built sysroot differs from the app release manifest')
+    with zipfile.ZipFile(archive) as packaged:
+        manifest = packaged.read('sysroot-wasip1/manifest.json')
+    if hashlib.sha256(manifest).hexdigest() != release['sysrootManifestSHA256']:
+        raise SystemExit('Own source-built sysroot manifest differs from the app release manifest')
+    shutil.copyfile(compiler, output / 'rustc.wasm')
+    shutil.copyfile(archive, output / 'sysroot-wasip1.zip')
+    (output / 'sysroot-wasip1.sha256').write_text(release['sysrootArchiveSHA256'])
+    print('Packaged verified Crabrix source-built compiler resources:', output)
+    raise SystemExit(0)
 archive = output / 'sysroot-wasip1.zip'
 # Rebuild when any input changes; deterministic timestamps keep hashes stable.
 inputs = sorted(p for p in (source / 'sysroot-wasip1').rglob('*') if p.is_file())
