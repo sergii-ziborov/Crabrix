@@ -1,10 +1,10 @@
 # Crabrix 1.1 App Store copy
 
-This copy describes the 1.1 (11) tester build. The 1.1 version record and this
-English copy were saved in App Store Connect on 2 October, and all 14 current
-iPhone and iPad screenshots were uploaded and verified. The version has not
-been resubmitted for App Review; physical-device testing remains with the
-testers before submission. See [the upload evidence](asset-upload-2026-10-02.json).
+This copy describes the 1.1 (12) tester build. Its English description and
+promotional text were saved and read back in App Store Connect on 2 October.
+All 14 iPhone and iPad screenshots were uploaded and verified in display order.
+The version has not been submitted for App Review; physical-device testing is
+next. See [the upload evidence](asset-upload-2026-10-02-build12.json).
 
 ## Promotional text
 
@@ -23,10 +23,10 @@ Seven courses cover Rust fundamentals through systems and interview topics,
 plus Algorithm Atlas: 742 lessons and steps, 200 algorithm challenges, source
 projects, questions, explanations, and practice material. A new installation
 lists all seven courses; choose which ones to download for offline learning.
-Existing learners retain all seven transition courses offline after updating.
+Existing learners retain their offline courses after updating.
 Lessons can open starter code as a separate editable project. Course downloads show their size,
 are checked before installation, and leave your projects and progress in place
-when you update or delete course material. Installed courses are readable
+when you remove course material. Installed courses are readable
 offline. The Projects course also supplies 46 downloadable Rust Examples in
 Academy. Open one to create your own editable project; its source is visible
 and the course copy stays unchanged. New course versions need a connection for
@@ -55,7 +55,7 @@ Energy limits.
 PRIVACY AND OFFLINE USE
 Projects, notes, progress, and compiler output stay local unless you choose to
 export or share them. Crabrix has no analytics SDK, advertising, or account.
-Course updates, crates.io packages, and GitHub imports use network requests;
+Course downloads, crates.io packages, and GitHub imports use network requests;
 the hosts may keep ordinary access logs. After course material and required
 dependencies are prepared, learning and compilation can work offline.
 
@@ -71,7 +71,7 @@ exact release candidate. The historical 1.0 screenshots are not 1.1 evidence.
 
 ## What to test in TestFlight
 
-Open Learn → Courses on a fresh install, download the Projects course after checking its
+Open Learn on a fresh install, download the Projects course after checking its
 size, and open an Academy Example as a separate editable project. Check and Run
 it, switch to Output, then choose another source file and confirm Code returns.
 Try a supported Cargo dependency in a project, Stop a long compile, and confirm

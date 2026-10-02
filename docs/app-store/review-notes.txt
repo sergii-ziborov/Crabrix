@@ -1,4 +1,4 @@
-Crabrix 1.1 (11) reviewer notes — prepared for tester validation.
+Crabrix 1.1 (12) reviewer notes — prepared for tester validation.
 
 Crabrix is a native Rust development and learning environment. No account or
 subscription is needed. The compiler, WebAssembly runtime, and WASI sysroot
@@ -8,17 +8,15 @@ TO SEE IT COMPILE
 1. Projects → current project card → Run. The project workspace opens on Code;
    the result appears in Output. Select a different file to return to Code.
 2. Edit the string in main.rs and Run again to see a fresh local compilation.
-3. Open the bundled Basics course in Learn. To inspect the borrowing lesson,
-   download Ownership after confirming its shown size, open its starter as a
+3. In Learn, download Ownership after confirming its shown size. Open its starter as a
    project, inspect the E0502 diagnostic, repair the source, and Run. Lesson
    hints are available in Output.
-4. Learn → Examples opens 46 editable Rust projects from the signed Projects
-   CoursePack. On a fresh install, confirm the shown size to download that
-   pack first. Open an example to create a separate copy in My Projects;
+4. In Learn, download Cargo & Real Projects, then open 46 Examples inside its
+   Downloaded course row. Open an example to create a separate copy in My Projects;
    edit and Run that copy. Its Rust source is visible to the user.
 
 COURSES AND DOWNLOADS
-Learn → Courses lists six Rust courses and Algorithm Atlas, with Examples under
+Learn lists six Rust courses and Algorithm Atlas, with Examples under
 the Projects course in Academy. A fresh installation downloads only the courses
 the user chooses. An update with legacy progress activates all seven transition
 packs offline from the app bundle. The initial signed catalog is bundled; each
