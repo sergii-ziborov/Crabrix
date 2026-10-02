@@ -219,19 +219,19 @@
     <div class="table-scroll">
       <table class="plain">
         <tbody>
-          <tr><td>Bundled <code>rustc</code></td><td>Exact version and artifact identity are shown in the app; current build input is <code>artifacts-test-7</code>.</td></tr>
+          <tr><td>Bundled <code>rustc</code></td><td>Source-built Rust <code>1.96.0-dev</code>; exact artifact identity is shown in the app.</td></tr>
           <tr><td>Target</td><td><code>wasm32-wasip1</code></td></tr>
-          <tr><td>Toolchain artifact</td><td><code>artifacts-test-7</code></td></tr>
-          <tr><td>Downloaded at runtime</td><td>Nothing. The compiler ships in the app bundle and is verified by SHA-256 at build time.</td></tr>
+          <tr><td>Toolchain artifact</td><td><a href="https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1"><code>crabrix-rust-2026-10-02.1</code></a></td></tr>
+          <tr><td>Downloaded at runtime</td><td>Nothing. The compiler ships in the app bundle after signature, SHA-256 and sysroot inventory verification at build time.</td></tr>
           <tr><td>Runtime</td><td><a href="https://github.com/sergii-ziborov/crabrix-runtime">CrabrixRuntime</a>, derived from WasmKit 0.4.1, pinned to a public commit. No JIT or daemon.</td></tr>
         </tbody>
       </table>
     </div>
     <p>
-      The app currently uses the pinned <code>artifacts-test-7</code> compatibility artifact.
       The public <a href="https://github.com/sergii-ziborov/crabrix-toolchain">Crabrix toolchain builder</a>
-      has source locks and build scripts, but has not yet supplied a verified
-      replacement compiler release. The runtime and compiler have separate identities.
+      produced this signed release from pinned Rust sources. Two clean builds are
+      documented; their raw bytes differ, so byte-identical reproducibility is not claimed.
+      The runtime and compiler have separate identities.
     </p>
 
     <h2>What your program is allowed to do</h2>

@@ -1,6 +1,12 @@
 # Validation record — 2 October 2026
 
-## 1 October 2026 app toolchain release input
+## 2 October 2026 signed Crabrix toolchain
+
+The [public release](https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1) contains the source-built compiler selected for app build 11. All 13 public assets were downloaded into a separate directory and passed `scripts/verify-signed-release.py`, including the Ed25519 descriptor, bound SHA-256 digests, complete sysroot ZIP inventory, provenance, notices, 13 selected app compatibility gates and two-build difference report. The app's normal `./scripts/bootstrap.sh` fetched the same release from public URLs, checked its signature and hashes, and packaged the compiler for Xcode. Compiler SHA-256 is `0286dc52064283ef78ba153a554d86ae742e6c8cd638aea8662e07d3529233fc`; sysroot ZIP SHA-256 is `085fece5602fdd3af4efde3e08388090928c33b03fc874d99aba741a0b85283b`. The two clean builds had different raw digests. See [toolchain details](toolchain.md) and the release evidence for exact inputs.
+
+The compatibility report comes from completed iOS 18.2 Release Simulator `.xcresult` bundles on this compiler and runtime `d996f0d11dff54734b5670d58062e22c6e01f949`. Thirteen selected tests passed, including all 46 Academy Examples, E0502/Run, supported heavy Cargo projects, Stop, output budget and warning-cache parity. A separate `serde_json` probe failed because the current Cargo subset does not run a required build script. Physical-device runtime and performance gates remain separate.
+
+## 1 October 2026 app toolchain release input (historical)
 
 The app now reads the bundled `Crabrix/Resources/toolchain.lock.json` for its
 compiler version and Cargo artifact identity; the fetch and package scripts
@@ -15,7 +21,7 @@ separate Docker candidate produced three source-built compiler binaries; their
 observed compatibility and remaining failures are recorded in
 [the candidate gate](toolchain-candidate-simulator-gate.md). The third passed
 the `regex` and four-crate application gates plus all 46 Examples on Release
-Simulator. None is a signed release input.
+Simulator. At that point, none was a signed release input.
 
 ## 1 October 2026 Release Academy source boundary
 
@@ -31,9 +37,9 @@ byte for byte, including 742 lessons, 200 patterns and 46 Examples. On this
 branch, the iOS 18.2 arm64 Simulator Release gate loaded the installed signed
 pack, forced a new source revision for each of the 46 Examples, and compiled
 and ran all 46 successfully in 238.925 seconds (one test, zero failures).
-The earlier 46-Example result below used the pre-guard candidate. These checks
-still use the older pinned compiler artifact; the source-built Crabrix compiler
-is in progress.
+The earlier 46-Example result below used the pre-guard candidate. These earlier
+checks used the older pinned compiler artifact. The 2 October release gates
+above use the source-built compiler.
 
 ## 1 October 2026 Academy Examples candidate
 
@@ -81,9 +87,9 @@ This records observed results for the current development branch. It is not an A
 | iOS software-bounds OOB regression | A separate Release iOS 18.2 Simulator gate requested direct dispatch with a 64 MiB virtual reservation and software bounds; the engine selected token dispatch and trapped on an `i32.load` at byte 65,536 of a one-page memory. One test passed, zero failures. This checks the app's linked runtime configuration rather than only the macOS fork test. |
 | Pinned runtime speed | [Five raw Release Simulator observations](performance/2026-09-30-reserved-memory-safety-simulator.json) measured changed-Check medians of 1143.668 ms at the preceding fork and 566.340 ms at pinned `fbe46d9` (2.02×), with the same compiler artifact and warning-Check source. First Check was 1228.261 ms versus 859.161 ms (1.43×); the candidate first samples varied more. All five candidate probes retained two warnings and unchanged diagnostics. A separate earlier 0.3.1 app snapshot had a 1588.499 ms changed-Check median, about 2.81× the current candidate, but app source and session differed. These are Simulator workload observations, not a device or whole-app claim. |
 | Hosted fast CI for memory patch | [Run 36765123054](https://github.com/sergii-ziborov/Crabrix/actions/runs/36765123054) on app commit `ef5f72b` and runtime `6f9e307c`: 424 tests executed, four opt-in tests skipped, zero failures; unsigned Release build and binary-path check passed. The app's subsequent pin to `fbe46d9` has not yet had hosted CI at the time of this record. |
-| Source-built toolchain | Three source-built candidate compilers were produced and exercised on Release iOS 18.2 Simulator. The first passed all 46 Academy Examples but failed the four-crate CLI at `smulhi.i64`; the second passed checked multiplication and `smallvec` but failed at `bswap.i128`. The third passed standalone `regex`, the full four-crate CLI, all 46 Examples, and eight selected compiler/Cargo/sandbox regressions. Its candidate-only stripped artifact independently passed E0502, byte swap, all 46 Examples, and the four-crate CLI. The [candidate gate](toolchain-candidate-simulator-gate.md) records exact digests and timings. No source-built toolchain is a signed release input yet. |
+| Source-built toolchain candidate history | Three source-built candidate compilers were produced and exercised on Release iOS 18.2 Simulator. The first passed all 46 Academy Examples but failed the four-crate CLI at `smulhi.i64`; the second passed checked multiplication and `smallvec` but failed at `bswap.i128`. The third passed standalone `regex`, the full four-crate CLI, all 46 Examples, and eight selected compiler/Cargo/sandbox regressions. Its candidate-only stripped artifact independently passed E0502, byte swap, all 46 Examples, and the four-crate CLI. The [candidate gate](toolchain-candidate-simulator-gate.md) records exact digests and timings. These preliminary runs preceded the signed release above. |
 | Source-built compiler size probe | [Two sets of five raw Release Simulator observations](performance/2026-10-02-source-built-strip-simulator.json) compared the same third compiler before and after stripping only Wasm `name` and `.debug_*` custom sections. The compiler fell from 129,337,658 to 87,833,739 bytes. Median parse was 148.515 versus 108.671 ms (1.37×), first warning Check 838.347 versus 686.758 ms (1.22×), and changed Check 581.459 versus 566.800 ms (1.03×). All ten Check probes passed with two warnings and unchanged-cache diagnostic parity. This is a small Simulator workload run in fixed order, with no thermal/RSS measurement; it cannot support a several-fold whole-app claim. |
 
 The Simulator used for the app gates was an iOS 18.2 device with Xcode 27.0 beta (`27A5228h`). Logs from local gates are not copied verbatim into public docs because they can contain machine paths; counts above come from completed command output. Re-run commands from the README and the repository CI before a release.
 
-Outstanding: full course update interruption/crash/disk-full matrix including actual process-kill resume, attribution of old unversioned attempts to the exact legacy snapshot, large-diagnostic compiler output stress and compiler workspace/tmp bounds, physical-device memory/thermal/Stop gates, a clean upstream 0.4.1 B baseline and device measurements, source-built toolchain release and app integration, and a final release manifest linked to an actual IPA. The [safety-gated candidate manifest](../release-manifests/candidate-reserved-memory-safety-2026-09-30.json) maps app source commit `ece70b0` to runtime `fbe46d9`, the unchanged old toolchain, and the signed course catalog; it has no IPA hash. The [earlier memory-patch manifest](../release-manifests/candidate-reserved-memory-2026-09-30.json) remains historical. The current comparison above measures one Check workload; it does not establish a several-fold whole-app speedup.
+Outstanding: full course update interruption/crash/disk-full matrix including actual process-kill resume, attribution of old unversioned attempts to the exact legacy snapshot, large-diagnostic compiler output stress and compiler workspace/tmp bounds, physical-device memory/thermal/Stop gates, a clean upstream 0.4.1 B baseline and device measurements, and the build 11 IPA/TestFlight mapping. The [safety-gated candidate manifest](../release-manifests/candidate-reserved-memory-safety-2026-09-30.json) maps an earlier app source to the old toolchain and is historical. The selected Simulator speed comparisons do not establish a several-fold whole-app speedup.

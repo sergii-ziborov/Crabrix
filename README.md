@@ -26,7 +26,7 @@ Crabrix 1.1 pins [CrabrixRuntime](https://github.com/sergii-ziborov/crabrix-runt
 
 In an A/B/A Release Simulator measurement using the same compiler and a heavy multi-crate CLI project, this runtime completed the selected workload **about 1.6× faster** than the preceding Crabrix runtime. The [raw observations](docs/performance/2026-10-02-sampled-cancellation-heavy-cli-simulator.json) document the source graph, output checks, cache preparation, and measurement limits. This result describes that workload on Simulator; other projects and devices need their own measurements. [Runtime integration](docs/runtime-integration.md) explains the implementation.
 
-The current app bundle still contains the pinned `artifacts-test-7` WASI `rustc` and `wasm32-wasip1` sysroot. They are fetched and hash checked on the **build machine**, then included in the app; the phone does not download compiler or runtime updates. [crabrix-toolchain](https://github.com/sergii-ziborov/crabrix-toolchain) is the public source locked builder. Its own compiler artifacts are not yet the app's release input; see [toolchain status](docs/toolchain.md). Source availability and a lock file are not evidence of a completed source build.
+Build 11 pins the [Crabrix source-built Rust toolchain](https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1), `crabrix-rust-2026-10-02.1`. Its `rustc.wasm` and `wasm32-wasip1` sysroot are built from locked source and published with a signed descriptor, notices, compatibility results, and a two-build difference report. The build Mac verifies the descriptor and every artifact before bundling them; the phone does not download compiler or runtime updates. The two source builds have different raw digests, so the release claims source-pinned inputs rather than byte-identical reproducibility. See [toolchain provenance and limits](docs/toolchain.md).
 
 The release graph has one runtime dependency. CoursePacks contain data, text, media, and editable Rust source; they cannot replace the compiler or install executable plugins. [Architecture](docs/architecture.md) and [course delivery](docs/course-delivery.md) explain the boundaries.
 
@@ -41,7 +41,7 @@ xcodebuild build -project Crabrix.xcodeproj -scheme Crabrix \
   -onlyUsePackageVersionsFromResolvedFile
 ```
 
-`bootstrap.sh` obtains the old pinned compiler artifacts with SHA-256 checks, packages them into the app resources, regenerates the Xcode project, and restores the audited SwiftPM resolution. The Share Extension needs the registered App Group `group.com.sergiiziborov.Crabrix` for a signed device build. Use `./scripts/device-build.sh` with a local signing team after that account setup.
+`bootstrap.sh` downloads the signed Crabrix toolchain release, verifies its Ed25519 descriptor, asset hashes and sysroot file inventory, packages the verified resources, regenerates the Xcode project, and restores the audited SwiftPM resolution. The Share Extension needs the registered App Group `group.com.sergiiziborov.Crabrix` for a signed device build. Use `./scripts/device-build.sh` with a local signing team after that account setup.
 
 ## Verify
 
@@ -62,7 +62,7 @@ The named Simulator is a local development device; choose an installed iOS Simul
 
 - The bundled compiler targets `wasm32-wasip1`. Rust procedural macros, native linking, and executable Cargo build scripts are outside the supported local Cargo subset.
 - Crate compatibility is measured per package. A successful metadata Check does not prove code generation or linking.
-- Compiler output stress, course update crash injection, device performance, and physical Face ID behavior still need their release gates. [Current validation](docs/VALIDATION.md) lists them explicitly.
+- Course update crash injection, physical-device performance and Face ID behavior still need their release gates. Selected Simulator gates include compiler output budgeting and supported heavy projects; [current validation](docs/VALIDATION.md) gives their exact scope.
 - Internet is needed for course catalog/update fetches, crate discovery/downloads, and user requested GitHub imports. Compilation and program execution stay on device.
 
 ## Privacy, support, and licenses
