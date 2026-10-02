@@ -40,6 +40,14 @@ published or verified on `crabrix.com`; the live site may still describe the
 previous app build. Publish only with the matching app release and verify the
 public pages after deployment.
 
+On 2 October, the local `site/screenshots/` copies were recaptured from the
+1.1 (10) Release Simulator source build and the local product copy was updated.
+They are committed with the app, but the Lovable site has not been republished:
+the live `iphone-library.png` still returned the previous 1206 × 2622 image
+when checked on 2 October. The inactive Cloudflare Worker must not be deployed
+to bypass Lovable. The next Lovable publish needs these new image files and
+the current local page copy, followed by a public fetch check.
+
 As verified on 8 September 2026, **crabrix.com serves Lovable** and is Active
 and primary in Lovable. All six principal HTTPS pages were checked against the
 canonical copy. `www.crabrix.com` still needs its separate DNS setup.
