@@ -30,6 +30,20 @@ if release['source']['kind'] == 'crabrix-release-v1':
     shutil.copyfile(compiler, output / 'rustc.wasm')
     shutil.copyfile(archive, output / 'sysroot-wasip1.zip')
     (output / 'sysroot-wasip1.sha256').write_text(release['sysrootArchiveSHA256'])
+    # XcodeGen includes this entire folder. Keep a previous build's compiler
+    # recoverable outside that folder so the new app does not bundle both.
+    resource_root = output.parent
+    retired_root = project / 'build/.retired-toolchains'
+    for item in resource_root.iterdir():
+        if item.name == version:
+            continue
+        if item.is_symlink() or not item.is_dir() or not (item / '.inputs-sha256').is_file():
+            raise SystemExit(f'Unexpected extra bundled toolchain resource: {item}')
+        retired = retired_root / item.name
+        if retired.exists():
+            raise SystemExit(f'Retired toolchain directory already exists: {retired}')
+        retired_root.mkdir(parents=True, exist_ok=True)
+        item.replace(retired)
     print('Packaged verified Crabrix source-built compiler resources:', output)
     raise SystemExit(0)
 archive = output / 'sysroot-wasip1.zip'

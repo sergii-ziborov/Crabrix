@@ -144,12 +144,19 @@ class CrabrixToolchainFetchTests(unittest.TestCase):
             release["source"]["sysrootAsset"]["sha256"] = release["sysrootArchiveSHA256"]
             lock = root / "Crabrix/Resources/toolchain.lock.json"
             lock.write_text(json.dumps(release))
+            previous = root / "build/Resources/Toolchain/artifacts-test-7"
+            previous.mkdir(parents=True)
+            (previous / ".inputs-sha256").write_text("old-generated-inputs")
+            (previous / "rustc.wasm").write_bytes(b"old compiler")
             command = ["/usr/bin/python3", str(scripts / "package_toolchain.py")]
             result = subprocess.run(command, capture_output=True, text=True, check=False)
             self.assertEqual(result.returncode, 0, result.stderr)
             packaged = root / "build/Resources/Toolchain/test-toolchain"
             self.assertEqual((packaged / "rustc.wasm").read_bytes(), compiler.read_bytes())
             self.assertEqual((packaged / "sysroot-wasip1.zip").read_bytes(), archive.read_bytes())
+            self.assertFalse(previous.exists())
+            self.assertEqual((root / "build/.retired-toolchains/artifacts-test-7/rustc.wasm").read_bytes(),
+                             b"old compiler")
             archive.write_bytes(archive.read_bytes() + b"tampered")
             result = subprocess.run(command, capture_output=True, text=True, check=False)
             self.assertNotEqual(result.returncode, 0)
