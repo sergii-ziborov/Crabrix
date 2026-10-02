@@ -10,6 +10,8 @@ The app's own build 11 Release Simulator `AppToolchainReleaseTests` passed (one 
 
 [Hosted PR run 36968195912](https://github.com/sergii-ziborov/Crabrix/actions/runs/36968195912) completed on app source `3b0ed1ea6e13b5a2a2fa3909b48c6e5605cbf07b`: 436 tests executed, 14 opt-in tests skipped, zero failures. Its unsigned Release build and check that the old Swift Academy catalog was absent from the binary passed. The compiler-gates job was skipped by PR policy; the selected local source-built compiler gates above cover the candidate separately. The rebuilt [public site](https://crabrix.com) was deployed from Lovable commit `de69e539aabc192db81440b07b7a004933ba2d51`; fresh HTTPS fetches found the updated Academy Examples, toolchain identity, privacy description and four screenshot assets.
 
+After merge, [main run 36970089264](https://github.com/sergii-ziborov/Crabrix/actions/runs/36970089264) passed the 436-test fast suite and unsigned Release binary check. Its separate compiler job used the scheme's Debug configuration: five selected compiler tests passed, then the all-46-Examples test was still running at the 90-minute hosted limit. GitHub cancelled the job; the full hosted compiler suite did **not** pass. The gate is being changed to the same optimized Release test configuration used by the completed local 46-example and source-built compiler checks. A later hosted rerun needs its own result.
+
 ## 1 October 2026 app toolchain release input (historical)
 
 The app now reads the bundled `Crabrix/Resources/toolchain.lock.json` for its
