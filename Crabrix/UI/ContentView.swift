@@ -84,7 +84,7 @@ struct ContentView: View {
     @State private var isProjectSidebarCollapsed = false
     @State private var isInspectorCollapsed = false
     @State private var isCompactProjectDrawerPresented = false
-    @State private var isCompactInspectorDrawerPresented = false
+    @State private var isDiagnosticHelpPresented = false
     @State private var selectedBuildDockTab: BuildDockTab = .code
     @State private var learningPath: [LearningRoute] = []
     @State private var editorCursorOffset = 0
@@ -252,6 +252,29 @@ struct ContentView: View {
             )
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $isDiagnosticHelpPresented) {
+            NavigationStack {
+                ScrollView {
+                    if let diagnostic = model.primaryDiagnostic {
+                        DiagnosticInspector(
+                            diagnostic: diagnostic,
+                            canRepair: BorrowRepair.apply(to: model.source, diagnostic: diagnostic) != nil,
+                            practiceCompleted: model.practiceCompleted,
+                            adviceState: model.diagnosticAdviceState,
+                            onRepair: model.applyRepair,
+                            onRequestAdvice: model.requestAppleIntelligenceAdvice,
+                            onCancelAdvice: model.cancelAppleIntelligenceAdvice,
+                            onApplyAdvice: model.applyAppleIntelligenceAdvice,
+                            onPractice: model.presentPractice
+                        )
+                        .padding(20)
+                    }
+                }
+                .background(CrabrixTheme.background)
+                .navigationTitle("Compiler help")
+                .toolbar { Button("Done") { isDiagnosticHelpPresented = false } }
+            }
         }
         .sheet(isPresented: $model.isPracticePresented) {
             PracticeSheet(
@@ -545,9 +568,8 @@ struct ContentView: View {
                     ? false
                     : !isCompactProjectDrawerPresented,
                 showsProjectSidebarToggle: horizontalSizeClass != .regular,
-                isInspectorCollapsed: horizontalSizeClass == .regular
-                    ? isInspectorCollapsed
-                    : !isCompactInspectorDrawerPresented,
+                showsInspectorToggle: horizontalSizeClass == .regular,
+                isInspectorCollapsed: isInspectorCollapsed,
                 onSelectFile: selectEditorFile,
                 onToggleProjectSidebar: {
                     if horizontalSizeClass == .regular {
@@ -555,14 +577,11 @@ struct ContentView: View {
                     } else {
                         withAnimation(.easeInOut(duration: 0.22)) {
                             isCompactProjectDrawerPresented.toggle()
-                            isCompactInspectorDrawerPresented = false
                         }
                     }
                 },
                 onToggleInspector: {
-                    let inspectorIsCollapsed = horizontalSizeClass == .regular
-                        ? isInspectorCollapsed
-                        : !isCompactInspectorDrawerPresented
+                    let inspectorIsCollapsed = isInspectorCollapsed
                     if inspectorIsCollapsed, model.primaryDiagnostic != nil {
                         presentDiagnosticAdvisor()
                         return
@@ -570,11 +589,6 @@ struct ContentView: View {
                     if horizontalSizeClass == .regular {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             isInspectorCollapsed.toggle()
-                        }
-                    } else {
-                        withAnimation(.easeInOut(duration: 0.22)) {
-                            isCompactInspectorDrawerPresented.toggle()
-                            isCompactProjectDrawerPresented = false
                         }
                     }
                 }
@@ -669,6 +683,7 @@ struct ContentView: View {
                     transfer: model.projectTransfer,
                     activity: model.activity,
                     canRun: model.canStartBuild && !model.isProjectOperationInProgress,
+                    onCheck: model.check,
                     onRun: model.run,
                     onCancelBuild: model.cancelBuild,
                     onOpenProjects: { selectedDestination = .projects },
@@ -763,7 +778,7 @@ struct ContentView: View {
                 editorPane
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                if !isCompactProjectDrawerPresented && !isCompactInspectorDrawerPresented {
+                if !isCompactProjectDrawerPresented {
                     HStack(spacing: 0) {
                         CompactEdgeSwipeZone(edge: .leading) {
                             withAnimation(.easeOut(duration: 0.22)) {
@@ -771,23 +786,17 @@ struct ContentView: View {
                             }
                         }
                         Spacer(minLength: 0)
-                        CompactEdgeSwipeZone(edge: .trailing) {
-                            withAnimation(.easeOut(duration: 0.22)) {
-                                isCompactInspectorDrawerPresented = true
-                            }
-                        }
                     }
                     .padding(.top, 52)
                     .zIndex(0.5)
                 }
 
-                if isCompactProjectDrawerPresented || isCompactInspectorDrawerPresented {
+                if isCompactProjectDrawerPresented {
                     Color.black.opacity(0.46)
                         .contentShape(Rectangle())
                         .onTapGesture {
                             withAnimation(.easeOut(duration: 0.2)) {
                                 isCompactProjectDrawerPresented = false
-                                isCompactInspectorDrawerPresented = false
                             }
                         }
                         .transition(.opacity)
@@ -839,26 +848,6 @@ struct ContentView: View {
                     .zIndex(2)
                 }
 
-                if isCompactInspectorDrawerPresented {
-                    VStack(spacing: 0) {
-                        CompactDrawerHeader(title: "Project details", systemImage: "sidebar.right") {
-                            withAnimation(.easeOut(duration: 0.2)) {
-                                isCompactInspectorDrawerPresented = false
-                            }
-                        }
-                        Divider().overlay(CrabrixTheme.border)
-                        inspectorPane
-                    }
-                    .frame(width: min(geometry.size.width * 0.88, 360))
-                    .frame(maxHeight: .infinity)
-                    .background(CrabrixTheme.panel)
-                    .overlay(alignment: .leading) {
-                        Rectangle().fill(CrabrixTheme.border).frame(width: 1)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .transition(.move(edge: .trailing).combined(with: .opacity))
-                    .zIndex(2)
-                }
             }
             .clipped()
             .contentShape(Rectangle())
@@ -877,23 +866,11 @@ struct ContentView: View {
                     withAnimation(.easeOut(duration: 0.2)) {
                         isCompactProjectDrawerPresented = false
                     }
-                } else if isCompactInspectorDrawerPresented, horizontal > 0 {
-                    withAnimation(.easeOut(duration: 0.2)) {
-                        isCompactInspectorDrawerPresented = false
-                    }
                 } else if !isCompactProjectDrawerPresented,
-                          !isCompactInspectorDrawerPresented,
                           value.startLocation.x <= 30,
                           horizontal > 0 {
                     withAnimation(.easeOut(duration: 0.22)) {
                         isCompactProjectDrawerPresented = true
-                    }
-                } else if !isCompactProjectDrawerPresented,
-                          !isCompactInspectorDrawerPresented,
-                          value.startLocation.x >= width - 30,
-                          horizontal < 0 {
-                    withAnimation(.easeOut(duration: 0.22)) {
-                        isCompactInspectorDrawerPresented = true
                     }
                 }
             }
@@ -946,7 +923,7 @@ struct ContentView: View {
                 isInspectorCollapsed = false
             } else {
                 isCompactProjectDrawerPresented = false
-                isCompactInspectorDrawerPresented = true
+                isDiagnosticHelpPresented = true
             }
         }
     }
@@ -1163,6 +1140,7 @@ private struct AppHeader: View {
     let transfer: CompilerViewModel.ProjectTransfer
     let activity: CompilerViewModel.Activity
     let canRun: Bool
+    let onCheck: () -> Void
     let onRun: () -> Void
     let onCancelBuild: () -> Void
     let onOpenProjects: () -> Void
@@ -1184,6 +1162,8 @@ private struct AppHeader: View {
                 .accessibilityLabel("Crabrix crab")
             Text("crabrix")
                 .font(.system(size: 21, weight: .bold, design: .rounded))
+                .lineLimit(1)
+                .minimumScaleFactor(0.78)
             Spacer()
 
             if horizontalSizeClass == .regular, !isPhone {
@@ -1215,18 +1195,17 @@ private struct AppHeader: View {
                 .disabled(transfer.isWorking)
             } else {
                 if isPhone {
-                    Button(action: onProjectActions) {
-                        Image(systemName: "ellipsis.circle")
-                            .font(.system(size: 18, weight: .semibold))
-                            .frame(width: 34, height: 38)
-                            .background(
-                                CrabrixTheme.raised,
-                                in: Circle()
-                            )
+                    Button(action: onCheck) {
+                        Label("Check", systemImage: "checkmark.circle")
+                            .font(.caption.bold())
+                            .foregroundStyle(CrabrixTheme.blue)
+                            .padding(.horizontal, 10)
+                            .frame(minHeight: 38)
+                            .background(CrabrixTheme.blue.opacity(0.1), in: Capsule())
                     }
                     .buttonStyle(.plain)
-                    .disabled(transfer.isWorking)
-                    .accessibilityLabel("Project details, save, and share")
+                    .disabled(activity != .idle || !canRun)
+                    .accessibilityLabel("Check project")
 
                     Button(action: activity == .idle ? onRun : onCancelBuild) {
                         HStack(spacing: 6) {
@@ -1620,6 +1599,7 @@ private struct EditorToolbar: View {
     let isProjectSidebarCollapsed: Bool
     /// iPad keeps the files panel on screen, so it offers no button to hide it.
     var showsProjectSidebarToggle = true
+    var showsInspectorToggle = true
     let isInspectorCollapsed: Bool
     let onSelectFile: (String) -> Void
     let onToggleProjectSidebar: () -> Void
@@ -1683,7 +1663,7 @@ private struct EditorToolbar: View {
                 .disabled(activity != .idle)
                 Spacer()
 
-                PanelToolbarButton(
+                if showsInspectorToggle { PanelToolbarButton(
                     title: isInspectorCollapsed
                         ? (hasCompilerError ? "Show Apple Intelligence error help" : "Show inspector")
                         : "Hide inspector",
@@ -1695,7 +1675,7 @@ private struct EditorToolbar: View {
                         ? (hasCompilerError ? "Fix" : "Details")
                         : nil,
                     action: onToggleInspector
-                )
+                ) }
             }
 
             Divider().overlay(CrabrixTheme.border)

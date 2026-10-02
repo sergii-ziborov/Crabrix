@@ -103,9 +103,9 @@ struct BuildDockView<CodeContent: View>: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-            Divider().overlay(CrabrixTheme.border)
             content
+            Divider().overlay(CrabrixTheme.border)
+            header
         }
         .background(CrabrixTheme.editor)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -134,7 +134,7 @@ struct BuildDockView<CodeContent: View>: View {
                         selectedTab == tab ? tab.tint.opacity(0.12) : Color.clear,
                         in: RoundedRectangle(cornerRadius: 8)
                     )
-                    .overlay(alignment: .bottom) {
+                    .overlay(alignment: .top) {
                         if selectedTab == tab {
                             Capsule().fill(tab.tint).frame(height: 2)
                         }

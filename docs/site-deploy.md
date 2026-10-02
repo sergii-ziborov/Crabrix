@@ -38,9 +38,11 @@ Its `npm run build` preview succeeded and deployment
 Fresh public HTTPS requests returned 200 for the home, technology, privacy and
 support pages on `crabrix.com`. The returned pages showed Academy Examples,
 toolchain `crabrix-rust-2026-10-02.1` and the course-hosting privacy copy;
-four current Academy, Examples, Cyberpunk and iPad screenshot assets also
-returned 200. These pages describe build 11's unchanged app UI and the exact
-toolchain in its [release manifest](releases/1.1-build11.json).
+four Academy, Examples, Cyberpunk and iPad screenshot assets also returned
+200. That deployment predates the build 12 course-selection and editor changes.
+The updated site copy and screenshots are in `site/`; Lovable has not published
+them because the project ran out of credits. See the
+[build 12 manifest](releases/1.1-build12.json) for the app artifact.
 
 One hosted support FAQ still says “Crabrix 1.0” in a sentence about accounts;
 the canonical source page here uses the version-neutral wording. A follow-up

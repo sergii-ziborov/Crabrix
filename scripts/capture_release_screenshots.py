@@ -89,7 +89,7 @@ def capture_set(app: Path, template: str, folder: str, frames: list[tuple[str, t
     try:
         boot_and_install(udid, app)
         launch(udid, "-CrabrixTab", "learn")
-        wait_for_baseline(udid, 1)
+        wait_for_baseline(udid, 0)
         shot(udid, STORE / folder / "03-learn.png", "-CrabrixTab", "learn")
 
         # A separate, clean update state installs all seven signed transition
@@ -112,6 +112,7 @@ def copy_for_docs() -> None:
         "iphone-build.png": "iphone-6.9/01-build.png",
         "iphone-projects.png": "iphone-6.9/02-projects.png",
         "iphone-learn.png": "iphone-6.9/03-learn.png",
+        "iphone-academy.png": "iphone-6.9/03-learn.png",
         "iphone-library.png": "iphone-6.9/07-library.png",
         "iphone-settings.png": "iphone-6.9/08-settings.png",
         "iphone-cyberpunk-settings.png": "iphone-6.9/08-settings.png",

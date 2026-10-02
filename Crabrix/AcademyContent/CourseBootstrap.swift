@@ -97,7 +97,10 @@ struct CourseBootstrap {
         let active = Dictionary(uniqueKeysWithValues: current.map { ("\($0.courseID)|\($0.language)", $0) })
 
         for entry in catalog.courses {
-            if mode == .newLearner && entry.courseID != "basics" { continue }
+            // A fresh installation starts with an online catalog. Only a
+            // learner upgrading from the Swift catalog receives transition
+            // packs automatically, preserving their former offline access.
+            if mode == .newLearner { continue }
             let name = try Self.singleComponent(entry.courseID)
             let language = try Self.singleComponent(entry.language)
             let key = "\(name)|\(language)"

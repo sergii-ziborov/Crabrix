@@ -304,12 +304,12 @@
       address as part of serving the request.
     </p>
 
-    <h3>3. Course catalog and updates (GitHub)</h3>
+    <h3>3. Course downloads (GitHub)</h3>
     <p>
-      When you choose <strong>Check for course updates</strong>, Crabrix requests the
-      signed public catalog from <code>raw.githubusercontent.com</code>. A course update
-      you approve is downloaded from <code>github.com</code> and GitHub's release
-      asset hosts. The request identifies the public catalog or course asset and
+      The initial signed course list is included in the app. When you choose to
+      download a course, Crabrix requests its signed descriptor and archive from
+      <code>github.com</code> and GitHub's release
+      asset hosts. The request identifies the selected course asset and
       carries no Crabrix account, tracking ID, project code, answers, or progress.
       GitHub and its delivery providers receive normal connection information,
       including your IP address, and may keep access logs under their own policies.
@@ -317,7 +317,7 @@
     </p>
 
     <p>
-      That is the complete list of this app's content and import requests: course updates,
+      That is the complete list of this app's content and import requests: course downloads,
       package discovery, and public file downloads. As with any HTTPS request,
       the receiving service sees your connection, including your IP address; Crabrix
       itself adds no account or device identifier.

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Crabrix — a real Rust compiler on your iPhone and iPad</title>
-<meta name="description" content="Crabrix compiles and runs Rust on iPhone and iPad. Native editor, Cargo packages, seven courses, 742 lessons and Atlas steps, and signed course updates.">
+<meta name="description" content="Crabrix compiles and runs Rust on iPhone and iPad. Native editor, Cargo packages, seven courses, 742 lessons and Atlas steps, and optional offline course downloads.">
 <meta property="og:title" content="Crabrix — a real Rust compiler on your iPhone and iPad">
 <meta property="og:description" content="Write Rust. Add real crates.io packages. Compile and run them. On a phone. Offline.">
 <meta property="og:type" content="website">
@@ -308,8 +308,8 @@
           <span class="ic">🎓</span>
           <h3>Teaches from the compiler</h3>
           <p>Seven courses: 142 guided Rust lessons and a 200-pattern Algorithm Atlas
-          with 600 steps. Basics opens offline on a new install; the other
-          courses and 46 editable Examples can be downloaded from a signed catalog.
+          with 600 steps. Choose which courses to download for offline use;
+          the Projects course includes 46 editable Examples.
           Existing learners retain all seven courses offline after updating.</p>
         </div>
         <div class="card">
@@ -327,7 +327,7 @@
       <h2>On the device</h2>
       <p class="section-lede">The current Academy, Examples, and Cyberpunk appearance on iPhone.</p>
       <div class="shots reveal-group">
-        <figure><img src="screenshots/iphone-academy.png" alt="Crabrix Academy showing progress and Examples"><figcaption>Academy</figcaption></figure>
+        <figure><img src="screenshots/iphone-academy.png" alt="Crabrix course library with individual Download buttons"><figcaption>Choose courses</figcaption></figure>
         <figure><img src="screenshots/iphone-examples.png" alt="46 editable Examples inside Academy"><figcaption>Academy Examples</figcaption></figure>
         <figure><img src="screenshots/iphone-cyberpunk-settings.png" alt="Cyberpunk appearance and local app protection in Settings"><figcaption>Cyberpunk and app protection</figcaption></figure>
       </div>
@@ -384,11 +384,10 @@
         </ul>
       </div>
       <p class="section-lede" style="margin-top:24px">
-        The compiler and package manager ship in the app. Basics opens offline
-        on a new install; all seven courses are included in the purchase, and
-        the other six are available from the signed public catalog. Existing
-        learners keep the full baseline offline. Course updates do not add a
-        second transaction.
+        The compiler and package manager ship in the app. All seven courses are
+        included in the purchase; a new install lets you choose which ones to
+        download for offline use. Existing learners keep their migrated offline
+        material. Course downloads do not add a second transaction.
       </p>
     </div>
   </section>
@@ -415,7 +414,7 @@
 
       <details>
         <summary>Is this really compiling, or is it sending my code to a server?</summary>
-        <p>Really compiling. The <code>rustc</code> binary and its <code>wasm32-wasip1</code> sysroot are inside the app bundle, verified by SHA-256 at build time. Turn on airplane mode and it still compiles. Network requests also occur when you check for course updates, download a signed course version, import a public GitHub snapshot, or search and download crates.</p>
+        <p>Really compiling. The <code>rustc</code> binary and its <code>wasm32-wasip1</code> sysroot are inside the app bundle, verified by SHA-256 at build time. Turn on airplane mode and it still compiles. Network requests occur when you download a course, import a public GitHub snapshot, or search and download crates.</p>
       </details>
 
       <details>
@@ -430,12 +429,12 @@
 
       <details>
         <summary>Does it work offline?</summary>
-        <p>The compiler, installed courses, and local projects work offline. A crate exercise also needs its dependencies prepared; <strong>Pin for Offline</strong> keeps exact verified crate archives durable after cache eviction. Course updates, first-time package downloads, and GitHub imports require a connection.</p>
+        <p>The compiler, downloaded courses, and local projects work offline. A crate exercise also needs its dependencies prepared; <strong>Pin for Offline</strong> keeps exact verified crate archives durable after cache eviction. First-time course and package downloads, and GitHub imports require a connection.</p>
       </details>
 
       <details>
-        <summary>Can I update a course without losing my project?</summary>
-        <p>Yes. Learn shows the installed version and the size of a newer signed CoursePack before you download it. The existing course stays active during transfer and verification. A starter becomes a separate editable project, and course updates do not overwrite your files or progress.</p>
+        <summary>Can I remove a downloaded course without losing my project?</summary>
+        <p>Yes. Learn has a menu for each downloaded course. Removing its offline copy leaves your separate projects and progress in place; you can download the course again later.</p>
       </details>
 
       <details>
