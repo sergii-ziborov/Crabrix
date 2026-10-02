@@ -17,20 +17,26 @@ upstream `NOTICE.txt` for those attributions.
 Upstream source and license: https://github.com/swiftwasm/WasmKit/tree/0.4.1
 
 Crabrix fork and patch history:
-https://github.com/sergii-ziborov/crabrix-runtime/tree/9dc0ef77c101d2b1f1433ece34a0e47889770335
+https://github.com/sergii-ziborov/crabrix-runtime/tree/d996f0d11dff54734b5670d58062e22c6e01f949
 
-### wasm-rustc / Weblings artifacts-test-7
+### Crabrix source-built Rust toolchain
 
-Copyright (c) 2026 Forest Anderson. Licensed under the MIT License.
+The build recipe is a fork of AngelOnFira/wasm-rustc. Copyright (c) 2026
+Forest Anderson. The builder recipe remains under the MIT License. The
+compiler, sysroot and their dependencies retain separate licenses.
 
-Source and license: https://github.com/AngelOnFira/wasm-rustc/tree/artifacts-test-7
+Source, lock, licenses and release notices:
+https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1
+
+Builder upstream and license: https://github.com/AngelOnFira/wasm-rustc
 
 ### Rust compiler and standard library
 
 Copyright (c) The Rust Project Contributors. Except where otherwise noted,
 Rust is offered under Apache-2.0 or MIT terms, at the recipient's option.
 Rust binary distributions also contain separately attributed third-party
-materials documented by the Rust project's generated copyright inventory.
+materials. This source-built release publishes a `vendor-notices.zip`
+inventory of its exact vendored crates and their notice texts.
 
 Copyright and license sources:
 
@@ -63,10 +69,12 @@ Exact versions and the fork revision are recorded in
 
 ## Where the full texts are
 
-This page is a summary. The complete, verbatim licence and notice files for
-every component above are bundled inside the app and readable with no network:
+This page is a summary. Primary license and notice texts are bundled inside
+the app and readable with no network:
 
 **Settings → About Crabrix → Open-source licenses → any component.**
 
-They are also in the repository under `Crabrix/Resources/Licenses/`. Those
-files are authoritative; this summary does not replace their terms.
+They are also in this repository under `Crabrix/Resources/Licenses/`.
+The complete vendored toolchain notice archive and its provenance are public
+assets of the pinned toolchain release linked above. This summary does not
+replace any component's terms.
