@@ -1,12 +1,13 @@
 # Crabrix 1.1 App Store copy — draft
 
-This copy describes the current development candidate. It has not been
-submitted. Recheck the final binary, first-install course flow, screenshots,
-price, and device gates before using it in App Store Connect.
+This copy describes the 1.1 (10) tester build. It has not been submitted for
+App Review. The 14 iPhone and iPad screenshots were recaptured from its Release
+Simulator source build on 2 October; physical-device testing remains with the
+testers before submission.
 
 ## Promotional text
 
-> Learn Rust on device: 742 Academy steps, 46 downloadable Examples, editable Cargo projects, and a bundled compiler. No account or cloud compilation.
+> From lesson to running Rust: the full Academy, 46 downloadable Examples, real Cargo projects, and local compilation on iPhone and iPad. No account required.
 
 ## Description
 
@@ -66,3 +67,14 @@ purchase; no subscription or in-app purchase is required.
 
 Use [review-notes.txt](review-notes.txt) with screenshots captured from the
 exact release candidate. The historical 1.0 screenshots are not 1.1 evidence.
+
+## What to test in TestFlight
+
+Open Learn on a fresh install, download the Projects course after checking its
+size, and open an Academy Example as a separate editable project. Check and Run
+it, switch to Output, then choose another source file and confirm Code returns.
+Try a supported Cargo dependency in a project, Stop a long compile, and confirm
+the next Run works. Restart offline to check installed lessons and prepared
+dependencies. On an existing installation, verify that progress and user
+projects survive the transition. Check Cyberpunk across Learn, Projects, and
+the editor, plus optional Face ID or passcode protection on a physical device.

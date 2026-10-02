@@ -1,10 +1,14 @@
 # Crabrix
 
-Crabrix is a native Rust learning workspace for iPhone and iPad: edit a project, compile it with the Rust compiler bundled in the app, inspect diagnostics, and run the resulting WebAssembly program on device.
+**Learn Rust, then make it run.** Crabrix brings the full Academy and a real project workspace to iPhone and iPad. Follow a lesson, turn its source into your own project, see actual compiler diagnostics, and run Rust locally. Cargo support and the compiler live in the app; no account or cloud compiler is required.
 
 [Website](https://crabrix.com) · [Support](https://crabrix.com/support) · [Privacy](https://crabrix.com/privacy) · [App license](LICENSE)
 
-<img src="docs/screenshots/iphone-cyberpunk-settings.png" width="280" alt="Cyberpunk appearance and optional device authentication in Crabrix Settings">
+<p>
+  <img src="docs/screenshots/iphone-learn.png" width="240" alt="Crabrix Academy course downloads and progress">
+  <img src="docs/screenshots/iphone-build.png" width="240" alt="Rust code editor and compiler workspace">
+  <img src="docs/screenshots/iphone-cyberpunk-settings.png" width="240" alt="Cyberpunk appearance and optional Face ID protection">
+</p>
 
 ## Use Crabrix
 
@@ -18,7 +22,9 @@ For Cargo projects, Crabrix resolves a supported subset of crates.io dependencie
 
 ## Runtime and compiler
 
-The development app pins [CrabrixRuntime](https://github.com/sergii-ziborov/crabrix-runtime) at `d996f0d11dff54734b5670d58062e22c6e01f949`, derived from WasmKit **0.4.1** (`a0471eaee817c523b8023d8ebb1c70ff70b7950a`). The adapter uses upstream fuel metering, a separate cancellation/deadline probe sampled at fuel checkpoints, read-only compiler inputs, bounded WASI output, fresh execution stores, and virtual memory reservation to avoid copying the compiler's full Wasm memory on growth. Software-bounds execution uses token dispatch after an out-of-bounds regression was found in direct dispatch. The Wasm guest has no network import. [Runtime integration](docs/runtime-integration.md) and the [Release Simulator measurements](docs/performance/2026-10-02-sampled-cancellation-heavy-cli-simulator.json) record the tested paths, measured speed, and remaining device gates.
+Crabrix 1.1 pins [CrabrixRuntime](https://github.com/sergii-ziborov/crabrix-runtime) at `d996f0d11dff54734b5670d58062e22c6e01f949`, derived from WasmKit **0.4.1** (`a0471eaee817c523b8023d8ebb1c70ff70b7950a`). The adapter uses upstream fuel metering, a separate cancellation/deadline probe sampled at fuel checkpoints, read-only compiler inputs, bounded WASI output, fresh execution stores, and virtual memory reservation to avoid copying the compiler's full Wasm memory on growth. Software-bounds execution uses token dispatch after an out-of-bounds regression was found in direct dispatch. The Wasm guest has no network import.
+
+In an A/B/A Release Simulator measurement using the same compiler and a heavy multi-crate CLI project, this runtime completed the selected workload **about 1.6× faster** than the preceding Crabrix runtime. The [raw observations](docs/performance/2026-10-02-sampled-cancellation-heavy-cli-simulator.json) document the source graph, output checks, cache preparation, and measurement limits. This result describes that workload on Simulator; other projects and devices need their own measurements. [Runtime integration](docs/runtime-integration.md) explains the implementation.
 
 The current app bundle still contains the pinned `artifacts-test-7` WASI `rustc` and `wasm32-wasip1` sysroot. They are fetched and hash checked on the **build machine**, then included in the app; the phone does not download compiler or runtime updates. [crabrix-toolchain](https://github.com/sergii-ziborov/crabrix-toolchain) is the public source locked builder. Its own compiler artifacts are not yet the app's release input; see [toolchain status](docs/toolchain.md). Source availability and a lock file are not evidence of a completed source build.
 

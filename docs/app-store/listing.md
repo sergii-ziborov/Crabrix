@@ -297,49 +297,47 @@ the binary links no GameKit. Rating, ranks and achievements stay on device.
 
 ## Screenshots
 
-Recaptured on 2026-09-06 from the Release build of the 1.0 (3) candidate, in
-dark appearance, on freshly erased simulators. The device archive differs from
-these builds only in signing and architecture, so re-capture is needed only if
-the interface changes again before submission. The Settings frame shows the top
-of the screen; the Help & problems section added in this build sits below its
-fold and is not visible in it.
+The image files linked here were replaced on 2026-10-02 with screenshots of the
+1.1 (10) Release Simulator build. This historical 1.0 listing text above is not
+the copy for those images; use [the 1.1 draft](listing-1.1-draft.md) for current
+product wording. The capture covers both a fresh installation and the offline
+transition state for an existing learner.
 
 | Folder | Device | Size |
 | --- | --- | --- |
 | `docs/app-store/screenshots/iphone-6.9/` | iPhone 17 Pro Max | 1320 × 2868 |
 | `docs/app-store/screenshots/ipad-13/` | iPad Pro 13-inch (M4) | 2064 × 2752 |
 
-These existing frames predate the current Academy Examples and navigation changes.
-Regenerate the set from the candidate binary, then inspect every frame before
-upload. The Store description and screenshots must match the same build.
+All 14 files were visually inspected after capture. The Academy Examples gallery,
+code syntax colours, Cyberpunk Settings, and deep course/lesson routes are present.
+The device archive was built from the same source, with the iOS device architecture
+and distribution signing; tester validation on a physical device remains separate.
 
 Upload order for the iPhone set, which tells the story in the right sequence:
 
-1. `01-build` — the workspace, editor and build inspector
+1. `01-build` — the code workspace and compiler inspector
 2. `03-learn` — Learn hub: rating and courses
-3. `05-lesson` — a lesson with its highlighted example and hints in Output
+3. `05-lesson` — a lesson with its highlighted Rust example
 4. `06-profile` — local profile, avatar, rating, and lifetime stats
-5. `02-projects` — the dashboard and My Projects organization
+5. `02-projects` — the simpler Projects landing screen
 6. `07-library` — Academy Examples after the Projects CoursePack is installed
 7. `04-course` — a course path
-8. `08-settings` — settings and About
+8. `08-settings` — Cyberpunk appearance and optional app protection
 
 In particular, `07-library` must show the installed Academy Examples gallery, not the removed Projects library card.
 
 ### Reproducing them
 
-Every frame comes from a launch argument, so the same build always produces the
-same screens:
+Capture every frame from one built Release Simulator app with:
 
 ```bash
-xcrun simctl launch <device> com.sergiiziborov.Crabrix \
-  -CrabrixTab learn -CrabrixLearn borrowing
+python3 scripts/capture_release_screenshots.py \
+  /absolute/path/to/Release-iphonesimulator/Crabrix.app
 ```
 
-`-CrabrixTab` takes `projects`, `build`, `learn`, or `settings`.
-`-CrabrixLearn` takes `profile`, `examples`, a course id, or a lesson id.
-`-CrabrixLibrary` opens Academy Examples after the Projects CoursePack is installed.
-`-CrabrixCanvasGallery` opens that gallery filtered to the Rust Canvas projects.
+The script uses temporary simulators named from `Crabrix Shots 6.9` and `Crabrix
+Dev iPad` device templates, then updates the Store, README, and site image copies.
+Review the generated images before uploading them to App Store Connect.
 
 ## Launch assets
 

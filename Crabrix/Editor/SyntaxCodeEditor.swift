@@ -102,7 +102,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             .setUsesAppleIntelligence(assistantUsesAppleIntelligence)
         textView.isEditable = isEditable
         canvas.backgroundColor = UIColor(CrabrixTheme.editor)
-        textView.textColor = UIColor(CrabrixTheme.primary)
+        // applyHighlighting owns foreground attributes; textColor here erases token colours.
         textView.tintColor = UIColor(CrabrixTheme.blue)
         textView.keyboardAppearance = colorScheme == .dark ? .dark : .light
         canvas.lineNumberColor = UIColor(CrabrixTheme.muted).withAlphaComponent(0.82)

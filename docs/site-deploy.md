@@ -59,16 +59,19 @@ no-analytics implementation. See `release-evidence/site-migration-2026-09-08/`.
 
 ## Refreshing the screenshots
 
-The app accepts launch arguments so a given tab can be captured directly:
+Capture the full iPhone and iPad set from the Release Simulator app. The script
+creates and deletes only its own temporary simulators, records fresh install and
+existing learner states, and copies the finished images to this site's source:
 
 ```bash
-xcrun simctl launch <device> com.sergiiziborov.Crabrix -CrabrixTab learn
-xcrun simctl launch <device> com.sergiiziborov.Crabrix -CrabrixTab learn -CrabrixLibrary
-xcrun simctl io <device> screenshot site/screenshots/iphone-learn.png
+python3 scripts/capture_release_screenshots.py \
+  /absolute/path/to/Release-iphonesimulator/Crabrix.app
 ```
 
-Valid tabs are `projects`, `build`, `learn`, and `settings`. Adding `-CrabrixLibrary`
-opens Academy Examples after the Projects CoursePack has been installed.
+The required templates are an iPhone 17 Pro Max named `Crabrix Shots 6.9` and an
+iPad Pro 13-inch named `Crabrix Dev iPad`. Inspect each generated frame before
+uploading it. The remaining launch arguments select Projects, Learn, Settings,
+an installed course, a lesson, or Academy Examples.
 
 ## What the pages carry now
 

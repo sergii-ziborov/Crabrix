@@ -316,12 +316,8 @@ struct ContentView: View {
         .task {
             await academy.prepare()
             let arguments = ProcessInfo.processInfo.arguments
-            if let repository = academy.repository {
-                learningPath = LearningRoute.launchArgument(repository: repository)
-            }
             if arguments.contains("-CrabrixLibrary") || arguments.contains("-CrabrixCanvasGallery") {
                 selectedDestination = .learn
-                learningPath = [.examples]
             }
             if arguments.contains("--crabrix-auto-multifile") {
                 model.loadMultiFileSample()
@@ -340,13 +336,8 @@ struct ContentView: View {
             if arguments.contains("--crabrix-auto-learn") {
                 selectedDestination = .learn
             }
-            if let lessonArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-lesson=") }) {
-                let lessonID = String(lessonArgument.dropFirst("--crabrix-auto-lesson=".count))
-                if let lesson = academy.repository?.lesson(id: lessonID),
-                   let course = academy.repository?.course(containing: lesson.id) {
-                    selectedDestination = .learn
-                    learningPath = [.course(course.id), .lesson(lesson.id)]
-                }
+            if arguments.contains(where: { $0.hasPrefix("--crabrix-auto-lesson=") }) {
+                selectedDestination = .learn
             }
             if arguments.contains("--crabrix-auto-settings") {
                 selectedDestination = .settings

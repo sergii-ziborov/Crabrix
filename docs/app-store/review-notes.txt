@@ -1,4 +1,4 @@
-Crabrix 1.1 reviewer notes — draft for the next candidate build.
+Crabrix 1.1 (10) reviewer notes — prepared for tester validation.
 
 Crabrix is a native Rust development and learning environment. No account or
 subscription is needed. The compiler, WebAssembly runtime, and WASI sysroot
@@ -50,7 +50,7 @@ Settings offers device authentication for a local app lock, and Auto, Light,
 Dark, and Cyberpunk appearances. The app does not request a Face ID enrollment
 or create a remote account.
 
-The current development candidate still uses the pinned artifacts-test-7
-rustc/sysroot. The public CrabrixRuntime fork is based on WasmKit 0.4.1.
-Final screenshots and physical-device gates must be taken from the exact build
-before these notes are submitted.
+This build uses the pinned artifacts-test-7 rustc/sysroot. The public
+CrabrixRuntime fork is based on WasmKit 0.4.1. Its iPhone and iPad screenshots
+were captured from the matching Release Simulator source on 2 October 2026.
+Physical-device tester results must be checked before App Review submission.

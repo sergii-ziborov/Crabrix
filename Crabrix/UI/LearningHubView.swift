@@ -37,6 +37,7 @@ struct LearningHubView: View {
     @State private var examplesSnapshot: LoadedCourse?
     @State private var pendingDownload: CourseCatalogPayload.Entry?
     @State private var isManagingDownloads = false
+    @State private var appliedLaunchRoute = false
     let completedLessonIDs: Set<String>
     let lessonAnswerIndices: [String: Int]
     let onStartLesson: (RustLesson, CourseSession) -> Void
@@ -251,6 +252,27 @@ struct LearningHubView: View {
                    let repository = academy.repository {
                     lessonSession = CourseSession(lessonID: lessonID, repository: repository)
                 }
+            }
+            .task(id: academy.repository?.courses.count) {
+                guard !appliedLaunchRoute,
+                      let repository = academy.repository else { return }
+                let arguments = ProcessInfo.processInfo.arguments
+                var route = LearningRoute.launchArgument(repository: repository)
+                if arguments.contains("-CrabrixLibrary") || arguments.contains("-CrabrixCanvasGallery") {
+                    route = [.examples]
+                }
+                if let argument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-lesson=") }) {
+                    let lessonID = String(argument.dropFirst("--crabrix-auto-lesson=".count))
+                    if let lesson = repository.lesson(id: lessonID),
+                       let course = repository.course(containing: lesson.id) {
+                        route = [.course(course.id), .lesson(lesson.id)]
+                    }
+                }
+                guard !route.isEmpty else { return }
+                appliedLaunchRoute = true
+                // Wait until NavigationStack is mounted before setting its bound path.
+                await Task.yield()
+                navigationPath = route
             }
         }
     }
