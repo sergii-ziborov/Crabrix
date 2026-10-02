@@ -47,28 +47,30 @@ final class CourseBootstrapTests: XCTestCase {
         )
     }
 
-    func testFreshInstallActivatesStarterAndOffersRemainingCatalog() async throws {
+    func testFreshInstallOffersCatalogWithoutInstallingCourses() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
         let bootstrap = try CourseBootstrap(
             bundle: .main, root: root, appVersion: SemanticVersion("1.1")
         )
         let installed = try await bootstrap.activateBundledBaseline(for: .newLearner)
-        XCTAssertEqual(installed.courses.map(\.id), ["basics"])
-        let installedLessonIDs = Set(installed.courses.flatMap(\.units).flatMap(\.lessons).map(\.id))
-        XCTAssertFalse(installed.practiceQuestions().isEmpty)
-        XCTAssertTrue(installed.practiceQuestions().allSatisfy {
-            installedLessonIDs.contains($0.topic)
-        })
-        XCTAssertTrue(installed.recallSnippets().allSatisfy {
-            installedLessonIDs.contains($0.topic)
-        })
-        XCTAssertTrue(installed.trainableTermPairs().allSatisfy {
-            installedLessonIDs.contains($0.topic)
-        })
+        XCTAssertTrue(installed.courses.isEmpty)
         XCTAssertEqual(try bootstrap.bundledCatalog().courses.count, 7)
         let afterRelaunch = try await bootstrap.activateBundledBaseline(for: .newLearner)
-        XCTAssertEqual(afterRelaunch.courses.map(\.id), ["basics"])
+        XCTAssertTrue(afterRelaunch.courses.isEmpty)
+
+        let packs = try XCTUnwrap(Bundle.main.url(forResource: "MigrationCoursePacks", withExtension: nil))
+        let entry = try XCTUnwrap(bootstrap.bundledCatalog().courses.first { $0.courseID == "basics" })
+        let installer = try CourseInstaller(root: root, appVersion: XCTUnwrap(SemanticVersion("1.1")))
+        _ = try await installer.install(
+            descriptorBytes: Data(contentsOf: packs.appending(path: "basics.descriptor.json")),
+            downloadedArchive: packs.appending(path: entry.archiveURL.lastPathComponent),
+            keyring: bootstrap.keyring()
+        )
+        let selected = try await bootstrap.loadInstalled()
+        XCTAssertEqual(selected.courses.map(\.id), ["basics"])
+        let selectedAfterRelaunch = try await bootstrap.activateBundledBaseline(for: .newLearner)
+        XCTAssertEqual(selectedAfterRelaunch.courses.map(\.id), ["basics"])
     }
 
     func testBundledBaselineInstallsOfflineAndRelaunchKeepsIdentity() async throws {

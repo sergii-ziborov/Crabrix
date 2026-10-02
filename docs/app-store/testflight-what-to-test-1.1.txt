@@ -1,11 +1,11 @@
-Crabrix 1.1 release candidate (build 11). Please test the new Academy and source-built local compiler workflow on a physical iPhone or iPad.
+Crabrix 1.1 release candidate (build 12). Please test the course downloads and source-built local compiler workflow on a physical iPhone or iPad.
 
-1. On a fresh install, open Learn. Basics is ready offline. Download the Projects course after checking its displayed size, then open one of the 46 Academy Examples as a separate editable project. Edit, Check, and Run it.
+1. On a fresh install, open Learn → Courses. No course should be preinstalled. Download only the Projects course after checking its displayed size, then open one of the 46 Academy Examples as a separate editable project. Edit, Check, and Run it.
 2. In My Projects, confirm the project manager opens. Start a new project and inspect the GitHub and Files/iCloud Drive import choices. Cargo packages are managed inside the project.
-3. In a multi-file project, switch to Output and select another source file. The editor should return to Code. Lesson hints appear in Output.
+3. In a multi-file project, confirm Details is absent, Code/Problems/Output/Terminal sit at the bottom, and Check is beside Run. Switch to Output and select another source file; the editor should return to Code. Lesson hints appear in Output.
 4. Build a project with a supported crates.io dependency. Pin its dependencies for offline use, restart without network, and try the prepared project again.
 5. Stop a long compile or program, then Check and Run again. Confirm the next execution works and reports a useful stop reason.
-6. Update or delete downloaded course material and check that your separate projects and progress remain. Existing learners should find all seven transition courses available offline after updating.
+6. Use the row menu to remove one downloaded course, then download it again. Separate projects and progress must remain. Existing learners should find their transition courses available offline after updating.
 7. Check Cyberpunk across Learn, Projects, and the editor. On a physical device, optionally enable Face ID or device-passcode protection and verify the app locks after leaving it.
 
 Please report the device, iOS version, course/version, project type, and steps to reproduce. Attach source code only if you choose to share it. The compiler and runtime are bundled; courses contain readable learning data and editable Rust source, not executable updates.

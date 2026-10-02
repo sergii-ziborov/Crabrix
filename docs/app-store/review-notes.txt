@@ -18,15 +18,13 @@ TO SEE IT COMPILE
    edit and Run that copy. Its Rust source is visible to the user.
 
 COURSES AND DOWNLOADS
-Learn lists six Rust courses and Algorithm Atlas, with Examples under Academy
-rather than Projects. A fresh installation opens Basics offline and offers
-the other six as downloads. An update with legacy
-progress activates all seven transition packs offline from the app bundle.
-Learn → Check for course updates reads a
-signed public catalog. A new version shows its download size before the user
-confirms. A verified CoursePack contains learning data, media, and editable
+Learn → Courses lists six Rust courses and Algorithm Atlas, with Examples under
+the Projects course in Academy. A fresh installation downloads only the courses
+the user chooses. An update with legacy progress activates all seven transition
+packs offline from the app bundle. The initial signed catalog is bundled; each
+course row shows its download size before the user confirms. A verified CoursePack contains learning data, media, and editable
 Rust starter source; it cannot update the compiler, runtime, or executable
-validator logic. Course updates preserve separate user projects and progress.
+validator logic. Removing and redownloading a course preserves separate user projects and progress.
 The catalog is served from raw.githubusercontent.com; archive assets are
 served by GitHub release hosts. An unavailable catalog does not disable an
 installed course.

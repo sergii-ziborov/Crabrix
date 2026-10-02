@@ -1,6 +1,7 @@
 import SwiftUI
 
 enum LearningRoute: Hashable {
+    case courses
     case course(String)
     case lesson(String)
     case examples
@@ -16,6 +17,7 @@ enum LearningRoute: Hashable {
         else { return [] }
 
         let value = arguments[index + 1]
+        if value == "courses" { return [.courses] }
         if value == "profile" { return [.profile] }
         if value == "examples" { return [.examples] }
         if let course = repository.course(id: value) { return [.course(course.id)] }
@@ -35,9 +37,8 @@ struct LearningHubView: View {
     @AppStorage("crabrix.learn.recallSessions") private var recallSessions = 0
     @State private var lessonSession: CourseSession?
     @State private var examplesSnapshot: LoadedCourse?
-    @State private var pendingDownload: CourseCatalogPayload.Entry?
-    @State private var isManagingDownloads = false
     @State private var appliedLaunchRoute = false
+    @State private var initialCatalogRoot: Bool?
     let completedLessonIDs: Set<String>
     let lessonAnswerIndices: [String: Int]
     let onStartLesson: (RustLesson, CourseSession) -> Void
@@ -49,10 +50,35 @@ struct LearningHubView: View {
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
+            Group {
+            if initialCatalogRoot == true {
+                CourseLibraryView()
+            } else {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    hero
-                    examplesCard
+                    if !(academy.repository?.courses.isEmpty ?? true) { hero }
+                    NavigationLink(value: LearningRoute.courses) {
+                        HStack(spacing: 14) {
+                            Image(systemName: "books.vertical.fill")
+                                .font(.title2)
+                                .foregroundStyle(CrabrixTheme.coral)
+                                .frame(width: 48, height: 48)
+                                .background(CrabrixTheme.coral.opacity(0.12), in: RoundedRectangle(cornerRadius: 13))
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Courses").font(.headline)
+                                Text("Choose and download for offline learning")
+                                    .font(.caption)
+                                    .foregroundStyle(CrabrixTheme.muted)
+                            }
+                            Spacer(minLength: 4)
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(CrabrixTheme.coral)
+                        }
+                        .padding(16)
+                        .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 16))
+                    }
+                    .buttonStyle(.plain)
+                    if !(academy.repository?.courses.isEmpty ?? true) {
                     WeakTopicsCard { topic in
                         guard let repository = academy.repository,
                               let lesson = repository.lesson(id: topic),
@@ -103,71 +129,8 @@ struct LearningHubView: View {
                         }
                         .buttonStyle(.plain)
                     }
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Choose a course")
-                            .font(.title2.bold())
-                        Text("Start with the level you need. Each course has its own visual lesson path.")
-                            .font(.subheadline)
-                            .foregroundStyle(CrabrixTheme.muted)
-                        Button("Check for course updates") {
-                            Task { await academy.checkForUpdates() }
-                        }
-                        .font(.subheadline)
-                        Button("Manage course downloads") {
-                            isManagingDownloads = true
-                        }
-                        .font(.subheadline)
-                        if let error = academy.catalogError {
-                            Text("Update check unavailable: \(error)")
-                                .font(.caption)
-                                .foregroundStyle(CrabrixTheme.muted)
-                        }
                     }
 
-                    LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(academy.repository?.courses ?? []) { course in
-                            VStack(alignment: .leading, spacing: 8) {
-                                NavigationLink(value: LearningRoute.course(course.id)) {
-                                    CourseCard(course: course)
-                                }
-                                .buttonStyle(.plain)
-                                HStack {
-                                    let version = academy.repository?.loaded[course.id]?.contentVersion ?? "—"
-                                    Text("Installed · English · v\(version)")
-                                        .font(.caption)
-                                        .foregroundStyle(CrabrixTheme.muted)
-                                    Spacer()
-                                    if let entry = availableUpdate(for: course.id, installedVersion: version) {
-                                        Button("Update") { pendingDownload = entry }
-                                            .font(.caption.bold())
-                                    }
-                                }
-                                if let transfer = academy.transfers[course.id + "|en"] {
-                                    transferView(transfer, courseID: course.id)
-                                }
-                            }
-                        }
-                        ForEach(availableUninstalled.filter { $0.courseID != "projects" }, id: \.courseID) { entry in
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(entry.courseID.replacingOccurrences(of: "-", with: " ").capitalized)
-                                    .font(.headline)
-                                Text("Available · \(entry.language) · v\(entry.contentVersion)")
-                                    .font(.caption)
-                                    .foregroundStyle(CrabrixTheme.muted)
-                                Button("Download · \(ByteCountFormatter.string(fromByteCount: Int64(entry.archiveBytes), countStyle: .file))") {
-                                    pendingDownload = entry
-                                }
-                                .font(.caption.bold())
-                                if let transfer = academy.transfers[entry.courseID + "|" + entry.language] {
-                                    transferView(transfer, courseID: entry.courseID)
-                                }
-                            }
-                            .padding(16)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 16))
-                        }
-                    }
                     if let error = academy.errorMessage {
                         ContentUnavailableView(
                             "Academy unavailable", systemImage: "exclamationmark.triangle",
@@ -185,51 +148,10 @@ struct LearningHubView: View {
             .background(CrabrixTheme.background.ignoresSafeArea())
             .foregroundStyle(CrabrixTheme.primary)
             .navigationTitle("Learn Rust")
+            }
+            }
             .navigationDestination(for: LearningRoute.self) { route in
                 destination(for: route)
-            }
-            .sheet(isPresented: $isManagingDownloads) {
-                NavigationStack {
-                    List {
-                        ForEach(academy.repository?.courses ?? []) { course in
-                            let version = academy.repository?.loaded[course.id]?.contentVersion ?? "—"
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(course.title).font(.headline)
-                                Text("Installed · English · v\(version)")
-                                    .font(.caption)
-                                    .foregroundStyle(CrabrixTheme.muted)
-                                Button("Delete local course material", role: .destructive) {
-                                    Task { await academy.deleteInstalled(courseID: course.id, language: "en") }
-                                }
-                            }
-                        }
-                    }
-                    .navigationTitle("Course downloads")
-                    .toolbar {
-                        Button("Done") { isManagingDownloads = false }
-                    }
-                    .safeAreaInset(edge: .bottom) {
-                        Text("Projects, attempts, and progress stay on this device. An open lesson keeps its current content until you leave it.")
-                            .font(.caption)
-                            .padding()
-                    }
-                }
-            }
-            .confirmationDialog(
-                "Download course update?", isPresented: Binding(
-                    get: { pendingDownload != nil },
-                    set: { if !$0 { pendingDownload = nil } }
-                ), titleVisibility: .visible
-            ) {
-                if let entry = pendingDownload {
-                    Button("Download \(ByteCountFormatter.string(fromByteCount: Int64(entry.archiveBytes), countStyle: .file))") {
-                        academy.download(entry)
-                        pendingDownload = nil
-                    }
-                }
-                Button("Cancel", role: .cancel) { pendingDownload = nil }
-            } message: {
-                Text("The course remains available while its signed update downloads and verifies.")
             }
             .onChange(of: navigationPath) { _, path in
                 if case .examples = path.last {
@@ -254,6 +176,9 @@ struct LearningHubView: View {
                 }
             }
             .task(id: academy.repository?.courses.count) {
+                if initialCatalogRoot == nil, let repository = academy.repository {
+                    initialCatalogRoot = repository.courses.isEmpty
+                }
                 guard !appliedLaunchRoute,
                       let repository = academy.repository else { return }
                 let arguments = ProcessInfo.processInfo.arguments
@@ -269,6 +194,10 @@ struct LearningHubView: View {
                     }
                 }
                 guard !route.isEmpty else { return }
+                if route == [.courses], initialCatalogRoot == true {
+                    appliedLaunchRoute = true
+                    return
+                }
                 appliedLaunchRoute = true
                 // Wait until NavigationStack is mounted before setting its bound path.
                 await Task.yield()
@@ -278,99 +207,10 @@ struct LearningHubView: View {
     }
 
     @ViewBuilder
-    private func transferView(_ state: AcademyContentStore.TransferState,
-                              courseID: String) -> some View {
-        switch state {
-        case let .downloading(received, total):
-            HStack {
-                ProgressView(value: Double(received), total: Double(max(total, 1)))
-                Button("Pause") { academy.cancelDownload(courseID: courseID, language: "en") }
-            }
-        case .verifying:
-            ProgressView("Verifying course")
-        case .installed:
-            Text("Update installed")
-                .font(.caption)
-                .foregroundStyle(CrabrixTheme.mint)
-        case let .failed(message):
-            HStack {
-                Text(message).font(.caption).foregroundStyle(CrabrixTheme.muted)
-                if let entry = academy.catalog?.courses.first(where: {
-                    $0.courseID == courseID && $0.language == "en"
-                }) {
-                    Button("Resume") { pendingDownload = entry }
-                }
-            }
-        }
-    }
-
-    private func availableUpdate(for courseID: String,
-                                 installedVersion: String) -> CourseCatalogPayload.Entry? {
-        guard let current = SemanticVersion(installedVersion) else { return nil }
-        return academy.catalog?.courses
-            .filter { $0.courseID == courseID && $0.language == "en" }
-            .filter { SemanticVersion($0.contentVersion).map { $0 > current } ?? false }
-            .max { lhs, rhs in
-                (SemanticVersion(lhs.contentVersion) ?? current)
-                    < (SemanticVersion(rhs.contentVersion) ?? current)
-            }
-    }
-
-    private var availableUninstalled: [CourseCatalogPayload.Entry] {
-        let installed = Set(academy.repository?.courses.map(\.id) ?? [])
-        let entries = academy.catalog?.courses.filter { !installed.contains($0.courseID) } ?? []
-        return Dictionary(grouping: entries, by: \.courseID).values.compactMap { versions in
-            versions.max { lhs, rhs in
-                (SemanticVersion(lhs.contentVersion) ?? SemanticVersion(major: 0, minor: 0, patch: 0))
-                    < (SemanticVersion(rhs.contentVersion) ?? SemanticVersion(major: 0, minor: 0, patch: 0))
-            }
-        }.sorted { $0.courseID < $1.courseID }
-    }
-
-    @ViewBuilder
-    private var examplesCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("Examples", systemImage: "curlybraces.square")
-                .font(.title3.bold())
-            if let installed = academy.repository?.loaded["projects"] {
-                Text("\(installed.showcases.count) editable Rust examples · installed v\(installed.contentVersion)")
-                    .font(.subheadline)
-                    .foregroundStyle(CrabrixTheme.muted)
-                NavigationLink(value: LearningRoute.examples) {
-                    Label("Open examples", systemImage: "arrow.right")
-                }
-                .font(.subheadline.bold())
-                if let update = availableUpdate(for: "projects", installedVersion: installed.contentVersion) {
-                    Button("Update · \(ByteCountFormatter.string(fromByteCount: Int64(update.archiveBytes), countStyle: .file))") {
-                        pendingDownload = update
-                    }
-                    .font(.caption)
-                }
-            } else if let entry = availableUninstalled.first(where: { $0.courseID == "projects" }) {
-                Text("Install the Projects course and its editable examples. Source stays in the Academy package until you copy an example into My Projects.")
-                    .font(.subheadline)
-                    .foregroundStyle(CrabrixTheme.muted)
-                Button("Download · \(ByteCountFormatter.string(fromByteCount: Int64(entry.archiveBytes), countStyle: .file))") {
-                    pendingDownload = entry
-                }
-                .font(.subheadline.bold())
-            } else {
-                Text("Connect to check the course catalog and download the Projects examples. Installed material stays available offline.")
-                    .font(.subheadline)
-                    .foregroundStyle(CrabrixTheme.muted)
-            }
-            if let transfer = academy.transfers["projects|en"] {
-                transferView(transfer, courseID: "projects")
-            }
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 16))
-    }
-
-    @ViewBuilder
     private func destination(for route: LearningRoute) -> some View {
         switch route {
+        case .courses:
+            CourseLibraryView()
         case .examples:
             if let snapshot = examplesSnapshot ?? academy.repository?.loaded["projects"],
                !snapshot.showcases.isEmpty {
@@ -485,6 +325,7 @@ struct LearningHubView: View {
                 Spacer(minLength: 0)
             }
 
+            if !(academy.repository?.courses.isEmpty ?? true) {
             VStack(spacing: 7) {
                 HStack {
                     Label("OVERALL PROGRESS", systemImage: "chart.line.uptrend.xyaxis")
@@ -503,6 +344,7 @@ struct LearningHubView: View {
                 ratingStrip
             }
             .buttonStyle(.plain)
+            }
         }
         .padding(20)
         .background(
@@ -580,6 +422,188 @@ struct LearningHubView: View {
 
 }
 
+private struct CourseLibraryView: View {
+    @EnvironmentObject private var academy: AcademyContentStore
+    @State private var pendingDownload: CourseCatalogPayload.Entry?
+
+    private var installed: [RustCourse] { academy.repository?.courses ?? [] }
+
+    private var available: [CourseCatalogPayload.Entry] {
+        let installedIDs = Set(installed.map(\.id))
+        let entries = academy.catalog?.courses.filter { !installedIDs.contains($0.courseID) } ?? []
+        return Dictionary(grouping: entries, by: \.courseID).values.compactMap { versions in
+            versions.max { lhs, rhs in
+                (SemanticVersion(lhs.contentVersion) ?? SemanticVersion(major: 0, minor: 0, patch: 0))
+                    < (SemanticVersion(rhs.contentVersion) ?? SemanticVersion(major: 0, minor: 0, patch: 0))
+            }
+        }.sorted { Self.order($0.courseID) < Self.order($1.courseID) }
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                if !installed.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Downloaded").font(.title2.bold())
+                        ForEach(installed) { course in
+                            HStack(spacing: 10) {
+                                NavigationLink(value: LearningRoute.course(course.id)) {
+                                    HStack(spacing: 12) {
+                                        icon(course.systemImage, tint: course.theme.primaryColor)
+                                        VStack(alignment: .leading, spacing: 3) {
+                                            Text(course.title).font(.headline)
+                                            Label("Available offline", systemImage: "checkmark.circle.fill")
+                                                .font(.caption)
+                                                .foregroundStyle(CrabrixTheme.mint)
+                                        }
+                                        Spacer(minLength: 0)
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption.bold())
+                                            .foregroundStyle(CrabrixTheme.muted)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                                Menu {
+                                    Button("Remove download", role: .destructive) {
+                                        Task { await academy.deleteInstalled(courseID: course.id, language: "en") }
+                                    }
+                                } label: {
+                                    Image(systemName: "ellipsis")
+                                        .frame(width: 36, height: 36)
+                                }
+                                .accessibilityLabel("Manage download for \(course.title)")
+                            }
+                            .padding(12)
+                            .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 14))
+                            if course.id == "projects" {
+                                NavigationLink("Open 46 Examples", value: LearningRoute.examples)
+                                    .font(.caption.weight(.semibold))
+                                    .padding(.leading, 12)
+                            }
+                        }
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Available Courses").font(.title2.bold())
+                    ForEach(available, id: \.courseID) { entry in
+                        let preview = Self.preview(entry.courseID)
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 12) {
+                                icon(preview.icon, tint: CrabrixTheme.coral)
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(preview.title).font(.headline)
+                                    Text(preview.subtitle)
+                                        .font(.caption)
+                                        .foregroundStyle(CrabrixTheme.muted)
+                                        .lineLimit(2)
+                                }
+                                Spacer(minLength: 0)
+                                VStack(spacing: 3) {
+                                    Button {
+                                        pendingDownload = entry
+                                    } label: {
+                                        Label("Download", systemImage: "arrow.down.circle.fill")
+                                    }
+                                    .buttonStyle(.bordered)
+                                    .tint(CrabrixTheme.coral)
+                                    .font(.caption.bold())
+                                    .accessibilityLabel("Download \(preview.title) for offline use")
+                                    Text(ByteCountFormatter.string(fromByteCount: Int64(entry.archiveBytes), countStyle: .file))
+                                        .font(.caption2.monospaced())
+                                        .foregroundStyle(CrabrixTheme.muted)
+                                }
+                            }
+                            if let transfer = academy.transfers[entry.courseID + "|" + entry.language] {
+                                transferView(transfer, entry: entry)
+                            }
+                        }
+                        .padding(14)
+                        .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 14))
+                    }
+                    if available.isEmpty && installed.isEmpty {
+                        ContentUnavailableView("Course list unavailable", systemImage: "wifi.slash")
+                        Button("Retry") { Task { await academy.checkForUpdates() } }
+                    }
+                }
+            }
+            .padding(20)
+            .frame(maxWidth: 720)
+            .frame(maxWidth: .infinity)
+        }
+        .background(CrabrixTheme.background.ignoresSafeArea())
+        .navigationTitle("Courses")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .tabBar)
+        .confirmationDialog(
+            "Download course?", isPresented: Binding(
+                get: { pendingDownload != nil },
+                set: { if !$0 { pendingDownload = nil } }
+            ), titleVisibility: .visible
+        ) {
+            if let entry = pendingDownload {
+                Button("Download \(ByteCountFormatter.string(fromByteCount: Int64(entry.archiveBytes), countStyle: .file))") {
+                    academy.download(entry)
+                    pendingDownload = nil
+                }
+            }
+            Button("Cancel", role: .cancel) { pendingDownload = nil }
+        } message: {
+            Text("The selected course will be available offline after verification.")
+        }
+    }
+
+    private func icon(_ name: String, tint: Color) -> some View {
+        Image(systemName: name)
+            .font(.title3)
+            .foregroundStyle(tint)
+            .frame(width: 42, height: 42)
+            .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
+    }
+
+    @ViewBuilder
+    private func transferView(_ state: AcademyContentStore.TransferState,
+                              entry: CourseCatalogPayload.Entry) -> some View {
+        switch state {
+        case let .downloading(received, total):
+            HStack {
+                ProgressView(value: Double(received), total: Double(max(total, 1)))
+                Button("Pause") {
+                    academy.cancelDownload(courseID: entry.courseID, language: entry.language)
+                }
+            }
+        case .verifying:
+            ProgressView("Verifying")
+        case .installed:
+            Label("Available offline", systemImage: "checkmark.circle.fill")
+                .foregroundStyle(CrabrixTheme.mint)
+        case let .failed(message):
+            VStack(alignment: .leading, spacing: 6) {
+                Text(message).font(.caption).foregroundStyle(CrabrixTheme.muted)
+                Button("Resume") { pendingDownload = entry }
+            }
+        }
+    }
+
+    private static func order(_ id: String) -> Int {
+        ["basics", "ownership", "projects", "concurrency", "systems", "interview", "algorithms"]
+            .firstIndex(of: id) ?? Int.max
+    }
+
+    private static func preview(_ id: String) -> (title: String, subtitle: String, icon: String) {
+        switch id {
+        case "basics": ("Rust Basics", "Start writing reliable Rust", "leaf.fill")
+        case "ownership": ("Ownership Mastery", "Borrowing, lifetimes and traits", "lock.fill")
+        case "projects": ("Cargo & Real Projects", "Projects, packages and 46 Examples", "shippingbox.fill")
+        case "concurrency": ("Concurrency & Async", "Threads, channels and async Rust", "arrow.triangle.2.circlepath")
+        case "systems": ("Macros & Systems Rust", "Unsafe, FFI and performance", "cpu.fill")
+        case "interview": ("Rust Interview Prep", "Explain and practise core ideas", "person.crop.rectangle.stack.fill")
+        case "algorithms": ("Algorithm Atlas", "200 patterns and Rust challenges", "square.grid.3x3.fill")
+        default: (id.replacingOccurrences(of: "-", with: " ").capitalized, "Rust course", "book.closed.fill")
+        }
+    }
+}
+
 private struct LearningPracticeCard: View {
     let title: String
     let subtitle: String
@@ -617,68 +641,5 @@ private struct LearningPracticeCard: View {
         .background(tint.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay { RoundedRectangle(cornerRadius: 16).stroke(tint.opacity(0.3)) }
-    }
-}
-
-private struct CourseCard: View {
-    let course: RustCourse
-
-    private var lessonCount: Int { course.units.flatMap(\.lessons).count }
-    private var tint: Color { course.theme.primaryColor }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top) {
-                Image(systemName: course.systemImage)
-                    .font(.title2)
-                    .foregroundStyle(tint)
-                    .frame(width: 50, height: 50)
-                    .background(tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 14))
-                Spacer()
-                Text(course.level)
-                    .font(.system(size: 9, weight: .bold, design: .monospaced))
-                    .foregroundStyle(tint)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 5)
-                    .background(tint.opacity(0.11), in: Capsule())
-            }
-
-            Text(course.title)
-                .font(.title3.bold())
-            Text(course.subtitle)
-                .font(.caption)
-                .foregroundStyle(CrabrixTheme.muted)
-                .lineLimit(3)
-
-            Spacer(minLength: 0)
-
-            HStack {
-                Label(
-                    course.id == "algorithms" ? "200 patterns" : "\(course.units.count) units",
-                    systemImage: "square.stack.3d.up.fill"
-                )
-                Label(
-                    course.id == "algorithms" ? "600 steps" : "\(lessonCount) lessons",
-                    systemImage: "checklist"
-                )
-                Spacer()
-                Image(systemName: "arrow.right.circle.fill")
-                    .font(.title3)
-                    .foregroundStyle(tint)
-            }
-            .font(.caption2.monospaced())
-            .foregroundStyle(CrabrixTheme.muted)
-        }
-        .padding(18)
-        .frame(maxWidth: .infinity, minHeight: 225, alignment: .leading)
-        .background(
-            LinearGradient(
-                colors: [tint.opacity(0.08), CrabrixTheme.panel],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay { RoundedRectangle(cornerRadius: 18).stroke(tint.opacity(0.28)) }
     }
 }

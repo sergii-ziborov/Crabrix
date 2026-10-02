@@ -22,7 +22,7 @@ LEARN WITH THE FULL ACADEMY
 Seven courses cover Rust fundamentals through systems and interview topics,
 plus Algorithm Atlas: 742 lessons and steps, 200 algorithm challenges, source
 projects, questions, explanations, and practice material. A new installation
-starts with Basics; choose and download the other courses from the catalog.
+lists all seven courses; choose which ones to download for offline learning.
 Existing learners retain all seven transition courses offline after updating.
 Lessons can open starter code as a separate editable project. Course downloads show their size,
 are checked before installation, and leave your projects and progress in place
@@ -71,7 +71,7 @@ exact release candidate. The historical 1.0 screenshots are not 1.1 evidence.
 
 ## What to test in TestFlight
 
-Open Learn on a fresh install, download the Projects course after checking its
+Open Learn → Courses on a fresh install, download the Projects course after checking its
 size, and open an Academy Example as a separate editable project. Check and Run
 it, switch to Output, then choose another source file and confirm Code returns.
 Try a supported Cargo dependency in a project, Stop a long compile, and confirm
