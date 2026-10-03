@@ -23,12 +23,15 @@ final class InstalledCourseRepositoryTests: XCTestCase {
         ## Try it
         Change one row.
 
+        The downloaded example stays unchanged when you open it.
+
         ## Proof
         Generic compiler notice.
         """
         let sections = ExampleGuideSection.sections(in: readme)
         XCTAssertEqual(sections.map(\.title), ["What to notice", "How it works", "Try it"])
         XCTAssertTrue(sections[0].body.contains("important data flow"))
+        XCTAssertEqual(sections[2].body, "Change one row.")
         XCTAssertFalse(sections.map(\.body).joined().contains("Generic compiler notice"))
     }
 

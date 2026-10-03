@@ -110,7 +110,10 @@ struct ExampleGuideSection: Identifiable, Sendable {
         var lines: [String] = []
         func flush() {
             guard let heading, visible.contains(heading) else { return }
-            let body = lines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+            var body = lines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+            if heading == "Try it", let note = body.range(of: "The downloaded example stays unchanged") {
+                body = String(body[..<note.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            }
             if !body.isEmpty { sections.append(Self(title: heading, body: body)) }
         }
         for line in readme.components(separatedBy: .newlines) {
