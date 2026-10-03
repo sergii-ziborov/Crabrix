@@ -112,7 +112,7 @@ enum CrabrixTheme {
 extension RustCourseTheme {
     var primaryColor: Color {
         if CrabrixTheme.isCyberpunk { return CrabrixTheme.coral }
-        switch self {
+        return switch self {
         case .basics: CrabrixTheme.mint
         case .ownership: CrabrixTheme.coral
         case .projects: CrabrixTheme.blue

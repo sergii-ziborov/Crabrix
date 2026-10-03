@@ -568,7 +568,7 @@ private struct CourseLibraryView: View {
                     }
                 }
                 .padding(14)
-                .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 14))
+                .crabrixPanel(cornerRadius: 14)
             }
         }
     }
