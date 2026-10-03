@@ -81,9 +81,9 @@ struct LearnPathView: View {
 
                 LearningLegend()
             }
-            .padding(.horizontal, 18)
+            .padding(.horizontal, 26)
             .padding(.vertical, 22)
-            .frame(maxWidth: 760)
+            .frame(maxWidth: 700)
             .frame(maxWidth: .infinity)
         }
         .background {
