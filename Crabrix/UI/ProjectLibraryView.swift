@@ -250,22 +250,6 @@ struct ExampleDetailView: View {
                     }
                 }
 
-                if let illustration = project.illustration,
-                   let image = UIImage(contentsOfFile: illustration.url.path) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxWidth: .infinity)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                            .accessibilityLabel(illustration.alt)
-                        Text(illustration.caption)
-                            .font(.caption)
-                            .foregroundStyle(CrabrixTheme.muted)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-
                 ForEach(guideSections) { section in
                     VStack(alignment: .leading, spacing: 10) {
                         Text(section.title)
@@ -276,6 +260,23 @@ struct ExampleDetailView: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                if let illustration = project.illustration,
+                   let image = UIImage(contentsOfFile: illustration.url.path) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: image.size.height > image.size.width ? 300 : .infinity)
+                            .frame(maxWidth: .infinity)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .accessibilityLabel(illustration.alt)
+                        Text(illustration.caption)
+                            .font(.caption)
+                            .foregroundStyle(CrabrixTheme.muted)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
 
                 VStack(alignment: .leading, spacing: 12) {
