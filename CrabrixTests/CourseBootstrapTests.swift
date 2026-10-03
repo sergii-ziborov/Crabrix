@@ -55,7 +55,13 @@ final class CourseBootstrapTests: XCTestCase {
         )
         let installed = try await bootstrap.activateBundledBaseline(for: .newLearner)
         XCTAssertTrue(installed.courses.isEmpty)
-        XCTAssertEqual(try bootstrap.bundledCatalog().courses.count, 7)
+        let activeCatalog = try bootstrap.bundledCatalog()
+        XCTAssertEqual(activeCatalog.courses.count, 8)
+        XCTAssertEqual(activeCatalog.sequence, 3)
+        XCTAssertEqual(
+            activeCatalog.courses.first { $0.courseID == "examples" }?.requiredCapabilities,
+            ["coursepack-v1", "examples-gallery-v1"]
+        )
         let afterRelaunch = try await bootstrap.activateBundledBaseline(for: .newLearner)
         XCTAssertTrue(afterRelaunch.courses.isEmpty)
 

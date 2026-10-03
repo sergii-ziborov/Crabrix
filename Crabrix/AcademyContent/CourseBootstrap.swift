@@ -149,8 +149,10 @@ struct CourseBootstrap {
     func bundledCatalog() throws -> CourseCatalogPayload {
         guard let packs = bundle.url(forResource: "MigrationCoursePacks", withExtension: nil)
         else { throw CoursePackError.manifestMismatch("bundled catalog") }
+        let active = bundle.url(forResource: "ActiveCourseCatalog", withExtension: nil)
+            ?? packs
         return try CoursePackVerifier.catalog(
-            bytes: Data(contentsOf: packs.appending(path: "catalog.v1.json")),
+            bytes: Data(contentsOf: active.appending(path: "catalog.v1.json")),
             keyring: keyring(), lastAcceptedSequence: 0
         )
     }

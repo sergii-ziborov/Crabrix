@@ -61,11 +61,13 @@ final class CourseDeliveryGateTests: XCTestCase {
             stateURL: root.appending(path: "catalog-state.json"), keyring: keyring
         )
         let catalog = try await client.refresh()
-        XCTAssertGreaterThanOrEqual(catalog.courses.count, 7)
+        XCTAssertGreaterThanOrEqual(catalog.courses.count, 8)
         let basics = try XCTUnwrap(catalog.courses.first { $0.courseID == "basics" })
-        let examples = try XCTUnwrap(catalog.courses.first { $0.courseID == "projects" })
+        let projects = try XCTUnwrap(catalog.courses.first { $0.courseID == "projects" })
+        let examples = try XCTUnwrap(catalog.courses.first { $0.courseID == "examples" })
         let manager = try CourseDownloadManager(cacheRoot: root.appending(path: "downloads"))
         let asset = try await manager.download(basics)
+        let projectsAsset = try await manager.download(projects)
         let examplesAsset = try await manager.download(examples)
         let installer = try CourseInstaller(
             root: root.appending(path: "installed"), appVersion: SemanticVersion("1.1")
@@ -75,6 +77,10 @@ final class CourseDeliveryGateTests: XCTestCase {
             keyring: keyring
         )
         _ = try await installer.install(
+            descriptorBytes: projectsAsset.descriptor,
+            downloadedArchive: projectsAsset.archive, keyring: keyring
+        )
+        _ = try await installer.install(
             descriptorBytes: examplesAsset.descriptor,
             downloadedArchive: examplesAsset.archive, keyring: keyring
         )
@@ -82,8 +88,10 @@ final class CourseDeliveryGateTests: XCTestCase {
             root: root.appending(path: "installed"),
             records: await installer.installed(), keyring: keyring
         )
-        XCTAssertEqual(repository.courses.map(\.id), ["basics", "projects"])
+        XCTAssertEqual(repository.courses.map(\.id), ["basics", "projects", "examples"])
         XCTAssertNotNil(repository.lesson(id: "hello-rust"))
         XCTAssertEqual(repository.showcaseProjects().count, 46)
+        XCTAssertTrue(repository.showcaseProjects().allSatisfy(\.isGuided))
+        XCTAssertTrue(repository.loaded["projects"]?.showcases.isEmpty == true)
     }
 }

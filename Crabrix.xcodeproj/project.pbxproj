@@ -178,6 +178,7 @@
 		D70ECFBCDF8636B011990335 /* ProblemReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15AF611D0815ED4D2805F0C /* ProblemReportTests.swift */; };
 		D86F638C06CE9367C008A2E7 /* WasmKit-NOTICE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 73CFA57D3BA2CCAB16D8C48E /* WasmKit-NOTICE.txt */; };
 		DAB88604F8DDD7AEE079AE41 /* TOMLParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B771273BE9E83B35B042C13 /* TOMLParserTests.swift */; };
+		DB6E886AFE6EC3B085FD76D2 /* ActiveCourseCatalog in Resources */ = {isa = PBXBuildFile; fileRef = 84CD37596DAEDCB81F6DF7B0 /* ActiveCourseCatalog */; };
 		DC76A2B0022B3BD7AF6C91BA /* swift-syntax-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = AD6A06B3CF1D9DA428CCB401 /* swift-syntax-LICENSE.txt */; };
 		DD74E3CFB5C4836F4B571E46 /* AchievementCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BA8750BF5000C8E1AB3AB63 /* AchievementCelebrationView.swift */; };
 		DF3BD723C27443199DCA4948 /* Rust-COPYRIGHT.txt in Resources */ = {isa = PBXBuildFile; fileRef = C8B0903AB1A17FB1FEAA4301 /* Rust-COPYRIGHT.txt */; };
@@ -319,6 +320,7 @@
 		7F50EE4654716EB67F513A70 /* CoursePackVerifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePackVerifier.swift; sourceTree = "<group>"; };
 		803DCDE8E1FA58CCCBB670AF /* RustBasicsExpansion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustBasicsExpansion.swift; sourceTree = "<group>"; };
 		83162DA802CA86A5A232D638 /* CompilerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompilerViewModel.swift; sourceTree = "<group>"; };
+		84CD37596DAEDCB81F6DF7B0 /* ActiveCourseCatalog */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ActiveCourseCatalog; path = Crabrix/Resources/ActiveCourseCatalog; sourceTree = SOURCE_ROOT; };
 		8764C5B10E5325765B5506E6 /* ZIPFoundation-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "ZIPFoundation-LICENSE.txt"; sourceTree = "<group>"; };
 		8811CE23D18FC4B914D532DF /* CrateSourceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrateSourceView.swift; sourceTree = "<group>"; };
 		8832CBE2C15F09166CBB610F /* WasmSandboxPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmSandboxPolicyTests.swift; sourceTree = "<group>"; };
@@ -808,6 +810,7 @@
 		E8C4C63036CC75C075DB8AB1 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				84CD37596DAEDCB81F6DF7B0 /* ActiveCourseCatalog */,
 				CA5866457924F7521705CCD1 /* Assets.xcassets */,
 				B2888F23BE9517E3AC3CA427 /* Info.plist */,
 				B5027E80C0376645BB780AC1 /* MigrationCoursePacks */,
@@ -941,6 +944,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DB6E886AFE6EC3B085FD76D2 /* ActiveCourseCatalog in Resources */,
 				F8F1E02965F5C0146D69DD89 /* Assets.xcassets in Resources */,
 				86CFC690934610F01587597F /* MigrationCoursePacks in Resources */,
 				3504D6529B169202FB4FDC61 /* PrivacyInfo.xcprivacy in Resources */,
@@ -1204,7 +1208,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = CrabrixShare/CrabrixShare.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				INFOPLIST_FILE = CrabrixShare/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1327,7 +1331,7 @@
 				CODE_SIGN_ENTITLEMENTS = Crabrix/Crabrix.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Crabrix/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Crabrix;
@@ -1356,7 +1360,7 @@
 				CODE_SIGN_ENTITLEMENTS = Crabrix/Crabrix.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Crabrix/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Crabrix;
@@ -1443,7 +1447,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = CrabrixShare/CrabrixShare.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				INFOPLIST_FILE = CrabrixShare/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

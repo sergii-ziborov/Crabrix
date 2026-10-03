@@ -1031,15 +1031,19 @@ final class CompilerViewModel: ObservableObject {
         userDefaults.set(lessonAnswerIndices, forKey: Self.lessonAnswersKey)
     }
 
-    func openAcademyExample(_ showcase: RustShowcaseProject, contentVersion: String) {
+    func openAcademyExample(_ showcase: RustShowcaseProject,
+                            courseID: String = "projects", contentVersion: String) {
         let template = showcase.project
         let copy = CrabrixProject(
             name: template.name,
             files: template.files,
             entryFile: template.entryFile,
             provenance: .academyExample(
-                id: showcase.id, contentVersion: contentVersion,
-                templateHash: showcase.contentDigest
+                id: showcase.id, courseID: courseID, contentVersion: contentVersion,
+                templateHash: CourseProjectTemplate(
+                    name: template.name, entryFile: template.entryFile,
+                    files: template.files
+                ).templateHash
             ),
             projectDescription: showcase.detail,
             tags: showcase.concepts,

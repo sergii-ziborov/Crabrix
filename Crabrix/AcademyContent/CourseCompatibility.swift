@@ -1,6 +1,8 @@
 import Foundation
 
 enum CourseCompatibility {
+    static let supportedCapabilities: Set<String> = ["coursepack-v1", "examples-gallery-v1"]
+
     static func requireSupported(_ descriptor: CourseDescriptorPayload,
                                  appVersion: SemanticVersion) throws {
         guard let minimum = SemanticVersion(descriptor.minimumAppVersion) else {
@@ -9,7 +11,8 @@ enum CourseCompatibility {
         guard appVersion >= minimum else {
             throw CoursePackError.incompatibleCapability("Crabrix \(minimum) or later")
         }
-        for capability in descriptor.requiredCapabilities where capability != "coursepack-v1" {
+        for capability in descriptor.requiredCapabilities
+            where !supportedCapabilities.contains(capability) {
             throw CoursePackError.incompatibleCapability(capability)
         }
     }

@@ -117,11 +117,21 @@ final class ProjectAuthoringTests: XCTestCase {
         XCTAssertNotEqual(firstCopy.id, example.project.id)
         XCTAssertEqual(firstCopy.provenance?.course?.courseID, "projects")
         XCTAssertEqual(firstCopy.provenance?.course?.contentVersion, "1.0.1")
-        XCTAssertEqual(firstCopy.provenance?.course?.templateHash, example.contentDigest)
+        let expectedHash = CourseProjectTemplate(
+            name: example.project.name, entryFile: example.project.entryFile,
+            files: example.project.files
+        ).templateHash
+        XCTAssertEqual(firstCopy.provenance?.course?.templateHash, expectedHash)
         model.source += "\n// local change"
         XCTAssertNotEqual(model.exportProject().files, example.project.files)
         model.openAcademyExample(example, contentVersion: "1.0.1")
         XCTAssertNotEqual(model.exportProject().id, firstCopy.id)
+        let guided = try XCTUnwrap(projects.first(where: \.isGuided))
+        model.openAcademyExample(guided, courseID: "examples", contentVersion: "1.0.0")
+        let separateCopy = model.exportProject()
+        XCTAssertEqual(separateCopy.provenance?.course?.courseID, "examples")
+        XCTAssertEqual(separateCopy.provenance?.course?.contentVersion, "1.0.0")
+        XCTAssertEqual(separateCopy.files["README.md"], guided.project.files["README.md"])
     }
 
     func testSwitchingFilesPreservesRevisionAndUnsavedEdits() {

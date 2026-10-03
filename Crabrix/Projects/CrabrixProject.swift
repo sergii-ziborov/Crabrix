@@ -84,13 +84,13 @@ struct CrabrixProject: Codable, Equatable, Sendable {
             )
         }
 
-        static func academyExample(id: String, contentVersion: String,
-                                   templateHash: String) -> Provenance {
+        static func academyExample(id: String, courseID: String = "projects",
+                                   contentVersion: String, templateHash: String) -> Provenance {
             Provenance(
                 source: .academy, owner: nil, repository: nil,
                 reference: nil, commit: nil, importedAt: Date(),
                 course: CourseOrigin(
-                    courseID: "projects", contentVersion: contentVersion,
+                    courseID: courseID, contentVersion: contentVersion,
                     lessonID: "example/\(id)", templateHash: templateHash
                 )
             )
