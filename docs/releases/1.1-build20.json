@@ -41,11 +41,12 @@
   },
   "courseCatalog": {
     "repository": "https://github.com/sergii-ziborov/crabrix-courses",
-    "repositoryCommit": "329b1fcce85e4268a6599a0b67d8276ac351f5bd",
-    "releaseTag": "coursepack-v1.0.3",
+    "repositoryCommit": "92d623b9e80e8d7e489ddf0b2563b7d1426b0e88",
+    "releaseTag": "coursepack-v1.0.4",
+    "releaseTagCommit": "3f9688ea76b6a47b543d37cfa9d7b02c0bb9c22f",
     "publicCatalogURL": "https://raw.githubusercontent.com/sergii-ziborov/crabrix-courses/main/catalog.v1.json",
-    "catalogSHA256": "131cf568f35f9a4bb49b96d0565f2d12af60d2a0e9bdd3a6071d88577953fdc6",
-    "sequence": 4,
+    "catalogSHA256": "e71ad29795afeae3aef4f7dc0848c77909026266f7e7a1f362b10abe21be604c",
+    "sequence": 5,
     "signedKeyID": "crabrix-course-2026-10",
     "transitionPacks": [
       {
@@ -109,11 +110,11 @@
       {
         "archiveBytes": 3871076,
         "archiveSHA256": "50877cc9eb94c9443d5690eb309361793ac5ad904640b2e98d96f07d922212fa",
-        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.3/algorithms-1.0.1.zip",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/algorithms-1.0.1.zip",
         "contentVersion": "1.0.1",
         "courseID": "algorithms",
         "descriptorSHA256": "5311a9874d788c6ac9ffec3edc73bbbc377d5abb012d5e4712c1f2ecd8e21505",
-        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.3/algorithms.descriptor.json",
+        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/algorithms.descriptor.json",
         "language": "en",
         "minimumAppVersion": "1.1",
         "requiredCapabilities": [
@@ -123,11 +124,11 @@
       {
         "archiveBytes": 105555,
         "archiveSHA256": "8498d05c7b52dc205b05911ff5981d019707b67c529467414ed5b07ed50ec51d",
-        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.3/basics-1.0.1.zip",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/basics-1.0.1.zip",
         "contentVersion": "1.0.1",
         "courseID": "basics",
         "descriptorSHA256": "c253894278b404fb7cd2258f687c3432317d04012d957ebbf8ca82ee21999e04",
-        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.3/basics.descriptor.json",
+        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/basics.descriptor.json",
         "language": "en",
         "minimumAppVersion": "1.1",
         "requiredCapabilities": [
@@ -137,11 +138,11 @@
       {
         "archiveBytes": 55296,
         "archiveSHA256": "b12c89976e26160345420bd2b95b29d62e8f1e455a1dffee24557e1f52ee7980",
-        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.3/concurrency-1.0.1.zip",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/concurrency-1.0.1.zip",
         "contentVersion": "1.0.1",
         "courseID": "concurrency",
         "descriptorSHA256": "e6c5b53974f898cd79dc44c8ea1f235779f97527be60209103fde2cc8d25fffa",
-        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.3/concurrency.descriptor.json",
+        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/concurrency.descriptor.json",
         "language": "en",
         "minimumAppVersion": "1.1",
         "requiredCapabilities": [
@@ -149,13 +150,13 @@
         ]
       },
       {
-        "archiveBytes": 5399859,
-        "archiveSHA256": "10830792ac032479c17ba82d9ba5ab0274a6cbfb9ff99ab487ae53266e90f81d",
-        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.3/examples-1.0.1.zip",
-        "contentVersion": "1.0.1",
+        "archiveBytes": 5420774,
+        "archiveSHA256": "1ee0d024f47935fb17a1e3c9a4751c00a13cffc7a68283ad03841350b5172458",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/examples-1.0.2.zip",
+        "contentVersion": "1.0.2",
         "courseID": "examples",
-        "descriptorSHA256": "4c6c235f715874506dda1e8b8ef917d17cbf390419e879f7f83e1241562485b2",
-        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.3/examples.descriptor.json",
+        "descriptorSHA256": "8757e74c6586194e45745798842bda6a688b46ac91d5223f9c8ed2ba53e821d1",
+        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/examples.descriptor.json",
         "language": "en",
         "minimumAppVersion": "1.1",
         "requiredCapabilities": [
@@ -166,11 +167,11 @@
       {
         "archiveBytes": 155587,
         "archiveSHA256": "7b54a3f4a8837b7822ffbc6ff36207eec46dfacc6804f896eec44ac282ede9ab",
-        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.3/interview-1.0.1.zip",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/interview-1.0.1.zip",
         "contentVersion": "1.0.1",
         "courseID": "interview",
         "descriptorSHA256": "add6f32c56f62ea3080d93fb56383db294f96d1f99da36a93f468fce361b11e8",
-        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.3/interview.descriptor.json",
+        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/interview.descriptor.json",
         "language": "en",
         "minimumAppVersion": "1.1",
         "requiredCapabilities": [
@@ -180,11 +181,11 @@
       {
         "archiveBytes": 105091,
         "archiveSHA256": "8a9f26fa8f9c60e213cc52f31af0b14974c9999fddfcfe4cbd5778c64b88d942",
-        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.3/ownership-1.0.1.zip",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/ownership-1.0.1.zip",
         "contentVersion": "1.0.1",
         "courseID": "ownership",
         "descriptorSHA256": "3cfca80fcb76286808ee22fe7ed1366a1fce73688b64c6688ace704ae89a4c0a",
-        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.3/ownership.descriptor.json",
+        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/ownership.descriptor.json",
         "language": "en",
         "minimumAppVersion": "1.1",
         "requiredCapabilities": [
@@ -194,11 +195,11 @@
       {
         "archiveBytes": 70828,
         "archiveSHA256": "ca545a8fe691f0d3fa59e35522d63afeb0d1238371cfbadd532f67a27cf5dc1d",
-        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.3/projects-1.0.2.zip",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/projects-1.0.2.zip",
         "contentVersion": "1.0.2",
         "courseID": "projects",
         "descriptorSHA256": "06a0cf49eaa656fc5a268c1e38a363e819a0826dadcb9892198d3614edf55d2f",
-        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.3/projects.descriptor.json",
+        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/projects.descriptor.json",
         "language": "en",
         "minimumAppVersion": "1.1",
         "requiredCapabilities": [
@@ -208,11 +209,11 @@
       {
         "archiveBytes": 55375,
         "archiveSHA256": "076c2cabaa1297da71a983f35ac006ef9644fd667c69690cb5e9e52facd1ac40",
-        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.3/systems-1.0.1.zip",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/systems-1.0.1.zip",
         "contentVersion": "1.0.1",
         "courseID": "systems",
         "descriptorSHA256": "1f12345dfb6fed1f884d48388c904aed90840f9eddeeb58f273c250f094162b8",
-        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.3/systems.descriptor.json",
+        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/systems.descriptor.json",
         "language": "en",
         "minimumAppVersion": "1.1",
         "requiredCapabilities": [
@@ -220,10 +221,16 @@
         ]
       }
     ],
-    "transitionPacksNote": "Seven original 1.0.1 packs remain bundled for legacy offline migration. Fresh installs can download selected packs from signed public catalog sequence 4; Examples 1.0.1 is a separate optional download.",
+    "transitionPacksNote": "Seven original 1.0.1 packs remain bundled for legacy offline migration. Fresh installs can download selected packs from signed public catalog sequence 5; Examples 1.0.2 is a separate optional download.",
     "appKeyringSHA256": "7826dce1f7f47ac23ea049e86140eeb2aece361f5de6af11e10186ddbecf0595",
     "bundledCatalogSequence": 3,
-    "bundledCatalogSHA256": "3ef4cdb9d92b7fcf75502a36d759b3901aecbf9fdb869e4aad48e1463f5fba17"
+    "bundledCatalogSHA256": "3ef4cdb9d92b7fcf75502a36d759b3901aecbf9fdb869e4aad48e1463f5fba17",
+    "catalogAtArchive": {
+      "sequence": 4,
+      "catalogSHA256": "131cf568f35f9a4bb49b96d0565f2d12af60d2a0e9bdd3a6071d88577953fdc6",
+      "releaseTag": "coursepack-v1.0.3",
+      "examplesVersion": "1.0.1"
+    }
   },
   "appStoreConnect": {
     "appID": "6809502653",
@@ -248,10 +255,11 @@
     "Xcode 27.0 stable built the Release iPhone Simulator app; its Ferris guide and diagram screenshot was captured at 1320 × 2868 and visually inspected.",
     "App Store Connect processed build 20 as VALID and IN_BETA_TESTING, returned the saved 3,951-character What to Test text, and confirmed Internal QA group access.",
     "The app PR #53 fast release suite and unsigned Release candidate CI checks passed before merge commit 06e850586b2eae85dea204c03a4406bab0b71417.",
-    "The new Ferris guide Release screenshot was uploaded as the tenth iPhone listing image; all 17 iPhone/iPad screenshot assets returned COMPLETE in display order with matching local checksums."
+    "The new Ferris guide Release screenshot was uploaded as the tenth iPhone listing image; all 17 iPhone/iPad screenshot assets returned COMPLETE in display order with matching local checksums.",
+    "After the IPA upload, signed public catalog sequence 5 was published with immutable Examples 1.0.2; all eight descriptor/archive pairs were fetched without credentials and matched their SHA-256 and byte counts."
   ],
   "pending": [
-    "Physical-device tester tap-through of expanded guides, four diagrams, and opt-in Examples 1.0.1 download.",
+    "Physical-device tester tap-through of expanded guides, four diagrams, and opt-in Examples 1.0.2 download.",
     "App Review submission and public App Store release.",
     "The website source and screenshots are not deployed to the live site; current Lovable deployment remains an earlier build."
   ],
