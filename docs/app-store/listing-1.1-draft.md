@@ -1,11 +1,11 @@
 # Crabrix 1.1 App Store copy
 
-This copy describes the 1.1 (18) internal TestFlight build. Its English
+This copy describes the 1.1 (19) internal TestFlight build. Its English
 description and promotional text were saved and read back in App Store Connect.
 All 16 iPhone and iPad Store screenshots were verified in display order. The version
 has not been submitted for App Review; physical-device testing is next. See
-[the release evidence](../releases/1.1-build18.json) and
-[screenshot evidence](asset-upload-2026-10-03-build18.json).
+[the release evidence](../releases/1.1-build19.json) and
+[screenshot evidence](asset-upload-2026-10-03-build19.json).
 
 ## Promotional text
 

@@ -60,45 +60,46 @@ enum CrabrixTheme {
     static var background: Color { adaptive(
         light: UIColor(red: 0.956, green: 0.969, blue: 0.984, alpha: 1),
         dark: UIColor(red: 0.045, green: 0.063, blue: 0.083, alpha: 1),
-        cyber: UIColor(red: 0.024, green: 0.039, blue: 0.063, alpha: 1)
+        cyber: UIColor(red: 0.020, green: 0.024, blue: 0.039, alpha: 1)
     ) }
     static var editor: Color { adaptive(
         light: UIColor(red: 0.985, green: 0.990, blue: 0.996, alpha: 1),
         dark: UIColor(red: 0.052, green: 0.071, blue: 0.092, alpha: 1),
-        cyber: UIColor(red: 0.031, green: 0.067, blue: 0.094, alpha: 1)
+        cyber: UIColor(red: 0.027, green: 0.031, blue: 0.043, alpha: 1)
     ) }
     static var panel: Color { adaptive(
         light: .white,
         dark: UIColor(red: 0.071, green: 0.094, blue: 0.122, alpha: 1),
-        cyber: UIColor(red: 0.063, green: 0.133, blue: 0.176, alpha: 1)
+        cyber: UIColor(red: 0.055, green: 0.067, blue: 0.094, alpha: 1)
     ) }
     static var raised: Color { adaptive(
         light: UIColor(red: 0.902, green: 0.929, blue: 0.957, alpha: 1),
         dark: UIColor(red: 0.095, green: 0.125, blue: 0.157, alpha: 1),
-        cyber: UIColor(red: 0.125, green: 0.275, blue: 0.329, alpha: 1)
+        cyber: UIColor(red: 0.086, green: 0.106, blue: 0.149, alpha: 1)
     ) }
     static var border: Color { adaptive(
         light: UIColor.black.withAlphaComponent(0.11),
         dark: UIColor.white.withAlphaComponent(0.11),
-        cyber: UIColor(red: 0.811, green: 0.933, blue: 0.992, alpha: 0.30)
+        cyber: UIColor(red: 1.0, green: 0.73, blue: 0.0, alpha: 0.36)
     ) }
     static var primary: Color { adaptive(
         light: UIColor(red: 0.075, green: 0.102, blue: 0.145, alpha: 1),
         dark: .white,
-        cyber: UIColor(red: 0.811, green: 0.933, blue: 0.992, alpha: 1)
+        cyber: UIColor(red: 0.94, green: 0.97, blue: 0.98, alpha: 1)
     ) }
     static var muted: Color { adaptive(
         light: UIColor(red: 0.35, green: 0.40, blue: 0.47, alpha: 1),
         dark: UIColor(red: 0.53, green: 0.58, blue: 0.64, alpha: 1),
-        cyber: UIColor(red: 0.64, green: 0.78, blue: 0.83, alpha: 1)
+        cyber: UIColor(red: 0.65, green: 0.74, blue: 0.79, alpha: 1)
     ) }
-    static var coral: Color { isCyberpunk ? Color(red: 1.0, green: 0.34, blue: 0.46) : Color(red: 1.0, green: 0.39, blue: 0.27) }
-    static var mint: Color { isCyberpunk ? Color(red: 0.18, green: 0.90, blue: 0.63) : Color(red: 0.42, green: 0.83, blue: 0.66) }
-    static var blue: Color { isCyberpunk ? Color(red: 0.16, green: 0.88, blue: 1.0) : Color(red: 0.41, green: 0.70, blue: 1.0) }
-    static var amber: Color { isCyberpunk ? Color(red: 1.0, green: 0.71, blue: 0.33) : Color(red: 0.95, green: 0.72, blue: 0.34) }
-    static var violet: Color { isCyberpunk ? Color(red: 0.69, green: 0.42, blue: 1.0) : Color(red: 0.67, green: 0.45, blue: 0.98) }
-    static var cyan: Color { isCyberpunk ? Color(red: 0.16, green: 0.88, blue: 1.0) : Color(red: 0.25, green: 0.82, blue: 0.82) }
-    static var indigo: Color { isCyberpunk ? Color(red: 0.50, green: 0.62, blue: 1.0) : Color(red: 0.45, green: 0.49, blue: 1.0) }
+    static var coral: Color { isCyberpunk ? Color(red: 1.0, green: 0.73, blue: 0.0) : Color(red: 1.0, green: 0.39, blue: 0.27) }
+    static var mint: Color { isCyberpunk ? Color(red: 0.15, green: 0.91, blue: 0.60) : Color(red: 0.42, green: 0.83, blue: 0.66) }
+    static var blue: Color { isCyberpunk ? Color(red: 0.30, green: 0.91, blue: 1.0) : Color(red: 0.41, green: 0.70, blue: 1.0) }
+    static var amber: Color { isCyberpunk ? Color(red: 1.0, green: 0.73, blue: 0.0) : Color(red: 0.95, green: 0.72, blue: 0.34) }
+    static var violet: Color { isCyberpunk ? Color(red: 1.0, green: 0.30, blue: 0.65) : Color(red: 0.67, green: 0.45, blue: 0.98) }
+    static var cyan: Color { isCyberpunk ? Color(red: 0.30, green: 0.91, blue: 1.0) : Color(red: 0.25, green: 0.82, blue: 0.82) }
+    static var indigo: Color { isCyberpunk ? Color(red: 0.64, green: 0.80, blue: 1.0) : Color(red: 0.45, green: 0.49, blue: 1.0) }
+    static var danger: Color { isCyberpunk ? Color(red: 0.73, green: 0.10, blue: 0.18) : Color(red: 0.77, green: 0.14, blue: 0.18) }
 
     static func adaptive(light: UIColor, dark: UIColor, cyber: UIColor) -> Color {
         if isCyberpunk { return Color(uiColor: cyber) }
@@ -110,7 +111,8 @@ enum CrabrixTheme {
 
 extension RustCourseTheme {
     var primaryColor: Color {
-        switch self {
+        if CrabrixTheme.isCyberpunk { return CrabrixTheme.coral }
+        return switch self {
         case .basics: CrabrixTheme.mint
         case .ownership: CrabrixTheme.coral
         case .projects: CrabrixTheme.blue
@@ -156,13 +158,49 @@ enum CrabrixBuildInfo {
 }
 
 extension View {
+    @ViewBuilder
     func crabrixPanel(cornerRadius: CGFloat = 12) -> some View {
         background(CrabrixTheme.panel)
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .clipShape(CrabrixCardShape(cornerRadius: cornerRadius))
             .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(CrabrixTheme.border, lineWidth: 1)
+                CrabrixCardShape(cornerRadius: cornerRadius)
+                    .stroke(CrabrixTheme.border, lineWidth: CrabrixTheme.isCyberpunk ? 1.5 : 1)
             }
+    }
+}
+
+struct CrabrixCardShape: Shape {
+    let cornerRadius: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        guard CrabrixTheme.isCyberpunk else {
+            return RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).path(in: rect)
+        }
+        let cut = min(cornerRadius, rect.width / 8, rect.height / 4)
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX - cut, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + cut))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX + cut, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - cut))
+        path.closeSubpath()
+        return path
+    }
+}
+
+struct CrabrixControlShape: Shape {
+    enum Classic { case circle, capsule }
+    let classic: Classic
+
+    func path(in rect: CGRect) -> Path {
+        if CrabrixTheme.isCyberpunk {
+            return CrabrixCardShape(cornerRadius: 10).path(in: rect)
+        }
+        switch classic {
+        case .circle: return Circle().path(in: rect)
+        case .capsule: return Capsule().path(in: rect)
+        }
     }
 }
 

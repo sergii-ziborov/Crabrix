@@ -1,4 +1,4 @@
-Crabrix 1.1 (18) reviewer notes — prepared for tester validation.
+Crabrix 1.1 (19) reviewer notes — prepared for tester validation.
 
 Crabrix is a native Rust development and learning environment. No account or
 subscription is needed. The compiler, WebAssembly runtime, and WASI sysroot
@@ -50,5 +50,5 @@ or create a remote account.
 This build bundles the signed source-built Crabrix Rust toolchain
 `crabrix-rust-2026-10-02.1`, prepared from pinned sources and verified on the
 build Mac. The public CrabrixRuntime fork is based on WasmKit 0.4.1. Its iPhone
-and iPad screenshots were captured from the 1.1 (18) Release Simulator app on
+and iPad screenshots were captured from the 1.1 (19) Release Simulator app on
 3 October 2026. Physical-device tester results must be checked before App Review submission.

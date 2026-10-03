@@ -106,6 +106,10 @@ final class ThemeContrastTests: XCTestCase {
             XCTAssertGreaterThan(contrast(resolve(CrabrixTheme.primary, style: .dark), resolve(surface, style: .dark)), 7.0)
             XCTAssertGreaterThan(contrast(resolve(CrabrixTheme.muted, style: .dark), resolve(surface, style: .dark)), 4.5)
         }
+        XCTAssertGreaterThan(
+            contrast(.white, resolve(CrabrixTheme.danger, style: .dark)), 4.5,
+            "white Remove text must remain legible on the swipe action"
+        )
     }
 }
 
