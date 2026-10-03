@@ -228,11 +228,11 @@
     "appStoreVersionID": "2bc0ae1f-ca26-41e6-a0a9-700628e7bf14",
     "betaGroupID": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
     "betaGroup": "Internal QA",
-    "processingState": null,
-    "deliveryID": null,
-    "buildID": null,
-    "internalBuildState": null,
-    "whatToTestLocalizationID": null,
+    "processingState": "VALID",
+    "deliveryID": "9436eb17-b220-4058-a24e-df7ae21ccbdd",
+    "buildID": "9436eb17-b220-4058-a24e-df7ae21ccbdd",
+    "internalBuildState": "IN_BETA_TESTING",
+    "whatToTestLocalizationID": "104a5f78-7e13-46e9-a4a6-a63382411ba4",
     "screenshotEvidence": "docs/app-store/asset-upload-2026-10-03-build19.json",
     "enUSListingLocalizationID": "a65d398a-7dd6-4135-b2d6-048be8b34dd3"
   },
@@ -241,10 +241,10 @@
     "The 60,192,840-byte distribution IPA passed ZIP integrity, deep code-signature verification, and Apple altool validation with no errors; SHA-256 224b3996764ba1d4e4f4f1d7fb7fbbb5c541720ef082674171d84bbea2533aea.",
     "Nineteen embedded SHA-256 values matched the build 18 source lock: compiler, sysroot ZIP, toolchain lock, active signed catalog, keyring, and all seven legacy transition packs and descriptors.",
     "The unchanged public sequence 3 catalog, eight packs, 46 authored Code Examples and full Academy parity remain linked from the earlier release evidence.",
-    "All sixteen App Store Connect iPhone and iPad screenshot slots returned COMPLETE in the requested order; local SHA-256 values match the saved build 19 screenshot evidence. One additional example detail frame was retained in README documentation."
+    "All sixteen App Store Connect iPhone and iPad screenshot slots returned COMPLETE in the requested order; local SHA-256 values match the saved build 19 screenshot evidence. One additional example detail frame was retained in README documentation.",
+    "App Store Connect processed build 19 as VALID, reported IN_BETA_TESTING, returned the saved 3,702-character What to Test text, and confirmed the existing Internal QA group relationship."
   ],
   "pending": [
-    "Apple upload processing, Internal QA assignment and What to Test readback.",
     "Physical-device tester tap-through for whole-card navigation, three-dot menu, swipe removal, Files import label, Cyberpunk appearance and offline return.",
     "App Review submission and public App Store release.",
     "The build 19 website source and screenshots are not deployed to the live site; the current Lovable deployment remains an earlier build."
