@@ -231,7 +231,11 @@
     "betaGroupID": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
     "betaGroup": "Internal QA",
     "enUSListingLocalizationID": "a65d398a-7dd6-4135-b2d6-048be8b34dd3",
-    "deliveryID": "92bb66b7-184d-4ef2-b5a4-202e8fa5f05b"
+    "deliveryID": "92bb66b7-184d-4ef2-b5a4-202e8fa5f05b",
+    "processingState": "VALID",
+    "buildID": "92bb66b7-184d-4ef2-b5a4-202e8fa5f05b",
+    "internalBuildState": "IN_BETA_TESTING",
+    "whatToTestLocalizationID": "1b34dc29-17e0-46a7-8303-a3821ac4f1fb"
   },
   "verified": [
     "Xcode 27.0 stable built the signed 1.1 (20) iOS archive from app input commit 740ecfe79876211249e24f032c65ea05691ac8a2.",
@@ -240,10 +244,11 @@
     "Public signed catalog sequence 4 and eight descriptor/archive pairs were fetched and verified; Examples 1.0.1 archive is 5,399,859 bytes.",
     "The app installed the public Examples 1.0.1 pack and read its guide and local media in the iOS Simulator course delivery gate.",
     "Apple altool validated the distribution IPA with no errors and accepted upload delivery 92bb66b7-184d-4ef2-b5a4-202e8fa5f05b.",
-    "Xcode 27.0 stable built the Release iPhone Simulator app; its Ferris guide and diagram screenshot was captured at 1320 × 2868 and visually inspected."
+    "Xcode 27.0 stable built the Release iPhone Simulator app; its Ferris guide and diagram screenshot was captured at 1320 × 2868 and visually inspected.",
+    "App Store Connect processed build 20 as VALID and IN_BETA_TESTING, returned the saved 3,951-character What to Test text, and confirmed Internal QA group access.",
+    "The app PR #53 fast release suite and unsigned Release candidate CI checks passed before merge commit 06e850586b2eae85dea204c03a4406bab0b71417."
   ],
   "pending": [
-    "App Store Connect build 20 processing, Internal QA assignment, and What to Test readback.",
     "Physical-device tester tap-through of expanded guides, four diagrams, and opt-in Examples 1.0.1 download.",
     "App Review submission and public App Store release.",
     "The website source and screenshots are not deployed to the live site; current Lovable deployment remains an earlier build."
