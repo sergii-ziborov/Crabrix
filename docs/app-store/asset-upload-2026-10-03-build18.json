@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "appStoreVersionID": "2bc0ae1f-ca26-41e6-a0a9-700628e7bf14",
+  "versionString": "1.1",
+  "locale": "en-US",
+  "buildNumber": "18",
+  "screenshotSets": [
+    {
+      "id": "9abbb718-2cd9-4aa3-9a3d-8f456be9376b",
+      "displayType": "APP_IPHONE_67",
+      "filesInDisplayOrder": [
+        {
+          "appScreenshotID": "ff000019-5e0c-83bd-8024-40278462d492",
+          "bytes": 163702,
+          "sha256": "c7ad8c54373bba73c5c60be02999b99415560d3b9b40c4c0c79383a506c2fae5",
+          "md5UploadChecksum": "c130fadcddd6f03577a80e35d0a587ba",
+          "deliveryState": "COMPLETE",
+          "file": "docs/app-store/screenshots/iphone-6.9/01-build.png"
+        },
+        {
+          "appScreenshotID": "67c00019-5e0c-83bd-800a-84cef34c64e2",
+          "bytes": 343481,
+          "sha256": "60e9244517092cc16ae36ec2ed47e45de30205d4ea589f5ec271374d3eff0b8b",
+          "md5UploadChecksum": "44c45e00b133ea8d689823cf1f150f90",
+          "deliveryState": "COMPLETE",
+          "file": "docs/app-store/screenshots/iphone-6.9/03-learn.png"
+        },
+        {
+          "appScreenshotID": "83000019-5e0c-83bd-8021-663531974b4c",
+          "bytes": 260466,
+          "sha256": "0053ddd3df912b34066f4e1a395d4cd166f993a06721e59f59d28f1f4501dcb6",
+          "md5UploadChecksum": "8bd2ddc69221ca2a7786b3070da89bd0",
+          "deliveryState": "COMPLETE",
+          "file": "docs/app-store/screenshots/iphone-6.9/09-my-courses.png"
+        },
+        {
+          "appScreenshotID": "c9000019-5e0c-83bd-8011-7291adb02b12",
+          "bytes": 547854,
+          "sha256": "6c1160b959352fc95b578dcb8b4430115bcabf752e26e8b22460e728a5c4aea2",
+          "md5UploadChecksum": "0873d2dbefe72d844182018723533682",
+          "deliveryState": "COMPLETE",
+          "file": "docs/app-store/screenshots/iphone-6.9/05-lesson.png"
+        },
+        {
+          "appScreenshotID": "9fc00019-5e0c-83bd-8015-f031138b3d0b",
+          "bytes": 305571,
+          "sha256": "6692558a4837aeea3185802935b8ff59a167e468f89f194227ed141e075ad382",
+          "md5UploadChecksum": "49e0e28882dab63e6c9828ebe2d80d26",
+          "deliveryState": "COMPLETE",
+          "file": "docs/app-store/screenshots/iphone-6.9/06-profile.png"
+        },
+        {
+          "appScreenshotID": "ee400019-5e0c-83bd-801f-abd89f077b6b",
+          "bytes": 443482,
+          "sha256": "1ee64a32e3b2cf244b31815b068369fcfd11728d5297a7c082a075af753285b3",
+          "md5UploadChecksum": "00413b62f283acfe67c115c49949cac6",
+          "deliveryState": "COMPLETE",
+          "file": "docs/app-store/screenshots/iphone-6.9/02-projects.png"
+        },
+        {
+          "appScreenshotID": "27000019-5e0c-83bd-8039-698bb447cf80",
+          "bytes": 1025709,
+          "sha256": "ace1eca35b453c7fe0ba85b1bed2e4739914144ed8f2f66e7c09fea1cbcbb5e3",
+          "md5UploadChecksum": "c7c64510e7512f097cffe80b183ec308",
+          "deliveryState": "COMPLETE",
+          "file": "docs/app-store/screenshots/iphone-6.9/07-library.png"
+        },
+        {
+          "appScreenshotID": "a2000019-5e0c-83bd-8036-8c69014bf2d4",
+          "bytes": 1120563,
+          "sha256": "2157fae88dca2df06b40823e8968c327a98ec8833885a4480ac51916f4bf8ae6",
+          "md5UploadChecksum": "260a03778a625d440b3d6115abdfeec9",
+          "deliveryState": "COMPLETE",
+          "file": "docs/app-store/screenshots/iphone-6.9/04-course.png"
+        },
+        {
+          "appScreenshotID": "57800019-5e0c-83bd-8021-f0fe8f47f596",
+          "bytes": 277186,
+          "sha256": "279eeb7b46fcc8c2ac3213684a6a64f45d853e7a19e9a95fedb9d195ed10999b",
+          "md5UploadChecksum": "d7ecfef8dc77eb8b486f28046792fe83",
+          "deliveryState": "COMPLETE",
+          "file": "docs/app-store/screenshots/iphone-6.9/08-settings.png"
+        }
+      ]
+    },
+    {
+      "id": "1c84229c-61cc-46c5-8da2-b318c1783a8b",
+      "displayType": "APP_IPAD_PRO_3GEN_129",
+      "filesInDisplayOrder": [
+        {
+          "appScreenshotID": "ce000019-5e0c-83bd-8026-57895b529732",
+          "bytes": 1124115,
+          "sha256": "f4b56e8b148b19ad12fd55eb4270ab7c5b2402ee622101a8279c5316076c0b44",
+          "md5UploadChecksum": "b3ef0cb4568649b3a494bd60bca3b9df",
+          "deliveryState": "COMPLETE",
+          "file": "docs/app-store/screenshots/ipad-13/01-build.png"
+        },
+        {
+          "appScreenshotID": "8e000019-5e0c-83bd-8029-13fb1c7b04bc",
+          "bytes": 226812,
+          "sha256": "04e562eb9ce2137663606b7e6d4303a138734ca8c7a34778a9067faee34a6349",
+          "md5UploadChecksum": "957d6708a09189a5093882c3fbd3d72a",
+          "deliveryState": "COMPLETE",
+          "file": "docs/app-store/screenshots/ipad-13/03-learn.png"
+        },
+        {
+          "appScreenshotID": "4f000019-5e0c-83bd-8032-46cb002d243f",
+          "bytes": 282682,
+          "sha256": "3801c61aab4ed16a774d8d69277b68998ca1b80d4e38ffb7e1c66dff550d725c",
+          "md5UploadChecksum": "a7e13329b1ad49f0bb5125e2c869ce4d",
+          "deliveryState": "COMPLETE",
+          "file": "docs/app-store/screenshots/ipad-13/07-my-courses.png"
+        },
+        {
+          "appScreenshotID": "57800019-5e0c-83bd-8039-a5ff63692892",
+          "bytes": 882918,
+          "sha256": "ffb6f6095fb88e2b6655910b901cd2f1433c4292d4c70cf24a1ab1c5a343c2dc",
+          "md5UploadChecksum": "0e1bfce6ee80f5618228883b2c72801a",
+          "deliveryState": "COMPLETE",
+          "file": "docs/app-store/screenshots/ipad-13/04-lesson.png"
+        },
+        {
+          "appScreenshotID": "5c000019-5e0c-83bd-8010-98b2247742d3",
+          "bytes": 274184,
+          "sha256": "32b70d5ec7b7231562ce955615003b0adde8800ddc0dd1f3ba53c10692452742",
+          "md5UploadChecksum": "413ae107cd1e8e4885eba3c7ee543460",
+          "deliveryState": "COMPLETE",
+          "file": "docs/app-store/screenshots/ipad-13/05-profile.png"
+        },
+        {
+          "appScreenshotID": "37800019-5e0c-83bd-8016-d1554bb0fc37",
+          "bytes": 410021,
+          "sha256": "2b8f45afe3ecd604934fb76a81b27d077e408b42f3f32767e32bd7d27cce9de9",
+          "md5UploadChecksum": "ded7691b5690c220fd2543918131a6bf",
+          "deliveryState": "COMPLETE",
+          "file": "docs/app-store/screenshots/ipad-13/02-projects.png"
+        },
+        {
+          "appScreenshotID": "2d000019-5e0c-83bd-8022-29e1fe4641bf",
+          "bytes": 1303154,
+          "sha256": "4f024fd9aa30ebb48d10d983260cbc72000c91ff7a55f66f71ac31ead2cb0e0b",
+          "md5UploadChecksum": "5283d811b4237b976e0c556e26b09e18",
+          "deliveryState": "COMPLETE",
+          "file": "docs/app-store/screenshots/ipad-13/06-library.png"
+        }
+      ]
+    }
+  ]
+}

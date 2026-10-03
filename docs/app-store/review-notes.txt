@@ -1,4 +1,4 @@
-Crabrix 1.1 (17) reviewer notes — prepared for tester validation.
+Crabrix 1.1 (18) reviewer notes — prepared for tester validation.
 
 Crabrix is a native Rust development and learning environment. No account or
 subscription is needed. The compiler, WebAssembly runtime, and WASI sysroot
@@ -11,12 +11,13 @@ TO SEE IT COMPILE
 3. In Learn, download Ownership after confirming its shown size. Open its starter as a
    project, inspect the E0502 diagnostic, repair the source, and Run. Lesson
    hints are available in Output.
-4. In Learn, download the separate Examples gallery. Open one of its 46 projects
-   to create a separate copy in My Projects; read its README, edit and Run that
-   copy. Its Rust source is visible to the user.
+4. In Learn, download Code Examples. Its 46 circular stops are open from the
+   start. Select one to read its description and source preview, then choose
+   Open in Code. A separate editable copy appears in My Projects with its
+   README and Rust source; edit and Run that copy.
 
 COURSES AND DOWNLOADS
-Learn lists six Rust courses and Algorithm Atlas, plus a separate Examples
+Learn lists six Rust courses and Algorithm Atlas, plus a separate Code Examples
 download. A fresh installation downloads only the material the user chooses.
 An update with legacy progress activates all seven transition packs offline
 from the app bundle. The signed catalog is bundled; each download shows its
@@ -49,5 +50,5 @@ or create a remote account.
 This build bundles the signed source-built Crabrix Rust toolchain
 `crabrix-rust-2026-10-02.1`, prepared from pinned sources and verified on the
 build Mac. The public CrabrixRuntime fork is based on WasmKit 0.4.1. Its iPhone
-and iPad screenshots were captured from the 1.1 (17) Release Simulator app on
+and iPad screenshots were captured from the 1.1 (18) Release Simulator app on
 3 October 2026. Physical-device tester results must be checked before App Review submission.
