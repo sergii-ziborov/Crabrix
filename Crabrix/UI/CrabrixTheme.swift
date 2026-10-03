@@ -111,6 +111,7 @@ enum CrabrixTheme {
 
 extension RustCourseTheme {
     var primaryColor: Color {
+        if CrabrixTheme.isCyberpunk { return CrabrixTheme.coral }
         switch self {
         case .basics: CrabrixTheme.mint
         case .ownership: CrabrixTheme.coral
@@ -163,7 +164,7 @@ extension View {
             .clipShape(CrabrixCardShape(cornerRadius: cornerRadius))
             .overlay {
                 CrabrixCardShape(cornerRadius: cornerRadius)
-                    .stroke(CrabrixTheme.border, lineWidth: 1)
+                    .stroke(CrabrixTheme.border, lineWidth: CrabrixTheme.isCyberpunk ? 1.5 : 1)
             }
     }
 }
