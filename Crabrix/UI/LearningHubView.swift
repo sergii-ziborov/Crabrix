@@ -5,6 +5,7 @@ enum LearningRoute: Hashable {
     case course(String)
     case lesson(String)
     case examples
+    case example(String)
     case profile
 
     /// Opens a Learn screen straight from a launch argument, the same way
@@ -20,6 +21,9 @@ enum LearningRoute: Hashable {
         if value == "courses" { return [.courses] }
         if value == "profile" { return [.profile] }
         if value == "examples" { return [.examples] }
+        if value.hasPrefix("example:") {
+            return [.examples, .example(String(value.dropFirst("example:".count)))]
+        }
         if let course = repository.course(id: value) { return [.course(course.id)] }
         if let lesson = repository.lesson(id: value),
            let course = repository.course(containing: lesson.id) {
@@ -54,7 +58,7 @@ struct LearningHubView: View {
                 destination(for: route)
             }
             .onChange(of: navigationPath) { _, path in
-                if case .examples = path.last {
+                if path.contains(.examples) {
                     if examplesSnapshot == nil {
                         examplesSnapshot = academy.repository?.loaded["examples"]
                             ?? academy.repository?.loaded["projects"]
@@ -121,10 +125,21 @@ struct LearningHubView: View {
                 ?? academy.repository?.loaded["projects"],
                !snapshot.showcases.isEmpty {
                 ProjectLibraryView(projects: snapshot.showcases) { project in
+                    navigationPath.append(.example(project.id))
+                }
+            } else {
+                ContentUnavailableView("Code examples unavailable", systemImage: "square.stack.3d.up.slash")
+            }
+        case let .example(exampleID):
+            if let snapshot = examplesSnapshot
+                ?? academy.repository?.loaded["examples"]
+                ?? academy.repository?.loaded["projects"],
+               let project = snapshot.showcases.first(where: { $0.id == exampleID }) {
+                ExampleDetailView(project: project) {
                     onOpenExample(project, snapshot.course.id, snapshot.contentVersion)
                 }
             } else {
-                ContentUnavailableView("Examples unavailable", systemImage: "square.stack.3d.up.slash")
+                ContentUnavailableView("Example unavailable", systemImage: "curlybraces")
             }
         case let .course(courseID):
             if let course = academy.repository?.course(id: courseID) {
@@ -325,7 +340,7 @@ private struct CourseLibraryView: View {
             }
         }
         .confirmationDialog(
-            pendingDownload?.courseID == "examples" ? "Download Examples?" : "Download course?",
+            pendingDownload?.courseID == "examples" ? "Download Code Examples?" : "Download course?",
             isPresented: Binding(
                 get: { pendingDownload != nil },
                 set: { if !$0 { pendingDownload = nil } }
@@ -345,14 +360,14 @@ private struct CourseLibraryView: View {
 
     private var examplesSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Examples").font(.title2.bold())
+            Text("Code Examples").font(.title2.bold())
             HStack(spacing: 12) {
                 icon("square.stack.3d.up.fill", tint: CrabrixTheme.coral)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("46 Rust projects").font(.headline)
+                    Text("46 open examples").font(.headline)
                     Text(examplesInstalled
-                         ? "Offline · open any example as your own project"
-                         : "Download the gallery, then open projects one by one")
+                         ? "Available offline"
+                         : "Download to explore and open in Code")
                         .font(.caption)
                         .foregroundStyle(CrabrixTheme.muted)
                 }
@@ -367,7 +382,7 @@ private struct CourseLibraryView: View {
                     } label: {
                         Image(systemName: "ellipsis")
                     }
-                    .accessibilityLabel("Manage Examples download")
+                    .accessibilityLabel("Manage Code Examples download")
                 } else if let entry = examplesEntry {
                     VStack(spacing: 3) {
                         Button { pendingDownload = entry } label: {
@@ -376,7 +391,7 @@ private struct CourseLibraryView: View {
                         .buttonStyle(.bordered)
                         .tint(CrabrixTheme.coral)
                         .font(.caption.bold())
-                        .accessibilityLabel("Download 46 Examples for offline use")
+                        .accessibilityLabel("Download 46 Code Examples for offline use")
                         Text(ByteCountFormatter.string(
                             fromByteCount: Int64(entry.archiveBytes), countStyle: .file
                         ))
@@ -444,7 +459,7 @@ private struct CourseLibraryView: View {
                 .accessibilityLabel("Manage download for \(course.title)")
             }
             if course.id == "projects", academy.repository?.loaded["projects"]?.showcases.isEmpty == false {
-                NavigationLink("Open 46 Examples", value: LearningRoute.examples)
+                NavigationLink("Open Code Examples", value: LearningRoute.examples)
                     .font(.caption.weight(.semibold))
             }
         }

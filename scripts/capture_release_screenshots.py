@@ -115,6 +115,8 @@ def copy_for_docs() -> None:
         "iphone-my-courses.png": "iphone-6.9/09-my-courses.png",
         "iphone-academy.png": "iphone-6.9/03-learn.png",
         "iphone-library.png": "iphone-6.9/07-library.png",
+        "iphone-examples.png": "iphone-6.9/07-library.png",
+        "iphone-example-detail.png": "iphone-6.9/10-example-detail.png",
         "iphone-settings.png": "iphone-6.9/08-settings.png",
         "iphone-cyberpunk-settings.png": "iphone-6.9/08-settings.png",
         "ipad-build.png": "ipad-13/01-build.png",
@@ -143,6 +145,7 @@ def main() -> None:
         ("05-lesson.png", ("-CrabrixTab", "learn", "-CrabrixLearn", "borrowing")),
         ("06-profile.png", ("-CrabrixTab", "learn", "-CrabrixLearn", "profile")),
         ("07-library.png", ("-CrabrixTab", "learn", "-CrabrixLearn", "examples")),
+        ("10-example-detail.png", ("-CrabrixTab", "learn", "-CrabrixLearn", "example:ferris-pixel-art")),
         ("08-settings.png", ("-CrabrixTab", "settings", "-crabrix.appearance", "cyberpunk")),
     ])
     capture_set(app, "Crabrix Dev iPad", "ipad-13", [

@@ -297,8 +297,8 @@ the binary links no GameKit. Rating, ranks and achievements stay on device.
 
 ## Screenshots
 
-The image files linked here were replaced on 2026-10-02 with screenshots of the
-1.1 (10) Release Simulator build. This historical 1.0 listing text above is not
+The image files linked here were replaced on 2026-10-03 with screenshots of the
+1.1 (18) Release Simulator build. This historical 1.0 listing text above is not
 the copy for those images; use [the 1.1 draft](listing-1.1-draft.md) for current
 product wording. The capture covers both a fresh installation and the offline
 transition state for an existing learner.
@@ -308,23 +308,25 @@ transition state for an existing learner.
 | `docs/app-store/screenshots/iphone-6.9/` | iPhone 17 Pro Max | 1320 × 2868 |
 | `docs/app-store/screenshots/ipad-13/` | iPad Pro 13-inch (M4) | 2064 × 2752 |
 
-All 14 files were visually inspected after capture. The Academy Examples gallery,
+The 16 Store frames and a documentation-only Code Examples detail frame were captured
+from the same Release Simulator build. The Code Examples path, source preview,
 code syntax colours, Cyberpunk Settings, and deep course/lesson routes are present.
 The device archive was built from the same source, with the iOS device architecture
 and distribution signing; tester validation on a physical device remains separate.
 
 Upload order for the iPhone set, which tells the story in the right sequence:
 
-1. `01-build` — the code workspace and compiler inspector
-2. `03-learn` — Learn hub: rating and courses
-3. `05-lesson` — a lesson with its highlighted Rust example
-4. `06-profile` — local profile, avatar, rating, and lifetime stats
-5. `02-projects` — the simpler Projects landing screen
-6. `07-library` — Academy Examples after the Projects CoursePack is installed
-7. `04-course` — a course path
-8. `08-settings` — Cyberpunk appearance and optional app protection
+1. `01-build` — the code workspace and compiler output
+2. `03-learn` — individual course and Code Examples downloads
+3. `09-my-courses` — installed offline courses
+4. `05-lesson` — a lesson with its highlighted Rust example
+5. `06-profile` — local profile, avatar, rating, and lifetime stats
+6. `02-projects` — the Projects landing screen
+7. `07-library` — the open Code Examples path
+8. `04-course` — a course path
+9. `08-settings` — Cyberpunk appearance and optional app protection
 
-In particular, `07-library` must show the installed Academy Examples gallery, not the removed Projects library card.
+`10-example-detail` is an additional documentation screenshot showing the read-first example page and Open in Code action; it is not a Store screenshot. `07-library` shows the Code Examples path inside Learn.
 
 ### Reproducing them
 

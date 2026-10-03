@@ -1,15 +1,15 @@
 # Crabrix 1.1 App Store copy
 
-This copy describes the 1.1 (17) internal TestFlight build. Its English
+This copy describes the 1.1 (18) internal TestFlight build. Its English
 description and promotional text were saved and read back in App Store Connect.
-All 16 iPhone and iPad screenshots were verified in display order. The version
+All 16 iPhone and iPad Store screenshots were verified in display order. The version
 has not been submitted for App Review; physical-device testing is next. See
-[the release evidence](../releases/1.1-build17.json) and
-[screenshot evidence](asset-upload-2026-10-03-build17.json).
+[the release evidence](../releases/1.1-build18.json) and
+[screenshot evidence](asset-upload-2026-10-03-build18.json).
 
 ## Promotional text
 
-> From lesson to running Rust: the full Academy, 46 downloadable Examples, real Cargo projects, and local compilation on iPhone and iPad. No account required.
+> From lesson to running Rust: the full Academy, 46 open Code Examples, real Cargo projects, and local compilation on iPhone and iPad. No account required.
 
 ## Description
 
@@ -23,16 +23,16 @@ LEARN WITH THE FULL ACADEMY
 Seven courses cover Rust fundamentals through systems and interview topics,
 plus Algorithm Atlas: 742 lessons and steps, 200 algorithm challenges, source
 projects, questions, explanations, and practice material. A new installation
-lists all seven courses and a separate Examples gallery; choose what to
+lists all seven courses and a separate Code Examples path; choose what to
 download for offline learning.
 Existing learners retain their offline courses after updating.
 Lessons can open starter code as a separate editable project. Course downloads show their size,
 are checked before installation, and leave your projects and progress in place
 when you remove course material. Installed courses are readable offline.
-Download the separate Examples gallery to explore 46 Rust projects, each
-with its own README. Open one to create your own editable project; its source
-is visible and the gallery copy stays unchanged. The first download needs a
-connection.
+Download Code Examples to explore 46 Rust projects in any order. Every stop
+opens a description and source preview without a quiz or unlock step. Choose
+Open in Code to create an editable project with its own README; the downloaded
+source stays unchanged. The first download needs a connection.
 
 BUILD YOUR OWN PROJECT
 The project workspace has a native file tree, syntax-aware editor, Code and
@@ -73,8 +73,9 @@ exact release candidate. The historical 1.0 screenshots are not 1.1 evidence.
 
 ## What to test in TestFlight
 
-Open Learn on a fresh install, download Examples after checking its size, and
-open one of its 46 projects as a separate editable project. Read its README,
+Open Learn on a fresh install, download Code Examples after checking its size,
+and open the first and last of its 46 stops. Read their descriptions and code
+previews, then create a separate editable project. Read its README,
 then Check and Run it. Switch to Output, choose another source file, and
 confirm Code returns.
 Try a supported Cargo dependency in a project, Stop a long compile, and confirm

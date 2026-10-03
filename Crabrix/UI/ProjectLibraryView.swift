@@ -5,173 +5,133 @@ enum ProjectsRoute: Hashable {
     case myProjects
 }
 
-/// The installed Academy example gallery, with search and category filters.
+/// The path is for browsing. Every downloaded example is open from the start.
 struct ProjectLibraryView: View {
-    @State private var query = ""
-    @State private var category: RustShowcaseCategory?
-    @State private var difficulty: RustShowcaseDifficulty?
-    /// `-CrabrixCanvasGallery` opens the library already filtered to the Rust
-    /// Canvas projects, the same way `-CrabrixTab` opens a tab: store frames
-    /// and review walkthroughs then come out of every build identically.
-    @State private var visualOnly = ProcessInfo.processInfo
-        .arguments.contains("-CrabrixCanvasGallery")
+    /// Keep the deterministic visual gallery screenshot route.
+    private let visualOnly = ProcessInfo.processInfo.arguments.contains("-CrabrixCanvasGallery")
 
     let projects: [RustShowcaseProject]
-    let onOpen: (RustShowcaseProject) -> Void
+    let onSelect: (RustShowcaseProject) -> Void
 
-    private let columns = [GridItem(.adaptive(minimum: 260), spacing: 14)]
-
-    private var results: [RustShowcaseProject] {
-        let needle = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        return projects.filter { project in
-            if let category, project.category != category { return false }
-            if let difficulty, project.difficulty != difficulty { return false }
-            if visualOnly, !project.isVisual { return false }
-            guard !needle.isEmpty else { return true }
-            return project.searchHaystack.contains(needle)
-        }
-    }
-
-    /// Categories that actually have something in them right now.
-    private var availableCategories: [RustShowcaseCategory] {
-        let present = Set(projects.map(\.category))
-        return RustShowcaseCategory.allCases.filter { present.contains($0) }
-    }
-
-    private var guidedCount: Int {
-        projects.filter(\.isGuided).count
-    }
-
-    private var visualCount: Int {
-        projects.filter(\.isVisual).count
+    private var visibleProjects: [RustShowcaseProject] {
+        visualOnly ? projects.filter(\.isVisual) : projects
     }
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                header
-                filters
-                if results.isEmpty {
-                    ContentUnavailableView.search(text: query)
-                        .padding(.top, 40)
-                } else {
-                    LazyVGrid(columns: columns, spacing: 14) {
-                        ForEach(results) { project in
-                            Button { onOpen(project) } label: {
-                                ProjectLibraryCard(project: project)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 7) {
+                    Text(visualOnly ? "RUST CANVAS" : "ALL OPEN")
+                        .font(.caption.monospaced().bold())
+                        .foregroundStyle(CrabrixTheme.mint)
+                    Text(visualOnly ? "Visual examples" : "Choose any example")
+                        .font(.title2.bold())
+                    Text("Explore \(visibleProjects.count) Rust projects in any order.")
+                        .font(.subheadline)
+                        .foregroundStyle(CrabrixTheme.muted)
                 }
+                ExamplePathMap(projects: visibleProjects, onSelect: onSelect)
             }
-            .padding(20)
-            // Room for the last card to clear the floating tab bar instead of
-            // ending underneath it.
-            .padding(.bottom, 24)
-            .frame(maxWidth: 1_100)
+            .padding(.horizontal, 26)
+            .padding(.vertical, 22)
+            .padding(.bottom, 20)
+            .frame(maxWidth: 700)
             .frame(maxWidth: .infinity)
         }
-        .background(CrabrixTheme.background.ignoresSafeArea())
+        .background {
+            ZStack {
+                CrabrixTheme.background.ignoresSafeArea()
+                LinearGradient(
+                    colors: [CrabrixTheme.coral.opacity(0.08), .clear, CrabrixTheme.mint.opacity(0.06)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+            }
+        }
         .foregroundStyle(CrabrixTheme.primary)
-        .navigationTitle("Examples")
+        .navigationTitle("Code Examples")
         .navigationBarTitleDisplayMode(.inline)
-        .searchable(text: $query, prompt: "Search projects, concepts, categories")
-    }
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("\(projects.count) EXAMPLES · \(guidedCount) GUIDED · \(visualCount) VISUAL")
-                .font(.caption.monospaced().bold())
-                .foregroundStyle(CrabrixTheme.mint)
-            Text("Open an Academy example")
-                .font(.system(size: 26, weight: .bold, design: .rounded))
-            Text("Copy an installed Rust example into your projects and edit it. The signed Academy package stays unchanged.")
-                .font(.subheadline)
-                .foregroundStyle(CrabrixTheme.muted)
-        }
-    }
-
-    private var filters: some View {
-        VStack(alignment: .leading, spacing: 9) {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    FilterChip(title: "All", isSelected: category == nil) { category = nil }
-                    FilterChip(
-                        title: "Rust Canvas",
-                        systemImage: "paintpalette.fill",
-                        isSelected: visualOnly
-                    ) {
-                        visualOnly.toggle()
-                    }
-                    ForEach(availableCategories) { option in
-                        FilterChip(
-                            title: option.title,
-                            systemImage: option.systemImage,
-                            isSelected: category == option
-                        ) {
-                            category = category == option ? nil : option
-                        }
-                    }
-                }
-                .padding(.horizontal, 1)
-            }
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    FilterChip(title: "Any level", isSelected: difficulty == nil) { difficulty = nil }
-                    ForEach(RustShowcaseDifficulty.allCases) { option in
-                        FilterChip(title: option.title, isSelected: difficulty == option) {
-                            difficulty = difficulty == option ? nil : option
-                        }
-                    }
-                    Text("\(results.count) shown")
-                        .font(.caption.monospaced())
-                        .foregroundStyle(CrabrixTheme.muted)
-                        .padding(.leading, 4)
-                }
-                .padding(.horizontal, 1)
-            }
-        }
     }
 }
 
-private struct FilterChip: View {
-    let title: String
-    var systemImage: String?
-    let isSelected: Bool
-    let action: () -> Void
+private struct ExamplePathMap: View {
+    let projects: [RustShowcaseProject]
+    let onSelect: (RustShowcaseProject) -> Void
+    private let rowHeight: CGFloat = 118
 
     var body: some View {
-        Button(action: action) {
-            Group {
-                if let systemImage {
-                    Label(title, systemImage: systemImage)
-                } else {
-                    Text(title)
+        GeometryReader { geometry in
+            let width = geometry.size.width
+            ZStack(alignment: .topLeading) {
+                ExampleTrailLine(count: projects.count, width: width, rowHeight: rowHeight)
+                ForEach(Array(projects.enumerated()), id: \.element.id) { index, project in
+                    ExamplePathNode(
+                        project: project,
+                        number: index + 1,
+                        width: width,
+                        rowHeight: rowHeight,
+                        onSelect: { onSelect(project) }
+                    )
+                    .offset(y: CGFloat(index) * rowHeight)
                 }
             }
-            .font(.caption.bold())
-            .lineLimit(1)
-            .fixedSize(horizontal: true, vertical: false)
-            .padding(.horizontal, 12)
-            .frame(height: 32)
-            .background(
-                isSelected ? CrabrixTheme.coral.opacity(0.18) : CrabrixTheme.raised,
-                in: Capsule()
-            )
-            .overlay {
-                Capsule().stroke(isSelected ? CrabrixTheme.coral : CrabrixTheme.border)
-            }
-            .foregroundStyle(isSelected ? CrabrixTheme.coral : CrabrixTheme.muted)
         }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .frame(height: CGFloat(projects.count) * rowHeight + 8)
+        .padding(.horizontal, 4)
+        .background(CrabrixTheme.panel.opacity(0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(CrabrixTheme.border, lineWidth: 1)
+        }
     }
 }
 
-private struct ProjectLibraryCard: View {
+private struct ExampleTrailLine: View {
+    let count: Int
+    let width: CGFloat
+    let rowHeight: CGFloat
+
+    var body: some View {
+        Path { path in
+            guard count > 0 else { return }
+            var current = point(at: 0)
+            path.move(to: current)
+            for index in 1..<count {
+                let next = point(at: index)
+                let midway = (current.y + next.y) / 2
+                path.addCurve(
+                    to: next,
+                    control1: CGPoint(x: current.x, y: midway),
+                    control2: CGPoint(x: next.x, y: midway)
+                )
+                current = next
+            }
+        }
+        .stroke(
+            CrabrixTheme.coral.opacity(0.38),
+            style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round, dash: [5, 8])
+        )
+        .accessibilityHidden(true)
+    }
+
+    private func point(at index: Int) -> CGPoint {
+        CGPoint(
+            x: LessonMapLayout.nodeCenterX(width: width, index: index),
+            y: CGFloat(index) * rowHeight + rowHeight / 2
+        )
+    }
+}
+
+private struct ExamplePathNode: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     let project: RustShowcaseProject
+    let number: Int
+    let width: CGFloat
+    let rowHeight: CGFloat
+    let onSelect: () -> Void
 
     private var tint: Color {
         switch project.difficulty {
@@ -182,58 +142,169 @@ private struct ProjectLibraryCard: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            if project.isVisual {
-                Label("RUST CANVAS", systemImage: "paintpalette.fill")
-                    .font(.caption.monospaced().bold())
-                    .foregroundStyle(CrabrixTheme.cyan)
-                    .frame(maxWidth: .infinity, minHeight: 72)
-                    .background(CrabrixTheme.raised, in: RoundedRectangle(cornerRadius: 9))
-            }
+        let index = number - 1
+        let nodeX = LessonMapLayout.nodeCenterX(width: width, index: index)
+        let labelWidth = LessonMapLayout.labelWidth(for: width)
+        let labelOnRight = LessonMapLayout.labelToRight(at: index)
+        let labelX = LessonMapLayout.labelCenterX(
+            width: width,
+            nodeX: nodeX,
+            labelWidth: labelWidth,
+            labelToRight: labelOnRight
+        )
 
-            HStack(spacing: 10) {
-                Image(systemName: project.systemImage)
-                    .font(.headline)
-                    .foregroundStyle(tint)
-                    .frame(width: 38, height: 38)
-                    .background(tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 11))
-                Spacer(minLength: 0)
-                Text(project.difficulty.title.uppercased())
-                    .font(.system(size: 8, weight: .bold, design: .monospaced))
-                    .foregroundStyle(tint)
-                if project.isGuided {
-                    Text("GUIDED")
-                        .font(.system(size: 8, weight: .bold, design: .monospaced))
-                        .foregroundStyle(CrabrixTheme.amber)
+        return Button(action: onSelect) {
+            ZStack {
+                VStack(alignment: labelOnRight ? .leading : .trailing, spacing: 6) {
+                    Text(String(format: "%02d", number))
+                        .font(.caption2.monospaced().bold())
+                        .foregroundStyle(tint)
+                    Text(project.title)
+                        .font(.subheadline.bold())
+                        .foregroundStyle(CrabrixTheme.primary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(labelOnRight ? .leading : .trailing)
+                    Text(project.category.title)
+                        .font(.caption)
+                        .foregroundStyle(CrabrixTheme.muted)
                 }
-            }
+                .frame(width: labelWidth, alignment: labelOnRight ? .leading : .trailing)
+                .position(x: labelX, y: rowHeight / 2)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(project.title)
-                    .font(.headline)
-                    .foregroundStyle(CrabrixTheme.primary)
-                Text(project.detail)
-                    .font(.caption)
-                    .foregroundStyle(CrabrixTheme.muted)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
+                ZStack {
+                    Circle()
+                        .stroke(tint.opacity(0.28), lineWidth: 3)
+                        .frame(width: 86, height: 86)
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [tint, tint.opacity(0.78)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 70, height: 70)
+                        .shadow(color: tint.opacity(0.32), radius: 12, y: 6)
+                    Image(systemName: project.systemImage)
+                        .font(.title3.bold())
+                        .foregroundStyle(colorScheme == .light
+                                         ? CrabrixTheme.primary : CrabrixTheme.background)
+                }
+                .frame(width: 96, height: 96)
+                .position(x: nodeX, y: rowHeight / 2)
             }
+            .frame(width: width, height: rowHeight)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Example \(number), \(project.title), open")
+        .accessibilityIdentifier("code-example-\(project.id)")
+    }
+}
 
-            HStack(spacing: 5) {
-                ForEach(project.concepts.prefix(3), id: \.self) { concept in
-                    Text(concept)
-                        .font(.system(size: 9, design: .monospaced))
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
-                        .background(CrabrixTheme.raised, in: Capsule())
+/// A short read-first page; the README remains in the copied project.
+struct ExampleDetailView: View {
+    let project: RustShowcaseProject
+    let onOpenInCode: () -> Void
+
+    private var sourcePreview: String {
+        guard let source = project.project.files[project.project.entryFile] else { return "" }
+        let lines = source.split(separator: "\n", omittingEmptySubsequences: false)
+        let excerpt = lines.prefix(20).joined(separator: "\n")
+        return lines.count > 20 ? excerpt + "\n…" : excerpt
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 22) {
+                VStack(alignment: .leading, spacing: 12) {
+                    Label(project.category.title.uppercased(), systemImage: project.systemImage)
+                        .font(.caption.monospaced().bold())
+                        .foregroundStyle(CrabrixTheme.coral)
+                    Text(project.title)
+                        .font(.largeTitle.bold())
+                    Text(project.detail)
+                        .font(.body)
+                        .foregroundStyle(CrabrixTheme.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                if !project.concepts.isEmpty {
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: 7) {
+                            ForEach(project.concepts.prefix(3), id: \.self) { concept in
+                                conceptChip(concept)
+                            }
+                        }
+                        VStack(alignment: .leading, spacing: 7) {
+                            ForEach(project.concepts.prefix(3), id: \.self) { concept in
+                                conceptChip(concept)
+                            }
+                        }
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("Code preview").font(.headline)
+                        Spacer()
+                        Text(project.project.entryFile)
+                            .font(.caption.monospaced())
+                            .foregroundStyle(CrabrixTheme.muted)
+                            .lineLimit(1)
+                    }
+                    ScrollView(.horizontal) {
+                        Text(sourcePreview)
+                            .font(.system(size: 12, design: .monospaced))
+                            .foregroundStyle(CrabrixTheme.primary)
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(14)
+                    .background(CrabrixTheme.editor, in: RoundedRectangle(cornerRadius: 12))
+                }
+                .padding(16)
+                .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 18))
+
+                if project.isGuided {
+                    Label("README included in the project", systemImage: "doc.text")
+                        .font(.caption)
                         .foregroundStyle(CrabrixTheme.muted)
                 }
             }
+            .padding(.horizontal, 26)
+            .padding(.vertical, 22)
+            .padding(.bottom, 20)
+            .frame(maxWidth: 700)
+            .frame(maxWidth: .infinity)
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .crabrixPanel(cornerRadius: 15)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(project.title), \(project.difficulty.title), \(project.detail)")
+        .background(CrabrixTheme.background.ignoresSafeArea())
+        .foregroundStyle(CrabrixTheme.primary)
+        .navigationTitle(project.title)
+        .navigationBarTitleDisplayMode(.inline)
+        .safeAreaInset(edge: .bottom) {
+            Button(action: onOpenInCode) {
+                Label("Open in Code", systemImage: "curlybraces")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(CrabrixTheme.coral)
+            .accessibilityIdentifier("code-example-open-in-code")
+            .padding(.horizontal, 26)
+            .padding(.vertical, 12)
+            .frame(maxWidth: 700)
+            .background(CrabrixTheme.background)
+        }
+    }
+
+    private func conceptChip(_ concept: String) -> some View {
+        Text(concept)
+            .font(.caption.monospaced())
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(CrabrixTheme.raised, in: Capsule())
     }
 }
