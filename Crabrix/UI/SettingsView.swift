@@ -53,7 +53,7 @@ struct SettingsView: View {
     private var appearanceSection: some View {
         SettingsSection(
             title: "Appearance",
-            detail: "Auto follows the device. Cyberpunk uses the RepoLens-inspired neon palette throughout Crabrix."
+            detail: "Auto follows the device. Cyberpunk uses dark panels, amber controls and sharp edges throughout Crabrix."
         ) {
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(CrabrixAppearance.allCases) { appearance in
@@ -82,9 +82,9 @@ struct SettingsView: View {
                             appearanceRaw == appearance.rawValue
                                 ? CrabrixTheme.coral.opacity(0.08) : CrabrixTheme.panel
                         )
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .clipShape(CrabrixCardShape(cornerRadius: 14))
                         .overlay {
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            CrabrixCardShape(cornerRadius: 14)
                                 .stroke(
                                     appearanceRaw == appearance.rawValue
                                         ? CrabrixTheme.coral.opacity(0.55) : CrabrixTheme.border,

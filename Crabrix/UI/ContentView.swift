@@ -1203,7 +1203,7 @@ private struct AppHeader: View {
                     Label("Projects", systemImage: "square.grid.2x2.fill")
                         .font(.system(size: 10, weight: .bold, design: .monospaced))
                         .frame(minWidth: 88, minHeight: 34)
-                        .background(CrabrixTheme.raised, in: RoundedRectangle(cornerRadius: 9))
+                        .background(CrabrixTheme.raised, in: CrabrixCardShape(cornerRadius: 9))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Open Projects home")
@@ -1232,7 +1232,7 @@ private struct AppHeader: View {
                             .font(.system(size: 20, weight: .medium))
                             .foregroundStyle(CrabrixTheme.primary)
                             .frame(width: 40, height: 40)
-                            .background(CrabrixTheme.raised, in: Circle())
+                            .background(CrabrixTheme.raised, in: CrabrixControlShape(classic: .circle))
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Project settings and share")
@@ -1242,7 +1242,7 @@ private struct AppHeader: View {
                             .font(.system(size: 20, weight: .medium))
                             .foregroundStyle(CrabrixTheme.blue)
                             .frame(width: 40, height: 40)
-                            .background(CrabrixTheme.blue.opacity(0.1), in: Capsule())
+                            .background(CrabrixTheme.blue.opacity(0.1), in: CrabrixControlShape(classic: .capsule))
                     }
                     .buttonStyle(.plain)
                     .disabled(activity != .idle || !canRun)
@@ -1263,9 +1263,10 @@ private struct AppHeader: View {
                         .foregroundStyle(CrabrixTheme.coral)
                         .padding(.horizontal, 11)
                         .frame(minHeight: 38)
-                        .background(CrabrixTheme.coral.opacity(0.12), in: Capsule())
+                        .background(CrabrixTheme.coral.opacity(0.12), in: CrabrixControlShape(classic: .capsule))
                         .overlay {
-                            Capsule().stroke(CrabrixTheme.coral.opacity(0.3))
+                            CrabrixControlShape(classic: .capsule)
+                                .stroke(CrabrixTheme.coral.opacity(0.3))
                         }
                     }
                     .buttonStyle(.plain)
@@ -1283,7 +1284,7 @@ private struct AppHeader: View {
                     Image(systemName: "xmark")
                         .font(.system(size: 13, weight: .bold))
                         .frame(width: 38, height: 38)
-                        .background(CrabrixTheme.raised, in: Circle())
+                        .background(CrabrixTheme.raised, in: CrabrixControlShape(classic: .circle))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Close editor")
@@ -1473,14 +1474,28 @@ private struct ProjectSidebar: View {
 
                     if let manifest {
                         Divider().overlay(CrabrixTheme.border).padding(.vertical, 8)
-                        Text("PACKAGE")
-                            .font(.system(size: 9, weight: .bold, design: .monospaced))
-                            .foregroundStyle(CrabrixTheme.muted)
-                        Text("\(manifest.name) \(manifest.version ?? "")")
-                            .font(.caption.weight(.semibold))
-                        Text("edition \(manifest.edition ?? "unspecified") · manifest parsed")
-                            .font(.caption2.monospaced())
-                            .foregroundStyle(CrabrixTheme.mint)
+                        Button {
+                            onSelect("Cargo.toml")
+                        } label: {
+                            VStack(alignment: .leading, spacing: 5) {
+                                Text("PROJECT MANIFEST")
+                                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                    .foregroundStyle(CrabrixTheme.muted)
+                                HStack {
+                                    Text("\(manifest.name) \(manifest.version ?? "")")
+                                        .font(.caption.weight(.semibold))
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption.bold())
+                                }
+                                Text("Open Cargo.toml · edition \(manifest.edition ?? "unspecified")")
+                                    .font(.caption2.monospaced())
+                                    .foregroundStyle(CrabrixTheme.mint)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Open Cargo.toml for \(manifest.name)")
                     }
 
                     Divider().overlay(CrabrixTheme.border).padding(.vertical, 8)

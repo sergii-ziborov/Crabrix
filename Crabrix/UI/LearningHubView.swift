@@ -50,6 +50,7 @@ struct LearningHubView: View {
     var body: some View {
         NavigationStack(path: $navigationPath) {
             CourseLibraryView(
+                navigationPath: $navigationPath,
                 completedLessonIDs: completedLessonIDs,
                 showsPractice: true,
                 onOpenWeakTopic: openWeakTopic
@@ -115,6 +116,7 @@ struct LearningHubView: View {
         switch route {
         case .courses:
             CourseLibraryView(
+                navigationPath: $navigationPath,
                 completedLessonIDs: completedLessonIDs,
                 showsPractice: false,
                 onOpenWeakTopic: openWeakTopic
@@ -237,11 +239,13 @@ struct LearningHubView: View {
 }
 
 private struct CourseLibraryView: View {
+    @Binding var navigationPath: [LearningRoute]
     @EnvironmentObject private var academy: AcademyContentStore
     @EnvironmentObject private var progress: CrabrixProgressStore
     @AppStorage("crabrix.learn.trainingSessions") private var trainingSessions = 0
     @AppStorage("crabrix.learn.recallSessions") private var recallSessions = 0
     @State private var pendingDownload: CourseCatalogPayload.Entry?
+    @State private var pendingRemoval: (id: String, title: String)?
     let completedLessonIDs: Set<String>
     let showsPractice: Bool
     let onOpenWeakTopic: (String) -> Void
@@ -356,34 +360,76 @@ private struct CourseLibraryView: View {
         } message: {
             Text("The selected material will be available offline after verification.")
         }
+        .confirmationDialog(
+            "Remove \(pendingRemoval?.title ?? "download")?",
+            isPresented: Binding(
+                get: { pendingRemoval != nil },
+                set: { if !$0 { pendingRemoval = nil } }
+            ), titleVisibility: .visible
+        ) {
+            if let removal = pendingRemoval {
+                Button("Remove downloaded material", role: .destructive) {
+                    pendingRemoval = nil
+                    Task { await academy.deleteInstalled(courseID: removal.id, language: "en") }
+                }
+            }
+            Button("Cancel", role: .cancel) { pendingRemoval = nil }
+        } message: {
+            Text("Saved projects and learning progress will stay on this device.")
+        }
     }
 
     private var examplesSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Code Examples").font(.title2.bold())
-            HStack(spacing: 12) {
-                icon("square.stack.3d.up.fill", tint: CrabrixTheme.coral)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("46 open examples").font(.headline)
-                    Text(examplesInstalled
-                         ? "Available offline"
-                         : "Download to explore and open in Code")
-                        .font(.caption)
-                        .foregroundStyle(CrabrixTheme.muted)
-                }
-                Spacer(minLength: 0)
-                if examplesInstalled {
-                    NavigationLink("Open", value: LearningRoute.examples)
-                        .font(.caption.bold())
-                    Menu {
-                        Button("Remove download", role: .destructive) {
-                            Task { await academy.deleteInstalled(courseID: "examples", language: "en") }
+            if examplesInstalled {
+                SwipeRevealCard(onDelete: { requestRemoval("examples", title: "Code Examples") }) {
+                    HStack(spacing: 8) {
+                        NavigationLink(value: LearningRoute.examples) {
+                            HStack(spacing: 12) {
+                                examplesIcon
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("46 open examples").font(.headline)
+                                    Label("Offline", systemImage: "checkmark.circle.fill")
+                                        .font(.caption)
+                                        .foregroundStyle(CrabrixTheme.mint)
+                                }
+                                Spacer(minLength: 0)
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.bold())
+                                    .foregroundStyle(CrabrixTheme.coral)
+                            }
+                            .contentShape(Rectangle())
                         }
-                    } label: {
-                        Image(systemName: "ellipsis")
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Browse 46 Code Examples, available offline")
+                        Menu {
+                            Button("Browse examples", systemImage: "square.stack.3d.up") {
+                                navigationPath.append(.examples)
+                            }
+                            Button("Remove download", systemImage: "trash", role: .destructive) {
+                                requestRemoval("examples", title: "Code Examples")
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis")
+                                .frame(width: 40, height: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .accessibilityLabel("Code Examples options")
                     }
-                    .accessibilityLabel("Manage Code Examples download")
-                } else if let entry = examplesEntry {
+                    .padding(15)
+                    .crabrixPanel(cornerRadius: 16)
+                }
+            } else if let entry = examplesEntry {
+                HStack(spacing: 12) {
+                    examplesIcon
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("46 open examples").font(.headline)
+                        Text("Download to browse and open in Code")
+                            .font(.caption)
+                            .foregroundStyle(CrabrixTheme.muted)
+                    }
+                    Spacer(minLength: 0)
                     VStack(spacing: 3) {
                         Button { pendingDownload = entry } label: {
                             Label("Download", systemImage: "arrow.down.circle.fill")
@@ -399,25 +445,41 @@ private struct CourseLibraryView: View {
                         .foregroundStyle(CrabrixTheme.muted)
                     }
                 }
+                .padding(15)
+                .crabrixPanel(cornerRadius: 16)
             }
-            if let entry = examplesEntry,
+            if !examplesInstalled, let entry = examplesEntry,
                let transfer = academy.transfers["examples|" + entry.language] {
                 transferView(transfer, entry: entry)
             }
         }
-        .padding(15)
-        .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var examplesIcon: some View {
+        Image("CodeExamplesIcon")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 52, height: 52)
+            .frame(width: 42, height: 42)
+            .clipped()
+            .accessibilityHidden(true)
+    }
+
+    private func requestRemoval(_ courseID: String, title: String) {
+        pendingRemoval = (courseID, title)
     }
 
     private func installedRow(_ course: RustCourse) -> some View {
         let lessons = course.units.flatMap(\.lessons)
         let completed = lessons.filter { completedLessonIDs.contains($0.id) }.count
-        return VStack(alignment: .leading, spacing: 10) {
+        return SwipeRevealCard(onDelete: { requestRemoval(course.id, title: course.title) }) {
+          VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 NavigationLink(value: LearningRoute.course(course.id)) {
                     VStack(alignment: .leading, spacing: 12) {
                         HStack(spacing: 12) {
-                            icon(course.systemImage, tint: course.theme.primaryColor)
+                            courseIcon(course.id, fallback: course.systemImage,
+                                       tint: course.theme.primaryColor)
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(course.title)
                                     .font(.headline)
@@ -449,8 +511,11 @@ private struct CourseLibraryView: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel("Open \(course.title), \(completed) of \(lessons.count) lessons complete, available offline")
                 Menu {
-                    Button("Remove download", role: .destructive) {
-                        Task { await academy.deleteInstalled(courseID: course.id, language: "en") }
+                    Button("Open course", systemImage: "book") {
+                        navigationPath.append(.course(course.id))
+                    }
+                    Button("Remove download", systemImage: "trash", role: .destructive) {
+                        requestRemoval(course.id, title: course.title)
                     }
                 } label: {
                     Image(systemName: "ellipsis")
@@ -462,9 +527,10 @@ private struct CourseLibraryView: View {
                 NavigationLink("Open Code Examples", value: LearningRoute.examples)
                     .font(.caption.weight(.semibold))
             }
+          }
+          .padding(15)
+          .crabrixPanel(cornerRadius: 16)
         }
-        .padding(15)
-        .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private var availableSection: some View {
@@ -475,7 +541,7 @@ private struct CourseLibraryView: View {
                 let preview = Self.preview(entry.courseID)
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 12) {
-                        icon(preview.icon, tint: CrabrixTheme.coral)
+                        courseIcon(entry.courseID, fallback: preview.icon, tint: CrabrixTheme.coral)
                         VStack(alignment: .leading, spacing: 3) {
                             Text(preview.title).font(.headline)
                             Text(preview.subtitle)
@@ -557,7 +623,36 @@ private struct CourseLibraryView: View {
             .font(.title3)
             .foregroundStyle(tint)
             .frame(width: 42, height: 42)
-            .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
+            .background(tint.opacity(0.12), in: CrabrixCardShape(cornerRadius: 11))
+    }
+
+    @ViewBuilder
+    private func courseIcon(_ courseID: String, fallback: String, tint: Color) -> some View {
+        if let assetName = Self.courseIconAsset(for: courseID) {
+            Image(assetName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 51, height: 51)
+                .frame(width: 42, height: 42)
+                .clipped()
+                .background(tint.opacity(0.08), in: CrabrixCardShape(cornerRadius: 11))
+                .accessibilityHidden(true)
+        } else {
+            icon(fallback, tint: tint)
+        }
+    }
+
+    private static func courseIconAsset(for id: String) -> String? {
+        switch id {
+        case "basics": "CourseBasicsIcon"
+        case "ownership": "CourseOwnershipIcon"
+        case "projects": "CourseProjectsIcon"
+        case "concurrency": "CourseConcurrencyIcon"
+        case "systems": "CourseSystemsIcon"
+        case "interview": "CourseInterviewIcon"
+        case "algorithms": "CourseAlgorithmsIcon"
+        default: nil
+        }
     }
 
     @ViewBuilder
@@ -640,5 +735,54 @@ private struct LearningPracticeCard: View {
         .background(tint.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay { RoundedRectangle(cornerRadius: 16).stroke(tint.opacity(0.3)) }
+    }
+}
+
+/// Reveals the same destructive action exposed by the options menu without
+/// making a vertical library scroll depend on a List container.
+private struct SwipeRevealCard<Content: View>: View {
+    @State private var revealed = false
+    let onDelete: () -> Void
+    let content: Content
+
+    init(onDelete: @escaping () -> Void, @ViewBuilder content: () -> Content) {
+        self.onDelete = onDelete
+        self.content = content()
+    }
+
+    var body: some View {
+        content
+            .offset(x: revealed ? -90 : 0)
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 20).onEnded { gesture in
+                    guard abs(gesture.translation.width) > abs(gesture.translation.height) * 1.3 else {
+                        return
+                    }
+                    if gesture.translation.width < -45 {
+                        withAnimation(.easeOut(duration: 0.2)) { revealed = true }
+                    } else if gesture.translation.width > 35 {
+                        withAnimation(.easeOut(duration: 0.2)) { revealed = false }
+                    }
+                }
+            )
+            .background(alignment: .trailing) {
+                GeometryReader { geometry in
+                    Button {
+                        revealed = false
+                        onDelete()
+                    } label: {
+                        Label("Remove", systemImage: "trash")
+                            .font(.caption.bold())
+                            .frame(width: 90, height: geometry.size.height)
+                    }
+                    .foregroundStyle(.white)
+                    .background(CrabrixTheme.danger)
+                    .buttonStyle(.plain)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .accessibilityLabel("Remove downloaded material")
+                }
+            }
+            .clipShape(CrabrixCardShape(cornerRadius: 16))
+            .accessibilityAction(named: "Remove download", onDelete)
     }
 }

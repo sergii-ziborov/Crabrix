@@ -62,7 +62,8 @@ struct NewProjectSheet: View {
                                 .frame(maxWidth: .infinity)
                         }
                         Button(action: onOpenFiles) {
-                            Label("iCloud Drive / Files", systemImage: "folder")
+                            Label("Files", systemImage: "folder")
+                                .lineLimit(1)
                                 .frame(maxWidth: .infinity)
                         }
                     }
@@ -98,9 +99,9 @@ struct NewProjectSheet: View {
                                 }
                                 .padding(14)
                                 .background(option == template ? CrabrixTheme.coral.opacity(0.08) : CrabrixTheme.panel)
-                                .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
+                                .clipShape(CrabrixCardShape(cornerRadius: 13))
                                 .overlay {
-                                    RoundedRectangle(cornerRadius: 13, style: .continuous)
+                                    CrabrixCardShape(cornerRadius: 13)
                                         .stroke(option == template ? CrabrixTheme.coral.opacity(0.5) : CrabrixTheme.border)
                                 }
                             }

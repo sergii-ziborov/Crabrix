@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1 (19) — 2026-10-03
+
+- Open installed courses and Code Examples from the card body. Swipe left or use the options menu to remove a downloaded pack after confirmation; progress and copied projects stay local.
+- Replace the Academy's generic course symbols with original illustrated icons, and give Cyberpunk a darker amber-accented palette and angular panels.
+- Make the project manifest summary open `Cargo.toml`, and shorten the New Project import button to Files while keeping iCloud Drive available through the system picker.
+
 ## 1.1 (18) — 2026-10-03
 
 - Present the separately downloadable Code Examples pack as a path of 46 open examples. Each example has a short description, source preview, and Open in Code action. Examples do not have lesson answers, scores, or unlock steps.

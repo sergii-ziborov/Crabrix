@@ -14,7 +14,7 @@ enum SyntaxTheme {
     static var background: Color { adaptive(
         light: UIColor(red: 0.957, green: 0.969, blue: 0.984, alpha: 1),
         dark: UIColor(red: 0.035, green: 0.051, blue: 0.070, alpha: 1),
-        cyber: UIColor(red: 0.024, green: 0.047, blue: 0.075, alpha: 1)
+        cyber: UIColor(red: 0.027, green: 0.031, blue: 0.043, alpha: 1)
     ) }
 
     /// Token colours, per theme.
