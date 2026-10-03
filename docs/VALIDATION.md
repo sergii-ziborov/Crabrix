@@ -1,5 +1,15 @@
 # Validation record
 
+## Build 16 persistent tabs and narrower courses — 3 October 2026
+
+The editor previously replaced the root `TabView`, which removed Projects, Learn and Settings when code opened. Build 16 keeps the editor inside Projects, uses the iPhone tab bar style and disables iOS 26 scroll minimization. The course library and lesson path use narrower card widths and larger side margins. On iPad, the system places the persistent tabs at the top.
+
+A Release iPhone 17 Pro Simulator build and a signed iOS archive succeeded with Xcode 27.0 stable. The exported 1.1 (16) IPA is 56,186,455 bytes with SHA-256 `280e4a185932100a4b091b2900357b48b036d9e28bca6f0c3caabeb748538c0d`; ZIP integrity, the archive's deep code signature, and Apple `altool --validate-app` passed. Apple accepted the upload with delivery UUID `2fb0ae83-c687-46d0-9470-0340ff019431`. The embedded compiler, sysroot, toolchain lock, signed catalog, and seven transition CoursePack archives and descriptors match the pinned build 15 digests.
+
+The build 16 Release Simulator screenshots show narrower course cards and persistent primary tabs in Learn and the editor on iPhone. The iPad screenshots show narrower cards and persistent native top tabs. All 16 iPhone and iPad screenshots were captured, uploaded or retained as appropriate, and both App Store Connect sets were verified in display order. App Store Connect processed build 16 as `VALID`, made it `IN_BETA_TESTING` for Internal QA, and returned the saved What to Test text. See the [build 16 manifest](releases/1.1-build16.json) and [screenshot evidence](app-store/asset-upload-2026-10-03-build16.json). Physical scrolling and tab switching still need a tester on a device; screenshots establish the visible initial routes, not live interactions.
+
+[PR run 37111390397](https://github.com/sergii-ziborov/Crabrix/actions/runs/37111390397) passed its Swift test and Release build job. Compiler gates were skipped by the PR policy because compiler inputs did not change.
+
 ## Build 15 Learn dashboard — 3 October 2026
 
 The previous Learn root chose a catalog-only view on first launch and kept that choice after a course was installed. Build 15 reads the current installed repository on every render: installed courses appear in My courses with offline status, lesson progress and a direct course link; remaining courses keep their Download buttons and sizes on the same screen. The introductory Academy hero is removed, and the empty weak-topic prompt no longer precedes practice.

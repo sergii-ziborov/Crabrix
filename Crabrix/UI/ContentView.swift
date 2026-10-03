@@ -4,7 +4,6 @@ import UniformTypeIdentifiers
 
 private enum CrabrixDestination: Hashable {
     case projects
-    case build
     case learn
     case settings
 
@@ -19,11 +18,18 @@ private enum CrabrixDestination: Hashable {
         }
         switch arguments[index + 1] {
         case "projects": return .projects
-        case "build": return .build
+        case "build": return .projects
         case "learn": return .learn
         case "settings": return .settings
         default: return nil
         }
+    }
+
+    static var launchesWorkspace: Bool {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: "-CrabrixTab"),
+              index + 1 < arguments.count else { return false }
+        return arguments[index + 1] == "build"
     }
 }
 
@@ -53,6 +59,17 @@ private struct ProjectArchiveShareSheet: UIViewControllerRepresentable {
     ) {}
 }
 
+private struct PersistentTabBar: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.tabBarMinimizeBehavior(.never)
+        } else {
+            content
+        }
+    }
+}
+
 struct ContentView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.scenePhase) private var scenePhase
@@ -79,6 +96,7 @@ struct ContentView: View {
     @State private var githubURL = ""
     @State private var selectedDestination: CrabrixDestination =
         CrabrixDestination.launchArgument ?? .projects
+    @State private var isWorkspaceOpen = CrabrixDestination.launchesWorkspace
     @State private var projectSidebarWidth: CGFloat = 220
     @State private var inspectorWidth: CGFloat = 390
     @State private var isProjectSidebarCollapsed = false
@@ -105,11 +123,11 @@ struct ContentView: View {
     )
 
     var body: some View {
-        Group {
-            if selectedDestination == .build {
-                buildWorkspace
-            } else {
-                TabView(selection: $selectedDestination) {
+        TabView(selection: $selectedDestination) {
+            Group {
+                if isWorkspaceOpen {
+                    buildWorkspace
+                } else {
             NavigationStack(path: $projectsPath) {
                 ProjectsHomeView(
                     projectName: model.projectName,
@@ -156,6 +174,8 @@ struct ContentView: View {
                     }
                 }
             }
+                }
+            }
             .tabItem { Label("Projects", systemImage: "folder.fill") }
             .tag(CrabrixDestination.projects)
 
@@ -182,12 +202,11 @@ struct ContentView: View {
             )
             .tabItem { Label("Settings", systemImage: "gearshape.fill") }
             .tag(CrabrixDestination.settings)
-                }
-                .tabViewStyle(.sidebarAdaptable)
-                .toolbarBackground(CrabrixTheme.panel, for: .tabBar)
-                .toolbarBackground(.visible, for: .tabBar)
-            }
         }
+        .tabViewStyle(.tabBarOnly)
+        .modifier(PersistentTabBar())
+        .toolbarBackground(CrabrixTheme.panel, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
         .id(appearanceRaw)
         .tint(CrabrixTheme.coral)
         .foregroundStyle(CrabrixTheme.primary)
@@ -369,7 +388,7 @@ struct ContentView: View {
             if let dockArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-dock=") }) {
                 let tab = String(dockArgument.dropFirst("--crabrix-auto-dock=".count))
                 if let dockTab = BuildDockTab(rawValue: tab) {
-                    selectedDestination = .build
+                    openCodeWorkspace()
                     selectedBuildDockTab = dockTab
                 }
             }
@@ -497,6 +516,7 @@ struct ContentView: View {
     }
 
     private func closeBuildWorkspace() {
+        isWorkspaceOpen = false
         if let lessonID = model.activeLessonID,
            let course = academy.repository?.course(containing: lessonID) {
             selectedDestination = .learn
@@ -507,8 +527,10 @@ struct ContentView: View {
     }
 
     private func openCodeWorkspace() {
+        projectsPath = []
+        isWorkspaceOpen = true
         selectedBuildDockTab = .code
-        selectedDestination = .build
+        selectedDestination = .projects
     }
 
     private func presentPendingProjectImport() {
@@ -687,7 +709,10 @@ struct ContentView: View {
                     onCheck: model.check,
                     onRun: model.run,
                     onCancelBuild: model.cancelBuild,
-                    onOpenProjects: { selectedDestination = .projects },
+                    onOpenProjects: {
+                        isWorkspaceOpen = false
+                        selectedDestination = .projects
+                    },
                     onCloseWorkspace: closeBuildWorkspace,
                     onNewProject: { isNewProjectPresented = true },
                     onProjectActions: {

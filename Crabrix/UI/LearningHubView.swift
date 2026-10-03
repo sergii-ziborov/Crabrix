@@ -277,8 +277,9 @@ private struct CourseLibraryView: View {
                     Button("Retry") { Task { await academy.checkForUpdates() } }
                 }
             }
-            .padding(20)
-            .frame(maxWidth: 720)
+            .padding(.horizontal, 26)
+            .padding(.vertical, 20)
+            .frame(maxWidth: 660)
             .frame(maxWidth: .infinity)
         }
         .background(CrabrixTheme.background.ignoresSafeArea())
