@@ -3,7 +3,7 @@
 ## 1.1 (20) — 2026-10-03
 
 - Show the full project-specific guide on each of the 46 Code Examples pages before the source preview. Four examples include original local diagrams with captions and alternative text.
-- Offer the separately signed Examples 1.0.1 download from the installed Examples card when available; existing editable project copies remain separate from downloaded course material.
+- Offer newer signed Examples content from the installed Examples card when available; existing editable project copies remain separate from downloaded course material.
 - Add the Ferris guide to the App Store screenshot set. The signed build 20 IPA and public CoursePack identities are recorded in the [release manifest](docs/releases/1.1-build20.json).
 
 ## 1.1 (19) — 2026-10-03
