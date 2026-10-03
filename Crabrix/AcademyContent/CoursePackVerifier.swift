@@ -231,7 +231,7 @@ enum CoursePackVerifier {
     }
 
     private static func checkCapabilities(_ values: [String]) throws {
-        for value in values where value != "coursepack-v1" {
+        for value in values where !CourseCompatibility.supportedCapabilities.contains(value) {
             throw CoursePackError.incompatibleCapability(value)
         }
     }

@@ -41,7 +41,7 @@ struct LearningHubView: View {
     let onCompleteLesson: (RustLesson) -> Void
     let onResetCourseProgress: (Set<String>) -> Void
     let onAnswerLesson: (RustLesson, Int, Bool) -> Void
-    let onOpenExample: (RustShowcaseProject, String) -> Void
+    let onOpenExample: (RustShowcaseProject, String, String) -> Void
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -55,7 +55,10 @@ struct LearningHubView: View {
             }
             .onChange(of: navigationPath) { _, path in
                 if case .examples = path.last {
-                    if examplesSnapshot == nil { examplesSnapshot = academy.repository?.loaded["projects"] }
+                    if examplesSnapshot == nil {
+                        examplesSnapshot = academy.repository?.loaded["examples"]
+                            ?? academy.repository?.loaded["projects"]
+                    }
                 } else {
                     examplesSnapshot = nil
                 }
@@ -113,10 +116,12 @@ struct LearningHubView: View {
                 onOpenWeakTopic: openWeakTopic
             )
         case .examples:
-            if let snapshot = examplesSnapshot ?? academy.repository?.loaded["projects"],
+            if let snapshot = examplesSnapshot
+                ?? academy.repository?.loaded["examples"]
+                ?? academy.repository?.loaded["projects"],
                !snapshot.showcases.isEmpty {
                 ProjectLibraryView(projects: snapshot.showcases) { project in
-                    onOpenExample(project, snapshot.contentVersion)
+                    onOpenExample(project, snapshot.course.id, snapshot.contentVersion)
                 }
             } else {
                 ContentUnavailableView("Examples unavailable", systemImage: "square.stack.3d.up.slash")
@@ -228,11 +233,26 @@ private struct CourseLibraryView: View {
 
     private let columns = [GridItem(.adaptive(minimum: 260), spacing: 14)]
 
-    private var installed: [RustCourse] { academy.repository?.courses ?? [] }
+    private var installed: [RustCourse] {
+        academy.repository?.courses.filter { $0.id != "examples" } ?? []
+    }
+
+    private var examplesInstalled: Bool {
+        academy.repository?.loaded["examples"] != nil
+    }
+
+    private var examplesEntry: CourseCatalogPayload.Entry? {
+        academy.catalog?.courses.filter { $0.courseID == "examples" }.max { lhs, rhs in
+            (SemanticVersion(lhs.contentVersion) ?? SemanticVersion(major: 0, minor: 0, patch: 0))
+                < (SemanticVersion(rhs.contentVersion) ?? SemanticVersion(major: 0, minor: 0, patch: 0))
+        }
+    }
 
     private var available: [CourseCatalogPayload.Entry] {
         let installedIDs = Set(installed.map(\.id))
-        let entries = academy.catalog?.courses.filter { !installedIDs.contains($0.courseID) } ?? []
+        let entries = academy.catalog?.courses.filter {
+            $0.courseID != "examples" && !installedIDs.contains($0.courseID)
+        } ?? []
         return Dictionary(grouping: entries, by: \.courseID).values.compactMap { versions in
             versions.max { lhs, rhs in
                 (SemanticVersion(lhs.contentVersion) ?? SemanticVersion(major: 0, minor: 0, patch: 0))
@@ -251,6 +271,10 @@ private struct CourseLibraryView: View {
                             installedRow(course)
                         }
                     }
+                }
+
+                if examplesEntry != nil || examplesInstalled {
+                    examplesSection
                 }
 
                 if showsPractice && !installed.isEmpty {
@@ -272,7 +296,8 @@ private struct CourseLibraryView: View {
                     Button("Retry") { Task { await academy.prepare() } }
                 } else if academy.repository == nil {
                     ProgressView("Preparing Academy")
-                } else if available.isEmpty && installed.isEmpty {
+                } else if available.isEmpty && installed.isEmpty && examplesEntry == nil
+                            && !examplesInstalled {
                     ContentUnavailableView("Course list unavailable", systemImage: "wifi.slash")
                     Button("Retry") { Task { await academy.checkForUpdates() } }
                 }
@@ -286,6 +311,9 @@ private struct CourseLibraryView: View {
         .foregroundStyle(CrabrixTheme.primary)
         .navigationTitle(showsPractice ? "Learn" : "Courses")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            if showsPractice { await academy.checkForUpdates() }
+        }
         .toolbar {
             if showsPractice && !installed.isEmpty {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -297,7 +325,8 @@ private struct CourseLibraryView: View {
             }
         }
         .confirmationDialog(
-            "Download course?", isPresented: Binding(
+            pendingDownload?.courseID == "examples" ? "Download Examples?" : "Download course?",
+            isPresented: Binding(
                 get: { pendingDownload != nil },
                 set: { if !$0 { pendingDownload = nil } }
             ), titleVisibility: .visible
@@ -310,8 +339,59 @@ private struct CourseLibraryView: View {
             }
             Button("Cancel", role: .cancel) { pendingDownload = nil }
         } message: {
-            Text("The selected course will be available offline after verification.")
+            Text("The selected material will be available offline after verification.")
         }
+    }
+
+    private var examplesSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Examples").font(.title2.bold())
+            HStack(spacing: 12) {
+                icon("square.stack.3d.up.fill", tint: CrabrixTheme.coral)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("46 Rust projects").font(.headline)
+                    Text(examplesInstalled
+                         ? "Offline · open any example as your own project"
+                         : "Download the gallery, then open projects one by one")
+                        .font(.caption)
+                        .foregroundStyle(CrabrixTheme.muted)
+                }
+                Spacer(minLength: 0)
+                if examplesInstalled {
+                    NavigationLink("Open", value: LearningRoute.examples)
+                        .font(.caption.bold())
+                    Menu {
+                        Button("Remove download", role: .destructive) {
+                            Task { await academy.deleteInstalled(courseID: "examples", language: "en") }
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                    }
+                    .accessibilityLabel("Manage Examples download")
+                } else if let entry = examplesEntry {
+                    VStack(spacing: 3) {
+                        Button { pendingDownload = entry } label: {
+                            Label("Download", systemImage: "arrow.down.circle.fill")
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(CrabrixTheme.coral)
+                        .font(.caption.bold())
+                        .accessibilityLabel("Download 46 Examples for offline use")
+                        Text(ByteCountFormatter.string(
+                            fromByteCount: Int64(entry.archiveBytes), countStyle: .file
+                        ))
+                        .font(.caption2.monospaced())
+                        .foregroundStyle(CrabrixTheme.muted)
+                    }
+                }
+            }
+            if let entry = examplesEntry,
+               let transfer = academy.transfers["examples|" + entry.language] {
+                transferView(transfer, entry: entry)
+            }
+        }
+        .padding(15)
+        .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private func installedRow(_ course: RustCourse) -> some View {
@@ -363,7 +443,7 @@ private struct CourseLibraryView: View {
                 }
                 .accessibilityLabel("Manage download for \(course.title)")
             }
-            if course.id == "projects" {
+            if course.id == "projects", academy.repository?.loaded["projects"]?.showcases.isEmpty == false {
                 NavigationLink("Open 46 Examples", value: LearningRoute.examples)
                     .font(.caption.weight(.semibold))
             }
@@ -498,7 +578,7 @@ private struct CourseLibraryView: View {
         switch id {
         case "basics": ("Rust Basics", "Start writing reliable Rust", "leaf.fill")
         case "ownership": ("Ownership Mastery", "Borrowing, lifetimes and traits", "lock.fill")
-        case "projects": ("Cargo & Real Projects", "Projects, packages and 46 Examples", "shippingbox.fill")
+        case "projects": ("Cargo & Real Projects", "Modules, packages, and reliable Rust apps", "shippingbox.fill")
         case "concurrency": ("Concurrency & Async", "Threads, channels and async Rust", "arrow.triangle.2.circlepath")
         case "systems": ("Macros & Systems Rust", "Unsafe, FFI and performance", "cpu.fill")
         case "interview": ("Rust Interview Prep", "Explain and practise core ideas", "person.crop.rectangle.stack.fill")

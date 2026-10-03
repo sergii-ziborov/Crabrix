@@ -189,8 +189,10 @@ struct ContentView: View {
                 onAnswerLesson: { lesson, answer, correct in
                     if correct { model.recordLessonAnswer(answer, for: lesson.id) }
                 },
-                onOpenExample: { project, contentVersion in
-                    model.openAcademyExample(project, contentVersion: contentVersion)
+                onOpenExample: { project, courseID, contentVersion in
+                    model.openAcademyExample(
+                        project, courseID: courseID, contentVersion: contentVersion
+                    )
                     openCodeWorkspace()
                 }
             )
@@ -394,9 +396,13 @@ struct ContentView: View {
             }
             if let showcaseArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-showcase=") }) {
                 let id = String(showcaseArgument.dropFirst("--crabrix-auto-showcase=".count))
-                if let installed = academy.repository?.loaded["projects"],
+                if let installed = academy.repository?.loaded["examples"]
+                    ?? academy.repository?.loaded["projects"],
                    let project = installed.showcases.first(where: { $0.id == id }) {
-                    model.openAcademyExample(project, contentVersion: installed.contentVersion)
+                    model.openAcademyExample(
+                        project, courseID: installed.course.id,
+                        contentVersion: installed.contentVersion
+                    )
                     openCodeWorkspace()
                 } else {
                     selectedDestination = .learn

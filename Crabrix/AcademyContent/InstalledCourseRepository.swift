@@ -56,7 +56,7 @@ struct InstalledCourseRepository: CourseRepository {
     }
 
     func showcaseProjects() -> [RustShowcaseProject] {
-        loaded["projects"]?.showcases ?? []
+        loaded["examples"]?.showcases ?? loaded["projects"]?.showcases ?? []
     }
 
     private static func load(root: URL, record: InstalledCourseRecord,
@@ -176,8 +176,8 @@ struct InstalledCourseRepository: CourseRepository {
         }
         let terms: [CourseTermPairDTO] = try decode("terms.json", as: [CourseTermPairDTO].self)
         let galleryFiles = manifest.files.map(\.path).filter { $0.hasPrefix("library-projects/") }
-        guard courseID == "projects" || galleryFiles.isEmpty else {
-            throw CoursePackError.manifestMismatch("library project outside projects course")
+        guard courseID == "projects" || courseID == "examples" || galleryFiles.isEmpty else {
+            throw CoursePackError.manifestMismatch("library project outside gallery pack")
         }
         var galleryIDs = Set<String>()
         for path in galleryFiles {
@@ -215,6 +215,12 @@ struct InstalledCourseRepository: CourseRepository {
         orderedShowcases.sort { $0.order < $1.order }
         guard orderedShowcases.enumerated().allSatisfy({ $0.offset == $0.element.order }) else {
             throw CoursePackError.manifestMismatch("library project order")
+        }
+        if courseID == "examples" {
+            guard source.unitIDs.isEmpty, terms.isEmpty, orderedShowcases.count == 46,
+                  orderedShowcases.allSatisfy({ $0.project.isGuided }) else {
+                throw CoursePackError.manifestMismatch("examples gallery")
+            }
         }
         let runtime = RustCourse(
             id: source.id, level: source.level, title: source.title,
