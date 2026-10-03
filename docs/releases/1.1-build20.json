@@ -235,7 +235,8 @@
     "processingState": "VALID",
     "buildID": "92bb66b7-184d-4ef2-b5a4-202e8fa5f05b",
     "internalBuildState": "IN_BETA_TESTING",
-    "whatToTestLocalizationID": "1b34dc29-17e0-46a7-8303-a3821ac4f1fb"
+    "whatToTestLocalizationID": "1b34dc29-17e0-46a7-8303-a3821ac4f1fb",
+    "screenshotEvidence": "docs/app-store/asset-upload-2026-10-03-build20.json"
   },
   "verified": [
     "Xcode 27.0 stable built the signed 1.1 (20) iOS archive from app input commit 740ecfe79876211249e24f032c65ea05691ac8a2.",
@@ -246,7 +247,8 @@
     "Apple altool validated the distribution IPA with no errors and accepted upload delivery 92bb66b7-184d-4ef2-b5a4-202e8fa5f05b.",
     "Xcode 27.0 stable built the Release iPhone Simulator app; its Ferris guide and diagram screenshot was captured at 1320 × 2868 and visually inspected.",
     "App Store Connect processed build 20 as VALID and IN_BETA_TESTING, returned the saved 3,951-character What to Test text, and confirmed Internal QA group access.",
-    "The app PR #53 fast release suite and unsigned Release candidate CI checks passed before merge commit 06e850586b2eae85dea204c03a4406bab0b71417."
+    "The app PR #53 fast release suite and unsigned Release candidate CI checks passed before merge commit 06e850586b2eae85dea204c03a4406bab0b71417.",
+    "The new Ferris guide Release screenshot was uploaded as the tenth iPhone listing image; all 17 iPhone/iPad screenshot assets returned COMPLETE in display order with matching local checksums."
   ],
   "pending": [
     "Physical-device tester tap-through of expanded guides, four diagrams, and opt-in Examples 1.0.1 download.",
