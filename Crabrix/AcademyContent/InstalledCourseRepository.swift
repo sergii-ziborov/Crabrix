@@ -1,5 +1,6 @@
 import CryptoKit
 import Foundation
+import ImageIO
 
 /// Loads only activated, previously verified CoursePack directories.
 struct InstalledCourseRepository: CourseRepository {
@@ -188,6 +189,7 @@ struct InstalledCourseRepository: CourseRepository {
             galleryIDs.insert(try component(String(segments[1])))
         }
         var orderedShowcases: [(order: Int, project: RustShowcaseProject)] = []
+        var illustrationPaths = Set<String>()
         for id in galleryIDs {
             let prefix = "library-projects/\(id)/"
             let metadataPath = prefix + "project.json"
@@ -210,7 +212,31 @@ struct InstalledCourseRepository: CourseRepository {
                     contentsOf: directory.appending(path: path), encoding: .utf8
                 )
             }
-            orderedShowcases.append((metadata.order, try metadata.runtimeProject(files: files)))
+            var illustrationURL: URL?
+            if let illustration = metadata.illustration {
+                let expected = "media/\(id).png"
+                guard illustration.path == expected,
+                      manifest.files.contains(where: { $0.path == expected }) else {
+                    throw CoursePackError.manifestMismatch("example illustration \(id)")
+                }
+                let url = directory.appending(path: expected)
+                guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+                      CGImageSourceGetCount(source) == 1,
+                      let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+                      let width = properties[kCGImagePropertyPixelWidth] as? Int,
+                      let height = properties[kCGImagePropertyPixelHeight] as? Int,
+                      width > 0, height > 0, width <= 4096, height <= 4096,
+                      width * height <= 8_000_000 else {
+                    throw CoursePackError.manifestMismatch("example image size \(id)")
+                }
+                illustrationPaths.insert(expected)
+                illustrationURL = url
+            }
+            orderedShowcases.append((metadata.order, try metadata.runtimeProject(
+                files: files, illustrationURL: illustrationURL)))
+        }
+        guard Set(manifest.files.map(\.path).filter { $0.hasPrefix("media/") }) == illustrationPaths else {
+            throw CoursePackError.manifestMismatch("example media inventory")
         }
         orderedShowcases.sort { $0.order < $1.order }
         guard orderedShowcases.enumerated().allSatisfy({ $0.offset == $0.element.order }) else {
