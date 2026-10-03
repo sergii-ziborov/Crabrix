@@ -126,8 +126,7 @@ def copy_for_docs() -> None:
     }
     for name, source in sources.items():
         shutil.copyfile(STORE / source, ROOT / "docs/screenshots" / name)
-        if name != "iphone-cyberpunk-settings.png":
-            shutil.copyfile(STORE / source, ROOT / "site/screenshots" / name)
+        shutil.copyfile(STORE / source, ROOT / "site/screenshots" / name)
 
 
 def main() -> None:
