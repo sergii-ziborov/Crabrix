@@ -238,7 +238,7 @@
   },
   "verified": [
     "The unchanged signed sequence 3 course catalog, eight public packs, 46 example projects/READMEs, and semantic parity remain linked from build 17. The build 18 archive carried the same catalog digest, keyring, toolchain lock, compiler, sysroot, and all seven transition packs/descriptors; local SHA-256 comparison matched the build 17 manifest.",
-    "The Release Simulator app built with Xcode 27.0 stable. iPhone dark and light frames and an iPad frame showed the first nodes of the 46-item Code Examples path; the first example detail frame showed the description, source preview, Open in Code, and persistent primary tabs. Visual frames do not prove physical-device taps.",
+    "The Release Simulator app built with Xcode 27.0 stable. A fresh iPhone frame showed the separate Code Examples Download control. The existing-user iPhone dark/light and iPad frames used the bundled Projects 1.0.1 transition pack to show the first nodes of the 46-item Code Examples path; the first example detail frame showed the description, source preview, Open in Code, and persistent primary tabs. The separate signed Examples pack delivery was tested with build 17. Visual frames do not prove physical-device taps.",
     "The signed iOS archive and exported 56,228,887-byte IPA passed ZIP integrity and deep code-signature verification. IPA SHA-256 is ecbe2bff9f628c6b6997c4cfe0b969f0ca95b38a4414738c911d3489e6e40ca6.",
     "Apple altool validated the IPA with no errors and accepted delivery 2ce81b1a-9047-44c5-96c5-f048d92b9b90.",
     "App Store Connect processed build 18 as VALID, placed it IN_BETA_TESTING for Internal QA, and returned the saved What to Test text.",
@@ -248,7 +248,6 @@
   ],
   "pending": [
     "Physical-device tester tap-through for Code Examples download, first and last node, Open in Code, README, editable copy, offline return and removal flow.",
-    "Build 18 pull request hosted CI result.",
     "App Review submission and public App Store release.",
     "The build 18 website source and screenshots are not deployed to the live site; the current Lovable deployment remains an earlier build."
   ],
