@@ -93,5 +93,15 @@ final class CourseDeliveryGateTests: XCTestCase {
         XCTAssertEqual(repository.showcaseProjects().count, 46)
         XCTAssertTrue(repository.showcaseProjects().allSatisfy(\.isGuided))
         XCTAssertTrue(repository.loaded["projects"]?.showcases.isEmpty == true)
+        if let version = SemanticVersion(examples.contentVersion),
+           let minimum = SemanticVersion("1.0.1"), version >= minimum {
+            let ferris = try XCTUnwrap(repository.showcaseProjects().first {
+                $0.id == "ferris-pixel-art"
+            })
+            XCTAssertTrue(ferris.project.files["README.md"]?.contains("## What to notice") == true)
+            let image = try XCTUnwrap(ferris.illustration)
+            XCTAssertTrue(FileManager.default.fileExists(atPath: image.url.path))
+            XCTAssertFalse(image.alt.isEmpty)
+        }
     }
 }

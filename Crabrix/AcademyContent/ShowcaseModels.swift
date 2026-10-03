@@ -74,6 +74,7 @@ struct RustShowcaseProject: Identifiable, Sendable {
     let concepts: [String]
     let project: CrabrixProject
     let contentDigest: String
+    let illustration: ShowcaseIllustration?
 
     var isGuided: Bool { project.files["README.md"] != nil }
     var isVisual: Bool {
@@ -90,12 +91,53 @@ struct RustShowcaseProject: Identifiable, Sendable {
     }
 }
 
+struct ShowcaseIllustration: Sendable {
+    let url: URL
+    let alt: String
+    let caption: String
+}
+
+struct ExampleGuideSection: Identifiable, Sendable {
+    let title: String
+    let body: String
+    var id: String { title }
+
+    static func sections(in readme: String) -> [Self] {
+        let visible = Set(["What to notice", "What this project does", "How it works",
+                           "Try it", "Your challenge", "Challenge"])
+        var sections: [Self] = []
+        var heading: String?
+        var lines: [String] = []
+        func flush() {
+            guard let heading, visible.contains(heading) else { return }
+            let body = lines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+            if !body.isEmpty { sections.append(Self(title: heading, body: body)) }
+        }
+        for line in readme.components(separatedBy: .newlines) {
+            if line.hasPrefix("## ") {
+                flush()
+                heading = String(line.dropFirst(3))
+                lines = []
+            } else if heading != nil {
+                lines.append(line)
+            }
+        }
+        flush()
+        return sections
+    }
+}
+
 /// Metadata stays in the signed CoursePack; guest Rust sources are ordinary
 /// files next to this JSON and never become Swift literals in the app binary.
 struct ShowcaseProjectDTO: Decodable, Sendable {
     struct Project: Decodable, Sendable {
         let name: String
         let entryFile: String
+    }
+    struct Illustration: Decodable, Sendable {
+        let path: String
+        let alt: String
+        let caption: String
     }
 
     let id: String
@@ -108,15 +150,19 @@ struct ShowcaseProjectDTO: Decodable, Sendable {
     let order: Int
     let contentDigest: String
     let project: Project
+    let illustration: Illustration?
 
-    func runtimeProject(files: [String: String]) throws -> RustShowcaseProject {
+    func runtimeProject(files: [String: String], illustrationURL: URL?) throws -> RustShowcaseProject {
         guard let category = RustShowcaseCategory(rawValue: category),
               let difficulty = RustShowcaseDifficulty(rawValue: difficulty),
               !title.isEmpty, !detail.isEmpty, !systemImage.isEmpty,
               !project.name.isEmpty, !concepts.isEmpty,
               contentDigest.count == 64,
               contentDigest.allSatisfy({ "0123456789abcdef".contains($0) }),
-              files[project.entryFile] != nil, files["Cargo.toml"] != nil else {
+              files[project.entryFile] != nil, files["Cargo.toml"] != nil,
+              illustration == nil || (illustrationURL != nil &&
+                  !(illustration?.alt.isEmpty ?? true) &&
+                  !(illustration?.caption.isEmpty ?? true)) else {
             throw CoursePackError.manifestMismatch("library project \(id)")
         }
         let isVisual = files.values.contains { $0.contains(RustCanvasOutput.marker) }
@@ -128,7 +174,10 @@ struct ShowcaseProjectDTO: Decodable, Sendable {
                 provenance: nil, folder: isVisual ? "Visual Gallery" : nil,
                 kind: isVisual ? .visual : .general
             ),
-            contentDigest: contentDigest
+            contentDigest: contentDigest,
+            illustration: illustration.flatMap { item in
+                illustrationURL.map { ShowcaseIllustration(url: $0, alt: item.alt, caption: item.caption) }
+            }
         )
     }
 }

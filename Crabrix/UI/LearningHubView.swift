@@ -267,6 +267,15 @@ private struct CourseLibraryView: View {
         }
     }
 
+    private var newerExamplesEntry: CourseCatalogPayload.Entry? {
+        guard let entry = examplesEntry,
+              let current = academy.repository?.loaded["examples"].map(\.contentVersion),
+              let availableVersion = SemanticVersion(entry.contentVersion),
+              let installedVersion = SemanticVersion(current),
+              availableVersion > installedVersion else { return nil }
+        return entry
+    }
+
     private var available: [CourseCatalogPayload.Entry] {
         let installedIDs = Set(installed.map(\.id))
         let entries = academy.catalog?.courses.filter {
@@ -406,6 +415,11 @@ private struct CourseLibraryView: View {
                         Menu {
                             Button("Browse examples", systemImage: "square.stack.3d.up") {
                                 navigationPath.append(.examples)
+                            }
+                            if let entry = newerExamplesEntry {
+                                Button("Download latest examples", systemImage: "arrow.down.circle") {
+                                    pendingDownload = entry
+                                }
                             }
                             Button("Remove download", systemImage: "trash", role: .destructive) {
                                 requestRemoval("examples", title: "Code Examples")

@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Navigation targets inside the Projects tab.
 enum ProjectsRoute: Hashable {
@@ -203,7 +204,7 @@ private struct ExamplePathNode: View {
     }
 }
 
-/// A short read-first page; the README remains in the copied project.
+/// Read the authored guide before opening an editable project copy.
 struct ExampleDetailView: View {
     let project: RustShowcaseProject
     let onOpenInCode: () -> Void
@@ -213,6 +214,10 @@ struct ExampleDetailView: View {
         let lines = source.split(separator: "\n", omittingEmptySubsequences: false)
         let excerpt = lines.prefix(20).joined(separator: "\n")
         return lines.count > 20 ? excerpt + "\n…" : excerpt
+    }
+
+    private var guideSections: [ExampleGuideSection] {
+        ExampleGuideSection.sections(in: project.project.files["README.md"] ?? "")
     }
 
     var body: some View {
@@ -245,6 +250,34 @@ struct ExampleDetailView: View {
                     }
                 }
 
+                if let illustration = project.illustration,
+                   let image = UIImage(contentsOfFile: illustration.url.path) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: .infinity)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .accessibilityLabel(illustration.alt)
+                        Text(illustration.caption)
+                            .font(.caption)
+                            .foregroundStyle(CrabrixTheme.muted)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+
+                ForEach(guideSections) { section in
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(section.title)
+                            .font(.title3.bold())
+                        Text(.init(section.body))
+                            .font(.body)
+                            .foregroundStyle(CrabrixTheme.primary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Text("Code preview").font(.headline)
@@ -268,11 +301,6 @@ struct ExampleDetailView: View {
                 .padding(16)
                 .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 18))
 
-                if project.isGuided {
-                    Label("README included in the project", systemImage: "doc.text")
-                        .font(.caption)
-                        .foregroundStyle(CrabrixTheme.muted)
-                }
             }
             .padding(.horizontal, 26)
             .padding(.vertical, 22)
