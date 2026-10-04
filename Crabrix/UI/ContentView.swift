@@ -753,6 +753,7 @@ struct ContentView: View {
                                 onAddPackage: { isCargoCatalogPresented = true },
                                 onManagePackageStorage: { isPackageStoragePresented = true },
                                 onRemovePackage: model.removeCargoDependency,
+                                onUseSynParserFeatures: model.useSynParserFeatures,
                                 vendoredFiles: model.vendoredFiles,
                                 onVendor: model.vendorCrate,
                                 onOpenVendor: model.openVendoredCrate,
@@ -864,6 +865,7 @@ struct ContentView: View {
                             onAddPackage: { isCargoCatalogPresented = true },
                             onManagePackageStorage: { isPackageStoragePresented = true },
                             onRemovePackage: model.removeCargoDependency,
+                            onUseSynParserFeatures: model.useSynParserFeatures,
                             vendoredFiles: model.vendoredFiles,
                             onVendor: model.vendorCrate,
                             onOpenVendor: model.openVendoredCrate,
@@ -1424,6 +1426,7 @@ private struct ProjectSidebar: View {
     let onAddPackage: () -> Void
     let onManagePackageStorage: () -> Void
     let onRemovePackage: (String) -> Bool
+    let onUseSynParserFeatures: () -> Bool
     let vendoredFiles: (String, SemanticVersion) -> [String: String]
     let onVendor: (String, SemanticVersion) -> Bool
     let onOpenVendor: (String, SemanticVersion) -> Bool
@@ -1509,6 +1512,7 @@ private struct ProjectSidebar: View {
                         onAddDependency: onAddPackage,
                         onManageStorage: onManagePackageStorage,
                         onRemoveDependency: onRemovePackage,
+                        onUseSynParserFeatures: onUseSynParserFeatures,
                         vendoredFiles: vendoredFiles,
                         onVendor: onVendor,
                         onOpenVendor: onOpenVendor,
@@ -1520,11 +1524,17 @@ private struct ProjectSidebar: View {
                         .font(.system(size: 9, weight: .bold, design: .monospaced))
                         .foregroundStyle(CrabrixTheme.muted)
                     Label(
-                        report.status == .ready ? "Ready for local inspection" : "Review required",
-                        systemImage: report.status == .ready ? "checkmark.seal.fill" : "exclamationmark.triangle.fill"
+                        !cargoWorkspace.blockingPackages.isEmpty
+                            ? "Package build blocked"
+                            : (report.status == .ready ? "Ready for local inspection" : "Review required"),
+                        systemImage: report.status == .ready && cargoWorkspace.blockingPackages.isEmpty
+                            ? "checkmark.seal.fill" : "exclamationmark.triangle.fill"
                     )
                     .font(.caption2.monospaced())
-                    .foregroundStyle(report.status == .ready ? CrabrixTheme.mint : CrabrixTheme.amber)
+                    .foregroundStyle(
+                        report.status == .ready && cargoWorkspace.blockingPackages.isEmpty
+                            ? CrabrixTheme.mint : CrabrixTheme.amber
+                    )
                     Text("\(report.rustFiles) Rust files · \(report.dependencies) dependencies")
                         .font(.caption2.monospaced())
                         .foregroundStyle(CrabrixTheme.muted)

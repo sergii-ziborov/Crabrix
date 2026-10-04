@@ -675,6 +675,45 @@ final class BundledCompilerGateTests: XCTestCase {
         )
     }
 
+    func testSynParserOnlyDependencyBuildsAndRuns() async throws {
+        try Self.requireCompilerGate()
+        let defaultManifest = """
+        [package]
+        name = "syn-device-regression"
+        version = "0.1.0"
+        edition = "2024"
+        [dependencies]
+        syn = "3.0.6"
+        """
+        let manager = CargoPackageManager()
+        let defaultSnapshot = try await manager.prepare(manifestSource: defaultManifest)
+        XCTAssertTrue(defaultSnapshot.blockingPackages.contains {
+            $0.name == "syn" && $0.features.contains("proc-macro")
+        })
+
+        let manifest = try CargoManifestEditor.usingSynParserFeatures(defaultManifest)
+        let snapshot = try await manager.prepare(manifestSource: manifest)
+        XCTAssertEqual(Set(snapshot.packages.map(\.name)), Set(["syn", "quote", "proc-macro2", "unicode-ident"]))
+        XCTAssertTrue(snapshot.blockingPackages.isEmpty, snapshot.blockingPackages.map {
+            "\($0.name): \($0.compatibility.detail ?? "")"
+        }.joined(separator: "\n"))
+        XCTAssertFalse(snapshot.packages.contains { $0.features.contains("proc-macro") })
+
+        let source = """
+        // syn parser gate \(UUID().uuidString)
+        fn main() {
+            let ident: syn::Ident = syn::parse_str("crabrix").unwrap();
+            println!("{}", ident);
+        }
+        """
+        let result = await WasmRustCompiler(bundle: .main).run(
+            source: source, sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": manifest], plan: snapshot.plan
+        )
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "crabrix")
+    }
+
     func testMultiCrateCollectionsAndJSONApplicationBuildsAndRuns() async throws {
         try Self.requireCompilerGate()
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_UNSUPPORTED_CRATE_PROBE"] == "1" else {

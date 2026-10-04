@@ -2,6 +2,25 @@ import XCTest
 @testable import Crabrix
 
 final class CargoManifestEditorTests: XCTestCase {
+    func testSynParserProfileRepairsPlainDependencyWithoutChangingOtherEntries() throws {
+        let source = """
+        [package]
+        name = "weather-station"
+        version = "0.1.0"
+        edition = "2024"
+        [dependencies]
+        syn = "3.0.6"
+        log = "0.4" # keep this comment
+        """
+        let updated = try CargoManifestEditor.usingSynParserFeatures(source)
+        let manifest = try CratePackageManifest.parse(updated)
+        let syn = try XCTUnwrap(manifest.dependencies.first { $0.alias == "syn" })
+        XCTAssertFalse(syn.usesDefaultFeatures)
+        XCTAssertEqual(Set(syn.features), Set(["derive", "parsing", "printing", "clone-impls"]))
+        XCTAssertTrue(updated.contains("log = \"0.4\" # keep this comment"))
+        XCTAssertEqual(try CargoManifestEditor.usingSynParserFeatures(updated), updated)
+    }
+
     func testRemovalPreservesOtherDependenciesAndTheirFormatting() throws {
         let source = """
         # My project 🦀

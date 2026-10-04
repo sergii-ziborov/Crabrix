@@ -2,6 +2,14 @@ import XCTest
 @testable import Crabrix
 
 final class RustDiagnosticParserTests: XCTestCase {
+    func testDependencyErrorSummaryDoesNotExposeRawRustcJSON() {
+        let stderr = #"{"$message_type":"diagnostic","message":"can't find crate for `proc_macro`","code":{"code":"E0463"},"level":"error","spans":[],"rendered":null}"#
+        XCTAssertEqual(
+            WasmRustCompiler.firstErrorLine(in: stderr),
+            "error[E0463]: can't find crate for `proc_macro`"
+        )
+    }
+
     func testParsesStructuredE0502AndSpans() throws {
         let json = #"{"$message_type":"diagnostic","message":"cannot borrow `items` as mutable because it is also borrowed as immutable","code":{"code":"E0502"},"level":"error","spans":[{"file_name":"/work/main.rs","line_start":4,"line_end":4,"column_start":5,"column_end":27,"is_primary":true,"text":[{"text":"    items.push(\"compiler\");"}],"label":"mutable borrow occurs here"},{"file_name":"/work/main.rs","line_start":3,"line_end":3,"column_start":18,"column_end":23,"is_primary":false,"text":[{"text":"    let first = &items[0];"}],"label":"immutable borrow occurs here"},{"file_name":"/work/main.rs","line_start":5,"line_end":5,"column_start":16,"column_end":21,"is_primary":false,"text":[{"text":"    println!(\"{first}\");"}],"label":"immutable borrow later used here"}],"rendered":"error[E0502]: borrow conflict"}"#
 

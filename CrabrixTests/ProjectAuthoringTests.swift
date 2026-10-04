@@ -82,6 +82,39 @@ final class ProjectAuthoringTests: XCTestCase {
         XCTAssertEqual(CargoManifest.parse(manifest)?.dependencies.count, 1)
     }
 
+    func testCatalogAddsSynWithExplicitLocalCompilerFeatures() throws {
+        let model = CompilerViewModel()
+        model.createProject(name: "syn-parser", template: .empty)
+
+        XCTAssertTrue(model.addCargoDependency(name: "syn", requirement: "3.0.6"))
+
+        let source = try XCTUnwrap(model.exportProject().files["Cargo.toml"])
+        let manifest = try CratePackageManifest.parse(source)
+        let dependency = try XCTUnwrap(manifest.dependencies.first { $0.alias == "syn" })
+        XCTAssertFalse(dependency.usesDefaultFeatures)
+        XCTAssertEqual(Set(dependency.features), Set(["derive", "parsing", "printing", "clone-impls"]))
+    }
+
+    func testExistingPlainSynDependencyCanBeRepairedInProject() throws {
+        let model = CompilerViewModel()
+        model.createProject(name: "weather-station", template: .empty)
+        XCTAssertTrue(model.addCargoDependency(name: "syn", requirement: "3.0.6"))
+        model.selectFile("Cargo.toml")
+        model.source = model.source.replacingOccurrences(
+            of: CargoManifestEditor.localCompilerDeclaration(name: "syn", requirement: "3.0.6"),
+            with: "syn = \"3.0.6\""
+        )
+
+        XCTAssertTrue(model.useSynParserFeatures())
+
+        let manifest = try CratePackageManifest.parse(
+            XCTUnwrap(model.exportProject().files["Cargo.toml"])
+        )
+        let dependency = try XCTUnwrap(manifest.dependencies.first { $0.alias == "syn" })
+        XCTAssertFalse(dependency.usesDefaultFeatures)
+        XCTAssertEqual(Set(dependency.features), Set(["derive", "parsing", "printing", "clone-impls"]))
+    }
+
     func testInstalledAcademyExamplesHaveRunnableEntries() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }

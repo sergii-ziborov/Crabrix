@@ -12,6 +12,7 @@ struct CargoPackagesPanel: View {
     let onAddDependency: () -> Void
     let onManageStorage: () -> Void
     let onRemoveDependency: (String) -> Bool
+    let onUseSynParserFeatures: () -> Bool
     let vendoredFiles: (String, SemanticVersion) -> [String: String]
     let onVendor: (String, SemanticVersion) -> Bool
     let onOpenVendor: (String, SemanticVersion) -> Bool
@@ -62,6 +63,20 @@ struct CargoPackagesPanel: View {
                 emptyState
             } else {
                 offlineBanner
+                if needsSynParserFeatures {
+                    Button {
+                        _ = onUseSynParserFeatures()
+                    } label: {
+                        Label("Fix syn for local build", systemImage: "wrench.adjustable")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(CrabrixTheme.amber)
+                    .disabled(isBusy || stage.isWorking)
+                    Text("Updates Cargo.toml to omit the host-only proc-macro feature. Your project files stay editable.")
+                        .font(.caption2)
+                        .foregroundStyle(CrabrixTheme.muted)
+                }
                 packageList
             }
             if !workspace.unresolvedDependencies.isEmpty {
@@ -137,7 +152,8 @@ struct CargoPackagesPanel: View {
             Label(offlineLabel, systemImage: offlineSystemImage)
                 .font(.caption2.monospaced())
                 .foregroundStyle(offlineTint)
-            if workspace.isOfflineReady, !workspace.isOfflinePinned {
+            if workspace.isOfflineReady, !workspace.isOfflinePinned,
+               workspace.blockingPackages.isEmpty {
                 Button(action: onPinForOffline) {
                     Label("Pin exact graph for offline", systemImage: "pin.fill")
                         .font(.caption2.weight(.semibold))
@@ -150,6 +166,9 @@ struct CargoPackagesPanel: View {
     }
 
     private var offlineLabel: String {
+        if !workspace.blockingPackages.isEmpty {
+            return "\(workspace.packages.count) package sources cached · build blocked"
+        }
         if workspace.isOfflinePinned { return "\(workspace.summary) · offline pinned" }
         if workspace.isOfflineReady { return "\(workspace.summary) · offline while cached" }
         return "\(workspace.summary) · download pending"
@@ -160,7 +179,17 @@ struct CargoPackagesPanel: View {
     }
 
     private var offlineTint: Color {
-        workspace.isOfflinePinned ? CrabrixTheme.mint : (workspace.isOfflineReady ? CrabrixTheme.blue : CrabrixTheme.amber)
+        if !workspace.blockingPackages.isEmpty { return CrabrixTheme.amber }
+        return workspace.isOfflinePinned ? CrabrixTheme.mint : (workspace.isOfflineReady ? CrabrixTheme.blue : CrabrixTheme.amber)
+    }
+
+    private var needsSynParserFeatures: Bool {
+        manifest?.dependencies.contains(where: { $0.name == "syn" }) == true
+            && workspace.packages.contains(where: {
+                ($0.name == "syn" || $0.name == "proc-macro2")
+                    && $0.features.contains("proc-macro")
+                    && $0.compatibility.isBlocking
+            })
     }
 
     private var packageList: some View {

@@ -290,7 +290,11 @@ actor CargoPackageManager {
             rootVersion: rootVersion.description
         ).render()
 
-        onStage?(.ready)
+        if let blocked = statuses.first(where: { $0.compatibility.isBlocking }) {
+            onStage?(.failed("\(blocked.name) \(blocked.version) cannot build with this toolchain"))
+        } else {
+            onStage?(.ready)
+        }
         return CargoWorkspaceSnapshot(
             packages: statuses,
             plan: plan,
@@ -493,6 +497,13 @@ actor CargoPackageManager {
         }
         if crate.manifest.isProcMacro {
             return .unsupported("procedural macros need a host compiler Crabrix does not bundle")
+        }
+        if ["syn", "quote", "proc-macro2"].contains(package.id.name),
+           package.features.contains("proc-macro") {
+            return .unsupported(
+                "the proc-macro feature needs Rust's host-only proc_macro library, "
+                    + "which is not in the bundled WASI sysroot; use the parser-only Cargo features"
+            )
         }
         if crate.manifest.requiresUnsupportedCrateType {
             return .unsupported(
