@@ -40,15 +40,15 @@ support pages on `crabrix.com`. The returned pages showed Academy Examples,
 toolchain `crabrix-rust-2026-10-02.1` and the course-hosting privacy copy;
 four Academy, Examples, Cyberpunk and iPad screenshot assets also returned
 200. That deployment predates the build 12 course-selection and editor changes.
-The updated site copy and screenshots are in `site/`; Lovable has not published
-them because the project ran out of credits. See the
-[build 12 manifest](releases/1.1-build12.json) for the app artifact.
-
-One hosted support FAQ still says “Crabrix 1.0” in a sentence about accounts;
-the canonical source page here uses the version-neutral wording. A follow-up
-Lovable edit was blocked when the project ran out of credits. This is a copy
-discrepancy, not a change in account behavior. The inactive Cloudflare Worker
-must not be deployed to bypass Lovable.
+On 5 October, the five changed 1.1 pages were reconciled in the Lovable
+project at edit commit `35da85d10bdeb41f6b84aef3da6ab051a3d7e621`.
+Reading the project files confirmed the optional Apple Game Center wording in
+the home, privacy and support pages; the project reports a successful build.
+Publishing was requested, but the deployment API returned `pending` and a
+fresh public readback is not yet recorded. The local `site/screenshots/` files
+were refreshed from build 22; the hosted image optimization assets still need
+separate reconciliation. The inactive Cloudflare Worker is not a deployment
+fallback.
 
 **crabrix.com serves Lovable** and is Active and primary in Lovable. The four
 principal pages named above were fetched after the 2 October deployment;
