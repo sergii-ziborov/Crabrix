@@ -1,10 +1,12 @@
 # Crabrix 1.1 App Store copy
 
-This is the proposed App Store copy for 1.1 (22). Game Center is optional and
+This is the proposed App Store copy for 1.1 (23). Game Center is optional and
 off by default. All 17 iPhone and iPad screenshots were recaptured from the
-Release Simulator build, uploaded or retained by matching digest, and verified
-in display order, including Profile with the new switch. See the [release
-manifest](../releases/1.1-build22.json) and [screenshot evidence](asset-upload-2026-10-05-build22.json).
+1.1 (22) Release Simulator build, uploaded or retained by matching digest, and
+verified in display order, including Profile with Game Center off. Build 23
+changes Game Center submission and the signed-in explanation, which these
+screenshots do not show. See the build 22 [release manifest](../releases/1.1-build22.json)
+and [screenshot evidence](asset-upload-2026-10-05-build22.json).
 The en-US description and promotional text below were saved in App Store
 Connect and read back for the 1.1 draft. Before App Review, review the App
 Privacy questionnaire and test Game Center sign-in and score submission on a
@@ -55,14 +57,16 @@ MAKE IT YOURS
 Choose Auto, Light, Dark, or a Cyberpunk appearance across the app. Optional
 Face ID or device-passcode protection locks the workspace when you leave it.
 Rating and achievements are earned on the device. In Profile, you can opt in
-to Apple Game Center to share your numeric rating on its leaderboard and progress for all 37 achievement ladders. Turn it off at any time without losing local progress.
+to Apple Game Center to share your numeric rating on its leaderboard, progress
+for all 37 achievement ladders, and ten earlier individual milestones. Turn it
+off at any time without losing local progress.
 Practice does not use Health or Energy limits.
 
 PRIVACY AND OFFLINE USE
 Projects, notes, detailed course progress, and compiler output stay local unless
 you choose to export or share them. Optional Game Center sends only the rating
-and achievement ladder progress to Apple; Crabrix runs no online account
-or leaderboard service. It has no analytics SDK or advertising.
+and achievement ladder progress plus ten earlier milestones to Apple; Crabrix
+runs no online account or leaderboard service. It has no analytics SDK or advertising.
 Course downloads, crates.io packages, and GitHub imports use network requests;
 the hosts may keep ordinary access logs. After course material and required
 dependencies are prepared, learning and compilation can work offline.
@@ -74,8 +78,9 @@ purchase; no subscription or in-app purchase is required.
 
 ## Reviewer path
 
-Use [review-notes.txt](review-notes.txt) with screenshots captured from the
-exact release candidate. The historical 1.0 screenshots are not 1.1 evidence.
+Use [review-notes.txt](review-notes.txt) with the verified 1.1 build 22
+screenshots. Build 23 changes achievement submission and signed-in copy, which
+those screenshots do not depict. The historical 1.0 screenshots are not 1.1 evidence.
 
 ## What to test in TestFlight
 

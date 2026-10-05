@@ -1,4 +1,4 @@
-Crabrix 1.1 Game Center candidate — update build number after signed archive.
+Crabrix 1.1 (23) Game Center candidate.
 
 Crabrix is a native Rust development and learning environment. No account or
 subscription is needed. The compiler, WebAssembly runtime, and WASI sysroot
@@ -42,8 +42,9 @@ paths are separate. There is no cloud compilation, required login, analytics
 SDK, or upload of user projects and detailed course progress. Course, crate,
 and GitHub downloads make ordinary HTTPS requests to their respective hosts.
 Profile has an off-by-default Game Center switch. If enabled, Crabrix submits
-only the local numeric rating and ten selected achievements to Apple's Game
-Center. There is no Crabrix account or proprietary online leaderboard. Switching
+the local numeric rating, progress for all 37 five-tier achievement ladders,
+and the ten previously published individual milestones to Apple's Game Center.
+There is no Crabrix account or proprietary online leaderboard. Switching
 it off stops future submissions and preserves local progress; Apple may retain
 scores already submitted. The leaderboard and achievement screens are Apple's.
 
@@ -55,6 +56,6 @@ or create a remote account.
 This build bundles the signed source-built Crabrix Rust toolchain
 `crabrix-rust-2026-10-02.1`, prepared from pinned sources and verified on the
 build Mac. The public CrabrixRuntime fork is based on WasmKit 0.4.1. Its iPhone
-and iPad screenshots currently in App Store Connect were captured from the 1.1
-(19) Release Simulator app on 3 October 2026. The Game Center candidate needs
-a new Profile screenshot and signed physical-device testing before App Review submission.
+and iPad screenshots currently in App Store Connect were refreshed from the 1.1
+(22) Release Simulator app on 5 October 2026, including Profile with Game Center
+off. Signed physical-device Game Center testing remains before App Review submission.
