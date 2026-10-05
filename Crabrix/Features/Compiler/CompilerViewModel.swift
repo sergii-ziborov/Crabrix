@@ -1206,7 +1206,7 @@ final class CompilerViewModel: ObservableObject {
               var path = normalizedProjectPath(rawPath, defaultRoot: "src")
         else { return false }
         if (path as NSString).pathExtension.isEmpty { path += ".rs" }
-        guard fileContents[path] == nil else {
+        guard canCreateProjectFile(at: path) else {
             projectTransfer = .failed("\(path) already exists.")
             return false
         }
@@ -1217,12 +1217,27 @@ final class CompilerViewModel: ObservableObject {
     }
 
     @discardableResult
+    func createTextFile(at rawPath: String) -> Bool {
+        guard !isBusy, !isProjectOperationInProgress,
+              let path = normalizedProjectPath(rawPath, defaultRoot: "src")
+        else { return false }
+        guard canCreateProjectFile(at: path) else {
+            projectTransfer = .failed("\(path) conflicts with an existing file or folder.")
+            return false
+        }
+
+        addProjectFile(path: path, source: "")
+        projectTransfer = .ready("Created \(path).")
+        return true
+    }
+
+    @discardableResult
     func createModuleFolder(at rawPath: String) -> Bool {
         guard !isBusy, !isProjectOperationInProgress,
               let folder = normalizedProjectPath(rawPath, defaultRoot: "src")
         else { return false }
         let path = "\(folder)/mod.rs"
-        guard fileContents[path] == nil else {
+        guard canCreateProjectFile(at: path) else {
             projectTransfer = .failed("\(folder) already contains mod.rs.")
             return false
         }
@@ -1231,6 +1246,15 @@ final class CompilerViewModel: ObservableObject {
         addProjectFile(path: path, source: "// \(moduleName) module\n")
         projectTransfer = .ready("Created \(folder) with mod.rs.")
         return true
+    }
+
+    private func canCreateProjectFile(at path: String) -> Bool {
+        let folded = path.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
+        return !fileContents.keys.contains { existing in
+            let current = existing.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
+            return current == folded || current.hasPrefix(folded + "/")
+                || folded.hasPrefix(current + "/")
+        }
     }
 
     @discardableResult

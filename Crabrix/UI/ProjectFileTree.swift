@@ -4,6 +4,9 @@ struct ProjectFileTree: View {
     let paths: [String]
     let selectedPath: String
     let onSelect: (String) -> Void
+    let onNewRustFileIn: (String) -> Void
+    let onNewTextFileIn: (String) -> Void
+    let onNewFolderIn: (String) -> Void
 
     private var nodes: [ProjectTreeNode] {
         ProjectTreeNode.build(paths: paths)
@@ -12,7 +15,12 @@ struct ProjectFileTree: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
             ForEach(nodes) { node in
-                ProjectTreeBranch(node: node, selectedPath: selectedPath, onSelect: onSelect)
+                ProjectTreeBranch(
+                    node: node, selectedPath: selectedPath, onSelect: onSelect,
+                    onNewRustFileIn: onNewRustFileIn,
+                    onNewTextFileIn: onNewTextFileIn,
+                    onNewFolderIn: onNewFolderIn
+                )
             }
         }
     }
@@ -22,6 +30,9 @@ private struct ProjectTreeBranch: View {
     let node: ProjectTreeNode
     let selectedPath: String
     let onSelect: (String) -> Void
+    let onNewRustFileIn: (String) -> Void
+    let onNewTextFileIn: (String) -> Void
+    let onNewFolderIn: (String) -> Void
     @State private var isExpanded = true
 
     var body: some View {
@@ -29,17 +40,51 @@ private struct ProjectTreeBranch: View {
             DisclosureGroup(isExpanded: $isExpanded) {
                 VStack(alignment: .leading, spacing: 3) {
                     ForEach(node.children) { child in
-                        ProjectTreeBranch(node: child, selectedPath: selectedPath, onSelect: onSelect)
+                        ProjectTreeBranch(
+                            node: child, selectedPath: selectedPath, onSelect: onSelect,
+                            onNewRustFileIn: onNewRustFileIn,
+                            onNewTextFileIn: onNewTextFileIn,
+                            onNewFolderIn: onNewFolderIn
+                        )
                     }
                 }
                 .padding(.leading, 12)
             } label: {
-                Label(node.name, systemImage: isExpanded ? "folder.fill" : "folder")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(CrabrixTheme.blue)
-                    .padding(.vertical, 5)
+                HStack(spacing: 5) {
+                    Label(node.name, systemImage: isExpanded ? "folder.fill" : "folder")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(CrabrixTheme.blue)
+                    Spacer(minLength: 2)
+                    Menu {
+                        Button { onNewRustFileIn(node.path) } label: {
+                            Label("New Rust File", systemImage: "doc.badge.plus")
+                        }
+                        Button { onNewTextFileIn(node.path) } label: {
+                            Label("New File", systemImage: "doc.badge.plus")
+                        }
+                        Button { onNewFolderIn(node.path) } label: {
+                            Label("New Module Folder", systemImage: "folder.badge.plus")
+                        }
+                    } label: {
+                        Image(systemName: "plus.circle")
+                            .foregroundStyle(CrabrixTheme.mint)
+                    }
+                    .accessibilityLabel("Add inside \(node.name)")
+                }
+                .padding(.vertical, 5)
             }
             .tint(CrabrixTheme.muted)
+            .contextMenu {
+                Button { onNewRustFileIn(node.path) } label: {
+                    Label("New Rust File Here", systemImage: "doc.badge.plus")
+                }
+                Button { onNewTextFileIn(node.path) } label: {
+                    Label("New File Here", systemImage: "doc.badge.plus")
+                }
+                Button { onNewFolderIn(node.path) } label: {
+                    Label("New Module Folder Here", systemImage: "folder.badge.plus")
+                }
+            }
         } else {
             Button {
                 onSelect(node.path)

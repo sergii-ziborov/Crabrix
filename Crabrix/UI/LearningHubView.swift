@@ -67,7 +67,11 @@ struct LearningHubView: View {
                 } else {
                     examplesSnapshot = nil
                 }
-                if case let .lesson(lessonID) = path.last {
+                let lessonID = path.compactMap { route -> String? in
+                    if case let .lesson(id) = route { return id }
+                    return nil
+                }.last
+                if let lessonID {
                     if lessonSession?.lessonID != lessonID,
                        let repository = academy.repository {
                         lessonSession = CourseSession(lessonID: lessonID, repository: repository)
@@ -184,11 +188,14 @@ struct LearningHubView: View {
                     onComplete: {
                         completeAndContinue(from: lesson)
                     },
+                    onShowAchievements: {
+                        navigationPath.append(.profile)
+                    },
                     onAnswer: { index, correct in
                         onAnswerLesson(lesson, index, correct)
                     }
                 )
-                .id(session.token)
+                .id(lesson.id)
             } else {
                 ContentUnavailableView("Lesson unavailable", systemImage: "book.closed")
             }

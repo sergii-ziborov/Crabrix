@@ -17,6 +17,7 @@ enum LessonNavigationFooterVisibility {
 }
 
 struct LessonDetailView: View {
+    @EnvironmentObject private var progress: CrabrixProgressStore
     let lesson: RustLesson
     let writing: RustLessonWriting
     let lessonDepth: RustLessonDepth
@@ -24,6 +25,7 @@ struct LessonDetailView: View {
     let isCompleted: Bool
     let onStart: () -> Void
     let onComplete: () -> Void
+    let onShowAchievements: () -> Void
     /// Called once, with the first answer the reader commits to.
     var onAnswer: (Int, Bool) -> Void = { _, _ in }
 
@@ -41,6 +43,7 @@ struct LessonDetailView: View {
     /// Keeping their footer state separate prevents an action from the previous
     /// step flashing over the next one while its geometry settles.
     @State private var footerVisibility: [Int: Bool] = [:]
+    @State private var answerScrollVersion = 0
 
     private var brief: RustLessonBrief { lesson.brief(writing: writing, theme: courseTheme) }
     private var practice: RustLessonPractice { lesson.lessonPractice(writing: writing) }
@@ -53,7 +56,8 @@ struct LessonDetailView: View {
         return true
     }
     private var showsNavigationFooter: Bool {
-        page == 2 || (footerVisibility[page] ?? false)
+        page == 2 || (page == 1 && isQuickCheckAnswered)
+            || (footerVisibility[page] ?? false)
     }
 
     init(
@@ -65,6 +69,7 @@ struct LessonDetailView: View {
         savedAnswer: Int? = nil,
         onStart: @escaping () -> Void,
         onComplete: @escaping () -> Void,
+        onShowAchievements: @escaping () -> Void,
         onAnswer: @escaping (Int, Bool) -> Void = { _, _ in }
     ) {
         self.lesson = lesson
@@ -74,6 +79,7 @@ struct LessonDetailView: View {
         self.isCompleted = isCompleted
         self.onStart = onStart
         self.onComplete = onComplete
+        self.onShowAchievements = onShowAchievements
         self.onAnswer = onAnswer
         // Older installations did not persist the chosen answer. A completed
         // lesson still opens as answered, using its known correct choice.
@@ -157,6 +163,27 @@ struct LessonDetailView: View {
                     .font(.caption2.monospaced())
                     .foregroundStyle(CrabrixTheme.muted)
             }
+
+            Button(action: onShowAchievements) {
+                HStack(spacing: 6) {
+                    Image(systemName: "star.fill")
+                        .foregroundStyle(CrabrixTheme.amber)
+                    Text("\(CrabrixPointsFormatter.string(progress.state.totalPoints)) rating")
+                    Text("·")
+                    Image(systemName: "rosette")
+                        .foregroundStyle(CrabrixTheme.mint)
+                    Text("\(progress.earnedAchievements.count) achievements")
+                    Image(systemName: "chevron.right")
+                        .font(.caption2.bold())
+                }
+                .font(.caption2.weight(.semibold))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(CrabrixTheme.background.opacity(0.8), in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityLabel("Rating \(progress.state.totalPoints), \(progress.earnedAchievements.count) achievements. Open profile")
 
             HStack(spacing: 7) {
                 ForEach(0..<3, id: \.self) { index in
@@ -292,6 +319,7 @@ struct LessonDetailView: View {
             .padding(18)
             .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 18))
             .overlay { RoundedRectangle(cornerRadius: 18).stroke(CrabrixTheme.border) }
+            .id("practice-answer")
 
             // A learner who is stuck used to get the same one-line feedback
             // however often they tried. The first miss offers the lesson's own
@@ -311,6 +339,7 @@ struct LessonDetailView: View {
                     }
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
+                .id("practice-hint")
             }
 
             // Only for a learner who actually picked a wrong answer. Striking
@@ -414,6 +443,7 @@ struct LessonDetailView: View {
                 if firstWrongChoice == nil { firstWrongChoice = index }
             }
             onAnswer(index, correct)
+            answerScrollVersion += 1
         } label: {
             HStack(spacing: 12) {
                 Text(String(UnicodeScalar(65 + index)!))
@@ -497,35 +527,49 @@ struct LessonDetailView: View {
 
     private func lessonScrollPage<Content: View>(
         index: Int,
-        @ViewBuilder content: () -> Content
+        @ViewBuilder content: @escaping () -> Content
     ) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                content()
+        ScrollViewReader { reader in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    content()
+                }
+                .padding(.horizontal, 22)
+                .padding(.top, 22)
+                .padding(
+                    .bottom,
+                    22 + LessonNavigationFooterVisibility.contentBottomClearance
+                )
+                .frame(maxWidth: 760)
+                .frame(maxWidth: .infinity)
+                // Pinned to the container: a child that refuses to compress used
+                // to widen its own page, so the three steps of one lesson ended up
+                // with three different text widths.
+                .containerRelativeFrame(.horizontal)
             }
-            .padding(.horizontal, 22)
-            .padding(.top, 22)
-            .padding(
-                .bottom,
-                22 + LessonNavigationFooterVisibility.contentBottomClearance
-            )
-            .frame(maxWidth: 760)
-            .frame(maxWidth: .infinity)
-            // Pinned to the container: a child that refuses to compress used
-            // to widen its own page, so the three steps of one lesson ended up
-            // with three different text widths.
-            .containerRelativeFrame(.horizontal)
-        }
-        .onScrollGeometryChange(for: Bool.self) { geometry in
-            LessonNavigationFooterVisibility.shouldShow(
-                contentHeight: geometry.contentSize.height,
-                visibleMaxY: geometry.visibleRect.maxY,
-                containerHeight: geometry.containerSize.height
-            )
-        } action: { _, shouldShow in
-            guard footerVisibility[index] != shouldShow else { return }
-            withAnimation(.easeInOut(duration: 0.18)) {
-                footerVisibility[index] = shouldShow
+            .onChange(of: answerScrollVersion) { _, _ in
+                guard index == 1 else { return }
+                Task { @MainActor in
+                    await Task.yield()
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        reader.scrollTo(
+                            isQuickCheckAnswered ? "practice-answer" : "practice-hint",
+                            anchor: .bottom
+                        )
+                    }
+                }
+            }
+            .onScrollGeometryChange(for: Bool.self) { geometry in
+                LessonNavigationFooterVisibility.shouldShow(
+                    contentHeight: geometry.contentSize.height,
+                    visibleMaxY: geometry.visibleRect.maxY,
+                    containerHeight: geometry.containerSize.height
+                )
+            } action: { _, shouldShow in
+                guard footerVisibility[index] != shouldShow else { return }
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    footerVisibility[index] = shouldShow
+                }
             }
         }
     }
