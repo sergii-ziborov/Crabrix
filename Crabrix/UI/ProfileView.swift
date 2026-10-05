@@ -7,7 +7,7 @@ import SwiftUI
 /// The player's profile: rating and achievements.
 ///
 /// Local rating and achievements work without an account. Game Center is an
-/// optional Apple-hosted copy of selected scores and milestones.
+/// optional Apple-hosted copy of the rating and achievement ladders.
 struct ProfileView: View {
     @EnvironmentObject private var progress: CrabrixProgressStore
     @EnvironmentObject private var academy: AcademyContentStore
@@ -154,7 +154,7 @@ struct ProfileView: View {
                     .font(.subheadline.bold())
             }
             .tint(CrabrixTheme.mint)
-            .accessibilityHint("Share your rating and selected achievements with Apple's Game Center. Local progress always remains on this device.")
+            .accessibilityHint("Share your rating and achievement ladder progress with Apple's Game Center. Local progress always remains on this device.")
 
             if gameCenter.isEnabled, gameCenter.isSignedIn {
                 HStack(spacing: 10) {
@@ -172,7 +172,7 @@ struct ProfileView: View {
                     .buttonStyle(.bordered)
                 }
                 .font(.subheadline.bold())
-                Text("Your rating and selected achievements sync through Apple Game Center.")
+                Text("Your rating and achievement ladders sync through Apple Game Center.")
                     .font(.caption)
                     .foregroundStyle(CrabrixTheme.muted)
             } else if gameCenter.isEnabled {

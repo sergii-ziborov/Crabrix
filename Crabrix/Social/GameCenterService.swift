@@ -31,18 +31,81 @@ final class GameCenterService: ObservableObject {
     /// The single leaderboard the rating is submitted to.
     static let leaderboardID = "com.sergiiziborov.Crabrix.rating"
 
-    /// A stable subset of the local catalogue. Installed Atlas packs can add
-    /// more local tiers, but Game Center IDs must be configured in App Store
-    /// Connect and cannot change with downloaded course data.
+    /// The ten individual milestones already published in Game Center. Their
+    /// identifiers must stay stable for players who earned them in build 22.
     static let achievementIDs: Set<String> = [
         "builds.0", "builds.2", "lessons.0", "lessons.2", "practice.0",
         "crates.0", "rating.0", "rating.4", "algorithm-atlas.0",
         "algorithm-atlas.4"
     ]
 
+    /// Every current local ladder also has one Game Center achievement. Each
+    /// of its five local tiers advances that achievement by at least 20%. Apple
+    /// caps a game at 100 achievements, while Crabrix has 185 local tiers.
+    /// Downloaded packs cannot silently add new Game Center identifiers.
+    static let achievementFamilyIDs: Set<String> = [
+        "builds", "contribution", "lessons", "diagnostics", "practice",
+        "crates", "train-runs", "train-pairs", "train-streak", "train-speed",
+        "recall-runs", "recall-depth", "recall-lines", "typing", "rating",
+        "algorithm-atlas", "algorithm-study", "algorithm-scans",
+        "algorithm-hashing", "algorithm-ranges", "algorithm-two-pointers",
+        "algorithm-sliding-window", "algorithm-stacks-queues",
+        "algorithm-sorting-selection", "algorithm-binary-search",
+        "algorithm-linked-lists", "algorithm-trees",
+        "algorithm-heaps-streaming", "algorithm-graph-traversal",
+        "algorithm-weighted-graphs", "algorithm-backtracking",
+        "algorithm-greedy-intervals", "algorithm-dynamic-1d",
+        "algorithm-dynamic-2d", "algorithm-strings-tries",
+        "algorithm-math-bits", "algorithm-advanced-structures"
+    ]
+
     static func gameCenterAchievementID(for localID: String) -> String {
         // Game Center accepts letters, digits, underscores, and periods.
         "com.sergiiziborov.Crabrix.\(localID.replacingOccurrences(of: "-", with: "_"))"
+    }
+
+    static func gameCenterFamilyID(for familyID: String) -> String {
+        gameCenterAchievementID(for: "family.\(familyID)")
+    }
+
+    /// Preserve both measured and previously awarded tiers. Signed course
+    /// metadata can change later, but an earned local badge is never revoked.
+    static func familyProgress(_ family: CrabrixAchievementFamily,
+                               state: CrabrixProgressState) -> Double {
+        let thresholds = family.thresholds
+        guard thresholds.count == AchievementTier.allCases.count else { return 0 }
+        let current = max(0, family.measure(state))
+        var completed = -1
+        for (index, achievement) in family.achievements.enumerated() {
+            if current >= thresholds[index]
+                || state.unlockedAchievementIDs.contains(achievement.id) {
+                completed = index
+            }
+        }
+        if completed == thresholds.count - 1 { return 100 }
+        let floor = Double(completed + 1) * 20
+        let lower = completed < 0 ? 0 : thresholds[completed]
+        let upper = thresholds[completed + 1]
+        guard upper > lower else { return floor }
+        let fraction = min(1, max(0, Double(current - lower) / Double(upper - lower)))
+        return floor + fraction * 20
+    }
+
+    static func achievementProgress(state: CrabrixProgressState) -> [String: Double] {
+        var progress: [String: Double] = [:]
+        for family in CrabrixAchievementCatalog.families(for: state.achievementMethods) {
+            if achievementFamilyIDs.contains(family.id) {
+                progress[gameCenterFamilyID(for: family.id)] = familyProgress(family, state: state)
+            }
+            for achievement in family.achievements where achievementIDs.contains(achievement.id) {
+                let value = achievement.progress(state)
+                guard value.target > 0 else { continue }
+                let percent = state.unlockedAchievementIDs.contains(achievement.id)
+                    ? 100 : min(100, Double(value.current) / Double(value.target) * 100)
+                progress[gameCenterAchievementID(for: achievement.id)] = percent
+            }
+        }
+        return progress
     }
 
     @Published private(set) var isEnabled: Bool
@@ -189,12 +252,8 @@ final class GameCenterService: ObservableObject {
     }
 
     private func submitAchievements(state: CrabrixProgressState) async {
-        let pending = CrabrixAchievementCatalog.all.compactMap { achievement -> GKAchievement? in
-            guard Self.achievementIDs.contains(achievement.id) else { return nil }
-            let value = achievement.progress(state)
-            guard value.target > 0 else { return nil }
-            let percent = min(100, Double(value.current) / Double(value.target) * 100)
-            let gameCenterID = Self.gameCenterAchievementID(for: achievement.id)
+        let playerID = authenticatedPlayerID
+        let pending = Self.achievementProgress(state: state).compactMap { gameCenterID, percent -> GKAchievement? in
             guard percent > (reportedAchievementProgress[gameCenterID] ?? 0) else {
                 return nil
             }
@@ -207,7 +266,7 @@ final class GameCenterService: ObservableObject {
         guard !pending.isEmpty else { return }
         do {
             try await GKAchievement.report(pending)
-            guard isEnabled else { return }
+            guard isEnabled, authenticatedPlayerID == playerID else { return }
             for achievement in pending {
                 reportedAchievementProgress[achievement.identifier] = achievement.percentComplete
             }

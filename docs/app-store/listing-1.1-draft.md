@@ -55,14 +55,13 @@ MAKE IT YOURS
 Choose Auto, Light, Dark, or a Cyberpunk appearance across the app. Optional
 Face ID or device-passcode protection locks the workspace when you leave it.
 Rating and achievements are earned on the device. In Profile, you can opt in
-to Apple Game Center to share your numeric rating on its leaderboard and ten
-selected achievements. Turn it off at any time without losing local progress.
+to Apple Game Center to share your numeric rating on its leaderboard and progress for all 37 achievement ladders. Turn it off at any time without losing local progress.
 Practice does not use Health or Energy limits.
 
 PRIVACY AND OFFLINE USE
 Projects, notes, detailed course progress, and compiler output stay local unless
 you choose to export or share them. Optional Game Center sends only the rating
-and selected achievement milestones to Apple; Crabrix runs no online account
+and achievement ladder progress to Apple; Crabrix runs no online account
 or leaderboard service. It has no analytics SDK or advertising.
 Course downloads, crates.io packages, and GitHub imports use network requests;
 the hosts may keep ordinary access logs. After course material and required

@@ -51,6 +51,13 @@ returned 200 and their SHA-256 digests matched `site/screenshots/`; one AVIF
 variant returned 200 with the expected byte count and media type. The current
 site JavaScript bundle references the new Academy asset ID. The inactive
 Cloudflare Worker remains unused.
+On 5 October, the optional Game Center copy was updated for 37 five-tier
+achievement ladders and ten earlier individual milestones at Lovable commit
+`97c6367b97a31cdacd5db6aa56d7bdeacba58aa3`. The site build passed and
+deployment `cebc82d2-36fa-4929-a73f-e37c6dc81e59` was requested. Fresh
+`crabrix.com` requests returned HTTP 200 for the home, privacy, technology,
+and terms pages; the privacy response mentions all 37 ladders and ten
+individual milestones.
 
 **crabrix.com serves Lovable** and is Active and primary in Lovable. The four
 principal pages named above were fetched after the 2 October deployment;
