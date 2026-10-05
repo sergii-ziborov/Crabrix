@@ -244,7 +244,8 @@
     "internalBuildState": "IN_BETA_TESTING",
     "whatToTestLocalizationID": "c1d02a2a-7936-4f96-9069-e12c4613c996",
     "screenshotEvidence": "docs/app-store/asset-upload-2026-10-05-build22.json",
-    "screenshotNote": "All 17 iPhone/iPad listing screenshots were recaptured from the Release Simulator candidate, uploaded or retained by matching digest, and read back COMPLETE in display order."
+    "screenshotNote": "All 17 iPhone/iPad listing screenshots were recaptured from the Release Simulator candidate, uploaded or retained by matching digest, and read back COMPLETE in display order.",
+    "listingReadback": "en-US description (3,267 characters) and promotional text (153 characters) matched docs/app-store/listing-1.1-draft.md after update."
   },
   "verified": [
     "Xcode 27.0 stable Release Simulator build and signed iOS archive succeeded from app input b923c60.",
@@ -253,12 +254,14 @@
     "All 19 embedded compiler, sysroot, active catalog, keyring, and transition pack digests matched the pinned build 21 inputs.",
     "Apple accepted delivery 30ef153c-c295-47e7-a37a-9ce89059f164 and processed build 22 as VALID. Internal QA membership, IN_BETA_TESTING state and 3,140-character en-US What to Test text matched App Store Connect readback.",
     "All 17 iPhone and iPad App Store listing screenshots reached COMPLETE and matched the saved display order and local SHA-256 evidence.",
-    "App Store Connect Game Center 1.1 is enabled; the leaderboard, ten achievements, localized metadata, and ten achievement images were configured and images read back COMPLETE."
+    "App Store Connect Game Center 1.1 is enabled; the leaderboard, ten achievements, localized metadata, and ten achievement images were configured and images read back COMPLETE.",
+    "The 1.1 en-US App Store description and promotional text were saved and matched App Store Connect readback."
   ],
   "pending": [
     "Physical-device TestFlight verification of Apple Game Center sign-in, score and achievement submission, Apple panels, opt-out persistence and local-only fallback.",
     "Physical-device tester checks inherited from build 21: lesson feedback, nested project files, and supported syn build.",
-    "App Review submission and public App Store release."
+    "App Review submission and public App Store release.",
+    "Review App Privacy questionnaire for optional Apple Game Center before App Review."
   ],
   "gameCenter": {
     "mode": "Apple Game Center, opt-in, off by default",

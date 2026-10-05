@@ -5,8 +5,10 @@ off by default. All 17 iPhone and iPad screenshots were recaptured from the
 Release Simulator build, uploaded or retained by matching digest, and verified
 in display order, including Profile with the new switch. See the [release
 manifest](../releases/1.1-build22.json) and [screenshot evidence](asset-upload-2026-10-05-build22.json).
-Before App Review, save the final listing in App Store Connect and read it back;
-physical-device Game Center sign-in and score submission still need testing.
+The en-US description and promotional text below were saved in App Store
+Connect and read back for the 1.1 draft. Before App Review, review the App
+Privacy questionnaire and test Game Center sign-in and score submission on a
+physical device.
 
 ## Promotional text
 
