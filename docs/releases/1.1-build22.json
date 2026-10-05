@@ -17,7 +17,9 @@
     },
     "ipaBytes": 60336274,
     "ipaSHA256": "441d661fc28c0ad383c2ce48559f0d77a9fa84978443123266a06ce9e0a017fc",
-    "signingTeamID": "XMS5ZC28UJ"
+    "signingTeamID": "XMS5ZC28UJ",
+    "sourceMergeCommit": "3140124fbe12085391955d9572c8f3a1633ca03a",
+    "testFlightTag": "testflight-1.1-build22"
   },
   "runtime": {
     "repository": "https://github.com/sergii-ziborov/crabrix-runtime",
@@ -255,7 +257,10 @@
     "Apple accepted delivery 30ef153c-c295-47e7-a37a-9ce89059f164 and processed build 22 as VALID. Internal QA membership, IN_BETA_TESTING state and 3,140-character en-US What to Test text matched App Store Connect readback.",
     "All 17 iPhone and iPad App Store listing screenshots reached COMPLETE and matched the saved display order and local SHA-256 evidence.",
     "App Store Connect Game Center 1.1 is enabled; the leaderboard, ten achievements, localized metadata, and ten achievement images were configured and images read back COMPLETE.",
-    "The 1.1 en-US App Store description and promotional text were saved and matched App Store Connect readback."
+    "The 1.1 en-US App Store description and promotional text were saved and matched App Store Connect readback.",
+    "PR #60 Release checks run 37282998724 passed 444 Swift tests, 15 configuration skips, zero failures, unsigned Release build and GameKit linkage check.",
+    "Main Release checks run 37283376565 passed 444 Swift tests and 24 bundled compiler/sandbox tests, each with zero failures.",
+    "Public crabrix.com served the new Game Center copy and all ten refreshed screenshot PNGs with matching SHA-256 digests; an optimized AVIF asset returned HTTP 200."
   ],
   "pending": [
     "Physical-device TestFlight verification of Apple Game Center sign-in, score and achievement submission, Apple panels, opt-out persistence and local-only fallback.",
@@ -274,5 +279,11 @@
     "configurationSource": "docs/game-center-catalog.json",
     "releaseRecordsLive": false,
     "note": "Game Center release records are configured for 1.1 but require the normal App Review path before public release; physical signed-in TestFlight interaction remains for testers."
+  },
+  "site": {
+    "publicURL": "https://crabrix.com",
+    "copyProjectCommit": "35da85d10bdeb41f6b84aef3da6ab051a3d7e621",
+    "screenshotProjectCommit": "e0c703376a86f349791f9b8c3ee243202abb2d6c",
+    "verification": "Five pages returned HTTP 200 with Game Center wording; ten CDN PNG screenshots returned HTTP 200 and matched site/screenshots SHA-256; one optimized AVIF returned HTTP 200."
   }
 }

@@ -42,13 +42,15 @@ four Academy, Examples, Cyberpunk and iPad screenshot assets also returned
 200. That deployment predates the build 12 course-selection and editor changes.
 On 5 October, the five changed 1.1 pages were reconciled in the Lovable
 project at edit commit `35da85d10bdeb41f6b84aef3da6ab051a3d7e621`.
-Reading the project files confirmed the optional Apple Game Center wording in
-the home, privacy and support pages; the project reports a successful build.
-Publishing was requested, but the deployment API returned `pending` and a
-fresh public readback is not yet recorded. The local `site/screenshots/` files
-were refreshed from build 22; the hosted image optimization assets still need
-separate reconciliation. The inactive Cloudflare Worker is not a deployment
-fallback.
+The ten refreshed screenshot families and their AVIF/WebP variants were then
+recorded at project commit `e0c703376a86f349791f9b8c3ee243202abb2d6c`.
+The project build passed and publishing was requested. Fresh public HTTPS
+reads of `crabrix.com` returned 200 for home, privacy, technology, support and
+terms, with the optional Game Center copy. All ten public CDN PNG assets
+returned 200 and their SHA-256 digests matched `site/screenshots/`; one AVIF
+variant returned 200 with the expected byte count and media type. The current
+site JavaScript bundle references the new Academy asset ID. The inactive
+Cloudflare Worker remains unused.
 
 **crabrix.com serves Lovable** and is Active and primary in Lovable. The four
 principal pages named above were fetched after the 2 October deployment;
