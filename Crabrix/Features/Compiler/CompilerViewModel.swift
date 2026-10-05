@@ -659,7 +659,11 @@ final class CompilerViewModel: ObservableObject {
         cargoWorkspace = snapshot
         resolvedManifestSource = manifestSource
         resolvedWorkspaceRevision = revision
-        cargoStage = snapshot.isEmpty ? .idle : .ready
+        if let blocked = snapshot.blockingPackages.first {
+            cargoStage = .failed("\(blocked.name) \(blocked.version) cannot build with this toolchain")
+        } else {
+            cargoStage = snapshot.isEmpty ? .idle : .ready
+        }
         return snapshot
     }
 
@@ -1275,6 +1279,38 @@ final class CompilerViewModel: ObservableObject {
     }
 
     @discardableResult
+    func useSynParserFeatures() -> Bool {
+        guard !isBusy, !isProjectOperationInProgress,
+              let manifest = cargoManifestSource else { return false }
+        do {
+            let updated = try CargoManifestEditor.usingSynParserFeatures(manifest)
+            guard updated != manifest else {
+                projectTransfer = .failed("Open Cargo.toml to edit this custom syn dependency.")
+                return false
+            }
+            resetDiagnosticAdvice()
+            fileContents[selectedFile] = source
+            fileContents["Cargo.toml"] = updated
+            if selectedFile == "Cargo.toml" {
+                source = updated
+            } else {
+                workspaceDidChange()
+            }
+            result = nil
+            lastBuild = nil
+            compatibilityReport = ProjectCompatibilityReport.scan(currentProject())
+            projectTransfer = .ready("syn now uses parser features supported by the local compiler.")
+            let project = currentProject()
+            Task { await remember(project, lastBuild: nil) }
+            refreshCargoWorkspace()
+            return true
+        } catch {
+            projectTransfer = .failed("Could not update Cargo.toml: \(error.localizedDescription)")
+            return false
+        }
+    }
+
+    @discardableResult
     func removeCargoDependency(name: String) -> Bool {
         guard !isBusy, !isProjectOperationInProgress,
               let manifest = cargoManifestSource,
@@ -1756,7 +1792,9 @@ final class CompilerViewModel: ObservableObject {
         requirement: String
     ) -> String {
         var lines = manifest.components(separatedBy: "\n")
-        let dependencyLine = "\(name) = \"\(requirement)\""
+        let dependencyLine = CargoManifestEditor.localCompilerDeclaration(
+            name: name, requirement: requirement
+        )
 
         guard let sectionStart = lines.firstIndex(where: {
             $0.trimmingCharacters(in: .whitespaces) == "[dependencies]"

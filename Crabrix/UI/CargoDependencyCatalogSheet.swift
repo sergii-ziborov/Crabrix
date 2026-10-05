@@ -369,6 +369,12 @@ private struct CratePackageView: View {
 
     private var addBar: some View {
         VStack(spacing: 6) {
+            if CargoManifestEditor.hasLocalCompilerProfile(name: model.crate.name) {
+                Text("Uses a WASI-compatible feature set without the host-only proc-macro API. The choice is saved in Cargo.toml.")
+                    .font(.caption2)
+                    .foregroundStyle(CrabrixTheme.muted)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
             if let validationMessage {
                 Label(validationMessage, systemImage: "exclamationmark.triangle.fill")
                     .font(.caption)

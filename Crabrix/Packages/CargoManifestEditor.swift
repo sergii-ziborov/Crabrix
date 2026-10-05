@@ -1,6 +1,49 @@
 import Foundation
 
 enum CargoManifestEditor {
+    /// These libraries expose useful parsing/token APIs on WASI without the
+    /// host-only proc_macro crate. Write the choice into Cargo.toml so the
+    /// dependency graph remains explicit and reproducible.
+    static func localCompilerDeclaration(name: String, requirement: String) -> String {
+        switch name {
+        case "syn":
+            return "syn = { version = \"\(requirement)\", default-features = false, features = [\"derive\", \"parsing\", \"printing\", \"clone-impls\"] }"
+        case "quote", "proc-macro2":
+            return "\(name) = { version = \"\(requirement)\", default-features = false }"
+        default:
+            return "\(name) = \"\(requirement)\""
+        }
+    }
+
+    static func hasLocalCompilerProfile(name: String) -> Bool {
+        name == "syn" || name == "quote" || name == "proc-macro2"
+    }
+
+    /// Repairs a pre-existing plain `syn = "…"` entry without rewriting the
+    /// rest of the user's manifest. Explicit feature selections are preserved.
+    static func usingSynParserFeatures(_ source: String) throws -> String {
+        let manifest = try CratePackageManifest.parse(source)
+        guard let dependency = manifest.dependencies.first(where: {
+            $0.kind == .normal && $0.alias == "syn" && $0.packageName == "syn"
+                && $0.isRegistry && !$0.isOptional && $0.usesDefaultFeatures
+                && $0.features.isEmpty
+        }), let requirement = dependency.requirementText,
+              !requirement.contains("\"")
+        else { return source }
+
+        guard let statement = try TOMLParser.statements(in: source).first(where: {
+            $0.path == ["dependencies", "syn"] && $0.valueRange != nil
+        }), let range = statement.valueRange else { return source }
+        var characters = Array(source)
+        let declaration = localCompilerDeclaration(name: "syn", requirement: requirement)
+        guard let value = declaration.split(separator: "=", maxSplits: 1).last?
+            .trimmingCharacters(in: .whitespaces) else { return source }
+        characters.replaceSubrange(range, with: value)
+        let updated = String(characters)
+        _ = try CratePackageManifest.parse(updated)
+        return updated
+    }
+
     /// Removes a direct dependency by its Cargo alias, without rewriting the
     /// rest of the manifest or deleting cached sources shared by other projects.
     static func removingDependency(_ alias: String, from source: String) throws -> String {

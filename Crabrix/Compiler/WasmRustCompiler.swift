@@ -700,9 +700,17 @@ final class WasmRustCompiler: @unchecked Sendable {
     }
 
     /// Picks the first `error: …` line out of raw rustc output.
-    private static func firstErrorLine(in stderr: String) -> String? {
+    static func firstErrorLine(in stderr: String) -> String? {
         for line in stderr.split(whereSeparator: \.isNewline) {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.hasPrefix("{"), let data = trimmed.data(using: .utf8),
+               let object = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+               object["level"] as? String == "error",
+               let message = object["message"] as? String {
+                let code = (object["code"] as? [String: Any])?["code"] as? String
+                let prefix = code.map { "error[\($0)]" } ?? "error"
+                return String("\(prefix): \(message)".prefix(500))
+            }
             guard trimmed.hasPrefix("error") else { continue }
             return String(trimmed.prefix(240))
         }
@@ -724,7 +732,9 @@ final class WasmRustCompiler: @unchecked Sendable {
             exitCode: nil,
             diagnostics: [],
             stdout: "",
-            stderr: stderr,
+            // rustc emits JSON Lines for dependency diagnostics. The Output
+            // tab should show a readable error instead of a raw JSON object.
+            stderr: Self.firstErrorLine(in: stderr) ?? detail,
             duration: started.duration(to: clock.now),
             detail: "\(unit.package.name) \(unit.package.version) did not build: \(detail)"
         )

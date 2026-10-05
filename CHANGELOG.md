@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1 (21) — 2026-10-04
+
+- Add a parser-only Cargo feature profile when `syn`, `quote`, or `proc-macro2` is selected from the package catalog. The explicit manifest setting avoids the host-only `proc_macro` dependency on iPhone.
+- Offer a one-tap repair for existing plain `syn` dependencies. Block incompatible package graphs before invoking rustc and show a readable dependency error in Output.
+- Verify `syn 3.0.6` and its four-crate graph with a real bundled compiler Run on the iOS Simulator.
+
 ## 1.1 (20) — 2026-10-03
 
 - Show the full project-specific guide on each of the 46 Code Examples pages before the source preview. Four examples include original local diagrams with captions and alternative text.
