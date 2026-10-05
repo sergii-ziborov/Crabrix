@@ -241,8 +241,8 @@
     <div class="callout">
       <p><strong>The short version.</strong> Crabrix has no required account or in-app analytics SDK.
       Your code, projects, answers, and course progress stay on your device. If you switch
-      on Game Center in Profile, Crabrix sends your numeric rating and selected achievement
-      milestones to Apple for its leaderboard and achievements. It is off by default;
+      on Game Center in Profile, Crabrix sends your numeric rating and achievement ladder
+      progress to Apple for its leaderboard and achievements. It is off by default;
       Crabrix has no online account or board of its own. Other network requests are
       requested course downloads, package discovery and downloads, and repository imports. If you write to
       support &mdash; including through <em>Report a problem</em> &mdash; that email
@@ -258,15 +258,15 @@
     </p>
 
     <h2>What stays on your device</h2>
-    <p>These items are stored locally. Only the numeric rating and selected achievement
-      milestones are sent to Apple if you enable Game Center:</p>
+    <p>These items are stored locally. Only the numeric rating and achievement ladder
+      progress are sent to Apple if you enable Game Center:</p>
     <ul>
       <li><strong>Your Rust code and projects</strong> &mdash; files you write, import from
         GitHub, or open from the Files app.</li>
       <li><strong>Build output</strong> &mdash; compiler diagnostics, program stdout and stderr,
         and cached build artifacts.</li>
       <li><strong>Learning progress</strong> &mdash; lessons completed, answers, topic mastery,
-        rating and achievements. Game Center receives only the optional subset described below.</li>
+        rating and achievements. Game Center receives the numeric rating and achievement ladder progress described below.</li>
       <li><strong>Preferences</strong> &mdash; appearance, editor font size, and the rest of
         Settings.</li>
       <li><strong>Optional profile photo</strong> &mdash; chosen through the system photo
@@ -330,7 +330,7 @@
     <p>
       Profile has an off-by-default Game Center switch. If you turn it on and sign in
       with Apple Game Center, Crabrix sends your numeric rating to Apple's global
-      leaderboard and progress for ten selected achievements. Apple supplies the player
+      leaderboard and progress for all 37 achievement ladders and ten previously published individual milestones. Apple supplies the player
       identity and may display your Game Center name and photo in its own interface.
       Crabrix does not send source code, project files, lesson answers, detailed course
       history, or your locally chosen profile photo. It has no leaderboard or account

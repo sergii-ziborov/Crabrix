@@ -104,7 +104,37 @@ final class CrabrixProgressStoreTests: XCTestCase {
 
         let knownIDs = Set(CrabrixAchievementCatalog.all.map(\.id))
         XCTAssertTrue(GameCenterService.achievementIDs.isSubset(of: knownIDs))
-        XCTAssertLessThanOrEqual(GameCenterService.achievementIDs.count, 100)
+        let categories = AlgorithmCourseCatalog.categories
+        var state = CrabrixProgressState()
+        state.achievementMethods = categories.map { category in
+            AlgorithmMethodDTO(
+                id: category.id, title: category.title, subtitle: category.subtitle,
+                systemImage: category.systemImage,
+                achievementTitle: category.achievementTitle,
+                patternIDs: category.patterns.map(\.id)
+            )
+        }
+        let families = CrabrixAchievementCatalog.families(for: state.achievementMethods)
+        XCTAssertEqual(families.count, 37)
+        XCTAssertEqual(families.flatMap(\.achievements).count, 185)
+        XCTAssertEqual(GameCenterService.achievementFamilyIDs, Set(families.map(\.id)))
+        XCTAssertLessThanOrEqual(
+            GameCenterService.achievementIDs.count + GameCenterService.achievementFamilyIDs.count,
+            100
+        )
+        XCTAssertEqual(GameCenterService.achievementProgress(state: state).count, 47)
+        state.buildsSucceeded = 10
+        XCTAssertEqual(
+            GameCenterService.achievementProgress(state: state)[
+                GameCenterService.gameCenterFamilyID(for: "builds")
+            ], 40
+        )
+        state.unlockedAchievementIDs.insert("builds.2")
+        XCTAssertGreaterThanOrEqual(
+            GameCenterService.achievementProgress(state: state)[
+                GameCenterService.gameCenterFamilyID(for: "builds")
+            ] ?? 0, 60
+        )
         XCTAssertEqual(
             GameCenterService.gameCenterAchievementID(for: "algorithm-atlas.0"),
             "com.sergiiziborov.Crabrix.algorithm_atlas.0"

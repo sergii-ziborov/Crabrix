@@ -1,0 +1,481 @@
+{
+  "achievementCount": 47,
+  "achievements": [
+    {
+      "achievementID": "779e2620-559d-44c2-885d-3fe5475709a7",
+      "imageID": "f37aaa60-1e37-46b5-80ed-9be74114f1da",
+      "imageState": "COMPLETE",
+      "key": "builds.0",
+      "localizationID": "953f7e3b-320a-46e7-bf46-981de07b89a3",
+      "points": 10,
+      "releaseID": "25ed5ceb-fe88-4220-ad47-773ff0ffb61d",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.builds.0"
+    },
+    {
+      "achievementID": "6ab2e447-98e5-4853-a658-4d8f16af79bd",
+      "imageID": "1a46a555-38ac-4b59-bc88-ac4986f30ebd",
+      "imageState": "COMPLETE",
+      "key": "builds.2",
+      "localizationID": "420becd6-69d0-4481-8660-25b7ae7b57a0",
+      "points": 10,
+      "releaseID": "a9ef1989-2bbe-4b09-aa4e-22b461c34b1c",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.builds.2"
+    },
+    {
+      "achievementID": "bf1a7d4c-a152-49d2-9da5-e3565a67e400",
+      "imageID": "1c562bf7-6f6c-4dcf-a10e-5e7219b298e7",
+      "imageState": "COMPLETE",
+      "key": "lessons.0",
+      "localizationID": "3f803fc3-e6f7-4c83-b8ef-ac41a7a6a99a",
+      "points": 10,
+      "releaseID": "413da7a1-8fd3-4585-8343-7678ec7f8804",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.lessons.0"
+    },
+    {
+      "achievementID": "a705cd75-3457-4047-98fa-38b9d9ea0fa4",
+      "imageID": "be4f91fe-93e7-4f3b-9ef7-a65fd5026a0e",
+      "imageState": "COMPLETE",
+      "key": "lessons.2",
+      "localizationID": "1e964158-fc25-47b9-ae27-e9a41716223c",
+      "points": 10,
+      "releaseID": "c37f1b19-444c-416a-9e26-8a0349ce14c0",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.lessons.2"
+    },
+    {
+      "achievementID": "9d2b7565-7ade-4da0-8cbc-ec05cc63c726",
+      "imageID": "232fd016-3fd9-4ec3-bc76-a21de967b922",
+      "imageState": "COMPLETE",
+      "key": "practice.0",
+      "localizationID": "d5766c40-3d2a-463e-9691-45ecd4a2bf2a",
+      "points": 10,
+      "releaseID": "b4e8e25a-d93f-4dd4-823a-a19f4d4c02bb",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.practice.0"
+    },
+    {
+      "achievementID": "9fddd215-5b57-4808-a248-077ff54d4071",
+      "imageID": "87eee00d-a311-4845-9985-3236c84578f3",
+      "imageState": "COMPLETE",
+      "key": "crates.0",
+      "localizationID": "f2ae8d9e-ae3c-4c35-b9d3-d3cf37cc3f52",
+      "points": 10,
+      "releaseID": "787591a6-7e41-4e17-a0a8-9741588a2554",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.crates.0"
+    },
+    {
+      "achievementID": "4b2ce0f4-8316-49cf-a8ec-67c93b9f6135",
+      "imageID": "2a7eafff-7dd5-4ad1-8713-22a3b12c1402",
+      "imageState": "COMPLETE",
+      "key": "rating.0",
+      "localizationID": "d854cd7d-5d1f-4c2f-8176-597f2b2a3e33",
+      "points": 10,
+      "releaseID": "577b5ec4-cf1d-4df5-8c6d-54c537f2197c",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.rating.0"
+    },
+    {
+      "achievementID": "4985dd09-2d29-4326-a844-5d9c94f354be",
+      "imageID": "fbece843-3ff6-4141-808a-084dd7d54a11",
+      "imageState": "COMPLETE",
+      "key": "rating.4",
+      "localizationID": "78c4e6cc-1452-4bb2-96c7-ac73b57d1199",
+      "points": 10,
+      "releaseID": "e78429b9-4c88-4109-b1f4-5ed72e565ea0",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.rating.4"
+    },
+    {
+      "achievementID": "60832322-1357-40b8-beb4-a7ee94e4b687",
+      "imageID": "5f9bf5bb-8f09-4077-a659-fbd8f0f78098",
+      "imageState": "COMPLETE",
+      "key": "algorithm-atlas.0",
+      "localizationID": "fc290168-3406-4944-b515-79ff1129d997",
+      "points": 10,
+      "releaseID": "8e4f6d9b-ea1c-48b1-8e09-880f1e0b127d",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.algorithm_atlas.0"
+    },
+    {
+      "achievementID": "99438be9-bca1-4462-bd00-9e18fb1bb475",
+      "imageID": "cbf22720-47d7-4d02-9f51-2ff687b25583",
+      "imageState": "COMPLETE",
+      "key": "algorithm-atlas.4",
+      "localizationID": "0f8bf639-b867-4e24-9554-a5ba27e6390b",
+      "points": 10,
+      "releaseID": "f75ec153-832a-45fd-a32d-5c2458ebfa67",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.algorithm_atlas.4"
+    },
+    {
+      "achievementID": "8f974eb5-754f-4ffd-9e58-36367b88f384",
+      "imageID": "2a63904d-03a9-4ed8-ad0c-4bbf8c4c6d19",
+      "imageState": "COMPLETE",
+      "key": "family.builds",
+      "localizationID": "86f5b17d-ea67-4acf-adaa-4ebaa1eb4a3b",
+      "points": 10,
+      "releaseID": "4111833f-0da7-4910-a2a2-7e3b725a087a",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.builds"
+    },
+    {
+      "achievementID": "a48670c2-f54c-46a5-a14a-478ff5dbbcef",
+      "imageID": "0b44c06e-43a5-4185-8e4a-e4c386ce91d3",
+      "imageState": "COMPLETE",
+      "key": "family.contribution",
+      "localizationID": "9b91ad90-7191-435f-b7d2-6e66c584bd48",
+      "points": 10,
+      "releaseID": "4e51ebcc-3771-415d-b2b3-c37f86155dbf",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.contribution"
+    },
+    {
+      "achievementID": "02622f00-efa0-4682-9ddf-f09cbbf9f58d",
+      "imageID": "c80feddd-2811-4135-8778-430dec5e6bfa",
+      "imageState": "COMPLETE",
+      "key": "family.lessons",
+      "localizationID": "3e5c5956-06e6-4ada-a300-8dc854a1ce65",
+      "points": 10,
+      "releaseID": "5cafb921-80c2-43bc-8642-6b87f02f06a9",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.lessons"
+    },
+    {
+      "achievementID": "4da0b7e7-a1c1-4935-a5af-f31a623e4577",
+      "imageID": "c9142d89-b4fd-4e69-a4c6-54c9b52aaf87",
+      "imageState": "COMPLETE",
+      "key": "family.diagnostics",
+      "localizationID": "7f3fb482-5a76-4c0f-8616-75a8aa4728ee",
+      "points": 10,
+      "releaseID": "0bf2875f-7d4f-4e8a-9d97-8898d5c14f27",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.diagnostics"
+    },
+    {
+      "achievementID": "e2719900-1135-48de-843f-50b465e80f1a",
+      "imageID": "5b3b64a1-6091-4f65-a490-e639e414681d",
+      "imageState": "COMPLETE",
+      "key": "family.practice",
+      "localizationID": "05101548-2ce2-47c9-96c3-1eb3e774a0e6",
+      "points": 10,
+      "releaseID": "96a27188-e288-4dd7-b811-3a2c528b7794",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.practice"
+    },
+    {
+      "achievementID": "8084634f-380a-4689-b658-5fe1a3c10057",
+      "imageID": "8ed4a2ea-3fc0-4d34-9177-46275fed5e2c",
+      "imageState": "COMPLETE",
+      "key": "family.crates",
+      "localizationID": "7707cc3e-4f4e-4fa4-8259-0311556fe816",
+      "points": 10,
+      "releaseID": "9a39fc0c-628c-41b8-8417-cfae1b30ca24",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.crates"
+    },
+    {
+      "achievementID": "08f48f76-4387-43b9-a3f6-086cb8532e66",
+      "imageID": "cea3bafb-76fa-42df-bb52-464cab10aa4a",
+      "imageState": "COMPLETE",
+      "key": "family.train-runs",
+      "localizationID": "dd075f22-386a-4927-8562-6a71886ffd41",
+      "points": 10,
+      "releaseID": "8d857658-4181-48e3-bd32-285163366b12",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.train_runs"
+    },
+    {
+      "achievementID": "ec157075-2a2e-4a0e-979a-6207d6c3e349",
+      "imageID": "0e5d34bb-8585-4eec-8c0a-1fe0cd3a117f",
+      "imageState": "COMPLETE",
+      "key": "family.train-pairs",
+      "localizationID": "edf7304d-23b2-455e-b057-26815a41cc70",
+      "points": 10,
+      "releaseID": "eabfa0bd-8acf-41b9-9fed-1070d29526b9",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.train_pairs"
+    },
+    {
+      "achievementID": "ad3c1096-2ca9-4006-a850-17ef2ce27a48",
+      "imageID": "4c8d03c9-1cb7-476b-aad6-94dab1b70e01",
+      "imageState": "COMPLETE",
+      "key": "family.train-streak",
+      "localizationID": "56f5d78b-1d83-464b-8f4f-4f11f8576e16",
+      "points": 10,
+      "releaseID": "cfda98ff-6364-4f77-847d-40c673b962f8",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.train_streak"
+    },
+    {
+      "achievementID": "22dd2dfc-1f71-46e5-9a80-973354fd938e",
+      "imageID": "da9d571f-c1f0-40e4-8163-58f8c9a427b3",
+      "imageState": "COMPLETE",
+      "key": "family.train-speed",
+      "localizationID": "3e54b08c-9d11-42d1-83ca-ae30f0283790",
+      "points": 10,
+      "releaseID": "058cf282-87ff-422f-9dd8-846c4242345e",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.train_speed"
+    },
+    {
+      "achievementID": "ad5a324e-0aaa-481b-8e25-088671eb720d",
+      "imageID": "53e7fa4e-4aaf-404a-84ff-be70ec546824",
+      "imageState": "COMPLETE",
+      "key": "family.recall-runs",
+      "localizationID": "d8281297-17c3-4064-b4d8-5398ba949eb9",
+      "points": 10,
+      "releaseID": "46d7a744-6d66-43a8-abfc-a00e3eaabef2",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.recall_runs"
+    },
+    {
+      "achievementID": "6f571abd-0a1a-4a83-b323-f828f526e0d0",
+      "imageID": "e6382a83-ef97-4512-a2e6-bdee7181df61",
+      "imageState": "COMPLETE",
+      "key": "family.recall-depth",
+      "localizationID": "b25d6d4a-ca66-42b9-bd47-5ff2872dd474",
+      "points": 10,
+      "releaseID": "c27ddc34-b679-4250-a5ad-920be025a9c9",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.recall_depth"
+    },
+    {
+      "achievementID": "747755ec-e4f3-4388-9871-426c18dc2cef",
+      "imageID": "2841a11e-da6f-441a-b679-d8d3b86ed5a6",
+      "imageState": "COMPLETE",
+      "key": "family.recall-lines",
+      "localizationID": "3b69634e-a1c9-4b00-bb3d-20ed8393ff39",
+      "points": 10,
+      "releaseID": "6cdccc0a-5aea-4c57-b6c2-75572290ae7e",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.recall_lines"
+    },
+    {
+      "achievementID": "0326155e-151c-4d6c-8055-2101a75c5a31",
+      "imageID": "a42d7ad3-b7b5-4072-93cc-074cdd735246",
+      "imageState": "COMPLETE",
+      "key": "family.typing",
+      "localizationID": "04e93361-be3b-45a5-8e05-ae5500428f08",
+      "points": 10,
+      "releaseID": "3d933116-4f4f-4575-b6a2-cdcbebf40e54",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.typing"
+    },
+    {
+      "achievementID": "e1a3e59e-4f99-4ee0-96ab-341873d92911",
+      "imageID": "f030110e-2b74-4fb9-9a0f-79139ef44332",
+      "imageState": "COMPLETE",
+      "key": "family.rating",
+      "localizationID": "90117ffc-0563-43c8-9072-ad85954cfd1c",
+      "points": 10,
+      "releaseID": "e0e911d0-02e2-4413-b275-9db062d53f4d",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.rating"
+    },
+    {
+      "achievementID": "195c8df9-f85a-4d41-a918-63b2e4e86758",
+      "imageID": "a048524b-9f12-4cf7-84bd-23ca7fc1437c",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-atlas",
+      "localizationID": "9af28a85-6948-48dd-a049-4979812cc10a",
+      "points": 10,
+      "releaseID": "0dad39c2-6dae-4092-be24-c546a2bbce3b",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_atlas"
+    },
+    {
+      "achievementID": "0f97d816-9d29-4a57-877b-1aa6601499e8",
+      "imageID": "4799311b-b500-462a-b8b0-64e808a433e1",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-study",
+      "localizationID": "ac88fb9d-4db2-47f3-860b-136e1ee7c947",
+      "points": 10,
+      "releaseID": "0a6ce980-2d06-4b5f-a0ba-1ceee080c32f",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_study"
+    },
+    {
+      "achievementID": "4dab7cec-c1f2-4c1d-a489-a0710b0e9d01",
+      "imageID": "4f58e070-8a28-4c21-b204-3cadbc8e3024",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-advanced-structures",
+      "localizationID": "69add9d4-7fc7-4257-90de-3d8d99bab4bf",
+      "points": 10,
+      "releaseID": "bf72375f-d08a-425c-99d8-8a4c55ecd1fd",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_advanced_structures"
+    },
+    {
+      "achievementID": "e6d8748d-5e82-414f-a903-9da1d0b3c5c6",
+      "imageID": "8c8cd5cf-800e-4c4a-a4fd-237e2f4ef0c2",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-backtracking",
+      "localizationID": "903e80eb-a129-4594-bf6c-2b806d9be393",
+      "points": 10,
+      "releaseID": "a805d089-150f-430c-a6ec-61057be6c2e7",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_backtracking"
+    },
+    {
+      "achievementID": "d33d1a38-5494-4e19-86da-bfcb68799d76",
+      "imageID": "c8cffc5f-3c9c-4403-b422-f580aeb23ef7",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-binary-search",
+      "localizationID": "c20b0904-018b-464b-8f7f-7d74e2f77b1b",
+      "points": 10,
+      "releaseID": "48aba553-eb5b-4c69-b100-ce5ad5ecf0ac",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_binary_search"
+    },
+    {
+      "achievementID": "e5fe31e9-f8b1-4eaf-861d-30060cf79e67",
+      "imageID": "5043ddba-b528-405e-a5d2-17b1df83c81b",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-dynamic-1d",
+      "localizationID": "7807e249-70f0-48ca-bff6-b7dd20a46519",
+      "points": 10,
+      "releaseID": "ed28f71e-1be8-4126-999d-b0a22a58d0d8",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_dynamic_1d"
+    },
+    {
+      "achievementID": "92dabc67-0eb9-413d-bd4e-b4ff166edfa4",
+      "imageID": "9191e30c-ab1e-456b-bb93-5df07f30c077",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-dynamic-2d",
+      "localizationID": "d5c17af0-7096-489a-89c8-4474c7ee4d71",
+      "points": 10,
+      "releaseID": "87cddf6a-c0d5-44a6-bad9-dc8134f821c3",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_dynamic_2d"
+    },
+    {
+      "achievementID": "b22a6cf9-78c2-4f9d-bbfc-2fcde0b2052c",
+      "imageID": "34f039c4-02a3-46be-ac90-84d45467bbf7",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-graph-traversal",
+      "localizationID": "1b85ca59-8cc7-45bc-9bab-0ad740a2bb0c",
+      "points": 10,
+      "releaseID": "afaa4fd1-5d89-4e04-8652-2ebf5f28d6e7",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_graph_traversal"
+    },
+    {
+      "achievementID": "a4011f1c-31cc-48e5-b25d-925efadfaad3",
+      "imageID": "fb48c016-3517-4b1d-a769-50fd72d88480",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-greedy-intervals",
+      "localizationID": "dda92bf5-32fb-4459-b0fd-a3d94f0c5bdf",
+      "points": 10,
+      "releaseID": "366ac727-2fa4-48de-aad0-dc77c5427185",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_greedy_intervals"
+    },
+    {
+      "achievementID": "150723a8-0c55-4da8-ad7d-d0fd91847b03",
+      "imageID": "b1cf0a86-41ab-4fbd-9fd2-c7888cd21074",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-hashing",
+      "localizationID": "7992ac87-1d36-491f-a084-a95070d04d36",
+      "points": 10,
+      "releaseID": "2b90366c-4e0c-4599-aa5e-5dbbd6cc480b",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_hashing"
+    },
+    {
+      "achievementID": "d1ac8f32-09ff-4888-9b5b-fcfc2b5a3c38",
+      "imageID": "1ab85cb5-17f1-468f-b6a5-3baefcdd4d5e",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-heaps-streaming",
+      "localizationID": "ff124f27-293b-4439-9c74-a63a59011496",
+      "points": 10,
+      "releaseID": "d22ab16c-5299-4cca-9ab4-f2acc1adcea4",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_heaps_streaming"
+    },
+    {
+      "achievementID": "392fa964-e512-42c2-9d83-4d7fe9731eb4",
+      "imageID": "20ab0ee2-ae43-4fd9-ab16-ee693070400f",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-linked-lists",
+      "localizationID": "f9f932aa-7573-4577-b899-d12897b8af7e",
+      "points": 10,
+      "releaseID": "e57b50e5-cc00-4c55-9f86-400076b511b6",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_linked_lists"
+    },
+    {
+      "achievementID": "a32e1501-b0f8-4ee5-a501-a69846e74b26",
+      "imageID": "4a815319-351b-4f8a-bd47-66ce04792645",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-math-bits",
+      "localizationID": "3068d02f-751e-46b5-a206-a07170770f75",
+      "points": 10,
+      "releaseID": "7345efcf-34eb-437f-869a-edddb1f0fb62",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_math_bits"
+    },
+    {
+      "achievementID": "0f6c1f03-013c-4313-81f3-0dbffb80ff82",
+      "imageID": "c0f582ee-6332-4a29-b9e9-0efa204b2b6c",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-ranges",
+      "localizationID": "2fb9bc65-4c41-4bbc-913d-1cb08a7cee0b",
+      "points": 10,
+      "releaseID": "fb1dd933-203d-46e9-ba28-d50f5ba06b0a",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_ranges"
+    },
+    {
+      "achievementID": "e7c51e8c-5cd7-4369-886e-d90eb1862ff1",
+      "imageID": "2c67148f-6ea3-4411-942a-58f7e6158ef2",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-scans",
+      "localizationID": "56a400eb-85dd-4ff8-b229-ea2e374b6776",
+      "points": 10,
+      "releaseID": "d1cec4ff-d084-433e-8650-8d42c8031429",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_scans"
+    },
+    {
+      "achievementID": "e6e6e4fe-6c6c-474d-afdc-1d5def5580c8",
+      "imageID": "83f9cf4a-e135-4f3e-94f7-470ef2e602fe",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-sliding-window",
+      "localizationID": "40646658-eaa5-44e0-a8bf-9a9c1a1d209a",
+      "points": 10,
+      "releaseID": "5c778bea-4747-42a7-ba96-d990c9ebd6c8",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_sliding_window"
+    },
+    {
+      "achievementID": "683c4788-e231-49c7-9dce-522261ee5e02",
+      "imageID": "9b435644-691d-464d-85f0-1d40e89c4e21",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-sorting-selection",
+      "localizationID": "d866b4aa-2c8a-4c19-aedb-7dc292bf3ae7",
+      "points": 10,
+      "releaseID": "85947f6b-f989-4fde-97b5-8b436e4ac8d0",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_sorting_selection"
+    },
+    {
+      "achievementID": "e71e3ae9-593a-4203-ad82-46b9183a783f",
+      "imageID": "4a0d1f2e-6a38-4ffc-ac07-04c8118c8e1c",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-stacks-queues",
+      "localizationID": "41ecb103-a48e-432b-9aa6-03302f542af6",
+      "points": 10,
+      "releaseID": "8ad22b61-8588-468a-b3f3-a2cb1b7962da",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_stacks_queues"
+    },
+    {
+      "achievementID": "4bcbf898-4e4f-4d7f-b0ba-c33ff546e18d",
+      "imageID": "1c71ee82-ee6d-4601-a5a9-1ef23c93bda1",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-strings-tries",
+      "localizationID": "d92a84df-a9cf-47ac-99e8-87d6ab692e86",
+      "points": 10,
+      "releaseID": "dee26200-1065-469e-a5b4-6a01148c51df",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_strings_tries"
+    },
+    {
+      "achievementID": "4269eff3-5f55-4f12-9cc0-7acc29418891",
+      "imageID": "c5c89ffa-bc88-4180-9041-e60ca5c56002",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-trees",
+      "localizationID": "2cdbdad9-ba79-41e6-8051-7ddc3e6932ed",
+      "points": 10,
+      "releaseID": "9f0bf920-e7fa-4e75-8e7d-11f36bf0c5fb",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_trees"
+    },
+    {
+      "achievementID": "4124ed84-1c7b-4a66-9b6e-ac0f68781b5d",
+      "imageID": "8b6fe9a7-32c1-4db8-a7ae-132e00911fdb",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-two-pointers",
+      "localizationID": "701a4db5-7ae1-4166-8c3f-a97789e7e391",
+      "points": 10,
+      "releaseID": "a4b6fbb6-1ce2-4317-879c-2a9d28ef863e",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_two_pointers"
+    },
+    {
+      "achievementID": "1a320f67-4104-48c0-9154-0dd8bf3abbd0",
+      "imageID": "6239fbb9-9f7a-4ef6-bfc5-84c1970106cf",
+      "imageState": "COMPLETE",
+      "key": "family.algorithm-weighted-graphs",
+      "localizationID": "85fac556-f4da-478e-80d4-1fdac6ba0e48",
+      "points": 10,
+      "releaseID": "1d8ecf88-ea8a-4387-9b9c-9acecf3e3e4a",
+      "vendorIdentifier": "com.sergiiziborov.Crabrix.family.algorithm_weighted_graphs"
+    }
+  ],
+  "appStoreAppId": "6809502653",
+  "familyAchievementCount": 37,
+  "gameCenterDetailId": "7575900e-ade8-462e-aa17-a1c9a7e18e9c",
+  "legacyIndividualCount": 10,
+  "localAchievementTiers": 185,
+  "totalGameCenterPoints": 470
+}

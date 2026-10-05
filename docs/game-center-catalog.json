@@ -11,15 +11,334 @@
     "submissionType": "BEST_SCORE"
   },
   "achievements": [
-    {"localID":"builds.0","title":"First Run","before":"Run a Rust program locally.","after":"You ran your first Rust program in Crabrix.","points":10},
-    {"localID":"builds.2","title":"50 Runs","before":"Complete 50 successful local runs.","after":"You completed 50 successful local Rust runs.","points":10},
-    {"localID":"lessons.0","title":"First Lesson","before":"Complete your first Rust lesson.","after":"You completed your first Rust lesson.","points":10},
-    {"localID":"lessons.2","title":"25 Lessons","before":"Complete 25 Rust lessons.","after":"You completed 25 Rust lessons.","points":10},
-    {"localID":"practice.0","title":"Practice Passed","before":"Pass a Rust practice round.","after":"You passed a Rust practice round.","points":10},
-    {"localID":"crates.0","title":"First Crate","before":"Compile a supported crates.io package on device.","after":"You compiled a crates.io package on device.","points":10},
-    {"localID":"rating.0","title":"Builder Rank","before":"Reach 2,000 rating points.","after":"You reached Builder rank at 2,000 points.","points":10},
-    {"localID":"rating.4","title":"Core Contributor","before":"Reach 50,000 rating points.","after":"You reached Core Contributor rank.","points":10},
-    {"localID":"algorithm-atlas.0","title":"First Pattern","before":"Master an Algorithm Atlas pattern.","after":"You mastered your first Algorithm Atlas pattern.","points":10},
-    {"localID":"algorithm-atlas.4","title":"Atlas Master","before":"Master 200 Algorithm Atlas patterns.","after":"You mastered all 200 Algorithm Atlas patterns.","points":10}
+    {
+      "localID": "builds.0",
+      "title": "First Run",
+      "before": "Run a Rust program locally.",
+      "after": "You ran your first Rust program in Crabrix.",
+      "points": 10
+    },
+    {
+      "localID": "builds.2",
+      "title": "50 Runs",
+      "before": "Complete 50 successful local runs.",
+      "after": "You completed 50 successful local Rust runs.",
+      "points": 10
+    },
+    {
+      "localID": "lessons.0",
+      "title": "First Lesson",
+      "before": "Complete your first Rust lesson.",
+      "after": "You completed your first Rust lesson.",
+      "points": 10
+    },
+    {
+      "localID": "lessons.2",
+      "title": "25 Lessons",
+      "before": "Complete 25 Rust lessons.",
+      "after": "You completed 25 Rust lessons.",
+      "points": 10
+    },
+    {
+      "localID": "practice.0",
+      "title": "Practice Passed",
+      "before": "Pass a Rust practice round.",
+      "after": "You passed a Rust practice round.",
+      "points": 10
+    },
+    {
+      "localID": "crates.0",
+      "title": "First Crate",
+      "before": "Compile a supported crates.io package on device.",
+      "after": "You compiled a crates.io package on device.",
+      "points": 10
+    },
+    {
+      "localID": "rating.0",
+      "title": "Builder Rank",
+      "before": "Reach 2,000 rating points.",
+      "after": "You reached Builder rank at 2,000 points.",
+      "points": 10
+    },
+    {
+      "localID": "rating.4",
+      "title": "Core Contributor",
+      "before": "Reach 50,000 rating points.",
+      "after": "You reached Core Contributor rank.",
+      "points": 10
+    },
+    {
+      "localID": "algorithm-atlas.0",
+      "title": "First Pattern",
+      "before": "Master an Algorithm Atlas pattern.",
+      "after": "You mastered your first Algorithm Atlas pattern.",
+      "points": 10
+    },
+    {
+      "localID": "algorithm-atlas.4",
+      "title": "Atlas Master",
+      "before": "Master 200 Algorithm Atlas patterns.",
+      "after": "You mastered all 200 Algorithm Atlas patterns.",
+      "points": 10
+    },
+    {
+      "familyID": "builds",
+      "title": "It Compiles",
+      "before": "Complete all five It Compiles milestones in Crabrix.",
+      "after": "You completed all five It Compiles milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "contribution",
+      "title": "Real Work",
+      "before": "Complete all five Real Work milestones in Crabrix.",
+      "after": "You completed all five Real Work milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "lessons",
+      "title": "Coursework",
+      "before": "Complete all five Coursework milestones in Crabrix.",
+      "after": "You completed all five Coursework milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "diagnostics",
+      "title": "Borrow Checker Whisperer",
+      "before": "Complete all five Borrow Checker Whisperer milestones in Crabrix.",
+      "after": "You completed all five Borrow Checker Whisperer milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "practice",
+      "title": "Practice Makes Compilers",
+      "before": "Complete all five Practice Makes Compilers milestones in Crabrix.",
+      "after": "You completed all five Practice Makes Compilers milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "crates",
+      "title": "Dependency Wrangler",
+      "before": "Complete all five Dependency Wrangler milestones in Crabrix.",
+      "after": "You completed all five Dependency Wrangler milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "train-runs",
+      "title": "All Connected",
+      "before": "Complete all five All Connected milestones in Crabrix.",
+      "after": "You completed all five All Connected milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "train-pairs",
+      "title": "Vocabulary Drilled",
+      "before": "Complete all five Vocabulary Drilled milestones in Crabrix.",
+      "after": "You completed all five Vocabulary Drilled milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "train-streak",
+      "title": "Perfect Chain",
+      "before": "Complete all five Perfect Chain milestones in Crabrix.",
+      "after": "You completed all five Perfect Chain milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "train-speed",
+      "title": "Quick Recall",
+      "before": "Complete all five Quick Recall milestones in Crabrix.",
+      "after": "You completed all five Quick Recall milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "recall-runs",
+      "title": "Photographic",
+      "before": "Complete all five Photographic milestones in Crabrix.",
+      "after": "You completed all five Photographic milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "recall-depth",
+      "title": "Deep Recall",
+      "before": "Complete all five Deep Recall milestones in Crabrix.",
+      "after": "You completed all five Deep Recall milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "recall-lines",
+      "title": "Total Recall",
+      "before": "Complete all five Total Recall milestones in Crabrix.",
+      "after": "You completed all five Total Recall milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "typing",
+      "title": "Written by Hand",
+      "before": "Complete all five Written by Hand milestones in Crabrix.",
+      "after": "You completed all five Written by Hand milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "rating",
+      "title": "Rising Rustacean",
+      "before": "Complete all five Rising Rustacean milestones in Crabrix.",
+      "after": "You completed all five Rising Rustacean milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-atlas",
+      "title": "Algorithm Atlas",
+      "before": "Complete all five Algorithm Atlas milestones in Crabrix.",
+      "after": "You completed all five Algorithm Atlas milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-study",
+      "title": "Pattern Study",
+      "before": "Complete all five Pattern Study milestones in Crabrix.",
+      "after": "You completed all five Pattern Study milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-advanced-structures",
+      "title": "Structure Master",
+      "before": "Complete all five Structure Master milestones in Crabrix.",
+      "after": "You completed all five Structure Master milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-backtracking",
+      "title": "Search Sculptor",
+      "before": "Complete all five Search Sculptor milestones in Crabrix.",
+      "after": "You completed all five Search Sculptor milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-binary-search",
+      "title": "Search Cartographer",
+      "before": "Complete all five Search Cartographer milestones in Crabrix.",
+      "after": "You completed all five Search Cartographer milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-dynamic-1d",
+      "title": "DP Builder",
+      "before": "Complete all five DP Builder milestones in Crabrix.",
+      "after": "You completed all five DP Builder milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-dynamic-2d",
+      "title": "DP Navigator",
+      "before": "Complete all five DP Navigator milestones in Crabrix.",
+      "after": "You completed all five DP Navigator milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-graph-traversal",
+      "title": "Graph Explorer",
+      "before": "Complete all five Graph Explorer milestones in Crabrix.",
+      "after": "You completed all five Graph Explorer milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-greedy-intervals",
+      "title": "Greedy Strategist",
+      "before": "Complete all five Greedy Strategist milestones in Crabrix.",
+      "after": "You completed all five Greedy Strategist milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-hashing",
+      "title": "Hash Navigator",
+      "before": "Complete all five Hash Navigator milestones in Crabrix.",
+      "after": "You completed all five Hash Navigator milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-heaps-streaming",
+      "title": "Heap Keeper",
+      "before": "Complete all five Heap Keeper milestones in Crabrix.",
+      "after": "You completed all five Heap Keeper milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-linked-lists",
+      "title": "Link Wrangler",
+      "before": "Complete all five Link Wrangler milestones in Crabrix.",
+      "after": "You completed all five Link Wrangler milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-math-bits",
+      "title": "Bit Alchemist",
+      "before": "Complete all five Bit Alchemist milestones in Crabrix.",
+      "after": "You completed all five Bit Alchemist milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-ranges",
+      "title": "Range Architect",
+      "before": "Complete all five Range Architect milestones in Crabrix.",
+      "after": "You completed all five Range Architect milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-scans",
+      "title": "Scan Specialist",
+      "before": "Complete all five Scan Specialist milestones in Crabrix.",
+      "after": "You completed all five Scan Specialist milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-sliding-window",
+      "title": "Window Watcher",
+      "before": "Complete all five Window Watcher milestones in Crabrix.",
+      "after": "You completed all five Window Watcher milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-sorting-selection",
+      "title": "Sorting Smith",
+      "before": "Complete all five Sorting Smith milestones in Crabrix.",
+      "after": "You completed all five Sorting Smith milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-stacks-queues",
+      "title": "Stack Tactician",
+      "before": "Complete all five Stack Tactician milestones in Crabrix.",
+      "after": "You completed all five Stack Tactician milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-strings-tries",
+      "title": "String Detective",
+      "before": "Complete all five String Detective milestones in Crabrix.",
+      "after": "You completed all five String Detective milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-trees",
+      "title": "Tree Climber",
+      "before": "Complete all five Tree Climber milestones in Crabrix.",
+      "after": "You completed all five Tree Climber milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-two-pointers",
+      "title": "Pointer Pilot",
+      "before": "Complete all five Pointer Pilot milestones in Crabrix.",
+      "after": "You completed all five Pointer Pilot milestones in Crabrix.",
+      "points": 10
+    },
+    {
+      "familyID": "algorithm-weighted-graphs",
+      "title": "Route Engineer",
+      "before": "Complete all five Route Engineer milestones in Crabrix.",
+      "after": "You completed all five Route Engineer milestones in Crabrix.",
+      "points": 10
+    }
   ]
 }

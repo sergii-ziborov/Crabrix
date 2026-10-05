@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render Crabrix's ten distinct 1024 px Game Center achievement badges."""
+"""Render the published 1024 px Game Center achievement badges."""
 
 import json
 import math
@@ -29,7 +29,7 @@ def render(local_id, index):
     d = ImageDraw.Draw(image)
     palette = ["#FF654F", "#F7C44B", "#60D7AB", "#38C6D6", "#EE5B98",
                "#A788F1", "#F09747", "#F4D85A", "#5BC9FF", "#70DEBE"]
-    accent = palette[index]
+    accent = palette[index % len(palette)]
     d.rounded_rectangle((72*s, 72*s, 952*s, 952*s), radius=180*s,
                         fill="#10283A", outline="#294355", width=10*s)
     d.ellipse((155*s, 155*s, 869*s, 869*s), outline=accent, width=22*s)
@@ -50,7 +50,13 @@ def render(local_id, index):
         y = (SIZE*s - (box[3]-box[1])) / 2 - box[1] - 22*s
         d.text((x, y), value, fill=accent, font=font)
 
-    if local_id == "builds.0":
+    if local_id.startswith("family."):
+        initials = "".join(part[0] for part in local_id[7:].split("-") if part)[:3].upper()
+        label(initials, 200 if len(initials) > 2 else 270)
+        small = ImageFont.truetype(str(FONT), 58*s)
+        d.text((512*s, 745*s), "I · II · III · IV · V", fill=accent,
+               anchor="mm", font=small)
+    elif local_id == "builds.0":
         d.rounded_rectangle((340*s, 335*s, 685*s, 690*s), radius=65*s,
                             outline=accent, width=38*s)
         d.polygon([(450*s, 418*s), (450*s, 610*s), (605*s, 512*s)], fill=accent)
@@ -103,7 +109,8 @@ def render(local_id, index):
 def main():
     DEST.mkdir(parents=True, exist_ok=True)
     for index, achievement in enumerate(CATALOG["achievements"]):
-        render(achievement["localID"], index)
+        identifier = achievement.get("localID") or "family." + achievement["familyID"]
+        render(identifier, index)
 
 
 if __name__ == "__main__":
