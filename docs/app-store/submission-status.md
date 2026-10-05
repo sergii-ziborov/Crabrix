@@ -1,4 +1,12 @@
-> Current status — 2 October 2026: **1.1 (12)** was archived and exported with
+> Current status — 5 October 2026: **1.1 (21)** is **VALID** and
+> **IN_BETA_TESTING** in TestFlight Internal QA. The signed IPA, Apple
+> validation, upload, saved What to Test, and tester-group membership were
+> verified. [The build manifest](../releases/1.1-build21.json) and
+> [validation record](../VALIDATION.md) identify the exact source and artifact.
+> Physical-device tester results are pending. This build has **not** been
+> submitted for App Review.
+
+> Earlier status — 2 October 2026: **1.1 (12)** was archived and exported with
 > stable Xcode 27.0 (27A266a). Apple validation and upload succeeded. App Store
 > Connect processed it as **VALID** and **IN_BETA_TESTING** for Internal QA;
 > its What to Test was saved and read back. The 1.1 English listing and all 14
