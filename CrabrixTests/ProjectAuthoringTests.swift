@@ -27,7 +27,7 @@ final class ProjectAuthoringTests: XCTestCase {
         XCTAssertNotNil(files["src/ui/mod.rs"])
     }
 
-    func testCreatesNestedFilesAndFoldersWithoutClobberingExistingPaths() {
+    func testCreatesNestedFilesAndFoldersWithoutClobberingExistingPaths() async throws {
         let model = CompilerViewModel()
         model.createProject(name: "nested-tree", template: .empty)
 
@@ -37,10 +37,19 @@ final class ProjectAuthoringTests: XCTestCase {
         XCTAssertFalse(model.createTextFile(at: "src/ui/widgets"))
         XCTAssertFalse(model.createModuleFolder(at: "docs/guides/README.md/other"))
 
-        let files = model.exportProject().files
+        let project = model.exportProject()
+        let files = project.files
         XCTAssertNotNil(files["src/ui/widgets/mod.rs"])
         XCTAssertNotNil(files["src/ui/widgets/button.rs"])
         XCTAssertEqual(files["docs/guides/README.md"], "")
+
+        let root = FileManager.default.temporaryDirectory
+            .appending(path: "nested-project-test-\(UUID().uuidString)", directoryHint: .isDirectory)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = ProjectStore(rootURL: root)
+        try await store.save(project: project, lastBuild: nil)
+        let reopened = try await store.project(id: project.id)
+        XCTAssertEqual(reopened?.project.files, files)
     }
 
     func testProjectTemplatesProvideDistinctRunnableLayouts() {
