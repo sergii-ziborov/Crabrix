@@ -10,8 +10,10 @@
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
 
-	<!-- Production 1.0 excludes Game Center and online boards. No
-	     profile, score, analytics, or source code is collected by this build. -->
+	<!-- Optional Game Center reports a numeric score and selected achievement
+	     milestones directly to Apple after player opt-in. Crabrix operates no
+	     account, board, or analytics server and collects no app data itself.
+	     Apple service data follows Apple's privacy terms. -->
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array/>
 

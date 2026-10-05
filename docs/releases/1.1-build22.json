@@ -1,0 +1,278 @@
+{
+  "schemaVersion": 1,
+  "release": {
+    "version": "1.1",
+    "build": "22",
+    "channel": "TestFlight Internal QA"
+  },
+  "app": {
+    "repository": "https://github.com/sergii-ziborov/Crabrix",
+    "buildInputCommit": "b923c607246b024f6a52872d7a8c0768939c9c58",
+    "buildInputNote": "The signed archive was built from the same app inputs later committed as b923c60. Evidence commits after this do not change archived app inputs.",
+    "bundleID": "com.sergiiziborov.Crabrix",
+    "configuration": "Release",
+    "xcode": {
+      "version": "27.0",
+      "build": "27A266a"
+    },
+    "ipaBytes": 60336274,
+    "ipaSHA256": "441d661fc28c0ad383c2ce48559f0d77a9fa84978443123266a06ce9e0a017fc",
+    "signingTeamID": "XMS5ZC28UJ"
+  },
+  "runtime": {
+    "repository": "https://github.com/sergii-ziborov/crabrix-runtime",
+    "revision": "d996f0d11dff54734b5670d58062e22c6e01f949",
+    "upstream": "swiftwasm/WasmKit 0.4.1",
+    "upstreamCommit": "a0471eaee817c523b8023d8ebb1c70ff70b7950a"
+  },
+  "bundledToolchain": {
+    "toolchainID": "crabrix-rust-2026-10-02.1",
+    "target": "wasm32-wasip1",
+    "rustVersion": "1.96.0-dev",
+    "rustcSHA256": "0286dc52064283ef78ba153a554d86ae742e6c8cd638aea8662e07d3529233fc",
+    "sysrootArchiveSHA256": "085fece5602fdd3af4efde3e08388090928c33b03fc874d99aba741a0b85283b",
+    "sysrootManifestSHA256": "4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c",
+    "lockSHA256": "caa4865ec549854d13fb0f0eaa040255c66ce8f353662fa3db4955df89b88cc7",
+    "origin": "Signed source-built Crabrix release toolchain-2026-10-02.1; built from source input 079b2dabbac02f8e5de452765c4bb89e0c4fc6ff.",
+    "releaseURL": "https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1",
+    "sourceLockSHA256": "7c44029b80757b80fe5bfb54614bc09e967917506bc28a275dc694eb404bf97a",
+    "descriptorSHA256": "aa73af686793a6242e3b084207cb94b2edf2b49031cad9756c9d590091c922e7",
+    "descriptorKeyID": "crabrix-toolchain-2026-10"
+  },
+  "courseCatalog": {
+    "repository": "https://github.com/sergii-ziborov/crabrix-courses",
+    "repositoryCommit": "92d623b9e80e8d7e489ddf0b2563b7d1426b0e88",
+    "releaseTag": "coursepack-v1.0.4",
+    "releaseTagCommit": "3f9688ea76b6a47b543d37cfa9d7b02c0bb9c22f",
+    "publicCatalogURL": "https://raw.githubusercontent.com/sergii-ziborov/crabrix-courses/main/catalog.v1.json",
+    "catalogSHA256": "e71ad29795afeae3aef4f7dc0848c77909026266f7e7a1f362b10abe21be604c",
+    "sequence": 5,
+    "signedKeyID": "crabrix-course-2026-10",
+    "transitionPacks": [
+      {
+        "courseID": "algorithms",
+        "language": "en",
+        "contentVersion": "1.0.1",
+        "descriptorSHA256": "5311a9874d788c6ac9ffec3edc73bbbc377d5abb012d5e4712c1f2ecd8e21505",
+        "archiveSHA256": "50877cc9eb94c9443d5690eb309361793ac5ad904640b2e98d96f07d922212fa",
+        "archiveBytes": 3871076
+      },
+      {
+        "courseID": "basics",
+        "language": "en",
+        "contentVersion": "1.0.1",
+        "descriptorSHA256": "c253894278b404fb7cd2258f687c3432317d04012d957ebbf8ca82ee21999e04",
+        "archiveSHA256": "8498d05c7b52dc205b05911ff5981d019707b67c529467414ed5b07ed50ec51d",
+        "archiveBytes": 105555
+      },
+      {
+        "courseID": "concurrency",
+        "language": "en",
+        "contentVersion": "1.0.1",
+        "descriptorSHA256": "e6c5b53974f898cd79dc44c8ea1f235779f97527be60209103fde2cc8d25fffa",
+        "archiveSHA256": "b12c89976e26160345420bd2b95b29d62e8f1e455a1dffee24557e1f52ee7980",
+        "archiveBytes": 55296
+      },
+      {
+        "courseID": "interview",
+        "language": "en",
+        "contentVersion": "1.0.1",
+        "descriptorSHA256": "add6f32c56f62ea3080d93fb56383db294f96d1f99da36a93f468fce361b11e8",
+        "archiveSHA256": "7b54a3f4a8837b7822ffbc6ff36207eec46dfacc6804f896eec44ac282ede9ab",
+        "archiveBytes": 155587
+      },
+      {
+        "courseID": "ownership",
+        "language": "en",
+        "contentVersion": "1.0.1",
+        "descriptorSHA256": "3cfca80fcb76286808ee22fe7ed1366a1fce73688b64c6688ace704ae89a4c0a",
+        "archiveSHA256": "8a9f26fa8f9c60e213cc52f31af0b14974c9999fddfcfe4cbd5778c64b88d942",
+        "archiveBytes": 105091
+      },
+      {
+        "courseID": "projects",
+        "language": "en",
+        "contentVersion": "1.0.1",
+        "descriptorSHA256": "15a05aba1a08ac5f576e3e088036a61a23219e30c7001463e82435ffa8de4f5e",
+        "archiveSHA256": "e4636c190ac7a10b7c8f2f9e2571b98f2e46b49d03fff21f03bd49567ac767aa",
+        "archiveBytes": 197284
+      },
+      {
+        "courseID": "systems",
+        "language": "en",
+        "contentVersion": "1.0.1",
+        "descriptorSHA256": "1f12345dfb6fed1f884d48388c904aed90840f9eddeeb58f273c250f094162b8",
+        "archiveSHA256": "076c2cabaa1297da71a983f35ac006ef9644fd667c69690cb5e9e52facd1ac40",
+        "archiveBytes": 55375
+      }
+    ],
+    "availablePacks": [
+      {
+        "archiveBytes": 3871076,
+        "archiveSHA256": "50877cc9eb94c9443d5690eb309361793ac5ad904640b2e98d96f07d922212fa",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/algorithms-1.0.1.zip",
+        "contentVersion": "1.0.1",
+        "courseID": "algorithms",
+        "descriptorSHA256": "5311a9874d788c6ac9ffec3edc73bbbc377d5abb012d5e4712c1f2ecd8e21505",
+        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/algorithms.descriptor.json",
+        "language": "en",
+        "minimumAppVersion": "1.1",
+        "requiredCapabilities": [
+          "coursepack-v1"
+        ]
+      },
+      {
+        "archiveBytes": 105555,
+        "archiveSHA256": "8498d05c7b52dc205b05911ff5981d019707b67c529467414ed5b07ed50ec51d",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/basics-1.0.1.zip",
+        "contentVersion": "1.0.1",
+        "courseID": "basics",
+        "descriptorSHA256": "c253894278b404fb7cd2258f687c3432317d04012d957ebbf8ca82ee21999e04",
+        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/basics.descriptor.json",
+        "language": "en",
+        "minimumAppVersion": "1.1",
+        "requiredCapabilities": [
+          "coursepack-v1"
+        ]
+      },
+      {
+        "archiveBytes": 55296,
+        "archiveSHA256": "b12c89976e26160345420bd2b95b29d62e8f1e455a1dffee24557e1f52ee7980",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/concurrency-1.0.1.zip",
+        "contentVersion": "1.0.1",
+        "courseID": "concurrency",
+        "descriptorSHA256": "e6c5b53974f898cd79dc44c8ea1f235779f97527be60209103fde2cc8d25fffa",
+        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/concurrency.descriptor.json",
+        "language": "en",
+        "minimumAppVersion": "1.1",
+        "requiredCapabilities": [
+          "coursepack-v1"
+        ]
+      },
+      {
+        "archiveBytes": 5420774,
+        "archiveSHA256": "1ee0d024f47935fb17a1e3c9a4751c00a13cffc7a68283ad03841350b5172458",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/examples-1.0.2.zip",
+        "contentVersion": "1.0.2",
+        "courseID": "examples",
+        "descriptorSHA256": "8757e74c6586194e45745798842bda6a688b46ac91d5223f9c8ed2ba53e821d1",
+        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/examples.descriptor.json",
+        "language": "en",
+        "minimumAppVersion": "1.1",
+        "requiredCapabilities": [
+          "coursepack-v1",
+          "examples-gallery-v1"
+        ]
+      },
+      {
+        "archiveBytes": 155587,
+        "archiveSHA256": "7b54a3f4a8837b7822ffbc6ff36207eec46dfacc6804f896eec44ac282ede9ab",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/interview-1.0.1.zip",
+        "contentVersion": "1.0.1",
+        "courseID": "interview",
+        "descriptorSHA256": "add6f32c56f62ea3080d93fb56383db294f96d1f99da36a93f468fce361b11e8",
+        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/interview.descriptor.json",
+        "language": "en",
+        "minimumAppVersion": "1.1",
+        "requiredCapabilities": [
+          "coursepack-v1"
+        ]
+      },
+      {
+        "archiveBytes": 105091,
+        "archiveSHA256": "8a9f26fa8f9c60e213cc52f31af0b14974c9999fddfcfe4cbd5778c64b88d942",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/ownership-1.0.1.zip",
+        "contentVersion": "1.0.1",
+        "courseID": "ownership",
+        "descriptorSHA256": "3cfca80fcb76286808ee22fe7ed1366a1fce73688b64c6688ace704ae89a4c0a",
+        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/ownership.descriptor.json",
+        "language": "en",
+        "minimumAppVersion": "1.1",
+        "requiredCapabilities": [
+          "coursepack-v1"
+        ]
+      },
+      {
+        "archiveBytes": 70828,
+        "archiveSHA256": "ca545a8fe691f0d3fa59e35522d63afeb0d1238371cfbadd532f67a27cf5dc1d",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/projects-1.0.2.zip",
+        "contentVersion": "1.0.2",
+        "courseID": "projects",
+        "descriptorSHA256": "06a0cf49eaa656fc5a268c1e38a363e819a0826dadcb9892198d3614edf55d2f",
+        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/projects.descriptor.json",
+        "language": "en",
+        "minimumAppVersion": "1.1",
+        "requiredCapabilities": [
+          "coursepack-v1"
+        ]
+      },
+      {
+        "archiveBytes": 55375,
+        "archiveSHA256": "076c2cabaa1297da71a983f35ac006ef9644fd667c69690cb5e9e52facd1ac40",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/systems-1.0.1.zip",
+        "contentVersion": "1.0.1",
+        "courseID": "systems",
+        "descriptorSHA256": "1f12345dfb6fed1f884d48388c904aed90840f9eddeeb58f273c250f094162b8",
+        "descriptorURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.4/systems.descriptor.json",
+        "language": "en",
+        "minimumAppVersion": "1.1",
+        "requiredCapabilities": [
+          "coursepack-v1"
+        ]
+      }
+    ],
+    "transitionPacksNote": "Seven original 1.0.1 packs remain bundled for legacy offline migration. Fresh installs can download selected packs from signed public catalog sequence 5; Examples 1.0.2 is a separate optional download.",
+    "appKeyringSHA256": "7826dce1f7f47ac23ea049e86140eeb2aece361f5de6af11e10186ddbecf0595",
+    "bundledCatalogSequence": 3,
+    "bundledCatalogSHA256": "3ef4cdb9d92b7fcf75502a36d759b3901aecbf9fdb869e4aad48e1463f5fba17",
+    "catalogAtArchive": {
+      "sequence": 5,
+      "catalogSHA256": "e71ad29795afeae3aef4f7dc0848c77909026266f7e7a1f362b10abe21be604c",
+      "releaseTag": "coursepack-v1.0.4",
+      "examplesVersion": "1.0.2"
+    }
+  },
+  "appStoreConnect": {
+    "appID": "6809502653",
+    "appStoreVersionID": "2bc0ae1f-ca26-41e6-a0a9-700628e7bf14",
+    "betaGroupID": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "betaGroup": "Internal QA",
+    "enUSListingLocalizationID": "a65d398a-7dd6-4135-b2d6-048be8b34dd3",
+    "deliveryID": "30ef153c-c295-47e7-a37a-9ce89059f164",
+    "processingState": "VALID",
+    "buildID": "30ef153c-c295-47e7-a37a-9ce89059f164",
+    "internalBuildState": "IN_BETA_TESTING",
+    "whatToTestLocalizationID": "c1d02a2a-7936-4f96-9069-e12c4613c996",
+    "screenshotEvidence": "docs/app-store/asset-upload-2026-10-05-build22.json",
+    "screenshotNote": "All 17 iPhone/iPad listing screenshots were recaptured from the Release Simulator candidate, uploaded or retained by matching digest, and read back COMPLETE in display order.",
+    "listingReadback": "en-US description (3,267 characters) and promotional text (153 characters) matched docs/app-store/listing-1.1-draft.md after update."
+  },
+  "verified": [
+    "Xcode 27.0 stable Release Simulator build and signed iOS archive succeeded from app input b923c60.",
+    "The opt-out persistence and achievement identifier test passed (one selected test, zero failures). The Release binary linked GameKit and the signed archive carried the Game Center entitlement.",
+    "The 60,336,274-byte IPA passed ZIP integrity, deep distribution signature, and Apple altool validation.",
+    "All 19 embedded compiler, sysroot, active catalog, keyring, and transition pack digests matched the pinned build 21 inputs.",
+    "Apple accepted delivery 30ef153c-c295-47e7-a37a-9ce89059f164 and processed build 22 as VALID. Internal QA membership, IN_BETA_TESTING state and 3,140-character en-US What to Test text matched App Store Connect readback.",
+    "All 17 iPhone and iPad App Store listing screenshots reached COMPLETE and matched the saved display order and local SHA-256 evidence.",
+    "App Store Connect Game Center 1.1 is enabled; the leaderboard, ten achievements, localized metadata, and ten achievement images were configured and images read back COMPLETE.",
+    "The 1.1 en-US App Store description and promotional text were saved and matched App Store Connect readback."
+  ],
+  "pending": [
+    "Physical-device TestFlight verification of Apple Game Center sign-in, score and achievement submission, Apple panels, opt-out persistence and local-only fallback.",
+    "Physical-device tester checks inherited from build 21: lesson feedback, nested project files, and supported syn build.",
+    "App Review submission and public App Store release.",
+    "Review App Privacy questionnaire for optional Apple Game Center before App Review."
+  ],
+  "gameCenter": {
+    "mode": "Apple Game Center, opt-in, off by default",
+    "bundleCapabilityEnabled": true,
+    "appVersion": "1.1",
+    "appVersionID": "b2899c70-b327-4e45-b2b6-d5bd9bfb54a7",
+    "leaderboardID": "com.sergiiziborov.Crabrix.rating",
+    "leaderboardResourceID": "7d63e64b-8fa7-4007-ac6e-f8312ceb0b18",
+    "achievementsConfigured": 10,
+    "configurationSource": "docs/game-center-catalog.json",
+    "releaseRecordsLive": false,
+    "note": "Game Center release records are configured for 1.1 but require the normal App Review path before public release; physical signed-in TestFlight interaction remains for testers."
+  }
+}

@@ -83,17 +83,32 @@ final class CrabrixProgressStoreTests: XCTestCase {
         XCTAssertEqual(reopened.state.totalPoints, CrabrixProgressEvent.lessonCompleted.points)
     }
 
-    func testProductionSocialPathsStayDormantUntilReleaseGatesEnableThem() {
-        XCTAssertFalse(CrabrixReleaseFeatures.gameCenterEnabled)
-
-        // Game Center is the only online path Crabrix will ever have, and this
-        // type exists only in a development build: the Release configuration
-        // archived for the App Store is compiled without CRABRIX_SOCIAL, so
-        // there is nothing here to keep dormant.
+    func testGameCenterRequiresOptInAndCanBeDisabledWithoutChangingProgress() {
         #if CRABRIX_SOCIAL
-        let gameCenter = GameCenterService()
+        let suite = "crabrix.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let gameCenter = GameCenterService(defaults: defaults)
+        XCTAssertFalse(gameCenter.isEnabled)
         gameCenter.authenticate()
         XCTAssertEqual(gameCenter.status, .idle)
+
+        defaults.set(true, forKey: "crabrix.gameCenter.enabled")
+        let returningPlayer = GameCenterService(defaults: defaults)
+        XCTAssertTrue(returningPlayer.isEnabled)
+        returningPlayer.setEnabled(false)
+        XCTAssertFalse(returningPlayer.isEnabled)
+        XCTAssertFalse(defaults.bool(forKey: "crabrix.gameCenter.enabled"))
+        XCTAssertEqual(returningPlayer.status, .idle)
+
+        let knownIDs = Set(CrabrixAchievementCatalog.all.map(\.id))
+        XCTAssertTrue(GameCenterService.achievementIDs.isSubset(of: knownIDs))
+        XCTAssertLessThanOrEqual(GameCenterService.achievementIDs.count, 100)
+        XCTAssertEqual(
+            GameCenterService.gameCenterAchievementID(for: "algorithm-atlas.0"),
+            "com.sergiiziborov.Crabrix.algorithm_atlas.0"
+        )
         #endif
     }
 

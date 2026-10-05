@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "appStoreAppId": "6809502653",
+  "bundleId": "com.sergiiziborov.Crabrix",
+  "leaderboard": {
+    "vendorIdentifier": "com.sergiiziborov.Crabrix.rating",
+    "referenceName": "Crabrix Rating",
+    "name": "Crabrix Rating",
+    "locale": "en-US",
+    "scoreSortType": "DESC",
+    "submissionType": "BEST_SCORE"
+  },
+  "achievements": [
+    {"localID":"builds.0","title":"First Run","before":"Run a Rust program locally.","after":"You ran your first Rust program in Crabrix.","points":10},
+    {"localID":"builds.2","title":"50 Runs","before":"Complete 50 successful local runs.","after":"You completed 50 successful local Rust runs.","points":10},
+    {"localID":"lessons.0","title":"First Lesson","before":"Complete your first Rust lesson.","after":"You completed your first Rust lesson.","points":10},
+    {"localID":"lessons.2","title":"25 Lessons","before":"Complete 25 Rust lessons.","after":"You completed 25 Rust lessons.","points":10},
+    {"localID":"practice.0","title":"Practice Passed","before":"Pass a Rust practice round.","after":"You passed a Rust practice round.","points":10},
+    {"localID":"crates.0","title":"First Crate","before":"Compile a supported crates.io package on device.","after":"You compiled a crates.io package on device.","points":10},
+    {"localID":"rating.0","title":"Builder Rank","before":"Reach 2,000 rating points.","after":"You reached Builder rank at 2,000 points.","points":10},
+    {"localID":"rating.4","title":"Core Contributor","before":"Reach 50,000 rating points.","after":"You reached Core Contributor rank.","points":10},
+    {"localID":"algorithm-atlas.0","title":"First Pattern","before":"Master an Algorithm Atlas pattern.","after":"You mastered your first Algorithm Atlas pattern.","points":10},
+    {"localID":"algorithm-atlas.4","title":"Atlas Master","before":"Master 200 Algorithm Atlas patterns.","after":"You mastered all 200 Algorithm Atlas patterns.","points":10}
+  ]
+}

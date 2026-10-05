@@ -1,11 +1,14 @@
 # Crabrix 1.1 App Store copy
 
-This copy describes the 1.1 (19) internal TestFlight build. Its English
-description and promotional text were saved and read back in App Store Connect.
-All 16 iPhone and iPad Store screenshots were verified in display order. The version
-has not been submitted for App Review; physical-device testing is next. See
-[the release evidence](../releases/1.1-build19.json) and
-[screenshot evidence](asset-upload-2026-10-03-build19.json).
+This is the proposed App Store copy for 1.1 (22). Game Center is optional and
+off by default. All 17 iPhone and iPad screenshots were recaptured from the
+Release Simulator build, uploaded or retained by matching digest, and verified
+in display order, including Profile with the new switch. See the [release
+manifest](../releases/1.1-build22.json) and [screenshot evidence](asset-upload-2026-10-05-build22.json).
+The en-US description and promotional text below were saved in App Store
+Connect and read back for the 1.1 draft. Before App Review, review the App
+Privacy questionnaire and test Game Center sign-in and score submission on a
+physical device.
 
 ## Promotional text
 
@@ -51,12 +54,16 @@ Reading an installed course stays available even when a crate is not ready.
 MAKE IT YOURS
 Choose Auto, Light, Dark, or a Cyberpunk appearance across the app. Optional
 Face ID or device-passcode protection locks the workspace when you leave it.
-Rating and achievements stay on the device; practice does not use Health or
-Energy limits.
+Rating and achievements are earned on the device. In Profile, you can opt in
+to Apple Game Center to share your numeric rating on its leaderboard and ten
+selected achievements. Turn it off at any time without losing local progress.
+Practice does not use Health or Energy limits.
 
 PRIVACY AND OFFLINE USE
-Projects, notes, progress, and compiler output stay local unless you choose to
-export or share them. Crabrix has no analytics SDK, advertising, or account.
+Projects, notes, detailed course progress, and compiler output stay local unless
+you choose to export or share them. Optional Game Center sends only the rating
+and selected achievement milestones to Apple; Crabrix runs no online account
+or leaderboard service. It has no analytics SDK or advertising.
 Course downloads, crates.io packages, and GitHub imports use network requests;
 the hosts may keep ordinary access logs. After course material and required
 dependencies are prepared, learning and compilation can work offline.
@@ -83,3 +90,6 @@ the next Run works. Restart offline to check installed lessons and prepared
 dependencies. On an existing installation, verify that progress and user
 projects survive the transition. Check Cyberpunk across Learn, Projects, and
 the editor, plus optional Face ID or passcode protection on a physical device.
+In Profile, confirm Game Center starts off, then opt in on a signed device,
+open Apple's leaderboard and achievements, turn it off, and verify that local
+rating and achievements remain visible. This device gate is not yet recorded.

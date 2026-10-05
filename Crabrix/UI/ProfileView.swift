@@ -6,10 +6,8 @@ import SwiftUI
 
 /// The player's profile: rating and achievements.
 ///
-/// There is no Crabrix account and, in the shipped build, nothing to sign in
-/// to: the profile is local, and the avatar comes from the photo library only.
-/// Development builds add the Game Center and board sections behind
-/// `CRABRIX_SOCIAL`.
+/// Local rating and achievements work without an account. Game Center is an
+/// optional Apple-hosted copy of selected scores and milestones.
 struct ProfileView: View {
     @EnvironmentObject private var progress: CrabrixProgressStore
     @EnvironmentObject private var academy: AcademyContentStore
@@ -76,12 +74,13 @@ struct ProfileView: View {
             GameCenterSheet(
                 controller: panel == .leaderboard
                     ? gameCenter.makeLeaderboardViewController()
-                    : gameCenter.makeAchievementsViewController()
+                    : gameCenter.makeAchievementsViewController(),
+                onDismiss: { gameCenterPanel = nil }
             )
             .ignoresSafeArea()
         }
         .task {
-            if CrabrixReleaseFeatures.gameCenterEnabled {
+            if gameCenter.isEnabled {
                 gameCenter.authenticate()
                 await gameCenter.submit(state: progress.state)
             }
@@ -104,8 +103,7 @@ struct ProfileView: View {
                 }
                 Spacer(minLength: 0)
                 #if CRABRIX_SOCIAL
-                if CrabrixReleaseFeatures.gameCenterEnabled,
-                   let rank = gameCenter.globalRank {
+                if gameCenter.isEnabled, let rank = gameCenter.globalRank {
                     VStack(spacing: 1) {
                         Text("#\(rank)")
                             .font(.title3.bold().monospacedDigit())
@@ -148,7 +146,17 @@ struct ProfileView: View {
             .font(.caption.bold())
 
             #if CRABRIX_SOCIAL
-            if CrabrixReleaseFeatures.gameCenterEnabled, gameCenter.isSignedIn {
+            Toggle(isOn: Binding(
+                get: { gameCenter.isEnabled },
+                set: { gameCenter.setEnabled($0) }
+            )) {
+                Label("Game Center", systemImage: "gamecontroller.fill")
+                    .font(.subheadline.bold())
+            }
+            .tint(CrabrixTheme.mint)
+            .accessibilityHint("Share your rating and selected achievements with Apple's Game Center. Local progress always remains on this device.")
+
+            if gameCenter.isEnabled, gameCenter.isSignedIn {
                 HStack(spacing: 10) {
                     Button { gameCenterPanel = .leaderboard } label: {
                         Label("Leaderboard", systemImage: "list.number")
@@ -164,6 +172,16 @@ struct ProfileView: View {
                     .buttonStyle(.bordered)
                 }
                 .font(.subheadline.bold())
+                Text("Your rating and selected achievements sync through Apple Game Center.")
+                    .font(.caption)
+                    .foregroundStyle(CrabrixTheme.muted)
+            } else if gameCenter.isEnabled {
+                Text(gameCenterStatusText)
+                    .font(.caption)
+                    .foregroundStyle(CrabrixTheme.muted)
+                Button("Try Game Center again") { gameCenter.authenticate() }
+                    .font(.caption.bold())
+                    .disabled(gameCenter.status == .authenticating)
             } else {
                 localStorageNote
             }
@@ -179,8 +197,6 @@ struct ProfileView: View {
         .crabrixPanel(cornerRadius: 16)
     }
 
-    /// No "Connect Game Center" button here on purpose: offering a control that
-    /// cannot work in this build would be a control that does nothing.
     private var localStorageNote: some View {
         Label(
             "Your rating, achievements, and progress are saved on this device.",
@@ -191,8 +207,6 @@ struct ProfileView: View {
         .fixedSize(horizontal: false, vertical: true)
     }
 
-    /// The name shown on the card. Without the social build flag there is no
-    /// identity provider at all, which is exactly what the shipped app reports.
     private var playerTitle: String {
         #if CRABRIX_SOCIAL
         gameCenter.isSignedIn ? gameCenter.playerName : "Playing offline"
@@ -204,7 +218,7 @@ struct ProfileView: View {
     private var avatarPicker: some View {
         let customImage = avatarStore.image
         #if CRABRIX_SOCIAL
-        let gameCenterImage = CrabrixReleaseFeatures.gameCenterEnabled
+        let gameCenterImage = gameCenter.isEnabled
             ? gameCenter.photo
             : nil
         #else
@@ -285,10 +299,8 @@ struct ProfileView: View {
     }
 
     private var subtitle: String {
-        // Nothing here names Game Center unless it actually connected: an
-        // explanation of a feature the build cannot offer reads as a fault.
         #if CRABRIX_SOCIAL
-        guard CrabrixReleaseFeatures.gameCenterEnabled else {
+        guard gameCenter.isEnabled else {
             return "Everything is stored on this device"
         }
         switch gameCenter.status {
@@ -301,6 +313,21 @@ struct ProfileView: View {
         return "Everything is stored on this device"
         #endif
     }
+
+    #if CRABRIX_SOCIAL
+    private var gameCenterStatusText: String {
+        switch gameCenter.status {
+        case .idle:
+            return "Game Center is on. Local progress remains available offline."
+        case .authenticating:
+            return "Connecting to Game Center…"
+        case .signedIn:
+            return "Connected to Game Center."
+        case .unavailable(let reason):
+            return "Game Center is unavailable: \(reason) Local progress is safe."
+        }
+    }
+    #endif
 
     private var statsCard: some View {
         VStack(alignment: .leading, spacing: 11) {
@@ -426,6 +453,7 @@ private struct ProfileMetric: View {
 /// Hosts Game Center's own leaderboard and achievement screens.
 private struct GameCenterSheet: UIViewControllerRepresentable {
     let controller: GKGameCenterViewController
+    let onDismiss: () -> Void
 
     func makeUIViewController(context: Context) -> GKGameCenterViewController {
         controller.gameCenterDelegate = context.coordinator
@@ -434,12 +462,18 @@ private struct GameCenterSheet: UIViewControllerRepresentable {
 
     func updateUIViewController(_ controller: GKGameCenterViewController, context: Context) {}
 
-    func makeCoordinator() -> Coordinator { Coordinator() }
+    func makeCoordinator() -> Coordinator { Coordinator(onDismiss: onDismiss) }
 
     @MainActor
     final class Coordinator: NSObject, @preconcurrency GKGameCenterControllerDelegate {
+        let onDismiss: () -> Void
+
+        init(onDismiss: @escaping () -> Void) {
+            self.onDismiss = onDismiss
+        }
+
         func gameCenterViewControllerDidFinish(_ controller: GKGameCenterViewController) {
-            controller.dismiss(animated: true)
+            onDismiss()
         }
     }
 }

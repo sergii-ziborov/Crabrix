@@ -1,20 +1,5 @@
 import SwiftUI
 
-/// Release capabilities stay explicit and auditable.
-///
-/// Crabrix runs no service of its own. If ranking ever goes online it will be
-/// Game Center, which Apple already operates — there is no Crabrix account, no
-/// Crabrix server, and no first-party board to run, moderate or secure.
-///
-/// The production 1.0 binary is built without `CRABRIX_SOCIAL`, so even Game
-/// Center is not merely switched off: its service, its UI and its network path
-/// are not compiled into the app at all. This flag remains so development
-/// builds, which do compile that code, still keep it dormant until the
-/// provisioning gates pass.
-enum CrabrixReleaseFeatures {
-    static let gameCenterEnabled = false
-}
-
 @main
 struct CrabrixApp: App {
     @Environment(\.scenePhase) private var scenePhase
@@ -66,18 +51,21 @@ struct CrabrixApp: App {
             .task {
                 await academyContent.prepare()
                 #if CRABRIX_SOCIAL
-                if CrabrixReleaseFeatures.gameCenterEnabled {
-                    gameCenter.authenticate()
-                }
+                gameCenter.authenticate()
                 #endif
             }
             .onReceive(progress.$state) { state in
                 #if CRABRIX_SOCIAL
-                if CrabrixReleaseFeatures.gameCenterEnabled {
-                    Task { await gameCenter.submit(state: state) }
-                }
+                Task { await gameCenter.submit(state: state) }
                 #endif
             }
+            #if CRABRIX_SOCIAL
+            .onReceive(gameCenter.$status) { status in
+                if status.isSignedIn {
+                    Task { await gameCenter.submit(state: progress.state) }
+                }
+            }
+            #endif
         }
     }
 

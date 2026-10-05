@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1 (22) — 2026-10-05
+
+- Add an off-by-default Game Center switch to Profile. When enabled, the local rating can appear on Apple's leaderboard and ten selected milestones sync to Apple achievements.
+- Keep local rating, course progress, projects, and achievements working when Game Center is off or unavailable. Changing the Apple player invalidates the submission cache.
+- Include the Game Center entitlement in Release, configure its leaderboard and achievements for the existing Bundle ID, and refresh the privacy and tester documentation.
+
 ## 1.1 (21) — 2026-10-05
 
 - Add a parser-only Cargo feature profile when `syn`, `quote`, or `proc-macro2` is selected from the package catalog. The explicit manifest setting avoids the host-only `proc_macro` dependency on iPhone.
