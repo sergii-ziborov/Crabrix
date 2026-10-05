@@ -67,7 +67,11 @@ struct LearningHubView: View {
                 } else {
                     examplesSnapshot = nil
                 }
-                if case let .lesson(lessonID) = path.last {
+                let lessonID = path.compactMap { route -> String? in
+                    if case let .lesson(id) = route { return id }
+                    return nil
+                }.last
+                if let lessonID {
                     if lessonSession?.lessonID != lessonID,
                        let repository = academy.repository {
                         lessonSession = CourseSession(lessonID: lessonID, repository: repository)
