@@ -1,43 +1,53 @@
-# Game Center
+# Optional Game Center
 
-**Not in Crabrix 1.0.** This document exists so the code behind
-`Crabrix/Social/` is not mistaken for a shipping feature.
+Crabrix keeps its rating, achievements, course progress, projects, and code on
+the device. In Profile, the player can turn on Apple Game Center to share the
+numeric rating with a global leaderboard and a selected set of achievement
+milestones. This is off by default. No Crabrix account or Crabrix-hosted board
+exists. Turning it off stops future submissions from this app; it does not
+delete scores already held by Apple or alter local progress. Apple manages
+Game Center identity and its data under its own terms.
 
-## What the production build contains
+The app's Release configuration compiles `CRABRIX_SOCIAL`, links GameKit, and
+has the `com.apple.developer.game-center` entitlement. Authentication begins
+only after the player opts in. A failed or unavailable Game Center connection
+does not prevent lessons, compiler runs, or local scoring.
 
-Nothing. The Release configuration is compiled without `CRABRIX_SOCIAL`, so
-`GameCenterService` and `LeaderboardClient` are not in the binary at all. The
-archived app links no GameKit, carries no board endpoint, and has no
-display-name field or publishing control anywhere in the interface. A step in
-`.github/workflows/release-checks.yml` fails the build if any of that returns:
+## Configured App Store Connect objects
 
-```
-otool -L Crabrix | grep -i GameKit          → must find nothing
-strings Crabrix | grep crabrix.com/api      → must find nothing
-strings Crabrix | grep GKLocalPlayer        → must find nothing
-```
+- Existing Bundle ID: `com.sergiiziborov.Crabrix`.
+- Game Center detail: `7575900e-ade8-462e-aa17-a1c9a7e18e9c`.
+- Game Center app version for 1.1: `b2899c70-b327-4e45-b2b6-d5bd9bfb54a7`, enabled.
+- Best-score, descending, global leaderboard: `com.sergiiziborov.Crabrix.rating`.
+- Ten achievements: the local IDs and published English descriptions are in
+  [`game-center-catalog.json`](game-center-catalog.json). The Game Center ID is
+  `com.sergiiziborov.Crabrix.` plus the local ID, replacing `-` with `_` because
+  App Store Connect does not accept a hyphen in an achievement vendor ID.
 
-Rating, ranks, achievements, and mastery are calculated and stored on the
-device. There is no account, no display name, and no server that holds anything
-about a player.
+The local achievement catalogue has more milestones. Only the ten stable IDs
+in `GameCenterService.achievementIDs` are submitted to Game Center; downloaded
+course data cannot create Game Center achievements. The 1024px achievement
+images are in `docs/app-store/game-center/` and can be rebuilt on macOS with
+Pillow installed using `python3 scripts/render-game-center-badges.py`.
 
-## Why the code is still here
+## Behavior and testing
 
-Development builds define `CRABRIX_SOCIAL`, which compiles the two services and
-their profile UI. That keeps the work reviewable and lets the tests exercise it,
-while `CrabrixReleaseFeatures.gameCenterEnabled` and `.crabrixBoardEnabled`
-remain `false` even there.
+When the player signs in after opting in, the app submits the current local
+rating and earned selected achievements. Later local changes are coalesced and
+submitted in order. The local store remains authoritative; a network error
+never rolls back local points. The leaderboard uses best score, so a later
+local reset cannot remove an old Game Center score. A new Game Center account
+can receive the current local score when enabled; the app does not merge
+progress or recover it from Game Center.
 
-## What a future version would need before enabling it
+Simulator builds and App Store Connect configuration verify compilation and
+metadata, not a real player session. Test on a signed physical TestFlight build:
+opt in, authenticate, earn an achievement, open the leaderboard, turn Game
+Center off, earn more points offline, and confirm local progress is unchanged.
+Then opt in again and verify the score catches up. Check the signed archive's
+embedded entitlement and the newly generated provisioning profile before
+upload. Do not mark Game Center behavior verified until that device test passes.
 
-- the Game Center capability on the App ID and the provisioning profile;
-- a leaderboard and achievement catalogue configured in App Store Connect;
-- App Privacy answers rewritten: publishing a score is data leaving the device,
-  and the current answers say nothing leaves it;
-- the privacy policy, the terms, and the support page updated **before** the
-  version ships, not after;
-- moderation for anything a player can type, if a display name ever exists.
-
-Until all of that is true, the honest description of Crabrix is the one in the
-app, on the site, and in the App Store listing: no account, no leaderboard,
-nothing published.
+The app privacy manifest and [site privacy policy](../site/privacy.html)
+describe this Apple-hosted optional path. No source, project, answer, lesson
+history, or personal photo is sent by Crabrix to Game Center.

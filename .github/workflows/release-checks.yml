@@ -64,7 +64,7 @@ jobs:
             -derivedDataPath "$PWD/DerivedDataCI" \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Verify the Release binary contains no online path
+      - name: Verify only the optional Game Center online path is linked
         run: |
           APP="$PWD/DerivedDataCI/Build/Products/Release-iphonesimulator/Crabrix.app/Crabrix"
           test -f "$APP" || { echo "no Release binary at $APP" >&2; exit 1; }
@@ -72,19 +72,19 @@ jobs:
             echo "a first-party service endpoint is present in a production build" >&2
             exit 1
           fi
-          if otool -L "$APP" | grep -qi GameKit; then
-            echo "GameKit is linked into a production build" >&2
+          if ! otool -L "$APP" | grep -qi GameKit; then
+            echo "GameKit is absent from the production build" >&2
             exit 1
           fi
           if strings "$APP" | grep -Fq 'Every Rust program starts at main, but the lesson is the whole loop.'; then
             echo "legacy Swift Academy content is present in the production executable" >&2
             exit 1
           fi
-          if strings "$APP" | grep -qi "GKLocalPlayer\|GKGameCenterViewController"; then
-            echo "Game Center symbols are present in a production build" >&2
+          if ! /usr/libexec/PlistBuddy -c 'Print :com.apple.developer.game-center' Crabrix/Crabrix.entitlements | grep -qx true; then
+            echo "Game Center entitlement is absent" >&2
             exit 1
           fi
-          echo "Release binary carries no service endpoint and no Game Center path"
+          echo "Release binary links GameKit and carries no Crabrix service endpoint"
 
   compiler-gates:
     # Full bundled-rustc/Cargo runs are deliberately separate from every PR.

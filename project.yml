@@ -15,11 +15,11 @@ settings:
     SUPPORTS_MACCATALYST: NO
     ENABLE_USER_SCRIPT_SANDBOXING: NO
   configs:
-    # Game Center and the Crabrix board compile only into development builds.
-    # The Release configuration - the one that is archived and uploaded - has no
-    # social services, no board UI and no publishing network path in it at all.
+    # Game Center is compiled in both configurations but remains opt-in.
     debug:
       SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG CRABRIX_SOCIAL
+    release:
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) CRABRIX_SOCIAL"
 
 packages:
   WasmKit:
@@ -114,7 +114,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix
         PRODUCT_NAME: Crabrix
         MARKETING_VERSION: 1.1
-        CURRENT_PROJECT_VERSION: 21
+        CURRENT_PROJECT_VERSION: 22
         CODE_SIGN_ENTITLEMENTS: Crabrix/Crabrix.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
@@ -126,6 +126,11 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         CODE_SIGN_STYLE: Automatic
+      configs:
+        release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER: "$(CRABRIX_APP_PROFILE)"
 
   CrabrixShare:
     type: app-extension
@@ -155,11 +160,16 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix.Share
         PRODUCT_NAME: CrabrixShare
         MARKETING_VERSION: 1.1
-        CURRENT_PROJECT_VERSION: 21
+        CURRENT_PROJECT_VERSION: 22
         CODE_SIGN_ENTITLEMENTS: CrabrixShare/CrabrixShare.entitlements
         CODE_SIGN_STYLE: Automatic
         APPLICATION_EXTENSION_API_ONLY: YES
         SKIP_INSTALL: YES
+      configs:
+        release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER: "$(CRABRIX_SHARE_PROFILE)"
 
   CrabrixTests:
     type: bundle.unit-test
