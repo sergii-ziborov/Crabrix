@@ -1,10 +1,12 @@
 # Changelog
 
-## 1.1 (21) — 2026-10-04
+## 1.1 (21) — 2026-10-05
 
 - Add a parser-only Cargo feature profile when `syn`, `quote`, or `proc-macro2` is selected from the package catalog. The explicit manifest setting avoids the host-only `proc_macro` dependency on iPhone.
 - Offer a one-tap repair for existing plain `syn` dependencies. Block incompatible package graphs before invoking rustc and show a readable dependency error in Output.
 - Verify `syn 3.0.6` and its four-crate graph with a real bundled compiler Run on the iOS Simulator.
+- Keep the learner on step 2 after either quick-check answer and scroll to the feedback or hint. Add a compact rating and achievements link in the lesson header.
+- Let project folders create nested Rust files, text files, and module folders from their own visible add menu. Reject file and folder path collisions.
 
 ## 1.1 (20) — 2026-10-03
 

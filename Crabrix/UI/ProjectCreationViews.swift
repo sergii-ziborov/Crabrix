@@ -2,6 +2,7 @@ import SwiftUI
 
 enum ProjectItemCreation: String, Identifiable {
     case rustFile
+    case textFile
     case moduleFolder
 
     var id: String { rawValue }
@@ -9,20 +10,23 @@ enum ProjectItemCreation: String, Identifiable {
     var title: String {
         switch self {
         case .rustFile: "New Rust File"
+        case .textFile: "New File"
         case .moduleFolder: "New Module Folder"
         }
     }
 
     var detail: String {
         switch self {
-        case .rustFile: "Creates an editable .rs file inside the project."
-        case .moduleFolder: "Creates a folder with mod.rs so it persists and works as a Rust module."
+        case .rustFile: "Create a .rs file here or enter a nested path such as src/ui/buttons.rs."
+        case .textFile: "Create an editable text file here, such as assets/config.json or docs/notes.md."
+        case .moduleFolder: "Create a nested Rust module folder with mod.rs so it persists in the project."
         }
     }
 
     var placeholder: String {
         switch self {
         case .rustFile: "src/models.rs"
+        case .textFile: "docs/notes.md"
         case .moduleFolder: "src/models"
         }
     }
@@ -30,6 +34,7 @@ enum ProjectItemCreation: String, Identifiable {
     var systemImage: String {
         switch self {
         case .rustFile: "doc.badge.plus"
+        case .textFile: "doc.badge.plus"
         case .moduleFolder: "folder.badge.plus"
         }
     }
@@ -164,12 +169,18 @@ struct NewProjectItemSheet: View {
     let mode: ProjectItemCreation
     let onCreate: (String) -> Bool
 
+    init(mode: ProjectItemCreation, initialPath: String = "", onCreate: @escaping (String) -> Bool) {
+        self.mode = mode
+        self.onCreate = onCreate
+        _path = State(initialValue: initialPath.isEmpty ? "" : "\(initialPath)/")
+    }
+
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 18) {
                 Label(mode.title, systemImage: mode.systemImage)
                     .font(.title2.bold())
-                    .foregroundStyle(mode == .rustFile ? CrabrixTheme.coral : CrabrixTheme.blue)
+                    .foregroundStyle(mode == .moduleFolder ? CrabrixTheme.blue : CrabrixTheme.coral)
                 Text(mode.detail)
                     .font(.subheadline)
                     .foregroundStyle(CrabrixTheme.muted)
@@ -185,7 +196,7 @@ struct NewProjectItemSheet: View {
                 }
                 Button(mode.title, action: create)
                     .buttonStyle(.borderedProminent)
-                    .tint(mode == .rustFile ? CrabrixTheme.coral : CrabrixTheme.blue)
+                    .tint(mode == .moduleFolder ? CrabrixTheme.blue : CrabrixTheme.coral)
                     .frame(maxWidth: .infinity)
                     .disabled(path.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 Spacer()

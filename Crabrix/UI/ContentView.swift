@@ -93,6 +93,7 @@ struct ContentView: View {
     @State private var isPackageStoragePresented = false
     @State private var projectsPath: [ProjectsRoute] = []
     @State private var projectItemCreation: ProjectItemCreation?
+    @State private var projectItemParentPath = ""
     @State private var githubURL = ""
     @State private var selectedDestination: CrabrixDestination =
         CrabrixDestination.launchArgument ?? .projects
@@ -247,9 +248,10 @@ struct ContentView: View {
             .presentationDragIndicator(.visible)
         }
         .sheet(item: $projectItemCreation) { mode in
-            NewProjectItemSheet(mode: mode) { path in
+            NewProjectItemSheet(mode: mode, initialPath: projectItemParentPath) { path in
                 switch mode {
                 case .rustFile: model.createRustFile(at: path)
+                case .textFile: model.createTextFile(at: path)
                 case .moduleFolder: model.createModuleFolder(at: path)
                 }
             }
@@ -746,8 +748,18 @@ struct ContentView: View {
                                     isProjectActionsPresented = true
                                 },
                                 onSelect: selectEditorFile,
-                                onNewFile: { projectItemCreation = .rustFile },
-                                onNewFolder: { projectItemCreation = .moduleFolder },
+                                onNewFile: { path in
+                                    projectItemParentPath = path
+                                    projectItemCreation = .rustFile
+                                },
+                                onNewTextFile: { path in
+                                    projectItemParentPath = path
+                                    projectItemCreation = .textFile
+                                },
+                                onNewFolder: { path in
+                                    projectItemParentPath = path
+                                    projectItemCreation = .moduleFolder
+                                },
                                 onResolvePackages: model.refreshCargoWorkspace,
                                 onPinPackages: model.pinDependenciesForOffline,
                                 onAddPackage: { isCargoCatalogPresented = true },
@@ -858,8 +870,18 @@ struct ContentView: View {
                                 isProjectActionsPresented = true
                             },
                             onSelect: selectEditorFile,
-                            onNewFile: { projectItemCreation = .rustFile },
-                            onNewFolder: { projectItemCreation = .moduleFolder },
+                            onNewFile: { path in
+                                projectItemParentPath = path
+                                projectItemCreation = .rustFile
+                            },
+                            onNewTextFile: { path in
+                                projectItemParentPath = path
+                                projectItemCreation = .textFile
+                            },
+                            onNewFolder: { path in
+                                projectItemParentPath = path
+                                projectItemCreation = .moduleFolder
+                            },
                             onResolvePackages: model.refreshCargoWorkspace,
                             onPinPackages: model.pinDependenciesForOffline,
                             onAddPackage: { isCargoCatalogPresented = true },
@@ -1419,8 +1441,9 @@ private struct ProjectSidebar: View {
     let isBusy: Bool
     let onProjectActions: () -> Void
     let onSelect: (String) -> Void
-    let onNewFile: () -> Void
-    let onNewFolder: () -> Void
+    let onNewFile: (String) -> Void
+    let onNewTextFile: (String) -> Void
+    let onNewFolder: (String) -> Void
     let onResolvePackages: () -> Void
     let onPinPackages: () -> Void
     let onAddPackage: () -> Void
@@ -1456,10 +1479,13 @@ private struct ProjectSidebar: View {
                             "Project details, save, and share"
                         )
                         Menu {
-                            Button(action: onNewFile) {
+                            Button { onNewFile("") } label: {
                                 Label("New Rust File", systemImage: "doc.badge.plus")
                             }
-                            Button(action: onNewFolder) {
+                            Button { onNewTextFile("") } label: {
+                                Label("New File", systemImage: "doc.badge.plus")
+                            }
+                            Button { onNewFolder("") } label: {
                                 Label("New Module Folder", systemImage: "folder.badge.plus")
                             }
                         } label: {
@@ -1472,7 +1498,10 @@ private struct ProjectSidebar: View {
                     ProjectFileTree(
                         paths: files,
                         selectedPath: selectedFile,
-                        onSelect: onSelect
+                        onSelect: onSelect,
+                        onNewRustFileIn: onNewFile,
+                        onNewTextFileIn: onNewTextFile,
+                        onNewFolderIn: onNewFolder
                     )
 
                     if let manifest {

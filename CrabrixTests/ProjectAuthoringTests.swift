@@ -27,6 +27,22 @@ final class ProjectAuthoringTests: XCTestCase {
         XCTAssertNotNil(files["src/ui/mod.rs"])
     }
 
+    func testCreatesNestedFilesAndFoldersWithoutClobberingExistingPaths() {
+        let model = CompilerViewModel()
+        model.createProject(name: "nested-tree", template: .empty)
+
+        XCTAssertTrue(model.createModuleFolder(at: "src/ui/widgets"))
+        XCTAssertTrue(model.createRustFile(at: "src/ui/widgets/button"))
+        XCTAssertTrue(model.createTextFile(at: "docs/guides/README.md"))
+        XCTAssertFalse(model.createTextFile(at: "src/ui/widgets"))
+        XCTAssertFalse(model.createModuleFolder(at: "docs/guides/README.md/other"))
+
+        let files = model.exportProject().files
+        XCTAssertNotNil(files["src/ui/widgets/mod.rs"])
+        XCTAssertNotNil(files["src/ui/widgets/button.rs"])
+        XCTAssertEqual(files["docs/guides/README.md"], "")
+    }
+
     func testProjectTemplatesProvideDistinctRunnableLayouts() {
         let model = CompilerViewModel()
 

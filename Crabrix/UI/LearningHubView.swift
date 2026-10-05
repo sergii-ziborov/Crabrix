@@ -184,11 +184,14 @@ struct LearningHubView: View {
                     onComplete: {
                         completeAndContinue(from: lesson)
                     },
+                    onShowAchievements: {
+                        navigationPath.append(.profile)
+                    },
                     onAnswer: { index, correct in
                         onAnswerLesson(lesson, index, correct)
                     }
                 )
-                .id(session.token)
+                .id(lesson.id)
             } else {
                 ContentUnavailableView("Lesson unavailable", systemImage: "book.closed")
             }
