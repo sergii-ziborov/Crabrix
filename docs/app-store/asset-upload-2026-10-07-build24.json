@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "release": "1.1 (24)",
+  "source": "Release Simulator build 24 captures, except unchanged iPhone Settings frame reused from an earlier release capture after the build 24 Simulator launch returned a blank frame.",
+  "sets": [
+    {
+      "set": "iphone-6.9",
+      "file": "01-build.png",
+      "id": "fa000019-5e0c-83bd-800c-1b89a694d7ee",
+      "bytes": 163702,
+      "sha256": "c7ad8c54373bba73c5c60be02999b99415560d3b9b40c4c0c79383a506c2fae5",
+      "md5": "c130fadcddd6f03577a80e35d0a587ba",
+      "state": "COMPLETE",
+      "captureBuild": "24"
+    },
+    {
+      "set": "iphone-6.9",
+      "file": "02-projects.png",
+      "id": "acc00019-5e0c-83bd-802a-ce760bff2858",
+      "bytes": 442842,
+      "sha256": "955ed7b40b6825a121aeb87573f78f017de66248c4c0b96a6f09aea28edbcff1",
+      "md5": "3b6b02973a7b7e4887dafb07a7a946c3",
+      "state": "COMPLETE",
+      "captureBuild": "24"
+    },
+    {
+      "set": "iphone-6.9",
+      "file": "03-learn.png",
+      "id": "69000019-5e0c-83bd-8017-42b63cd3a23f",
+      "bytes": 463257,
+      "sha256": "944a6ee8642b2df7ffcbadc7248e249736c08e9a35e2f087ba1ae6bb36d1e0e5",
+      "md5": "5268c2818e6d0852c13efc56c7c91c90",
+      "state": "COMPLETE",
+      "captureBuild": "24"
+    },
+    {
+      "set": "iphone-6.9",
+      "file": "09-my-courses.png",
+      "id": "4cc00019-5e0c-83bd-8022-65c93fe01089",
+      "bytes": 343442,
+      "sha256": "78b98f7d8267f498af0b0738b0d072795ffffd86b7c0ac954eae05e83832fa05",
+      "md5": "76bff5302ccbb85e22b0c96786aea335",
+      "state": "COMPLETE",
+      "captureBuild": "24"
+    },
+    {
+      "set": "iphone-6.9",
+      "file": "04-course.png",
+      "id": "1c000019-5e0c-83bd-8005-81d4d5fb9ac0",
+      "bytes": 1119941,
+      "sha256": "48f28878923d268af780c4b9e0e04a44048b971e5beca69f6b045e1c822e1934",
+      "md5": "2da34e743d1c21d97d3a6a0d79ed70b3",
+      "state": "COMPLETE",
+      "captureBuild": "24"
+    },
+    {
+      "set": "iphone-6.9",
+      "file": "05-lesson.png",
+      "id": "ffc00019-5e0c-83bd-803c-de330d2fdf32",
+      "bytes": 513870,
+      "sha256": "c6e2036783f4853f3da4a2904ff26371aea12c1e71839f94905cf8450d6f8bba",
+      "md5": "1d31ba637f74b0be01b6cecc00216528",
+      "state": "COMPLETE",
+      "captureBuild": "24"
+    },
+    {
+      "set": "iphone-6.9",
+      "file": "06-profile.png",
+      "id": "29800019-5e0c-83bd-8028-702cedfbf1ad",
+      "bytes": 292894,
+      "sha256": "9309da7064c2cf820c680c88749dd7123f91346bb0c2855984794449528cde75",
+      "md5": "190c26edf4dc9694fd648b8d16c1d337",
+      "state": "COMPLETE",
+      "captureBuild": "24"
+    },
+    {
+      "set": "iphone-6.9",
+      "file": "07-library.png",
+      "id": "6ec00019-5e0c-83bd-8014-432504ea59f7",
+      "bytes": 1025164,
+      "sha256": "d446c54e9582363af7eab05229d2a77c859566ddcb430f98f6ff25988aaf471a",
+      "md5": "89dabd11077006492316234d9a213f3c",
+      "state": "COMPLETE",
+      "captureBuild": "24"
+    },
+    {
+      "set": "iphone-6.9",
+      "file": "10-example-detail.png",
+      "id": "03800019-5e0c-83bd-8015-4f92da55dd81",
+      "bytes": 161899,
+      "sha256": "8963e06861c23c8ee8dad5830d9bc5194df9668e1b569ac2e4b0f5e1d2c63622",
+      "md5": "bd0bac5c21b2e1311cd2c41ef362fd38",
+      "state": "COMPLETE",
+      "captureBuild": "24"
+    },
+    {
+      "set": "iphone-6.9",
+      "file": "08-settings.png",
+      "id": "90800019-5e0c-83bd-8017-509ba521ff24",
+      "bytes": 251932,
+      "sha256": "9035fad76503a4dd913d288ec4bd3bcaa2c6a49d0d3203ec0c6b901c85e5ad5a",
+      "md5": "0c2b66917efdc16b68b4eb605ac33de3",
+      "state": "COMPLETE",
+      "captureBuild": "22"
+    },
+    {
+      "set": "ipad-13",
+      "file": "01-build.png",
+      "id": "56400019-5e0c-83bd-8019-116191b31a1d",
+      "bytes": 1127513,
+      "sha256": "4ec17d75dee5586d340d9e625e02f7c7fe5c3f8271b794b41a58de6e818361de",
+      "md5": "9c3b15c7483463c3c1947b906210568b",
+      "state": "COMPLETE",
+      "captureBuild": "24"
+    },
+    {
+      "set": "ipad-13",
+      "file": "02-projects.png",
+      "id": "72800019-5e0c-83bd-802d-dcc02acf95e2",
+      "bytes": 410410,
+      "sha256": "0c5f6c869ee0a491dbae1bf752d3956f2b01c56b580737df1a450a0eacb47e6d",
+      "md5": "ed6f1c90e491ad15b0fe241132056d00",
+      "state": "COMPLETE",
+      "captureBuild": "24"
+    },
+    {
+      "set": "ipad-13",
+      "file": "03-learn.png",
+      "id": "bec00019-5e0c-83bd-8020-e644459fe7f2",
+      "bytes": 287751,
+      "sha256": "27f6cfc8791bf67f9093d6aa7d9094ef926eac1d96343494ac00173a67bfe66c",
+      "md5": "55e7546850458020ac64ad935fe3dd3b",
+      "state": "COMPLETE",
+      "captureBuild": "24"
+    },
+    {
+      "set": "ipad-13",
+      "file": "07-my-courses.png",
+      "id": "e5800019-5e0c-83bd-8020-581e9ae50697",
+      "bytes": 342945,
+      "sha256": "fa323bad790f637dc6adc5039f581f7749cfdcf8f2501b3310464552959bbe99",
+      "md5": "cdedaab03d29d3fe58cb14b01fd123eb",
+      "state": "COMPLETE",
+      "captureBuild": "24"
+    },
+    {
+      "set": "ipad-13",
+      "file": "04-lesson.png",
+      "id": "a4800019-5e0c-83bd-801e-fe4a35351caf",
+      "bytes": 859120,
+      "sha256": "d5e2be52967ff6a8b48a5396a94a129a1ba4e2e76db0eaa07416f0b7f80ce337",
+      "md5": "d194cafd00476c255ecca991fa51f87a",
+      "state": "COMPLETE",
+      "captureBuild": "24"
+    },
+    {
+      "set": "ipad-13",
+      "file": "05-profile.png",
+      "id": "a4800019-5e0c-83bd-8037-c3651edd632c",
+      "bytes": 277648,
+      "sha256": "a70bfb66f2681d02634ee54274e3be76efc8a05d343dbb120bc34346d60140d2",
+      "md5": "91abb7a5dc6a3b7fc4feb6be7c0db501",
+      "state": "COMPLETE",
+      "captureBuild": "24"
+    },
+    {
+      "set": "ipad-13",
+      "file": "06-library.png",
+      "id": "0d400019-5e0c-83bd-802e-02bcd7976ff3",
+      "bytes": 1303703,
+      "sha256": "061b07f52a10a20723624d1b343667ab2ae0f7df9179412d058e1c96249e5eda",
+      "md5": "572652aa75ebf549d9910adeea84edcb",
+      "state": "COMPLETE",
+      "captureBuild": "24"
+    }
+  ]
+}

@@ -59,6 +59,19 @@ deployment `cebc82d2-36fa-4929-a73f-e37c6dc81e59` was requested. Fresh
 and terms pages; the privacy response mentions all 37 ladders and ten
 individual milestones.
 
+On 7 October, the site refreshed all 14 screenshot PNGs and 56 optimized
+AVIF/WebP variants from Crabrix source commit
+`d69161b1e9037e0d2c7ecdcb93881f890bd95113`. The site edit ended at
+`5872730910d27323488ba1d817c320303caf406d`; its image build and desktop/
+mobile preview checks passed, including 70 asset responses. Deployment
+`938a1125-fb27-4f61-984a-4ef209b74855` was requested on the existing
+Lovable project. Fresh public requests to `crabrix.com` returned HTTP 200 for
+home, privacy, technology, support, and terms. The rendered home contains the
+new Academy and Cyberpunk asset IDs. Three public PNG responses (Learn, iPad
+My Courses, and Cyberpunk Settings) matched the source SHA-256 digests. The
+Cyberpunk Settings capture is the unchanged prior release frame documented in
+the [build 24 screenshot evidence](app-store/asset-upload-2026-10-07-build24.json).
+
 **crabrix.com serves Lovable** and is Active and primary in Lovable. The four
 principal pages named above were fetched after the 2 October deployment;
 the earlier six-page comparison was on 8 September. `www.crabrix.com` still

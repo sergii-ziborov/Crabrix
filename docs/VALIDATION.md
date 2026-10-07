@@ -1,5 +1,17 @@
 # Validation record
 
+## Build 24 review candidate — 7 October 2026
+
+Build 24 changes the app build number from 23 and refreshes reviewer evidence; the compiled feature code and bundled runtime, toolchain, and CoursePacks are unchanged. Stable Xcode 27.0 (27A266a) built the Release Simulator app and signed iOS archive from source commit `8cab55b2a448224dccd6ac4b97e0cad015d44f51`. The 60,339,500-byte IPA passed ZIP integrity, strict distribution codesign verification, and Apple `altool --validate-app`; SHA-256 is `d7ea4b6da132a3015f2a2fb4b0b7d3b990d380129762c0a6de8d6fa1cbff14aa`.
+
+Apple accepted the upload (`85cc807a-b03b-491d-bae7-8b9b3af12947`) and processed it as `VALID` and `IN_BETA_TESTING` for Internal QA. The build 24 [What to Test](app-store/what-to-test-build24.txt), version 1.1 build selection, en-US description, and [Review Notes](app-store/review-notes.txt) all matched App Store Connect readback. Version 1.1 currently reports `PREPARE_FOR_SUBMISSION`; the earlier 1.0 (8) rejection remains historical. This upload did not submit 1.1 for review. The [build 24 manifest](releases/1.1-build24.json) records exact identities. Current screenshots and their upload evidence are tracked separately.
+
+The [App Store screenshot upload record](app-store/asset-upload-2026-10-07-build24.json) contains 17 RGB files with SHA-256 digests and asset IDs. Apple reported `COMPLETE` for all ten iPhone and seven iPad assets, and both ordered sets matched readback. Sixteen frames were captured from the build 24 Release Simulator. The unchanged Cyberpunk Settings frame was reused from earlier release evidence after a new Simulator capture was rejected as blank; Review Notes disclose this. The capture script now fails on nearly blank frames.
+
+The [site synchronization record](site-deploy.md) maps all 14 site screenshot PNGs and 56 AVIF/WebP variants to source commit `d69161b1e9037e0d2c7ecdcb93881f890bd95113`. The site image build and 70-asset desktop/mobile preview check passed. After deployment, public `crabrix.com` returned HTTP 200 for five key pages, its home HTML referenced new Academy and Cyberpunk asset IDs, and three public PNG SHA-256 digests matched local files. The site did not change app binary inputs.
+
+The most recent full Swift suite belongs to build 23 and passed 444 tests with 15 planned skips and zero failures. Build 24's PR checks are tracked separately. Physical-device TestFlight checks, including signed-in Game Center behavior and the reported lesson/project regressions, remain for testers; they are not counted as passed here.
+
 ## Build 23 full Game Center achievement mapping — 5 October 2026
 
 The signed 1.1 (23) iOS archive includes optional Game Center with 47 configured achievement IDs: 37 family achievements representing all 185 five-tier local awards, plus the ten individual milestones already present in build 22. A selected iOS 18.2 Simulator test passed with zero failures, checking the full family and ID mapping, previously awarded tiers, and opt-out preservation. [PR #62 Release checks](https://github.com/sergii-ziborov/Crabrix/actions/runs/37289213632) passed 444 Swift tests with 15 planned skips and zero failures, built an unsigned Release candidate, and verified GameKit linkage and the online-path boundary.
