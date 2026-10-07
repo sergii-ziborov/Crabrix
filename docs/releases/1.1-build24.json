@@ -245,19 +245,20 @@
     "whatToTestLocalizationID": "492f05b8-7cba-4e83-9a7d-d1b70409d57d",
     "screenshotEvidence": "docs/app-store/asset-upload-2026-10-07-build24.json",
     "screenshotNote": "App Store Connect readback verified ten iPhone 6.9-inch and seven iPad 13-inch RGB screenshots in requested order. Sixteen frames were captured from build 24 Release Simulator; the unchanged Cyberpunk Settings frame was reused from a prior release capture after a blank Simulator frame was rejected.",
-    "listingReadback": "The en-US description was updated to name Files import consistently with the visible button and matched App Store Connect readback. Updated build 24 Review Notes matched readback."
+    "listingReadback": "The en-US description was updated to name Files import consistently with the visible button and matched App Store Connect readback. Updated build 24 Review Notes matched readback.",
+    "appStoreState": "PREPARE_FOR_SUBMISSION"
   },
   "verified": [
     "Xcode 27.0 stable produced Release Simulator and signed iOS archive builds from the build input commit; both build commands succeeded.",
     "The 60,339,500-byte IPA passed ZIP integrity, distribution codesign verification, and Apple altool --validate-app. Its SHA-256 is recorded above.",
     "The compiler, sysroot, lock, active catalog, keyring, and transition CoursePack descriptor/archive digests matched the previous release manifest; these bundled inputs did not change.",
-    "Apple accepted build 24 and processed it as VALID. Internal QA membership, IN_BETA_TESTING, What to Test, and selection on rejected App Store version 1.1 matched API readback.",
+    "Apple accepted build 24 and processed it as VALID. Internal QA membership, IN_BETA_TESTING, What to Test, and selection on App Store version 1.1, which reports PREPARE_FOR_SUBMISSION matched API readback.",
     "The updated en-US description and build 24 Review Notes matched App Store Connect API readback.",
     "Build 23 PR #62 passed 444 Swift tests with 15 planned skips and zero failures; build 24 changes only the build number in app inputs.",
-    "Seventeen App Store screenshots reached COMPLETE and the ordered iPhone/iPad sets matched API readback; their local SHA-256 digests are recorded in screenshot evidence. Sixteen were captured from build 24 and one unchanged Settings frame was reused from prior release evidence."
+    "Seventeen App Store screenshots reached COMPLETE and the ordered iPhone/iPad sets matched API readback; their local SHA-256 digests are recorded in screenshot evidence. Sixteen were captured from build 24 and one unchanged Settings frame was reused from prior release evidence.",
+    "The website image build and 70-asset preview check passed. Public crabrix.com served five key pages and new Academy/Cyberpunk references; three fetched PNG digests matched source."
   ],
   "pending": [
-    "Publish and verify the refreshed site screenshot copies.",
     "Physical-device TestFlight tester verification of Game Center sign-in, rating and ladder progress, Apple panels, opt-out persistence, account switching, and offline catch-up.",
     "Physical-device tester checks inherited from build 22: lesson feedback, nested project files, and supported syn build.",
     "Review App Privacy questionnaire for optional Apple Game Center before App Review.",
@@ -280,7 +281,9 @@
   "site": {
     "publicURL": "https://crabrix.com",
     "copyProjectCommit": "97c6367b97a31cdacd5db6aa56d7bdeacba58aa3",
-    "screenshotProjectCommit": "e0c703376a86f349791f9b8c3ee243202abb2d6c",
-    "verification": "The live site uses prior screenshots until build 24 imagery is deployed and publicly verified."
+    "screenshotProjectCommit": "5872730910d27323488ba1d817c320303caf406d",
+    "verification": "The Lovable image build and desktop/mobile preview passed with 70 PNG/AVIF/WebP asset responses. Public crabrix.com returned HTTP 200 for home, privacy, technology, support, and terms, included new Academy/Cyberpunk asset IDs, and three public PNG digests matched local source files.",
+    "screenshotSourceCommit": "d69161b1e9037e0d2c7ecdcb93881f890bd95113",
+    "deploymentID": "938a1125-fb27-4f61-984a-4ef209b74855"
   }
 }

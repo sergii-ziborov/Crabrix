@@ -1,7 +1,9 @@
 > Current status — 7 October 2026: **1.1 (24)** is **VALID** and
 > **IN_BETA_TESTING** in TestFlight Internal QA. Its signed IPA, Apple
 > validation, upload, group membership, What to Test, and selection on the
-> rejected 1.1 App Store version were read back. The en-US description and
+> 1.1 App Store version were read back. Version 1.1 reports
+> **PREPARE_FOR_SUBMISSION**; the earlier 1.0 (8) rejection is historical.
+> The en-US description and
 > Review Notes describe this build. All ten iPhone and seven iPad App Store
 > screenshots were uploaded and verified; the unchanged Settings frame was
 > reused from prior release evidence after a blank Simulator capture was

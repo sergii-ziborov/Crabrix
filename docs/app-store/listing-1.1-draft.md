@@ -9,8 +9,9 @@ Before App Review, review the App Privacy questionnaire and test Game Center
 sign-in and score submission on a physical device.
 
 The optional [What's New draft](whats-new-1.1.txt) is not live in App Store
-Connect: its API rejected the edit with HTTP 409 while version 1.1 is in the
-current rejected state. The description and Review Notes edits were saved and
+Connect: its API rejected the edit with HTTP 409 while version 1.1 reports
+PREPARE_FOR_SUBMISSION. The reason for this field-level restriction is not
+established. The description and Review Notes edits were saved and
 read back. Keep this distinction in release evidence.
 
 ## Promotional text
