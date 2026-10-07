@@ -1,16 +1,17 @@
 # Crabrix 1.1 App Store copy
 
-This is the proposed App Store copy for 1.1 (23). Game Center is optional and
-off by default. All 17 iPhone and iPad screenshots were recaptured from the
-1.1 (22) Release Simulator build, uploaded or retained by matching digest, and
-verified in display order, including Profile with Game Center off. Build 23
-changes Game Center submission and the signed-in explanation, which these
-screenshots do not show. See the build 22 [release manifest](../releases/1.1-build22.json)
-and [screenshot evidence](asset-upload-2026-10-05-build22.json).
-The en-US description and promotional text below were saved in App Store
-Connect and read back for the 1.1 draft. Before App Review, review the App
-Privacy questionnaire and test Game Center sign-in and score submission on a
-physical device.
+This is the proposed App Store copy for 1.1 (24). Game Center is optional and
+off by default. The en-US description and promotional text below were saved
+in App Store Connect and read back for the 1.1 draft. The release evidence
+identifies the final screenshots, binary, and selected build in the
+[release manifest](../releases/1.1-build24.json) and [screenshot evidence](asset-upload-2026-10-07-build24.json).
+Before App Review, review the App Privacy questionnaire and test Game Center
+sign-in and score submission on a physical device.
+
+The optional [What's New draft](whats-new-1.1.txt) is not live in App Store
+Connect: its API rejected the edit with HTTP 409 while version 1.1 is in the
+current rejected state. The description and Review Notes edits were saved and
+read back. Keep this distinction in release evidence.
 
 ## Promotional text
 
@@ -43,7 +44,7 @@ BUILD YOUR OWN PROJECT
 The project workspace has a native file tree, syntax-aware editor, Code and
 Output views, and compiler diagnostics that point to source spans. My Projects
 opens the project manager. New Project offers local templates and imports from
-GitHub and Files/iCloud Drive. Check and Run use Crabrix's source-built Rust
+GitHub and Files. Check and Run use Crabrix's source-built Rust
 compiler bundled with the app. Lesson hints appear in Output while you work.
 
 CARGO IN THE PROJECT
@@ -78,9 +79,8 @@ purchase; no subscription or in-app purchase is required.
 
 ## Reviewer path
 
-Use [review-notes.txt](review-notes.txt) with the verified 1.1 build 22
-screenshots. Build 23 changes achievement submission and signed-in copy, which
-those screenshots do not depict. The historical 1.0 screenshots are not 1.1 evidence.
+Use [review-notes.txt](review-notes.txt) with the verified 1.1 build 24
+screenshots. The historical 1.0 screenshots are not 1.1 evidence.
 
 ## What to test in TestFlight
 

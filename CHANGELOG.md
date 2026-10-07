@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1 (24) — 2026-10-07
+
+- Refresh the release build, App Store screenshots, documentation, and reviewer guidance for the 1.1 candidate. No app behavior changes from build 23.
+
+## 1.1 (23) — 2026-10-05
+
+- Map all 37 five-tier local achievement ladders to Game Center progress while retaining the ten earlier individual milestones. Game Center remains optional and off by default.
+
 ## 1.1 (22) — 2026-10-05
 
 - Add an off-by-default Game Center switch to Profile. When enabled, the local rating can appear on Apple's leaderboard and ten selected milestones sync to Apple achievements.

@@ -1,4 +1,16 @@
-> Current status — 5 October 2026: **1.1 (21)** is **VALID** and
+> Current status — 7 October 2026: **1.1 (24)** is **VALID** and
+> **IN_BETA_TESTING** in TestFlight Internal QA. Its signed IPA, Apple
+> validation, upload, group membership, What to Test, and selection on the
+> rejected 1.1 App Store version were read back. The en-US description and
+> Review Notes describe this build. All ten iPhone and seven iPad App Store
+> screenshots were uploaded and verified; the unchanged Settings frame was
+> reused from prior release evidence after a blank Simulator capture was
+> rejected. Physical-device tester verification remains. No new App
+> Review submission has occurred. See the [build 24 manifest](../releases/1.1-build24.json),
+> [validation record](../VALIDATION.md), and [draft reply to the earlier 4.3(a)
+> rejection](rejection-response-1.1-build24.md).
+
+> Earlier status — 5 October 2026: **1.1 (21)** is **VALID** and
 > **IN_BETA_TESTING** in TestFlight Internal QA. The signed IPA, Apple
 > validation, upload, saved What to Test, and tester-group membership were
 > verified. [The build manifest](../releases/1.1-build21.json) and

@@ -1,4 +1,10 @@
-Crabrix 1.1 (23) Game Center candidate.
+Crabrix 1.1 (24) review candidate.
+
+Since rejected 1.0 (8), 1.1 adds seven selectable Academy downloads, 46
+downloadable open Code Examples, durable lesson projects, nested files, local
+Cargo workflows, and a simpler editor. It bundles our maintained WasmKit 0.4.1
+fork and source-built pinned Rust toolchain. The screenshots and steps below
+correspond to build 24.
 
 Crabrix is a native Rust development and learning environment. No account or
 subscription is needed. The compiler, WebAssembly runtime, and WASI sysroot
@@ -30,7 +36,7 @@ installed course.
 
 PROJECTS AND PACKAGES
 My Projects opens the project manager. New Project offers templates and
-user-initiated imports from GitHub or Files/iCloud Drive. Cargo packages are
+user-initiated imports from GitHub or Files. Cargo packages are
 managed inside the open project. For a supported package, downloaded source
 can be inspected and copied into a project with Vendor & Edit, then compiled
 under a distinct local fingerprint or reset to the registry source.
@@ -43,7 +49,7 @@ SDK, or upload of user projects and detailed course progress. Course, crate,
 and GitHub downloads make ordinary HTTPS requests to their respective hosts.
 Profile has an off-by-default Game Center switch. If enabled, Crabrix submits
 the local numeric rating, progress for all 37 five-tier achievement ladders,
-and the ten previously published individual milestones to Apple's Game Center.
+and the ten earlier configured individual milestones to Apple's Game Center.
 There is no Crabrix account or proprietary online leaderboard. Switching
 it off stops future submissions and preserves local progress; Apple may retain
 scores already submitted. The leaderboard and achievement screens are Apple's.
@@ -55,7 +61,7 @@ or create a remote account.
 
 This build bundles the signed source-built Crabrix Rust toolchain
 `crabrix-rust-2026-10-02.1`, prepared from pinned sources and verified on the
-build Mac. The public CrabrixRuntime fork is based on WasmKit 0.4.1. Its iPhone
-and iPad screenshots currently in App Store Connect were refreshed from the 1.1
-(22) Release Simulator app on 5 October 2026, including Profile with Game Center
-off. Signed physical-device Game Center testing remains before App Review submission.
+build Mac. The public CrabrixRuntime fork is based on WasmKit 0.4.1. The
+screenshots match 1.1 (24); the unchanged Settings frame was reused from an
+earlier build. Game Center
+sign-in and Face ID require a physical device; both features are optional.
