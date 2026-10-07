@@ -1,7 +1,10 @@
 # Draft reply for the 4.3(a) rejection
 
-Use this in the existing App Review conversation after the refreshed 1.1 (24)
-metadata and screenshots are saved. This is a draft; it has not been sent.
+Use this in the existing App Review submission
+`67fcdbd6-987a-4865-ae9e-1726e08331a2` after the refreshed 1.1 (24)
+metadata and screenshots are saved. The submission still shows Unresolved
+Issues, even though its item now shows 1.1 (24); Apple's September 29 message
+specifically says it reviewed 1.0 (8). This is a draft; it has not been sent.
 
 > Hello App Review,
 >

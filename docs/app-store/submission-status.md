@@ -2,15 +2,24 @@
 > **IN_BETA_TESTING** in TestFlight Internal QA. Its signed IPA, Apple
 > validation, upload, group membership, What to Test, and selection on the
 > 1.1 App Store version were read back. Version 1.1 reports
-> **PREPARE_FOR_SUBMISSION**; the earlier 1.0 (8) rejection is historical.
+> **PREPARE_FOR_SUBMISSION**. The existing App Review submission still reports
+> **Unresolved Issues**: its current item is 1.1 (24), while Apple's latest
+> 4.3(a) message says it reviewed 1.0 (8). The issue remains open until a
+> further review accepts the replacement.
 > The en-US description and
 > Review Notes describe this build. All ten iPhone and seven iPad App Store
 > screenshots were uploaded and verified; the unchanged Settings frame was
 > reused from prior release evidence after a blank Simulator capture was
-> rejected. Physical-device tester verification remains. No new App
-> Review submission has occurred. See the [build 24 manifest](../releases/1.1-build24.json),
+> rejected. Physical-device tester verification remains. Build 24 has not
+> been resubmitted for App Review. See the [build 24 manifest](../releases/1.1-build24.json),
 > [validation record](../VALIDATION.md), and [draft reply to the earlier 4.3(a)
 > rejection](rejection-response-1.1-build24.md).
+
+After device QA and App Privacy review, use the existing submission's
+**Edit → Add for Review → Resubmit to App Review** path, with the prepared reply
+in its message thread. Apple's [unresolved-issues instructions](https://developer.apple.com/help/app-store-connect/manage-submissions-to-app-review/manage-a-submission-with-unresolved-issues)
+describe this path; creating another version is unnecessary for the current
+1.1 (24) replacement.
 
 > Earlier status — 5 October 2026: **1.1 (21)** is **VALID** and
 > **IN_BETA_TESTING** in TestFlight Internal QA. The signed IPA, Apple

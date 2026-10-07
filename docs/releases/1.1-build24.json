@@ -246,15 +246,21 @@
     "screenshotEvidence": "docs/app-store/asset-upload-2026-10-07-build24.json",
     "screenshotNote": "App Store Connect readback verified ten iPhone 6.9-inch and seven iPad 13-inch RGB screenshots in requested order. Sixteen frames were captured from build 24 Release Simulator; the unchanged Cyberpunk Settings frame was reused from a prior release capture after a blank Simulator frame was rejected.",
     "listingReadback": "The en-US description was updated to name Files import consistently with the visible button and matched App Store Connect readback. Updated build 24 Review Notes matched readback.",
-    "appStoreState": "PREPARE_FOR_SUBMISSION"
+    "appStoreState": "PREPARE_FOR_SUBMISSION",
+    "reviewSubmissionID": "67fcdbd6-987a-4865-ae9e-1726e08331a2",
+    "reviewSubmissionUIState": "Unresolved Issues",
+    "reviewSubmissionCurrentItem": "iOS 1.1 (24)",
+    "lastAppleMessageReviewedBuild": "1.0 (8)",
+    "gameCenterAppVersionEnabled": true
   },
   "verified": [
     "Xcode 27.0 stable produced Release Simulator and signed iOS archive builds from the build input commit; both build commands succeeded.",
     "The 60,339,500-byte IPA passed ZIP integrity, distribution codesign verification, and Apple altool --validate-app. Its SHA-256 is recorded above.",
     "The compiler, sysroot, lock, active catalog, keyring, and transition CoursePack descriptor/archive digests matched the previous release manifest; these bundled inputs did not change.",
     "Apple accepted build 24 and processed it as VALID. Internal QA membership, IN_BETA_TESTING, What to Test, and selection on App Store version 1.1, which reports PREPARE_FOR_SUBMISSION matched API readback.",
+    "The existing App Review submission still showed Unresolved Issues in App Store Connect: its current item was iOS 1.1 (24), while the last Apple message named reviewed build 1.0 (8). Game Center was enabled for the 1.1 app version in API readback.",
     "The updated en-US description and build 24 Review Notes matched App Store Connect API readback.",
-    "Build 23 PR #62 passed 444 Swift tests with 15 planned skips and zero failures; build 24 changes only the build number in app inputs.",
+    "Build 24 PR #64 passed its fast Swift suite, unsigned Release build, and production binary linkage check; the compiler gate was skipped by PR policy. Build 24 changes only the build number in app inputs.",
     "Seventeen App Store screenshots reached COMPLETE and the ordered iPhone/iPad sets matched API readback; their local SHA-256 digests are recorded in screenshot evidence. Sixteen were captured from build 24 and one unchanged Settings frame was reused from prior release evidence.",
     "The website image build and 70-asset preview check passed. Public crabrix.com served five key pages and new Academy/Cyberpunk references; three fetched PNG digests matched source."
   ],
