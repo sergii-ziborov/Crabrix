@@ -76,19 +76,24 @@ def shot(udid: str, destination: Path, *arguments: str) -> None:
     time.sleep(12 if "-CrabrixLearn" in arguments
                or any(value.startswith("--crabrix-auto-") for value in arguments) else 6)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    run("xcrun", "simctl", "io", udid, "screenshot", "--type=png", str(destination))
-    # Simulator PNGs carry an opaque alpha channel. App Store Connect rejects
-    # alpha channels even when every pixel is fully opaque.
-    with Image.open(destination) as captured:
-        if "A" in captured.getbands() and captured.getchannel("A").getextrema() != (255, 255):
-            raise RuntimeError(f"Screenshot has translucent pixels: {destination}")
-        rgb = captured.convert("RGB")
+    pending = destination.with_name(destination.stem + ".pending.png")
+    try:
+        run("xcrun", "simctl", "io", udid, "screenshot", "--type=png", str(pending))
+        # Simulator PNGs carry an opaque alpha channel. App Store Connect
+        # rejects alpha channels even when every pixel is fully opaque.
+        with Image.open(pending) as captured:
+            if "A" in captured.getbands() and captured.getchannel("A").getextrema() != (255, 255):
+                raise RuntimeError(f"Screenshot has translucent pixels: {destination}")
+            rgb = captured.convert("RGB")
         # A launch can return before SwiftUI paints anything below the status
-        # bar. Reject that frame before it reaches README or App Store Connect.
+        # bar. Reject that frame before replacing a valid prior capture.
         app_area = rgb.crop((0, rgb.height // 10, rgb.width, rgb.height * 9 // 10))
         if max(ImageStat.Stat(app_area).stddev) < 5:
             raise RuntimeError(f"Screenshot is blank or still launching: {destination}")
-        rgb.save(destination, format="PNG")
+        rgb.save(pending, format="PNG")
+        pending.replace(destination)
+    finally:
+        pending.unlink(missing_ok=True)
     print(destination.relative_to(ROOT), flush=True)
 
 
