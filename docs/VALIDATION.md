@@ -1,5 +1,11 @@
 # Validation record
 
+## App Review resubmission — 8 October 2026
+
+Crabrix 1.1 (24) was resubmitted in the existing App Review submission `67fcdbd6-987a-4865-ae9e-1726e08331a2` after replacing the rejected item. App Store Connect UI and API both reported `WAITING_FOR_REVIEW` for the submission and version; the item was `READY_FOR_REVIEW` in the API. The [reply to Apple's 4.3(a) message](app-store/rejection-response-1.1-build24.md) was sent and appeared as the sixth message in the existing thread. Manual release remains selected, so approval alone will not publish the version.
+
+The subsequent [main compiler-gate run](https://github.com/sergii-ziborov/Crabrix/actions/runs/37688461328) completed 23 of 24 tests successfully. Its Stop recovery timing test measured 5.19 seconds against a 5.0-second CI threshold and failed; the fast Swift test job passed. The earlier main compiler gate on the unchanged feature code passed all 24 tests. This result is recorded as a failed timing gate, not a pass or a compiler correctness failure. Physical-device results reported by the owner are separate from automated CI evidence.
+
 ## Build 24 review candidate — 7 October 2026
 
 Build 24 changes the app build number from 23 and refreshes reviewer evidence; the compiled feature code and bundled runtime, toolchain, and CoursePacks are unchanged. Stable Xcode 27.0 (27A266a) built the Release Simulator app and signed iOS archive from source commit `8cab55b2a448224dccd6ac4b97e0cad015d44f51`. The 60,339,500-byte IPA passed ZIP integrity, strict distribution codesign verification, and Apple `altool --validate-app`; SHA-256 is `d7ea4b6da132a3015f2a2fb4b0b7d3b990d380129762c0a6de8d6fa1cbff14aa`.

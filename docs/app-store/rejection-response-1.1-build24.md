@@ -1,10 +1,9 @@
-# Draft reply for the 4.3(a) rejection
+# Reply sent for the 4.3(a) rejection
 
-Use this in the existing App Review submission
-`67fcdbd6-987a-4865-ae9e-1726e08331a2` after the refreshed 1.1 (24)
-metadata and screenshots are saved. The submission still shows Unresolved
-Issues, even though its item now shows 1.1 (24); Apple's September 29 message
-specifically says it reviewed 1.0 (8). This is a draft; it has not been sent.
+Sent on 8 October 2026 in the existing App Review submission
+`67fcdbd6-987a-4865-ae9e-1726e08331a2`, after the refreshed 1.1 (24)
+metadata and screenshots were saved. It appeared as the sixth message in the
+thread. Apple's September 29 message specifically says it reviewed 1.0 (8).
 
 > Hello App Review,
 >
@@ -52,4 +51,5 @@ specifically says it reviewed 1.0 (8). This is a draft; it has not been sent.
 
 The reply describes observed features only. It does not assert that changing
 WasmKit alone resolves 4.3(a), guarantee approval, or claim a universal speed
-ratio. Sending it and pressing **Submit for Review** are separate actions.
+ratio. The 1.1 (24) item was subsequently resubmitted; App Store Connect
+reported **Waiting for Review**.
