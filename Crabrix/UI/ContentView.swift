@@ -99,9 +99,7 @@ struct ContentView: View {
         CrabrixDestination.launchArgument ?? .projects
     @State private var isWorkspaceOpen = CrabrixDestination.launchesWorkspace
     @State private var projectSidebarWidth: CGFloat = 220
-    @State private var inspectorWidth: CGFloat = 390
     @State private var isProjectSidebarCollapsed = false
-    @State private var isInspectorCollapsed = false
     @State private var isCompactProjectDrawerPresented = false
     @State private var isDiagnosticHelpPresented = false
     @State private var selectedBuildDockTab: BuildDockTab = .code
@@ -592,15 +590,12 @@ struct ContentView: View {
             EditorToolbar(
                 activity: model.activity,
                 cargoStage: model.cargoStage,
-                result: model.result,
                 files: model.fileNames,
                 selectedFile: model.selectedFile,
                 isProjectSidebarCollapsed: horizontalSizeClass == .regular
                     ? false
                     : !isCompactProjectDrawerPresented,
                 showsProjectSidebarToggle: horizontalSizeClass != .regular,
-                showsInspectorToggle: horizontalSizeClass == .regular,
-                isInspectorCollapsed: isInspectorCollapsed,
                 onSelectFile: selectEditorFile,
                 onToggleProjectSidebar: {
                     if horizontalSizeClass == .regular {
@@ -608,18 +603,6 @@ struct ContentView: View {
                     } else {
                         withAnimation(.easeInOut(duration: 0.22)) {
                             isCompactProjectDrawerPresented.toggle()
-                        }
-                    }
-                },
-                onToggleInspector: {
-                    let inspectorIsCollapsed = isInspectorCollapsed
-                    if inspectorIsCollapsed, model.primaryDiagnostic != nil {
-                        presentDiagnosticAdvisor()
-                        return
-                    }
-                    if horizontalSizeClass == .regular {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            isInspectorCollapsed.toggle()
                         }
                     }
                 }
@@ -784,20 +767,6 @@ struct ContentView: View {
 
                         editorPane
                             .frame(minWidth: 340)
-
-                        ResizablePanelDivider(
-                            edge: .trailing,
-                            width: $inspectorWidth,
-                            isCollapsed: $isInspectorCollapsed,
-                            minimumWidth: 320,
-                            maximumWidth: 560
-                        )
-
-                        if !isInspectorCollapsed {
-                            inspectorPane
-                                .frame(width: inspectorWidth)
-                                .transition(.move(edge: .trailing).combined(with: .opacity))
-                        }
                     }
                 } else {
                     compactBuildWorkspace
@@ -975,12 +944,8 @@ struct ContentView: View {
         }
 
         withAnimation(.easeOut(duration: 0.22)) {
-            if horizontalSizeClass == .regular {
-                isInspectorCollapsed = false
-            } else {
-                isCompactProjectDrawerPresented = false
-                isDiagnosticHelpPresented = true
-            }
+            isCompactProjectDrawerPresented = false
+            isDiagnosticHelpPresented = true
         }
     }
 
@@ -1016,62 +981,6 @@ struct ContentView: View {
         )
         editorCursorOffset = offset + (suggestion.insertion as NSString).length
         completion.dismiss()
-    }
-
-    @ViewBuilder
-    private var inspectorPane: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                // One place in the workspace starts, reports, and stops a build,
-                // and it stays put as the panel below it changes.
-                BuildWorkflowControls(
-                    activity: model.activity,
-                    cargoStage: model.cargoStage,
-                    result: model.result,
-                    canRun: model.canStartBuild && !model.isProjectOperationInProgress,
-                    onCheck: model.check,
-                    onRun: model.run,
-                    onCancel: model.cancelBuild
-                )
-
-                if let result = model.result, result.succeeded {
-                    SuccessInspector(
-                        result: result,
-                        practiceCompleted: model.practiceCompleted,
-                        canContinueLearning: model.canContinueFromLessonResult,
-                        lessonEvidenceMessage: model.lessonEvidenceMessage,
-                        contribution: lastContribution,
-                        onRunNext: model.run,
-                        onContinueLearning: continueLearning
-                    )
-                } else if let diagnostic = model.primaryDiagnostic {
-                    DiagnosticInspector(
-                        diagnostic: diagnostic,
-                        canRepair: BorrowRepair.apply(to: model.source, diagnostic: diagnostic) != nil,
-                        practiceCompleted: model.practiceCompleted,
-                        adviceState: model.diagnosticAdviceState,
-                        onRepair: model.applyRepair,
-                        onRequestAdvice: model.requestAppleIntelligenceAdvice,
-                        onCancelAdvice: model.cancelAppleIntelligenceAdvice,
-                        onApplyAdvice: model.applyAppleIntelligenceAdvice,
-                        onPractice: model.presentPractice
-                    )
-                } else {
-                    RuntimeInspector(
-                        toolchain: model.toolchain,
-                        activity: model.activity
-                    )
-                }
-            }
-            .padding(22)
-        }
-        .background(
-            LinearGradient(
-                colors: [CrabrixTheme.panel, CrabrixTheme.background],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
     }
 
     /// What finishing this step is worth.
@@ -1688,25 +1597,15 @@ struct ProgrammingEnvironmentBar: View {
 private struct EditorToolbar: View {
     let activity: CompilerViewModel.Activity
     let cargoStage: CargoPreparationStage
-    let result: CompilationResult?
     let files: [String]
     let selectedFile: String
     let isProjectSidebarCollapsed: Bool
     /// iPad keeps the files panel on screen, so it offers no button to hide it.
     var showsProjectSidebarToggle = true
-    var showsInspectorToggle = true
-    let isInspectorCollapsed: Bool
     let onSelectFile: (String) -> Void
     let onToggleProjectSidebar: () -> Void
-    let onToggleInspector: () -> Void
 
-    private var hasCompilerError: Bool {
-        result?.diagnostics.contains(where: { $0.level == "error" }) == true
-    }
-
-    /// Build controls live in the project details inspector. What stays above the editor
-    /// is a read-only line, so a multi-minute build is never silent while the
-    /// inspector is closed.
+    /// The running state stays visible above the editor on both device sizes.
     private var buildStatus: some View {
         HStack(spacing: 7) {
             ProgressView().controlSize(.mini).tint(CrabrixTheme.amber)
@@ -1757,20 +1656,6 @@ private struct EditorToolbar: View {
                 }
                 .disabled(activity != .idle)
                 Spacer()
-
-                if showsInspectorToggle { PanelToolbarButton(
-                    title: isInspectorCollapsed
-                        ? (hasCompilerError ? "Show Apple Intelligence error help" : "Show inspector")
-                        : "Hide inspector",
-                    systemImage: hasCompilerError && isInspectorCollapsed
-                        ? "apple.intelligence"
-                        : "sidebar.right",
-                    isCollapsed: isInspectorCollapsed,
-                    visibleTitle: isInspectorCollapsed
-                        ? (hasCompilerError ? "Fix" : "Details")
-                        : nil,
-                    action: onToggleInspector
-                ) }
             }
 
             Divider().overlay(CrabrixTheme.border)
