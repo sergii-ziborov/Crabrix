@@ -661,10 +661,7 @@ struct ContentView: View {
                 diagnosticAdviceState: model.diagnosticAdviceState,
                 onOpenDiagnosticAdvisor: presentDiagnosticAdvisor,
                 onContinueLearning: continueLearning,
-                keyboardBridge: editorKeyboard,
-                assistantUsesAppleIntelligence: appleIntelligenceCompletion
-                    && RustCompletionSupport.isAppleIntelligenceAvailable,
-                onRequestCompletion: requestEditorAssistant
+                keyboardBridge: editorKeyboard
             ) {
                 codeWorkspace
             }

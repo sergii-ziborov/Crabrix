@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 enum BuildDockTab: String, CaseIterable, Identifiable {
     case code
@@ -54,8 +55,6 @@ struct BuildDockView<CodeContent: View>: View {
     let onOpenDiagnosticAdvisor: () -> Void
     let onContinueLearning: () -> Void
     let keyboardBridge: RustEditorKeyboardBridge
-    let assistantUsesAppleIntelligence: Bool
-    let onRequestCompletion: () -> Void
     let codeContent: CodeContent
 
     init(
@@ -80,8 +79,6 @@ struct BuildDockView<CodeContent: View>: View {
         onOpenDiagnosticAdvisor: @escaping () -> Void,
         onContinueLearning: @escaping () -> Void,
         keyboardBridge: RustEditorKeyboardBridge,
-        assistantUsesAppleIntelligence: Bool,
-        onRequestCompletion: @escaping () -> Void,
         @ViewBuilder codeContent: () -> CodeContent
     ) {
         _selectedTab = selectedTab
@@ -105,14 +102,14 @@ struct BuildDockView<CodeContent: View>: View {
         self.onOpenDiagnosticAdvisor = onOpenDiagnosticAdvisor
         self.onContinueLearning = onContinueLearning
         self.keyboardBridge = keyboardBridge
-        self.assistantUsesAppleIntelligence = assistantUsesAppleIntelligence
-        self.onRequestCompletion = onRequestCompletion
         self.codeContent = codeContent()
     }
 
     var body: some View {
         GeometryReader { geometry in
             let fold = AdaptiveFold.horizontal(in: geometry)
+            let keyboardAccessoryInset: CGFloat =
+                selectedTab == .code || selectedTab == .terminal ? 34 : 0
             VStack(spacing: 0) {
                 if let fold,
                    fold.minY > 120,
@@ -123,25 +120,13 @@ struct BuildDockView<CodeContent: View>: View {
                         if selectedTab == .terminal { terminalContent(autoFocus: true) }
                         else { codeContent }
                     }
-                        // The hinge is still visible display area in laptop
-                        // pose. Let the upper pane use it instead of leaving a
-                        // dead strip between the editor and lower controls.
-                        // The terminal's system keyboard includes a taller
-                        // suggestion strip than the code editor keyboard.
-                        // Reserve the tab row at the end of the upper pane so
-                        // it remains visible directly above that keyboard.
-                        .frame(height: fold.maxY - (selectedTab == .terminal ? 34 : 0))
+                        // Both input fields use the same keyboard accessory.
+                        // Keep the tabs at one position while switching
+                        // between Code and Terminal.
+                        .frame(height: fold.maxY - keyboardAccessoryInset)
                         .clipped()
                     header(tabletop: true)
-                    if selectedTab == .code {
-                        RustKeyboardShortcutRow(
-                            bridge: keyboardBridge,
-                            usesAppleIntelligence: assistantUsesAppleIntelligence,
-                            onComplete: onRequestCompletion
-                        )
-                        .padding(.bottom, 6)
-                        Spacer(minLength: 0)
-                    } else if selectedTab == .terminal {
+                    if selectedTab == .code || selectedTab == .terminal {
                         Spacer(minLength: 0)
                     } else {
                         content
@@ -156,7 +141,7 @@ struct BuildDockView<CodeContent: View>: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .preference(
                 key: TabletopTabsGlobalYPreferenceKey.self,
-                value: fold.map { geometry.frame(in: .global).minY + $0.maxY - (selectedTab == .terminal ? 34 : 0) }
+                value: fold.map { geometry.frame(in: .global).minY + $0.maxY - keyboardAccessoryInset }
             )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -263,47 +248,6 @@ struct BuildDockView<CodeContent: View>: View {
             onContinueLearning: onContinueLearning
         )
         .id(lessonHint?.sessionToken)
-    }
-}
-
-private struct RustKeyboardShortcutRow: View {
-    let bridge: RustEditorKeyboardBridge
-    let usesAppleIntelligence: Bool
-    let onComplete: () -> Void
-
-    private let symbols = ["::", "->", "=>", "&", "&mut ", "|", "_", "!", "<", ">", "{", "}", "[", "]", "(", ")", ";"]
-
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 5) {
-                Button(action: onComplete) {
-                    Image(systemName: usesAppleIntelligence ? "sparkles" : "curlybraces")
-                        .foregroundStyle(usesAppleIntelligence ? Color.blue : CrabrixTheme.primary)
-                        .frame(width: 34, height: 24)
-                }
-                .accessibilityLabel(usesAppleIntelligence
-                    ? "Complete Rust code with Apple Intelligence"
-                    : "Complete Rust code offline")
-
-                Divider().frame(height: 24)
-
-                ForEach(symbols, id: \.self) { symbol in
-                    Button { bridge.insertSymbol(symbol) } label: {
-                        Text(symbol)
-                            .font(.system(size: 11, weight: .medium, design: .monospaced))
-                            .foregroundStyle(CrabrixTheme.primary)
-                            .padding(.horizontal, 11)
-                            .frame(height: 24)
-                            .background(CrabrixTheme.raised, in: RoundedRectangle(cornerRadius: 5))
-                    }
-                    .accessibilityLabel(symbol)
-                }
-            }
-            .buttonStyle(.plain)
-            .padding(.horizontal, 7)
-        }
-        .frame(height: 28)
-        .background(CrabrixTheme.panel)
     }
 }
 
@@ -716,7 +660,7 @@ private struct OutputStreamBlock: View {
 
 private struct TerminalDockContent: View {
     @ObservedObject var terminal: ProjectTerminalSession
-    @FocusState private var commandIsFocused: Bool
+    @State private var commandIsFocused = false
     let project: CrabrixProject
     let activity: CompilerViewModel.Activity
     let canStartBuild: Bool
@@ -784,13 +728,12 @@ private struct TerminalDockContent: View {
                     .foregroundStyle(CrabrixTheme.mint)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
-                TextField("command", text: $terminal.command)
-                    .textFieldStyle(.plain)
-                    .focused($commandIsFocused)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .submitLabel(.send)
-                    .onSubmit(submit)
+                TerminalCommandField(
+                    text: $terminal.command,
+                    isFocused: $commandIsFocused,
+                    onSubmit: submit,
+                    onHelp: { run("help") }
+                )
                     .padding(.horizontal, 10)
                     .frame(height: 34)
                     .background(Color.black.opacity(0.22), in: RoundedRectangle(cornerRadius: 8))
@@ -813,13 +756,6 @@ private struct TerminalDockContent: View {
                 }
                 .disabled(!terminal.canRecallNext)
                 .accessibilityLabel("Next command")
-                Button {
-                    commandIsFocused = false
-                } label: {
-                    Image(systemName: "keyboard.chevron.compact.down")
-                        .frame(width: 24, height: 34)
-                }
-                .accessibilityLabel("Hide keyboard")
                 Button(action: submit) {
                     Label("Run", systemImage: "return")
                         .font(.caption.bold())
@@ -872,6 +808,88 @@ private struct TerminalDockContent: View {
         commandIsFocused = true
     }
 
+}
+
+private struct TerminalCommandField: UIViewRepresentable {
+    @Binding var text: String
+    @Binding var isFocused: Bool
+    @Environment(\.colorScheme) private var colorScheme
+    let onSubmit: () -> Void
+    let onHelp: () -> Void
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    func makeUIView(context: Context) -> UITextField {
+        let field = UITextField(frame: .zero)
+        field.delegate = context.coordinator
+        field.text = text
+        field.textColor = UIColor(CrabrixTheme.primary)
+        field.tintColor = UIColor(CrabrixTheme.blue)
+        field.font = .monospacedSystemFont(ofSize: 11, weight: .regular)
+        field.attributedPlaceholder = NSAttributedString(
+            string: "command",
+            attributes: [.foregroundColor: UIColor(CrabrixTheme.muted)]
+        )
+        field.autocapitalizationType = .none
+        field.autocorrectionType = .no
+        field.spellCheckingType = .no
+        field.smartDashesType = .no
+        field.smartQuotesType = .no
+        field.returnKeyType = .send
+        field.keyboardAppearance = colorScheme == .dark ? .dark : .light
+        field.accessibilityLabel = "Terminal command"
+        field.inputAssistantItem.leadingBarButtonGroups = []
+        field.inputAssistantItem.trailingBarButtonGroups = []
+        field.addTarget(context.coordinator, action: #selector(Coordinator.textChanged(_:)), for: .editingChanged)
+        field.inputAccessoryView = RustKeyboardAccessoryView(
+            usesAppleIntelligence: false,
+            onInsert: { [weak field, weak coordinator = context.coordinator] symbol in
+                field?.insertText(symbol)
+                if let field { coordinator?.textChanged(field) }
+            },
+            onComplete: { [weak coordinator = context.coordinator] in
+                coordinator?.parent.onHelp()
+            },
+            onDismiss: { [weak field] in field?.resignFirstResponder() },
+            leadingSystemImage: "questionmark.circle",
+            leadingAccessibilityLabel: "Terminal help"
+        )
+        return field
+    }
+
+    func updateUIView(_ field: UITextField, context: Context) {
+        context.coordinator.parent = self
+        field.keyboardAppearance = colorScheme == .dark ? .dark : .light
+        if field.text != text { field.text = text }
+        if isFocused && !field.isFirstResponder {
+            field.becomeFirstResponder()
+        } else if !isFocused && field.isFirstResponder {
+            field.resignFirstResponder()
+        }
+    }
+
+    final class Coordinator: NSObject, UITextFieldDelegate {
+        var parent: TerminalCommandField
+
+        init(_ parent: TerminalCommandField) { self.parent = parent }
+
+        @objc func textChanged(_ field: UITextField) {
+            parent.text = field.text ?? ""
+        }
+
+        func textFieldDidBeginEditing(_ textField: UITextField) {
+            parent.isFocused = true
+        }
+
+        func textFieldDidEndEditing(_ textField: UITextField) {
+            parent.isFocused = false
+        }
+
+        func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+            parent.onSubmit()
+            return false
+        }
+    }
 }
 
 private struct TerminalHighlightedLine: View {
