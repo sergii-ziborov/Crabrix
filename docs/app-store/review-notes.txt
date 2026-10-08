@@ -1,18 +1,18 @@
-Crabrix 1.1 (25) review candidate.
+Crabrix 1.1 (26) review candidate.
 
-Since rejected 1.0 (8), 1.1 adds seven selectable Academy downloads, 46
-downloadable open Code Examples, durable lesson projects, nested files, local
-Cargo workflows, and a simpler editor. It bundles our maintained WasmKit 0.4.1
-fork and source-built pinned Rust toolchain. On iPad the editor uses the space
-beside the project file sidebar; Code, Problems, Output, and Terminal remain
-available in the bottom dock. The right inspector shown in older screenshots
-has been removed. The iPad screenshots below were captured from build 25.
+Since rejected 1.0 (8), 1.1 adds seven Academy downloads, 46 open Code
+Examples, durable lesson projects, nested files, local Cargo workflows,
+and a simpler editor. It bundles our WasmKit 0.4.1 fork and pinned Rust
+toolchain. iPad has a file sidebar and in-file search; the old right inspector
+is gone. iPhone Duo screenshots show Code and Output in laptop posture.
 
 The compiler, runtime, and sysroot are bundled; none is downloaded on device.
 
 TO SEE IT COMPILE
 1. Projects → current project card → Run. The project workspace opens on Code;
    the result appears in Output. Select a different file to return to Code.
+   On Duo, the project name and Find in file share the compact header; Code,
+   Problems, Output, and Terminal remain above the keyboard.
 2. Edit the string in main.rs and Run again to see a fresh local compilation.
 3. In Learn, download Ownership after confirming its shown size. Open its starter as a
    project, inspect the E0502 diagnostic, repair the source, and Run. Lesson
@@ -61,6 +61,6 @@ or create a remote account.
 This build bundles the signed source-built Crabrix Rust toolchain
 `crabrix-rust-2026-10-02.1`, prepared from pinned sources and verified on the
 build Mac. The public CrabrixRuntime fork is based on WasmKit 0.4.1. The
-new iPad screenshots match 1.1 (25). The unchanged iPhone Settings frame was
-reused from an earlier build. Game Center
+new iPad editor and iPhone Duo screenshots match build-26 Release Simulator
+source. Unchanged iPhone Settings came from earlier capture. Game Center
 sign-in and Face ID require a physical device; both features are optional.

@@ -1,4 +1,18 @@
-> Current status — 8 October 2026: **1.1 (25)** is **VALID** and available in
+> Current status — 8 October 2026: **1.1 (26)** is the new release candidate.
+> A signed local IPA passed Apple validation. Xcode Cloud manual run **36**
+> (`95a6153b-38a2-4ca5-9ba5-1a5c236f69ab`) was started from app input
+> commit `35ddb46`; Cloud processing and the build-26 TestFlight upload are
+> pending. App Store Connect has ten current iPhone screenshots, seven iPad
+> screenshots with the new search header first, and two new iPhone Duo inner
+> display screenshots. All assets are `COMPLETE` and the sets read back in
+> order. The en-US description and build-26 Review Notes were saved and read
+> back. `whatsNew` remains unavailable (`STATE_ERROR`, HTTP 409). Version 1.1
+> is `PREPARE_FOR_SUBMISSION` with build 25 still selected until build 26
+> processes. No build-26 App Review submission has been created. Release is
+> manual. See the [build 26 manifest](../releases/1.1-build26.json) and
+> [screenshot evidence](asset-upload-2026-10-08-build26.json).
+
+> Earlier status — 8 October 2026: **1.1 (25)** is **VALID** and available in
 > TestFlight Internal QA. Its signed archive and IPA passed Apple validation.
 > The App Store 1.1 version now selects build 25; the en-US description and
 > Review Notes were updated and read back. Seven iPad 13-inch screenshots from

@@ -22,8 +22,12 @@ pnpm build
 `app/blog` contains two articles. Product and legal copy in the checked-in
 top-level HTML files is rendered through `lib/legacy.ts`; the Next layout supplies
 their common navigation and spacing. Product captures are in `public/screenshots/`.
+The iPad editor capture includes in-file search; the two Duo captures show Code
+with its keyboard controls and a completed run in Output. Refresh the Store
+captures from the same Release Simulator source before changing those files.
 
-The site runs as its own Hetzner container from `compose.hetzner.yaml` and
-`hetzner/Dockerfile`, following the separate-service pattern used by GrantTap.
-It binds only to loopback on port 3212. Public access needs a Crabrix server
+The site runs as its own Hetzner container. The current release serves a
+locally built static export from Nginx using `compose.prebuilt.yaml`; source
+builds use `compose.hetzner.yaml` and `hetzner/Dockerfile`. It binds only to
+loopback on port 3212. Public access needs a Crabrix server
 route and certificate; the current Lovable site and domain records are unchanged.

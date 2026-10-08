@@ -147,14 +147,15 @@ def copy_for_docs() -> None:
     for name, source in sources.items():
         shutil.copyfile(STORE / source, ROOT / "docs/screenshots" / name)
         shutil.copyfile(STORE / source, ROOT / "site/screenshots" / name)
+        shutil.copyfile(STORE / source, ROOT / "site/public/screenshots" / name)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("app", type=Path, help="Release Simulator Crabrix.app")
-    parser.add_argument("--iphone-template", default="Crabrix Shots 6.9",
+    parser.add_argument("--iphone-template", default="Echo Shots 6.9",
                         help="existing iPhone 6.9-inch Simulator to clone")
-    parser.add_argument("--ipad-template", default="Crabrix Dev iPad",
+    parser.add_argument("--ipad-template", default="Echo Shots iPad 13",
                         help="existing iPad 13-inch Simulator to clone")
     args = parser.parse_args()
     app = args.app.resolve()

@@ -1,17 +1,17 @@
 # Crabrix 1.1 App Store copy
 
-This is the App Store copy for 1.1 (25). Game Center is optional and off by
-default. The en-US description and promotional text below were saved in App
-Store Connect and read back. Build 25 and its iPad screenshots are recorded in
-the [release manifest](../releases/1.1-build25.json) and
-[submission status](submission-status.md). iPhone Duo materials are pending.
+This is the App Store copy for the 1.1 (26) candidate. Game Center is optional
+and off by default. The en-US description and promotional text below are the
+current listing copy; [submission status](submission-status.md) records the
+latest App Store Connect verification. The new iPad and iPhone captures and the
+iPhone Duo Code and Output captures are in [screenshots](screenshots/).
 Before App Review, review the App Privacy questionnaire and test Game Center
 sign-in and score submission on a physical device.
 
 The optional [What's New draft](whats-new-1.1.txt) is not live in App Store
-Connect: its API rejected the edit with HTTP 409 while version 1.1 reports
-DEVELOPER_REJECTED. The description and Review Notes edits were saved and read
-back. Keep this distinction in release evidence.
+Connect: its API rejected the edit with HTTP 409 (`STATE_ERROR`) while version
+1.1 reports `PREPARE_FOR_SUBMISSION`. The description and Review Notes were
+saved and read back. Keep this distinction in release evidence.
 
 ## Promotional text
 
@@ -41,13 +41,15 @@ Open in Code to create an editable project with its own README; the downloaded
 source stays unchanged. The first download needs a connection.
 
 BUILD YOUR OWN PROJECT
-The project workspace has a native file tree, syntax-aware editor, Code,
-Problems, Output, and Terminal views, and compiler diagnostics that point to
-source spans. On iPad the file sidebar sits beside the editor; there is no
-separate right inspector. My Projects
-opens the project manager. New Project offers local templates and imports from
-GitHub and Files. Check and Run use Crabrix's source-built Rust
-compiler bundled with the app. Lesson hints appear in Output while you work.
+The project workspace has a native file tree, syntax-aware editor, in-file
+search, Code, Problems, Output, and Terminal views, and compiler diagnostics
+that point to source spans. On iPad the file sidebar sits beside the editor.
+On iPhone Duo, the compact workspace header shows the project name and search;
+the coding tabs, shortcuts, and keyboard controls stay together in laptop mode.
+My Projects opens the project manager. New Project offers local templates and
+imports from GitHub and Files. Check and Run use Crabrix's source-built Rust
+compiler bundled with the app. Output distinguishes completed, empty, stopped,
+and failed runs. Lesson hints appear there while you work.
 
 CARGO IN THE PROJECT
 Add supported crates.io dependencies to a project's Cargo.toml. Crabrix
@@ -81,7 +83,7 @@ purchase; no subscription or in-app purchase is required.
 
 ## Reviewer path
 
-Use [review-notes.txt](review-notes.txt) with the verified 1.1 build 25
+Use [review-notes.txt](review-notes.txt) with the verified 1.1 build 26
 screenshots once App Store Connect reports them processed. The historical 1.0
 screenshots are not 1.1 evidence.
 

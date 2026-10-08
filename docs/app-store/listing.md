@@ -297,8 +297,8 @@ the binary links no GameKit. Rating, ranks and achievements stay on device.
 
 ## Screenshots
 
-The image files linked here were replaced on 2026-10-03 with screenshots of the
-1.1 (18) Release Simulator build. This historical 1.0 listing text above is not
+The image files linked here were refreshed on 2026-10-08 from the current
+1.1 Release Simulator source. This historical 1.0 listing text above is not
 the copy for those images; use [the 1.1 draft](listing-1.1-draft.md) for current
 product wording. The capture covers both a fresh installation and the offline
 transition state for an existing learner.
@@ -307,10 +307,12 @@ transition state for an existing learner.
 | --- | --- | --- |
 | `docs/app-store/screenshots/iphone-6.9/` | iPhone 17 Pro Max | 1320 × 2868 |
 | `docs/app-store/screenshots/ipad-13/` | iPad Pro 13-inch (M4) | 2064 × 2752 |
+| `docs/app-store/screenshots/iphone-duo-qa/01-laptop-code.png`, `02-laptop-output.png` | iPhone Duo inner display | 2007 × 2853 |
 
-The 16 Store frames and a documentation-only Code Examples detail frame were captured
-from the same Release Simulator build. The Code Examples path, source preview,
-code syntax colours, Cyberpunk Settings, and deep course/lesson routes are present.
+The ten iPhone frames, seven iPad frames, and two Duo inner-display frames were
+captured from the same Release Simulator source. The Code Examples path, source
+preview, code syntax colours, Cyberpunk Settings, iPad search, Duo keyboard and
+Output, and deep course/lesson routes are present.
 The device archive was built from the same source, with the iOS device architecture
 and distribution signing; tester validation on a physical device remains separate.
 
@@ -338,8 +340,8 @@ python3 scripts/capture_release_screenshots.py \
   /absolute/path/to/Release-iphonesimulator/Crabrix.app
 ```
 
-The script uses temporary simulators named from `Crabrix Shots 6.9` and `Crabrix
-Dev iPad` device templates, removes Simulator's fully opaque alpha channel, then
+The script uses temporary simulators named from `Echo Shots 6.9` and `Echo Shots
+iPad 13` device templates, removes Simulator's fully opaque alpha channel, then
 updates the Store, README, and site image copies.
 Review the generated images before uploading them to App Store Connect.
 

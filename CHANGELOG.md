@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1 (26) — 2026-10-08
+
+- Bring the Duo editor header in line with My Projects: project name and in-file search stay visible without the old top tabs and close button. Keep the Code, Problems, Output, and Terminal tabs aligned above the keyboard in laptop and landscape layouts.
+- Keep the terminal input focused when its tab opens, add a visible keyboard dismiss control, and show a clearer result for completed, empty, stopped, and failed runs.
+- Add in-file search to the iPad editor header. Refresh iPhone, iPad, and Duo captures for the website, README, and App Store listing.
+
 ## 1.1 (24) — 2026-10-07
 
 - Refresh the release build, App Store screenshots, documentation, and reviewer guidance for the 1.1 candidate. No app behavior changes from build 23.

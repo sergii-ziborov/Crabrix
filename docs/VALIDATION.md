@@ -1,5 +1,23 @@
 # Validation record
 
+## Build 26 release candidate — 8 October 2026
+
+Xcode 27.1 RC (`27A9275`) built the Release Simulator app and signed 1.1 (26)
+iOS archive from app input `35ddb46fe4da0bafd6f0fa51ffe43fb1bfac743f`.
+The 60,395,915-byte IPA passed ZIP integrity, strict distribution signature
+verification, and Apple `altool --validate-app`; its SHA-256 is
+`b9bf85c60dcbd0fcf1dba40dde20694a9832673a68cd25ad298a4c5eb5068048`.
+Xcode Cloud manual run 36 started on that branch; Cloud and TestFlight results
+are pending. The [manifest](releases/1.1-build26.json) records exact inputs.
+
+The 1.1 en-US description and Review Notes matched App Store Connect readback.
+Ten current iPhone, seven iPad (the refreshed editor/search first), and two
+iPhone Duo screenshots reached `COMPLETE` in the intended order; see
+[screenshot evidence](app-store/asset-upload-2026-10-08-build26.json). The
+Next.js site exported 763 pages. Its Hetzner loopback service returned HTTP 200
+for home, Blog, Learn, a lesson, and refreshed captures, and served screenshot
+hashes matched local files. Public DNS still routes to the prior Lovable site.
+
 ## App Store creative assets and resubmission — 8 October 2026
 
 The en-US listing already contained a 3,328-character description, 153-character promotional text, name, subtitle, keywords, and support/marketing URLs. App Store Connect's “672 characters remaining” is unused capacity in the description field. `whatsNew` is empty in the first unapproved app version and was not presented as a missing description.

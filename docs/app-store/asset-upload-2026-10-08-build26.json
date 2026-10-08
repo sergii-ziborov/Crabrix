@@ -1,0 +1,296 @@
+{
+  "schemaVersion": 1,
+  "release": "1.1 (26)",
+  "source": "Release Simulator capture from build-26 application source; only CFBundleVersion changed after capture",
+  "buildInputCommit": "35ddb46fe4da0bafd6f0fa51ffe43fb1bfac743f",
+  "appStoreVersionID": "2bc0ae1f-ca26-41e6-a0a9-700628e7bf14",
+  "locale": "en-US",
+  "versionLocalizationID": "a65d398a-7dd6-4135-b2d6-048be8b34dd3",
+  "sets": [
+    {
+      "device": "iphone-6.9",
+      "setID": "9abbb718-2cd9-4aa3-9a3d-8f456be9376b",
+      "screenshots": [
+        {
+          "id": "754a990b-d064-487a-a021-9129fdaf3f2e",
+          "fileName": "b26-iphone-01-build.png",
+          "state": "COMPLETE"
+        },
+        {
+          "id": "3d63b108-6cfc-4b2c-bbc2-dd4621476bcd",
+          "fileName": "b26-iphone-02-projects.png",
+          "state": "COMPLETE"
+        },
+        {
+          "id": "d806cacc-377c-4d7d-a9b2-0bb2dc66ceb9",
+          "fileName": "b26-iphone-03-learn.png",
+          "state": "COMPLETE"
+        },
+        {
+          "id": "a52905ee-3f65-4418-924f-fed0794fba0c",
+          "fileName": "b26-iphone-09-my-courses.png",
+          "state": "COMPLETE"
+        },
+        {
+          "id": "c7a7a4f5-7a44-4510-a3c7-7997ad1236e2",
+          "fileName": "b26-iphone-04-course.png",
+          "state": "COMPLETE"
+        },
+        {
+          "id": "278b7b87-2990-4d43-8649-507c775312c7",
+          "fileName": "b26-iphone-05-lesson.png",
+          "state": "COMPLETE"
+        },
+        {
+          "id": "cd3bd1dc-d9cc-4dfc-8433-6d8a64d50b2e",
+          "fileName": "b26-iphone-06-profile.png",
+          "state": "COMPLETE"
+        },
+        {
+          "id": "a5832a7e-03b4-42bf-8454-8a3091c1f8cb",
+          "fileName": "b26-iphone-07-library.png",
+          "state": "COMPLETE"
+        },
+        {
+          "id": "76e7dab0-a953-4ab6-b99e-09758fa884cf",
+          "fileName": "b26-iphone-10-example-detail.png",
+          "state": "COMPLETE"
+        },
+        {
+          "id": "42388f9d-644e-45b0-85cc-05fdb40fa1f9",
+          "fileName": "b26-iphone-08-settings.png",
+          "state": "COMPLETE"
+        }
+      ]
+    },
+    {
+      "device": "ipad-13",
+      "setID": "1c84229c-61cc-46c5-8da2-b318c1783a8b",
+      "screenshots": [
+        {
+          "id": "7d0c83e4-a102-49a8-ae9b-880fd0b5881d",
+          "fileName": "b26-ipad-build.png",
+          "state": "COMPLETE"
+        },
+        {
+          "id": "9e000019-5e0c-83bd-803f-b36aaf1cda23",
+          "fileName": "b25-02-projects.png",
+          "state": "COMPLETE"
+        },
+        {
+          "id": "d8400019-5e0c-83bd-802a-5c861f6b5a49",
+          "fileName": "b25-03-learn.png",
+          "state": "COMPLETE"
+        },
+        {
+          "id": "22c00019-5e0c-83bd-8022-3bd66825b894",
+          "fileName": "b25-07-my-courses.png",
+          "state": "COMPLETE"
+        },
+        {
+          "id": "79400019-5e0c-83bd-8016-e1399ac5ba3d",
+          "fileName": "b25-04-lesson.png",
+          "state": "COMPLETE"
+        },
+        {
+          "id": "b8800019-5e0c-83bd-8022-36e42ecbffff",
+          "fileName": "b25-05-profile.png",
+          "state": "COMPLETE"
+        },
+        {
+          "id": "39c00019-5e0c-83bd-8021-39315557b1ea",
+          "fileName": "b25-06-library.png",
+          "state": "COMPLETE"
+        }
+      ]
+    },
+    {
+      "device": "iphone-duo-inner",
+      "setID": "3a7cf784-c782-478f-b4a4-1e8108604cc1",
+      "screenshots": [
+        {
+          "id": "b101d808-e24d-4f2b-b122-9055add0b0af",
+          "fileName": "b26-duo-code.png",
+          "state": "COMPLETE"
+        },
+        {
+          "id": "2f5937cd-b4bb-46c3-bdbb-05aa5f3503b0",
+          "fileName": "b26-duo-output.png",
+          "state": "COMPLETE"
+        }
+      ]
+    }
+  ],
+  "newAssets": [
+    {
+      "file": "docs/app-store/screenshots/iphone-duo-qa/01-laptop-code.png",
+      "name": "duo-code",
+      "size": [
+        2007,
+        2853
+      ],
+      "bytes": 247326,
+      "sha256": "40f4a70ae5920a391cc9d86d88ce1e6b0d901c0f474711eee356b9e4fa8f99f6",
+      "imageID": "59000019-5e0c-83bd-8002-05ce9b00b29c",
+      "placementID": "8b400019-5e0c-83bd-8f1f-7011fc67db1f",
+      "assetState": "PREPARE_FOR_SUBMISSION"
+    },
+    {
+      "file": "docs/app-store/screenshots/iphone-duo-qa/02-laptop-output.png",
+      "name": "duo-output",
+      "size": [
+        2007,
+        2853
+      ],
+      "bytes": 537980,
+      "sha256": "2dd438c238106a9fa9f90756de7fbe48fd507e6431b508c387de55d1207e262a",
+      "imageID": "be800019-5e0c-83bd-8013-659614f174ee",
+      "placementID": "8e800019-5e0c-83bd-8f19-956065094d13",
+      "assetState": "PREPARE_FOR_SUBMISSION"
+    },
+    {
+      "file": "docs/app-store/screenshots/ipad-13/01-build.png",
+      "name": "ipad-build",
+      "size": [
+        2064,
+        2752
+      ],
+      "bytes": 167943,
+      "sha256": "4fc2672405e0d1697a66fde32f9844af8c0bd692777573f5acd9ce764f56fb4a",
+      "imageID": "5f000019-5e0c-83bd-8009-d4fcd626276c",
+      "placementID": "fc400019-5e0c-83bd-8f0e-e595f21142bf",
+      "assetState": "PREPARE_FOR_SUBMISSION"
+    },
+    {
+      "file": "docs/app-store/screenshots/iphone-6.9/01-build.png",
+      "name": "iphone-01-build",
+      "size": [
+        1320,
+        2868
+      ],
+      "bytes": 165760,
+      "sha256": "dbff940c5375293dce692c380e0d788b26a80a5123c82ee378c0db5335a7c571",
+      "imageID": "59800019-5e0c-83bd-8000-53f618350b0f",
+      "placementID": "0c800019-5e0c-83bd-8f33-cda08b71c1ac",
+      "assetState": "COMPLETE"
+    },
+    {
+      "file": "docs/app-store/screenshots/iphone-6.9/02-projects.png",
+      "name": "iphone-02-projects",
+      "size": [
+        1320,
+        2868
+      ],
+      "bytes": 437921,
+      "sha256": "1fef2f36ef257c97d0d4938ce2c400cad3f74b4a2c14d52a9fa4f87c449ca822",
+      "imageID": "38400019-5e0c-83bd-8032-872bdaadc23d",
+      "placementID": "95c00019-5e0c-83bd-8f00-f4bacf6299c0",
+      "assetState": "PREPARE_FOR_SUBMISSION"
+    },
+    {
+      "file": "docs/app-store/screenshots/iphone-6.9/03-learn.png",
+      "name": "iphone-03-learn",
+      "size": [
+        1320,
+        2868
+      ],
+      "bytes": 463257,
+      "sha256": "944a6ee8642b2df7ffcbadc7248e249736c08e9a35e2f087ba1ae6bb36d1e0e5",
+      "imageID": "39400019-5e0c-83bd-8014-9f9ea182f61a",
+      "placementID": "f5400019-5e0c-83bd-8f1b-ed61729e4ad4",
+      "assetState": "PREPARE_FOR_SUBMISSION"
+    },
+    {
+      "file": "docs/app-store/screenshots/iphone-6.9/04-course.png",
+      "name": "iphone-04-course",
+      "size": [
+        1320,
+        2868
+      ],
+      "bytes": 1119987,
+      "sha256": "a9fee02d8b3f67bea3b04ff5960e99e43428c1fdf1ba9b15f907b18acdcaf462",
+      "imageID": "fac00019-5e0c-83bd-8015-435834909202",
+      "placementID": "e8400019-5e0c-83bd-8f10-a437bc5867a4",
+      "assetState": "PREPARE_FOR_SUBMISSION"
+    },
+    {
+      "file": "docs/app-store/screenshots/iphone-6.9/05-lesson.png",
+      "name": "iphone-05-lesson",
+      "size": [
+        1320,
+        2868
+      ],
+      "bytes": 513870,
+      "sha256": "c6e2036783f4853f3da4a2904ff26371aea12c1e71839f94905cf8450d6f8bba",
+      "imageID": "04c00019-5e0c-83bd-8005-e356faac3071",
+      "placementID": "24800019-5e0c-83bd-8f08-dde7155cddd6",
+      "assetState": "PREPARE_FOR_SUBMISSION"
+    },
+    {
+      "file": "docs/app-store/screenshots/iphone-6.9/06-profile.png",
+      "name": "iphone-06-profile",
+      "size": [
+        1320,
+        2868
+      ],
+      "bytes": 292890,
+      "sha256": "58b09debb9a8e8beff037f85da60196ceec43f0eeb3eff24110b2afe066f195a",
+      "imageID": "54800019-5e0c-83bd-8015-987a84b0d729",
+      "placementID": "fb800019-5e0c-83bd-8f15-ca11fda2df40",
+      "assetState": "PREPARE_FOR_SUBMISSION"
+    },
+    {
+      "file": "docs/app-store/screenshots/iphone-6.9/07-library.png",
+      "name": "iphone-07-library",
+      "size": [
+        1320,
+        2868
+      ],
+      "bytes": 1025164,
+      "sha256": "d446c54e9582363af7eab05229d2a77c859566ddcb430f98f6ff25988aaf471a",
+      "imageID": "da400019-5e0c-83bd-8030-2ca1389705e7",
+      "placementID": "8e000019-5e0c-83bd-8f28-35deeb056404",
+      "assetState": "COMPLETE"
+    },
+    {
+      "file": "docs/app-store/screenshots/iphone-6.9/08-settings.png",
+      "name": "iphone-08-settings",
+      "size": [
+        1320,
+        2868
+      ],
+      "bytes": 265986,
+      "sha256": "884ac325191fd88984227f29a98b13e42601c0c035dfed068f5170b3601032b1",
+      "imageID": "50c00019-5e0c-83bd-8017-b99a10ab2eb4",
+      "placementID": "62800019-5e0c-83bd-8f3b-8e6b38dac9ca",
+      "assetState": "PREPARE_FOR_SUBMISSION"
+    },
+    {
+      "file": "docs/app-store/screenshots/iphone-6.9/09-my-courses.png",
+      "name": "iphone-09-my-courses",
+      "size": [
+        1320,
+        2868
+      ],
+      "bytes": 343448,
+      "sha256": "e64931f017ad9d47b05c03adde0f654033600a32f508f0d67d3cd536a4e161b9",
+      "imageID": "a1800019-5e0c-83bd-8037-aab8ca68f29b",
+      "placementID": "c3400019-5e0c-83bd-8f27-c5f4980beeab",
+      "assetState": "PREPARE_FOR_SUBMISSION"
+    },
+    {
+      "file": "docs/app-store/screenshots/iphone-6.9/10-example-detail.png",
+      "name": "iphone-10-example-detail",
+      "size": [
+        1320,
+        2868
+      ],
+      "bytes": 161901,
+      "sha256": "2b34ba78a44bca1e5424ba7034c6d573563c8543d581cb2c7ded7488b7623b42",
+      "imageID": "da800019-5e0c-83bd-803d-65d9bb79b9f9",
+      "placementID": "84400019-5e0c-83bd-8f1e-b1e954c1e3ec",
+      "assetState": "PREPARE_FOR_SUBMISSION"
+    }
+  ],
+  "note": "The unchanged six iPad frames remain from the build-25 upload; the new iPad editor/search frame is first. All ten iPhone frames and two Duo inner-display frames are new active placements."
+}
