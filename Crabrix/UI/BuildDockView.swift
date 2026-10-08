@@ -54,6 +54,8 @@ struct BuildDockView<CodeContent: View>: View {
     let onOpenDiagnosticAdvisor: () -> Void
     let onContinueLearning: () -> Void
     let keyboardBridge: RustEditorKeyboardBridge
+    let hingePartiallyOpen: Bool
+    let hingeGlobalY: CGFloat
     let assistantUsesAppleIntelligence: Bool
     let onRequestCompletion: () -> Void
     let codeContent: CodeContent
@@ -80,6 +82,8 @@ struct BuildDockView<CodeContent: View>: View {
         onOpenDiagnosticAdvisor: @escaping () -> Void,
         onContinueLearning: @escaping () -> Void,
         keyboardBridge: RustEditorKeyboardBridge,
+        hingePartiallyOpen: Bool,
+        hingeGlobalY: CGFloat,
         assistantUsesAppleIntelligence: Bool,
         onRequestCompletion: @escaping () -> Void,
         @ViewBuilder codeContent: () -> CodeContent
@@ -105,6 +109,8 @@ struct BuildDockView<CodeContent: View>: View {
         self.onOpenDiagnosticAdvisor = onOpenDiagnosticAdvisor
         self.onContinueLearning = onContinueLearning
         self.keyboardBridge = keyboardBridge
+        self.hingePartiallyOpen = hingePartiallyOpen
+        self.hingeGlobalY = hingeGlobalY
         self.assistantUsesAppleIntelligence = assistantUsesAppleIntelligence
         self.onRequestCompletion = onRequestCompletion
         self.codeContent = codeContent()
@@ -112,7 +118,11 @@ struct BuildDockView<CodeContent: View>: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let fold = AdaptiveFold.horizontal(in: geometry)
+            let fold = AdaptiveFold.horizontal(
+                in: geometry,
+                hingePartiallyOpen: hingePartiallyOpen,
+                hingeGlobalY: hingeGlobalY
+            )
             VStack(spacing: 0) {
                 if let fold,
                    fold.minY > 120,
@@ -123,14 +133,7 @@ struct BuildDockView<CodeContent: View>: View {
                         if selectedTab == .terminal { terminalContent(autoFocus: true) }
                         else { codeContent }
                     }
-                        // The hinge is still visible display area in laptop
-                        // pose. Let the upper pane use it instead of leaving a
-                        // dead strip between the editor and lower controls.
-                        // The terminal's system keyboard includes a taller
-                        // suggestion strip than the code editor keyboard.
-                        // Reserve the tab row at the end of the upper pane so
-                        // it remains visible directly above that keyboard.
-                        .frame(height: fold.maxY - (selectedTab == .terminal ? 34 : 0))
+                        .frame(height: fold.maxY)
                         .clipped()
                     header(tabletop: true)
                     if selectedTab == .code {
@@ -156,7 +159,7 @@ struct BuildDockView<CodeContent: View>: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .preference(
                 key: TabletopTabsGlobalYPreferenceKey.self,
-                value: fold.map { geometry.frame(in: .global).minY + $0.maxY - (selectedTab == .terminal ? 34 : 0) }
+                value: fold.map { geometry.frame(in: .global).minY + $0.maxY }
             )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -716,7 +719,7 @@ private struct OutputStreamBlock: View {
 
 private struct TerminalDockContent: View {
     @ObservedObject var terminal: ProjectTerminalSession
-    @FocusState private var commandIsFocused: Bool
+    @State private var commandIsFocused = false
     let project: CrabrixProject
     let activity: CompilerViewModel.Activity
     let canStartBuild: Bool
@@ -784,13 +787,12 @@ private struct TerminalDockContent: View {
                     .foregroundStyle(CrabrixTheme.mint)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
-                TextField("command", text: $terminal.command)
-                    .textFieldStyle(.plain)
-                    .focused($commandIsFocused)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .submitLabel(.send)
-                    .onSubmit(submit)
+                TerminalCommandField(
+                    text: $terminal.command,
+                    isFocused: commandIsFocused,
+                    onFocusChange: { commandIsFocused = $0 },
+                    onSubmit: submit
+                )
                     .padding(.horizontal, 10)
                     .frame(height: 34)
                     .background(Color.black.opacity(0.22), in: RoundedRectangle(cornerRadius: 8))
@@ -872,6 +874,79 @@ private struct TerminalDockContent: View {
         commandIsFocused = true
     }
 
+}
+
+private struct TerminalCommandField: UIViewRepresentable {
+    @Binding var text: String
+    let isFocused: Bool
+    let onFocusChange: (Bool) -> Void
+    let onSubmit: () -> Void
+
+    func makeUIView(context: Context) -> UITextField {
+        let field = UITextField()
+        field.delegate = context.coordinator
+        field.addTarget(context.coordinator, action: #selector(Coordinator.changed(_:)), for: .editingChanged)
+        field.font = .monospacedSystemFont(ofSize: 11, weight: .regular)
+        field.textColor = UIColor(CrabrixTheme.primary)
+        field.tintColor = UIColor(CrabrixTheme.blue)
+        field.attributedPlaceholder = NSAttributedString(
+            string: "command",
+            attributes: [.foregroundColor: UIColor(CrabrixTheme.muted)]
+        )
+        field.keyboardAppearance = .dark
+        field.autocapitalizationType = .none
+        field.autocorrectionType = .no
+        field.spellCheckingType = .no
+        field.smartDashesType = .no
+        field.smartQuotesType = .no
+        field.returnKeyType = .send
+        field.inputAssistantItem.leadingBarButtonGroups = []
+        field.inputAssistantItem.trailingBarButtonGroups = []
+        field.inputAccessoryView = TerminalKeyboardPresentationAccessoryView()
+        field.accessibilityLabel = "Terminal command"
+        return field
+    }
+
+    func updateUIView(_ field: UITextField, context: Context) {
+        context.coordinator.parent = self
+        if field.text != text { field.text = text }
+        if isFocused && !field.isFirstResponder {
+            DispatchQueue.main.async { [weak field] in field?.becomeFirstResponder() }
+        } else if !isFocused && field.isFirstResponder {
+            field.resignFirstResponder()
+        }
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
+
+    final class Coordinator: NSObject, UITextFieldDelegate {
+        var parent: TerminalCommandField
+
+        init(parent: TerminalCommandField) { self.parent = parent }
+
+        @objc func changed(_ field: UITextField) {
+            parent.text = field.text ?? ""
+        }
+
+        func textFieldDidBeginEditing(_ textField: UITextField) {
+            parent.onFocusChange(true)
+        }
+
+        func textFieldDidEndEditing(_ textField: UITextField) {
+            parent.onFocusChange(false)
+        }
+
+        func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+            parent.onSubmit()
+            return false
+        }
+    }
+}
+
+private final class TerminalKeyboardPresentationAccessoryView: UIView {
+    override var intrinsicContentSize: CGSize {
+        CGSize(width: UIView.noIntrinsicMetric, height: 1)
+    }
 }
 
 private struct TerminalHighlightedLine: View {

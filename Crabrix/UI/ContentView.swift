@@ -111,6 +111,8 @@ struct ContentView: View {
         return .code
     }()
     @State private var tabletopTabsGlobalY: CGFloat?
+    @State private var duoPartiallyOpen = false
+    @State private var duoHingePresent = false
     @State private var learningPath: [LearningRoute] = []
     @State private var editorCursorOffset = 0
     /// What the last successful run was scored on, shown in the build dock.
@@ -130,20 +132,46 @@ struct ContentView: View {
         )
     )
 
-    var body: some View {
+    @ViewBuilder var body: some View {
+        #if CRABRIX_DUO_SDK
+        if #available(iOS 27.1, *) {
+            tabRoot.onHingeChange { _, context in
+                duoHingePresent = context.hinge != nil
+                duoPartiallyOpen = context.hinge?.status == .partiallyOpen
+            }
+        } else {
+            tabRoot
+        }
+        #else
+        tabRoot
+        #endif
+    }
+
+    private var tabRoot: some View {
         GeometryReader { geometry in
-            let tabletop = AdaptiveFold.horizontal(in: geometry) != nil
+            // The keyboard shrinks this SwiftUI reader on Duo. The window
+            // still spans both displays, so its midpoint stays on the hinge.
+            let hingeGlobalY = UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .flatMap(\.windows)
+                .first(where: \.isKeyWindow)?
+                .bounds.midY ?? geometry.frame(in: .global).midY
+            let tabletop = AdaptiveFold.horizontal(
+                in: geometry,
+                hingePartiallyOpen: duoPartiallyOpen,
+                hingeGlobalY: hingeGlobalY
+            ) != nil
                 || tabletopTabsGlobalY != nil
-            tabContent(tabletop: tabletop)
+            tabContent(tabletop: tabletop, hingeGlobalY: hingeGlobalY)
                 .toolbar(tabletop && isWorkspaceOpen ? .hidden : .visible, for: .tabBar)
         }
     }
 
-    private func tabContent(tabletop: Bool) -> some View {
+    private func tabContent(tabletop: Bool, hingeGlobalY: CGFloat) -> some View {
         TabView(selection: $selectedDestination) {
             Group {
                 if isWorkspaceOpen {
-                    buildWorkspace
+                    buildWorkspace(hingeGlobalY: hingeGlobalY)
                         .toolbar(tabletop ? .hidden : .visible, for: .tabBar)
                         .ignoresSafeArea(tabletop ? .container : [], edges: .top)
                         .ignoresSafeArea(
@@ -618,7 +646,7 @@ struct ContentView: View {
         openCodeWorkspace()
     }
 
-    private func editorPane(fixedSidebar: Bool) -> some View {
+    private func editorPane(fixedSidebar: Bool, hingeGlobalY: CGFloat) -> some View {
         VStack(spacing: 0) {
             EditorToolbar(
                 activity: model.activity,
@@ -662,6 +690,8 @@ struct ContentView: View {
                 onOpenDiagnosticAdvisor: presentDiagnosticAdvisor,
                 onContinueLearning: continueLearning,
                 keyboardBridge: editorKeyboard,
+                hingePartiallyOpen: duoPartiallyOpen,
+                hingeGlobalY: hingeGlobalY,
                 assistantUsesAppleIntelligence: appleIntelligenceCompletion
                     && RustCompletionSupport.isAppleIntelligenceAvailable,
                 onRequestCompletion: requestEditorAssistant
@@ -690,7 +720,7 @@ struct ContentView: View {
                 keyboardBridge: editorKeyboard,
                 onRequestCompletion: requestEditorAssistant,
                 onEditorFocus: {
-                    if tabletopTabsGlobalY != nil {
+                    if tabletopTabsGlobalY != nil && selectedBuildDockTab != .terminal {
                         selectedBuildDockTab = .code
                     }
                 }
@@ -732,11 +762,16 @@ struct ContentView: View {
         }
     }
 
-    private var buildWorkspace: some View {
+    private func buildWorkspace(hingeGlobalY: CGFloat) -> some View {
         GeometryReader { workspace in
         let fixedSidebar = horizontalSizeClass == .regular && workspace.size.width >= 570
         let bookFold = AdaptiveFold.vertical(in: workspace)
-        let tabletopFold = AdaptiveFold.horizontal(in: workspace)
+        let tabletopFold = AdaptiveFold.horizontal(
+            in: workspace,
+            hingePartiallyOpen: duoPartiallyOpen,
+            hingeGlobalY: hingeGlobalY
+        )
+        let compactDuoHeader = tabletopFold != nil || tabletopTabsGlobalY != nil || duoHingePresent
         ZStack {
             CrabrixTheme.background.ignoresSafeArea()
 
@@ -744,8 +779,8 @@ struct ContentView: View {
                 AppHeader(
                     isPhone: UIDevice.current.userInterfaceIdiom == .phone,
                     regularTablet: horizontalSizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone,
-                    dense: tabletopFold != nil || tabletopTabsGlobalY != nil,
-                    showsTopNavigation: tabletopFold != nil || tabletopTabsGlobalY != nil,
+                    dense: compactDuoHeader,
+                    showsTopNavigation: compactDuoHeader,
                     headerWidth: workspace.size.width,
                     projectName: model.projectName,
                     searchQuery: $editorSearchQuery,
@@ -828,11 +863,14 @@ struct ContentView: View {
                             )
                         }
 
-                        editorPane(fixedSidebar: true)
+                        editorPane(fixedSidebar: true, hingeGlobalY: hingeGlobalY)
                             .frame(minWidth: bookFold == nil ? 340 : 0)
                     }
                 } else {
-                    compactBuildWorkspace(tabletopTabsGlobalY: tabletopTabsGlobalY)
+                    compactBuildWorkspace(
+                        tabletopTabsGlobalY: tabletopTabsGlobalY,
+                        hingeGlobalY: hingeGlobalY
+                    )
                 }
             }
             // Keep the workspace toolbar level with the native My Projects
@@ -864,7 +902,10 @@ struct ContentView: View {
         }
     }
 
-    private func compactBuildWorkspace(tabletopTabsGlobalY: CGFloat?) -> some View {
+    private func compactBuildWorkspace(
+        tabletopTabsGlobalY: CGFloat?,
+        hingeGlobalY: CGFloat
+    ) -> some View {
         GeometryReader { geometry in
             // In tabletop pose the drawer fills the upper display down to the
             // Code, Problems, Output and Terminal tabs, without a dead strip.
@@ -872,7 +913,7 @@ struct ContentView: View {
                 max(160, min($0 - geometry.frame(in: .global).minY, geometry.size.height))
             } ?? geometry.size.height
             ZStack(alignment: .topLeading) {
-                editorPane(fixedSidebar: false)
+                editorPane(fixedSidebar: false, hingeGlobalY: hingeGlobalY)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 if !isCompactProjectDrawerPresented {
@@ -1253,27 +1294,7 @@ private struct AppHeader: View {
                     .frame(maxWidth: max(110, min(190, headerWidth * 0.2)), alignment: .leading)
 
                 Spacer(minLength: 4)
-                HStack(spacing: 7) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundStyle(CrabrixTheme.muted)
-                    TextField("Find in file", text: $searchQuery)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .submitLabel(.search)
-                        .onSubmit(onFindNext)
-                        .accessibilityLabel("Find in current file")
-                    if !searchQuery.isEmpty {
-                        Button(action: onFindNext) {
-                            Image(systemName: "arrow.down")
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Find next in file")
-                    }
-                }
-                .font(.system(size: 13))
-                .padding(.horizontal, 12)
-                .frame(width: max(120, min(190, headerWidth * 0.2)), height: 36)
-                .background(CrabrixTheme.raised, in: Capsule())
+                fileSearch(width: max(120, min(190, headerWidth * 0.2)))
 
                 tabletopProjectMenu
                 checkButton
@@ -1292,6 +1313,8 @@ private struct AppHeader: View {
                 Spacer()
 
                 if regularTablet {
+                    fileSearch(width: max(120, min(250, headerWidth * 0.25)))
+
                     Button(action: onOpenProjects) {
                         Label("Projects", systemImage: "square.grid.2x2.fill")
                             .font(.system(size: 10, weight: .bold, design: .monospaced))
@@ -1341,6 +1364,30 @@ private struct AppHeader: View {
         .padding(.trailing, showsTopNavigation ? 112 : 0)
         .frame(height: dense ? 44 : 58)
         .background(CrabrixTheme.background)
+    }
+
+    private func fileSearch(width: CGFloat) -> some View {
+        HStack(spacing: 7) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(CrabrixTheme.muted)
+            TextField("Find in file", text: $searchQuery)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .submitLabel(.search)
+                .onSubmit(onFindNext)
+                .accessibilityLabel("Find in current file")
+            if !searchQuery.isEmpty {
+                Button(action: onFindNext) {
+                    Image(systemName: "arrow.down")
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Find next in file")
+            }
+        }
+        .font(.system(size: 13))
+        .padding(.horizontal, 12)
+        .frame(width: width, height: 36)
+        .background(CrabrixTheme.raised, in: Capsule())
     }
 
     private var tabletopProjectMenu: some View {
