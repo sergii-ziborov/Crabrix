@@ -486,119 +486,200 @@ private struct OutputDockContent: View {
         result.map { RustCanvasOutput.parse($0.stdout) }
     }
 
+    private enum DisplayState {
+        case ready, checking, running, stopped, passed, failed
+    }
+
+    private var displayState: DisplayState {
+        if activity == .checking { return .checking }
+        if activity == .running { return .running }
+        guard let result else { return .ready }
+        if result.phase == .setup && result.detail.hasPrefix("Build stopped.") {
+            return .stopped
+        }
+        return result.succeeded ? .passed : .failed
+    }
+
+    private var statusTitle: String {
+        switch displayState {
+        case .ready: "Ready to run"
+        case .checking: "Checking code"
+        case .running: "Running project"
+        case .stopped: "Run stopped"
+        case .passed: result?.phase == .run ? "Run complete" : "Check complete"
+        case .failed: result?.phase == .run ? "Run failed" : "Build failed"
+        }
+    }
+
+    private var statusDetail: String {
+        switch displayState {
+        case .ready: return "Compile and run the current project to see its result here."
+        case .checking: return "The bundled Rust compiler is checking your code."
+        case .running: return "Compiling and running your project locally."
+        case .stopped: return "The build was interrupted. You can start it again."
+        case .passed:
+            return result?.phase == .run
+                ? "Your program finished successfully."
+                : "Your code passed the compiler check."
+        case .failed:
+            if result?.phase == .compile { return "The program did not run. Check the diagnostic below." }
+            return result?.detail ?? "The build could not finish."
+        }
+    }
+
+    private var statusTint: Color {
+        switch displayState {
+        case .ready, .checking, .running: CrabrixTheme.blue
+        case .stopped: CrabrixTheme.amber
+        case .passed: CrabrixTheme.mint
+        case .failed: CrabrixTheme.coral
+        }
+    }
+
+    private var statusSymbol: String {
+        switch displayState {
+        case .ready: "play.fill"
+        case .checking: "checkmark.circle"
+        case .running: "waveform"
+        case .stopped: "stop.fill"
+        case .passed: "checkmark"
+        case .failed: "exclamationmark"
+        }
+    }
+
+    private var hasProgramOutput: Bool {
+        parsedOutput?.frame != nil
+            || !(parsedOutput?.plainText ?? "").isEmpty
+            || !(result?.stderr ?? "").isEmpty
+    }
+
+    private var hasDiagnostic: Bool { result?.diagnostics.first != nil }
+
+    private var emptyOutputTitle: String {
+        switch displayState {
+        case .ready: "Output will appear here"
+        case .checking: "Waiting for the check"
+        case .running: "Waiting for program output"
+        case .stopped: "No output captured"
+        case .passed: result?.phase == .run ? "No program output" : "No program was run"
+        case .failed: "No output captured"
+        }
+    }
+
+    private var emptyOutputDetail: String {
+        switch displayState {
+        case .ready: return "Run your project to see printed text, errors, or a visual result."
+        case .checking: return "Compiler diagnostics will appear when the check finishes."
+        case .running: return "Printed text and errors will appear when the run finishes."
+        case .stopped: return "This run ended before it produced any output."
+        case .passed:
+            return result?.phase == .run
+                ? "Your program finished successfully without printing anything."
+                : "A code check compiles the project without executing it."
+        case .failed: return "The build ended before the program produced output."
+        }
+    }
+
     var body: some View {
         GeometryReader { available in
-        ScrollView {
-            if let result {
-                VStack(alignment: .leading, spacing: 12) {
-                    Label(
-                        !result.succeeded && result.phase == .compile
-                            ? "Build failed — the program was not executed."
-                            : result.detail,
-                        systemImage: result.succeeded ? "checkmark.circle.fill" : "xmark.octagon.fill"
-                    )
-                    .foregroundStyle(result.succeeded ? CrabrixTheme.mint : CrabrixTheme.coral)
-                    if let diagnostic = result.diagnostics.first {
-                        OutputStreamBlock(
-                            label: diagnostic.code ?? "ERROR",
-                            text: diagnostic.message,
-                            tint: CrabrixTheme.coral,
-                            systemImage: "exclamationmark.triangle.fill"
-                        )
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    if !hasProgramOutput && !hasDiagnostic {
+                        Spacer(minLength: 16)
                     }
-                    if let frame = parsedOutput?.frame {
-                        RustCanvasPreview(frame: frame)
+
+                    statusCard
+
+                    if !hasProgramOutput && !hasDiagnostic {
+                        emptyOutputCard
                     }
-                    if let plainText = parsedOutput?.plainText,
-                       !plainText.isEmpty {
-                        OutputStreamBlock(
-                            label: "STDOUT",
-                            text: plainText,
-                            tint: CrabrixTheme.mint,
-                            systemImage: "arrow.right.circle.fill"
-                        )
+
+                    if let result {
+                        if let diagnostic = result.diagnostics.first {
+                            OutputStreamBlock(
+                                label: diagnostic.code ?? "ERROR",
+                                text: diagnostic.message,
+                                tint: CrabrixTheme.coral,
+                                systemImage: "exclamationmark.triangle.fill"
+                            )
+                        }
+                        if let frame = parsedOutput?.frame {
+                            RustCanvasPreview(frame: frame)
+                        }
+                        if let plainText = parsedOutput?.plainText,
+                           !plainText.isEmpty {
+                            OutputStreamBlock(
+                                label: "STDOUT",
+                                text: plainText,
+                                tint: CrabrixTheme.mint,
+                                systemImage: "arrow.right.circle.fill"
+                            )
+                        }
+                        if !result.stderr.isEmpty {
+                            OutputStreamBlock(
+                                label: "STDERR",
+                                text: result.stderr,
+                                tint: CrabrixTheme.coral,
+                                systemImage: "exclamationmark.octagon.fill"
+                            )
+                        }
+                        if result.phase == .run, let lessonEvidenceMessage {
+                            Label(
+                                lessonEvidenceMessage,
+                                systemImage: canContinueLearning
+                                    ? "checkmark.seal.fill"
+                                    : "exclamationmark.triangle.fill"
+                            )
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(
+                                canContinueLearning ? CrabrixTheme.mint : CrabrixTheme.amber
+                            )
+                        }
+                        if result.succeeded, result.phase == .run, let contribution {
+                            ContributionSummaryRow(contribution: contribution)
+                        }
+
+                        if result.succeeded, result.phase == .run, canContinueLearning {
+                            Button(action: onContinueLearning) {
+                                HStack(spacing: 10) {
+                                    Image(systemName: "graduationcap.fill")
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Continue learning")
+                                            .font(.subheadline.bold())
+                                        Text("Return to your Rust course and continue from the next lesson.")
+                                            .font(.caption)
+                                            .foregroundStyle(CrabrixTheme.muted)
+                                    }
+                                    Spacer()
+                                    Image(systemName: "arrow.right")
+                                }
+                                .foregroundStyle(CrabrixTheme.mint)
+                                .padding(12)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(
+                                    CrabrixTheme.mint.opacity(0.09),
+                                    in: RoundedRectangle(cornerRadius: 11, style: .continuous)
+                                )
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                                        .stroke(CrabrixTheme.mint.opacity(0.34))
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
-                    if !result.stderr.isEmpty {
-                        OutputStreamBlock(
-                            label: "STDERR",
-                            text: result.stderr,
-                            tint: CrabrixTheme.coral,
-                            systemImage: "exclamationmark.octagon.fill"
-                        )
-                    }
-                    if result.phase == .run, let lessonEvidenceMessage {
-                        Label(
-                            lessonEvidenceMessage,
-                            systemImage: canContinueLearning
-                                ? "checkmark.seal.fill"
-                                : "exclamationmark.triangle.fill"
-                        )
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(
-                            canContinueLearning ? CrabrixTheme.mint : CrabrixTheme.amber
-                        )
-                    }
-                    runButton
+
                     hintPanel
 
-                    if result.succeeded, result.phase == .run, let contribution {
-                        ContributionSummaryRow(contribution: contribution)
-                    }
-
-                    if result.succeeded, result.phase == .run, canContinueLearning {
-                        Button(action: onContinueLearning) {
-                            HStack(spacing: 10) {
-                                Image(systemName: "graduationcap.fill")
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Continue learning")
-                                        .font(.subheadline.bold())
-                                    Text("Return to your Rust course and continue from the next lesson.")
-                                        .font(.caption)
-                                        .foregroundStyle(CrabrixTheme.muted)
-                                }
-                                Spacer()
-                                Image(systemName: "arrow.right")
-                            }
-                            .foregroundStyle(CrabrixTheme.mint)
-                            .padding(12)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(
-                                CrabrixTheme.mint.opacity(0.09),
-                                in: RoundedRectangle(cornerRadius: 11, style: .continuous)
-                            )
-                            .overlay {
-                                RoundedRectangle(cornerRadius: 11, style: .continuous)
-                                    .stroke(CrabrixTheme.mint.opacity(0.34))
-                            }
-                        }
-                        .buttonStyle(.plain)
+                    if !hasProgramOutput && !hasDiagnostic {
+                        Spacer(minLength: 16)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(14)
-            } else {
-                VStack(spacing: 12) {
-                    Image(systemName: "play.circle.fill")
-                        .font(.system(size: 42))
-                        .foregroundStyle(CrabrixTheme.coral.opacity(0.7))
-                    Text("Ready to run")
-                        .font(.headline)
-                        .foregroundStyle(CrabrixTheme.primary)
-                    Text("Compile the current project and execute it locally.")
-                        .font(.caption)
-                        .foregroundStyle(CrabrixTheme.muted)
-                        .multilineTextAlignment(.center)
-                    runButton
-                        .padding(.top, 4)
-                    hintPanel
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 24)
-                .frame(minHeight: available.size.height)
+                .frame(minHeight: max(0, available.size.height - 32))
+                .padding(16)
             }
         }
-        }
-        .font(.system(size: 11, design: .monospaced))
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
             LinearGradient(
@@ -607,6 +688,74 @@ private struct OutputDockContent: View {
                 endPoint: .bottomTrailing
             )
         )
+    }
+
+    private var statusCard: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            HStack(alignment: .top, spacing: 13) {
+                Group {
+                    if displayState == .checking || displayState == .running {
+                        ProgressView().tint(statusTint)
+                    } else {
+                        Image(systemName: statusSymbol)
+                            .font(.system(size: 17, weight: .bold))
+                    }
+                }
+                .frame(width: 42, height: 42)
+                .foregroundStyle(statusTint)
+                .background(statusTint.opacity(0.13), in: RoundedRectangle(cornerRadius: 12))
+
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("PROJECT OUTPUT")
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .tracking(1)
+                        .foregroundStyle(statusTint)
+                    Text(statusTitle)
+                        .font(.title3.bold())
+                        .foregroundStyle(CrabrixTheme.primary)
+                    Text(statusDetail)
+                        .font(.subheadline)
+                        .foregroundStyle(CrabrixTheme.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            runButton
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(CrabrixTheme.raised, in: RoundedRectangle(cornerRadius: 16))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(statusTint.opacity(0.3), lineWidth: 1)
+        }
+    }
+
+    private var emptyOutputCard: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "terminal")
+                .font(.system(size: 21, weight: .medium))
+                .foregroundStyle(CrabrixTheme.muted)
+                .frame(width: 48, height: 48)
+                .background(CrabrixTheme.raised, in: RoundedRectangle(cornerRadius: 14))
+            Text(emptyOutputTitle)
+                .font(.subheadline.bold())
+                .foregroundStyle(CrabrixTheme.primary)
+            Text(emptyOutputDetail)
+                .font(.caption)
+                .foregroundStyle(CrabrixTheme.muted)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 24)
+        .background(CrabrixTheme.panel.opacity(0.6), in: RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(CrabrixTheme.border.opacity(0.7))
+        }
     }
 
     @ViewBuilder
@@ -640,12 +789,12 @@ private struct OutputDockContent: View {
                 systemImage: activity == .running ? "stop.fill" : "play.fill"
             )
             .font(.subheadline.bold())
-            .frame(maxWidth: .infinity, minHeight: 40)
+            .padding(.horizontal, 16)
+            .frame(minHeight: 38)
         }
         .buttonStyle(.borderedProminent)
         .tint(activity == .running ? CrabrixTheme.amber : CrabrixTheme.coral)
         .disabled(activity == .checking || (activity == .idle && !canStartBuild))
-        .frame(maxWidth: 320)
     }
 }
 
@@ -738,6 +887,7 @@ private struct OutputStreamBlock: View {
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
                 .foregroundStyle(tint)
             Text(text)
+                .font(.system(size: 13, design: .monospaced))
                 .foregroundStyle(CrabrixTheme.primary)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
