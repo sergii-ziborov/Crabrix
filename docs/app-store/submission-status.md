@@ -1,9 +1,18 @@
 > Current status — 8 October 2026: **1.1 (24)** is **Waiting for Review** in
-> existing submission `67fcdbd6-987a-4865-ae9e-1726e08331a2`. The updated
-> item and the [reply to Apple's earlier 4.3(a) rejection](rejection-response-1.1-build24.md)
-> were sent in that submission. App Store Connect UI and API confirmed the
-> waiting state. Build 24 remains available in TestFlight Internal QA, and
-> manual release is selected. Approval will require a separate release action.
+> submission `d6c99b9d-65f1-4087-aa0b-6d0f1847b1b2`. The en-US product page
+> now has a header image and a separate search-results image; both were uploaded
+> to Asset Library, selected on the version page, and the page displayed 1 of 1
+> for each placement. The new submission contains the version item; the API
+> confirmed `WAITING_FOR_REVIEW` for both submission and version. Release is
+> still manual. [Creative evidence](creative-upload-2026-10-08-build24.json).
+>
+> Earlier on 8 October, 1.1 (24) was waiting in submission
+> `67fcdbd6-987a-4865-ae9e-1726e08331a2`. It was canceled to add the new
+> creative assets; the API now reports that submission as `COMPLETE`. The
+> [reply to Apple's earlier 4.3(a) rejection](rejection-response-1.1-build24.md)
+> was sent in that earlier submission and remains in its message history.
+> Build 24 remains available in TestFlight Internal QA. Approval will require
+> a separate release action.
 > The [build 24 manifest](../releases/1.1-build24.json) and
 > [validation record](../VALIDATION.md) identify the build and test evidence.
 

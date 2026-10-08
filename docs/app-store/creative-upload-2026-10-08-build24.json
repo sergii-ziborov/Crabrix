@@ -1,0 +1,32 @@
+{
+  "appAppleId": "6809502653",
+  "version": "1.1",
+  "build": "24",
+  "locale": "en-US",
+  "assets": [
+    {
+      "placement": "header",
+      "file": "creative/crabrix-header-3840x1646.png",
+      "width": 3840,
+      "height": 1646,
+      "mode": "RGB",
+      "sha256": "b931a02de11b549c5b006a44c1996ee80da922bdb88428c99bbb4abb6542ffe9",
+      "assetId": "62800019-5e0c-83bd-800e-1dbaa6197dc7"
+    },
+    {
+      "placement": "searchResults",
+      "file": "creative/crabrix-search-1920x1280.png",
+      "width": 1920,
+      "height": 1280,
+      "mode": "RGB",
+      "sha256": "364dd0de94a953923d6d486b2921e5900eaa7c8ea5e98bfeb1d5f3aa3fced8a5",
+      "assetId": "c7c00019-5e0c-83bd-8022-3bb1584a9bf7"
+    }
+  ],
+  "versionId": "2bc0ae1f-ca26-41e6-a0a9-700628e7bf14",
+  "selectedBuildId": "85cc807a-b03b-491d-bae7-8b9b3af12947",
+  "reviewSubmissionId": "d6c99b9d-65f1-4087-aa0b-6d0f1847b1b2",
+  "reviewSubmissionStateAtVerification": "WAITING_FOR_REVIEW",
+  "versionStateAtVerification": "WAITING_FOR_REVIEW",
+  "releaseType": "MANUAL"
+}

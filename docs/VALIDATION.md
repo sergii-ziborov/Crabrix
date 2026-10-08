@@ -1,5 +1,13 @@
 # Validation record
 
+## App Store creative assets and resubmission — 8 October 2026
+
+The en-US listing already contained a 3,328-character description, 153-character promotional text, name, subtitle, keywords, and support/marketing URLs. App Store Connect's “672 characters remaining” is unused capacity in the description field. `whatsNew` is empty in the first unapproved app version and was not presented as a missing description.
+
+Two new RGB creative images were generated and uploaded: a 3840 × 1646 header and a 1920 × 1280 search-results image. Both were selected on the 1.1 product page, which showed “1 of 1” for each placement. Their SHA-256 digests and Asset Library IDs are in [the upload record](app-store/creative-upload-2026-10-08-build24.json). These are illustrations of the existing workflow, not app screenshots or speed claims.
+
+To make the locked product page editable, the earlier App Review submission `67fcdbd6-987a-4865-ae9e-1726e08331a2` was canceled. The two assets were removed as separate draft review items after App Store Connect flagged their duplication with the version page. Version 1.1 (24) was then added as the sole item in submission `d6c99b9d-65f1-4087-aa0b-6d0f1847b1b2` and submitted. API readback returned `WAITING_FOR_REVIEW` for both the submission and version, with build 24 selected and `releaseType: MANUAL`. The Mac locked immediately after the Add for Review action, so the final status was verified through the API rather than a post-submit UI screenshot.
+
 ## App Review resubmission — 8 October 2026
 
 Crabrix 1.1 (24) was resubmitted in the existing App Review submission `67fcdbd6-987a-4865-ae9e-1726e08331a2` after replacing the rejected item. App Store Connect UI and API both reported `WAITING_FOR_REVIEW` for the submission and version; the item was `READY_FOR_REVIEW` in the API. The [reply to Apple's 4.3(a) message](app-store/rejection-response-1.1-build24.md) was sent and appeared as the sixth message in the existing thread. Manual release remains selected, so approval alone will not publish the version.
