@@ -2,7 +2,7 @@ name: crabrix-web
 
 services:
   site:
-    image: localhost/crabrix-web-site:${CRABRIX_SITE_TAG:-b26}
+    image: localhost/crabrix-web-site:${CRABRIX_SITE_TAG:-b36}
     restart: unless-stopped
     ports:
       - "127.0.0.1:${CRABRIX_SITE_PORT:-3212}:8080"

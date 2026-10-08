@@ -37,9 +37,9 @@ For a prebuilt release, build the static export locally, transfer `out/` with
 `compose.prebuilt.yaml` to an isolated release directory on Hetzner, then run:
 
 ```bash
-podman build -f hetzner/Dockerfile.prebuilt -t localhost/crabrix-web-site:b26 .
+podman build -f hetzner/Dockerfile.prebuilt -t localhost/crabrix-web-site:b36 .
 podman compose -f compose.prebuilt.yaml up -d
 ```
 
-Set `CRABRIX_SITE_TAG` for a later image. The compose file binds only to
+Set `CRABRIX_SITE_TAG=b36` for this release, or choose a new tag for a later image. The compose file binds only to
 `127.0.0.1` and does not change the public domain route.

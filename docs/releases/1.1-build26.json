@@ -295,7 +295,7 @@
   "site": {
     "publicURL": "https://crabrix.com",
     "privateService": "Hetzner 127.0.0.1:3212",
-    "deployedRelease": "/srv/apps/crabrix-site/releases/20261008-b26/site",
+    "deployedRelease": "/srv/apps/crabrix-site/releases/20261008-b36/site",
     "framework": "Next.js 16 static export served by Nginx",
     "verification": "Private service returned 200 for /, /blog/, /learn/, /learn/basics/hello-rust/, and refreshed Duo/iPad PNGs; the served PNG digests matched the local build. Public domain still points to the earlier Lovable site."
   }

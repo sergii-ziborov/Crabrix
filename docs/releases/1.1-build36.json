@@ -50,7 +50,8 @@
   "website": {
     "privateHetznerService": "127.0.0.1:3212",
     "nextPages": 763,
-    "publicRoute": "Still points to older Lovable site; no DNS or Cloudflare changes made"
+    "publicRoute": "Still points to older Lovable site; no DNS or Cloudflare changes made",
+    "privateRelease": "/srv/apps/crabrix-site/releases/20261008-b36/site"
   },
   "pending": [
     "Physical-device TestFlight QA, including Game Center sign-in and Duo keyboard behavior",
