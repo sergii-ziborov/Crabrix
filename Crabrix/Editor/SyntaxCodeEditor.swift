@@ -214,7 +214,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
                 textView?.resignFirstResponder()
             }
         )
-        canvas.configureKeyboardBar(keyboardBar)
+        canvas.configureKeyboardBar(keyboardBar, tabletop: tabletopCodeTabActive != nil)
         keyboardBridge?.insert = { [weak coordinator = context.coordinator] symbol in
             coordinator?.insert(symbol)
         }
@@ -563,6 +563,7 @@ final class CodeEditorCanvas: UIView {
     let textView: RustSourceTextView
     private let scrollView = UIScrollView()
     fileprivate var keyboardBar: RustKeyboardAccessoryView?
+    private let keyboardPresentationAccessory = KeyboardPresentationAccessoryView()
     private var tabletopCodeTabActive: Bool?
     private var didFocusForTabletop = false
 
@@ -616,14 +617,16 @@ final class CodeEditorCanvas: UIView {
         fatalError("CodeEditorCanvas is created in code, never from a nib")
     }
 
-    fileprivate func configureKeyboardBar(_ bar: RustKeyboardAccessoryView) {
+    fileprivate func configureKeyboardBar(_ bar: RustKeyboardAccessoryView, tabletop: Bool) {
         keyboardBar = bar
-        textView.inputAccessoryView = bar
+        textView.inputAccessoryView = tabletop ? keyboardPresentationAccessory : bar
     }
 
     func setTabletopCodeTabActive(_ active: Bool?) {
         guard tabletopCodeTabActive != active else { return }
         tabletopCodeTabActive = active
+        textView.inputAccessoryView = active == nil ? keyboardBar : keyboardPresentationAccessory
+        if textView.isFirstResponder { textView.reloadInputViews() }
         if active == true {
             focusForTabletopIfNeeded()
         } else if active == false {
@@ -742,6 +745,12 @@ final class CodeEditorCanvas: UIView {
         guard caret.isFinite else { return }
         caret = caret.insetBy(dx: -(Self.gutterWidth + 24), dy: -12)
         scrollView.scrollRectToVisible(caret, animated: false)
+    }
+}
+
+private final class KeyboardPresentationAccessoryView: UIView {
+    override var intrinsicContentSize: CGSize {
+        CGSize(width: UIView.noIntrinsicMetric, height: 1)
     }
 }
 
@@ -985,7 +994,7 @@ final class GutterView: UIView {
     }
 }
 
-final class RustKeyboardAccessoryView: UIView {
+fileprivate final class RustKeyboardAccessoryView: UIView {
     private let symbols = ["::", "->", "=>", "&", "&mut ", "|", "_", "!", "<", ">", "{", "}", "[", "]", "(", ")", ";"]
     private let completeButton: UIButton
 
@@ -993,19 +1002,10 @@ final class RustKeyboardAccessoryView: UIView {
         usesAppleIntelligence: Bool,
         onInsert: @escaping (String) -> Void,
         onComplete: @escaping () -> Void,
-        onDismiss: @escaping () -> Void,
-        leadingSystemImage: String? = nil,
-        leadingAccessibilityLabel: String? = nil
+        onDismiss: @escaping () -> Void
     ) {
         completeButton = Self.assistantButton(usesAppleIntelligence: usesAppleIntelligence)
         super.init(frame: .zero)
-        if let leadingSystemImage {
-            var configuration = completeButton.configuration ?? UIButton.Configuration.gray()
-            configuration.image = UIImage(systemName: leadingSystemImage)
-            configuration.baseForegroundColor = .systemBlue
-            completeButton.configuration = configuration
-            completeButton.accessibilityLabel = leadingAccessibilityLabel
-        }
         backgroundColor = .secondarySystemBackground
         autoresizingMask = .flexibleHeight
 
