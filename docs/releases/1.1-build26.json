@@ -3,7 +3,7 @@
   "release": {
     "version": "1.1",
     "build": "26",
-    "channel": "Xcode Cloud archive candidate; App Store review preparation"
+    "channel": "Local signed archive and screenshot source; App Store binary is Xcode Cloud build 36"
   },
   "app": {
     "repository": "https://github.com/sergii-ziborov/Crabrix",
@@ -239,24 +239,25 @@
     "betaGroup": "Internal QA",
     "enUSListingLocalizationID": "a65d398a-7dd6-4135-b2d6-048be8b34dd3",
     "deliveryID": null,
-    "processingState": "LOCAL_ARCHIVE_VALIDATED; APP_STORE_UPLOAD_PENDING",
-    "buildID": null,
-    "internalBuildState": "PENDING",
-    "whatToTestLocalizationID": null,
+    "processingState": "CLOUD_BUILD_36_VALID",
+    "internalBuildState": "IN_BETA_TESTING",
+    "whatToTestLocalizationID": "56ef3bdd-5ca4-4da9-8e93-15aede6f01e5",
     "screenshotEvidence": "docs/app-store/asset-upload-2026-10-08-build26.json",
     "screenshotNote": "Ten iPhone screenshots, the iPad editor/search screenshot, and two iPhone Duo inner-display screenshots were uploaded as new Asset Library images and active App Store version placements. Six unchanged iPad screenshots remain from build 25; all set orders were read back.",
     "listingReadback": "The updated en-US description, including in-file search and iPhone Duo, matched App Store Connect API readback.",
-    "appStoreState": "PREPARE_FOR_SUBMISSION",
-    "reviewSubmissionID": null,
-    "reviewSubmissionUIState": "No build-26 App Review submission has been created.",
-    "reviewSubmissionCurrentItem": null,
+    "appStoreState": "WAITING_FOR_REVIEW",
+    "reviewSubmissionID": "c78c865e-156f-4f26-a0d1-4f6db860ddcd",
+    "reviewSubmissionUIState": "WAITING_FOR_REVIEW",
+    "reviewSubmissionCurrentItem": "App Store version 1.1 with Xcode Cloud build 36",
     "lastAppleMessageReviewedBuild": "1.0 (8)",
     "gameCenterAppVersionEnabled": true,
     "xcodeCloudBuildRunID": "95a6153b-38a2-4ca5-9ba5-1a5c236f69ab",
     "xcodeCloudBuildRunNumber": 36,
-    "xcodeCloudStatus": "RUNNING",
-    "reviewNotesReadback": "Build-26 Review Notes saved in App Store Connect and matched exact API readback.",
-    "whatsNewStatus": "Not editable: App Store Connect returned STATE_ERROR HTTP 409 while version state is PREPARE_FOR_SUBMISSION."
+    "xcodeCloudStatus": "COMPLETE_SUCCEEDED",
+    "reviewNotesReadback": "Build-36 Review Notes saved and matched exact API readback.",
+    "whatsNewStatus": "Not editable: App Store Connect returned STATE_ERROR HTTP 409 while version state is PREPARE_FOR_SUBMISSION.",
+    "buildId": "d1b46cc3-ee08-45d7-9e0b-bb7536ae3176",
+    "selectedStoreBuild": "1.1 (36)"
   },
   "verified": [
     "Xcode 27.1 RC built the Release Simulator app and a signed iOS archive for the build-26 application inputs at commit 35ddb46.",
@@ -265,11 +266,13 @@
     "The App Store Connect 1.1 screenshot sets read back in order: ten current iPhone images, seven iPad images with the new editor/search first, and two current iPhone Duo inner-display images.",
     "The Next.js static export built 763 pages and the Hetzner loopback service returned HTTP 200 for home, Blog, Learn, a lesson, and refreshed screenshots.",
     "Xcode Cloud manual run 36 started and resolved the exact build-input commit 35ddb46.",
-    "Build-26 Review Notes were saved and matched App Store Connect API readback."
+    "Build-26 Review Notes were saved and matched App Store Connect API readback.",
+    "Xcode Cloud run 36 succeeded, and App Store Connect processed linked build d1b46cc3 as version 36, VALID and APP_STORE_ELIGIBLE.",
+    "Build 36 is selected on App Store version 1.1, attached to TestFlight Internal QA, and its en-US What to Test text matched exact readback.",
+    "Build-36 Review Notes matched exact App Store Connect API readback.",
+    "New App Review submission c78c865e was submitted; both submission and version read back WAITING_FOR_REVIEW."
   ],
   "pending": [
-    "Xcode Cloud run 36 is executing; confirm its archive and resulting App Store Connect binary are VALID and available in Internal QA.",
-    "Select the validated build for App Store version 1.1, update What to Test and Review Notes, and resubmit for App Review.",
     "Physical-device TestFlight checks of Game Center sign-in, rating and achievement submission, opt-out, and offline catch-up.",
     "Physical-device tester checks of lesson feedback, nested files, and supported syn build.",
     "Public Crabrix site routing remains on the prior Lovable endpoint; do not change DNS or Cloudflare without separate authorization.",

@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "release": {
+    "version": "1.1",
+    "appStoreBuild": "36",
+    "sourceProjectBuild": "26",
+    "channel": "Xcode Cloud; TestFlight Internal QA; App Review waiting"
+  },
+  "source": {
+    "commit": "35ddb46fe4da0bafd6f0fa51ffe43fb1bfac743f",
+    "localArchiveManifest": "docs/releases/1.1-build26.json",
+    "note": "Xcode Cloud automatically set build number 36. The source commit and UI match local source build 26 and its Release Simulator screenshots."
+  },
+  "xcodeCloud": {
+    "runID": "95a6153b-38a2-4ca5-9ba5-1a5c236f69ab",
+    "runNumber": 36,
+    "status": "COMPLETE",
+    "completionStatus": "SUCCEEDED",
+    "finishedDate": "2026-10-08T15:52:08.494Z",
+    "actions": [
+      "Build - iOS: SUCCEEDED",
+      "Archive - iOS: SUCCEEDED"
+    ]
+  },
+  "appStoreConnect": {
+    "appID": "6809502653",
+    "buildID": "d1b46cc3-ee08-45d7-9e0b-bb7536ae3176",
+    "processingState": "VALID",
+    "buildAudienceType": "APP_STORE_ELIGIBLE",
+    "internalBetaGroup": "Internal QA",
+    "internalBetaGroupID": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "betaBuildLocalizationID": "56ef3bdd-5ca4-4da9-8e93-15aede6f01e5",
+    "appStoreVersionID": "2bc0ae1f-ca26-41e6-a0a9-700628e7bf14",
+    "appStoreVersionState": "WAITING_FOR_REVIEW",
+    "selectedOnVersion": true,
+    "releaseType": "MANUAL",
+    "reviewNotesSavedAndReadBack": true,
+    "whatsNew": "Not editable (STATE_ERROR HTTP 409)",
+    "internalBetaState": "IN_BETA_TESTING",
+    "reviewSubmissionId": "c78c865e-156f-4f26-a0d1-4f6db860ddcd",
+    "reviewSubmissionState": "WAITING_FOR_REVIEW"
+  },
+  "screenshots": {
+    "evidence": "docs/app-store/asset-upload-2026-10-08-build26.json",
+    "iphone69": 10,
+    "ipad13": 7,
+    "iphoneDuo": 2,
+    "note": "Images were captured from Release Simulator with the same app source. The new iPad editor frame shows search; Duo images show Code with keyboard and a completed Output run."
+  },
+  "website": {
+    "privateHetznerService": "127.0.0.1:3212",
+    "nextPages": 763,
+    "publicRoute": "Still points to older Lovable site; no DNS or Cloudflare changes made"
+  },
+  "pending": [
+    "Physical-device TestFlight QA, including Game Center sign-in and Duo keyboard behavior",
+    "Public routing to the Hetzner Next.js site requires separate authorization",
+    "Manual public release remains after Apple approval"
+  ]
+}

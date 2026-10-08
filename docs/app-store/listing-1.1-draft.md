@@ -1,6 +1,7 @@
 # Crabrix 1.1 App Store copy
 
-This is the App Store copy for the 1.1 (26) candidate. Game Center is optional
+This is the App Store copy for 1.1 (36), built by Xcode Cloud from the
+source labeled build 26. Game Center is optional
 and off by default. The en-US description and promotional text below are the
 current listing copy; [submission status](submission-status.md) records the
 latest App Store Connect verification. The new iPad and iPhone captures and the
@@ -83,7 +84,7 @@ purchase; no subscription or in-app purchase is required.
 
 ## Reviewer path
 
-Use [review-notes.txt](review-notes.txt) with the verified 1.1 build 26
+Use [review-notes.txt](review-notes.txt) with the validated Xcode Cloud 1.1 build 36
 screenshots once App Store Connect reports them processed. The historical 1.0
 screenshots are not 1.1 evidence.
 

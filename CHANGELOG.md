@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1 (26) — 2026-10-08
+## 1.1 (36 in Xcode Cloud; source build 26) — 2026-10-08
 
 - Bring the Duo editor header in line with My Projects: project name and in-file search stay visible without the old top tabs and close button. Keep the Code, Problems, Output, and Terminal tabs aligned above the keyboard in laptop and landscape layouts.
 - Keep the terminal input focused when its tab opens, add a visible keyboard dismiss control, and show a clearer result for completed, empty, stopped, and failed runs.
