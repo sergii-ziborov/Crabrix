@@ -34,6 +34,10 @@ struct InstalledCourseRepository: CourseRepository {
         loaded.values.lazy.compactMap { $0.depth[lessonID] }.first
     }
 
+    func illustration(for lessonID: String) -> LessonIllustration? {
+        loaded.values.lazy.compactMap { $0.illustrations[lessonID] }.first
+    }
+
     func evidence(for lessonID: String) -> LessonEvidence? {
         loaded.values.lazy.compactMap { $0.evidence[lessonID] }.first
     }
@@ -98,6 +102,8 @@ struct InstalledCourseRepository: CourseRepository {
         var units: [RustLearningUnit] = []
         var writings: [String: RustLessonWriting] = [:]
         var depths: [String: RustLessonDepth] = [:]
+        var illustrations: [String: LessonIllustration] = [:]
+        var lessonIllustrationPaths = Set<String>()
         var evidence: [String: LessonEvidence] = [:]
         var projects: [String: CourseProjectTemplate] = [:]
         var challenges: [String: AlgorithmChallenge] = [:]
@@ -130,6 +136,29 @@ struct InstalledCourseRepository: CourseRepository {
                 depths[lessonID] = try lesson.depth.runtimeDepth()
                 evidence[lessonID] = proof
                 lessons.append(try lesson.runtimeLesson())
+                if let illustration = lesson.illustration {
+                    let expected = "media/\(safeLesson).png"
+                    guard illustration.path == expected,
+                          !illustration.alt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                          !illustration.caption.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                          manifest.files.contains(where: { $0.path == expected }) else {
+                        throw CoursePackError.manifestMismatch("lesson illustration \(lessonID)")
+                    }
+                    let url = directory.appending(path: expected)
+                    guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+                          CGImageSourceGetCount(source) == 1,
+                          let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+                          let width = properties[kCGImagePropertyPixelWidth] as? Int,
+                          let height = properties[kCGImagePropertyPixelHeight] as? Int,
+                          width > 0, height > 0, width <= 4096, height <= 4096,
+                          width * height <= 8_000_000 else {
+                        throw CoursePackError.manifestMismatch("lesson image size \(lessonID)")
+                    }
+                    lessonIllustrationPaths.insert(expected)
+                    illustrations[lessonID] = LessonIllustration(
+                        url: url, alt: illustration.alt, caption: illustration.caption
+                    )
+                }
                 if let challenge = check.challenge {
                     guard challenge.lessonID == lessonID else {
                         throw CoursePackError.manifestMismatch("challenge \(lessonID)")
@@ -235,8 +264,9 @@ struct InstalledCourseRepository: CourseRepository {
             orderedShowcases.append((metadata.order, try metadata.runtimeProject(
                 files: files, illustrationURL: illustrationURL)))
         }
-        guard Set(manifest.files.map(\.path).filter { $0.hasPrefix("media/") }) == illustrationPaths else {
-            throw CoursePackError.manifestMismatch("example media inventory")
+        guard Set(manifest.files.map(\.path).filter { $0.hasPrefix("media/") })
+                == illustrationPaths.union(lessonIllustrationPaths) else {
+            throw CoursePackError.manifestMismatch("course media inventory")
         }
         orderedShowcases.sort { $0.order < $1.order }
         guard orderedShowcases.enumerated().allSatisfy({ $0.offset == $0.element.order }) else {
@@ -255,7 +285,7 @@ struct InstalledCourseRepository: CourseRepository {
         )
         return LoadedCourse(
             course: runtime, language: language, order: source.order,
-            writing: writings, depth: depths, evidence: evidence,
+            writing: writings, depth: depths, illustrations: illustrations, evidence: evidence,
             projects: projects, challenges: challenges, algorithmMethods: algorithmMethods,
             terms: terms, showcases: orderedShowcases.map { $0.project },
             contentVersion: version, archiveSHA256: record.archiveSHA256

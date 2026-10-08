@@ -45,6 +45,7 @@ struct CourseLessonDTO: Decodable, Sendable {
     let exerciseKind: String
     let writing: CourseWritingDTO
     let depth: CourseDepthDTO
+    let illustration: CourseLessonIllustrationDTO?
 
     func runtimeLesson() throws -> RustLesson {
         let exercise: RustLesson.Exercise
@@ -58,6 +59,12 @@ struct CourseLessonDTO: Decodable, Sendable {
         }
         return RustLesson(id: id, title: title, concept: concept, minutes: minutes, exercise: exercise)
     }
+}
+
+struct CourseLessonIllustrationDTO: Decodable, Sendable {
+    let path: String
+    let alt: String
+    let caption: String
 }
 
 struct CourseWritingDTO: Decodable, Sendable {

@@ -21,6 +21,7 @@ struct LessonDetailView: View {
     let lesson: RustLesson
     let writing: RustLessonWriting
     let lessonDepth: RustLessonDepth
+    let illustration: LessonIllustration?
     let courseTheme: RustCourseTheme
     let isCompleted: Bool
     let onStart: () -> Void
@@ -64,6 +65,7 @@ struct LessonDetailView: View {
         lesson: RustLesson,
         writing: RustLessonWriting,
         lessonDepth: RustLessonDepth,
+        illustration: LessonIllustration? = nil,
         courseTheme: RustCourseTheme,
         isCompleted: Bool,
         savedAnswer: Int? = nil,
@@ -75,6 +77,7 @@ struct LessonDetailView: View {
         self.lesson = lesson
         self.writing = writing
         self.lessonDepth = lessonDepth
+        self.illustration = illustration
         self.courseTheme = courseTheme
         self.isCompleted = isCompleted
         self.onStart = onStart
@@ -210,6 +213,23 @@ struct LessonDetailView: View {
                 systemImage: brief.systemImage,
                 tint: brief.tint
             )
+
+            if let illustration,
+               let image = UIImage(contentsOfFile: illustration.url.path) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: .infinity)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .accessibilityLabel(illustration.alt)
+                    Text(illustration.caption)
+                        .font(.caption)
+                        .foregroundStyle(CrabrixTheme.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.vertical, 4)
+            }
 
             LessonCard(title: "Why this matters", systemImage: "book.pages.fill", tint: brief.tint) {
                 Text(brief.summary)

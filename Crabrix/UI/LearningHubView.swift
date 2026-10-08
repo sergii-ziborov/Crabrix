@@ -181,6 +181,7 @@ struct LearningHubView: View {
                     lesson: lesson,
                     writing: writing,
                     lessonDepth: depth,
+                    illustration: repository.illustration(for: lessonID),
                     courseTheme: course.theme,
                     isCompleted: isReview,
                     savedAnswer: lessonAnswerIndices[lesson.id],

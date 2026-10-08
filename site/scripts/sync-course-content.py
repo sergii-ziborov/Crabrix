@@ -3,6 +3,7 @@
 
 import argparse
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -34,6 +35,19 @@ def main() -> None:
                        for lesson_id in unit["lessonIDs"]]
             if any(lesson["parentID"] != unit_id for lesson in lessons):
                 raise ValueError(f"lesson parent mismatch in {course_id}/{unit_id}")
+            for lesson in lessons:
+                illustration = lesson.get("illustration")
+                if illustration is None:
+                    continue
+                expected = f"media/{lesson['id']}.png"
+                if illustration.get("path") != expected or not illustration.get("alt"):
+                    raise ValueError(f"invalid lesson illustration in {course_id}/{lesson['id']}")
+                source_image = folder / expected
+                if not source_image.is_file():
+                    raise ValueError(f"missing lesson illustration: {source_image}")
+                destination_image = SITE / "public" / "learn-media" / course_id / f"{lesson['id']}.png"
+                destination_image.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source_image, destination_image)
             units.append({**unit, "lessons": lessons})
         courses.append({**course, "units": units})
 

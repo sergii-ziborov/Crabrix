@@ -7,6 +7,7 @@ protocol CourseRepository: Sendable {
     var courses: [RustCourse] { get }
     func writing(for lessonID: String) -> RustLessonWriting?
     func depth(for lessonID: String) -> RustLessonDepth?
+    func illustration(for lessonID: String) -> LessonIllustration?
     func evidence(for lessonID: String) -> LessonEvidence?
     func starterProject(for lessonID: String) -> CourseProjectTemplate?
     func challenge(for lessonID: String) -> AlgorithmChallenge?
@@ -22,7 +23,15 @@ struct CourseLearningTotals: Equatable, Sendable {
     let atlasChallenges: Int
 }
 
+struct LessonIllustration: Sendable {
+    let url: URL
+    let alt: String
+    let caption: String
+}
+
 extension CourseRepository {
+    func illustration(for lessonID: String) -> LessonIllustration? { nil }
+
     func learningTotals() -> CourseLearningTotals {
         let rust = courses.filter { $0.id != "algorithms" }
             .flatMap { $0.units.flatMap(\.lessons) }.count
@@ -103,6 +112,7 @@ struct LoadedCourse: Sendable {
     let order: Int
     let writing: [String: RustLessonWriting]
     let depth: [String: RustLessonDepth]
+    let illustrations: [String: LessonIllustration]
     let evidence: [String: LessonEvidence]
     let projects: [String: CourseProjectTemplate]
     let challenges: [String: AlgorithmChallenge]

@@ -8,6 +8,7 @@ export type Lesson = {
   minutes: number;
   order: number;
   exerciseKind: string;
+  illustration?: { path: string; alt: string; caption: string };
   writing?: {
     summary?: string;
     rule?: string;

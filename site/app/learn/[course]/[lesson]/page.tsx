@@ -41,7 +41,13 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
         {writing?.rule && <div className="lesson-callout"><strong>Core idea</strong><p>{writing.rule}</p></div>}
       </div>
       <article className="lesson-content">
-        {writing?.explanation && <section><h2>Understand it</h2><p>{writing.explanation}</p></section>}
+        {lesson.illustration && <figure className="lesson-infographic">
+          <img src={`/learn-media/${course.id}/${lesson.id}.png`} alt={lesson.illustration.alt} loading="lazy" />
+          <figcaption>{lesson.illustration.caption}</figcaption>
+        </figure>}
+        {writing?.explanation && <section><h2>Understand it</h2>
+          {writing.explanation.split(/\n\s*\n/).map((paragraph, paragraphIndex) => <p key={paragraphIndex}>{paragraph}</p>)}
+        </section>}
         {algorithm && <section><h2>The pattern</h2>
           {algorithm.idea && <p>{algorithm.idea}</p>}
           {algorithm.useCases && <p><strong>When to use it:</strong> {algorithm.useCases}</p>}
