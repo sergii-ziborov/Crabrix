@@ -50,12 +50,12 @@
   "website": {
     "privateHetznerService": "127.0.0.1:3212",
     "nextPages": 763,
-    "publicRoute": "Still points to older Lovable site; no DNS or Cloudflare changes made",
-    "privateRelease": "/srv/apps/crabrix-site/releases/20261008-b36/site"
+    "publicRoute": "https://crabrix.com/ on Hetzner via DNS-only A 116.203.99.11 (since 2026-10-09)",
+    "privateRelease": "/srv/apps/crabrix-site/releases/20261008-b36/site",
+    "certificateRenewal": "Let's Encrypt webroot; certbot.timer; dry-run passed 2026-10-09"
   },
   "pending": [
     "Physical-device TestFlight QA, including Game Center sign-in and Duo keyboard behavior",
-    "Public routing to the Hetzner Next.js site requires separate authorization",
     "Manual public release remains after Apple approval"
   ]
 }

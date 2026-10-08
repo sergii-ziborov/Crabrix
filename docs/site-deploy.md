@@ -1,17 +1,33 @@
 # Crabrix website deployment
 
-## Current state
+## Production — 9 October 2026
 
-The public `crabrix.com` site still serves the existing Lovable deployment. The
-new site in `site/` is a Next.js 16 static export. It has one shared navigation,
-responsive spacing, Blog, all seven free Learn courses and 742 lesson pages,
-and screenshots captured from the current app. It has passed a local build and
-link check, but has not replaced the public site.
+The public [crabrix.com](https://crabrix.com/) site is the Next.js 16 static
+export in `site/`. Its shared navigation and spacing cover the product pages,
+Blog, and free Learn section. The export has 763 pages: seven courses and 742
+individual lesson pages, plus the rest of the site. The current iPad editor and
+iPhone Duo Code and Output screenshots are served from `site/public/screenshots/`.
 
-On 8 October, the isolated `crabrix-web-site-1` container was deployed to the
-GrantTap Hetzner host from this branch. It listens on `127.0.0.1:3212`.
-Health, Learn, Blog and the Duo screenshot returned HTTP 200 on that internal
-endpoint. The GrantTap stack, public routing and domain records were unchanged.
+The isolated `crabrix-web-site-1` container on the GrantTap Hetzner host serves
+the export at `127.0.0.1:3212`. Nginx uses
+[`site/hetzner/crabrix.com.nginx`](../site/hetzner/crabrix.com.nginx) for the
+public HTTPS route. Its certificate is issued by Let's Encrypt and renewed by
+Certbot's webroot authenticator; `certbot.timer` and the existing Nginx reload
+hook are active. `certbot renew --dry-run --cert-name crabrix.com` succeeded.
+
+The apex DNS A record points to `116.203.99.11` with a five-minute TTL. Only
+that record changed from the former Lovable address `185.158.133.1`. DNS
+remains unproxied; the existing MX, SPF, DKIM and other verification records
+were left intact. The temporary DNS-01 TXT used for initial certificate issue
+was removed after webroot renewal was verified. Resolver caches may briefly
+retain the previous one-hour A record.
+
+Public HTTPS returned 200 for the home page, Blog, Learn, an individual lesson,
+and the refreshed iPad and Duo PNGs. The served screenshot SHA-256 digests
+matched the checked-in files. The browser displayed the new menu, Learn and
+Blog links, and the updated device gallery. The browser capture of the live
+home page is [`docs/screenshots/crabrix-site-live-2026-10-09.png`](screenshots/crabrix-site-live-2026-10-09.png),
+with a separate [live device gallery capture](screenshots/crabrix-site-gallery-live-2026-10-09.png).
 
 ## Build locally
 
@@ -22,34 +38,30 @@ pnpm check
 pnpm build
 ```
 
-The static site is written to `site/out/`. Next.js renders the existing product
-and legal copy from the checked-in HTML documents while its shared layout
-supplies the common header and footer. `site/content/courses.json` is a pinned
-snapshot from the course repository; `site/README.md` explains how to refresh
-it.
+The static export is written to `site/out/`. Product and legal copy comes from
+the checked-in HTML documents, with common navigation supplied by the Next
+layout. `site/content/courses.json` is a pinned snapshot from the course
+repository; `site/README.md` explains how to refresh it.
 
-## Rebuild the isolated Hetzner service
+## Deploy the isolated Hetzner service
 
-On the server, after checking out the desired commit into a separate Crabrix
-directory:
+For a prebuilt release, transfer `site/out/` with `hetzner/nginx.conf`,
+`hetzner/Dockerfile.prebuilt`, and `compose.prebuilt.yaml` to an isolated release
+directory on Hetzner. Build and start the container there:
 
 ```bash
-cd site
-podman compose -f compose.hetzner.yaml config
-podman compose -f compose.hetzner.yaml build
-podman compose -f compose.hetzner.yaml up -d
+podman build -f hetzner/Dockerfile.prebuilt -t localhost/crabrix-web-site:b36 .
+CRABRIX_SITE_TAG=b36 podman compose -f compose.prebuilt.yaml up -d
 curl --fail http://127.0.0.1:3212/healthz
-curl --fail http://127.0.0.1:3212/learn/
+curl --fail https://crabrix.com/learn/
 ```
 
-The server's existing GrantTap compose project and routes do not need changes.
-A separate public HTTPS route for Crabrix can be added only when its destination
-and domain routing have been agreed. Until then, Lovable remains the public
-site.
+Choose a new image tag for each later release. The container stays bound to
+loopback; Nginx owns the public route. The GrantTap compose project is separate.
 
-## Screenshots
+## Refresh screenshots
 
 `python3 scripts/capture_release_screenshots.py /absolute/path/to/Crabrix.app`
-refreshes the Release Simulator images in `docs/screenshots` and `site`.
+updates Release Simulator captures in `docs/screenshots` and `site`.
 `docs/screenshots/duo-laptop.png` was captured separately in Device Hub from
-the iPhone Duo laptop posture. Inspect images before committing or publishing.
+the iPhone Duo laptop posture. Review the captures before publishing.

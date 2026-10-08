@@ -29,8 +29,9 @@ captures from the same Release Simulator source before changing those files.
 The site runs as its own Hetzner container. The current release serves a
 locally built static export from Nginx using `compose.prebuilt.yaml`; source
 builds use `compose.hetzner.yaml` and `hetzner/Dockerfile`. It binds only to
-loopback on port 3212. Public access needs a Crabrix server
-route and certificate; the current Lovable site and domain records are unchanged.
+loopback on port 3212. The public `crabrix.com` HTTPS route is handled by
+`hetzner/crabrix.com.nginx`; the certificate renews through Certbot webroot.
+Deployment evidence and DNS details are in `../docs/site-deploy.md`.
 
 For a prebuilt release, build the static export locally, transfer `out/` with
 `hetzner/nginx.conf`, `hetzner/Dockerfile.prebuilt`, and

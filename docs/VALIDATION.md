@@ -19,7 +19,8 @@ seven iPad (the refreshed editor/search first), and two iPhone Duo screenshots
 reached `COMPLETE` in the intended order; see [screenshot evidence](app-store/asset-upload-2026-10-08-build26.json).
 The Next.js site exported 763 pages. Its Hetzner loopback service returned HTTP
 200 for home, Blog, Learn, a lesson, and refreshed captures; served screenshot
-hashes matched local files. Public DNS still routes to the prior Lovable site.
+hashes matched local files. On 9 October, public DNS was routed to Hetzner;
+public HTTPS and screenshot hashes matched the release. See [website deployment](site-deploy.md).
 App Review submission `c78c865e-156f-4f26-a0d1-4f6db860ddcd` and version 1.1
 read back `WAITING_FOR_REVIEW`; release remains manual. Physical-device QA is
 still pending.
