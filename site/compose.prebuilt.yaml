@@ -1,0 +1,19 @@
+name: crabrix-web
+
+services:
+  site:
+    image: localhost/crabrix-web-site:${CRABRIX_SITE_TAG:-b26}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${CRABRIX_SITE_PORT:-3212}:8080"
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 128
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s

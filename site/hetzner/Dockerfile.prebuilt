@@ -1,0 +1,4 @@
+FROM docker.io/nginxinc/nginx-unprivileged:stable-alpine
+COPY hetzner/nginx.conf /etc/nginx/conf.d/default.conf
+COPY out /usr/share/nginx/html
+EXPOSE 8080

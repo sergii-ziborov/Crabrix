@@ -31,3 +31,15 @@ locally built static export from Nginx using `compose.prebuilt.yaml`; source
 builds use `compose.hetzner.yaml` and `hetzner/Dockerfile`. It binds only to
 loopback on port 3212. Public access needs a Crabrix server
 route and certificate; the current Lovable site and domain records are unchanged.
+
+For a prebuilt release, build the static export locally, transfer `out/` with
+`hetzner/nginx.conf`, `hetzner/Dockerfile.prebuilt`, and
+`compose.prebuilt.yaml` to an isolated release directory on Hetzner, then run:
+
+```bash
+podman build -f hetzner/Dockerfile.prebuilt -t localhost/crabrix-web-site:b26 .
+podman compose -f compose.prebuilt.yaml up -d
+```
+
+Set `CRABRIX_SITE_TAG` for a later image. The compose file binds only to
+`127.0.0.1` and does not change the public domain route.
