@@ -732,7 +732,8 @@ struct ContentView: View {
 
             VStack(spacing: 0) {
                 AppHeader(
-                    compact: workspace.size.width < 680,
+                    isPhone: UIDevice.current.userInterfaceIdiom == .phone,
+                    regularTablet: horizontalSizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone,
                     dense: tabletopFold != nil || tabletopFoldGlobalY != nil,
                     showsTopNavigation: tabletopFold != nil || tabletopFoldGlobalY != nil,
                     headerWidth: workspace.size.width,
@@ -1193,7 +1194,8 @@ private struct CompactEdgeSwipeZone: View {
 }
 
 private struct AppHeader: View {
-    let compact: Bool
+    let isPhone: Bool
+    let regularTablet: Bool
     let dense: Bool
     let showsTopNavigation: Bool
     let headerWidth: CGFloat
@@ -1212,7 +1214,7 @@ private struct AppHeader: View {
     let onProjectActions: () -> Void
 
     var body: some View {
-        HStack(spacing: compact ? 7 : 12) {
+        HStack(spacing: isPhone ? 7 : 12) {
             if showsTopNavigation {
                 Button(action: onCloseWorkspace) {
                     Image(systemName: "chevron.left")
@@ -1251,6 +1253,10 @@ private struct AppHeader: View {
                 .padding(.horizontal, 12)
                 .frame(width: max(120, min(190, headerWidth * 0.2)), height: 36)
                 .background(CrabrixTheme.raised, in: Capsule())
+
+                tabletopProjectMenu
+                checkButton
+                runButton
             } else {
                 Image("CrabrixMark")
                     .resizable()
@@ -1263,91 +1269,129 @@ private struct AppHeader: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.78)
                 Spacer()
-            }
 
-            if !compact && !showsTopNavigation {
-                Button(action: onOpenProjects) {
-                    Label("Projects", systemImage: "square.grid.2x2.fill")
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .frame(minWidth: 88, minHeight: 34)
-                        .background(CrabrixTheme.raised, in: CrabrixCardShape(cornerRadius: 9))
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Open Projects home")
-            }
-
-            Menu {
-                Button("Project settings and share", systemImage: "gearshape", action: onProjectActions)
-                Button("New project", systemImage: "plus", action: onNewProject)
-            } label: {
-                Image(systemName: "ellipsis.circle")
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(CrabrixTheme.primary)
-                    .frame(width: 40, height: 40)
-                    .background(CrabrixTheme.raised, in: CrabrixControlShape(classic: .circle))
-            }
-            .disabled(transfer.isWorking)
-            .accessibilityLabel("Project menu")
-
-            Button(action: onCheck) {
-                Image(systemName: "checkmark.circle")
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(CrabrixTheme.blue)
-                    .frame(width: 40, height: 40)
-                    .background(CrabrixTheme.blue.opacity(0.1), in: CrabrixControlShape(classic: .capsule))
-            }
-            .buttonStyle(.plain)
-            .disabled(activity != .idle || !canRun)
-            .accessibilityLabel("Check project")
-
-            Button(action: activity == .idle ? onRun : onCancelBuild) {
-                HStack(spacing: 6) {
-                    if activity == .idle {
-                        Image(systemName: "play.fill")
-                    } else {
-                        ProgressView()
-                            .controlSize(.mini)
-                            .tint(CrabrixTheme.coral)
+                if regularTablet {
+                    Button(action: onOpenProjects) {
+                        Label("Projects", systemImage: "square.grid.2x2.fill")
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .frame(minWidth: 88, minHeight: 34)
+                            .background(CrabrixTheme.raised, in: CrabrixCardShape(cornerRadius: 9))
                     }
-                    Text(activity == .idle ? "Run" : "Stop")
-                        .font(.caption.bold())
-                }
-                .foregroundStyle(CrabrixTheme.coral)
-                .padding(.horizontal, 11)
-                .frame(minHeight: 38)
-                .background(CrabrixTheme.coral.opacity(0.12), in: CrabrixControlShape(classic: .capsule))
-                .overlay {
-                    CrabrixControlShape(classic: .capsule)
-                        .stroke(CrabrixTheme.coral.opacity(0.3))
-                }
-            }
-            .buttonStyle(.plain)
-            .disabled(activity == .idle && !canRun)
-            .opacity(activity == .idle && !canRun ? 0.46 : 1)
-            .accessibilityLabel(activity == .idle ? "Run project" : "Stop build")
-            .accessibilityHint(
-                activity == .idle
-                    ? "Compiles and runs the project locally"
-                    : "Cancels the current compiler operation"
-            )
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Open Projects home")
 
-            if !showsTopNavigation {
-                Button(action: onCloseWorkspace) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 13, weight: .bold))
-                        .frame(width: 38, height: 38)
-                        .background(CrabrixTheme.raised, in: CrabrixControlShape(classic: .circle))
+                    Menu {
+                        Button(action: onNewProject) {
+                            Label("New Project", systemImage: "plus")
+                        }
+                        Button(action: onProjectActions) {
+                            Label("Project Details & Share", systemImage: "ellipsis.circle")
+                        }
+                    } label: {
+                        if transfer.isWorking {
+                            ProgressView().tint(CrabrixTheme.coral)
+                        } else {
+                            Label("PROJECT", systemImage: "folder.fill")
+                                .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                                .foregroundStyle(CrabrixTheme.primary)
+                        }
+                    }
+                    .disabled(transfer.isWorking)
+                } else {
+                    if isPhone {
+                        Button(action: onProjectActions) {
+                            Image(systemName: "ellipsis.circle")
+                                .font(.system(size: 20, weight: .medium))
+                                .foregroundStyle(CrabrixTheme.primary)
+                                .frame(width: 40, height: 40)
+                                .background(CrabrixTheme.raised, in: CrabrixControlShape(classic: .circle))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Project settings and share")
+                        checkButton
+                        runButton
+                    }
+                    closeButton
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Close editor")
             }
         }
-        .padding(.horizontal, compact ? 14 : 18)
-        // Tabletop places the status glyphs on the same visual row. Keep the
-        // action buttons clear of the time and connectivity indicator.
+        .padding(.horizontal, isPhone ? 14 : 18)
+        // The status glyphs share the header row in laptop posture.
         .padding(.trailing, showsTopNavigation ? 112 : 0)
         .frame(height: dense ? 44 : 58)
         .background(CrabrixTheme.background.opacity(0.97))
+    }
+
+    private var tabletopProjectMenu: some View {
+        Menu {
+            Button("Project settings and share", systemImage: "gearshape", action: onProjectActions)
+            Button("New project", systemImage: "plus", action: onNewProject)
+        } label: {
+            Image(systemName: "ellipsis.circle")
+                .font(.system(size: 20, weight: .medium))
+                .foregroundStyle(CrabrixTheme.primary)
+                .frame(width: 40, height: 40)
+                .background(CrabrixTheme.raised, in: CrabrixControlShape(classic: .circle))
+        }
+        .disabled(transfer.isWorking)
+        .accessibilityLabel("Project menu")
+    }
+
+    private var checkButton: some View {
+        Button(action: onCheck) {
+            Image(systemName: "checkmark.circle")
+                .font(.system(size: 20, weight: .medium))
+                .foregroundStyle(CrabrixTheme.blue)
+                .frame(width: 40, height: 40)
+                .background(CrabrixTheme.blue.opacity(0.1), in: CrabrixControlShape(classic: .capsule))
+        }
+        .buttonStyle(.plain)
+        .disabled(activity != .idle || !canRun)
+        .accessibilityLabel("Check project")
+    }
+
+    private var runButton: some View {
+        Button(action: activity == .idle ? onRun : onCancelBuild) {
+            HStack(spacing: 6) {
+                if activity == .idle {
+                    Image(systemName: "play.fill")
+                } else {
+                    ProgressView()
+                        .controlSize(.mini)
+                        .tint(CrabrixTheme.coral)
+                }
+                Text(activity == .idle ? "Run" : "Stop")
+                    .font(.caption.bold())
+            }
+            .foregroundStyle(CrabrixTheme.coral)
+            .padding(.horizontal, 11)
+            .frame(minHeight: 38)
+            .background(CrabrixTheme.coral.opacity(0.12), in: CrabrixControlShape(classic: .capsule))
+            .overlay {
+                CrabrixControlShape(classic: .capsule)
+                    .stroke(CrabrixTheme.coral.opacity(0.3))
+            }
+        }
+        .buttonStyle(.plain)
+        .disabled(activity == .idle && !canRun)
+        .opacity(activity == .idle && !canRun ? 0.46 : 1)
+        .accessibilityLabel(activity == .idle ? "Run project" : "Stop build")
+        .accessibilityHint(
+            activity == .idle
+                ? "Compiles and runs the project locally"
+                : "Cancels the current compiler operation"
+        )
+    }
+
+    private var closeButton: some View {
+        Button(action: onCloseWorkspace) {
+            Image(systemName: "xmark")
+                .font(.system(size: 13, weight: .bold))
+                .frame(width: 38, height: 38)
+                .background(CrabrixTheme.raised, in: CrabrixControlShape(classic: .circle))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Close editor")
     }
 }
 
