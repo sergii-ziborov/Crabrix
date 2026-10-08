@@ -690,6 +690,7 @@ struct ContentView: View {
                 onOpenDiagnosticAdvisor: presentDiagnosticAdvisor,
                 onContinueLearning: continueLearning,
                 keyboardBridge: editorKeyboard,
+                duoHingePresent: duoHingePresent,
                 hingePartiallyOpen: duoPartiallyOpen,
                 hingeGlobalY: hingeGlobalY,
                 assistantUsesAppleIntelligence: appleIntelligenceCompletion

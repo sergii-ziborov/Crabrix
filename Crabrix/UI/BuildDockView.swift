@@ -54,6 +54,7 @@ struct BuildDockView<CodeContent: View>: View {
     let onOpenDiagnosticAdvisor: () -> Void
     let onContinueLearning: () -> Void
     let keyboardBridge: RustEditorKeyboardBridge
+    let duoHingePresent: Bool
     let hingePartiallyOpen: Bool
     let hingeGlobalY: CGFloat
     let assistantUsesAppleIntelligence: Bool
@@ -82,6 +83,7 @@ struct BuildDockView<CodeContent: View>: View {
         onOpenDiagnosticAdvisor: @escaping () -> Void,
         onContinueLearning: @escaping () -> Void,
         keyboardBridge: RustEditorKeyboardBridge,
+        duoHingePresent: Bool,
         hingePartiallyOpen: Bool,
         hingeGlobalY: CGFloat,
         assistantUsesAppleIntelligence: Bool,
@@ -109,6 +111,7 @@ struct BuildDockView<CodeContent: View>: View {
         self.onOpenDiagnosticAdvisor = onOpenDiagnosticAdvisor
         self.onContinueLearning = onContinueLearning
         self.keyboardBridge = keyboardBridge
+        self.duoHingePresent = duoHingePresent
         self.hingePartiallyOpen = hingePartiallyOpen
         self.hingeGlobalY = hingeGlobalY
         self.assistantUsesAppleIntelligence = assistantUsesAppleIntelligence
@@ -209,7 +212,8 @@ struct BuildDockView<CodeContent: View>: View {
 
             Spacer()
 
-            if activeTab == .code || activeTab == .terminal {
+            // The tab-row dismissal control is only needed beside Duo's hinge.
+            if (duoHingePresent || tabletop) && (activeTab == .code || activeTab == .terminal) {
                 Button(action: hideKeyboard) {
                     HStack(spacing: 5) {
                         Image(systemName: "keyboard.chevron.compact.down")
