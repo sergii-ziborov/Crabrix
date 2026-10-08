@@ -1,5 +1,25 @@
 # Validation record
 
+## Duo-only keyboard dismiss control — 9 October 2026
+
+The Code/Terminal tab row shows its keyboard-dismiss button only when the Duo
+hinge is present. The normal iPhone and iPad tab rows no longer show it; the
+separate Terminal input control is unchanged. Debug and Release builds for the
+generic iOS Simulator completed with Xcode 27.1 RC. Fresh Release Simulator
+captures for 6.9-inch iPhone and 13-inch iPad replaced the editor screenshots
+in this repository and the Next.js site; both were inspected visually. The
+static site passed `pnpm check` and `pnpm build` (763 exported pages).
+
+Xcode Cloud run 37 built source `618da0a189b9108301594b10662f05a7d2c42f5a`
+successfully. App Store Connect reports build 37 as `VALID`,
+`APP_STORE_ELIGIBLE`, and `IN_BETA_TESTING` in Internal QA; its en-US What to
+Test text was saved and read back. [The build manifest](releases/1.1-build37.json)
+records its identifiers and screenshot hashes. App Review still has build 36
+selected in the existing `WAITING_FOR_REVIEW` submission. The new screenshots
+have not yet replaced that locked Store listing. The Hetzner site's SSH banner
+and HTTPS service were unavailable during this update, so the refreshed site
+export is built locally but has not yet been published or publicly verified.
+
 ## Xcode Cloud build 36 and source build 26 — 8 October 2026
 
 Xcode 27.1 RC (`27A9275`) built the Release Simulator app and a local signed

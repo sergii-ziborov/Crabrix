@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "release": {
+    "version": "1.1",
+    "appStoreBuild": "37",
+    "channel": "Xcode Cloud; TestFlight Internal QA"
+  },
+  "source": {
+    "commit": "618da0a189b9108301594b10662f05a7d2c42f5a",
+    "change": "Show dock keyboard dismiss button only on Duo"
+  },
+  "xcodeCloud": {
+    "runID": "c7561d29-8f19-43c6-baa8-24e6203beb4a",
+    "runNumber": 37,
+    "status": "COMPLETE",
+    "completionStatus": "SUCCEEDED",
+    "finishedDate": "2026-10-08T23:17:08.311Z"
+  },
+  "appStoreConnect": {
+    "appID": "6809502653",
+    "buildID": "fbab7b74-53e4-4e83-a222-5c14bcd02e70",
+    "processingState": "VALID",
+    "buildAudienceType": "APP_STORE_ELIGIBLE",
+    "internalBetaGroup": "Internal QA",
+    "internalBetaGroupID": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "internalBetaState": "IN_BETA_TESTING",
+    "betaBuildLocalizationID": "2fada4f8-e637-4a79-bf0f-127e368fc56f",
+    "appReviewSelectedBuild": "36",
+    "appReviewState": "WAITING_FOR_REVIEW"
+  },
+  "screenshots": {
+    "source": "Release iOS Simulator build from the same source commit",
+    "iphone69": {
+      "path": "docs/app-store/screenshots/iphone-6.9/01-build.png",
+      "sha256": "98f010beba2556e5a1b520f8ce6e749c77ab817905930e8b1f1d649be1592a44"
+    },
+    "ipad13": {
+      "path": "docs/app-store/screenshots/ipad-13/01-build.png",
+      "sha256": "a606a535a340ef9d55fbb8de08f31bae04c50755b66a00e98722a3a21e7ef288"
+    }
+  },
+  "pending": [
+    "Physical device verification of iPhone, iPad, and Duo keyboard behavior",
+    "Replace App Review build 36 only after deciding to restart the submitted review",
+    "Publish the refreshed site captures to the Hetzner service when its SSH and HTTPS endpoints respond"
+  ]
+}

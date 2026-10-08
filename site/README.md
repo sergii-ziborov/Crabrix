@@ -22,8 +22,10 @@ pnpm build
 `app/blog` contains two articles. Product and legal copy in the checked-in
 top-level HTML files is rendered through `lib/legacy.ts`; the Next layout supplies
 their common navigation and spacing. Product captures are in `public/screenshots/`.
-The iPad editor capture includes in-file search; the two Duo captures show Code
-with its keyboard controls and a completed run in Output. Refresh the Store
+The iPad editor capture includes in-file search. Current iPhone and iPad editor
+captures omit Duo's keyboard-dismiss button from the Code/Terminal tab row; the
+two Duo captures show Code with its keyboard controls and a completed run in
+Output. Refresh the Store
 captures from the same Release Simulator source before changing those files.
 
 The site runs as its own Hetzner container. The current release serves a

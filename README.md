@@ -12,7 +12,7 @@
   <img src="docs/screenshots/iphone-cyberpunk-settings.png" width="200" alt="Cyberpunk appearance and optional Face ID protection">
 </p>
 
-The [iPad workspace](docs/screenshots/ipad-build.png) shows the file sidebar and the new in-file search above the editor. The [Duo code workspace](docs/screenshots/duo-laptop.png) shows its project header, search, tabs, shortcuts, and keyboard; [Duo Output](docs/screenshots/duo-output.png) shows the completed run, standard output, and rating. The iPhone, iPad, and Duo captures come from the current Release Simulator source.
+The [iPad workspace](docs/screenshots/ipad-build.png) shows the file sidebar and in-file search above the editor. The current iPhone and iPad editor captures omit the keyboard-dismiss button from the Code/Terminal tab row; that control remains on [Duo](docs/screenshots/duo-laptop.png), where the code tabs and keyboard share the fold layout. [Duo Output](docs/screenshots/duo-output.png) shows the completed run, standard output, and rating.
 
 ## Use Crabrix
 
@@ -30,13 +30,13 @@ Crabrix 1.1 pins [CrabrixRuntime](https://github.com/sergii-ziborov/crabrix-runt
 
 In an A/B/A Release Simulator measurement using the same compiler and a heavy multi-crate CLI project, this runtime completed the selected workload **about 1.6× faster** than the preceding Crabrix runtime. The [raw observations](docs/performance/2026-10-02-sampled-cancellation-heavy-cli-simulator.json) document the source graph, output checks, cache preparation, and measurement limits. This result describes that workload on Simulator; other projects and devices need their own measurements. [Runtime integration](docs/runtime-integration.md) explains the implementation.
 
-The 1.1 source used for Xcode Cloud build 36 pins the [Crabrix source-built Rust toolchain](https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1), `crabrix-rust-2026-10-02.1`. Its `rustc.wasm` and `wasm32-wasip1` sysroot are built from locked source and published with a signed descriptor, notices, compatibility results, and a two-build difference report. The build Mac verifies the descriptor and every artifact before bundling them; the phone does not download compiler or runtime updates. The two source builds have different raw digests, so the release claims source-pinned inputs rather than byte-identical reproducibility. See [toolchain provenance and limits](docs/toolchain.md).
+The 1.1 source used for Xcode Cloud build 37 pins the [Crabrix source-built Rust toolchain](https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1), `crabrix-rust-2026-10-02.1`. Its `rustc.wasm` and `wasm32-wasip1` sysroot are built from locked source and published with a signed descriptor, notices, compatibility results, and a two-build difference report. The build Mac verifies the descriptor and every artifact before bundling them; the phone does not download compiler or runtime updates. The two source builds have different raw digests, so the release claims source-pinned inputs rather than byte-identical reproducibility. See [toolchain provenance and limits](docs/toolchain.md).
 
 The release graph has one runtime dependency. CoursePacks contain data, text, media, and editable Rust source; they cannot replace the compiler or install executable plugins. [Architecture](docs/architecture.md) and [course delivery](docs/course-delivery.md) explain the boundaries.
 
 ## Build from source
 
-The local signed build 26 archive used Xcode 27.1 RC (`27A9275`); Xcode Cloud used the same source commit and numbered its App Store build 36. The [source manifest](docs/releases/1.1-build26.json) records the local artifact and [Cloud release manifest](docs/releases/1.1-build36.json) records the Store build. XcodeGen and `zstd` are build tools. The app deployment target is iOS 18. Package versions and the runtime revision are pinned in [Dependencies/Package.resolved](Dependencies/Package.resolved) and [project.yml](project.yml). A signing team is needed only for a physical device; the bundle IDs and App Group remain unchanged.
+The local signed build 26 archive used Xcode 27.1 RC (`27A9275`). Xcode Cloud build 37 contains the later Duo-only keyboard-dismiss change and is in TestFlight Internal QA; [its manifest](docs/releases/1.1-build37.json) records the source and Store build. Build 36 remains selected for the already submitted App Review version. The [build 26 source manifest](docs/releases/1.1-build26.json) and [build 36 Cloud manifest](docs/releases/1.1-build36.json) preserve the earlier release evidence. XcodeGen and `zstd` are build tools. The app deployment target is iOS 18. Package versions and the runtime revision are pinned in [Dependencies/Package.resolved](Dependencies/Package.resolved) and [project.yml](project.yml). A signing team is needed only for a physical device; the bundle IDs and App Group remain unchanged.
 
 ```bash
 ./scripts/bootstrap.sh

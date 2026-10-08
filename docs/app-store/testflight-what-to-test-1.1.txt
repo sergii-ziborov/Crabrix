@@ -1,4 +1,6 @@
-Crabrix 1.1 (Xcode Cloud build 36): please focus on the current project editor, Duo keyboard layout, in-file search, and run results.
+Crabrix 1.1 (Xcode Cloud build 37): please focus on the current project editor, Duo keyboard layout, in-file search, and run results.
+
+New in build 37: on standard iPhone and iPad, Code and Terminal no longer show the redundant keyboard-dismiss button at the right edge of the bottom tab row. Duo keeps it. Please check both devices with the keyboard open and closed.
 
 1. On iPhone Duo, open Projects → current project. In portrait and laptop posture, check that the compact header shows the project name and Find in file without touching the system clock. The editor tabs stay together at the bottom. With the keyboard open, Code tabs, Rust shortcuts, and the keyboard should sit together without a large gap or overlap. Use Hide to dismiss the keyboard.
 2. Switch to Terminal. The command field should take focus and open the keyboard every time. Change between Code and Terminal: tabs and keyboard controls should stay visible without jumping. In landscape, use the visible keyboard dismiss button. Switch to Problems and Output and confirm the keyboard can close so those panels use their full height.
