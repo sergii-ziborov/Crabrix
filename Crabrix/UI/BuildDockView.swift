@@ -53,6 +53,9 @@ struct BuildDockView<CodeContent: View>: View {
     let diagnosticAdviceState: RustDiagnosticAdviceState
     let onOpenDiagnosticAdvisor: () -> Void
     let onContinueLearning: () -> Void
+    let keyboardBridge: RustEditorKeyboardBridge
+    let assistantUsesAppleIntelligence: Bool
+    let onRequestCompletion: () -> Void
     let codeContent: CodeContent
 
     init(
@@ -76,6 +79,9 @@ struct BuildDockView<CodeContent: View>: View {
         diagnosticAdviceState: RustDiagnosticAdviceState,
         onOpenDiagnosticAdvisor: @escaping () -> Void,
         onContinueLearning: @escaping () -> Void,
+        keyboardBridge: RustEditorKeyboardBridge,
+        assistantUsesAppleIntelligence: Bool,
+        onRequestCompletion: @escaping () -> Void,
         @ViewBuilder codeContent: () -> CodeContent
     ) {
         _selectedTab = selectedTab
@@ -98,23 +104,70 @@ struct BuildDockView<CodeContent: View>: View {
         self.diagnosticAdviceState = diagnosticAdviceState
         self.onOpenDiagnosticAdvisor = onOpenDiagnosticAdvisor
         self.onContinueLearning = onContinueLearning
+        self.keyboardBridge = keyboardBridge
+        self.assistantUsesAppleIntelligence = assistantUsesAppleIntelligence
+        self.onRequestCompletion = onRequestCompletion
         self.codeContent = codeContent()
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            content
-            Divider().overlay(CrabrixTheme.border)
-            header
+        GeometryReader { geometry in
+            let fold = AdaptiveFold.horizontal(in: geometry)
+            VStack(spacing: 0) {
+                if let fold,
+                   fold.minY > 120,
+                   fold.maxY < geometry.size.height - 100 {
+                    // Terminal replaces Code on the upper display. Problems
+                    // and Output use the lower display in place of keyboard.
+                    Group {
+                        if selectedTab == .terminal { terminalContent(autoFocus: true) }
+                        else { codeContent }
+                    }
+                        // The hinge is still visible display area in laptop
+                        // pose. Let the upper pane use it instead of leaving a
+                        // dead strip between the editor and lower controls.
+                        // The terminal's system keyboard includes a taller
+                        // suggestion strip than the code editor keyboard.
+                        // Reserve the tab row at the end of the upper pane so
+                        // it remains visible directly above that keyboard.
+                        .frame(height: fold.maxY - (selectedTab == .terminal ? 34 : 0))
+                        .clipped()
+                    header(tabletop: true)
+                    if selectedTab == .code {
+                        RustKeyboardShortcutRow(
+                            bridge: keyboardBridge,
+                            usesAppleIntelligence: assistantUsesAppleIntelligence,
+                            onComplete: onRequestCompletion
+                        )
+                        Spacer(minLength: 0)
+                    } else if selectedTab == .terminal {
+                        Spacer(minLength: 0)
+                    } else {
+                        content
+                    }
+                } else {
+                    content
+                    Divider().overlay(CrabrixTheme.border)
+                    header(tabletop: false)
+                }
+            }
+            .background(CrabrixTheme.editor)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .preference(
+                key: TabletopFoldGlobalYPreferenceKey.self,
+                value: fold.map { geometry.frame(in: .global).minY + $0.minY }
+            )
         }
-        .background(CrabrixTheme.editor)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private var header: some View {
-        HStack(spacing: 4) {
-            ForEach(BuildDockTab.allCases) { tab in
+    private func header(tabletop: Bool) -> some View {
+        let activeTab = selectedTab
+        let tabs = BuildDockTab.allCases
+        return HStack(spacing: 4) {
+            ForEach(tabs) { tab in
                 Button {
+                    if tab != .code { keyboardBridge.dismissKeyboard() }
                     selectedTab = tab
                 } label: {
                     HStack(spacing: 5) {
@@ -128,28 +181,28 @@ struct BuildDockView<CodeContent: View>: View {
                         }
                     }
                     .padding(.horizontal, 8)
-                    .frame(height: 34)
-                    .foregroundStyle(selectedTab == tab ? tab.tint : CrabrixTheme.muted)
+                    .frame(height: tabletop ? 30 : 34)
+                    .foregroundStyle(activeTab == tab ? tab.tint : CrabrixTheme.muted)
                     .background(
-                        selectedTab == tab ? tab.tint.opacity(0.12) : Color.clear,
+                        activeTab == tab ? tab.tint.opacity(0.12) : Color.clear,
                         in: RoundedRectangle(cornerRadius: 8)
                     )
                     .overlay(alignment: .top) {
-                        if selectedTab == tab {
+                        if activeTab == tab {
                             Capsule().fill(tab.tint).frame(height: 2)
                         }
                     }
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Show \(tab.title.lowercased())")
-                .accessibilityAddTraits(selectedTab == tab ? .isSelected : [])
+                .accessibilityAddTraits(activeTab == tab ? .isSelected : [])
             }
 
             Spacer()
         }
         .font(.system(size: 9, weight: .semibold, design: .monospaced))
         .padding(.horizontal, 9)
-        .frame(height: 38)
+        .frame(height: tabletop ? 34 : 38)
     }
 
     @ViewBuilder
@@ -166,35 +219,85 @@ struct BuildDockView<CodeContent: View>: View {
                     onOpenDiagnosticAdvisor: onOpenDiagnosticAdvisor
                 )
             case .output:
-                OutputDockContent(
-                    result: result,
-                    activity: activity,
-                    canStartBuild: canStartBuild,
-                    canContinueLearning: canContinueLearning,
-                    lessonEvidenceMessage: lessonEvidenceMessage,
-                    lessonHint: lessonHint,
-                    contribution: contribution,
-                    onRun: onRun,
-                    onCancel: onCancel,
-                    onContinueLearning: onContinueLearning
-                )
-                .id(lessonHint?.sessionToken)
+                outputContent
             case .terminal:
-                TerminalDockContent(
-                    terminal: terminal,
-                    project: project,
-                    activity: activity,
-                    canStartBuild: canStartBuild,
-                    onCheck: onCheck,
-                    onRun: onRun,
-                    onReplaceFiles: onReplaceFiles,
-                    workspace: workspace,
-                    onFetch: onFetch
-                )
+                terminalContent(autoFocus: true)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .clipped()
+    }
+
+    private func terminalContent(autoFocus: Bool) -> some View {
+        TerminalDockContent(
+            terminal: terminal,
+            project: project,
+            activity: activity,
+            canStartBuild: canStartBuild,
+            onCheck: onCheck,
+            onRun: onRun,
+            onReplaceFiles: onReplaceFiles,
+            workspace: workspace,
+            onFetch: onFetch,
+            autoFocus: autoFocus
+        )
+    }
+
+    private var outputContent: some View {
+        OutputDockContent(
+            result: result,
+            activity: activity,
+            canStartBuild: canStartBuild,
+            canContinueLearning: canContinueLearning,
+            lessonEvidenceMessage: lessonEvidenceMessage,
+            lessonHint: lessonHint,
+            contribution: contribution,
+            onRun: onRun,
+            onCancel: onCancel,
+            onContinueLearning: onContinueLearning
+        )
+        .id(lessonHint?.sessionToken)
+    }
+}
+
+private struct RustKeyboardShortcutRow: View {
+    let bridge: RustEditorKeyboardBridge
+    let usesAppleIntelligence: Bool
+    let onComplete: () -> Void
+
+    private let symbols = ["::", "->", "=>", "&", "&mut ", "|", "_", "!", "<", ">", "{", "}", "[", "]", "(", ")", ";"]
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 5) {
+                Button(action: onComplete) {
+                    Image(systemName: usesAppleIntelligence ? "sparkles" : "curlybraces")
+                        .foregroundStyle(usesAppleIntelligence ? Color.blue : CrabrixTheme.primary)
+                        .frame(width: 34, height: 24)
+                }
+                .accessibilityLabel(usesAppleIntelligence
+                    ? "Complete Rust code with Apple Intelligence"
+                    : "Complete Rust code offline")
+
+                Divider().frame(height: 24)
+
+                ForEach(symbols, id: \.self) { symbol in
+                    Button { bridge.insertSymbol(symbol) } label: {
+                        Text(symbol)
+                            .font(.system(size: 11, weight: .medium, design: .monospaced))
+                            .foregroundStyle(CrabrixTheme.primary)
+                            .padding(.horizontal, 11)
+                            .frame(height: 24)
+                            .background(CrabrixTheme.raised, in: RoundedRectangle(cornerRadius: 5))
+                    }
+                    .accessibilityLabel(symbol)
+                }
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 7)
+        }
+        .frame(height: 28)
+        .background(CrabrixTheme.panel)
     }
 }
 
@@ -610,8 +713,9 @@ private struct TerminalDockContent: View {
     let onReplaceFiles: ([String: String], String?) -> Bool
     let workspace: CargoWorkspaceSnapshot
     let onFetch: () -> Void
+    let autoFocus: Bool
 
-    private let quickCommands = ["help", "ls", "cargo check", "cargo tree", "cargo run", "clear"]
+    private let quickCommands = ["help", "ls", "tree", "history", "cargo check", "cargo tree", "cargo metadata", "cargo run", "clear"]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -664,8 +768,10 @@ private struct TerminalDockContent: View {
             Divider().overlay(CrabrixTheme.border)
 
             HStack(spacing: 7) {
-                Text("\(project.name) $ ")
+                Text("\(project.name):\(terminal.promptDirectory) $")
                     .foregroundStyle(CrabrixTheme.mint)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
                 TextField("command", text: $terminal.command)
                     .textFieldStyle(.plain)
                     .focused($commandIsFocused)
@@ -676,6 +782,32 @@ private struct TerminalDockContent: View {
                     .padding(.horizontal, 10)
                     .frame(height: 34)
                     .background(Color.black.opacity(0.22), in: RoundedRectangle(cornerRadius: 8))
+                Button {
+                    terminal.recallPrevious()
+                    commandIsFocused = true
+                } label: {
+                    Image(systemName: "chevron.up")
+                        .frame(width: 24, height: 34)
+                }
+                .disabled(!terminal.canRecallPrevious)
+                .accessibilityLabel("Previous command")
+
+                Button {
+                    terminal.recallNext()
+                    commandIsFocused = true
+                } label: {
+                    Image(systemName: "chevron.down")
+                        .frame(width: 24, height: 34)
+                }
+                .disabled(!terminal.canRecallNext)
+                .accessibilityLabel("Next command")
+                Button {
+                    commandIsFocused = false
+                } label: {
+                    Image(systemName: "keyboard.chevron.compact.down")
+                        .frame(width: 24, height: 34)
+                }
+                .accessibilityLabel("Hide keyboard")
                 Button(action: submit) {
                     Label("Run", systemImage: "return")
                         .font(.caption.bold())
@@ -691,15 +823,14 @@ private struct TerminalDockContent: View {
             .frame(height: 50)
             .background(CrabrixTheme.panel)
         }
-        .task { terminal.attach(to: project) }
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button { commandIsFocused = false } label: {
-                    Image(systemName: "keyboard.chevron.compact.down")
-                }
-                .accessibilityLabel("Hide keyboard")
-            }
+        .task {
+            terminal.attach(to: project)
+            guard autoFocus else { return }
+            // The editor resigns when Terminal replaces it. Wait for that
+            // transition before giving the prompt first responder status.
+            try? await Task.sleep(for: .milliseconds(180))
+            guard !Task.isCancelled else { return }
+            commandIsFocused = true
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
@@ -726,6 +857,7 @@ private struct TerminalDockContent: View {
     private func run(_ command: String) {
         terminal.command = command
         submit()
+        commandIsFocused = true
     }
 
 }
@@ -734,15 +866,92 @@ private struct TerminalHighlightedLine: View {
     let line: ProjectTerminalSession.Line
 
     var body: some View {
+        HStack(alignment: .top, spacing: 9) {
+            Text(marker)
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .foregroundStyle(accent)
+                .frame(width: 13, alignment: .center)
+            styledText
+                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                .lineSpacing(3)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(accent.opacity(line.kind == .info ? 0.035 : 0.075),
+                    in: RoundedRectangle(cornerRadius: 8))
+        .overlay(alignment: .leading) {
+            Capsule()
+                .fill(accent.opacity(0.75))
+                .frame(width: 2)
+                .padding(.vertical, 7)
+        }
+    }
+
+    private var styledText: Text {
         if line.kind == .command, line.text.hasPrefix("$ ") {
-            command
-        } else if line.text.hasPrefix("[build]") {
-            Text("[build]")
-                .foregroundColor(CrabrixTheme.blue)
-            + Text(String(line.text.dropFirst("[build]".count)))
-                .foregroundColor(color)
-        } else {
-            Text(line.text).foregroundStyle(color)
+            return command
+        }
+        if line.text.hasPrefix("[build]") {
+            return Text("[build]").foregroundColor(CrabrixTheme.blue)
+                + Text(String(line.text.dropFirst("[build]".count)))
+                    .foregroundColor(color)
+        }
+        if line.text.hasPrefix("Crabrix project terminal") {
+            return Text(line.text).foregroundColor(CrabrixTheme.mint)
+        }
+        if line.kind == .info {
+            return formattedInformation(line.text)
+        }
+        return Text(line.text).foregroundColor(color)
+    }
+
+    private func formattedInformation(_ output: String) -> Text {
+        let rows = output.split(separator: "\n", omittingEmptySubsequences: false)
+        return rows.enumerated().reduce(Text("")) { rendered, row in
+            rendered + (row.offset == 0 ? Text("") : Text("\n"))
+                + formattedRow(String(row.element))
+        }
+    }
+
+    private func formattedRow(_ row: String) -> Text {
+        if row == "Project shell commands" {
+            return Text(row).foregroundColor(CrabrixTheme.mint).bold()
+        }
+        if row.hasPrefix("  "),
+           let separator = row.range(of: #"\s{2,}"#, options: .regularExpression,
+                                     range: row.index(row.startIndex, offsetBy: 2)..<row.endIndex) {
+            let command = String(row[..<separator.lowerBound])
+            let description = String(row[separator.lowerBound...])
+            return Text(command).foregroundColor(CrabrixTheme.blue)
+                + Text(description).foregroundColor(CrabrixTheme.primary)
+        }
+        if let colon = row.firstIndex(of: ":"),
+           row.distance(from: row.startIndex, to: colon) <= 16 {
+            return Text(row[...colon]).foregroundColor(CrabrixTheme.blue)
+                + Text(row[row.index(after: colon)...]).foregroundColor(CrabrixTheme.primary)
+        }
+        if row.hasPrefix("/workspace/") || row.hasPrefix("~/") {
+            return Text(row).foregroundColor(CrabrixTheme.mint)
+        }
+        return Text(row).foregroundColor(CrabrixTheme.primary)
+    }
+
+    private var marker: String {
+        switch line.kind {
+        case .command: "›"
+        case .info: "·"
+        case .success: "✓"
+        case .error: "!"
+        }
+    }
+
+    private var accent: Color {
+        switch line.kind {
+        case .command: CrabrixTheme.amber
+        case .info: CrabrixTheme.blue
+        case .success: CrabrixTheme.mint
+        case .error: CrabrixTheme.coral
         }
     }
 
@@ -759,8 +968,8 @@ private struct TerminalHighlightedLine: View {
     private var color: Color {
         switch line.kind {
         case .command: CrabrixTheme.primary
-        case .info: CrabrixTheme.muted
-        case .success: CrabrixTheme.mint
+        case .info: CrabrixTheme.primary
+        case .success: CrabrixTheme.primary
         case .error: CrabrixTheme.coral
         }
     }

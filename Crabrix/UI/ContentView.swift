@@ -76,6 +76,7 @@ struct ContentView: View {
     @StateObject private var model = CompilerViewModel()
     @StateObject private var completion = RustCompletionController()
     @StateObject private var terminal = ProjectTerminalSession()
+    @StateObject private var editorKeyboard = RustEditorKeyboardBridge()
     @EnvironmentObject private var progress: CrabrixProgressStore
     @EnvironmentObject private var academy: AcademyContentStore
     /// Lessons already turned into rating, seeded from persisted progress so a
@@ -102,12 +103,15 @@ struct ContentView: View {
     @State private var isProjectSidebarCollapsed = false
     @State private var isCompactProjectDrawerPresented = false
     @State private var isDiagnosticHelpPresented = false
-    @State private var selectedBuildDockTab: BuildDockTab = .code
+    @State private var selectedBuildDockTab: BuildDockTab =
+        ProcessInfo.processInfo.arguments.contains("--crabrix-auto-terminal") ? .terminal : .code
+    @State private var tabletopFoldGlobalY: CGFloat?
     @State private var learningPath: [LearningRoute] = []
     @State private var editorCursorOffset = 0
     /// What the last successful run was scored on, shown in the build dock.
     @State private var lastContribution: CodeContribution?
     @State private var editorNavigationTarget: EditorNavigationTarget?
+    @State private var editorSearchQuery = ""
     @AppStorage("crabrix.appearance") private var appearanceRaw = CrabrixAppearance.system.rawValue
     @AppStorage("crabrix.keepAwakeDuringBuild") private var keepAwakeDuringBuild = true
     @AppStorage("crabrix.appleIntelligenceCompletion") private var appleIntelligenceCompletion = true
@@ -122,10 +126,25 @@ struct ContentView: View {
     )
 
     var body: some View {
+        GeometryReader { geometry in
+            let tabletop = AdaptiveFold.horizontal(in: geometry) != nil
+                || tabletopFoldGlobalY != nil
+            tabContent(tabletop: tabletop)
+                .toolbar(tabletop && isWorkspaceOpen ? .hidden : .visible, for: .tabBar)
+        }
+    }
+
+    private func tabContent(tabletop: Bool) -> some View {
         TabView(selection: $selectedDestination) {
             Group {
                 if isWorkspaceOpen {
                     buildWorkspace
+                        .toolbar(tabletop ? .hidden : .visible, for: .tabBar)
+                        .ignoresSafeArea(tabletop ? .container : [], edges: .top)
+                        .ignoresSafeArea(
+                            tabletopFoldGlobalY == nil ? [] : .keyboard,
+                            edges: .bottom
+                        )
                 } else {
             NavigationStack(path: $projectsPath) {
                 ProjectsHomeView(
@@ -170,6 +189,7 @@ struct ContentView: View {
                                 )
                             }
                         )
+                        .toolbar(.visible, for: .navigationBar)
                     }
                 }
             }
@@ -206,6 +226,7 @@ struct ContentView: View {
         }
         .tabViewStyle(.tabBarOnly)
         .modifier(PersistentTabBar())
+        .toolbar(tabletop && isWorkspaceOpen ? .hidden : .visible, for: .tabBar)
         .toolbarBackground(CrabrixTheme.panel, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .id(appearanceRaw)
@@ -429,7 +450,8 @@ struct ContentView: View {
         }
         .onChange(of: model.projectID) { _, _ in
             terminal.attach(to: model.exportProject())
-            selectedBuildDockTab = .code
+            selectedBuildDockTab = ProcessInfo.processInfo.arguments.contains("--crabrix-auto-terminal")
+                ? .terminal : .code
         }
         .onChange(of: model.activity) { oldValue, newValue in
             terminal.activityChanged(
@@ -535,7 +557,8 @@ struct ContentView: View {
     private func openCodeWorkspace() {
         projectsPath = []
         isWorkspaceOpen = true
-        selectedBuildDockTab = .code
+        selectedBuildDockTab = ProcessInfo.processInfo.arguments.contains("--crabrix-auto-terminal")
+            ? .terminal : .code
         selectedDestination = .projects
     }
 
@@ -585,20 +608,19 @@ struct ContentView: View {
         openCodeWorkspace()
     }
 
-    private var editorPane: some View {
+    private func editorPane(fixedSidebar: Bool) -> some View {
         VStack(spacing: 0) {
             EditorToolbar(
                 activity: model.activity,
                 cargoStage: model.cargoStage,
                 files: model.fileNames,
                 selectedFile: model.selectedFile,
-                isProjectSidebarCollapsed: horizontalSizeClass == .regular
-                    ? false
-                    : !isCompactProjectDrawerPresented,
-                showsProjectSidebarToggle: horizontalSizeClass != .regular,
+                isProjectSidebarCollapsed: fixedSidebar ? false : !isCompactProjectDrawerPresented,
+                showsProjectSidebarToggle: !fixedSidebar,
+                showsEnvironmentBar: tabletopFoldGlobalY == nil,
                 onSelectFile: selectEditorFile,
                 onToggleProjectSidebar: {
-                    if horizontalSizeClass == .regular {
+                    if fixedSidebar {
                         // The files panel does not hide on iPad.
                     } else {
                         withAnimation(.easeInOut(duration: 0.22)) {
@@ -628,7 +650,11 @@ struct ContentView: View {
                 onOpenDiagnostic: openDiagnostic,
                 diagnosticAdviceState: model.diagnosticAdviceState,
                 onOpenDiagnosticAdvisor: presentDiagnosticAdvisor,
-                onContinueLearning: continueLearning
+                onContinueLearning: continueLearning,
+                keyboardBridge: editorKeyboard,
+                assistantUsesAppleIntelligence: appleIntelligenceCompletion
+                    && RustCompletionSupport.isAppleIntelligenceAvailable,
+                onRequestCompletion: requestEditorAssistant
             ) {
                 codeWorkspace
             }
@@ -649,7 +675,15 @@ struct ContentView: View {
                 navigationTarget: editorNavigationTarget,
                 assistantUsesAppleIntelligence: appleIntelligenceCompletion
                     && RustCompletionSupport.isAppleIntelligenceAvailable,
-                onRequestCompletion: requestEditorAssistant
+                tabletopCodeTabActive: tabletopFoldGlobalY == nil
+                    ? nil : selectedBuildDockTab == .code,
+                keyboardBridge: editorKeyboard,
+                onRequestCompletion: requestEditorAssistant,
+                onEditorFocus: {
+                    if tabletopFoldGlobalY != nil {
+                        selectedBuildDockTab = .code
+                    }
+                }
             )
 
             if let diagnostic = model.primaryDiagnostic,
@@ -689,11 +723,21 @@ struct ContentView: View {
     }
 
     private var buildWorkspace: some View {
+        GeometryReader { workspace in
+        let fixedSidebar = horizontalSizeClass == .regular && workspace.size.width >= 570
+        let bookFold = AdaptiveFold.vertical(in: workspace)
+        let tabletopFold = AdaptiveFold.horizontal(in: workspace)
         ZStack {
             CrabrixTheme.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 AppHeader(
+                    compact: workspace.size.width < 680,
+                    dense: tabletopFold != nil || tabletopFoldGlobalY != nil,
+                    showsTopNavigation: tabletopFold != nil || tabletopFoldGlobalY != nil,
+                    headerWidth: workspace.size.width,
+                    projectName: model.projectName,
+                    searchQuery: $editorSearchQuery,
                     transfer: model.projectTransfer,
                     activity: model.activity,
                     canRun: model.canStartBuild && !model.isProjectOperationInProgress,
@@ -705,6 +749,7 @@ struct ContentView: View {
                         selectedDestination = .projects
                     },
                     onCloseWorkspace: closeBuildWorkspace,
+                    onFindNext: findNextInCurrentFile,
                     onNewProject: { isNewProjectPresented = true },
                     onProjectActions: {
                         isProjectActionsPresented = true
@@ -715,7 +760,7 @@ struct ContentView: View {
                 }
                 Divider().overlay(CrabrixTheme.border)
 
-                if horizontalSizeClass == .regular {
+                if fixedSidebar && tabletopFold == nil && tabletopFoldGlobalY == nil {
                     HStack(spacing: 0) {
                         ProjectSidebar(
                                 projectName: model.projectName,
@@ -754,42 +799,58 @@ struct ContentView: View {
                                 onOpenVendor: model.openVendoredCrate,
                                 onResetVendor: model.resetVendoredCrate
                             )
-                        .frame(width: projectSidebarWidth)
+                        .frame(width: bookFold.map { max(170, min($0.minX, workspace.size.width - 280)) }
+                            ?? min(projectSidebarWidth, workspace.size.width - 360))
 
-                        ResizablePanelDivider(
-                            edge: .leading,
-                            width: $projectSidebarWidth,
-                            isCollapsed: $isProjectSidebarCollapsed,
-                            minimumWidth: 170,
-                            maximumWidth: 360,
-                            canCollapse: false
-                        )
+                        if let bookFold {
+                            Color.clear.frame(width: bookFold.width)
+                        } else {
+                            ResizablePanelDivider(
+                                edge: .leading,
+                                width: $projectSidebarWidth,
+                                isCollapsed: $isProjectSidebarCollapsed,
+                                minimumWidth: 170,
+                                maximumWidth: 360,
+                                canCollapse: false
+                            )
+                        }
 
-                        editorPane
-                            .frame(minWidth: 340)
+                        editorPane(fixedSidebar: true)
+                            .frame(minWidth: bookFold == nil ? 340 : 0)
                     }
                 } else {
-                    compactBuildWorkspace
+                    compactBuildWorkspace(tabletopFoldGlobalY: tabletopFoldGlobalY)
                 }
             }
+            // Tabletop has its own tall status region. Reclaim part of the
+            // unused gap while keeping the controls below the status glyphs.
+            .padding(.top, tabletopFold == nil ? 0 : 50)
+        }
+        .onPreferenceChange(TabletopFoldGlobalYPreferenceKey.self) { globalY in
+            tabletopFoldGlobalY = globalY
+        }
         }
     }
 
     private func selectEditorFile(_ file: String) {
         model.selectFile(file)
         editorNavigationTarget = nil
+        editorSearchQuery = ""
         selectedBuildDockTab = .code
-        if horizontalSizeClass != .regular {
-            withAnimation(.easeOut(duration: 0.18)) {
-                isCompactProjectDrawerPresented = false
-            }
+        withAnimation(.easeOut(duration: 0.18)) {
+            isCompactProjectDrawerPresented = false
         }
     }
 
-    private var compactBuildWorkspace: some View {
+    private func compactBuildWorkspace(tabletopFoldGlobalY: CGFloat?) -> some View {
         GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                editorPane
+            // In tabletop pose the lower display is the typing and output
+            // surface. Keep the file drawer on the upper display only.
+            let drawerHeight = tabletopFoldGlobalY.map {
+                max(160, min($0 - geometry.frame(in: .global).minY, geometry.size.height))
+            } ?? geometry.size.height
+            ZStack(alignment: .topLeading) {
+                editorPane(fixedSidebar: false)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 if !isCompactProjectDrawerPresented {
@@ -807,6 +868,8 @@ struct ContentView: View {
 
                 if isCompactProjectDrawerPresented {
                     Color.black.opacity(0.46)
+                        .frame(height: drawerHeight)
+                        .frame(maxHeight: .infinity, alignment: .top)
                         .contentShape(Rectangle())
                         .onTapGesture {
                             withAnimation(.easeOut(duration: 0.2)) {
@@ -864,11 +927,13 @@ struct ContentView: View {
                         )
                     }
                     .frame(width: min(geometry.size.width * 0.86, 340))
-                    .frame(maxHeight: .infinity)
+                    .frame(height: drawerHeight)
                     .background(CrabrixTheme.panel)
                     .overlay(alignment: .trailing) {
                         Rectangle().fill(CrabrixTheme.border).frame(width: 1)
                     }
+                    .clipped()
+                    .frame(maxHeight: .infinity, alignment: .top)
                     .transition(.move(edge: .leading).combined(with: .opacity))
                     .zIndex(2)
                 }
@@ -969,6 +1034,33 @@ struct ContentView: View {
         withAnimation(.easeOut(duration: 0.18)) {
             selectedBuildDockTab = .code
         }
+    }
+
+    private func findNextInCurrentFile() {
+        let needle = editorSearchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !needle.isEmpty else { return }
+        let source = model.source as NSString
+        let start = min(max(editorCursorOffset + 1, 0), source.length)
+        var match = source.range(
+            of: needle,
+            options: .caseInsensitive,
+            range: NSRange(location: start, length: source.length - start)
+        )
+        if match.location == NSNotFound {
+            match = source.range(of: needle, options: .caseInsensitive)
+        }
+        guard match.location != NSNotFound else { return }
+
+        let prefix = source.substring(to: match.location) as NSString
+        let lastNewline = prefix.range(of: "\n", options: .backwards).location
+        let line = prefix.components(separatedBy: "\n").count
+        let column = match.location - (lastNewline == NSNotFound ? 0 : lastNewline + 1) + 1
+        selectedBuildDockTab = .code
+        editorNavigationTarget = EditorNavigationTarget(
+            filePath: model.selectedFile,
+            line: line,
+            column: column
+        )
     }
 
     private func acceptCompletion() {
@@ -1101,7 +1193,12 @@ private struct CompactEdgeSwipeZone: View {
 }
 
 private struct AppHeader: View {
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    let compact: Bool
+    let dense: Bool
+    let showsTopNavigation: Bool
+    let headerWidth: CGFloat
+    let projectName: String
+    @Binding var searchQuery: String
     let transfer: CompilerViewModel.ProjectTransfer
     let activity: CompilerViewModel.Activity
     let canRun: Bool
@@ -1110,28 +1207,65 @@ private struct AppHeader: View {
     let onCancelBuild: () -> Void
     let onOpenProjects: () -> Void
     let onCloseWorkspace: () -> Void
+    let onFindNext: () -> Void
     let onNewProject: () -> Void
     let onProjectActions: () -> Void
 
-    private var isPhone: Bool {
-        UIDevice.current.userInterfaceIdiom == .phone
-    }
-
     var body: some View {
-        HStack(spacing: isPhone ? 7 : 12) {
-            Image("CrabrixMark")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 30, height: 30)
-                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
-                .accessibilityLabel("Crabrix crab")
-            Text("crabrix")
-                .font(.system(size: 21, weight: .bold, design: .rounded))
-                .lineLimit(1)
-                .minimumScaleFactor(0.78)
-            Spacer()
+        HStack(spacing: compact ? 7 : 12) {
+            if showsTopNavigation {
+                Button(action: onCloseWorkspace) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 17, weight: .semibold))
+                        .frame(width: 38, height: 38)
+                        .background(CrabrixTheme.raised, in: CrabrixControlShape(classic: .circle))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Back to Projects")
 
-            if horizontalSizeClass == .regular, !isPhone {
+                Text(projectName)
+                    .font(.system(size: 16, weight: .semibold))
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .frame(maxWidth: max(110, min(190, headerWidth * 0.2)), alignment: .leading)
+
+                Spacer(minLength: 4)
+                HStack(spacing: 7) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundStyle(CrabrixTheme.muted)
+                    TextField("Find in file", text: $searchQuery)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .submitLabel(.search)
+                        .onSubmit(onFindNext)
+                        .accessibilityLabel("Find in current file")
+                    if !searchQuery.isEmpty {
+                        Button(action: onFindNext) {
+                            Image(systemName: "arrow.down")
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Find next in file")
+                    }
+                }
+                .font(.system(size: 13))
+                .padding(.horizontal, 12)
+                .frame(width: max(120, min(190, headerWidth * 0.2)), height: 36)
+                .background(CrabrixTheme.raised, in: Capsule())
+            } else {
+                Image("CrabrixMark")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 30, height: 30)
+                    .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                    .accessibilityLabel("Crabrix crab")
+                Text("crabrix")
+                    .font(.system(size: 21, weight: .bold, design: .rounded))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.78)
+                Spacer()
+            }
+
+            if !compact && !showsTopNavigation {
                 Button(action: onOpenProjects) {
                     Label("Projects", systemImage: "square.grid.2x2.fill")
                         .font(.system(size: 10, weight: .bold, design: .monospaced))
@@ -1140,79 +1274,64 @@ private struct AppHeader: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Open Projects home")
+            }
 
-                Menu {
-                    Button(action: onNewProject) {
-                        Label("New Project", systemImage: "plus")
-                    }
-                    Button(action: onProjectActions) {
-                        Label("Project Details & Share", systemImage: "ellipsis.circle")
-                    }
-                } label: {
-                    if transfer.isWorking {
-                        ProgressView().tint(CrabrixTheme.coral)
+            Menu {
+                Button("Project settings and share", systemImage: "gearshape", action: onProjectActions)
+                Button("New project", systemImage: "plus", action: onNewProject)
+            } label: {
+                Image(systemName: "ellipsis.circle")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(CrabrixTheme.primary)
+                    .frame(width: 40, height: 40)
+                    .background(CrabrixTheme.raised, in: CrabrixControlShape(classic: .circle))
+            }
+            .disabled(transfer.isWorking)
+            .accessibilityLabel("Project menu")
+
+            Button(action: onCheck) {
+                Image(systemName: "checkmark.circle")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(CrabrixTheme.blue)
+                    .frame(width: 40, height: 40)
+                    .background(CrabrixTheme.blue.opacity(0.1), in: CrabrixControlShape(classic: .capsule))
+            }
+            .buttonStyle(.plain)
+            .disabled(activity != .idle || !canRun)
+            .accessibilityLabel("Check project")
+
+            Button(action: activity == .idle ? onRun : onCancelBuild) {
+                HStack(spacing: 6) {
+                    if activity == .idle {
+                        Image(systemName: "play.fill")
                     } else {
-                        Label("PROJECT", systemImage: "folder.fill")
-                            .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                            .foregroundStyle(CrabrixTheme.primary)
+                        ProgressView()
+                            .controlSize(.mini)
+                            .tint(CrabrixTheme.coral)
                     }
+                    Text(activity == .idle ? "Run" : "Stop")
+                        .font(.caption.bold())
                 }
-                .disabled(transfer.isWorking)
-            } else {
-                if isPhone {
-                    Button(action: onProjectActions) {
-                        Image(systemName: "ellipsis.circle")
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundStyle(CrabrixTheme.primary)
-                            .frame(width: 40, height: 40)
-                            .background(CrabrixTheme.raised, in: CrabrixControlShape(classic: .circle))
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Project settings and share")
-
-                    Button(action: onCheck) {
-                        Image(systemName: "checkmark.circle")
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundStyle(CrabrixTheme.blue)
-                            .frame(width: 40, height: 40)
-                            .background(CrabrixTheme.blue.opacity(0.1), in: CrabrixControlShape(classic: .capsule))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(activity != .idle || !canRun)
-                    .accessibilityLabel("Check project")
-
-                    Button(action: activity == .idle ? onRun : onCancelBuild) {
-                        HStack(spacing: 6) {
-                            if activity == .idle {
-                                Image(systemName: "play.fill")
-                            } else {
-                                ProgressView()
-                                    .controlSize(.mini)
-                                    .tint(CrabrixTheme.coral)
-                            }
-                            Text(activity == .idle ? "Run" : "Stop")
-                                .font(.caption.bold())
-                        }
-                        .foregroundStyle(CrabrixTheme.coral)
-                        .padding(.horizontal, 11)
-                        .frame(minHeight: 38)
-                        .background(CrabrixTheme.coral.opacity(0.12), in: CrabrixControlShape(classic: .capsule))
-                        .overlay {
-                            CrabrixControlShape(classic: .capsule)
-                                .stroke(CrabrixTheme.coral.opacity(0.3))
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(activity == .idle && !canRun)
-                    .opacity(activity == .idle && !canRun ? 0.46 : 1)
-                    .accessibilityLabel(activity == .idle ? "Run project" : "Stop build")
-                    .accessibilityHint(
-                        activity == .idle
-                            ? "Compiles and runs the project locally"
-                            : "Cancels the current compiler operation"
-                    )
+                .foregroundStyle(CrabrixTheme.coral)
+                .padding(.horizontal, 11)
+                .frame(minHeight: 38)
+                .background(CrabrixTheme.coral.opacity(0.12), in: CrabrixControlShape(classic: .capsule))
+                .overlay {
+                    CrabrixControlShape(classic: .capsule)
+                        .stroke(CrabrixTheme.coral.opacity(0.3))
                 }
+            }
+            .buttonStyle(.plain)
+            .disabled(activity == .idle && !canRun)
+            .opacity(activity == .idle && !canRun ? 0.46 : 1)
+            .accessibilityLabel(activity == .idle ? "Run project" : "Stop build")
+            .accessibilityHint(
+                activity == .idle
+                    ? "Compiles and runs the project locally"
+                    : "Cancels the current compiler operation"
+            )
 
+            if !showsTopNavigation {
                 Button(action: onCloseWorkspace) {
                     Image(systemName: "xmark")
                         .font(.system(size: 13, weight: .bold))
@@ -1223,8 +1342,11 @@ private struct AppHeader: View {
                 .accessibilityLabel("Close editor")
             }
         }
-        .padding(.horizontal, isPhone ? 14 : 18)
-        .frame(height: 58)
+        .padding(.horizontal, compact ? 14 : 18)
+        // Tabletop places the status glyphs on the same visual row. Keep the
+        // action buttons clear of the time and connectivity indicator.
+        .padding(.trailing, showsTopNavigation ? 112 : 0)
+        .frame(height: dense ? 44 : 58)
         .background(CrabrixTheme.background.opacity(0.97))
     }
 }
@@ -1602,6 +1724,7 @@ private struct EditorToolbar: View {
     let isProjectSidebarCollapsed: Bool
     /// iPad keeps the files panel on screen, so it offers no button to hide it.
     var showsProjectSidebarToggle = true
+    var showsEnvironmentBar = true
     let onSelectFile: (String) -> Void
     let onToggleProjectSidebar: () -> Void
 
@@ -1623,8 +1746,10 @@ private struct EditorToolbar: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ProgrammingEnvironmentBar()
-            Divider().overlay(CrabrixTheme.border)
+            if showsEnvironmentBar {
+                ProgrammingEnvironmentBar()
+                Divider().overlay(CrabrixTheme.border)
+            }
 
             HStack(spacing: 8) {
                 if showsProjectSidebarToggle {

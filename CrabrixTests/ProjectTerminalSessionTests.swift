@@ -78,6 +78,30 @@ final class ProjectTerminalSessionTests: XCTestCase {
         XCTAssertTrue(didRun)
     }
 
+    func testCommandHistoryRestoresDraftAndStaysWithProject() {
+        let terminal = ProjectTerminalSession()
+        let first = project(named: "first")
+        let second = project(named: "second")
+
+        submit("pwd", to: terminal, project: first)
+        submit("cargo metadata", to: terminal, project: first)
+        terminal.command = "unfinished"
+        terminal.recallPrevious()
+        XCTAssertEqual(terminal.command, "cargo metadata")
+        terminal.recallPrevious()
+        XCTAssertEqual(terminal.command, "pwd")
+        terminal.recallNext()
+        XCTAssertEqual(terminal.command, "cargo metadata")
+        terminal.recallNext()
+        XCTAssertEqual(terminal.command, "unfinished")
+
+        terminal.attach(to: second)
+        XCTAssertFalse(terminal.canRecallPrevious)
+        terminal.attach(to: first)
+        XCTAssertTrue(terminal.canRecallPrevious)
+        XCTAssertTrue(terminal.lines.map(\.text).joined().contains("Package: first"))
+    }
+
     func testLinuxStyleListingAndNavigation() {
         let terminal = ProjectTerminalSession()
         let project = CrabrixProject(

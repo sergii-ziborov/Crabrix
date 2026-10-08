@@ -14,6 +14,10 @@ settings:
     TARGETED_DEVICE_FAMILY: "1,2"
     SUPPORTS_MACCATALYST: NO
     ENABLE_USER_SCRIPT_SANDBOXING: NO
+    # The fold reserved-region API first appears in the iOS 27.1 SDK. The
+    # Xcode 27.0 CI image keeps building the ordinary size-class layout.
+    SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphoneos27.1*]: "$(inherited) CRABRIX_DUO_SDK"
+    SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphonesimulator27.1*]: "$(inherited) CRABRIX_DUO_SDK"
   configs:
     # Game Center is compiled in both configurations but remains opt-in.
     debug:

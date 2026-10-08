@@ -1,14 +1,14 @@
-Crabrix 1.1 (24) review candidate.
+Crabrix 1.1 (25) review candidate.
 
 Since rejected 1.0 (8), 1.1 adds seven selectable Academy downloads, 46
 downloadable open Code Examples, durable lesson projects, nested files, local
 Cargo workflows, and a simpler editor. It bundles our maintained WasmKit 0.4.1
-fork and source-built pinned Rust toolchain. The screenshots and steps below
-correspond to build 24.
+fork and source-built pinned Rust toolchain. On iPad the editor uses the space
+beside the project file sidebar; Code, Problems, Output, and Terminal remain
+available in the bottom dock. The right inspector shown in older screenshots
+has been removed. The iPad screenshots below were captured from build 25.
 
-Crabrix is a native Rust development and learning environment. No account or
-subscription is needed. The compiler, WebAssembly runtime, and WASI sysroot
-are bundled in the app; neither compiler nor runtime is downloaded on device.
+The compiler, runtime, and sysroot are bundled; none is downloaded on device.
 
 TO SEE IT COMPILE
 1. Projects → current project card → Run. The project workspace opens on Code;
@@ -30,9 +30,8 @@ from the app bundle. The signed catalog is bundled; each download shows its
 size before the user confirms. A verified CoursePack contains learning data, media, and editable
 Rust starter source; it cannot update the compiler, runtime, or executable
 validator logic. Removing and redownloading a course preserves separate user projects and progress.
-The catalog is served from raw.githubusercontent.com; archive assets are
-served by GitHub release hosts. An unavailable catalog does not disable an
-installed course.
+The catalog and archives use public GitHub hosts. Installed courses remain
+available if the catalog is unavailable.
 
 PROJECTS AND PACKAGES
 My Projects opens the project manager. New Project offers templates and
@@ -62,6 +61,6 @@ or create a remote account.
 This build bundles the signed source-built Crabrix Rust toolchain
 `crabrix-rust-2026-10-02.1`, prepared from pinned sources and verified on the
 build Mac. The public CrabrixRuntime fork is based on WasmKit 0.4.1. The
-screenshots match 1.1 (24); the unchanged Settings frame was reused from an
-earlier build. Game Center
+new iPad screenshots match 1.1 (25). The unchanged iPhone Settings frame was
+reused from an earlier build. Game Center
 sign-in and Face ID require a physical device; both features are optional.

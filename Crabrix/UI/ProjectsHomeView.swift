@@ -16,7 +16,6 @@ struct ProjectsHomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                brandHeader
                 currentProject
                 LazyVGrid(columns: columns, spacing: 14) {
                     actionCard(
@@ -41,22 +40,16 @@ struct ProjectsHomeView: View {
         }
         .background(CrabrixTheme.background.ignoresSafeArea())
         .foregroundStyle(CrabrixTheme.primary)
-    }
-
-    private var brandHeader: some View {
-        HStack(spacing: 12) {
-            Image("CrabrixMark")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 42, height: 42)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Crabrix").font(.title2.bold())
-                Text("Native Rust workspace")
-                    .font(.caption.monospaced())
-                    .foregroundStyle(CrabrixTheme.muted)
+        .navigationTitle("Crabrix")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Image("CrabrixMark")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 30, height: 30)
+                    .clipShape(RoundedRectangle(cornerRadius: 7))
             }
-            Spacer()
         }
     }
 

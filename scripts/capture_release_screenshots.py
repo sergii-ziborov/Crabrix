@@ -152,11 +152,15 @@ def copy_for_docs() -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("app", type=Path, help="Release Simulator Crabrix.app")
+    parser.add_argument("--iphone-template", default="Crabrix Shots 6.9",
+                        help="existing iPhone 6.9-inch Simulator to clone")
+    parser.add_argument("--ipad-template", default="Crabrix Dev iPad",
+                        help="existing iPad 13-inch Simulator to clone")
     args = parser.parse_args()
     app = args.app.resolve()
     if not (app / "Info.plist").is_file():
         parser.error(f"not an app bundle: {app}")
-    capture_set(app, "Crabrix Shots 6.9", "iphone-6.9", [
+    capture_set(app, args.iphone_template, "iphone-6.9", [
         ("01-build.png", ("--crabrix-auto-borrow",)),
         ("02-projects.png", ("-CrabrixTab", "projects")),
         ("09-my-courses.png", ("-CrabrixTab", "learn")),
@@ -167,7 +171,7 @@ def main() -> None:
         ("10-example-detail.png", ("-CrabrixTab", "learn", "-CrabrixLearn", "example:ferris-pixel-art")),
         ("08-settings.png", ("-CrabrixTab", "settings", "-crabrix.appearance", "cyberpunk")),
     ])
-    capture_set(app, "Crabrix Dev iPad", "ipad-13", [
+    capture_set(app, args.ipad_template, "ipad-13", [
         ("01-build.png", ("--crabrix-auto-multifile",)),
         ("02-projects.png", ("-CrabrixTab", "projects")),
         ("07-my-courses.png", ("-CrabrixTab", "learn")),

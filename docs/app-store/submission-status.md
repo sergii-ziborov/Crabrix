@@ -1,4 +1,17 @@
-> Current status — 8 October 2026: **1.1 (24)** is **Waiting for Review** in
+> Current status — 8 October 2026: **1.1 (25)** is **VALID** and available in
+> TestFlight Internal QA. Its signed archive and IPA passed Apple validation.
+> The App Store 1.1 version now selects build 25; the en-US description and
+> Review Notes were updated and read back. Seven iPad 13-inch screenshots from
+> build 25 reached COMPLETE and appear in the requested order. They show the
+> editor without the old right inspector. The ten iPhone 6.9-inch screenshots
+> remain from build 24 because this edit did not change iPhone layout.
+> The prior build 24 submission was canceled and is COMPLETE; App Store Connect
+> currently reports DEVELOPER_REJECTED for the version. Build 25 is not yet
+> resubmitted. iPhone Duo screenshots are pending. Release remains manual.
+> See the [build 25 manifest](../releases/1.1-build25.json) and
+> [iPad upload evidence](asset-upload-2026-10-08-build25.json).
+
+> Earlier status — 8 October 2026: **1.1 (24)** was **Waiting for Review** in
 > submission `d6c99b9d-65f1-4087-aa0b-6d0f1847b1b2`. The en-US product page
 > now has a header image and a separate search-results image; both were uploaded
 > to Asset Library, selected on the version page, and the page displayed 1 of 1

@@ -1,6 +1,117 @@
 import SwiftUI
 import UIKit
 
+@MainActor
+final class RustEditorKeyboardBridge: ObservableObject {
+    var insert: ((String) -> Void)?
+    var dismiss: (() -> Void)?
+
+    func insertSymbol(_ symbol: String) { insert?(symbol) }
+    func dismissKeyboard() { dismiss?() }
+}
+
+struct RustSmartNewlineEdit: Equatable {
+    let replacement: String
+    /// UTF-16 cursor offset within the replacement.
+    let cursorOffset: Int
+}
+
+enum RustSmartNewline {
+    static func plan(in source: String, range: NSRange, filePath: String) -> RustSmartNewlineEdit? {
+        guard URL(fileURLWithPath: filePath).pathExtension.lowercased() == "rs" else { return nil }
+        let text = source as NSString
+        guard range.location <= text.length, NSMaxRange(range) <= text.length else { return nil }
+
+        let prefix = text.substring(to: range.location) as NSString
+        let lineStart = prefix.range(of: "\n", options: .backwards).location
+        let start = lineStart == NSNotFound ? 0 : lineStart + 1
+        let before = text.substring(with: NSRange(location: start, length: range.location - start))
+        let baseIndent = String(before.prefix { $0 == " " || $0 == "\t" })
+        let indentUnit = baseIndent.contains("\t") ? "\t" : "    "
+        let trimmed = before.trimmingCharacters(in: .whitespaces)
+        let leadingNewline = "\n" + baseIndent
+
+        guard let last = trimmed.last, "{([".contains(last) else {
+            return RustSmartNewlineEdit(
+                replacement: leadingNewline,
+                cursorOffset: (leadingNewline as NSString).length
+            )
+        }
+
+        let openerOffset = range.location - (before as NSString).length
+            + (before as NSString).range(of: String(last), options: .backwards).location
+        let tokens = SyntaxHighlighter.tokens(in: source, filePath: filePath)
+        let ignored = tokens.filter { $0.kind == .comment || $0.kind == .string }
+        guard !ignored.contains(where: { NSLocationInRange(openerOffset, $0.range) }) else {
+            return RustSmartNewlineEdit(
+                replacement: leadingNewline,
+                cursorOffset: (leadingNewline as NSString).length
+            )
+        }
+
+        let inner = "\n" + baseIndent + indentUnit
+        let after = text.substring(from: NSMaxRange(range)) as NSString
+        let nextLineEnd = after.range(of: "\n").location
+        let afterOnLine = after.substring(to: nextLineEnd == NSNotFound ? after.length : nextLineEnd)
+        let closer: Character = last == "{" ? "}" : (last == "(" ? ")" : "]")
+        let immediateCloser = afterOnLine.trimmingCharacters(in: .whitespaces).first == closer
+
+        if immediateCloser {
+            let replacement = inner + "\n" + baseIndent
+            return RustSmartNewlineEdit(
+                replacement: replacement,
+                cursorOffset: (inner as NSString).length
+            )
+        }
+
+        // Do not add another closer when this opener already has one later in
+        // the file, or when code follows the insertion point on this line.
+        if hasMatchingCloser(in: text, after: openerOffset, opener: last, closer: closer, ignoring: ignored)
+            || !afterOnLine.trimmingCharacters(in: .whitespaces).isEmpty {
+            return RustSmartNewlineEdit(
+                replacement: inner,
+                cursorOffset: (inner as NSString).length
+            )
+        }
+
+        return RustSmartNewlineEdit(
+            replacement: inner + "\n" + baseIndent + String(closer),
+            cursorOffset: (inner as NSString).length
+        )
+    }
+
+    private static func hasMatchingCloser(
+        in text: NSString,
+        after openerOffset: Int,
+        opener: Character,
+        closer: Character,
+        ignoring tokens: [SyntaxToken]
+    ) -> Bool {
+        let openCode = (String(opener) as NSString).character(at: 0)
+        let closeCode = (String(closer) as NSString).character(at: 0)
+        var depth = 1
+        var offset = openerOffset + 1
+        var tokenIndex = 0
+        while offset < text.length {
+            while tokenIndex < tokens.count && NSMaxRange(tokens[tokenIndex].range) <= offset {
+                tokenIndex += 1
+            }
+            if tokenIndex < tokens.count, NSLocationInRange(offset, tokens[tokenIndex].range) {
+                offset = NSMaxRange(tokens[tokenIndex].range)
+                continue
+            }
+            let character = text.character(at: offset)
+            if character == openCode { depth += 1 }
+            if character == closeCode {
+                depth -= 1
+                if depth == 0 { return true }
+            }
+            offset += 1
+        }
+        return false
+    }
+}
+
 struct EditorNavigationTarget: Equatable {
     let id = UUID()
     let filePath: String
@@ -24,7 +135,12 @@ struct SyntaxCodeEditor: UIViewRepresentable {
     /// it will not, the key still completes Rust offline — it just stops
     /// wearing Apple Intelligence's sparkle to say so.
     let assistantUsesAppleIntelligence: Bool
+    /// In the laptop pose, the editor owns the lower-screen keyboard only
+    /// while Code is the active tab.
+    let tabletopCodeTabActive: Bool?
+    let keyboardBridge: RustEditorKeyboardBridge?
     let onRequestCompletion: () -> Void
+    let onEditorFocus: () -> Void
 
     init(
         text: Binding<String>,
@@ -36,7 +152,10 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         diagnostics: [RustDiagnostic] = [],
         navigationTarget: EditorNavigationTarget?,
         assistantUsesAppleIntelligence: Bool = false,
-        onRequestCompletion: @escaping () -> Void
+        tabletopCodeTabActive: Bool? = nil,
+        keyboardBridge: RustEditorKeyboardBridge? = nil,
+        onRequestCompletion: @escaping () -> Void,
+        onEditorFocus: @escaping () -> Void = {}
     ) {
         _text = text
         _cursorOffset = cursorOffset
@@ -47,7 +166,10 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         self.diagnostics = diagnostics
         self.navigationTarget = navigationTarget
         self.assistantUsesAppleIntelligence = assistantUsesAppleIntelligence
+        self.tabletopCodeTabActive = tabletopCodeTabActive
+        self.keyboardBridge = keyboardBridge
         self.onRequestCompletion = onRequestCompletion
+        self.onEditorFocus = onEditorFocus
     }
 
     func makeCoordinator() -> Coordinator {
@@ -78,7 +200,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         textView.text = text
         context.coordinator.textView = textView
         context.coordinator.canvas = canvas
-        textView.inputAccessoryView = RustKeyboardAccessoryView(
+        let keyboardBar = RustKeyboardAccessoryView(
             usesAppleIntelligence: assistantUsesAppleIntelligence,
             onInsert: { [weak coordinator = context.coordinator] symbol in
                 coordinator?.insert(symbol)
@@ -90,6 +212,14 @@ struct SyntaxCodeEditor: UIViewRepresentable {
                 textView?.resignFirstResponder()
             }
         )
+        canvas.configureKeyboardBar(keyboardBar, tabletop: tabletopCodeTabActive != nil)
+        keyboardBridge?.insert = { [weak coordinator = context.coordinator] symbol in
+            coordinator?.insert(symbol)
+        }
+        keyboardBridge?.dismiss = { [weak textView] in
+            textView?.resignFirstResponder()
+        }
+        canvas.setTabletopCodeTabActive(tabletopCodeTabActive)
         context.coordinator.applyHighlighting(to: textView, filePath: filePath)
         return canvas
     }
@@ -98,8 +228,14 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         let textView = canvas.textView
         context.coordinator.parent = self
         context.coordinator.canvas = canvas
-        (textView.inputAccessoryView as? RustKeyboardAccessoryView)?
-            .setUsesAppleIntelligence(assistantUsesAppleIntelligence)
+        canvas.keyboardBar?.setUsesAppleIntelligence(assistantUsesAppleIntelligence)
+        canvas.setTabletopCodeTabActive(tabletopCodeTabActive)
+        keyboardBridge?.insert = { [weak coordinator = context.coordinator] symbol in
+            coordinator?.insert(symbol)
+        }
+        keyboardBridge?.dismiss = { [weak textView] in
+            textView?.resignFirstResponder()
+        }
         textView.isEditable = isEditable
         canvas.backgroundColor = UIColor(CrabrixTheme.editor)
         // applyHighlighting owns foreground attributes; textColor here erases token colours.
@@ -148,6 +284,10 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         var lastNavigationID: UUID?
         private var isApplyingHighlight = false
 
+        func textViewDidBeginEditing(_ textView: UITextView) {
+            parent.onEditorFocus()
+        }
+
         init(parent: SyntaxCodeEditor) {
             self.parent = parent
         }
@@ -167,6 +307,20 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             shouldChangeTextIn range: NSRange,
             replacementText text: String
         ) -> Bool {
+            if text == "\n",
+               let edit = RustSmartNewline.plan(
+                    in: textView.text ?? "", range: range, filePath: parent.filePath
+               ),
+               let start = textView.position(from: textView.beginningOfDocument, offset: range.location),
+               let end = textView.position(from: start, offset: range.length),
+               let selectedRange = textView.textRange(from: start, to: end) {
+                textView.replace(selectedRange, withText: edit.replacement)
+                let cursor = range.location + edit.cursorOffset
+                textView.selectedRange = NSRange(location: cursor, length: 0)
+                parent.cursorOffset = cursor
+                canvas?.scrollCaretToVisible()
+                return false
+            }
             if parent.tracksTyping, let projectID = parent.projectID, !text.isEmpty {
                 TypingLedger.shared.record(
                     projectID: projectID,
@@ -400,6 +554,10 @@ struct SyntaxCodeEditor: UIViewRepresentable {
 final class CodeEditorCanvas: UIView {
     let textView: RustSourceTextView
     private let scrollView = UIScrollView()
+    fileprivate var keyboardBar: RustKeyboardAccessoryView?
+    private let keyboardPresentationAccessory = KeyboardPresentationAccessoryView()
+    private var tabletopCodeTabActive: Bool?
+    private var didFocusForTabletop = false
 
     /// Width reserved for line numbers, matching `textContainerInset.left`.
     static let gutterWidth: CGFloat = 44
@@ -449,6 +607,44 @@ final class CodeEditorCanvas: UIView {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("CodeEditorCanvas is created in code, never from a nib")
+    }
+
+    fileprivate func configureKeyboardBar(_ bar: RustKeyboardAccessoryView, tabletop: Bool) {
+        keyboardBar = bar
+        textView.inputAccessoryView = tabletop ? keyboardPresentationAccessory : bar
+    }
+
+    func setTabletopCodeTabActive(_ active: Bool?) {
+        guard tabletopCodeTabActive != active else { return }
+        tabletopCodeTabActive = active
+        textView.inputAccessoryView = active == nil ? keyboardBar : keyboardPresentationAccessory
+        if textView.isFirstResponder { textView.reloadInputViews() }
+        if active == true {
+            focusForTabletopIfNeeded()
+        } else if active == false {
+            if textView.isFirstResponder { textView.resignFirstResponder() }
+            didFocusForTabletop = false
+        } else {
+            didFocusForTabletop = false
+        }
+    }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if window == nil {
+            didFocusForTabletop = false
+        } else if tabletopCodeTabActive == true {
+            focusForTabletopIfNeeded()
+        }
+    }
+
+    private func focusForTabletopIfNeeded() {
+        guard window != nil, !didFocusForTabletop else { return }
+        didFocusForTabletop = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in
+            guard let self, self.window != nil, self.tabletopCodeTabActive == true else { return }
+            self.textView.becomeFirstResponder()
+        }
     }
 
     override var backgroundColor: UIColor? {
@@ -541,6 +737,12 @@ final class CodeEditorCanvas: UIView {
         guard caret.isFinite else { return }
         caret = caret.insetBy(dx: -(Self.gutterWidth + 24), dy: -12)
         scrollView.scrollRectToVisible(caret, animated: false)
+    }
+}
+
+private final class KeyboardPresentationAccessoryView: UIView {
+    override var intrinsicContentSize: CGSize {
+        CGSize(width: UIView.noIntrinsicMetric, height: 1)
     }
 }
 
@@ -779,12 +981,12 @@ final class GutterView: UIView {
         separator.move(to: CGPoint(x: bounds.maxX, y: bounds.minY))
         separator.addLine(to: CGPoint(x: bounds.maxX, y: bounds.maxY))
         separatorColor.setStroke()
-        separator.lineWidth = 1 / max(UIScreen.main.scale, 1)
+        separator.lineWidth = 1 / max(contentScaleFactor, 1)
         separator.stroke()
     }
 }
 
-private final class RustKeyboardAccessoryView: UIView {
+fileprivate final class RustKeyboardAccessoryView: UIView {
     private let symbols = ["::", "->", "=>", "&", "&mut ", "|", "_", "!", "<", ">", "{", "}", "[", "]", "(", ")", ";"]
     private let completeButton: UIButton
 

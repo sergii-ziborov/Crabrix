@@ -3,6 +3,57 @@ import SwiftUI
 import UIKit
 @testable import Crabrix
 
+final class RustSmartNewlineTests: XCTestCase {
+    func testEnterAfterOpeningBraceAddsIndentedBodyAndClosingBrace() throws {
+        let source = "    if ready {"
+        let edit = try XCTUnwrap(RustSmartNewline.plan(
+            in: source,
+            range: NSRange(location: (source as NSString).length, length: 0),
+            filePath: "src/main.rs"
+        ))
+        XCTAssertEqual(edit.replacement, "\n        \n    }")
+        XCTAssertEqual(edit.cursorOffset, ("\n        " as NSString).length)
+    }
+
+    func testEnterBetweenExistingBracesDoesNotAddAnotherCloser() throws {
+        let source = "fn main() {}"
+        let cursor = (source as NSString).range(of: "{").location + 1
+        let edit = try XCTUnwrap(RustSmartNewline.plan(
+            in: source,
+            range: NSRange(location: cursor, length: 0),
+            filePath: "main.rs"
+        ))
+        XCTAssertEqual(edit.replacement, "\n    \n")
+        XCTAssertEqual(edit.cursorOffset, 5)
+    }
+
+    func testEnterKeepsCurrentBlockIndentOnOrdinaryLine() throws {
+        let source = "fn main() {\n    let answer = 42;"
+        let edit = try XCTUnwrap(RustSmartNewline.plan(
+            in: source,
+            range: NSRange(location: (source as NSString).length, length: 0),
+            filePath: "src/main.rs"
+        ))
+        XCTAssertEqual(edit.replacement, "\n    ")
+    }
+
+    func testEnterDoesNotCloseBraceInsideCommentOrTextFile() throws {
+        let source = "    // {"
+        let cursor = (source as NSString).length
+        XCTAssertEqual(
+            RustSmartNewline.plan(in: source,
+                                  range: NSRange(location: cursor, length: 0),
+                                  filePath: "main.rs")?.replacement,
+            "\n    "
+        )
+        XCTAssertNil(RustSmartNewline.plan(
+            in: source,
+            range: NSRange(location: cursor, length: 0),
+            filePath: "Cargo.toml"
+        ))
+    }
+}
+
 @MainActor
 final class SyntaxCodeEditorHostedTests: XCTestCase {
     private final class Box: ObservableObject {
@@ -38,6 +89,32 @@ final class SyntaxCodeEditorHostedTests: XCTestCase {
             if let found = findCanvas(subview) { return found }
         }
         return nil
+    }
+
+    func testEnterInRealEditorCreatesRustBlock() throws {
+        let box = Box()
+        box.text = "fn main() {"
+        box.cursor = (box.text as NSString).length
+        let controller = UIHostingController(rootView: Host(box: box))
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 500, height: 700))
+        window.rootViewController = controller
+        window.isHidden = false
+        controller.view.layoutIfNeeded()
+
+        let textView = try XCTUnwrap(findTextView(controller.view))
+        let cursor = (textView.text as NSString).length
+        textView.selectedRange = NSRange(location: cursor, length: 0)
+        let accepted = textView.delegate?.textView?(
+            textView,
+            shouldChangeTextIn: NSRange(location: cursor, length: 0),
+            replacementText: "\n"
+        )
+
+        XCTAssertEqual(accepted, false)
+        XCTAssertEqual(textView.text, "fn main() {\n    \n}")
+        XCTAssertEqual(textView.selectedRange.location, 16)
+        XCTAssertEqual(box.text, textView.text)
+        window.isHidden = true
     }
 
     func testRealEditorHighlightsTextInsertedThroughUIKit() throws {

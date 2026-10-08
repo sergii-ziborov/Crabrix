@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "release": "1.1 (25)",
+  "source": "Release Simulator Crabrix.app build 25",
+  "sets": [
+    {
+      "set": "ipad-13",
+      "file": "01-build.png",
+      "id": "ed000019-5e0c-83bd-8008-9b9673b39816",
+      "bytes": 161778,
+      "sha256": "79cc8ace2d2a57f8728f3a9e520725a298e2f8d44500510ce6e03318c29d4d21",
+      "md5": "2c0563e2b3d0654ea1ddf03a61920730",
+      "state": "COMPLETE"
+    },
+    {
+      "set": "ipad-13",
+      "file": "02-projects.png",
+      "id": "9e000019-5e0c-83bd-803f-b36aaf1cda23",
+      "bytes": 409320,
+      "sha256": "c5e4a2a0f03a73d0897fbf52cb8b0462e687c57113cd1859665df4b81cbc209b",
+      "md5": "64d37934a7a02a5f25875a398b8dbf34",
+      "state": "COMPLETE"
+    },
+    {
+      "set": "ipad-13",
+      "file": "03-learn.png",
+      "id": "d8400019-5e0c-83bd-802a-5c861f6b5a49",
+      "bytes": 287140,
+      "sha256": "7b2f99d2eca8b720efe0c1d3036d3b7a66d006912f19fccbf314c0a66ea37bc8",
+      "md5": "bb7fe0b6c05c7906272f489dffebd1a3",
+      "state": "COMPLETE"
+    },
+    {
+      "set": "ipad-13",
+      "file": "07-my-courses.png",
+      "id": "22c00019-5e0c-83bd-8022-3bd66825b894",
+      "bytes": 342126,
+      "sha256": "45f8327d0d8ae9988be4cfed06f233631260d290d9ce97e8a4dee518f77b1fba",
+      "md5": "a102a0f99054206d0a0a87531285724e",
+      "state": "COMPLETE"
+    },
+    {
+      "set": "ipad-13",
+      "file": "04-lesson.png",
+      "id": "79400019-5e0c-83bd-8016-e1399ac5ba3d",
+      "bytes": 858420,
+      "sha256": "a12c5083a9b3163f6a40894c23a3f61f66dc6b967265caa02995452eeb4e223f",
+      "md5": "68daae2d8b673c51fc33ef41dafb55db",
+      "state": "COMPLETE"
+    },
+    {
+      "set": "ipad-13",
+      "file": "05-profile.png",
+      "id": "b8800019-5e0c-83bd-8022-36e42ecbffff",
+      "bytes": 276856,
+      "sha256": "5dc8c87a815e31176c40aa0989427621e7db3549d2b75827756d315857b388fa",
+      "md5": "df55fab1cf0660563e3d0fe1324c9ddd",
+      "state": "COMPLETE"
+    },
+    {
+      "set": "ipad-13",
+      "file": "06-library.png",
+      "id": "39c00019-5e0c-83bd-8021-39315557b1ea",
+      "bytes": 1303230,
+      "sha256": "63b43740ad48da1ed9f17a9854cdaa0f92c507cc4c17582397e6d71a60461dee",
+      "md5": "17c1ba54f336a78a22191d669f626bc4",
+      "state": "COMPLETE"
+    }
+  ]
+}

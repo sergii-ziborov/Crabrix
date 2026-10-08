@@ -66,6 +66,7 @@
 		4AEBE02C51FC37BE241D16C9 /* CrabrixTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FE59D76CC8EBC1BF4A988 /* CrabrixTheme.swift */; };
 		4F0F2BB8BA44F3561B320E78 /* production-keyring.json in Resources */ = {isa = PBXBuildFile; fileRef = EECD124647A0A13CCBE341FE /* production-keyring.json */; };
 		4F2CD25FA774D401FC368E55 /* RustDiagnosticParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D5F2FB12886D9E89DDD12A /* RustDiagnosticParserTests.swift */; };
+		52C44E944F7455EA0DEA976C /* AdaptiveFold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5764C24D7A7235B9C83EC0F1 /* AdaptiveFold.swift */; };
 		53C0F03750BFF241447304AE /* CargoPackageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34454EEDE1F2D70EF3FC91BA /* CargoPackageManager.swift */; };
 		53C508818988C87F3CA384F9 /* BorrowExplanation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A42F9E4CE0ACDDFFC8ABDE3C /* BorrowExplanation.swift */; };
 		54D2D6A6D36DEBE5E48021BF /* Rust-LICENSE-MIT.txt in Resources */ = {isa = PBXBuildFile; fileRef = F4ACC16AB86032A8DCE347FD /* Rust-LICENSE-MIT.txt */; };
@@ -287,6 +288,7 @@
 		54941194910930A95296DE96 /* CargoLockfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoLockfile.swift; sourceTree = "<group>"; };
 		559E456A8AD38F60E3A9BAD2 /* TermMatchTrainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermMatchTrainView.swift; sourceTree = "<group>"; };
 		56AA1284DFED9057782C150A /* BundledCompilerGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledCompilerGateTests.swift; sourceTree = "<group>"; };
+		5764C24D7A7235B9C83EC0F1 /* AdaptiveFold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveFold.swift; sourceTree = "<group>"; };
 		5B1EB6F0B52A3B0F7E5BF901 /* CompilerPerformanceProbeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompilerPerformanceProbeTests.swift; sourceTree = "<group>"; };
 		5B270F1FF867630900E5AA2C /* ProjectFileTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectFileTree.swift; sourceTree = "<group>"; };
 		5CAC5B86C54D56DCAC398E6A /* LessonDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonDetailView.swift; sourceTree = "<group>"; };
@@ -729,6 +731,7 @@
 			isa = PBXGroup;
 			children = (
 				8BA8750BF5000C8E1AB3AB63 /* AchievementCelebrationView.swift */,
+				5764C24D7A7235B9C83EC0F1 /* AdaptiveFold.swift */,
 				08CF787A36CA91D1C110D707 /* BuildDockView.swift */,
 				4416BEF4A5157F2F6D4E2B2F /* BuildWorkflowControls.swift */,
 				92BB070DF07D979DE9FFEE95 /* CargoDependencyCatalogSheet.swift */,
@@ -1007,6 +1010,7 @@
 			files = (
 				79148B2203952A72C77D5388 /* AcademyContentStore.swift in Sources */,
 				DD74E3CFB5C4836F4B571E46 /* AchievementCelebrationView.swift in Sources */,
+				52C44E944F7455EA0DEA976C /* AdaptiveFold.swift in Sources */,
 				03886B8D78DCEDCE1A159287 /* AlgorithmCourseCatalog.swift in Sources */,
 				2A129C11FCE30742F1CD2CE4 /* AlgorithmCourseData.swift in Sources */,
 				8774C7F4897814F164353FA7 /* AlgorithmVerificationData.swift in Sources */,
@@ -1295,6 +1299,8 @@
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG CRABRIX_SOCIAL";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphoneos27.1*]" = "$(inherited) CRABRIX_DUO_SDK";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphonesimulator27.1*]" = "$(inherited) CRABRIX_DUO_SDK";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1430,6 +1436,8 @@
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) CRABRIX_SOCIAL";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphoneos27.1*]" = "$(inherited) CRABRIX_DUO_SDK";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphonesimulator27.1*]" = "$(inherited) CRABRIX_DUO_SDK";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;

@@ -24,6 +24,37 @@ final class ProjectTerminalSession: ObservableObject {
     private var resultSignatures: [UUID: String] = [:]
     private var workingDirectories: [UUID: String] = [:]
     private var directoryBuffers: [UUID: Set<String>] = [:]
+    private var commandHistories: [UUID: [String]] = [:]
+    private var historyPositions: [UUID: Int] = [:]
+    private var historyDrafts: [UUID: String] = [:]
+
+    var promptDirectory: String { currentDirectory.isEmpty ? "~" : "~/\(currentDirectory)" }
+    var canRecallPrevious: Bool { !(projectID.flatMap { commandHistories[$0] } ?? []).isEmpty }
+    var canRecallNext: Bool { projectID.flatMap { historyPositions[$0] } != nil }
+
+    func recallPrevious() {
+        guard let projectID, let history = commandHistories[projectID], !history.isEmpty else { return }
+        if historyPositions[projectID] == nil {
+            historyDrafts[projectID] = command
+            historyPositions[projectID] = history.count
+        }
+        let position = max(0, (historyPositions[projectID] ?? history.count) - 1)
+        historyPositions[projectID] = position
+        command = history[position]
+    }
+
+    func recallNext() {
+        guard let projectID, let history = commandHistories[projectID],
+              let position = historyPositions[projectID] else { return }
+        let next = position + 1
+        if next < history.count {
+            historyPositions[projectID] = next
+            command = history[next]
+        } else {
+            historyPositions[projectID] = nil
+            command = historyDrafts.removeValue(forKey: projectID) ?? ""
+        }
+    }
 
     func attach(to project: CrabrixProject) {
         guard projectID != project.id else {
@@ -63,6 +94,12 @@ final class ProjectTerminalSession: ObservableObject {
         attach(to: project)
         command = ""
         guard !raw.isEmpty else { return }
+        commandHistories[project.id, default: []].append(raw)
+        if commandHistories[project.id, default: []].count > 100 {
+            commandHistories[project.id]?.removeFirst()
+        }
+        historyPositions[project.id] = nil
+        historyDrafts[project.id] = nil
         append("$ \(raw)", kind: .command)
 
         guard let components = Self.shellWords(raw), !components.isEmpty else {
@@ -84,6 +121,8 @@ final class ProjectTerminalSession: ObservableObject {
                 "  cp · mv · echo          Copy, move, and write files\n" +
                 "  cargo check|run|build   Use the bundled Rust toolchain\n" +
                 "  cargo tree|fetch        Inspect and download packages\n" +
+                "  cargo metadata          Inspect this package manifest\n" +
+                "  history                 Recall recent commands\n" +
                 "  env · date · uname      Sandbox information\n" +
                 "  clear                    Clear this terminal\n\n" +
                 "Commands run inside /workspace/\(project.name); iOS does not expose host processes.",
@@ -126,6 +165,10 @@ final class ProjectTerminalSession: ObservableObject {
             )
         case "date":
             append(Date().formatted(date: .abbreviated, time: .standard), kind: .info)
+        case "history":
+            let history = commandHistories[project.id] ?? []
+            append(history.enumerated().map { "\($0.offset + 1)  \($0.element)" }
+                .joined(separator: "\n"), kind: .info)
         case "which":
             guard components.count == 2 else {
                 append("usage: which <command>", kind: .error)
@@ -202,7 +245,7 @@ final class ProjectTerminalSession: ObservableObject {
         onFetch: (() -> Void)?
     ) {
         guard let command = arguments.first else {
-            append("usage: cargo <check|run|build|tree|fetch>", kind: .error)
+            append("usage: cargo <check|run|build|tree|fetch|metadata>", kind: .error)
             return
         }
         switch command {
@@ -227,6 +270,17 @@ final class ProjectTerminalSession: ObservableObject {
             onFetch()
         case "tree":
             append(Self.renderTree(project: project, workspace: workspace), kind: .info)
+        case "metadata":
+            let manifest = project.manifest
+            append(
+                "Package: \(manifest?.name ?? project.name) \(manifest?.version ?? "0.1.0")\n" +
+                "Edition: \(manifest?.edition ?? "2024")\n" +
+                "Entry: \(project.entryFile)\n" +
+                "Files: \(project.files.count)\n" +
+                "Dependencies: \(manifest?.dependencies.count ?? 0)\n" +
+                workspace.summary,
+                kind: .info
+            )
         default:
             append("cargo \(command) is not available in the Crabrix project shell", kind: .error)
         }
@@ -292,7 +346,7 @@ final class ProjectTerminalSession: ObservableObject {
     private static let availableCommands: Set<String> = [
         "help", "pwd", "ls", "cd", "tree", "cat", "head", "tail", "wc",
         "grep", "find", "touch", "mkdir", "rm", "cp", "mv", "echo",
-        "whoami", "uname", "env", "date", "which", "cargo", "clear",
+        "whoami", "uname", "env", "date", "which", "cargo", "history", "clear",
     ]
 
     private static func shellWords(_ input: String) -> [String]? {
