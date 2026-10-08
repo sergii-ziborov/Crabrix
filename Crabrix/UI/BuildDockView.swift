@@ -135,7 +135,7 @@ struct BuildDockView<CodeContent: View>: View {
                     }
                         .frame(height: fold.maxY)
                         .clipped()
-                    header(tabletop: true)
+                    header(tabletop: true, wide: geometry.size.width >= 500)
                     if selectedTab == .code {
                         RustKeyboardShortcutRow(
                             bridge: keyboardBridge,
@@ -152,7 +152,7 @@ struct BuildDockView<CodeContent: View>: View {
                 } else {
                     content
                     Divider().overlay(CrabrixTheme.border)
-                    header(tabletop: false)
+                    header(tabletop: false, wide: geometry.size.width >= 500)
                 }
             }
             .background(CrabrixTheme.editor)
@@ -165,7 +165,7 @@ struct BuildDockView<CodeContent: View>: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func header(tabletop: Bool) -> some View {
+    private func header(tabletop: Bool, wide: Bool) -> some View {
         let activeTab = selectedTab
         let tabs = BuildDockTab.allCases
         return HStack(spacing: 4) {
@@ -208,10 +208,41 @@ struct BuildDockView<CodeContent: View>: View {
             }
 
             Spacer()
+
+            if activeTab == .code || activeTab == .terminal {
+                Button(action: hideKeyboard) {
+                    HStack(spacing: 5) {
+                        Image(systemName: "keyboard.chevron.compact.down")
+                        if wide { Text("Hide") }
+                    }
+                    .foregroundStyle(CrabrixTheme.blue)
+                    .padding(.horizontal, 9)
+                    .frame(height: tabletop ? 30 : 34)
+                    .background(
+                        CrabrixTheme.blue.opacity(0.12),
+                        in: RoundedRectangle(cornerRadius: 8)
+                    )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Hide keyboard")
+            }
         }
         .font(.system(size: 9, weight: .semibold, design: .monospaced))
         .padding(.horizontal, 9)
         .frame(height: tabletop ? 34 : 38)
+    }
+
+    private func hideKeyboard() {
+        if selectedTab == .code {
+            keyboardBridge.dismissKeyboard()
+        } else {
+            UIApplication.shared.sendAction(
+                #selector(UIResponder.resignFirstResponder),
+                to: nil,
+                from: nil,
+                for: nil
+            )
+        }
     }
 
     @ViewBuilder
