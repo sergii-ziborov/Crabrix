@@ -5,9 +5,11 @@ import UIKit
 final class RustEditorKeyboardBridge: ObservableObject {
     var insert: ((String) -> Void)?
     var dismiss: (() -> Void)?
+    var focus: (() -> Void)?
 
     func insertSymbol(_ symbol: String) { insert?(symbol) }
     func dismissKeyboard() { dismiss?() }
+    func focusEditor() { focus?() }
 }
 
 struct RustSmartNewlineEdit: Equatable {
@@ -219,6 +221,9 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         keyboardBridge?.dismiss = { [weak textView] in
             textView?.resignFirstResponder()
         }
+        keyboardBridge?.focus = { [weak textView] in
+            textView?.becomeFirstResponder()
+        }
         canvas.setTabletopCodeTabActive(tabletopCodeTabActive)
         context.coordinator.applyHighlighting(to: textView, filePath: filePath)
         return canvas
@@ -235,6 +240,9 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         }
         keyboardBridge?.dismiss = { [weak textView] in
             textView?.resignFirstResponder()
+        }
+        keyboardBridge?.focus = { [weak textView] in
+            textView?.becomeFirstResponder()
         }
         textView.isEditable = isEditable
         canvas.backgroundColor = UIColor(CrabrixTheme.editor)

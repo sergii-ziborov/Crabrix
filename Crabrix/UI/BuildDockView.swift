@@ -139,6 +139,7 @@ struct BuildDockView<CodeContent: View>: View {
                             usesAppleIntelligence: assistantUsesAppleIntelligence,
                             onComplete: onRequestCompletion
                         )
+                        .padding(.bottom, 6)
                         Spacer(minLength: 0)
                     } else if selectedTab == .terminal {
                         Spacer(minLength: 0)
@@ -154,8 +155,8 @@ struct BuildDockView<CodeContent: View>: View {
             .background(CrabrixTheme.editor)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .preference(
-                key: TabletopFoldGlobalYPreferenceKey.self,
-                value: fold.map { geometry.frame(in: .global).minY + $0.minY }
+                key: TabletopTabsGlobalYPreferenceKey.self,
+                value: fold.map { geometry.frame(in: .global).minY + $0.maxY - (selectedTab == .terminal ? 34 : 0) }
             )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -167,8 +168,13 @@ struct BuildDockView<CodeContent: View>: View {
         return HStack(spacing: 4) {
             ForEach(tabs) { tab in
                 Button {
-                    if tab != .code { keyboardBridge.dismissKeyboard() }
+                    if tab == .problems || tab == .output {
+                        keyboardBridge.dismissKeyboard()
+                    }
                     selectedTab = tab
+                    if tab == .code {
+                        keyboardBridge.focusEditor()
+                    }
                 } label: {
                     HStack(spacing: 5) {
                         Image(systemName: tab.systemImage)
@@ -308,6 +314,7 @@ private struct ProblemsDockContent: View {
     let onOpenDiagnosticAdvisor: () -> Void
 
     var body: some View {
+        GeometryReader { available in
         ScrollView {
             if let diagnostics = result?.diagnostics, !diagnostics.isEmpty {
                 LazyVStack(alignment: .leading, spacing: 7) {
@@ -388,7 +395,10 @@ private struct ProblemsDockContent: View {
                     description: Text("Compiler diagnostics for the current snapshot appear here.")
                 )
                 .foregroundStyle(CrabrixTheme.muted)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: available.size.height)
             }
+        }
         }
         .font(.system(size: 11, design: .monospaced))
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -443,6 +453,7 @@ private struct OutputDockContent: View {
     }
 
     var body: some View {
+        GeometryReader { available in
         ScrollView {
             if let result {
                 VStack(alignment: .leading, spacing: 12) {
@@ -549,8 +560,9 @@ private struct OutputDockContent: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 24)
-                .padding(.vertical, 40)
+                .frame(minHeight: available.size.height)
             }
+        }
         }
         .font(.system(size: 11, design: .monospaced))
         .frame(maxWidth: .infinity, maxHeight: .infinity)

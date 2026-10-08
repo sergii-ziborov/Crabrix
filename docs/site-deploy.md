@@ -8,9 +8,10 @@ responsive spacing, Blog, all seven free Learn courses and 742 lesson pages,
 and screenshots captured from the current app. It has passed a local build and
 link check, but has not replaced the public site.
 
-The prepared Hetzner service is independent of GrantTap. It listens on
-`127.0.0.1:3212` by default and does not create a public route or alter domain
-records. No public hosting switch is part of this repository change.
+On 8 October, the isolated `crabrix-web-site-1` container was deployed to the
+GrantTap Hetzner host from this branch. It listens on `127.0.0.1:3212`.
+Health, Learn, Blog and the Duo screenshot returned HTTP 200 on that internal
+endpoint. The GrantTap stack, public routing and domain records were unchanged.
 
 ## Build locally
 
@@ -27,16 +28,16 @@ supplies the common header and footer. `site/content/courses.json` is a pinned
 snapshot from the course repository; `site/README.md` explains how to refresh
 it.
 
-## Prepare the isolated Hetzner service
+## Rebuild the isolated Hetzner service
 
 On the server, after checking out the desired commit into a separate Crabrix
 directory:
 
 ```bash
 cd site
-docker compose -f compose.hetzner.yaml config
-docker compose -f compose.hetzner.yaml build
-docker compose -f compose.hetzner.yaml up -d
+podman compose -f compose.hetzner.yaml config
+podman compose -f compose.hetzner.yaml build
+podman compose -f compose.hetzner.yaml up -d
 curl --fail http://127.0.0.1:3212/healthz
 curl --fail http://127.0.0.1:3212/learn/
 ```

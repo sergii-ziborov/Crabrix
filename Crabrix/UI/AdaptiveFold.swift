@@ -27,9 +27,9 @@ enum AdaptiveFold {
     }
 }
 
-/// The editor dock is the first view that sees the fold. Share its global Y
-/// coordinate so overlays outside the dock can stop at the same hinge.
-struct TabletopFoldGlobalYPreferenceKey: PreferenceKey {
+/// The editor dock is the first view that sees the fold. Share the global Y
+/// coordinate of its tabletop tab row so drawers stop directly above it.
+struct TabletopTabsGlobalYPreferenceKey: PreferenceKey {
     static let defaultValue: CGFloat? = nil
 
     static func reduce(value: inout CGFloat?, nextValue: () -> CGFloat?) {

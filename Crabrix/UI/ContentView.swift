@@ -105,7 +105,7 @@ struct ContentView: View {
     @State private var isDiagnosticHelpPresented = false
     @State private var selectedBuildDockTab: BuildDockTab =
         ProcessInfo.processInfo.arguments.contains("--crabrix-auto-terminal") ? .terminal : .code
-    @State private var tabletopFoldGlobalY: CGFloat?
+    @State private var tabletopTabsGlobalY: CGFloat?
     @State private var learningPath: [LearningRoute] = []
     @State private var editorCursorOffset = 0
     /// What the last successful run was scored on, shown in the build dock.
@@ -128,7 +128,7 @@ struct ContentView: View {
     var body: some View {
         GeometryReader { geometry in
             let tabletop = AdaptiveFold.horizontal(in: geometry) != nil
-                || tabletopFoldGlobalY != nil
+                || tabletopTabsGlobalY != nil
             tabContent(tabletop: tabletop)
                 .toolbar(tabletop && isWorkspaceOpen ? .hidden : .visible, for: .tabBar)
         }
@@ -142,7 +142,7 @@ struct ContentView: View {
                         .toolbar(tabletop ? .hidden : .visible, for: .tabBar)
                         .ignoresSafeArea(tabletop ? .container : [], edges: .top)
                         .ignoresSafeArea(
-                            tabletopFoldGlobalY == nil ? [] : .keyboard,
+                            tabletopTabsGlobalY == nil ? [] : .keyboard,
                             edges: .bottom
                         )
                 } else {
@@ -617,7 +617,7 @@ struct ContentView: View {
                 selectedFile: model.selectedFile,
                 isProjectSidebarCollapsed: fixedSidebar ? false : !isCompactProjectDrawerPresented,
                 showsProjectSidebarToggle: !fixedSidebar,
-                showsEnvironmentBar: tabletopFoldGlobalY == nil,
+                showsEnvironmentBar: tabletopTabsGlobalY == nil,
                 onSelectFile: selectEditorFile,
                 onToggleProjectSidebar: {
                     if fixedSidebar {
@@ -675,12 +675,12 @@ struct ContentView: View {
                 navigationTarget: editorNavigationTarget,
                 assistantUsesAppleIntelligence: appleIntelligenceCompletion
                     && RustCompletionSupport.isAppleIntelligenceAvailable,
-                tabletopCodeTabActive: tabletopFoldGlobalY == nil
+                tabletopCodeTabActive: tabletopTabsGlobalY == nil
                     ? nil : selectedBuildDockTab == .code,
                 keyboardBridge: editorKeyboard,
                 onRequestCompletion: requestEditorAssistant,
                 onEditorFocus: {
-                    if tabletopFoldGlobalY != nil {
+                    if tabletopTabsGlobalY != nil {
                         selectedBuildDockTab = .code
                     }
                 }
@@ -734,8 +734,8 @@ struct ContentView: View {
                 AppHeader(
                     isPhone: UIDevice.current.userInterfaceIdiom == .phone,
                     regularTablet: horizontalSizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone,
-                    dense: tabletopFold != nil || tabletopFoldGlobalY != nil,
-                    showsTopNavigation: tabletopFold != nil || tabletopFoldGlobalY != nil,
+                    dense: tabletopFold != nil || tabletopTabsGlobalY != nil,
+                    showsTopNavigation: tabletopFold != nil || tabletopTabsGlobalY != nil,
                     headerWidth: workspace.size.width,
                     projectName: model.projectName,
                     searchQuery: $editorSearchQuery,
@@ -759,9 +759,11 @@ struct ContentView: View {
                 if model.projectTransfer.isWorking || model.projectTransfer.isFailure {
                     ProjectTransferStrip(transfer: model.projectTransfer)
                 }
-                Divider().overlay(CrabrixTheme.border)
+                Rectangle()
+                    .fill(CrabrixTheme.border)
+                    .frame(height: 1 / UIScreen.main.scale)
 
-                if fixedSidebar && tabletopFold == nil && tabletopFoldGlobalY == nil {
+                if fixedSidebar && tabletopFold == nil && tabletopTabsGlobalY == nil {
                     HStack(spacing: 0) {
                         ProjectSidebar(
                                 projectName: model.projectName,
@@ -820,15 +822,24 @@ struct ContentView: View {
                             .frame(minWidth: bookFold == nil ? 340 : 0)
                     }
                 } else {
-                    compactBuildWorkspace(tabletopFoldGlobalY: tabletopFoldGlobalY)
+                    compactBuildWorkspace(tabletopTabsGlobalY: tabletopTabsGlobalY)
                 }
             }
-            // Tabletop has its own tall status region. Reclaim part of the
-            // unused gap while keeping the controls below the status glyphs.
-            .padding(.top, tabletopFold == nil ? 0 : 50)
+            // Keep the workspace toolbar level with the native My Projects
+            // navigation bar; the status glyphs remain in the trailing space.
+            .padding(.top, tabletopFold == nil ? 0 : 30)
+            .background(CrabrixTheme.background)
         }
-        .onPreferenceChange(TabletopFoldGlobalYPreferenceKey.self) { globalY in
-            tabletopFoldGlobalY = globalY
+        .onPreferenceChange(TabletopTabsGlobalYPreferenceKey.self) { globalY in
+            let enteringTabletop = tabletopTabsGlobalY == nil && globalY != nil
+            tabletopTabsGlobalY = globalY
+            if enteringTabletop && selectedBuildDockTab == .code {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    if selectedBuildDockTab == .code {
+                        editorKeyboard.focusEditor()
+                    }
+                }
+            }
         }
         }
     }
@@ -843,11 +854,11 @@ struct ContentView: View {
         }
     }
 
-    private func compactBuildWorkspace(tabletopFoldGlobalY: CGFloat?) -> some View {
+    private func compactBuildWorkspace(tabletopTabsGlobalY: CGFloat?) -> some View {
         GeometryReader { geometry in
-            // In tabletop pose the lower display is the typing and output
-            // surface. Keep the file drawer on the upper display only.
-            let drawerHeight = tabletopFoldGlobalY.map {
+            // In tabletop pose the drawer fills the upper display down to the
+            // Code, Problems, Output and Terminal tabs, without a dead strip.
+            let drawerHeight = tabletopTabsGlobalY.map {
                 max(160, min($0 - geometry.frame(in: .global).minY, geometry.size.height))
             } ?? geometry.size.height
             ZStack(alignment: .topLeading) {
@@ -1220,7 +1231,7 @@ private struct AppHeader: View {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 17, weight: .semibold))
                         .frame(width: 38, height: 38)
-                        .background(CrabrixTheme.raised, in: CrabrixControlShape(classic: .circle))
+                        .background(CrabrixTheme.raised, in: Circle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Back to Projects")
@@ -1319,7 +1330,7 @@ private struct AppHeader: View {
         // The status glyphs share the header row in laptop posture.
         .padding(.trailing, showsTopNavigation ? 112 : 0)
         .frame(height: dense ? 44 : 58)
-        .background(CrabrixTheme.background.opacity(0.97))
+        .background(CrabrixTheme.background)
     }
 
     private var tabletopProjectMenu: some View {
@@ -1331,7 +1342,7 @@ private struct AppHeader: View {
                 .font(.system(size: 20, weight: .medium))
                 .foregroundStyle(CrabrixTheme.primary)
                 .frame(width: 40, height: 40)
-                .background(CrabrixTheme.raised, in: CrabrixControlShape(classic: .circle))
+                .background(CrabrixTheme.raised, in: Circle())
         }
         .disabled(transfer.isWorking)
         .accessibilityLabel("Project menu")
@@ -1343,7 +1354,14 @@ private struct AppHeader: View {
                 .font(.system(size: 20, weight: .medium))
                 .foregroundStyle(CrabrixTheme.blue)
                 .frame(width: 40, height: 40)
-                .background(CrabrixTheme.blue.opacity(0.1), in: CrabrixControlShape(classic: .capsule))
+                .background {
+                    if showsTopNavigation {
+                        Circle().fill(CrabrixTheme.blue.opacity(0.1))
+                    } else {
+                        CrabrixControlShape(classic: .capsule)
+                            .fill(CrabrixTheme.blue.opacity(0.1))
+                    }
+                }
         }
         .buttonStyle(.plain)
         .disabled(activity != .idle || !canRun)
@@ -1366,10 +1384,21 @@ private struct AppHeader: View {
             .foregroundStyle(CrabrixTheme.coral)
             .padding(.horizontal, 11)
             .frame(minHeight: 38)
-            .background(CrabrixTheme.coral.opacity(0.12), in: CrabrixControlShape(classic: .capsule))
+            .background {
+                if showsTopNavigation {
+                    Capsule().fill(CrabrixTheme.coral.opacity(0.12))
+                } else {
+                    CrabrixControlShape(classic: .capsule)
+                        .fill(CrabrixTheme.coral.opacity(0.12))
+                }
+            }
             .overlay {
-                CrabrixControlShape(classic: .capsule)
-                    .stroke(CrabrixTheme.coral.opacity(0.3))
+                if showsTopNavigation {
+                    Capsule().stroke(CrabrixTheme.coral.opacity(0.3))
+                } else {
+                    CrabrixControlShape(classic: .capsule)
+                        .stroke(CrabrixTheme.coral.opacity(0.3))
+                }
             }
         }
         .buttonStyle(.plain)

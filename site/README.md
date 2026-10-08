@@ -23,8 +23,7 @@ pnpm build
 top-level HTML files is rendered through `lib/legacy.ts`; the Next layout supplies
 their common navigation and spacing. Product captures are in `public/screenshots/`.
 
-The Hetzner deployment is prepared in `compose.hetzner.yaml` and
+The site runs as its own Hetzner container from `compose.hetzner.yaml` and
 `hetzner/Dockerfile`, following the separate-service pattern used by GrantTap.
-It binds only to loopback on port 3212 by default. A future deployment needs a
-server route and certificate for Crabrix; this repository change does not alter
-the current Lovable site or any domain records.
+It binds only to loopback on port 3212. Public access needs a Crabrix server
+route and certificate; the current Lovable site and domain records are unchanged.
