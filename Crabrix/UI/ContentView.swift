@@ -103,8 +103,13 @@ struct ContentView: View {
     @State private var isProjectSidebarCollapsed = false
     @State private var isCompactProjectDrawerPresented = false
     @State private var isDiagnosticHelpPresented = false
-    @State private var selectedBuildDockTab: BuildDockTab =
-        ProcessInfo.processInfo.arguments.contains("--crabrix-auto-terminal") ? .terminal : .code
+    @State private var selectedBuildDockTab: BuildDockTab = {
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("--crabrix-auto-terminal") { return .terminal }
+        if arguments.contains("--crabrix-auto-problems") { return .problems }
+        if arguments.contains("--crabrix-auto-output") { return .output }
+        return .code
+    }()
     @State private var tabletopTabsGlobalY: CGFloat?
     @State private var learningPath: [LearningRoute] = []
     @State private var editorCursorOffset = 0
@@ -141,6 +146,11 @@ struct ContentView: View {
                     buildWorkspace
                         .toolbar(tabletop ? .hidden : .visible, for: .tabBar)
                         .ignoresSafeArea(tabletop ? .container : [], edges: .top)
+                        .ignoresSafeArea(
+                            tabletop && (selectedBuildDockTab == .problems || selectedBuildDockTab == .output)
+                                ? .container : [],
+                            edges: .bottom
+                        )
                         .ignoresSafeArea(
                             tabletopTabsGlobalY == nil ? [] : .keyboard,
                             edges: .bottom
