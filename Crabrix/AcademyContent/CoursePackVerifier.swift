@@ -99,7 +99,7 @@ struct VerifiedCoursePack: Sendable {
 enum CoursePackVerifier {
     static let descriptorDomain = Data("Crabrix.CourseDescriptor.v1\n".utf8)
     static let catalogDomain = Data("Crabrix.CourseCatalog.v1\n".utf8)
-    static let maximumArchiveBytes = 64 * 1024 * 1024
+    static let maximumArchiveBytes = 80 * 1024 * 1024
     static let maximumUnpackedBytes = 128 * 1024 * 1024
     static let maximumFileBytes = 16 * 1024 * 1024
     static let maximumEntries = 5_000

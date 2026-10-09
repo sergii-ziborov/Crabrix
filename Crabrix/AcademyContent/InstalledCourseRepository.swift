@@ -137,22 +137,27 @@ struct InstalledCourseRepository: CourseRepository {
                 evidence[lessonID] = proof
                 lessons.append(try lesson.runtimeLesson())
                 if let illustration = lesson.illustration {
-                    let expected = "media/\(safeLesson).png"
-                    guard illustration.path == expected,
+                    let perLessonPath = "media/\(safeLesson).png"
+                    let sharedAtlasPaths = courseID == "algorithms"
+                        ? ["media/\(safeUnit)-a.png", "media/\(safeUnit)-b.png"] : []
+                    let expected = illustration.path
+                    guard expected == perLessonPath || sharedAtlasPaths.contains(expected),
                           !illustration.alt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                           !illustration.caption.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                           manifest.files.contains(where: { $0.path == expected }) else {
                         throw CoursePackError.manifestMismatch("lesson illustration \(lessonID)")
                     }
                     let url = directory.appending(path: expected)
-                    guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
-                          CGImageSourceGetCount(source) == 1,
-                          let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
-                          let width = properties[kCGImagePropertyPixelWidth] as? Int,
-                          let height = properties[kCGImagePropertyPixelHeight] as? Int,
-                          width > 0, height > 0, width <= 4096, height <= 4096,
-                          width * height <= 8_000_000 else {
-                        throw CoursePackError.manifestMismatch("lesson image size \(lessonID)")
+                    if !lessonIllustrationPaths.contains(expected) {
+                        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+                              CGImageSourceGetCount(source) == 1,
+                              let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+                              let width = properties[kCGImagePropertyPixelWidth] as? Int,
+                              let height = properties[kCGImagePropertyPixelHeight] as? Int,
+                              width > 0, height > 0, width <= 4096, height <= 4096,
+                              width * height <= 8_000_000 else {
+                            throw CoursePackError.manifestMismatch("lesson image size \(lessonID)")
+                        }
                     }
                     lessonIllustrationPaths.insert(expected)
                     illustrations[lessonID] = LessonIllustration(

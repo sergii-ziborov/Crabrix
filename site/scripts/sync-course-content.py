@@ -39,13 +39,16 @@ def main() -> None:
                 illustration = lesson.get("illustration")
                 if illustration is None:
                     continue
-                expected = f"media/{lesson['id']}.png"
-                if illustration.get("path") != expected or not illustration.get("alt"):
+                expected = illustration.get("path")
+                allowed = {f"media/{lesson['id']}.png"}
+                if course_id == "algorithms":
+                    allowed.update({f"media/{unit_id}-{variant}.png" for variant in ("a", "b")})
+                if expected not in allowed or not illustration.get("alt"):
                     raise ValueError(f"invalid lesson illustration in {course_id}/{lesson['id']}")
                 source_image = folder / expected
                 if not source_image.is_file():
                     raise ValueError(f"missing lesson illustration: {source_image}")
-                destination_image = SITE / "public" / "learn-media" / course_id / f"{lesson['id']}.png"
+                destination_image = SITE / "public" / "learn-media" / course_id / Path(expected).name
                 destination_image.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source_image, destination_image)
             units.append({**unit, "lessons": lessons})

@@ -24,12 +24,13 @@ The Academy contains seven courses: six Rust language courses and Algorithm Atla
 
 For Cargo projects, Crabrix resolves a supported subset of crates.io dependencies, verifies registry checksums, builds dependencies locally, and can pin their source archives for offline rebuilds. `syn`, `quote`, and `proc-macro2` use a parser-only feature profile that works with the bundled WASI compiler; an existing plain `syn` dependency can be repaired from the project package panel. Procedural macro crates and build scripts remain unsupported. An installed course is readable offline; an exercise using crates is offline ready only after its dependencies have been prepared. The editor, diagnostics, Code Examples path, import/export, and training activities remain native UI.
 
-The [free Learn site](https://crabrix.com/learn/) now has expanded explanations
-for all 142 Rust lessons and generated diagrams in at least every other lesson.
-The 600 Algorithm Atlas steps retain their earlier text. The [Blog](https://crabrix.com/blog/)
-has two in-depth articles with two generated illustrations each, including an
-infographic. App course downloads remain on the last signed catalog until the
-expanded CoursePacks receive production signatures and are released.
+The [free Learn site](https://crabrix.com/learn/) has expanded explanations
+for all 742 lessons: 142 Rust lessons and 600 Algorithm Atlas steps. At least
+every other lesson has an infographic; Atlas shares 40 five-pattern diagrams
+across its 300 illustrated steps. The [Blog](https://crabrix.com/blog/) has
+two in-depth articles with two generated illustrations each, including an
+infographic. The expanded courses have new content versions and production-signed
+CoursePacks; compatible app builds can download them from the release catalog.
 
 ## Runtime and compiler
 
