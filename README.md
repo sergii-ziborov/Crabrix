@@ -24,6 +24,13 @@ The Academy contains seven courses: six Rust language courses and Algorithm Atla
 
 For Cargo projects, Crabrix resolves a supported subset of crates.io dependencies, verifies registry checksums, builds dependencies locally, and can pin their source archives for offline rebuilds. `syn`, `quote`, and `proc-macro2` use a parser-only feature profile that works with the bundled WASI compiler; an existing plain `syn` dependency can be repaired from the project package panel. Procedural macro crates and build scripts remain unsupported. An installed course is readable offline; an exercise using crates is offline ready only after its dependencies have been prepared. The editor, diagnostics, Code Examples path, import/export, and training activities remain native UI.
 
+The [free Learn site](https://crabrix.com/learn/) now has expanded explanations
+for all 142 Rust lessons and generated diagrams in at least every other lesson.
+The 600 Algorithm Atlas steps retain their earlier text. The [Blog](https://crabrix.com/blog/)
+has two in-depth articles with two generated illustrations each, including an
+infographic. App course downloads remain on the last signed catalog until the
+expanded CoursePacks receive production signatures and are released.
+
 ## Runtime and compiler
 
 Crabrix 1.1 pins [CrabrixRuntime](https://github.com/sergii-ziborov/crabrix-runtime) at `d996f0d11dff54734b5670d58062e22c6e01f949`, derived from WasmKit **0.4.1** (`a0471eaee817c523b8023d8ebb1c70ff70b7950a`). The adapter uses upstream fuel metering, a separate cancellation/deadline probe sampled at fuel checkpoints, read-only compiler inputs, bounded WASI output, fresh execution stores, and virtual memory reservation to avoid copying the compiler's full Wasm memory on growth. Software-bounds execution uses token dispatch after an out-of-bounds regression was found in direct dispatch. The Wasm guest has no network import.

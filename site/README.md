@@ -19,6 +19,11 @@ python3 scripts/sync-course-content.py /path/to/crabrix-courses
 pnpm build
 ```
 
+The current snapshot pins course source `0951e4a`: all 142 Rust lessons have
+expanded explanations and at least every other lesson has a generated diagram.
+Algorithm Atlas retains its existing 600 steps. Both Blog articles exceed
+1,500 words and contain two generated images, including an infographic.
+
 `content/posts.json` contains two articles of more than 1,500 words each and
 the image references rendered by `app/blog`. Product and legal copy in the checked-in
 top-level HTML files is rendered through `lib/legacy.ts`; the Next layout supplies
@@ -38,12 +43,14 @@ Deployment evidence and DNS details are in `../docs/site-deploy.md`.
 
 For a prebuilt release, build the static export locally, transfer `out/` with
 `hetzner/nginx.conf`, `hetzner/Dockerfile.prebuilt`, and
-`compose.prebuilt.yaml` to an isolated release directory on Hetzner, then run:
+`compose.prebuilt.yaml` to an isolated release directory on Hetzner, then build
+a versioned image:
 
 ```bash
-podman build -f hetzner/Dockerfile.prebuilt -t localhost/crabrix-web-site:learn-20261009 .
-CRABRIX_SITE_TAG=learn-20261009 podman compose -f compose.prebuilt.yaml up -d
+podman build -f hetzner/Dockerfile.prebuilt -t localhost/crabrix-web-site:rust-20261009 .
 ```
 
-Set `CRABRIX_SITE_TAG=learn-20261009` for this release, or choose a new tag for a later image. The compose file binds only to
-`127.0.0.1` and does not change the public domain route.
+Test a candidate on port 3213 before moving the public port 3212 to the new
+container; keep the previous container stopped for rollback. The compose file
+binds only to `127.0.0.1` and does not change the public domain route. The
+observed switch and rollback target are recorded in `../docs/site-deploy.md`.
