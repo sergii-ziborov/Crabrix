@@ -134,6 +134,9 @@ table.plain td { color: var(--muted); }
 .lesson-content > section, .article-content > section { border-top: 1px solid var(--border); padding: 28px 0; }
 .lesson-content p, .article-content p, .lesson-content li, .article-content li { color: var(--muted); }
 .lesson-content h2, .article-content h2 { font-size: 25px; }
+.lesson-reading p { color: var(--text); font-size: 1.035rem; line-height: 1.82; max-width: 72ch; }
+.lesson-reading p + p { margin-top: 1.35em; }
+.lesson-next-step { border-left: 3px solid var(--mint); padding-left: 19px !important; background: linear-gradient(90deg, rgba(37, 201, 187, .055), transparent 60%); }
 .lesson-callout { border-left: 3px solid var(--mint); background: var(--panel); border-radius: 0 12px 12px 0; padding: 14px 17px; margin: 20px 0; }
 .lesson-callout p { margin: 0; }
 .lesson-infographic { max-width: 850px; margin: 6px 0 30px; }
@@ -145,9 +148,20 @@ table.plain td { color: var(--muted); }
 .answer-reveal .correct { color: var(--mint); font-weight: 700; }
 .article-content { max-width: 780px; }
 .article-date { color: var(--muted); font-size: 13px; }
+.article-toc { border: 1px solid var(--border); background: var(--panel); border-radius: 15px; padding: 18px 22px; margin-top: 24px; }
+.article-toc strong { display: block; font-size: 14px; }
+.article-toc ol { columns: 2; column-gap: 30px; padding-left: 20px; margin: 10px 0 0; }
+.article-toc li { break-inside: avoid; margin: 5px 0; font-size: 13px; line-height: 1.5; }
+.article-toc a { color: var(--muted); text-decoration: none; }
+.article-toc a:hover { color: var(--text); text-decoration: underline; }
+.article-content > section { scroll-margin-top: 90px; }
 .article-content pre { margin: 18px 0 25px; }
+.article-image { margin: 25px 0 5px; }
+.article-image img { display: block; width: 100%; height: auto; border: 1px solid var(--border); border-radius: 16px; }
+.article-image figcaption { color: var(--muted); font-size: 0.88rem; line-height: 1.5; margin-top: 9px; }
 
 @media (max-width: 760px) {
+  .article-toc ol { columns: 1; }
   .site-header-row { flex-wrap: wrap; align-items: start; gap: 0; padding-block: 10px 7px; }
   .site-brand { margin-bottom: 5px; }
   .site-nav { width: 100%; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }

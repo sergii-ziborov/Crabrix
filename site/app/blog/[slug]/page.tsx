@@ -15,6 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const post = postBySlug((await params).slug);
   if (!post) notFound();
+  const sectionId = (heading: string) => heading.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   return (
     <div className="site-shell article-page">
       <nav className="breadcrumbs" aria-label="Breadcrumbs"><Link href="/blog">Blog</Link><span>/</span><span>{post.title}</span></nav>
@@ -23,12 +24,20 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         <h1>{post.title}</h1>
         <p className="lede">{post.summary}</p>
         <p className="article-date">{post.date} · {post.readingMinutes} min read</p>
+        <nav className="article-toc" aria-label="Article contents">
+          <strong>In this article</strong>
+          <ol>{post.sections.map((section) => <li key={section.heading}><a href={`#${sectionId(section.heading)}`}>{section.heading}</a></li>)}</ol>
+        </nav>
       </div>
       <article className="article-content">
-        {post.sections.map((section) => <section key={section.heading}>
+        {post.sections.map((section) => <section key={section.heading} id={sectionId(section.heading)}>
           <h2>{section.heading}</h2>
           {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
           {section.code && <pre><code>{section.code}</code></pre>}
+          {section.image && <figure className="article-image">
+            <img src={section.image.src} alt={section.image.alt} loading="lazy" />
+            <figcaption>{section.image.caption}</figcaption>
+          </figure>}
         </section>)}
         <p><Link href="/learn">Explore the free Crabrix lessons →</Link></p>
       </article>

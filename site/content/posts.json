@@ -1,0 +1,181 @@
+[
+  {
+    "slug": "real-rust-on-iphone",
+    "title": "What it means to run a real Rust compiler on an iPhone",
+    "date": "2026-10-09",
+    "readingMinutes": 11,
+    "summary": "Follow a source file through local compilation, diagnostics, WASI execution, dependency preparation, and the practical limits of a phone-sized Rust workspace.",
+    "sections": [
+      {
+        "heading": "A compiler, not a remote text checker",
+        "paragraphs": [
+          "The useful question is not whether an editor can color Rust syntax. It is whether a change to your program reaches a compiler that checks the same kinds of rules you would meet in a real project. Crabrix bundles a pinned Rust compiler and its wasm32-wasip1 sysroot inside the iOS app. When you press Check, that compiler parses your source, resolves names and types, and applies borrow checking on the device. The Problems view is fed by compiler diagnostics, not by a fixed set of quiz answers or a remote service pretending to understand the code.",
+          "That distinction changes how you learn. If you move a String into a function and use it again, the error comes from the language rules your own project must obey. If you misspell a variable, the highlighted span refers to your file. Fixing the program means changing the source and asking the compiler again. Crabrix still has to present the feedback clearly, but the verdict is produced by a real toolchain. The exact compiler target and toolchain identity are pinned for an app build so behavior can be compared and investigated rather than quietly changing from one session to the next."
+        ]
+      },
+      {
+        "heading": "From source to a result",
+        "paragraphs": [
+          "There are four distinct stages in the usual loop. First, an editable source file lives in the project workspace. Second, the local compiler checks it and, for a requested build, produces a WASI binary. Third, Crabrix executes that binary in a fresh runtime store. Fourth, the program writes output or returns a result that the app shows in Output. The compiler can also report diagnostics along the way. A failed check stops before a new program can run; an empty Output panel after a successful build may simply mean the program never printed anything.",
+          "Keeping those stages separate helps with debugging. A red diagnostic is about code the compiler could not accept. A panic or nonzero exit after a successful build is about a program that did run. A line from println! belongs to stdout, not to the compiler. When you modify a file, predict which stage your change can affect before tapping Run. If a formatting placeholder is wrong, expect a compile-time message. If a branch prints only for one input, expect the build to succeed and output to vary with the input."
+        ],
+        "image": {
+          "src": "/blog/compiler-flow.png",
+          "alt": "Infographic showing source file, local Rust compiler, WASI binary, and local output inside an on-device boundary, with diagnostics branching from the compiler.",
+          "caption": "The app keeps compilation and program execution as separate, observable steps."
+        }
+      },
+      {
+        "heading": "What “local” does and does not promise",
+        "paragraphs": [
+          "The compiler and runtime execute on the device. Source does not need to be uploaded to a compilation server for Check or Run. The app bundle contains the pinned compiler and sysroot; a phone does not download new compiler executable code to replace them. This is a concrete statement about the build loop, not a claim that every app feature is offline or that network access never occurs. Course downloads, a supported dependency that has not been cached, or importing a project can involve the network. A cached and pinned package archive can be reused for an offline rebuild under the conditions documented in the app.",
+          "A project terminal is likewise local but deliberately narrower than a Mac shell. It offers commands over the project workspace; it does not start arbitrary host processes or grant a Rust program unrestricted iOS access. The WASI guest has no network import. These limits protect the boundary between a user-edited project and the host app. They also matter when evaluating a crate: code that expects a native C library, an executable build script, or a socket opened by the guest cannot be assumed to work simply because it compiles on a desktop."
+        ]
+      },
+      {
+        "heading": "Why WebAssembly and WASI appear in the design",
+        "paragraphs": [
+          "Rust normally compiles native code for a target platform. In Crabrix, the bundled compiler is itself a WebAssembly program run through CrabrixRuntime, a Swift interpreter derived from WasmKit. The project output targets wasm32-wasip1. That target gives a defined set of filesystem and process-style interfaces that the app can provide inside a bounded workspace. The runtime can meter execution, limit memory and output, and start a fresh store for program runs. This architecture is different from handing user source to a server or trying to execute an arbitrary new iOS binary.",
+          "The target is a compatibility choice, not a promise that every Rust ecosystem package will work. A pure Rust library that fits the supported target and build flow may be usable. A dependency that needs a host executable build.rs or a procedural macro requires capabilities outside the current local subset. The most honest workflow is to check a dependency before a long build, read the compatibility result, and keep an alternative design in mind. Often a small hand-written parser or a crate without native components is enough for a learning project."
+        ]
+      },
+      {
+        "heading": "The cost of genuine work",
+        "paragraphs": [
+          "A real compiler performs genuine work, and a phone is not a desktop workstation. The first check of a changed project may spend time parsing, resolving packages, checking types, and generating code. Dependencies add more work. Repeating an identical build can benefit from local artifact caches, while changing source or configuration can invalidate some cached results. A spinner is not proof that the app is doing useful work by itself; a trustworthy interface should show which phase is active and surface errors when work stops.",
+          "For your own experiments, compare the right things. Run a tiny one-file program once, then run it again unchanged, then change one line and run again. Notice which run is fastest and which needs compilation. Avoid extrapolating from one warm cache measurement to a new Cargo project with dependencies. Limits on memory, writable files, runtime, and output can stop an overlarge guest. Treat those boundaries as part of the supported environment, just as a desktop toolchain has a target triple and system libraries that define its behavior."
+        ]
+      },
+      {
+        "heading": "Dependencies: useful, but selective",
+        "paragraphs": [
+          "Cargo makes Rust projects larger than a single source file, and Crabrix supports a focused subset of that workflow. The app can resolve supported crates.io packages, verify downloaded archives against registry checksums, write a lockfile, and build suitable dependencies for its target. Once the exact verified source archives are cached or pinned for offline use, the same packages can be available without another download. That is a useful bridge from a tutorial snippet to a multi-file project with a manifest.",
+          "The subset has edges. Procedural-macro crates, executable build scripts, and native C linking are outside the supported local Cargo path. A package may depend on one of these indirectly, so read the whole dependency result rather than just the top-level crate name. A lockfile records a selected dependency graph, but it is not a magic guarantee that every dependency can be compiled for every target. Start with a small pure-Rust dependency, verify it works, then add one package at a time. That makes an incompatibility diagnosable instead of leaving you with a large unresolved graph."
+        ]
+      },
+      {
+        "heading": "A bounded workspace is a useful workspace",
+        "paragraphs": [
+          "An editable project deserves to survive beyond the lesson that created it. Crabrix keeps project files in a local workspace, with a file tree, source editor, diagnostics, Output, and a project terminal. The terminal can help inspect files or run supported project commands, but it is not an unrestricted shell. That distinction is visible in the product because an honest tool should not imply that it can do what the platform and sandbox do not permit.",
+          "The runtime also protects itself from guest behavior. A program can loop forever, produce huge output, or request too much memory. Metering, deadlines, and output bounds give the app ways to stop or contain those cases. Stopping a guest is not the same as proving its algorithm correct; it is a resource policy that keeps the device responsive. When a build or run is interrupted, look at which phase stopped and whether a new binary was produced. Do not interpret an old Output line as the result of the latest failed build."
+        ],
+        "image": {
+          "src": "/blog/compiler-workspace.png",
+          "alt": "A stylized phone code editor and diagnostics enclosed in a local sandbox.",
+          "caption": "The project workspace is editable while the guest runtime stays inside explicit limits."
+        }
+      },
+      {
+        "heading": "Read a diagnostic as evidence",
+        "paragraphs": [
+          "Rust diagnostics often contain a primary message, a source span, notes, and sometimes a suggested change. Begin with the first meaningful error, not the last line in the panel. A missing brace can create many follow-up messages, so repair one cause and check again. If the compiler says “expected X, found Y,” identify which expression produced Y and which function or branch demanded X. This turns the error from a verdict into a map of the program you actually wrote.",
+          "For ownership errors, draw the flow of one value: creation, move, borrow, last use. A suggestion to clone may make code compile but can hide an unnecessary allocation or an unclear API. Ask whether a function needs ownership or only a read-only borrow. For a formatting error, count placeholders and supplied values. For a missing trait, inspect the operation that requires it. Each fix should be a conscious statement about the program, not a sequence of edits that happen to quiet the compiler."
+        ]
+      },
+      {
+        "heading": "A ten-minute experiment",
+        "paragraphs": [
+          "Create a small project and write a function that returns a greeting. First compile and run the program unchanged, and record the exact output. Next misspell a binding name and press Check. Find the highlighted span, predict the smallest correction, then fix it. After that, add a second placeholder to println! but no second argument. Notice that this problem is caught before a new run. Finally restore a valid format and change the text the program prints. You have now observed source editing, compiler validation, a diagnostic, and runtime output as separate events.",
+          "Repeat the same method with a borrowed String: let a helper accept &str, call it with a String, and use the String afterward. Then change the helper to take ownership and compare the compiler response. This is more instructive than memorizing a slogan about borrowing. Keep a short note of each prediction, the actual evidence, and the rule you inferred. A local compiler is most valuable when it becomes a tool for testing your understanding, not just a button you press until the red text disappears."
+        ]
+      },
+      {
+        "heading": "Where to continue",
+        "paragraphs": [
+          "The free Learn section on this website provides the same course topics and examples to read without an account. Start with Rust Basics if you are new to the language, then move through ownership and project structure before tackling concurrency or unsafe code. On the device, open an example in Code and make a durable project copy so you can experiment beyond the lesson. When a project grows, check the target and dependency limits before assuming desktop Cargo behavior.",
+          "Crabrix is a focused local Rust workspace. Its strength is that the edit, check, run, and inspect cycle can happen where you are, with a compiler whose identity and limits are visible. Its limits are part of that story. The fastest way to learn is to make a precise prediction, change one thing, read the evidence, and repeat."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "from-lesson-to-project",
+    "title": "From a Rust lesson to a project you own",
+    "date": "2026-10-09",
+    "readingMinutes": 11,
+    "summary": "A practical path from reading one example to predicting behavior, editing source, handling errors, and keeping an independent Rust project.",
+    "sections": [
+      {
+        "heading": "Reading is a starting point",
+        "paragraphs": [
+          "A short example can make a concept look obvious while someone else has already made every choice. You see a finished function, a correct type, and a successful output. The real skill starts when one detail changes: an input is empty, a value moves, or a branch returns the wrong type. Crabrix lessons are meant to give you an idea and a concrete Rust snippet, but the way to make that idea yours is to predict, edit, and check it. The compiler then tests a claim about your own code instead of asking you to remember someone else’s answer.",
+          "The Academy currently organizes six Rust courses with 142 guided lessons, plus Algorithm Atlas with 200 patterns across 600 steps. Those counts describe the catalog, not a promise that reading every page automatically makes someone fluent. A useful lesson has to make the next action clear: what to notice, what to change, what result to expect, and how to explain a surprise. On the website every lesson is open to read. In the app you can take an example into the editor and turn it into a project that remains yours."
+        ]
+      },
+      {
+        "heading": "The four-step learning loop",
+        "paragraphs": [
+          "Begin by reading the example slowly enough to name each value and the operation that uses it. Before running anything, write down the output or the compiler error you expect. Then change one line and ask the same question again. Only after you have a prediction should you press Check or Run. Compare the evidence with your prediction, and revise your mental model if they differ. This order matters: without a prediction, even a surprising result is easy to accept without understanding.",
+          "For a tiny greeting, the prediction may be one exact line of stdout. For a borrow, predict whether the caller can still use the owned String after a function call. For a match, list every variant and which arm handles it. A failed prediction is useful when you can point to the rule you misunderstood. Keep the experiment small enough that one changed line has one plausible effect. If you change types, branches, and formatting all at once, the next diagnostic may tell you little about which idea was wrong."
+        ],
+        "image": {
+          "src": "/blog/lesson-loop.png",
+          "alt": "Infographic of the learning loop: read, predict, edit, check or run, and repeat.",
+          "caption": "A prediction turns compiler feedback into an explanation you can test."
+        }
+      },
+      {
+        "heading": "Copy the lesson into an independent project",
+        "paragraphs": [
+          "In the iOS app, opening lesson source in Code creates an editable project copy. The project is separate from the downloaded course material. This is an important ownership boundary for the learner: you can make mistakes, rename files, or delete code without corrupting the lesson you may want to reread. You can also return to My Projects later rather than losing the experiment when you leave the lesson. The first copied version is only a starting point; the value lies in what you do to it.",
+          "Give the project a question. Instead of “I am practicing Rust,” try “What changes when this function borrows a String rather than taking it?” or “What should an empty list return?” Put that question in a note or comment, change the smallest relevant piece of code, and check. If the compiler rejects your experiment, read its message before undoing the change. If it succeeds, run an input that distinguishes your new behavior from the old one. A project becomes durable learning material when it records a sequence of understood decisions."
+        ]
+      },
+      {
+        "heading": "A concrete first experiment",
+        "paragraphs": [
+          "Start with a list of names and a loop that prints a greeting for each one. Borrow the list during iteration so the list still exists afterward. Predict the output for two names, including punctuation and line breaks, then run it. Add a third name and predict again. This seems elementary, but it establishes the habit of separating collection contents, iteration, formatting, and output into distinct parts you can reason about.",
+          "Now remove the reference from the loop and try to use the list afterward. The compiler may tell you that the vector was moved by the iteration. Read the diagnostic as evidence about ownership: the loop took values rather than merely borrowing them. Restore the reference and explain why the later use works. Next try an empty vector. The loop runs zero times, so there is no greeting. Decide whether that is acceptable or whether your program should print an explicit “no names” message. You have moved from copying syntax to defining behavior for a boundary case."
+        ],
+        "code": "fn main() {\n    let names = vec![\"Ferris\", \"Crabrix\"];\n    for name in &names {\n        println!(\"Hello, {name}!\");\n    }\n    println!(\"Count: {}\", names.len());\n}"
+      },
+      {
+        "heading": "Make compiler errors part of the plan",
+        "paragraphs": [
+          "An error is most useful when you created it on purpose. Change `&names` to `names` in the loop, predict whether `names.len()` remains legal, and press Check. Identify the line where ownership moved and the later line that tried to use the old binding. Do not immediately add `.clone()` merely to remove the error. Cloning can be correct when independent owned copies are needed, but in this example a borrow expresses the intent more clearly and avoids copying elements.",
+          "Try a different controlled mistake: give a function an `i32` argument where it expects `&str`. The diagnostic compares the actual and expected types. Ask whether the caller should convert its value, or whether the function signature is wrong for your intended API. That question is more valuable than a mechanical cast. Fix one error, compile again, and only then inspect the next. Compiler messages often cascade from one missing delimiter or type mismatch, so treating every line as an independent bug wastes time."
+        ]
+      },
+      {
+        "heading": "Handle the first real input",
+        "paragraphs": [
+          "A copied example often contains only known-good values. A real project eventually reads text it did not choose. Parsing is the first useful boundary to add. Accept a text number, call `parse::<i32>()`, and handle both `Ok(number)` and `Err(error)`. Decide what the user should see when the input is empty, contains letters, or exceeds the number type’s range. This is where a tutorial becomes software: you must define behavior for the cases the original snippet did not show.",
+          "Keep the failure path recoverable. An `unwrap()` may be fine in a five-line controlled demonstration, but it turns ordinary bad input into a panic. Returning `Result` from a helper lets its caller decide whether to retry, show a message, or stop. Add a test or a small table of inputs and expected outcomes. If you cannot explain why a failed parse is handled one way rather than another, the project needs a clearer requirement. The compiler ensures you handle the type; the product decision is still yours."
+        ]
+      },
+      {
+        "heading": "Grow the file tree deliberately",
+        "paragraphs": [
+          "One file is enough for a first experiment. Split code into modules when a boundary is clear, not merely because the file reached a certain line count. A parser module can own conversion and error messages; a model module can define the values the rest of the project uses; main can connect input to output. If a function is useful from another module, decide whether to expose it with `pub`. Keep internal helpers private. This gives names to responsibilities while keeping the public API small.",
+          "The project workspace supports multiple files and a manifest. Some projects can add supported crates.io dependencies, but check target compatibility before building a design around one. A dependency may transitively require a build script, procedural macro, or native linker that the local target does not support. Start with a small pure-Rust dependency and verify it before adding more. The moment you add files or packages, keep a working version of the project so you can distinguish a module-path error from a dependency problem."
+        ],
+        "image": {
+          "src": "/blog/project-ownership.png",
+          "alt": "An illustrated lesson page becoming a separate project folder with editable source files.",
+          "caption": "The lesson stays a reference; the editable project becomes the place for your experiments."
+        }
+      },
+      {
+        "heading": "Use tests for claims you want to keep",
+        "paragraphs": [
+          "A print statement answers “what happened in this run?” A test can preserve a claim for future changes. For a greeting function, test a normal name and an empty name. For parsing, test valid, invalid, and boundary inputs. Name the test after the behavior it protects rather than the method it calls. A test that merely repeats implementation details can pass even while the user-facing result is wrong. Keep expected values visible and specific.",
+          "Choose the smallest useful test. A pure function can be tested without invoking the entire app. An integration-style test can check that several modules work together. A manual run is still useful for terminal output and interaction, but it should not be the only guard for a rule you plan to rely on. After changing a function, run the relevant tests and then check the project again. If a test fails, decide whether the behavior or the expectation should change; do not update expected output automatically without understanding the difference."
+        ]
+      },
+      {
+        "heading": "Debug with a hypothesis",
+        "paragraphs": [
+          "When a program produces the wrong answer, start with one hypothesis that could explain it. “The empty input takes the normal branch” is testable; “Rust is behaving strangely” is not. Inspect the value just before the branch, or add a narrow temporary debug print. Compare it with the value you predicted. If the hypothesis fails, remove that observation and choose another. This is faster than scattering prints across every line and trying to read an ocean of logs afterward.",
+          "Separate build errors from runtime behavior. Problems contains compiler diagnostics from code that could not be accepted. Output is where a built program’s stdout and run outcome appear. The project terminal offers supported commands over the workspace, not an unrestricted host shell. Use the tool that answers your current question. If a run was interrupted, confirm whether the visible output belongs to the latest build or an earlier one. Write a regression test after you understand the bug so the same boundary stays covered."
+        ]
+      },
+      {
+        "heading": "Keep the result and choose the next question",
+        "paragraphs": [
+          "A project copy is useful because it remains editable after the lesson ends. Rename it to describe the experiment, keep the source and tests that explain its behavior, and export it when you want to move it elsewhere. A downloaded course can be updated independently of that project. Offline reading and offline building also differ: a course can be stored on the phone while an exercise using an uncached dependency may still require preparation. Plan accordingly before a trip or a class without connectivity.",
+          "One good learning session is not measured by the number of lessons completed. It is measured by a rule you can now explain and a program whose behavior you can predict. After Rust Basics, try ownership with a deliberate move and borrow; after that, build a small multi-file program with one recoverable error. Return to the free web lesson when you need the reference, then use the local compiler to test the next claim. Over time, your project collection becomes evidence of what you can actually make."
+        ]
+      }
+    ]
+  }
+]
