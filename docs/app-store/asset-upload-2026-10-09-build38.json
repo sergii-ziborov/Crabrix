@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "release": "1.1 (38)",
+  "appStoreVersionID": "2bc0ae1f-ca26-41e6-a0a9-700628e7bf14",
+  "locale": "en-US",
+  "source": "Release Simulator captures from build-37 app source; editor UI is unchanged in build 38",
+  "replacements": [
+    {
+      "device": "iphone-6.9",
+      "setID": "9abbb718-2cd9-4aa3-9a3d-8f456be9376b",
+      "oldID": "754a990b-d064-487a-a021-9129fdaf3f2e",
+      "newID": "3e800019-5e0c-83bd-8023-a533405bb84f",
+      "file": "docs/app-store/screenshots/iphone-6.9/01-build.png",
+      "sha256": "98f010beba2556e5a1b520f8ce6e749c77ab817905930e8b1f1d649be1592a44",
+      "bytes": 163702,
+      "state": "COMPLETE",
+      "orderedIDs": [
+        "3e800019-5e0c-83bd-8023-a533405bb84f",
+        "3d63b108-6cfc-4b2c-bbc2-dd4621476bcd",
+        "d806cacc-377c-4d7d-a9b2-0bb2dc66ceb9",
+        "a52905ee-3f65-4418-924f-fed0794fba0c",
+        "c7a7a4f5-7a44-4510-a3c7-7997ad1236e2",
+        "278b7b87-2990-4d43-8649-507c775312c7",
+        "cd3bd1dc-d9cc-4dfc-8433-6d8a64d50b2e",
+        "a5832a7e-03b4-42bf-8454-8a3091c1f8cb",
+        "76e7dab0-a953-4ab6-b99e-09758fa884cf",
+        "42388f9d-644e-45b0-85cc-05fdb40fa1f9"
+      ]
+    },
+    {
+      "device": "ipad-13",
+      "setID": "1c84229c-61cc-46c5-8da2-b318c1783a8b",
+      "oldID": "7d0c83e4-a102-49a8-ae9b-880fd0b5881d",
+      "newID": "a9800019-5e0c-83bd-800b-1596db6e0654",
+      "file": "docs/app-store/screenshots/ipad-13/01-build.png",
+      "sha256": "a606a535a340ef9d55fbb8de08f31bae04c50755b66a00e98722a3a21e7ef288",
+      "bytes": 164873,
+      "state": "COMPLETE",
+      "orderedIDs": [
+        "a9800019-5e0c-83bd-800b-1596db6e0654",
+        "9e000019-5e0c-83bd-803f-b36aaf1cda23",
+        "d8400019-5e0c-83bd-802a-5c861f6b5a49",
+        "22c00019-5e0c-83bd-8022-3bd66825b894",
+        "79400019-5e0c-83bd-8016-e1399ac5ba3d",
+        "b8800019-5e0c-83bd-8022-36e42ecbffff",
+        "39c00019-5e0c-83bd-8021-39315557b1ea"
+      ]
+    }
+  ],
+  "verification": "Both assets reached COMPLETE; ordered screenshot IDs read back with each replacement first. Public site screenshot SHA-256 matches both local files.",
+  "reviewSubmissionID": "3384f357-c05a-49b7-8c16-0f6984420811",
+  "reviewState": "WAITING_FOR_REVIEW"
+}

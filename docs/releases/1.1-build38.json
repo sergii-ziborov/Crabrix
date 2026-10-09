@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "release": {
+    "version": "1.1",
+    "appStoreBuild": "38",
+    "channel": "Xcode Cloud; TestFlight Internal QA; App Review pending"
+  },
+  "source": {
+    "commit": "fc9016c7c08b894521cbc74b4e53e5a4e4c0666c",
+    "change": "Support illustrated 742-lesson CoursePacks with 80 MiB Atlas archive"
+  },
+  "xcodeCloud": {
+    "runID": "551a6532-ecf0-42f9-8b5d-3c62a9668c28",
+    "runNumber": 38,
+    "status": "COMPLETE",
+    "completionStatus": "SUCCEEDED",
+    "finishedDate": "2026-10-09T10:17:00.659Z"
+  },
+  "appStoreConnect": {
+    "appID": "6809502653",
+    "buildID": "3102a1cd-7e72-4156-bfa3-0676d8c1b277",
+    "processingState": "VALID",
+    "buildAudienceType": "APP_STORE_ELIGIBLE",
+    "internalBetaGroup": "Internal QA",
+    "internalBetaGroupID": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "internalBetaGroupContainsBuild": true,
+    "betaBuildLocalizationID": "0d9dcbd2-74a3-46bf-b140-676d8e29f05e",
+    "appReviewSelectedBuild": "38",
+    "appReviewSubmissionID": "3384f357-c05a-49b7-8c16-0f6984420811",
+    "appReviewState": "WAITING_FOR_REVIEW",
+    "releaseType": "MANUAL"
+  },
+  "content": {
+    "catalogSequence": 6,
+    "courseCount": 8,
+    "lessonCount": 742,
+    "coursepackRelease": "coursepack-v1.0.5"
+  },
+  "screenshots": {
+    "iphone69SHA256": "98f010beba2556e5a1b520f8ce6e749c77ab817905930e8b1f1d649be1592a44",
+    "ipad13SHA256": "a606a535a340ef9d55fbb8de08f31bae04c50755b66a00e98722a3a21e7ef288",
+    "uploadEvidence": "docs/app-store/asset-upload-2026-10-09-build38.json"
+  },
+  "pending": [
+    "Apple App Review approval",
+    "Physical device verification of iPhone, iPad and Duo keyboard behavior"
+  ]
+}

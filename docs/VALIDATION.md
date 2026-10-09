@@ -1,5 +1,25 @@
 # Validation record
 
+## Illustrated Academy rollout and App Store build 38 — 9 October 2026
+
+All 742 lessons were revised in the course source: 142 Rust lessons and 600
+Algorithm Atlas steps. The eight CoursePacks and sequence-6 catalog were signed
+with the production key and verified locally; the published catalog on GitHub
+matches the signed local file byte for byte. The 16 release assets are public in
+`coursepack-v1.0.5`. The Next.js site on Hetzner serves the updated Learn pages,
+blog, infographics, and refreshed editor screenshots over public HTTPS. The
+published iPhone and iPad screenshot hashes match the local captures.
+
+Xcode Cloud run 38 succeeded from `fc9016c7c08b894521cbc74b4e53e5a4e4c0666c`.
+App Store Connect processed build 38 as `VALID` and `APP_STORE_ELIGIBLE`, and
+the Internal QA group contains it. The first iPhone 6.9-inch and iPad 13-inch
+screenshots were replaced in the Store listing; both uploads reached `COMPLETE`
+and were read back first in their ordered sets. App Store version 1.1 now
+selects build 38 and submission `3384f357-c05a-49b7-8c16-0f6984420811`
+is `WAITING_FOR_REVIEW` with manual release. Apple approval and physical-device
+keyboard checks remain pending. See [build 38](releases/1.1-build38.json) and
+[screenshot upload evidence](app-store/asset-upload-2026-10-09-build38.json).
+
 ## Duo-only keyboard dismiss control — 9 October 2026
 
 The Code/Terminal tab row shows its keyboard-dismiss button only when the Duo
