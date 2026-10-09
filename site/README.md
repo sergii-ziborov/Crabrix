@@ -19,7 +19,8 @@ python3 scripts/sync-course-content.py /path/to/crabrix-courses
 pnpm build
 ```
 
-`app/blog` contains two articles. Product and legal copy in the checked-in
+`content/posts.json` contains two articles of more than 1,500 words each and
+the image references rendered by `app/blog`. Product and legal copy in the checked-in
 top-level HTML files is rendered through `lib/legacy.ts`; the Next layout supplies
 their common navigation and spacing. Product captures are in `public/screenshots/`.
 The iPad editor capture includes in-file search. Current iPhone and iPad editor
@@ -40,9 +41,9 @@ For a prebuilt release, build the static export locally, transfer `out/` with
 `compose.prebuilt.yaml` to an isolated release directory on Hetzner, then run:
 
 ```bash
-podman build -f hetzner/Dockerfile.prebuilt -t localhost/crabrix-web-site:b36 .
-podman compose -f compose.prebuilt.yaml up -d
+podman build -f hetzner/Dockerfile.prebuilt -t localhost/crabrix-web-site:learn-20261009 .
+CRABRIX_SITE_TAG=learn-20261009 podman compose -f compose.prebuilt.yaml up -d
 ```
 
-Set `CRABRIX_SITE_TAG=b36` for this release, or choose a new tag for a later image. The compose file binds only to
+Set `CRABRIX_SITE_TAG=learn-20261009` for this release, or choose a new tag for a later image. The compose file binds only to
 `127.0.0.1` and does not change the public domain route.

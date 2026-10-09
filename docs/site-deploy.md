@@ -1,5 +1,30 @@
 # Crabrix website deployment
 
+## Learn and Blog refresh — 9 October 2026
+
+The current public container is `crabrix-web-site-1`, running image
+`localhost/crabrix-web-site:learn-20261009` from
+`/srv/apps/crabrix-site/releases/20261009-learn-v2/site`. The previous
+`b36` container remains stopped as `crabrix-web-site-b36-backup` for rollback.
+Nginx and DNS were not changed.
+
+The release pins course source commit `40c14dcd555175694ec0a23c3a0c634d70fb178d`.
+All 28 Rust Basics lessons have longer beginner explanations. The website
+shows the code before the large diagram and removes generic deeper-reading
+filler from those lessons. Both blog articles exceed 1,500 words and contain
+two generated images, including one infographic each. The article content is
+stored in `site/content/posts.json`.
+
+The static export passed `pnpm check` and `pnpm build`. A candidate container
+was checked on `127.0.0.1:3213` before the public switch. `podman compose up`
+failed during recreation while the old container was still serving; the old
+container was restarted immediately, then the already-created new container
+was started after stopping the old one. Both the live `hello-rust` lesson and
+the first article returned HTTP 200 with the new text and images. The public
+`/healthz` returned 200 and the new container reported healthy after the
+rename. For rollback, stop `crabrix-web-site-1` and start the stopped `b36`
+backup; both bind the same loopback port, so they cannot run simultaneously.
+
 ## Production — 9 October 2026
 
 The public [crabrix.com](https://crabrix.com/) site is the Next.js 16 static
