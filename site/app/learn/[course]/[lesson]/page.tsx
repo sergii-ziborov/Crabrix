@@ -3,6 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { courseById, courseLessons, courseSnapshot, lessonById } from "@/lib/courses";
 
+function prose(text: string) {
+  return text.split(/(`[^`]+`)/g).map((part, index) =>
+    part.startsWith("`") && part.endsWith("`")
+      ? <code key={index}>{part.slice(1, -1)}</code>
+      : part);
+}
+
 export function generateStaticParams() {
   return courseSnapshot().courses.flatMap((course) =>
     course.units.flatMap((unit) => unit.lessons.map((lesson) => ({ course: course.id, lesson: lesson.id }))));
@@ -46,7 +53,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
           <figcaption>{lesson.illustration.caption}</figcaption>
         </figure>}
         {writing?.explanation && <section><h2>Understand it</h2>
-          {writing.explanation.split(/\n\s*\n/).map((paragraph, paragraphIndex) => <p key={paragraphIndex}>{paragraph}</p>)}
+          {writing.explanation.split(/\n\s*\n/).map((paragraph, paragraphIndex) => <p key={paragraphIndex}>{prose(paragraph)}</p>)}
         </section>}
         {algorithm && <section><h2>The pattern</h2>
           {algorithm.idea && <p>{algorithm.idea}</p>}
@@ -60,8 +67,8 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
           {writing?.practiceCode && writing.practiceCode !== writing.exampleCode && <><h3>Practice starter</h3><pre><code>{writing.practiceCode}</code></pre></>}
         </section>}
         {(writing?.task || algorithm?.task || writing?.success) && <section><h2>Try it</h2>
-          <p>{writing?.task || algorithm?.task}</p>
-          {writing?.success && <p><strong>What success looks like:</strong> {writing.success}</p>}
+          <p>{prose(writing?.task || algorithm?.task || "")}</p>
+          {writing?.success && <p><strong>What success looks like:</strong> {prose(writing.success)}</p>}
         </section>}
         {writing?.question && <section><h2>Check your understanding</h2><p>{writing.question}</p>
           <details className="answer-reveal"><summary>Reveal the answer</summary>
@@ -71,9 +78,9 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
         </section>}
         {depth && <section><h2>Go deeper</h2>
           {depth.misconception && <p><strong>Common misconception:</strong> {depth.misconception}</p>}
-          {depth.correction && <p>{depth.correction}</p>}
-          {depth.traceSteps && <ol>{depth.traceSteps.map((step, stepIndex) => <li key={stepIndex}><strong>{step.title}:</strong> {step.detail}</li>)}</ol>}
-          {depth.transferChallenge && <p><strong>Transfer challenge:</strong> {depth.transferChallenge}</p>}
+          {depth.correction && <p>{prose(depth.correction)}</p>}
+          {depth.traceSteps && <ol>{depth.traceSteps.map((step, stepIndex) => <li key={stepIndex}><strong>{step.title}:</strong> {prose(step.detail)}</li>)}</ol>}
+          {depth.transferChallenge && <p><strong>Transfer challenge:</strong> {prose(depth.transferChallenge)}</p>}
           {depth.connections && depth.connections.length > 0 && <><h3>Connections</h3><ul>{depth.connections.map((connection, connectionIndex) => <li key={connectionIndex}><strong>{connection.title}:</strong> {connection.concept}</li>)}</ul></>}
         </section>}
         {algorithm?.expectedAnswer && <details><summary>Reveal the Algorithm Atlas answer</summary><p><code>{algorithm.expectedAnswer}</code></p></details>}

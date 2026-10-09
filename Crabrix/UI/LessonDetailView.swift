@@ -234,9 +234,16 @@ struct LessonDetailView: View {
             LessonCard(title: "Why this matters", systemImage: "book.pages.fill", tint: brief.tint) {
                 Text(brief.summary)
                     .font(.title3.weight(.semibold))
-                Text(brief.explanation)
-                    .foregroundStyle(CrabrixTheme.muted)
-                    .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(
+                        Array(brief.explanation.components(separatedBy: "\n\n").enumerated()),
+                        id: \.offset
+                    ) { _, paragraph in
+                        formattedParagraph(paragraph)
+                            .foregroundStyle(CrabrixTheme.muted)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
 
                 if let example = brief.example {
                     VStack(alignment: .leading, spacing: 8) {
@@ -266,6 +273,16 @@ struct LessonDetailView: View {
 
             objectives
         }
+    }
+
+    private func formattedParagraph(_ paragraph: String) -> Text {
+        if let attributed = try? AttributedString(
+            markdown: paragraph,
+            options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
+        ) {
+            return Text(attributed)
+        }
+        return Text(paragraph)
     }
 
     private var objectives: some View {

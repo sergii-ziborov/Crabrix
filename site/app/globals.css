@@ -139,6 +139,7 @@ table.plain td { color: var(--muted); }
 .lesson-infographic { max-width: 850px; margin: 6px 0 30px; }
 .lesson-infographic img { display: block; width: 100%; height: auto; border: 1px solid var(--border); border-radius: 16px; }
 .lesson-infographic figcaption { color: var(--muted); font-size: 0.88rem; line-height: 1.5; margin-top: 9px; }
+.lesson-content p code, .lesson-content li code { color: #8fe9df; background: rgba(37, 201, 187, 0.09); border: 1px solid rgba(37, 201, 187, 0.15); border-radius: 5px; padding: 0.08em 0.28em; font-size: 0.91em; }
 .answer-reveal { margin-top: 18px; }
 .answer-reveal ol { padding-left: 23px; }
 .answer-reveal .correct { color: var(--mint); font-weight: 700; }
