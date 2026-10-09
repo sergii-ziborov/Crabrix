@@ -1,8 +1,31 @@
 # Crabrix website deployment
 
+## Complete Rust lesson refresh — 9 October 2026
+
+The public container is `crabrix-web-site-1`, running image
+`localhost/crabrix-web-site:rust-20261009` from
+`/srv/apps/crabrix-site/releases/20261009-rust-full/site`. The previous
+`learn-20261009` container is stopped as `crabrix-web-site-learn-backup`;
+the earlier `b36` backup is also retained. Nginx and DNS were not changed.
+
+The site snapshot pins course source commit `0951e4a018eb64b8f30d7fa639fe9cf8e818be37`.
+All 142 Rust lessons across Basics, Ownership, Projects, Concurrency, Systems,
+and Interview now have at least twice the original explanatory word count,
+with an ImageGen diagram in at least every other lesson. The two blog articles
+contain 1,841 and 1,783 words respectively (including headings and summaries)
+and two generated images each, one an infographic. The Algorithm Atlas course
+is included in the export but was not part of this Rust lesson rewrite.
+
+The 763-page static export passed `pnpm check` and `pnpm build`. A candidate
+container served `/healthz`, an interview lesson and its diagram, and a Systems
+lesson from `127.0.0.1:3213` before the public switch. The live Learn, Basics,
+Interview, image, and both Blog URLs then returned HTTP 200. For rollback,
+stop `crabrix-web-site-1` and start `crabrix-web-site-learn-backup`; both bind
+port `3212` and cannot run simultaneously.
+
 ## Learn and Blog refresh — 9 October 2026
 
-The current public container is `crabrix-web-site-1`, running image
+That earlier public container ran image
 `localhost/crabrix-web-site:learn-20261009` from
 `/srv/apps/crabrix-site/releases/20261009-learn-v2/site`. The previous
 `b36` container remains stopped as `crabrix-web-site-b36-backup` for rollback.
