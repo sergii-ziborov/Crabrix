@@ -1,5 +1,20 @@
 # Crabrix website deployment
 
+## Inline lesson code and Printing Values diagram — 10 October 2026
+
+The public container runs `localhost/crabrix-web-site:inline-code-20261010`.
+It serves the Next.js export pinned to course source `407cdc2`. Rust snippets
+in Variables and Printing Values are marked as inline code, and the light-theme
+code style has a readable foreground and background. The Printing Values
+diagram now maps `name = "Ferris"` to `{name}` and `builds = 4` to `{builds}`;
+the illustrated first output line matches the lesson's Rust example.
+
+The candidate on `127.0.0.1:3213` served both lessons and the new PNG before
+the switch. Public HTTPS returned 200 for the home page, Learn, both lessons,
+and the PNG; the served PNG SHA-256 matched the local export. The previous
+container is stopped as `crabrix-web-site-before-inline-20261010` for rollback.
+DNS and Nginx were unchanged.
+
 ## Build 40 Learn screenshots — 10 October 2026
 
 The public container now runs `localhost/crabrix-web-site:review40-shots-20261010`.
