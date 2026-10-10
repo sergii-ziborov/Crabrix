@@ -1,5 +1,21 @@
 # Crabrix website deployment
 
+## Complete Academy infographics — 10 October 2026
+
+The public container runs `localhost/crabrix-web-site:all-infographics-20261010`
+from `/srv/apps/crabrix-site/releases/20261010-all-infographics/site` and the
+course snapshot pins source `9414133`. Every one of the 742 lesson pages has an
+infographic. The release uses 182 distinct image files: 40 shared Atlas
+diagrams and 142 Rust lesson images. The previous site container is stopped
+as `crabrix-web-site-before-infographics-20261010` for rollback.
+
+The Next.js export generated all 742 lesson pages. A candidate served Learn,
+two formerly unillustrated lessons, and their images on loopback port 3213
+before the switch. Public HTTPS then returned the same pages and exact image
+hashes. The new container is healthy. Signed CoursePack catalog sequence 8
+delivers the same illustrations to installed app builds. DNS and Nginx were
+unchanged.
+
 ## Inline lesson code and Printing Values diagram — 10 October 2026
 
 The public container runs `localhost/crabrix-web-site:inline-code-20261010`.
