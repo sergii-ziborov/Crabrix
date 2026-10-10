@@ -275,3 +275,14 @@ schemes:
           selectedTests:
             - CourseDeliveryGateTests/testPublicSignedCatalogAndCourseInstall()
             - CourseDeliveryGateTests/testPublicArchiveResumesFromPersistedRange()
+
+  CrabrixLegalGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+    test:
+      targets:
+        - name: CrabrixTests
+          selectedTests:
+            - BundledLicenseTests
