@@ -39,4 +39,30 @@ final class BundledLicenseTests: XCTestCase {
     func testTheNoticesFileIsAlsoBundled() {
         XCTAssertNotNil(LicensesView.load())
     }
+
+    func testOfflineLegalDocumentsDecodeAndKeepTheAppWebsiteBoundary() throws {
+        let documents = try BundledLegalDocuments.load()
+        XCTAssertEqual(Set(documents.map(\.id)), ["about", "privacy", "terms", "source-license", "content-license"])
+        let privacy = try XCTUnwrap(documents.first { $0.id == "privacy" })
+        XCTAssertTrue(privacy.blocks.contains { $0.text.contains("Website Academy accounts") })
+        XCTAssertTrue(privacy.blocks.contains { $0.text.contains("off-by-default Game Center") })
+        let terms = try XCTUnwrap(documents.first { $0.id == "terms" })
+        XCTAssertTrue(terms.blocks.contains { $0.text.contains("www.apple.com/legal/internet-services/itunes/dev/stdeula/") })
+        for document in documents {
+            XCTAssertFalse(document.blocks.isEmpty)
+            XCTAssertEqual(document.sourceURL.scheme, "https")
+            XCTAssertEqual(document.sourceURL.host, "crabrix.com")
+        }
+    }
+
+    func testEveryInventoriedCompilerNoticeCanBeReadOffline() throws {
+        let notices = try ToolchainNoticeCatalog.load()
+        XCTAssertEqual(notices.count, 1594) // Primary group, supplemental group, 1592 source packages.
+        for notice in notices {
+            XCTAssertFalse(notice.documents.isEmpty, notice.name)
+            for path in notice.documents {
+                XCTAssertFalse(try ToolchainNoticeCatalog.text(archive: notice.archive, path: path).isEmpty, path)
+            }
+        }
+    }
 }

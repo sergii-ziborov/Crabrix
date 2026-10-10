@@ -26,13 +26,13 @@ enum BundledLicenseCatalog {
         ),
         BundledLicense(
             id: "wasm-rustc",
-            name: "wasm-rustc (artifacts-test-7)",
+            name: "Crabrix toolchain builder · 2026-10-02.1",
             summary: "Forest Anderson · MIT",
             documents: ["wasm-rustc-LICENSE"]
         ),
         BundledLicense(
             id: "WasmKit",
-            name: "WasmKit 0.3.1",
+            name: "CrabrixRuntime · WasmKit 0.4.1",
             summary: "Akio Yasui · MIT, with Apache-2.0 attributions in its notice",
             documents: ["WasmKit-LICENSE", "WasmKit-NOTICE"]
         ),
@@ -49,34 +49,16 @@ enum BundledLicenseCatalog {
             documents: ["swift-system-LICENSE"]
         ),
         BundledLicense(
-            id: "swift-collections",
-            name: "Swift Collections 1.6.0",
-            summary: "Apple · Apache-2.0 with Runtime Library Exception",
-            documents: ["swift-collections-LICENSE"]
-        ),
-        BundledLicense(
-            id: "swift-atomics",
-            name: "Swift Atomics 1.3.1",
-            summary: "Apple · Apache-2.0 with Runtime Library Exception",
-            documents: ["swift-atomics-LICENSE"]
-        ),
-        BundledLicense(
             id: "swift-argument-parser",
             name: "Swift Argument Parser 1.8.2",
             summary: "Apple · Apache-2.0 with Runtime Library Exception",
             documents: ["swift-argument-parser-LICENSE"]
         ),
         BundledLicense(
-            id: "swift-log",
-            name: "SwiftLog 1.15.0",
-            summary: "Apple · Apache-2.0",
-            documents: ["swift-log-LICENSE", "swift-log-NOTICE"]
-        ),
-        BundledLicense(
-            id: "swift-nio",
-            name: "SwiftNIO 2.101.3",
-            summary: "Apple · Apache-2.0",
-            documents: ["swift-nio-LICENSE", "swift-nio-NOTICE"]
+            id: "swift-syntax",
+            name: "Swift Syntax 604.0.0",
+            summary: "Swift Project Contributors · Apache-2.0 with Runtime Library Exception",
+            documents: ["swift-syntax-LICENSE"]
         ),
     ]
 
@@ -119,6 +101,15 @@ struct LicensesView: View {
                         }
                         .buttonStyle(.plain)
                     }
+                    NavigationLink { ToolchainNoticesView() } label: {
+                        LicenseRow(license: BundledLicense(
+                            id: "toolchain-vendor",
+                            name: "Compiler and sysroot dependency notices",
+                            summary: "Rust, LLVM, WASI, Cranelift and 1,592 inventoried source packages · full offline texts",
+                            documents: []
+                        ))
+                    }
+                    .buttonStyle(.plain)
                 }
 
                 Divider().overlay(CrabrixTheme.border)

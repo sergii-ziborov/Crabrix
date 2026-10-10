@@ -1,0 +1,61 @@
+[
+  {
+    "id": "Rust",
+    "name": "Rust compiler and standard library",
+    "summary": "The Rust Project Contributors \u00b7 Apache-2.0 or MIT, at your option",
+    "documents": [
+      "Rust-COPYRIGHT",
+      "Rust-LICENSE-MIT",
+      "Rust-LICENSE-APACHE"
+    ]
+  },
+  {
+    "id": "wasm-rustc",
+    "name": "Crabrix toolchain builder \u00b7 2026-10-02.1",
+    "summary": "Forest Anderson \u00b7 MIT",
+    "documents": [
+      "wasm-rustc-LICENSE"
+    ]
+  },
+  {
+    "id": "WasmKit",
+    "name": "CrabrixRuntime \u00b7 WasmKit 0.4.1",
+    "summary": "Akio Yasui \u00b7 MIT, with Apache-2.0 attributions in its notice",
+    "documents": [
+      "WasmKit-LICENSE",
+      "WasmKit-NOTICE"
+    ]
+  },
+  {
+    "id": "ZIPFoundation",
+    "name": "ZIPFoundation 0.9.20",
+    "summary": "Thomas Zoechling \u00b7 MIT",
+    "documents": [
+      "ZIPFoundation-LICENSE"
+    ]
+  },
+  {
+    "id": "swift-system",
+    "name": "Swift System 1.8.1",
+    "summary": "Apple \u00b7 Apache-2.0 with Runtime Library Exception",
+    "documents": [
+      "swift-system-LICENSE"
+    ]
+  },
+  {
+    "id": "swift-argument-parser",
+    "name": "Swift Argument Parser 1.8.2",
+    "summary": "Apple \u00b7 Apache-2.0 with Runtime Library Exception",
+    "documents": [
+      "swift-argument-parser-LICENSE"
+    ]
+  },
+  {
+    "id": "swift-syntax",
+    "name": "Swift Syntax 604.0.0",
+    "summary": "Swift Project Contributors \u00b7 Apache-2.0 with Runtime Library Exception",
+    "documents": [
+      "swift-syntax-LICENSE"
+    ]
+  }
+]

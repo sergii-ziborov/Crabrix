@@ -261,7 +261,7 @@ struct SettingsView: View {
                 )
             }
 
-            Text("Crabrix has no account and no reporting service. A report is an email you write and send yourself.")
+            Text("The Crabrix iOS app has no required account or reporting service. A report is an email you write and send yourself.")
                 .font(.caption2)
                 .foregroundStyle(CrabrixTheme.muted)
                 .fixedSize(horizontal: false, vertical: true)
@@ -303,26 +303,39 @@ struct SettingsView: View {
             }
             .buttonStyle(.plain)
 
-            // These are the URLs App Store Connect points at, kept in one place
-            // so the app and the listing can never disagree.
-            Link(destination: CrabrixLinks.privacy) {
-                SettingsLinkRow(
-                    title: "Privacy Policy",
-                    detail: "What leaves this device, which is almost nothing",
-                    icon: "hand.raised.fill",
-                    tint: CrabrixTheme.blue,
-                    isExternal: true
-                )
+            NavigationLink { LegalDocumentView(documentID: "about") } label: {
+                SettingsLinkRow(title: "About Crabrix", detail: "What the app does, its limits, and credits · available offline",
+                    icon: "info.circle.fill", tint: CrabrixTheme.mint, isExternal: false)
             }
+            .buttonStyle(.plain)
 
-            Link(destination: CrabrixLinks.terms) {
-                SettingsLinkRow(
-                    title: "Terms of Use",
-                    detail: "Your code stays yours",
-                    icon: "text.book.closed.fill",
-                    tint: CrabrixTheme.muted,
-                    isExternal: true
-                )
+            NavigationLink { LegalDocumentView(documentID: "privacy") } label: {
+                SettingsLinkRow(title: "Privacy Policy", detail: "App data, optional Game Center, and separate website accounts · offline copy",
+                    icon: "hand.raised.fill", tint: CrabrixTheme.blue, isExternal: false)
+            }
+            .buttonStyle(.plain)
+
+            NavigationLink { LegalDocumentView(documentID: "terms") } label: {
+                SettingsLinkRow(title: "Terms of Use", detail: "App use and free website Academy terms · offline copy",
+                    icon: "text.book.closed.fill", tint: CrabrixTheme.muted, isExternal: false)
+            }
+            .buttonStyle(.plain)
+
+            NavigationLink { LegalDocumentView(documentID: "content-license") } label: {
+                SettingsLinkRow(title: "Educational content rights", detail: "Private practice with examples, and rights in course text and media",
+                    icon: "book.closed.fill", tint: CrabrixTheme.amber, isExternal: false)
+            }
+            .buttonStyle(.plain)
+
+            NavigationLink { LegalDocumentView(documentID: "source-license") } label: {
+                SettingsLinkRow(title: "Application source license", detail: "Public source terms are separate from third-party open-source licenses",
+                    icon: "curlybraces", tint: CrabrixTheme.muted, isExternal: false)
+            }
+            .buttonStyle(.plain)
+
+            Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
+                SettingsLinkRow(title: "Apple Standard EULA", detail: "Apple’s license agreement for the App Store application",
+                    icon: "apple.logo", tint: CrabrixTheme.muted, isExternal: true)
             }
 
             Text("Rust and the Rust logo are trademarks of the Rust Foundation. Crabrix is an independent project, not affiliated with or endorsed by the Rust Foundation or by Apple.")

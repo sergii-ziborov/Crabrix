@@ -158,6 +158,9 @@ table.plain td { color: var(--muted); }
 .answer-reveal ol { padding-left: 23px; }
 .answer-reveal .correct { color: var(--mint); font-weight: 700; }
 .article-content { max-width: 780px; }
+.legal-text { white-space: pre-wrap; overflow-wrap: anywhere; font: 14px/1.7 ui-monospace, monospace; color: var(--muted); }
+.license-disclosure { padding: 16px 0; border-bottom: 1px solid var(--border); }
+.license-disclosure summary { cursor: pointer; font-weight: 650; }
 .article-date { color: var(--muted); font-size: 13px; }
 .article-toc { border: 1px solid var(--border); background: var(--panel); border-radius: 15px; padding: 18px 22px; margin-top: 24px; }
 .article-toc strong { display: block; font-size: 14px; }

@@ -1,0 +1,554 @@
+[
+  {
+    "id": "about",
+    "title": "About Crabrix",
+    "updated": "2026-10-10",
+    "sourceURL": "https://crabrix.com/about/",
+    "blocks": [
+      {
+        "kind": "p",
+        "text": "A real Rust compiler on a phone, an honest account of its limits, and one developer behind it."
+      },
+      {
+        "kind": "h2",
+        "text": "What Crabrix is"
+      },
+      {
+        "kind": "p",
+        "text": "Crabrix is a Rust workspace for iPhone and iPad. You write Rust, add real dependencies from crates.io, press Run, and the code compiles and executes on the device in your hand. There is no server doing the work and no account standing between you and the compiler."
+      },
+      {
+        "kind": "p",
+        "text": "That distinction is the whole point. Crabrix bundles and runs a real Rust compiler locally instead of relying on a cloud compilation service."
+      },
+      {
+        "kind": "h2",
+        "text": "How it actually works"
+      },
+      {
+        "kind": "p",
+        "text": "**A real rustc**The app bundles a WebAssembly build of the Rust compiler and standard library. Diagnostics are real rustc diagnostics from Crabrix's pinned bundled toolchain, with the same error codes."
+      },
+      {
+        "kind": "p",
+        "text": "**Running in Swift**That WebAssembly module is executed by CrabrixRuntime, a maintained public fork of WasmKit 0.4.1, inside the app's own process. No JIT or daemon."
+      },
+      {
+        "kind": "p",
+        "text": "**A real package manager**Crabrix speaks the crates.io sparse index protocol, resolves SemVer ranges, unifies features, verifies SHA-256 checksums, extracts the sources, and compiles and links them."
+      },
+      {
+        "kind": "p",
+        "text": "**Sandboxed by construction**Your program runs inside the WebAssembly sandbox with a memory cap, no network, and a single writable directory. It cannot reach the rest of your device."
+      },
+      {
+        "kind": "p",
+        "text": "Every crate Crabrix downloads is fully readable inside the app, file by file, in the Packages screen. Nothing that runs on your device is hidden from you."
+      },
+      {
+        "kind": "h2",
+        "text": "The exact toolchain"
+      },
+      {
+        "kind": "p",
+        "text": "Crabrix pins one compiler build and ships it in the app. Nothing is downloaded at runtime to compile your code, and the compiler identity is shown under Settings → Runtime:"
+      },
+      {
+        "kind": "li",
+        "text": "Target: `wasm32-wasip1`"
+      },
+      {
+        "kind": "li",
+        "text": "Toolchain artifact: [`crabrix-rust-2026-10-02.1`](https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1)"
+      },
+      {
+        "kind": "li",
+        "text": "Runtime: [CrabrixRuntime](https://github.com/sergii-ziborov/crabrix-runtime) from WasmKit 0.4.1"
+      },
+      {
+        "kind": "p",
+        "text": "The public [toolchain builder](https://github.com/sergii-ziborov/crabrix-toolchain) produced the signed compiler release from pinned source. Its build inputs, compatibility results, licenses and two-build difference report are public. The compiler has its own identity distinct from the runtime fork."
+      },
+      {
+        "kind": "h2",
+        "text": "What it cannot do"
+      },
+      {
+        "kind": "p",
+        "text": "Being honest about the edges is more useful than a feature list. The bundled compiler targets `wasm32-wasip1` and has no native linker, so:"
+      },
+      {
+        "kind": "li",
+        "text": "Crates with C dependencies, build scripts, or procedural macros generally cannot build. Crabrix detects these and says so instead of failing halfway."
+      },
+      {
+        "kind": "li",
+        "text": "Compilation is interpreted WebAssembly, so a first build is slower than on a laptop. Repeat builds come from a local artifact cache."
+      },
+      {
+        "kind": "li",
+        "text": "There is no debugger and no `cargo test` harness yet."
+      },
+      {
+        "kind": "p",
+        "text": "The Packages screen labels every dependency verified, expected to work, needs review, or unsupported, based on real build outcomes recorded on device."
+      },
+      {
+        "kind": "h2",
+        "text": "Learning, not just tooling"
+      },
+      {
+        "kind": "p",
+        "text": "Crabrix contains a full Rust course — 142 lessons across six language courses, from `fn main` through ownership, traits, and async to macros, unsafe, and FFI, plus interview preparation that reaches past the language into memory, networking, databases, and distributed systems. A separate Algorithm Atlas adds 200 reusable patterns across 20 independent solution methods. Each method has its own path, and every pattern is taught through a mental model, recognition guide, and local Rust challenge."
+      },
+      {
+        "kind": "p",
+        "text": "All 742 lessons and steps have expanded written guidance, inline code markup, a syntax-highlighted example, and an infographic with a caption and alt text. Crabrix includes compiler-backed labs across the Rust curriculum, and every Algorithm Atlas pattern ends in a local Rust challenge the bundled compiler has to accept. Three drills — Quick Practice, Term Train, and Code Recall — are generated from that same curriculum and scheduled with SM-2 spaced repetition, so what you are weakest at comes back soonest."
+      },
+      {
+        "kind": "p",
+        "text": "A new installation offers seven signed courses for individual download. Code Examples is a separate optional download with 46 editable projects. Existing learners receive all seven signed transition packs locally so previously available courses stay available offline. Later versions are published as data-only CoursePacks from the public [course repository](https://github.com/sergii-ziborov/crabrix-courses). Learn shows the size before a requested update. Opening a starter creates a separate editable project, so an updated course does not replace your work."
+      },
+      {
+        "kind": "p",
+        "text": "Rating is earned across everything, and a successful run is scored on how much Rust actually changed since the last one. Pressing Run on an untouched sample is not work, and the app does not pretend otherwise."
+      },
+      {
+        "kind": "h2",
+        "text": "Who makes it"
+      },
+      {
+        "kind": "p",
+        "text": "Crabrix is built by **Serhii Ziborov**, an independent developer. It is not a company, it has no investors, and it has nobody's growth targets to hit. That is why it is a one-time purchase with no subscription, no advertising, no analytics, and no required app account. The separate website Academy offers free accounts for full lessons; its public previews and blog are open to everyone."
+      },
+      {
+        "kind": "p",
+        "text": "The source is on [GitHub](https://github.com/sergii-ziborov/Crabrix) for review. Questions, bugs, and disagreements are welcome — [write to support](https://crabrix.com/support/)."
+      },
+      {
+        "kind": "h2",
+        "text": "Credits and licenses"
+      },
+      {
+        "kind": "p",
+        "text": "The [license library](https://crabrix.com/licenses/) includes the application source terms, educational content rights and original third-party notices. The app also bundles About, Privacy and Terms for offline reading in Settings."
+      },
+      {
+        "kind": "p",
+        "text": "Crabrix stands on work by other people, all of it open source and attributed in full inside the app under Settings → About Crabrix → Open-source licenses:"
+      },
+      {
+        "kind": "li",
+        "text": "**The Rust Project** — the compiler and standard library, under Apache-2.0 or MIT."
+      },
+      {
+        "kind": "li",
+        "text": "**WasmKit** by Akio Yasui — the Swift WebAssembly interpreter, MIT."
+      },
+      {
+        "kind": "li",
+        "text": "**wasm-rustc** by Forest Anderson — the MIT-licensed builder recipe behind the source-built toolchain. Rust and toolchain dependencies keep their own terms."
+      },
+      {
+        "kind": "li",
+        "text": "**ZIPFoundation** by Thomas Zoechling — archive reading and writing, MIT."
+      },
+      {
+        "kind": "li",
+        "text": "**Swift System 1.8.1, Argument Parser 1.8.2, and Swift Syntax 604.0.0** — Apache-2.0 with the notices and applicable Runtime Library Exception."
+      },
+      {
+        "kind": "p",
+        "text": "Rust and the Rust logo are trademarks of the Rust Foundation. Crabrix is an independent project, not affiliated with or endorsed by the Rust Foundation or by Apple."
+      }
+    ]
+  },
+  {
+    "id": "privacy",
+    "title": "Privacy Policy",
+    "updated": "2026-10-10",
+    "sourceURL": "https://crabrix.com/privacy/",
+    "blocks": [
+      {
+        "kind": "p",
+        "text": "The app keeps your code on your device. Website Academy accounts use a username, password and private recovery code. This page explains both."
+      },
+      {
+        "kind": "p",
+        "text": "LAST UPDATED 10 OCTOBER 2026"
+      },
+      {
+        "kind": "p",
+        "text": "**The short version.** Crabrix has no required account or in-app analytics SDK. Your code, projects, answers, and course progress stay on your device. If you switch on Game Center in Profile, Crabrix sends your numeric rating and achievement ladder progress to Apple for its leaderboard and achievements. It is off by default; The app has no online profile or board of its own; website Academy accounts are separate. Other network requests are requested course downloads, package discovery and downloads, and repository imports. If you write to support — including through *Report a problem* — that email reaches a person, and this page says what happens to it."
+      },
+      {
+        "kind": "h2",
+        "text": "Who is responsible"
+      },
+      {
+        "kind": "p",
+        "text": "Crabrix is made by Serhii Ziborov, an independent developer. There is no company, no investor. Hosting providers receive ordinary requests for the public assets described below; they do not receive your source or learning progress from Crabrix. Contact: [write to support](https://crabrix.com/support/)."
+      },
+      {
+        "kind": "h2",
+        "text": "What stays on your device"
+      },
+      {
+        "kind": "p",
+        "text": "These items are stored locally. Only the numeric rating and achievement ladder progress are sent to Apple if you enable Game Center:"
+      },
+      {
+        "kind": "li",
+        "text": "**Your Rust code and projects** — files you write, import from GitHub, or open from the Files app."
+      },
+      {
+        "kind": "li",
+        "text": "**Build output** — compiler diagnostics, program stdout and stderr, and cached build artifacts."
+      },
+      {
+        "kind": "li",
+        "text": "**Learning progress** — lessons completed, answers, topic mastery, rating and achievements. Game Center receives the numeric rating and achievement ladder progress described below."
+      },
+      {
+        "kind": "li",
+        "text": "**Preferences** — appearance, editor font size, and the rest of Settings."
+      },
+      {
+        "kind": "li",
+        "text": "**Optional profile photo** — chosen through the system photo picker, processed and stored locally, and never uploaded by Crabrix."
+      },
+      {
+        "kind": "li",
+        "text": "**Downloaded crates** — package sources and compiled artifacts, cached so a project rebuilds offline."
+      },
+      {
+        "kind": "li",
+        "text": "**Installed CoursePacks** — lesson text, media, starter source, and checks, stored separately from your progress and projects."
+      },
+      {
+        "kind": "p",
+        "text": "Deleting the app removes all of it. Crabrix keeps no copy and has no way to recover it. Apple may retain Game Center scores and achievements already shared after you switch the feature off or delete Crabrix. Your code, projects, answers, and lesson history reach someone else only if you export or share them yourself."
+      },
+      {
+        "kind": "h2",
+        "text": "What leaves your device"
+      },
+      {
+        "kind": "h3",
+        "text": "1. Package discovery and downloads (crates.io)"
+      },
+      {
+        "kind": "p",
+        "text": "When you search for or add a dependency, Crabrix talks to the crates.io registry over HTTPS: searches and package and owner metadata through the crates.io API, the sparse index at `index.crates.io`, and package archives at `static.crates.io`. Requests contain the search terms or package names needed for the action you asked for; Crabrix adds no account or device identifier. These services are operated by the Rust Foundation and its providers under their own privacy policies, and like any web service they receive normal connection information such as your IP address as part of serving the request."
+      },
+      {
+        "kind": "h3",
+        "text": "2. Repository import (GitHub)"
+      },
+      {
+        "kind": "p",
+        "text": "If you import a public repository, Crabrix downloads its archive from `github.com` over HTTPS. The request identifies the public repository or archive you selected; it carries no account credentials, and no private repositories are accessed. GitHub is operated under its own privacy policy and, like any web service, receives normal connection information such as your IP address as part of serving the request."
+      },
+      {
+        "kind": "h3",
+        "text": "3. Course downloads (GitHub)"
+      },
+      {
+        "kind": "p",
+        "text": "The initial signed course list is included in the app. When you choose to download a course, Crabrix requests its signed descriptor and archive from `github.com` and GitHub's release asset hosts. The request identifies the selected course asset and carries no Crabrix account, tracking ID, project code, answers, or progress. GitHub and its delivery providers receive normal connection information, including your IP address, and may keep access logs under their own policies. Crabrix does not control those provider logs."
+      },
+      {
+        "kind": "p",
+        "text": "Those are the app's content and import requests: course downloads, package discovery, and public file downloads. As with any HTTPS request, the receiving service sees your connection, including your IP address; Crabrix itself adds no account or device identifier."
+      },
+      {
+        "kind": "h3",
+        "text": "4. Optional Game Center (Apple)"
+      },
+      {
+        "kind": "p",
+        "text": "Profile has an off-by-default Game Center switch. If you turn it on and sign in with Apple Game Center, Crabrix sends your numeric rating to Apple's global leaderboard and progress for all 37 achievement ladders and ten previously published individual milestones. Apple supplies the player identity and may display your Game Center name and photo in its own interface. Crabrix does not send source code, project files, lesson answers, detailed course history, or your locally chosen profile photo. It has no leaderboard or account server of its own. Turning the switch off stops later submissions from the app and leaves local progress intact; it does not erase scores or achievements Apple already holds. Manage that data through Apple's Game Center settings and privacy controls. Game Center is subject to [Apple's privacy policy](https://www.apple.com/legal/privacy/)."
+      },
+      {
+        "kind": "h2",
+        "text": "Your privacy choices"
+      },
+      {
+        "kind": "p",
+        "text": "In the app, Profile → Game Center switches future rating and achievement submissions on or off. Apple manages already submitted Game Center data through its own account and privacy controls. You can export your own projects before removing local data or deleting the app. The app does not register an Academy account for you."
+      },
+      {
+        "kind": "p",
+        "text": "For the separate website service, [Account](https://crabrix.com/account/) lets you sign out, change or recover your password, download your account details, or delete the account. Use [Support](https://crabrix.com/support/) for other access, correction or deletion requests. Website account deletion does not delete your app projects or progress."
+      },
+      {
+        "kind": "h2",
+        "text": "Website Academy accounts"
+      },
+      {
+        "kind": "p",
+        "text": "The website at `crabrix.com` is hosted by Hetzner in Germany. Anyone can read the blog, course catalogue and approximately the first 30% of each lesson. A free website account opens the complete Academy. The iOS app does not require this account."
+      },
+      {
+        "kind": "p",
+        "text": "We store your username, salted password hash, hashed recovery code, account creation time and the version of the Terms you accepted. We store hashed session tokens and their expiry times so you can remain signed in for up to 30 days. Passwords and recovery codes are not stored in readable form. No email, real name or payment details are required. Do not choose a username containing sensitive personal information."
+      },
+      {
+        "kind": "p",
+        "text": "A necessary, first-party session cookie keeps you signed in. It is marked Secure, HttpOnly and SameSite=Lax in production. Signing out ends that session. Changing or recovering your password revokes your other sessions. We use no advertising cookies or third-party visitor analytics. Reading a lesson does not create a website progress history; your app progress remains on your device."
+      },
+      {
+        "kind": "p",
+        "text": "Ordinary server access logs include your IP address, time, requested URL, response status and browser information. They are rotated after 14 days. Short-lived abuse counters use hashes of IP addresses and usernames and expire after 15 minutes; the original values are not stored in those counters. Form bodies, passwords and recovery codes are not written to access logs."
+      },
+      {
+        "kind": "p",
+        "text": "Account data remains while your account exists. You can download your username and creation date and delete your account in [Account](https://crabrix.com/account/). Deletion removes the active account, credentials and sessions. Restricted daily database backups expire after seven days. Non-readable deletion fingerprints are kept for up to eight days so a restore does not resurrect an erased account. If a backup is restored, account deletions recorded after it was created must be reapplied before access is reopened."
+      },
+      {
+        "kind": "p",
+        "text": "Where the GDPR applies, providing the account and requested lesson access is necessary to perform our agreement with you. Basic server security and abuse prevention rely on our legitimate interest in keeping the service available and secure. Hetzner processes hosting data for us. We do not sell account information, use it for advertising, make automated decisions with legal effects, or send it to Apple for sign-in."
+      },
+      {
+        "kind": "p",
+        "text": "You may request access, correction, deletion, portability where applicable, restriction or object to processing based on legitimate interests. Contact the developer using the support link below. You can also complain to the data protection authority in your place of residence where applicable. Support will verify ownership before disclosing or changing account data. Without your password or recovery code, we cannot reliably establish ownership or restore access."
+      },
+      {
+        "kind": "h2",
+        "text": "Optional support correspondence"
+      },
+      {
+        "kind": "p",
+        "text": "If you choose **Report a problem** in Settings, Crabrix composes the report on your device and opens it in your own mail app, or copies the text when you ask it to. The app sends nothing: no message exists anywhere until you press send in your mail app, and you can edit or discard the draft first."
+      },
+      {
+        "kind": "p",
+        "text": "When you do send it, I receive the address you send from and whatever you chose to include. The report contains what you typed and, unless you switch the toggle off, four lines of technical detail: the app version and build, your iOS version and hardware model (for example `iPhone14,4`), the bundled compiler version and target, and whether the toolchain is installed. Crabrix does not attach your project files, your source code, your device name, or any identifier unique to you or your install. Anything else in the message is there because you put it there — so please remove passwords, tokens and private source before sending."
+      },
+      {
+        "kind": "p",
+        "text": "Support messages are used to answer you and to fix the problem, and for nothing else: no advertising, no mailing list, no profiling. They are kept while the problem is being worked on and deleted once it is closed, apart from any de-identified technical note needed to keep the fix from regressing. Use [write to support](https://crabrix.com/support/) to ask for a copy of your correspondence, a correction, or its deletion. Your mail provider and mine handle delivery under their own terms."
+      },
+      {
+        "kind": "p",
+        "text": "A public [GitHub](https://github.com/sergii-ziborov/Crabrix) issue is a different, public channel: anything you post there is visible to everyone, so do not put secrets or private project code in one."
+      },
+      {
+        "kind": "h2",
+        "text": "What the iOS app does not have"
+      },
+      {
+        "kind": "p",
+        "text": "There is no Crabrix account, proprietary leaderboard, online profile, or Crabrix progress server. Rating, ranks and achievements are calculated and kept on your device; optional Game Center sharing is described above. Your source code is never uploaded for compilation: the compiler runs inside the app."
+      },
+      {
+        "kind": "p",
+        "text": "Crabrix has no remote compiler, required account, or server that stores your projects and learning progress. Public course files are delivered by GitHub and its asset hosts; their request logs are described above."
+      },
+      {
+        "kind": "h2",
+        "text": "What the iOS app does not do"
+      },
+      {
+        "kind": "li",
+        "text": "No tracking, in the App Store sense or any other. Your activity is not linked to data from other apps or websites."
+      },
+      {
+        "kind": "li",
+        "text": "No advertising, no ad identifiers, no advertising networks."
+      },
+      {
+        "kind": "li",
+        "text": "No third-party analytics, crash reporting, or attribution SDK. None is linked into the app."
+      },
+      {
+        "kind": "li",
+        "text": "No selling or sharing of data. There is nobody to sell it to and nothing to sell."
+      },
+      {
+        "kind": "li",
+        "text": "No broad photo-library access: the only photo Crabrix ever sees is the one you explicitly select as a local avatar through the system photo picker. No camera, microphone, location, contacts, or health permissions are requested."
+      },
+      {
+        "kind": "li",
+        "text": "No reading of your code by anyone but you. It is compiled on your device by a compiler that ships inside the app, and it is never uploaded to compile it. The exception is the obvious one: code you export yourself, or paste into a support message."
+      },
+      {
+        "kind": "h2",
+        "text": "Children"
+      },
+      {
+        "kind": "p",
+        "text": "The website account service is for people aged 16 or older. We do not knowingly create accounts for younger children. If you believe a child has created an account, contact support so we can investigate and remove it. The iOS app is a separate programming tool. The app has no account or public profile, and one user cannot see another's projects or progress. Public asset hosts receive ordinary request information as described above. Writing to support is optional and is an email the sender writes themselves."
+      },
+      {
+        "kind": "h2",
+        "text": "Legal basis and your rights"
+      },
+      {
+        "kind": "p",
+        "text": "Where the GDPR applies: Crabrix keeps your projects, source code, and learning progress on your device. Public content providers and the website host may keep request logs under their own policies. Deleting the app removes its local copy; it does not erase logs already held by those providers."
+      },
+      {
+        "kind": "p",
+        "text": "Support correspondence is handled separately. If you write to me, I hold that email — your address and what you chose to send — as the controller, in order to answer you and fix the problem. The lawful basis is legitimate interest in supporting the software you bought; you can object at any time by asking me to delete the correspondence. You may ask for access, correction, a copy, or erasure of it: [write to support](https://crabrix.com/support/). Website account data is described above."
+      },
+      {
+        "kind": "p",
+        "text": "Retention: nothing the app stores is retained anywhere but on your device. Support emails are kept while the problem is open and deleted when it is closed, except for de-identified technical notes — a compiler version, a crate name, a stack shape — that carry no address and no personal detail."
+      },
+      {
+        "kind": "h2",
+        "text": "Changes to this policy"
+      },
+      {
+        "kind": "p",
+        "text": "If Crabrix ever collects something new, this page will say so before that version ships, and the date at the top will change. The app's App Store privacy details are kept in step with this page."
+      }
+    ]
+  },
+  {
+    "id": "terms",
+    "title": "Terms of Use",
+    "updated": "2026-10-10",
+    "sourceURL": "https://crabrix.com/terms/",
+    "blocks": [
+      {
+        "kind": "p",
+        "text": "The app is a one-time purchase. Website Academy access is free with an account. Your own code remains yours."
+      },
+      {
+        "kind": "p",
+        "text": "LAST UPDATED 10 OCTOBER 2026"
+      },
+      {
+        "kind": "p",
+        "text": "Crabrix is sold through the App Store, so Apple's [Licensed Application End User License Agreement](https://www.apple.com/legal/internet-services/itunes/dev/stdeula/) applies by default. This page adds the few things specific to Crabrix. Apple's agreement governs the licensed app. The website account terms below govern the separate free Academy service."
+      },
+      {
+        "kind": "h2",
+        "text": "Free website Academy accounts"
+      },
+      {
+        "kind": "p",
+        "text": "These website terms form an agreement between you and Serhii Ziborov, the developer of Crabrix. The blog and lesson previews are public. Complete website lessons are available without payment after registration. The app is sold separately through Apple and works without a website account. A website account does not purchase the app or synchronise its projects or progress."
+      },
+      {
+        "kind": "p",
+        "text": "You must be at least 16 to register. Choose your own username, protect your password, and save your private recovery code. Do not impersonate another person or share credentials to bypass access limits. You may delete the website account in Account. If you lose both your password and recovery code, we cannot promise recovery; you can create a new free account."
+      },
+      {
+        "kind": "p",
+        "text": "Your account grants personal access to read and practise with the learning material. The text and illustrations remain protected by their stated content terms. Do not mass-extract or redistribute the Academy, resell access, circumvent account checks, or interfere with the service. Search engines may index public previews under the same access rules as other visitors. Nothing here removes rights granted by an applicable open-source licence or mandatory law. Course source examples and publicly distributed app packs retain their separate notices."
+      },
+      {
+        "kind": "p",
+        "text": "We may limit requests or suspend an account used for abuse, unauthorised redistribution or security attacks. Where practical, we will explain the reason and let you contact support to contest an error; urgent security issues may require immediate action. Website access and content can change, and uninterrupted availability is not guaranteed. Material changes to these terms will be announced on the website; any new payment terms would require a separate agreement."
+      },
+      {
+        "kind": "p",
+        "text": "Learning material is educational. Check code and platform requirements before using examples in production. These terms do not exclude any mandatory consumer rights or any liability that cannot lawfully be excluded. Website accounts are handled under the [Privacy Policy](https://crabrix.com/privacy/)."
+      },
+      {
+        "kind": "h2",
+        "text": "Your licence"
+      },
+      {
+        "kind": "p",
+        "text": "Buying Crabrix gives you a personal, non-transferable licence to use it on the Apple devices you own or control, under the App Store terms and Family Sharing rules where applicable. It is a one-time purchase: there is no subscription and no feature held back for a second transaction."
+      },
+      {
+        "kind": "h2",
+        "text": "Your code is yours"
+      },
+      {
+        "kind": "p",
+        "text": "Everything you write in Crabrix belongs to you. No licence to it is claimed, it is never uploaded, and it is never read by anyone else. It is compiled on your device by a compiler that ships inside the app."
+      },
+      {
+        "kind": "h2",
+        "text": "Your responsibility for what you run"
+      },
+      {
+        "kind": "p",
+        "text": "Crabrix compiles and runs code you write or import, including third-party packages you choose to add from crates.io. You are responsible for what you run and for complying with the licences of any dependency you use. Programs execute inside a WebAssembly sandbox with a memory limit, no network access, and one writable directory — but a sandbox is a boundary, not a guarantee that arbitrary code is safe or correct."
+      },
+      {
+        "kind": "h2",
+        "text": "Optional Game Center"
+      },
+      {
+        "kind": "p",
+        "text": "The app does not publish your projects or detailed learning progress. Rating, ranks and achievements are earned locally. If you enable Game Center in Profile, your numeric rating and achievement ladder progress are also submitted to Apple's service as 37 ladder achievements plus ten earlier individual milestones. You can disable future submissions without losing local progress; scores Apple already holds may remain there. The iOS app operates no account or leaderboard server of its own; website Academy accounts are separate. See the [privacy policy](https://crabrix.com/privacy)."
+      },
+      {
+        "kind": "h2",
+        "text": "Public course materials"
+      },
+      {
+        "kind": "p",
+        "text": "Course source files and downloadable CoursePacks are publicly readable in the [Crabrix course repository](https://github.com/sergii-ziborov/crabrix-courses). You may copy, edit, compile and run the supplied example code and starter projects for private learning, and keep private backups of that practice work. Your own original code remains yours. Publication does not grant rights to redistribute the authored texts, questions, media, CoursePacks or adapted teaching corpus. The repository's [content terms](https://github.com/sergii-ziborov/crabrix-courses/blob/main/CONTENT-LICENSE.md) explain reuse; third-party assets retain their own notices."
+      },
+      {
+        "kind": "h2",
+        "text": "Open-source components"
+      },
+      {
+        "kind": "p",
+        "text": "Crabrix is proprietary software. The compiler, standard library, and several libraries inside it are open source under their own licences, which continue to govern those components. The full notices ship in the app under Settings → About Crabrix → Open-source licenses, and are also in the [repository](https://github.com/sergii-ziborov/Crabrix) and [website license library](https://crabrix.com/licenses/). Nothing in this page restricts any right those licences grant you."
+      },
+      {
+        "kind": "h2",
+        "text": "What is not promised"
+      },
+      {
+        "kind": "p",
+        "text": "Crabrix compiles Rust on a phone. That is a hard thing to do and the limits are described plainly on the [About](https://crabrix.com/about) page: some crates cannot build on device, and first builds are slower than on a laptop. The app is provided as is, without a warranty that it will suit a particular purpose or that any specific crate will compile. To the extent the law allows, liability is limited to the amount you paid for the app."
+      },
+      {
+        "kind": "p",
+        "text": "This is not a disclaimer meant to wave problems away. If something is broken, write to me and I will fix it or tell you honestly that I cannot."
+      },
+      {
+        "kind": "h2",
+        "text": "Changes"
+      },
+      {
+        "kind": "p",
+        "text": "These terms may change as the app changes. The date at the top says when they last did, and material changes will be described in the app's release notes."
+      },
+      {
+        "kind": "h2",
+        "text": "Contact"
+      },
+      {
+        "kind": "p",
+        "text": "Serhii Ziborov — [write to support](https://crabrix.com/support/)"
+      }
+    ]
+  },
+  {
+    "id": "source-license",
+    "title": "Application source license",
+    "updated": "2026-10-10",
+    "sourceURL": "https://crabrix.com/licenses/",
+    "blocks": [
+      {
+        "kind": "pre",
+        "text": "Crabrix — Source-Available License\nCopyright © 2026 Serhii Ziborov. All rights reserved.\n\nCrabrix is commercial proprietary software. The source is published so that it\ncan be read, audited and evaluated — not so that it can be reused. Seeing the\ncode grants no licence to it beyond what is written below.\n\nWHAT YOU MAY DO\n\n1. Read, review and audit this source, in whole or in part, including for\n   security research, academic study, journalism, or deciding whether to buy\n   the app.\n2. Quote short excerpts with attribution, for example in a review, an article,\n   a talk, or a bug report.\n3. Build and run this source on your own devices for the sole purpose of\n   evaluating it or verifying a claim made about it.\n\nWHAT YOU MAY NOT DO WITHOUT PRIOR WRITTEN PERMISSION\n\n1. Use this source, or any part of it, in another product or service, whether\n   commercial or not.\n2. Redistribute, sublicense, sell, rent, or publish this source or a modified\n   version of it.\n3. Create derivative works, including ports to other platforms and translations\n   to other languages.\n4. Publish a compiled build of this source to any application store or other\n   distribution channel.\n5. Remove or alter any copyright, licence, or attribution notice.\n\nEDUCATIONAL CONTENT AND USER CODE\n\nThe authored Academy texts, questions, media and example projects have their\nseparate terms in CONTENT-LICENSE.md. That document permits private learning\nwith editable example and starter code. Your own original programs are not\nlicensed to Crabrix by publishing this repository or using the app.\n\nTHIRD-PARTY COMPONENTS\n\nThis repository redistributes third-party components that are covered by their\nown licences, not by this one. Those licences continue to govern those\ncomponents and nothing here restricts a right they grant you. The complete\ntexts ship inside the app and live in Crabrix/Resources/Licenses/; the summary\nis in Crabrix/Resources/ThirdPartyNotices.md.\n\nThe bundled Rust compiler and standard library are offered by the Rust Project\nunder Apache-2.0 or MIT terms, at the recipient's option. Rust and the Rust logo\nare trademarks of the Rust Foundation. Crabrix is an independent project and is\nnot affiliated with or endorsed by the Rust Foundation or by Apple.\n\nTRADEMARKS\n\nThis licence grants no rights to the Crabrix name, logo, or app icon.\n\nNO WARRANTY\n\nTHIS SOURCE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN\nACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION\nWITH THIS SOURCE OR ITS USE.\n\nPERMISSION\n\nTo ask for anything this licence does not grant, write to the author through\nthe contact form at https://crabrix.com/support. Permission is given in writing\nor not at all."
+      }
+    ]
+  },
+  {
+    "id": "content-license",
+    "title": "Educational content rights",
+    "updated": "2026-10-10",
+    "sourceURL": "https://crabrix.com/licenses/",
+    "blocks": [
+      {
+        "kind": "pre",
+        "text": "# Crabrix educational content\n\nCopyright © 2026 Serhii Ziborov. All rights reserved in the authored course\ntexts, questions, answer choices, explanations, exercises, starter projects,\nmedia and compiled CoursePacks, except where a file carries its own notice.\n\n## Personal learning permission\n\nYou may read the public material, download official CoursePacks for Crabrix,\nand read the complete website Academy through your own free account. For\npersonal learning, you may copy, edit, compile and run the supplied example\ncode and starter projects on your own devices, and keep private backups of\nthat practice work. Your own original code remains yours. This permission\nmakes the app's editable lesson projects usable; it does not grant rights to\nrepublish the educational corpus or the original illustrations.\n\n## Other uses\n\nPublic access does not grant permission to mass-extract, republish, sell,\nsublicense or distribute the authored course texts, questions, explanations,\nmedia or CoursePacks, or to publish adapted versions of that corpus. Request\nseparate written permission for those uses through https://crabrix.com/support/.\nThe same restriction applies to redistributing the authored example projects\nas teaching content or as part of another product. This restriction does not\nlimit rights granted by a file's own open-source license or mandatory law.\n\n## Separate licenses\n\nThe MIT license in the crabrix-courses repository covers its authored tools\nand schemas, not the educational corpus. The application and website source\nhave the separate source-available license in the Crabrix app repository.\nThird-party notices remain with their material and continue to govern it.\nThe course repository's PROVENANCE.md identifies the migrated source snapshot."
+      }
+    ]
+  }
+]

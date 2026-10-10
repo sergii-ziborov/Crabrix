@@ -13,6 +13,7 @@ export function SiteFooter() {
           <Link href="/support">Support</Link>
           <Link href="/privacy">Privacy</Link>
           <Link href="/terms">Terms</Link>
+          <Link href="/licenses">Licenses</Link>
           <a href="https://github.com/sergii-ziborov/Crabrix">GitHub</a>
         </nav>
       </div>

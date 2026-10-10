@@ -1,0 +1,23 @@
+[
+  {
+    "id": "primary",
+    "name": "Rust, LLVM, WASI and Cranelift",
+    "summary": "Original primary license and copyright files from the pinned toolchain sources",
+    "archive": "ToolchainLicenses",
+    "documents": [
+      "licenses/README.md",
+      "licenses/third-party/COMPILER-BUILTINS-LICENSE.txt",
+      "licenses/third-party/CRANELIFT-LICENSE-APACHE.txt",
+      "licenses/third-party/CRANELIFT-LICENSE-MIT.txt",
+      "licenses/third-party/LLVM-LICENSE.txt",
+      "licenses/third-party/RUST-COPYRIGHT.txt",
+      "licenses/third-party/RUST-LICENSE-APACHE.txt",
+      "licenses/third-party/RUST-LICENSE-MIT.txt",
+      "licenses/third-party/WASI-LIBC-LICENSE-APACHE-LLVM.txt",
+      "licenses/third-party/WASI-LIBC-LICENSE-APACHE.txt",
+      "licenses/third-party/WASI-LIBC-LICENSE-MIT.txt",
+      "licenses/third-party/WASI-LIBC-LICENSE.txt",
+      "licenses/third-party/WASI-SDK-LICENSE.txt"
+    ]
+  }
+]

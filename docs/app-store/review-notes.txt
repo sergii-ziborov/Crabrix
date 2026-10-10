@@ -1,66 +1,17 @@
-Crabrix 1.1 (43) Xcode Cloud review candidate.
+Crabrix 1.1 (44) is the latest Xcode Cloud archive. The native compiler and runtime remain bundled and unchanged by course downloads. The app needs no login, website account, paid course unlock, or reviewer credentials. Website Academy accounts are a separate free reading service.
 
-Since rejected 1.0 (8), 1.1 adds seven Academy downloads, 46 open Code
-Examples, durable lesson projects, nested files, local Cargo workflows,
-and a simpler editor. It bundles our WasmKit 0.4.1 fork and pinned Rust
-toolchain. iPad has a file sidebar and in-file search; the old right inspector
-is gone. iPhone Duo screenshots show Code and Output in laptop posture.
+REVIEW PATH
+1. Open Learn on a fresh install. Seven courses and Code Examples are offered individually; no course is silently installed. Download Rust Basics (network required once), then open a lesson. Its text, code formatting, example and illustration remain available offline.
+2. Open its starter in Code to create a separate project, then Check and Run. Output distinguishes completed, empty, failed and stopped results. The compiler is the source-built Rust 1.96.0-dev toolchain pinned to crabrix-rust-2026-10-02.1, targeting wasm32-wasip1. No server compiles user code.
+3. In Learn, download Code Examples. All 46 projects can open their guide and source preview without a quiz/unlock. Open in Code creates a durable copy with its own README. Updating or removing course material never replaces that project.
+4. My Courses/Learn offer Refresh, Update and Update all when the signed catalog has a newer compatible course. Updates are data-only: text, media, questions and editable source. They preserve progress and project copies; an open lesson stays on its previous snapshot until reopened.
+5. Settings → About Crabrix contains full offline About, Privacy Policy, Terms of Use, Educational content rights, and Application source license. Apple Standard EULA is linked separately. Open-source licenses show current resolved packages; Compiler and sysroot dependency notices opens a searchable, offline 1,592-package source inventory plus original primary licenses. Website and GitHub use the same authored legal copy.
+6. Profile contains the off-by-default Game Center switch. Local learning works without it. If enabled and authenticated, numeric rating and achievement progress go to Apple's service; the app has no proprietary account or leaderboard server. Disable to stop future submissions while retaining local progress.
 
-The compiler, runtime, and sysroot are bundled; none is downloaded on device.
-In Learn, update Rust Basics to 1.0.5. Variables and quick checks highlight
-code; Printing Values matches placeholders. Atlas answers stay behind Reveal.
+NETWORK AND OFFLINE LIMITS
+Course downloads and public GitHub imports require a connection. Cargo packages require initial resolution/download or an existing local pin. Supported prepared dependency graphs can rebuild offline. The user program's WASI sandbox has no network import. Build scripts, procedural macro crates, native linking, debugger and cargo test are unsupported. Examples and compatibility checks do not promise arbitrary crate support.
 
-TO SEE IT COMPILE
-1. Projects → current project card → Run. The project workspace opens on Code;
-   the result appears in Output. Select a different file to return to Code.
-   On Duo, the project name and Find in file share the compact header; Code,
-   Problems, Output, and Terminal remain above the keyboard.
-2. Edit the string in main.rs and Run again to see a fresh local compilation.
-3. In Learn, download Ownership after confirming its shown size. Open its starter as a
-   project, inspect the E0502 diagnostic, repair the source, and Run. Lesson
-   hints are available in Output.
-4. In Learn, download Code Examples. Its 46 circular stops are open from the
-   start. Select one to read its description and source preview, then choose
-   Open in Code. A separate editable copy appears in My Projects with its
-   README and Rust source; edit and Run that copy.
+CAPTURES AND CONTENT
+The en-US screenshot sets cover iPhone 6.9, iPad 13 and iPhone Duo. Current Academy content has 142 Rust lessons and 600 Atlas steps (200 challenges), with expanded explanations and inline code markup. Text and illustrations have content rights separate from MIT-licensed course tooling; private practice with starter/example code is permitted. The app is a one-time purchase with no subscription, advertising, analytics SDK or in-app purchases.
 
-COURSES AND DOWNLOADS
-Learn lists six Rust courses and Algorithm Atlas, plus a separate Code Examples
-download. A fresh installation downloads only the material the user chooses.
-An update with legacy progress activates all seven transition packs offline
-from the app bundle. The signed catalog is bundled; each download shows its
-size before the user confirms. A verified CoursePack contains learning data, media, and editable
-Rust starter source; it cannot update the compiler, runtime, or executable
-validator logic. Removing and redownloading a course preserves separate user projects and progress.
-The catalog and archives use public GitHub hosts. Installed courses remain
-available if the catalog is unavailable.
-
-PROJECTS AND PACKAGES
-My Projects opens the project manager. New Project offers templates and
-user-initiated imports from GitHub or Files. Cargo packages are
-managed inside the open project. For a supported package, downloaded source
-can be inspected and copied into a project with Vendor & Edit, then compiled
-under a distinct local fingerprint or reset to the registry source.
-
-SANDBOX AND PRIVACY
-Programs run in a bounded, network-free WebAssembly sandbox. Compiler source,
-sysroot, and registry mounts are read-only; compiler output and temporary
-paths are separate. There is no cloud compilation, required login, analytics
-SDK, or upload of user projects and detailed course progress. Course, crate,
-and GitHub downloads make ordinary HTTPS requests to their respective hosts.
-Profile has an off-by-default Game Center switch. If enabled, Crabrix submits
-the local numeric rating, progress for all 37 five-tier achievement ladders,
-and the ten earlier configured individual milestones to Apple's Game Center.
-There is no Crabrix account or proprietary online leaderboard. Switching
-it off stops future submissions and preserves local progress; Apple may retain
-scores already submitted. The leaderboard and achievement screens are Apple's.
-
-OPTIONAL APP PROTECTION
-Settings offers device authentication for a local app lock, and Auto, Light,
-Dark, and Cyberpunk appearances. The app does not request a Face ID enrollment
-or create a remote account.
-
-This build bundles the signed source-built Crabrix Rust toolchain
-`crabrix-rust-2026-10-02.1`, prepared from pinned sources and verified on the
-build Mac. The public CrabrixRuntime fork is based on WasmKit 0.4.1. The
-Game Center sign-in and Face ID require a physical device; both are optional.
+Existing learners keep their signed offline transition courses after upgrade. Optional Face ID/device passcode locks the local workspace. Report a problem opens an editable draft in the user's mail app and sends nothing by itself.

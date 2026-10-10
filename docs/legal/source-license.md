@@ -1,3 +1,7 @@
+# Application source license
+
+Updated: 2026-10-10 · [Website copy](https://crabrix.com/licenses/)
+
 Crabrix — Source-Available License
 Copyright © 2026 Serhii Ziborov. All rights reserved.
 

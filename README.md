@@ -2,7 +2,7 @@
 
 **Learn Rust, then make it run.** Crabrix brings the full Academy and a real project workspace to iPhone and iPad. Follow a lesson, turn its source into your own project, see actual compiler diagnostics, and run Rust locally. Cargo support and the compiler live in the app; no account or cloud compiler is required.
 
-[Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support) · [Privacy](https://crabrix.com/privacy) · [Changelog](CHANGELOG.md) · [App license](LICENSE)
+[Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support) · [Privacy](https://crabrix.com/privacy) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
 <p>
   <img src="docs/screenshots/iphone-learn.png" width="200" alt="Crabrix course library with individual downloads">
@@ -43,13 +43,21 @@ Crabrix 1.1 pins [CrabrixRuntime](https://github.com/sergii-ziborov/crabrix-runt
 
 In an A/B/A Release Simulator measurement using the same compiler and a heavy multi-crate CLI project, this runtime completed the selected workload **about 1.6× faster** than the preceding Crabrix runtime. The [raw observations](docs/performance/2026-10-02-sampled-cancellation-heavy-cli-simulator.json) document the source graph, output checks, cache preparation, and measurement limits. This result describes that workload on Simulator; other projects and devices need their own measurements. [Runtime integration](docs/runtime-integration.md) explains the implementation.
 
-The 1.1 source used for build 43 pins the [Crabrix source-built Rust toolchain](https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1), `crabrix-rust-2026-10-02.1`. Its `rustc.wasm` and `wasm32-wasip1` sysroot are built from locked source and published with a signed descriptor, notices, compatibility results, and a two-build difference report. The build Mac verifies the descriptor and every artifact before bundling them; the phone does not download compiler or runtime updates. The two source builds have different raw digests, so the release claims source-pinned inputs rather than byte-identical reproducibility. See [toolchain provenance and limits](docs/toolchain.md).
+The 1.1 source pins the [Crabrix source-built Rust toolchain](https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1), `crabrix-rust-2026-10-02.1`. Its `rustc.wasm` and `wasm32-wasip1` sysroot are built from locked source and published with a signed descriptor, notices, compatibility results, and a two-build difference report. The build Mac verifies the descriptor and every artifact before bundling them; the phone does not download compiler or runtime updates. The two source builds have different raw digests, so the release claims source-pinned inputs rather than byte-identical reproducibility. See [toolchain provenance and limits](docs/toolchain.md).
 
 The release graph has one runtime dependency. CoursePacks contain data, text, media, and editable Rust source; they cannot replace the compiler or install executable plugins. [Architecture](docs/architecture.md) and [course delivery](docs/course-delivery.md) explain the boundaries.
 
 ## Build from source
 
-The local signed build 26 archive used Xcode 27.1 RC (`27A9275`). Build 42 was compiled, archived, and uploaded by Xcode Cloud. It is in TestFlight Internal QA and selected for App Review 1.1 with manual release; [its manifest](docs/releases/1.1-build42.json) records the exact source and Store status. XcodeGen and `zstd` are build tools. The app deployment target is iOS 18. Package versions and the runtime revision are pinned in [Dependencies/Package.resolved](Dependencies/Package.resolved) and [project.yml](project.yml). A signing team is needed only for a physical device; the bundle IDs and App Group remain unchanged.
+Distribution builds are compiled, archived and uploaded through **Xcode Cloud**.
+Its workflow is manual; GitHub Actions does not build or deploy Crabrix. The
+current selected review build, source commit and review status are recorded in
+[submission status](docs/app-store/submission-status.md) and the
+[release manifests](docs/releases/). XcodeGen and `zstd` are build tools. The app
+supports iOS 18 and later. Package versions and the runtime revision are pinned
+in [Dependencies/Package.resolved](Dependencies/Package.resolved) and
+[project.yml](project.yml). Signing is needed for a physical device; the bundle
+IDs and App Group remain unchanged.
 
 ```bash
 ./scripts/bootstrap.sh
@@ -58,7 +66,7 @@ xcodebuild build -project Crabrix.xcodeproj -scheme Crabrix \
   -onlyUsePackageVersionsFromResolvedFile
 ```
 
-`bootstrap.sh` downloads the signed Crabrix toolchain release, verifies its Ed25519 descriptor, asset hashes and sysroot file inventory, packages the verified resources, regenerates the Xcode project, and restores the audited SwiftPM resolution. The Share Extension needs the registered App Group `group.com.sergiiziborov.Crabrix` for a signed device build. Use `./scripts/device-build.sh` with a local signing team after that account setup.
+`bootstrap.sh` first checks that the bundled legal documents and website license copies match their canonical sources, then downloads the signed Crabrix toolchain release, verifies its Ed25519 descriptor, asset hashes and sysroot file inventory, packages the verified resources, regenerates the Xcode project, and restores the audited SwiftPM resolution. The Share Extension needs the registered App Group `group.com.sergiiziborov.Crabrix` for a signed device build. Use `./scripts/device-build.sh` with a local signing team after that account setup.
 
 For a distribution archive, provide `CRABRIX_APP_PROFILE` and `CRABRIX_SHARE_PROFILE` as the names of your installed App Store provisioning profiles and set `DEVELOPMENT_TEAM`. The app profile must include the Game Center entitlement. These profile names are build inputs, not repository credentials; the profiles and signing keys stay outside Git.
 
@@ -89,3 +97,24 @@ The named Simulator is a local development device; choose an installed iOS Simul
 The Crabrix app has no required account, analytics SDK, advertising, or cloud compiler. Website Academy accounts are separate and required for full web lessons. Projects, course progress, and build output are local unless you explicitly export or share them. If you enable Game Center, Crabrix reports your numeric rating and achievement ladder progress to Apple; the app operates no Crabrix account or leaderboard server of its own. Course downloads use GitHub's public delivery hosts, which receive ordinary HTTP requests and may retain access logs. crates.io and GitHub imports are user initiated. The guest program has no network import. See the [Game Center details](docs/GAME-CENTER.md), [privacy policy](https://crabrix.com/privacy), and bundled `PrivacyInfo.xcprivacy`.
 
 The application is public source under its existing [license](LICENSE); public source does not grant permission to reuse the commercial app. WasmKit, the builder, Rust, and other components retain their upstream licenses and notices in [third party notices](Crabrix/Resources/ThirdPartyNotices.md) and `Crabrix/Resources/Licenses/`. Crabrix is independent of the Rust Foundation, Apple, and the WasmKit maintainers.
+
+### Offline About and legal information
+
+Settings → About Crabrix includes **About, Privacy Policy, Terms of Use,
+Educational content rights, and Application source license** as full offline
+documents. Apple’s Standard EULA governs the App Store application; the app
+links to Apple’s current agreement. Website Academy account terms are separate.
+The same authored copy is readable in [docs/legal](docs/legal/) and on the site.
+`python3 scripts/sync_legal_documents.py` regenerates it;
+`python3 scripts/sync_legal_documents.py --check` blocks a stale archive.
+
+The license screen uses the current resolved Swift package graph, including
+WasmKit 0.4.1 and Swift Syntax 604.0.0. It bundles the pinned toolchain’s original
+primary and vendored notice archives, with a searchable 1,592-package source
+inventory for offline reading. [Provenance](docs/legal/toolchain-notice-provenance.json)
+records the archive hashes checked against the signed release descriptor.
+The [website license library](https://crabrix.com/licenses/) serves identical
+texts and archive bytes. Private practice with supplied starter/example code
+is permitted by [CONTENT-LICENSE.md](CONTENT-LICENSE.md); redistribution of the
+authored teaching corpus remains restricted. Original third-party licenses
+continue to govern their material.

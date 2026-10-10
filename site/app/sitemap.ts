@@ -5,7 +5,7 @@ import { posts } from "@/lib/posts";
 export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const paths = ["", "about", "technology", "support", "privacy", "terms", "learn", "blog"];
+  const paths = ["", "about", "technology", "support", "privacy", "terms", "licenses", "learn", "blog"];
   const coursePaths = courseSnapshot().courses.flatMap((course) => [
     `learn/${course.id}`,
     ...course.units.flatMap((unit) => unit.lessons.map((lesson) => `learn/${course.id}/${lesson.id}`)),

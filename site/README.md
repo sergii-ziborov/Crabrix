@@ -98,3 +98,17 @@ assets, public blog/screenshots and backup script. Source builds use
 Nginx route stays on port 3212 with the existing Certbot certificate. Test on
 3213 before switching; retain the previous container for rollback. No GitHub
 CI/CD is used. Deployment evidence is in `../docs/site-deploy.md`.
+
+## Shared legal documents
+
+The public [About](https://crabrix.com/about/), [Privacy](https://crabrix.com/privacy/),
+[Terms](https://crabrix.com/terms/) and [Licenses](https://crabrix.com/licenses/)
+pages share the same authored terms as the native app and GitHub. The original
+HTML main bodies are canonical for About/Privacy/Terms. Application source
+rights come from the repository LICENSE; educational rights come from
+CONTENT-LICENSE.md, kept equal to crabrix-courses. Run
+`python3 scripts/sync_legal_documents.py` at the app repository root after an
+edit and `--check` before release. The export includes offline Swift resources,
+GitHub-readable Markdown, website data, original third-party text files and
+byte-identical toolchain notice archives. Third-party copyrights and licenses
+are preserved. Account data is not part of any release artifact.

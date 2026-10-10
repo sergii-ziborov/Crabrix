@@ -1,30 +1,3 @@
-# Crabrix 1.1 App Store copy
-
-Current version source for the en-US listing. The latest selected build and
-review state are recorded in [submission-status.md](submission-status.md).
-Distribution archives use Xcode Cloud. Website Academy accounts are separate
-from the native app, which requires no login. Screenshots and their upload
-checksums are recorded with each release; iPhone, iPad and Duo sets are present.
-
-## Name and subtitle
-
-- Name: Crabrix: Rust Compiler
-- Subtitle: Cargo IDE, offline on-device
-- Primary category: Developer Tools
-- Secondary category: Education
-- Keywords: rustc,crates,code,coding,developer,compile,editor,learn,programming,algorithms,interview,wasm,course
-- Marketing URL: https://crabrix.com/technology/
-- Support URL: https://crabrix.com/support/
-- Privacy: https://crabrix.com/privacy/
-- Privacy choices: https://crabrix.com/privacy/#privacy-choices
-- App EULA: Apple Standard EULA; website terms and source/content rights are separate.
-
-## Promotional text
-
-Learn with 742 illustrated lessons, explore 46 Rust projects, then compile on device. Signed course updates preserve progress. No app account or subscription required.
-
-## Description
-
 Learn Rust, then make it run. Crabrix brings a native Academy and a real coding workspace to iPhone and iPad. Read a lesson, open its starter as your own project, check actual rustc diagnostics, and run the result locally. The compiler ships in the app: no cloud compilation or app account is required.
 
 A FULL ACADEMY, AVAILABLE OFFLINE
@@ -52,10 +25,3 @@ YOUR CODE STAYS ON YOUR DEVICE
 No advertising, analytics SDK or cloud compiler. Projects, answers, detailed learning history and compiler output stay local unless you export or share them. Game Center is an optional Apple service. Requested course downloads, crates.io searches and packages, and public repository imports use the network; their hosts receive ordinary connection information. After downloading lessons and preparing needed dependencies, study and builds can work offline.
 
 About, Privacy, Terms and educational content rights are readable offline in Settings, alongside full third-party licenses and a searchable compiler notice inventory. Your original code remains yours. One purchase; no subscription or in-app purchase is required.
-
-## Reviewer notes
-
-See [review-notes.txt](review-notes.txt). Version 1.1 is the first submitted
-public version, so Apple does not expose a What's New field for this version.
-The current description and review notes carry the relevant changes instead.
-A first release has no ratings/reviews or update history to manufacture.

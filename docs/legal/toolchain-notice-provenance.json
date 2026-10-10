@@ -1,0 +1,17 @@
+{
+  "release": "toolchain-2026-10-02.1",
+  "toolchainID": "crabrix-rust-2026-10-02.1",
+  "descriptorKeyID": "crabrix-toolchain-2026-10",
+  "files": {
+    "licenses.zip": {
+      "bytes": 36341,
+      "sha256": "c6319ff6642b0ed700f6e6fd008dc7a71e5b12107f19ce3dca3ae29816390373"
+    },
+    "vendor-notices.zip": {
+      "bytes": 5821739,
+      "sha256": "4472276dadf26ccf8bd85dac1ad025a66c40317c937f51058eede036f40e55b3"
+    }
+  },
+  "vendorPackages": 1592,
+  "noticeFiles": 2628
+}

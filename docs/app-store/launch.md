@@ -1,3 +1,13 @@
+# Current launch material
+
+The current product-page copy is in [listing-1.1-draft.md](listing-1.1-draft.md).
+[Submission status](submission-status.md) records what Apple currently has.
+The notes below are campaign drafts, not evidence of a sent pitch, nomination,
+created custom page or paid advertisement. App price is unchanged; check the
+live price schedule for storefront currencies. App use is account-free; full
+companion website lessons require a separate free account. Offline legal copy,
+content rights and notices are available inside the app and on the website.
+
 # Launch assets
 
 Everything that goes out on release day, written before release day so nothing
@@ -19,15 +29,16 @@ whether or not it can land on launch day.
 
 > An independent developer project that bundles a real Rust compiler and builds
 > crates.io dependencies locally on iPhone and iPad, with no cloud compilation
-> service and no account. It combines a native programming environment, a
-> 142-lesson Rust curriculum, and a 200-pattern algorithm course. User code is
+> service and no required app account. It combines a native programming environment, an
+> illustrated 742-lesson Academy (142 Rust lessons and 600 steps across 200
+> algorithm patterns), with 46 editable examples. User code is
 > never uploaded for compilation.
 
 **Why it is worth featuring**, in the order Apple's own guidance cares about:
 
 - unusual platform engineering: a full compiler toolchain running inside an app,
   interrupted safely, with no JIT and no dynamic code loading;
-- privacy as a build property, not a promise: no account, no analytics, no
+- privacy: no required app account, no analytics SDK, no
   network path for user code;
 - universal: the same workspace on iPhone and iPad;
 - education: a curriculum whose exercises are checked by the compiler itself;
