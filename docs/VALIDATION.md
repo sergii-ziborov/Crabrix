@@ -1,5 +1,24 @@
 # Validation record
 
+## Academy code highlighting and signed course update — 10 October 2026
+
+The seven changed courses contain 742 lessons and 742 illustration references.
+All course schemas and ten course-repository tests passed. Prose code spans are
+balanced, and the 200 Algorithm Atlas challenge explanations and trace steps do
+not disclose the expected answer before the reveal. Large Rust code blocks in
+the web Learn reader now have token colors. The native lesson reader also
+formats code spans in quick checks, answer choices, and trace steps; its iOS
+Simulator build passed. The published site generated all 763 static pages, and
+public HTTPS served updated Basics, rustdoc, and Atlas pages with colored code.
+
+Production-signed CoursePack release `coursepack-v1.0.8` and catalog sequence 9
+were verified against the production public key. The public catalog bytes and
+all seven descriptor bytes matched the locally verified release. Two opt-in
+iOS Simulator upgrade tests passed with no failures: bundled Basics 1.0.1 and
+Atlas 1.0.1 each upgraded from the live catalog while retaining the open old
+lesson snapshot and stable lesson IDs. These are delivery and structural
+checks; they do not certify every explanation's pedagogical accuracy.
+
 ## Rust inline code and corrected diagram — 10 October 2026
 
 The native lesson reader renders Markdown code spans in a distinct, theme-aware

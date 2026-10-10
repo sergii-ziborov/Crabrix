@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { courseById, courseLessons, courseSnapshot, lessonById } from "@/lib/courses";
+import { SyntaxCode } from "@/components/SyntaxCode";
 
 function prose(text: string) {
   return text.split(/(`[^`]+`)/g).map((part, index) =>
@@ -37,8 +38,8 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
   const isBasics = course.id === "basics";
   const explanationParagraphs = writing?.explanation?.split(/\n\s*\n/) || [];
   const exampleSection = (writing?.exampleCode || writing?.practiceCode) && <section><h2>Read the Rust</h2>
-    {writing?.exampleCode && <><pre><code>{writing.exampleCode}</code></pre>{writing.exampleCaption && <p>{writing.exampleCaption}</p>}</>}
-    {writing?.practiceCode && writing.practiceCode !== writing.exampleCode && <><h3>Practice starter</h3><pre><code>{writing.practiceCode}</code></pre></>}
+    {writing?.exampleCode && <><SyntaxCode code={writing.exampleCode} />{writing.exampleCaption && <p>{prose(writing.exampleCaption)}</p>}</>}
+    {writing?.practiceCode && writing.practiceCode !== writing.exampleCode && <><h3>Practice starter</h3><SyntaxCode code={writing.practiceCode} /></>}
   </section>;
   return (
     <div className="site-shell lesson-page">
@@ -50,7 +51,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
       <div className="page-intro lesson-content">
         <p className="eyebrow">{unit.title} · {lesson.minutes} min · free lesson</p>
         <h1>{lesson.title}</h1>
-        <p className="lede">{writing?.summary || lesson.concept}</p>
+        <p className="lede">{prose(writing?.summary || lesson.concept)}</p>
         {writing?.rule && <div className="lesson-callout"><strong>Core idea</strong><p>{prose(writing.rule)}</p></div>}
       </div>
       <article className="lesson-content">
@@ -73,28 +74,28 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
           {explanationParagraphs.map((paragraph, paragraphIndex) => <p key={paragraphIndex}>{prose(paragraph)}</p>)}
         </section>}
         {algorithm && <section><h2>The pattern</h2>
-          {algorithm.idea && <p>{algorithm.idea}</p>}
-          {algorithm.useCases && <p><strong>When to use it:</strong> {algorithm.useCases}</p>}
+          {algorithm.idea && <p>{prose(algorithm.idea)}</p>}
+          {algorithm.useCases && <p><strong>When to use it:</strong> {prose(algorithm.useCases)}</p>}
           {algorithm.complexity && <p><strong>Complexity:</strong> {algorithm.complexity}</p>}
           {algorithm.visibleInput && <p><strong>Input:</strong> <code>{algorithm.visibleInput}</code></p>}
-          {algorithm.rustSketch && <pre><code>{algorithm.rustSketch}</code></pre>}
+          {algorithm.rustSketch && <SyntaxCode code={algorithm.rustSketch} />}
         </section>}
         {!isBasics && exampleSection}
         {(writing?.task || algorithm?.task || writing?.success) && <section><h2>Try it</h2>
           <p>{prose(writing?.task || algorithm?.task || "")}</p>
           {writing?.success && <p><strong>What success looks like:</strong> {prose(writing.success)}</p>}
         </section>}
-        {writing?.question && <section><h2>Check your understanding</h2><p>{writing.question}</p>
+        {writing?.question && <section><h2>Check your understanding</h2><p>{prose(writing.question)}</p>
           <details className="answer-reveal"><summary>Reveal the answer</summary>
-            {writing.answers && <ol>{writing.answers.map((answer, answerIndex) => <li className={answerIndex === writing.correctAnswer ? "correct" : undefined} key={answerIndex}>{answer}</li>)}</ol>}
-            {writing.feedback && <p>{writing.feedback}</p>}
+            {writing.answers && <ol>{writing.answers.map((answer, answerIndex) => <li className={answerIndex === writing.correctAnswer ? "correct" : undefined} key={answerIndex}>{prose(answer)}</li>)}</ol>}
+            {writing.feedback && <p>{prose(writing.feedback)}</p>}
           </details>
         </section>}
         {isBasics && depth?.transferChallenge && <section className="lesson-next-step"><h2>One more experiment</h2>
           <p>{prose(depth.transferChallenge)}</p>
         </section>}
         {!isBasics && depth && <section><h2>Go deeper</h2>
-          {depth.misconception && <p><strong>Common misconception:</strong> {depth.misconception}</p>}
+          {depth.misconception && <p><strong>Common misconception:</strong> {prose(depth.misconception)}</p>}
           {depth.correction && <p>{prose(depth.correction)}</p>}
           {depth.traceSteps && <ol>{depth.traceSteps.map((step, stepIndex) => <li key={stepIndex}><strong>{step.title}:</strong> {prose(step.detail)}</li>)}</ol>}
           {depth.transferChallenge && <p><strong>Transfer challenge:</strong> {prose(depth.transferChallenge)}</p>}

@@ -1,5 +1,18 @@
 # Crabrix website deployment
 
+## Lesson code highlighting and answer reveals — 10 October 2026
+
+The public container runs `localhost/crabrix-web-site:code-audit-20261010`
+from `/srv/apps/crabrix-site/releases/20261010-code-audit/site`. The previous
+container is stopped as `crabrix-web-site-before-code-audit-20261010` for
+rollback. The Next.js export pins course source `aabd294` and generated 763
+pages, including 742 lessons. Inline Rust snippets and larger source examples
+have distinct colors; Atlas challenge explanations no longer disclose answers
+before the reveal. A candidate served the updated lessons on loopback port
+3213 before switching port 3212. Public HTTPS returned the Variables,
+rustdoc, and Atlas sample lessons with code token classes and infographics.
+The site service, Nginx route, and DNS were otherwise unchanged.
+
 ## Complete Academy infographics — 10 October 2026
 
 The public container runs `localhost/crabrix-web-site:all-infographics-20261010`

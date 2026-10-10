@@ -19,12 +19,13 @@ python3 scripts/sync-course-content.py /path/to/crabrix-courses
 pnpm build
 ```
 
-The current snapshot pins course source `9414133`: all 742 Academy lessons
+The current snapshot pins course source `aabd294`: all 742 Academy lessons
 have an infographic. Atlas reuses its pattern-specific diagrams across all
 600 steps, and the 70 Rust lessons that lacked an illustration have individual
-code-to-rule diagrams. Rust Basics 1.0.4 retains the corrected Printing Values
-diagram and marks inline Rust expressions so they stand out in both light and
-dark themes. Both Blog articles exceed
+code-to-rule diagrams. Rust Basics 1.0.5 retains the corrected Printing Values
+diagram; inline Rust expressions and the larger source examples now have
+distinct colors. Atlas challenge answers stay behind the answer reveal.
+Both Blog articles exceed
 1,500 words and contain two generated images, including an infographic.
 
 `content/posts.json` contains two articles of more than 1,500 words each and

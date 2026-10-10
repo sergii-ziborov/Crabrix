@@ -1,5 +1,28 @@
 import SwiftUI
 
+private func lessonFormattedText(
+    _ paragraph: String,
+    plainColor: Color = CrabrixTheme.muted
+) -> Text {
+    let parts = paragraph.split(separator: "`", omittingEmptySubsequences: false)
+    guard !parts.count.isMultiple(of: 2) else {
+        return Text(paragraph).foregroundColor(plainColor)
+    }
+    return parts.enumerated().reduce(Text("")) { result, element in
+        let (index, part) = element
+        if index.isMultiple(of: 2) {
+            let prose = (try? AttributedString(
+                markdown: String(part),
+                options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
+            )) ?? AttributedString(String(part))
+            return result + Text(prose).foregroundColor(plainColor)
+        }
+        return result + Text(String(part))
+            .font(.system(.body, design: .monospaced).weight(.semibold))
+            .foregroundColor(CrabrixTheme.lessonCode)
+    }
+}
+
 enum LessonNavigationFooterVisibility {
     /// The footer is an overlay, so the end of the lesson needs enough room to
     /// scroll clear of it before the action appears.
@@ -276,28 +299,7 @@ struct LessonDetailView: View {
     private func formattedParagraph(
         _ paragraph: String,
         plainColor: Color = CrabrixTheme.muted
-    ) -> Text {
-        // The signed lesson text uses Markdown code spans. Apple's default
-        // inline-code treatment is only a subtle font change in light mode;
-        // give those spans a clear, theme-aware color as well.
-        let parts = paragraph.split(separator: "`", omittingEmptySubsequences: false)
-        guard !parts.count.isMultiple(of: 2) else {
-            return Text(paragraph).foregroundColor(plainColor)
-        }
-        return parts.enumerated().reduce(Text("")) { result, element in
-            let (index, part) = element
-            if index.isMultiple(of: 2) {
-                let prose = (try? AttributedString(
-                    markdown: String(part),
-                    options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
-                )) ?? AttributedString(String(part))
-                return result + Text(prose).foregroundColor(plainColor)
-            }
-            return result + Text(String(part))
-                .font(.system(.body, design: .monospaced).weight(.semibold))
-                .foregroundColor(CrabrixTheme.lessonCode)
-        }
-    }
+    ) -> Text { lessonFormattedText(paragraph, plainColor: plainColor) }
 
     private var objectives: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -333,7 +335,7 @@ struct LessonDetailView: View {
                 Text("QUICK CHECK")
                     .font(.caption2.monospaced().bold())
                     .foregroundStyle(CrabrixTheme.coral)
-                Text(practice.question)
+                formattedParagraph(practice.question, plainColor: CrabrixTheme.primary)
                     .font(.title3.bold())
 
                 ForEach(Array(practice.answers.enumerated()), id: \.offset) { index, answer in
@@ -501,7 +503,7 @@ struct LessonDetailView: View {
                     .foregroundStyle(isSelected ? CrabrixTheme.background : CrabrixTheme.muted)
                     .frame(width: 28, height: 28)
                     .background(isSelected ? brief.tint : CrabrixTheme.border, in: Circle())
-                Text(answer)
+                formattedParagraph(answer, plainColor: CrabrixTheme.primary)
                     .font(.subheadline.weight(.semibold))
                     .multilineTextAlignment(.leading)
                 Spacer()
@@ -640,7 +642,7 @@ private struct LessonTraceStepRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(step.title)
                     .font(.subheadline.weight(.bold))
-                Text(step.detail)
+                lessonFormattedText(step.detail)
                     .font(.subheadline)
                     .foregroundStyle(CrabrixTheme.muted)
                     .fixedSize(horizontal: false, vertical: true)

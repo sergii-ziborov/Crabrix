@@ -25,6 +25,14 @@ code, pre, .mono, .eyebrow { font-family: ui-monospace, SFMono-Regular, "SF Mono
 code { font-size: .92em; }
 pre { overflow-x: auto; background: #080c12; border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; color: #d6e7f6; font-size: 13px; line-height: 1.55; }
 pre code { font-size: inherit; }
+pre.syntax-code .syntax-comment { color: #97a7b8; }
+pre.syntax-code .syntax-string { color: #75ddb2; }
+pre.syntax-code .syntax-keyword { color: #ff917c; }
+pre.syntax-code .syntax-type { color: #8dbdff; }
+pre.syntax-code .syntax-number { color: #f9d06e; }
+pre.syntax-code .syntax-macro { color: #cda6ff; }
+pre.syntax-code .syntax-attribute { color: #ffadd5; }
+pre.syntax-code .syntax-lifetime { color: #f1b77c; }
 strong { color: var(--text); }
 .site-shell, .wrap { width: min(var(--max), calc(100% - 44px)); margin-inline: auto; }
 
