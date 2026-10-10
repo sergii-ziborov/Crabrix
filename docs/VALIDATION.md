@@ -1,5 +1,19 @@
 # Validation record
 
+## App Store screenshots for build 40 — 10 October 2026
+
+Four Release Simulator screenshots now show the current Learn and My Courses
+screens on iPhone 6.9-inch and iPad 13-inch, including the new per-course
+updates and Update all. All four App Store Connect assets reached `COMPLETE`;
+the ordered sets read back as ten iPhone, seven iPad and two unchanged Duo
+screenshots. The old build-40 submission was canceled for metadata editing,
+and version 1.1 (40) was resubmitted as
+`2ac85d28-44c5-49aa-849c-012a5805cfc2`. Both the submission and version
+read back `WAITING_FOR_REVIEW` with manual release. The same four PNGs are live
+on crabrix.com with matching SHA-256 digests, while the existing site content
+was retained from its prior container. See
+[screenshot evidence](app-store/asset-upload-2026-10-10-build40.json).
+
 ## In-app lesson updates and build 40 — 10 October 2026
 
 Xcode Cloud runs 39 and 40 compiled the update feature but failed while exporting
@@ -14,10 +28,10 @@ and processed build 40 as `VALID` and `APP_STORE_ELIGIBLE`.
 
 Build 40 is in TestFlight Internal QA; its en-US What to Test text matched API
 readback. App Store version 1.1 and its new review submission
-`c8c5d443-1291-4b82-a257-fdc6652ac3c7` both report
+`2ac85d28-44c5-49aa-849c-012a5805cfc2` both report
 `WAITING_FOR_REVIEW`, with build 40 selected and manual release. The earlier
-build-38 submission was canceled after build 40 became valid. The existing
-iPhone and iPad screenshot assets were retained. Simulator delivery gates for
+build-38 submission was canceled after build 40 became valid. Four Learn and
+My Courses screenshots were replaced for build 40. Simulator delivery gates for
 Rust Basics and Algorithm Atlas passed as recorded below. Physical-device
 interaction with Update and Update all is still pending; Apple approval is
 also pending. See [build 40](releases/1.1-build40.json).

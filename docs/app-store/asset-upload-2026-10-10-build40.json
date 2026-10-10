@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "release": "1.1 (40)",
+  "appStoreVersionID": "2bc0ae1f-ca26-41e6-a0a9-700628e7bf14",
+  "locale": "en-US",
+  "source": "Release Simulator capture from build 40 application source (5a25c972d1f8f91930a9ef72dcbb1dc6ce616f82); visual QA before upload",
+  "replacements": [
+    {
+      "device": "iphone-6.9",
+      "slot": 3,
+      "oldID": "d806cacc-377c-4d7d-a9b2-0bb2dc66ceb9",
+      "oldName": "b26-iphone-03-learn.png",
+      "newID": "08400019-5e0c-83bd-8012-ce334e6f0804",
+      "file": "docs/app-store/screenshots/iphone-6.9/03-learn.png",
+      "sha256": "343f62d05783f32f45e88222e5365e6db8c1f15d1c5dbe16b86668e2eda56c71",
+      "bytes": 473304,
+      "state": "COMPLETE",
+      "orderedIDs": [
+        "3e800019-5e0c-83bd-8023-a533405bb84f",
+        "3d63b108-6cfc-4b2c-bbc2-dd4621476bcd",
+        "08400019-5e0c-83bd-8012-ce334e6f0804",
+        "a52905ee-3f65-4418-924f-fed0794fba0c",
+        "c7a7a4f5-7a44-4510-a3c7-7997ad1236e2",
+        "278b7b87-2990-4d43-8649-507c775312c7",
+        "cd3bd1dc-d9cc-4dfc-8433-6d8a64d50b2e",
+        "a5832a7e-03b4-42bf-8454-8a3091c1f8cb",
+        "76e7dab0-a953-4ab6-b99e-09758fa884cf",
+        "42388f9d-644e-45b0-85cc-05fdb40fa1f9"
+      ]
+    },
+    {
+      "device": "iphone-6.9",
+      "slot": 4,
+      "oldID": "a52905ee-3f65-4418-924f-fed0794fba0c",
+      "oldName": "b26-iphone-09-my-courses.png",
+      "newID": "7ec00019-5e0c-83bd-800b-9092540615fb",
+      "file": "docs/app-store/screenshots/iphone-6.9/09-my-courses.png",
+      "sha256": "73887eba143e21898dd882cba7a400e6669432c1e53c5c46b3c0cf3a5a60be9a",
+      "bytes": 354378,
+      "state": "COMPLETE",
+      "orderedIDs": [
+        "3e800019-5e0c-83bd-8023-a533405bb84f",
+        "3d63b108-6cfc-4b2c-bbc2-dd4621476bcd",
+        "08400019-5e0c-83bd-8012-ce334e6f0804",
+        "7ec00019-5e0c-83bd-800b-9092540615fb",
+        "c7a7a4f5-7a44-4510-a3c7-7997ad1236e2",
+        "278b7b87-2990-4d43-8649-507c775312c7",
+        "cd3bd1dc-d9cc-4dfc-8433-6d8a64d50b2e",
+        "a5832a7e-03b4-42bf-8454-8a3091c1f8cb",
+        "76e7dab0-a953-4ab6-b99e-09758fa884cf",
+        "42388f9d-644e-45b0-85cc-05fdb40fa1f9"
+      ]
+    },
+    {
+      "device": "ipad-13",
+      "slot": 3,
+      "oldID": "d8400019-5e0c-83bd-802a-5c861f6b5a49",
+      "oldName": "b25-03-learn.png",
+      "newID": "03800019-5e0c-83bd-8031-313460ef59fd",
+      "file": "docs/app-store/screenshots/ipad-13/03-learn.png",
+      "sha256": "367356ea3d2003399943206df377a7296299e5755608bb7bf96a6a809176afbd",
+      "bytes": 292131,
+      "state": "COMPLETE",
+      "orderedIDs": [
+        "a9800019-5e0c-83bd-800b-1596db6e0654",
+        "9e000019-5e0c-83bd-803f-b36aaf1cda23",
+        "03800019-5e0c-83bd-8031-313460ef59fd",
+        "22c00019-5e0c-83bd-8022-3bd66825b894",
+        "79400019-5e0c-83bd-8016-e1399ac5ba3d",
+        "b8800019-5e0c-83bd-8022-36e42ecbffff",
+        "39c00019-5e0c-83bd-8021-39315557b1ea"
+      ]
+    },
+    {
+      "device": "ipad-13",
+      "slot": 4,
+      "oldID": "22c00019-5e0c-83bd-8022-3bd66825b894",
+      "oldName": "b25-07-my-courses.png",
+      "newID": "d0000019-5e0c-83bd-8003-0eebaa3027ea",
+      "file": "docs/app-store/screenshots/ipad-13/07-my-courses.png",
+      "sha256": "206469087fd0550150d89fdbcb6e1d3e3cbb940601750f96f0e37defd3fb6402",
+      "bytes": 334411,
+      "state": "COMPLETE",
+      "orderedIDs": [
+        "a9800019-5e0c-83bd-800b-1596db6e0654",
+        "9e000019-5e0c-83bd-803f-b36aaf1cda23",
+        "03800019-5e0c-83bd-8031-313460ef59fd",
+        "d0000019-5e0c-83bd-8003-0eebaa3027ea",
+        "79400019-5e0c-83bd-8016-e1399ac5ba3d",
+        "b8800019-5e0c-83bd-8022-36e42ecbffff",
+        "39c00019-5e0c-83bd-8021-39315557b1ea"
+      ]
+    }
+  ],
+  "otherScreenshots": "6 other iPhone, 5 other iPad, and 2 Duo assets retained",
+  "readback": {
+    "iPhone67": 10,
+    "iPad129": 7,
+    "iPhoneDuo": 2,
+    "allStates": "COMPLETE",
+    "orderedSetsVerified": true
+  },
+  "previousReviewSubmissionID": "c8c5d443-1291-4b82-a257-fdc6652ac3c7",
+  "reviewSubmissionID": "2ac85d28-44c5-49aa-849c-012a5805cfc2",
+  "reviewState": "WAITING_FOR_REVIEW",
+  "selectedBuild": "40",
+  "releaseType": "MANUAL"
+}

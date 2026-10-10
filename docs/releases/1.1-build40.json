@@ -41,8 +41,8 @@
     "appReviewSelectedBuild": "40",
     "appReviewState": "WAITING_FOR_REVIEW",
     "releaseType": "MANUAL",
-    "appReviewSubmissionID": "c8c5d443-1291-4b82-a257-fdc6652ac3c7",
-    "previousReviewSubmissionID": "3384f357-c05a-49b7-8c16-0f6984420811",
+    "appReviewSubmissionID": "2ac85d28-44c5-49aa-849c-012a5805cfc2",
+    "previousReviewSubmissionID": "c8c5d443-1291-4b82-a257-fdc6652ac3c7",
     "previousReviewState": "COMPLETE (canceled)",
     "internalBuildState": "IN_BETA_TESTING"
   },
@@ -55,7 +55,7 @@
   "screenshots": {
     "iphone69SHA256": "98f010beba2556e5a1b520f8ce6e749c77ab817905930e8b1f1d649be1592a44",
     "ipad13SHA256": "a606a535a340ef9d55fbb8de08f31bae04c50755b66a00e98722a3a21e7ef288",
-    "uploadEvidence": "docs/app-store/asset-upload-2026-10-09-build38.json",
+    "uploadEvidence": "docs/app-store/asset-upload-2026-10-10-build40.json",
     "appStoreReadback": {
       "iPhone67": 10,
       "iPad129": 7,

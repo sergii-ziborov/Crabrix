@@ -1,5 +1,17 @@
 # Crabrix website deployment
 
+## Build 40 Learn screenshots — 10 October 2026
+
+The public container now runs `localhost/crabrix-web-site:review40-shots-20261010`.
+It inherits the prior `atlas-20261009b` image and replaces only four Learn and
+My Courses PNGs: iPhone and iPad for each view. The prior container is stopped
+as `crabrix-web-site-before-shots40-20261010` for rollback. The candidate
+served `/healthz`, `/learn/`, and all four exact screenshot hashes on loopback
+port 3213 before the switch. Afterward, public HTTPS returned 200 for the
+home page, Learn, Blog, and a Basics lesson; the four served screenshot hashes
+matched the checked-in `site/public/screenshots/` files. The local Next.js
+export passed `pnpm check` and `pnpm build`. DNS and Nginx were unchanged.
+
 ## Complete Rust lesson refresh — 9 October 2026
 
 The public container is `crabrix-web-site-1`, running image
