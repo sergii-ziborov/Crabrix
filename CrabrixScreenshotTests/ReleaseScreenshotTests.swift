@@ -7,16 +7,15 @@ import UIKit
 final class ReleaseScreenshotTests: XCTestCase {
     private let app = XCUIApplication()
 
-    override func setUpWithError() throws {
+    func testReleaseScreenshotsAndLegalReaders() throws {
         continueAfterFailure = false
         XCUIDevice.shared.orientation = .portrait
-    }
-
-    func testReleaseScreenshotsAndLegalReaders() throws {
         let family = UIDevice.current.userInterfaceIdiom == .pad ? "ipad-13" : "iphone-6.9"
         launch(["-CrabrixTab", "learn"])
         let basics = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Open Rust Basics")).firstMatch
         XCTAssertTrue(basics.waitForExistence(timeout: 120), "The signed offline transition courses must finish loading")
+        try updateTeachingContent()
+        launch(["-CrabrixTab", "learn"])
         capture("\(family)-03-learn")
 
         let frames: [(String, [String])] = family == "ipad-13" ? [
@@ -67,6 +66,34 @@ final class ReleaseScreenshotTests: XCTestCase {
             XCTAssertFalse(app.staticTexts["This document could not be read from the app bundle."].exists)
             capture("legal-\(id)")
         }
+    }
+
+    private func updateTeachingContent() throws {
+        let update = app.buttons["Update all"]
+        XCTAssertTrue(update.waitForExistence(timeout: 90), "The public catalog must offer the current teaching packs")
+        update.tap()
+        let confirm = app.buttons.matching(NSPredicate(format: "label MATCHES %@", "^Update [0-9]+ courses$")).firstMatch
+        XCTAssertTrue(confirm.waitForExistence(timeout: 10))
+        confirm.tap()
+        let banner = app.staticTexts["New lessons available"]
+        let completed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: banner)
+        XCTAssertEqual(XCTWaiter.wait(for: [completed], timeout: 480), .completed,
+                       "All installed courses must update before the lesson captures")
+        XCTAssertFalse(app.staticTexts["Academy unavailable"].exists)
+
+        // Examples moved into their own downloadable pack. Install it through
+        // the real UI rather than silently reusing the old projects archive.
+        let examples = app.buttons["Download 46 Code Examples for offline use"]
+        for _ in 0..<20 {
+            if examples.exists && examples.isHittable { break }
+            app.swipeUp()
+        }
+        XCTAssertTrue(examples.exists && examples.isHittable)
+        examples.tap()
+        let download = app.buttons.matching(NSPredicate(format: "label MATCHES %@", "^Download [0-9].*")).firstMatch
+        XCTAssertTrue(download.waitForExistence(timeout: 10))
+        download.tap()
+        XCTAssertTrue(app.buttons["Browse 46 Code Examples, available offline"].waitForExistence(timeout: 180))
     }
 
     private func launch(_ arguments: [String]) {
