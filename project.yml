@@ -187,7 +187,31 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.CrabrixTests
         GENERATE_INFOPLIST_FILE: YES
 
+  CrabrixScreenshotTests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: CrabrixScreenshotTests
+    dependencies:
+      - target: Crabrix
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.CrabrixScreenshotTests
+        GENERATE_INFOPLIST_FILE: YES
+
 schemes:
+  CrabrixScreenshots:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixScreenshotTests: [test]
+    test:
+      targets:
+        - name: CrabrixScreenshotTests
+          selectedTests:
+            - ReleaseScreenshotTests
+      gatherCoverageData: false
+
   Crabrix:
     build:
       targets:

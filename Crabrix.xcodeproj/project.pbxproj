@@ -204,12 +204,20 @@
 		F3B4A7B2555D918F3192BB3D /* CourseModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4479B42763852BA1B452D60 /* CourseModels.swift */; };
 		F8F1E02965F5C0146D69DD89 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA5866457924F7521705CCD1 /* Assets.xcassets */; };
 		FA6604AE42D256B00E00939A /* AppLockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73C1FC8A2234B8B8C0D7C08C /* AppLockTests.swift */; };
+		FA6B3D430B69957FC2E7A2AA /* ReleaseScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E560EAA1E9DC2387BE92ED56 /* ReleaseScreenshotTests.swift */; };
 		FB1DAD024CC5E08008E2D4ED /* ThemeContrastTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3786418CA7D9446F9360AE70 /* ThemeContrastTests.swift */; };
 		FCCA5F66ED8D7F43C8828B7B /* PracticeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B61E3671EFD881E08389F5E /* PracticeSheet.swift */; };
 		FE77A6E9CE5D66CE12DA11FD /* CrabrixProjectDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9D7D181612381980B5CB164 /* CrabrixProjectDocument.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		1FCACA8F888F9AE66831FD51 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 017F59874475A7A2BEE22ACE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BDA58CBA9BF4A4013D082A3F;
+			remoteInfo = Crabrix;
+		};
 		356CEE9811C71ABB3B2D479E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 017F59874475A7A2BEE22ACE /* Project object */;
@@ -306,6 +314,7 @@
 		5F2E28AF633C57EFB91DF034 /* LocalProjectLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalProjectLoader.swift; sourceTree = "<group>"; };
 		6166C001764BC9D14984D241 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6408E7D74302DB95B47776D4 /* ProjectsHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectsHomeView.swift; sourceTree = "<group>"; };
+		640C78A6920D8B504F90A7E4 /* CrabrixScreenshotTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CrabrixScreenshotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		646F773F58C7B624AE941CE3 /* Rust-LICENSE-APACHE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Rust-LICENSE-APACHE.txt"; sourceTree = "<group>"; };
 		67D67D2D0A1619040A96DC9A /* AchievementTierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementTierTests.swift; sourceTree = "<group>"; };
 		68A15F83CEFC441BA39AF0FC /* basics-1.0.1.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "basics-1.0.1.zip"; sourceTree = "<group>"; };
@@ -418,6 +427,7 @@
 		E28616F40A43EF200A8D0265 /* InspectorViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorViews.swift; sourceTree = "<group>"; };
 		E4B798EE784275F9C194D9B5 /* swift-system-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-system-LICENSE.txt"; sourceTree = "<group>"; };
 		E4D08AA163586E6C07EFEC1D /* ToolchainNoticesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolchainNoticesView.swift; sourceTree = "<group>"; };
+		E560EAA1E9DC2387BE92ED56 /* ReleaseScreenshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseScreenshotTests.swift; sourceTree = "<group>"; };
 		E59CCACF0B58534D0C509F99 /* CargoResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoResolverTests.swift; sourceTree = "<group>"; };
 		E77E2A29DC1E65C2BD1E0BE4 /* TypingLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingLedger.swift; sourceTree = "<group>"; };
 		E99B3257756AEEA188EB639C /* RustLessonDepthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustLessonDepthTests.swift; sourceTree = "<group>"; };
@@ -666,6 +676,7 @@
 			children = (
 				E8C4BDCE02556729FBDBF1EF /* build */,
 				465F97A34FE7112D439C6A54 /* Crabrix */,
+				FA93F34CD47638E06707EB65 /* CrabrixScreenshotTests */,
 				75A8C38ADD6CB5D59CDB5AC3 /* CrabrixShare */,
 				A68C05224AE5392908F03339 /* CrabrixShared */,
 				9148689B17692A2B66CA2E57 /* CrabrixTests */,
@@ -792,6 +803,7 @@
 			isa = PBXGroup;
 			children = (
 				AAD3161C843E95583F80834C /* Crabrix.app */,
+				640C78A6920D8B504F90A7E4 /* CrabrixScreenshotTests.xctest */,
 				3F84AB4318432025CA06FD68 /* CrabrixShare.appex */,
 				1DE43E81E450434AC8E261A4 /* CrabrixTests.xctest */,
 			);
@@ -844,6 +856,14 @@
 				20F9150930EA5F739C099FF5 /* Licenses */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		FA93F34CD47638E06707EB65 /* CrabrixScreenshotTests */ = {
+			isa = PBXGroup;
+			children = (
+				E560EAA1E9DC2387BE92ED56 /* ReleaseScreenshotTests.swift */,
+			);
+			path = CrabrixScreenshotTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -912,6 +932,24 @@
 			productReference = AAD3161C843E95583F80834C /* Crabrix.app */;
 			productType = "com.apple.product-type.application";
 		};
+		D333E0281820569E50E56FD0 /* CrabrixScreenshotTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7E3B0CE866CF0B9F273190D0 /* Build configuration list for PBXNativeTarget "CrabrixScreenshotTests" */;
+			buildPhases = (
+				72CD29D7C8935F9EDA8630FE /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3A70025193060FF009E6A7A6 /* PBXTargetDependency */,
+			);
+			name = CrabrixScreenshotTests;
+			packageProductDependencies = (
+			);
+			productName = CrabrixScreenshotTests;
+			productReference = 640C78A6920D8B504F90A7E4 /* CrabrixScreenshotTests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -921,6 +959,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					D333E0281820569E50E56FD0 = {
+						TestTargetID = BDA58CBA9BF4A4013D082A3F;
+					};
 				};
 			};
 			buildConfigurationList = C1D5A6B08FF6399491A10F5C /* Build configuration list for PBXProject "Crabrix" */;
@@ -945,6 +986,7 @@
 				BDA58CBA9BF4A4013D082A3F /* Crabrix */,
 				0C43E448A9432485895C857E /* CrabrixShare */,
 				7B515BB1F0FFBE8409A70175 /* CrabrixTests */,
+				D333E0281820569E50E56FD0 /* CrabrixScreenshotTests */,
 			);
 		};
 /* End PBXProject section */
@@ -1030,6 +1072,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		72CD29D7C8935F9EDA8630FE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA6B3D430B69957FC2E7A2AA /* ReleaseScreenshotTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A1CCC5443E4EE6A466E9BD55 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1220,6 +1270,11 @@
 			target = 0C43E448A9432485895C857E /* CrabrixShare */;
 			targetProxy = 356CEE9811C71ABB3B2D479E /* PBXContainerItemProxy */;
 		};
+		3A70025193060FF009E6A7A6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BDA58CBA9BF4A4013D082A3F /* Crabrix */;
+			targetProxy = 1FCACA8F888F9AE66831FD51 /* PBXContainerItemProxy */;
+		};
 		634EEDBE24A8E418361718E6 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = BDA58CBA9BF4A4013D082A3F /* Crabrix */;
@@ -1228,6 +1283,23 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		3AD2BD49E3FE6DC1553672AE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.CrabrixScreenshotTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Crabrix;
+			};
+			name = Debug;
+		};
 		4D004EF447BD1C56821CD423 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1264,6 +1336,23 @@
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Crabrix.app/Crabrix";
+			};
+			name = Release;
+		};
+		5FEFF6C91FC4A9F6E8B1E635 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.CrabrixScreenshotTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Crabrix;
 			};
 			name = Release;
 		};
@@ -1500,6 +1589,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		7E3B0CE866CF0B9F273190D0 /* Build configuration list for PBXNativeTarget "CrabrixScreenshotTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3AD2BD49E3FE6DC1553672AE /* Debug */,
+				5FEFF6C91FC4A9F6E8B1E635 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		89373A5854615CBBDE7A6835 /* Build configuration list for PBXNativeTarget "CrabrixTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
