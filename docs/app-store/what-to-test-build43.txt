@@ -1,0 +1,1 @@
+Crabrix 1.1 build 43: update your Academy courses in Learn or My Courses. Rust code in lesson text, quick checks, answers, and trace steps has clearer highlighting. Check the Variables and Printing Values lessons, and verify that Algorithm Atlas challenge answers stay hidden until revealed. Progress should remain intact after updating a course.

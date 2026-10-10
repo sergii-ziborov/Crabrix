@@ -19,6 +19,14 @@ Atlas 1.0.1 each upgraded from the live catalog while retaining the open old
 lesson snapshot and stable lesson IDs. These are delivery and structural
 checks; they do not certify every explanation's pedagogical accuracy.
 
+Xcode Cloud run 43 compiled, archived, and uploaded source `9433d98`. App Store
+Connect processed the binary as `VALID` and `APP_STORE_ELIGIBLE`; Internal QA
+reports `IN_BETA_TESTING` and its en-US What to Test matched API readback. The
+prior build-42 review submission was canceled after build 43 was ready. Version
+1.1 now selects build 43, and both the version and new submission
+`cd2c216d-cfad-48e1-a7b0-e6597aa45030` read back `WAITING_FOR_REVIEW`.
+Reviewer notes name build 43 and Rust Basics 1.0.5; release remains manual.
+
 ## Rust inline code and corrected diagram — 10 October 2026
 
 The native lesson reader renders Markdown code spans in a distinct, theme-aware

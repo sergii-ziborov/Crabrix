@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "release": {
+    "version": "1.1",
+    "appStoreBuild": "43",
+    "channel": "Xcode Cloud archive; TestFlight Internal QA; App Review waiting",
+    "releaseType": "MANUAL"
+  },
+  "source": {
+    "commit": "9433d98c9e088dabddeac43cc476bdc024934abc",
+    "change": "Highlight code in native lesson checks and traces; serve colored code and corrected lessons on the web"
+  },
+  "xcodeCloud": {
+    "runID": "3dc5bb6c-9c90-4c5f-9237-a7512e28c951",
+    "number": 43,
+    "completionStatus": "SUCCEEDED"
+  },
+  "appStoreConnect": {
+    "appID": "6809502653",
+    "buildID": "00664663-fd25-4d53-993c-7bf9e9be76b3",
+    "processingState": "VALID",
+    "buildAudienceType": "APP_STORE_ELIGIBLE",
+    "internalBetaGroup": "Internal QA",
+    "internalBetaGroupID": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "internalBuildState": "IN_BETA_TESTING",
+    "whatToTestReadbackMatched": true,
+    "appStoreVersionID": "2bc0ae1f-ca26-41e6-a0a9-700628e7bf14",
+    "appReviewSelectedBuild": "43",
+    "appReviewSubmissionID": "cd2c216d-cfad-48e1-a7b0-e6597aa45030",
+    "appReviewState": "WAITING_FOR_REVIEW",
+    "previousReviewSubmissionID": "4e534419-bb03-4deb-9f80-d5670469d4dd"
+  },
+  "content": {
+    "catalogSequence": 9,
+    "coursepackRelease": "coursepack-v1.0.8",
+    "rustBasicsVersion": "1.0.5",
+    "algorithmAtlasVersion": "1.0.4",
+    "lessonCount": 742,
+    "illustratedLessonCount": 742
+  },
+  "validation": {
+    "courseSchemas": "passed: 8 courses and 742 lessons",
+    "courseRepositoryTests": "passed: 10 tests",
+    "nativeSimulatorBuild": "passed",
+    "publicUpgradeFromBundledBasicsAndAtlas": "passed: two tests, zero failures",
+    "website": "763 pages; three public lesson samples returned colored code and infographics",
+    "physicalDeviceReview": "pending"
+  }
+}

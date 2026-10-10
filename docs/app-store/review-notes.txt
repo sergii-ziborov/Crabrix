@@ -1,4 +1,4 @@
-Crabrix 1.1 (42) Xcode Cloud review candidate.
+Crabrix 1.1 (43) Xcode Cloud review candidate.
 
 Since rejected 1.0 (8), 1.1 adds seven Academy downloads, 46 open Code
 Examples, durable lesson projects, nested files, local Cargo workflows,
@@ -7,8 +7,8 @@ toolchain. iPad has a file sidebar and in-file search; the old right inspector
 is gone. iPhone Duo screenshots show Code and Output in laptop posture.
 
 The compiler, runtime, and sysroot are bundled; none is downloaded on device.
-In Learn, refresh and update Rust Basics to 1.0.3. Variables highlights inline
-Rust; Printing Values now maps each binding to the correct placeholder.
+In Learn, update Rust Basics to 1.0.5. Variables and quick checks highlight
+code; Printing Values matches placeholders. Atlas answers stay behind Reveal.
 
 TO SEE IT COMPILE
 1. Projects → current project card → Run. The project workspace opens on Code;

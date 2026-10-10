@@ -1,4 +1,14 @@
-> Current status — 10 October 2026: **1.1 (42)** was compiled, archived, and
+> Current status — 10 October 2026: **1.1 (43)** was compiled, archived, and
+> uploaded by Xcode Cloud from `9433d98`. App Store Connect processed it as
+> `VALID` and `APP_STORE_ELIGIBLE`. Internal QA reports `IN_BETA_TESTING` and
+> the en-US What to Test matched API readback. Version 1.1 selects build 43;
+> it and submission `cd2c216d-cfad-48e1-a7b0-e6597aa45030` read back
+> `WAITING_FOR_REVIEW`. Reviewer notes name build 43, and release remains
+> manual. Signed CoursePack catalog sequence 9 delivers the updated lessons.
+> Physical-device confirmation and Apple's review are pending. See the
+> [build-43 manifest](../releases/1.1-build43.json).
+
+> Earlier status — 10 October 2026: **1.1 (42)** was compiled, archived, and
 > uploaded by Xcode Cloud from `f2a288c`. App Store Connect processed it as
 > `VALID` and `APP_STORE_ELIGIBLE`. It is in TestFlight **Internal QA** with
 > the updated en-US What to Test. The 1.1 version selects build 42; both the
