@@ -1,4 +1,4 @@
-Crabrix 1.1 (36) Xcode Cloud review candidate.
+Crabrix 1.1 (42) Xcode Cloud review candidate.
 
 Since rejected 1.0 (8), 1.1 adds seven Academy downloads, 46 open Code
 Examples, durable lesson projects, nested files, local Cargo workflows,
@@ -7,6 +7,8 @@ toolchain. iPad has a file sidebar and in-file search; the old right inspector
 is gone. iPhone Duo screenshots show Code and Output in laptop posture.
 
 The compiler, runtime, and sysroot are bundled; none is downloaded on device.
+In Learn, refresh and update Rust Basics to 1.0.3. Variables highlights inline
+Rust; Printing Values now maps each binding to the correct placeholder.
 
 TO SEE IT COMPILE
 1. Projects → current project card → Run. The project workspace opens on Code;
@@ -61,6 +63,4 @@ or create a remote account.
 This build bundles the signed source-built Crabrix Rust toolchain
 `crabrix-rust-2026-10-02.1`, prepared from pinned sources and verified on the
 build Mac. The public CrabrixRuntime fork is based on WasmKit 0.4.1. The
-new iPad editor and iPhone Duo screenshots match the same Release Simulator
-source. Unchanged iPhone Settings came from earlier capture. Game Center
-sign-in and Face ID require a physical device; both features are optional.
+Game Center sign-in and Face ID require a physical device; both are optional.

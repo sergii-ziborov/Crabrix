@@ -18,6 +18,15 @@ installed bundled Basics 1.0.1, fetched the public Basics 1.0.3 package, and
 passed with one test and zero failures; its open old lesson retained its prior
 snapshot.
 
+Xcode Cloud run 42 compiled, archived, and uploaded source `f2a288c`.
+App Store Connect processed build 42 as `VALID` and `APP_STORE_ELIGIBLE`.
+Internal QA contains it, reports `IN_BETA_TESTING`, and the en-US What to Test
+matched API readback. The prior review submission was canceled only after
+build 42 was ready. Version 1.1 now selects build 42, with reviewer notes
+read back and new submission `4e534419-bb03-4deb-9f80-d5670469d4dd` in
+`WAITING_FOR_REVIEW`. Release remains manual. See
+[build 42](releases/1.1-build42.json).
+
 ## App Store screenshots for build 40 — 10 October 2026
 
 Four Release Simulator screenshots now show the current Learn and My Courses

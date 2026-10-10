@@ -1,4 +1,15 @@
-> Current status — 8 October 2026: **1.1 (36)** was built by Xcode Cloud
+> Current status — 10 October 2026: **1.1 (42)** was compiled, archived, and
+> uploaded by Xcode Cloud from `f2a288c`. App Store Connect processed it as
+> `VALID` and `APP_STORE_ELIGIBLE`. It is in TestFlight **Internal QA** with
+> the updated en-US What to Test. The 1.1 version selects build 42; both the
+> version and submission `4e534419-bb03-4deb-9f80-d5670469d4dd` read back
+> `WAITING_FOR_REVIEW`. Reviewer notes match the saved build-42 text. Release
+> remains manual. Rust Basics 1.0.3 is available as a signed lesson update,
+> with a corrected Printing Values diagram and clearer inline Rust text.
+> Physical-device confirmation and Apple's review are pending. See the
+> [build-42 manifest](../releases/1.1-build42.json).
+
+> Earlier status — 8 October 2026: **1.1 (36)** was built by Xcode Cloud
 > run 36 from source commit `35ddb46` (locally labeled build 26). Cloud Build
 > and Archive succeeded; App Store Connect processed the linked binary as
 > `VALID` and `APP_STORE_ELIGIBLE`. It is attached to TestFlight **Internal QA**
