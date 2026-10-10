@@ -232,7 +232,7 @@ struct LessonDetailView: View {
             }
 
             LessonCard(title: "Why this matters", systemImage: "book.pages.fill", tint: brief.tint) {
-                Text(brief.summary)
+                formattedParagraph(brief.summary, plainColor: CrabrixTheme.primary)
                     .font(.title3.weight(.semibold))
                 VStack(alignment: .leading, spacing: 12) {
                     ForEach(
@@ -240,16 +240,14 @@ struct LessonDetailView: View {
                         id: \.offset
                     ) { _, paragraph in
                         formattedParagraph(paragraph)
-                            .foregroundStyle(CrabrixTheme.muted)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
 
                 if let example = brief.example {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(example.caption)
+                        formattedParagraph(example.caption)
                             .font(.caption)
-                            .foregroundStyle(CrabrixTheme.muted)
                             .fixedSize(horizontal: false, vertical: true)
                         HighlightedCodeBlock(code: example.code)
                     }
@@ -258,7 +256,7 @@ struct LessonDetailView: View {
             }
 
             LessonCard(title: "The rule", systemImage: "lightbulb.fill", tint: CrabrixTheme.amber) {
-                Text(practice.rule)
+                formattedParagraph(practice.rule, plainColor: CrabrixTheme.primary)
                     .font(.headline)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -275,14 +273,30 @@ struct LessonDetailView: View {
         }
     }
 
-    private func formattedParagraph(_ paragraph: String) -> Text {
-        if let attributed = try? AttributedString(
-            markdown: paragraph,
-            options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
-        ) {
-            return Text(attributed)
+    private func formattedParagraph(
+        _ paragraph: String,
+        plainColor: Color = CrabrixTheme.muted
+    ) -> Text {
+        // The signed lesson text uses Markdown code spans. Apple's default
+        // inline-code treatment is only a subtle font change in light mode;
+        // give those spans a clear, theme-aware color as well.
+        let parts = paragraph.split(separator: "`", omittingEmptySubsequences: false)
+        guard !parts.count.isMultiple(of: 2) else {
+            return Text(paragraph).foregroundColor(plainColor)
         }
-        return Text(paragraph)
+        return parts.enumerated().reduce(Text("")) { result, element in
+            let (index, part) = element
+            if index.isMultiple(of: 2) {
+                let prose = (try? AttributedString(
+                    markdown: String(part),
+                    options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
+                )) ?? AttributedString(String(part))
+                return result + Text(prose).foregroundColor(plainColor)
+            }
+            return result + Text(String(part))
+                .font(.system(.body, design: .monospaced).weight(.semibold))
+                .foregroundColor(CrabrixTheme.blue)
+        }
     }
 
     private var objectives: some View {
@@ -366,7 +380,7 @@ struct LessonDetailView: View {
                     // This lesson's own rule, which is what decides the
                     // question. A generic "read the diagnostic" line would be
                     // the same sentence in all 142 lessons.
-                    Text(practice.rule)
+                    formattedParagraph(practice.rule, plainColor: CrabrixTheme.primary)
                         .fixedSize(horizontal: false, vertical: true)
                     if wrongAttempts > 1, let index = firstWrongChoice {
                         Divider().overlay(CrabrixTheme.border)
@@ -392,8 +406,7 @@ struct LessonDetailView: View {
                         .font(.headline)
                         .strikethrough(color: CrabrixTheme.coral)
                         .fixedSize(horizontal: false, vertical: true)
-                    Text(practice.rule)
-                        .foregroundStyle(CrabrixTheme.muted)
+                    formattedParagraph(practice.rule, plainColor: CrabrixTheme.primary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -414,7 +427,7 @@ struct LessonDetailView: View {
             )
 
             LessonCard(title: "Success looks like", systemImage: "flag.checkered", tint: CrabrixTheme.mint) {
-                Text(brief.success)
+                formattedParagraph(brief.success, plainColor: CrabrixTheme.primary)
                     .font(.title3.weight(.semibold))
                     .fixedSize(horizontal: false, vertical: true)
                 Label(
@@ -426,7 +439,7 @@ struct LessonDetailView: View {
             }
 
             LessonCard(title: "Transfer challenge", systemImage: "arrow.triangle.branch", tint: CrabrixTheme.coral) {
-                Text(depth.transferChallenge)
+                formattedParagraph(depth.transferChallenge, plainColor: CrabrixTheme.primary)
                     .font(.headline)
                     .fixedSize(horizontal: false, vertical: true)
                 Label(

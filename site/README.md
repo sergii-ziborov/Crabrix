@@ -19,8 +19,10 @@ python3 scripts/sync-course-content.py /path/to/crabrix-courses
 pnpm build
 ```
 
-The current snapshot pins course source `0951e4a`: all 142 Rust lessons have
+The current snapshot pins course source `407cdc2`: all 142 Rust lessons have
 expanded explanations and at least every other lesson has a generated diagram.
+Rust Basics 1.0.3 corrects the Printing Values diagram and marks inline Rust
+expressions so they stand out in both light and dark themes.
 Algorithm Atlas retains its existing 600 steps. Both Blog articles exceed
 1,500 words and contain two generated images, including an infographic.
 
