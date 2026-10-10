@@ -1,4 +1,21 @@
-> Current status — 10 October 2026: **1.1 (44)** was compiled, archived, and
+> Current status — 11 October 2026: **1.1 (50)** is VALID, APP_STORE_ELIGIBLE
+> and IN_BETA_TESTING in Internal QA. Xcode Cloud manual run 50 succeeded
+> with Xcode 27.1 RC / SDK 27.1, compiling the preserved Duo hinge layout.
+> Version 1.1 selects build 50. Both the version and submission
+> `ab085ac9-cba1-420e-bd0d-0bc8dadc9b33` report **WAITING_FOR_REVIEW**.
+> Release remains MANUAL. All 19 screenshot assets are COMPLETE in order
+> with matching MD5s; 16 fresh iPhone/iPad frames show the updated Academy.
+> The verified SDK 27.1 iPad editor and two Duo laptop frames remain.
+> All six bundled-license tests and all five offline legal readers passed;
+> course updates and the separate example download passed on all three
+> destination families. A local SDK 27.1 Duo run completed with stdout `crab`.
+> The physical iPhone reports 1.1 (50); full physical interaction is pending
+> because CoreDevice remote screen capture returns 4016.
+> [Build 50 manifest](../releases/1.1-build50.json),
+> [native Cloud QA](native-cloud-qa-2026-10-11.json),
+> [Apple submission readback](review50-2026-10-11.json).
+
+> Earlier status — 10 October 2026: **1.1 (44)** was compiled, archived, and
 > uploaded by Xcode Cloud from `2a5dd98`. It is `VALID`, `APP_STORE_ELIGIBLE`,
 > and `IN_BETA_TESTING` in Internal QA. What to Test and product/reviewer text
 > matched API readback. Version 1.1 selects build 44; version and submission

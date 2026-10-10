@@ -1,0 +1,123 @@
+{
+  "build": "50",
+  "reviewBuildSourceCommit": "bd1fcab38468efa7671ed05165688a13293ffa1e",
+  "captureStatus": "16 fresh iPhone/iPad captures from manual Xcode Cloud run 54 after real course and example updates; verified SDK 27.1 iPad editor and Duo laptop captures retained. First-party native source unchanged.",
+  "sets": [
+    {
+      "setID": "9abbb718-2cd9-4aa3-9a3d-8f456be9376b",
+      "device": "iphone-6.9",
+      "assets": [
+        {
+          "id": "1b800019-5e0c-83bd-802a-30a3b4509aa5",
+          "file": "docs/app-store/screenshots/iphone-6.9/01-build.png",
+          "md5": "e0e16db5ecde059bacd8c0bbe677cc01"
+        },
+        {
+          "id": "b6400019-5e0c-83bd-8007-75c1b36d6d85",
+          "file": "docs/app-store/screenshots/iphone-6.9/02-projects.png",
+          "md5": "457e6cad3df92f811522de83f2087fe1"
+        },
+        {
+          "id": "32c00019-5e0c-83bd-8032-8f45cab89df5",
+          "file": "docs/app-store/screenshots/iphone-6.9/03-learn.png",
+          "md5": "8bbad46fcb91e83cc155f3ca0a84bbb2"
+        },
+        {
+          "id": "e7800019-5e0c-83bd-8032-53aa0811dce2",
+          "file": "docs/app-store/screenshots/iphone-6.9/04-course.png",
+          "md5": "971ad0a8d4c94d73445dfd3b30da9a86"
+        },
+        {
+          "id": "72000019-5e0c-83bd-8031-b319bf115972",
+          "file": "docs/app-store/screenshots/iphone-6.9/05-lesson.png",
+          "md5": "eeb47620dda81509ff71f51723eb1d7b"
+        },
+        {
+          "id": "a9400019-5e0c-83bd-8012-77ddbc501a88",
+          "file": "docs/app-store/screenshots/iphone-6.9/06-profile.png",
+          "md5": "b6167082bb51f7e7d6e88347c706d353"
+        },
+        {
+          "id": "85800019-5e0c-83bd-8007-04b00dce1bdf",
+          "file": "docs/app-store/screenshots/iphone-6.9/07-library.png",
+          "md5": "c5d070153a0b889368428dc09a377d05"
+        },
+        {
+          "id": "f7c00019-5e0c-83bd-803a-e9a277166ccf",
+          "file": "docs/app-store/screenshots/iphone-6.9/08-settings.png",
+          "md5": "9f08a9b5f0516bb44a0f3e5254b03d6b"
+        },
+        {
+          "id": "25c00019-5e0c-83bd-801c-2166c6b1f9eb",
+          "file": "docs/app-store/screenshots/iphone-6.9/09-my-courses.png",
+          "md5": "198a6b9966aafe2b6703fc4f4e15d018"
+        },
+        {
+          "id": "00800019-5e0c-83bd-801b-1b67f6abfb11",
+          "file": "docs/app-store/screenshots/iphone-6.9/10-example-detail.png",
+          "md5": "b81cd0664a73eedda9ca26d4d9ade1fd"
+        }
+      ],
+      "state": "COMPLETE"
+    },
+    {
+      "setID": "1c84229c-61cc-46c5-8da2-b318c1783a8b",
+      "device": "ipad-13",
+      "assets": [
+        {
+          "id": "a9800019-5e0c-83bd-800b-1596db6e0654",
+          "file": "docs/app-store/screenshots/ipad-13/01-build.png",
+          "md5": "54231db94a768f41c17a70c24306f5f5"
+        },
+        {
+          "id": "14800019-5e0c-83bd-8027-bb3aeb4aadb6",
+          "file": "docs/app-store/screenshots/ipad-13/02-projects.png",
+          "md5": "4b8275e1d19937a0fe560d1a78f9f61a"
+        },
+        {
+          "id": "70800019-5e0c-83bd-802f-c60518b48737",
+          "file": "docs/app-store/screenshots/ipad-13/03-learn.png",
+          "md5": "667e2901f7a8b9836d126c727d183dbd"
+        },
+        {
+          "id": "53800019-5e0c-83bd-8005-695078b32582",
+          "file": "docs/app-store/screenshots/ipad-13/04-lesson.png",
+          "md5": "cb9660220785d389386c3f8a73967143"
+        },
+        {
+          "id": "5bc00019-5e0c-83bd-802d-a625a0b78dbd",
+          "file": "docs/app-store/screenshots/ipad-13/05-profile.png",
+          "md5": "7c4fee4a69056704939814ed0d47f04b"
+        },
+        {
+          "id": "18000019-5e0c-83bd-8029-695845117ffb",
+          "file": "docs/app-store/screenshots/ipad-13/06-library.png",
+          "md5": "b8f72f49d1f5f7df182ef154def9a30c"
+        },
+        {
+          "id": "fbc00019-5e0c-83bd-801e-7204de121fd8",
+          "file": "docs/app-store/screenshots/ipad-13/07-my-courses.png",
+          "md5": "86f2c0163ec0ed62b3d1b2a95c673aa0"
+        }
+      ],
+      "state": "COMPLETE"
+    },
+    {
+      "setID": "3a7cf784-c782-478f-b4a4-1e8108604cc1",
+      "device": "iphone-duo-qa",
+      "assets": [
+        {
+          "id": "b101d808-e24d-4f2b-b122-9055add0b0af",
+          "file": "docs/app-store/screenshots/iphone-duo-qa/01-laptop-code.png",
+          "md5": "e2bcaafb54f352a58408cb68b4b6729c"
+        },
+        {
+          "id": "2f5937cd-b4bb-46c3-bdbb-05aa5f3503b0",
+          "file": "docs/app-store/screenshots/iphone-duo-qa/02-laptop-output.png",
+          "md5": "b5acb515e726122cc94f23e80b3206de"
+        }
+      ],
+      "state": "COMPLETE"
+    }
+  ]
+}

@@ -1,5 +1,33 @@
 # Crabrix website deployment
 
+## Native Academy screenshot refresh and build 50 — 11 October 2026
+
+The public service runs `localhost/crabrix-web-site:build50-20261011` from
+`/srv/apps/crabrix-site/releases/20261011-build50/site` (image digest
+`1bfff364d961a60bcd5a0ce0266d4143186e0825a187aa40f3467c6151dcec12`).
+`crabrix-web-site-1` is healthy on the existing loopback port 3212. Sixteen
+new iPhone/iPad photos from manual Cloud run 54 show the signed Academy
+updates and downloaded examples. The gallery includes the Borrowing lesson
+with highlighted Rust and its infographic. The verified SDK 27.1 iPad editor
+and two portrait Duo laptop frames remain; the fresh QA frame exclusions are
+recorded in the native audit. All 21 public screenshot aliases match the
+repository SHA-256 digests, both on candidate port 3213 and public HTTPS.
+
+The local Next.js build and TypeScript stage passed. Candidate/public checks
+passed for ten routes, the roughly 30% guest lesson preview, login invitation,
+account-to-login redirect, private media denial (401/private no-store), and
+raw course JSON denial (404). The seven-course/742-lesson snapshot, Blog,
+account schema and synchronized legal pages are preserved. A consistent
+restricted account backup completed before switching; the original account
+data mount and daily backup timer remain. Resource limits and security options
+are preserved. The previous account-gated server is stopped as
+`crabrix-web-site-before-build50-20261011` for rollback. The Nginx route,
+certificate and DNS were unchanged. GitHub Actions remain disabled.
+
+[Deployment evidence](site-release-2026-10-11-build50.json),
+[native build 50](releases/1.1-build50.json),
+[Apple screenshot hashes](app-store/asset-upload-2026-10-11-build50.json).
+
 ## Synchronized legal pages and native release 44 — 10 October 2026
 
 The public service runs `localhost/crabrix-web-site:legal-20261010-r1` from

@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "release": {
+    "version": "1.1",
+    "appStoreBuild": "50",
+    "channel": "Xcode Cloud manual archive; TestFlight Internal QA; App Review Waiting for Review",
+    "releaseType": "MANUAL"
+  },
+  "source": {
+    "commit": "bd1fcab38468efa7671ed05165688a13293ffa1e",
+    "change": "Build the preserved native interface and offline legal resources using the Duo-capable SDK. Native Swift source is unchanged from 2a5dd98."
+  },
+  "xcodeCloud": {
+    "runID": "b9dc3e66-ab0c-49b5-8c25-465e8e27dbcf",
+    "number": 50,
+    "completionStatus": "SUCCEEDED",
+    "xcode": "27.1 RC",
+    "xcodeBuild": "27A9275",
+    "sdk": "iOS 27.1",
+    "workflowID": "ff6eebeb-2000-4dd8-a1d9-3b4d2598689a",
+    "manualOnly": true
+  },
+  "appStoreConnect": {
+    "appID": "6809502653",
+    "buildID": "d9905a8f-1a74-495e-8570-53d853861eb5",
+    "processingState": "VALID",
+    "buildAudienceType": "APP_STORE_ELIGIBLE",
+    "internalBetaGroup": "Internal QA",
+    "internalBetaGroupID": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "internalBuildState": "IN_BETA_TESTING",
+    "appStoreVersionID": "2bc0ae1f-ca26-41e6-a0a9-700628e7bf14",
+    "appReviewSelectedBuild": "50",
+    "appReviewState": "WAITING_FOR_REVIEW",
+    "previousReviewSubmissionID": "a953a91f-bda4-4e8c-8cb8-8adb114c9832",
+    "reviewSubmissionID": "ab085ac9-cba1-420e-bd0d-0bc8dadc9b33",
+    "reviewSubmissionState": "WAITING_FOR_REVIEW"
+  },
+  "content": {
+    "catalogSequence": 9,
+    "coursepackRelease": "coursepack-v1.0.8",
+    "lessonCount": 742,
+    "illustratedLessonCount": 742,
+    "deliveryChanged": false
+  },
+  "validation": {
+    "cloudBuildAndArchive": "passed",
+    "legalCopyAndPinnedLicenseCheck": "passed",
+    "nativeBundledLicenseTests": "6 passed, run 45; all 1594 notice groups read",
+    "nativeLegalReaders": "All five readers passed on iPhone/iPad in run 54 and Duo in run 49",
+    "signedCourseUpdatesThroughUI": "Passed on iPhone and iPad in run 54, and Duo in run 49; all seven installed packs and separate 46 Code Examples",
+    "physicalDeviceVersion": "connected iPhone 13 mini reports 1.1 (50); user confirms TestFlight update",
+    "physicalDeviceInteraction": "pending: Device Hub and CoreDevice remote-screen service time out",
+    "freshScreenshots": "All 19 ordered assets COMPLETE and matching repository MD5s; 16 fresh phone/iPad frames from run 54, verified SDK 27.1 iPad editor and two Duo laptop images retained.",
+    "localDuoSmokeTest": "Build-50 Cloud app (SDK 27.1) passed testDuoDisplayScreenshots locally; native compiler run completed with stdout crab",
+    "website": "Hetzner healthy; candidate and public HTTPS passed account gate, private-media/raw-data denial, ten routes and all 21 screenshot SHA-256 digests"
+  },
+  "evidence": [
+    "docs/app-store/legal-cloud-tests-2026-10-11.json",
+    "docs/app-store/native-cloud-qa-2026-10-11.json",
+    "docs/app-store/asset-upload-2026-10-11-build50.json",
+    "docs/app-store/review50-2026-10-11.json",
+    "docs/site-release-2026-10-11-build50.json"
+  ]
+}

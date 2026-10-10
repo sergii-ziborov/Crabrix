@@ -5,7 +5,8 @@
 [Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support/) · [Privacy](https://crabrix.com/privacy/) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
 <p>
-  <img src="docs/screenshots/iphone-learn.png" width="200" alt="Crabrix course library with individual downloads">
+  <img src="docs/screenshots/iphone-learn.png" width="200" alt="Downloaded Crabrix courses and lesson progress">
+  <img src="docs/screenshots/iphone-lesson.png" width="200" alt="Expanded borrowing lesson with highlighted Rust code and an infographic">
   <img src="docs/screenshots/iphone-examples.png" width="200" alt="Code Examples path with every example open">
   <img src="docs/screenshots/iphone-example-detail.png" width="200" alt="Example description, source preview and Open in Code">
   <img src="docs/screenshots/iphone-build.png" width="200" alt="Rust code editor and compiler workspace">
@@ -13,6 +14,8 @@
 </p>
 
 The [iPad workspace](docs/screenshots/ipad-build.png) shows the file sidebar and in-file search above the editor. The current iPhone and iPad editor captures omit the keyboard-dismiss button from the Code/Terminal tab row; that control remains on [Duo](docs/screenshots/duo-laptop.png), where the code tabs and keyboard share the fold layout. [Duo Output](docs/screenshots/duo-output.png) shows the completed run, standard output, and rating.
+
+The current screenshot set includes sixteen new iPhone/iPad frames captured after the signed Academy updates in manual Xcode Cloud run 54. The verified SDK 27.1 iPad editor and Duo laptop frames are retained. [Capture and upload evidence](docs/app-store/asset-upload-2026-10-11-build50.json) records the exact published files.
 
 ## Use Crabrix
 
@@ -50,7 +53,11 @@ The release graph has one runtime dependency. CoursePacks contain data, text, me
 ## Build from source
 
 Distribution builds are compiled, archived and uploaded through **Xcode Cloud**.
-Its workflow is manual; GitHub Actions does not build or deploy Crabrix. The
+Its workflow is manual; GitHub Actions does not build or deploy Crabrix.
+Distribution is pinned to Xcode 27.1 RC / iOS 27.1 SDK so the preserved Duo
+hinge code is compiled. An archive built with SDK 27.0 omits that code; do
+not use such an archive for the Duo release. See the
+[build 50 manifest](docs/releases/1.1-build50.json). The
 current selected review build, source commit and review status are recorded in
 [submission status](docs/app-store/submission-status.md) and the
 [release manifests](docs/releases/). XcodeGen and `zstd` are build tools. The app
@@ -84,6 +91,15 @@ xcodebuild test -project Crabrix.xcodeproj -scheme CrabrixCourseDeliveryGate \
 ```
 
 The named Simulator is a local development device; choose an installed iOS Simulator on another Mac. [Validation](docs/VALIDATION.md) records commands and observed outcomes without treating a written test as a passed test. A physical device pass is a separate release gate.
+
+`CrabrixLegalGate` runs the six offline legal-resource tests. All six passed in
+[manual Xcode Cloud run 45](docs/app-store/legal-cloud-tests-2026-10-11.json),
+including reading every document in all 1,594 compiler notice groups.
+`CrabrixScreenshots` runs on a fresh Simulator: it installs the signed transition
+packs, updates the courses through the real download UI, installs Code Examples,
+captures the Academy/workspace routes, and opens all five offline legal readers.
+Its screenshots are retained as XCTest attachments for inspection before
+publication. These Cloud workflows have manual triggers only.
 
 ## Compatibility and limits
 

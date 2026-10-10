@@ -1,0 +1,149 @@
+{
+  "date": "2026-10-11",
+  "scope": "Native offline legal readers and signed course updates; manual Xcode Cloud QA",
+  "runs": [
+    {
+      "runID": "e002ba44-ecbc-455e-bd4d-e205106a0923",
+      "number": 46,
+      "source": "c4924cd934187b3a840780f687a50b42c16730de",
+      "result": "SUCCEEDED",
+      "tests": [
+        {
+          "name": "testReleaseScreenshotsAndLegalReaders()",
+          "status": "SUCCESS",
+          "destinations": [
+            {
+              "uuid": "896cb112-7f10-45c0-9eda-4c7583f3c3ca",
+              "deviceName": "iPad Pro 13-inch (M4)",
+              "osVersion": "27.0",
+              "status": "SUCCESS",
+              "duration": 300.841588973999
+            },
+            {
+              "uuid": "a154e4be-d53c-4963-8af9-8a8eaa6ac181",
+              "deviceName": "iPhone 16 Pro Max",
+              "osVersion": "27.0",
+              "status": "SUCCESS",
+              "duration": 368.4622149467468
+            }
+          ]
+        }
+      ],
+      "screenshotAttachmentCount": 31
+    },
+    {
+      "runID": "7726ef88-ca9e-4965-be5d-f99f7d0f0920",
+      "number": 47,
+      "source": "c4924cd934187b3a840780f687a50b42c16730de",
+      "result": "SUCCEEDED",
+      "tests": [
+        {
+          "name": "testReleaseScreenshotsAndLegalReaders()",
+          "status": "SUCCESS",
+          "destinations": [
+            {
+              "uuid": "4818e799-3175-4c0d-86ba-de4f63accdf1",
+              "deviceName": "iPhone",
+              "osVersion": "27.1",
+              "status": "SUCCESS",
+              "duration": 383.3263349533081
+            }
+          ]
+        }
+      ],
+      "screenshotAttachmentCount": 17
+    },
+    {
+      "runID": "4ece80c1-0ff2-4c5c-9566-78230ef53973",
+      "number": 49,
+      "source": "69788833612986a670d870c3199a38ff839fb338",
+      "result": "SUCCEEDED",
+      "tests": [
+        {
+          "name": "testReleaseScreenshotsAndLegalReaders()",
+          "status": "SUCCESS",
+          "destinations": [
+            {
+              "uuid": "5edeb25c-f636-4839-9f48-debc01ab5a65",
+              "deviceName": "iPhone",
+              "osVersion": "27.1",
+              "status": "SUCCESS",
+              "duration": 455.21805906295776
+            }
+          ]
+        }
+      ],
+      "screenshotAttachmentCount": 17
+    },
+    {
+      "runID": "6fbb6dc9-1e5b-43d8-afaa-48c98f595872",
+      "number": 51,
+      "source": "155673a9852b72a10ae67ac209437586c9d5df9f",
+      "result": "SUCCEEDED",
+      "tests": [
+        {
+          "name": "testDuoDisplayScreenshots()",
+          "status": "SUCCESS",
+          "destinations": [
+            {
+              "uuid": "47bad3fc-4d23-4256-bb61-fec2a2c9ba77",
+              "deviceName": "iPhone",
+              "osVersion": "27.1",
+              "status": "SUCCESS",
+              "duration": 78.55482292175293
+            }
+          ]
+        }
+      ],
+      "screenshotAttachmentCount": 12
+    },
+    {
+      "runID": "5bf5ad4a-c5ce-4f7b-b731-a9db840c56a3",
+      "number": 54,
+      "source": "b292bfe9c41ee4fe177b0165e5e99635d04c4a5b",
+      "result": "SUCCEEDED",
+      "tests": [
+        {
+          "name": "testReleaseScreenshotsAndLegalReaders()",
+          "status": "SUCCESS",
+          "destinations": [
+            {
+              "uuid": "41d6dfe5-4a6e-4a60-b4e8-c6d52faceb86",
+              "deviceName": "iPhone 16 Pro Max",
+              "osVersion": "27.0",
+              "status": "SUCCESS",
+              "duration": 448.6207640171051
+            },
+            {
+              "uuid": "b7d44069-6347-49ee-bb87-35d987e3efff",
+              "deviceName": "iPad Pro 13-inch (M4)",
+              "osVersion": "27.0",
+              "status": "SUCCESS",
+              "duration": 380.12287199497223
+            }
+          ]
+        }
+      ],
+      "screenshotAttachmentCount": 31,
+      "contentUpdate": "All seven installed transition packs updated through Update all; separate 46 Code Examples download confirmed by byte-count button."
+    }
+  ],
+  "limitations": [
+    "Cloud Duo screen 0 is the exterior display; screen 1 remained blank. These frames are not published as laptop captures.",
+    "The legal reader runs exercise five offline documents. The distinct six-test resource gate reads all compiler notice groups.",
+    "Physical iPhone reports build 50, but remote screen capture is currently unavailable.",
+    "The SDK 27.0 phone/iPad QA job generated an overlapping iPad editor header; that individual frame was excluded. The earlier verified SDK 27.1 iPad editor frame remains published.",
+    "Screenshot smoke tests verify launch and capture, not every keyboard position or gesture. Physical device interaction has not passed."
+  ],
+  "localDuo": {
+    "sourceArtifactRun": 51,
+    "appBundleBuild": "50",
+    "sdk": "iphonesimulator27.1",
+    "test": "testDuoDisplayScreenshots()",
+    "result": "SUCCESS",
+    "attachmentCount": 12,
+    "realCompilerRun": "Observed Run complete and stdout crab after executing the native bundled compiler/runtime in the same build-50 Cloud app.",
+    "marketingCapture": "Local simulator remains landscape; previous verified portrait laptop marketing captures retained.",
+    "nativeSourceChanged": false
+  }
+}

@@ -59,10 +59,15 @@ Product and legal copy remains in the top-level HTML files rendered through
 
 Current product screenshots in `public/screenshots/`, `screenshots/` and
 `../docs/screenshots/` agree byte-for-byte where a shared filename exists.
+Sixteen iPhone/iPad frames were refreshed after the real signed course updates
+in manual Xcode Cloud run 54. The gallery and root README include the current
+Borrowing lesson infographic and highlighted code. The verified SDK 27.1
+iPad editor and two Duo portrait laptop captures remain; capture provenance
+and Apple MD5 readback are in
+`../docs/app-store/asset-upload-2026-10-11-build50.json`.
 The iPad editor shows in-file search. Duo Code and Output retain their tested
 fold layout. iPhone/iPad editor captures omit the Duo-only keyboard-dismiss
-button from the Code/Terminal tab row. Native build 43 remains the App Review
-build; this website change does not alter its offline account-free behaviour.
+button from the Code/Terminal tab row. Native build 50 is selected for App Review; this website change does not alter its offline account-free behaviour.
 
 ## Accounts and operation
 

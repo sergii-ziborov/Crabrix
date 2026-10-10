@@ -1,0 +1,91 @@
+{
+  "workflowID": "c81243ff-0672-45d1-9ddf-4a3f45857055",
+  "manualOnly": true,
+  "runID": "a5c6106e-3aa4-4087-9eef-b0b0e4ab29f5",
+  "runNumber": 45,
+  "status": "SUCCEEDED",
+  "sourceCommit": "5144333d034464e535216617a4aff36cb15327e9",
+  "nativeSourceMatchesReviewBuild44": true,
+  "selectedAppStoreBuild": "44",
+  "finishedDate": "2026-10-10T21:43:51.771Z",
+  "tests": [
+    {
+      "name": "testOfflineLegalDocumentsDecodeAndKeepTheAppWebsiteBoundary()",
+      "class": "BundledLicenseTests",
+      "status": "SUCCESS",
+      "destinations": [
+        {
+          "deviceName": "iPhone 16 Pro Max",
+          "osVersion": "27.0",
+          "status": "SUCCESS",
+          "duration": 0.00568997859954834
+        }
+      ]
+    },
+    {
+      "name": "testTheNoticesFileIsAlsoBundled()",
+      "class": "BundledLicenseTests",
+      "status": "SUCCESS",
+      "destinations": [
+        {
+          "deviceName": "iPhone 16 Pro Max",
+          "osVersion": "27.0",
+          "status": "SUCCESS",
+          "duration": 0.0018749237060546875
+        }
+      ]
+    },
+    {
+      "name": "testTheRedistributedToolchainLicencesAreTheRealTexts()",
+      "class": "BundledLicenseTests",
+      "status": "SUCCESS",
+      "destinations": [
+        {
+          "deviceName": "iPhone 16 Pro Max",
+          "osVersion": "27.0",
+          "status": "SUCCESS",
+          "duration": 0.0019350051879882812
+        }
+      ]
+    },
+    {
+      "name": "testEveryDeclaredLicenceTextShipsInsideTheApp()",
+      "class": "BundledLicenseTests",
+      "status": "SUCCESS",
+      "destinations": [
+        {
+          "deviceName": "iPhone 16 Pro Max",
+          "osVersion": "27.0",
+          "status": "SUCCESS",
+          "duration": 0.006356000900268555
+        }
+      ]
+    },
+    {
+      "name": "testEveryInventoriedCompilerNoticeCanBeReadOffline()",
+      "class": "BundledLicenseTests",
+      "status": "SUCCESS",
+      "destinations": [
+        {
+          "deviceName": "iPhone 16 Pro Max",
+          "osVersion": "27.0",
+          "status": "SUCCESS",
+          "duration": 27.02366006374359
+        }
+      ]
+    },
+    {
+      "name": "testEveryComponentNamesAtLeastOneDocument()",
+      "class": "BundledLicenseTests",
+      "status": "SUCCESS",
+      "destinations": [
+        {
+          "deviceName": "iPhone 16 Pro Max",
+          "osVersion": "27.0",
+          "status": "SUCCESS",
+          "duration": 0.002804994583129883
+        }
+      ]
+    }
+  ]
+}

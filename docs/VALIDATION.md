@@ -1,5 +1,58 @@
 # Validation record
 
+## Build 50 and native Academy UI — 11 October 2026
+
+Manual Xcode Cloud distribution run 50 built and archived `bd1fcab` with
+Xcode 27.1 RC / SDK 27.1. Apple reports build 50 VALID and APP_STORE_ELIGIBLE;
+Internal QA is IN_BETA_TESTING. This SDK compiles the preserved conditional
+Duo hinge implementation. First-party native Swift and resource files are
+unchanged from `2a5dd98`; build 44 used SDK 27.0 and omitted the Duo condition.
+Both distribution workflows now pin SDK 27.1 and have no automatic triggers.
+Version 1.1 and submission `ab085ac9-cba1-420e-bd0d-0bc8dadc9b33` report
+WAITING_FOR_REVIEW with build 50 selected and MANUAL release. All 19 ordered
+Apple screenshot assets are COMPLETE and match the repository MD5s.
+
+Manual run 54 passed the screenshot/legal-reader test on iPhone 16 Pro Max
+and iPad Pro 13-inch M4. It upgraded all seven installed signed courses and
+separately downloaded the 46-example pack through the actual app interface.
+Five offline legal readers passed on both destinations; run 49 passed the
+same paths on Duo. [Native QA results](app-store/native-cloud-qa-2026-10-11.json)
+record the destinations and scope. Six bundled-license resource tests also
+passed in run 45, including all 1594 notice groups.
+
+The build-50 SDK 27.1 Simulator application was extracted from Cloud run 51
+Test Products and installed into an isolated local Duo clone. Its screen
+capture smoke test passed; an actual local compiler run completed and printed
+`crab`. Portrait laptop capture remains blocked by Device Hub control timeouts:
+XCTest orientation changes affect the exterior screen only. The new SDK 27.0
+iPad editor capture overlapped its system tabs and search, so the verified
+SDK 27.1 editor image remains in the published set. Sixteen fresh phone/iPad
+frames show the updated teaching packs; the verified two Duo laptop images
+remain. Screenshot tests are not assertions of every keyboard position.
+
+The connected physical iPhone and the owner's TestFlight confirmation identify
+1.1 (50). CoreDevice still rejects its remote capture usage assertion (4016),
+so this is installation evidence rather than a completed physical-device pass.
+The Mac was not rebooted and original device data was retained.
+
+## Legal tests and Simulator retry — 11 October 2026
+
+All six `BundledLicenseTests` passed in manual Xcode Cloud test run 45 on
+iPhone 16 Pro Max / iOS 27.0. This includes reading every document in all 1594
+compiler notice groups. [Machine-readable results](app-store/legal-cloud-tests-2026-10-11.json)
+record the test names, statuses, durations and source `5144333`. First-party
+app and test source match App Review build 44; this test-only run does not
+replace the selected distribution build. Automatic workflow triggers are absent.
+
+The local retry booted a fresh clone and captured four build-44 iPhone frames.
+The capture then stalled again in CoreSimulator runtime discovery: a sampled
+`simctl terminate` client was blocked in `stat` inside `SimRuntime.initWithBundle`.
+The four fresh drafts are retained in
+`app-store/screenshots/build44-partial/iphone-6.9/`; the complete earlier
+Store/site/README set remains synchronized. Other iPhone, iPad and Duo captures
+remain pending. The owned capture runner was stopped. Existing learner data
+and installed runtimes were retained; the Mac was not rebooted.
+
 ## Bundled legal documents and release 44 — 10 October 2026
 
 Xcode Cloud built and archived source `2a5dd98` successfully. Apple processed

@@ -43,12 +43,13 @@
     "nativeDebugBuildForTesting": "passed",
     "legalCopyAndPinnedLicenseCheck": "passed",
     "releaseBundleDocuments": "passed: five legal documents and 1594 offline notice groups readable; source bytes match",
-    "nativeBundledLicenseTestExecution": "pending: CoreSimulator broker is blocked despite targeted service restarts",
+    "nativeBundledLicenseTestExecution": "passed: all six tests in manual Xcode Cloud test-only run 45; app and test source match build 44",
     "websiteProductionBuild": "passed",
     "websitePublicHTTPS": "passed: About, Privacy, Terms and Licenses; account gate retained",
     "appStoreScreenshotUpload": "passed: 10 iPhone, 7 iPad, 2 Duo; all COMPLETE; ordered source-file MD5s match",
-    "freshBuild44ScreenshotCapture": "pending: CoreSimulator unavailable; synchronized existing verified captures instead",
-    "physicalDeviceReview": "pending"
+    "freshBuild44ScreenshotCapture": "partial: four fresh iPhone drafts retained separately; remaining six iPhone, seven iPad and two Duo images blocked by local runtime discovery; existing complete public set preserved",
+    "physicalDeviceReview": "partial: connected iPhone 13 mini reports 1.1 (44); a real lesson screenshot shows highlighted Rust blocks; complete physical QA remains pending",
+    "legalTestEvidence": "docs/app-store/legal-cloud-tests-2026-10-11.json"
   },
   "documentation": "Follow-up documentation and evidence commits do not change the first-party Swift source compiled by this run."
 }

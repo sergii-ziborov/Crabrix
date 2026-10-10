@@ -4,6 +4,11 @@
 The script clones temporary Simulators, so existing learner data is untouched.
 It records both a fresh Academy install and the offline transition path for an
 existing learner. Run it with the Release Simulator .app being documented.
+
+The local transition captures use the bundled course versions. For marketing
+captures of the latest delivered Academy, use the CrabrixScreenshots scheme:
+it updates the courses through the actual app UI before retaining screenshots
+as XCTest attachments. Inspect those attachments before publishing them.
 """
 
 import argparse
@@ -133,6 +138,9 @@ def copy_for_docs() -> None:
         "iphone-projects.png": "iphone-6.9/02-projects.png",
         "iphone-learn.png": "iphone-6.9/03-learn.png",
         "iphone-my-courses.png": "iphone-6.9/09-my-courses.png",
+        "iphone-lesson.png": "iphone-6.9/05-lesson.png",
+        "iphone-course.png": "iphone-6.9/04-course.png",
+        "iphone-profile.png": "iphone-6.9/06-profile.png",
         "iphone-academy.png": "iphone-6.9/03-learn.png",
         "iphone-library.png": "iphone-6.9/07-library.png",
         "iphone-examples.png": "iphone-6.9/07-library.png",
@@ -142,6 +150,8 @@ def copy_for_docs() -> None:
         "ipad-build.png": "ipad-13/01-build.png",
         "ipad-learn.png": "ipad-13/03-learn.png",
         "ipad-my-courses.png": "ipad-13/07-my-courses.png",
+        "ipad-lesson.png": "ipad-13/04-lesson.png",
+        "ipad-profile.png": "ipad-13/05-profile.png",
         "ipad-library.png": "ipad-13/06-library.png",
     }
     for name, source in sources.items():

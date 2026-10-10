@@ -1,0 +1,12 @@
+{
+  "app": "Crabrix",
+  "version": "1.1",
+  "build": "50",
+  "buildID": "d9905a8f-1a74-495e-8570-53d853861eb5",
+  "reviewSubmissionID": "ab085ac9-cba1-420e-bd0d-0bc8dadc9b33",
+  "reviewSubmissionState": "WAITING_FOR_REVIEW",
+  "versionState": "WAITING_FOR_REVIEW",
+  "releaseType": "MANUAL",
+  "buildProcessingState": "VALID",
+  "selectedBuildID": "d9905a8f-1a74-495e-8570-53d853861eb5"
+}

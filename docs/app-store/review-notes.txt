@@ -1,4 +1,4 @@
-Crabrix 1.1 (44) is the latest Xcode Cloud archive. The native compiler and runtime remain bundled and unchanged by course downloads. The app needs no login, website account, paid course unlock, or reviewer credentials. Website Academy accounts are a separate free reading service.
+Crabrix 1.1 (50) is the latest Xcode Cloud archive, built with the iOS 27.1 SDK to include the Duo hinge layout. The native compiler and runtime remain bundled and unchanged by course downloads. The app needs no login, website account, paid course unlock, or reviewer credentials. Website Academy accounts are a separate free reading service.
 
 REVIEW PATH
 1. Open Learn on a fresh install. Seven courses and Code Examples are offered individually; no course is silently installed. Download Rust Basics (network required once), then open a lesson. Its text, code formatting, example and illustration remain available offline.
