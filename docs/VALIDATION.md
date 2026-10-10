@@ -13,9 +13,12 @@ installed the bundled signed Rust Basics 1.0.1 pack, fetched the live signed
 catalog and Rust Basics 1.0.2 asset from GitHub, installed it, and verified the
 changed lesson explanation, stable `hello-rust` lesson ID, and unchanged open
 1.0.1 session snapshot. Its result bundle reported one passed test, zero
-skipped and zero failed. This verifies the content upgrade path; manual
-interaction with the Update and Update all buttons on physical devices remains
-to be checked.
+skipped and zero failed. A second live gate upgraded the bundled Algorithm
+Atlas 1.0.1 pack to the public 1.0.2 archive, loaded all 600 revised steps and
+an infographic, and verified that an open old step kept its snapshot. That
+result bundle also reported one passed, zero skipped and zero failed. These
+verify the content upgrade paths; manual interaction with the Update and Update
+all buttons on physical devices remains to be checked.
 
 ## Illustrated Academy rollout and App Store build 38 — 9 October 2026
 

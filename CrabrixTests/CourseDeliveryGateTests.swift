@@ -99,6 +99,53 @@ final class CourseDeliveryGateTests: XCTestCase {
         ).path))
     }
 
+    func testPublicAtlasUpgradeLoadsRevisedStepsAndIllustrations() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COURSE_FETCH"] == "1" else {
+            throw XCTSkip("Set CRABRIX_RUN_COURSE_FETCH=1 for the public Atlas upgrade gate.")
+        }
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let packs = try XCTUnwrap(Bundle.main.url(
+            forResource: "MigrationCoursePacks", withExtension: nil
+        ))
+        let keyring = try JSONDecoder().decode(CourseKeyring.self,
+            from: Data(contentsOf: packs.appending(path: "production-keyring.json")))
+        let installer = try CourseInstaller(
+            root: root.appending(path: "installed"), appVersion: SemanticVersion("1.1")
+        )
+        _ = try await installer.install(
+            descriptorBytes: Data(contentsOf: packs.appending(path: "algorithms.descriptor.json")),
+            downloadedArchive: packs.appending(path: "algorithms-1.0.1.zip"),
+            keyring: keyring
+        )
+        let old = try await installer.loadRepository(keyring: keyring)
+        let oldAtlas = try XCTUnwrap(old.course(id: "algorithms"))
+        let stepID = try XCTUnwrap(oldAtlas.units.first?.lessons.first?.id)
+        let oldSession = try XCTUnwrap(CourseSession(lessonID: stepID, repository: old))
+        let oldText = try XCTUnwrap(oldSession.repository.writing(for: stepID)).explanation
+
+        let client = CourseCatalogClient(
+            stateURL: root.appending(path: "catalog-state.json"), keyring: keyring
+        )
+        let catalog = try await client.refresh()
+        let latest = CourseUpdatePlanner.latestCompatible(
+            in: catalog, appVersion: try XCTUnwrap(SemanticVersion("1.1"))
+        )
+        let entry = try XCTUnwrap(latest["algorithms|en"])
+        let manager = try CourseDownloadManager(cacheRoot: root.appending(path: "downloads"))
+        let downloaded = try await manager.download(entry)
+        _ = try await installer.install(
+            descriptorBytes: downloaded.descriptor, downloadedArchive: downloaded.archive,
+            keyring: keyring
+        )
+        let updated = try await installer.loadRepository(keyring: keyring)
+        XCTAssertEqual(updated.loaded["algorithms"]?.contentVersion, entry.contentVersion)
+        XCTAssertEqual(updated.course(id: "algorithms")?.units.flatMap(\.lessons).count, 600)
+        XCTAssertNotEqual(updated.writing(for: stepID)?.explanation, oldText)
+        XCTAssertNotNil(updated.illustration(for: stepID))
+        XCTAssertEqual(oldSession.repository.writing(for: stepID)?.explanation, oldText)
+    }
+
     func testPublicArchiveResumesFromPersistedRange() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COURSE_FETCH"] == "1" else {
             throw XCTSkip("Set CRABRIX_RUN_COURSE_FETCH=1 for the public course delivery gate.")
