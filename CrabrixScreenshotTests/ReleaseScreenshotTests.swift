@@ -110,7 +110,7 @@ final class ReleaseScreenshotTests: XCTestCase {
         }
         XCTAssertTrue(examples.exists && examples.isHittable)
         examples.tap()
-        let download = app.buttons.matching(NSPredicate(format: "label MATCHES %@", "^Download [0-9].*")).firstMatch
+        let download = app.buttons.matching(NSPredicate(format: "label MATCHES %@", "^Download [0-9][0-9,. ]* (bytes|KB|MB|GB|TB)$")).firstMatch
         XCTAssertTrue(download.waitForExistence(timeout: 10))
         download.tap()
         XCTAssertTrue(app.buttons["Browse 46 Code Examples, available offline"].waitForExistence(timeout: 180))
