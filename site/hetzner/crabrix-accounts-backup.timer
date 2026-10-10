@@ -1,0 +1,8 @@
+[Unit]
+Description=Daily Crabrix Academy account backup
+[Timer]
+OnCalendar=*-*-* 03:30:00 UTC
+Persistent=true
+RandomizedDelaySec=15m
+[Install]
+WantedBy=timers.target

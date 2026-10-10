@@ -1,60 +1,100 @@
 # Crabrix website
 
-This directory contains the Next.js 16 website. The same shared header, footer,
-spacing, and responsive layout render the product, legal, Blog, and Learn pages.
-The build exports static HTML, so the Hetzner service only serves files with
-Nginx. It is independent of the running GrantTap compose stack.
+The Next.js 16 website uses a shared header, footer and responsive spacing for
+product pages, Blog, Learn, registration and Account. It now runs as a **Node.js
+server**, independently of GrantTap on Hetzner. Static export is no longer a
+production deployment option because Academy access is checked on the server.
 
-```bash
+## Development and checks
+
+Use Node.js 24. Copy `.env.example` to `.env.local` for localhost, then:
+
+```sh
 pnpm install --frozen-lockfile
+pnpm dev
+pnpm test
+pnpm check
 pnpm build
 ```
 
-The output is `site/out/`. `app/learn` exposes all seven courses and 742 lesson
-pages from the pinned snapshot in `content/courses.json`. Refresh that snapshot
-from a trusted checkout of the author's course repository with:
+`pnpm test` covers credential/session handling, recovery rotation, account
+deletion, backup restoration, all 742 lesson previews and the three new blog
+articles. `scripts/test-account-flow.mjs` runs the browser account lifecycle
+against a running site and deletes its isolated test account. It needs an
+installed Chrome and the `PLAYWRIGHT_MODULE` path or a local Playwright install.
+Set `QA_SITE_ORIGIN` for a candidate or live HTTPS check. `QA_CAPTURE=1` saves
+registration captures without credentials or recovery codes.
 
-```bash
+## Content and synchronization
+
+`content/courses.json` is the pinned 742-lesson curriculum from the course
+repository, including all 142 Rust lessons and 600 Algorithm Atlas steps.
+Refresh both lesson JSON and the 182 private media files with:
+
+```sh
 python3 scripts/sync-course-content.py /path/to/crabrix-courses
 pnpm build
 ```
 
-The current snapshot pins course source `aabd294`: all 742 Academy lessons
-have an infographic. Atlas reuses its pattern-specific diagrams across all
-600 steps, and the 70 Rust lessons that lacked an illustration have individual
-code-to-rule diagrams. Rust Basics 1.0.5 retains the corrected Printing Values
-diagram; inline Rust expressions and the larger source examples now have
-distinct colors. Atlas challenge answers stay behind the answer reveal.
-Both Blog articles exceed
-1,500 words and contain two generated images, including an infographic.
+Lesson sources and images live under `content/`, never `public/`. Guests receive
+approximately 30% of the lesson's visible word count and an invitation to create
+a free account. Exercises, answers and the rest of the lesson are absent from
+both guest HTML and React Server Component responses. `/learn-media/` checks
+the same session. Authenticated responses use private/no-store caching.
+Google receives the same previews as other logged-out visitors. Registration
+content has matching JSON-LD markup; account pages are excluded from indexing.
 
-`content/posts.json` contains two articles of more than 1,500 words each and
-the image references rendered by `app/blog`. Product and legal copy in the checked-in
-top-level HTML files is rendered through `lib/legacy.ts`; the Next layout supplies
-their common navigation and spacing. Product captures are in `public/screenshots/`.
-The iPad editor capture includes in-file search. Current iPhone and iPad editor
-captures omit Duo's keyboard-dismiss button from the Code/Terminal tab row; the
-two Duo captures show Code with its keyboard controls and a completed run in
-Output. Refresh the Store
-captures from the same Release Simulator source before changing those files.
+This is website access control, not copy protection: the separate app course
+repository and signed release archives remain public so existing native builds
+can download and update their courses. Changing that delivery model requires
+an app release and a separate migration.
 
-The site runs as its own Hetzner container. The current release serves a
-locally built static export from Nginx using `compose.prebuilt.yaml`; source
-builds use `compose.hetzner.yaml` and `hetzner/Dockerfile`. It binds only to
-loopback on port 3212. The public `crabrix.com` HTTPS route is handled by
-`hetzner/crabrix.com.nginx`; the certificate renews through Certbot webroot.
-Deployment evidence and DNS details are in `../docs/site-deploy.md`.
+`content/posts.json` contains five articles. The three added on 10 October 2026
+have 1,605, 1,555 and 1,601 prose words, official Rust source links, highlighted
+Rust examples and two ImageGen images each. Each pair contains an infographic.
+Final assets and hashes are recorded in `../docs/blog-assets-2026-10-10.json`;
+the built-in ImageGen prompts are in `../docs/blog-image-prompts-2026-10-10.md`.
+Product and legal copy remains in the top-level HTML files rendered through
+`lib/legacy.ts`.
 
-For a prebuilt release, build the static export locally, transfer `out/` with
-`hetzner/nginx.conf`, `hetzner/Dockerfile.prebuilt`, and
-`compose.prebuilt.yaml` to an isolated release directory on Hetzner, then build
-a versioned image:
+Current product screenshots in `public/screenshots/`, `screenshots/` and
+`../docs/screenshots/` agree byte-for-byte where a shared filename exists.
+The iPad editor shows in-file search. Duo Code and Output retain their tested
+fold layout. iPhone/iPad editor captures omit the Duo-only keyboard-dismiss
+button from the Code/Terminal tab row. Native build 43 remains the App Review
+build; this website change does not alter its offline account-free behaviour.
 
-```bash
-podman build -f hetzner/Dockerfile.prebuilt -t localhost/crabrix-web-site:rust-20261009 .
+## Accounts and operation
+
+Accounts use a username and password; no email or payment information is
+required. Password hashes use scrypt (N=131072, r=8, p=1), unique salts and
+constant-time comparison. Recovery codes and session tokens are randomly
+generated and stored only as hashes. Production cookies are Secure, HttpOnly,
+SameSite=Lax and expire after 30 days. Server Actions validate the origin and
+persist short-lived rate limits. Account includes export, password change and
+password-confirmed deletion. Terms acceptance records the policy version.
+
+Configure `SITE_ORIGIN=https://crabrix.com` and
+`AUTH_DB_PATH=/data/accounts.sqlite`. The persistent account directory is
+`/srv/apps/crabrix-site/accounts`, owned by container UID 1000 with restricted
+permissions. Never put it in a release archive or Git. Backups retain seven days;
+deletion fingerprints retain at most eight days. Restore only with the site
+stopped; the restore script reapplies deletions and revokes all sessions.
+See `../docs/site-accounts.md` for operation and recovery.
+
+## Production release
+
+Build locally, then prepare a server artifact:
+
+```sh
+pnpm build
+node scripts/prepare-server-release.mjs ../build/site-server-release
 ```
 
-Test a candidate on port 3213 before moving the public port 3212 to the new
-container; keep the previous container stopped for rollback. The compose file
-binds only to `127.0.0.1` and does not change the public domain route. The
-observed switch and rollback target are recorded in `../docs/site-deploy.md`.
+Transfer that prepared directory to an isolated Hetzner release directory.
+`hetzner/Dockerfile.prebuilt` packages the standalone server, static framework
+assets, public blog/screenshots and backup script. Source builds use
+`hetzner/Dockerfile`. Both bind only to loopback through Podman. The public
+Nginx route stays on port 3212 with the existing Certbot certificate. Test on
+3213 before switching; retain the previous container for rollback. No GitHub
+CI/CD is used. Deployment evidence is in `../docs/site-deploy.md`.

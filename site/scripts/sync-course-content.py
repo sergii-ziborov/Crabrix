@@ -48,7 +48,7 @@ def main() -> None:
                 source_image = folder / expected
                 if not source_image.is_file():
                     raise ValueError(f"missing lesson illustration: {source_image}")
-                destination_image = SITE / "public" / "learn-media" / course_id / Path(expected).name
+                destination_image = SITE / "content" / "learn-media" / course_id / Path(expected).name
                 destination_image.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source_image, destination_image)
             units.append({**unit, "lessons": lessons})

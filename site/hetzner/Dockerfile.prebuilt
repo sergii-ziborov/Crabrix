@@ -1,4 +1,10 @@
-FROM docker.io/nginxinc/nginx-unprivileged:stable-alpine
-COPY hetzner/nginx.conf /etc/nginx/conf.d/default.conf
-COPY out /usr/share/nginx/html
+FROM node:24-bookworm-slim
+WORKDIR /app
+ENV NODE_ENV=production PORT=8080 HOSTNAME=0.0.0.0 SITE_ORIGIN=https://crabrix.com AUTH_DB_PATH=/data/accounts.sqlite
+COPY --chown=node:node standalone/ ./
+COPY --chown=node:node static/ ./.next/static/
+COPY --chown=node:node scripts/ ./scripts/
+COPY --chown=node:node public/ ./public/
+USER node
 EXPOSE 8080
+CMD ["node", "server.js"]

@@ -1,0 +1,55 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+process.env.AUTH_DB_PATH = join(mkdtempSync(join(tmpdir(), 'crabrix-auth-')), 'test.sqlite');
+const auth = await import('../lib/auth-store.ts');
+
+test('account lifecycle protects credentials, revokes sessions and rotates recovery', async () => {
+  const password = 'correct horse battery crab';
+  const registered = await auth.registerAccount('Learner_qa', password);
+  const viewer = auth.viewerForToken(registered.token);
+  assert.equal(viewer.username, 'learner_qa');
+  assert.equal(auth.viewerForToken(registered.token + 'x'), null);
+  await assert.rejects(auth.registerAccount('LEARNER_QA', password), /unavailable/);
+  await assert.rejects(auth.loginAccount('learner_qa', 'incorrect long password'), /incorrect/);
+  await assert.rejects(auth.loginAccount('unknown_user', password), /incorrect/);
+  const session = await auth.loginAccount('learner_qa', password);
+  const sql = new DatabaseSync(process.env.AUTH_DB_PATH);
+  const stored = sql.prepare('SELECT * FROM users').get();
+  assert.ok(stored.password_hash.startsWith('scrypt-v1$'));
+  assert.notEqual(stored.password_hash, password);
+  assert.notEqual(stored.recovery_hash, registered.recoveryCode);
+  assert.notEqual(sql.prepare('SELECT token_hash FROM sessions LIMIT 1').get().token_hash, registered.token);
+  const nextPassword = 'another safe long crab phrase';
+  const recovered = await auth.recoverAccount('learner_qa', registered.recoveryCode, nextPassword);
+  assert.equal(auth.viewerForToken(registered.token), null);
+  assert.equal(auth.viewerForToken(session.token), null);
+  await assert.rejects(auth.recoverAccount('learner_qa', registered.recoveryCode, nextPassword), /incorrect/);
+  await assert.rejects(auth.loginAccount('learner_qa', password), /incorrect/);
+  assert.ok(auth.viewerForToken(recovered.token));
+  const changed = await auth.changeAccountPassword(viewer.id, nextPassword, password);
+  assert.equal(auth.viewerForToken(recovered.token), null);
+  await assert.rejects(auth.deleteAccount(viewer.id, nextPassword), /incorrect/);
+  await auth.deleteAccount(viewer.id, password);
+  assert.equal(auth.viewerForToken(changed.token), null);
+  assert.equal(sql.prepare('SELECT count(*) AS n FROM sessions').get().n, 0);
+  sql.close();
+});
+
+test('logout, expiry and persistent rate limits', async () => {
+  const account = await auth.registerAccount('session_qa', 'a very long safe password');
+  const sql = new DatabaseSync(process.env.AUTH_DB_PATH);
+  sql.prepare('UPDATE sessions SET expires_at=0').run();
+  assert.equal(auth.viewerForToken(account.token), null);
+  const login = await auth.loginAccount('session_qa', 'a very long safe password');
+  auth.endSession(login.token);
+  assert.equal(auth.viewerForToken(login.token), null);
+  auth.consumeLimit('test-key', 2);
+  auth.consumeLimit('test-key', 2);
+  assert.throws(() => auth.consumeLimit('test-key', 2), /Too many/);
+  assert.ok(!JSON.stringify(sql.prepare('SELECT * FROM rate_limits').all()).includes('test-key'));
+  sql.close();
+});

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { currentViewer } from "@/lib/auth";
 
 const links = [
   ["Overview", "/"],
@@ -9,7 +10,8 @@ const links = [
   ["Support", "/support"],
 ] as const;
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const viewer = await currentViewer();
   return (
     <header className="site-header">
       <div className="site-shell site-header-row">
@@ -20,6 +22,7 @@ export function SiteHeader() {
         <nav className="site-nav" aria-label="Main navigation">
           {links.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
         </nav>
+        <Link className="site-account" href={viewer ? "/account/" : "/login/"}>{viewer ? "Account" : "Sign in"}</Link>
       </div>
     </header>
   );

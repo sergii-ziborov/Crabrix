@@ -14,8 +14,8 @@ export default function LearnPage() {
       <div className="page-intro">
         <p className="eyebrow">The Crabrix Academy · free on the web</p>
         <h1>Learn Rust, one real idea at a time.</h1>
-        <p className="lede">Read all {snapshot.rustLessonCount} guided Rust lessons and 600 Algorithm Atlas steps here, without an account or payment. The app adds offline reading, editable projects, local compilation, practice and progress.</p>
-        <p className="card-meta">{snapshot.courseCount} courses · {snapshot.lessonCount} lessons and steps · content version pinned to <a href={`${snapshot.source}/tree/${snapshot.sourceCommit}`}>the public course source</a></p>
+        <p className="lede">Explore the beginning of any lesson. A free account opens all {snapshot.rustLessonCount} guided Rust lessons and 600 Algorithm Atlas steps, with explanations, code and infographics. The app adds offline reading, editable projects, local compilation, practice and progress.</p>
+        <p className="card-meta">{snapshot.courseCount} courses · {snapshot.lessonCount} lessons and steps · same curriculum as the app · free with an account</p>
       </div>
       <div className="catalog-grid">
         {snapshot.courses.map((course) => (

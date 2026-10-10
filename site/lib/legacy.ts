@@ -19,7 +19,7 @@ export const legacyMetadata: Record<LegacyPage, { title: string; description: st
   },
   privacy: {
     title: "Crabrix privacy policy",
-    description: "What stays on your device and what is shared when you choose to connect.",
+    description: "App data stays on your device; this policy also explains website Academy accounts, necessary cookies and your rights.",
   },
   terms: {
     title: "Crabrix terms",

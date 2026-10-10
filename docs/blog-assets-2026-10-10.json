@@ -1,0 +1,41 @@
+{
+  "rust-1-99-upgrade": {
+    "proseWords": 1605,
+    "images": [
+      {
+        "path": "site/public/blog/rust-upgrade-workshop.png",
+        "sha256": "c76b3e9aea654c4754549aaf167e0d1f88233f16574c95f3e4ca8bd5247ce5eb"
+      },
+      {
+        "path": "site/public/blog/rust-upgrade-infographic.png",
+        "sha256": "2144237488b82798fba79044901fdcc6d3684a6aaeecffd3cd8551efe9444df3"
+      }
+    ]
+  },
+  "ownership-in-a-real-program": {
+    "proseWords": 1555,
+    "images": [
+      {
+        "path": "site/public/blog/ownership-workshop.png",
+        "sha256": "b2ed3da1f94234cb366a863a151d63bfc7c1adda75578b321fd7958d6115e535"
+      },
+      {
+        "path": "site/public/blog/ownership-infographic.png",
+        "sha256": "67666657580fbae0d3c59f68b3ab02011f7494b07dfcbf3e3740998c838d4650"
+      }
+    ]
+  },
+  "result-errors-that-help": {
+    "proseWords": 1601,
+    "images": [
+      {
+        "path": "site/public/blog/result-workshop.png",
+        "sha256": "f460051dd2b7c3a6f8238ee774c76699f626e0d89d773cd381b33cf4fc1ff8f3"
+      },
+      {
+        "path": "site/public/blog/result-infographic.png",
+        "sha256": "0d3163c52faeaa1036aeb835a98772bdd2faa73b6853f5116fa0d850e42fa77f"
+      }
+    ]
+  }
+}

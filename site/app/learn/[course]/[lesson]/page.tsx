@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { courseById, courseLessons, courseSnapshot, lessonById } from "@/lib/courses";
+import { courseById, courseLessons, lessonById } from "@/lib/courses";
 import { SyntaxCode } from "@/components/SyntaxCode";
+import { currentViewer } from "@/lib/auth";
+import { lessonPreview } from "@/lib/lesson-preview";
+import { StructuredData } from "@/components/structured-data";
+
+export const dynamic = "force-dynamic";
 
 function prose(text: string) {
   return text.split(/(`[^`]+`)/g).map((part, index) =>
     part.startsWith("`") && part.endsWith("`")
       ? <code key={index}>{part.slice(1, -1)}</code>
       : part);
-}
-
-export function generateStaticParams() {
-  return courseSnapshot().courses.flatMap((course) =>
-    course.units.flatMap((unit) => unit.lessons.map((lesson) => ({ course: course.id, lesson: lesson.id }))));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ course: string; lesson: string }> }): Promise<Metadata> {
@@ -30,6 +30,35 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
   const found = lessonById(course, lessonId);
   if (!found) notFound();
   const { unit, lesson } = found;
+  const structuredData = <StructuredData data={{ "@context": "https://schema.org", "@type": "Article",
+    headline: lesson.title, description: lesson.writing?.summary || lesson.concept,
+    url: `https://crabrix.com/learn/${course.id}/${lesson.id}/`, isAccessibleForFree: false,
+    author: { "@type": "Person", name: "Serhii Ziborov", url: "https://crabrix.com/about/" },
+    hasPart: { "@type": "WebPageElement", isAccessibleForFree: false, cssSelector: ".lesson-full" },
+  }} />;
+  const viewer = await currentViewer();
+  if (!viewer) {
+    const preview = lessonPreview(lesson, course.id === "basics");
+    const path = `/learn/${course.id}/${lesson.id}/`;
+    const next = encodeURIComponent(path);
+    return <div className="site-shell lesson-page">
+      {structuredData}
+      <nav className="breadcrumbs" aria-label="Breadcrumbs"><Link href="/learn/">Learn</Link><span>/</span><Link href={`/learn/${course.id}/`}>{course.title}</Link><span>/</span><span>{unit.title}</span></nav>
+      <div className="page-intro lesson-content"><p className="eyebrow">{unit.title} · {lesson.minutes} min · free with an account</p><h1>{lesson.title}</h1>
+        <span className="preview-label">Lesson preview · about 30%</span><p className="lede">{prose(preview.summary)}</p>
+        {preview.rule && <div className="lesson-callout"><strong>Core idea</strong><p>{prose(preview.rule)}</p></div>}
+      </div>
+      <article className="lesson-content">
+        <section className="lesson-reading"><h2>Start with the idea</h2>{preview.paragraphs.map((paragraph, index) => <p key={index}>{prose(paragraph)}</p>)}</section>
+        <section className="lesson-access lesson-full"><p className="eyebrow">Keep learning, for free</p><h2>The rest of this lesson is waiting for you.</h2>
+          <p>Create a free account to read the complete explanation, see the infographic, explore the code, and try the exercises. All 742 lessons and algorithm steps are included.</p>
+          <div className="access-actions"><Link className="btn" href={`/register/?next=${next}`}>Create free account →</Link><Link href={`/login/?next=${next}`}>Already learning? Sign in</Link></div>
+          <p className="auth-note">No payment details. Your account opens the complete Academy.</p>
+        </section>
+        <Link href={`/learn/${course.id}/`}>← All lessons in {course.title}</Link>
+      </article>
+    </div>;
+  }
   const writing = lesson.writing;
   const depth = lesson.depth;
   const algorithm = lesson.algorithm;
@@ -43,6 +72,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
   </section>;
   return (
     <div className="site-shell lesson-page">
+      {structuredData}
       <nav className="breadcrumbs" aria-label="Breadcrumbs">
         <Link href="/learn">Learn</Link><span>/</span>
         <Link href={`/learn/${course.id}`}>{course.title}</Link><span>/</span>
@@ -54,7 +84,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
         <p className="lede">{prose(writing?.summary || lesson.concept)}</p>
         {writing?.rule && <div className="lesson-callout"><strong>Core idea</strong><p>{prose(writing.rule)}</p></div>}
       </div>
-      <article className="lesson-content">
+      <article className="lesson-content lesson-full">
         {!isBasics && lesson.illustration && <figure className="lesson-infographic">
           <img src={`/learn-media/${course.id}/${lesson.illustration.path.slice(6)}`} alt={lesson.illustration.alt} loading="lazy" />
           <figcaption>{lesson.illustration.caption}</figcaption>

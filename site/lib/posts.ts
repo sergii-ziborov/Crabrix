@@ -16,7 +16,9 @@ export type Post = {
     heading: string;
     paragraphs: string[];
     code?: string;
+    codeLanguage?: string;
     image?: PostImage;
+    sources?: { title: string; url: string }[];
   }[];
 };
 

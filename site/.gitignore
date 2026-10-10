@@ -2,3 +2,6 @@ node_modules/
 .next/
 out/
 *.tsbuildinfo
+auth-data/
+.env*
+!.env.example

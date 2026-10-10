@@ -4,7 +4,7 @@ import { posts } from "@/lib/posts";
 
 export const metadata: Metadata = {
   title: "Blog",
-  description: "Notes about building Crabrix, running Rust locally on iPhone and learning by making real projects.",
+  description: "Practical Rust guides, release upgrades, ownership, error handling and notes from the Crabrix workspace.",
 };
 
 export default function BlogPage() {
@@ -12,12 +12,13 @@ export default function BlogPage() {
     <div className="site-shell">
       <div className="page-intro">
         <p className="eyebrow">Crabrix blog</p>
-        <h1>Notes from the workspace.</h1>
-        <p className="lede">How the app works, what it can do today, and ways to turn a lesson into your own Rust project.</p>
+        <h1>Rust you can put to work.</h1>
+        <p className="lede">Release guides, practical examples, and careful explanations from the Crabrix workspace.</p>
       </div>
       <div className="post-grid">
         {posts.map((post) => (
           <Link className="post-card" href={`/blog/${post.slug}`} key={post.slug}>
+            {post.sections.find((section) => section.image)?.image && <img className="post-cover" src={post.sections.find((section) => section.image)!.image!.src} alt="" loading="lazy" />}
             <span className="card-kicker">{post.date} · {post.readingMinutes} min read</span>
             <h2>{post.title}</h2>
             <p>{post.summary}</p>

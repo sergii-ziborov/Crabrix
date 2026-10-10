@@ -5,3 +5,6 @@ out
 *.log
 *.tsbuildinfo
 screenshots
+auth-data
+.env*
+tests

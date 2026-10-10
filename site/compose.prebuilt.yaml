@@ -1,19 +1,25 @@
 name: crabrix-web
-
 services:
   site:
-    image: localhost/crabrix-web-site:${CRABRIX_SITE_TAG:-b36}
+    build:
+      context: .
+      dockerfile: hetzner/Dockerfile.prebuilt
+    image: localhost/crabrix-web-site:${CRABRIX_SITE_TAG:?Set a release tag}
     restart: unless-stopped
     ports:
       - "127.0.0.1:${CRABRIX_SITE_PORT:-3212}:8080"
-    mem_limit: 256m
-    cpus: 0.5
-    pids_limit: 128
+    environment:
+      SITE_ORIGIN: https://crabrix.com
+      AUTH_DB_PATH: /data/accounts.sqlite
+    volumes:
+      - /srv/apps/crabrix-site/accounts:/data:rw
+    mem_limit: 512m
+    cpus: 0.75
+    pids_limit: 256
     security_opt:
       - no-new-privileges:true
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/healthz/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 5s

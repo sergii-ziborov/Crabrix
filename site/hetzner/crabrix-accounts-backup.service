@@ -1,0 +1,6 @@
+[Unit]
+Description=Back up Crabrix Academy accounts
+After=network.target
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/podman exec crabrix-web-site-1 node /app/scripts/backup-accounts.mjs

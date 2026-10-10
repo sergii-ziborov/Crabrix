@@ -1,5 +1,424 @@
 [
   {
+    "slug": "rust-1-99-upgrade",
+    "title": "Rust 1.99: upgrade your project without guessing",
+    "date": "2026-10-10",
+    "readingMinutes": 10,
+    "summary": "A practical upgrade guide: separate compiler releases from editions and dependencies, establish a baseline, test the targets you actually ship, and know what Rust 1.99 changes.",
+    "sections": [
+      {
+        "heading": "Start with the problem you want to solve",
+        "paragraphs": [
+          "A compiler upgrade is easier to evaluate when it answers a concrete question. Perhaps a dependency needs a newer compiler. Perhaps a diagnostic could help a teammate understand a failure. Perhaps you want to stay on the supported stable release. Write that reason down before changing files. It will help you distinguish a successful upgrade from an unrelated refactor that happened during the same afternoon.",
+          "As of 10 October 2026, Rust 1.99.0 is the current stable release, announced on 1 October. This article uses that version as the destination for an existing project. The process is deliberately small: record a baseline, select the new toolchain, run meaningful checks, investigate differences, and keep evidence. You can repeat those steps for the next release without inventing a fresh upgrade ritual."
+        ],
+        "image": {
+          "src": "/blog/rust-upgrade-workshop.png",
+          "alt": "A crab checks test cards in a workshop connecting an older tool cabinet to a new one.",
+          "caption": "An upgrade is a maintenance task: keep the old baseline, check the new result, and record what changed."
+        },
+        "sources": [
+          {
+            "title": "Official Rust 1.99 announcement",
+            "url": "https://blog.rust-lang.org/2026/10/01/Rust-1.99.0/"
+          }
+        ]
+      },
+      {
+        "heading": "What the release actually changes",
+        "paragraphs": [
+          "Rust 1.99 stabilises defining C-ABI variadic functions, alongside APIs for inspecting layout through raw pointers and additional standard-library operations. The release also revises guidance for leaking and later reclaiming allocations: code intending to recover ownership should use an ownership-transfer API rather than treating a leaked reference as a temporary detour. These are relevant changes for low-level libraries, but they are not an instruction to add unsafe code to an ordinary application.",
+          "For a learning project, the useful first question is whether any change touches your source or dependencies. A command-line parser using owned strings does not automatically need a C variadic function. Make a short impact note: affected directly, affected through a dependency, or no known direct effect. Then test that note. This keeps a release announcement from turning into a shopping list of features your project does not need."
+        ],
+        "sources": [
+          {
+            "title": "Rust 1.99 release details",
+            "url": "https://blog.rust-lang.org/2026/10/01/Rust-1.99.0/"
+          }
+        ]
+      },
+      {
+        "heading": "Compiler, edition and dependencies are separate decisions",
+        "paragraphs": [
+          "Updating the compiler does not itself rewrite the edition declared in your package. The edition controls language compatibility choices for that package; the compiler version selects the toolchain that builds it. Dependency requirements and the resolved dependency graph are another concern. Put all three on separate lines in your upgrade note. If you change them together, a new error can have several plausible causes before you have even read it.",
+          "For the first pass, keep the existing edition and dependency lockfile. Use the new compiler against the source graph you already understand. If an edition migration is also valuable, do it as a later change with its own checks. The Edition Guide describes migration tooling such as `cargo fix --edition`, but automatic source edits still deserve review. For example, review generated fixes in a small function before accepting them across a large workspace."
+        ],
+        "image": {
+          "src": "/blog/rust-upgrade-infographic.png",
+          "alt": "Five upgrade steps: baseline, pin toolchain, build and test, check targets, record results. Compiler, edition and dependencies are separate choices.",
+          "caption": "Hold the edition and dependency graph steady while checking the compiler upgrade. Migrate them separately when needed."
+        },
+        "sources": [
+          {
+            "title": "Edition migration guide",
+            "url": "https://doc.rust-lang.org/stable/edition-guide/editions/transitioning-an-existing-project-to-a-new-edition.html"
+          }
+        ]
+      },
+      {
+        "heading": "Make a baseline you can compare",
+        "paragraphs": [
+          "Before switching toolchains, run the project in the way a person uses it. For a small text analyser, keep three fixtures: normal input, empty input, and malformed input. Save the expected output and exit status for each. Also record the compiler version and the exact commands you used. A screenshot of a green terminal is less useful than a reproducible command and a fixture that demonstrates the behaviour you care about.",
+          "Keep the baseline narrow enough to repeat. If the application is supposed to count Unicode characters, include a word containing a multibyte character. If it rejects negative quantities, include a negative quantity. These checks belong to the product contract, so they remain meaningful even when implementation details change. If the baseline already fails, investigate that failure before describing a later failure as an upgrade regression. You need a known starting point to make that claim."
+        ],
+        "code": "rustc --version --verbose\ncargo test --locked\ncargo run --locked -- fixtures/normal.txt\ncargo run --locked -- fixtures/empty.txt",
+        "codeLanguage": "shell"
+      },
+      {
+        "heading": "Pin the destination and keep the dependency graph stable",
+        "paragraphs": [
+          "For a desktop project managed by rustup, install the destination toolchain and invoke it explicitly. This lets you compare old and new compilers without changing the default for unrelated projects. Once the upgrade is accepted, a project toolchain file can communicate the chosen version to other contributors. Record any required targets or components as part of that environment, rather than expecting every machine to have the same global setup.",
+          "The manifest describes dependency requirements, while `Cargo.lock` records a resolved set of versions and sources. Keep that lockfile during the initial comparison. `--locked` asks Cargo to reject a build that would need to change it; it does not promise that every platform-specific input is identical. If the upgrade requires a dependency adjustment, make that adjustment visible and explain why. A reviewable two-file change is easier to reason about than a mysterious regenerated dependency graph."
+        ],
+        "code": "rustup toolchain install 1.99.0\ncargo +1.99.0 test --locked\ncargo +1.99.0 check --locked",
+        "codeLanguage": "shell",
+        "sources": [
+          {
+            "title": "Cargo.toml and Cargo.lock",
+            "url": "https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html"
+          },
+          {
+            "title": "Rustup toolchains",
+            "url": "https://rust-lang.github.io/rustup/concepts/toolchains.html"
+          }
+        ]
+      },
+      {
+        "heading": "Run checks that answer different questions",
+        "paragraphs": [
+          "A successful check tells you that the selected source can be type-checked under the selected configuration. Tests tell you what your assertions exercised. A real application run tells you whether its entry point, input handling and output fit together. Treat those as different pieces of evidence. For the text analyser, a unit test of the counting function is useful, but it does not prove that a filename with spaces is handled correctly by the command-line interface.",
+          "Choose a small verification table with a question beside every command. Does the library still build? Do examples still compile? Does invalid input produce the intended error? Does the shipping target still work? If a command has no clear question, it may be adding noise. Conversely, if an important behaviour has no evidence, add a check for that behaviour. The goal is a persuasive upgrade record, not the longest possible command transcript."
+        ],
+        "code": "cargo +1.99.0 check --all-targets --locked\ncargo +1.99.0 test --locked\ncargo +1.99.0 test --doc --locked\ncargo +1.99.0 fmt --check",
+        "codeLanguage": "shell"
+      },
+      {
+        "heading": "Investigate a difference before changing the code",
+        "paragraphs": [
+          "Suppose the new compiler reports a warning in a helper function. Read its location and explanation, then isolate the smallest relevant expression. Ask whether the source has a real ambiguity, whether a lint changed, or whether a dependency exposes the warning. Do not immediately suppress it across the entire crate. A local explanation gives future readers something they can evaluate; a blanket allowance removes information from places you have not inspected.",
+          "For a changed runtime result, compare the same fixture under both toolchains. Remove unrelated formatting edits from the comparison. If the difference survives in a small example, you now have something useful for a bug report or a dependency issue. If it disappears when you restore the lockfile, the compiler was probably not the only variable. Write the observed condition precisely: which target, which input, which command and which result differed. That precision saves repeated guesswork."
+        ]
+      },
+      {
+        "heading": "Decide what your minimum supported Rust version means",
+        "paragraphs": [
+          "An application can choose to build with a recent pinned compiler while a library may support older consumers. The `rust-version` manifest field communicates the minimum supported toolchain for a package. Using a newly stabilised API can raise that minimum even if the overall design has not changed. If your package advertises an older version, actually test the supported configuration before publishing an upgrade that relies on a new feature.",
+          "Write the support decision for your audience. A private learning tool might simply require the selected release. A reusable library may need to preserve an older minimum until its users can update. Avoid treating the version field as decoration: it is a statement other people use when selecting dependencies. Keep the policy short enough to follow, and separate a minimum-version increase from a compiler maintenance update in your release notes."
+        ],
+        "sources": [
+          {
+            "title": "Cargo rust-version reference",
+            "url": "https://doc.rust-lang.org/cargo/reference/rust-version.html"
+          }
+        ]
+      },
+      {
+        "heading": "Check the platform you ship, including Crabrix",
+        "paragraphs": [
+          "A successful desktop build is evidence for that desktop environment. It does not establish that a WebAssembly target, a phone sandbox or a different operating system behaves identically. Keep platform checks tied to actual requirements: filesystem paths, available imports, memory limits and package build requirements. A dependency can compile on your laptop and still require capabilities that an on-device environment does not provide. Target compatibility is a separate part of the upgrade decision.",
+          "Crabrix bundles its compiler in the application. Reading a new Rust release article does not update that bundled compiler, and a website account does not change it either. Check the compiler and target shown by your installed app. Use the app for examples supported by that environment, and validate desktop release-specific experiments on the corresponding desktop toolchain. This distinction makes lesson results easier to interpret and prevents a new language feature from looking like an unexplained editor failure."
+        ]
+      },
+      {
+        "heading": "Treat performance as an experiment",
+        "paragraphs": [
+          "A compiler upgrade may change build time or runtime performance, but a single stopwatch reading is a weak comparison. Start by naming the workload. For the text analyser, choose a fixed input file, the same output mode and the same build profile. Record whether the build cache is warm or cold. A faster cached build and a slower clean build can both be true, because they measure different work. Keep those conditions beside the results so a teammate can reproduce the comparison.",
+          "Run the selected workload several times under comparable conditions and check its output each time. A programme that finishes faster because it skips a required operation has not improved the task you meant to measure. Separate an observation from an explanation: this command took less time is an observation; this optimiser change caused it is a hypothesis that needs more evidence. If the difference is too small or inconsistent to distinguish from normal variation, say that. You can accept an upgrade for compatibility or maintenance reasons without claiming a performance benefit you have not established."
+        ]
+      },
+      {
+        "heading": "Keep a short acceptance record",
+        "paragraphs": [
+          "Finish with a record another developer can use tomorrow. State the old and new compiler versions, the retained edition, whether the lockfile changed, the targets checked, the fixtures run and any remaining limitation. Include the reason for the upgrade from the first section. If a check was skipped because the target was unavailable, say so directly. An honest gap is more useful than a broad claim that everything is compatible.",
+          "For your next practice session, take a small existing Rust project and write the baseline before touching its configuration. Then change only the compiler selection and rerun the same commands. Explain one result in plain language: what did that check prove, and what did it leave untested? That habit scales from a five-line lesson to a maintained application. New releases become manageable changes when you can connect each decision to a concrete observation."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "ownership-in-a-real-program",
+    "title": "Ownership in a real Rust program: choose who keeps the data",
+    "date": "2026-10-10",
+    "readingMinutes": 10,
+    "summary": "Build a tiny message workflow to understand moves, shared borrows, mutable borrows and cloning. Learn to choose function signatures from the job they do.",
+    "sections": [
+      {
+        "heading": "Give ownership a concrete job",
+        "paragraphs": [
+          "Imagine a small program that receives a message, counts its characters, appends a note, and produces a final report. The message is ordinary text stored in a `String`. Several functions need access to it, but they do not all need the same kind of access. Counting reads. Appending changes. Producing the final report may take responsibility for the original text. That difference is where ownership becomes useful in everyday design.",
+          "Before writing signatures, describe what each function promises its caller. Does the caller still need the message afterwards? Should the function be able to change it? Does the function need to keep it after returning? Those questions are easier to answer than a vague question about satisfying the borrow checker. We will use one message throughout this article and change one decision at a time, so you can predict the effect of each signature."
+        ],
+        "image": {
+          "src": "/blog/ownership-workshop.png",
+          "alt": "A crab passes a single message card between reading, editing and final-report stations.",
+          "caption": "Reading a message, editing it, and taking it into a report are three different jobs."
+        }
+      },
+      {
+        "heading": "Start with one owner",
+        "paragraphs": [
+          "Create `let message = String::from(\"hello\");`. The binding named `message` owns this `String` value. The string manages its text storage, and dropping the owned value releases that storage. Think of the owner as the place responsible for the value's lifetime, rather than a label attached permanently to one physical address. The compiler follows how responsibility moves through your program.",
+          "For this example, write a tiny ownership ledger beside the source. Before a function call, the caller owns the message. During the call, note whether ownership transfers or the function only receives a reference. After the call, mark which value remains available. The ledger is not code and does not need a sophisticated diagram. Three lines on paper can reveal why a later use is valid, or why it attempts to use a value that has already moved."
+        ],
+        "sources": [
+          {
+            "title": "The Rust Book: ownership",
+            "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html"
+          }
+        ]
+      },
+      {
+        "heading": "A move transfers responsibility",
+        "paragraphs": [
+          "Suppose `into_report` accepts a `String` and returns a newly formatted `String`. Calling `into_report(message)` transfers the argument into the function. The caller cannot continue using the moved binding afterwards. This is often a useful API: the caller has finished working with the original message, and the function is explicitly responsible for turning it into the final representation.",
+          "The returned report is a value with a new owner in the caller. Our ledger therefore changes from caller owns message, to function owns message, to caller owns report. The exact internal implementation may allocate a new buffer, reuse storage, or combine values; the ownership contract tells us which values can be used at each point. Avoid imagining that every move means copying all the text bytes. Responsibility and copying are different questions."
+        ],
+        "code": "fn into_report(message: String) -> String {\n    format!(\"Report: {message}\")\n}\n\nfn main() {\n    let message = String::from(\"hello\");\n    let report = into_report(message);\n    println!(\"{report}\");\n}",
+        "sources": [
+          {
+            "title": "Moved values and E0382",
+            "url": "https://doc.rust-lang.org/error_codes/E0382.html"
+          }
+        ]
+      },
+      {
+        "heading": "Borrow for the reading job",
+        "paragraphs": [
+          "Counting characters does not need to own the message. Give that function a `&str`: a borrowed view of text. The caller keeps ownership, and the function reads through the view for the duration of the call. `character_count(&message)` works because the owned string can be borrowed as a string slice. The signature also accepts a string literal, so callers are not forced to construct an owned string just to ask a read-only question.",
+          "Our reading operation counts Unicode scalar values with `chars().count()`. That is deliberately more specific than counting visible characters: some displayed characters consist of several scalar values. `String::len()` measures bytes, which answers another question. Choose the measurement your program actually needs and name it accurately. Ownership does not settle that product decision for you. A program can be memory-safe and still count the wrong thing if its contract is unclear."
+        ],
+        "code": "fn character_count(text: &str) -> usize {\n    text.chars().count()\n}\n\nfn main() {\n    let message = String::from(\"café\");\n    let count = character_count(&message);\n    println!(\"{message}: {count} scalar values\");\n}",
+        "sources": [
+          {
+            "title": "String storage and length",
+            "url": "https://doc.rust-lang.org/std/string/struct.String.html"
+          },
+          {
+            "title": "String slices and chars",
+            "url": "https://doc.rust-lang.org/std/primitive.str.html"
+          }
+        ]
+      },
+      {
+        "heading": "Borrow mutably for the editing job",
+        "paragraphs": [
+          "Appending a note changes the caller's string, so `append_note` takes `&mut String`. The caller must have a mutable binding and must pass a mutable reference. The function can update the value without taking it away. This makes the effect visible in the signature: someone reading the call sees that this operation may change the message they still own.",
+          "While a mutable borrow is active, it provides exclusive access to the borrowed value under Rust's borrowing rules. You cannot also use an overlapping shared reference in a way that conflicts with that access. Organise the work into phases: inspect, finish inspecting, then edit. The compiler tracks when references are used; the relevant borrow can end before the surrounding block ends. Small sequential phases usually express the intended workflow more clearly than a tangle of references kept alive unnecessarily."
+        ],
+        "code": "fn append_note(text: &mut String) {\n    text.push_str(\" — checked\");\n}\n\nfn main() {\n    let mut message = String::from(\"hello\");\n    append_note(&mut message);\n    println!(\"{message}\");\n}",
+        "image": {
+          "src": "/blog/ownership-infographic.png",
+          "alt": "Three separate choices: move ownership into a function, borrow text for reading, or borrow a string mutably for exclusive editing.",
+          "caption": "These are alternatives for a function's job. Shared and mutable access are not shown as simultaneous borrows."
+        },
+        "sources": [
+          {
+            "title": "References and borrowing",
+            "url": "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html"
+          }
+        ]
+      },
+      {
+        "heading": "Combine the jobs in a readable order",
+        "paragraphs": [
+          "Now combine the three operations. Count the text while borrowing it, append the note with a mutable borrow, then move the finished message into the report. At every stage, ask who owns the current value and which access is active. The caller keeps the string during the first two jobs and deliberately gives it up for the last. That is a complete ownership story with no extra clone.",
+          "Try changing the order before changing the signatures. If you produce the report first and then attempt to count the original binding, you will encounter a moved-value error. That error reflects the contract you selected. Decide whether the programme really needs the original message later, or whether the count should simply happen earlier. A change in operation order may solve the actual design problem more cleanly than adding another allocation."
+        ],
+        "code": "fn character_count(text: &str) -> usize { text.chars().count() }\nfn append_note(text: &mut String) { text.push_str(\" — checked\"); }\nfn into_report(message: String) -> String { format!(\"Report: {message}\") }\n\nfn main() {\n    let mut message = String::from(\"hello\");\n    let count = character_count(&message);\n    append_note(&mut message);\n    let report = into_report(message);\n    println!(\"Before the note: {count} scalar values\\n{report}\");\n}"
+      },
+      {
+        "heading": "Use clone when you want independent ownership",
+        "paragraphs": [
+          "Sometimes the application really needs two independently owned strings. Perhaps you must preserve the original user input while building an editable draft. In that case, cloning the string can express a deliberate requirement. Name the values according to their roles: `original` and `draft`. A reader can then see why two owned copies exist and why later edits to the draft should not alter the original.",
+          "Cloning is type-specific. For a `String`, it creates an independently owned copy of the text; for other types, the behaviour and cost depend on their `Clone` implementation. Do not apply a universal rule that cloning is always wrong or always cheap. Instead, explain the independence you need. If a function only reads, borrowing may be enough. If two parts need separate ownership and independent changes, a clone may be a reasonable part of the design."
+        ],
+        "sources": [
+          {
+            "title": "The Clone trait",
+            "url": "https://doc.rust-lang.org/std/clone/trait.Clone.html"
+          }
+        ]
+      },
+      {
+        "heading": "Returning a view ties the result to its source",
+        "paragraphs": [
+          "A function can return a borrowed part of the caller's text. Our `first_word` function takes a `&str` and returns a `&str` selected from it. With this signature, the lifetime elision rules connect the returned reference to the input reference. The caller must keep the underlying text valid for as long as it uses that returned view. The function does not create a new owned copy of the word.",
+          "This choice is useful when inspecting a message briefly. If you instead need to save the word independently while discarding or changing the source, an owned result may be the clearer contract. Practise both versions and write down what changes in the ledger. The borrowed version depends on source storage; an owned string has its own ownership story. Neither version is universally better. The requirement to keep or modify the source determines which contract fits."
+        ],
+        "code": "fn first_word(text: &str) -> &str {\n    text.split_whitespace().next().unwrap_or(\"\")\n}\n\nfn main() {\n    let message = String::from(\"hello Rust\");\n    println!(\"First word: {}\", first_word(&message));\n}",
+        "sources": [
+          {
+            "title": "Lifetime elision rules",
+            "url": "https://doc.rust-lang.org/reference/lifetime-elision.html"
+          }
+        ]
+      },
+      {
+        "heading": "Read an error as a trace through your program",
+        "paragraphs": [
+          "When the borrow checker rejects a change, locate the places it identifies: where the value moved or a borrow began, and where the conflicting use occurs. Annotate those source lines with your ledger. If you cannot describe the sequence, reduce the example until you can. Keep the same relationship between owner and references while removing unrelated printing, parsing or collection code.",
+          "Then propose a change in ordinary language before editing Rust. I need the reading phase to finish before mutation. I need this function to borrow because the caller still uses the value. I need an owned result because its source will disappear. Each statement leads to a specific code change. This habit turns diagnostics into design feedback. Randomly inserting `clone`, `mut` or lifetime parameters can make the compiler quieter without making your data flow easier to understand."
+        ]
+      },
+      {
+        "heading": "Small numbers have a different contract",
+        "paragraphs": [
+          "If you pass the character count into another function, you may notice that the count remains usable afterwards. That is because a simple integer type such as usize implements Copy. Passing that value can copy it without the explicit ownership transfer behaviour you observed for String. This does not make the message example inconsistent; different types provide different capabilities. Read the type before applying a rule learned from one particular value.",
+          "Add a helper that prints the count and then use the count again in the caller. Compare its signature with the function that consumes the message. Write two ledger entries: one for the integer copy, one for the string move. The exercise prevents a common overgeneralisation that every ordinary assignment or argument makes the previous binding unusable. Your model should describe what the selected type permits. When a type does not implement Copy, make the ownership decision explicit through moving, borrowing or a deliberate clone."
+        ],
+        "sources": [
+          {
+            "title": "The Copy trait",
+            "url": "https://doc.rust-lang.org/std/marker/trait.Copy.html"
+          }
+        ]
+      },
+      {
+        "heading": "A practice exercise with a clear finish",
+        "paragraphs": [
+          "Build a message workflow in Crabrix or on your desktop. Begin with the combined example above. Add a second read-only function that reports whether the message contains a question mark. Call it before appending the note. Then preserve an original string and create a separate draft that receives the note. Explain why the second version needs independent ownership, and compare the output of original, draft and final report.",
+          "Finally, return the first word as a borrowed view and deliberately attempt a conflicting edit before using the view. Read the diagnostic, then reorganise the work so the view is consumed before mutation. Your finish condition is not merely a green build: describe every move and borrow in the successful programme, identify the storage behind each view, and explain any clone you retained. Once that explanation is straightforward, ownership has become a tool you can use rather than a rule you are trying to evade."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "result-errors-that-help",
+    "title": "Rust errors that help: design a Result your caller can use",
+    "date": "2026-10-10",
+    "readingMinutes": 11,
+    "summary": "Build a small quantity parser with useful errors, propagate failures without losing their meaning, and turn failure cases into tests and readable output.",
+    "sections": [
+      {
+        "heading": "Begin with the person receiving the error",
+        "paragraphs": [
+          "A programme that accepts user input will meet values it cannot use. Someone submits an empty quantity, types a word where a number belongs, or requests more than the allowed amount. Those failures are part of the normal interface. A useful error tells the caller what happened and leaves room for an appropriate response: ask for another value, skip a record, show a message, or stop the operation with a clear status.",
+          "In this article we will parse the quantity for a small workshop order. The quantity must be an integer from one to one hundred. Our goal is more precise than removing every `unwrap`: we want each expected failure to have a name, every successful value to satisfy the contract, and the programme boundary to explain a failure without exposing irrelevant internals. You can build the example in Crabrix using only the standard library and then adapt the same design to a file or command-line tool."
+        ],
+        "image": {
+          "src": "/blog/result-workshop.png",
+          "alt": "A crab at an input workshop sends a valid order along a mint route and a rejected order to a helpful repair station.",
+          "caption": "Expected input failures need a useful route back to the caller, not an unexplained crash."
+        }
+      },
+      {
+        "heading": "Result makes two outcomes explicit",
+        "paragraphs": [
+          "A `Result<T, E>` contains either `Ok(T)` or `Err(E)`. For our parser, the successful value is a `u32`, and the error type describes why no accepted quantity was produced. The type forces a caller to account for the two possibilities when it wants to obtain the success value. Returning an error does not by itself print anything, close a window, or retry a request. Those are decisions made by the caller.",
+          "Keep the success contract as important as the failure contract. If the function returns `Ok(7)`, the caller should know that seven satisfied the parser's documented range. It should not need to repeat the same range check just to trust the result. Think of the function as a boundary between raw input and a value the next stage can use. That boundary becomes easier to maintain when success and failure both have a clear meaning."
+        ],
+        "sources": [
+          {
+            "title": "Result in the standard library",
+            "url": "https://doc.rust-lang.org/std/result/enum.Result.html"
+          }
+        ]
+      },
+      {
+        "heading": "Name the failures your caller cares about",
+        "paragraphs": [
+          "Our workshop distinguishes missing input, input that cannot be parsed as `u32`, and a parsed quantity outside the allowed range. Those categories correspond to different user guidance. Empty input suggests entering a value. An invalid integer suggests checking the format. An out-of-range value suggests choosing a quantity between the documented limits. A string such as something went wrong would discard information we already have at the point of failure.",
+          "Represent those cases with an enum. The enum is a compact vocabulary shared by the parser, tests and interface. Start with the cases that have a real use. A huge error hierarchy invented before you have callers can make a small programme harder to follow. Conversely, if the caller needs to distinguish two failures, collapsing them into one generic category makes the next layer guess. The right level of detail comes from the responses the application actually supports."
+        ],
+        "code": "#[derive(Debug, PartialEq)]\nenum QuantityError {\n    Empty,\n    InvalidInteger,\n    OutOfRange { value: u32 },\n}",
+        "sources": [
+          {
+            "title": "Enums in the Rust Book",
+            "url": "https://doc.rust-lang.org/book/ch06-01-defining-an-enum.html"
+          }
+        ]
+      },
+      {
+        "heading": "Write the parser as a sequence of decisions",
+        "paragraphs": [
+          "First trim surrounding whitespace, because our interface deliberately accepts a quantity with spaces around it. Next reject an empty string. Parse the remaining text as `u32`, translating a parse failure into our public error category. Finally enforce the range and return the quantity. The order matters: it tells us which error an input should receive. Document that extremely large decimal input may fail parsing before it reaches the range check, because it does not fit into `u32`.",
+          "This sequence is easy to trace by hand. For a blank string, stop at Empty. For twelve written as letters, stop at InvalidInteger. For zero, parsing succeeds but the range check fails. For seven, every stage succeeds. Do that trace before adding more code. A parser that you can explain through four small inputs gives you a reliable foundation for a user-facing message and a test suite."
+        ],
+        "code": "#[derive(Debug, PartialEq)]\nenum QuantityError { Empty, InvalidInteger, OutOfRange { value: u32 } }\n\nfn parse_quantity(input: &str) -> Result<u32, QuantityError> {\n    let text = input.trim();\n    if text.is_empty() { return Err(QuantityError::Empty); }\n    let value = text.parse::<u32>()\n        .map_err(|_| QuantityError::InvalidInteger)?;\n    if !(1..=100).contains(&value) {\n        return Err(QuantityError::OutOfRange { value });\n    }\n    Ok(value)\n}",
+        "sources": [
+          {
+            "title": "Parsing strings",
+            "url": "https://doc.rust-lang.org/std/primitive.str.html#method.parse"
+          }
+        ]
+      },
+      {
+        "heading": "The question mark propagates a failure",
+        "paragraphs": [
+          "In the parser, `?` unwraps the successful parsed value or returns the error from the current function. It is an early return on the error path, not a retry and not a panic. Our `map_err` changes the parser's library error into the application category before propagation. That conversion is a conscious choice: this small interface needs to identify an invalid integer, while detailed parse internals would not change the user's next action.",
+          "In a larger system, preserving the underlying error may be important for diagnosis. Decide that from the needs of the next layer rather than automatically replacing every error with a sentence. A concise `?` can make a sequence of fallible operations readable, but it cannot decide what context the caller will need. Read a chain of question marks as a series of exit points and ask what information travels along each exit."
+        ],
+        "image": {
+          "src": "/blog/result-infographic.png",
+          "alt": "Result branches into Ok(value), which continues, and Err(error), which returns to the caller through the question mark operator.",
+          "caption": "The diagram shows propagation from the current function. The caller chooses whether to show, retry, skip or stop."
+        },
+        "sources": [
+          {
+            "title": "Propagating errors in the Rust Book",
+            "url": "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html"
+          }
+        ]
+      },
+      {
+        "heading": "Handle the result at the interface boundary",
+        "paragraphs": [
+          "The part of the programme talking to a person should turn an error into a response. Use `match` to display a clear message for each quantity error. The successful path can create the workshop order. The parser remains reusable because it does not decide whether output belongs in a terminal, a sheet, a form or a test. Separating parsing from presentation also keeps its tests small and predictable.",
+          "Write messages that help someone correct the input. Enter a quantity gives a next step. Use a whole number identifies the required format. Choose a quantity from one to one hundred communicates the accepted range. Do not copy an entire stack of internal details into the normal interface just because you have them. Keep useful diagnostic information available for development, while giving the user a response suited to the task they are trying to complete."
+        ],
+        "code": "fn show_order(input: &str) {\n    match parse_quantity(input) {\n        Ok(value) => println!(\"Order accepted: {value} items\"),\n        Err(QuantityError::Empty) => println!(\"Enter a quantity.\"),\n        Err(QuantityError::InvalidInteger) => println!(\"Use a whole number.\"),\n        Err(QuantityError::OutOfRange { .. }) => {\n            println!(\"Choose a quantity from 1 to 100.\");\n        }\n    }\n}"
+      },
+      {
+        "heading": "Add context without losing the original cause",
+        "paragraphs": [
+          "Imagine importing twenty workshop orders from a file. InvalidInteger now needs context: which row contained the invalid quantity? Add that information at the layer that knows about rows, rather than teaching the basic quantity parser about files. The low-level function can still report the quantity error, while the import layer attaches a row number. This preserves reuse and makes the report actionable for the person fixing the file.",
+          "For systems errors, an error chain can retain an underlying cause while adding the operation that failed. The standard `Error` trait supports reporting a source error, and `Display` supplies a readable representation. Our small enum does not need that machinery to demonstrate the idea, but larger application boundaries may benefit from it. The important design question is whether a caller can understand both the failed operation and the reason, without reverse-engineering a generic message."
+        ],
+        "sources": [
+          {
+            "title": "The standard Error trait",
+            "url": "https://doc.rust-lang.org/std/error/trait.Error.html"
+          }
+        ]
+      },
+      {
+        "heading": "Choose panic for a different kind of failure",
+        "paragraphs": [
+          "Expected invalid input should normally travel through a result the caller can handle. A panic has a different role: it can signal a violated assumption or an unrecoverable situation in the selected programme design. `unwrap` and `expect` panic when their expected success is absent. They can be useful in tightly controlled examples or tests, but using them on arbitrary user input turns an ordinary correction into abrupt failure.",
+          "Ask what the interface promises before choosing a response. If the workshop app accepts text entered by a person, malformed text is foreseeable. If a test constructs a value that must be valid for the test itself to make sense, a failed expectation can clearly identify a broken setup. Write the invariant beside that expectation. Avoid calling every unexpected value a programmer error when it actually arrived through an external boundary you have not validated."
+        ],
+        "sources": [
+          {
+            "title": "When to panic",
+            "url": "https://doc.rust-lang.org/book/ch09-03-to-panic-or-not-to-panic.html"
+          }
+        ]
+      },
+      {
+        "heading": "Test the contract at its boundaries",
+        "paragraphs": [
+          "Turn the earlier hand traces into tests. Check empty input, invalid text, zero, the lowest accepted value, the highest accepted value and the first value above it. Add surrounding whitespace because accepting it was a deliberate part of the parser contract. Check a value too large for `u32` so the parse-versus-range distinction remains documented. These cases protect decisions a user can observe, rather than simply repeating the function's internal lines.",
+          "Test error categories as values. Comparing an enum is usually less fragile than comparing a complete English message, whose wording you may improve later. Then add a small interface check for the messages you actually show. Keep both questions visible: did the parser classify the failure correctly, and did the interface help the user? A successful test run is persuasive when you can explain the behaviours it covers and the behaviours still outside its scope."
+        ],
+        "code": "#[cfg(test)]\nmod tests {\n    use super::*;\n    #[test]\n    fn quantity_contract() {\n        assert_eq!(parse_quantity(\" \"), Err(QuantityError::Empty));\n        assert_eq!(parse_quantity(\"many\"), Err(QuantityError::InvalidInteger));\n        assert_eq!(parse_quantity(\"0\"), Err(QuantityError::OutOfRange { value: 0 }));\n        assert_eq!(parse_quantity(\" 1 \"), Ok(1));\n        assert_eq!(parse_quantity(\"100\"), Ok(100));\n        assert_eq!(parse_quantity(\"101\"), Err(QuantityError::OutOfRange { value: 101 }));\n        assert_eq!(parse_quantity(\"999999999999999999999\"), Err(QuantityError::InvalidInteger));\n    }\n}"
+      },
+      {
+        "heading": "Avoid accidental disclosure in diagnostics",
+        "paragraphs": [
+          "Error context is useful, but more detail is not automatically better. A failed file operation might involve a private path; a failed request might include a token; a rejected record might contain personal information. Decide which context belongs in ordinary output, which belongs in restricted diagnostic output, and which should not be retained at all. Design that decision alongside the error type instead of adding indiscriminate logging after a failure appears.",
+          "For our workshop example, a row number and a category usually help without reproducing the entire order. During local development, you can examine a controlled fixture to investigate a bug. For a deployed product, avoid treating arbitrary user content as a harmless diagnostic string. This is an application design concern, not a capability `Result` supplies automatically. The type makes failure explicit; you still choose a responsible and useful way to present it."
+        ]
+      },
+      {
+        "heading": "Practise a failure story from input to response",
+        "paragraphs": [
+          "Copy the parser into a small project, add the display function, and call it with each fixture. Predict the result before running it. Then change the accepted range and update the contract tests. Add a rule that the quantity must be even, with its own named error. Decide where that check belongs in the sequence and which error an out-of-range odd number should receive. Your answer should follow a documented rule rather than accidental branch order.",
+          "Finish by explaining one failure end to end: the original input, the validation step that rejected it, the error value returned, the layer that handled it, and the message the person received. Then explain one successful path with the same precision. When both stories are clear, you have designed more than a parser that compiles. You have a reusable boundary whose outcomes the next part of the programme can trust, test and communicate."
+        ]
+      }
+    ]
+  },
+  {
     "slug": "real-rust-on-iphone",
     "title": "What it means to run a real Rust compiler on an iPhone",
     "date": "2026-10-09",
