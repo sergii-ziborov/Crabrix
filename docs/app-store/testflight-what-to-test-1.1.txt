@@ -1,6 +1,6 @@
-Crabrix 1.1 (Xcode Cloud build 39): please focus on the current project editor, Duo keyboard layout, in-file search, and run results.
+Crabrix 1.1 (build 40, compiled in Xcode Cloud): please focus on the current project editor, Duo keyboard layout, in-file search, and run results.
 
-New in build 39: Learn and My Courses show a refresh button, a direct Update action on installed courses with newer signed lessons, and Update all with a combined download size. Try upgrading an older Rust Basics or Atlas download; completed lesson progress, saved projects, and an already open lesson should remain intact. If everything is current, no update button should appear.
+New in build 40: Learn and My Courses show a refresh button, a direct Update action on installed courses with newer signed lessons, and Update all with a combined download size. Try upgrading an older Rust Basics or Atlas download; completed lesson progress, saved projects, and an already open lesson should remain intact. If everything is current, no update button should appear.
 
 New in build 38: all 742 lessons have expanded explanations. At least every other lesson has an infographic, including 300 Algorithm Atlas steps. On standard iPhone and iPad, Code and Terminal keep the compact bottom tabs; Duo retains its keyboard-dismiss control. Please check both layouts with the keyboard open and closed.
 

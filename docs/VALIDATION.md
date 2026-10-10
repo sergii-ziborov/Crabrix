@@ -1,5 +1,27 @@
 # Validation record
 
+## In-app lesson updates and build 40 — 10 October 2026
+
+Xcode Cloud runs 39 and 40 compiled the update feature but failed while exporting
+the archive: Apple's signing service returned HTTP 502. The run-40 Cloud archive
+was downloaded, its app and share-extension build numbers were set to 40 in a
+copy, and the existing distribution certificate and active provisioning
+profiles produced a signed App Store IPA on the Mac. The IPA passed ZIP
+integrity, strict deep signature verification, and Apple `altool` validation.
+All 45 bundled resource files compared were byte-identical to the Cloud
+archive. Apple accepted delivery `95c56430-95fa-4ac0-89df-2035104cf0e2`
+and processed build 40 as `VALID` and `APP_STORE_ELIGIBLE`.
+
+Build 40 is in TestFlight Internal QA; its en-US What to Test text matched API
+readback. App Store version 1.1 and its new review submission
+`c8c5d443-1291-4b82-a257-fdc6652ac3c7` both report
+`WAITING_FOR_REVIEW`, with build 40 selected and manual release. The earlier
+build-38 submission was canceled after build 40 became valid. The existing
+iPhone and iPad screenshot assets were retained. Simulator delivery gates for
+Rust Basics and Algorithm Atlas passed as recorded below. Physical-device
+interaction with Update and Update all is still pending; Apple approval is
+also pending. See [build 40](releases/1.1-build40.json).
+
 ## In-app CoursePack updates — 10 October 2026
 
 Learn and My Courses now expose a manual catalog refresh, per-course updates,
