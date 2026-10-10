@@ -1,5 +1,23 @@
 # Validation record
 
+## Rust inline code and corrected diagram — 10 October 2026
+
+The native lesson reader renders Markdown code spans in a distinct, theme-aware
+monospace color. Rust Basics 1.0.3 marks the expressions in Variables and
+Printing Values and replaces the Printing Values diagram with a mapping that
+matches the lesson's actual Rust example. The corrected PNG and exact lesson
+text are live on crabrix.com; the Variables and Printing Values pages, the PNG,
+and the home and Learn pages returned HTTP 200. The live PNG SHA-256 matched
+the local source export.
+
+The updated Basics CoursePack passed validation and production signature
+verification. The public signed catalog advanced from sequence 6 to 7, and
+the downloaded release archive matched the locally signed archive byte for
+byte. The Debug iOS Simulator build succeeded. The opt-in public upgrade test
+installed bundled Basics 1.0.1, fetched the public Basics 1.0.3 package, and
+passed with one test and zero failures; its open old lesson retained its prior
+snapshot.
+
 ## App Store screenshots for build 40 — 10 October 2026
 
 Four Release Simulator screenshots now show the current Learn and My Courses

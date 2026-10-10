@@ -95,6 +95,11 @@ enum CrabrixTheme {
     static var coral: Color { isCyberpunk ? Color(red: 1.0, green: 0.73, blue: 0.0) : Color(red: 1.0, green: 0.39, blue: 0.27) }
     static var mint: Color { isCyberpunk ? Color(red: 0.15, green: 0.91, blue: 0.60) : Color(red: 0.42, green: 0.83, blue: 0.66) }
     static var blue: Color { isCyberpunk ? Color(red: 0.30, green: 0.91, blue: 1.0) : Color(red: 0.41, green: 0.70, blue: 1.0) }
+    static var lessonCode: Color { adaptive(
+        light: UIColor(red: 0.04, green: 0.32, blue: 0.65, alpha: 1),
+        dark: UIColor(red: 0.55, green: 0.79, blue: 1.0, alpha: 1),
+        cyber: UIColor(red: 0.30, green: 0.91, blue: 1.0, alpha: 1)
+    ) }
     static var amber: Color { isCyberpunk ? Color(red: 1.0, green: 0.73, blue: 0.0) : Color(red: 0.95, green: 0.72, blue: 0.34) }
     static var violet: Color { isCyberpunk ? Color(red: 1.0, green: 0.30, blue: 0.65) : Color(red: 0.67, green: 0.45, blue: 0.98) }
     static var cyan: Color { isCyberpunk ? Color(red: 0.30, green: 0.91, blue: 1.0) : Color(red: 0.25, green: 0.82, blue: 0.82) }

@@ -295,7 +295,7 @@ struct LessonDetailView: View {
             }
             return result + Text(String(part))
                 .font(.system(.body, design: .monospaced).weight(.semibold))
-                .foregroundColor(CrabrixTheme.blue)
+                .foregroundColor(CrabrixTheme.lessonCode)
         }
     }
 
