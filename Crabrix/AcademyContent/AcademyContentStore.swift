@@ -15,10 +15,38 @@ final class AcademyContentStore: ObservableObject {
     @Published private(set) var errorMessage: String?
     @Published private(set) var catalog: CourseCatalogPayload?
     @Published private(set) var catalogError: String?
+    @Published private(set) var checkingForUpdates = false
+    @Published private(set) var updatingAll = false
     @Published private(set) var transfers: [String: TransferState] = [:]
     private let initialInstallMode: CourseInitialInstallMode
     private var preparing: Task<InstalledCourseRepository, Error>?
     private var downloadTasks: [String: Task<Void, Never>] = [:]
+    private var bulkUpdateTask: Task<Void, Never>?
+
+    private var latestCompatible: [String: CourseCatalogPayload.Entry] {
+        let appVersion = (try? CourseBootstrap().appVersion)
+            ?? SemanticVersion(major: 0, minor: 0, patch: 0)
+        return CourseUpdatePlanner.latestCompatible(in: catalog, appVersion: appVersion)
+    }
+
+    private var installedVersions: [String: String] {
+        guard let repository else { return [:] }
+        return Dictionary(uniqueKeysWithValues: repository.loaded.values.map {
+            ("\($0.course.id)|\($0.language)", $0.contentVersion)
+        })
+    }
+
+    var availableUpdates: [CourseCatalogPayload.Entry] {
+        CourseUpdatePlanner.updates(latest: latestCompatible, installedVersions: installedVersions)
+    }
+
+    var availableDownloads: [CourseCatalogPayload.Entry] {
+        latestCompatible.filter { installedVersions[$0.key] == nil }.map(\.value)
+    }
+
+    func updateEntry(for courseID: String, language: String = "en") -> CourseCatalogPayload.Entry? {
+        availableUpdates.first { $0.courseID == courseID && $0.language == language }
+    }
 
     init(initialInstallMode: CourseInitialInstallMode) {
         self.initialInstallMode = initialInstallMode
@@ -39,8 +67,13 @@ final class AcademyContentStore: ObservableObject {
         defer { loading = false; preparing = nil }
         do {
             repository = try await task.value
-            if catalog == nil, let bootstrap = try? CourseBootstrap() {
-                catalog = try? bootstrap.bundledCatalog()
+            if catalog == nil, let bootstrap = try? CourseBootstrap(),
+               let keyring = try? bootstrap.keyring() {
+                let client = CourseCatalogClient(
+                    stateURL: bootstrap.root.appending(path: "catalog-state.json"),
+                    keyring: keyring
+                )
+                catalog = (try? await client.current()) ?? (try? bootstrap.bundledCatalog())
             }
             errorMessage = nil
         } catch {
@@ -49,6 +82,9 @@ final class AcademyContentStore: ObservableObject {
     }
 
     func checkForUpdates() async {
+        guard !checkingForUpdates else { return }
+        checkingForUpdates = true
+        defer { checkingForUpdates = false }
         do {
             let bootstrap = try CourseBootstrap()
             let client = CourseCatalogClient(
@@ -63,16 +99,40 @@ final class AcademyContentStore: ObservableObject {
     }
 
     func download(_ entry: CourseCatalogPayload.Entry) {
+        _ = startDownload(entry)
+    }
+
+    func updateAll() {
+        guard bulkUpdateTask == nil else { return }
+        let entries = availableUpdates.sorted { $0.courseID < $1.courseID }
+        guard !entries.isEmpty else { return }
+        updatingAll = true
+        bulkUpdateTask = Task { [weak self] in
+            guard let self else { return }
+            for entry in entries {
+                if let task = startDownload(entry) { await task.value }
+            }
+            updatingAll = false
+            bulkUpdateTask = nil
+        }
+    }
+
+    @discardableResult
+    private func startDownload(_ entry: CourseCatalogPayload.Entry) -> Task<Void, Never>? {
         let key = entry.courseID + "|" + entry.language
-        guard downloadTasks[key] == nil else { return }
+        guard latestCompatible[key]?.archiveSHA256 == entry.archiveSHA256 else {
+            transfers[key] = .failed("The course catalog changed. Refresh and try again.")
+            return nil
+        }
+        if let task = downloadTasks[key] { return task }
         transfers[key] = .downloading(0, entry.archiveBytes)
-        downloadTasks[key] = Task { [weak self] in
+        let task = Task { [weak self] in
             guard let self else { return }
             defer { downloadTasks[key] = nil }
             do {
                 let bootstrap = try CourseBootstrap()
                 let manager = try CourseDownloadManager()
-                let (descriptor, archive) = try await manager.download(entry) { received, total in
+                let (descriptor, archive) = try await manager.download(entry) { [weak self] received, total in
                     Task { @MainActor [weak self] in
                         self?.transfers[key] = .downloading(received, total)
                     }
@@ -91,6 +151,8 @@ final class AcademyContentStore: ObservableObject {
                     : error.localizedDescription)
             }
         }
+        downloadTasks[key] = task
+        return task
     }
 
     func cancelDownload(courseID: String, language: String) {

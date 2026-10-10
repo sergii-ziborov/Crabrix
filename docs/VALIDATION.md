@@ -1,5 +1,22 @@
 # Validation record
 
+## In-app CoursePack updates — 10 October 2026
+
+Learn and My Courses now expose a manual catalog refresh, per-course updates,
+and a sequential Update all action with a size confirmation. The update planner
+filters out versions requiring a newer app or unsupported capability, and does
+not offer a downgrade. A cached accepted catalog survives an offline relaunch.
+
+The Debug iOS Simulator build completed. On the iOS 27.1 Crabrix Duo QA
+Simulator, the update-planner test passed. The opt-in public delivery test then
+installed the bundled signed Rust Basics 1.0.1 pack, fetched the live signed
+catalog and Rust Basics 1.0.2 asset from GitHub, installed it, and verified the
+changed lesson explanation, stable `hello-rust` lesson ID, and unchanged open
+1.0.1 session snapshot. Its result bundle reported one passed test, zero
+skipped and zero failed. This verifies the content upgrade path; manual
+interaction with the Update and Update all buttons on physical devices remains
+to be checked.
+
 ## Illustrated Academy rollout and App Store build 38 — 9 October 2026
 
 All 742 lessons were revised in the course source: 142 Rust lessons and 600

@@ -3,6 +3,102 @@ import XCTest
 @testable import Crabrix
 
 final class CourseDeliveryGateTests: XCTestCase {
+    func testUpdatePlannerSelectsLatestCompatibleVersionWithoutDowngrading() throws {
+        let packs = try XCTUnwrap(Bundle.main.url(
+            forResource: "MigrationCoursePacks", withExtension: nil
+        ))
+        let keyring = try JSONDecoder().decode(CourseKeyring.self,
+            from: Data(contentsOf: packs.appending(path: "production-keyring.json")))
+        let bundled = try CoursePackVerifier.catalog(
+            bytes: Data(contentsOf: packs.appending(path: "catalog.v1.json")),
+            keyring: keyring, lastAcceptedSequence: 0
+        )
+        let old = try XCTUnwrap(bundled.courses.first { $0.courseID == "basics" })
+        let update = CourseCatalogPayload.Entry(
+            courseID: old.courseID, language: old.language, contentVersion: "1.0.2",
+            descriptorURL: old.descriptorURL, descriptorSHA256: old.descriptorSHA256,
+            archiveURL: old.archiveURL, archiveSHA256: old.archiveSHA256,
+            archiveBytes: old.archiveBytes, minimumAppVersion: "1.1",
+            requiredCapabilities: old.requiredCapabilities
+        )
+        let future = CourseCatalogPayload.Entry(
+            courseID: old.courseID, language: old.language, contentVersion: "1.0.3",
+            descriptorURL: old.descriptorURL, descriptorSHA256: old.descriptorSHA256,
+            archiveURL: old.archiveURL, archiveSHA256: old.archiveSHA256,
+            archiveBytes: old.archiveBytes, minimumAppVersion: "2.0",
+            requiredCapabilities: old.requiredCapabilities
+        )
+        let catalog = CourseCatalogPayload(
+            schemaVersion: 1, sequence: bundled.sequence + 1, releaseNotes: "",
+            courses: [old, update, future]
+        )
+        let latest = CourseUpdatePlanner.latestCompatible(
+            in: catalog, appVersion: try XCTUnwrap(SemanticVersion("1.1"))
+        )
+        XCTAssertEqual(latest["basics|en"]?.contentVersion, "1.0.2")
+        XCTAssertEqual(CourseUpdatePlanner.updates(
+            latest: latest, installedVersions: ["basics|en": old.contentVersion]
+        ).map(\.contentVersion), ["1.0.2"])
+        XCTAssertTrue(CourseUpdatePlanner.updates(
+            latest: latest, installedVersions: ["basics|en": "1.0.3"]
+        ).isEmpty)
+    }
+
+    func testPublicCourseUpgradeKeepsOpenLessonSnapshotAndStableIDs() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COURSE_FETCH"] == "1" else {
+            throw XCTSkip("Set CRABRIX_RUN_COURSE_FETCH=1 for the public course upgrade gate.")
+        }
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let packs = try XCTUnwrap(Bundle.main.url(
+            forResource: "MigrationCoursePacks", withExtension: nil
+        ))
+        let keyring = try JSONDecoder().decode(CourseKeyring.self,
+            from: Data(contentsOf: packs.appending(path: "production-keyring.json")))
+        let installedRoot = root.appending(path: "installed")
+        let installer = try CourseInstaller(root: installedRoot, appVersion: SemanticVersion("1.1"))
+        _ = try await installer.install(
+            descriptorBytes: Data(contentsOf: packs.appending(path: "basics.descriptor.json")),
+            downloadedArchive: packs.appending(path: "basics-1.0.1.zip"), keyring: keyring
+        )
+        let oldRepository = try await installer.loadRepository(keyring: keyring)
+        let oldSession = try XCTUnwrap(CourseSession(
+            lessonID: "hello-rust", repository: oldRepository
+        ))
+        let oldExplanation = try XCTUnwrap(oldSession.repository.writing(for: "hello-rust"))
+            .explanation
+        XCTAssertEqual(oldSession.contentVersion, "1.0.1")
+
+        let client = CourseCatalogClient(
+            stateURL: root.appending(path: "catalog-state.json"), keyring: keyring
+        )
+        let publicCatalog = try await client.refresh()
+        let cachedCatalog = try await client.current()
+        XCTAssertEqual(cachedCatalog?.sequence, publicCatalog.sequence)
+        let latest = CourseUpdatePlanner.latestCompatible(
+            in: publicCatalog, appVersion: try XCTUnwrap(SemanticVersion("1.1"))
+        )
+        let entry = try XCTUnwrap(latest["basics|en"])
+        XCTAssertGreaterThan(try XCTUnwrap(SemanticVersion(entry.contentVersion)),
+                             try XCTUnwrap(SemanticVersion(oldSession.contentVersion)))
+        let manager = try CourseDownloadManager(cacheRoot: root.appending(path: "downloads"))
+        let downloaded = try await manager.download(entry)
+        _ = try await installer.install(
+            descriptorBytes: downloaded.descriptor,
+            downloadedArchive: downloaded.archive, keyring: keyring
+        )
+        let updatedRepository = try await installer.loadRepository(keyring: keyring)
+        XCTAssertEqual(updatedRepository.loaded["basics"]?.contentVersion, entry.contentVersion)
+        XCTAssertNotEqual(updatedRepository.writing(for: "hello-rust")?.explanation,
+                          oldExplanation)
+        XCTAssertNotNil(updatedRepository.lesson(id: oldSession.lessonID))
+        XCTAssertEqual(oldSession.repository.writing(for: oldSession.lessonID)?.explanation,
+                       oldExplanation)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: installedRoot.appending(
+            path: "basics/en/1.0.1/course.json"
+        ).path))
+    }
+
     func testPublicArchiveResumesFromPersistedRange() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COURSE_FETCH"] == "1" else {
             throw XCTSkip("Set CRABRIX_RUN_COURSE_FETCH=1 for the public course delivery gate.")

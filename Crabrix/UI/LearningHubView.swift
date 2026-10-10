@@ -253,6 +253,7 @@ private struct CourseLibraryView: View {
     @AppStorage("crabrix.learn.trainingSessions") private var trainingSessions = 0
     @AppStorage("crabrix.learn.recallSessions") private var recallSessions = 0
     @State private var pendingDownload: CourseCatalogPayload.Entry?
+    @State private var confirmUpdateAll = false
     @State private var pendingRemoval: (id: String, title: String)?
     let completedLessonIDs: Set<String>
     let showsPractice: Bool
@@ -269,37 +270,31 @@ private struct CourseLibraryView: View {
     }
 
     private var examplesEntry: CourseCatalogPayload.Entry? {
-        academy.catalog?.courses.filter { $0.courseID == "examples" }.max { lhs, rhs in
-            (SemanticVersion(lhs.contentVersion) ?? SemanticVersion(major: 0, minor: 0, patch: 0))
-                < (SemanticVersion(rhs.contentVersion) ?? SemanticVersion(major: 0, minor: 0, patch: 0))
-        }
+        academy.availableDownloads.first { $0.courseID == "examples" }
     }
 
     private var newerExamplesEntry: CourseCatalogPayload.Entry? {
-        guard let entry = examplesEntry,
-              let current = academy.repository?.loaded["examples"].map(\.contentVersion),
-              let availableVersion = SemanticVersion(entry.contentVersion),
-              let installedVersion = SemanticVersion(current),
-              availableVersion > installedVersion else { return nil }
-        return entry
+        academy.updateEntry(for: "examples")
     }
 
     private var available: [CourseCatalogPayload.Entry] {
-        let installedIDs = Set(installed.map(\.id))
-        let entries = academy.catalog?.courses.filter {
-            $0.courseID != "examples" && !installedIDs.contains($0.courseID)
-        } ?? []
-        return Dictionary(grouping: entries, by: \.courseID).values.compactMap { versions in
-            versions.max { lhs, rhs in
-                (SemanticVersion(lhs.contentVersion) ?? SemanticVersion(major: 0, minor: 0, patch: 0))
-                    < (SemanticVersion(rhs.contentVersion) ?? SemanticVersion(major: 0, minor: 0, patch: 0))
-            }
-        }.sorted { Self.order($0.courseID) < Self.order($1.courseID) }
+        academy.availableDownloads.filter { $0.courseID != "examples" }
+            .sorted { Self.order($0.courseID) < Self.order($1.courseID) }
+    }
+
+    private var updates: [CourseCatalogPayload.Entry] {
+        academy.availableUpdates.sorted { Self.order($0.courseID) < Self.order($1.courseID) }
+    }
+
+    private var pendingIsUpdate: Bool {
+        pendingDownload.flatMap { academy.repository?.loaded[$0.courseID] } != nil
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
+                if !updates.isEmpty { updateSummary }
+
                 if !installed.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("My courses").font(.title2.bold())
@@ -324,6 +319,17 @@ private struct CourseLibraryView: View {
                     availableSection
                 }
 
+                if let catalogError = academy.catalogError {
+                    HStack(spacing: 8) {
+                        Image(systemName: "wifi.slash")
+                        Text("Could not check for new lessons: \(catalogError)")
+                            .font(.caption)
+                        Button("Retry") { Task { await academy.checkForUpdates() } }
+                            .font(.caption.bold())
+                    }
+                    .foregroundStyle(CrabrixTheme.muted)
+                }
+
                 if let error = academy.errorMessage {
                     ContentUnavailableView(
                         "Academy unavailable", systemImage: "exclamationmark.triangle",
@@ -343,14 +349,24 @@ private struct CourseLibraryView: View {
             .frame(maxWidth: 660)
             .frame(maxWidth: .infinity)
         }
+        .refreshable { await academy.checkForUpdates() }
         .background(CrabrixTheme.background.ignoresSafeArea())
         .foregroundStyle(CrabrixTheme.primary)
         .navigationTitle(showsPractice ? "Learn" : "Courses")
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            if showsPractice { await academy.checkForUpdates() }
+            await academy.checkForUpdates()
         }
         .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Task { await academy.checkForUpdates() }
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .disabled(academy.checkingForUpdates)
+                .accessibilityLabel("Check for lesson updates")
+            }
             if showsPractice && !installed.isEmpty {
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink(value: LearningRoute.profile) {
@@ -361,21 +377,31 @@ private struct CourseLibraryView: View {
             }
         }
         .confirmationDialog(
-            pendingDownload?.courseID == "examples" ? "Download Code Examples?" : "Download course?",
+            pendingIsUpdate ? "Update lessons?" : "Download course?",
             isPresented: Binding(
                 get: { pendingDownload != nil },
                 set: { if !$0 { pendingDownload = nil } }
             ), titleVisibility: .visible
         ) {
             if let entry = pendingDownload {
-                Button("Download \(ByteCountFormatter.string(fromByteCount: Int64(entry.archiveBytes), countStyle: .file))") {
+                Button("\(pendingIsUpdate ? "Update" : "Download") \(ByteCountFormatter.string(fromByteCount: Int64(entry.archiveBytes), countStyle: .file))") {
                     academy.download(entry)
                     pendingDownload = nil
                 }
             }
             Button("Cancel", role: .cancel) { pendingDownload = nil }
         } message: {
-            Text("The selected material will be available offline after verification.")
+            Text(pendingIsUpdate
+                 ? "The new lessons will replace the installed version after verification. Your progress and projects stay on this device."
+                 : "The selected material will be available offline after verification.")
+        }
+        .confirmationDialog("Update all courses?", isPresented: $confirmUpdateAll,
+                            titleVisibility: .visible) {
+            Button("Update \(updates.count) courses") { academy.updateAll() }
+            Button("Cancel", role: .cancel) { confirmUpdateAll = false }
+        } message: {
+            let bytes = updates.reduce(Int64(0)) { $0 + Int64($1.archiveBytes) }
+            Text("Downloads \(ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)). Saved progress and projects stay on this device.")
         }
         .confirmationDialog(
             "Remove \(pendingRemoval?.title ?? "download")?",
@@ -394,6 +420,29 @@ private struct CourseLibraryView: View {
         } message: {
             Text("Saved projects and learning progress will stay on this device.")
         }
+    }
+
+    private var updateSummary: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: "arrow.down.circle.fill")
+                .font(.title3)
+                .foregroundStyle(CrabrixTheme.mint)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("New lessons available").font(.headline)
+                Text("\(updates.count) course\(updates.count == 1 ? "" : "s") ready to update. Your progress stays saved.")
+                    .font(.caption)
+                    .foregroundStyle(CrabrixTheme.muted)
+            }
+            Spacer(minLength: 0)
+            Button(academy.updatingAll ? "Updating" : "Update all") {
+                confirmUpdateAll = true
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(CrabrixTheme.mint)
+            .disabled(academy.updatingAll)
+        }
+        .padding(15)
+        .crabrixPanel(cornerRadius: 16)
     }
 
     private var examplesSection: some View {
@@ -441,6 +490,11 @@ private struct CourseLibraryView: View {
                     }
                     .padding(15)
                     .crabrixPanel(cornerRadius: 16)
+                }
+                if let entry = newerExamplesEntry {
+                    updateAction(entry, currentVersion: academy.repository?.loaded["examples"]?.contentVersion)
+                        .padding(12)
+                        .crabrixPanel(cornerRadius: 14)
                 }
             } else if let entry = examplesEntry {
                 HStack(spacing: 12) {
@@ -549,9 +603,33 @@ private struct CourseLibraryView: View {
                 NavigationLink("Open Code Examples", value: LearningRoute.examples)
                     .font(.caption.weight(.semibold))
             }
+            if let entry = academy.updateEntry(for: course.id) {
+                updateAction(entry, currentVersion: academy.repository?.loaded[course.id]?.contentVersion)
+            }
           }
           .padding(15)
           .crabrixPanel(cornerRadius: 16)
+        }
+    }
+
+    private func updateAction(_ entry: CourseCatalogPayload.Entry,
+                              currentVersion: String?) -> some View {
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(spacing: 8) {
+                Image(systemName: "arrow.down.circle")
+                    .foregroundStyle(CrabrixTheme.mint)
+                Text("New content: \(currentVersion ?? "installed") → \(entry.contentVersion)")
+                    .font(.caption.weight(.semibold))
+                Spacer(minLength: 0)
+                Button("Update") { pendingDownload = entry }
+                    .buttonStyle(.bordered)
+                    .tint(CrabrixTheme.mint)
+                    .disabled(academy.updatingAll)
+                    .accessibilityLabel("Update \(Self.preview(entry.courseID).title) lessons")
+            }
+            if let transfer = academy.transfers[entry.courseID + "|" + entry.language] {
+                transferView(transfer, entry: entry)
+            }
         }
     }
 
