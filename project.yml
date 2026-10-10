@@ -209,7 +209,19 @@ schemes:
       targets:
         - name: CrabrixScreenshotTests
           selectedTests:
-            - ReleaseScreenshotTests
+            - ReleaseScreenshotTests/testReleaseScreenshotsAndLegalReaders()
+      gatherCoverageData: false
+
+  CrabrixDuoScreenshots:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixScreenshotTests: [test]
+    test:
+      targets:
+        - name: CrabrixScreenshotTests
+          selectedTests:
+            - ReleaseScreenshotTests/testDuoDisplayScreenshots()
       gatherCoverageData: false
 
   Crabrix:

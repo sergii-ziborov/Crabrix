@@ -7,6 +7,26 @@ import UIKit
 final class ReleaseScreenshotTests: XCTestCase {
     private let app = XCUIApplication()
 
+    func testDuoDisplayScreenshots() throws {
+        continueAfterFailure = false
+        for (orientation, name) in [(UIDeviceOrientation.portrait, "portrait"), (.landscapeLeft, "landscape")] {
+            XCUIDevice.shared.orientation = orientation
+            for tab in ["code", "output"] {
+                launch(["--crabrix-auto-dock=\(tab)"])
+                let application = XCTAttachment(screenshot: app.screenshot())
+                application.name = "duo-\(name)-\(tab)-application"
+                application.lifetime = .keepAlways
+                add(application)
+                for (index, screen) in XCUIScreen.screens.enumerated() {
+                    let attachment = XCTAttachment(screenshot: screen.screenshot())
+                    attachment.name = "duo-\(name)-\(tab)-screen-\(index)"
+                    attachment.lifetime = .keepAlways
+                    add(attachment)
+                }
+            }
+        }
+    }
+
     func testReleaseScreenshotsAndLegalReaders() throws {
         continueAfterFailure = false
         XCUIDevice.shared.orientation = .portrait
