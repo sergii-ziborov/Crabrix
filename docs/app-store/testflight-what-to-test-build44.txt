@@ -1,0 +1,7 @@
+Build 44: synchronized offline legal documents and current compiler notices.
+
+Settings > About: open About Crabrix, Privacy Policy, Terms of Use, Educational Content Rights, Application Source License, and Open-source licenses. The full bundled documents must remain readable without network access. Compiler dependency notices supports search and offline full text for the pinned 1,592-package source inventory.
+
+Academy: check the expanded illustrated lessons and highlighted Rust snippets. In My Courses, check per-course updates and Update all; signed course updates must preserve completed steps and achievements. The native app requires no Crabrix account; the website uses a separate free account for full lessons.
+
+Regression checks: open and edit an example, run it on device, switch between Code, Problems, Output and Terminal. Verify the existing Duo layout, helper keys and keyboard behavior. This build does not change editor or Duo layout logic.

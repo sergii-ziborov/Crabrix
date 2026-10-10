@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "release": {
+    "version": "1.1",
+    "appStoreBuild": "44",
+    "channel": "Xcode Cloud archive; TestFlight Internal QA; App Review waiting",
+    "releaseType": "MANUAL"
+  },
+  "source": {
+    "commit": "2a5dd98aa03762dfca6e7d55c941850db4a3f950",
+    "change": "Bundle synchronized About, Privacy, Terms, source/content licenses and full offline compiler notice archives; preserve editor and Duo code."
+  },
+  "xcodeCloud": {
+    "runID": "e4838bc7-415a-40d5-83ac-5a26ae0d1c20",
+    "number": 44,
+    "completionStatus": "SUCCEEDED"
+  },
+  "appStoreConnect": {
+    "appID": "6809502653",
+    "buildID": "e9c73e7e-534d-4792-96cf-578812a441a3",
+    "processingState": "VALID",
+    "buildAudienceType": "APP_STORE_ELIGIBLE",
+    "internalBetaGroup": "Internal QA",
+    "internalBetaGroupID": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "internalBuildState": "IN_BETA_TESTING",
+    "whatToTestReadbackMatched": true,
+    "appStoreVersionID": "2bc0ae1f-ca26-41e6-a0a9-700628e7bf14",
+    "appReviewSelectedBuild": "44",
+    "appReviewSubmissionID": "a953a91f-bda4-4e8c-8cb8-8adb114c9832",
+    "appReviewState": "WAITING_FOR_REVIEW",
+    "previousReviewSubmissionID": "cd2c216d-cfad-48e1-a7b0-e6597aa45030"
+  },
+  "content": {
+    "catalogSequence": 9,
+    "coursepackRelease": "coursepack-v1.0.8",
+    "lessonCount": 742,
+    "illustratedLessonCount": 742,
+    "deliveryChanged": false
+  },
+  "validation": {
+    "cloudBuildAndArchive": "passed",
+    "nativeReleaseAppCompilation": "passed",
+    "nativeDebugBuildForTesting": "passed",
+    "legalCopyAndPinnedLicenseCheck": "passed",
+    "releaseBundleDocuments": "passed: five legal documents and 1594 offline notice groups readable; source bytes match",
+    "nativeBundledLicenseTestExecution": "pending: CoreSimulator broker is blocked despite targeted service restarts",
+    "websiteProductionBuild": "passed",
+    "websitePublicHTTPS": "passed: About, Privacy, Terms and Licenses; account gate retained",
+    "appStoreScreenshotUpload": "passed: 10 iPhone, 7 iPad, 2 Duo; all COMPLETE; ordered source-file MD5s match",
+    "freshBuild44ScreenshotCapture": "pending: CoreSimulator unavailable; synchronized existing verified captures instead",
+    "physicalDeviceReview": "pending"
+  },
+  "documentation": "Follow-up documentation and evidence commits do not change the first-party Swift source compiled by this run."
+}

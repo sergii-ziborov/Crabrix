@@ -1,5 +1,32 @@
 # Validation record
 
+## Bundled legal documents and release 44 — 10 October 2026
+
+Xcode Cloud built and archived source `2a5dd98` successfully. Apple processed
+build 44 as VALID and APP_STORE_ELIGIBLE; Internal QA is IN_BETA_TESTING. The
+replacement App Review submission `a953a91f-bda4-4e8c-8cb8-8adb114c9832` and
+version 1.1 select build 44 and both report WAITING_FOR_REVIEW, with manual
+release. Product copy, links, privacy choices, reviewer notes, and What to Test
+matched API readback. All 19 ordered screenshots are COMPLETE and match the
+verified repository files; these include retained earlier captures.
+
+Legal generation/checking and the Next.js production build passed. Every
+license text matches its pinned source. Both compiler notice archives matched
+the Ed25519-verified toolchain release descriptor. The compiled Release app
+contains five current legal documents and all 1,594 notice groups; every
+referenced notice was read and decoded from that bundle. The public website
+serves the matching documents and archives, with Academy account access kept.
+
+The Release app compiled. The first Release build-for-testing could not import
+Crabrix using `@testable` because Release does not enable testability. The Debug
+arm64 build-for-testing then succeeded. Execution of the six bundled-license
+tests and fresh screenshot capture are still pending: the CoreSimulator broker
+stalls while loading installed runtimes, even for device-list requests and a
+separate device set. Targeted broker restarts did not recover it. Existing user
+device data was not erased. The Mac owner has been asked to restart after other
+running work completes. No runtime, device, branch, or learner data was removed.
+
+
 ## Academy code highlighting and signed course update — 10 October 2026
 
 The seven changed courses contain 742 lessons and 742 illustration references.

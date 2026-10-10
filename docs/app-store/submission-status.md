@@ -1,4 +1,17 @@
-> Current status — 10 October 2026: **1.1 (43)** was compiled, archived, and
+> Current status — 10 October 2026: **1.1 (44)** was compiled, archived, and
+> uploaded by Xcode Cloud from `2a5dd98`. It is `VALID`, `APP_STORE_ELIGIBLE`,
+> and `IN_BETA_TESTING` in Internal QA. What to Test and product/reviewer text
+> matched API readback. Version 1.1 selects build 44; version and submission
+> `a953a91f-bda4-4e8c-8cb8-8adb114c9832` report `WAITING_FOR_REVIEW`.
+> Release remains manual. All 19 screenshots reached COMPLETE and their
+> ordered MD5s match the verified repository captures. A fresh build-44
+> capture and execution of the six bundled-license tests are pending because
+> CoreSimulator is blocked; both Release app compilation and the Debug test
+> build passed. Physical-device QA and Apple's decision are pending. See the
+> [build-44 manifest](../releases/1.1-build44.json) and
+> [metadata audit](metadata-audit-2026-10-10.md).
+
+> Earlier status — 10 October 2026: **1.1 (43)** was compiled, archived, and
 > uploaded by Xcode Cloud from `9433d98`. App Store Connect processed it as
 > `VALID` and `APP_STORE_ELIGIBLE`. Internal QA reports `IN_BETA_TESTING` and
 > the en-US What to Test matched API readback. Version 1.1 selects build 43;

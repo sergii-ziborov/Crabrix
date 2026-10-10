@@ -1,5 +1,28 @@
 # Crabrix website deployment
 
+## Synchronized legal pages and native release 44 — 10 October 2026
+
+The public service runs `localhost/crabrix-web-site:legal-20261010-r1` from
+`/srv/apps/crabrix-site/releases/20261010-legal-r1/site` (image digest
+`f6f232609a9bdf0d5dd80a46275931dbd8c1166b6c936a2e886f7cfeff0f8b32`).
+The Podman container `crabrix-web-site-1` is healthy on the same loopback port
+3212. Memory, CPU, process limits, no-new-privileges, account data mount and
+restart policy are preserved. The previous account-gated server is stopped as
+`crabrix-web-site-before-legal-20261010` for rollback. A consistent restricted
+SQLite backup was saved before switching; the daily backup timer remains active.
+
+About, Privacy and Terms share generated offline copies with native build 44.
+The new `/licenses/` page serves the source/content terms, original component
+texts and exact signed-release notice ZIPs. Candidate and public HTTPS checks
+passed. The Privacy Choices anchor, account redirect and denial of the raw
+course JSON were checked. The Academy content snapshot, account schema and
+existing screenshot files are unchanged. New Simulator recaptures are pending
+CoreSimulator recovery; this deployment does not claim those pending images.
+DNS, certificate, Nginx routing and Cloudflare were not changed or used.
+
+Public browser evidence: [Licenses](screenshots/site-licenses-live-2026-10-10.png).
+
+
 ## Free Academy accounts and three Rust articles — 10 October 2026
 
 The public service now runs the standalone Next.js server, image
