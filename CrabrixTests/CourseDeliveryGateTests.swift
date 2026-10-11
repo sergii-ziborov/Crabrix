@@ -1,5 +1,6 @@
 import Foundation
 import XCTest
+import UIKit
 @testable import Crabrix
 
 final class CourseDeliveryGateTests: XCTestCase {
@@ -182,6 +183,76 @@ final class CourseDeliveryGateTests: XCTestCase {
         let asset = try await manager.download(basics)
         XCTAssertEqual(try Data(contentsOf: asset.archive), archive)
         XCTAssertFalse(FileManager.default.fileExists(atPath: partial.path))
+    }
+
+    func testPublicExamplesUpgradeKeepsEditedProjectAndLoadsEveryInfographic() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COURSE_FETCH"] == "1" else {
+            throw XCTSkip("Set CRABRIX_RUN_COURSE_FETCH=1 for the public Examples upgrade gate.")
+        }
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let packs = try XCTUnwrap(Bundle.main.url(forResource: "MigrationCoursePacks", withExtension: nil))
+        let keyring = try JSONDecoder().decode(CourseKeyring.self,
+            from: Data(contentsOf: packs.appending(path: "production-keyring.json")))
+        // Freeze the preceding production pack so bootstrap's live catalog cannot erase the upgrade case.
+        let old = CourseCatalogPayload.Entry(
+            courseID: "examples", language: "en", contentVersion: "1.0.2",
+            descriptorURL: URL(string: "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.5/examples.descriptor.json")!,
+            descriptorSHA256: "8757e74c6586194e45745798842bda6a688b46ac91d5223f9c8ed2ba53e821d1",
+            archiveURL: URL(string: "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.5/examples-1.0.2.zip")!,
+            archiveSHA256: "1ee0d024f47935fb17a1e3c9a4751c00a13cffc7a68283ad03841350b5172458",
+            archiveBytes: 5_420_774, minimumAppVersion: "1.1",
+            requiredCapabilities: ["coursepack-v1", "examples-gallery-v1"]
+        )
+        let manager = try CourseDownloadManager(cacheRoot: root.appending(path: "downloads"))
+        let installer = try CourseInstaller(root: root.appending(path: "installed"), appVersion: SemanticVersion("1.1"))
+        let oldAsset = try await manager.download(old)
+        _ = try await installer.install(descriptorBytes: oldAsset.descriptor,
+            downloadedArchive: oldAsset.archive, keyring: keyring)
+        let previous = try await installer.loadRepository(keyring: keyring)
+        XCTAssertEqual(previous.showcaseProjects().filter { $0.illustration != nil }.count, 4)
+        let example = try XCTUnwrap(previous.showcaseProjects().first { $0.id == "unit-converter" })
+        var edited = example.project
+        edited.provenance = .academyExample(id: example.id, courseID: "examples",
+            contentVersion: "1.0.2", templateHash: example.contentDigest)
+        edited.files[edited.entryFile, default: ""] += "\n// retained learner edit\n"
+        let libraryURL = root.appending(path: "library/recent-projects.json")
+        let library = ProjectLibrary(storageURL: libraryURL)
+        _ = try await library.record(project: edited, lastBuild: nil)
+
+        let client = CourseCatalogClient(stateURL: root.appending(path: "catalog-state.json"), keyring: keyring)
+        let catalog = try await client.refresh()
+        let latest = CourseUpdatePlanner.latestCompatible(in: catalog,
+            appVersion: try XCTUnwrap(SemanticVersion("1.1")))
+        let entry = try XCTUnwrap(latest["examples|en"])
+        XCTAssertGreaterThanOrEqual(try XCTUnwrap(SemanticVersion(entry.contentVersion)),
+            try XCTUnwrap(SemanticVersion("1.0.3")))
+        XCTAssertEqual(CourseUpdatePlanner.updates(latest: latest,
+            installedVersions: ["examples|en": "1.0.2"]).filter { $0.courseID == "examples" }.count, 1)
+        let asset = try await manager.download(entry)
+        _ = try await installer.install(descriptorBytes: asset.descriptor,
+            downloadedArchive: asset.archive, keyring: keyring)
+        let updated = try await installer.loadRepository(keyring: keyring)
+        XCTAssertEqual(Set(updated.showcaseProjects().map(\.id)), Set(previous.showcaseProjects().map(\.id)))
+        XCTAssertEqual(updated.showcaseProjects().count, 46)
+        for item in updated.showcaseProjects() {
+            let illustration = try XCTUnwrap(item.illustration, item.id)
+            let image = try XCTUnwrap(UIImage(contentsOfFile: illustration.url.path), item.id)
+            XCTAssertNotNil(image.cgImage, item.id)
+            XCTAssertFalse(illustration.alt.isEmpty, item.id)
+            XCTAssertFalse(illustration.caption.isEmpty, item.id)
+            let prior = try XCTUnwrap(previous.showcaseProjects().first { $0.id == item.id })
+            XCTAssertEqual(item.project.files.filter { $0.key.hasSuffix(".rs") },
+                prior.project.files.filter { $0.key.hasSuffix(".rs") }, item.id)
+        }
+        let reopened = try await ProjectLibrary(storageURL: libraryURL).allItems()
+        XCTAssertEqual(reopened.count, 1)
+        XCTAssertEqual(reopened.first?.project.id, edited.id)
+        XCTAssertEqual(reopened.first?.project.files, edited.files)
+        XCTAssertEqual(reopened.first?.project.provenance?.course?.contentVersion, "1.0.2")
+        // An already open guide retains its old snapshot until the user reopens it.
+        XCTAssertNil(example.illustration)
+        XCTAssertNotNil(updated.showcaseProjects().first { $0.id == example.id }?.illustration)
     }
 
     func testPublicSignedCatalogAndCourseInstall() async throws {

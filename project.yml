@@ -310,6 +310,7 @@ schemes:
         - name: CrabrixTests
           selectedTests:
             - CourseDeliveryGateTests/testPublicSignedCatalogAndCourseInstall()
+            - CourseDeliveryGateTests/testPublicExamplesUpgradeKeepsEditedProjectAndLoadsEveryInfographic()
             - CourseDeliveryGateTests/testPublicArchiveResumesFromPersistedRange()
 
   CrabrixLegalGate:
