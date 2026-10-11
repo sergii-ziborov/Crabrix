@@ -311,6 +311,7 @@ schemes:
           selectedTests:
             - CourseDeliveryGateTests/testPublicSignedCatalogAndCourseInstall()
             - CourseDeliveryGateTests/testPublicExamplesUpgradeKeepsEditedProjectAndLoadsEveryInfographic()
+            - CourseDeliveryGateTests/testPublicConstellationGeneratorCompilesAndRendersRepeatableCanvas()
             - CourseDeliveryGateTests/testPublicArchiveResumesFromPersistedRange()
 
   CrabrixLegalGate:

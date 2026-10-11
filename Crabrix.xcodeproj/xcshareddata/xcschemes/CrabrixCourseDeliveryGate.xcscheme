@@ -72,6 +72,9 @@
                   Identifier = "CourseDeliveryGateTests/testPublicExamplesUpgradeKeepsEditedProjectAndLoadsEveryInfographic()">
                </Test>
                <Test
+                  Identifier = "CourseDeliveryGateTests/testPublicConstellationGeneratorCompilesAndRendersRepeatableCanvas()">
+               </Test>
+               <Test
                   Identifier = "CourseDeliveryGateTests/testPublicArchiveResumesFromPersistedRange()">
                </Test>
             </SelectedTests>

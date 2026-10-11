@@ -211,7 +211,7 @@ final class CourseDeliveryGateTests: XCTestCase {
             downloadedArchive: oldAsset.archive, keyring: keyring)
         let previous = try await installer.loadRepository(keyring: keyring)
         XCTAssertEqual(previous.showcaseProjects().filter { $0.illustration != nil }.count, 4)
-        let example = try XCTUnwrap(previous.showcaseProjects().first { $0.id == "unit-converter" })
+        let example = try XCTUnwrap(previous.showcaseProjects().first { $0.id == "constellation-generator" })
         var edited = example.project
         edited.provenance = .academyExample(id: example.id, courseID: "examples",
             contentVersion: "1.0.2", templateHash: example.contentDigest)
@@ -226,7 +226,7 @@ final class CourseDeliveryGateTests: XCTestCase {
             appVersion: try XCTUnwrap(SemanticVersion("1.1")))
         let entry = try XCTUnwrap(latest["examples|en"])
         XCTAssertGreaterThanOrEqual(try XCTUnwrap(SemanticVersion(entry.contentVersion)),
-            try XCTUnwrap(SemanticVersion("1.0.3")))
+            try XCTUnwrap(SemanticVersion("1.0.4")))
         XCTAssertEqual(CourseUpdatePlanner.updates(latest: latest,
             installedVersions: ["examples|en": "1.0.2"]).filter { $0.courseID == "examples" }.count, 1)
         let asset = try await manager.download(entry)
@@ -242,8 +242,15 @@ final class CourseDeliveryGateTests: XCTestCase {
             XCTAssertFalse(illustration.alt.isEmpty, item.id)
             XCTAssertFalse(illustration.caption.isEmpty, item.id)
             let prior = try XCTUnwrap(previous.showcaseProjects().first { $0.id == item.id })
-            XCTAssertEqual(item.project.files.filter { $0.key.hasSuffix(".rs") },
-                prior.project.files.filter { $0.key.hasSuffix(".rs") }, item.id)
+            if item.id == "constellation-generator" {
+                XCTAssertNotEqual(item.project.files[item.project.entryFile],
+                    prior.project.files[prior.project.entryFile])
+                XCTAssertNotEqual(item.contentDigest, prior.contentDigest)
+                XCTAssertTrue(item.isVisual)
+            } else {
+                XCTAssertEqual(item.project.files.filter { $0.key.hasSuffix(".rs") },
+                    prior.project.files.filter { $0.key.hasSuffix(".rs") }, item.id)
+            }
         }
         let reopened = try await ProjectLibrary(storageURL: libraryURL).allItems()
         XCTAssertEqual(reopened.count, 1)
@@ -253,6 +260,49 @@ final class CourseDeliveryGateTests: XCTestCase {
         // An already open guide retains its old snapshot until the user reopens it.
         XCTAssertNil(example.illustration)
         XCTAssertNotNil(updated.showcaseProjects().first { $0.id == example.id }?.illustration)
+    }
+
+    func testPublicConstellationGeneratorCompilesAndRendersRepeatableCanvas() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COURSE_FETCH"] == "1" else {
+            throw XCTSkip("Use the public course delivery scheme for the updated Rust renderer.")
+        }
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let packs = try XCTUnwrap(Bundle.main.url(forResource: "MigrationCoursePacks", withExtension: nil))
+        let keys = try JSONDecoder().decode(CourseKeyring.self,
+            from: Data(contentsOf: packs.appending(path: "production-keyring.json")))
+        let client = CourseCatalogClient(stateURL: root.appending(path: "catalog-state.json"), keyring: keys)
+        let catalog = try await client.refresh()
+        let latest = CourseUpdatePlanner.latestCompatible(in: catalog,
+            appVersion: try XCTUnwrap(SemanticVersion("1.1")))
+        let entry = try XCTUnwrap(latest["examples|en"])
+        XCTAssertGreaterThanOrEqual(try XCTUnwrap(SemanticVersion(entry.contentVersion)),
+            try XCTUnwrap(SemanticVersion("1.0.4")))
+        let manager = try CourseDownloadManager(cacheRoot: root.appending(path: "downloads"))
+        let asset = try await manager.download(entry)
+        let installer = try CourseInstaller(root: root.appending(path: "installed"), appVersion: SemanticVersion("1.1"))
+        _ = try await installer.install(descriptorBytes: asset.descriptor,
+            downloadedArchive: asset.archive, keyring: keys)
+        let repository = try await installer.loadRepository(keyring: keys)
+        let example = try XCTUnwrap(repository.showcaseProjects().first { $0.id == "constellation-generator" })
+        var supporting = example.project.files
+        let source = try XCTUnwrap(supporting.removeValue(forKey: example.project.entryFile))
+        let compiler = WasmRustCompiler(bundle: .main)
+        let first = await compiler.run(source: source, sourcePath: example.project.entryFile, supportingFiles: supporting)
+        XCTAssertTrue(first.succeeded, "\(first.detail)\n\(first.stderr)")
+        let frame = try XCTUnwrap(RustCanvasOutput.parse(first.stdout).frame)
+        XCTAssertEqual(frame.width, 64)
+        XCTAssertEqual(frame.height, 40)
+        let again = await compiler.run(source: source, sourcePath: example.project.entryFile, supportingFiles: supporting)
+        XCTAssertTrue(again.succeeded, "\(again.detail)\n\(again.stderr)")
+        XCTAssertEqual(first.stdout, again.stdout)
+        let changedSeed = source.replacingOccurrences(of: "const SEED: u32 = 0xC0FFEE;",
+            with: "const SEED: u32 = 0x12345678;")
+        XCTAssertNotEqual(changedSeed, source)
+        let changed = await compiler.run(source: changedSeed, sourcePath: example.project.entryFile, supportingFiles: supporting)
+        XCTAssertTrue(changed.succeeded, "\(changed.detail)\n\(changed.stderr)")
+        let changedFrame = try XCTUnwrap(RustCanvasOutput.parse(changed.stdout).frame)
+        XCTAssertNotEqual(frame.pixels, changedFrame.pixels)
     }
 
     func testPublicSignedCatalogAndCourseInstall() async throws {
