@@ -549,7 +549,7 @@ struct ContentView: View {
         .onReceive(model.$practiceCompleted) { passed in
             guard passed, !scoredPractice else { return }
             scoredPractice = true
-            progress.record(.practicePassed)
+            progress.record(.practicePassed, eventKey: "practice:compiler-borrow:first-completion")
         }
         .onChange(of: keepAwakeDuringBuild) { _, keepAwake in
             UIApplication.shared.isIdleTimerDisabled = model.isBusy && keepAwake
@@ -1162,8 +1162,7 @@ struct ContentView: View {
             lastContribution = nil
             return
         }
-        // Rating follows the diff, so re-running an untouched sample earns a
-        // token amount and real editing earns real points.
+        // Rating follows new source work, shared across copies of a project.
         var contribution = CodeContributionLedger.shared.record(
             projectID: model.projectID,
             files: model.exportProject().files
@@ -1173,15 +1172,14 @@ struct ContentView: View {
         // diff is paid once per exact source revision, so a loop of identical
         // builds earns nothing; showing up is paid once a day, so coming back
         // to a finished project tomorrow still counts.
-        let revisionKey = CrabrixProgressState.buildRevisionKeyPrefix
-            + "\(model.projectID.uuidString):\(model.workspaceRevision.sourceTreeHash)"
-        let buildRecorded = progress.record(.buildSucceeded(contribution), eventKey: revisionKey)
-        if progress.isFirstRunToday() { progress.record(.dailyRunBonus) }
-        lastContribution = buildRecorded ? contribution : nil
-
-        // Typing is where most of the rating comes from now.
         let typed = TypingLedger.shared.drainPendingTyped(projectID: model.projectID)
-        if typed > 0 { progress.record(.codeTyped(characters: typed)) }
+        let buildRecorded = progress.recordSourceRun(
+            contribution: contribution,
+            sourceTreeHash: model.workspaceRevision.sourceTreeHash,
+            scoringSourceHash: CodeContribution.scoringSourceHash(model.exportProject().files),
+            typedCharacters: typed
+        )
+        lastContribution = buildRecorded ? contribution : nil
         if let repairEventKey = model.repairRewardEventKey {
             progress.record(.diagnosticRepaired, eventKey: repairEventKey)
         }

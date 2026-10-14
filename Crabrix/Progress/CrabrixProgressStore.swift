@@ -95,7 +95,7 @@ final class CrabrixProgressStore: ObservableObject {
     /// Whether the day's run reward is still unclaimed.
     func isFirstRunToday(now: Date = Date()) -> Bool {
         guard let last = state.lastRunRewardDay else { return true }
-        return !Calendar.current.isDate(last, inSameDayAs: now)
+        return Self.rewardCalendar.startOfDay(for: now) > last
     }
 
     var earnedAchievements: [CrabrixAchievement] {
@@ -109,12 +109,16 @@ final class CrabrixProgressStore: ObservableObject {
     /// Applies an event: adds its points, updates the counters it affects, then
     /// unlocks whatever that made true.
     @discardableResult
-    func record(_ event: CrabrixProgressEvent, eventKey: String? = nil) -> Bool {
-        if let eventKey, hasApplied(eventKey) { return false }
+    func record(_ event: CrabrixProgressEvent, eventKey: String? = nil, now: Date = Date()) -> Bool {
+        guard event.isValid else { return false }
+        // The compiler drill has one identity even if a caller omits its key.
+        let identity = eventKey ?? (event == .practicePassed ? "practice:compiler-borrow:first-completion" : nil)
+        if let identity, hasApplied(identity) { return false }
+        if event == .dailyRunBonus, !isFirstRunToday(now: now) { return false }
         var updated = state
-        if let eventKey { Self.remember(eventKey, in: &updated) }
-        updated.totalPoints += event.points
-        updated.lastActiveAt = Date()
+        if let identity { Self.remember(identity, in: &updated) }
+        updated.totalPoints += Self.rewardPoints(for: event, state: &updated, now: now)
+        updated.lastActiveAt = now
 
         switch event {
         case .lessonCompleted:
@@ -131,7 +135,7 @@ final class CrabrixProgressStore: ObservableObject {
             updated.buildsSucceeded += 1
             updated.linesChanged += contribution.changedLines
         case .dailyRunBonus:
-            updated.lastRunRewardDay = Calendar.current.startOfDay(for: Date())
+            updated.lastRunRewardDay = Self.rewardCalendar.startOfDay(for: now)
         case .diagnosticRepaired:
             updated.diagnosticsRepaired += 1
         case .practicePassed:
@@ -173,19 +177,121 @@ final class CrabrixProgressStore: ObservableObject {
 
     func clearCelebration() { pendingCelebration = [] }
 
+    /// Source rewards and pending typing use the same content identity. Typing
+    /// then deleting back to a previously paid revision cannot drain more points.
+    @discardableResult
+    func recordSourceRun(
+        contribution: CodeContribution,
+        sourceTreeHash: String,
+        scoringSourceHash: String? = nil,
+        typedCharacters: Int,
+        now: Date = Date()
+    ) -> Bool {
+        guard CrabrixProgressEvent.buildSucceeded(contribution).isValid else { return false }
+        let scoringHash = scoringSourceHash ?? sourceTreeHash
+        let identity = CrabrixProgressState.buildRevisionKeyPrefix + scoringHash
+        let alreadyPaid = hasApplied(CrabrixProgressState.buildRevisionKeyPrefix + sourceTreeHash)
+        let recorded: Bool
+        if alreadyPaid {
+            // Carry an existing exact-byte reward into the normalized identity.
+            var updated = state
+            if !hasApplied(identity) {
+                Self.remember(identity, in: &updated)
+                state = updated
+                persist()
+            }
+            recorded = false
+        } else if contribution.changedLines > 0 {
+            recorded = record(.buildSucceeded(contribution), eventKey: identity, now: now)
+        } else {
+            recorded = false
+        }
+        record(.dailyRunBonus, now: now)
+        let payableTyping = min(typedCharacters, contribution.addedCharacters)
+        if recorded, contribution.changedLines > 0, payableTyping > 0 {
+            record(
+                .codeTyped(characters: payableTyping),
+                eventKey: "typing-revision:\(scoringHash)",
+                now: now
+            )
+        }
+        return recorded
+    }
+
+    private static var rewardCalendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        return calendar
+    }
+
+    /// Limits apply inside the store, so relaunching or switching projects cannot
+    /// bypass them. Curriculum first-completion rewards keep their full value.
+    private static func rewardPoints(
+        for event: CrabrixProgressEvent,
+        state: inout CrabrixProgressState,
+        now: Date
+    ) -> Int {
+        var points = max(0, event.points)
+        let bucket: String
+        let limit: Int
+        switch event {
+        case .buildSucceeded, .diagnosticRepaired, .packagesCompiled:
+            bucket = "build"
+            limit = 300
+        case .codeTyped:
+            bucket = "typing"
+            limit = 500
+        case let .termTrainFinished(_, _, seconds):
+            bucket = "training"
+            limit = 600
+            let key = seconds == nil ? "term-train:practice" : "term-train:timed"
+            let previous = state.trainingBestPoints[key, default: 0]
+            state.trainingBestPoints[key] = max(previous, points)
+            points = max(0, points - previous)
+        case .codeRecallFinished:
+            bucket = "training"
+            limit = 600
+            let key = "code-recall"
+            let previous = state.trainingBestPoints[key, default: 0]
+            state.trainingBestPoints[key] = max(previous, points)
+            points = max(0, points - previous)
+        default:
+            return points
+        }
+
+        let day = rewardCalendar.startOfDay(for: now)
+        if state.rewardDay == nil || day > state.rewardDay! {
+            state.rewardDay = day
+            state.dailyRewardPoints = [:]
+        }
+        // A backwards clock must not reopen an already spent budget.
+        guard state.rewardDay == day else { return 0 }
+        let paid = state.dailyRewardPoints[bucket, default: 0]
+        let reward = min(points, max(0, limit - paid))
+        state.dailyRewardPoints[bucket] = paid + reward
+        return reward
+    }
+
     /// Whether a reward identity has already been paid.
     private func hasApplied(_ eventKey: String) -> Bool {
         CrabrixProgressState.isBoundedEventKey(eventKey)
-            ? state.recentBuildRevisions.contains(eventKey)
+            ? state.recentBuildRevisions.contains { Self.canonicalRevisionKey($0) == Self.canonicalRevisionKey(eventKey) }
             : state.processedEventKeys.contains(eventKey)
+    }
+
+    /// Old build keys included the ProjectID. The source identity is global so
+    /// cloning a project cannot buy another reward for the same code.
+    private static func canonicalRevisionKey(_ key: String) -> String {
+        guard key.hasPrefix(CrabrixProgressState.buildRevisionKeyPrefix),
+              let revision = key.split(separator: ":").last
+        else { return key }
+        return CrabrixProgressState.buildRevisionKeyPrefix + revision
     }
 
     /// Records a reward identity so a relaunch cannot pay it twice.
     ///
-    /// Lesson, pattern, crate, and repair identities are finite, so they are
-    /// kept for good. Source revisions are not: they are held in a bounded
-    /// window instead, which is far longer than any plausible farming loop and
-    /// keeps the persisted state from growing with every edit.
+    /// Curriculum identities are permanent. Source and typing revisions use a
+    /// bounded cache; the persisted daily budget limits rewards after eviction.
     private static func remember(_ eventKey: String, in state: inout CrabrixProgressState) {
         guard CrabrixProgressState.isBoundedEventKey(eventKey) else {
             state.processedEventKeys.insert(eventKey)

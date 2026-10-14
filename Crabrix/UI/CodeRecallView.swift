@@ -33,6 +33,7 @@ struct CodeRecallView: View {
     @State private var roundsCleared = 0
     @State private var linesRecalled = 0
     @State private var bestLevel = 0
+    @State private var awardedRating = 0
     @State private var secondsLeft = 0
     @State private var unlockedThisRun: [CrabrixAchievement] = []
 
@@ -253,7 +254,7 @@ struct CodeRecallView: View {
                     .font(.subheadline)
                     .foregroundStyle(CrabrixTheme.muted)
 
-                Text("+\(CodeRecallRunResult(bestLevel: bestLevel, roundsCleared: roundsCleared, linesRecalled: linesRecalled).progressEvent.points) rating")
+                Text("+\(awardedRating) rating")
                     .font(.headline.monospaced())
                     .foregroundStyle(CrabrixTheme.amber)
 
@@ -353,6 +354,7 @@ struct CodeRecallView: View {
         roundsCleared = 0
         linesRecalled = 0
         bestLevel = 0
+        awardedRating = 0
         usedTopics = []
         unlockedThisRun = []
         nextRound()
@@ -420,13 +422,16 @@ struct CodeRecallView: View {
     }
 
     private func finish() {
+        guard phase != .finished else { return }
         let outcome = CodeRecallRunResult(
             bestLevel: bestLevel,
             roundsCleared: roundsCleared,
             linesRecalled: linesRecalled
         )
         let before = progress.state.unlockedAchievementIDs
+        let pointsBefore = progress.state.totalPoints
         progress.record(outcome.progressEvent)
+        awardedRating = progress.state.totalPoints - pointsBefore
         unlockedThisRun = progress.allAchievements.filter {
             progress.state.unlockedAchievementIDs.contains($0.id) && !before.contains($0.id)
         }

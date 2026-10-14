@@ -70,20 +70,15 @@ struct ProfileView: View {
             }
         }
         #if CRABRIX_SOCIAL
-        .sheet(item: $gameCenterPanel) { panel in
-            GameCenterSheet(
-                controller: panel == .leaderboard
-                    ? gameCenter.makeLeaderboardViewController()
-                    : gameCenter.makeAchievementsViewController(),
-                onDismiss: { gameCenterPanel = nil }
+        .sheet(item: $gameCenterPanel, onDismiss: {
+            gameCenter.cancelAuthenticationPresentation()
+        }) { panel in
+            GameCenterEntrySheet(
+                service: gameCenter,
+                progress: progress,
+                showsLeaderboard: panel == .leaderboard
             )
             .ignoresSafeArea()
-        }
-        .task {
-            if gameCenter.isEnabled {
-                gameCenter.authenticate()
-                await gameCenter.submit(state: progress.state)
-            }
         }
         #endif
     }
@@ -156,32 +151,33 @@ struct ProfileView: View {
             .tint(CrabrixTheme.mint)
             .accessibilityHint("Share your rating and achievement ladder progress with Apple's Game Center. Local progress always remains on this device.")
 
-            if gameCenter.isEnabled, gameCenter.isSignedIn {
+            if gameCenter.isEnabled {
                 HStack(spacing: 10) {
-                    Button { gameCenterPanel = .leaderboard } label: {
+                    Button {
+                        gameCenterPanel = .leaderboard
+                        gameCenter.authenticate()
+                    } label: {
                         Label("Leaderboard", systemImage: "list.number")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(CrabrixTheme.amber)
 
-                    Button { gameCenterPanel = .achievements } label: {
+                    Button {
+                        gameCenterPanel = .achievements
+                        gameCenter.authenticate()
+                    } label: {
                         Label("Game Center", systemImage: "rosette")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
                 }
                 .font(.subheadline.bold())
-                Text("Your rating and achievement ladders sync through Apple Game Center.")
+                Text(gameCenter.isSignedIn
+                     ? "Your rating and achievement ladders sync through Apple Game Center."
+                     : "Open the leaderboard to connect to Game Center.")
                     .font(.caption)
                     .foregroundStyle(CrabrixTheme.muted)
-            } else if gameCenter.isEnabled {
-                Text(gameCenterStatusText)
-                    .font(.caption)
-                    .foregroundStyle(CrabrixTheme.muted)
-                Button("Try Game Center again") { gameCenter.authenticate() }
-                    .font(.caption.bold())
-                    .disabled(gameCenter.status == .authenticating)
             } else {
                 localStorageNote
             }
@@ -478,35 +474,54 @@ private struct GameCenterSheet: UIViewControllerRepresentable {
     }
 }
 
-/// Presents Game Center's sign-in screen when it asks for one.
-struct GameCenterAuthenticationPresenter: ViewModifier {
+/// Login and the requested board share one sheet, avoiding two competing modals.
+private struct GameCenterEntrySheet: View {
+    @Environment(\.dismiss) private var dismiss
     @ObservedObject var service: GameCenterService
+    @ObservedObject var progress: CrabrixProgressStore
+    let showsLeaderboard: Bool
 
-    func body(content: Content) -> some View {
-        content.sheet(isPresented: isPresented) {
-            if let controller = service.authenticationViewController {
-                AuthenticationSheet(controller: controller).ignoresSafeArea()
+    var body: some View {
+        Group {
+            if service.isSignedIn {
+                GameCenterSheet(
+                    controller: showsLeaderboard
+                        ? service.makeLeaderboardViewController()
+                        : service.makeAchievementsViewController(),
+                    onDismiss: { dismiss() }
+                )
+                .task { await service.submit(state: progress.state) }
+            } else {
+                NavigationStack {
+                    Group {
+                        if let controller = service.authenticationViewController {
+                            AuthenticationSheet(controller: controller)
+                        } else if case let .unavailable(reason) = service.status {
+                            VStack(spacing: 16) {
+                                Text(reason)
+                                    .multilineTextAlignment(.center)
+                                Button("Try again") { service.authenticate() }
+                                    .buttonStyle(.borderedProminent)
+                            }
+                            .padding(24)
+                        } else {
+                            ProgressView("Connecting to Game Center…")
+                        }
+                    }
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Close") { dismiss() }
+                        }
+                    }
+                }
             }
         }
-    }
-
-    private var isPresented: Binding<Bool> {
-        Binding(
-            get: { service.authenticationViewController != nil },
-            set: { if !$0 { service.authenticationViewController = nil } }
-        )
     }
 
     private struct AuthenticationSheet: UIViewControllerRepresentable {
         let controller: UIViewController
         func makeUIViewController(context: Context) -> UIViewController { controller }
         func updateUIViewController(_ controller: UIViewController, context: Context) {}
-    }
-}
-
-extension View {
-    func gameCenterAuthentication(_ service: GameCenterService) -> some View {
-        modifier(GameCenterAuthenticationPresenter(service: service))
     }
 }
 #endif

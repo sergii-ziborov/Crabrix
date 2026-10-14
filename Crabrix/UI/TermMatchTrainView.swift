@@ -54,6 +54,7 @@ struct TermMatchTrainView: View {
     @State private var secondsElapsed = 0
     @State private var isFinished = false
     @State private var result: TermTrainRunResult?
+    @State private var awardedRating = 0
     /// Snapshotted when the run ends: the root overlay drains the shared queue,
     /// so the summary cannot read it back afterwards.
     @State private var unlockedThisRun: [CrabrixAchievement] = []
@@ -396,7 +397,7 @@ struct TermMatchTrainView: View {
                             tint: CrabrixTheme.blue
                         )
                     }
-                    Text("+\(result.progressEvent.points) rating")
+                    Text("+\(awardedRating) rating")
                         .font(.headline.monospaced())
                         .foregroundStyle(CrabrixTheme.amber)
                 }
@@ -506,7 +507,9 @@ struct TermMatchTrainView: View {
         result = outcome
         withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) { isFinished = true }
         let before = progress.state.unlockedAchievementIDs
+        let pointsBefore = progress.state.totalPoints
         progress.record(outcome.progressEvent)
+        awardedRating = progress.state.totalPoints - pointsBefore
         unlockedThisRun = progress.allAchievements.filter {
             progress.state.unlockedAchievementIDs.contains($0.id) && !before.contains($0.id)
         }

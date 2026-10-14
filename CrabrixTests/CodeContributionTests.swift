@@ -2,13 +2,66 @@ import XCTest
 @testable import Crabrix
 
 final class CodeContributionTests: XCTestCase {
+    func testRenamedDuplicatedAndEmptyFilesCannotCreateANewRewardIdentity() {
+        let source = "fn main() { println!(\"hello\"); }"
+        let original = CodeContribution.scoringSourceHash(["main.rs": source])
+        let copy = CodeContribution.scoringSourceHash([
+            "src/main.rs": source, "duplicate.rs": source, "empty.rs": "// just a comment",
+        ])
+        XCTAssertEqual(original, copy)
+        XCTAssertEqual(CodeContribution.measure(previous: [:], current: ["empty.rs": "// just a comment"]).points, 0)
+    }
+
+    func testAttributeFormattingIsIgnoredWhileAttributeLiteralsStayDistinct() {
+        let first = ["main.rs": "#[allow(dead_code)] fn main() {}"]
+        let formatted = ["main.rs": "# [allow(dead_code)] fn main() {}"]
+        // Whitespace inside a valid attribute must not buy another reward.
+        XCTAssertEqual(
+            CodeContribution.scoringSourceHash(first),
+            CodeContribution.scoringSourceHash(["main.rs": "#[ allow( dead_code ) ] fn main() {}"])
+        )
+        XCTAssertNotEqual(
+            CodeContribution.scoringSourceHash(["main.rs": "#[doc = \"a b\"] fn main() {}"]),
+            CodeContribution.scoringSourceHash(["main.rs": "#[doc = \"ab\"] fn main() {}"])
+        )
+        XCTAssertEqual(CodeContribution.scoringSourceHash(first), CodeContribution.scoringSourceHash(formatted))
+    }
+    func testFormattingAndCommentsDoNotEarnSourcePoints() {
+        let before = ["main.rs": "fn main() { let x = 1; println!(\"{}\", x); }"]
+        let after = ["main.rs": "// an edit\nfn main() {\n    let x = 1; // another edit\n    println!(\"{}\", x);\n}\n"]
+        XCTAssertEqual(CodeContribution.measure(previous: before, current: after).points, 0)
+        XCTAssertEqual(CodeContribution.scoringSourceHash(before), CodeContribution.scoringSourceHash(after))
+    }
+
+    func testNestedCommentsAndRangeSpacingKeepTheSameScoringIdentity() {
+        let before = ["main.rs": "fn main(){for n in 0..2 {println!(\"{}\",n);}}"]
+        let after = ["main.rs": "/* outer /* inner */ changed text */ fn main() { for n in 0 .. 2 { println!(\"{}\", n); } }"]
+        XCTAssertEqual(CodeContribution.scoringSourceHash(before), CodeContribution.scoringSourceHash(after))
+    }
+
+    func testLiteralAndIdentifierChangesKeepDistinctScoringIdentities() {
+        let first = ["main.rs": "fn main(){println!(\"https://example.com/a b\");}"]
+        let second = ["main.rs": "fn main(){println!(\"https://example.com/ab\");}"]
+        XCTAssertNotEqual(CodeContribution.scoringSourceHash(first), CodeContribution.scoringSourceHash(second))
+        XCTAssertNotEqual(
+            CodeContribution.scoringSourceHash(["main.rs": "fn main(){let a = 1;}"]),
+            CodeContribution.scoringSourceHash(["main.rs": "fn main(){let aa = 1;}"])
+        )
+    }
+
+    func testChangingOnlyMetadataDoesNotEarnSourcePoints() {
+        let before = ["main.rs": "fn main() {}", "README.md": "before"]
+        let after = ["main.rs": "fn main() {}", "README.md": "after"]
+        XCTAssertEqual(CodeContribution.measure(previous: before, current: after).points, 0)
+        XCTAssertEqual(CodeContribution.scoringSourceHash(before), CodeContribution.scoringSourceHash(after))
+    }
     func testAnUntouchedProjectMeasuresNoChange() {
         let files = ["main.rs": "fn main() {}\n"]
         let contribution = CodeContribution.measure(previous: files, current: files)
         XCTAssertEqual(contribution.changedLines, 0)
     }
 
-    func testRerunningUntouchedCodeEarnsFarLessThanEditingIt() {
+    func testRerunningUntouchedCodeEarnsNoSourceReward() {
         let files = ["main.rs": "fn main() {}\n"]
         let untouched = CodeContribution.measure(previous: files, current: files)
         let edited = CodeContribution.measure(
@@ -17,7 +70,7 @@ final class CodeContributionTests: XCTestCase {
         )
         // The whole point of the change: tapping Run again is not work.
         XCTAssertLessThan(untouched.points, edited.points)
-        XCTAssertGreaterThan(untouched.points, 0, "a run still counts for something")
+        XCTAssertEqual(untouched.points, 0, "only the separate daily bonus pays for returning")
     }
 
     func testAddedAndRemovedLinesAreCountedSeparately() {

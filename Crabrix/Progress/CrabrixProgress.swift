@@ -16,17 +16,16 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
     /// mis-decoded.
     static let currentVersion = 1
 
-    /// Reward identity for one exact project source revision.
+    /// Reward identity for successful source content, shared by project copies.
     static let buildRevisionKeyPrefix = "build-revision:"
-    /// How many source revisions stay remembered. Large enough that no real
-    /// editing session can cycle back to a paid revision, small enough that the
-    /// persisted state stays a fixed size.
+    /// Source and typing identities have a bounded cache. Daily reward budgets
+    /// still limit repeatable work after an older identity leaves that cache.
     static let maximumRecentBuildRevisions = 400
 
     /// Whether this identity belongs to the bounded window rather than to the
     /// permanent set.
     static func isBoundedEventKey(_ key: String) -> Bool {
-        key.hasPrefix(buildRevisionKeyPrefix)
+        key.hasPrefix(buildRevisionKeyPrefix) || key.hasPrefix("typing-revision:")
     }
 
     var version = CrabrixProgressState.currentVersion
@@ -77,6 +76,11 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
     /// revision — kept as a bounded, ordered window so the persisted state
     /// cannot grow without limit. Oldest entries fall out first.
     var recentBuildRevisions: [String] = []
+    /// Repeatable work has a persisted UTC-day budget, shared by all projects.
+    var rewardDay: Date?
+    var dailyRewardPoints: [String: Int] = [:]
+    /// Training pays only the improvement over the best previously recorded result.
+    var trainingBestPoints: [String: Int] = [:]
 
     init() {}
 
@@ -130,6 +134,11 @@ struct CrabrixProgressState: Codable, Equatable, Sendable {
             .decodeIfPresent(Set<String>.self, forKey: .processedEventKeys) ?? []
         recentBuildRevisions = try container
             .decodeIfPresent([String].self, forKey: .recentBuildRevisions) ?? []
+        rewardDay = try container.decodeIfPresent(Date.self, forKey: .rewardDay)
+        dailyRewardPoints = try container
+            .decodeIfPresent([String: Int].self, forKey: .dailyRewardPoints) ?? [:]
+        trainingBestPoints = try container
+            .decodeIfPresent([String: Int].self, forKey: .trainingBestPoints) ?? [:]
         unlockedAchievementIDs = try container
             .decodeIfPresent(Set<String>.self, forKey: .unlockedAchievementIDs) ?? []
         achievementMethods = try container
@@ -164,6 +173,32 @@ enum CrabrixProgressEvent: Sendable, Equatable {
     case codeRecallFinished(bestLevel: Int, linesRecalled: Int)
     /// Rust actually typed, which is where most rating now comes from.
     case codeTyped(characters: Int)
+
+    /// Reject malformed event payloads before arithmetic or counters change.
+    var isValid: Bool {
+        switch self {
+        case let .buildSucceeded(contribution):
+            return (0...1_000_000).contains(contribution.addedLines)
+                && (0...1_000_000).contains(contribution.removedLines)
+                && (0...10_000).contains(contribution.newFiles)
+                && (0...10_000_000).contains(contribution.addedCharacters)
+                && contribution.typedShare.isFinite
+                && (0...1).contains(contribution.typedShare)
+        case let .termTrainFinished(pairs, streak, seconds):
+            return (0...10_000).contains(pairs)
+                && (0...pairs).contains(streak)
+                && (seconds == nil || (1...86_400).contains(seconds!))
+        case let .codeRecallFinished(bestLevel, linesRecalled):
+            return (0...CodeRecallDeck.maximumLines).contains(bestLevel)
+                && (0...1_000_000).contains(linesRecalled)
+        case let .codeTyped(characters):
+            return (0...1_000_000).contains(characters)
+        case let .packagesCompiled(count):
+            return (0...1_000).contains(count)
+        default:
+            return true
+        }
+    }
 
     var points: Int {
         switch self {

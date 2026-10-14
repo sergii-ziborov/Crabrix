@@ -49,6 +49,9 @@ struct CodeContribution: Equatable, Sendable {
     var removedLines = 0
     /// Files that did not exist in the previous snapshot.
     var newFiles = 0
+    /// Characters in newly added source lines; caps pending typing to code
+    /// still present at the successful run instead of deleted keystrokes.
+    var addedCharacters = 0
 
     var changedLines: Int { addedLines + removedLines }
     var isFirstRun = false
@@ -71,7 +74,7 @@ struct CodeContribution: Equatable, Sendable {
     var points: Int {
         // A revision can be new to the workspace and still leave the scored
         // files identical — a rename, or a baseline the ledger had to shorten.
-        guard changedLines > 0 else { return 3 }
+        guard changedLines > 0 else { return 0 }
         let scaled = 12.0 * log2(Double(changedLines) + 1)
         let fileBonus = min(newFiles, 5) * 6
         let raw = Double(6 + Int(scaled.rounded()) + fileBonus) * craftMultiplier
@@ -103,16 +106,21 @@ struct CodeContribution: Equatable, Sendable {
         var result = CodeContribution()
         result.isFirstRun = baseline.isEmpty
 
-        for (name, text) in current {
+        for (name, text) in current where name.hasSuffix(".rs") {
             guard let before = baseline[name] else {
+                guard scoringSource(text, filePath: name) != emptyScoringSource else { continue }
                 result.newFiles += 1
                 result.addedLines += lines(of: text).count
+                result.addedCharacters += text.count
                 continue
             }
             if let beforeText = before.text {
+                // Formatting and comments do not buy another source reward.
+                guard scoringSource(beforeText, filePath: name) != scoringSource(text, filePath: name) else { continue }
                 let diff = lineDiff(from: lines(of: beforeText), to: lines(of: text))
                 result.addedLines += diff.added
                 result.removedLines += diff.removed
+                result.addedCharacters += diff.addedCharacters
                 continue
             }
             // Too large to keep verbatim. The digest still answers whether it
@@ -127,10 +135,92 @@ struct CodeContribution: Equatable, Sendable {
 
         // A deleted file is work too, and ignoring it would let a delete-then-
         // re-add cycle look like pure addition.
-        for (name, before) in baseline where current[name] == nil {
+        for (name, before) in baseline where name.hasSuffix(".rs") && current[name] == nil {
             result.removedLines += before.lineCount
         }
         return result
+    }
+
+    /// Scoring has its own identity; compiler evidence still uses the exact
+    /// WorkspaceRevision bytes. Preserve literals and token boundaries here.
+    static func scoringSourceHash(_ files: [String: String]) -> String {
+        let contents = files.compactMap { name, source -> String? in
+            guard name.hasSuffix(".rs") else { return nil }
+            let identity = scoringSource(source, filePath: name)
+            return identity == emptyScoringSource ? nil : identity
+        }
+        // Renaming a file, duplicating it, or adding an empty Rust file does
+        // not create new source work. Execution retains its exact path hashes.
+        return hashTokens(Set(contents).sorted())
+    }
+
+    private static let emptyScoringSource = hashTokens([])
+    private static let scoringTokenExpression = try! NSRegularExpression(
+        pattern: #"[\p{L}_][\p{L}\p{N}_]*|(?:0x[\dA-Fa-f_]+|0b[01_]+|0o[0-7_]+|\d[\d_]*(?:\.\d[\d_]*)?(?:[eE][+-]?\d[\d_]*)?)(?:[A-Za-z][A-Za-z\d_]*)?|::|->|=>|\.\.=|\.\.|&&|\|\||<<=?|>>=?|[+\-*/%&|^!=<>]=|[^\s]"#
+    )
+
+    private static func scoringSource(_ source: String, filePath: String) -> String {
+        hashTokens(scoringTokens(source, filePath: filePath))
+    }
+
+    private static func scoringTokens(_ source: String, filePath: String) -> [String] {
+        let text = source as NSString
+        var tokens: [String] = []
+        var cursor = 0
+        func appendCode(until end: Int) {
+            let range = NSRange(location: cursor, length: end - cursor)
+            tokens += scoringTokenExpression.matches(in: source, range: range).map {
+                text.substring(with: $0.range)
+            }
+        }
+        for token in SyntaxHighlighter.tokens(in: source, filePath: filePath)
+            where token.kind == .comment || token.kind == .string || token.kind == .attribute {
+            guard token.range.location >= cursor else { continue }
+            appendCode(until: token.range.location)
+            if token.kind == .comment {
+                cursor = commentEnd(token.range, in: text)
+            } else if token.kind == .attribute {
+                let attribute = text.substring(with: token.range)
+                let prefixLength = attribute.hasPrefix("#![") ? 3 : 2
+                let body = String(attribute.dropFirst(prefixLength).dropLast())
+                tokens.append("#")
+                if prefixLength == 3 { tokens.append("!") }
+                tokens.append("[")
+                tokens += scoringTokens(body, filePath: filePath)
+                tokens.append("]")
+                cursor = NSMaxRange(token.range)
+            } else {
+                tokens.append(text.substring(with: token.range))
+                cursor = NSMaxRange(token.range)
+            }
+        }
+        appendCode(until: text.length)
+        return tokens
+    }
+
+    private static func commentEnd(_ range: NSRange, in source: NSString) -> Int {
+        guard source.substring(with: range).hasPrefix("/*") else { return NSMaxRange(range) }
+        var cursor = range.location + 2
+        var depth = 1
+        while cursor + 1 < source.length {
+            let pair = source.substring(with: NSRange(location: cursor, length: 2))
+            if pair == "/*" {
+                depth += 1
+                cursor += 2
+            } else if pair == "*/" {
+                depth -= 1
+                cursor += 2
+                if depth == 0 { return cursor }
+            } else {
+                cursor += 1
+            }
+        }
+        return source.length
+    }
+
+    private static func hashTokens(_ tokens: [String]) -> String {
+        let data = try! JSONEncoder().encode(tokens)
+        return SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
     }
 
     private static func lines(of text: String) -> [Substring] {
@@ -142,7 +232,7 @@ struct CodeContribution: Equatable, Sendable {
     /// Very large files fall back to a multiset comparison rather than running
     /// an O(n·m) table over them; the number only has to be a fair measure of
     /// effort, not a rendered patch.
-    static func lineDiff(from before: [Substring], to after: [Substring]) -> (added: Int, removed: Int) {
+    static func lineDiff(from before: [Substring], to after: [Substring]) -> (added: Int, removed: Int, addedCharacters: Int) {
         let limit = 2_000
         guard before.count <= limit, after.count <= limit else {
             return multisetDiff(from: before, to: after)
@@ -160,25 +250,42 @@ struct CodeContribution: Equatable, Sendable {
             }
         }
         let common = table[0][0]
-        return (added: after.count - common, removed: before.count - common)
+        var i = 0
+        var j = 0
+        var addedCharacters = 0
+        while i < before.count, j < after.count {
+            if before[i] == after[j] {
+                i += 1
+                j += 1
+            } else if table[i + 1][j] >= table[i][j + 1] {
+                i += 1
+            } else {
+                addedCharacters += after[j].count + 1
+                j += 1
+            }
+        }
+        for line in after.dropFirst(j) { addedCharacters += line.count + 1 }
+        return (added: after.count - common, removed: before.count - common, addedCharacters: addedCharacters)
     }
 
     private static func multisetDiff(
         from before: [Substring],
         to after: [Substring]
-    ) -> (added: Int, removed: Int) {
+    ) -> (added: Int, removed: Int, addedCharacters: Int) {
         var counts: [Substring: Int] = [:]
         for line in before { counts[line, default: 0] += 1 }
         var added = 0
+        var addedCharacters = 0
         for line in after {
             if let count = counts[line], count > 0 {
                 counts[line] = count - 1
             } else {
                 added += 1
+                addedCharacters += line.count + 1
             }
         }
         let removed = counts.values.reduce(0, +)
-        return (added: added, removed: removed)
+        return (added: added, removed: removed, addedCharacters: addedCharacters)
     }
 }
 

@@ -1,4 +1,7 @@
 import XCTest
+#if CRABRIX_SOCIAL
+import UIKit
+#endif
 @testable import Crabrix
 
 @MainActor
@@ -556,9 +559,61 @@ final class ProgressStateCompatibilityTests: XCTestCase {
         state.linesChanged = 4_200
         state.codeRecallBestLevel = 7
         state.unlockedAchievementIDs = ["a", "b"]
+        state.rewardDay = Date(timeIntervalSince1970: 1_760_000_000)
+        state.dailyRewardPoints = ["typing": 100]
+        state.trainingBestPoints = ["code-recall": 120]
 
         let data = try JSONEncoder().encode(state)
         let decoded = try JSONDecoder().decode(CrabrixProgressState.self, from: data)
         XCTAssertEqual(decoded, state)
     }
 }
+
+#if CRABRIX_SOCIAL
+@MainActor
+final class GameCenterEntryTests: XCTestCase {
+    func testConstructionDoesNotAuthenticateEvenWhenTheFeatureIsEnabled() {
+        var starts = 0
+        let service = GameCenterService(isEnabled: true) { _ in starts += 1 }
+        XCTAssertEqual(starts, 0)
+        XCTAssertEqual(service.status, .idle)
+        service.authenticate()
+        service.authenticate()
+        XCTAssertEqual(starts, 1)
+        XCTAssertEqual(service.status, .authenticating)
+    }
+
+    func testClosingTheEntryIgnoresDelayedLoginCallbacks() {
+        var callback: GameCenterService.AuthenticationHandler?
+        let service = GameCenterService(isEnabled: true) { callback = $0 }
+        service.authenticate()
+        service.cancelAuthenticationPresentation()
+        callback?(UIViewController(), nil)
+        XCTAssertEqual(service.status, .idle)
+        XCTAssertNil(service.authenticationViewController)
+    }
+
+    func testRetryStartsOnlyAfterAnExplicitRequestAndIgnoresTheOldRequest() {
+        var callbacks: [GameCenterService.AuthenticationHandler] = []
+        let service = GameCenterService(isEnabled: true) { callbacks.append($0) }
+        service.authenticate()
+        callbacks[0](nil, NSError(domain: "GameCenterTest", code: -1))
+        if case .unavailable = service.status {} else { XCTFail("failure should offer a retry") }
+        service.authenticate()
+        XCTAssertEqual(callbacks.count, 2)
+        callbacks[0](UIViewController(), nil)
+        XCTAssertNil(service.authenticationViewController)
+        let controller = UIViewController()
+        callbacks[1](controller, nil)
+        XCTAssertTrue(service.authenticationViewController === controller)
+    }
+
+    func testDisabledReleaseGateNeverStartsGameKit() {
+        var starts = 0
+        let service = GameCenterService(isEnabled: false) { _ in starts += 1 }
+        service.authenticate()
+        XCTAssertEqual(starts, 0)
+        XCTAssertEqual(service.status, .idle)
+    }
+}
+#endif

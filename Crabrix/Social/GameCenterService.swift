@@ -15,6 +15,7 @@ import SwiftUI
 /// disabling it stops future submissions without changing local progress.
 @MainActor
 final class GameCenterService: ObservableObject {
+    typealias AuthenticationHandler = @MainActor (UIViewController?, (any Error)?) -> Void
     enum Status: Equatable {
         case idle
         case authenticating
@@ -115,7 +116,7 @@ final class GameCenterService: ObservableObject {
     @Published private(set) var photo: UIImage?
     @Published private(set) var globalRank: Int?
     /// Set when Game Center wants to present its own sign-in screen.
-    @Published var authenticationViewController: UIViewController?
+    @Published private(set) var authenticationViewController: UIViewController?
 
     private var lastSubmittedPoints: Int?
     private var reportedAchievementProgress: [String: Double] = [:]
@@ -124,10 +125,21 @@ final class GameCenterService: ObservableObject {
     private var submissionInProgress = false
     private let defaults: UserDefaults
     private static let enabledKey = "crabrix.gameCenter.enabled"
+    private let authenticatePlayer: (@escaping AuthenticationHandler) -> Void
+    private var authenticationRequest: UUID?
 
-    init(defaults: UserDefaults = .standard) {
+    init(
+        defaults: UserDefaults = .standard,
+        isEnabled: Bool? = nil,
+        authenticatePlayer: ((@escaping AuthenticationHandler) -> Void)? = nil
+    ) {
         self.defaults = defaults
-        isEnabled = defaults.bool(forKey: Self.enabledKey)
+        self.isEnabled = isEnabled ?? defaults.bool(forKey: Self.enabledKey)
+        self.authenticatePlayer = authenticatePlayer ?? { handler in
+            GKLocalPlayer.local.authenticateHandler = { viewController, error in
+                Task { @MainActor in handler(viewController, error) }
+            }
+        }
     }
 
     var isSignedIn: Bool { status.isSignedIn }
@@ -136,9 +148,8 @@ final class GameCenterService: ObservableObject {
         guard isEnabled != enabled else { return }
         isEnabled = enabled
         defaults.set(enabled, forKey: Self.enabledKey)
-        if enabled {
-            authenticate()
-        } else {
+        if !enabled {
+            cancelAuthenticationPresentation()
             // GameKit has no per-app sign-out. Disconnect this app's UI and
             // stop future requests; existing Game Center scores remain there.
             GKLocalPlayer.local.authenticateHandler = nil
@@ -154,19 +165,30 @@ final class GameCenterService: ObservableObject {
         }
     }
 
-    /// Starts authentication. Safe to call more than once.
+    /// Called only by an explicit leaderboard/Game Center button in Profile.
+    /// Constructing the service and opening the app never initializes GameKit.
     func authenticate() {
-        guard isEnabled else { return }
-        guard !status.isSignedIn else { return }
-        guard status != .authenticating else { return }
+        guard isEnabled, status != .authenticating else { return }
+        if isSignedIn, GKLocalPlayer.local.isAuthenticated,
+           authenticatedPlayerID == GKLocalPlayer.local.gamePlayerID {
+            return
+        }
+        let request = UUID()
+        authenticationRequest = request
+        authenticationViewController = nil
         status = .authenticating
 
-        GKLocalPlayer.local.authenticateHandler = { [weak self] viewController, error in
-            guard let self else { return }
-            Task { @MainActor in
-                self.handleAuthentication(viewController: viewController, error: error)
-            }
+        authenticatePlayer { [weak self] viewController, error in
+            guard let self, self.authenticationRequest == request else { return }
+            self.handleAuthentication(viewController: viewController, error: error)
         }
+    }
+
+    /// A delayed callback after closing Profile's sheet must not reopen login.
+    func cancelAuthenticationPresentation() {
+        authenticationRequest = nil
+        authenticationViewController = nil
+        if !isSignedIn { status = .idle }
     }
 
     private func handleAuthentication(viewController: UIViewController?, error: Error?) {
@@ -174,10 +196,10 @@ final class GameCenterService: ObservableObject {
         if let viewController {
             // Game Center wants to ask the player to sign in; the app presents it.
             authenticationViewController = viewController
-            status = .unavailable(reason: "Sign in to Game Center to join the leaderboard.")
             return
         }
 
+        authenticationViewController = nil
         if let error {
             status = .unavailable(reason: Self.describe(error))
             return
@@ -217,7 +239,10 @@ final class GameCenterService: ObservableObject {
     /// Nothing here is required for the app to work, so a failure is recorded
     /// and forgotten rather than surfaced as an error the reader must act on.
     func submit(state: CrabrixProgressState) async {
-        guard isEnabled, isSignedIn else { return }
+        guard isEnabled, isSignedIn,
+              GKLocalPlayer.local.isAuthenticated,
+              authenticatedPlayerID == GKLocalPlayer.local.gamePlayerID
+        else { return }
         pendingState = state
         guard !submissionInProgress else { return }
         submissionInProgress = true

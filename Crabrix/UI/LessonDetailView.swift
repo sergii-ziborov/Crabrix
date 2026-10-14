@@ -527,54 +527,49 @@ struct LessonDetailView: View {
     }
 
     private var navigationFooter: some View {
-        VStack(spacing: 0) {
-            Divider().overlay(CrabrixTheme.border)
-
-            HStack(spacing: 12) {
-                if page > 0 {
-                    Button {
-                        moveToPage(page - 1)
-                    } label: {
-                        Label("Back", systemImage: "arrow.left")
-                            .frame(minWidth: 90)
-                    }
-                    .buttonStyle(.bordered)
+        HStack(spacing: 12) {
+            if page > 0 {
+                Button {
+                    moveToPage(page - 1)
+                } label: {
+                    Label("Back", systemImage: "arrow.left")
+                        .frame(minWidth: 90)
                 }
-
-                Spacer(minLength: 0)
-
-                if page < 2 {
-                    Button {
-                        moveToPage(page + 1)
-                    } label: {
-                        Label(
-                            page == 0 ? "Try a quick check" : "Review result",
-                            systemImage: "arrow.right"
-                        )
-                        .frame(minWidth: 180)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(brief.tint)
-                    .disabled(page == 1 && !isQuickCheckAnswered)
-                } else {
-                    Button(action: isLive ? onStart : onComplete) {
-                        Label(
-                            isLive
-                                ? (isCompleted ? "Restart compiler lab" : "Open compiler lab")
-                                : (isCompleted ? "Next lesson" : "Complete & continue"),
-                            systemImage: isLive ? "hammer.fill" : "checkmark.circle.fill"
-                        )
-                        .frame(minWidth: 200)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(isLive ? CrabrixTheme.coral : CrabrixTheme.mint)
-                }
+                .buttonStyle(.bordered)
             }
-            .font(.headline)
-            .padding(.horizontal, 22)
-            .padding(.vertical, 14)
+
+            Spacer(minLength: 0)
+
+            if page < 2 {
+                Button {
+                    moveToPage(page + 1)
+                } label: {
+                    Label(
+                        page == 0 ? "Try a quick check" : "Continue",
+                        systemImage: "arrow.right"
+                    )
+                    .frame(minWidth: 180)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(brief.tint)
+                .disabled(page == 1 && !isQuickCheckAnswered)
+            } else {
+                Button(action: isLive ? onStart : onComplete) {
+                    Label(
+                        isLive
+                            ? (isCompleted ? "Restart compiler lab" : "Open compiler lab")
+                            : (isCompleted ? "Next lesson" : "Complete & continue"),
+                        systemImage: isLive ? "hammer.fill" : "checkmark.circle.fill"
+                    )
+                    .frame(minWidth: 200)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(isLive ? CrabrixTheme.coral : CrabrixTheme.mint)
+            }
         }
-        .background(.ultraThinMaterial)
+        .font(.headline)
+        .padding(.horizontal, 22)
+        .padding(.vertical, 14)
     }
 
     private func lessonScrollPage<Content: View>(

@@ -7,6 +7,7 @@ struct QuickPracticeView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var step = 0
     @State private var score = 0
+    @State private var solvedQuestionIDs: Set<String> = []
     /// Drawn once per session from the whole curriculum, weighted by mastery.
     @State private var questions: [RustQuestion] = []
     private let mastery = TopicMasteryStore.shared
@@ -22,14 +23,14 @@ struct QuickPracticeView: View {
             Group {
                 switch step {
                 case 0:
-                    MatchPractice { passed in advance(passed) }
+                    MatchPractice { passed in advance(passed, from: 0) }
                 case 1:
-                    ArrangeCodePractice { passed in advance(passed) }
+                    ArrangeCodePractice { passed in advance(passed, from: 1) }
                 case let index where index - 2 < questions.count:
                     let question = questions[index - 2]
                     LessonQuestionPractice(question: question) { passed in
                         mastery.record(topic: question.topic, correct: passed)
-                        advance(passed)
+                        advance(passed, from: index)
                     }
                     .id(question.topic)
                 default:
@@ -107,15 +108,24 @@ struct QuickPracticeView: View {
         .padding(24)
         .frame(maxWidth: 620)
         .onAppear {
-            // Each solved round is worth rating; award the set once.
+            // A question is paid once, even across new sessions and relaunches.
             guard !didAward else { return }
             didAward = true
-            for _ in 0..<score { progress.record(.practicePassed) }
+            for questionID in solvedQuestionIDs {
+                progress.record(.practicePassed, eventKey: "practice:\(questionID):first-completion")
+            }
         }
     }
 
-    private func advance(_ passed: Bool) {
-        if passed { score += 1 }
+    private func advance(_ passed: Bool, from expectedStep: Int) {
+        guard step == expectedStep, step < total else { return }
+        if passed {
+            score += 1
+            let questionID = step < 2
+                ? (step == 0 ? "match-lifetime" : "arrange-hello")
+                : questions[step - 2].id
+            solvedQuestionIDs.insert(questionID)
+        }
         withAnimation(.easeInOut(duration: 0.22)) { step += 1 }
     }
 }

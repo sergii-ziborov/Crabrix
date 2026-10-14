@@ -50,9 +50,6 @@ struct CrabrixApp: App {
             }
             .task {
                 await academyContent.prepare()
-                #if CRABRIX_SOCIAL
-                gameCenter.authenticate()
-                #endif
             }
             .onReceive(progress.$state) { state in
                 #if CRABRIX_SOCIAL
@@ -77,7 +74,6 @@ struct CrabrixApp: App {
         #if CRABRIX_SOCIAL
         content
             .environmentObject(gameCenter)
-            .gameCenterAuthentication(gameCenter)
         #else
         content
         #endif

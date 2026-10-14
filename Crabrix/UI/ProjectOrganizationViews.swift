@@ -566,16 +566,9 @@ struct MyProjectsView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("\(items.count) PROJECTS · \(folders.count) FOLDERS · \(tags.count) TAGS · \(items.filter { $0.project.isFavorite }.count) FAVORITES")
-                .font(.caption.monospaced().bold())
-                .foregroundStyle(CrabrixTheme.mint)
-            Text("Everything you build, organized")
-                .font(.system(size: 26, weight: .bold, design: .rounded))
-            Text("Folders and tags change how projects are shown, never where their durable files are stored.")
-                .font(.subheadline)
-                .foregroundStyle(CrabrixTheme.muted)
-        }
+        Text("\(items.count) PROJECTS · \(folders.count) FOLDERS · \(tags.count) TAGS · \(items.filter { $0.project.isFavorite }.count) FAVORITES")
+            .font(.caption.monospaced().bold())
+            .foregroundStyle(CrabrixTheme.mint)
     }
 
     private var filters: some View {
