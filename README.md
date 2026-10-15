@@ -27,6 +27,8 @@ The Academy contains seven courses: six Rust language courses and Algorithm Atla
 
 The [Examples 1.0.3 release verification](docs/examples-infographics-2026-10-11.md) records all 46 images and the successful native upgrade test: manual Xcode Cloud run 55, three tests passed with no skips.
 
+The [Constellation Generator update](docs/constellation-generator-2026-10-11.md) records Examples 1.0.4, its actual pixel output, and the successful native compiler and upgrade checks: manual Xcode Cloud run 56, four tests passed with no skips.
+
 For Cargo projects, Crabrix resolves a supported subset of crates.io dependencies, verifies registry checksums, builds dependencies locally, and can pin their source archives for offline rebuilds. `syn`, `quote`, and `proc-macro2` use a parser-only feature profile that works with the bundled WASI compiler; an existing plain `syn` dependency can be repaired from the project package panel. Procedural macro crates and build scripts remain unsupported. An installed course is readable offline; an exercise using crates is offline ready only after its dependencies have been prepared. The editor, diagnostics, Code Examples path, import/export, and training activities remain native UI.
 
 The [free Learn site](https://crabrix.com/learn/) has expanded explanations
