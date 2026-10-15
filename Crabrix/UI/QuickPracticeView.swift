@@ -5,6 +5,7 @@ struct QuickPracticeView: View {
     @EnvironmentObject private var progress: CrabrixProgressStore
     @State private var didAward = false
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var step = 0
     @State private var score = 0
     @State private var solvedQuestionIDs: Set<String> = []
@@ -68,7 +69,7 @@ struct QuickPracticeView: View {
     }
 
     private var practiceHeader: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: verticalSizeClass == .compact ? 4 : 10) {
             HStack {
                 Label("5-MINUTE RUST", systemImage: "bolt.fill")
                     .font(.caption.monospaced().bold())
@@ -82,7 +83,7 @@ struct QuickPracticeView: View {
                 .tint(CrabrixTheme.mint)
         }
         .padding(.horizontal, 22)
-        .padding(.vertical, 14)
+        .padding(.vertical, verticalSizeClass == .compact ? 5 : 14)
         .background(CrabrixTheme.panel)
     }
 
@@ -217,38 +218,48 @@ private struct ArrangeCodePractice: View {
         return VStack(alignment: .leading, spacing: gap) {
             if wide {
                 HStack(alignment: .top, spacing: 22) {
-                    instructions(compact: true)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    codeLines
+                    VStack(alignment: .leading, spacing: 10) {
+                        instructions(compact: true)
+                        feedback
+                        checkButton
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    codeLines(compact: true)
                         .frame(maxWidth: .infinity)
                 }
             } else {
                 instructions(compact: compact)
-                codeLines
+                codeLines(compact: false)
+                feedback
+                checkButton
             }
-
-            PracticeFeedback(
-                isVisible: checked,
-                isCorrect: correct,
-                correctText: "Perfect — function, binding, output, closing brace.",
-                wrongText: "Start with fn main(), then the binding, then println!."
-            )
-
-            Button(checked && correct ? "Finish" : "Check order") {
-                if checked && correct {
-                    onNext(true)
-                } else {
-                    correct = lines.map(\.id) == [0, 1, 2, 3]
-                    checked = true
-                }
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(checked && correct ? CrabrixTheme.mint : CrabrixTheme.coral)
-            .frame(minHeight: 44)
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .accessibilityIdentifier("arrange-check-order")
         }
-        .padding(compact ? 16 : 22)
+        .padding(wide ? 10 : (compact ? 16 : 22))
+    }
+
+    private var feedback: some View {
+        PracticeFeedback(
+            isVisible: checked,
+            isCorrect: correct,
+            correctText: "Perfect — function, binding, output, closing brace.",
+            wrongText: "Start with fn main(), then the binding, then println!."
+        )
+    }
+
+    private var checkButton: some View {
+        Button(checked && correct ? "Finish" : "Check order") {
+            if checked && correct {
+                onNext(true)
+            } else {
+                correct = lines.map(\.id) == [0, 1, 2, 3]
+                checked = true
+            }
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(checked && correct ? CrabrixTheme.mint : CrabrixTheme.coral)
+        .frame(minHeight: 44)
+        .frame(maxWidth: .infinity, alignment: .trailing)
+        .accessibilityIdentifier("arrange-check-order")
     }
 
     private func instructions(compact: Bool) -> some View {
@@ -265,8 +276,8 @@ private struct ArrangeCodePractice: View {
         .fixedSize(horizontal: false, vertical: true)
     }
 
-    private var codeLines: some View {
-        let rowHeight = max(52, ceil(codeFontSize * 3.8))
+    private func codeLines(compact: Bool) -> some View {
+        let rowHeight = max(compact ? 44 : 52, ceil(codeFontSize * (compact ? 3.3 : 3.8)))
         return List {
             ForEach(lines) { line in
                 Text(line.text)
