@@ -1,12 +1,9 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import legal from "@/content/legal-documents.json";
 import licenses from "@/content/license-index.json";
 
-export const metadata: Metadata = {
-  title: "Licenses and content rights",
-  description: "Crabrix application source terms, personal learning permission, and original compiler and Swift dependency licenses.",
-};
+export const metadata = pageMetadata({"title": "Licenses and Educational Content Rights", "description": "Read Crabrix application terms, educational content rights and original Rust compiler and Swift dependency licenses, also available offline in the app.", "path": "/licenses/"});
 
 export default function LicensesPage() {
   return (

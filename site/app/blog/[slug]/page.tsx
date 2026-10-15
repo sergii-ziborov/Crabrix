@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { pageMetadata, pageUrl, breadcrumbs } from "@/lib/seo";
+import { StructuredData } from "@/components/structured-data";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { postBySlug, posts } from "@/lib/posts";
@@ -14,7 +16,9 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const post = postBySlug((await params).slug);
-  return post ? { title: post.title, description: post.summary } : {};
+  const image = post?.sections.find((section) => section.image)?.image;
+  return post ? pageMetadata({ title: post.title, description: post.summary,
+    path: `/blog/${post.slug}/`, image: image?.src, imageAlt: image?.alt, articleDate: post.date }) : {};
 }
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -23,6 +27,16 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const sectionId = (heading: string) => heading.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   return (
     <div className="site-shell article-page">
+      <StructuredData data={{ "@context": "https://schema.org", "@graph": [
+        { "@type": "BlogPosting", headline: post.title, description: post.summary,
+          mainEntityOfPage: pageUrl(`/blog/${post.slug}/`), datePublished: post.date,
+          author: { "@type": "Person", name: "Serhii Ziborov", url: pageUrl("/about/") },
+          publisher: { "@type": "Organization", name: "Crabrix", url: pageUrl("/") },
+          image: post.sections.flatMap((section) => section.image ? [new URL(section.image.src, pageUrl("/")).href] : []),
+          inLanguage: "en", isAccessibleForFree: true,
+        },
+        breadcrumbs([{ name: "Crabrix", path: "/" }, { name: "Rust Blog", path: "/blog/" }, { name: post.title, path: `/blog/${post.slug}/` }]),
+      ] }} />
       <nav className="breadcrumbs" aria-label="Breadcrumbs"><Link href="/blog">Blog</Link><span>/</span><span>{post.title}</span></nav>
       <div className="page-intro article-content">
         <p className="eyebrow">Crabrix blog</p>

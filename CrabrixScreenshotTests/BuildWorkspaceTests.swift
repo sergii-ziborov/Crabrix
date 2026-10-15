@@ -28,6 +28,22 @@ final class BuildWorkspaceTests: XCTestCase {
 
     func testArrangeCodeFitsAndNativeDragDoesNotScrollPage() throws {
         launch(["-CrabrixTab", "learn"])
+        // The hosted compiler tests may have classified this simulator as a
+        // fresh install before UI testing. Install one course through the real
+        // UI so Quick Practice is available in either installation state.
+        let download = app.buttons["Download Rust Basics for offline use"]
+        if download.waitForExistence(timeout: 12) {
+            for _ in 0..<8 {
+                if download.isHittable { break }
+                app.swipeUp()
+            }
+            download.tap()
+            let confirm = app.buttons.matching(NSPredicate(format: "label MATCHES %@", "^Download [0-9].* (MB|KB|bytes)$")).firstMatch
+            XCTAssertTrue(confirm.waitForExistence(timeout: 10))
+            confirm.tap()
+            let basics = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Open Rust Basics")).firstMatch
+            XCTAssertTrue(basics.waitForExistence(timeout: 180))
+        }
         let quick = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Quick Practice")).firstMatch
         for _ in 0..<16 {
             if quick.exists && quick.isHittable { break }
@@ -35,7 +51,7 @@ final class BuildWorkspaceTests: XCTestCase {
         }
         XCTAssertTrue(quick.exists && quick.isHittable)
         quick.tap()
-        let answer = app.buttons["Describes when a reference is valid"]
+        let answer = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Describes when a reference is valid")).firstMatch
         XCTAssertTrue(answer.waitForExistence(timeout: 15))
         answer.tap()
         app.buttons["Continue"].tap()

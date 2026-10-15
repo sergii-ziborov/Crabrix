@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import { legacyMain, legacyMetadata, legacyPages, type LegacyPage } from "@/lib/legacy";
 
@@ -9,7 +10,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   if (!legacyPages.includes(slug as LegacyPage)) return {};
-  return legacyMetadata[slug as LegacyPage];
+  return pageMetadata({ ...legacyMetadata[slug as LegacyPage], path: `/${slug}/` });
 }
 
 export default async function LegacyPageView({ params }: { params: Promise<{ slug: string }> }) {

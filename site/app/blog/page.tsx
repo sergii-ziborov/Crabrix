@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { posts } from "@/lib/posts";
 
-export const metadata: Metadata = {
-  title: "Blog",
-  description: "Practical Rust guides, release upgrades, ownership, error handling and notes from the Crabrix workspace.",
-};
+export const metadata = pageMetadata({"title": "Rust Guides: Releases, Ownership and Practical Programming", "description": "Practical Rust articles on releases, ownership, errors and testing, with runnable examples, infographics and links to official documentation.", "path": "/blog/"});
 
 export default function BlogPage() {
   return (

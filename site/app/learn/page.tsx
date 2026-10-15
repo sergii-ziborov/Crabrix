@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { courseSnapshot, courseLessons } from "@/lib/courses";
 
-export const metadata: Metadata = {
-  title: "Learn Rust for free",
-  description: "The same 742 Rust lessons and Algorithm Atlas steps as the Crabrix app, free to read on the web.",
-};
+export const metadata = pageMetadata({"title": "Learn Rust Free: 742 Lessons and Algorithm Atlas Steps", "description": "Start Rust Basics, ownership, Cargo and algorithms with clear examples and infographics. Preview any lesson; a free account opens the complete Academy.", "path": "/learn/"});
 
 export default function LearnPage() {
   const snapshot = courseSnapshot();

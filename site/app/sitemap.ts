@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { courseSnapshot } from "@/lib/courses";
+import { pageUrl } from "@/lib/seo";
 import { posts } from "@/lib/posts";
 
 export const dynamic = "force-static";
@@ -11,5 +12,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...course.units.flatMap((unit) => unit.lessons.map((lesson) => `learn/${course.id}/${lesson.id}`)),
   ]);
   return [...paths, ...coursePaths, ...posts.map((post) => `blog/${post.slug}`)]
-    .map((path) => ({ url: `https://crabrix.com/${path}` }));
+    .map((path) => ({ url: pageUrl(path) }));
 }

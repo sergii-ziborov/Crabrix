@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { pageMetadata, pageUrl, breadcrumbs } from "@/lib/seo";
+import { StructuredData } from "@/components/structured-data";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { courseById, courseLessons, courseSnapshot } from "@/lib/courses";
@@ -9,7 +11,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ course: string }> }): Promise<Metadata> {
   const course = courseById((await params).course);
-  return course ? { title: `${course.title} — free lessons`, description: course.subtitle } : {};
+  return course ? pageMetadata({ title: `${course.title} — Free Rust Lessons`, description: course.subtitle, path: `/learn/${course.id}/` }) : {};
 }
 
 export default async function CoursePage({ params }: { params: Promise<{ course: string }> }) {
@@ -17,12 +19,21 @@ export default async function CoursePage({ params }: { params: Promise<{ course:
   if (!course) notFound();
   return (
     <div className="site-shell course-page">
+      <StructuredData data={{ "@context": "https://schema.org", "@graph": [
+        { "@type": "Course", name: course.title, description: course.subtitle,
+          url: pageUrl(`/learn/${course.id}/`), inLanguage: "en", educationalLevel: course.level,
+          provider: { "@type": "Organization", name: "Crabrix", url: pageUrl("/") },
+          offers: { "@type": "Offer", price: "0", priceCurrency: "USD", category: "Free" },
+          coursePrerequisites: "A free Academy account to read complete lessons; previews are public.",
+        },
+        breadcrumbs([{ name: "Crabrix", path: "/" }, { name: "Learn Rust", path: "/learn/" }, { name: course.title, path: `/learn/${course.id}/` }]),
+      ] }} />
       <nav className="breadcrumbs" aria-label="Breadcrumbs"><Link href="/learn">Learn</Link><span>/</span><span>{course.title}</span></nav>
       <div className="page-intro">
         <p className="eyebrow">Free course · {course.level}</p>
         <h1>{course.title}</h1>
         <p className="lede">{course.subtitle}</p>
-        <p className="card-meta">{course.units.length} units · {courseLessons(course).length} lessons · every lesson is open</p>
+        <p className="card-meta">{course.units.length} units · {courseLessons(course).length} lessons · complete lessons free with an account</p>
       </div>
       <div className="unit-list">
         {course.units.map((unit) => (
