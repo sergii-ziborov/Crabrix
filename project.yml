@@ -200,6 +200,18 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
 
 schemes:
+  CrabrixBuildWorkspaceGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixScreenshotTests: [test]
+    test:
+      gatherCoverageData: false
+      targets:
+        - name: CrabrixScreenshotTests
+          selectedTests:
+            - BuildWorkspaceTests
+
   CrabrixBuildProblemsGate:
     build:
       targets:
