@@ -17,6 +17,29 @@ struct CompilationResult: Sendable {
     let duration: Duration
     let detail: String
 
+    var wasStopped: Bool {
+        !succeeded && detail.hasPrefix("Build stopped.")
+    }
+
+    /// Cargo preparation and sandbox failures have no rustc JSON or source
+    /// span. They still belong in Problems. Keep these separate from rustc
+    /// diagnostics, which drive source edits, lesson evidence and rewards.
+    var problemDiagnostics: [RustDiagnostic] {
+        guard !wasStopped else { return [] }
+        guard !succeeded, !diagnostics.contains(where: { $0.level == "error" }) else {
+            return diagnostics
+        }
+        let message = detail.trimmingCharacters(in: .whitespacesAndNewlines)
+        let diagnostic = RustDiagnostic(
+            level: "error",
+            message: message.isEmpty ? "The build could not finish." : message,
+            code: nil,
+            rendered: stderr,
+            spans: []
+        )
+        return [diagnostic] + diagnostics
+    }
+
     static func failure(
         phase: Phase,
         detail: String,

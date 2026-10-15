@@ -193,34 +193,45 @@ private struct ArrangeCodePractice: View {
     @State private var correct = false
     let onNext: (Bool) -> Void
 
+    @ScaledMetric(relativeTo: .body) private var codeFontSize = 13
+
     var body: some View {
-        PracticeCard(
-            eyebrow: "ARRANGE THE CODE",
-            title: "Drag the lines into a runnable program",
-            detail: "Use the handles to reorder the code, then check your answer."
-        ) {
-            List {
-                ForEach(lines) { line in
-                    Text(line.text)
-                        .font(.system(size: 13, design: .monospaced))
-                        .foregroundStyle(CrabrixTheme.primary)
-                        .listRowBackground(CrabrixTheme.raised)
-                }
-                .onMove { source, destination in
-                    lines.move(fromOffsets: source, toOffset: destination)
-                    checked = false
+        GeometryReader { available in
+            let compact = available.size.height < 560
+            ViewThatFits(in: .vertical) {
+                exercise(compact: compact, wide: available.size.width > 600 && available.size.height < 420)
+                    .fixedSize(horizontal: false, vertical: true)
+                // Large accessibility text may need one page scroll. The code
+                // list itself never scrolls, so dragging cannot move two layers.
+                ScrollView {
+                    exercise(compact: compact, wide: false)
                 }
             }
-            .environment(\.editMode, .constant(.active))
-            .scrollContentBackground(.hidden)
-            .frame(minHeight: 245)
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .accessibilityIdentifier("arrange-code-exercise")
+    }
+
+    private func exercise(compact: Bool, wide: Bool) -> some View {
+        let gap: CGFloat = compact ? 10 : 16
+        return VStack(alignment: .leading, spacing: gap) {
+            if wide {
+                HStack(alignment: .top, spacing: 22) {
+                    instructions(compact: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    codeLines
+                        .frame(maxWidth: .infinity)
+                }
+            } else {
+                instructions(compact: compact)
+                codeLines
+            }
 
             PracticeFeedback(
                 isVisible: checked,
                 isCorrect: correct,
                 correctText: "Perfect — function, binding, output, closing brace.",
-                wrongText: "Not quite. Start with fn main() and keep println! inside the braces."
+                wrongText: "Start with fn main(), then the binding, then println!."
             )
 
             Button(checked && correct ? "Finish" : "Check order") {
@@ -233,9 +244,57 @@ private struct ArrangeCodePractice: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(checked && correct ? CrabrixTheme.mint : CrabrixTheme.coral)
+            .frame(minHeight: 44)
             .frame(maxWidth: .infinity, alignment: .trailing)
+            .accessibilityIdentifier("arrange-check-order")
         }
+        .padding(compact ? 16 : 22)
     }
+
+    private func instructions(compact: Bool) -> some View {
+        VStack(alignment: .leading, spacing: compact ? 8 : 12) {
+            Text("ARRANGE THE CODE")
+                .font(.caption.monospaced().bold())
+                .foregroundStyle(CrabrixTheme.coral)
+            Text("Build a runnable program")
+                .font(compact ? .title3.bold() : .title2.bold())
+            Text("Drag the handles to reorder the lines, then check your answer.")
+                .font(.subheadline)
+                .foregroundStyle(CrabrixTheme.muted)
+        }
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var codeLines: some View {
+        let rowHeight = max(52, ceil(codeFontSize * 3.8))
+        return List {
+            ForEach(lines) { line in
+                Text(line.text)
+                    .font(.system(size: codeFontSize, design: .monospaced))
+                    .foregroundStyle(CrabrixTheme.primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(height: rowHeight)
+                    .padding(.leading, 14)
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 12))
+                    .listRowBackground(CrabrixTheme.raised)
+                    .accessibilityIdentifier("arrange-code-line-\(line.id)")
+            }
+            .onMove { source, destination in
+                lines.move(fromOffsets: source, toOffset: destination)
+                checked = false
+            }
+        }
+        .listStyle(.plain)
+        .environment(\.editMode, .constant(.active))
+        .environment(\.defaultMinListRowHeight, 0)
+        .scrollContentBackground(.hidden)
+        .contentMargins(.all, 0, for: .scrollContent)
+        .scrollDisabled(true)
+        .frame(height: rowHeight * CGFloat(lines.count))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .accessibilityIdentifier("arrange-code-lines")
+    }
+
 }
 
 private struct PracticeCard<Content: View>: View {

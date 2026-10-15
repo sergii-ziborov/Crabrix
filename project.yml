@@ -200,6 +200,26 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
 
 schemes:
+  CrabrixBuildProblemsGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+        CrabrixScreenshotTests: [test]
+    test:
+      gatherCoverageData: false
+      environmentVariables:
+        CRABRIX_RUN_COMPILER_GATE: "1"
+      targets:
+        - name: CrabrixTests
+          selectedTests:
+            - BuildProblemsTests
+            - CargoManifestEditorTests
+            - ProjectAuthoringTests/testExistingPlainSynDependencyCanBeRepairedInProject()
+        - name: CrabrixScreenshotTests
+          selectedTests:
+            - BuildWorkspaceTests
+
   CrabrixInteractionGate:
     build:
       targets:

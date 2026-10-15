@@ -649,6 +649,7 @@ struct ContentView: View {
     private func editorPane(fixedSidebar: Bool, hingeGlobalY: CGFloat) -> some View {
         VStack(spacing: 0) {
             EditorToolbar(
+                projectName: model.projectName,
                 activity: model.activity,
                 cargoStage: model.cargoStage,
                 files: model.fileNames,
@@ -1799,13 +1800,10 @@ private struct GitHubImportSheet: View {
     }
 }
 
-/// A persistent statement of what this screen is.
-///
-/// Crabrix is a programming environment, and Apple's Developer Program License
-/// Agreement asks such an app to say so conspicuously rather than leaving the
-/// user to infer it from an editor. It doubles as the honest toolchain label:
-/// the compiler is pinned and bundled, and its exact version is not hidden.
+/// The active project and, where space permits, the bundled Rust toolchain.
+/// The editor's code icon and accessibility label identify the environment.
 struct ProgrammingEnvironmentBar: View {
+    let projectName: String
     private var toolchainDetail: String {
         "rustc \(CargoToolchain.semanticVersionLabel) · \(RustTargetSpec.wasm32WasiP1.triple)"
     }
@@ -1833,19 +1831,22 @@ struct ProgrammingEnvironmentBar: View {
         .background(CrabrixTheme.panel)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
-            "Rust programming environment. Bundled \(toolchainDetail)."
+            "\(projectName). Rust programming environment. Bundled \(toolchainDetail)."
         )
+        .accessibilityIdentifier("editor-project-name")
     }
 
     private var label: some View {
-        Text("RUST PROGRAMMING ENVIRONMENT")
-            .font(.system(size: 9, weight: .bold, design: .monospaced))
+        Text(projectName)
+            .font(.system(size: 10, weight: .semibold, design: .monospaced))
             .foregroundStyle(CrabrixTheme.primary)
             .lineLimit(1)
+            .truncationMode(.middle)
     }
 }
 
 private struct EditorToolbar: View {
+    let projectName: String
     let activity: CompilerViewModel.Activity
     let cargoStage: CargoPreparationStage
     let files: [String]
@@ -1876,7 +1877,7 @@ private struct EditorToolbar: View {
     var body: some View {
         VStack(spacing: 0) {
             if showsEnvironmentBar {
-                ProgrammingEnvironmentBar()
+                ProgrammingEnvironmentBar(projectName: projectName)
                 Divider().overlay(CrabrixTheme.border)
             }
 

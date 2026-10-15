@@ -183,6 +183,7 @@
 		D244136DFB4BDBC64690F600 /* ProjectTerminalSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44ABFA97B5DA7FD2FADA63C6 /* ProjectTerminalSessionTests.swift */; };
 		D49C98DD06AD42D9BD560349 /* CrabrixProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17305CBAACACB768E537F24 /* CrabrixProgress.swift */; };
 		D5050F9D62A3048C30A31F67 /* TopicMastery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1D24127CCCD6858FC76A21 /* TopicMastery.swift */; };
+		D62CE9F33D5CD754B6052DB4 /* BuildWorkspaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CEBD152D5381C70622EDD87 /* BuildWorkspaceTests.swift */; };
 		D70ECFBCDF8636B011990335 /* ProblemReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15AF611D0815ED4D2805F0C /* ProblemReportTests.swift */; };
 		D86F638C06CE9367C008A2E7 /* WasmKit-NOTICE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 73CFA57D3BA2CCAB16D8C48E /* WasmKit-NOTICE.txt */; };
 		DAB88604F8DDD7AEE079AE41 /* TOMLParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B771273BE9E83B35B042C13 /* TOMLParserTests.swift */; };
@@ -201,6 +202,7 @@
 		EF101C40AFF5C8D91F8EA769 /* CourseBootstrapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CFF7795F63D1B35CF6A62BE /* CourseBootstrapTests.swift */; };
 		F0B9BBE785A01AD1ACC83D6F /* LearnPathView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D22109AD0D3338201CEFE20 /* LearnPathView.swift */; };
 		F18AFE001FA97304AEA1A402 /* RustLessonProgressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A19951F6B509DE6C56E27216 /* RustLessonProgressionTests.swift */; };
+		F1F0BF0DA8B783EE070F2CA5 /* BuildProblemsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC4745C09CED9CA69999E7B0 /* BuildProblemsTests.swift */; };
 		F3B4A7B2555D918F3192BB3D /* CourseModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4479B42763852BA1B452D60 /* CourseModels.swift */; };
 		F8F1E02965F5C0146D69DD89 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA5866457924F7521705CCD1 /* Assets.xcassets */; };
 		FA6604AE42D256B00E00939A /* AppLockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73C1FC8A2234B8B8C0D7C08C /* AppLockTests.swift */; };
@@ -312,6 +314,7 @@
 		5B270F1FF867630900E5AA2C /* ProjectFileTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectFileTree.swift; sourceTree = "<group>"; };
 		5CAC5B86C54D56DCAC398E6A /* LessonDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonDetailView.swift; sourceTree = "<group>"; };
 		5CE24E0030AC4CFD4B7F6E01 /* ProblemReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemReportView.swift; sourceTree = "<group>"; };
+		5CEBD152D5381C70622EDD87 /* BuildWorkspaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildWorkspaceTests.swift; sourceTree = "<group>"; };
 		5F2E28AF633C57EFB91DF034 /* LocalProjectLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalProjectLoader.swift; sourceTree = "<group>"; };
 		6166C001764BC9D14984D241 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6234FA291715E7AB88B78388 /* TermMatchConnectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermMatchConnectionTests.swift; sourceTree = "<group>"; };
@@ -387,6 +390,7 @@
 		A9F0FB50E1462BCBC86DF551 /* CargoBuildPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoBuildPlan.swift; sourceTree = "<group>"; };
 		AAD3161C843E95583F80834C /* Crabrix.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Crabrix.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABB041C5A186A0E2DB1CB3F9 /* CrateSourceBrowserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrateSourceBrowserTests.swift; sourceTree = "<group>"; };
+		AC4745C09CED9CA69999E7B0 /* BuildProblemsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildProblemsTests.swift; sourceTree = "<group>"; };
 		AD6A06B3CF1D9DA428CCB401 /* swift-syntax-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-syntax-LICENSE.txt"; sourceTree = "<group>"; };
 		AF263BC0BDACD405CDF0BAFF /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B2888F23BE9517E3AC3CA427 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -694,6 +698,7 @@
 				73C1FC8A2234B8B8C0D7C08C /* AppLockTests.swift */,
 				24851507366B69E1C89A070E /* AppToolchainReleaseTests.swift */,
 				ED805A32682154958D4A1EC2 /* BorrowRepairTests.swift */,
+				AC4745C09CED9CA69999E7B0 /* BuildProblemsTests.swift */,
 				56AA1284DFED9057782C150A /* BundledCompilerGateTests.swift */,
 				8D8034113D3EF6270CBF8F84 /* BundledLicenseTests.swift */,
 				A201213590F9ECED7CE983FC /* BundledSysrootTests.swift */,
@@ -864,6 +869,7 @@
 		FA93F34CD47638E06707EB65 /* CrabrixScreenshotTests */ = {
 			isa = PBXGroup;
 			children = (
+				5CEBD152D5381C70622EDD87 /* BuildWorkspaceTests.swift */,
 				E560EAA1E9DC2387BE92ED56 /* ReleaseScreenshotTests.swift */,
 			);
 			path = CrabrixScreenshotTests;
@@ -1079,6 +1085,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D62CE9F33D5CD754B6052DB4 /* BuildWorkspaceTests.swift in Sources */,
 				FA6B3D430B69957FC2E7A2AA /* ReleaseScreenshotTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1206,6 +1213,7 @@
 				FA6604AE42D256B00E00939A /* AppLockTests.swift in Sources */,
 				EDD602BB2F5547C82174AD00 /* AppToolchainReleaseTests.swift in Sources */,
 				ABDFFA5263492E9C914C3C6B /* BorrowRepairTests.swift in Sources */,
+				F1F0BF0DA8B783EE070F2CA5 /* BuildProblemsTests.swift in Sources */,
 				B53A042015AC822CCE2CCDFA /* BundledCompilerGateTests.swift in Sources */,
 				496103BB6AAEBCD5D49F0625 /* BundledLicenseTests.swift in Sources */,
 				C56EA75AEB015034CDCF4A1B /* BundledSysrootTests.swift in Sources */,

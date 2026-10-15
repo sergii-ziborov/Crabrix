@@ -186,7 +186,7 @@ struct BuildDockView<CodeContent: View>: View {
                         Image(systemName: tab.systemImage)
                         Text(tab.title)
                         if tab == .problems {
-                            Text("\(result?.diagnostics.count ?? 0)")
+                            Text("\(result?.problemDiagnostics.count ?? 0)")
                                 .padding(.horizontal, 5)
                                 .padding(.vertical, 1)
                                 .background(CrabrixTheme.raised, in: Capsule())
@@ -206,6 +206,7 @@ struct BuildDockView<CodeContent: View>: View {
                     }
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("build-dock-\(tab.rawValue)")
                 .accessibilityLabel("Show \(tab.title.lowercased())")
                 .accessibilityAddTraits(activeTab == tab ? .isSelected : [])
             }
@@ -291,13 +292,10 @@ struct BuildDockView<CodeContent: View>: View {
         OutputDockContent(
             result: result,
             activity: activity,
-            canStartBuild: canStartBuild,
             canContinueLearning: canContinueLearning,
             lessonEvidenceMessage: lessonEvidenceMessage,
             lessonHint: lessonHint,
             contribution: contribution,
-            onRun: onRun,
-            onCancel: onCancel,
             onContinueLearning: onContinueLearning
         )
         .id(lessonHint?.sessionToken)
@@ -354,9 +352,9 @@ private struct ProblemsDockContent: View {
     var body: some View {
         GeometryReader { available in
         ScrollView {
-            if let diagnostics = result?.diagnostics, !diagnostics.isEmpty {
+            if let diagnostics = result?.problemDiagnostics, !diagnostics.isEmpty {
                 LazyVStack(alignment: .leading, spacing: 7) {
-                    if diagnostics.contains(where: { $0.level == "error" }) {
+                    if result?.diagnostics.contains(where: { $0.level == "error" }) == true {
                         Button(action: onOpenDiagnosticAdvisor) {
                             HStack(spacing: 10) {
                                 if adviceState.isWorking {
@@ -477,13 +475,10 @@ private struct OutputDockContent: View {
     @State private var isHintExpanded = false
     let result: CompilationResult?
     let activity: CompilerViewModel.Activity
-    let canStartBuild: Bool
     let canContinueLearning: Bool
     let lessonEvidenceMessage: String?
     let lessonHint: CourseHintSnapshot?
     let contribution: CodeContribution?
-    let onRun: () -> Void
-    let onCancel: () -> Void
     let onContinueLearning: () -> Void
 
     private var parsedOutput: ParsedRustCanvasOutput? {
@@ -498,66 +493,17 @@ private struct OutputDockContent: View {
         if activity == .checking { return .checking }
         if activity == .running { return .running }
         guard let result else { return .ready }
-        if result.phase == .setup && result.detail.hasPrefix("Build stopped.") {
+        if result.wasStopped {
             return .stopped
         }
         return result.succeeded ? .passed : .failed
     }
 
-    private var statusTitle: String {
-        switch displayState {
-        case .ready: "Ready to run"
-        case .checking: "Checking code"
-        case .running: "Running project"
-        case .stopped: "Run stopped"
-        case .passed: result?.phase == .run ? "Run complete" : "Check complete"
-        case .failed: result?.phase == .run ? "Run failed" : "Build failed"
-        }
-    }
-
-    private var statusDetail: String {
-        switch displayState {
-        case .ready: return "Compile and run the current project to see its result here."
-        case .checking: return "The bundled Rust compiler is checking your code."
-        case .running: return "Compiling and running your project locally."
-        case .stopped: return "The build was interrupted. You can start it again."
-        case .passed:
-            return result?.phase == .run
-                ? "Your program finished successfully."
-                : "Your code passed the compiler check."
-        case .failed:
-            if result?.phase == .compile { return "The program did not run. Check the diagnostic below." }
-            return result?.detail ?? "The build could not finish."
-        }
-    }
-
-    private var statusTint: Color {
-        switch displayState {
-        case .ready, .checking, .running: CrabrixTheme.blue
-        case .stopped: CrabrixTheme.amber
-        case .passed: CrabrixTheme.mint
-        case .failed: CrabrixTheme.coral
-        }
-    }
-
-    private var statusSymbol: String {
-        switch displayState {
-        case .ready: "play.fill"
-        case .checking: "checkmark.circle"
-        case .running: "waveform"
-        case .stopped: "stop.fill"
-        case .passed: "checkmark"
-        case .failed: "exclamationmark"
-        }
-    }
-
     private var hasProgramOutput: Bool {
         parsedOutput?.frame != nil
             || !(parsedOutput?.plainText ?? "").isEmpty
-            || !(result?.stderr ?? "").isEmpty
+            || (result?.phase == .run && !(result?.stderr ?? "").isEmpty)
     }
-
-    private var hasDiagnostic: Bool { result?.diagnostics.first != nil }
 
     private var emptyOutputTitle: String {
         switch displayState {
@@ -572,7 +518,7 @@ private struct OutputDockContent: View {
 
     private var emptyOutputDetail: String {
         switch displayState {
-        case .ready: return "Run your project to see printed text, errors, or a visual result."
+        case .ready: return "Run your project to see printed text or a visual result."
         case .checking: return "Compiler diagnostics will appear when the check finishes."
         case .running: return "Printed text and errors will appear when the run finishes."
         case .stopped: return "This run ended before it produced any output."
@@ -580,7 +526,7 @@ private struct OutputDockContent: View {
             return result?.phase == .run
                 ? "Your program finished successfully without printing anything."
                 : "A code check compiles the project without executing it."
-        case .failed: return "The build ended before the program produced output."
+        case .failed: return "No program output was captured. Build details are in Problems."
         }
     }
 
@@ -588,27 +534,15 @@ private struct OutputDockContent: View {
         GeometryReader { available in
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    if !hasProgramOutput && !hasDiagnostic {
+                    if !hasProgramOutput {
                         Spacer(minLength: 16)
                     }
 
-                    if displayState != .ready {
-                        statusCard
-                    }
-
-                    if !hasProgramOutput && !hasDiagnostic {
+                    if !hasProgramOutput {
                         emptyOutputCard
                     }
 
                     if let result {
-                        if let diagnostic = result.diagnostics.first {
-                            OutputStreamBlock(
-                                label: diagnostic.code ?? "ERROR",
-                                text: diagnostic.message,
-                                tint: CrabrixTheme.coral,
-                                systemImage: "exclamationmark.triangle.fill"
-                            )
-                        }
                         if let frame = parsedOutput?.frame {
                             RustCanvasPreview(frame: frame)
                         }
@@ -621,7 +555,7 @@ private struct OutputDockContent: View {
                                 systemImage: "arrow.right.circle.fill"
                             )
                         }
-                        if !result.stderr.isEmpty {
+                        if result.phase == .run, !result.stderr.isEmpty {
                             OutputStreamBlock(
                                 label: "STDERR",
                                 text: result.stderr,
@@ -677,7 +611,7 @@ private struct OutputDockContent: View {
 
                     hintPanel
 
-                    if !hasProgramOutput && !hasDiagnostic {
+                    if !hasProgramOutput {
                         Spacer(minLength: 16)
                     }
                 }
@@ -694,48 +628,6 @@ private struct OutputDockContent: View {
                 endPoint: .bottomTrailing
             )
         )
-    }
-
-    private var statusCard: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            HStack(alignment: .top, spacing: 13) {
-                Group {
-                    if displayState == .checking || displayState == .running {
-                        ProgressView().tint(statusTint)
-                    } else {
-                        Image(systemName: statusSymbol)
-                            .font(.system(size: 17, weight: .bold))
-                    }
-                }
-                .frame(width: 42, height: 42)
-                .foregroundStyle(statusTint)
-                .background(statusTint.opacity(0.13), in: RoundedRectangle(cornerRadius: 12))
-
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("PROJECT OUTPUT")
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .tracking(1)
-                        .foregroundStyle(statusTint)
-                    Text(statusTitle)
-                        .font(.title3.bold())
-                        .foregroundStyle(CrabrixTheme.primary)
-                    Text(statusDetail)
-                        .font(.subheadline)
-                        .foregroundStyle(CrabrixTheme.muted)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
-            runButton
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(CrabrixTheme.raised, in: RoundedRectangle(cornerRadius: 16))
-        .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(statusTint.opacity(0.3), lineWidth: 1)
-        }
     }
 
     private var emptyOutputCard: some View {
@@ -787,21 +679,7 @@ private struct OutputDockContent: View {
         }
     }
 
-    /// Output is where you look for a result, so it can also produce one.
-    private var runButton: some View {
-        Button(action: activity == .running ? onCancel : onRun) {
-            Label(
-                activity == .running ? "Stop" : (result == nil ? "Run project" : "Run again"),
-                systemImage: activity == .running ? "stop.fill" : "play.fill"
-            )
-            .font(.subheadline.bold())
-            .padding(.horizontal, 16)
-            .frame(minHeight: 38)
-        }
-        .buttonStyle(.borderedProminent)
-        .tint(activity == .running ? CrabrixTheme.amber : CrabrixTheme.coral)
-        .disabled(activity == .checking || (activity == .idle && !canStartBuild))
-    }
+
 }
 
 private struct RustCanvasPreview: View {
