@@ -48,6 +48,21 @@ final class AppLockTests: XCTestCase {
         XCTAssertTrue(condition(), "Authentication state did not settle", file: file, line: line)
     }
 
+    func testLosingActivationBeforePromptStartsDoesNotConsumeNextUnlock() async throws {
+        let harness = Harness()
+        defer { harness.cleanup() }
+        let lock = harness.makeLock()
+        lock.scenePhaseChanged(.active)
+        lock.scenePhaseChanged(.inactive)
+        // Let the queued automatic task observe inactivity before resuming.
+        try await Task.sleep(for: .milliseconds(20))
+        XCTAssertTrue(harness.contexts.isEmpty)
+        lock.scenePhaseChanged(.active)
+        try await waitUntil { harness.contexts.first?.isPending == true }
+        harness.contexts[0].complete(.success(true))
+        try await waitUntil { !lock.isLocked }
+    }
+
     func testSystemInterruptionBeforeReactivationRetriesWithFreshContext() async throws {
         let harness = Harness()
         defer { harness.cleanup() }

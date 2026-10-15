@@ -37,6 +37,7 @@ final class AppLockController: ObservableObject {
     private let makeContext: @MainActor () -> any AppLockAuthenticationContext
     private var scenePhase: ScenePhase = .inactive
     private var autoPromptedThisForeground = false
+    private var scheduledPrompt: UUID?
     private var canRetrySystemInterruption = true
     private var activeContext: (any AppLockAuthenticationContext)?
     private var currentAttempt: UUID?
@@ -68,6 +69,7 @@ final class AppLockController: ObservableObject {
         switch phase {
         case .background:
             autoPromptedThisForeground = false
+            scheduledPrompt = nil
             canRetrySystemInterruption = true
             if isEnabled { isLocked = true }
             let context = activeContext
@@ -90,7 +92,17 @@ final class AppLockController: ObservableObject {
         guard scenePhase == .active, isEnabled, isLocked,
               !isAuthenticating, !autoPromptedThisForeground else { return }
         autoPromptedThisForeground = true
-        Task { await unlock() }
+        let prompt = UUID()
+        scheduledPrompt = prompt
+        Task {
+            guard scheduledPrompt == prompt else { return }
+            scheduledPrompt = nil
+            guard scenePhase == .active else {
+                autoPromptedThisForeground = false
+                return
+            }
+            await unlock()
+        }
     }
 
     func setEnabled(_ enabled: Bool) async {
@@ -106,6 +118,8 @@ final class AppLockController: ObservableObject {
     }
 
     func unlock() async {
+        // A manual tap supersedes any automatic prompt still queued to start.
+        scheduledPrompt = nil
         guard isEnabled && isLocked else { return }
         guard await authorize(reason: "Open your Rust projects and courses"),
               scenePhase != .background else { return }
