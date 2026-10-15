@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1 (60, TestFlight) — 2026-10-15
+
+- Connect Term Train cards at their inner dots, with a curve that stays between the columns instead of crossing the text.
+- Retry optional Face ID/device-passcode protection after a system interruption or a queued prompt losing activation. Keep explicit cancellation manual, reject stale background results, and prevent automatic prompt loops.
+- Verify all eleven focused interaction tests on both iPhone and iPad simulators, then archive manually in Xcode Cloud with SDK 27.1 for Duo support.
+
 ## 1.1 (36 in Xcode Cloud; source build 26) — 2026-10-08
 
 - Bring the Duo editor header in line with My Projects: project name and in-file search stay visible without the old top tabs and close button. Keep the Code, Problems, Output, and Terminal tabs aligned above the keyboard in laptop and landscape layouts.

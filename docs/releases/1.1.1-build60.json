@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "release": {
+    "version": "1.1.1",
+    "appStoreBuild": "60",
+    "channel": "TestFlight Internal QA"
+  },
+  "source": {
+    "commit": "85b43fe3ebf7791ac7aa1fcdce0d715a1e2320cf",
+    "branch": "codex/term-train-connector-lock",
+    "baseCommit": "681313e7b5dd461c549d6fce15e17567665f740a",
+    "testedRuntimeCommit": "e8137bf662f5062482897cf116da81aea27d5c27",
+    "runtimeSourceEqualsTestedSource": true
+  },
+  "xcodeCloud": {
+    "runNumber": 60,
+    "runID": "edb4fc76-8a61-4b59-93aa-fc25d9540788",
+    "status": "SUCCEEDED",
+    "workflowID": "ff6eebeb-2000-4dd8-a1d9-3b4d2598689a",
+    "manualOnly": true,
+    "configuredXcode": "27.1 RC",
+    "configuredSDK": "iOS 27.1"
+  },
+  "appStoreConnect": {
+    "appID": "6809502653",
+    "buildID": "9224e9a7-dadf-440b-b66d-2a5ad049b0af",
+    "processingState": "VALID",
+    "internalBuildState": "IN_BETA_TESTING",
+    "internalBetaGroup": "Internal QA",
+    "internalBetaGroupID": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "membershipVerified": true,
+    "usesNonExemptEncryption": false,
+    "whatsNewLocale": "en-US",
+    "whatsNewLocalizationID": "c3a61bc0-0b98-4f8d-ac22-d2f96c1a2e28",
+    "uploadedDate": "2026-10-15T13:50:58-07:00"
+  },
+  "validation": {
+    "manualNativeRun": 59,
+    "nativeRunID": "d1f3547e-f8d5-4e4a-a09e-26186aacd809",
+    "uniqueTestsPassed": 11,
+    "successfulDeviceExecutions": 22,
+    "failed": 0,
+    "skipped": 0,
+    "devices": [
+      "iPhone 16 Pro Max / iOS 27.0 simulator",
+      "iPad Pro 13-inch (M4) / iOS 27.0 simulator"
+    ],
+    "physicalBiometricCheckPerformed": false,
+    "diffWhitespaceCheck": "passed"
+  },
+  "scope": {
+    "appReviewSelectedBuildChanged": false,
+    "githubActionsEnabled": false
+  },
+  "verifiedAtUTC": "2026-10-15T20:54:43.735349+00:00"
+}
