@@ -1,6 +1,6 @@
 # Crabrix App Store creative assets
 
-These are original illustrated assets for the 1.1 product page. They depict the existing Learn, Code, Run, and Output workflow. They are not captured app screenshots and contain no performance claim.
+These are original illustrated assets used on the 1.1 and 1.1.1 product pages. They depict the existing Learn, Code, Run, and Output workflow. They are not captured app screenshots and contain no performance claim.
 
 | File | Placement | Pixels |
 | --- | --- | --- |
@@ -15,3 +15,8 @@ are illustrations rather than application screenshots; actual current iPhone,
 iPad and Duo captures live under `../screenshots/` and are synchronized with
 website and app README files. The latest selected native build is recorded in
 [submission status](../submission-status.md).
+
+On 16 October 2026 both assets read back as **APPROVED**. Their active placements
+were verified on the main 1.1.1 page and both new custom product pages (Rust
+Academy and Rust Compiler), alongside the current native screenshots. See
+[the current asset record](../asset-upload-2026-10-16-1.1.1.json).

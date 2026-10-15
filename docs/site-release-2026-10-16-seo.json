@@ -1,0 +1,115 @@
+{
+  "image": "localhost/crabrix-web-site:seo-111-20261016-r2",
+  "digest": "69d84aa07b9f2e8847c2f61959715c22d74e3245f6d9a53008def225dfa5086f",
+  "latestIPadSHA256": "4d5ffbf37495fe02e31db58ca3fbe4bc8e740197e64f4b0c44ae94befb028499",
+  "liveHealthAndPages": "passed",
+  "fullSEOAudit": "763 pages passed before image-only update",
+  "verifiedAtUTC": "2026-10-15T21:51:02.383997+00:00",
+  "seoAudit": {
+    "origin": "https://crabrix.com",
+    "pagesVerified": 763,
+    "duplicateTitles": 0,
+    "canonicalAndSocialMetadata": "passed",
+    "structuredData": "passed",
+    "accountNoindex": "passed",
+    "guestPreviewAndPrivateMedia": "passed"
+  },
+  "accountDataMountPreserved": true,
+  "githubActionsEnabled": false,
+  "dnsChanged": false,
+  "screenshotProof": "app-store/asset-upload-2026-10-16-1.1.1.json",
+  "publicScreenshotAliases": [
+    {
+      "file": "iphone-example-detail.png",
+      "sha256": "833aef37bea630212d15ab9817bc2c6ce28d9d6b33e146f106baaf8ffb40144c"
+    },
+    {
+      "file": "ipad-projects.png",
+      "sha256": "a60b478f81e16dc4204babedf4aaf98ed493f5cb42e5ce0b4218a097bf949104"
+    },
+    {
+      "file": "ipad-library.png",
+      "sha256": "b91e2cacbf614cbb1658db1bdec5f96817324ca8980c842c8249b99b3bbaf423"
+    },
+    {
+      "file": "iphone-lesson.png",
+      "sha256": "ab56349addcfcafde6aedb0a1fb0716441a4d92c742bb947b825a889cd386e5e"
+    },
+    {
+      "file": "iphone-my-courses.png",
+      "sha256": "5133d15beca439ea1abe673f084b5dc1725ea4d5e11736b17fef728c7428ed9d"
+    },
+    {
+      "file": "ipad-examples.png",
+      "sha256": "b91e2cacbf614cbb1658db1bdec5f96817324ca8980c842c8249b99b3bbaf423"
+    },
+    {
+      "file": "iphone-cyberpunk-settings.png",
+      "sha256": "4bd395860754ff6cfba797ec1e83eb823da7e0f0ae53bf47fc8abfa4e0efe1ae"
+    },
+    {
+      "file": "ipad-build.png",
+      "sha256": "4d5ffbf37495fe02e31db58ca3fbe4bc8e740197e64f4b0c44ae94befb028499"
+    },
+    {
+      "file": "iphone-profile.png",
+      "sha256": "731e37f70242cae7b48c2bd7700479a9e6117d1a119d7728278c06db178fa051"
+    },
+    {
+      "file": "iphone-build.png",
+      "sha256": "528dc7b0a13bbe5fc81b086ea3dbd8c9a3f244e374027f5d2c4aca06888df77d"
+    },
+    {
+      "file": "iphone-academy.png",
+      "sha256": "c0b91d617b9fd89ea8905e6fce62b00b7afc019c11e5be27e5a0e2b21a01862e"
+    },
+    {
+      "file": "iphone-library.png",
+      "sha256": "a79c1ea37cce5cdb512a31f1d2d468f05b2e041c549a2e58a90d0e80a42181b0"
+    },
+    {
+      "file": "iphone-projects.png",
+      "sha256": "03dc651e7d045e58d647bccfa82425ed5303cbd9f44e200594f4510e020048d7"
+    },
+    {
+      "file": "iphone-settings.png",
+      "sha256": "4bd395860754ff6cfba797ec1e83eb823da7e0f0ae53bf47fc8abfa4e0efe1ae"
+    },
+    {
+      "file": "duo-laptop.png",
+      "sha256": "10fd1f9d288a3782c56d12239dfeea536ad80b8cc3d574892e0090a40c524e95"
+    },
+    {
+      "file": "duo-output.png",
+      "sha256": "d71a6edaeaf5d2052edb5fee8782e855cb6f5f42f215996b3c80743b7e7c4d58"
+    },
+    {
+      "file": "iphone-examples.png",
+      "sha256": "a79c1ea37cce5cdb512a31f1d2d468f05b2e041c549a2e58a90d0e80a42181b0"
+    },
+    {
+      "file": "iphone-course.png",
+      "sha256": "956e3010751c1c62fd60130e47e5b43a4496cb590431445768a3151bc65ea6e3"
+    },
+    {
+      "file": "ipad-learn.png",
+      "sha256": "bfaf3c26abe50237811a9a9cccfcd609dacd8880616ab799754e165ad465a7fd"
+    },
+    {
+      "file": "ipad-my-courses.png",
+      "sha256": "7029db2d9750a27d6193943344b75b3a09159e0f5f6095c30e50101d58dba666"
+    },
+    {
+      "file": "ipad-lesson.png",
+      "sha256": "d1beca2382fb561b5f15eb6079d862c0c217638473a96d7438987324105d8d8d"
+    },
+    {
+      "file": "ipad-profile.png",
+      "sha256": "e5e4511068e95adac7d98bc1f534baa8b1ab5f352cd53e82020569f12cd079a2"
+    },
+    {
+      "file": "iphone-learn.png",
+      "sha256": "c0b91d617b9fd89ea8905e6fce62b00b7afc019c11e5be27e5a0e2b21a01862e"
+    }
+  ]
+}

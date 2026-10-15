@@ -4,7 +4,7 @@
   "marketingUrl": "https://crabrix.com/technology/",
   "supportUrl": "https://crabrix.com/support/",
   "promotionalText": "Learn with 742 illustrated lessons, explore 46 Rust projects, then compile on device. Signed course updates preserve progress. No app account or subscription required.",
-  "whatsNew": "• Build and Cargo setup errors now appear in Problems, including failures without a source location.\n• Output focuses on your program’s result, without a duplicate Run button or error card.\n• The editor shows the current project name above its files.\n• Arrange Code uses a fitted layout and native drag handles without nested scrolling.\n• Improved Term Train connections, app-unlock recovery, progress safeguards and illustrated Code Examples.",
+  "whatsNew": "• Build and Cargo setup errors now appear in Problems, including failures without a source location.\n• Output focuses on your program’s result, without a duplicate Run button or error card.\n• The editor shows the current project name above its files.\n• Arrange Code uses a fitted layout and native drag handles without nested scrolling.\n• Improved Term Train connections, app-unlock recovery, progress safeguards and illustrated Code Examples.\n• iPad keeps Check and Run beside the top search and project controls.",
   "name": "Crabrix: Rust Compiler",
   "subtitle": "Offline IDE & coding lessons"
 }

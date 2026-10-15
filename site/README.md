@@ -59,15 +59,28 @@ Product and legal copy remains in the top-level HTML files rendered through
 
 Current product screenshots in `public/screenshots/`, `screenshots/` and
 `../docs/screenshots/` agree byte-for-byte where a shared filename exists.
-Sixteen iPhone/iPad frames were refreshed after the real signed course updates
-in manual Xcode Cloud run 54. The gallery and root README include the current
-Borrowing lesson infographic and highlighted code. The verified SDK 27.1
-iPad editor and two Duo portrait laptop captures remain; capture provenance
-and Apple MD5 readback are in
-`../docs/app-store/asset-upload-2026-10-11-build50.json`.
-The iPad editor shows in-file search. Duo Code and Output retain their tested
-fold layout. iPhone/iPad editor captures omit the Duo-only keyboard-dismiss
-button from the Code/Terminal tab row. Native build 50 is selected for App Review; this website change does not alter its offline account-free behaviour.
+Ten iPhone and six iPad frames were refreshed after the real signed course
+updates in manual Xcode Cloud run 62. The iPad editor comes from the final
+SDK 27.1 product in run 70 and shows search, Check and Run. Two fresh native
+Duo laptop captures show the editor and actual multi-file program output.
+Capture provenance, all 19 unique image hashes, and the main/Academy/Compiler
+page placements are in
+`../docs/app-store/asset-upload-2026-10-16-1.1.1.json`.
+iPhone/iPad omit the Duo-only keyboard-dismiss control from the coding tab row.
+The native app's offline reading and compilation do not require a website account.
+
+## Search metadata
+
+Public routes share canonical HTTPS addresses with trailing slashes, individual
+titles/descriptions, Open Graph and Twitter cards. BlogPosting, Course,
+Article and BreadcrumbList data describe the actual visible content. Restricted
+lesson markup identifies the account requirement; it does not expose the full
+lesson to crawlers. Account routes stay noindex and outside the sitemap.
+
+The live audit checked all 763 sitemap pages, unique titles, one H1 per page,
+canonical/social metadata, structured data, previews and private media denial.
+See `../docs/seo-2026-10-16.md` and the live deployment record
+`../docs/site-release-2026-10-16-seo.json`.
 
 ## Accounts and operation
 

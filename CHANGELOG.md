@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.1 (68, TestFlight and App Review) — 2026-10-16
+
+- Show compiler, Cargo preparation and sandbox build failures in Problems, including errors without a source location.
+- Keep program output separate from diagnostics, without a duplicate Run button or status/error card.
+- Identify the current project above the editor; restore iPad Check and Run beside search.
+- Fit Arrange Code into the screen with native reorder handles and no nested scrolling.
+- Repair the reported weather-station Cargo files without changing its Rust source.
+- Preserve build 60’s Term Train, unlock, progress, Academy and Duo behavior.
+- Refresh all 19 Store screenshots and synchronized website/README copies; submit the main page and two search-oriented custom product pages.
+- Publish canonical/social metadata and structured data across 763 public website pages while preserving free-account Academy access.
+
 ## 1.1.1 (60, TestFlight) — 2026-10-15
 
 - Connect Term Train cards at their inner dots, with a curve that stays between the columns instead of crossing the text.

@@ -1,0 +1,11 @@
+Crabrix 1.1.1 — workspace and practice fixes
+
+• Build a project with a compiler error or an unsupported Cargo feature. Problems must show the failure even when there is no source location.
+• Output must contain program text or a visual result, without a second Run button or a compiler-error card. The main toolbar still has Run/Stop.
+• The ordinary editor strip must show the current project name.
+• On iPad, use Find in file, Check and Run from the top workspace controls; also try a narrower multitasking window.
+• In Learn → Quick Practice → Arrange Code, drag the native handles, check the correct order, and rotate the device. All four lines and the action should fit without nested scrolling.
+• Check that Duo tabs and helpers retain their established fold/keyboard placement.
+• Term Train connections should meet the inner card dots; app protection should recover from interrupted Face ID/passcode prompts without reopening after an explicit cancellation.
+
+Installed courses, editable projects, progress and existing appearance settings are preserved. Academy downloads remain optional; the native app requires no website account or subscription.

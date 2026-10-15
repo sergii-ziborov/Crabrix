@@ -1,5 +1,27 @@
 # Crabrix website deployment
 
+## SEO, product pages and current screenshots — 16 October 2026
+
+The public service runs `localhost/crabrix-web-site:seo-111-20261016-r2`
+(image `69d84aa07b9f2e8847c2f61959715c22d74e3245f6d9a53008def225dfa5086f`).
+The existing `crabrix-web-site-1` service is healthy on loopback port 3212.
+Its account data mount, resource limits and security options are preserved.
+The preceding account-gated container remains stopped for rollback.
+
+The full public HTTPS audit passed for all 763 sitemap pages: unique titles,
+one H1, canonical/social metadata, JSON-LD, account noindex, guest previews
+and private media denial. All public screenshot aliases matched local hashes.
+The final image-only revision replaced the iPad editor with the SDK 27.1
+capture showing search, Check and Run; its public hash was checked again.
+Ten iPhone and six other iPad images show the updated Academy, and two fresh
+Duo laptop images show the editor and real multi-file output. Repository,
+site and App Store copies share the same sources. DNS and Nginx were unchanged.
+GitHub Actions remain disabled; publication was manual.
+
+[Live deployment evidence](site-release-2026-10-16-seo.json),
+[SEO and App Store presentation](seo-2026-10-16.md),
+[assets and placements](app-store/asset-upload-2026-10-16-1.1.1.json).
+
 ## Native Academy screenshot refresh and build 50 — 11 October 2026
 
 The public service runs `localhost/crabrix-web-site:build50-20261011` from

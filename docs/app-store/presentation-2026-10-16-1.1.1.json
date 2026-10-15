@@ -1,0 +1,65 @@
+{
+  "verifiedAtUTC": "2026-10-15T22:04:05.257038+00:00",
+  "version": "1.1.1",
+  "categories": {
+    "primaryCategory": {
+      "type": "appCategories",
+      "id": "DEVELOPER_TOOLS"
+    },
+    "secondaryCategory": {
+      "type": "appCategories",
+      "id": "EDUCATION"
+    }
+  },
+  "product": {
+    "description": "Learn Rust, then make it run. Crabrix brings a native Academy and a real coding workspace to iPhone and iPad. Read a lesson, open its starter as your own project, check actual rustc diagnostics, and run the result locally. The compiler ships in the app: no cloud compilation or app account is required.\n\nA FULL ACADEMY, AVAILABLE OFFLINE\nSeven courses cover Rust Basics, ownership, traits, systems topics, Cargo projects and interview preparation. Algorithm Atlas teaches 200 reusable patterns through 600 ordered steps. Together the Academy has 742 lessons and steps with expanded guidance, inline code formatting, syntax-highlighted examples and illustrated explanations.\n\nChoose individual courses to download; installed lessons remain readable offline. Signed content updates appear in Learn and My Courses with an Update button and Update all. Lesson corrections preserve existing progress and editable project copies. Removing a course keeps your projects and earned progress. A free companion website provides lesson previews and complete Academy reading with a separate website account; that account is not needed in the app.\n\n46 OPEN CODE EXAMPLES\nDownload the separate Code Examples path and explore every project in any order. Each stop has its own illustrated guide, source preview and README. Open in Code makes a durable, editable copy in My Projects. The first course or example download needs a connection.\n\nA NATIVE PROJECT WORKSPACE\nWork with files, syntax-aware editing, in-file search, real compiler diagnostics, and Code, Problems, Output and Terminal views. The editor supports indentation and paired syntax. Check finds compiler errors; Run compiles and executes the program in a bounded WebAssembly sandbox. Problems includes compiler and dependency setup errors. Output shows the program\u2019s text or visual result, with lesson hints while practising.\n\nMy Projects manages local work. New Project offers templates and imports from public GitHub repositories and Files. Share or export your projects when you choose. iPad has a file sidebar and search. iPhone Duo adapts the header, coding tabs and keyboard controls to its fold layout.\n\nSUPPORTED CARGO DEPENDENCIES\nAdd crates.io dependencies in Cargo.toml. Crabrix resolves supported packages, verifies source checksums, builds dependencies on device, and can pin them for offline rebuilds. Native linking, executable build scripts and procedural macros remain unsupported. The bundled compiler targets wasm32-wasip1; arbitrary desktop Rust projects may not build. There is no debugger or cargo test harness.\n\nPRACTISE AND PERSONALISE\nQuick Practice, Term Train and Code Recall reinforce the curriculum. Progress, rating and achievements are earned locally. Optional Game Center is off by default; enable it in Profile to share your numeric rating and achievement progress with Apple. Disabling it keeps local progress. Practice has no Health or Energy limits.\n\nChoose Auto, Light, Dark or Cyberpunk appearance. Optional Face ID or device-passcode protection locks the app when you leave it.\n\nYOUR CODE STAYS ON YOUR DEVICE\nNo advertising, analytics SDK or cloud compiler. Projects, answers, detailed learning history and compiler output stay local unless you export or share them. Game Center is an optional Apple service. Requested course downloads, crates.io searches and packages, and public repository imports use the network; their hosts receive ordinary connection information. After downloading lessons and preparing needed dependencies, study and builds can work offline.\n\nAbout, Privacy, Terms and educational content rights are readable offline in Settings, alongside full third-party licenses and a searchable compiler notice inventory. Your original code remains yours. One purchase; no subscription or in-app purchase is required.",
+    "keywords": "cargo,rustc,crates,code,editor,learn,programming,developer,algorithms,interview,wasm,terminal,course",
+    "marketingUrl": "https://crabrix.com/technology/",
+    "supportUrl": "https://crabrix.com/support/",
+    "promotionalText": "Learn with 742 illustrated lessons, explore 46 Rust projects, then compile on device. Signed course updates preserve progress. No app account or subscription required.",
+    "whatsNew": "\u2022 Build and Cargo setup errors now appear in Problems, including failures without a source location.\n\u2022 Output focuses on your program\u2019s result, without a duplicate Run button or error card.\n\u2022 The editor shows the current project name above its files.\n\u2022 Arrange Code uses a fitted layout and native drag handles without nested scrolling.\n\u2022 Improved Term Train connections, app-unlock recovery, progress safeguards and illustrated Code Examples.\n\u2022 iPad keeps Check and Run beside the top search and project controls.",
+    "name": "Crabrix: Rust Compiler",
+    "subtitle": "Offline IDE & coding lessons"
+  },
+  "customPages": [
+    {
+      "id": "23d222fb-322c-414d-90d0-efd1b844a310",
+      "name": "Rust Academy \u2014 Learn and Practise",
+      "url": "https://apps.apple.com/us/app/crabrix-rust-compiler/id6809502653?ppid=23d222fb-322c-414d-90d0-efd1b844a310",
+      "versionID": "8880b4c7-de67-420c-a944-ff8a4b1b6bbd",
+      "state": "WAITING_FOR_REVIEW",
+      "locale": {
+        "locale": "en-US",
+        "promotionalText": "Learn Rust step by step: 742 lessons and Atlas steps, illustrated explanations, highlighted code and practical exercises. Download courses and keep learning offline."
+      },
+      "mappedKeywords": [
+        "learn",
+        "algorithms",
+        "interview",
+        "course"
+      ]
+    },
+    {
+      "id": "1501e8ed-1169-4a77-8342-d0c53f9a72d8",
+      "name": "Rust Compiler \u2014 Build on Device",
+      "url": "https://apps.apple.com/us/app/crabrix-rust-compiler/id6809502653?ppid=1501e8ed-1169-4a77-8342-d0c53f9a72d8",
+      "versionID": "aa4163f1-f049-4e82-9fac-ccb33ef2a770",
+      "state": "WAITING_FOR_REVIEW",
+      "locale": {
+        "locale": "en-US",
+        "promotionalText": "Write Rust on iPhone, iPad and iPhone Duo. Check real compiler diagnostics, run locally, organise projects and explore 46 illustrated examples. No cloud compiler."
+      },
+      "mappedKeywords": [
+        "rustc",
+        "crates",
+        "code",
+        "developer",
+        "editor",
+        "programming",
+        "wasm"
+      ]
+    }
+  ],
+  "assets": "asset-upload-2026-10-16-1.1.1.json",
+  "manualRelease": true
+}

@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "release": {
+    "version": "1.1.1",
+    "appStoreBuild": "68",
+    "channel": "TestFlight Internal QA and App Review"
+  },
+  "source": {
+    "commit": "11a2f5967b88bcbfb2fa2a13b347f775c25f725f",
+    "branch": "codex/compiler-output-practice-review",
+    "uiTestSourceCommit": "660ccf6ed6fc5425dd2461cb1cd7d7e257489391",
+    "runtimeFilesUnchangedSinceArchive": true
+  },
+  "xcodeCloud": {
+    "runNumber": 68,
+    "runID": "9e30d681-f8a9-4c6d-91cf-951d0f3f7f40",
+    "workflowID": "ff6eebeb-2000-4dd8-a1d9-3b4d2598689a",
+    "status": "SUCCEEDED",
+    "manualOnly": true,
+    "configuredXcode": "27.1 RC",
+    "configuredSDK": "iOS 27.1"
+  },
+  "appStoreConnect": {
+    "verifiedAtUTC": "2026-10-15T22:02:56.551458+00:00",
+    "buildID": "30dbac66-d636-48ad-b4ed-8f3aab6fe61c",
+    "processingState": "VALID",
+    "usesNonExemptEncryption": false,
+    "whatToTestLocalizationID": "e912acef-9254-4fc3-9520-56eb2680f94a",
+    "whatToTestMatched": true,
+    "internalBetaGroupID": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "membershipVerified": true,
+    "betaDetail": {
+      "autoNotifyEnabled": true,
+      "internalBuildState": "IN_BETA_TESTING",
+      "externalBuildState": "READY_FOR_BETA_SUBMISSION"
+    },
+    "submissionID": "a9772a61-0817-4344-8dec-7407c2d94e75",
+    "submissionState": "WAITING_FOR_REVIEW",
+    "versionID": "1eb96061-e8e3-4784-a988-bdc99a8ee5ed",
+    "version": {
+      "platform": "IOS",
+      "versionString": "1.1.1",
+      "appStoreState": "WAITING_FOR_REVIEW",
+      "appVersionState": "WAITING_FOR_REVIEW",
+      "copyright": "2026 Serhii Ziborov",
+      "reviewType": "APP_STORE",
+      "releaseType": "MANUAL",
+      "earliestReleaseDate": null,
+      "usesIdfa": null,
+      "downloadable": true,
+      "createdDate": "2026-10-15T14:05:28-07:00"
+    },
+    "items": [
+      {
+        "id": "YTk3NzJhNjEtMDgxNy00MzQ0LThkZWMtNzQwN2MyZDk0ZTc1fDZ8ODkzMjQyOTg5",
+        "attributes": {
+          "state": "READY_FOR_REVIEW"
+        }
+      },
+      {
+        "id": "YTk3NzJhNjEtMDgxNy00MzQ0LThkZWMtNzQwN2MyZDk0ZTc1fDV8ODg4MGI0YzctZGU2Ny00MjBjLWE5NDQtZmY4YTRiMWI2YmJk",
+        "attributes": {
+          "state": "READY_FOR_REVIEW"
+        }
+      },
+      {
+        "id": "YTk3NzJhNjEtMDgxNy00MzQ0LThkZWMtNzQwN2MyZDk0ZTc1fDV8YWE0MTYzZjEtZjA0OS00ZTgyLTlmYWMtY2NiMzNlZjJhNzcw",
+        "attributes": {
+          "state": "READY_FOR_REVIEW"
+        }
+      }
+    ],
+    "customPages": [
+      {
+        "id": "8880b4c7-de67-420c-a944-ff8a4b1b6bbd",
+        "attributes": {
+          "version": "1",
+          "state": "WAITING_FOR_REVIEW",
+          "deepLink": null
+        }
+      },
+      {
+        "id": "aa4163f1-f049-4e82-9fac-ccb33ef2a770",
+        "attributes": {
+          "version": "1",
+          "state": "WAITING_FOR_REVIEW",
+          "deepLink": null
+        }
+      }
+    ]
+  },
+  "validation": {
+    "native": {
+      "runNumber": 61,
+      "runID": "f49619f3-6d4a-4ac7-ac69-ec287d615e2c",
+      "nativePassedPerDevice": 12,
+      "nativeSuccessfulExecutions": 24,
+      "devices": [
+        "iPhone 13 mini / iOS 27.0",
+        "iPad Pro 13-inch M4 / iOS 27.0"
+      ],
+      "nativeSkipped": 0,
+      "initialCombinedGateStatus": "FAILED: initial UI test assumptions and missing iPad controls; not represented as a passing gate",
+      "runtimeSourceNote": "Compiler, package resolver, Problems/Output and Arrange Code sources are identical between run 61 and archive 68. The later app change restores iPad header commands."
+    },
+    "ui": {
+      "appSourceCommit": "11a2f5967b88bcbfb2fa2a13b347f775c25f725f",
+      "appBinary": "Unmodified SDK 27.1 test product from manual Cloud run 70; same app runtime source as archive 68",
+      "runner": "Existing Cloud runner; focused test bundle compiled locally against the same SDK from committed test source",
+      "iPhone13Mini": {
+        "os": "26.5",
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0,
+        "result": "Passed",
+        "coverage": [
+          "Actual rustc E0502 in Problems",
+          "Output without duplicate Run or error card",
+          "Project name",
+          "Native reorder and fitted portrait layout",
+          "No nested scrolling"
+        ],
+        "testSourceNote": "Final iPad command-ready wait was added after this passing phone suite; the assertions and gestures are the same."
+      },
+      "iPadPro13M4": {
+        "os": "26.5",
+        "arrange": "Passed in local-verified-ipad-ui; native drag, correct order, portrait and landscape",
+        "compilerAndOutput": "Passed in compiler-ipad-verified after waiting for automatic diagnostic advice to finish",
+        "successfulMethodExecutions": 2,
+        "skipped": 0,
+        "initialCombinedResult": "Failed one assertion made while diagnostic advice was still active; the corrected compiler method was rerun and passed"
+      },
+      "iPhoneOrientationNote": "Quick Practice kept the phone in portrait after a rotation request; only iPad captures demonstrate landscape."
+    },
+    "physicalProject": {
+      "cargoManifestAndLockfileRepaired": true,
+      "rustSourceUnchanged": true,
+      "deviceReadbackVerified": true,
+      "nativeCompilerOutput": [
+        "average 21.8 C",
+        "driest  52%"
+      ]
+    },
+    "websiteSEO": {
+      "origin": "https://crabrix.com",
+      "pagesVerified": 763,
+      "duplicateTitles": 0,
+      "canonicalAndSocialMetadata": "passed",
+      "structuredData": "passed",
+      "accountNoindex": "passed",
+      "guestPreviewAndPrivateMedia": "passed"
+    },
+    "diffWhitespaceCheck": "passed"
+  },
+  "screenshots": "../app-store/asset-upload-2026-10-16-1.1.1.json",
+  "presentation": "../app-store/presentation-2026-10-16-1.1.1.json",
+  "scope": {
+    "githubActionsEnabled": false,
+    "previousBranchesPreserved": true,
+    "automaticStoreReleaseEnabled": false
+  },
+  "verifiedAtUTC": "2026-10-15T22:03:28.476622+00:00"
+}

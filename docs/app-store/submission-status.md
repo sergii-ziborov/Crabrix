@@ -1,4 +1,19 @@
-> Current status — 11 October 2026: **1.1 (50)** is VALID, APP_STORE_ELIGIBLE
+> Current status — 16 October 2026: **1.1.1 (68)** is VALID,
+> APP_STORE_ELIGIBLE and IN_BETA_TESTING in Internal QA. Manual Xcode Cloud
+> run 68 succeeded with Xcode 27.1 RC / SDK 27.1 from `11a2f59`.
+> The selected build is 68. The version, submission
+> `a9772a61-0817-4344-8dec-7407c2d94e75`, and both Rust Academy / Rust Compiler
+> custom product pages report **WAITING_FOR_REVIEW**. Release remains MANUAL.
+> Each page has 10 iPhone, 7 iPad and 2 Duo screenshots in verified order,
+> plus active approved Header and Search Results creative assets.
+> Description, keywords, name/subtitle, categories, URLs, reviewer guidance,
+> Game Center and TestFlight What to Test were read back. Prior release 1.1 (50)
+> remains the current approved store binary until this review/release completes.
+> [Build 68 evidence](../releases/1.1.1-build68.json),
+> [current assets](asset-upload-2026-10-16-1.1.1.json),
+> [search presentation](presentation-2026-10-16-1.1.1.json).
+
+> Earlier status — 11 October 2026: **1.1 (50)** is VALID, APP_STORE_ELIGIBLE
 > and IN_BETA_TESTING in Internal QA. Xcode Cloud manual run 50 succeeded
 > with Xcode 27.1 RC / SDK 27.1, compiling the preserved Duo hinge layout.
 > Version 1.1 selects build 50. Both the version and submission

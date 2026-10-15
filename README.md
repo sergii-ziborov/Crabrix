@@ -13,11 +13,13 @@
   <img src="docs/screenshots/iphone-cyberpunk-settings.png" width="200" alt="Cyberpunk appearance and optional Face ID protection">
 </p>
 
-The [iPad workspace](docs/screenshots/ipad-build.png) shows the file sidebar and in-file search above the editor. The current iPhone and iPad editor captures omit the keyboard-dismiss button from the Code/Terminal tab row; that control remains on [Duo](docs/screenshots/duo-laptop.png), where the code tabs and keyboard share the fold layout. [Duo Output](docs/screenshots/duo-output.png) shows the completed run, standard output, and rating.
+The [iPad workspace](docs/screenshots/ipad-build.png) shows the file sidebar and in-file search above the editor. The current iPhone and iPad editor captures omit the keyboard-dismiss button from the Code/Terminal tab row; that control remains on [Duo](docs/screenshots/duo-laptop.png), where the code tabs and keyboard share the fold layout. [Duo Output](docs/screenshots/duo-output.png) shows the actual standard output of a completed multi-file run.
 
-The current screenshot set includes sixteen new iPhone/iPad frames captured after the signed Academy updates in manual Xcode Cloud run 54. The verified SDK 27.1 iPad editor and Duo laptop frames are retained. [Capture and upload evidence](docs/app-store/asset-upload-2026-10-11-build50.json) records the exact published files.
+The current screenshot set includes ten iPhone and six iPad frames from manual Xcode Cloud run 62 after signed Academy updates, the final SDK 27.1 iPad editor with search and Check/Run from run 70, and two fresh native Duo laptop frames. [Capture and upload evidence](docs/app-store/asset-upload-2026-10-16-1.1.1.json) records all 19 files and their placements on the main, Rust Academy and Rust Compiler product pages.
 
-The current internal test release is **1.1.1 (60)**. It includes the Term Train connector and interrupted unlock fixes; [TestFlight delivery evidence](docs/releases/1.1.1-build60.json) records the verified Internal QA availability.
+The current internal test release is **1.1.1 (68)**, built manually in Xcode Cloud with SDK 27.1. It is available in TestFlight Internal QA and selected for App Review. The 1.1.1 version and the Rust Academy / Rust Compiler custom product pages report **WAITING_FOR_REVIEW**; release remains manual. [Delivery and verification evidence](docs/releases/1.1.1-build68.json) records the source, build, native checks and screenshots. Term Train, unlock, progress and the established Duo keyboard layout are preserved.
+
+The live website has canonical and social metadata for all **763 public pages**, with structured data for the product, courses, lessons and articles. [SEO and App Store presentation](docs/seo-2026-10-16.md) documents the live audit, account access checks, relevant search keywords and two custom product pages.
 
 ## Use Crabrix
 
