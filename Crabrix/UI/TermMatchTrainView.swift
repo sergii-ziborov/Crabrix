@@ -285,14 +285,7 @@ struct TermMatchTrainView: View {
                    let selectedTerm,
                    let start = positions[Position(side: .description, id: selectedDescription)],
                    let end = positions[Position(side: .term, id: selectedTerm)] {
-                    Path { path in
-                        path.move(to: proxy[start])
-                        path.addCurve(
-                            to: proxy[end],
-                            control1: CGPoint(x: proxy[start].x + 55, y: proxy[start].y),
-                            control2: CGPoint(x: proxy[end].x - 55, y: proxy[end].y)
-                        )
-                    }
+                    TermMatchConnection(start: proxy[start], end: proxy[end])
                     .stroke(
                         selectedDescription == selectedTerm ? CrabrixTheme.mint : CrabrixTheme.coral,
                         style: StrokeStyle(lineWidth: 4, lineCap: .round, dash: [7, 5])
@@ -334,14 +327,14 @@ struct TermMatchTrainView: View {
         return Button(action: action) {
             HStack(spacing: 8) {
                 if side == .term {
-                    Circle().fill(selected ? tint : CrabrixTheme.border).frame(width: 8, height: 8)
+                    connectionDot(pairID: pairID, side: side, tint: selected ? tint : CrabrixTheme.border)
                 }
                 Text(text)
                     .font(side == .term ? .system(size: 13, weight: .bold, design: .monospaced) : .caption)
                     .multilineTextAlignment(side == .term ? .trailing : .leading)
                     .frame(maxWidth: .infinity, alignment: side == .term ? .trailing : .leading)
                 if side == .description {
-                    Circle().fill(selected ? tint : CrabrixTheme.border).frame(width: 8, height: 8)
+                    connectionDot(pairID: pairID, side: side, tint: selected ? tint : CrabrixTheme.border)
                 }
             }
             .padding(12)
@@ -367,12 +360,18 @@ struct TermMatchTrainView: View {
         }
         .buttonStyle(.plain)
         .disabled(resolvingPair != nil)
-        .anchorPreference(
-            key: MatchAnchorKey.self,
-            value: .center,
-            transform: { [Position(side: side, id: pairID): $0] }
-        )
         .accessibilityLabel("\(side == .term ? "Term" : "Description"): \(text)")
+    }
+
+    private func connectionDot(pairID: String, side: Side, tint: Color) -> some View {
+        Circle()
+            .fill(tint)
+            .frame(width: 8, height: 8)
+            .anchorPreference(
+                key: MatchAnchorKey.self,
+                value: .center,
+                transform: { [Position(side: side, id: pairID): $0] }
+            )
     }
 
     // MARK: - Completion
@@ -579,6 +578,25 @@ struct TermMatchTrainView: View {
             termOrder.insert(replacement, at: Int.random(in: 0...termOrder.count))
         } else if board.isEmpty {
             finish()
+        }
+    }
+}
+
+/// Keep the entire connector between the two inner dots, including on narrow
+/// screens where a fixed control-point offset would bend back over card text.
+struct TermMatchConnection: Shape {
+    let start: CGPoint
+    let end: CGPoint
+
+    func path(in rect: CGRect) -> Path {
+        let reach = min(abs(end.x - start.x) / 2, 55) * (end.x < start.x ? -1 : 1)
+        return Path { path in
+            path.move(to: start)
+            path.addCurve(
+                to: end,
+                control1: CGPoint(x: start.x + reach, y: start.y),
+                control2: CGPoint(x: end.x - reach, y: end.y)
+            )
         }
     }
 }

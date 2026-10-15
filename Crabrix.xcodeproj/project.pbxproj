@@ -208,6 +208,7 @@
 		FB1DAD024CC5E08008E2D4ED /* ThemeContrastTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3786418CA7D9446F9360AE70 /* ThemeContrastTests.swift */; };
 		FCCA5F66ED8D7F43C8828B7B /* PracticeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B61E3671EFD881E08389F5E /* PracticeSheet.swift */; };
 		FE77A6E9CE5D66CE12DA11FD /* CrabrixProjectDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9D7D181612381980B5CB164 /* CrabrixProjectDocument.swift */; };
+		FE9E3A1BD655444608B0BF86 /* TermMatchConnectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6234FA291715E7AB88B78388 /* TermMatchConnectionTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -313,6 +314,7 @@
 		5CE24E0030AC4CFD4B7F6E01 /* ProblemReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemReportView.swift; sourceTree = "<group>"; };
 		5F2E28AF633C57EFB91DF034 /* LocalProjectLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalProjectLoader.swift; sourceTree = "<group>"; };
 		6166C001764BC9D14984D241 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		6234FA291715E7AB88B78388 /* TermMatchConnectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermMatchConnectionTests.swift; sourceTree = "<group>"; };
 		6408E7D74302DB95B47776D4 /* ProjectsHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectsHomeView.swift; sourceTree = "<group>"; };
 		640C78A6920D8B504F90A7E4 /* CrabrixScreenshotTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CrabrixScreenshotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		646F773F58C7B624AE941CE3 /* Rust-LICENSE-APACHE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Rust-LICENSE-APACHE.txt"; sourceTree = "<group>"; };
@@ -733,6 +735,7 @@
 				038C4428EA249D76936D4DEB /* SemanticVersionTests.swift */,
 				A7037316586E8A8B02149446 /* SyntaxCodeEditorTests.swift */,
 				F45E02B45E3816073DFEB4F9 /* SyntaxHighlighterTests.swift */,
+				6234FA291715E7AB88B78388 /* TermMatchConnectionTests.swift */,
 				3786418CA7D9446F9360AE70 /* ThemeContrastTests.swift */,
 				9B771273BE9E83B35B042C13 /* TOMLParserTests.swift */,
 				8C8353143ECA2D2A68833FC7 /* TopicMasteryTests.swift */,
@@ -1245,6 +1248,7 @@
 				67D60A5B69DCD830E71A841F /* SyntaxCodeEditorTests.swift in Sources */,
 				1D8F90248920034745A225EE /* SyntaxHighlighterTests.swift in Sources */,
 				DAB88604F8DDD7AEE079AE41 /* TOMLParserTests.swift in Sources */,
+				FE9E3A1BD655444608B0BF86 /* TermMatchConnectionTests.swift in Sources */,
 				FB1DAD024CC5E08008E2D4ED /* ThemeContrastTests.swift in Sources */,
 				58E2A5D18ADA34C72BE80AEF /* TopicMasteryTests.swift in Sources */,
 				92FEF66418D13E68DA4E0A91 /* TypingEconomyTests.swift in Sources */,

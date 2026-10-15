@@ -200,6 +200,19 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
 
 schemes:
+  CrabrixInteractionGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+    test:
+      gatherCoverageData: false
+      targets:
+        - name: CrabrixTests
+          selectedTests:
+            - AppLockTests
+            - TermMatchConnectionTests
+
   CrabrixScreenshots:
     build:
       targets:
