@@ -21,7 +21,7 @@ final class BuildWorkspaceTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["No output captured"].waitForExistence(timeout: 10))
         XCTAssertFalse(app.staticTexts["PROJECT OUTPUT"].exists)
         XCTAssertFalse(app.buttons["Run again"].exists)
-        XCTAssertFalse(app.buttons["Run project"].exists)
+        XCTAssertEqual(app.buttons["Run project"].count, 1, "Keep the single primary toolbar Run control")
         XCTAssertFalse(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "E0502")).firstMatch.exists)
         capture("qa-compiler-output")
     }
