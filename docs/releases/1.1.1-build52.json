@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "release": {
+    "version": "1.1.1",
+    "appStoreBuild": "52",
+    "channel": "TestFlight Internal QA"
+  },
+  "source": {
+    "commit": "2063683b97b8e99b55e2854ed223bbbd300856ab",
+    "branch": "codex/output-empty-state-testflight-52",
+    "change": "Hide the redundant Ready to run card, its description and duplicate Run project button before the first build. Keep the top toolbar Run action and the output placeholder; retain status cards while building and after a result."
+  },
+  "localArchive": {
+    "xcode": "27.1 RC",
+    "xcodeBuild": "27A9275",
+    "sdk": "iOS 27.1",
+    "appVersion": "1.1.1",
+    "appBuild": "52",
+    "shareExtensionBuild": "52",
+    "ipaSHA256": "d4fc69e3f72e8971256391bd987f8d9bca2bb202aa6b09b99ebef625f17a2a36"
+  },
+  "appStoreConnect": {
+    "appID": "6809502653",
+    "internalBetaGroup": "Internal QA",
+    "internalBetaGroupID": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "deliveryUUID": "55809c2a-350e-4b1f-85a0-05b7b309759a",
+    "upload": "SUCCEEDED",
+    "buildID": "55809c2a-350e-4b1f-85a0-05b7b309759a",
+    "processingState": "VALID",
+    "buildAudienceType": "APP_STORE_ELIGIBLE",
+    "internalBuildState": "IN_BETA_TESTING",
+    "usesNonExemptEncryption": false,
+    "whatsNewLocale": "en-US",
+    "whatsNewLocalizationID": "ed6e52cc-76e1-4f8c-8eaa-ebc58d560131"
+  },
+  "validation": {
+    "debugSimulatorBuild": "passed",
+    "iphoneOutputScreen": "visually verified: one output placeholder, no Ready to run card or duplicate Run project button; top toolbar Run remains visible",
+    "iphoneOutputScreenshotSHA256": "e308d61039c430ed06f8bab2dd0384aeaeb2ce79253521e44fa103bfdcab606c",
+    "archive": "passed",
+    "appAndShareCodeSign": "passed strict verification",
+    "appAndShareExportedVersion": "1.1.1 (52)",
+    "legalLicenseAndPinnedToolchainCheck": "passed",
+    "diffWhitespaceCheck": "passed",
+    "iphoneOutputVisualSourceCommit": "659777d192db494f7fabf700e88b8d90c40788de",
+    "testFlightAvailability": "verified IN_BETA_TESTING in Internal QA; en-US What to Test saved"
+  },
+  "scope": {
+    "appReviewSelectedBuildChanged": false
+  },
+  "verifiedAtUTC": "2026-10-15"
+}
