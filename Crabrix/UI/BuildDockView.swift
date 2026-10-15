@@ -592,7 +592,9 @@ private struct OutputDockContent: View {
                         Spacer(minLength: 16)
                     }
 
-                    statusCard
+                    if displayState != .ready {
+                        statusCard
+                    }
 
                     if !hasProgramOutput && !hasDiagnostic {
                         emptyOutputCard
