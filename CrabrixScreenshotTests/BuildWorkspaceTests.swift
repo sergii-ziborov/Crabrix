@@ -64,10 +64,20 @@ final class BuildWorkspaceTests: XCTestCase {
         XCTAssertTrue(answer.waitForExistence(timeout: 15))
         answer.tap()
         app.buttons["Continue"].tap()
-        let check = app.buttons["arrange-check-order"]
+        // SwiftUI's ViewThatFits can expose its container identifier in place
+        // of a child's identifier. Visible labels still identify these real
+        // controls and source lines on either supported OS generation.
+        let check = app.buttons.matching(NSPredicate(
+            format: "identifier == %@ OR label == %@ OR label == %@",
+            "arrange-check-order", "Check order", "Finish"
+        )).firstMatch
         XCTAssertTrue(check.waitForExistence(timeout: 10))
-        let list = app.collectionViews["arrange-code-lines"].firstMatch
-        let line = { (id: Int) in self.app.staticTexts["arrange-code-line-\(id)"] }
+        let list = app.collectionViews.firstMatch
+        let source = ["fn main() {", "let message =", "println!", "}"]
+        let line = { (id: Int) in self.app.staticTexts.matching(NSPredicate(
+            format: id == 3 ? "identifier == %@ OR label == %@" : "identifier == %@ OR label CONTAINS %@",
+            "arrange-code-line-\(id)", source[id]
+        )).firstMatch }
         XCTAssertTrue(line(0).waitForExistence(timeout: 10))
         XCTAssertTrue(check.isHittable)
         for id in 0...3 { XCTAssertTrue(line(id).isHittable, "Every line must fit before dragging") }
