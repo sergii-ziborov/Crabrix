@@ -1275,8 +1275,10 @@ private struct AppHeader: View {
     let onNewProject: () -> Void
     let onProjectActions: () -> Void
 
+    private var compactTablet: Bool { regularTablet && headerWidth < 760 }
+
     var body: some View {
-        HStack(spacing: isPhone ? 7 : 12) {
+        HStack(spacing: isPhone || compactTablet ? 7 : 12) {
             if showsTopNavigation {
                 Button(action: onCloseWorkspace) {
                     Image(systemName: "chevron.left")
@@ -1306,19 +1308,24 @@ private struct AppHeader: View {
                     .frame(width: 30, height: 30)
                     .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
                     .accessibilityLabel("Crabrix crab")
-                Text("crabrix")
-                    .font(.system(size: 21, weight: .bold, design: .rounded))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.78)
+                if !compactTablet {
+                    Text("crabrix")
+                        .font(.system(size: 21, weight: .bold, design: .rounded))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.78)
+                }
                 Spacer()
 
                 if regularTablet {
                     fileSearch(width: max(120, min(250, headerWidth * 0.25)))
 
                     Button(action: onOpenProjects) {
-                        Label("Projects", systemImage: "square.grid.2x2.fill")
+                        HStack(spacing: 5) {
+                            Image(systemName: "square.grid.2x2.fill")
+                            if !compactTablet { Text("Projects") }
+                        }
                             .font(.system(size: 10, weight: .bold, design: .monospaced))
-                            .frame(minWidth: 88, minHeight: 34)
+                            .frame(minWidth: compactTablet ? 36 : 88, minHeight: 34)
                             .background(CrabrixTheme.raised, in: CrabrixCardShape(cornerRadius: 9))
                     }
                     .buttonStyle(.plain)
@@ -1341,6 +1348,8 @@ private struct AppHeader: View {
                         }
                     }
                     .disabled(transfer.isWorking)
+                    checkButton
+                    runButton
                 } else {
                     if isPhone {
                         Button(action: onProjectActions) {
