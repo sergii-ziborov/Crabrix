@@ -32,16 +32,25 @@ final class BuildWorkspaceTests: XCTestCase {
         // fresh install before UI testing. Install one course through the real
         // UI so Quick Practice is available in either installation state.
         let download = app.buttons["Download Rust Basics for offline use"]
-        if download.waitForExistence(timeout: 12) {
+        let basics = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Open Rust Basics")).firstMatch
+        // A migrated library can finish mounting after the catalog appears.
+        // Observe that state before acting on a transient Download control.
+        if !basics.waitForExistence(timeout: 20) {
+            XCTAssertTrue(download.waitForExistence(timeout: 30))
             for _ in 0..<8 {
-                if download.isHittable { break }
+                if basics.exists || (download.exists && download.isHittable) { break }
                 app.swipeUp()
             }
-            download.tap()
-            let confirm = app.buttons.matching(NSPredicate(format: "label MATCHES %@", "^Download [0-9].* (MB|KB|bytes)$")).firstMatch
-            XCTAssertTrue(confirm.waitForExistence(timeout: 10))
-            confirm.tap()
-            let basics = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Open Rust Basics")).firstMatch
+            if !basics.exists {
+                XCTAssertTrue(download.exists && download.isHittable)
+                download.tap()
+                let confirm = app.buttons.matching(NSPredicate(format: "label MATCHES %@", "^Download [0-9].* (MB|KB|bytes)$")).firstMatch
+                if confirm.waitForExistence(timeout: 10) {
+                    confirm.tap()
+                } else {
+                    XCTAssertTrue(basics.exists, "A download confirmation or the migrated installed course must appear")
+                }
+            }
             XCTAssertTrue(basics.waitForExistence(timeout: 180))
         }
         let quick = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Quick Practice")).firstMatch
