@@ -8,14 +8,23 @@ final class BuildWorkspaceTests: XCTestCase {
     private let app = XCUIApplication()
 
     func testCompilerFailureUsesProblemsAndOutputHasNoDuplicateRun() throws {
-        launch(["--crabrix-auto-borrow", "--crabrix-auto-dock=problems"])
+        launch(["--crabrix-auto-borrow"])
         let check = app.buttons["Check project"]
         XCTAssertTrue(check.waitForExistence(timeout: 90))
-        XCTAssertTrue(app.otherElements["editor-project-name"].exists
-                      || app.staticTexts["editor-project-name"].exists)
+        let project = app.descendants(matching: .any).matching(identifier: "editor-project-name").firstMatch
+        XCTAssertTrue(project.waitForExistence(timeout: 30))
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "label BEGINSWITH %@", "borrow-lab."), object: project
+        )], timeout: 30), .completed)
         check.tap()
+        app.buttons["build-dock-problems"].tap()
         let error = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "E0502")).firstMatch
         XCTAssertTrue(error.waitForExistence(timeout: 240), "The actual bundled compiler error must reach Problems")
+        // Capable iPads also finish their on-device diagnostic advice here.
+        // Wait for the primary commands to become available before switching.
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "enabled == true"), object: check
+        )], timeout: 90), .completed)
         capture("qa-compiler-problems")
         app.buttons["build-dock-output"].tap()
         XCTAssertTrue(app.staticTexts["No output captured"].waitForExistence(timeout: 10))
@@ -86,12 +95,18 @@ final class BuildWorkspaceTests: XCTestCase {
         XCTAssertEqual(line(0).frame.midY, y, accuracy: 3, "A swipe on code must not scroll the exercise")
         let listFrame = list.exists ? list.frame : app.descendants(matching: .any)["arrange-code-lines"].firstMatch.frame
         XCTAssertFalse(listFrame.isEmpty)
+        capture("qa-arrange-before-drag")
+        func handle(_ id: Int) -> XCUIElement {
+            app.buttons.matching(NSPredicate(
+                format: id == 3 ? "label == %@" : "label BEGINSWITH 'Reorder ' AND label CONTAINS %@",
+                id == 3 ? "Reorder }" : source[id]
+            )).firstMatch
+        }
         func move(_ id: Int, before target: Int) {
-            let from = app.coordinate(withNormalizedOffset: .zero)
-                .withOffset(CGVector(dx: listFrame.maxX - 23, dy: line(id).frame.midY))
-            let to = app.coordinate(withNormalizedOffset: .zero)
-                .withOffset(CGVector(dx: listFrame.maxX - 23, dy: line(target).frame.minY + 5))
-            from.press(forDuration: 0.5, thenDragTo: to)
+            XCTAssertTrue(handle(id).exists && handle(target).exists)
+            let from = handle(id).coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            let to = handle(target).coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1))
+            from.press(forDuration: 0.8, thenDragTo: to, withVelocity: .slow, thenHoldForDuration: 0.2)
         }
         move(0, before: 2)
         move(1, before: 2)
