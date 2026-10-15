@@ -21,7 +21,7 @@
     "configuredSDK": "iOS 27.1"
   },
   "appStoreConnect": {
-    "verifiedAtUTC": "2026-10-15T22:02:56.551458+00:00",
+    "verifiedAtUTC": "2026-10-15T22:36:42.018802+00:00",
     "buildID": "30dbac66-d636-48ad-b4ed-8f3aab6fe61c",
     "processingState": "VALID",
     "usesNonExemptEncryption": false,
@@ -34,7 +34,7 @@
       "internalBuildState": "IN_BETA_TESTING",
       "externalBuildState": "READY_FOR_BETA_SUBMISSION"
     },
-    "submissionID": "a9772a61-0817-4344-8dec-7407c2d94e75",
+    "submissionID": "58c35354-6b29-46c4-9bdb-d74b8089745e",
     "submissionState": "WAITING_FOR_REVIEW",
     "versionID": "1eb96061-e8e3-4784-a988-bdc99a8ee5ed",
     "version": {
@@ -52,19 +52,19 @@
     },
     "items": [
       {
-        "id": "YTk3NzJhNjEtMDgxNy00MzQ0LThkZWMtNzQwN2MyZDk0ZTc1fDZ8ODkzMjQyOTg5",
+        "id": "NThjMzUzNTQtNmIyOS00NmM0LTliZGItZDc0YjgwODk3NDVlfDZ8ODkzMjQyOTg5",
         "attributes": {
           "state": "READY_FOR_REVIEW"
         }
       },
       {
-        "id": "YTk3NzJhNjEtMDgxNy00MzQ0LThkZWMtNzQwN2MyZDk0ZTc1fDV8ODg4MGI0YzctZGU2Ny00MjBjLWE5NDQtZmY4YTRiMWI2YmJk",
+        "id": "NThjMzUzNTQtNmIyOS00NmM0LTliZGItZDc0YjgwODk3NDVlfDV8ODg4MGI0YzctZGU2Ny00MjBjLWE5NDQtZmY4YTRiMWI2YmJk",
         "attributes": {
           "state": "READY_FOR_REVIEW"
         }
       },
       {
-        "id": "YTk3NzJhNjEtMDgxNy00MzQ0LThkZWMtNzQwN2MyZDk0ZTc1fDV8YWE0MTYzZjEtZjA0OS00ZTgyLTlmYWMtY2NiMzNlZjJhNzcw",
+        "id": "NThjMzUzNTQtNmIyOS00NmM0LTliZGItZDc0YjgwODk3NDVlfDV8YWE0MTYzZjEtZjA0OS00ZTgyLTlmYWMtY2NiMzNlZjJhNzcw",
         "attributes": {
           "state": "READY_FOR_REVIEW"
         }
@@ -87,7 +87,10 @@
           "deepLink": null
         }
       }
-    ]
+    ],
+    "priorSubmissionID": "a9772a61-0817-4344-8dec-7407c2d94e75",
+    "priorSubmissionState": "COMPLETE",
+    "resubmissionReason": "User requested Code as the first screenshot on every product page"
   },
   "validation": {
     "native": {
@@ -159,5 +162,6 @@
     "previousBranchesPreserved": true,
     "automaticStoreReleaseEnabled": false
   },
-  "verifiedAtUTC": "2026-10-15T22:03:28.476622+00:00"
+  "verifiedAtUTC": "2026-10-15T22:36:42.018802+00:00",
+  "screenshotOrderVerification": "../app-store/code-first-order-2026-10-16.json"
 }

@@ -5,11 +5,11 @@
 [Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support/) · [Privacy](https://crabrix.com/privacy/) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
 <p>
+  <img src="docs/screenshots/iphone-build.png" width="200" alt="Rust code editor and compiler workspace">
   <img src="docs/screenshots/iphone-learn.png" width="200" alt="Downloaded Crabrix courses and lesson progress">
   <img src="docs/screenshots/iphone-lesson.png" width="200" alt="Expanded borrowing lesson with highlighted Rust code and an infographic">
   <img src="docs/screenshots/iphone-examples.png" width="200" alt="Code Examples path with every example open">
   <img src="docs/screenshots/iphone-example-detail.png" width="200" alt="Example description, source preview and Open in Code">
-  <img src="docs/screenshots/iphone-build.png" width="200" alt="Rust code editor and compiler workspace">
   <img src="docs/screenshots/iphone-cyberpunk-settings.png" width="200" alt="Cyberpunk appearance and optional Face ID protection">
 </p>
 

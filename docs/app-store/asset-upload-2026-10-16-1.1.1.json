@@ -510,6 +510,12 @@
       "groups": {
         "iphone-6.9": [
           {
+            "placementID": "02c00019-5e0c-83bd-8f2c-09fe96196e95",
+            "imageID": "52000019-5e0c-83bd-8013-3b8f9ea36946",
+            "file": "docs/app-store/screenshots/iphone-6.9/01-build.png",
+            "sha256": "528dc7b0a13bbe5fc81b086ea3dbd8c9a3f244e374027f5d2c4aca06888df77d"
+          },
+          {
             "placementID": "60c00019-5e0c-83bd-8f03-874dc18cbac4",
             "imageID": "11c00019-5e0c-83bd-8038-4c876af2fa08",
             "file": "docs/app-store/screenshots/iphone-6.9/03-learn.png",
@@ -552,12 +558,6 @@
             "sha256": "731e37f70242cae7b48c2bd7700479a9e6117d1a119d7728278c06db178fa051"
           },
           {
-            "placementID": "02c00019-5e0c-83bd-8f2c-09fe96196e95",
-            "imageID": "52000019-5e0c-83bd-8013-3b8f9ea36946",
-            "file": "docs/app-store/screenshots/iphone-6.9/01-build.png",
-            "sha256": "528dc7b0a13bbe5fc81b086ea3dbd8c9a3f244e374027f5d2c4aca06888df77d"
-          },
-          {
             "placementID": "09c00019-5e0c-83bd-8f05-ed3a04e30864",
             "imageID": "a1800019-5e0c-83bd-8012-38aa75875aad",
             "file": "docs/app-store/screenshots/iphone-6.9/02-projects.png",
@@ -571,6 +571,12 @@
           }
         ],
         "ipad-13": [
+          {
+            "placementID": "10800019-5e0c-83bd-8f26-1c5ea7102cc1",
+            "imageID": "01c00019-5e0c-83bd-802e-6f07b37b81af",
+            "file": "docs/app-store/screenshots/ipad-13/01-build.png",
+            "sha256": "4d5ffbf37495fe02e31db58ca3fbe4bc8e740197e64f4b0c44ae94befb028499"
+          },
           {
             "placementID": "d2800019-5e0c-83bd-8f35-84ed7d320032",
             "imageID": "ec800019-5e0c-83bd-800d-7ec8701e3b80",
@@ -600,12 +606,6 @@
             "imageID": "ef400019-5e0c-83bd-801e-1c6d0b50f8c6",
             "file": "docs/app-store/screenshots/ipad-13/05-profile.png",
             "sha256": "e5e4511068e95adac7d98bc1f534baa8b1ab5f352cd53e82020569f12cd079a2"
-          },
-          {
-            "placementID": "10800019-5e0c-83bd-8f26-1c5ea7102cc1",
-            "imageID": "01c00019-5e0c-83bd-802e-6f07b37b81af",
-            "file": "docs/app-store/screenshots/ipad-13/01-build.png",
-            "sha256": "4d5ffbf37495fe02e31db58ca3fbe4bc8e740197e64f4b0c44ae94befb028499"
           },
           {
             "placementID": "db800019-5e0c-83bd-8f03-962ad8d378ee",
@@ -1179,5 +1179,7 @@
         }
       ]
     }
-  }
+  },
+  "firstScreenshotVerifiedAtUTC": "2026-10-15T22:36:42.018802+00:00",
+  "firstScreenshotPolicy": "Native code editor first on every product page and device family"
 }

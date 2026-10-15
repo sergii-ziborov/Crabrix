@@ -1,0 +1,80 @@
+{
+  "verifiedAtUTC": "2026-10-15T22:36:42.018802+00:00",
+  "order": [
+    {
+      "page": "main",
+      "displayType": "APP_IPAD_PRO_3GEN_129",
+      "firstScreenshot": "v111-ipad-13-01-build.png",
+      "count": 7
+    },
+    {
+      "page": "main",
+      "displayType": "APP_IPHONE_DUO",
+      "firstScreenshot": "v111-iphone-duo-qa-01-laptop-code.png",
+      "count": 2
+    },
+    {
+      "page": "main",
+      "displayType": "APP_IPHONE_67",
+      "firstScreenshot": "v111-iphone-6.9-01-build.png",
+      "count": 10
+    },
+    {
+      "page": "academy",
+      "displayType": "APP_IPAD_PRO_3GEN_129",
+      "firstScreenshot": "v111-ipad-13-01-build.png",
+      "count": 7
+    },
+    {
+      "page": "academy",
+      "displayType": "APP_IPHONE_67",
+      "firstScreenshot": "v111-iphone-6.9-01-build.png",
+      "count": 10
+    },
+    {
+      "page": "academy",
+      "displayType": "APP_IPHONE_DUO",
+      "firstScreenshot": "v111-iphone-duo-qa-01-laptop-code.png",
+      "count": 2
+    },
+    {
+      "page": "compiler",
+      "displayType": "APP_IPAD_PRO_3GEN_129",
+      "firstScreenshot": "v111-ipad-13-01-build.png",
+      "count": 7
+    },
+    {
+      "page": "compiler",
+      "displayType": "APP_IPHONE_67",
+      "firstScreenshot": "v111-iphone-6.9-01-build.png",
+      "count": 10
+    },
+    {
+      "page": "compiler",
+      "displayType": "APP_IPHONE_DUO",
+      "firstScreenshot": "v111-iphone-duo-qa-01-laptop-code.png",
+      "count": 2
+    }
+  ],
+  "changes": [
+    {
+      "page": "academy",
+      "group": "iphone-6.9",
+      "firstFile": "docs/app-store/screenshots/iphone-6.9/01-build.png",
+      "orderingRequestID": "398eab5e-b1ae-4bb9-85b4-41088faecea9"
+    },
+    {
+      "page": "academy",
+      "group": "ipad-13",
+      "firstFile": "docs/app-store/screenshots/ipad-13/01-build.png",
+      "orderingRequestID": "7e34bb6d-1431-4889-b619-810ea27aa7fd"
+    }
+  ],
+  "version": "1.1.1",
+  "build": "68",
+  "submissionID": "58c35354-6b29-46c4-9bdb-d74b8089745e",
+  "submissionState": "WAITING_FOR_REVIEW",
+  "priorSubmissionID": "a9772a61-0817-4344-8dec-7407c2d94e75",
+  "priorSubmissionState": "COMPLETE",
+  "appRuntimeChanged": false
+}

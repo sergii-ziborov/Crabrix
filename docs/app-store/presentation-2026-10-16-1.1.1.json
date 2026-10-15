@@ -1,5 +1,5 @@
 {
-  "verifiedAtUTC": "2026-10-15T22:04:05.257038+00:00",
+  "verifiedAtUTC": "2026-10-15T22:36:42.018802+00:00",
   "version": "1.1.1",
   "categories": {
     "primaryCategory": {
@@ -61,5 +61,7 @@
     }
   ],
   "assets": "asset-upload-2026-10-16-1.1.1.json",
-  "manualRelease": true
+  "manualRelease": true,
+  "firstScreenshotPolicy": "Code first on main, Rust Academy and Rust Compiler for iPhone, iPad and Duo",
+  "screenshotOrderReadback": "code-first-order-2026-10-16.json"
 }

@@ -2,9 +2,10 @@
 > APP_STORE_ELIGIBLE and IN_BETA_TESTING in Internal QA. Manual Xcode Cloud
 > run 68 succeeded with Xcode 27.1 RC / SDK 27.1 from `11a2f59`.
 > The selected build is 68. The version, submission
-> `a9772a61-0817-4344-8dec-7407c2d94e75`, and both Rust Academy / Rust Compiler
+> `58c35354-6b29-46c4-9bdb-d74b8089745e`, and both Rust Academy / Rust Compiler
 > custom product pages report **WAITING_FOR_REVIEW**. Release remains MANUAL.
-> Each page has 10 iPhone, 7 iPad and 2 Duo screenshots in verified order,
+> Every page/device set starts with Code. Each page has 10 iPhone, 7 iPad
+> and 2 Duo screenshots in verified order,
 > plus active approved Header and Search Results creative assets.
 > Description, keywords, name/subtitle, categories, URLs, reviewer guidance,
 > Game Center and TestFlight What to Test were read back. Prior release 1.1 (50)
