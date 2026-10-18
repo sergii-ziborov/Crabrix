@@ -1,0 +1,343 @@
+{
+  "verifiedAtUTC": "2026-10-18T07:57:52.457286+00:00",
+  "origin": "https://crabrix.com",
+  "image": "localhost/crabrix-web-site:blog-20261018-r2",
+  "digest": "4f436cdc3b3f36ad7bd39e91fd63f2de4773c2e39a487ba33c421db2fcf61b47",
+  "releaseDirectory": "/srv/apps/crabrix-site/releases/20261018-blog/final-r2",
+  "deployment": "Manual local Next.js build, prepared standalone artifact, checksum-based rsync, isolated Linux candidate and manual Podman activation.",
+  "sourceBaseCommit": "a493e422dfde3ac7c55d4b688988dc8ac33bbee9",
+  "sourceFileSHA256": {
+    "site/content/posts.json": "a71ceaae3470de0d15fb8f9ffbf9e843e9a2f8fd3030af5edf6cd634d60ef767",
+    "site/lib/posts.ts": "e07ff705a421c3530730e9d616eb232ca1e3603a01792b1040bd7204c56fd7b2",
+    "site/app/blog/page.tsx": "3d80e21e2ec2401def742b39dd891f941c8d465f5351312b914825e65271393a",
+    "site/app/blog/[slug]/page.tsx": "c62353857d38d14092a3df62c007aa3533a8cb57a6f216bbfef6d1dd012563f0",
+    "site/app/globals.css": "c8f63217fed0383c3ed62b053736cac791a2bebf05fd934ea9e96956ead63a4e"
+  },
+  "artifactTree": {
+    "filesAndLinks": 1704,
+    "sha256": "b044124186b0f55d680a2ea0fc04de46820dde8a2960236d37249d957de22494",
+    "method": "SHA-256 of sorted JSON rows [relative POSIX path, file/symlink, SHA-256 content or link target], compact JSON separators."
+  },
+  "linuxArtifactTreeMatchesMac": true,
+  "status": "running healthy",
+  "rollbackContainer": "crabrix-web-site-before-blog-20261018",
+  "rollbackImageDigest": "69d84aa07b9f2e8847c2f61959715c22d74e3245f6d9a53008def225dfa5086f",
+  "existingArticlesUnchanged": 5,
+  "totalArticles": 10,
+  "editorialPublicationDates": [
+    "2026-10-12",
+    "2026-10-13",
+    "2026-10-15",
+    "2026-10-16",
+    "2026-10-18"
+  ],
+  "previousLastPublication": "2026-10-10",
+  "previousAverageProseWords": 1642.4,
+  "newAverageProseWords": 2137.0,
+  "averageWordIncrease": 494.6,
+  "selectedGeneratedImages": 10,
+  "infographics": 5,
+  "imageMode": "built-in image_gen; ten original prompts and two targeted corrections; no CLI fallback",
+  "assetManifest": "blog-assets-2026-10-18.json",
+  "exactPrompts": "blog-image-prompts-2026-10-18.md",
+  "siteTests": {
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0
+  },
+  "typescript": "passed",
+  "productionBuild": "passed",
+  "rustVerification": {
+    "toolchain": "rustc 1.99.0 (b940084d7 2026-09-28)",
+    "standalonePrograms": 9,
+    "unitTests": 1,
+    "doctests": 1,
+    "cargoFeatureConfigurations": 2,
+    "result": "all compiled and executed successfully"
+  },
+  "officialSourceLinks": [
+    {
+      "url": "https://doc.rust-lang.org/book/ch06-01-defining-an-enum.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/book/ch06-02-match.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/book/ch08-02-strings.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/book/ch11-03-test-organization.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/book/ch13-02-iterators.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/book/ch18-03-oo-design-patterns.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/cargo/reference/features.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/cargo/reference/resolver.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/rustdoc/write-documentation/documentation-tests.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/std/iter/trait.Iterator.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/std/primitive.str.html",
+      "status": 200
+    }
+  ],
+  "localSEOAudit": {
+    "origin": "http://127.0.0.1:3215",
+    "pagesVerified": 768,
+    "duplicateTitles": 0,
+    "canonicalAndSocialMetadata": "passed",
+    "structuredData": "passed",
+    "accountNoindex": "passed",
+    "guestPreviewAndPrivateMedia": "passed"
+  },
+  "candidateSEOAudit": {
+    "origin": "http://127.0.0.1:3216",
+    "pagesVerified": 768,
+    "duplicateTitles": 0,
+    "canonicalAndSocialMetadata": "passed",
+    "structuredData": "passed",
+    "accountNoindex": "passed",
+    "guestPreviewAndPrivateMedia": "passed"
+  },
+  "candidateSEOImage": "blog-20261018-r1; final r2 adds responsive cover height and formatting only",
+  "finalCandidateArticleAndCSSAudit": {
+    "origin": "http://127.0.0.1:3216",
+    "articles": [
+      {
+        "slug": "rust-enums-state-machines",
+        "date": "2026-10-18",
+        "proseWords": 2150,
+        "images": [
+          {
+            "path": "/blog/rust-enum-states-workshop.png",
+            "sha256": "df379363b2a2fafca58f492cf95abf0d2f0b7fd22f5985d84cf4277adb4f36b1",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-enum-states-infographic.png",
+            "sha256": "d10b7bf4ce5252c2ff2162e42436b035c696c558244c94dc6d3bc76d96d38bcb",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "cargo-features-portable-dependencies",
+        "date": "2026-10-16",
+        "proseWords": 2139,
+        "images": [
+          {
+            "path": "/blog/rust-cargo-features-workshop.png",
+            "sha256": "2c7e66243faa1cf235075a41302b7a02c6098ed8e4bcd3a3b78b46eb41214b66",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-cargo-features-infographic.png",
+            "sha256": "7ff11f5e3d9a1356e46481054cb44bae4f78f163b23b729afba489a355deaa04",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "testing-rust-boundaries-fixtures-doctests",
+        "date": "2026-10-15",
+        "proseWords": 2123,
+        "images": [
+          {
+            "path": "/blog/rust-testing-workshop.png",
+            "sha256": "ddaaed732874fbfa06ab7714ce7393e82aa868534722db4cd9f8086ad78d2f9c",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-testing-v2-infographic.png",
+            "sha256": "b1fd3455c64c3ca03fa03ed7915ed447a99e7ede6633aa88752b862e4badda6e",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "rust-strings-utf8-safe-parsing",
+        "date": "2026-10-13",
+        "proseWords": 2151,
+        "images": [
+          {
+            "path": "/blog/rust-utf8-workshop.png",
+            "sha256": "4e852fa0cba3319ec1b6106e3003def88ebea7a7e4445dc776d95abf3a78dac7",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-utf8-infographic.png",
+            "sha256": "65f4cf0c098ae1acd5be884aa1a034c70d7df6334296a0fdd11c105c852cbe52",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "rust-iterators-without-extra-allocations",
+        "date": "2026-10-12",
+        "proseWords": 2122,
+        "images": [
+          {
+            "path": "/blog/rust-iterators-workshop.png",
+            "sha256": "98e2a0f30d385a3659cdbebffe84bac53bf6cfbc7ac0ea499000e8e1f0ea3a41",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-iterators-v2-infographic.png",
+            "sha256": "92b76c38797136f637d885b57dc49f91bae77e679d86f69aaf93152c10a18390",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      }
+    ],
+    "blogIndexCount": 10,
+    "existingOriginalsPreserved": 5,
+    "responsiveCoverCSS": "height:auto verified in served CSS",
+    "passed": true
+  },
+  "publicSEOAudit": {
+    "origin": "https://crabrix.com",
+    "pagesVerified": 768,
+    "duplicateTitles": 0,
+    "canonicalAndSocialMetadata": "passed",
+    "structuredData": "passed",
+    "accountNoindex": "passed",
+    "guestPreviewAndPrivateMedia": "passed"
+  },
+  "publicBlogAudit": {
+    "origin": "https://crabrix.com",
+    "articles": [
+      {
+        "slug": "rust-enums-state-machines",
+        "date": "2026-10-18",
+        "proseWords": 2150,
+        "images": [
+          {
+            "path": "/blog/rust-enum-states-workshop.png",
+            "sha256": "df379363b2a2fafca58f492cf95abf0d2f0b7fd22f5985d84cf4277adb4f36b1",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-enum-states-infographic.png",
+            "sha256": "d10b7bf4ce5252c2ff2162e42436b035c696c558244c94dc6d3bc76d96d38bcb",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "cargo-features-portable-dependencies",
+        "date": "2026-10-16",
+        "proseWords": 2139,
+        "images": [
+          {
+            "path": "/blog/rust-cargo-features-workshop.png",
+            "sha256": "2c7e66243faa1cf235075a41302b7a02c6098ed8e4bcd3a3b78b46eb41214b66",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-cargo-features-infographic.png",
+            "sha256": "7ff11f5e3d9a1356e46481054cb44bae4f78f163b23b729afba489a355deaa04",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "testing-rust-boundaries-fixtures-doctests",
+        "date": "2026-10-15",
+        "proseWords": 2123,
+        "images": [
+          {
+            "path": "/blog/rust-testing-workshop.png",
+            "sha256": "ddaaed732874fbfa06ab7714ce7393e82aa868534722db4cd9f8086ad78d2f9c",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-testing-v2-infographic.png",
+            "sha256": "b1fd3455c64c3ca03fa03ed7915ed447a99e7ede6633aa88752b862e4badda6e",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "rust-strings-utf8-safe-parsing",
+        "date": "2026-10-13",
+        "proseWords": 2151,
+        "images": [
+          {
+            "path": "/blog/rust-utf8-workshop.png",
+            "sha256": "4e852fa0cba3319ec1b6106e3003def88ebea7a7e4445dc776d95abf3a78dac7",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-utf8-infographic.png",
+            "sha256": "65f4cf0c098ae1acd5be884aa1a034c70d7df6334296a0fdd11c105c852cbe52",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "rust-iterators-without-extra-allocations",
+        "date": "2026-10-12",
+        "proseWords": 2122,
+        "images": [
+          {
+            "path": "/blog/rust-iterators-workshop.png",
+            "sha256": "98e2a0f30d385a3659cdbebffe84bac53bf6cfbc7ac0ea499000e8e1f0ea3a41",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-iterators-v2-infographic.png",
+            "sha256": "92b76c38797136f637d885b57dc49f91bae77e679d86f69aaf93152c10a18390",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      }
+    ],
+    "blogIndexCount": 10,
+    "existingOriginalsPreserved": 5,
+    "responsiveCoverCSS": "height:auto verified in served CSS",
+    "passed": true
+  },
+  "browserVisualCheck": "Unavailable because the Mac was locked. Generated images were visually reviewed; complete rendered article HTML, image dimensions and served responsive cover CSS were checked automatically.",
+  "accountDataMountPreserved": true,
+  "consistentAccountBackupBeforeActivation": "passed",
+  "dailyBackupTimer": {
+    "unit": "crabrix-accounts-backup.timer",
+    "status": "active"
+  },
+  "curriculumLessonsUnchanged": 742,
+  "nativeCodeAndScreenshotAssetsChanged": false,
+  "githubActionsEnabled": false,
+  "dnsChanged": false,
+  "nginxChanged": false,
+  "temporaryCandidateStopped": true
+}

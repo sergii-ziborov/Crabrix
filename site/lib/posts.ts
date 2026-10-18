@@ -4,6 +4,8 @@ export type PostImage = {
   src: string;
   alt: string;
   caption: string;
+  width?: number;
+  height?: number;
 };
 
 export type Post = {
@@ -12,6 +14,7 @@ export type Post = {
   date: string;
   readingMinutes: number;
   summary: string;
+  relatedSlugs?: string[];
   sections: {
     heading: string;
     paragraphs: string[];
@@ -23,6 +26,10 @@ export type Post = {
 };
 
 export const posts: Post[] = postData;
+
+export function postWordCount(post: Post): number {
+  return post.sections.flatMap((section) => section.paragraphs).join(" ").trim().split(/\s+/).length;
+}
 
 export function postBySlug(slug: string): Post | undefined {
   return posts.find((post) => post.slug === slug);

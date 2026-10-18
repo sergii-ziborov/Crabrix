@@ -18,8 +18,8 @@ pnpm build
 ```
 
 `pnpm test` covers credential/session handling, recovery rotation, account
-deletion, backup restoration, all 742 lesson previews and the three new blog
-articles. `scripts/test-account-flow.mjs` runs the browser account lifecycle
+deletion, backup restoration, all 742 lesson previews and the blog content requirements
+(length, publication dates, unique prose and image assets). `scripts/test-account-flow.mjs` runs the browser account lifecycle
 against a running site and deletes its isolated test account. It needs an
 installed Chrome and the `PLAYWRIGHT_MODULE` path or a local Playwright install.
 Set `QA_SITE_ORIGIN` for a candidate or live HTTPS check. `QA_CAPTURE=1` saves
@@ -49,11 +49,24 @@ repository and signed release archives remain public so existing native builds
 can download and update their courses. Changing that delivery model requires
 an app release and a separate migration.
 
-`content/posts.json` contains five articles. The three added on 10 October 2026
-have 1,605, 1,555 and 1,601 prose words, official Rust source links, highlighted
-Rust examples and two ImageGen images each. Each pair contains an infographic.
-Final assets and hashes are recorded in `../docs/blog-assets-2026-10-10.json`;
-the built-in ImageGen prompts are in `../docs/blog-image-prompts-2026-10-10.md`.
+`content/posts.json` contains ten articles. The five added on 18 October have
+editorial publication dates of 12, 13, 15, 16 and 18 October, between the previous
+last publication (10 October) and this update. They contain 2,122–2,151 paragraph
+words each: a 2,137-word average versus the previous 1,642.4-word average. Each
+article has a distinct ImageGen cover and explanatory infographic, primary Rust
+source links, highlighted Rust examples and three related guides. Dates, word
+counts, dimensions, captions and image hashes are in
+`../docs/blog-assets-2026-10-18.json`; exact built-in generation and correction
+prompts are in `../docs/blog-image-prompts-2026-10-18.md`. The original five
+articles retain their text and publication dates.
+
+Blog pages include canonical/social metadata, BlogPosting word counts,
+BreadcrumbList data, an index ItemList, linked contents, inline code styling and
+related article links. Image dimensions reserve layout space; the first article
+image loads eagerly and later images load lazily. Shell and TOML blocks are
+rendered as their own languages rather than Rust. New standalone examples, the
+public-library unit test and doctest, and both local Cargo feature configurations
+were compiled and run with Rust 1.99. Desktop-only commands are labeled.
 Product and legal copy remains in the top-level HTML files rendered through
 `lib/legacy.ts`.
 
@@ -77,10 +90,11 @@ Article and BreadcrumbList data describe the actual visible content. Restricted
 lesson markup identifies the account requirement; it does not expose the full
 lesson to crawlers. Account routes stay noindex and outside the sitemap.
 
-The live audit checked all 763 sitemap pages, unique titles, one H1 per page,
-canonical/social metadata, structured data, previews and private media denial.
-See `../docs/seo-2026-10-16.md` and the live deployment record
-`../docs/site-release-2026-10-16-seo.json`.
+The latest live audit checked all 768 sitemap pages, unique titles, one H1 per
+page, canonical/social metadata, structured data, previews and private media
+denial. All ten new public image hashes matched the selected repository assets.
+See `../docs/site-release-2026-10-18-blog.json` and the earlier product-page
+audit in `../docs/seo-2026-10-16.md`.
 
 ## Accounts and operation
 

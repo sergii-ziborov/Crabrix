@@ -1,5 +1,693 @@
 [
   {
+    "slug": "rust-enums-state-machines",
+    "title": "Rust enums and state machines: make invalid states explicit",
+    "date": "2026-10-18",
+    "summary": "Model Rust workflows with enums, data-bearing variants and explicit transitions. Handle invalid commands, preserve state on failure, and test every edge.",
+    "readingMinutes": 11,
+    "sections": [
+      {
+        "heading": "When two flags stop explaining the workflow",
+        "paragraphs": [
+          "A document starts as a draft, becomes ready after validation, and can then be sent. Editing a ready document makes it a draft again because its previous validation no longer describes the content. A sent document is final in this deliberately small workflow. These rules are simple enough to say aloud, yet a pair of booleans can make them surprisingly difficult to preserve in code.",
+          "Suppose the representation uses `valid` and `sent`. Two flags allow four combinations. Our workflow intends three: an unvalidated draft, a validated ready document and a sent document that passed validation. The fourth combination, sent but not valid, has no meaning in this design. Every caller that changes either flag must remember that restriction, and every reader must reconstruct which combinations are supposed to exist.",
+          "A Rust enum gives the intended states names. It does not automatically solve persistence, external delivery or every transition rule, but it gives those decisions one explicit representation. We will build a small state machine, distinguish runtime validation from compile-time restrictions, and examine what happens when an operation fails. The examples use the standard library only."
+        ],
+        "image": {
+          "src": "/blog/rust-enum-states-workshop.png",
+          "alt": "Three miniature document stations connect draft preparation, validation and archiving, operated by a crab at a railway switch.",
+          "caption": "Name the intended states and the legal paths between them before choosing the implementation.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Draw the rules before choosing methods",
+        "paragraphs": [
+          "Our states are `Draft`, `Ready` and `Sent`. The legal transitions are draft to ready on validation, ready to sent on sending, and ready to draft on editing. All other combinations of these commands and states are rejected in the minimal model. In a real editor, editing a draft would usually be allowed without changing its state. We leave that operation outside this example so every transition changes the state and the table stays easy to audit.",
+          "The state diagram is a contract for this particular product, not a universal law about documents. Another product might allow a sent document to be recalled, record several delivery attempts, or require a review state. Write those rules explicitly before adding variants. A diagram that merely lists the states but omits what each command does cannot tell you whether an implementation is correct.",
+          "The infographic compares the three intended states with the four flag combinations. The “invalid” row is invalid because of the rule we chose: this workflow never sends unvalidated content. That qualification matters. Booleans are not inherently wrong; they become a poor fit when independent toggles pretend to represent dependent domain states."
+        ],
+        "image": {
+          "src": "/blog/rust-enum-states-infographic.png",
+          "alt": "Draft validates to Ready, Ready sends to Sent or returns to Draft after editing; a table highlights the unintended sent-but-invalid flag combination.",
+          "caption": "The enum represents three intended states. Transition validation still decides which command is legal in the current state.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "A small runtime state machine you can run",
+        "paragraphs": [
+          "The following program stores the current state and exposes one transition operation. It matches the current state together with the requested action. Only three pairs produce a next state. Every rejected pair returns an error before assigning to the state variable, so the previous state is preserved. That ordering is an important part of the contract; returning an error after partially changing the state would be a different and much more difficult API.",
+          "The assertions walk through a successful route and an invalid command. Sending a draft fails, validation makes it ready, editing invalidates that readiness, and validation followed by sending reaches the final state. The final command also fails without changing the sent state. These are ordinary runtime checks. Calling `apply` with the wrong action still compiles because all actions share one public type.",
+          "Use this version when actions arrive as runtime data, such as a button identifier, imported event or network command. An enum-based machine can validate that data clearly. It should not be described as proving every transition correct at compile time; its explicit `Result` exists precisely because some requests must be rejected while the program is running."
+        ],
+        "code": "#[derive(Debug, Clone, Copy, PartialEq)]\nenum State { Draft, Ready, Sent }\n#[derive(Clone, Copy)]\nenum Action { Validate, Edit, Send }\nfn apply(state: &mut State, action: Action) -> Result<(), &'static str> {\n    let next = match (*state, action) {\n        (State::Draft, Action::Validate) => State::Ready,\n        (State::Ready, Action::Edit) => State::Draft,\n        (State::Ready, Action::Send) => State::Sent,\n        _ => return Err(\"action is not allowed in this state\"),\n    };\n    *state = next;\n    Ok(())\n}\nfn main() {\n    let mut state = State::Draft;\n    assert!(apply(&mut state, Action::Send).is_err());\n    assert_eq!(state, State::Draft);\n    apply(&mut state, Action::Validate).unwrap();\n    apply(&mut state, Action::Edit).unwrap();\n    assert_eq!(state, State::Draft);\n    apply(&mut state, Action::Validate).unwrap();\n    apply(&mut state, Action::Send).unwrap();\n    assert_eq!(state, State::Sent);\n    assert!(apply(&mut state, Action::Validate).is_err());\n    assert_eq!(state, State::Sent);\n    println!(\"Workflow checks passed: {state:?}\");\n}"
+      },
+      {
+        "heading": "Let variants carry the data they require",
+        "paragraphs": [
+          "States often differ in more than their name. A draft may contain editable text. A ready document may include text together with a validation summary. A sent document may include an identifier or receipt. Putting every field into one struct with several `Option` values allows combinations such as “sent with no receipt” or “draft with an obsolete approval.” Data-bearing enum variants can express which fields belong together.",
+          "For example, a `Sent { receipt: String }` variant always carries a string when it exists. That removes the separate question of whether a receipt field is present in that variant. It does not prove the string is nonempty, authentic or issued by a real service. If those properties matter, validate them through a constructor or a dedicated type. Structural guarantees are valuable, but they must not be exaggerated into claims about external reality.",
+          "Keep the representation close to the domain. If every variant carries the same large field and only a small status differs, a shared struct with an enum status may be simpler. If fields exist only in specific states, putting them in those variants can eliminate repetitive optional-field checks and make invalid combinations harder to construct."
+        ],
+        "sources": [
+          {
+            "title": "The Rust Book: defining enums",
+            "url": "https://doc.rust-lang.org/book/ch06-01-defining-an-enum.html"
+          }
+        ]
+      },
+      {
+        "heading": "Use exhaustive matches to review new states",
+        "paragraphs": [
+          "When matching an enum, Rust requires the match to cover the possible variants. This gives a useful maintenance signal when a new state is added: code that explicitly handles every old state needs another decision. A display label, transition rule and persistence conversion may all need to account for a new `AwaitingReview` state. The compiler can point to missing structural cases, even though it cannot decide what the correct product behavior should be.",
+          "A wildcard arm suppresses that signal for the cases it covers. Sometimes that is appropriate. Our transition function intentionally rejects every pair outside the three allowed transitions. For a user-facing label function, however, a wildcard returning “Other” can hide the fact that the new state needs a meaningful label. Choose explicit arms where a future variant should force a review.",
+          "Exhaustiveness is a tool for remembering decisions, not a replacement for making them. A match can be exhaustive and still send a document from the wrong state. Keep assertions about the transition table alongside the structural representation. The compiler checks coverage; your tests and review check the intended rule."
+        ],
+        "sources": [
+          {
+            "title": "The Rust Book: match control flow",
+            "url": "https://doc.rust-lang.org/book/ch06-02-match.html"
+          }
+        ]
+      },
+      {
+        "heading": "A transition error should leave a usable object",
+        "paragraphs": [
+          "Failure behavior deserves as much design as the happy path. In the mutable-reference example, an invalid transition leaves the state untouched. If validation inspects content and returns an error, the user should normally retain the draft so they can correct it. An API that consumes the document and returns only an error can accidentally make recovery awkward because the caller no longer owns the original content.",
+          "There are several ways to preserve recoverability. Borrow during validation, return the original value together with the error, or make the operation produce a candidate before replacing the stored value. The right choice depends on ownership and the cost of rebuilding state. Do not add a clone just to conceal an unclear failure contract. First decide which data the caller must still have after rejection.",
+          "Tests should verify preservation explicitly. Start with identifiable content, request an invalid transition, and compare the state and relevant fields afterward. Seeing an error value is insufficient evidence if the operation already discarded edits, reset a selection or erased the receipt needed to explain a previous send."
+        ]
+      },
+      {
+        "heading": "Keep external effects outside the simple transition rule",
+        "paragraphs": [
+          "Marking an object sent and actually delivering it to another system are different events. A pure transition function can be deterministic, while a network request can time out after the remote side accepted it. If the application simply changes `Ready` to `Sent` before attempting delivery, a failure may leave it claiming success. If it changes state afterward, an ambiguous timeout may still require a separate reconciliation policy.",
+          "A production workflow might introduce `Sending`, `Failed` or `DeliveryUnknown`, along with an operation identifier that makes retries safe for the particular service. Those details depend on the external system’s guarantees. Do not claim that an enum alone provides exactly-once delivery, a transaction or crash recovery. It provides names in which those possibilities can be represented and handled deliberately.",
+          "Keep the small example small while recognizing its boundary: our `Send` action represents a confirmed domain transition and performs no I/O. When adding real delivery, design and test the effect boundary separately. That prevents a clean educational state diagram from being mistaken for a complete distributed protocol."
+        ]
+      },
+      {
+        "heading": "Typestate moves some choices into the type system",
+        "paragraphs": [
+          "A different design uses separate types such as `DraftDocument` and `ReadyDocument`. Validating a draft returns a ready document, and only the ready type exposes a `send` method. This is often called typestate. It can prevent certain method sequences from being expressed by ordinary callers, because a draft value simply has no send operation. Ownership can ensure that a successful transition consumes the old representation.",
+          "Typestate is useful when callers control the sequence in Rust code and the number of states remains manageable. It can become less convenient when a collection must store many objects in different states or when commands arrive dynamically. An enum is often a natural storage representation in those situations. The two approaches can also meet at a boundary, with an enum for persisted data and validated types for a narrower operation.",
+          "Do not choose typestate solely because “compile-time” sounds stronger. It has costs in API shape, generic types and recovery design. Choose the guarantees that simplify real callers. A runtime enum with precise errors can be a better product API than a complicated type hierarchy that people work around with duplicated data."
+        ],
+        "sources": [
+          {
+            "title": "The Rust Book: state transitions and alternative type designs",
+            "url": "https://doc.rust-lang.org/book/ch18-03-oo-design-patterns.html"
+          }
+        ]
+      },
+      {
+        "heading": "Store a domain state, not a debug string",
+        "paragraphs": [
+          "Persisted state lives longer than one version of the code. Avoid treating a `Debug` representation as a stable file format. A renamed variant or changed formatting can break old records. Define a deliberate storage representation with a versioning policy, and validate data when reading it back. External bytes can describe combinations your current in-memory constructors would never produce.",
+          "When migrating a flag-based format, handle the unintended combination explicitly. A stored record with `sent = true` and `valid = false` needs a product decision: reject it, mark it for recovery, or migrate it using trustworthy additional information. Silently mapping every unknown combination to `Draft` may hide a previously sent item and cause an unsafe duplicate action. A default can be data loss disguised as convenience.",
+          "Write migration fixtures for each old combination and any unsupported future value. A round-trip test is useful but insufficient by itself: encoding and decoding can agree with each other while both implement the wrong mapping. Include independently specified expected states for representative stored records."
+        ]
+      },
+      {
+        "heading": "Test the transition table, including rejected edges",
+        "paragraphs": [
+          "Three states and three actions produce nine state-action pairs. Only three are legal in our minimal table. That is small enough to test every pair and verify both the returned result and the resulting state. This does not mean every larger state machine needs an enormous exhaustive Cartesian product. It means a small domain should not leave its illegal edges unexamined simply because the happy path passes.",
+          "Also test sequences. Validation followed by editing should return to draft, and a subsequent send should fail until validation happens again. The sequence exposes stale-validation defects that isolated successful transitions can miss. If states carry data, check that the right fields survive or change at each edge. A correct status label is not enough if the document contents were replaced accidentally.",
+          "For effects, test a seam with controlled outcomes rather than relying on random network availability. Verify that a failed validation triggers no send request, and that an ambiguous delivery outcome is represented according to the documented policy. The rule and its effects need related but distinct evidence."
+        ]
+      },
+      {
+        "heading": "Turn a rejected transition into useful interface feedback",
+        "paragraphs": [
+          "The domain can reject a command without deciding how the interface should look. A screen might disable Send while the document is a draft and show a concise explanation when validation fails. Another caller might log a structured rejection. Keep the reason available rather than making every caller guess from the current label. In a larger API, a transition error enum can distinguish an invalid action from invalid content or a failed external operation.",
+          "A disabled button is helpful guidance, but it is not the enforcement boundary. Commands can arrive through shortcuts, restored sessions or a different screen, so the transition operation should still validate the rule. Tests can then check the domain independently of the visual affordance. This avoids a fragile design where one carefully styled button is the only thing preventing an invalid state change. The interface explains the rule; the domain consistently applies it wherever the command originates."
+        ]
+      },
+      {
+        "heading": "Grow the model only when a real rule needs it",
+        "paragraphs": [
+          "An enum is especially useful when it replaces repeated conditionals scattered across screens, persistence code and command handlers. Put the transition decision in one place and let those callers ask it for an outcome. Keep display details separate where they do not affect the domain. A new button color should not require rewriting the state model, while a new approval requirement probably should.",
+          "Before adding a state, explain what it permits, what it forbids and which data distinguishes it from existing states. If two proposed states have identical behavior and data, they may be labels for the same state. If one variant needs several optional fields whose combinations keep producing new rules, the model may need another boundary or a more specific type.",
+          "Start with the diagram, encode the intended alternatives, define what failure preserves, and test legal and illegal transitions. That process turns “make invalid states impossible” from a slogan into a bounded engineering claim. You will know which combinations the representation excludes, which commands runtime validation rejects, and which external facts still need verification."
+        ]
+      }
+    ],
+    "relatedSlugs": [
+      "ownership-in-a-real-program",
+      "testing-rust-boundaries-fixtures-doctests",
+      "result-errors-that-help"
+    ]
+  },
+  {
+    "slug": "cargo-features-portable-dependencies",
+    "title": "Cargo features: smaller builds and portable dependencies",
+    "date": "2026-10-16",
+    "summary": "Understand Cargo feature unification, defaults and target limits. Design additive features, inspect dependency requests, and test portable configurations.",
+    "readingMinutes": 11,
+    "sections": [
+      {
+        "heading": "A dependency name is only the start",
+        "paragraphs": [
+          "Adding a Rust dependency is easy to describe as one line in a manifest. The build that follows depends on more than the crate’s name: the resolved package version, activated features, compilation target, build scripts and host-side tooling all contribute. A package that works in a desktop command-line application may not fit an on-device WASI environment with the same manifest entry. Understanding features helps you ask the right questions before assuming a dependency is portable.",
+          "Features are named compile-time capabilities selected through Cargo. They can enable optional dependencies or conditional Rust code. They are useful for separating a small core from optional functionality, but they are not a sandbox, a compatibility certificate or a runtime settings system. Disabling a feature can remove a dependency path only when the package has actually designed that path to be optional.",
+          "We will build a tiny local package with one feature, explain why feature requests can combine, and develop a review process for constrained targets. The manifest and desktop Cargo commands are complete enough to reproduce locally. They do not imply that Crabrix’s bundled terminal implements every desktop Cargo command or can build arbitrary host tools."
+        ],
+        "image": {
+          "src": "/blog/rust-cargo-features-workshop.png",
+          "alt": "A modular engine receives two request cards while a crab selects optional components beside a travel case.",
+          "caption": "A useful feature adds a capability to a core. Selecting modules and verifying the target remain separate decisions.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Build one feature before reasoning about many",
+        "paragraphs": [
+          "Create a local desktop Cargo binary package named `feature_lab`. Its report always exists, while a `pretty-report` feature changes its presentation. There are no external dependencies. This intentionally small design lets you see conditional compilation without confusing it with registry resolution, native libraries or network access. Start with a local package whose complete source is visible, then transfer the same reasoning to a larger dependency tree.",
+          "The manifest below declares an empty default set and an independently selectable capability. The feature has an empty dependency list because it gates only code in this package. An actual library might connect a feature to an optional dependency, but adding a third-party package is not required for a feature to be meaningful. The package name, edition and version describe this illustrative local project; they are not a recommendation for a particular registry release.",
+          "Features should have names that tell a caller what becomes available. Names such as `disable-everything` or `not-mobile` are hard to combine because their meaning depends on what other requests are active. Positive capability names make an additive design easier to explain and test."
+        ],
+        "code": "# Cargo.toml for a new local desktop package\n[package]\nname = \"feature_lab\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[features]\ndefault = []\npretty-report = []",
+        "codeLanguage": "toml"
+      },
+      {
+        "heading": "Conditional compilation selects the implementation",
+        "paragraphs": [
+          "Place the following program in `src/main.rs` of that local package. Exactly one `report` implementation is compiled for a given feature selection. The `cfg` attributes remove the other implementation before type checking the selected program. This differs from an ordinary runtime `if`, where both branches must still be valid Rust code for the build. Use conditional compilation when the source itself depends on a compile-time capability.",
+          "The two implementations preserve the same basic contract: they report a count. The pretty version adds formatting rather than changing what the number means. That is a useful pattern for additive features. If enabling an unrelated capability changes a parser from strict validation to silently dropping records, callers can no longer reason about feature combinations safely. A feature should not casually rewrite the semantics of the core API.",
+          "The example uses only standard-library formatting and is not a size benchmark. Even a feature that removes source code does not justify a fixed binary-size reduction claim without measurement. Treat conditional compilation as a mechanism you can inspect, then measure the actual build artifact if size is part of your product requirement."
+        ],
+        "code": "#[cfg(feature = \"pretty-report\")]\nfn report(count: usize) -> String { format!(\"[ readings: {count} ]\") }\n\n#[cfg(not(feature = \"pretty-report\"))]\nfn report(count: usize) -> String { format!(\"readings={count}\") }\n\nfn main() {\n    let output = report(3);\n    #[cfg(feature = \"pretty-report\")]\n    assert_eq!(output, \"[ readings: 3 ]\");\n    #[cfg(not(feature = \"pretty-report\"))]\n    assert_eq!(output, \"readings=3\");\n    println!(\"{output}\");\n}"
+      },
+      {
+        "heading": "Understand what default-features controls",
+        "paragraphs": [
+          "A package can put a convenient collection of capabilities in its `default` feature. A dependency declaration normally activates those defaults unless that declaration opts out with `default-features = false`. This option affects the request made through that dependency edge. It does not guarantee that the package’s defaults are absent from the entire resolved build. Another dependency can request them too.",
+          "That distinction explains a frustrating debugging session: you disable defaults in your own manifest, but an unwanted capability still appears. The next step is to inspect who else depends on the same package and which features they request. Repeating the same local option or deleting the lockfile does not answer that question. The build graph, rather than one isolated manifest entry, determines the activated capability set within the relevant resolution context.",
+          "For a library author, changing the default set can affect downstream users even if all feature names remain available. Document defaults as part of the public experience. For a consumer, keep explicit feature selections near the dependency declaration so a reviewer can see why the package is needed and which capabilities your code actually relies on."
+        ]
+      },
+      {
+        "heading": "Feature requests can unite at a shared package",
+        "paragraphs": [
+          "Consider an application path requesting a hypothetical package’s `json` feature and a command-line path requesting its `csv` feature. If those requests refer to one resolved package version in the same normal-dependency context, Cargo combines them. The package is built with both capabilities. One caller does not get to subtract a capability another caller requires. This is why feature design generally needs to be additive.",
+          "The infographic shows that specific context. It is not a claim that every package name has one globally unified feature set in every build. Different package versions are distinct, and modern resolver rules can separate requests across contexts such as build dependencies, development dependencies and inactive targets. Those boundaries matter when investigating why a package is built more than once or why a host-side feature is absent from the target build.",
+          "When debugging, write down the package version and the context before discussing “the features.” Otherwise two people may be describing different compilation units using the same crate name. A precise graph inspection is more reliable than concluding that Cargo ignored a manifest because a capability appeared unexpectedly."
+        ],
+        "image": {
+          "src": "/blog/rust-cargo-features-infographic.png",
+          "alt": "App requests json and CLI requests csv; one shared package version receives both features within one normal-dependency context.",
+          "caption": "Feature requests add together in this context. Opting out of defaults on one edge does not subtract requests made elsewhere.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "Cargo reference: features",
+            "url": "https://doc.rust-lang.org/cargo/reference/features.html"
+          },
+          {
+            "title": "Cargo reference: dependency resolution",
+            "url": "https://doc.rust-lang.org/cargo/reference/resolver.html"
+          }
+        ]
+      },
+      {
+        "heading": "Inspect requests before removing dependencies",
+        "paragraphs": [
+          "Desktop Cargo’s tree output can show which packages depend on a package and how features are activated. Start with the actual resolved project, rather than a copied manifest fragment from a tutorial. A lockfile records resolved versions for reproducibility, while the manifest declares acceptable requirements and feature requests. They serve related but different purposes. Neither alone is a complete explanation of the compilation target or every enabled capability.",
+          "The commands below are for the local desktop package. A larger project can use feature-oriented tree output and an inverse dependency view to identify the source of a request. When inspecting a specific package with multiple resolved versions, disambiguate the package selection. Avoid removing a transitive dependency by name without understanding which capability introduced it and whether your code still needs that capability.",
+          "Keep notes about the request path when making a portability change. “Disabled default features because the core parser does not need the optional integration” is reviewable. “Cargo was broken, so several dependencies were removed” is not. A small explanation saves the next developer from accidentally restoring the same unsupported path."
+        ],
+        "code": "# Desktop commands, inside feature_lab\ncargo run --no-default-features\ncargo run --no-default-features --features pretty-report\ncargo tree -e features",
+        "codeLanguage": "shell"
+      },
+      {
+        "heading": "Portability requires more than a smaller feature set",
+        "paragraphs": [
+          "A dependency can expose pure Rust source and still require facilities unavailable in a particular environment. It may rely on operating-system APIs, native linking, a build script that invokes external tools, or a procedural macro that executes on the build host. Feature flags can help when those requirements are optional, but a flag cannot create a missing host library or operating-system service by itself.",
+          "For Crabrix, treat the bundled on-device Rust and WASI toolchain as a specific environment with documented limits. Do not infer support for a package merely because a desktop target builds it. In particular, procedural macro support and arbitrary build-script execution are not capabilities you should assume. A parser-only feature path may be useful if the package genuinely separates parsing from host-only generation, but that separation must be verified in the package’s source and manifest.",
+          "A useful compatibility note names the tested package version, selected features, target and operation. “Parsing this input works under this configuration” is a bounded statement. “This crate supports mobile” is too vague to help someone understand which parts were exercised or what will happen when they enable another integration."
+        ]
+      },
+      {
+        "heading": "Keep runtime choices out of compile-time features",
+        "paragraphs": [
+          "A feature determines what code is compiled into an artifact. A user preference determines what an already built application does at runtime. If a person should be able to switch a report’s color theme without installing a new build, that choice belongs in runtime configuration. Using a compile-time feature for a runtime preference creates unnecessary build variants and makes testing harder.",
+          "There are reasonable combinations: a feature can include an optional export format, while a runtime setting chooses whether to use that format for a particular operation. Keep those layers separate in names and documentation. The presence of a capability does not force the user to activate it for every request, and a runtime toggle cannot activate source that was excluded from the binary.",
+          "Also avoid treating features as an authorization system. Code compiled into an application is not a substitute for checking whether a request is permitted. Features organize artifacts; permissions govern actions. Confusing them leads to fragile product logic and misleading claims about what a build-time option protects."
+        ]
+      },
+      {
+        "heading": "Test the configurations you promise to support",
+        "paragraphs": [
+          "For the local example, run both the empty feature set and `pretty-report`; the assertions check the intended output in each build. In a real library, test the smallest supported core, each important optional capability, and combinations that share code or dependencies. If two features are documented to work together, a successful separate run of each one does not prove their combination works.",
+          "An `--all-features` build is useful only when enabling everything together is a supported configuration. Some ecosystems contain intentionally exclusive backend selections. Blindly using one enormous configuration can miss the absence of a default capability and can also request combinations the package never promised. A small explicit matrix based on supported use cases is more informative than one universal command copied into every project.",
+          "Include target-specific checks where they matter. Compiling on the host validates the host build, not a different target. A successful compile also does not establish that file access, time, networking or other environmental behavior works as expected at runtime. Exercise a representative operation in the environment your users actually have."
+        ]
+      },
+      {
+        "heading": "Measure size with a controlled comparison",
+        "paragraphs": [
+          "If reducing an artifact is the goal, compare builds made with the same toolchain, target, profile and relevant build settings. Change one feature selection at a time, record the exact configuration and measure the resulting artifact. A development binary and an optimized release binary are not a fair feature comparison. Debug information and link settings can outweigh the capability you intended to study.",
+          "Look at the result users download or install, not only an intermediate object file. Packaging and compression can affect the delivered size. If the change also affects startup or memory, measure those separately under a repeatable workload. A smaller executable does not automatically mean every operation runs faster. Avoid claiming percentages based on one attractive pair of numbers without recording how the pair was produced.",
+          "This article intentionally provides no invented savings figure. The repeatable benefit of a well-designed core is that its requirements can be inspected and tested independently. Any size or performance improvement is a result to establish for your actual build, not a property granted by the word “optional” in a manifest."
+        ]
+      },
+      {
+        "heading": "Keep support claims beside the manifest",
+        "paragraphs": [
+          "A short support note can prevent a working configuration from becoming tribal knowledge. Record which operation you verified, the feature selection used for it, and the environment where it ran. If a desktop-only export backend is intentionally outside the portable core, say so near the relevant manifest entry or public documentation. A future maintainer should not have to rediscover the boundary by repeatedly triggering a missing-library error.",
+          "For the local package in this guide, the note is simple: the default and `pretty-report` configurations use only the standard library and produce the two asserted strings in a desktop Cargo run. It does not claim a measured size improvement, registry compatibility or additional on-device terminal commands. For a real dependency, keep the same specificity and update the note when the resolved version or selected capabilities change. A reproducible support claim is more useful than a broad badge whose meaning nobody can explain."
+        ]
+      },
+      {
+        "heading": "A dependency review you can repeat",
+        "paragraphs": [
+          "Before adding a dependency to a constrained project, identify the smallest API you need. Inspect its documented features and defaults, select the required capabilities explicitly where appropriate, and inspect the resulting request graph. Then verify host-tool requirements and target-specific code. Finally, compile and run a representative case in the real environment. This order turns a vague compatibility hope into a series of concrete questions.",
+          "When a build fails, keep the diagnostic attached to the failing package and configuration. A missing host facility, an unsupported target API and a type error in your own program require different fixes. Do not solve all three by randomly disabling features until the message changes. Preserve a minimal reproducer and document the exact combination that works.",
+          "The same discipline helps library design. Give the core a useful contract, make optional capabilities additive where possible, document defaults, and test the promised configurations. Consumers can then choose a smaller dependency surface with confidence because the boundaries were designed and verified, rather than inferred from a feature name."
+        ]
+      }
+    ],
+    "relatedSlugs": [
+      "rust-1-99-upgrade",
+      "real-rust-on-iphone",
+      "testing-rust-boundaries-fixtures-doctests"
+    ]
+  },
+  {
+    "slug": "testing-rust-boundaries-fixtures-doctests",
+    "title": "Testing Rust: useful fixtures, boundaries and doctests",
+    "date": "2026-10-15",
+    "summary": "Write Rust tests that catch real mistakes. Choose useful boundaries, build deterministic fixtures, and connect unit tests, integration tests and doctests.",
+    "readingMinutes": 11,
+    "sections": [
+      {
+        "heading": "Begin with a promise, not a coverage target",
+        "paragraphs": [
+          "A test is useful when it protects a behavior somebody depends on. For a configuration parser, that might be rejecting an empty key. For a report, it might be preserving every accepted record. For an editor command, it might be leaving the document unchanged after validation fails. These promises are more actionable than a goal to add tests around every line. They tell you what to arrange, what operation to perform, and what result would count as a regression.",
+          "A good first question is: what believable mistake could a future edit introduce? Removing a boundary check, reversing a sort order, swallowing an error or changing an ownership contract are concrete possibilities. Write the smallest case that distinguishes the intended behavior from that mistake. You do not need a miniature production deployment to test whether a numeric limit includes its endpoint.",
+          "This article uses a small reading-limit function to explain test boundaries and fixtures. Desktop Cargo commands are labeled separately. Crabrix can run the standalone assertion program, but its bundled environment does not provide a general `cargo test` harness. Keeping that distinction explicit prevents a testing tutorial from promising an unsupported workflow."
+        ],
+        "image": {
+          "src": "/blog/rust-testing-workshop.png",
+          "alt": "A crab inspects normal, empty, cracked and boundary-marked sample tiles on a workbench.",
+          "caption": "A useful fixture set includes ordinary cases and the inputs most likely to reveal a broken rule.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Separate the rule from its surroundings",
+        "paragraphs": [
+          "Imagine a settings screen that accepts a maximum number of readings to include in a report. The supported interval is one through sixty, inclusive. The text field, persistence layer and screen animation are real parts of the application, but none is required to decide whether `60` is a valid limit. Put that decision in a small function with explicit input and output. The interface can call it and display the error without owning the validation rule itself.",
+          "This separation creates a cheap place to ask precise questions. Does zero fail? Does sixty succeed? Does a value above sixty fail? Does malformed text produce a different error from an out-of-range integer? A function returning `Result` makes those outcomes visible to tests and callers. Avoid putting every distinction into a boolean when the interface needs to explain why the input was rejected.",
+          "A pure function is not mandatory for all testing, but it is a useful starting point. When a test needs a running database simply to exercise arithmetic or string validation, inspect whether unrelated responsibilities have become tangled. Extracting the rule can improve the design even before you write the first assertion."
+        ]
+      },
+      {
+        "heading": "Make the smallest example executable",
+        "paragraphs": [
+          "The following complete program accepts surrounding whitespace, rejects non-numeric input and enforces the inclusive interval. It uses an unsigned integer, so negative text is classified as a numeric-format error. That is a specific contract. An application that wants a separate “negative values are not allowed” message could parse a signed integer first and validate the domain afterward. Tests should describe the contract you actually intend, not whichever behavior happened to emerge from a type choice.",
+          "The assertions cover both endpoints and representative failures. They run inside `main`, so the program is convenient for experimenting in Crabrix. On a desktop project, the same assertions can move into individual `#[test]` functions. Keep the input and expected value visible together; a reader should not need to inspect a large helper framework to understand why a case exists.",
+          "Try deliberately changing `1..=60` to `1..60`. The assertion for sixty should fail. This small mutation demonstrates that the fixture detects a plausible boundary mistake. You have stronger evidence than a green test run whose assertions would also pass after the rule was accidentally removed."
+        ],
+        "code": "#[derive(Debug, PartialEq)]\nenum LimitError { NotANumber, OutOfRange }\nfn parse_limit(input: &str) -> Result<u16, LimitError> {\n    let value = input.trim().parse::<u16>()\n        .map_err(|_| LimitError::NotANumber)?;\n    if !(1..=60).contains(&value) { return Err(LimitError::OutOfRange); }\n    Ok(value)\n}\nfn main() {\n    assert_eq!(parse_limit(\" 12 \"), Ok(12));\n    assert_eq!(parse_limit(\"1\"), Ok(1));\n    assert_eq!(parse_limit(\"60\"), Ok(60));\n    assert_eq!(parse_limit(\"0\"), Err(LimitError::OutOfRange));\n    assert_eq!(parse_limit(\"61\"), Err(LimitError::OutOfRange));\n    assert_eq!(parse_limit(\"\"), Err(LimitError::NotANumber));\n    assert_eq!(parse_limit(\"many\"), Err(LimitError::NotANumber));\n    println!(\"Seven limit checks passed\");\n}"
+      },
+      {
+        "heading": "Choose what boundary each test observes",
+        "paragraphs": [
+          "A unit test can focus on one rule close to its implementation. In Rust, a test module in the same source module can access private items through the normal module relationship. That is useful for narrowly targeted checks, but it does not mean every private helper deserves a permanent test. Prefer assertions that describe a meaningful behavior rather than the exact decomposition used to implement it.",
+          "An integration test in a desktop Cargo package is an external consumer of the library’s public API. Files under `tests` are compiled as separate crates. This boundary catches problems that an internal test may miss, such as an item that is not publicly available or a public operation whose pieces do not work together. It does not require launching every service the real product uses. Scope still follows the promise you want to verify.",
+          "A doctest makes a documented usage example executable. It checks that the example remains compatible with the library and, when assertions are present, that it produces the stated result. These boundaries complement one another. A stack of internal tests does not automatically validate the public example that new users will copy."
+        ],
+        "image": {
+          "src": "/blog/rust-testing-v2-infographic.png",
+          "alt": "Three testing boundaries: a unit rule, an external integration test calling a library public API, and an executable documentation example.",
+          "caption": "Choose the observation boundary, then cover normal, empty, malformed and boundary inputs within that contract.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "The Rust Book: test organization",
+            "url": "https://doc.rust-lang.org/book/ch11-03-test-organization.html"
+          }
+        ]
+      },
+      {
+        "heading": "Give boundary cases names that explain the rule",
+        "paragraphs": [
+          "For an inclusive interval, test the minimum, maximum and values immediately outside it. For a parser, test the smallest valid input and the smallest malformed input that could be confused with it. For a collection operation, test empty, single-item and repeated-item cases when they affect behavior. Boundary testing is not a ritual of adding random extreme numbers. It is a way to examine where the contract changes from one outcome to another.",
+          "Names such as `accepts_maximum_limit` or `rejects_missing_separator` help a failure explain itself. A name such as `test_case_7` forces the reader to inspect the fixture before learning which promise broke. If many cases differ only in data, a table-driven loop can keep them compact, but include the input in the assertion message so a failure identifies the relevant row.",
+          "Do not assume all large numbers exercise the same path. A value outside the supported domain may still fit the numeric type, while another value may overflow during parsing. Decide whether those failures should be distinct. The test set should reflect the user-facing distinction instead of accidentally locking in an unhelpful error message."
+        ]
+      },
+      {
+        "heading": "Make fixtures small enough to understand",
+        "paragraphs": [
+          "A fixture is the input environment a test needs. For a text parser, a short string is often better than a copied production file containing hundreds of unrelated fields. For a directory importer, a temporary directory with two carefully chosen files can be clearer than a whole repository snapshot. Keep enough structure to trigger the behavior and remove details that do not affect the assertion.",
+          "A regression fixture should preserve the property that caused the original defect. If an imported name failed because it contained a combining mark, do not simplify it to ASCII while reducing the case. If order mattered, keep the relevant order. Record a short explanation beside the fixture so future cleanup does not erase the reason it exists. Small is useful only when the failure remains represented.",
+          "Avoid putting private user data into fixtures. Reproduce the necessary structure with synthetic names and values. This also improves maintenance: a deliberately constructed sample can communicate its purpose, while a realistic-looking dump often contains accidental details that later readers mistake for requirements."
+        ]
+      },
+      {
+        "heading": "Control time, randomness and shared state",
+        "paragraphs": [
+          "A test that sometimes fails can be worse than an obvious failure because people learn to rerun it until it passes. Common causes include reading the current clock, relying on random data without recording a seed, sharing a mutable global variable, or using a fixed filesystem path that another test also writes. Identify these dependencies instead of increasing retry counts and treating the symptoms as normal.",
+          "Pass time-dependent values into the rule being tested when possible. Use a fixed seed for a deterministic scenario, and print or retain a generated seed when exploring broader random cases. Give filesystem tests isolated temporary locations and clean up only their own files. A test should not depend on the order in which other tests happen to run.",
+          "There are legitimate integration checks against real services, but label their environment requirements and keep them distinct from ordinary local rule tests. The question “does our parser reject this malformed field?” should have the same answer on a train without network access as it does in a developer’s office."
+        ]
+      },
+      {
+        "heading": "Assert outcomes that matter to callers",
+        "paragraphs": [
+          "An assertion about a private intermediate vector can make a harmless refactor look like a regression. An assertion about returned records, a preserved document or a structured error protects something a caller can rely on. This does not prohibit inspecting internal state when an invariant genuinely matters. It asks you to explain why that state is part of the behavior you intend to preserve.",
+          "For an error result, assert the stable distinction the caller uses. If an interface branches on an error enum, comparing variants is usually more robust than matching the entire English message. Separately test a message when its wording is itself a product requirement. Avoid broad assertions such as “the error string is nonempty” when the bug is specifically about reporting the wrong field.",
+          "For operations that can fail after partial work, check the aftermath. Did the original input remain unchanged? Was a temporary output discarded? Was the stored version left intact? A test that only sees `Err` can miss destructive side effects that occurred before the error was returned."
+        ]
+      },
+      {
+        "heading": "Let documentation examples prove their claims",
+        "paragraphs": [
+          "A useful documentation example shows a realistic public call and an observable result. Rustdoc can run ordinary Rust code blocks as documentation tests in a desktop library project. Include the imports and setup a reader needs, or hide purely supporting lines using rustdoc’s documented conventions. The visible example should remain understandable on its own. A code block that only compiles may fail to demonstrate the behavior its surrounding prose promises.",
+          "Use an assertion when a result is predictable. If you document a parser returning a specific field, check that field. When explaining an API misuse that must not compile, a `compile_fail` example can express the expectation, but be careful: a failure for an unrelated typo is not evidence that the intended restriction was tested. Keep such examples small and review the actual compiler diagnostic.",
+          "Documentation tests are particularly valuable after public API changes. Internal unit tests can keep passing while the README example stops compiling because an import or return type changed. Executable examples connect the user’s first interaction with the library to the same verification discipline used for implementation code."
+        ],
+        "sources": [
+          {
+            "title": "Rustdoc: documentation tests",
+            "url": "https://doc.rust-lang.org/rustdoc/write-documentation/documentation-tests.html"
+          }
+        ]
+      },
+      {
+        "heading": "Use desktop Cargo commands with clear scope",
+        "paragraphs": [
+          "In a desktop Cargo project, `cargo test` runs the package’s relevant test targets under Cargo’s normal selection rules. `cargo test --lib` focuses on library unit tests, while `cargo test --doc` focuses on documentation tests. An integration test file can be selected with `--test` and its target name. These commands are useful for narrowing a failure, but a narrow successful run does not establish that every other target still works.",
+          "The shell block below assumes a local Cargo package with the usual library layout. It is not a command sequence for Crabrix’s on-device project terminal. To explore the validation logic inside Crabrix, run the complete `main` program earlier in this article. When you move a project to a desktop environment, keep those behavioral assertions and organize them into the test targets that match its public boundaries.",
+          "Run the smallest relevant target while developing, then the appropriate broader package checks before sharing the change. If a feature changes conditional compilation, include the feature configurations you actually support. Testing one convenient default cannot establish that every optional path compiles."
+        ],
+        "code": "# Desktop Cargo package, not the Crabrix on-device terminal\ncargo test --lib\ncargo test --doc\ncargo test",
+        "codeLanguage": "shell"
+      },
+      {
+        "heading": "Make one public example a documentation test",
+        "paragraphs": [
+          "For a concrete desktop experiment, create a library package named `limit_rules` with `cargo new --lib limit_rules`. Replace its `src/lib.rs` with the code below. The public function has a documentation example that imports it as an external caller would. The assertion checks the maximum accepted value. An internal unit test checks a rejected value through the same public function, giving the two checks different responsibilities.",
+          "Run `cargo test` inside that package on your desktop. Cargo runs the unit test and rustdoc runs the documentation example. Try changing the function's public name without updating the example: the doctest should expose the stale import. Try changing the upper endpoint: the example should expose the changed behavior. These are useful failures because they correspond to promises made to a caller reading the documentation, rather than details of a private helper."
+        ],
+        "code": "/// Accept a reading limit from 1 through 60, inclusive.\n///\n/// ```\n/// use limit_rules::accepts;\n/// assert!(accepts(60));\n/// ```\npub fn accepts(value: u16) -> bool { (1..=60).contains(&value) }\n\n#[cfg(test)]\nmod tests {\n    use super::accepts;\n    #[test]\n    fn rejects_zero() { assert!(!accepts(0)); }\n}"
+      },
+      {
+        "heading": "Keep a regression suite that earns its maintenance",
+        "paragraphs": [
+          "After fixing a defect, write a test that fails on the defective implementation and passes on the repaired one. Whenever practical, demonstrate that difference before finalizing the fix. This avoids a common trap: adding a test near the changed code that never actually exercises the reported failure. The fixture should be traceable to a behavior, not merely to the file you edited.",
+          "Remove duplication when tests repeat the same promise through the same path. Preserve distinct cases when they guard different boundaries, even if the assertions look similar. A compact suite with clear failures is easier to trust than a large suite whose helper layers and shared setup make every failure ambiguous. Maintenance quality affects whether people investigate failures or learn to ignore them.",
+          "For your next small Rust function, write one ordinary case, one empty or missing case, one malformed case and one precise boundary case where those categories apply. Explain each expected result before running the program. That habit turns testing from a final checkbox into a practical method for discovering what the function should mean."
+        ]
+      }
+    ],
+    "relatedSlugs": [
+      "rust-enums-state-machines",
+      "cargo-features-portable-dependencies",
+      "result-errors-that-help"
+    ]
+  },
+  {
+    "slug": "rust-strings-utf8-safe-parsing",
+    "title": "Rust strings and UTF-8: parse text without broken boundaries",
+    "date": "2026-10-13",
+    "summary": "Understand String, str and UTF-8 boundaries. Parse text safely, distinguish bytes from characters, and return useful errors instead of panicking.",
+    "readingMinutes": 11,
+    "sections": [
+      {
+        "heading": "The first bug is often the meaning of length",
+        "paragraphs": [
+          "A text field looks like a row of characters, but a Rust string is stored as UTF-8 bytes. Those two views coincide for plain ASCII and diverge as soon as an accented letter, another writing system or an emoji enters the input. Code that worked for every developer-written fixture can fail on a perfectly ordinary user name. The input was not exotic; the assumption was too narrow.",
+          "Start by naming the unit of each operation. A network protocol may specify a maximum byte count. A cursor may move between user-perceived characters. A parser may split at an ASCII separator. These are different requirements, so they should not share an unexplained variable called `length`. Rust makes byte boundaries visible because pretending that every character occupies one slot would make text handling both misleading and unsafe.",
+          "This guide uses a seven-byte example, then builds a small key-value parser. The focus is reliable application code: borrowing slices when possible, avoiding panics on external input, and writing diagnostics that distinguish missing structure from invalid values. All runnable Rust snippets use only the standard library and can be tried in Crabrix."
+        ],
+        "image": {
+          "src": "/blog/rust-utf8-workshop.png",
+          "alt": "A crab arranges mosaic tiles into groups of one, two and four, with separators between complete groups.",
+          "caption": "UTF-8 stores scalar values in groups of bytes. A safe text boundary falls between complete encoded values.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Inspect seven bytes before writing a parser",
+        "paragraphs": [
+          "The string `aé🦀` occupies seven UTF-8 bytes. The ASCII letter `a` uses one byte, `é` uses two, and the crab emoji uses four. It contains three Unicode scalar values. The byte offsets at valid boundaries are zero, one, three and seven. Offset two is inside the encoded `é`; offset four is inside the crab. A range can be in bounds numerically and still fail to describe valid string boundaries.",
+          "The hexadecimal sequence is `61 C3 A9 F0 9F A6 80`. You do not need to memorize it. What matters is that byte length is a storage measurement, while scalar counting decodes the text. The example checks both measurements and demonstrates a valid and invalid slice request. `get` returns `None` for the invalid range, so the caller can decide how to respond instead of crashing.",
+          "This small exercise is valuable when investigating a reported text bug. Print the byte length, inspect `char_indices`, and identify the unit used by the failing operation. You can usually find the incorrect assumption more quickly than by repeatedly trying different visual strings in the interface."
+        ],
+        "code": "fn main() {\n    let text = \"aé🦀\";\n    assert_eq!(text.len(), 7);\n    assert_eq!(text.chars().count(), 3);\n    assert_eq!(text.char_indices().map(|(i, _)| i).collect::<Vec<_>>(),\n               vec![0, 1, 3]);\n    assert_eq!(text.get(1..3), Some(\"é\"));\n    assert_eq!(text.get(1..2), None);\n    println!(\"{} bytes, {} scalars\", text.len(), text.chars().count());\n}"
+      },
+      {
+        "heading": "Bytes, scalars and visible characters are different",
+        "paragraphs": [
+          "A Rust `char` represents a Unicode scalar value, not an arbitrary byte and not necessarily one complete symbol on screen. An accented letter can be represented by a base letter followed by a combining mark. Emoji sequences can contain several scalars joined into one displayed symbol. Consequently, calling `chars().count()` does not implement a universal count of what a person sees as characters. It answers the narrower scalar-count question accurately.",
+          "This matters for truncation. Taking the first ten scalars avoids cutting a scalar’s UTF-8 encoding, but it may still separate a combining mark or part of a joined emoji sequence from the rest. A user interface that must truncate at grapheme boundaries needs an appropriate Unicode segmentation implementation. That is a separate requirement from parsing an ASCII-delimited file. Do not introduce a whole text segmentation dependency where a delimiter operation already matches the format.",
+          "The infographic deliberately labels its count as “scalars.” Use equally specific names in code and interface explanations. A byte limit should be called a byte limit. A product that promises a visible-character limit needs to define and test that promise, including combining text and the writing systems its users actually use."
+        ],
+        "image": {
+          "src": "/blog/rust-utf8-infographic.png",
+          "alt": "Seven UTF-8 bytes for aé🦀 grouped into three scalar values, with valid boundaries at offsets 0, 1, 3 and 7.",
+          "caption": "7 bytes and 3 Unicode scalar values. Visible characters can involve multiple scalars; byte offsets are not character indexes.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "The Rust Book: UTF-8 encoded strings",
+            "url": "https://doc.rust-lang.org/book/ch08-02-strings.html"
+          }
+        ]
+      },
+      {
+        "heading": "Use String for ownership and str for a view",
+        "paragraphs": [
+          "`String` owns a growable UTF-8 buffer. `&str` is a borrowed view of valid UTF-8 text. A function that only reads text usually accepts `&str`, allowing callers to pass a string literal, a slice of an owned string, or a borrowed `String`. A function that must keep text independently may need an owned `String`. The distinction is about responsibility for storage, not about one type being the “real” string.",
+          "Borrowed parsing can avoid allocating a new string for every field. A slice returned by `split_once` points into the original input. That is useful while processing a line whose owner remains alive. If you store the parsed fields in a long-lived project record after the input buffer will be discarded, you need an ownership decision: copy the required fields, retain the owning buffer with an appropriate representation, or redesign the boundary. A lifetime annotation cannot make discarded bytes remain alive.",
+          "Keep APIs modest. Accept a borrowed string when reading is sufficient, and allocate at a clear point where the data must outlive its source. This makes memory behavior easier to follow and prevents scattered `to_string` calls from hiding which parts of the parser actually need independent storage."
+        ]
+      },
+      {
+        "heading": "Split on structure instead of guessed positions",
+        "paragraphs": [
+          "Suppose a configuration line has the form `name=value`. Searching for the first equals sign expresses that format more faithfully than assuming the name occupies a certain number of bytes. `split_once` returns the two sides without allocating. Because the delimiter is a complete string pattern, the returned pieces are valid slices. A value can contain additional equals signs if your format assigns special meaning only to the first separator.",
+          "The function below trims surrounding whitespace, rejects a missing separator, and rejects an empty key. It permits an empty value; that is a deliberate format choice rather than an oversight. If your configuration requires nonempty values, add that rule explicitly and test it. Trimming also changes the format, so do not apply it automatically to fields where leading spaces are meaningful data.",
+          "Observe that non-ASCII text needs no special branch here. The parser does not count characters or slice at guessed offsets. It asks the string library to find the structural delimiter, then works with the resulting valid views. Choosing the right operation often removes the boundary problem entirely."
+        ],
+        "code": "fn field(line: &str) -> Result<(&str, &str), &'static str> {\n    let (key, value) = line.split_once('=').ok_or(\"missing = separator\")?;\n    let key = key.trim();\n    if key.is_empty() { return Err(\"empty key\"); }\n    Ok((key, value.trim()))\n}\nfn main() {\n    assert_eq!(field(\" city = Київ \"), Ok((\"city\", \"Київ\")));\n    assert_eq!(field(\"token=a=b\"), Ok((\"token\", \"a=b\")));\n    assert_eq!(field(\"missing\"), Err(\"missing = separator\"));\n    assert_eq!(field(\" =value\"), Err(\"empty key\"));\n    println!(\"All field checks passed\");\n}"
+      },
+      {
+        "heading": "When you need offsets, obtain them from the text",
+        "paragraphs": [
+          "Some parsers do need byte offsets, for example to attach a diagnostic span to the original source. `char_indices` yields each scalar together with the byte offset where it begins. Those offsets are suitable starting boundaries for string slices. They are still byte offsets, so label them accordingly. Do not later reinterpret the same number as a screen column without a separate conversion policy.",
+          "For a range supplied by another system, use `get` when absence is a recoverable result. It checks both bounds and UTF-8 boundaries. Direct slicing with an invalid range panics, which can be acceptable for an internal invariant that is genuinely guaranteed, but is a poor response to an untrusted cursor position or malformed imported range. Converting failure into an explicit error lets the interface explain what went wrong.",
+          "Source spans also become stale when the underlying text changes. A correct boundary from the previous version of a document is not automatically a meaningful boundary in the next version. Associate diagnostics with the input snapshot they describe. This is especially important in editors, where a user can insert an emoji before a highlighted range while a background operation is still running."
+        ]
+      },
+      {
+        "heading": "Define an ASCII rule when the format is ASCII",
+        "paragraphs": [
+          "A protocol identifier may intentionally allow only ASCII letters, digits and underscores. That is a valid specification if it is stated clearly. In such a field, byte-oriented validation can be appropriate because every accepted character has a single-byte encoding. The key is that you validate the restriction before relying on it. Do not infer ASCII from a few successful sample inputs and then apply byte indexing to every future string.",
+          "Human-facing names are a different domain. Rejecting a user’s name because it contains non-ASCII letters is not a necessary consequence of Rust’s string model. It is a product rule, often an undesirable one. Separate a machine identifier from a display name if they have different requirements. You can validate an internal slug narrowly while preserving the user’s original label for display.",
+          "Case conversion also needs a policy. ASCII case-insensitive comparison can be right for an ASCII keyword; it is not a complete international name comparison algorithm. Keep canonicalization requirements tied to a specific format and avoid promising that a simple lowercase operation solves every Unicode equivalence question."
+        ]
+      },
+      {
+        "heading": "Validate bytes before treating them as text",
+        "paragraphs": [
+          "Files and network responses arrive as bytes. A `String` guarantees valid UTF-8, but an arbitrary byte buffer does not. If a format requires UTF-8, validate it at the boundary and return an error when decoding fails. `std::str::from_utf8` provides a borrowed string view when the bytes are valid. This is different from using a lossy conversion that replaces invalid sequences with replacement characters.",
+          "Lossy conversion is useful for a diagnostic preview when showing approximate content is better than showing nothing. It is not automatically suitable for importing identifiers, verifying signatures or preserving exact source files. Replacing bytes changes the data. If you use that policy, make it visible and retain the original bytes where the application requires fidelity. A parser should not silently repair input and then claim to have accepted it unchanged.",
+          "The example makes the boundary explicit without introducing file I/O. One byte sequence decodes to `é`; the other is invalid UTF-8. The caller can report a decoding problem separately from a later format error such as a missing equals sign. That separation produces much more useful diagnostics."
+        ],
+        "code": "fn main() {\n    let valid = [0xC3, 0xA9];\n    let invalid = [0xFF, 0x61];\n    assert_eq!(std::str::from_utf8(&valid), Ok(\"é\"));\n    assert!(std::str::from_utf8(&invalid).is_err());\n    println!(\"UTF-8 boundary checks passed\");\n}"
+      },
+      {
+        "heading": "Make failures describe the input rule",
+        "paragraphs": [
+          "“Invalid string” is rarely enough information to repair an import. Distinguish decoding failures, missing separators, empty keys, duplicate keys and invalid values. Attach a line number while iterating over lines, and include a short field name when that is safe and helpful. Avoid printing entire secret-bearing configuration lines into logs just to provide context. Precision does not require exposing every byte of the input.",
+          "For numeric values, first isolate the field, then parse it into the intended numeric type, and finally check the application’s range. A value can be a valid integer and still be outside the supported interval. Reporting “sampling interval must be between the supported minimum and maximum” is more useful than treating every rejected value as a Unicode issue. Text decoding, syntactic structure and domain validation are separate stages.",
+          "This separation also helps an interface place the error correctly. A byte span can identify a source fragment, while a domain message explains the rule. Store both when you have them. Do not force a message to encode machine-readable positions in a string that another part of the application must later parse."
+        ]
+      },
+      {
+        "heading": "Build a fixture set that breaks ASCII assumptions",
+        "paragraphs": [
+          "A useful text fixture set is small but deliberate. Include an empty string, plain ASCII, a two-byte scalar, a four-byte scalar, a combining sequence, a missing delimiter, repeated delimiters and surrounding whitespace. Add the actual writing systems and formats your product handles. For each case, state whether the expected result is acceptance, rejection or preservation without normalization. An assortment of emoji is not a substitute for a defined contract.",
+          "Test byte ranges independently from parsing rules. For `aé🦀`, verify that `1..3` yields `é` and that `1..2` is rejected. For the key-value parser, verify that an equals sign inside the value remains in the value. For imported bytes, verify that invalid UTF-8 is reported before later parsing. These assertions identify the layer responsible for a failure instead of letting one large integration test hide the cause.",
+          "If the interface truncates names, add a visual check for combined and joined text alongside automated boundary tests. A string can remain valid UTF-8 while looking broken to a reader. Correct storage encoding is a foundation, but readable presentation requires the additional rules chosen by your interface."
+        ]
+      },
+      {
+        "heading": "Choose the line-ending contract too",
+        "paragraphs": [
+          "A line-oriented importer also needs a policy for line endings. Rust’s `lines` method treats a newline and a carriage-return/newline pair as line terminators, and does not return a final empty line merely because the input ends with a terminator. Splitting literally on `\\n` has different behavior: it can leave a carriage return attached to a field and can yield a trailing empty piece. Neither operation is a universal replacement for the other.",
+          "For a configuration reader, `lines` is often convenient. For a format where an empty final record is significant, inspect the format before choosing it. Add fixtures for Unix-style endings, Windows-style endings and a final terminator. This is another example of selecting an operation from the contract rather than assuming that every visually similar text file has identical structure."
+        ]
+      },
+      {
+        "heading": "A compact plan for safer text handling",
+        "paragraphs": [
+          "At each boundary, ask four questions: who owns the bytes, are they valid UTF-8, what structure does the format require, and what unit does each length or position use? Most accidental string bugs involve an unstated answer to one of these questions. Writing down the answers often leads directly to a suitable standard-library method and a much smaller implementation.",
+          "Prefer operations that match the format: delimiter splitting for delimited fields, `lines` for line-oriented text, `get` for a fallible byte range, and `char_indices` when decoded scalar boundaries matter. Keep owned copies for places that need independent storage. Reserve grapheme-aware processing for requirements about user-perceived characters, and use a suitable implementation rather than assuming `chars` already provides it.",
+          "The next time a text bug appears only with one user’s input, resist calling that input unusual. Reduce it to a small fixture, identify the mistaken unit or ownership assumption, and keep the fixture as a regression test. Rust’s explicit string model gives you the tools to explain the failure and repair the rule rather than patching individual characters."
+        ],
+        "sources": [
+          {
+            "title": "Standard library: str methods and UTF-8 guarantees",
+            "url": "https://doc.rust-lang.org/std/primitive.str.html"
+          }
+        ]
+      }
+    ],
+    "relatedSlugs": [
+      "result-errors-that-help",
+      "rust-iterators-without-extra-allocations",
+      "testing-rust-boundaries-fixtures-doctests"
+    ]
+  },
+  {
+    "slug": "rust-iterators-without-extra-allocations",
+    "title": "Rust iterators: clear pipelines without extra allocations",
+    "date": "2026-10-12",
+    "summary": "Learn how Rust iterators borrow, consume and short-circuit. Build clear pipelines, avoid needless collections, and keep malformed input visible.",
+    "readingMinutes": 11,
+    "sections": [
+      {
+        "heading": "Start with the result you actually need",
+        "paragraphs": [
+          "A small report rarely needs every intermediate version of its input. Suppose a weather station stores sensor readings and you want the sum of the squares of the even readings. You could copy the readings into a second vector, remove the odd values, build another vector of squares, then add everything together. That works, but the temporary collections are doing bookkeeping for the implementation rather than representing useful results in your program.",
+          "Rust iterators let you describe the transformations while leaving the decision about storage until the end. This is useful for ordinary application code: calculating a total, finding the first matching record, checking whether a configuration is valid, or producing a final list for a screen. The important question is not whether a chain looks sophisticated. Ask what the caller needs to receive. A number, a borrowed item and an owned collection imply different endings to the same pipeline.",
+          "We will use a tiny numeric example first, then examine the ownership and error handling decisions that become important with real text input. Every Rust program in this article uses the standard library. You can run these examples in Crabrix without installing a third-party dependency."
+        ],
+        "image": {
+          "src": "/blog/rust-iterators-workshop.png",
+          "alt": "A crab operates a small conveyor with a selection gate, transformation station and collection tray.",
+          "caption": "Choose a consumer for the answer you need; intermediate stations do not automatically require intermediate collections.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Follow one value through the pipeline",
+        "paragraphs": [
+          "Our input is `[2, 7, 4, 9]`. Filtering for even values leaves `2` and `4`. Squaring them gives `4` and `16`, whose sum is `20`. These deliberately small numbers make the whole calculation inspectable. Before changing a larger report to use iterator adapters, choose an equally small input and calculate the expected result by hand. You will notice a reversed filter or a missing conversion much faster than you would in a large output file.",
+          "The following program borrows its vector, copies each small integer into the pipeline, keeps the even ones, and sums their squares. The explicit `i32` result type tells `sum` which numeric type to produce. The input is still available afterward because `iter` borrowed it. `copied` copies the integers; it does not clone the vector or allocate a new one. For these values, copying is a natural way to keep the closures easy to read.",
+          "Treat the assertion as part of the explanation. It states the result independently of how the adapters are arranged. If you later replace the chain with a loop, the same assertion should still describe the desired behavior."
+        ],
+        "code": "fn main() {\n    let readings = vec![2_i32, 7, 4, 9];\n    let total: i32 = readings.iter().copied()\n        .filter(|value| value % 2 == 0)\n        .map(|value| value * value)\n        .sum();\n    assert_eq!(total, 20);\n    assert_eq!(readings.len(), 4);\n    println!(\"Total: {total}\");\n}"
+      },
+      {
+        "heading": "Laziness means the consumer asks for work",
+        "paragraphs": [
+          "Calling `map` or `filter` constructs an adapter. It does not, by itself, walk the entire input and manufacture an output list. A consumer such as `sum`, `collect` or `find` requests items. Each request passes through the adapters until a result can be returned or the input is exhausted. For our sum, the consumer eventually asks for everything, but each accepted value can be squared and accumulated without first storing a vector of accepted values.",
+          "That distinction explains a common debugging surprise: placing a print statement inside `map` and never consuming the iterator produces no prints from that closure. It also explains why `find` can stop early. Once it has found a matching value, it does not need to request the remaining items. Laziness describes when work is requested; it is not a promise that any particular chain is faster than a readable loop.",
+          "The infographic shows the logical stages, not separate buffers in memory. The crossed-out rejected values do not enter the square stage. In a real execution the consumer pulls values through the stages as needed. Keeping that direction in mind is more useful than imagining a sequence of fully populated conveyor trays."
+        ],
+        "image": {
+          "src": "/blog/rust-iterators-v2-infographic.png",
+          "alt": "Iterator calculation: input 2, 7, 4, 9; keep 2 and 4; square to 4 and 16; sum to 20.",
+          "caption": "The exact calculation is 2² + 4² = 20. Adapters describe stages; the consumer drives evaluation.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "The Rust Book: processing items with iterators",
+            "url": "https://doc.rust-lang.org/book/ch13-02-iterators.html"
+          }
+        ]
+      },
+      {
+        "heading": "Choose iter, iter_mut or into_iter deliberately",
+        "paragraphs": [
+          "Ownership becomes more visible when the items are strings instead of integers. A vector of `String` values owns their buffers. Calling `iter` yields shared references to those strings, so you can inspect them without transferring ownership. Calling `iter_mut` yields mutable references, allowing changes under Rust’s borrowing rules. Calling `into_iter` on the vector consumes the vector and yields its owned strings. The words look similar, but they answer different questions about who keeps the data.",
+          "Use borrowing when a later part of the program still needs the original collection. Consume it when the next stage should take responsibility for the owned items. A transformation from `Vec<String>` into another owned collection may naturally use `into_iter`, moving strings instead of cloning them. A read-only search normally does not need that transfer. Do not add `clone` automatically just because the compiler reports a moved value: first check whether the pipeline should have borrowed the collection.",
+          "There is no universal rule that consuming is better than borrowing. The correct choice follows the lifetime of the application’s data. A report can borrow a project’s records while rendering a summary; an import operation can consume a temporary batch after validating it. Make that choice explicit at the start of the chain."
+        ]
+      },
+      {
+        "heading": "Collect only when storage is part of the answer",
+        "paragraphs": [
+          "A final `collect` is appropriate when a caller genuinely needs a collection. A screen might need a stable list that can be sorted, indexed or displayed repeatedly. A function might promise to return an owned `Vec` of validated rows. In those cases allocation serves the API. The questionable pattern is collecting only to immediately iterate over the temporary collection again, especially when the second pass merely computes a total or asks a yes-or-no question.",
+          "For a total, consider `sum`. For a condition across all items, consider `all` or `any`. For the first match, consider `find`. For an accumulated value with a custom rule, a loop or `fold` may be clearer. These consumers express an intention that a temporary vector can obscure. They also avoid requiring storage for results the caller never receives. However, a deliberate collection can simplify complicated code, and clarity is a legitimate reason to keep it.",
+          "When reviewing a chain, underline each place that creates owned storage: a collected vector, a new string, or a clone of a record. Then ask whether that storage escapes the current calculation. This is a much more precise review habit than treating every iterator as allocation-free or every collection as a mistake."
+        ]
+      },
+      {
+        "heading": "Borrow a matching item instead of duplicating it",
+        "paragraphs": [
+          "Searching a list of owned strings usually needs a reference to the matching string, not a copy of its contents. The example below finds the first project name with a particular prefix and prints it while leaving the original names in place. The returned reference cannot outlive the vector it points into. That restriction matches reality: a name borrowed from this list should not remain usable after the list has been destroyed.",
+          "Notice that `find` returns an `Option`. An empty list and a list with no matching prefix are ordinary possibilities, so the program handles the missing case explicitly. Replacing that handling with `unwrap` would silently change the function’s contract from “a match may exist” to “absence is a bug.” Sometimes that contract is justified, but a user’s search query rarely makes it safe to assume a result exists.",
+          "This pattern scales to larger records. Borrow the record during inspection and only build a separate owned representation when a later boundary needs it. That boundary might be persistent storage, a background task, or a response whose lifetime is independent of the source list."
+        ],
+        "code": "fn main() {\n    let names = vec![String::from(\"notes\"), String::from(\"weather-lab\")];\n    match names.iter().find(|name| name.starts_with(\"weather\")) {\n        Some(name) => println!(\"Found: {name}\"),\n        None => println!(\"No matching project\"),\n    }\n    assert_eq!(names.len(), 2);\n}"
+      },
+      {
+        "heading": "Do not make malformed data disappear",
+        "paragraphs": [
+          "Iterator chains become dangerous when a convenient adapter quietly changes the meaning of the input. For example, parsing each line with `filter_map(|line| line.parse::<i32>().ok())` discards every line that fails to parse. That may be intentional for an exploratory tool, but it is a poor default for a financial total, a configuration file or a sensor import where an invalid reading should stop the operation. A shorter chain is not clearer if it conceals missing data.",
+          "When every item must be valid, preserve the `Result` returned by parsing. Collecting an iterator of results into a `Result<Vec<_>, _>` stops at the first error instead of manufacturing a successful vector with omissions. That vector is useful if subsequent work needs all the parsed values. When you only need an accumulated total, a loop that parses, adds context and updates a checked accumulator can express the contract without building that collection.",
+          "Choose the policy before choosing the adapter: reject the batch, retain individual failures, or intentionally skip invalid rows while reporting how many were skipped. All three can be reasonable products. Accidentally losing errors because `.ok()` made a type mismatch disappear is not a policy."
+        ]
+      },
+      {
+        "heading": "Keep errors attached to useful context",
+        "paragraphs": [
+          "A parse error such as “invalid digit found in string” may be technically correct and still leave the reader guessing which input needs repair. Attach the line number at the point where you still know it. `enumerate` provides a zero-based index; converting it to a one-based line number is a small presentation decision that makes diagnostics match what people see in an editor. Keep the original error available when your application’s error type supports it.",
+          "The program below intentionally rejects its second line. It does not claim to validate all possible inputs: the total itself could overflow with sufficiently large values, so a production importer also needs an explicit numeric range or checked addition. Separating these decisions makes the example honest. Parsing validates the spelling of one integer, while arithmetic validation protects the aggregate. Neither substitutes for the other.",
+          "In an application, a structured error with fields for the line and underlying cause is often better than a string. A compact string is sufficient here to show where context belongs. Keep diagnostics near the operation that understands the input rather than trying to reconstruct a line number after the chain has finished."
+        ],
+        "code": "fn parse_lines(lines: &[&str]) -> Result<Vec<i32>, String> {\n    lines.iter().enumerate().map(|(index, line)| {\n        line.parse::<i32>()\n            .map_err(|error| format!(\"line {}: {error}\", index + 1))\n    }).collect()\n}\nfn main() {\n    let error = parse_lines(&[\"12\", \"not a number\", \"7\"]).unwrap_err();\n    assert!(error.starts_with(\"line 2:\"));\n    println!(\"{error}\");\n}"
+      },
+      {
+        "heading": "A loop can be the clearest short circuit",
+        "paragraphs": [
+          "Not every sequence of operations wants to be an iterator chain. A loop is often easier to review when processing requires several related state changes, detailed diagnostics, a transaction boundary or an early return with a custom reason. Rust does not reserve efficiency for functional-looking code. A straightforward loop can borrow the same input and avoid the same unnecessary allocations as an adapter chain.",
+          "Consider an import that must count accepted rows, reject a duplicate identifier, and stop before an external write when the batch reaches a configured limit. Encoding every branch into nested closures may make the order of effects harder to understand. A loop can name each stage and keep the rollback or failure behavior visible. Conversely, a simple transformation from records to labels may become noisier if expanded into a loop with a mutable output vector.",
+          "Use the form that makes the invariant easiest to inspect. If there is a requirement such as “no writes occur after the first rejected row,” put it where a reviewer can follow the control flow. The goal is understandable behavior with deliberate ownership, not a maximum number of adapters per line."
+        ]
+      },
+      {
+        "heading": "Measure the workload you actually have",
+        "paragraphs": [
+          "Iterator syntax does not provide a portable speed ratio. Compiler optimization, data size, allocation patterns and the work inside each closure all matter. A microbenchmark over a handful of integers says little about a report dominated by string formatting or file I/O. Avoid performance claims based only on how a chain looks. First find a user-visible problem and identify which work accounts for it.",
+          "When measuring, compare implementations that produce the same answer and handle the same invalid inputs. Keep input preparation outside the timed operation if preparation is not what you intend to study. Use optimized builds for a desktop performance comparison, repeat measurements, and inspect variability rather than publishing a single attractive number. Memory behavior also deserves attention: removing a temporary collection may help peak storage without noticeably changing elapsed time.",
+          "The examples in this article are explanations, not benchmark results. Their concrete benefit is that ownership, validation and storage decisions are visible. If your own profiling later shows that one stage dominates execution, you will have a small, well-defined piece of code to investigate instead of a vague suspicion that iterators are either always fast or inherently expensive."
+        ]
+      },
+      {
+        "heading": "A practical review before you ship",
+        "paragraphs": [
+          "Read the pipeline from both ends. At the beginning, check whether it borrows, mutably borrows or consumes the source. At the end, check whether the consumer returns exactly what the caller needs. Between them, look for accidental cloning, unreported parsing failures and transformations whose assumptions are not stated. Then test a normal input, an empty input and a failure case. These checks expose more useful defects than rewriting code solely to reduce line count.",
+          "For our even-square total, empty input should produce zero. For a search, empty input should produce `None`. For a strict parser, one malformed line should return an error rather than a partial success. These are different contracts even when all three implementations begin with `iter`. Naming the contract gives you a stable basis for choosing adapters and for changing the implementation later.",
+          "A useful next exercise is to take a report you already understand and remove exactly one temporary collection. Keep its output and error behavior unchanged. If the revised code becomes harder to explain, keep the original or try a loop. Good iterator code is a clear agreement about data, work and results; brevity is a possible consequence, not the agreement itself."
+        ],
+        "sources": [
+          {
+            "title": "Standard library: Iterator methods and contracts",
+            "url": "https://doc.rust-lang.org/std/iter/trait.Iterator.html"
+          }
+        ]
+      }
+    ],
+    "relatedSlugs": [
+      "rust-strings-utf8-safe-parsing",
+      "testing-rust-boundaries-fixtures-doctests",
+      "ownership-in-a-real-program"
+    ]
+  },
+  {
     "slug": "rust-1-99-upgrade",
     "title": "Rust 1.99: upgrade your project without guessing",
     "date": "2026-10-10",

@@ -1,5 +1,39 @@
 # Crabrix website deployment
 
+## Five original Rust guides — 18 October 2026
+
+The manually published release is `localhost/crabrix-web-site:blog-20261018-r2`,
+from `/srv/apps/crabrix-site/releases/20261018-blog/final-r2`. It serves the
+existing loopback port 3212 and preserves the persistent account directory,
+resource limits, security options and private Academy access checks. The
+preceding server is retained as `crabrix-web-site-before-blog-20261018`.
+
+The Blog now contains ten articles. Five new original guides cover iterators,
+UTF-8 strings, test boundaries, Cargo features and enum state machines. Their
+editorial dates are 12, 13, 15, 16 and 18 October, distributed between the previous
+latest article on 10 October and this update. Each contains 2,122–2,151 paragraph
+words, averaging 2,137 versus the previous average of 1,642.4. The previous five
+articles retain their text and dates. Each new guide has two distinct built-in
+ImageGen illustrations, including an explanatory infographic; two first-pass
+diagrams were corrected before publication. Selected assets, prompts and hashes
+are recorded in [the asset manifest](blog-assets-2026-10-18.json) and
+[the exact prompt set](blog-image-prompts-2026-10-18.md).
+
+Article pages include primary-source links, highlighted Rust, linked contents,
+related guides, word counts in BlogPosting data, and explicit image dimensions.
+The Blog index has ItemList data. Seven automated site tests, TypeScript checking
+and the production build passed. Nine standalone Rust examples, a library unit
+test, its doctest and both Cargo feature configurations compiled and ran with
+Rust 1.99. The local and Linux candidate checks covered all 768 sitemap routes;
+public HTTPS checks then verified the complete text of all five new guides,
+metadata, dates, related/source links and all ten image hashes. The full public
+SEO audit covered all 768 routes, account noindex, guest previews and private
+media denial. Native screenshots and the 742-lesson curriculum were preserved.
+
+A consistent restricted account backup completed before activation. Deployment
+was manual on Hetzner; GitHub Actions remain disabled. See the
+[release and verification record](site-release-2026-10-18-blog.json).
+
 ## SEO, product pages and current screenshots — 16 October 2026
 
 The public service runs `localhost/crabrix-web-site:seo-111-20261016-r2`

@@ -1,27 +1,35 @@
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadata, pageUrl } from "@/lib/seo";
+import { StructuredData } from "@/components/structured-data";
 import Link from "next/link";
 import { posts } from "@/lib/posts";
 
-export const metadata = pageMetadata({"title": "Rust Guides: Releases, Ownership and Practical Programming", "description": "Practical Rust articles on releases, ownership, errors and testing, with runnable examples, infographics and links to official documentation.", "path": "/blog/"});
+export const metadata = pageMetadata({"title": "Practical Rust Guides: Iterators, UTF-8, Testing and Cargo", "description": "Learn Rust with practical guides to iterators, UTF-8 strings, testing, Cargo features, enums and releases. Runnable code, original diagrams and official sources.", "path": "/blog/"});
 
 export default function BlogPage() {
   return (
     <div className="site-shell">
+      <StructuredData data={{ "@context": "https://schema.org", "@type": "ItemList",
+        name: "Crabrix practical Rust guides", numberOfItems: posts.length,
+        itemListElement: posts.map((post, index) => ({ "@type": "ListItem", position: index + 1,
+          url: pageUrl(`/blog/${post.slug}/`), name: post.title })) }} />
       <div className="page-intro">
         <p className="eyebrow">Crabrix blog</p>
         <h1>Rust you can put to work.</h1>
-        <p className="lede">Release guides, practical examples, and careful explanations from the Crabrix workspace.</p>
+        <p className="lede">Practical guides to Rust iterators, text, testing, Cargo features and state machines, alongside release notes and ownership fundamentals.</p>
       </div>
       <div className="post-grid">
-        {posts.map((post) => (
-          <Link className="post-card" href={`/blog/${post.slug}`} key={post.slug}>
-            {post.sections.find((section) => section.image)?.image && <img className="post-cover" src={post.sections.find((section) => section.image)!.image!.src} alt="" loading="lazy" />}
-            <span className="card-kicker">{post.date} · {post.readingMinutes} min read</span>
-            <h2>{post.title}</h2>
-            <p>{post.summary}</p>
-            <span className="card-meta">Read article →</span>
-          </Link>
-        ))}
+        {posts.map((post) => {
+          const image = post.sections.find((section) => section.image)?.image;
+          return (
+            <Link className="post-card" href={`/blog/${post.slug}`} key={post.slug}>
+              {image && <img className="post-cover" src={image.src} alt="" width={image.width} height={image.height} loading="lazy" />}
+              <span className="card-kicker"><time dateTime={post.date}>{post.date}</time> · {post.readingMinutes} min read</span>
+              <h2>{post.title}</h2>
+              <p>{post.summary}</p>
+              <span className="card-meta">Read article →</span>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

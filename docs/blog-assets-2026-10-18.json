@@ -1,0 +1,240 @@
+{
+  "date": "2026-10-18",
+  "existingArticlesUnchanged": 5,
+  "existingLastPublication": "2026-10-10",
+  "existingAverageProseWords": 1642.4,
+  "newAverageProseWords": 2137.0,
+  "wordCountMethod": "Whitespace-separated paragraph words; excludes headings, code, captions and source labels.",
+  "imageMode": "Built-in image_gen, one call per asset; two targeted corrections. No CLI fallback.",
+  "articles": [
+    {
+      "slug": "rust-enums-state-machines",
+      "title": "Rust enums and state machines: make invalid states explicit",
+      "date": "2026-10-18",
+      "url": "https://crabrix.com/blog/rust-enums-state-machines/",
+      "proseWords": 2150,
+      "readingMinutes": 11,
+      "deltaFromExistingAverage": 507.6,
+      "sources": [
+        {
+          "title": "The Rust Book: defining enums",
+          "url": "https://doc.rust-lang.org/book/ch06-01-defining-an-enum.html"
+        },
+        {
+          "title": "The Rust Book: match control flow",
+          "url": "https://doc.rust-lang.org/book/ch06-02-match.html"
+        },
+        {
+          "title": "The Rust Book: state transitions and alternative type designs",
+          "url": "https://doc.rust-lang.org/book/ch18-03-oo-design-patterns.html"
+        }
+      ],
+      "images": [
+        {
+          "src": "/blog/rust-enum-states-workshop.png",
+          "alt": "Three miniature document stations connect draft preparation, validation and archiving, operated by a crab at a railway switch.",
+          "caption": "Name the intended states and the legal paths between them before choosing the implementation.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-enum-states-workshop.png",
+          "sha256": "df379363b2a2fafca58f492cf95abf0d2f0b7fd22f5985d84cf4277adb4f36b1",
+          "bytes": 2167708,
+          "mode": "built-in image_gen",
+          "visualReview": "accepted; text, data and diagram directions checked"
+        },
+        {
+          "src": "/blog/rust-enum-states-infographic.png",
+          "alt": "Draft validates to Ready, Ready sends to Sent or returns to Draft after editing; a table highlights the unintended sent-but-invalid flag combination.",
+          "caption": "The enum represents three intended states. Transition validation still decides which command is legal in the current state.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-enum-states-infographic.png",
+          "sha256": "d10b7bf4ce5252c2ff2162e42436b035c696c558244c94dc6d3bc76d96d38bcb",
+          "bytes": 1959234,
+          "mode": "built-in image_gen",
+          "visualReview": "accepted; text, data and diagram directions checked"
+        }
+      ]
+    },
+    {
+      "slug": "cargo-features-portable-dependencies",
+      "title": "Cargo features: smaller builds and portable dependencies",
+      "date": "2026-10-16",
+      "url": "https://crabrix.com/blog/cargo-features-portable-dependencies/",
+      "proseWords": 2139,
+      "readingMinutes": 11,
+      "deltaFromExistingAverage": 496.6,
+      "sources": [
+        {
+          "title": "Cargo reference: features",
+          "url": "https://doc.rust-lang.org/cargo/reference/features.html"
+        },
+        {
+          "title": "Cargo reference: dependency resolution",
+          "url": "https://doc.rust-lang.org/cargo/reference/resolver.html"
+        }
+      ],
+      "images": [
+        {
+          "src": "/blog/rust-cargo-features-workshop.png",
+          "alt": "A modular engine receives two request cards while a crab selects optional components beside a travel case.",
+          "caption": "A useful feature adds a capability to a core. Selecting modules and verifying the target remain separate decisions.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-cargo-features-workshop.png",
+          "sha256": "2c7e66243faa1cf235075a41302b7a02c6098ed8e4bcd3a3b78b46eb41214b66",
+          "bytes": 2280547,
+          "mode": "built-in image_gen",
+          "visualReview": "accepted; text, data and diagram directions checked"
+        },
+        {
+          "src": "/blog/rust-cargo-features-infographic.png",
+          "alt": "App requests json and CLI requests csv; one shared package version receives both features within one normal-dependency context.",
+          "caption": "Feature requests add together in this context. Opting out of defaults on one edge does not subtract requests made elsewhere.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-cargo-features-infographic.png",
+          "sha256": "7ff11f5e3d9a1356e46481054cb44bae4f78f163b23b729afba489a355deaa04",
+          "bytes": 1913534,
+          "mode": "built-in image_gen",
+          "visualReview": "accepted; text, data and diagram directions checked"
+        }
+      ]
+    },
+    {
+      "slug": "testing-rust-boundaries-fixtures-doctests",
+      "title": "Testing Rust: useful fixtures, boundaries and doctests",
+      "date": "2026-10-15",
+      "url": "https://crabrix.com/blog/testing-rust-boundaries-fixtures-doctests/",
+      "proseWords": 2123,
+      "readingMinutes": 11,
+      "deltaFromExistingAverage": 480.6,
+      "sources": [
+        {
+          "title": "The Rust Book: test organization",
+          "url": "https://doc.rust-lang.org/book/ch11-03-test-organization.html"
+        },
+        {
+          "title": "Rustdoc: documentation tests",
+          "url": "https://doc.rust-lang.org/rustdoc/write-documentation/documentation-tests.html"
+        }
+      ],
+      "images": [
+        {
+          "src": "/blog/rust-testing-workshop.png",
+          "alt": "A crab inspects normal, empty, cracked and boundary-marked sample tiles on a workbench.",
+          "caption": "A useful fixture set includes ordinary cases and the inputs most likely to reveal a broken rule.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-testing-workshop.png",
+          "sha256": "ddaaed732874fbfa06ab7714ce7393e82aa868534722db4cd9f8086ad78d2f9c",
+          "bytes": 2285951,
+          "mode": "built-in image_gen",
+          "visualReview": "accepted; text, data and diagram directions checked"
+        },
+        {
+          "src": "/blog/rust-testing-v2-infographic.png",
+          "alt": "Three testing boundaries: a unit rule, an external integration test calling a library public API, and an executable documentation example.",
+          "caption": "Choose the observation boundary, then cover normal, empty, malformed and boundary inputs within that contract.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-testing-v2-infographic.png",
+          "sha256": "b1fd3455c64c3ca03fa03ed7915ed447a99e7ede6633aa88752b862e4badda6e",
+          "bytes": 1524193,
+          "mode": "built-in image_gen",
+          "visualReview": "accepted; text, data and diagram directions checked"
+        }
+      ]
+    },
+    {
+      "slug": "rust-strings-utf8-safe-parsing",
+      "title": "Rust strings and UTF-8: parse text without broken boundaries",
+      "date": "2026-10-13",
+      "url": "https://crabrix.com/blog/rust-strings-utf8-safe-parsing/",
+      "proseWords": 2151,
+      "readingMinutes": 11,
+      "deltaFromExistingAverage": 508.6,
+      "sources": [
+        {
+          "title": "The Rust Book: UTF-8 encoded strings",
+          "url": "https://doc.rust-lang.org/book/ch08-02-strings.html"
+        },
+        {
+          "title": "Standard library: str methods and UTF-8 guarantees",
+          "url": "https://doc.rust-lang.org/std/primitive.str.html"
+        }
+      ],
+      "images": [
+        {
+          "src": "/blog/rust-utf8-workshop.png",
+          "alt": "A crab arranges mosaic tiles into groups of one, two and four, with separators between complete groups.",
+          "caption": "UTF-8 stores scalar values in groups of bytes. A safe text boundary falls between complete encoded values.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-utf8-workshop.png",
+          "sha256": "4e852fa0cba3319ec1b6106e3003def88ebea7a7e4445dc776d95abf3a78dac7",
+          "bytes": 2262778,
+          "mode": "built-in image_gen",
+          "visualReview": "accepted; text, data and diagram directions checked"
+        },
+        {
+          "src": "/blog/rust-utf8-infographic.png",
+          "alt": "Seven UTF-8 bytes for aé🦀 grouped into three scalar values, with valid boundaries at offsets 0, 1, 3 and 7.",
+          "caption": "7 bytes and 3 Unicode scalar values. Visible characters can involve multiple scalars; byte offsets are not character indexes.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-utf8-infographic.png",
+          "sha256": "65f4cf0c098ae1acd5be884aa1a034c70d7df6334296a0fdd11c105c852cbe52",
+          "bytes": 1839968,
+          "mode": "built-in image_gen",
+          "visualReview": "accepted; text, data and diagram directions checked"
+        }
+      ]
+    },
+    {
+      "slug": "rust-iterators-without-extra-allocations",
+      "title": "Rust iterators: clear pipelines without extra allocations",
+      "date": "2026-10-12",
+      "url": "https://crabrix.com/blog/rust-iterators-without-extra-allocations/",
+      "proseWords": 2122,
+      "readingMinutes": 11,
+      "deltaFromExistingAverage": 479.6,
+      "sources": [
+        {
+          "title": "The Rust Book: processing items with iterators",
+          "url": "https://doc.rust-lang.org/book/ch13-02-iterators.html"
+        },
+        {
+          "title": "Standard library: Iterator methods and contracts",
+          "url": "https://doc.rust-lang.org/std/iter/trait.Iterator.html"
+        }
+      ],
+      "images": [
+        {
+          "src": "/blog/rust-iterators-workshop.png",
+          "alt": "A crab operates a small conveyor with a selection gate, transformation station and collection tray.",
+          "caption": "Choose a consumer for the answer you need; intermediate stations do not automatically require intermediate collections.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-iterators-workshop.png",
+          "sha256": "98e2a0f30d385a3659cdbebffe84bac53bf6cfbc7ac0ea499000e8e1f0ea3a41",
+          "bytes": 2140184,
+          "mode": "built-in image_gen",
+          "visualReview": "accepted; text, data and diagram directions checked"
+        },
+        {
+          "src": "/blog/rust-iterators-v2-infographic.png",
+          "alt": "Iterator calculation: input 2, 7, 4, 9; keep 2 and 4; square to 4 and 16; sum to 20.",
+          "caption": "The exact calculation is 2² + 4² = 20. Adapters describe stages; the consumer drives evaluation.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-iterators-v2-infographic.png",
+          "sha256": "92b76c38797136f637d885b57dc49f91bae77e679d86f69aaf93152c10a18390",
+          "bytes": 1658346,
+          "mode": "built-in image_gen",
+          "visualReview": "accepted; text, data and diagram directions checked"
+        }
+      ]
+    }
+  ]
+}

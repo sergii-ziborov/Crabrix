@@ -19,7 +19,7 @@ The current screenshot set includes ten iPhone and six iPad frames from manual X
 
 The current internal test release is **1.1.1 (68)**, built manually in Xcode Cloud with SDK 27.1. It is available in TestFlight Internal QA and selected for App Review. The 1.1.1 version and the Rust Academy / Rust Compiler custom product pages report **WAITING_FOR_REVIEW**; release remains manual. [Delivery and verification evidence](docs/releases/1.1.1-build68.json) records the source, build, native checks and screenshots. Term Train, unlock, progress and the established Duo keyboard layout are preserved.
 
-The live website has canonical and social metadata for all **763 public pages**, with structured data for the product, courses, lessons and articles. [SEO and App Store presentation](docs/seo-2026-10-16.md) documents the live audit, account access checks, relevant search keywords and two custom product pages.
+The live website has canonical and social metadata for all **768 public pages**, with structured data for the product, courses, lessons and articles. [Blog publication evidence](docs/site-release-2026-10-18-blog.json) records the latest site checks. [SEO and App Store presentation](docs/seo-2026-10-16.md) documents account access checks, relevant search keywords and two custom product pages.
 
 ## Use Crabrix
 
@@ -42,9 +42,13 @@ and an infographic for all 742 lessons: 142 Rust lessons and 600 Algorithm
 Atlas steps. Atlas shares 40 five-pattern diagrams across all 600 steps; the
 70 previously unillustrated Rust lessons have individual code-to-rule diagrams.
 The [Blog](https://crabrix.com/blog/) has
-five in-depth articles with two generated illustrations each, including an
-infographic. Three new guides cover Rust 1.99 upgrades, ownership in a real programme,
-and useful Result errors; each has at least 1,500 prose words. Website Academy
+ten in-depth articles with two generated illustrations each, including an
+infographic. Five new guides dated 12–18 October cover iterators, UTF-8, testing,
+Cargo features and enum state machines. Each contains 2,122–2,151 prose words,
+roughly 500 more than the previous average. Runnable examples, a unit test, a
+doctest and both feature configurations were verified with Rust 1.99.
+[Article and image manifest](docs/blog-assets-2026-10-18.json) records the dates,
+word counts, original ImageGen assets and hashes. Website Academy
 accounts use a username, password and one-time recovery code. Complete lesson
 text and media are checked on the server; previews are the same for visitors and
 search engines. The expanded courses have new content versions and production-signed

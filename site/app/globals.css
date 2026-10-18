@@ -236,7 +236,7 @@ table.plain td { color: var(--muted); }
 .lesson-access .access-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
 .preview-label { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; padding: 5px 10px; color: var(--mint); font-size: 12px; font-weight: 650; }
 .article-content p code, .article-content li code { color: var(--inline-code); background: var(--inline-code-bg); border: 1px solid var(--inline-code-border); padding: .08em .28em; border-radius: 5px; font-size: .91em; font-weight: 650; }
-.post-cover { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 10px; margin-bottom: 8px; }
+.post-cover { width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 10px; margin-bottom: 8px; }
 @media (max-width: 950px) { .auth-page { grid-template-columns: 1fr 400px; gap: 28px; } }
 @media (max-width: 760px) { .auth-page { grid-template-columns: 1fr; padding-top: 30px; gap: 28px; } .auth-story h1 { font-size: 34px; } .auth-code-art, .auth-benefits { display: none; } .auth-story .lede { margin-bottom: 10px; } .auth-panel { padding: 24px; } .account-grid { grid-template-columns: 1fr; } }
 .site-account { flex: 0 0 auto; border: 1px solid var(--border); border-radius: 10px; padding: 7px 12px; color: var(--text); text-decoration: none; font-size: 14px; font-weight: 650; }

@@ -3,7 +3,7 @@ import { pageMetadata, pageUrl, breadcrumbs } from "@/lib/seo";
 import { StructuredData } from "@/components/structured-data";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { postBySlug, posts } from "@/lib/posts";
+import { postBySlug, posts, postWordCount } from "@/lib/posts";
 import { SyntaxCode } from "@/components/SyntaxCode";
 
 function prose(text: string) {
@@ -24,6 +24,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const post = postBySlug((await params).slug);
   if (!post) notFound();
+  const cover = post.sections.find((section) => section.image)?.image;
+  const related = (post.relatedSlugs ?? []).flatMap((slug) => {
+    const article = postBySlug(slug);
+    return article ? [article] : [];
+  });
   const sectionId = (heading: string) => heading.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   return (
     <div className="site-shell article-page">
@@ -33,7 +38,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           author: { "@type": "Person", name: "Serhii Ziborov", url: pageUrl("/about/") },
           publisher: { "@type": "Organization", name: "Crabrix", url: pageUrl("/") },
           image: post.sections.flatMap((section) => section.image ? [new URL(section.image.src, pageUrl("/")).href] : []),
-          inLanguage: "en", isAccessibleForFree: true,
+          inLanguage: "en", isAccessibleForFree: true, wordCount: postWordCount(post),
         },
         breadcrumbs([{ name: "Crabrix", path: "/" }, { name: "Rust Blog", path: "/blog/" }, { name: post.title, path: `/blog/${post.slug}/` }]),
       ] }} />
@@ -42,7 +47,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         <p className="eyebrow">Crabrix blog</p>
         <h1>{post.title}</h1>
         <p className="lede">{post.summary}</p>
-        <p className="article-date">{post.date} · {post.readingMinutes} min read</p>
+        <p className="article-date"><time dateTime={post.date}>{post.date}</time> · {post.readingMinutes} min read</p>
         <nav className="article-toc" aria-label="Article contents">
           <strong>In this article</strong>
           <ol>{post.sections.map((section) => <li key={section.heading}><a href={`#${sectionId(section.heading)}`}>{section.heading}</a></li>)}</ol>
@@ -52,14 +57,18 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         {post.sections.map((section) => <section key={section.heading} id={sectionId(section.heading)}>
           <h2>{section.heading}</h2>
           {section.paragraphs.map((paragraph) => <p key={paragraph}>{prose(paragraph)}</p>)}
-          {section.code && (section.codeLanguage === "shell" ? <pre><code>{section.code}</code></pre> : <SyntaxCode code={section.code} />)}
+          {section.code && (section.codeLanguage && section.codeLanguage !== "rust" ? <pre><code className={`language-${section.codeLanguage}`}>{section.code}</code></pre> : <SyntaxCode code={section.code} />)}
           {section.image && <figure className="article-image">
-            <img src={section.image.src} alt={section.image.alt} loading="lazy" />
+            <img src={section.image.src} alt={section.image.alt} width={section.image.width} height={section.image.height} loading={section.image === cover ? "eager" : "lazy"} />
             <figcaption>{section.image.caption}</figcaption>
           </figure>}
           {section.sources && <p className="article-sources">Sources: {section.sources.map((source, index) => <span key={source.url}>{index > 0 && " · "}<a href={source.url}>{source.title}</a></span>)}</p>}
         </section>)}
         <p><Link href="/learn">Explore the free Crabrix lessons →</Link></p>
+        {related.length > 0 && <aside className="article-related" aria-label="Related Rust guides">
+          <h2>Continue with a related Rust guide</h2>
+          <ul>{related.map((article) => <li key={article.slug}><Link href={`/blog/${article.slug}/`}>{article.title}</Link></li>)}</ul>
+        </aside>}
       </article>
     </div>
   );
