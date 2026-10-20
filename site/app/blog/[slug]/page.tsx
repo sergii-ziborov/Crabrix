@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { postBySlug, posts, postWordCount } from "@/lib/posts";
 import { SyntaxCode } from "@/components/SyntaxCode";
+import { BlogImage } from "@/components/blog-image";
 
 function prose(text: string) {
   return text.split(/(`[^`]+`)/g).map((part, index) => part.startsWith("`") && part.endsWith("`") ? <code key={index}>{part.slice(1, -1)}</code> : part);
@@ -59,7 +60,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           {section.paragraphs.map((paragraph) => <p key={paragraph}>{prose(paragraph)}</p>)}
           {section.code && (section.codeLanguage && section.codeLanguage !== "rust" ? <pre><code className={`language-${section.codeLanguage}`}>{section.code}</code></pre> : <SyntaxCode code={section.code} />)}
           {section.image && <figure className="article-image">
-            <img src={section.image.src} alt={section.image.alt} width={section.image.width} height={section.image.height} loading={section.image === cover ? "eager" : "lazy"} />
+            <BlogImage image={section.image} priority={section.image === cover} />
             <figcaption>{section.image.caption}</figcaption>
           </figure>}
           {section.sources && <p className="article-sources">Sources: {section.sources.map((source, index) => <span key={source.url}>{index > 0 && " · "}<a href={source.url}>{source.title}</a></span>)}</p>}

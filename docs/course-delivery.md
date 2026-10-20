@@ -16,7 +16,31 @@ Both Learn and My Courses check for updates when opened, and expose a manual ref
 
 The [course authoring guide](https://github.com/sergii-ziborov/crabrix-courses#correct-an-existing-lesson) now gives a short correction path for existing lesson IDs. Its incremental catalog builder verifies the previous signed catalog, keeps the other course URLs, and refuses to publish changed bytes under the same content version. A correction to one old lesson therefore needs one new signed course archive and descriptor, plus a new signed catalog sequence; learners see the update in the app without downloading the other courses again.
 
-## Offline migration
+## Published content updates
+
+### 20 October 2026 editorial update
+
+Catalog sequence **13** publishes Basics **1.0.6**, Systems **1.0.5** and
+Interview **1.0.6** from authored commit
+`e0f3ead2a98e4fb8e08118ce27632a15516adc70`. Ten lesson corrections and three
+replacement diagrams are shared with the website. The other five catalog
+entries retain their prior descriptors and archive URLs. Existing compatible
+app versions receive these updates through Learn → Update or Update all;
+edited project copies and progress stay separate.
+
+Both releases' public assets were downloaded and compared with their signed
+publication bytes. The actual app's `CoursePackVerifier`, compatibility logic
+and `CourseUpdatePlanner`, compiled unchanged on macOS with the bundled app
+keyring, accepted all three packs for app 1.1.1 and selected three updates.
+The repeated catalog sequence and a modified archive were rejected. This
+checks the native shared verification/update logic; it is not a physical-device
+UI execution. Fourteen course-tool tests also passed.
+
+[Review scope](academy-review-2026-10-20.md) ·
+[Published follow-up release](https://github.com/sergii-ziborov/crabrix-courses/releases/tag/course-updates-2026-10-20.2) ·
+[Signed release verification](https://github.com/sergii-ziborov/crabrix-courses/blob/main/artwork/review-20261020/release-verification-followup.json).
+
+## Offline migration behavior
 
 The previous binary is absent after an iOS app update. For that reason, all seven transition packs are resources of the new binary. Before the current progress store can write its schema, the app persists a first-launch decision from existing progress, lesson evidence, or project files. An existing learner gets all seven packs verified and activated locally without an old bundle lookup or network connection. A clean install activates none: all seven courses appear in the list, and the learner chooses which to download. Already installed newer course versions are not downgraded. A lesson retains its content snapshot while open. Quick Practice, Code Recall, and Term Train snapshot only installed course content when a round starts; an update cannot change a question or answer mid-round.
 

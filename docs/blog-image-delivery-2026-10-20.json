@@ -1,0 +1,578 @@
+{
+  "images": [
+    {
+      "source": "/blog/compiler-flow.png",
+      "sourceBytes": 1267093,
+      "full": "/blog/compiler-flow.webp",
+      "fullBytes": 59558,
+      "small": "/blog/compiler-flow-640.webp",
+      "smallBytes": 16262,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "smallDimensions": [
+        640,
+        360
+      ],
+      "sourceSHA256": "501494f52a7ca9bfbaaab571ac5ddf8b387b422966d25645a8ff3c488ed9f821",
+      "fullSHA256": "453ce84a018da9f8ee6c4c511d6c8fcb8073104914a2cc0831b69d5d130178af",
+      "smallSHA256": "20390c9ed3dbf2679c51d2266d855be93292b4fcb20962c2eeee1c3702c2c154"
+    },
+    {
+      "source": "/blog/compiler-workspace.png",
+      "sourceBytes": 1685329,
+      "full": "/blog/compiler-workspace.webp",
+      "fullBytes": 71004,
+      "small": "/blog/compiler-workspace-640.webp",
+      "smallBytes": 18660,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "smallDimensions": [
+        640,
+        360
+      ],
+      "sourceSHA256": "8974e5847dfdd9416da91f7074112a8fd14b9654b55048b7f7e81cdc4ca359ef",
+      "fullSHA256": "a78643f1e738976ebe88865335a78ff42a4164afd7b8a9b2af69116f7c18ebfe",
+      "smallSHA256": "47de3bc4c412cbda36d2a50fd30c67acb7d799f206389b3a70dc1893c75dc463"
+    },
+    {
+      "source": "/blog/lesson-loop.png",
+      "sourceBytes": 1470662,
+      "full": "/blog/lesson-loop.webp",
+      "fullBytes": 119372,
+      "small": "/blog/lesson-loop-640.webp",
+      "smallBytes": 37732,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "smallDimensions": [
+        640,
+        360
+      ],
+      "sourceSHA256": "4612cb0148b368c521595e26bf0d028cf3788f36de44b69a037a0f6fa0c2a907",
+      "fullSHA256": "b4fdf9d05fe56e41c8afdb69f4f3de5ddff1b866e026c8465f8d7abc53179137",
+      "smallSHA256": "c18f3543831c11c28b0b13e52e493cce02f2a23d6f247cd9a8cf85ad479492c5"
+    },
+    {
+      "source": "/blog/ownership-infographic.png",
+      "sourceBytes": 1400942,
+      "full": "/blog/ownership-infographic.webp",
+      "fullBytes": 122214,
+      "small": "/blog/ownership-infographic-640.webp",
+      "smallBytes": 40264,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "67666657580fbae0d3c59f68b3ab02011f7494b07dfcbf3e3740998c838d4650",
+      "fullSHA256": "f7f65de674bffda927373eec06a115f1dde29921bee441604d88038470a5bf4b",
+      "smallSHA256": "ec0b615898cf5e597492af7d8de8776e041d3a17eef8baef62c942f675da5f84"
+    },
+    {
+      "source": "/blog/ownership-workshop.png",
+      "sourceBytes": 2142560,
+      "full": "/blog/ownership-workshop.webp",
+      "fullBytes": 190366,
+      "small": "/blog/ownership-workshop-640.webp",
+      "smallBytes": 54692,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "b2ed3da1f94234cb366a863a151d63bfc7c1adda75578b321fd7958d6115e535",
+      "fullSHA256": "cc20f644182c10fb24c199c8cb682d9feaa64f5fcd13843e47a39cb2174258df",
+      "smallSHA256": "98f7b2b6899a8b298c5fbb7a7f27f3c9b48a574c0dc457128d0cadb48c86551d"
+    },
+    {
+      "source": "/blog/project-ownership.png",
+      "sourceBytes": 1702381,
+      "full": "/blog/project-ownership.webp",
+      "fullBytes": 87942,
+      "small": "/blog/project-ownership-640.webp",
+      "smallBytes": 20888,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "smallDimensions": [
+        640,
+        360
+      ],
+      "sourceSHA256": "c30f6cb621291d604e5b7e5d9c48cb8a0491356b85244fc9a0842d936e771699",
+      "fullSHA256": "a87456379b4e4838418e6b6312a843f55e7becd5951bc812fab8dd721d0e4295",
+      "smallSHA256": "f44df9e89b12fcefc3ff2a17bce7e93f76122150aac57d26d6efb444bddff7e9"
+    },
+    {
+      "source": "/blog/result-infographic.png",
+      "sourceBytes": 1306497,
+      "full": "/blog/result-infographic.webp",
+      "fullBytes": 92584,
+      "small": "/blog/result-infographic-640.webp",
+      "smallBytes": 31206,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "0d3163c52faeaa1036aeb835a98772bdd2faa73b6853f5116fa0d850e42fa77f",
+      "fullSHA256": "ff7561a4d52663f135bc6e7d47f635d0030d9e7088eaf72623730c887794cb3b",
+      "smallSHA256": "b0bb552173fcf1a34889ec338ac536f5e3a30779c4cb46f3bd935ab9145854ba"
+    },
+    {
+      "source": "/blog/result-workshop.png",
+      "sourceBytes": 2116990,
+      "full": "/blog/result-workshop.webp",
+      "fullBytes": 188964,
+      "small": "/blog/result-workshop-640.webp",
+      "smallBytes": 49464,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "f460051dd2b7c3a6f8238ee774c76699f626e0d89d773cd381b33cf4fc1ff8f3",
+      "fullSHA256": "134e657b0e0ecdcc3b6aa29b139784c2941b28e4c012d8365c4c7422d269a8eb",
+      "smallSHA256": "e316b2b9b5d50c7b513da4bb48f32f0fbfbdff3dc3cb57e9059be36925a61ec3"
+    },
+    {
+      "source": "/blog/rust-arithmetic-analysis.png",
+      "sourceBytes": 1419255,
+      "full": "/blog/rust-arithmetic-analysis.webp",
+      "fullBytes": 133992,
+      "small": "/blog/rust-arithmetic-analysis-640.webp",
+      "smallBytes": 43708,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "3207dc769c79d2e5cf109bc4a3123346fda538694de642fd93a7ead9083e7170",
+      "fullSHA256": "933fc48e710cfef70f8fe846a6c08156230507a8f748b096696ec72cc1eba83c",
+      "smallSHA256": "48764e695d9449205665be5fa9e3e37a4402e0ae4831974bfa5b56259dac5033"
+    },
+    {
+      "source": "/blog/rust-arithmetic-editorial.png",
+      "sourceBytes": 2353099,
+      "full": "/blog/rust-arithmetic-editorial.webp",
+      "fullBytes": 294452,
+      "small": "/blog/rust-arithmetic-editorial-640.webp",
+      "smallBytes": 73650,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "cdeba0fe3b011a4abd853864cdd8b608aeee2676b123b5ae1a776af12af8f57e",
+      "fullSHA256": "48777d17aa264afe38e114fe560248a1fcf2348a7c0dc1a76a6fef61b87bf0ee",
+      "smallSHA256": "92be3ad7efd68cc39112220046df552f3cec0a2a7170f6d07d00ec56b2ae751e"
+    },
+    {
+      "source": "/blog/rust-cargo-features-infographic.png",
+      "sourceBytes": 1913534,
+      "full": "/blog/rust-cargo-features-infographic.webp",
+      "fullBytes": 139162,
+      "small": "/blog/rust-cargo-features-infographic-640.webp",
+      "smallBytes": 43174,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "7ff11f5e3d9a1356e46481054cb44bae4f78f163b23b729afba489a355deaa04",
+      "fullSHA256": "95ff79f039fed2966ff2a33da586cd735d3ad72407f13e21d40e91cfc2d6ac60",
+      "smallSHA256": "cf27b3578e3a38ddb8e1cea8c92ad8e571d244e4cd3a45aedea400c01f7571a0"
+    },
+    {
+      "source": "/blog/rust-cargo-features-workshop.png",
+      "sourceBytes": 2280547,
+      "full": "/blog/rust-cargo-features-workshop.webp",
+      "fullBytes": 271800,
+      "small": "/blog/rust-cargo-features-workshop-640.webp",
+      "smallBytes": 64814,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "2c7e66243faa1cf235075a41302b7a02c6098ed8e4bcd3a3b78b46eb41214b66",
+      "fullSHA256": "e6926c7f2d7418b511af17cc8663e81dc01cc3e7d28852367da46f6aa293ef57",
+      "smallSHA256": "43a66520d456a0823d206bc29c9e19a5aa18690e96216948c57ad89b1d238070"
+    },
+    {
+      "source": "/blog/rust-enum-states-infographic.png",
+      "sourceBytes": 1959234,
+      "full": "/blog/rust-enum-states-infographic.webp",
+      "fullBytes": 141712,
+      "small": "/blog/rust-enum-states-infographic-640.webp",
+      "smallBytes": 39148,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "d10b7bf4ce5252c2ff2162e42436b035c696c558244c94dc6d3bc76d96d38bcb",
+      "fullSHA256": "c20e1c65bdb2709112a9f71854e5cbbf9481b3cbdc123c0075cf7f2256985de3",
+      "smallSHA256": "fadabd9dcee4b97bf1560387b3d105e7988e126a964a0aacca92374d179d9e13"
+    },
+    {
+      "source": "/blog/rust-enum-states-workshop.png",
+      "sourceBytes": 2167708,
+      "full": "/blog/rust-enum-states-workshop.webp",
+      "fullBytes": 221258,
+      "small": "/blog/rust-enum-states-workshop-640.webp",
+      "smallBytes": 53594,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "df379363b2a2fafca58f492cf95abf0d2f0b7fd22f5985d84cf4277adb4f36b1",
+      "fullSHA256": "33fb6a1ef4db5168b6e678c5290a2bc75a0533acc962bc7dc15ce3a805c3ac69",
+      "smallSHA256": "5eb3c9b7a41e313e30d0bb469285c58c7cc031f61a2710af912b344bec961a0f"
+    },
+    {
+      "source": "/blog/rust-file-input-analysis.png",
+      "sourceBytes": 1362369,
+      "full": "/blog/rust-file-input-analysis.webp",
+      "fullBytes": 117598,
+      "small": "/blog/rust-file-input-analysis-640.webp",
+      "smallBytes": 37140,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "b2f7c9be54162aaae0ce8110e7b1511eb161505a976fec658afe14e34176d71c",
+      "fullSHA256": "c23304e537b3385efb9a3412f6cad5820fae1fe5f50676ca4cdf067090e8f6b7",
+      "smallSHA256": "c02caf7b35ae8731856b5ad1609552485327f884192be2cdebdb002618911432"
+    },
+    {
+      "source": "/blog/rust-file-input-editorial.png",
+      "sourceBytes": 2531868,
+      "full": "/blog/rust-file-input-editorial.webp",
+      "fullBytes": 333916,
+      "small": "/blog/rust-file-input-editorial-640.webp",
+      "smallBytes": 85476,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "ffad0197b7d13fc1a9218b384f797fdc61bbb60bb49cd96442eb69ec155b4317",
+      "fullSHA256": "8b2967decf52fc71ecd1e35819f1678b6f3b27be0d99f016a9049cd023cd499a",
+      "smallSHA256": "c18ca65e6d3bf8dc78f22465a615fdbdb4e08eec5f462d757896072d72536f2b"
+    },
+    {
+      "source": "/blog/rust-hashmap-analysis.png",
+      "sourceBytes": 1263519,
+      "full": "/blog/rust-hashmap-analysis.webp",
+      "fullBytes": 83800,
+      "small": "/blog/rust-hashmap-analysis-640.webp",
+      "smallBytes": 29128,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "ddadeec6919932337c12275baaaa00951ae402a4b300ff069e8bd8cd39d8bfb6",
+      "fullSHA256": "a134e8b5b1b0f727b856d5b4da32757bd85799340c61654480ca796d5b3360c9",
+      "smallSHA256": "3ce3739179844a36f0be3ca3ee0a7ab5a95f234a9844e56b3f9ce467953a5602"
+    },
+    {
+      "source": "/blog/rust-hashmap-editorial.png",
+      "sourceBytes": 2665668,
+      "full": "/blog/rust-hashmap-editorial.webp",
+      "fullBytes": 364158,
+      "small": "/blog/rust-hashmap-editorial-640.webp",
+      "smallBytes": 96422,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "15fea4b4bc36d6dd8e8b3b0af1724b750c14edd2803c579b7f2fc47d8f57ffb7",
+      "fullSHA256": "1dd25d165a7877d920732029a47c1c129d8710c9038002cc85de623d9936e231",
+      "smallSHA256": "4c293e22faad2dc0d25a7c18a4d24709f555434d49f7741e6920b07840b5cda4"
+    },
+    {
+      "source": "/blog/rust-iterators-v2-infographic.png",
+      "sourceBytes": 1658346,
+      "full": "/blog/rust-iterators-v2-infographic.webp",
+      "fullBytes": 112448,
+      "small": "/blog/rust-iterators-v2-infographic-640.webp",
+      "smallBytes": 38478,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "92b76c38797136f637d885b57dc49f91bae77e679d86f69aaf93152c10a18390",
+      "fullSHA256": "e03bb704657ebfcc67febff5255284036226579415e0638ecb9af86ea5372f27",
+      "smallSHA256": "8a9fbab751eb3b4c0729bcbc711448e877b2995d51a77a8b366d0b0b8d2a0ae2"
+    },
+    {
+      "source": "/blog/rust-iterators-workshop.png",
+      "sourceBytes": 2140184,
+      "full": "/blog/rust-iterators-workshop.webp",
+      "fullBytes": 179340,
+      "small": "/blog/rust-iterators-workshop-640.webp",
+      "smallBytes": 42348,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "98e2a0f30d385a3659cdbebffe84bac53bf6cfbc7ac0ea499000e8e1f0ea3a41",
+      "fullSHA256": "a0fa08e7f23cf85e5fbf1672420bd5b06d6fb954e3481f416515b478088d62e3",
+      "smallSHA256": "cef55e7f6225fa8e1c50b45563659707386c840d8779ca5d4edb8db59c28eaa2"
+    },
+    {
+      "source": "/blog/rust-patterns-analysis.png",
+      "sourceBytes": 1325881,
+      "full": "/blog/rust-patterns-analysis.webp",
+      "fullBytes": 96108,
+      "small": "/blog/rust-patterns-analysis-640.webp",
+      "smallBytes": 31668,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "5b6367013ccb41981574052730fe7662a3995a72d1730440770684521ab1d5f3",
+      "fullSHA256": "71467e5cade516d2a96d0885833a58e9260b465ca7bc3740ce5c31243fefc43b",
+      "smallSHA256": "f253f2f179d21a36ddb358da38cff4b303ef18d849e9ad6f3d0a25b68efcdd51"
+    },
+    {
+      "source": "/blog/rust-patterns-editorial.png",
+      "sourceBytes": 2949576,
+      "full": "/blog/rust-patterns-editorial.webp",
+      "fullBytes": 486814,
+      "small": "/blog/rust-patterns-editorial-640.webp",
+      "smallBytes": 123232,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "4d7518ccc9306a3908da9158ff898fa66aa1878caee21eaf6f84efc9093e985e",
+      "fullSHA256": "bcf2061c7e8500de0815803d63c35b269ec5cd2e6e95d8ff16d0597d98d78df7",
+      "smallSHA256": "593ee379e577c14b1ed4ec8f52a0432e6c936c2b253889309379f876062b6ece"
+    },
+    {
+      "source": "/blog/rust-testing-v2-infographic.png",
+      "sourceBytes": 1524193,
+      "full": "/blog/rust-testing-v2-infographic.webp",
+      "fullBytes": 122958,
+      "small": "/blog/rust-testing-v2-infographic-640.webp",
+      "smallBytes": 41402,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "b1fd3455c64c3ca03fa03ed7915ed447a99e7ede6633aa88752b862e4badda6e",
+      "fullSHA256": "d243f76cd5f7f5559253462aefa355f24d6fd3ba5a551175c43fd9631458da09",
+      "smallSHA256": "6e39720eeaf681fc4867514eab31fd2c769e782840273420846e08d16f555c5d"
+    },
+    {
+      "source": "/blog/rust-testing-workshop.png",
+      "sourceBytes": 2285951,
+      "full": "/blog/rust-testing-workshop.webp",
+      "fullBytes": 266658,
+      "small": "/blog/rust-testing-workshop-640.webp",
+      "smallBytes": 63086,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "ddaaed732874fbfa06ab7714ce7393e82aa868534722db4cd9f8086ad78d2f9c",
+      "fullSHA256": "f83152a8f178c09c758e559fcd8834fa026e79ebc8704746ab3eaf6bd08fe069",
+      "smallSHA256": "5602b422517de03dfd8eddaff1e09245ad54b486e307d8c379d478fd6ca46c4a"
+    },
+    {
+      "source": "/blog/rust-traits-analysis.png",
+      "sourceBytes": 1346430,
+      "full": "/blog/rust-traits-analysis.webp",
+      "fullBytes": 114736,
+      "small": "/blog/rust-traits-analysis-640.webp",
+      "smallBytes": 36974,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "fc754cc35d4d7decb00046156fdfa124ac050aec87fb02f99b63e71090a22b2f",
+      "fullSHA256": "c2306f606d1159aced9215fd864098eda7dc9cebfefe191cb427836ba8b7a162",
+      "smallSHA256": "218805e1f8415f3c35f3e142995177747499d58520b967651835c72990887061"
+    },
+    {
+      "source": "/blog/rust-traits-editorial.png",
+      "sourceBytes": 3000776,
+      "full": "/blog/rust-traits-editorial.webp",
+      "fullBytes": 444362,
+      "small": "/blog/rust-traits-editorial-640.webp",
+      "smallBytes": 83098,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "910b646a6cb7edad8cfdddcfc8a1603ffa668403aca02621206d8f6f7e501cb5",
+      "fullSHA256": "9b0f83a9b535e1483bc3f2d279211fc388be19c6ab7c86419a57bf051a04a986",
+      "smallSHA256": "998f7e192ba330bd1ebaf210927767c855db6e51a0a70e409a65a738e45beb6c"
+    },
+    {
+      "source": "/blog/rust-upgrade-infographic.png",
+      "sourceBytes": 1461855,
+      "full": "/blog/rust-upgrade-infographic.webp",
+      "fullBytes": 117426,
+      "small": "/blog/rust-upgrade-infographic-640.webp",
+      "smallBytes": 41724,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "2144237488b82798fba79044901fdcc6d3684a6aaeecffd3cd8551efe9444df3",
+      "fullSHA256": "fc730f770bcccfe08afb10fb8722da93f5851a19950c4f1afff2e1090a7dd169",
+      "smallSHA256": "3454ed40a18cf3f4202d780c30cf8cad9c03f2080821dc1258175227e424947f"
+    },
+    {
+      "source": "/blog/rust-upgrade-workshop.png",
+      "sourceBytes": 2249658,
+      "full": "/blog/rust-upgrade-workshop.webp",
+      "fullBytes": 237658,
+      "small": "/blog/rust-upgrade-workshop-640.webp",
+      "smallBytes": 60520,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "c76b3e9aea654c4754549aaf167e0d1f88233f16574c95f3e4ca8bd5247ce5eb",
+      "fullSHA256": "d491f47a854908504876ea4c95b82bcbc550b4523e0abf84032a77aca445ab47",
+      "smallSHA256": "0060a38e3fce09f64d47fdae0bd2eeb0ce872dd771f3b1dfa09d33208e16e39c"
+    },
+    {
+      "source": "/blog/rust-utf8-infographic.png",
+      "sourceBytes": 1839968,
+      "full": "/blog/rust-utf8-infographic.webp",
+      "fullBytes": 130788,
+      "small": "/blog/rust-utf8-infographic-640.webp",
+      "smallBytes": 41344,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "65f4cf0c098ae1acd5be884aa1a034c70d7df6334296a0fdd11c105c852cbe52",
+      "fullSHA256": "0c608d1db5fb8ee28da2dea2427725501e4519da58c5abed89229f59f6fa0c15",
+      "smallSHA256": "f0566d0c2601308e36ea9890ec414e39bcf9b02fc447dca403fa091bb709e264"
+    },
+    {
+      "source": "/blog/rust-utf8-workshop.png",
+      "sourceBytes": 2262778,
+      "full": "/blog/rust-utf8-workshop.webp",
+      "fullBytes": 228472,
+      "small": "/blog/rust-utf8-workshop-640.webp",
+      "smallBytes": 58418,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "smallDimensions": [
+        640,
+        427
+      ],
+      "sourceSHA256": "4e852fa0cba3319ec1b6106e3003def88ebea7a7e4445dc776d95abf3a78dac7",
+      "fullSHA256": "36d22c898de9d1b641ddbf16b29ae1389744cfb03477128eebb1109acaf59269",
+      "smallSHA256": "a2c08d72526ca3b779d9327c91c129202e3528e03911d26f4009e7251e3ac32c"
+    }
+  ],
+  "originalBytes": 57054851,
+  "fullWebPBytes": 5571620,
+  "cardWebPBytes": 1497714,
+  "encoding": "Pillow WebP quality 92, method 6; 640px card copies and original-size copies. Original ImageGen PNGs preserved."
+}

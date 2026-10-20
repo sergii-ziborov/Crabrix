@@ -1,5 +1,255 @@
 [
   {
+    "slug": "rust-buffered-text-input-errors",
+    "title": "Rust text input: buffered reading without lost errors",
+    "date": "2026-10-20",
+    "summary": "Read text reliably in Rust with BufRead, Cursor and reusable buffers. Preserve I/O errors, define line rules, and validate records before changing state.",
+    "readingMinutes": 9,
+    "sections": [
+      {
+        "heading": "Reading a file is several separate operations",
+        "paragraphs": [
+          "A file can open successfully and still contain invalid UTF-8. Its text can decode correctly and still contain a malformed record. A record can have the expected fields and still violate a domain limit. Combining all these situations into “could not read file” makes an importer difficult to repair and test. Separate access to bytes, text decoding, line handling and domain validation so each failure has a useful meaning.",
+          "We will begin with an in-memory reader, which makes the behavior repeatable without depending on a filesystem path. The same parsing function can later accept a buffered file on a desktop. In Crabrix, the in-memory examples run without any extra dependency. Filesystem access in the app belongs to its project sandbox; this guide does not promise access to arbitrary device files or a desktop home directory."
+        ],
+        "image": {
+          "src": "/blog/rust-file-input-editorial.png",
+          "alt": "A paper ribbon passes through a buffered inspection station while malformed segments are retained in a separate tray.",
+          "caption": "Keep access, decoding and validation as distinct stages, and retain enough information to explain a rejected record.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Choose between a whole string and a stream",
+        "paragraphs": [
+          "Reading a small configuration into a complete string can be a sensible choice. It simplifies borrowed parsing and lets several passes inspect the same input. A line-oriented stream is useful when processing should begin incrementally or when retaining the entire file is unnecessary. Neither approach is always superior. The right choice depends on input limits, validation requirements and whether later operations need earlier text to remain available.",
+          "Buffering reduces small underlying reads, but it does not by itself impose a hard bound on line length. A single extremely long line can still require a large string. If input is untrusted or a product needs strict memory limits, define a maximum record size and enforce it deliberately. Avoid teaching “line by line uses constant memory” without stating the assumptions about line size and any accumulated output. A streaming parser can still collect enough results to consume substantial memory."
+        ]
+      },
+      {
+        "heading": "Use Cursor to make the first example deterministic",
+        "paragraphs": [
+          "`Cursor` adapts an in-memory byte sequence to the standard I/O interfaces. That lets a parser accept a reader while tests provide exact bytes. The example below reads two integers using the `lines` iterator. Each item is a `Result`, because reading and decoding a line can fail. The parser preserves that failure, adds a line number to numeric validation, and returns a vector only when every line is accepted.",
+          "This importer intentionally trims surrounding whitespace and rejects an empty line as an invalid integer. Those are format choices. If blank lines should be ignored, add a rule and a fixture for it. If the final vector is unnecessary, the same approach can process accepted values incrementally, but consider whether a later failure should undo earlier effects. The small example keeps validation free of external writes so a rejected input cannot leave half an import stored."
+        ],
+        "code": "use std::io::{BufRead, Cursor};\nfn readings<R: BufRead>(reader: R) -> Result<Vec<u32>, String> {\n    reader.lines().enumerate().map(|(index, line)| {\n        let line = line.map_err(|error| format!(\"line {}: {error}\", index + 1))?;\n        line.trim().parse::<u32>()\n            .map_err(|error| format!(\"line {}: {error}\", index + 1))\n    }).collect()\n}\nfn main() {\n    assert_eq!(readings(Cursor::new(b\"12\n7\n\")), Ok(vec![12, 7]));\n    let error = readings(Cursor::new(b\"12\nbad\n\")).unwrap_err();\n    assert!(error.starts_with(\"line 2:\"));\n    println!(\"Reader checks passed\");\n}"
+      },
+      {
+        "heading": "Distinguish the failure layers in the report",
+        "paragraphs": [
+          "The conceptual pipeline in the infographic starts with bytes, decodes text, identifies lines and validates domain values. Its sample labels illustrate the stages; they are not an assertion that the displayed greeting parses into the displayed table. In Rust’s buffered text APIs, invalid UTF-8 is reported through an I/O result. A valid line whose field cannot be parsed is a later validation failure. A production error type can retain these categories as separate variants.",
+          "This separation helps both people and interfaces. An access failure may need a different file selection; an encoding failure may need a supported export format; a malformed field may need editing on a specific line. Avoid responding to all three by silently skipping the record. Preserve the underlying cause where possible, attach bounded context at the stage that understands it, and keep sensitive whole-file content out of routine logs."
+        ],
+        "image": {
+          "src": "/blog/rust-file-input-analysis.png",
+          "alt": "Bytes pass through UTF-8 decoding, line processing and domain validation, with a read_line loop that clears its buffer and stops at zero bytes.",
+          "caption": "These are conceptual stages. Text-reading errors and field-validation errors need separate handling.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "Standard library: BufRead",
+            "url": "https://doc.rust-lang.org/std/io/trait.BufRead.html"
+          },
+          {
+            "title": "Standard library: Cursor",
+            "url": "https://doc.rust-lang.org/std/io/struct.Cursor.html"
+          }
+        ]
+      },
+      {
+        "heading": "A reusable read_line buffer must be cleared",
+        "paragraphs": [
+          "`read_line` appends to the string supplied by the caller. Reusing one string without clearing it makes the next operation see accumulated text from earlier lines. That can look like a parser defect even though the parser is faithfully processing the contents it received. Clear the buffer before each new read when the intended unit is one line, then inspect the returned byte count to detect end of input.",
+          "A return value of zero indicates that no further bytes were read at the end of the stream. It is not the same as a blank line: a blank line contains a line terminator and therefore has a nonzero byte count when read. The complete program below demonstrates the reuse pattern without a filesystem dependency. It also retains the terminators in the stored strings, making the difference from the `lines` iterator explicit and testable."
+        ],
+        "code": "use std::io::{self, BufRead, Cursor};\nfn main() -> io::Result<()> {\n    let mut reader = Cursor::new(b\"first\n\nthird\n\");\n    let mut buffer = String::new();\n    let mut records = Vec::new();\n    loop {\n        buffer.clear();\n        let bytes_read = reader.read_line(&mut buffer)?;\n        if bytes_read == 0 { break; }\n        records.push(buffer.clone());\n    }\n    assert_eq!(records, vec![\"first\n\", \"\n\", \"third\n\"]);\n    println!(\"Read {} lines, including a blank line\", records.len());\n    Ok(())\n}"
+      },
+      {
+        "heading": "Do not erase I/O errors with a convenient adapter",
+        "paragraphs": [
+          "An iterator of line results is not just an iterator of strings. Using a filtering operation that keeps only successful items can make read or decoding failures disappear. That may produce a plausible partial report while hiding the exact record that needed attention. A strict importer should propagate failures. An intentionally tolerant importer should retain a count and explanation of rejected records according to a documented policy.",
+          "The same issue appears at later stages. Converting parse errors to `None` and filtering them out changes “every record must be valid” into “any record we could parse is good enough.” Both can be legitimate products, but they are different promises. Write down the promise before choosing adapters. A shorter expression does not compensate for losing the information users need to understand why their import contains fewer records than the source."
+        ]
+      },
+      {
+        "heading": "Line endings belong to the input format",
+        "paragraphs": [
+          "Different line APIs preserve different details. `BufRead::lines` yields strings without their newline terminators and handles a carriage return before the newline as part of the line ending. `read_line` retains the bytes it appends, including a terminator when present. Splitting a whole string literally on a newline can leave carriage returns or trailing empty pieces. Choose the operation that matches the format rather than treating them as identical spellings.",
+          "Trimming all whitespace is another transformation. It is convenient for our numeric example, but it may remove meaningful leading or trailing spaces from a text field. If a format preserves spaces, remove only the terminator according to that format’s rules. Test Unix-style line endings, Windows-style endings, an empty line and a final record without a terminator. These small fixtures catch real interoperability defects that a large ordinary sample can miss."
+        ]
+      },
+      {
+        "heading": "Attach record context before ownership moves on",
+        "paragraphs": [
+          "A line number is easiest to obtain while iterating through lines. A field name is easiest to obtain while validating that field. A file label belongs to the caller that opened or selected the input. Preserve context at those boundaries instead of trying to reconstruct it later from a generic error string. A structured error can carry a category, location and underlying cause while allowing an interface to choose suitable wording.",
+          "Avoid attaching an entire sensitive record by default. A line number and field name may be sufficient, and a bounded redacted preview can be a separate diagnostic policy. Also distinguish byte positions from visible columns if errors identify substrings. UTF-8 offsets cannot be presented as universal character indexes without a conversion rule. Good context identifies the repair location accurately while disclosing only the information needed for that repair."
+        ]
+      },
+      {
+        "heading": "Validate before committing an import",
+        "paragraphs": [
+          "Incremental reading and incremental permanent writes are independent decisions. A parser can read line by line while collecting a validated batch, then store it only after all records pass. Alternatively, a large import may use a transaction or a documented partial-success policy. The choice depends on the storage system and the product’s recovery requirements, not simply on whether the input arrived through a buffered reader.",
+          "For a small project, keeping parsing pure and separating the final update often gives the clearest failure behavior. If line seven is malformed, the old project state remains available and the user can correct the file. If partial success is intentional, report which records were accepted and make retry behavior explicit. Otherwise users may retry the whole file and create duplicates because the interface concealed that earlier records were already stored."
+        ]
+      },
+      {
+        "heading": "Keep the core independent of one file path",
+        "paragraphs": [
+          "A function accepting a reader can be reused with an in-memory cursor, a buffered file or another suitable source. The caller decides how access is obtained, while the core decides what the bytes and records mean. This separation is particularly useful across a desktop filesystem and an app-managed project sandbox, where opening a source can have different platform rules.",
+          "Do not interpret the generic reader as a promise that every source has identical latency or failure behavior. The core still needs to propagate read errors and respect its input limits. Keep platform access checks near file selection and parsing checks near the reader function. Then a failing fixture identifies the rule that broke rather than requiring an interactive file picker for every test."
+        ]
+      },
+      {
+        "heading": "Bound records before trusting an input stream",
+        "paragraphs": [
+          "A reusable buffer retains capacity after it is cleared. That can be beneficial for ordinary repeated lines, but a single huge record can leave a large allocation retained for the rest of the import. If strict limits matter, use a deliberate bounded-reading strategy and decide what to do with the remainder of a rejected record. Checking length only after reading the whole line does not prevent its initial allocation.",
+          "A maximum file size and a maximum line size are different limits. An input may contain many short records or one very long record. Specify both when the product requires them, and test the rejection path without storing partial results accidentally. Buffering is an I/O technique; resource limits are part of the parser’s contract and need their own enforcement."
+        ]
+      },
+      {
+        "heading": "Test readers independently from file selection",
+        "paragraphs": [
+          "An in-memory fixture can test valid text, malformed fields, blank lines, missing final terminators and invalid UTF-8 bytes without depending on the operating system’s file picker. Separate integration checks can verify that a selected project file is opened from the correct sandbox location and that access failures are reported. This division makes parser failures repeatable and keeps platform-specific access behavior visible at its own boundary.",
+          "Before shipping, explain four policies in plain language: which encoding is accepted, how lines and whitespace are treated, what validation rejects, and what remains unchanged after failure. Then keep fixtures for each boundary. A reliable text importer is not defined by one clever loop. It is defined by preserving data and errors through a sequence of understandable decisions, from the first byte to the final accepted domain value."
+        ]
+      }
+    ],
+    "relatedSlugs": [
+      "rust-strings-utf8-safe-parsing",
+      "rust-iterators-without-extra-allocations",
+      "result-errors-that-help"
+    ]
+  },
+  {
+    "slug": "rust-traits-generics-dynamic-dispatch",
+    "title": "Rust traits and generics: choose a clear dispatch boundary",
+    "date": "2026-10-19",
+    "summary": "Design small Rust traits, use generic bounds, and understand borrowed dyn trait objects. Compare dispatch choices without invented performance claims.",
+    "readingMinutes": 8,
+    "sections": [
+      {
+        "heading": "Begin with shared behavior you actually need",
+        "paragraphs": [
+          "Two types can have different storage and still support the same useful operation. A temperature sensor might compute a reading from one field, while a counter exposes a stored total. A report may only need a number from either source. A trait names that shared behavior without requiring the two types to share a representation or inherit from the same data structure.",
+          "The important design question is what the caller needs to do. Starting with an abstract interface before identifying a real shared operation can create unnecessary generic parameters and awkward methods. This guide builds one small trait, then uses it through both a generic function and a borrowed trait object. All examples use the standard library and can run in Crabrix. We will keep dispatch, ownership and allocation as separate decisions throughout the explanation."
+        ],
+        "image": {
+          "src": "/blog/rust-traits-editorial.png",
+          "alt": "Two differently shaped measuring instruments share one connector and feed direct and selectable routes through an architectural interface.",
+          "caption": "Share an operation where it helps callers; keep concrete storage and ownership decisions explicit.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "A trait is a contract for operations",
+        "paragraphs": [
+          "Our trait, `Measure`, exposes a read-only method returning an `i32`. It deliberately says little about how the value is stored or obtained. A `Counter` returns its stored value; an `Offset` computes a value from a base and a small adjustment. These are illustrative measurements with a bounded example input, not an overflow-safe numeric framework. If the domain permits extreme values, the operation’s numeric policy must be designed too.",
+          "A generic function constrained by `T: Measure` can call the promised method without knowing which fields a concrete type contains. The bound is useful because it states the capability required by that function. The compiler checks each implementation and use against the trait’s declared interface. It does not prove that the measured number is physically accurate or that two implementations use the same units. Those semantic requirements belong in the trait’s documentation and tests."
+        ],
+        "code": "trait Measure { fn value(&self) -> i32; }\nstruct Counter { count: i32 }\nstruct Offset { base: i32, adjustment: i32 }\nimpl Measure for Counter { fn value(&self) -> i32 { self.count } }\nimpl Measure for Offset {\n    fn value(&self) -> i32 { self.base + self.adjustment }\n}\nfn doubled<T: Measure>(source: &T) -> i32 { source.value() * 2 }\nfn main() {\n    let counter = Counter { count: 7 };\n    let offset = Offset { base: 10, adjustment: -2 };\n    assert_eq!(doubled(&counter), 14);\n    assert_eq!(doubled(&offset), 16);\n    println!(\"Generic checks passed\");\n}"
+      },
+      {
+        "heading": "Generics keep the concrete type available",
+        "paragraphs": [
+          "A generic parameter lets the caller supply a concrete type satisfying the bound. The function body can use the trait’s promised operations, while compilation retains knowledge of the concrete instantiation. This is commonly associated with static dispatch and monomorphization. It is a useful default when one concrete type flows through a call and the API benefits from preserving that type’s relationships.",
+          "Do not turn that mechanism into an automatic speed claim. Inlining, optimization, code size and the work inside the operation all affect actual results. Generic code can produce multiple instantiations, while dynamic calls can affect optimization opportunities. The infographic compares where concrete type information is retained or hidden; its arrows are not a benchmark. Choose an understandable API first, then measure a demonstrated performance problem under the real workload."
+        ],
+        "image": {
+          "src": "/blog/rust-traits-analysis.png",
+          "alt": "Generic concrete types flow through separate generic uses, while two implementations can be borrowed through one dyn Measure interface.",
+          "caption": "Generics preserve concrete type information at the call boundary; a trait object supplies a common interface with dynamic dispatch.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "The Rust Book: traits and shared behavior",
+            "url": "https://doc.rust-lang.org/book/ch10-02-traits.html"
+          }
+        ]
+      },
+      {
+        "heading": "Borrowed trait objects can support runtime choice",
+        "paragraphs": [
+          "A `&dyn Measure` refers to a value through the trait’s interface. The concrete value still exists and still has an owner, but the caller using that reference works through dynamic dispatch. This is useful when a collection or runtime choice needs to treat several concrete implementations uniformly. The trait must meet Rust’s dyn-compatibility requirements before it can be used this way.",
+          "A borrowed trait object does not require a `Box`. The next complete program keeps two concrete values on the stack and stores references to them in an array. The owners remain alive during the iteration. This is a useful correction to the oversimplified rule that dynamic dispatch necessarily means a heap allocation. Allocation follows the chosen owner and container; dispatch follows how methods are selected through the interface."
+        ],
+        "code": "trait Measure { fn value(&self) -> i32; }\nstruct Counter(i32);\nstruct Fixed(i32);\nimpl Measure for Counter { fn value(&self) -> i32 { self.0 } }\nimpl Measure for Fixed { fn value(&self) -> i32 { self.0 } }\nfn main() {\n    let counter = Counter(7);\n    let fixed = Fixed(9);\n    let sources: [&dyn Measure; 2] = [&counter, &fixed];\n    let total: i32 = sources.iter().map(|source| source.value()).sum();\n    assert_eq!(total, 16);\n    println!(\"Borrowed total: {total}\");\n}",
+        "sources": [
+          {
+            "title": "The Rust Reference: dyn compatibility",
+            "url": "https://doc.rust-lang.org/reference/items/traits.html"
+          }
+        ]
+      },
+      {
+        "heading": "Keep ownership separate from dispatch",
+        "paragraphs": [
+          "A shared reference permits inspection without taking ownership. A mutable reference permits exclusive access under borrowing rules. An owned `Box<dyn Trait>` can store a dynamically selected implementation independently of a temporary caller, subject to its lifetime requirements. These shapes solve different storage and access needs. They are not interchangeable decorations added to make a compiler error disappear.",
+          "Ask who owns the concrete value, how long the interface must survive, and whether mutation is required. A report that reads a short-lived source can borrow it. A long-lived plugin registry may need owned objects. A mutable service may require `&mut self` methods and careful exclusive access. Choosing an owner first often makes the dispatch form straightforward, while choosing `Box` by habit can introduce allocation and lifetime constraints the product never needed."
+        ]
+      },
+      {
+        "heading": "Small traits make obligations easier to explain",
+        "paragraphs": [
+          "A trait with one coherent responsibility is easier to implement and test than an interface containing every operation a large application might eventually need. If a formatter only reads a value, it should not require implementers to support reset, persistence, networking and deletion. Large interfaces can force meaningless stub methods and make mock implementations appear valid while silently ignoring important behavior.",
+          "Keep related operations together when they share a genuine contract. If reading a value also requires a unit, document that relationship or return a type that carries it. If failure is possible, represent it in the return type rather than promising an infallible integer and panicking internally for ordinary environmental errors. Trait design is API design: method names, error behavior, borrowing and units all matter as much as the presence of the `trait` keyword."
+        ]
+      },
+      {
+        "heading": "Associated types express relationships, not arbitrary choice",
+        "paragraphs": [
+          "An associated type can describe a type chosen by an implementation, such as an iterator’s item type. A generic parameter can instead represent a type supplied at a particular use or implementation boundary. The distinction becomes important when callers need to state relationships between operations. Do not choose between the two solely by which spelling produces fewer angle brackets in a small example.",
+          "Start with a concrete question: does one implementation have one natural output type, or should the same implementation support several independently selected types? Then examine how callers constrain that choice. Our introductory `Measure` trait fixes its output to `i32` to keep the dispatch explanation small. A production measurement API might use a domain-specific value type or an associated output, but that extra flexibility should solve a real caller requirement rather than anticipate every possible future extension."
+        ]
+      },
+      {
+        "heading": "Default methods should preserve the contract",
+        "paragraphs": [
+          "A trait can provide a default method implementation using its other promised operations. This is useful when a common behavior can be expressed correctly for all conforming implementations. Implementers can override it when the API permits, but the override should still respect the documented semantics. A default is shared behavior, not a license for implementations to return incompatible meanings under the same method name.",
+          "Tests should exercise both ordinary implementations and any override whose behavior differs internally. Compare observable results, error propagation and ownership effects where relevant. Avoid making tests depend on whether a call used the default body or an override unless that distinction is itself part of a documented extension contract. Callers usually care that the operation means the same thing, not which source file contains the implementation."
+        ]
+      },
+      {
+        "heading": "Use an enum when the alternatives form a closed set",
+        "paragraphs": [
+          "Traits are especially useful when implementations can be extended independently. An enum can be simpler when the set of alternatives is intentionally closed and callers need to handle each variant explicitly. A small application with two known source types may benefit from an enum and exhaustive matches, particularly if the variants carry different data that the caller must inspect.",
+          "Neither choice is a universal maturity level. Replacing every enum with trait objects can hide useful structural information, while forcing an open-ended extension system into one central enum can make independent additions awkward. Identify who is allowed to add alternatives and which operations need exhaustive decisions. That boundary often reveals the appropriate representation more clearly than an abstract debate about static and dynamic dispatch."
+        ]
+      },
+      {
+        "heading": "Argument impl Trait is not a trait object",
+        "paragraphs": [
+          "A function parameter written with `impl Trait` can offer a concise way to accept a type satisfying a bound. It does not mean the caller passes a dynamically dispatched trait object. Keep the difference visible when explaining examples: a generic argument and a borrowed `dyn Trait` interface solve related but distinct API problems.",
+          "Return-position `impl Trait` also has its own contract: the function hides a concrete return type satisfying the bounds, rather than promising arbitrary unrelated concrete types on different branches. If runtime alternatives require different concrete values, consider an enum or an appropriate trait object. Do not change the spelling until the desired relationship between branches and callers is clear."
+        ]
+      },
+      {
+        "heading": "Review dyn compatibility when the interface grows",
+        "paragraphs": [
+          "A small trait used through `dyn` can stop being dyn-compatible after its interface changes. Methods with their own generic type parameters or requirements involving a concrete Self need particular care. Consult the trait rules and compile a representative trait-object caller whenever adding methods; an internal implementation test alone may not expose the public compatibility break.",
+          "Sometimes a method can deliberately be restricted to sized implementers while the remaining interface stays usable through a trait object. Sometimes the design needs a separate extension trait. The appropriate fix depends on which callers need the new operation. Treat compatibility as part of the API promise, and keep a minimal external-style example that uses the public trait in the supported form."
+        ]
+      },
+      {
+        "heading": "Verify the promise at the caller boundary",
+        "paragraphs": [
+          "Test the operation through the same interface real callers use. For a generic helper, exercise at least two meaningfully different implementations so the helper does not accidentally rely on an unstated concrete assumption. For a heterogeneous trait-object collection, verify the runtime-selected implementations produce the intended results and that their owners remain valid for the collection’s lifetime.",
+          "When performance becomes relevant, compare equivalent behavior and error handling under the same build settings. Record code-size and timing observations separately rather than assuming one determines the other. A useful design review ends with clear answers: what behavior is shared, what remains concrete, who owns the value, whether runtime variation is required, and how failures are represented. Those answers make traits an aid to understanding instead of an abstraction layer that callers must work around."
+        ]
+      }
+    ],
+    "relatedSlugs": [
+      "rust-enums-state-machines",
+      "ownership-in-a-real-program",
+      "testing-rust-boundaries-fixtures-doctests"
+    ]
+  },
+  {
     "slug": "rust-enums-state-machines",
     "title": "Rust enums and state machines: make invalid states explicit",
     "date": "2026-10-18",
@@ -142,6 +392,257 @@
     ]
   },
   {
+    "slug": "rust-checked-arithmetic-conversions",
+    "title": "Rust numeric safety: checked arithmetic and honest conversions",
+    "date": "2026-10-18",
+    "summary": "Choose explicit Rust overflow and conversion policies. Compare checked, wrapping and saturating arithmetic, handle narrowing, and test numeric boundaries.",
+    "readingMinutes": 8,
+    "sections": [
+      {
+        "heading": "The type is only the first numeric decision",
+        "paragraphs": [
+          "A counter can have the correct integer type and still behave incorrectly at its boundary. A conversion can compile and still discard information the application needed. Rust gives these operations defined rules, but the rules do not automatically match a product’s intent. A completed-task count, circular sequence number and brightness control can reasonably need three different answers to the same overflowing sum.",
+          "This guide starts with a byte-sized calculation so every result can be checked by hand. We then separate conversion from arithmetic, examine signed and unsigned values, and build a small checked calculation. The programs use only the standard library. They are useful in Crabrix and in larger desktop projects because the central question is the same: which values are valid, and how should an invalid result be reported?"
+        ],
+        "image": {
+          "src": "/blog/rust-arithmetic-editorial.png",
+          "alt": "A precision instrument sends an overflowing flow toward a safety gate, a circular return track and a capped reservoir.",
+          "caption": "Rejecting, wrapping and clamping express different rules at the same numeric boundary.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Calculate the boundary before choosing the method",
+        "paragraphs": [
+          "A `u8` represents integers from zero through 255. Adding ten to 250 produces the mathematical result 260, which does not fit. `checked_add` returns `None`; `wrapping_add` reduces the result modulo 256 and returns four; `saturating_add` clamps it to 255. None of these is the universally correct product behavior. The choice depends on what the stored number means and what a caller needs to know.",
+          "The example makes all three policies executable. Printing an option with debug formatting is a convenient way to observe `None`, while assertions state the expected results independently of the output. Do not treat saturation as error reporting: after clamping, the result no longer tells you how far beyond the limit the mathematical answer was. Similarly, wrapping preserves modular behavior but loses the original magnitude. Select the policy before using its name in code."
+        ],
+        "code": "fn main() {\n    let value = 250_u8;\n    assert_eq!(value.checked_add(10), None);\n    assert_eq!(value.wrapping_add(10), 4);\n    assert_eq!(value.saturating_add(10), 255);\n    println!(\"checked: {:?}\", value.checked_add(10));\n    println!(\"wrapping: {}\", value.wrapping_add(10));\n    println!(\"saturating: {}\", value.saturating_add(10));\n}"
+      },
+      {
+        "heading": "Avoid making build profiles part of the domain rule",
+        "paragraphs": [
+          "Ordinary integer arithmetic can panic on overflow when overflow checks are enabled. Common development and release profiles use different defaults, and those settings can be changed. A statement such as “debug always panics and release always wraps” overstates what a build profile guarantees. Constant evaluation has its own restrictions too. If the application needs a stable policy, express that policy through the appropriate operation rather than relying on a profile name.",
+          "This distinction prevents a particularly confusing defect: a test run appears to reject an excessive count, while another build silently produces a wrapped value. Named methods make the intended behavior visible in both places. The infographic compares the exact byte-sized results from our example and separately shows a narrowing conversion. It does not present a performance ranking or imply that a conversion and an addition are the same operation."
+        ],
+        "image": {
+          "src": "/blog/rust-arithmetic-analysis.png",
+          "alt": "For u8 250 plus 10, checked_add gives None, wrapping_add gives 4, and saturating_add gives 255; narrowing 300 gives 44 or an error depending on the conversion.",
+          "caption": "A numeric boundary needs an explicit policy. Build-profile defaults are not an application contract.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "Standard library: checked, wrapping and saturating integer operations",
+            "url": "https://doc.rust-lang.org/std/primitive.u8.html"
+          },
+          {
+            "title": "Cargo reference: overflow checks in profiles",
+            "url": "https://doc.rust-lang.org/cargo/reference/profiles.html"
+          }
+        ]
+      },
+      {
+        "heading": "A lossy cast is not an unsafe Rust operation",
+        "paragraphs": [
+          "An integer narrowing cast with `as` has defined behavior. Casting 300 to `u8` retains the low eight bits and produces 44. That can be a logical error for an inventory count, but it does not require an `unsafe` block and is not automatically memory unsafety. Keeping these terms separate matters when learning Rust: “inappropriate for this domain” and “violates a memory-safety requirement” describe different problems.",
+          "Use a fallible conversion such as `u8::try_from` when out-of-range input should be rejected. Use `From` when the particular conversion is guaranteed to succeed. The choice communicates information to a caller: either a valid destination value is produced, or the caller receives a conversion failure to handle. Do not solve a compiler type mismatch by adding `as` before examining whether the source’s negative values or larger range are meaningful."
+        ],
+        "code": "fn main() {\n    let large = 300_i32;\n    assert_eq!(large as u8, 44);\n    assert!(u8::try_from(large).is_err());\n    assert!(u8::try_from(-1_i32).is_err());\n    assert_eq!(u16::from(250_u8), 250);\n    println!(\"Conversion checks passed\");\n}",
+        "sources": [
+          {
+            "title": "Standard library: TryFrom",
+            "url": "https://doc.rust-lang.org/std/convert/trait.TryFrom.html"
+          }
+        ]
+      },
+      {
+        "heading": "Validate each stage of a calculation",
+        "paragraphs": [
+          "A report total may multiply a unit price by a quantity and then add a fee. Checking only the final addition leaves the multiplication unexamined. If an intermediate result overflows before the final check, the program has already lost the correct mathematical value. Break the expression into stages and choose a policy for each stage that can exceed the representation’s range.",
+          "The function below reports the stage that failed. Its inputs are illustrative integer units, not a complete financial model: it does not define currency rounding, taxation or decimal precision. That limitation keeps the example’s contract precise. The useful pattern is chaining checked operations while preserving enough context to distinguish multiplication failure from addition failure. Callers can then decide whether to ask for different input, use a wider representation or reject the operation."
+        ],
+        "code": "fn total(unit: u32, quantity: u32, fee: u32) -> Result<u32, &'static str> {\n    let subtotal = unit.checked_mul(quantity).ok_or(\"subtotal overflow\")?;\n    subtotal.checked_add(fee).ok_or(\"fee overflow\")\n}\nfn main() {\n    assert_eq!(total(12, 3, 2), Ok(38));\n    assert_eq!(total(u32::MAX, 2, 0), Err(\"subtotal overflow\"));\n    assert_eq!(total(u32::MAX, 1, 1), Err(\"fee overflow\"));\n    println!(\"Checked total: {}\", total(12, 3, 2).unwrap());\n}"
+      },
+      {
+        "heading": "Signed values need their own boundaries",
+        "paragraphs": [
+          "An unsigned type excludes negative values, but choosing it does not make every conversion from signed input valid. A negative temperature or offset may be meaningful in the source domain. Casting it into an unsigned type changes its representation according to Rust’s rules; it does not establish that the original value was acceptable. Validate the domain and use a conversion that preserves the intended failure behavior.",
+          "Signed arithmetic also has asymmetric endpoints: the minimum signed value has one more unit of magnitude than the maximum positive value. Operations such as negation, absolute value or division of the minimum value by negative one deserve explicit boundary consideration. You do not need to memorize every edge immediately. Read the operation’s documented checked variant and add a fixture for the exact boundary your function can encounter, especially when accepting values from outside the program."
+        ]
+      },
+      {
+        "heading": "Division needs a policy beyond truncation",
+        "paragraphs": [
+          "Integer division truncates toward zero. That is useful when the application wants whole units, but it can surprise someone expecting a fractional average. A zero divisor is another separate condition, and signed division can also encounter a representability boundary. A checked division method can express failure without depending on a panic as ordinary control flow. Decide what the caller should see when a division cannot produce a supported result.",
+          "Converting to floating point changes the problem rather than universally solving it. Floating-point operations have their own precision and special-value rules. A display that needs an approximate average can reasonably choose a floating type; a protocol field requiring an exact integer cannot silently adopt that choice. State whether rounding, truncation or a remainder is part of the intended result. Tests should verify the rule with values that do not divide evenly, not only convenient multiples."
+        ]
+      },
+      {
+        "heading": "Choose an index width from the target contract",
+        "paragraphs": [
+          "`usize` is appropriate for collection lengths and indexes because its width follows the target’s pointer width. That does not make it an ideal serialized file count or cross-platform protocol integer. An on-device WASI target and a desktop host can use different widths. If a file format specifies a fixed-width integer, keep that representation explicit and validate conversions when moving into an indexing operation.",
+          "The same reasoning applies to counts that might exceed available memory. A valid serialized count does not prove that allocating that many elements is possible or acceptable. Validate limits before allocation, and distinguish a format’s maximum from the product’s supported maximum. The goal is not to make every number larger. It is to make representation changes visible at the boundaries where their assumptions can be checked."
+        ]
+      },
+      {
+        "heading": "Keep errors informative without hiding them in defaults",
+        "paragraphs": [
+          "Replacing a failed conversion or checked operation with zero can make the program continue while silently changing its meaning. That is acceptable only when zero is the documented fallback. For many counters, a clear error is better than an apparently valid but fabricated result. Use an error type with enough structure for the caller to distinguish unsupported input, arithmetic overflow and an unavailable external value.",
+          "Also avoid logging whole sensitive records just to explain a failed calculation. A field name, operation stage and bounded numeric context may be enough. Preserve the original input where recovery requires it, and avoid partially updating persistent state before validation succeeds. Numeric safety includes what the application does after failure, not merely whether a helper returned `None` or `Err` somewhere along the path."
+        ]
+      },
+      {
+        "heading": "Units can be wrong even when the integer fits",
+        "paragraphs": [
+          "A type range cannot tell whether a number represents seconds, milliseconds or a count of records. Adding two values with the same primitive type can still be a domain mistake when their units differ. Clear names help, and small wrapper types can make important distinctions explicit at API boundaries. Validate representation and units as separate requirements.",
+          "For example, converting a supported duration into a smaller display unit needs a rounding rule as well as an overflow rule. Multiplying before dividing can overflow even when the final mathematical result would fit. Reordering operations can change truncation. Write the intended formula and units first, then choose checked stages or a representation that can express the required intermediate values."
+        ]
+      },
+      {
+        "heading": "Approximate values need a different comparison policy",
+        "paragraphs": [
+          "Floating-point values represent many real-world measurements approximately. Converting an integer calculation into floating point does not provide unlimited exact arithmetic, and a successful conversion does not guarantee every possible integer remains distinguishable. Choose an error tolerance from the measurement or algorithm when approximate comparison is required; an arbitrary small constant is not a universal solution.",
+          "Also decide how the application handles non-finite results and invalid input before displaying a total or storing a measurement. These concerns are separate from integer overflow, but both illustrate why a numeric type alone cannot specify the whole contract. Keep examples for ordinary values and the actual failure boundaries the product accepts rather than relying on a few convenient calculations that happen to be exact."
+        ]
+      },
+      {
+        "heading": "Test the mathematical boundary and the recovery path",
+        "paragraphs": [
+          "For each numeric operation, test an ordinary result, the largest accepted result and the first rejected result where practical. For a conversion, include a negative source when the destination is unsigned and an excessive positive source when narrowing. For a multi-stage calculation, create separate cases that fail at each stage. Assertions should describe the expected domain result, not simply confirm that execution did not panic.",
+          "If an operation updates a model, verify that rejection leaves the prior model intact. If it clamps intentionally, test the clamped value and document the loss of magnitude. If it wraps, test the modular result explicitly. A short review can then answer four questions: what range is valid, where conversion occurs, which overflow policy applies, and what a caller retains after failure. Those answers make numeric code dependable across builds and targets."
+        ]
+      }
+    ],
+    "relatedSlugs": [
+      "cargo-features-portable-dependencies",
+      "testing-rust-boundaries-fixtures-doctests",
+      "result-errors-that-help"
+    ]
+  },
+  {
+    "slug": "rust-hashmap-entry-stable-reports",
+    "title": "Rust HashMap: count with entry and produce stable reports",
+    "date": "2026-10-17",
+    "summary": "Build a reliable Rust word counter with HashMap entry. Handle missing keys, choose borrowed or owned keys, and sort output for repeatable reports.",
+    "readingMinutes": 9,
+    "sections": [
+      {
+        "heading": "Counting is a data-model decision",
+        "paragraphs": [
+          "A word counter looks like a tiny exercise, yet it contains decisions that appear in inventories, event summaries, logs and analytics. What makes two keys equal? Who owns their text? What happens when a key is absent? Does the final report need a predictable order? Answering these questions gives the collection a clear job. Merely choosing a map because it offers fast lookup does not define the behavior of the report.",
+          "We will count the tokens in a short string and produce a stable alphabetical result. The scope is intentionally precise: split on whitespace and preserve each token’s exact spelling. Punctuation and letter case remain significant. That makes the example useful without pretending it implements a complete natural-language tokenizer. Every program uses the standard library and can be run in Crabrix; no external hashing or text-processing package is required."
+        ],
+        "image": {
+          "src": "/blog/rust-hashmap-editorial.png",
+          "alt": "Matching token shapes enter the same keyed drawer before output cards are aligned for a report.",
+          "caption": "Group by key during accumulation, then choose presentation order as a separate step.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Make the first complete program small",
+        "paragraphs": [
+          "Our input is `rust crab rust`. It contains three tokens but only two distinct keys. The expected counts are rust twice and crab once. Naming the input in the program matters: a copied loop referring to an undeclared `text` variable is an incomplete example, even if the loop itself illustrates a useful technique. A first runnable sample should establish every binding its explanation depends on.",
+          "The program uses borrowed string slices as keys because the source text remains alive for the entire calculation. The count type is `usize`, which is convenient for this small in-memory token count. A production counter with an externally specified numeric range should choose and validate that range deliberately. Assertions check both known keys and a missing key, so absence remains an ordinary result rather than a panic hidden in indexing syntax."
+        ],
+        "code": "use std::collections::HashMap;\nfn main() {\n    let text = \"rust crab rust\";\n    let mut counts: HashMap<&str, usize> = HashMap::new();\n    for word in text.split_whitespace() {\n        *counts.entry(word).or_insert(0) += 1;\n    }\n    assert_eq!(counts.get(\"rust\"), Some(&2));\n    assert_eq!(counts.get(\"crab\"), Some(&1));\n    assert_eq!(counts.get(\"missing\"), None);\n    assert_eq!(counts.len(), 2);\n    println!(\"Two distinct keys, three tokens\");\n}"
+      },
+      {
+        "heading": "Read the reference returned by entry",
+        "paragraphs": [
+          "`entry` gives access to the slot associated with a key. Calling `or_insert(0)` returns a mutable reference to the existing value, or inserts zero and returns a mutable reference to that new value. The leading dereference in `*counts.entry(word).or_insert(0) += 1` changes the stored count. Without understanding that reference, the expression can look like punctuation to memorize rather than an operation you can explain.",
+          "The sequence is easy to trace. The first rust token inserts zero and increments it to one. Crab gets its own zero and becomes one. The second rust token finds the existing count and changes it to two. There is no need to remove the key, rebuild its pair and insert it again. The infographic shows those exact updates, followed by a separate sort for presentation. Each step is independently checkable against the original three-token input."
+        ],
+        "image": {
+          "src": "/blog/rust-hashmap-analysis.png",
+          "alt": "Updates rust 0 to 1, crab 0 to 1, rust 1 to 2, followed by the sorted report crab 1 and rust 2.",
+          "caption": "The map groups by equality. Sorting belongs to the report and is not a guarantee of HashMap iteration.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "Standard library: HashMap and the Entry API",
+            "url": "https://doc.rust-lang.org/std/collections/struct.HashMap.html"
+          }
+        ]
+      },
+      {
+        "heading": "A missing key deserves an explicit policy",
+        "paragraphs": [
+          "Calling `get` returns an option containing a borrowed value. That is suitable for a lookup where the key may not exist. Indexing syntax can be concise when the key is guaranteed to exist, but it panics if the key is absent. A user-provided search key normally does not establish that guarantee. Match the option, provide a justified default, or propagate absence to a caller that knows what it means.",
+          "For a count report, a missing token can often be displayed as zero. For an inventory, an absent product record may require an “unknown product” result instead. Those are different contracts even if both use a map. Avoid turning every missing key into a default object just to simplify a type. An automatically created object can obscure the difference between “known with zero activity” and “never existed,” which matters for diagnostics, accounting and user interfaces."
+        ]
+      },
+      {
+        "heading": "Do not promise a borrow error that does not occur",
+        "paragraphs": [
+          "It is common to explain `entry` by contrasting it with a separate `get` followed by `insert`. The entry form is usually clearer for an update, but be precise about the alternative. Modern Rust permits some nested method calls through its borrowing rules, including cases where a receiver’s mutable borrow is activated after an argument has been evaluated. You should not claim that every expression combining `insert` and `get` is rejected.",
+          "The reliable explanation focuses on the work and meaning: `entry` describes access to one keyed slot and supports updating it directly. Separate lookup and insertion can repeat lookup work and require more careful handling of ownership. If you are teaching a compiler error, compile the exact example and inspect the diagnostic. A plausible story about borrows is weaker evidence than the compiler’s actual behavior, and an incorrect story can leave learners distrusting an otherwise useful API."
+        ]
+      },
+      {
+        "heading": "Borrow keys while the source lives",
+        "paragraphs": [
+          "With `HashMap<&str, usize>`, the map owns its reference values and counters, but the referenced token bytes remain in the original text. This avoids allocating a separate string for each key. It also means the map cannot outlive the source buffer. That relationship is usually convenient for a report computed and displayed while the input is available. It becomes a design constraint if the report is stored independently after the input is discarded.",
+          "Use owned keys when independent storage is required. A `HashMap<String, usize>` can retain keys assembled from temporary input, at the cost of allocating owned strings where needed. Decide at the storage boundary instead of sprinkling clones through a loop until the compiler stops objecting. Ownership is part of the API contract: a function returning borrowed keys is also promising a relationship with its input’s lifetime. An owned result makes a different, sometimes more useful promise."
+        ]
+      },
+      {
+        "heading": "Normalization changes the meaning of a key",
+        "paragraphs": [
+          "Our whitespace tokenizer counts `Rust`, `rust` and `rust,` separately. If a product wants them treated as one word, it needs explicit normalization and tokenization rules. Lowercasing, punctuation removal and Unicode normalization each change information and have language-specific consequences. Do not silently add a few string operations and claim the result counts every human language correctly. Begin with the actual format your application accepts.",
+          "Normalization can also change ownership. Converting each token into a newly allocated lowercase string produces owned text, so borrowing keys directly from the unchanged original buffer is no longer the same operation. You may normalize into a separate owned representation or use owned map keys. Include this cost and lifetime in the design. A good report documents its token definition so a surprising count can be investigated as a rule or an implementation issue, rather than dismissed as random map behavior."
+        ]
+      },
+      {
+        "heading": "Sort once at the presentation boundary",
+        "paragraphs": [
+          "`HashMap` iteration order is arbitrary. It can vary between maps or runs, so tests and user-visible reports should not assume insertion or alphabetical order. Collecting borrowed entries into a vector and sorting them by key gives the output a deliberate stable order without changing the map’s lookup role. This collection serves a real purpose: the caller needs an ordered sequence for presentation.",
+          "The next program asserts the ordered rows independently of how the map happens to be laid out. A `BTreeMap` is another option when sorted key traversal is a core requirement throughout the program. Choose between the structures based on the operations and scale you need, not a blanket claim that one is universally faster. A map for accumulation plus one explicit sort is often easy to understand for a small final report."
+        ],
+        "code": "use std::collections::HashMap;\nfn main() {\n    let counts = HashMap::from([(\"rust\", 2_usize), (\"crab\", 1)]);\n    let mut rows: Vec<_> = counts.iter().map(|(key, count)| (*key, *count)).collect();\n    rows.sort_unstable_by_key(|(key, _)| *key);\n    assert_eq!(rows, vec![(\"crab\", 1), (\"rust\", 2)]);\n    for (key, count) in rows { println!(\"{key}: {count}\"); }\n}"
+      },
+      {
+        "heading": "State complexity with the relevant assumptions",
+        "paragraphs": [
+          "Hash-based lookup is commonly discussed in expected constant-time terms, but hashing a long string still requires work related to its contents, and collisions or allocation can affect actual cost. A report that sorts distinct keys also has sorting work. Keep the quantities separate: total input size, number of tokens, number of distinct keys and key lengths. Saying “the algorithm is O(1)” because it uses a HashMap ignores most of the program.",
+          "Memory also follows distinct keys and retained storage. A borrowed-key map can keep the original input alive; an owned-key map stores separate text. Reserving capacity may help a known workload, but guessing an enormous capacity can waste memory. Measure a real workload before publishing speed or storage claims. This article supplies exact count results, not invented benchmarks. The design can be justified by ownership and required operations even before performance becomes a demonstrated problem."
+        ]
+      },
+      {
+        "heading": "Create defaults only when the slot is empty",
+        "paragraphs": [
+          "An initial count of zero is cheap, but other entry defaults may require allocating a buffer or constructing a larger record. An expression passed to `or_insert` is evaluated before the call, even when the key already has a value. `or_insert_with` accepts a closure whose construction work is performed when a vacant entry actually needs the default.",
+          "This distinction follows the same principle as choosing a consumer for an iterator: describe the work the operation really needs. Do not use a lazy closure merely to make a trivial constant look sophisticated. Use it when the default has meaningful cost or must be created at that specific boundary, and keep any side effects understandable."
+        ]
+      },
+      {
+        "heading": "Insertion can replace an existing record",
+        "paragraphs": [
+          "A map associates one value with each key. Calling `insert` with an existing key replaces its previous value and returns the old value as an option. That is useful for deliberate replacement, but it is not the same rule as accumulating another occurrence. A counter that inserts one for every token will finish with one for each distinct key, silently losing repetition.",
+          "For an importer that must reject duplicate identifiers, examine whether the key already exists or use the entry variants to express occupied and vacant behavior. For an updater that permits replacement, decide whether callers need the previous value for history or rollback. The data structure supports these different policies; the application must select one and test duplicate input explicitly."
+        ]
+      },
+      {
+        "heading": "Test reports as data before testing formatting",
+        "paragraphs": [
+          "Check empty input, one token, repeated tokens, several distinct keys and a missing lookup. If case or punctuation is significant, include fixtures that prove it. Then test the sorted rows as data. A separate formatting assertion can verify headings, separators and final newlines when those are part of the product’s output contract. This separation makes failures easier to diagnose than one large text snapshot containing unrelated details.",
+          "When adapting the counter to inventories or events, define overflow behavior for counters and validate keys at the input boundary. Preserve errors instead of silently discarding malformed records. Finally, explain the result in terms a caller can rely on: how keys are identified, who owns them, how absence is handled and how output is ordered. Those four answers make a small HashMap loop into a dependable component rather than a copied idiom whose assumptions nobody has examined."
+        ]
+      }
+    ],
+    "relatedSlugs": [
+      "rust-iterators-without-extra-allocations",
+      "rust-strings-utf8-safe-parsing",
+      "testing-rust-boundaries-fixtures-doctests"
+    ]
+  },
+  {
     "slug": "cargo-features-portable-dependencies",
     "title": "Cargo features: smaller builds and portable dependencies",
     "date": "2026-10-16",
@@ -277,6 +778,132 @@
       "rust-1-99-upgrade",
       "real-rust-on-iphone",
       "testing-rust-boundaries-fixtures-doctests"
+    ]
+  },
+  {
+    "slug": "rust-pattern-matching-without-panics",
+    "title": "Rust pattern matching: handle missing values without panics",
+    "date": "2026-10-16",
+    "summary": "Use match, if let and let else to handle optional values, validate variants, borrow fields and keep failure paths visible in practical Rust code.",
+    "readingMinutes": 9,
+    "sections": [
+      {
+        "heading": "Start where a value might be absent",
+        "paragraphs": [
+          "A sensor reading can be present, missing, zero or below the accepted range. A project search can find a record or return nothing. Treating these situations as if they always contain a usable value makes a program fragile. Rust expresses the alternatives through types such as `Option` and `Result`, then lets pattern matching describe what should happen in each case. The useful habit is to inspect the alternatives before extracting the data.",
+          "This guide follows a small classification function and extends its reasoning to parsing, borrowing and collections. The examples are standard-library programs that you can run in Crabrix. Their purpose is practical: make absence ordinary, preserve the information needed for a diagnostic, and avoid a panic where the application has a reasonable recovery path. We will also distinguish compiler-checked coverage from the product decisions that only you can specify."
+        ],
+        "image": {
+          "src": "/blog/rust-patterns-editorial.png",
+          "alt": "Four distinct capsules pass through an inspection instrument and travel along separate tracks to matching destinations.",
+          "caption": "Inspect the alternative first, then choose the operation that belongs to that case.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Make the alternatives visible in one match",
+        "paragraphs": [
+          "Consider an `Option<i32>`. It has two structural variants, `Some` and `None`, but the integer inside `Some` can still have several meanings. Our classifier calls zero “Zero,” positive integers “Positive,” negative integers “Other integer,” and absence “Missing.” These labels are a deliberately small domain policy. They are not built-in meanings of `Option`. A different application could reject negative readings or treat zero as missing, but it should state that policy explicitly.",
+          "The function below matches the exact zero case first, then uses a guard for positive values, and handles the remaining integer and missing cases. A match selects the first applicable arm. Changing the order can change the result: putting `Some(_)` first would catch every present value before the specific arms could apply. Keep the most informative distinctions visible, and write assertions for values that could otherwise fall into an overly broad catch-all."
+        ],
+        "code": "fn classify(reading: Option<i32>) -> &'static str {\n    match reading {\n        Some(0) => \"Zero\",\n        Some(value) if value > 0 => \"Positive\",\n        Some(_) => \"Other integer\",\n        None => \"Missing\",\n    }\n}\nfn main() {\n    assert_eq!(classify(Some(0)), \"Zero\");\n    assert_eq!(classify(Some(5)), \"Positive\");\n    assert_eq!(classify(Some(-2)), \"Other integer\");\n    assert_eq!(classify(None), \"Missing\");\n    println!(\"Four classification checks passed\");\n}"
+      },
+      {
+        "heading": "Coverage and correctness are different checks",
+        "paragraphs": [
+          "Rust checks that a match covers the possibilities required by its input type. That catches a missing `None` arm when no other arm handles it. A guard is a runtime condition, however, so a guarded arm does not by itself establish that every value of a structural variant is covered. Our unguarded `Some(_)` arm handles the remaining integers. This makes both the structural coverage and the runtime range policy clear.",
+          "An exhaustive match can still implement the wrong rule. It might label every negative number as positive or confuse an absent reading with zero. The compiler cannot infer the product’s intended meaning from those English labels. Use small independently specified examples alongside exhaustiveness. The infographic shows four observed paths through our classifier; it does not imply that `Option<i32>` contains only four possible values. There are many integers, and these cases represent the boundaries between outcomes."
+        ],
+        "image": {
+          "src": "/blog/rust-patterns-analysis.png",
+          "alt": "Some(0) maps to Zero, Some(5) to Positive, Some(-2) to Other integer, and None to Missing.",
+          "caption": "The examples exercise four outcomes. The final unguarded present-value arm covers integers that fail earlier conditions.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "The Rust Book: match control flow",
+            "url": "https://doc.rust-lang.org/book/ch06-02-match.html"
+          }
+        ]
+      },
+      {
+        "heading": "Use if let when one alternative matters",
+        "paragraphs": [
+          "Sometimes only one variant needs work. An optional subtitle may be displayed when present and omitted otherwise. An `if let Some(subtitle) = value` expresses that focused decision without requiring a two-arm match. The omitted case still has a meaning: do nothing here. Before choosing this form, ask whether ignoring that case is intentional. A missing optional decoration and a failed payment are not equally suitable candidates for silent omission.",
+          "An `else` branch can provide a fallback when that makes the behavior clearer. If both branches do substantial work, a match often gives a more balanced presentation. The choice is about communication, not a rule that one syntax is always more idiomatic. Keep the reader’s question in view: do they need to understand one interesting case, or compare the outcomes of several alternatives? Pick the form that makes that comparison easiest without hiding an error."
+        ]
+      },
+      {
+        "heading": "Let else can keep the successful path straight",
+        "paragraphs": [
+          "A `let ... else` statement is useful when a required pattern should either bind values for the rest of the scope or leave that path immediately. The else block must diverge, for example by returning or continuing. That requirement prevents execution from reaching later code with bindings that were never created. It often reduces indentation in a parser with several early rejection conditions.",
+          "The next example accepts a pair separated by one colon. Missing structure produces an error; a valid pair remains available after the statement. This is the same borrowing relationship a match would express, arranged so the successful path stays flat. The function permits empty sides because its purpose is structural splitting. If the domain forbids an empty key, add that separate validation rather than implying the delimiter operation already checked it."
+        ],
+        "code": "fn pair(input: &str) -> Result<(&str, &str), &'static str> {\n    let Some((key, value)) = input.split_once(':') else {\n        return Err(\"expected key:value\");\n    };\n    if key.is_empty() { return Err(\"empty key\"); }\n    Ok((key, value))\n}\nfn main() {\n    assert_eq!(pair(\"city:Kyiv\"), Ok((\"city\", \"Kyiv\")));\n    assert_eq!(pair(\"missing\"), Err(\"expected key:value\"));\n    assert_eq!(pair(\":value\"), Err(\"empty key\"));\n    println!(\"Pair checks passed\");\n}",
+        "sources": [
+          {
+            "title": "The Rust Book: if let and let else",
+            "url": "https://doc.rust-lang.org/book/ch06-03-if-let.html"
+          }
+        ]
+      },
+      {
+        "heading": "Match borrowed values when ownership should remain",
+        "paragraphs": [
+          "Patterns can move values as well as inspect them. Matching an owned `Option<String>` and binding its string by value transfers that string into the arm. If later code still needs the original option, borrow it instead. Methods such as `as_ref` provide an option containing a shared reference, which is convenient when inspecting optional owned data without taking responsibility for its allocation.",
+          "This matters in real interfaces. A screen may need to inspect an optional error message while the model retains ownership for a later redraw. Moving the message merely to decide whether it should be displayed can create an unnecessary lifetime or ownership problem. Cloning the entire model might silence the compiler but obscure the original mistake. Begin by deciding whether the operation needs to read, mutate or consume the data, then choose a pattern and input expression that match that intention."
+        ]
+      },
+      {
+        "heading": "Do not replace expected absence with unwrap",
+        "paragraphs": [
+          "`unwrap` is concise because it adopts a strong contract: the value must have the successful or present variant, otherwise execution panics. That can be suitable for a test fixture whose setup establishes the invariant. It is usually unsuitable for a user search, an optional configuration field or a parse result from external input. Those values are allowed to be absent or invalid by the nature of their source.",
+          "A default also needs a policy. `unwrap_or(0)` may be correct for a missing count that genuinely means zero; it can be misleading for a missing temperature or a failed calculation. Pattern matching lets you keep those distinctions visible. If a fallback requires expensive work, consider a lazy fallback operation rather than constructing it unconditionally. Readability improves when the selected fallback is justified by the domain rather than added solely to remove an `Option` from a type signature."
+        ]
+      },
+      {
+        "heading": "Keep Result errors separate from ordinary absence",
+        "paragraphs": [
+          "An `Option` says that a value may be absent. A `Result` carries a success value or an error explaining why an operation failed. Turning every parse error into `None` can erase information needed to repair the input. Conversely, inventing an error for a perfectly ordinary missing optional field can make callers handle noise. Choose the type that expresses the operation’s promise, then match on that type without weakening its information accidentally.",
+          "For example, finding the first nonempty line can reasonably return `Option<&str>`. Parsing that selected line as an integer can return a `Result`. A higher-level importer may need to distinguish an empty file from a malformed first record, so preserve both stages in its error model. Pattern syntax cannot decide which distinctions your application needs, but it makes those distinctions easy to inspect when the types retain them. Attach line or field context before discarding the structure that knows it."
+        ]
+      },
+      {
+        "heading": "Patterns also describe the shape of collections",
+        "paragraphs": [
+          "A slice pattern can distinguish empty, single-item and multi-item input without indexing first and hoping the collection is long enough. This is useful for commands, small protocol frames and APIs whose behavior depends on a few leading elements. A rest pattern represents the remainder without allocating a new collection. It remains a view into the same source data, with the corresponding borrowing lifetime.",
+          "Keep structural checks separate from semantic validation. A two-element slice can have the right shape while containing an invalid command name or an out-of-range value. Also avoid writing a complicated nested pattern that takes longer to decode than an explicit sequence of checks. Patterns are a vocabulary for describing structure. Use that vocabulary where it removes an unsafe assumption or clarifies an alternative; keep names and intermediate steps where they make a business rule easier to follow."
+        ]
+      },
+      {
+        "heading": "A match can produce the value you need",
+        "paragraphs": [
+          "A match is an expression, so its arms can produce a value for a surrounding binding or return. This is useful when several alternatives select one label, parsed value or domain outcome. The arm results must be compatible with the expression’s required type. A semicolon can turn a block’s final expression into a statement and change its result to the unit value, which explains some otherwise surprising type errors.",
+          "When that happens, inspect the result of each arm before adding a conversion. One arm might return a string slice while another accidentally returns nothing. Another might return an owned string when the intended API borrows a label. Naming the desired result type can make the diagnostic easier to follow and keeps the ownership decision visible."
+        ]
+      },
+      {
+        "heading": "Ignoring a field and binding it are different",
+        "paragraphs": [
+          "The wildcard pattern `_` ignores a value without giving it a local name. A name such as `_message` is still a binding even though its spelling suppresses an unused-variable warning. That distinction matters when a pattern can move an owned field. Do not rename a binding with an underscore and assume the ownership effect disappeared.",
+          "When only a variant’s presence matters, use a pattern that reflects that inspection and borrow the input if the owner must remain available. When the contents are needed, bind them deliberately and decide whether the operation should receive a reference or an owned value. Small experiments with an optional String help make this difference concrete: compile the inspection, then try to use the original owner afterward and explain the result."
+        ]
+      },
+      {
+        "heading": "Design tests around the boundaries between arms",
+        "paragraphs": [
+          "Test a value in each intended outcome and values immediately around a numeric or structural boundary. Our classifier needs zero, a positive integer, a negative integer and absence. A parser with an empty-key rule needs a missing delimiter, an empty key and an ordinary valid pair. A borrowed inspection deserves a check that the owner is still available afterward. These cases verify different promises even if they use similarly small inputs.",
+          "When adding a new enum variant, review the wildcard arms as carefully as compiler errors. Explicit matches often force a useful decision, while a wildcard can quietly route the new variant into a generic fallback. Some fallbacks are intentional, especially at compatibility boundaries, but they should remain documented. A final review question is simple: after reading the match, can someone explain what happens when the expected value is missing, malformed or newly introduced? If so, the control flow is doing useful work."
+        ]
+      }
+    ],
+    "relatedSlugs": [
+      "rust-enums-state-machines",
+      "result-errors-that-help",
+      "rust-strings-utf8-safe-parsing"
     ]
   },
   {

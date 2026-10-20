@@ -21,9 +21,10 @@ test('three 10 October Rust articles meet the requested length and image count',
   assert.equal(images.size, 6);
 });
 
-const additions = posts.filter(post => post.date > '2026-10-10');
+const october18Slugs = ['rust-iterators-without-extra-allocations', 'rust-strings-utf8-safe-parsing', 'testing-rust-boundaries-fixtures-doctests', 'cargo-features-portable-dependencies', 'rust-enums-state-machines'];
+const additions = posts.filter(post => october18Slugs.includes(post.slug));
 test('October expansion preserves five originals and adds five dated, longer original guides', () => {
-  assert.equal(posts.length, 10);
+  assert.ok(posts.length >= 10);
   assert.equal(additions.length, 5);
   const original = posts.filter(post => post.date <= '2026-10-10');
   const words = post => post.sections.flatMap(section => section.paragraphs).join(' ').trim().split(/\s+/).length;
@@ -71,4 +72,49 @@ test('each new guide ships two unique generated images, including a dimensioned 
   }
   assert.equal(hashes.size, 10);
   assert.equal(paths.size, 10);
+});
+
+test('20 October guides have distinct days, 1500 prose words, code and two original images', () => {
+  const slugs = ['rust-pattern-matching-without-panics', 'rust-hashmap-entry-stable-reports', 'rust-checked-arithmetic-conversions', 'rust-traits-generics-dynamic-dispatch', 'rust-buffered-text-input-errors'];
+  const batch = posts.filter(post => slugs.includes(post.slug));
+  assert.equal(batch.length, 5);
+  assert.equal(new Set(batch.map(post => post.date)).size, 5);
+  const hashes = new Set();
+  for (const post of batch) {
+    assert.ok(post.date <= '2026-10-20');
+    const words = post.sections.flatMap(section => section.paragraphs).join(' ').split(/\s+/).length;
+    assert.ok(words >= 1500, `${post.slug}: ${words}`);
+    assert.equal(post.readingMinutes, Math.ceil(words / 200));
+    assert.ok(post.sections.some(section => section.code));
+    const images = post.sections.flatMap(section => section.image ? [section.image] : []);
+    assert.equal(images.length, 2);
+    assert.equal(images.filter(image => image.src.endsWith('-analysis.png')).length, 1);
+    for (const image of images) {
+      const bytes = readFileSync(new URL('../public' + image.src, import.meta.url));
+      assert.equal(bytes.readUInt32BE(16), image.width);
+      assert.equal(bytes.readUInt32BE(20), image.height);
+      hashes.add(createHash('sha256').update(bytes).digest('hex'));
+      assert.ok(image.alt.length > 40 && image.caption.length > 40);
+    }
+  }
+  assert.equal(hashes.size, 10);
+});
+
+test('every article image has complete WebP delivery copies with a smaller download budget', () => {
+  const sources = new Set(posts.flatMap(post => post.sections.flatMap(section => section.image ? [section.image.src] : [])));
+  let originalBytes = 0, fullBytes = 0, cardBytes = 0;
+  for (const source of sources) {
+    const original = readFileSync(new URL('../public' + source, import.meta.url));
+    const stem = source.replace(/\.png$/, '');
+    const variants = ['.webp', '-640.webp'].map(suffix => readFileSync(new URL('../public' + stem + suffix, import.meta.url)));
+    for (const bytes of variants) {
+      assert.equal(bytes.toString('ascii', 0, 4), 'RIFF', source);
+      assert.equal(bytes.toString('ascii', 8, 12), 'WEBP', source);
+      assert.equal(bytes.readUInt32LE(4) + 8, bytes.length, source);
+    }
+    originalBytes += original.length; fullBytes += variants[0].length; cardBytes += variants[1].length;
+  }
+  assert.equal(sources.size, 30);
+  assert.ok(fullBytes < originalBytes * 0.15, 'full WebP copies must save at least 85%');
+  assert.ok(cardBytes < originalBytes * 0.05, 'card copies must save at least 95%');
 });

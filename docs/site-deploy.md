@@ -1,5 +1,62 @@
 # Crabrix website deployment
 
+## Academy review, five Rust guides and complete sitemaps — 20 October 2026
+
+The manual release is `localhost/crabrix-web-site:academy-blog-20261020-r4`
+(image `9eb52549e119626e61189ff3eb83f3bf9dda2a588be14749fb8da631626aa69f`),
+from `/srv/apps/crabrix-site/releases/20261020-academy-blog/site`.
+It uses the existing loopback port 3212, account mount, resource limits and
+security options. Consistent account backups completed before activation.
+The pre-task production server is retained as
+`crabrix-web-site-before-academy-blog-20261020` for rollback. Task-created
+intermediate containers and images are removed after the final checks;
+previous application sources, native screenshots and branches are preserved.
+
+The five new articles have separate editorial dates of 16–20 October and
+1,551–1,685 paragraph words each. They cover pattern matching, HashMap reports,
+checked arithmetic, trait dispatch and buffered text input. Each has two
+original built-in ImageGen images, including an analytical infographic,
+highlighted code, official Rust sources, linked contents and related guides.
+All ten earlier article objects are unchanged. All eleven complete new blog
+programs compiled and ran. [Asset metadata](blog-assets-2026-10-20.json) and
+[exact prompts](blog-image-prompts-2026-10-20.md) retain the selected originals.
+
+The XML sitemap includes 774 canonical URLs: 742 lessons, seven courses, 15
+articles and ten general pages. It also lists 30 public blog images. A new
+linked HTML sitemap provides access to every lesson and article. Dotted
+Algorithm Atlas lesson IDs now use the framework's actual final URL without a
+trailing slash; 600 unnecessary sitemap redirects and their canonical mismatch
+are removed. Descriptions are unique, readable and free of Markdown delimiters.
+Lesson metadata includes recorded editorial changes, course context and the
+existing registration restriction; guest previews and private media protection
+are retained. Robots references the XML sitemap and account routes stay noindex.
+
+Ten lessons were corrected in the shared authored curriculum and three teaching
+images were replaced. Website snapshot `e0f3ead2a98e4fb8e08118ce27632a15516adc70`
+matches the signed Basics 1.0.6, Systems 1.0.5 and Interview 1.0.6 content
+offered through native catalog sequence 13. See the
+[Academy review](academy-review-2026-10-20.md) for the exact changes, native
+verifier results and the compilation probe's limits.
+
+Responsive WebP delivery copies preserve the original PNGs. All 30 full-size
+copies total 5.57 MB versus 57.05 MB for the originals; 640px card copies total
+1.50 MB. The browser uses `picture`, explicit dimensions, descriptive article
+alt text and deferred secondary images. These are byte-size savings, not a
+claimed performance-score measurement. [Delivery inventory](blog-image-delivery-2026-10-20.json)
+records all 60 generated derivatives and their source hashes.
+
+Eleven site tests, TypeScript checking and the production build passed. The
+prepared artifact tree matched on Mac and Linux. Candidate and public checks
+verified article text, metadata, dates, source/related links, original image
+hashes and all 60 WebP variants. The public SEO audit covered all 774 final
+URLs, including canonical/social metadata, unique titles/H1, structured data,
+account noindex and restricted lesson access. Browser checks include actual
+WebP selection, fully loaded covers, no horizontal overflow and no console
+errors. DNS, Nginx and GitHub Actions configuration are unchanged; Actions
+remain disabled in both repositories.
+
+[Release and verification record](site-release-2026-10-20-academy-blog.json).
+
 ## Five original Rust guides — 18 October 2026
 
 The manually published release is `localhost/crabrix-web-site:blog-20261018-r2`,

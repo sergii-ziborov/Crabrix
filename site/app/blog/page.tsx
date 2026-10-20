@@ -1,5 +1,6 @@
 import { pageMetadata, pageUrl } from "@/lib/seo";
 import { StructuredData } from "@/components/structured-data";
+import { BlogImage } from "@/components/blog-image";
 import Link from "next/link";
 import { posts } from "@/lib/posts";
 
@@ -18,11 +19,11 @@ export default function BlogPage() {
         <p className="lede">Practical guides to Rust iterators, text, testing, Cargo features and state machines, alongside release notes and ownership fundamentals.</p>
       </div>
       <div className="post-grid">
-        {posts.map((post) => {
+        {posts.map((post, index) => {
           const image = post.sections.find((section) => section.image)?.image;
           return (
             <Link className="post-card" href={`/blog/${post.slug}`} key={post.slug}>
-              {image && <img className="post-cover" src={image.src} alt="" width={image.width} height={image.height} loading="lazy" />}
+              {image && <BlogImage image={image} decorative card priority={index === 0} />}
               <span className="card-kicker"><time dateTime={post.date}>{post.date}</time> · {post.readingMinutes} min read</span>
               <h2>{post.title}</h2>
               <p>{post.summary}</p>

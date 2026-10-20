@@ -1,0 +1,536 @@
+{
+  "verifiedAtUTC": "2026-10-20T17:13:24.895245+00:00",
+  "origin": "https://crabrix.com",
+  "image": "localhost/crabrix-web-site:academy-blog-20261020-r4",
+  "digest": "9eb52549e119626e61189ff3eb83f3bf9dda2a588be14749fb8da631626aa69f",
+  "releaseDirectory": "/srv/apps/crabrix-site/releases/20261020-academy-blog/site",
+  "deployment": "Manual local Next.js build, prepared standalone artifact, checksum rsync, isolated Linux candidate and manual Podman activation. No CI/CD.",
+  "sourceBaseCommit": "38924bb3052b28e9f683ce1b770f1b9c12496cce",
+  "sourceFileSHA256": {
+    "site/content/posts.json": "8ee13a8a91b25f939df03c1ef8b103c2a66d13702bd90312ef8d6034994228ed",
+    "site/content/courses.json": "e887a4f8fb7b31feccf3740b2f9d6c9dfa09cbcd208ecca96779801d50676014",
+    "site/lib/seo.ts": "2a9d9a439fd614f3662b22f4846c5e00c993deb829b44ccbcc456cc55343b38c",
+    "site/lib/lesson-seo.ts": "9586e6b2a1fb0d816e5968ab534949b986ea6c99c7b3f3889fce4165092aad83",
+    "site/lib/posts.ts": "e07ff705a421c3530730e9d616eb232ca1e3603a01792b1040bd7204c56fd7b2",
+    "site/app/blog/page.tsx": "9627fe85812213c1fad1f2918af38bf348e6dd89d7c2f2d3072d91f19536bc55",
+    "site/app/blog/[slug]/page.tsx": "66b8bb04363771a72f854abc1ada2584becfeeb95ce46a79cc0b68bc39d222be",
+    "site/app/learn/[course]/[lesson]/page.tsx": "809756a788208d93b408afce94a44c054ffc1c7520e9f656ea91499be42a5835",
+    "site/app/sitemap.ts": "18bab096eaed4b309dfd2d690175ceff48a5fc2cb2689bfdb877a52e88802b7d",
+    "site/app/sitemap/page.tsx": "177a77e5c2adbda683f5c01e50c612f746bb0e5d4c0d98e4d92081c739ceeeb2",
+    "site/components/blog-image.tsx": "3039b87dc07e10ecb9ce11e89c990a7bab0e6acb852f2c9a7377cbc1315e95f6",
+    "site/components/site-footer.tsx": "da1e0812dc0c981d927c288cf58e9f3b73a5ced5ddf4f7cc72d12a2e8705a452",
+    "site/scripts/prepare-blog-images.py": "1309ea0f0b8bee6f30aa01e9fddc8adac157f51c145b4327141b28f7660792b8",
+    "site/sitemap.xml": "4bcae4215a92a5135cac5c143fc137694c6b54c1436b8ba0e379795e56d26199"
+  },
+  "artifactTree": {
+    "filesAndLinks": 1786,
+    "sha256": "a90733e2c33ac011481b2b5d4b4df57e10cc048da42c13e8b3034901157254c6",
+    "method": "SHA-256 of sorted JSON [relative POSIX path, file/symlink, SHA-256 content or link target], compact JSON separators."
+  },
+  "linuxArtifactTreeMatchesMac": true,
+  "status": "running healthy",
+  "rollbackContainer": "crabrix-web-site-before-academy-blog-20261020",
+  "rollbackImageDigest": "4f436cdc3b3f36ad7bd39e91fd63f2de4773c2e39a487ba33c421db2fcf61b47",
+  "existingArticleObjectsUnchanged": 10,
+  "totalArticles": 15,
+  "newArticles": [
+    {
+      "slug": "rust-pattern-matching-without-panics",
+      "date": "2026-10-16",
+      "proseWords": 1685,
+      "originalImages": 2
+    },
+    {
+      "slug": "rust-hashmap-entry-stable-reports",
+      "date": "2026-10-17",
+      "proseWords": 1650,
+      "originalImages": 2
+    },
+    {
+      "slug": "rust-checked-arithmetic-conversions",
+      "date": "2026-10-18",
+      "proseWords": 1587,
+      "originalImages": 2
+    },
+    {
+      "slug": "rust-traits-generics-dynamic-dispatch",
+      "date": "2026-10-19",
+      "proseWords": 1551,
+      "originalImages": 2
+    },
+    {
+      "slug": "rust-buffered-text-input-errors",
+      "date": "2026-10-20",
+      "proseWords": 1646,
+      "originalImages": 2
+    }
+  ],
+  "selectedGeneratedBlogImages": 10,
+  "blogInfographics": 5,
+  "replacementLessonDiagrams": 3,
+  "imageMode": "built-in image_gen; originals preserved. WebP derivatives encoded locally for delivery.",
+  "assetManifest": "blog-assets-2026-10-20.json",
+  "exactPrompts": "blog-image-prompts-2026-10-20.md",
+  "responsiveImageInventory": "blog-image-delivery-2026-10-20.json",
+  "siteTests": {
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0
+  },
+  "typescript": "passed",
+  "productionBuild": "passed",
+  "rustVerification": {
+    "toolchain": "rustc 1.99.0 (b940084d7 2026-09-28)",
+    "standaloneBlogProgramsCompiledAndRun": [
+      {
+        "slug": "rust-buffered-text-input-errors",
+        "section": "Use Cursor to make the first example deterministic",
+        "result": "Reader checks passed"
+      },
+      {
+        "slug": "rust-buffered-text-input-errors",
+        "section": "A reusable read_line buffer must be cleared",
+        "result": "Read 3 lines, including a blank line"
+      },
+      {
+        "slug": "rust-traits-generics-dynamic-dispatch",
+        "section": "A trait is a contract for operations",
+        "result": "Generic checks passed"
+      },
+      {
+        "slug": "rust-traits-generics-dynamic-dispatch",
+        "section": "Borrowed trait objects can support runtime choice",
+        "result": "Borrowed total: 16"
+      },
+      {
+        "slug": "rust-checked-arithmetic-conversions",
+        "section": "Calculate the boundary before choosing the method",
+        "result": "checked: None\nwrapping: 4\nsaturating: 255"
+      },
+      {
+        "slug": "rust-checked-arithmetic-conversions",
+        "section": "A lossy cast is not an unsafe Rust operation",
+        "result": "Conversion checks passed"
+      },
+      {
+        "slug": "rust-checked-arithmetic-conversions",
+        "section": "Validate each stage of a calculation",
+        "result": "Checked total: 38"
+      },
+      {
+        "slug": "rust-hashmap-entry-stable-reports",
+        "section": "Make the first complete program small",
+        "result": "Two distinct keys, three tokens"
+      },
+      {
+        "slug": "rust-hashmap-entry-stable-reports",
+        "section": "Sort once at the presentation boundary",
+        "result": "crab: 1\nrust: 2"
+      },
+      {
+        "slug": "rust-pattern-matching-without-panics",
+        "section": "Make the alternatives visible in one match",
+        "result": "Four classification checks passed"
+      },
+      {
+        "slug": "rust-pattern-matching-without-panics",
+        "section": "Let else can keep the successful path straight",
+        "result": "Pair checks passed"
+      }
+    ],
+    "lessonCompilationProbe": {
+      "rustLessonBlocks": 142,
+      "compiled": 108,
+      "needOtherContextOrIntentionallyInvalid": 34,
+      "scope": "Standalone or simple fn-main wrapping probe, not manual execution of every lesson."
+    }
+  },
+  "officialSourceLinks": [
+    {
+      "url": "https://doc.rust-lang.org/book/ch06-02-match.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/book/ch06-03-if-let.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/book/ch10-02-traits.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/cargo/reference/profiles.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/reference/items/traits.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/std/collections/struct.HashMap.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/std/convert/trait.TryFrom.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/std/io/struct.Cursor.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/std/io/trait.BufRead.html",
+      "status": 200
+    },
+    {
+      "url": "https://doc.rust-lang.org/std/primitive.u8.html",
+      "status": 200
+    }
+  ],
+  "candidateFullSEOAuditImage": "academy-blog-20261020-r3; r4 changes responsive blog image rendering only",
+  "candidateFullSEOAudit": {
+    "origin": "http://127.0.0.1:3216",
+    "pagesVerified": 774,
+    "duplicateTitles": 0,
+    "canonicalAndSocialMetadata": "passed",
+    "structuredData": "passed",
+    "accountNoindex": "passed",
+    "guestPreviewAndPrivateMedia": "passed"
+  },
+  "finalCandidateBlogAudit": {
+    "origin": "http://127.0.0.1:3216",
+    "articles": [
+      {
+        "slug": "rust-pattern-matching-without-panics",
+        "date": "2026-10-16",
+        "proseWords": 1685,
+        "images": [
+          {
+            "path": "/blog/rust-patterns-editorial.png",
+            "sha256": "4d7518ccc9306a3908da9158ff898fa66aa1878caee21eaf6f84efc9093e985e",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-patterns-analysis.png",
+            "sha256": "5b6367013ccb41981574052730fe7662a3995a72d1730440770684521ab1d5f3",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "rust-hashmap-entry-stable-reports",
+        "date": "2026-10-17",
+        "proseWords": 1650,
+        "images": [
+          {
+            "path": "/blog/rust-hashmap-editorial.png",
+            "sha256": "15fea4b4bc36d6dd8e8b3b0af1724b750c14edd2803c579b7f2fc47d8f57ffb7",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-hashmap-analysis.png",
+            "sha256": "ddadeec6919932337c12275baaaa00951ae402a4b300ff069e8bd8cd39d8bfb6",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "rust-checked-arithmetic-conversions",
+        "date": "2026-10-18",
+        "proseWords": 1587,
+        "images": [
+          {
+            "path": "/blog/rust-arithmetic-editorial.png",
+            "sha256": "cdeba0fe3b011a4abd853864cdd8b608aeee2676b123b5ae1a776af12af8f57e",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-arithmetic-analysis.png",
+            "sha256": "3207dc769c79d2e5cf109bc4a3123346fda538694de642fd93a7ead9083e7170",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "rust-traits-generics-dynamic-dispatch",
+        "date": "2026-10-19",
+        "proseWords": 1551,
+        "images": [
+          {
+            "path": "/blog/rust-traits-editorial.png",
+            "sha256": "910b646a6cb7edad8cfdddcfc8a1603ffa668403aca02621206d8f6f7e501cb5",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-traits-analysis.png",
+            "sha256": "fc754cc35d4d7decb00046156fdfa124ac050aec87fb02f99b63e71090a22b2f",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "rust-buffered-text-input-errors",
+        "date": "2026-10-20",
+        "proseWords": 1646,
+        "images": [
+          {
+            "path": "/blog/rust-file-input-editorial.png",
+            "sha256": "ffad0197b7d13fc1a9218b384f797fdc61bbb60bb49cd96442eb69ec155b4317",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-file-input-analysis.png",
+            "sha256": "b2f7c9be54162aaae0ce8110e7b1511eb161505a976fec658afe14e34176d71c",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      }
+    ],
+    "blogIndexCount": 15,
+    "existingOriginalsPreserved": 10,
+    "responsiveCoverCSS": "height:auto verified in served CSS",
+    "passed": true
+  },
+  "finalCandidateSitemapAudit": {
+    "origin": "http://127.0.0.1:3216",
+    "canonicalURLs": 774,
+    "lessonURLs": 742,
+    "articleURLs": 15,
+    "blogImages": 30,
+    "htmlSitemapLinks": "all 742 lessons and 15 articles",
+    "recordedEditorialDates": 10,
+    "robotsReference": "passed",
+    "privateLessonImagesExcluded": true
+  },
+  "finalCandidateImageDeliveryAudit": {
+    "origin": "http://127.0.0.1:3216",
+    "responsiveVariantsVerified": 60,
+    "blogPictureElements": 15,
+    "newArticlePictureElements": 10,
+    "originalBytes": 57054851,
+    "fullWebPBytes": 5571620,
+    "cardWebPBytes": 1497714,
+    "hashesAndMimeTypes": "passed"
+  },
+  "publicSEOAudit": {
+    "origin": "https://crabrix.com",
+    "pagesVerified": 774,
+    "duplicateTitles": 0,
+    "canonicalAndSocialMetadata": "passed",
+    "structuredData": "passed",
+    "accountNoindex": "passed",
+    "guestPreviewAndPrivateMedia": "passed"
+  },
+  "publicBlogAudit": {
+    "origin": "https://crabrix.com",
+    "articles": [
+      {
+        "slug": "rust-pattern-matching-without-panics",
+        "date": "2026-10-16",
+        "proseWords": 1685,
+        "images": [
+          {
+            "path": "/blog/rust-patterns-editorial.png",
+            "sha256": "4d7518ccc9306a3908da9158ff898fa66aa1878caee21eaf6f84efc9093e985e",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-patterns-analysis.png",
+            "sha256": "5b6367013ccb41981574052730fe7662a3995a72d1730440770684521ab1d5f3",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "rust-hashmap-entry-stable-reports",
+        "date": "2026-10-17",
+        "proseWords": 1650,
+        "images": [
+          {
+            "path": "/blog/rust-hashmap-editorial.png",
+            "sha256": "15fea4b4bc36d6dd8e8b3b0af1724b750c14edd2803c579b7f2fc47d8f57ffb7",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-hashmap-analysis.png",
+            "sha256": "ddadeec6919932337c12275baaaa00951ae402a4b300ff069e8bd8cd39d8bfb6",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "rust-checked-arithmetic-conversions",
+        "date": "2026-10-18",
+        "proseWords": 1587,
+        "images": [
+          {
+            "path": "/blog/rust-arithmetic-editorial.png",
+            "sha256": "cdeba0fe3b011a4abd853864cdd8b608aeee2676b123b5ae1a776af12af8f57e",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-arithmetic-analysis.png",
+            "sha256": "3207dc769c79d2e5cf109bc4a3123346fda538694de642fd93a7ead9083e7170",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "rust-traits-generics-dynamic-dispatch",
+        "date": "2026-10-19",
+        "proseWords": 1551,
+        "images": [
+          {
+            "path": "/blog/rust-traits-editorial.png",
+            "sha256": "910b646a6cb7edad8cfdddcfc8a1603ffa668403aca02621206d8f6f7e501cb5",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-traits-analysis.png",
+            "sha256": "fc754cc35d4d7decb00046156fdfa124ac050aec87fb02f99b63e71090a22b2f",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "rust-buffered-text-input-errors",
+        "date": "2026-10-20",
+        "proseWords": 1646,
+        "images": [
+          {
+            "path": "/blog/rust-file-input-editorial.png",
+            "sha256": "ffad0197b7d13fc1a9218b384f797fdc61bbb60bb49cd96442eb69ec155b4317",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-file-input-analysis.png",
+            "sha256": "b2f7c9be54162aaae0ce8110e7b1511eb161505a976fec658afe14e34176d71c",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      }
+    ],
+    "blogIndexCount": 15,
+    "existingOriginalsPreserved": 10,
+    "responsiveCoverCSS": "height:auto verified in served CSS",
+    "passed": true
+  },
+  "publicSitemapAudit": {
+    "origin": "https://crabrix.com",
+    "canonicalURLs": 774,
+    "lessonURLs": 742,
+    "articleURLs": 15,
+    "blogImages": 30,
+    "htmlSitemapLinks": "all 742 lessons and 15 articles",
+    "recordedEditorialDates": 10,
+    "robotsReference": "passed",
+    "privateLessonImagesExcluded": true
+  },
+  "publicImageDeliveryAudit": {
+    "origin": "https://crabrix.com",
+    "responsiveVariantsVerified": 60,
+    "blogPictureElements": 15,
+    "newArticlePictureElements": 10,
+    "originalBytes": 57054851,
+    "fullWebPBytes": 5571620,
+    "cardWebPBytes": 1497714,
+    "hashesAndMimeTypes": "passed"
+  },
+  "browserVisualCheck": {
+    "firstCovers": [
+      {
+        "currentSrc": "https://crabrix.com/blog/rust-file-input-editorial.webp",
+        "loaded": true
+      },
+      {
+        "currentSrc": "https://crabrix.com/blog/rust-traits-editorial.webp",
+        "loaded": true
+      },
+      {
+        "currentSrc": "https://crabrix.com/blog/rust-enum-states-workshop.webp",
+        "loaded": true
+      }
+    ],
+    "scrollWidth": 1265,
+    "url": "https://crabrix.com/blog/",
+    "width": 1265,
+    "consoleErrors": []
+  },
+  "browserScreenshot": {
+    "path": "site-previews/blog-2026-10-20.jpg",
+    "sha256": "ae1016bf1798e1e5d994c7b460680c382f68beae630b47c766ca27469983735f"
+  },
+  "academy": {
+    "totalLessons": 742,
+    "changedLessons": 10,
+    "sourceCommit": "e0f3ead2a98e4fb8e08118ce27632a15516adc70",
+    "catalogRepositoryCommit": "82e9d56388440fcc1cb135c6bafc19e0ef162954",
+    "catalogSequence": 13,
+    "versions": {
+      "basics": "1.0.6",
+      "systems": "1.0.5",
+      "interview": "1.0.6"
+    },
+    "courseToolTests": 14,
+    "catalogBytesMatchPublicRawURL": true,
+    "nativeVerification": {
+      "actualSourceFiles": [
+        "CoursePackVerifier.swift",
+        "CourseCompatibility.swift",
+        "SemanticVersion.swift"
+      ],
+      "acceptedPacks": [
+        "basics 1.0.6",
+        "systems 1.0.5",
+        "interview 1.0.6"
+      ],
+      "compatibleAppVersion": "1.1.1",
+      "plannedUpdatesFromBeforeReview": 3,
+      "plannedUpdatesFromSequence12": 1,
+      "catalogRollbackRejected": true,
+      "modifiedArchiveRejected": true,
+      "executionHost": "macOS; actual shared app verifier and planner with app bundled keyring, not an iPhone UI test"
+    },
+    "actualNativeSourceParity": [
+      {
+        "path": "Crabrix/AcademyContent/CoursePackVerifier.swift",
+        "sha256": "e1ef85b8ba64da4e8655e32be9613833a5ac7b2cc4545814bd72349b4626c1dc",
+        "executedCopyIdentical": true
+      },
+      {
+        "path": "Crabrix/AcademyContent/CourseCompatibility.swift",
+        "sha256": "90f828de38fb8b3e397877045ced34d88f86c7275e57d716386ff61aae5aec19",
+        "executedCopyIdentical": true
+      },
+      {
+        "path": "Crabrix/Packages/SemanticVersion.swift",
+        "sha256": "34a6c69f5ae56798d4b88cf546c2c8367b218f090c74c3e2593d613af1784a6b",
+        "executedCopyIdentical": true
+      }
+    ],
+    "report": "academy-review-2026-10-20.md"
+  },
+  "accountDataMountPreserved": true,
+  "consistentAccountBackupsBeforeActivation": 2,
+  "dailyBackupTimer": {
+    "unit": "crabrix-accounts-backup.timer",
+    "status": "active"
+  },
+  "nativeCodeAndScreenshotAssetsChanged": false,
+  "githubActionsEnabled": false,
+  "courseRepositoryActionsEnabled": false,
+  "dnsChanged": false,
+  "nginxChanged": false,
+  "temporaryCandidateRemoved": true,
+  "intermediateTaskReleaseImageRemoved": true
+}

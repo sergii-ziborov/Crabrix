@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { pageMetadata, breadcrumbs } from "@/lib/seo";
+import { pageMetadata, pageUrl, breadcrumbs } from "@/lib/seo";
+import { lessonDescription, lessonModifiedDates } from "@/lib/lesson-seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { courseById, courseLessons, lessonById } from "@/lib/courses";
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ course: s
   const { course: courseId, lesson: lessonId } = await params;
   const course = courseById(courseId);
   const lesson = course && lessonById(course, lessonId)?.lesson;
-  return lesson ? pageMetadata({ title: `${lesson.title} — ${course.title}`, description: lesson.writing?.summary || lesson.concept, path: `/learn/${course.id}/${lesson.id}/` }) : {};
+  return lesson ? pageMetadata({ title: `${lesson.title} — ${course.title}`, description: lessonDescription(lesson), path: `/learn/${course.id}/${lesson.id}/`, kind: "article", modifiedDate: lessonModifiedDates[`${course.id}/${lesson.id}`] }) : {};
 }
 
 export default async function LessonPage({ params }: { params: Promise<{ course: string; lesson: string }> }) {
@@ -33,8 +34,11 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
   const { unit, lesson } = found;
   const structuredData = <StructuredData data={{ "@context": "https://schema.org", "@graph": [{ "@type": "Article",
     inLanguage: "en", timeRequired: `PT${lesson.minutes}M`, articleSection: course.title,
-    headline: lesson.title, description: lesson.writing?.summary || lesson.concept,
-    url: `https://crabrix.com/learn/${course.id}/${lesson.id}/`, isAccessibleForFree: false,
+    headline: lesson.title, description: lessonDescription(lesson),
+    url: pageUrl(`/learn/${course.id}/${lesson.id}/`), mainEntityOfPage: pageUrl(`/learn/${course.id}/${lesson.id}/`), isAccessibleForFree: false,
+    about: { "@type": "Thing", name: lesson.concept },
+    isPartOf: { "@type": "Course", name: course.title, url: pageUrl(`/learn/${course.id}/`) },
+    ...(lessonModifiedDates[`${course.id}/${lesson.id}`] ? { dateModified: lessonModifiedDates[`${course.id}/${lesson.id}`] } : {}),
     author: { "@type": "Person", name: "Serhii Ziborov", url: "https://crabrix.com/about/" },
     hasPart: { "@type": "WebPageElement", isAccessibleForFree: false, cssSelector: ".lesson-full" },
   }, breadcrumbs([{ name: "Crabrix", path: "/" }, { name: "Learn Rust", path: "/learn/" },

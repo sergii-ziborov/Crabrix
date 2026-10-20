@@ -1,0 +1,207 @@
+{
+  "mode": "built-in image_gen",
+  "articles": [
+    {
+      "slug": "rust-pattern-matching-without-panics",
+      "title": "Rust pattern matching: handle missing values without panics",
+      "date": "2026-10-16",
+      "proseWords": 1685,
+      "images": [
+        {
+          "src": "/blog/rust-patterns-editorial.png",
+          "alt": "Four distinct capsules pass through an inspection instrument and travel along separate tracks to matching destinations.",
+          "caption": "Inspect the alternative first, then choose the operation that belongs to that case.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-patterns-editorial.png",
+          "sha256": "4d7518ccc9306a3908da9158ff898fa66aa1878caee21eaf6f84efc9093e985e",
+          "bytes": 2949576,
+          "mode": "built-in image_gen"
+        },
+        {
+          "src": "/blog/rust-patterns-analysis.png",
+          "alt": "Some(0) maps to Zero, Some(5) to Positive, Some(-2) to Other integer, and None to Missing.",
+          "caption": "The examples exercise four outcomes. The final unguarded present-value arm covers integers that fail earlier conditions.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-patterns-analysis.png",
+          "sha256": "5b6367013ccb41981574052730fe7662a3995a72d1730440770684521ab1d5f3",
+          "bytes": 1325881,
+          "mode": "built-in image_gen"
+        }
+      ],
+      "sources": [
+        {
+          "title": "The Rust Book: match control flow",
+          "url": "https://doc.rust-lang.org/book/ch06-02-match.html"
+        },
+        {
+          "title": "The Rust Book: if let and let else",
+          "url": "https://doc.rust-lang.org/book/ch06-03-if-let.html"
+        }
+      ]
+    },
+    {
+      "slug": "rust-hashmap-entry-stable-reports",
+      "title": "Rust HashMap: count with entry and produce stable reports",
+      "date": "2026-10-17",
+      "proseWords": 1650,
+      "images": [
+        {
+          "src": "/blog/rust-hashmap-editorial.png",
+          "alt": "Matching token shapes enter the same keyed drawer before output cards are aligned for a report.",
+          "caption": "Group by key during accumulation, then choose presentation order as a separate step.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-hashmap-editorial.png",
+          "sha256": "15fea4b4bc36d6dd8e8b3b0af1724b750c14edd2803c579b7f2fc47d8f57ffb7",
+          "bytes": 2665668,
+          "mode": "built-in image_gen"
+        },
+        {
+          "src": "/blog/rust-hashmap-analysis.png",
+          "alt": "Updates rust 0 to 1, crab 0 to 1, rust 1 to 2, followed by the sorted report crab 1 and rust 2.",
+          "caption": "The map groups by equality. Sorting belongs to the report and is not a guarantee of HashMap iteration.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-hashmap-analysis.png",
+          "sha256": "ddadeec6919932337c12275baaaa00951ae402a4b300ff069e8bd8cd39d8bfb6",
+          "bytes": 1263519,
+          "mode": "built-in image_gen"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Standard library: HashMap and the Entry API",
+          "url": "https://doc.rust-lang.org/std/collections/struct.HashMap.html"
+        }
+      ]
+    },
+    {
+      "slug": "rust-checked-arithmetic-conversions",
+      "title": "Rust numeric safety: checked arithmetic and honest conversions",
+      "date": "2026-10-18",
+      "proseWords": 1587,
+      "images": [
+        {
+          "src": "/blog/rust-arithmetic-editorial.png",
+          "alt": "A precision instrument sends an overflowing flow toward a safety gate, a circular return track and a capped reservoir.",
+          "caption": "Rejecting, wrapping and clamping express different rules at the same numeric boundary.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-arithmetic-editorial.png",
+          "sha256": "cdeba0fe3b011a4abd853864cdd8b608aeee2676b123b5ae1a776af12af8f57e",
+          "bytes": 2353099,
+          "mode": "built-in image_gen"
+        },
+        {
+          "src": "/blog/rust-arithmetic-analysis.png",
+          "alt": "For u8 250 plus 10, checked_add gives None, wrapping_add gives 4, and saturating_add gives 255; narrowing 300 gives 44 or an error depending on the conversion.",
+          "caption": "A numeric boundary needs an explicit policy. Build-profile defaults are not an application contract.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-arithmetic-analysis.png",
+          "sha256": "3207dc769c79d2e5cf109bc4a3123346fda538694de642fd93a7ead9083e7170",
+          "bytes": 1419255,
+          "mode": "built-in image_gen"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Standard library: checked, wrapping and saturating integer operations",
+          "url": "https://doc.rust-lang.org/std/primitive.u8.html"
+        },
+        {
+          "title": "Cargo reference: overflow checks in profiles",
+          "url": "https://doc.rust-lang.org/cargo/reference/profiles.html"
+        },
+        {
+          "title": "Standard library: TryFrom",
+          "url": "https://doc.rust-lang.org/std/convert/trait.TryFrom.html"
+        }
+      ]
+    },
+    {
+      "slug": "rust-traits-generics-dynamic-dispatch",
+      "title": "Rust traits and generics: choose a clear dispatch boundary",
+      "date": "2026-10-19",
+      "proseWords": 1551,
+      "images": [
+        {
+          "src": "/blog/rust-traits-editorial.png",
+          "alt": "Two differently shaped measuring instruments share one connector and feed direct and selectable routes through an architectural interface.",
+          "caption": "Share an operation where it helps callers; keep concrete storage and ownership decisions explicit.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-traits-editorial.png",
+          "sha256": "910b646a6cb7edad8cfdddcfc8a1603ffa668403aca02621206d8f6f7e501cb5",
+          "bytes": 3000776,
+          "mode": "built-in image_gen"
+        },
+        {
+          "src": "/blog/rust-traits-analysis.png",
+          "alt": "Generic concrete types flow through separate generic uses, while two implementations can be borrowed through one dyn Measure interface.",
+          "caption": "Generics preserve concrete type information at the call boundary; a trait object supplies a common interface with dynamic dispatch.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-traits-analysis.png",
+          "sha256": "fc754cc35d4d7decb00046156fdfa124ac050aec87fb02f99b63e71090a22b2f",
+          "bytes": 1346430,
+          "mode": "built-in image_gen"
+        }
+      ],
+      "sources": [
+        {
+          "title": "The Rust Book: traits and shared behavior",
+          "url": "https://doc.rust-lang.org/book/ch10-02-traits.html"
+        },
+        {
+          "title": "The Rust Reference: dyn compatibility",
+          "url": "https://doc.rust-lang.org/reference/items/traits.html"
+        }
+      ]
+    },
+    {
+      "slug": "rust-buffered-text-input-errors",
+      "title": "Rust text input: buffered reading without lost errors",
+      "date": "2026-10-20",
+      "proseWords": 1646,
+      "images": [
+        {
+          "src": "/blog/rust-file-input-editorial.png",
+          "alt": "A paper ribbon passes through a buffered inspection station while malformed segments are retained in a separate tray.",
+          "caption": "Keep access, decoding and validation as distinct stages, and retain enough information to explain a rejected record.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-file-input-editorial.png",
+          "sha256": "ffad0197b7d13fc1a9218b384f797fdc61bbb60bb49cd96442eb69ec155b4317",
+          "bytes": 2531868,
+          "mode": "built-in image_gen"
+        },
+        {
+          "src": "/blog/rust-file-input-analysis.png",
+          "alt": "Bytes pass through UTF-8 decoding, line processing and domain validation, with a read_line loop that clears its buffer and stops at zero bytes.",
+          "caption": "These are conceptual stages. Text-reading errors and field-validation errors need separate handling.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-file-input-analysis.png",
+          "sha256": "b2f7c9be54162aaae0ce8110e7b1511eb161505a976fec658afe14e34176d71c",
+          "bytes": 1362369,
+          "mode": "built-in image_gen"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Standard library: BufRead",
+          "url": "https://doc.rust-lang.org/std/io/trait.BufRead.html"
+        },
+        {
+          "title": "Standard library: Cursor",
+          "url": "https://doc.rust-lang.org/std/io/struct.Cursor.html"
+        }
+      ]
+    }
+  ],
+  "deliveryVariants": "blog-image-delivery-2026-10-20.json",
+  "sourcePNGsPreserved": true
+}
