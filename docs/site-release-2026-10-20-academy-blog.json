@@ -1,5 +1,5 @@
 {
-  "verifiedAtUTC": "2026-10-20T17:13:24.895245+00:00",
+  "verifiedAtUTC": "2026-10-20T17:16:01.432777+00:00",
   "origin": "https://crabrix.com",
   "image": "localhost/crabrix-web-site:academy-blog-20261020-r4",
   "digest": "9eb52549e119626e61189ff3eb83f3bf9dda2a588be14749fb8da631626aa69f",
@@ -474,7 +474,9 @@
     "totalLessons": 742,
     "changedLessons": 10,
     "sourceCommit": "e0f3ead2a98e4fb8e08118ce27632a15516adc70",
-    "catalogRepositoryCommit": "82e9d56388440fcc1cb135c6bafc19e0ef162954",
+    "catalogRepositoryCommit": "f69da95d0b3848c9baef0b3a1cd476244e17921f",
+    "normalizedCorpusCommit": "fac40d1a3781c7017b246cf62b04c20381d94e72",
+    "allCourseUnitAndLessonObjectsMatchCommittedCorpus": true,
     "catalogSequence": 13,
     "versions": {
       "basics": "1.0.6",

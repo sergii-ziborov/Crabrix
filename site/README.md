@@ -108,6 +108,10 @@ guarantees and borrowed versus owning trait objects. The same lesson
 bytes and replacement diagrams are published as signed Basics 1.0.6, Systems
 1.0.5 and Interview 1.0.6 packs in catalog sequence 13. See
 `../docs/academy-review-2026-10-20.md` for the review and verification scope.
+The recorded snapshot revision identifies the authored lesson changes.
+`fac40d1a3781c7017b246cf62b04c20381d94e72` also commits the generated unit
+digests already included in the snapshot and published pack. All course, unit
+and lesson objects match that committed corpus exactly.
 
 ## Search metadata
 

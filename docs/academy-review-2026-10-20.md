@@ -6,6 +6,13 @@ commit `e0f3ead2a98e4fb8e08118ce27632a15516adc70`. The curriculum still contains
 progress identities, native source code and existing user project copies are
 preserved.
 
+The snapshot records that authored revision. Commit
+`fac40d1a3781c7017b246cf62b04c20381d94e72` additionally tracks the generated
+Interview unit digests already present in both the signed archive and website
+snapshot. All seven courses, every unit and all 742 lesson objects were compared
+with that committed corpus and match exactly. No published archive bytes were
+changed by committing the generated metadata.
+
 ## Corrections
 
 | Course / lesson | Correction |
