@@ -1,4 +1,15 @@
-> Current status — 16 October 2026: **1.1.1 (68)** is VALID,
+> Delivery check — 21 October 2026: **1.1.1 (68)** is still the latest Apple
+> build, VALID, unexpired and IN_BETA_TESTING in Internal QA. App source,
+> resources, dependencies and build configuration are unchanged from its
+> archive, so no replacement binary or Xcode Cloud run is needed for the
+> latest website and Academy edits. Signed catalog sequence 13 offers
+> Basics 1.0.6, Systems 1.0.5 and Interview 1.0.6 through Learn → Update all.
+> TestFlight What to Test now includes those updates and matched API readback.
+> Hetzner serves the verified 20 October release: its image, Next build ID,
+> private curriculum snapshot, public sitemap and new articles match the
+> published artifact. [Current delivery evidence](../releases/delivery-check-2026-10-21.json).
+
+> Earlier status — 16 October 2026: **1.1.1 (68)** is VALID,
 > APP_STORE_ELIGIBLE and IN_BETA_TESTING in Internal QA. Manual Xcode Cloud
 > run 68 succeeded with Xcode 27.1 RC / SDK 27.1 from `11a2f59`.
 > The selected build is 68. The version, submission

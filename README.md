@@ -21,6 +21,12 @@ The current internal test release is **1.1.1 (68)**, built manually in Xcode Clo
 
 The live website has canonical and social metadata for all **774 public pages**, with structured data for the product, courses, lessons and articles. The [HTML sitemap](https://crabrix.com/sitemap/) and [XML sitemap](https://crabrix.com/sitemap.xml) include all 742 lessons and 15 blog articles. [Publication evidence](docs/site-release-2026-10-20-academy-blog.json) records the latest site checks. [SEO and App Store presentation](docs/seo-2026-10-16.md) documents account access checks, relevant search keywords and two custom product pages.
 
+The [21 October delivery check](docs/releases/delivery-check-2026-10-21.json)
+confirms TestFlight 1.1.1 (68) remains active and the latest Hetzner artifact is
+live. Native app inputs have not changed since that archive. New Academy
+material arrives through signed catalog 13; TestFlight What to Test now includes
+the current course versions and update checks.
+
 ## Use Crabrix
 
 Open **Learn**, choose a course to download, and read it offline. New signed lessons appear with an **Update** button on each installed course and an **Update all** action; pull down or use the refresh button to check again. Open a lesson starter as an editable project. In the project workspace, use **Check** to see compiler diagnostics, then **Run** to execute the program. The three-dot button opens project settings, save, and share. Code, Problems, Output, and Terminal switch from the bottom of the editor; hints appear in Output for lesson projects. A project is a durable copy: editing or deleting course material does not edit that project.

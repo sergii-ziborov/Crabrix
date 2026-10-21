@@ -1,0 +1,63 @@
+{
+  "verifiedAtUTC": "2026-10-21T10:09:46.063715+00:00",
+  "appArchiveSource": "11a2f5967b88bcbfb2fa2a13b347f775c25f725f",
+  "checkedSource": "dbb68fca55556fa5468f205c5dd2ed26955bec16",
+  "checkedAppInputPaths": [
+    "Crabrix",
+    "CrabrixShare",
+    "CrabrixShared",
+    "Dependencies",
+    "Vendor",
+    "project.yml",
+    "Crabrix.xcodeproj",
+    "ci_scripts"
+  ],
+  "changedAppInputs": [],
+  "testflight": {
+    "verifiedAtUTC": "2026-10-21T10:08:43.735470+00:00",
+    "version": "1.1.1",
+    "build": "68",
+    "buildID": "30dbac66-d636-48ad-b4ed-8f3aab6fe61c",
+    "betaState": "IN_BETA_TESTING",
+    "internalGroup": "Internal QA",
+    "membershipVerified": true,
+    "whatToTestLocalizationID": "e912acef-9254-4fc3-9520-56eb2680f94a",
+    "whatToTestMatched": true,
+    "whatToTestCharacters": 2822,
+    "whatToTestSHA256": "8d90b38d31744a4feb72d1cedb0f1a1a9f44cb75db72fbcb5a96ef8c8aff5a02",
+    "newBinaryUploaded": false,
+    "reason": "App build inputs are identical to the archived build 68 source; Academy changes are delivered through the existing signed CoursePack updater."
+  },
+  "catalog": {
+    "sequence": 13,
+    "versions": {
+      "algorithms": "1.0.4",
+      "basics": "1.0.6",
+      "concurrency": "1.0.4",
+      "examples": "1.0.4",
+      "interview": "1.0.6",
+      "ownership": "1.0.4",
+      "projects": "1.0.5",
+      "systems": "1.0.5"
+    },
+    "sha256": "377cd3919709878c17b7f62de1d622968eb6a3c5ca80df7994bff6c31767516d"
+  },
+  "website": {
+    "image": "localhost/crabrix-web-site:academy-blog-20261020-r4",
+    "digest": "9eb52549e119626e61189ff3eb83f3bf9dda2a588be14749fb8da631626aa69f",
+    "status": "running healthy",
+    "buildID": "0rY0xZ7YAbqU5bkGOgOZE",
+    "courseSnapshotSHA256": "e887a4f8fb7b31feccf3740b2f9d6c9dfa09cbcd208ecca96779801d50676014",
+    "publicChecks": {
+      "sitemapURLs": 774,
+      "sitemapMatchesPublishedSource": true,
+      "fiveNewestArticlesPresent": true,
+      "optimizedCoverSHA256Matches": true
+    },
+    "deploymentNeeded": false,
+    "deployedAt": "2026-10-20",
+    "accountBackupTimer": "active"
+  },
+  "githubActionsUsed": false,
+  "newXcodeCloudRunNeeded": false
+}

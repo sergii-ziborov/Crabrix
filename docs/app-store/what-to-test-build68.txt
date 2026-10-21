@@ -1,5 +1,19 @@
 Crabrix 1.1.1 — workspace and practice fixes
 
+Academy content update — 20 October 2026 (available to this existing build):
+
+Open Learn, refresh the course list, and use Update or Update all. The current signed catalog is sequence 13: Rust Basics 1.0.6, Macros & Systems Rust 1.0.5 and Rust Interview Prep 1.0.6. Close and reopen a lesson after updating to see its new content; an already open lesson retains its prior snapshot.
+
+• Check the revised Strings explanation and infographic: café has five UTF-8 bytes and four Unicode scalar values. Scalar values and grapheme clusters are different units; string slices must respect UTF-8 boundaries.
+• Check Number Types, Operators, Collections, Control Flow and Enums. Examples should define their inputs, explain explicit overflow/conversion policies and produce a sorted HashMap report where order matters.
+• Check FFI in Systems and Interview: Rust 2024 extern syntax, ABI/validity/lifetime contracts and the stated foreign-linking limits must agree with the examples and diagram.
+• In Interview, check Syscalls and Buffering and dyn Trait vs Generics. Buffering does not guarantee one syscall or durable storage; a borrowed trait object does not require Box or guarantee a smaller/faster binary. Read the revised questions and run the complete standard-library examples.
+• Before and after the update, confirm that completed lessons, answers and edited My Projects copies remain. After the downloads finish, restart offline and reopen the updated lessons and images.
+
+These are signed course text, media and editable-source updates. The app binary, bundled compiler and existing workspace behavior are unchanged.
+
+Continue checking the build-68 workspace fixes:
+
 • Build a project with a compiler error or an unsupported Cargo feature. Problems must show the failure even when there is no source location.
 • Output must contain program text or a visual result, without a second Run button or a compiler-error card. The main toolbar still has Run/Stop.
 • The ordinary editor strip must show the current project name.
