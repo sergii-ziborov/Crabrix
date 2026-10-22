@@ -114,7 +114,50 @@ test('every article image has complete WebP delivery copies with a smaller downl
     }
     originalBytes += original.length; fullBytes += variants[0].length; cardBytes += variants[1].length;
   }
-  assert.equal(sources.size, 30);
+  assert.equal(sources.size, 40);
   assert.ok(fullBytes < originalBytes * 0.15, 'full WebP copies must save at least 85%');
   assert.ok(cardBytes < originalBytes * 0.05, 'card copies must save at least 95%');
+});
+
+test('23 October expansion adds three sourced news analyses and two longer practical guides on free days', () => {
+  const news = new Map([
+    ['rustup-1-29-2-certificate-update', 'https://blog.rust-lang.org/2026/10/20/Rustup-1.29.2/'],
+    ['rust-1-100-i686-windows-host-tools', 'https://blog.rust-lang.org/2026/10/02/demoting-i686-windows-targets-to-std-only/'],
+    ['rust-infrastructure-q3-2026-registry-resilience', 'https://blog.rust-lang.org/inside-rust/2026/10/12/infrastructure-team-q3-recap-and-q4-plan/'],
+  ]);
+  const slugs = [...news.keys(), 'cargo-build-scripts-generated-code', 'rust-memoization-cache-contracts'];
+  const batch = posts.filter(post => slugs.includes(post.slug));
+  const previous = posts.filter(post => !slugs.includes(post.slug));
+  const words = post => post.sections.flatMap(section => section.paragraphs).join(' ').trim().split(/\s+/).length;
+  const longestPrevious = Math.max(...previous.map(words));
+  assert.equal(posts.length, 20);
+  assert.equal(previous.length, 15);
+  assert.equal(batch.length, 5);
+  assert.deepEqual(batch.map(post => post.date), ['2026-10-23', '2026-10-22', '2026-10-21', '2026-10-14', '2026-10-11']);
+  const hashes = new Set();
+  for (const post of batch) {
+    assert.ok(!previous.some(old => old.date === post.date), post.date);
+    assert.ok(words(post) > longestPrevious, `${post.slug}: must exceed ${longestPrevious} prose words`);
+    assert.equal(post.readingMinutes, Math.ceil(words(post) / 200));
+    assert.ok(post.summary.length >= 120 && post.summary.length <= 180);
+    assert.ok(post.title.length <= 75);
+    assert.equal(post.relatedSlugs.length, 3);
+    assert.equal(new Set(post.relatedSlugs).size, 3);
+    assert.ok(post.relatedSlugs.every(slug => slug !== post.slug && posts.some(p => p.slug === slug)));
+    assert.ok(post.sections.some(s => s.code && s.codeLanguage === 'rust'));
+    const images = post.sections.flatMap(s => s.image ? [s.image] : []);
+    assert.equal(images.length, 2);
+    assert.equal(images.filter(img => img.src.endsWith('-infographic.png')).length, 1);
+    for (const img of images) {
+      const bytes = readFileSync(new URL('../public' + img.src, import.meta.url));
+      assert.equal(bytes.readUInt32BE(16), img.width);
+      assert.equal(bytes.readUInt32BE(20), img.height);
+      assert.ok(img.alt.length > 40 && img.caption.length > 40);
+      hashes.add(createHash('sha256').update(bytes).digest('hex'));
+    }
+    if (news.has(post.slug)) {
+      assert.ok(post.sections.flatMap(s => s.sources ?? []).some(s => s.url === news.get(post.slug)));
+    }
+  }
+  assert.equal(hashes.size, 10);
 });

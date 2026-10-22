@@ -1,0 +1,252 @@
+{
+  "mode": "built-in image_gen",
+  "authoredOn": "2026-10-23",
+  "editorialDatePolicy": "One article today; four previously unoccupied date slots. News event dates are separately identified and precede article dates.",
+  "previousArticles": 15,
+  "previousLongestProseWords": 2151,
+  "previousArticlesUnchanged": true,
+  "articles": [
+    {
+      "slug": "rustup-1-29-2-certificate-update",
+      "title": "rustup 1.29.2: certificate security and toolchain checks",
+      "date": "2026-10-23",
+      "kind": "news analysis",
+      "proseWords": 2360,
+      "images": [
+        {
+          "src": "/blog/rustup-trust-editorial.png",
+          "alt": "A precision maintenance station replaces a jade trust component in a small brass instrument while separate compiler and package trays remain organized nearby.",
+          "caption": "Maintain the tool that acquires toolchains, and verify compiler selection and application dependencies as separate responsibilities.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rustup-trust-editorial.png",
+          "sha256": "bc2a6faa79fa658cb944c4600b40a70f6eda12f66a47ad833f428e59d4a6a668",
+          "bytes": 2094999,
+          "mode": "built-in image_gen",
+          "visuallyChecked": true
+        },
+        {
+          "src": "/blog/rustup-trust-infographic.png",
+          "alt": "Three separate lanes show rustup manager maintenance, rustc and Cargo toolchain selection, and application dependencies recorded in Cargo.lock.",
+          "caption": "rustup self update addresses the manager. Compiler selection and application dependency maintenance still need their own checks.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rustup-trust-infographic.png",
+          "sha256": "2f8287238219944c8edd38595ed3a175f2c8cbb73b08239213b3bffef482f80c",
+          "bytes": 1825983,
+          "mode": "built-in image_gen",
+          "visuallyChecked": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "Rustup Team: announcing rustup 1.29.2, 20 October 2026",
+          "url": "https://blog.rust-lang.org/2026/10/20/Rustup-1.29.2/"
+        },
+        {
+          "title": "RustSec: RUSTSEC-2026-0382",
+          "url": "https://rustsec.org/advisories/RUSTSEC-2026-0382.html"
+        },
+        {
+          "title": "Rustup Book: basic usage and self-update",
+          "url": "https://rust-lang.github.io/rustup/basics.html"
+        },
+        {
+          "title": "Rustup Book: toolchain overrides and selection",
+          "url": "https://rust-lang.github.io/rustup/overrides.html"
+        }
+      ],
+      "newsEventDate": "2026-10-20"
+    },
+    {
+      "slug": "rust-1-100-i686-windows-host-tools",
+      "title": "Rust 1.100: what changes for 32-bit Windows builds",
+      "date": "2026-10-22",
+      "kind": "news analysis",
+      "proseWords": 2323,
+      "images": [
+        {
+          "src": "/blog/rust-windows-host-editorial.png",
+          "alt": "A large ivory 64-bit workbench produces a compact jade application artifact that travels to a smaller separate receiver.",
+          "caption": "The machine running the compiler and the machine running the produced application are different roles.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-windows-host-editorial.png",
+          "sha256": "5ef06245fefa37f6153c92c9a3acbc6203b4f4c557cb12f0c202b12e95fdfb1e",
+          "bytes": 2284942,
+          "mode": "built-in image_gen",
+          "visuallyChecked": true
+        },
+        {
+          "src": "/blog/rust-windows-host-infographic.png",
+          "alt": "An upcoming Rust 1.100 diagram separates a supported host running rustc and Cargo from i686 Windows targets retaining standard libraries without distributed host tools.",
+          "caption": "Announced for Rust 1.100: target standard libraries remain. A supported build host and the correct native linking setup are still required.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-windows-host-infographic.png",
+          "sha256": "6814fc9b5d45a51b59e09aaf1a9db99a4315bea529d4a8e594de8849c7c8fec6",
+          "bytes": 1395517,
+          "mode": "built-in image_gen",
+          "visuallyChecked": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "Compiler Team: demoting i686 Windows targets to std-only, 2 October 2026",
+          "url": "https://blog.rust-lang.org/2026/10/02/demoting-i686-windows-targets-to-std-only/"
+        },
+        {
+          "title": "rustc Book: platform support and tiers",
+          "url": "https://doc.rust-lang.org/rustc/platform-support.html"
+        },
+        {
+          "title": "Standard library: u32 byte-order conversions",
+          "url": "https://doc.rust-lang.org/std/primitive.u32.html#method.to_le_bytes"
+        }
+      ],
+      "newsEventDate": "2026-10-02"
+    },
+    {
+      "slug": "rust-infrastructure-q3-2026-registry-resilience",
+      "title": "Rust infrastructure Q3 2026: crates.io, docs.rs and resilient builds",
+      "date": "2026-10-21",
+      "kind": "news analysis",
+      "proseWords": 2363,
+      "images": [
+        {
+          "src": "/blog/rust-registry-resilience-editorial.png",
+          "alt": "A refined architectural library has separate jade-lit entrances for package archives and documentation, connected by orderly protected brass routes.",
+          "caption": "Package availability and documentation availability support development, while build correctness still requires independent checks.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-registry-resilience-editorial.png",
+          "sha256": "28a9c84a95f1aa74217eab528cb7f69634c99ce7d7633cb15b5749fa29c33574",
+          "bytes": 3015155,
+          "mode": "built-in image_gen",
+          "visuallyChecked": true
+        },
+        {
+          "src": "/blog/rust-registry-resilience-infographic.png",
+          "alt": "Four independent checks ask whether a service is reachable, an artifact is expected, source compiles, and runtime behavior is correct.",
+          "caption": "These checks complement one another. Passing an earlier stage does not prove the later stages.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-registry-resilience-infographic.png",
+          "sha256": "4a79dff34c0a3286fde04de1ea3a0c697768757dcf0aaf0ece56cbc7139ab216",
+          "bytes": 1661932,
+          "mode": "built-in image_gen",
+          "visuallyChecked": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "Infrastructure Team: Q3 recap and Q4 plan, 12 October 2026",
+          "url": "https://blog.rust-lang.org/inside-rust/2026/10/12/infrastructure-team-q3-recap-and-q4-plan/"
+        },
+        {
+          "title": "Cargo Book: cargo fetch",
+          "url": "https://doc.rust-lang.org/cargo/commands/cargo-fetch.html"
+        },
+        {
+          "title": "Cargo Book: cargo build and --frozen",
+          "url": "https://doc.rust-lang.org/cargo/commands/cargo-build.html"
+        },
+        {
+          "title": "Cargo Book: cargo doc",
+          "url": "https://doc.rust-lang.org/cargo/commands/cargo-doc.html"
+        }
+      ],
+      "newsEventDate": "2026-10-12"
+    },
+    {
+      "slug": "rust-memoization-cache-contracts",
+      "title": "Rust memoization: cache keys, limits and failure handling",
+      "date": "2026-10-14",
+      "kind": "practical",
+      "proseWords": 2307,
+      "images": [
+        {
+          "src": "/blog/rust-memoization-editorial.png",
+          "alt": "An elegant observatory indexes luminous calculation tokens into individual drawers and returns a previously stored matching token.",
+          "caption": "Reuse an answer only when the key captures every input that can change its meaning.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-memoization-editorial.png",
+          "sha256": "861e28695d5520c756c7b939fabd8ac3848b074faa0d6ebe4afe5eebf0af94ef",
+          "bytes": 2743610,
+          "mode": "built-in image_gen",
+          "visuallyChecked": true
+        },
+        {
+          "src": "/blog/rust-memoization-infographic.png",
+          "alt": "A table maps Fibonacci inputs 0, 1, 2, 3, 4, 5 to 0, 1, 1, 2, 3, 5 and shows a repeated fib(5) returning the cached value 5.",
+          "caption": "Six distinct inputs are cached after fib(5). This is a state illustration, not a call-count or speed benchmark.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/rust-memoization-infographic.png",
+          "sha256": "61556cbd93b0ad3fdcd906d26cfb6b5db71ce315b4fe6b5ce752e515e0828f97",
+          "bytes": 1562052,
+          "mode": "built-in image_gen",
+          "visuallyChecked": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "Standard library: HashMap",
+          "url": "https://doc.rust-lang.org/std/collections/struct.HashMap.html"
+        },
+        {
+          "title": "Standard library: u64 checked_add",
+          "url": "https://doc.rust-lang.org/std/primitive.u64.html#method.checked_add"
+        }
+      ]
+    },
+    {
+      "slug": "cargo-build-scripts-generated-code",
+      "title": "Cargo build.rs: generated code and reliable rebuilds",
+      "date": "2026-10-11",
+      "kind": "practical",
+      "proseWords": 2324,
+      "images": [
+        {
+          "src": "/blog/cargo-build-scripts-editorial.png",
+          "alt": "An ivory specification card enters a brass and glass source foundry and emerges as neatly stacked generated sheets.",
+          "caption": "A generator is an explicit transformation from declared inputs to source that the compiler can consume.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/cargo-build-scripts-editorial.png",
+          "sha256": "4c40edc4e58282afd15c80554274ad884d651aa46255233fd3ada7a3056d0369",
+          "bytes": 2430904,
+          "mode": "built-in image_gen",
+          "visuallyChecked": true
+        },
+        {
+          "src": "/blog/cargo-build-scripts-infographic.png",
+          "alt": "A greeting file and GREETING_STYLE feed build.rs on the host, which writes OUT_DIR/generated.rs for rustc compiling the target.",
+          "caption": "Both inputs are tracked explicitly. The generator runs on the host; its generated source is compiled for the selected target.",
+          "width": 1536,
+          "height": 1024,
+          "path": "site/public/blog/cargo-build-scripts-infographic.png",
+          "sha256": "347c1b838151f200905cc1fb52ea31120364f5469c364e563bf38b42ced8c1b5",
+          "bytes": 1412763,
+          "mode": "built-in image_gen",
+          "visuallyChecked": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "Cargo reference: build scripts",
+          "url": "https://doc.rust-lang.org/cargo/reference/build-scripts.html"
+        },
+        {
+          "title": "Cargo reference: environment variables",
+          "url": "https://doc.rust-lang.org/cargo/reference/environment-variables.html"
+        },
+        {
+          "title": "Cargo Book: build script examples",
+          "url": "https://doc.rust-lang.org/cargo/reference/build-script-examples.html"
+        }
+      ]
+    }
+  ]
+}

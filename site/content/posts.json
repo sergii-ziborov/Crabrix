@@ -1,5 +1,591 @@
 [
   {
+    "slug": "rustup-1-29-2-certificate-update",
+    "title": "rustup 1.29.2: certificate security and toolchain checks",
+    "date": "2026-10-23",
+    "summary": "Understand the rustup 1.29.2 certificate-security update, verify which tools you use, and separate manager maintenance from compiler and dependency changes.",
+    "relatedSlugs": [
+      "rust-1-99-upgrade",
+      "cargo-build-scripts-generated-code",
+      "cargo-features-portable-dependencies"
+    ],
+    "sections": [
+      {
+        "heading": "The news: a security update for the toolchain manager",
+        "paragraphs": [
+          "On 20 October 2026, the Rustup Team released rustup 1.29.2. The announcement describes a small update to its certificate-related dependencies, `rustls-webpki` and `webpki-root-certs`, addressing problematic eMudhra intermediate certificates associated with CVE-2026-111943. This article is dated 23 October and examines how to apply that manager update without accidentally changing unrelated project assumptions.",
+          "The immediate distinction is between the program that manages toolchains and the compiler a project uses. Updating the former can be necessary even when you deliberately keep the latter pinned. The rest of this guide is an operational interpretation and a set of original verification scenarios, rather than a claim that every Rust application or every downloaded crate shares the same exposure."
+        ],
+        "image": {
+          "src": "/blog/rustup-trust-editorial.png",
+          "alt": "A precision maintenance station replaces a jade trust component in a small brass instrument while separate compiler and package trays remain organized nearby.",
+          "caption": "Maintain the tool that acquires toolchains, and verify compiler selection and application dependencies as separate responsibilities.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "Rustup Team: announcing rustup 1.29.2, 20 October 2026",
+            "url": "https://blog.rust-lang.org/2026/10/20/Rustup-1.29.2/"
+          }
+        ]
+      },
+      {
+        "heading": "What the advisory does and does not establish",
+        "paragraphs": [
+          "The linked RustSec advisory concerns acceptance of certain distrusted certificate intermediates by affected verification code. Its affected and patched version ranges are the authoritative starting point for dependency investigations. A certificate-verification defect concerns whether a connection's presented identity is accepted under the relevant trust configuration; it is not evidence that arbitrary source code in a project has become incorrect.",
+          "Avoid turning that narrow finding into a universal statement about Rust's safety guarantees. Memory safety, transport identity, artifact provenance, and application correctness answer different questions. An update can repair one boundary while leaving the others dependent on their own controls. If you maintain software using the affected libraries directly, assess that dependency graph separately from updating your installed rustup executable."
+        ],
+        "sources": [
+          {
+            "title": "RustSec: RUSTSEC-2026-0382",
+            "url": "https://rustsec.org/advisories/RUSTSEC-2026-0382.html"
+          }
+        ]
+      },
+      {
+        "heading": "Three version numbers that should not be conflated",
+        "paragraphs": [
+          "A developer's machine can contain a rustup manager version, several compiler toolchains, and many application dependency resolutions. These numbers evolve independently. A security update to rustup does not imply a new Rust language release. A new compiler does not imply that an application's locked dependencies have been updated. A changed dependency lockfile does not prove that the tool used to download a compiler was maintained.",
+          "Use this separation when writing a change request or explaining an incident. State which component changed, which evidence identifies it, and which checks establish that project behavior remains acceptable. A report saying only “Rust updated” is difficult to review because it can conceal three unrelated modifications. The diagram intentionally keeps those responsibilities in separate lanes rather than suggesting one command validates the entire development environment."
+        ],
+        "image": {
+          "src": "/blog/rustup-trust-infographic.png",
+          "alt": "Three separate lanes show rustup manager maintenance, rustc and Cargo toolchain selection, and application dependencies recorded in Cargo.lock.",
+          "caption": "rustup self update addresses the manager. Compiler selection and application dependency maintenance still need their own checks.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Capture the selected environment before making a change",
+        "paragraphs": [
+          "From the actual project directory, record the manager version, active toolchain, compiler details, and Cargo version. The working directory matters because project configuration can select a toolchain different from the global default. Keep this record alongside the update's verification output, so a later difference can be traced to a specific component rather than reconstructed from someone's memory.",
+          "These commands inspect versions; they are not a complete security assessment and should not be presented as one. They answer a smaller, useful question: what does this shell resolve and select for this project now? If an IDE or build service behaves differently, repeat the inventory in that environment rather than assuming the interactive shell's result applies everywhere."
+        ],
+        "code": "rustup --version\nrustup show active-toolchain\nrustc -Vv\ncargo -V",
+        "codeLanguage": "shell"
+      },
+      {
+        "heading": "Understand which installation owns the manager",
+        "paragraphs": [
+          "A machine can have tools installed through more than one mechanism. Before updating, identify whether the rustup executable belongs to rustup's normal installer or to an operating-system package manager or managed workstation image. Maintenance should follow the owning installation method. Replacing a managed executable with a second unmanaged copy can create a confusing path order while leaving the original installation untouched.",
+          "The rustup documentation notes that some distributor-provided builds disable self-update. In that situation, use the distributor's supported update path. The practical objective is a maintained manager in the environment that actually runs builds, not merely a newer executable somewhere on disk. Document that path for colleagues so the next update does not repeat the same ambiguity."
+        ],
+        "sources": [
+          {
+            "title": "Rustup Book: basic usage and self-update",
+            "url": "https://rust-lang.github.io/rustup/basics.html"
+          }
+        ]
+      },
+      {
+        "heading": "Apply the focused update when rustup owns its installation",
+        "paragraphs": [
+          "For a normal rustup-managed installation, the release announcement directs users to stop programs using rustup, such as an IDE, and run `rustup self update`. Schedule that action between active builds so the tool is not being replaced while another process depends on it. This is a state-changing maintenance command; review its output and require a successful exit before proceeding.",
+          "Then query the manager version again in a fresh shell and repeat the project inventory. The focused command maintains rustup without asking for new compiler toolchains. If you also intend to update compilers, make that a separate explicit step with its own compatibility checks. Keeping the decisions separate makes both success and failure much easier to explain."
+        ],
+        "code": "rustup self update\nrustup --version\nrustup show active-toolchain\nrustc -Vv\ncargo -V",
+        "codeLanguage": "shell"
+      },
+      {
+        "heading": "A toolchain pin and manager maintenance solve different problems",
+        "paragraphs": [
+          "A repository may pin a compiler to keep collaborators on a known language and standard-library version. That pin does not replace maintenance of the manager that installs and selects toolchains. Conversely, keeping rustup current does not authorize silently moving a project's compiler pin. Treat the pin as part of the project's compatibility contract and the manager as maintained development infrastructure.",
+          "If the project has no pin, record that fact rather than inventing one during a security update. Introducing a pin is a separate policy decision involving supported platforms, update cadence, and contributors' workflows. An urgent manager patch is easier to verify when its scope remains clear and unrelated project configuration is left for a deliberate review."
+        ]
+      },
+      {
+        "heading": "Resolve surprising compiler selection before diagnosing a regression",
+        "paragraphs": [
+          "If the compiler version differs from what you expected, inspect explicit toolchain selection, environment overrides, directory settings, and the repository's toolchain file. Rustup supports multiple selection mechanisms, and their precedence matters. A command launched from a parent directory or through a wrapper can use a different selection from the command you typed beside the source file.",
+          "Do not immediately blame the manager update for a compiler regression when the active compiler has not been identified. Compare the before and after records from the same directory and process environment. If selection differs, establish why first. That small step can prevent hours of debugging an application with the wrong toolchain or changing source code to compensate for an unrelated configuration difference."
+        ],
+        "sources": [
+          {
+            "title": "Rustup Book: toolchain overrides and selection",
+            "url": "https://rust-lang.github.io/rustup/overrides.html"
+          }
+        ]
+      },
+      {
+        "heading": "Restart long-running tools deliberately",
+        "paragraphs": [
+          "An IDE, terminal session, or worker process may retain environment variables established before maintenance. Reopen the relevant application and verify its own tool output if it launches builds. A successful command in a new terminal does not prove that an already-running process now resolves the same executable or inherits the same path configuration.",
+          "Keep the restart procedure proportionate. Close the applications that use the toolchain and reopen them after the update; do not erase project state or reinstall unrelated SDKs merely to make the environment feel fresh. If a process still selects an unexpected tool, inspect its launch environment and configuration. Repeated broad resets conceal the evidence needed to understand the difference."
+        ]
+      },
+      {
+        "heading": "Use a small compilation check with a limited claim",
+        "paragraphs": [
+          "A smoke program can establish that the selected compiler still compiles and runs ordinary code in the current desktop environment. The complete example below uses only the standard library and reports its runtime platform identifiers and pointer width. Its assertion checks a simple calculation, giving the run a visible correctness condition rather than merely printing a reassuring message.",
+          "This program does not test certificate validation, download integrity, every installed target, or the application's full behavior. Those claims would require different evidence. Its purpose is narrower: after maintaining the manager, confirm that the selected toolchain remains usable before running the project's own relevant tests. Keeping the claim limited makes the result more credible and easier to interpret."
+        ],
+        "code": "fn checked_total(values: &[u32]) -> Option<u32> {\n    values.iter().try_fold(0_u32, |sum, value| sum.checked_add(*value))\n}\n\nfn main() {\n    assert_eq!(checked_total(&[12, 8, 5]), Some(25));\n    assert_eq!(checked_total(&[u32::MAX, 1]), None);\n    println!(\"{} / {} / {}-bit pointers\",\n        std::env::consts::OS,\n        std::env::consts::ARCH,\n        usize::BITS);\n}",
+        "codeLanguage": "rust"
+      },
+      {
+        "heading": "Keep dependency remediation separate from compiler acquisition",
+        "paragraphs": [
+          "If an application directly depends on an affected certificate-verification library, updating rustup does not replace that application's dependency review. Inspect the relevant lockfile and dependency path, determine the advisory's applicability, update through the project's normal dependency process, and test the affected behavior. The manager and the application can contain different versions of similarly named libraries without sharing the same remediation path.",
+          "Avoid editing a lockfile by hand to make a version number look patched. Dependency resolution, compatibility, and testing should remain consistent. Also distinguish a library used only by a development tool from one shipped in the product. Both can matter, but the exposure, rollout mechanism, and validation evidence may differ. The useful question is which executable uses which code under which trust configuration."
+        ]
+      },
+      {
+        "heading": "Do not make a failed update succeed by weakening trust",
+        "paragraphs": [
+          "A connection failure during maintenance is a signal to investigate, not a reason to bypass certificate checks. Check the system clock, proxy configuration, managed certificate policy, network route, and the owning installation method. In a managed organization, an approved internal distribution channel may be appropriate, but its authenticity and maintenance responsibilities should be explicit.",
+          "Copying an executable from an unverified forum attachment or disabling validation can replace a diagnosed maintenance problem with a less visible trust problem. Preserve the original error and the command that produced it. If a corporate proxy is involved, provide that context to the administrator rather than guessing at global certificate changes that affect unrelated applications."
+        ]
+      },
+      {
+        "heading": "Update the environment that will perform the next build",
+        "paragraphs": [
+          "A developer laptop, a container image, a remote build worker, and a release machine are separate installations. Updating one does not maintain the others. Inventory the places that actually acquire toolchains and plan a focused update for each relevant owner. A rarely used release machine can remain stale even when every developer's interactive shell looks current.",
+          "For an immutable image, rebuild and replace the image through the established manual or automated release process rather than modifying a running instance and forgetting the change. Record the selected manager version in the image's release evidence. The goal is repeatable maintenance at the next launch, not a one-time successful command whose result disappears when the environment is recreated."
+        ]
+      },
+      {
+        "heading": "Preserve enough evidence to distinguish maintenance from drift",
+        "paragraphs": [
+          "A concise maintenance record can contain the source announcement, update date, installation owner, before and after manager versions, unchanged or deliberately changed compiler selection, and the smoke-test result. Keep sensitive paths and environment values out of public logs where they are unnecessary. The record should explain the decision without becoming a dump of the entire machine's configuration.",
+          "When something fails afterward, compare that evidence before changing dependencies or reverting source. Was the manager replaced? Did the compiler change? Did a wrapper select a different target? Did the project lockfile change independently? Separating those questions narrows investigation far more effectively than treating every failure after an update as one undifferentiated Rust regression."
+        ]
+      },
+      {
+        "heading": "Rollback is a recovery decision with a security cost",
+        "paragraphs": [
+          "If maintenance exposes an installation problem, prefer repairing the supported installation path while preserving the security update. Returning to an older manager may reintroduce the very issue that motivated the change. A temporary exception, if an organization genuinely needs one, should have an owner, a limited duration, and a documented reason rather than becoming an invisible permanent configuration.",
+          "Do not confuse rolling back the manager with selecting an older project compiler. Those are different actions. A project can deliberately retain a tested compiler while using an updated manager, and that combination may be exactly the intended result. Recovery instructions should name the component being changed and the consequence, so an operator does not undo unrelated protections while attempting to restore a build."
+        ]
+      },
+      {
+        "heading": "What this means for Crabrix projects",
+        "paragraphs": [
+          "Crabrix's local compiler is bundled with the signed app. Running rustup on a desktop does not replace that bundled compiler, update an installed iPhone app, or change the app's supported local execution model. App updates and desktop toolchain maintenance follow separate distribution paths. A source project can still be shared between those environments, but the available targets and build-time capabilities must be considered explicitly.",
+          "Use the app for the supported local Rust workflow and a desktop Cargo environment when a project requires desktop-specific tools or build scripts. When comparing results, identify the compiler and target on each side before attributing a difference to the source. That discipline is useful even when no security advisory is involved, because it distinguishes a platform limitation from a program defect."
+        ]
+      },
+      {
+        "heading": "A concrete maintenance handoff for a small team",
+        "paragraphs": [
+          "Imagine one colleague uses an ordinary rustup installation, another receives tools through a managed package, and a third prepares release artifacts on a separate workstation. Assign the update to the owner of each installation. Ask for the same small evidence set from all three, while allowing the actual update command to differ according to the distribution method.",
+          "Finish by confirming that the repository's intended compiler selection still holds and that the next build uses the maintained environment. This avoids a common partial success: everyone agrees the update is complete because one person posted a new version number. Maintenance is complete when the relevant installations have been addressed and the team's real workflow still produces the expected result."
+        ]
+      },
+      {
+        "heading": "A successful command needs an observed postcondition",
+        "paragraphs": [
+          "An update command returning successfully is useful evidence, but a maintenance handoff should also record the state that followed it. Query the version through the same environment that will launch the next project command. If a second executable appears earlier on the path, the observed version may reveal that the command maintained one installation while the workflow still selects another.",
+          "Keep the postcondition concrete: the intended installation reports the maintained manager version, the project selects its expected compiler, and the relevant build check completes. This is stronger than taking a screenshot of a terminal message in isolation. It also makes a later report of inconsistent behavior actionable because another developer can repeat the same inventory and compare the exact boundary that differs."
+        ]
+      },
+      {
+        "heading": "Keep maintenance notes distinct from application release notes",
+        "paragraphs": [
+          "A toolchain-manager patch may require developer action without changing the application binary or its user-facing features. Describe that distinction in team documentation. Users should not be told that an installed mobile application received a security fix merely because a maintainer updated a desktop tool, and contributors should not miss an important development-tool update because it did not warrant a product release.",
+          "Choose the communication channel according to the affected audience and installation owner. A short developer maintenance note can link the advisory, name the supported update method, and state the verified postconditions. If a later application release also changes a directly affected dependency, document that separate change with its own evidence rather than borrowing the manager update's conclusion."
+        ]
+      },
+      {
+        "heading": "The useful outcome is a maintained, understandable toolchain",
+        "paragraphs": [
+          "The release is small, and the operational response can remain small as well. Identify the manager, apply the appropriate update, confirm selection, and run proportionate checks. Do not use the occasion to change every dependency or rewrite working project configuration without a separate reason. Focused changes produce evidence that is easier to review and a recovery path that is easier to follow.",
+          "Keep the official announcement and advisory linked in your maintenance record, especially if they are updated with further details. Our practical distinction remains durable: maintaining the acquisition tool, selecting a compiler, and resolving application dependencies are related tasks with separate contracts. Naming those contracts clearly turns a vague “Rust update” into an action a developer can perform, verify, and explain."
+        ]
+      }
+    ],
+    "readingMinutes": 12
+  },
+  {
+    "slug": "rust-1-100-i686-windows-host-tools",
+    "title": "Rust 1.100: what changes for 32-bit Windows builds",
+    "date": "2026-10-22",
+    "summary": "Prepare for the announced Rust 1.100 i686 Windows host-tool changes. Separate build hosts, target libraries, linking and real 32-bit execution tests.",
+    "relatedSlugs": [
+      "cargo-build-scripts-generated-code",
+      "rust-checked-arithmetic-conversions",
+      "rust-1-99-upgrade"
+    ],
+    "sections": [
+      {
+        "heading": "The announced change is about where Rust tools run",
+        "paragraphs": [
+          "On 2 October 2026, the Rust Compiler Team announced a change scheduled for Rust 1.100.0: `i686-pc-windows-msvc` will move from Tier 1 with host tools to Tier 1 without host tools, and `i686-pc-windows-gnu` from Tier 2 with host tools to Tier 2 without host tools. Distributed standard libraries remain available for both targets. This 22 October guide discusses preparation for that announced transition, not a claim that Rust 1.100 is already the current stable release.",
+          "The central practical consequence is that producing a 32-bit Windows application and running the compiler on a 32-bit Windows host become separate support questions. Projects can continue targeting those application platforms by cross-compiling from a supported host. The announcement does not remove all 32-bit Rust targets or say that every existing 32-bit application must immediately become a 64-bit application."
+        ],
+        "image": {
+          "src": "/blog/rust-windows-host-editorial.png",
+          "alt": "A large ivory 64-bit workbench produces a compact jade application artifact that travels to a smaller separate receiver.",
+          "caption": "The machine running the compiler and the machine running the produced application are different roles.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "Compiler Team: demoting i686 Windows targets to std-only, 2 October 2026",
+            "url": "https://blog.rust-lang.org/2026/10/02/demoting-i686-windows-targets-to-std-only/"
+          }
+        ]
+      },
+      {
+        "heading": "Read host tools and target support as different promises",
+        "paragraphs": [
+          "Host tools are programs such as the compiler and Cargo that execute during development. A target standard library supports compiling a program for a particular output platform. A support tier describes additional availability and testing commitments, and the words “with host tools” add another dimension. Removing that qualifier is materially different from removing the target itself.",
+          "Use the platform-support documentation for the compiler release you are evaluating. A current stable table can still describe the pre-transition situation while an announcement describes a future release. Keep the release number attached to your notes so that a colleague reading them later can distinguish an upcoming policy from the behavior of the compiler installed on a particular workstation today."
+        ],
+        "sources": [
+          {
+            "title": "rustc Book: platform support and tiers",
+            "url": "https://doc.rust-lang.org/rustc/platform-support.html"
+          }
+        ]
+      },
+      {
+        "heading": "Inventory the build host before changing the application",
+        "paragraphs": [
+          "Start by identifying where release builds actually run. Is the compiler process itself 32-bit? Is a 64-bit Windows machine using a 32-bit toolchain? Does a packaging script invoke a tool from an old installation path? These are inventory questions, not reasons to rewrite the application's data model before understanding the deployment path.",
+          "Record the host reported by `rustc -Vv`, the active toolchain, the intended output target, and the linker prerequisites. Also identify the machine or environment used for execution testing. A team may discover that it already builds 32-bit outputs on a supported 64-bit host, making the transition mostly a matter of documenting and verifying its existing arrangement rather than replacing the product."
+        ],
+        "code": "rustc -Vv\nrustup show active-toolchain\nrustup target list --installed\ncargo -V",
+        "codeLanguage": "shell"
+      },
+      {
+        "heading": "A target standard library is not a complete native SDK",
+        "paragraphs": [
+          "Adding a Rust target installs its Rust components; it does not automatically establish every native prerequisite needed to link a Windows executable. The selected target also implies an ABI and native toolchain expectations. An MSVC target and a GNU target are not interchangeable spellings for the same complete environment, especially when the application links native libraries.",
+          "Before writing a migration command into release instructions, verify the corresponding linker and SDK setup on the supported host. Keep this prerequisite visible next to the Rust command. A failure to find the appropriate linker should produce a concrete environment diagnosis, rather than leading someone to switch target triples randomly until a build seems to pass with a different ABI than the product expects."
+        ]
+      },
+      {
+        "heading": "The transition diagram keeps the two target families separate",
+        "paragraphs": [
+          "The diagram summarizes the announcement's target-specific tier changes while showing a supported host producing a 32-bit application. Its arrows represent a build relationship, not a guarantee that any host can link any target without configuration. The native toolchain and execution environment still need to match the selected output.",
+          "For the MSVC target, the announced Tier 1 status continues without distributed host tools; the GNU target retains Tier 2 status without those tools. Keep those labels separate in support documentation. Saying simply “Windows was demoted” discards the distinction users need to understand which guarantee changed and which application build remains possible."
+        ],
+        "image": {
+          "src": "/blog/rust-windows-host-infographic.png",
+          "alt": "An upcoming Rust 1.100 diagram separates a supported host running rustc and Cargo from i686 Windows targets retaining standard libraries without distributed host tools.",
+          "caption": "Announced for Rust 1.100: target standard libraries remain. A supported build host and the correct native linking setup are still required.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Make the output target explicit in the build command",
+        "paragraphs": [
+          "On a suitably configured supported Windows host, the commands below illustrate selecting the MSVC output target. They are a workflow example, not evidence that this article's macOS verification environment linked or ran a Windows binary. Use the equivalent target only after choosing the ABI your application and native dependencies actually support.",
+          "Keep the target explicit in repeatable release commands instead of relying on a developer's implicit default. The resulting artifacts live in a target-specific directory, which helps packaging scripts avoid picking up an older native-host build by mistake. Verify that directory as part of packaging; a successful command is not enough if the installer later copies a different executable from a familiar location."
+        ],
+        "code": "rustup target add i686-pc-windows-msvc\ncargo build --release --target i686-pc-windows-msvc",
+        "codeLanguage": "shell"
+      },
+      {
+        "heading": "Separate compilation, linking, packaging and execution",
+        "paragraphs": [
+          "A source file can pass type checking and still fail at native linking. A linked program can still fail to start because a required runtime component is missing. A program that starts on a development machine can still be packaged incorrectly. Treat these as separate stages with evidence appropriate to each one, rather than interpreting a green compile as a universal compatibility result.",
+          "For an existing Windows product, preserve at least one realistic 32-bit execution check through the transition. Exercise the installed application, not only the loose executable in a build directory. File access, native library loading, configuration discovery, and update behavior often depend on packaging details that a small console demonstration cannot cover."
+        ]
+      },
+      {
+        "heading": "Build-time programs still execute on the host",
+        "paragraphs": [
+          "A project may compile more than its final application. Build scripts and procedural macros participate in the build as host-side programs, while target code is produced for the selected application platform. Native tools launched by a script also need to be available where the build runs. Confusing these roles can produce failures that look like application incompatibility even when the target source itself is fine.",
+          "Audit any build-time platform detection during the migration. A script that assumes its own architecture describes the output program may generate the wrong constants or locate an incompatible native library. Keep host discovery and target discovery separate, and test the ordinary build sequence after moving the host environment. The related build-script guide develops that boundary with a complete generated-source example."
+        ]
+      },
+      {
+        "heading": "Pointer-sized integers are a portability decision",
+        "paragraphs": [
+          "The width of `usize` follows the compilation target. That is useful for indexing in-memory collections, but it is a poor accidental choice for a persistent file format that must move between 32-bit and 64-bit applications. A host migration is a good time to identify whether an application has quietly serialized native sizes or assumed a pointer fits in a particular fixed-width integer.",
+          "Do not fix such problems by scattering unchecked casts through the code. Decide what the stored value means, choose a defined representation, and validate conversion at the boundary where the value becomes an in-memory size. That reasoning remains valuable even if the application continues to ship only one architecture today, because files and protocols often outlive the machine that first produced them."
+        ]
+      },
+      {
+        "heading": "A fixed-width record that does not depend on the host",
+        "paragraphs": [
+          "This complete example encodes two `u32` fields into an eight-byte little-endian record. The format is defined by the field widths and byte order, not by the size of a native struct or pointer. The decoder rejects an input with the wrong length and the assertions check both the known byte representation and round-trip behavior.",
+          "It is intentionally a small format, not a general serialization library. Adding fields would require a versioning and compatibility policy, and treating the count as an allocation size would require another checked conversion and resource limit. The example demonstrates one useful architectural habit: make the external representation explicit so moving the compiler host does not silently redefine a document's bytes."
+        ],
+        "code": "#[derive(Debug, PartialEq, Eq)]\nstruct Record { count: u32, flags: u32 }\n\nfn encode(record: &Record) -> [u8; 8] {\n    let mut bytes = [0; 8];\n    bytes[..4].copy_from_slice(&record.count.to_le_bytes());\n    bytes[4..].copy_from_slice(&record.flags.to_le_bytes());\n    bytes\n}\n\nfn decode(bytes: &[u8]) -> Option<Record> {\n    let bytes: &[u8; 8] = bytes.try_into().ok()?;\n    Some(Record {\n        count: u32::from_le_bytes(bytes[..4].try_into().ok()?),\n        flags: u32::from_le_bytes(bytes[4..].try_into().ok()?),\n    })\n}\n\nfn main() {\n    let record = Record { count: 513, flags: 7 };\n    let bytes = encode(&record);\n    assert_eq!(bytes, [1, 2, 0, 0, 7, 0, 0, 0]);\n    assert_eq!(decode(&bytes), Some(record));\n    assert_eq!(decode(&bytes[..7]), None);\n    println!(\"Fixed-width eight-byte record verified\");\n}",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Standard library: u32 byte-order conversions",
+            "url": "https://doc.rust-lang.org/std/primitive.u32.html#method.to_le_bytes"
+          }
+        ]
+      },
+      {
+        "heading": "Review FFI at the actual native boundary",
+        "paragraphs": [
+          "A Rust application calling native code must match the foreign library's architecture, ABI, and data representation. A successful pure Rust build does not prove that an existing native library is appropriate for the target. Locate the source of each linked binary and record whether a matching 32-bit version is available under the product's distribution terms.",
+          "Avoid assuming that a C type has the same width merely because its Rust counterpart has a familiar name. Prefer the types and declarations appropriate to the platform interface, and keep ownership and lifetime rules documented near the wrapper. A host-tool transition is not an excuse to weaken those contracts; it is an opportunity to verify that previous assumptions were explicit rather than inherited accidentally from one machine."
+        ]
+      },
+      {
+        "heading": "Test representative data sizes without promising impossible capacity",
+        "paragraphs": [
+          "A 32-bit output has a different address-space context from a 64-bit host. Tests performed only with tiny inputs on the host can miss allocation failures or overflow at size boundaries relevant to the target. Identify realistic upper bounds for documents, buffers, indexes, and dependency behavior, then test the application's response when a request exceeds those limits.",
+          "The correct behavior may be a clear refusal rather than an attempt to allocate until the process fails. Keep error messages tied to the operation the user requested, such as importing an oversized file, instead of exposing a confusing architecture detail without a repair path. A portable program is not one that pretends every platform has unlimited resources; it is one that handles its supported limits deliberately."
+        ]
+      },
+      {
+        "heading": "Do not let artifact names hide architecture mistakes",
+        "paragraphs": [
+          "A packaging script that always copies `target/release/app.exe` can accidentally select a host build when the intended application was produced under a target-specific directory. Give release artifacts names or metadata that identify the target, and verify their origin before signing or distributing them. Preserve that identity when transferring files between build and packaging machines.",
+          "Also check native plugins, helper executables, and installer actions. The main executable can have the correct architecture while a bundled helper does not. Treat the product as the complete installed bundle. An installation test on a clean representative environment catches dependencies that were present on a developer's workstation but omitted from the distribution."
+        ]
+      },
+      {
+        "heading": "Use a migration matrix with named responsibilities",
+        "paragraphs": [
+          "A practical matrix can list the old host, proposed host, selected Rust toolchain, application target, native linker setup, packaging method, and execution-test environment. Give each row an owner and a concrete expected result. This is more useful than a broad task called “support Rust 1.100,” because it reveals which change actually requires work.",
+          "For a small project, the matrix may contain only one release path. For a product shipping both MSVC and GNU variants, keep separate rows rather than assuming one successful build covers the other. Reuse common source tests, but preserve the target-specific native and packaging checks that make those variants distinct products from the operating system's point of view."
+        ]
+      },
+      {
+        "heading": "Keep the compiler upgrade separate from source modernization",
+        "paragraphs": [
+          "When evaluating the announced transition, first reproduce the current product with its existing compiler and target on the proposed supported host. Then evaluate the newer compiler as another controlled change. Combining a host move, compiler upgrade, dependency refresh, and large source cleanup makes a failure harder to localize and can hide which action was actually required.",
+          "Once the build path is stable, modernize source in focused changes backed by relevant tests. New language features may be valuable, but they are not prerequisites merely because the project moved its build host. Preserve the oldest compiler version the project promises until that compatibility policy changes deliberately and is communicated to contributors and downstream users."
+        ]
+      },
+      {
+        "heading": "Retain old toolchains as evidence, not a permanent strategy",
+        "paragraphs": [
+          "A known working old build can help compare output and diagnose a transition. Preserve its source revision, compiler identity, target, and packaging prerequisites so the comparison is meaningful. Keeping a mysterious workstation untouched without recording those details is fragile evidence: a disk failure or account change can erase the only explanation of how the product was built.",
+          "Do not treat an unsupported host installation as an indefinite maintenance plan. Identify a supported build path and test it while there is time to resolve native dependency or packaging issues. If a temporary delay is necessary, give it a specific owner and exit condition. The objective is a repeatable product build rather than a collection of machines nobody dares to change."
+        ]
+      },
+      {
+        "heading": "Explain the change accurately to application users",
+        "paragraphs": [
+          "Most application users care whether their supported installation continues to work, not where the compiler ran. Release communication should describe any actual product compatibility change separately from this upstream tooling announcement. If your application still supports its existing 32-bit users after changing build hosts, say that clearly without implying a platform removal that did not occur.",
+          "If testing reveals that a particular native dependency or operating-system version is no longer supported by your own product, document that as a product decision with its own reason. Do not attribute every local limitation to the Rust announcement. Accurate communication helps users distinguish an upstream tooling policy from the support commitments your application actually makes."
+        ]
+      },
+      {
+        "heading": "Crabrix and WASI are a different target boundary",
+        "paragraphs": [
+          "Crabrix's bundled local execution environment is not a Windows cross-linker or a replacement for a Windows SDK. Sharing a Rust source file with the app does not establish that its native Windows integration can run there. Keep the portable calculation core separate from platform adapters so that useful logic can be explored across environments without confusing their capabilities.",
+          "The fixed-width record program is an example of such a portable core. It needs no Windows API to establish its byte format. Testing that core locally is valuable, while verifying native linking and installed Windows behavior remains work for the corresponding desktop environment. Each check contributes evidence at its own boundary rather than standing in for all the others."
+        ]
+      },
+      {
+        "heading": "A short example of a successful transition plan",
+        "paragraphs": [
+          "Consider a utility whose source is portable Rust but whose installer includes a native compression library. Its team can first move the compiler to a supported 64-bit Windows host, install the matching 32-bit linker prerequisites, and build the existing i686 target. It then verifies the compression library's architecture, packages the target-specific executable, and runs installation and file-processing checks in the supported user environment.",
+          "Only after that path is repeatable does the team evaluate the announced compiler release. If a test fails, the evidence distinguishes host setup, native library selection, packaging, and source behavior. The plan is modest, but it avoids both unnecessary application rewrites and a false sense of safety from a single successful type-checking command."
+        ]
+      },
+      {
+        "heading": "Prepare for the precise change that was announced",
+        "paragraphs": [
+          "The useful response is to separate roles: supported build host, chosen compiler, intended application target, compatible native linker, and realistic execution tests. Record each one, then migrate the pieces that actually need to change. There is no need to infer that every 32-bit Rust application has lost its target or that every Windows source project must be redesigned.",
+          "Recheck the release-specific platform documentation when Rust 1.100 becomes the version you intend to use. Announcements describe a planned transition; a maintained product needs evidence from its actual toolchain and distribution path. That combination of precise upstream reading and concrete local verification is what turns a potentially alarming headline into an understandable engineering task."
+        ]
+      }
+    ],
+    "readingMinutes": 12
+  },
+  {
+    "slug": "rust-infrastructure-q3-2026-registry-resilience",
+    "title": "Rust infrastructure Q3 2026: crates.io, docs.rs and resilient builds",
+    "date": "2026-10-21",
+    "summary": "Read Rust infrastructure news without confusing service availability with build correctness. Prepare Cargo dependencies, local docs and bounded retry policies.",
+    "relatedSlugs": [
+      "cargo-features-portable-dependencies",
+      "cargo-build-scripts-generated-code",
+      "rust-memoization-cache-contracts"
+    ],
+    "sections": [
+      {
+        "heading": "The news: registry and documentation services received infrastructure work",
+        "paragraphs": [
+          "The Rust Infrastructure Team published its Q3 recap and Q4 plan on 12 October 2026. Among the completed work were Fastly firewall and DDoS protections for crates.io and docs.rs, CDN improvements, and better service logging. The report also described a new notification queue between the services as provisioned but unused at publication time. This 21 October article examines the build-engineering implications of that report.",
+          "One detail deserves careful wording: the reported ten-percent reduction concerned compute time at CDN nodes, not a promised ten-percent improvement in a developer's download time. The practical discussion below is our own analysis of resilient project workflows. It separates upstream service improvements from local responsibilities such as dependency preparation, bounded retries, native build prerequisites, and preserving useful failure evidence."
+        ],
+        "image": {
+          "src": "/blog/rust-registry-resilience-editorial.png",
+          "alt": "A refined architectural library has separate jade-lit entrances for package archives and documentation, connected by orderly protected brass routes.",
+          "caption": "Package availability and documentation availability support development, while build correctness still requires independent checks.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "Infrastructure Team: Q3 recap and Q4 plan, 12 October 2026",
+            "url": "https://blog.rust-lang.org/inside-rust/2026/10/12/infrastructure-team-q3-recap-and-q4-plan/"
+          }
+        ]
+      },
+      {
+        "heading": "Availability is one layer of a successful build",
+        "paragraphs": [
+          "A dependency service can be reachable while a project fails because it selected incompatible features. A crate archive can be downloaded correctly while a native linker is missing. A build can compile successfully while the resulting program contains a logic defect. These failures are different, and repairing the service boundary does not automatically repair the application's own contracts.",
+          "When investigating a failed release, name the stage before choosing a remedy. Did dependency resolution fail? Was an artifact unavailable? Did compilation reject the source? Did execution produce the wrong answer? This vocabulary keeps an infrastructure incident from becoming an excuse to make unrelated source changes, and it keeps an application defect from generating unnecessary requests against a healthy registry."
+        ]
+      },
+      {
+        "heading": "Keep four questions visible in your workflow",
+        "paragraphs": [
+          "The companion diagram separates availability, artifact integrity, compilation, and runtime behavior. Each stage answers a different question. An available response is not automatically the expected artifact, the expected artifact is not automatically compatible source, and compatible source is not automatically a correct program. Evidence should flow through those stages without being stretched into claims it cannot support.",
+          "For a small project, this can be as simple as preserving the exact failing command and its error category. Larger release processes may record more structured evidence. The point is the same: identify the boundary where the workflow stopped, preserve what was already established, and verify the repaired boundary before proceeding. A single green status labelled “everything works” loses useful information when the next failure arrives."
+        ],
+        "image": {
+          "src": "/blog/rust-registry-resilience-infographic.png",
+          "alt": "Four independent checks ask whether a service is reachable, an artifact is expected, source compiles, and runtime behavior is correct.",
+          "caption": "These checks complement one another. Passing an earlier stage does not prove the later stages.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Prepare dependency downloads before an offline session",
+        "paragraphs": [
+          "If you expect to work without a reliable connection, fetch dependencies while the network is available. Cargo's fetch command obtains the dependency sources required by the selected resolution. With an existing committed lockfile, `--locked` prevents an unnoticed resolution update from being accepted as part of preparation. Choose a target explicitly when the planned work is target-specific.",
+          "Preparation is useful only when it matches the later build. If the offline task will enable different features, use a different workspace package, or target another platform, verify that combination before leaving the network. A successful fetch for yesterday's command does not prove that tomorrow's expanded build has all its sources and tools available. Keep the planned invocation beside the preparation record."
+        ],
+        "code": "cargo fetch --locked\ncargo build --frozen\ncargo test --frozen",
+        "codeLanguage": "shell",
+        "sources": [
+          {
+            "title": "Cargo Book: cargo fetch",
+            "url": "https://doc.rust-lang.org/cargo/commands/cargo-fetch.html"
+          },
+          {
+            "title": "Cargo Book: cargo build and --frozen",
+            "url": "https://doc.rust-lang.org/cargo/commands/cargo-build.html"
+          }
+        ]
+      },
+      {
+        "heading": "Frozen resolution is not a reproducible-build certificate",
+        "paragraphs": [
+          "A frozen build constrains Cargo's dependency resolution and network behavior, but it is not a proof that every byte of the resulting executable is reproducible across machines. Compiler selection, linker versions, native inputs, generated source, paths, and build-time programs may still affect the result. Use the option for the narrower guarantee it provides and document additional requirements separately.",
+          "For example, a build script can depend on a local tool or external resource outside ordinary dependency fetching. If an offline build fails at that stage, downloading crates again will not solve the missing prerequisite. Audit build-time inputs as their own part of the project. Our generated-source guide shows how even a dependency-free package needs explicit file and environment inputs to rebuild predictably."
+        ]
+      },
+      {
+        "heading": "A warmed cache is not the same as a complete project archive",
+        "paragraphs": [
+          "A Cargo cache is helpful for repeated work, but its presence on one workstation is not a distribution plan. Decide which source revision, lockfile, compiler, target components, native tools, and configuration are required to reproduce the intended workflow. A project archive that omits one of those assumptions can fail on a second machine even if the first machine builds without a network request.",
+          "For a workshop or classroom, rehearse the exact exercise in a fresh, documented environment before promising offline availability. Keep a fallback activity that uses only already-available standard-library code if downloads are unavailable. This is a product-quality decision: learners should receive a useful explanation of the missing prerequisite rather than an endless spinner that makes the lesson look broken."
+        ]
+      },
+      {
+        "heading": "Generate local documentation for the work you plan to do",
+        "paragraphs": [
+          "Registry metadata and hosted API documentation serve different needs. If your session depends on reading library APIs, generate or retain the appropriate local documentation while the environment is prepared. Cargo can produce project documentation under `target/doc`; `cargo doc --no-deps` deliberately omits dependency documentation, which may be exactly the opposite of what an offline library investigation needs.",
+          "Open the generated pages before relying on them. Confirm that they describe the versions in the project and that the APIs you need are present under the intended feature configuration. A cached browser tab for another version can be misleading. Documentation preparation deserves its own check because a successful application build does not prove that the reference material needed during development is available offline."
+        ],
+        "code": "cargo doc --locked\n# Open target/doc/index.html if generated by your workspace,\n# or the package-specific documentation page under target/doc/.",
+        "codeLanguage": "shell",
+        "sources": [
+          {
+            "title": "Cargo Book: cargo doc",
+            "url": "https://doc.rust-lang.org/cargo/commands/cargo-doc.html"
+          }
+        ]
+      },
+      {
+        "heading": "Treat rate limits as a request to change behavior",
+        "paragraphs": [
+          "An automated client that responds to every failure by retrying immediately can amplify an incident. Rate limiting, temporary service unavailability, and permanent request errors should not all trigger the same loop. Respect documented server guidance, cap attempts, and keep enough context to explain why a request stopped. Avoid claiming that more parallel connections are always a cure for slow dependency preparation.",
+          "For a custom service integration, define retry policy independently from the HTTP client implementation. That lets you test the decision rules without sending traffic to a public registry. It also makes it possible to review whether authentication failures, invalid requests, or interrupted operations should be retried at all. The example below is a small policy demonstration, not a replacement for Cargo's own network handling."
+        ]
+      },
+      {
+        "heading": "An executable bounded-retry policy for your own client",
+        "paragraphs": [
+          "This complete Rust program models three outcomes: retry after a delay, stop, or finish successfully. Only two chosen temporary status categories qualify for retry. The policy accepts a server-supplied delay only when it is within the example's local bound; otherwise it stops and lets the caller report the condition. There is also an attempt budget, so repeated temporary failures cannot create an unbounded loop.",
+          "The function does not make HTTP requests, parse headers, sleep, or implement jitter. Those belong to a real client's separate transport and scheduling layers. Its narrow purpose is to turn a few operational rules into deterministic assertions. In production, follow the service's documented semantics and your application's retry requirements rather than copying the example's numbers as universal registry recommendations."
+        ],
+        "code": "#[derive(Debug, PartialEq, Eq)]\nenum Decision { Done, RetryAfter(u64), Stop }\n\nfn decide(status: u16, completed_attempts: u8, server_delay: Option<u64>) -> Decision {\n    if (200..300).contains(&status) { return Decision::Done; }\n    if completed_attempts >= 3 || !matches!(status, 429 | 503) {\n        return Decision::Stop;\n    }\n    match server_delay {\n        Some(seconds @ 1..=60) => Decision::RetryAfter(seconds),\n        Some(_) => Decision::Stop,\n        None => Decision::RetryAfter(5),\n    }\n}\n\nfn main() {\n    assert_eq!(decide(200, 1, None), Decision::Done);\n    assert_eq!(decide(429, 1, Some(30)), Decision::RetryAfter(30));\n    assert_eq!(decide(503, 2, None), Decision::RetryAfter(5));\n    assert_eq!(decide(503, 3, None), Decision::Stop);\n    assert_eq!(decide(401, 1, None), Decision::Stop);\n    assert_eq!(decide(429, 1, Some(120)), Decision::Stop);\n    println!(\"Retry decisions are bounded and testable\");\n}",
+        "codeLanguage": "rust"
+      },
+      {
+        "heading": "Retries need a whole-operation time budget",
+        "paragraphs": [
+          "An attempt count is only one resource limit. A request can spend a long time connecting, downloading, or waiting between attempts. A user-facing workflow also needs an overall deadline and a cancellation path. Otherwise three attempts can still feel like an application that never finishes, particularly when each transport attempt already has a generous timeout.",
+          "Keep retry scheduling visible in the interface when it affects the user's wait. Explain whether the operation is waiting for a service, downloading data, or compiling locally. If the user cancels, stop scheduling new work and preserve a clear final state. A good failure screen should offer a deliberate retry after the relevant condition changes, rather than silently restarting the same long operation forever."
+        ]
+      },
+      {
+        "heading": "Do not turn a temporary service failure into source churn",
+        "paragraphs": [
+          "During an outage, developers sometimes remove dependencies, change feature sets, or update the lockfile simply to get past the immediate error. Such changes may be reasonable independently, but they also change the program being built. Preserve the original failure and establish whether the problem was availability before making a source-level workaround that needs its own testing and review.",
+          "If a fallback source or internal mirror is part of your organization's design, configure it deliberately with the expected registry identity and authenticity controls. Do not copy packages from an arbitrary web page or disable validation just because a request is inconvenient. A workaround that produces an executable without explaining its inputs can be harder to trust and maintain than a clearly reported temporary build interruption."
+        ]
+      },
+      {
+        "heading": "Keep documentation publication separate from package publication",
+        "paragraphs": [
+          "A package becoming available and a hosted documentation page becoming available are separate observable events. Design release communication so users can distinguish them. If your own library's documentation is not ready yet, provide source-level API guidance or a local documentation command rather than asserting that the package itself must be missing or unusable.",
+          "Similarly, a documentation build failure can reveal an API configuration problem without proving that every supported application build fails. Reproduce the documentation command under the intended features and target assumptions. Treat hosted documentation as a valuable independent surface whose correctness deserves attention, while preserving a precise distinction between source availability, documentation generation, and runtime functionality."
+        ]
+      },
+      {
+        "heading": "Preserve the difference between delivered work and planned work",
+        "paragraphs": [
+          "Infrastructure reports often combine accomplishments, experiments, and future plans. Read their status language before writing release notes or designing an integration around them. A provisioned queue is not necessarily processing production events, and a planned access-control improvement is not evidence that a particular account or workflow already uses it. The date of the report belongs beside any such conclusion.",
+          "For your own project updates, use the same discipline. State what was deployed, what was tested, what remains a proposal, and what evidence supports each statement. This is more helpful to readers than turning every planned improvement into a completed feature. It also makes later updates easier to compare without inventing an uninterrupted success story that hides unfinished work."
+        ]
+      },
+      {
+        "heading": "Design useful failure messages around the failed boundary",
+        "paragraphs": [
+          "A dependency preparation failure should identify the operation and offer a useful next step, such as checking connectivity or retrying after a service recovers. A compiler diagnostic should point to the relevant source or configuration. Combining both into a generic “build failed” message makes the user guess which action can actually help.",
+          "Keep raw technical details available where developers can inspect them, but summarize the state clearly first. If no application ran, do not display an empty output panel as though the program silently returned nothing. If a download was canceled, distinguish cancellation from an invalid package. These small interface choices preserve the same engineering boundaries used by the build process itself."
+        ]
+      },
+      {
+        "heading": "Use cached artifacts with an explicit freshness story",
+        "paragraphs": [
+          "A locally available dependency can let an established project continue during a network interruption, but cached content should still correspond to the intended resolution. Record which lockfile and source revision the cache preparation covered. If the project later changes dependencies, repeat preparation rather than assuming the old cache contains every new requirement.",
+          "For application-level caches, freshness and invalidation are additional contracts. A package cache and a cache of computed domain answers should not share one vague rule called “offline mode.” The first concerns available build inputs; the second concerns whether a saved result still answers the current question. The related memoization guide examines the latter problem with explicit revision keys and bounded storage."
+        ]
+      },
+      {
+        "heading": "Keep logs useful without exposing credentials",
+        "paragraphs": [
+          "A troubleshooting record can include the failing command, timestamp, selected target, error category, and a bounded relevant excerpt. Avoid publishing access tokens, private registry credentials, or full sensitive environment dumps. The useful evidence is usually the relationship between the command and the failure stage, not every value available to the process.",
+          "When sharing a reproduction publicly, reduce it to the smallest project that still demonstrates the problem. Preserve the dependency and feature combination that matters, and remove unrelated private data. This gives maintainers a realistic chance to reproduce the issue while keeping the report focused. A large unfiltered log can obscure a simple missing prerequisite just as easily as a message containing no detail at all."
+        ]
+      },
+      {
+        "heading": "A release rehearsal should test loss of the network deliberately",
+        "paragraphs": [
+          "Do not infer offline readiness from a build that happened to avoid a visible download. Prepare the exact project and then run the intended command under an environment where network access is unavailable or constrained according to your test setup. Keep this isolated from unrelated work so the test does not disrupt other applications or services on a shared machine.",
+          "If the rehearsal fails, identify whether the missing resource was a crate source, compiler component, native tool, build-script input, or documentation page. Update the preparation procedure for that boundary and repeat only the relevant check. The outcome should be a reproducible offline workflow with named prerequisites, not an accumulation of undocumented files copied from a developer's cache."
+        ]
+      },
+      {
+        "heading": "What service resilience means for learners using Crabrix",
+        "paragraphs": [
+          "A native learning app can provide a useful local core while its website, downloadable lessons, hosted references, and desktop dependencies have different availability requirements. Explain those differences in the product. A standard-library exercise should not appear dependent on a remote registry merely because an unrelated optional project uses external packages.",
+          "When an exercise does need a resource, identify it before the user begins the task and preserve progress if access fails. A clear preparation step and a recoverable error are more useful than implying that every workflow is permanently offline. The infrastructure news reinforces the value of reliable shared services while leaving room for thoughtful local behavior at the application boundary."
+        ]
+      },
+      {
+        "heading": "An incident rehearsal for a small library team",
+        "paragraphs": [
+          "Imagine a team preparing a documentation update and a release build on a day when a public service becomes intermittently unavailable. It first preserves the existing source and lockfile, checks whether dependency sources are already prepared, and runs the established local build. It generates local documentation independently, keeping the publication state separate from the package's actual behavior.",
+          "If a required download remains unavailable, the team stops within its time budget and communicates the blocked stage. It does not declare a compiler regression, silently change dependency versions, or promise a release artifact whose inputs it cannot explain. Once the service recovers, it resumes the interrupted stage and runs the normal validation. That response is small, understandable, and reusable."
+        ]
+      },
+      {
+        "heading": "The actionable lesson from the infrastructure report",
+        "paragraphs": [
+          "The upstream work supports services that many Rust developers depend on, but resilient projects still need explicit inputs, proportionate retries, useful local references, and clear failure states. Choose preparation steps that match the real build, and verify them before the moment when connectivity becomes essential. Keep each guarantee narrow enough that another developer can understand what was actually tested.",
+          "Read the original report for the full infrastructure account and distinguish its completed work from its plans. Then examine your own project's boundaries: service access, expected artifacts, compilation, and runtime correctness. Treating those as separate responsibilities makes the workflow easier to recover during an incident and easier to explain on an ordinary day when everything is working."
+        ]
+      }
+    ],
+    "readingMinutes": 12
+  },
+  {
     "slug": "rust-buffered-text-input-errors",
     "title": "Rust text input: buffered reading without lost errors",
     "date": "2026-10-20",
@@ -1046,6 +1632,174 @@
     ]
   },
   {
+    "slug": "rust-memoization-cache-contracts",
+    "title": "Rust memoization: cache keys, limits and failure handling",
+    "date": "2026-10-14",
+    "summary": "Implement memoization in Rust without hiding stale results or errors. Build tested caches with explicit keys, revision handling and capacity rules.",
+    "relatedSlugs": [
+      "rust-hashmap-entry-stable-reports",
+      "rust-checked-arithmetic-conversions",
+      "testing-rust-boundaries-fixtures-doctests"
+    ],
+    "sections": [
+      {
+        "heading": "A saved answer is only useful for the same question",
+        "paragraphs": [
+          "Memoization stores a function's answer so a repeated request can reuse it. The attractive part is avoiding repeated work; the difficult part is deciding whether two requests actually ask the same question. A lookup keyed only by a filename is wrong if the file's contents can change. A lookup keyed only by a query is wrong if the calculation also depends on the dataset, permissions, rounding policy, or configuration revision.",
+          "Start by writing the function as though no cache existed. Identify its inputs, result, errors, and resource limits. Then define the circumstances under which an earlier result remains valid. This guide develops two small standard-library examples: a bounded-domain recursive calculation and a cache with explicit revision keys and capacity behavior. Both are ordinary Rust programs rather than a promise that one map can solve every storage or concurrency problem."
+        ],
+        "image": {
+          "src": "/blog/rust-memoization-editorial.png",
+          "alt": "An elegant observatory indexes luminous calculation tokens into individual drawers and returns a previously stored matching token.",
+          "caption": "Reuse an answer only when the key captures every input that can change its meaning.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "First ask whether there is repeated work to remove",
+        "paragraphs": [
+          "A cache adds hashing, comparisons, storage, and maintenance. For a cheap calculation used once per key, those costs can exceed the computation it replaces. Before adding one, describe the expected workload: how often requests repeat, how expensive a miss is, how large a value becomes, and how long the answers stay useful. An optimization that helps a tiny demonstration may retain unnecessary memory in a long-running application.",
+          "The recursive Fibonacci sequence is useful here because repeated subproblems are easy to see. It is a teaching example, not a recommendation to implement a production Fibonacci service with a map. A simple iterative calculation can solve this particular problem with less storage. We use recursion to make the memoization boundary observable, then transfer the reasoning to calculations whose overlapping subproblems are less obvious."
+        ]
+      },
+      {
+        "heading": "Give the recursive example a finite numeric contract",
+        "paragraphs": [
+          "Our function accepts indices through 94 and returns an optional `u64`. Index 93 fits, while index 94 overflows the result type. Larger indices are rejected before recursion, so a huge request cannot produce a huge recursive call chain or fill the map with millions of entries. The limit belongs to this function's documented domain; it is not a general property of memoization.",
+          "The cache stores `Option<u64>` values. A stored `None` means the calculation was performed for a supported index and found that its result does not fit. An absent key means no result has been stored. Those are separate states. Looking up a nested option and accidentally flattening the distinction can cause deterministic failures to be recomputed forever or make a missing answer look like a known overflow."
+        ]
+      },
+      {
+        "heading": "A complete memoized function with checked arithmetic",
+        "paragraphs": [
+          "The program checks the map before descending, copies the small optional value out of the borrowed entry, computes on a miss, and stores the outcome. The immutable lookup borrow ends before the recursive calls need mutable access to the same map. This order avoids holding an entry borrow across recursion, a tempting arrangement that makes the ownership relationship much harder to express correctly.",
+          "The assertions check a familiar small value, the largest representable result in the supported sequence, the overflow case, and rejection beyond the domain. A repeated successful request must leave the number of entries unchanged. These checks establish correctness and basic reuse; they do not establish a speedup. Performance claims require a representative workload and measurements that distinguish initial misses from later hits."
+        ],
+        "code": "use std::collections::HashMap;\n\nfn fib(n: u32, cache: &mut HashMap<u32, Option<u64>>) -> Option<u64> {\n    if n > 94 { return None; }\n    if let Some(answer) = cache.get(&n) { return *answer; }\n    let answer = match n {\n        0 => Some(0),\n        1 => Some(1),\n        _ => fib(n - 1, cache)\n            .zip(fib(n - 2, cache))\n            .and_then(|(a, b)| a.checked_add(b)),\n    };\n    cache.insert(n, answer);\n    answer\n}\n\nfn main() {\n    let mut cache = HashMap::new();\n    assert_eq!(fib(10, &mut cache), Some(55));\n    assert_eq!(fib(93, &mut cache), Some(12_200_160_415_121_876_738));\n    assert_eq!(fib(94, &mut cache), None);\n    let entries = cache.len();\n    assert_eq!(fib(10, &mut cache), Some(55));\n    assert_eq!(cache.len(), entries);\n    assert_eq!(fib(u32::MAX, &mut cache), None);\n    assert_eq!(cache.len(), entries);\n    println!(\"{entries} cached inputs; repeated requests reuse answers\");\n}",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Standard library: HashMap",
+            "url": "https://doc.rust-lang.org/std/collections/struct.HashMap.html"
+          },
+          {
+            "title": "Standard library: u64 checked_add",
+            "url": "https://doc.rust-lang.org/std/primitive.u64.html#method.checked_add"
+          }
+        ]
+      },
+      {
+        "heading": "Read the cache diagram as a state table",
+        "paragraphs": [
+          "For a fresh request for `fib(5)`, the completed map contains the distinct inputs zero through five with values zero, one, one, two, three, and five. A second request for five can return the stored five. The diagram counts distinct cached inputs, not total function invocations: recursive calls and cache checks still occur while the first result is assembled.",
+          "That distinction prevents a misleading comparison. Memoization removes repeated computation after a result is known, but it does not erase the work needed to discover keys, look them up, or return values. When explaining an optimization, label exactly what a number counts. A diagram showing six stored inputs should not be presented as evidence of six total calls, constant memory, or a particular performance multiplier."
+        ],
+        "image": {
+          "src": "/blog/rust-memoization-infographic.png",
+          "alt": "A table maps Fibonacci inputs 0, 1, 2, 3, 4, 5 to 0, 1, 1, 2, 3, 5 and shows a repeated fib(5) returning the cached value 5.",
+          "caption": "Six distinct inputs are cached after fib(5). This is a state illustration, not a call-count or speed benchmark.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Make hidden context visible in the key",
+        "paragraphs": [
+          "Suppose an application calculates a score for a query against a dataset. The query alone is insufficient: the same query can produce a different score after the dataset changes. Our second example uses a key containing both the query text and an application-managed revision number. A revision must identify an immutable interpretation of the data; reusing a revision after modifying the data breaks the contract.",
+          "There are other valid designs. You can keep a cache inside an immutable dataset object, replace the whole cache when that object changes, or include a content digest in the key. Choose the smallest design that reliably distinguishes answer-changing context. Do not add a field merely because it is available, and do not omit one merely because the first demonstration happened to keep it constant."
+        ]
+      },
+      {
+        "heading": "Choose an eviction rule you can explain accurately",
+        "paragraphs": [
+          "This cache has a maximum entry count. When a successful miss arrives at capacity, it clears all existing entries and inserts the new answer. That is a simple bounded policy, not least-recently-used eviction. It may cause bursts of recomputation, but its behavior is short enough to review and test. A production workload with frequent churn may justify a more sophisticated policy after measurement.",
+          "Capacity zero means bypassing storage while still computing the answer. Errors are returned without insertion, and a failed calculation does not evict successful older answers. The example stores small copied integers; entry count is therefore an understandable first limit. For large strings or trees, a count limit alone is insufficient because one entry may consume most of the process's memory. Define a byte or domain-size budget when values vary substantially."
+        ]
+      },
+      {
+        "heading": "A revision-aware cache without cached transient errors",
+        "paragraphs": [
+          "Here is the complete second program. The caller provides the actual calculation as a closure, allowing the tests to count work without a network, database, or clock. The cache owns its key and copies its small result on a hit. The implementation computes successfully before clearing a full map, so a failed attempt preserves previously useful entries.",
+          "Notice that this interface cannot verify the caller's revision discipline. That invariant belongs to the application model and must be enforced where data changes. A type can help organize a contract without magically proving facts about external state. The examples deliberately make this responsibility visible instead of hiding it behind a generic function named `cached` whose actual validity rules are undocumented."
+        ],
+        "code": "use std::collections::HashMap;\n\n#[derive(Clone, Debug, PartialEq, Eq, Hash)]\nstruct Key { revision: u64, query: String }\n\nstruct Scores { capacity: usize, values: HashMap<Key, u64> }\n\nimpl Scores {\n    fn new(capacity: usize) -> Self {\n        Self { capacity, values: HashMap::new() }\n    }\n\n    fn get_or_compute<E>(\n        &mut self, key: Key, compute: impl FnOnce() -> Result<u64, E>,\n    ) -> Result<u64, E> {\n        if let Some(value) = self.values.get(&key) { return Ok(*value); }\n        let value = compute()?;\n        if self.capacity != 0 {\n            if self.values.len() >= self.capacity { self.values.clear(); }\n            self.values.insert(key, value);\n        }\n        Ok(value)\n    }\n}\n\nfn main() {\n    let mut cache = Scores::new(2);\n    let first = Key { revision: 1, query: \"rust\".into() };\n    let second = Key { revision: 2, query: \"rust\".into() };\n    let mut calls = 0;\n    for key in [first.clone(), first, second.clone()] {\n        let value = cache.get_or_compute(key.clone(), || {\n            calls += 1;\n            Ok::<u64, &str>(key.revision * 10)\n        }).unwrap();\n        assert_eq!(value, key.revision * 10);\n    }\n    assert_eq!(calls, 2);\n    for _ in 0..2 {\n        let failed = Key { revision: 3, query: \"offline\".into() };\n        assert_eq!(cache.get_or_compute(failed, || Err(\"offline\")), Err(\"offline\"));\n    }\n    assert_eq!(cache.values.len(), 2);\n    assert_eq!(cache.get_or_compute(second, || Err(\"must be a hit\")), Ok(20));\n    let third = Key { revision: 3, query: \"new\".into() };\n    assert_eq!(cache.get_or_compute(third, || Ok::<_, &str>(30)), Ok(30));\n    assert_eq!(cache.values.len(), 1);\n    let mut disabled = Scores::new(0);\n    let key = Key { revision: 1, query: \"fresh\".into() };\n    assert_eq!(disabled.get_or_compute(key, || Ok::<_, &str>(7)), Ok(7));\n    assert!(disabled.values.is_empty());\n    println!(\"Revision, retry and capacity contracts passed\");\n}",
+        "codeLanguage": "rust"
+      },
+      {
+        "heading": "Decide which failures are stable enough to remember",
+        "paragraphs": [
+          "The Fibonacci cache remembers overflow because it is a deterministic answer for that input and numeric type. The score cache does not remember errors because its caller may fail for a temporary reason. These choices differ intentionally. A missing object in an immutable snapshot may be a stable negative answer, while a temporary service outage is usually not evidence that the requested object does not exist.",
+          "If you cache negative answers, specify their validity rules as carefully as successful answers. Include the relevant revision, expiration rule, or invalidation event. Also preserve the distinction between a calculation that returned no value and a calculation that could not be completed. Collapsing those states into one cached sentinel makes retries, diagnostics, and user messages misleading even if the happy path appears faster."
+        ]
+      },
+      {
+        "heading": "Ownership determines the cost of returning a hit",
+        "paragraphs": [
+          "Returning a copied integer is inexpensive and keeps the examples focused. A real cache may hold a large document. Returning an owned clone duplicates that document, returning a reference ties the caller to the cache's borrow, and returning a shared ownership handle introduces another lifetime and allocation policy. None of those choices is automatically best; the right interface follows how callers use the result.",
+          "Avoid solving borrow-checker pressure by cloning every object without considering the data size. Sometimes a short inner scope or computing before insertion is enough. Sometimes a cache should own immutable shared values so callers can retain them while later requests mutate the map. Write down whether a returned answer may outlive its cache entry before selecting the return type. That decision affects eviction semantics as well as convenience."
+        ]
+      },
+      {
+        "heading": "Invalidation should follow the data model",
+        "paragraphs": [
+          "A revision key prevents new requests from confusing different snapshots, but it does not remove old entries. The capacity policy still needs to reclaim them. If only the current dataset is useful, replacing the whole cache on revision change may be simpler than storing many generations. If users compare snapshots, keeping multiple revisions may be intentional. The application should make that choice rather than accidentally retaining every version forever.",
+          "For mutable external data without revisions, time-based expiration is only an approximation of freshness. It says how old an answer may become under a chosen policy; it does not prove that the source remained unchanged during that interval. State that limitation honestly in the product. A cache used for an informational preview can tolerate different freshness rules from one deciding access rights or financial balances."
+        ]
+      },
+      {
+        "heading": "Parallel requests add a separate coordination problem",
+        "paragraphs": [
+          "A mutex around a map protects access to the map, but deciding where computation happens remains important. Holding a global lock during an expensive calculation can serialize unrelated keys. Releasing it before calculation allows concurrent misses to compute the same answer more than once. Both designs can be correct, but their resource behavior differs, and neither is a complete policy for a busy service.",
+          "Per-key coordination can avoid duplicate work, but then cancellation, failed computations, waiting callers, and removal of in-progress entries need explicit behavior. Do not casually extend the single-threaded examples into a global concurrent cache by adding one wrapper type and assuming the reasoning is finished. Begin with a scoped cache when possible, and introduce shared coordination only when the application actually needs cross-request reuse."
+        ]
+      },
+      {
+        "heading": "Measure hits, misses and retained size separately",
+        "paragraphs": [
+          "A useful measurement includes the uncached baseline, an empty-cache run, a representative mixed workload, and repeated hits. Report the distribution of keys and the amount of retained data alongside elapsed time. A test that repeatedly requests one already-cached value measures a narrow path; it does not predict startup cost or a workload where every request is new.",
+          "Instrumentation should not expose sensitive query contents merely to count hits. Aggregate counters, bounded diagnostics, and anonymized workload shapes can often answer the engineering question. Watch whether the miss rate rises after a capacity reset or revision change. Those transitions explain real latency spikes that disappear in an average assembled from a long stretch of easy repeated hits."
+        ]
+      },
+      {
+        "heading": "Normalization belongs to the question being cached",
+        "paragraphs": [
+          "Two strings that look similar are not necessarily equivalent queries. Lowercasing, trimming spaces, removing punctuation, or applying Unicode normalization changes the question unless the domain explicitly defines those transformations. If the uncached function treats two inputs differently, a cache must not merge them merely to improve its hit rate. Start with exact keys and introduce normalization only alongside a tested semantic rule.",
+          "When normalization is intentional, apply it consistently before both lookup and computation, or include the relevant policy revision in the key. Otherwise a cache can store an answer computed for one representation under a key describing another. Keep fixtures for inputs that should remain distinct as well as inputs that should collapse together. Those pairs are often more revealing than a long list of ordinary repeated requests."
+        ]
+      },
+      {
+        "heading": "A cache lifetime can be simpler than an eviction algorithm",
+        "paragraphs": [
+          "Sometimes the cleanest limit is scope. A cache owned by one document import can disappear when the import finishes; a cache owned by one immutable analysis session can disappear when the session closes. That design avoids cross-session invalidation and makes retained memory follow an operation the application already understands. It can also make tests more independent because one test's entries never leak into another.",
+          "Compare that option with a process-wide cache before adding global state. Global reuse may be valuable, but it introduces questions about user separation, configuration changes, memory pressure, and shutdown behavior. A scoped map can deliver the useful repeated-work savings without requiring answers to all of those questions at once. The correct lifetime is an application design choice, not a property automatically supplied by `HashMap`."
+        ]
+      },
+      {
+        "heading": "Cached answers must not cross authorization boundaries accidentally",
+        "paragraphs": [
+          "If an answer depends on who may see the underlying data, that context belongs in the validity design. Sharing a cache entry between users can expose information or return an answer computed under permissions the current caller does not have. Sometimes the correct design is separate caches per authorized dataset rather than adding a user identifier to an otherwise global key.",
+          "Check authorization before serving a cached result according to the product's rules, and ensure permission changes invalidate or isolate answers that are no longer appropriate. Do not assume expiration alone provides immediate revocation. The small numeric examples have no accounts or sensitive data, but a real application must revisit that assumption when the same memoization pattern moves from a local calculation into a shared service."
+        ]
+      },
+      {
+        "heading": "Test equality semantics as carefully as the calculation",
+        "paragraphs": [
+          "Our derived key equality compares both revision and query text. A custom key implementation must preserve a consistent relationship between equality and hashing. Do not compare only a display label while hashing hidden context, and do not mutate answer-changing key data behind a shared reference after insertion. Such designs make lookup behavior difficult to reason about even before cache invalidation enters the picture.",
+          "Keep the key small and immutable enough to inspect in a focused test. Construct pairs that should compare equal and pairs that differ in exactly one meaningful field. Then exercise the public cache operation with those pairs rather than relying only on low-level hash output. The promise is semantic reuse for equivalent questions, not a particular hash value that can change across implementations or process runs."
+        ]
+      },
+      {
+        "heading": "Turn validity rules into small executable checks",
+        "paragraphs": [
+          "Keep tests for repeated identical requests, answer-changing context, errors, disabled storage, and capacity transitions. Add a test proving that two different query strings cannot accidentally share an answer merely because their revisions match. For a cache that stores large values, test the actual resource policy rather than just the number of map entries. These cases express the cache's contract more directly than testing every private helper in isolation.",
+          "Memoization succeeds when it preserves the uncached function's meaning while avoiding work under a clearly defined workload. Start with a correct function, a complete key, and a bounded lifetime. Then measure whether reuse pays for the added machinery. The map is the easy part; the useful engineering is knowing exactly when a saved answer is still an answer to the question being asked."
+        ]
+      }
+    ],
+    "readingMinutes": 12
+  },
+  {
     "slug": "rust-strings-utf8-safe-parsing",
     "title": "Rust strings and UTF-8: parse text without broken boundaries",
     "date": "2026-10-13",
@@ -1313,6 +2067,188 @@
       "testing-rust-boundaries-fixtures-doctests",
       "ownership-in-a-real-program"
     ]
+  },
+  {
+    "slug": "cargo-build-scripts-generated-code",
+    "title": "Cargo build.rs: generated code and reliable rebuilds",
+    "date": "2026-10-11",
+    "summary": "Build a complete Cargo code generator with tracked file and environment inputs. Understand OUT_DIR, host versus target, and reliable rebuild tests.",
+    "relatedSlugs": [
+      "cargo-features-portable-dependencies",
+      "testing-rust-boundaries-fixtures-doctests",
+      "rust-1-99-upgrade"
+    ],
+    "sections": [
+      {
+        "heading": "A build script is another program in your project",
+        "paragraphs": [
+          "Generated code can remove tedious repetition, but it also adds a second program whose behavior affects your application. A small configuration file becomes Rust source, a native library probe changes linker arguments, or a schema produces a set of types. When the result looks stale, the defect may be in the generator's declared inputs rather than in the generated function. Understanding that boundary makes build failures much easier to diagnose.",
+          "This guide builds a complete, dependency-free desktop Cargo project. Its build script reads one greeting file, optionally changes the greeting's case, and writes one Rust constant. The important result is a visible input contract that we can test. Crabrix's bundled local compiler does not execute Cargo build scripts or procedural macros: inspect this example in the app, but run the Cargo commands on a supported desktop toolchain."
+        ],
+        "image": {
+          "src": "/blog/cargo-build-scripts-editorial.png",
+          "alt": "An ivory specification card enters a brass and glass source foundry and emerges as neatly stacked generated sheets.",
+          "caption": "A generator is an explicit transformation from declared inputs to source that the compiler can consume.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Start with the smallest useful generation boundary",
+        "paragraphs": [
+          "Before creating a build script, ask whether an ordinary constant, checked-in source file, or runtime configuration would be simpler. A build script makes sense when the compiled program genuinely needs a generated artifact or information established during the build. It is a poor substitute for loading a user's changing preferences at runtime. Those preferences would require recompilation whenever they changed, which usually conflicts with the product's behavior.",
+          "Our greeting is deliberately tiny so the generation mechanics stay visible. A real project might generate a lookup table from a reviewed specification using the same structure. Keep the generator narrow enough that someone can list every input without reading the entire repository. If its output depends on the current time, an undocumented environment variable, or an unversioned network response, that list is incomplete even when a clean build happens to succeed."
+        ]
+      },
+      {
+        "heading": "Create the package and its input file",
+        "paragraphs": [
+          "Create a new directory containing `Cargo.toml`, a root `build.rs`, `settings/greeting.txt`, and `src/main.rs`. The greeting file should initially contain `Hello, Rust!` followed by a newline. Cargo discovers the conventional build script automatically. No external crate is needed, and the manifest below intentionally has no dependency section: an example about generation should not obscure its behavior behind an unrelated download.",
+          "The package uses the Rust 2024 edition. The modern `cargo::` instruction syntax used later requires Cargo from Rust 1.77 or newer, so an edition-capable current stable toolchain is sufficient. If you maintain a package with an older supported compiler, choose syntax and edition consistently with that policy. A build script is part of your supported toolchain surface, just like the library code that users import."
+        ],
+        "code": "[package]\nname = \"build_contract_demo\"\nversion = \"0.1.0\"\nedition = \"2024\"",
+        "codeLanguage": "toml"
+      },
+      {
+        "heading": "Track the inputs before generating the output",
+        "paragraphs": [
+          "The build script below announces two relevant inputs: the greeting file and a caller-controlled environment variable named `GREETING_STYLE`. It accepts only `plain` or `upper`, rejects an empty or multiline greeting, and writes the generated constant below `OUT_DIR`. The generated source uses Rust's debug representation of the string, so quotation marks and backslashes in the greeting remain escaped instead of accidentally becoming source syntax.",
+          "This is a complete `build.rs`, including error propagation. A missing file, invalid setting, or failed write produces a failed build with a useful explanation. It does not silently substitute an older greeting. The generator uses ASCII case conversion intentionally; this keeps the example's transformation small and explicit. A product that needs language-sensitive text conversion should define that requirement separately instead of assuming every uppercase operation has the same semantics."
+        ],
+        "code": "use std::{env, error::Error, fs, path::PathBuf};\n\nfn main() -> Result<(), Box<dyn Error>> {\n    println!(\"cargo::rerun-if-changed=settings/greeting.txt\");\n    println!(\"cargo::rerun-if-env-changed=GREETING_STYLE\");\n\n    let input = fs::read_to_string(\"settings/greeting.txt\")?;\n    let greeting = input.strip_suffix(\"\\r\\n\").or_else(|| input.strip_suffix('\\n')).unwrap_or(&input);\n    if greeting.is_empty() || greeting.contains(['\\r', '\\n']) {\n        return Err(\"greeting must be one nonempty line\".into());\n    }\n    let style = match env::var(\"GREETING_STYLE\") {\n        Ok(value) => value,\n        Err(env::VarError::NotPresent) => \"plain\".into(),\n        Err(error) => return Err(error.into()),\n    };\n    let greeting = match style.as_str() {\n        \"plain\" => greeting.to_owned(),\n        \"upper\" => greeting.to_ascii_uppercase(),\n        _ => return Err(\"GREETING_STYLE must be plain or upper\".into()),\n    };\n    let output = PathBuf::from(env::var_os(\"OUT_DIR\").ok_or(\"OUT_DIR missing\")?);\n    let source = format!(\"pub const GREETING: &str = {greeting:?};\\n\");\n    fs::write(output.join(\"generated.rs\"), source)?;\n    Ok(())\n}",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Cargo reference: build scripts",
+            "url": "https://doc.rust-lang.org/cargo/reference/build-scripts.html"
+          }
+        ]
+      },
+      {
+        "heading": "Include the generated source at a clear location",
+        "paragraphs": [
+          "The application includes exactly the file the generator writes. `env!(\"OUT_DIR\")` expands while compiling this package, and `concat!` constructs the generated file's path. The included item is an ordinary constant once parsed. From the application's point of view, printing it is no different from printing a constant written directly in `main.rs`; generation does not turn it into a value that can change after compilation.",
+          "Keep the include location easy to find. In a larger crate, a private generated module with a small hand-written public wrapper is often easier to maintain than scattering generated items throughout several modules. That wrapper can validate assumptions and provide documentation without editing a file that will be overwritten. Generated source is an implementation artifact; the public interface should remain something a reader can understand and review deliberately."
+        ],
+        "code": "include!(concat!(env!(\"OUT_DIR\"), \"/generated.rs\"));\n\nfn main() {\n    println!(\"{GREETING}\");\n}",
+        "codeLanguage": "rust"
+      },
+      {
+        "heading": "Follow the host-to-target sequence",
+        "paragraphs": [
+          "Cargo compiles and runs the build script on the build host. The generated source is then consumed while compiling the package for its selected target. Those can be different platforms during cross-compilation. A script running on a 64-bit desktop must not assume that its own pointer width, operating system, or available system libraries describe the program being produced for another target.",
+          "The diagram separates these stages because many confusing cross-build defects begin by collapsing them. A `cfg!` expression inside `build.rs` describes that script's compilation environment. When the script needs information about the package's target configuration, Cargo exposes target-related environment variables such as `CARGO_CFG_TARGET_ARCH`. Choose the information source that answers the actual question. An executable discovered on the host is not automatically a library that can be linked into the target."
+        ],
+        "image": {
+          "src": "/blog/cargo-build-scripts-infographic.png",
+          "alt": "A greeting file and GREETING_STYLE feed build.rs on the host, which writes OUT_DIR/generated.rs for rustc compiling the target.",
+          "caption": "Both inputs are tracked explicitly. The generator runs on the host; its generated source is compiled for the selected target.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "Cargo reference: environment variables",
+            "url": "https://doc.rust-lang.org/cargo/reference/environment-variables.html"
+          }
+        ]
+      },
+      {
+        "heading": "Prove that a changed file changes the program",
+        "paragraphs": [
+          "Run the project with `GREETING_STYLE` set explicitly to `plain`. It should print `Hello, Rust!`. Change only `settings/greeting.txt` to `Hello, Crabrix!`, run it again, and check that the new greeting appears. This is more meaningful than repeatedly cleaning the target directory: the defect we want to catch is a normal incremental build failing to notice a relevant input change.",
+          "Also test a greeting containing quotation marks and a backslash. The resulting program should print those characters exactly, without a Rust parse error or extra escape characters in its output. That check exercises the boundary between data and generated syntax. If your real generator emits identifiers, expressions, or types instead of string literals, each category needs its own validation rule; string escaping cannot safely validate arbitrary Rust source."
+        ],
+        "code": "GREETING_STYLE=plain cargo run --quiet\n# Expected: Hello, Rust!\n\n# Edit settings/greeting.txt to contain Hello, Crabrix!\nGREETING_STYLE=plain cargo run --quiet\n# Expected: Hello, Crabrix!",
+        "codeLanguage": "shell"
+      },
+      {
+        "heading": "Prove that environment changes also trigger generation",
+        "paragraphs": [
+          "Without editing the greeting file again, run with `GREETING_STYLE=upper`. The program should now print `HELLO, CRABRIX!`. Then switch back to `plain` and verify the original case returns. These transitions exercise the declared environment input. A generator that reads the variable but forgets to track it can appear correct on a fresh checkout while serving stale output during ordinary development.",
+          "The shell commands use POSIX assignment syntax; PowerShell users can set the corresponding process environment variable before running Cargo. The variable belongs to this example, rather than to Cargo's general configuration. Avoid reusing unrelated system variables to control generation because that creates accidental dependencies on a developer's machine. If the output depends on several settings, document their allowed values and which defaults become part of a distributed build."
+        ],
+        "code": "GREETING_STYLE=upper cargo run --quiet\n# Expected: HELLO, CRABRIX!\nGREETING_STYLE=plain cargo run --quiet\n# Expected: Hello, Crabrix!",
+        "codeLanguage": "shell"
+      },
+      {
+        "heading": "Treat failed generation as a failed build",
+        "paragraphs": [
+          "Temporarily empty the greeting file and run the project. Cargo should stop because the build script returned an error. Restore the input and verify that the next invocation succeeds. Repeat with an unsupported style. These failures are useful tests: they prove that invalid inputs cannot quietly produce a successful application containing an old generated value that happens to remain on disk.",
+          "Cargo does not promise to clear `OUT_DIR` between build-script runs. A real generator that produces multiple files must manage its own obsolete outputs and ensure that a failed partial run cannot be mistaken for a complete new result. For a multi-file format, consider generating into a staging directory and publishing a manifest only when all outputs are valid. The exact strategy depends on which files later compilation consumes and what recovery must preserve."
+        ]
+      },
+      {
+        "heading": "Narrow rebuild tracking without forgetting a dependency",
+        "paragraphs": [
+          "Once a script emits explicit rerun instructions, its input list becomes a maintenance obligation. If tomorrow's generator reads a second template, add that template to the tracked inputs in the same change. Tracking a directory can be appropriate when its contents genuinely define the input set, but tracking the whole repository just to avoid thinking about dependencies makes unnecessary rebuilds harder to explain.",
+          "Distinguish inputs from outputs. Watching the generated file as though it were an upstream specification can create confusing rebuild behavior, and writing generated files back into the source tree can dirty a checkout unexpectedly. Keep reviewed specifications under version control and disposable output under the directory Cargo provides. If generated code must be committed for distribution reasons, design an explicit regeneration command and a consistency check for that separate workflow."
+        ]
+      },
+      {
+        "heading": "Deterministic source is a useful, limited promise",
+        "paragraphs": [
+          "For this example, the same greeting bytes and style produce the same `generated.rs` bytes. We can verify that without claiming the entire executable is bit-for-bit reproducible across machines. Linkers, compiler versions, paths, native inputs, and build configuration may affect the final artifact. A precise claim about the generator is valuable because it identifies one boundary whose behavior can be checked independently.",
+          "Avoid embedding the wall clock, a random identifier, or the absolute temporary output directory merely to decorate generated source. Such values create changes unrelated to the specification and make meaningful differences harder to inspect. If a release needs provenance, record it in a deliberate metadata channel with a documented policy. A timestamp may be appropriate there, but it should not accidentally invalidate every compilation of otherwise identical generated items."
+        ]
+      },
+      {
+        "heading": "Use verbose Cargo output before deleting caches",
+        "paragraphs": [
+          "When a change does not appear, first confirm which package, working directory, environment, and target you actually built. Use Cargo's verbose output to understand whether a build script ran and which compiler invocation followed it. Build-script output is especially useful when a script emits target configuration or linker instructions that are not visible in ordinary application source.",
+          "A clean build can help distinguish stale incremental state from a deterministic generator bug, but cleaning first destroys useful evidence. Capture the failing inputs and exact command before removing anything. If a clean build fixes the symptom, still investigate the missing dependency declaration. Otherwise the same failure will return when someone repeats the original sequence of edits, which is exactly the sequence a reliable incremental build should support."
+        ],
+        "sources": [
+          {
+            "title": "Cargo Book: build script examples",
+            "url": "https://doc.rust-lang.org/cargo/reference/build-script-examples.html"
+          }
+        ]
+      },
+      {
+        "heading": "Keep build-time execution within a reviewable boundary",
+        "paragraphs": [
+          "A build script executes code with the permissions of the process running Cargo. Even a small generator can read files or launch other programs if written to do so. Review it as executable project code, including scripts in dependencies, and keep unnecessary network access out of the transformation. A lockfile identifies dependency resolutions; it does not by itself describe every file, tool, or service a build script might consult.",
+          "For native-library integration, verify both discovery and target compatibility. Finding a host library or command is only the beginning of that work. Prefer an explicit error describing the missing target prerequisite over a guessed path that produces a mysterious linker failure later. Our text generator avoids those dependencies entirely, making it a useful baseline before introducing a C compiler, schema compiler, or platform-specific SDK."
+        ]
+      },
+      {
+        "heading": "Test the generator as a transformation, not just a command",
+        "paragraphs": [
+          "A useful generator test separates the input fixture from Cargo's surrounding machinery. For our project, compare the generated source after two builds with identical input bytes and style. Then change one input at a time and verify the expected constant changes. Keep the fixture small enough that the generated file can be inspected without a code browser or a large snapshot diff.",
+          "Do not compare an arbitrary file from an old output directory. Cargo can create different output directories for different build configurations, and several generated files may remain beneath `target`. Identify the output belonging to the invocation under test. A test that accidentally reads a previous successful artifact can falsely report that generation worked even after the current script failed before producing anything."
+        ]
+      },
+      {
+        "heading": "Choose whether unchanged output should be rewritten",
+        "paragraphs": [
+          "This small generator writes its file whenever it runs. A larger generator may compare the new bytes with the existing file and avoid replacing an identical artifact. That can reduce unnecessary downstream work in some designs, but it adds a read and another error-handling path. Introduce the optimization only when there is a concrete reason and preserve correctness when the file is absent or unreadable.",
+          "Keep byte equality separate from semantic equality. Two generated files that happen to compile to equivalent behavior may differ in ordering, comments, or formatting. Prefer a stable generation order and format so meaningful source changes remain visible. If you do add write-if-changed behavior, test both the changed-output path and a missing-output rebuild; otherwise a convenience optimization can become another source of stale artifacts."
+        ]
+      },
+      {
+        "heading": "Decide who reviews changes to generated interfaces",
+        "paragraphs": [
+          "When a specification change creates new public items, review both the specification and the interface consumers will see. A source generator can produce syntactically valid Rust while still creating an awkward or incompatible API. Names, visibility, feature conditions, and documentation remain design decisions even when a program emits the corresponding tokens.",
+          "For a private greeting constant, that review is trivial. For generated protocol types or tables used by several crates, it deserves a small representative diff and focused consumer tests. Establish whether generated output is checked in, inspected during release, or validated through fixtures. The review mechanism can vary, but there should be an answer before a large generated change reaches users who depend on its interface."
+        ]
+      },
+      {
+        "heading": "Handle the environment as typed input rather than background noise",
+        "paragraphs": [
+          "A missing setting and a malformed setting should not accidentally mean the same thing. For this project's optional style, absence selects the documented default; an unknown value produces an error. If an environment value cannot be represented as the expected text, report it instead of silently pretending it was absent. This makes unusual machine configuration diagnosable rather than a hidden source of different output.",
+          "Apply the same principle to paths and tool locations in more complex generators. Decide whether a relative path is interpreted from the package directory or another explicit base, and avoid exposing irrelevant absolute paths in generated public source. A build configuration becomes much easier to reproduce when its values have defined types, defaults, validation rules, and a clear place where errors are reported."
+        ]
+      },
+      {
+        "heading": "A generation contract you can hand to another developer",
+        "paragraphs": [
+          "Document the four project files, the accepted style values, the exact desktop command, and the expected greeting after each input transition. Keep a small fixture containing escaped characters and a failing fixture containing an empty or multiline greeting. A new developer should be able to reproduce all of those outcomes without guessing which environment setting made your own machine succeed.",
+          "When the generator grows, preserve that same discipline: enumerate inputs, isolate outputs, distinguish host execution from target compilation, and test ordinary rebuild transitions. The amount of generated source matters less than the clarity of those rules. A useful build script is a predictable stage in the project, with observable failures and a limited responsibility that can survive both a clean checkout and a long afternoon of incremental edits."
+        ]
+      }
+    ],
+    "readingMinutes": 12
   },
   {
     "slug": "rust-1-99-upgrade",

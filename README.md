@@ -19,7 +19,7 @@ The current screenshot set includes ten iPhone and six iPad frames from manual X
 
 The current internal test release is **1.1.1 (68)**, built manually in Xcode Cloud with SDK 27.1. It is available in TestFlight Internal QA and selected for App Review. The 1.1.1 version and the Rust Academy / Rust Compiler custom product pages report **WAITING_FOR_REVIEW**; release remains manual. [Delivery and verification evidence](docs/releases/1.1.1-build68.json) records the source, build, native checks and screenshots. Term Train, unlock, progress and the established Duo keyboard layout are preserved.
 
-The live website has canonical and social metadata for all **774 public pages**, with structured data for the product, courses, lessons and articles. The [HTML sitemap](https://crabrix.com/sitemap/) and [XML sitemap](https://crabrix.com/sitemap.xml) include all 742 lessons and 15 blog articles. [Publication evidence](docs/site-release-2026-10-20-academy-blog.json) records the latest site checks. [SEO and App Store presentation](docs/seo-2026-10-16.md) documents account access checks, relevant search keywords and two custom product pages.
+The live website has canonical and social metadata for all **779 public pages**, with structured data for the product, courses, lessons and articles. The [HTML sitemap](https://crabrix.com/sitemap/) and [XML sitemap](https://crabrix.com/sitemap.xml) include all 742 lessons and 20 blog articles. [Publication evidence](docs/site-release-2026-10-23-blog.json) records the latest site checks. [SEO and App Store presentation](docs/seo-2026-10-16.md) documents account access checks, relevant search keywords and two custom product pages.
 
 The [21 October delivery check](docs/releases/delivery-check-2026-10-21.json)
 confirms TestFlight 1.1.1 (68) remains active and the latest Hetzner artifact is
@@ -48,14 +48,18 @@ and an infographic for all 742 lessons: 142 Rust lessons and 600 Algorithm
 Atlas steps. Atlas shares 40 five-pattern diagrams across all 600 steps; the
 70 previously unillustrated Rust lessons have individual code-to-rule diagrams.
 The [Blog](https://crabrix.com/blog/) has
-15 in-depth articles with two generated illustrations each, including an
-infographic. The five newest guides, dated 16–20 October, cover exhaustive
-matching, HashMap reports, checked arithmetic, trait dispatch and buffered text
-input. Each contains 1,551–1,685 paragraph words, two original ImageGen images,
-highlighted code and primary Rust sources. All eleven complete programs from
-these guides compiled and ran. The [article and image manifest](docs/blog-assets-2026-10-20.json)
-records dates, word counts, captions and hashes; [exact image prompts](docs/blog-image-prompts-2026-10-20.md)
-are retained. The ten earlier articles and native screenshot set are preserved.
+20 in-depth articles with two generated illustrations each, including an
+infographic. Five additions authored on 23 October cover Cargo build scripts,
+memoization, Rust infrastructure, the announced Rust 1.100 Windows host-tool
+transition, and rustup 1.29.2. Their editorial dates occupy 11, 14, 21, 22 and
+23 October; source news dates are identified separately. Each contains
+2,307–2,363 paragraph words, exceeding the previous longest article, with
+highlighted Rust, primary sources and three related guides. Five complete Rust
+programs and nine desktop build-script scenarios passed. The
+[article and image manifest](docs/blog-assets-2026-10-23.json),
+[code verification](docs/blog-code-verification-2026-10-23.json) and
+[exact image prompts](docs/blog-image-prompts-2026-10-23.md) retain the evidence.
+All fifteen earlier article objects and the native screenshot set are preserved.
 The [20 October Academy review](docs/academy-review-2026-10-20.md) records ten
 lesson corrections shared by the website and signed app updates: Basics 1.0.6,
 Systems 1.0.5 and Interview 1.0.6. Website Academy

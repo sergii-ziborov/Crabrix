@@ -1,0 +1,280 @@
+{
+  "verifiedAtUTC": "2026-10-22T23:54:32.896318+00:00",
+  "sourceBaseCommit": "cb511139d39626a19131642be18e237dc8dad294",
+  "sourceFilesSHA256": {
+    "README.md": "1b5d571a86d9ec399a1748333c81b6333f20204adbff80ebd66aa16ca84aab92",
+    "site/README.md": "2b7d2f54fb85e6c78845a5de30320d9a39dd2be6241f65b6709192578c5e886a",
+    "site/content/posts.json": "aef18d73a3ec932d40cffdd62e54ff7d9ac0223a127cd375888ec0c72be8003f",
+    "site/app/blog/page.tsx": "c9642fa84a89e0781473f5a9ff8eb72a54b771057749a028a87e051b9526985e",
+    "site/tests/blog.test.mjs": "14cc89cadb1d69a67959d9683dabf3d814a2dce9afcfb10cc08cabbf16888634",
+    "site/package.json": "d156d3c96133ce2fc989113bb33c9666fe5592c483e6a1541e80994663a9edae",
+    "site/pnpm-lock.yaml": "b71ffef8190268659baf23b00aebfcd976f000b8ebaa070806f35cbccfc9284f",
+    "site/sitemap.xml": "54e59845ddec653b59bcef1895866fe416b964c707b194a6da7454c64d2f5fad"
+  },
+  "totalArticles": 20,
+  "previousArticlesPreserved": 15,
+  "previousLongestProseWords": 2151,
+  "editorialDatePolicy": "One article today; four previously unoccupied date slots. News event dates are separately identified and precede article dates.",
+  "newArticles": [
+    {
+      "slug": "rustup-1-29-2-certificate-update",
+      "title": "rustup 1.29.2: certificate security and toolchain checks",
+      "date": "2026-10-23",
+      "kind": "news analysis",
+      "proseWords": 2360,
+      "newsEventDate": "2026-10-20"
+    },
+    {
+      "slug": "rust-1-100-i686-windows-host-tools",
+      "title": "Rust 1.100: what changes for 32-bit Windows builds",
+      "date": "2026-10-22",
+      "kind": "news analysis",
+      "proseWords": 2323,
+      "newsEventDate": "2026-10-02"
+    },
+    {
+      "slug": "rust-infrastructure-q3-2026-registry-resilience",
+      "title": "Rust infrastructure Q3 2026: crates.io, docs.rs and resilient builds",
+      "date": "2026-10-21",
+      "kind": "news analysis",
+      "proseWords": 2363,
+      "newsEventDate": "2026-10-12"
+    },
+    {
+      "slug": "rust-memoization-cache-contracts",
+      "title": "Rust memoization: cache keys, limits and failure handling",
+      "date": "2026-10-14",
+      "kind": "practical",
+      "proseWords": 2307
+    },
+    {
+      "slug": "cargo-build-scripts-generated-code",
+      "title": "Cargo build.rs: generated code and reliable rebuilds",
+      "date": "2026-10-11",
+      "kind": "practical",
+      "proseWords": 2324
+    }
+  ],
+  "assetManifest": "blog-assets-2026-10-23.json",
+  "imageGeneration": {
+    "mode": "built-in image_gen",
+    "originalImages": 10,
+    "analyticalInfographics": 5,
+    "prompts": "blog-image-prompts-2026-10-23.md",
+    "deliveryInventory": "blog-image-delivery-2026-10-23.json",
+    "visualCheck": "all ten selected outputs reviewed for labels, data and arrows"
+  },
+  "codeVerification": {
+    "report": "blog-code-verification-2026-10-23.json",
+    "standaloneProgramsCompiledAndRun": 5,
+    "cargoBuildScriptScenariosPassed": 9,
+    "compiler": "rustc 1.99.0 (b940084d7 2026-09-28)"
+  },
+  "siteChecks": {
+    "testsPassed": 12,
+    "testsFailed": 0,
+    "typeScript": "passed",
+    "productionBuild": "passed"
+  },
+  "frameworkMaintenance": {
+    "reason": "Production build surfaced October 2026 security advisories affecting the installed Next.js version.",
+    "from": "16.4.0",
+    "to": "16.4.2",
+    "sharp": "0.35.5 (unchanged, patched)",
+    "lockfileScope": "Next.js and its version-matched packages only",
+    "officialSource": "https://nextjs.org/blog/nextjs-security-update-october-14-2026",
+    "dependencyAuditAfter": {
+      "advisories": {},
+      "metadata": {
+        "vulnerabilities": {
+          "info": 0,
+          "low": 0,
+          "moderate": 0,
+          "high": 0,
+          "critical": 0
+        },
+        "dependencies": 18,
+        "devDependencies": 4,
+        "optionalDependencies": 39,
+        "totalDependencies": 61
+      }
+    }
+  },
+  "candidateSEOAudit": {
+    "origin": "http://127.0.0.1:3216",
+    "pagesVerified": 779,
+    "duplicateTitles": 0,
+    "canonicalAndSocialMetadata": "passed",
+    "structuredData": "passed",
+    "accountNoindex": "passed",
+    "guestPreviewAndPrivateMedia": "passed"
+  },
+  "liveBlogAudit": {
+    "origin": "https://crabrix.com",
+    "articles": [
+      {
+        "slug": "rustup-1-29-2-certificate-update",
+        "date": "2026-10-23",
+        "proseWords": 2360,
+        "images": [
+          {
+            "path": "/blog/rustup-trust-editorial.png",
+            "sha256": "bc2a6faa79fa658cb944c4600b40a70f6eda12f66a47ad833f428e59d4a6a668",
+            "status": 200
+          },
+          {
+            "path": "/blog/rustup-trust-infographic.png",
+            "sha256": "2f8287238219944c8edd38595ed3a175f2c8cbb73b08239213b3bffef482f80c",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "rust-1-100-i686-windows-host-tools",
+        "date": "2026-10-22",
+        "proseWords": 2323,
+        "images": [
+          {
+            "path": "/blog/rust-windows-host-editorial.png",
+            "sha256": "5ef06245fefa37f6153c92c9a3acbc6203b4f4c557cb12f0c202b12e95fdfb1e",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-windows-host-infographic.png",
+            "sha256": "6814fc9b5d45a51b59e09aaf1a9db99a4315bea529d4a8e594de8849c7c8fec6",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "rust-infrastructure-q3-2026-registry-resilience",
+        "date": "2026-10-21",
+        "proseWords": 2363,
+        "images": [
+          {
+            "path": "/blog/rust-registry-resilience-editorial.png",
+            "sha256": "28a9c84a95f1aa74217eab528cb7f69634c99ce7d7633cb15b5749fa29c33574",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-registry-resilience-infographic.png",
+            "sha256": "4a79dff34c0a3286fde04de1ea3a0c697768757dcf0aaf0ece56cbc7139ab216",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "rust-memoization-cache-contracts",
+        "date": "2026-10-14",
+        "proseWords": 2307,
+        "images": [
+          {
+            "path": "/blog/rust-memoization-editorial.png",
+            "sha256": "861e28695d5520c756c7b939fabd8ac3848b074faa0d6ebe4afe5eebf0af94ef",
+            "status": 200
+          },
+          {
+            "path": "/blog/rust-memoization-infographic.png",
+            "sha256": "61556cbd93b0ad3fdcd906d26cfb6b5db71ce315b4fe6b5ce752e515e0828f97",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      },
+      {
+        "slug": "cargo-build-scripts-generated-code",
+        "date": "2026-10-11",
+        "proseWords": 2324,
+        "images": [
+          {
+            "path": "/blog/cargo-build-scripts-editorial.png",
+            "sha256": "4c40edc4e58282afd15c80554274ad884d651aa46255233fd3ada7a3056d0369",
+            "status": 200
+          },
+          {
+            "path": "/blog/cargo-build-scripts-infographic.png",
+            "sha256": "347c1b838151f200905cc1fb52ea31120364f5469c364e563bf38b42ced8c1b5",
+            "status": 200
+          }
+        ],
+        "metadataAndLinks": "passed"
+      }
+    ],
+    "blogIndexCount": 20,
+    "existingOriginalsPreserved": 15,
+    "responsiveCoverCSS": "height:auto verified in served CSS",
+    "passed": true
+  },
+  "liveSitemapAudit": {
+    "origin": "https://crabrix.com",
+    "canonicalURLs": 779,
+    "lessonURLs": 742,
+    "articleURLs": 20,
+    "blogImages": 40,
+    "htmlSitemapLinks": "all 742 lessons and 20 articles",
+    "recordedEditorialDates": 10,
+    "robotsReference": "passed",
+    "privateLessonImagesExcluded": true
+  },
+  "liveImageDeliveryAudit": {
+    "origin": "https://crabrix.com",
+    "responsiveVariantsVerified": 80,
+    "blogPictureElements": 20,
+    "newArticlePictureElements": 10,
+    "originalBytes": 77482708,
+    "fullWebPBytes": 8274490,
+    "cardWebPBytes": 2213650,
+    "hashesAndMimeTypes": "passed"
+  },
+  "browserVerification": {
+    "url": "https://crabrix.com/blog/",
+    "path": "site-previews/blog-2026-10-23.png",
+    "sha256": "44939fa2c401ff9aa0f57ab5818f7b2ab678d5d590e3cb378e6a26bfeceff525",
+    "dimensions": [
+      1265,
+      712
+    ],
+    "cards": 20,
+    "horizontalOverflow": 0,
+    "consoleWarningsOrErrors": 0,
+    "visibleNewCovers": "all three loaded as WebP",
+    "rustCode": "memoization example visually checked; keyword, type, number, macro and string colors; prose inline code styled"
+  },
+  "deployment": {
+    "provider": "Hetzner",
+    "method": "local standalone build, checksummed rsync, manual Podman build and activation; no CI/CD",
+    "artifact": {
+      "filesAndLinks": 1816,
+      "sha256": "19f8cbeb189c4877a8d103e654560a1fca714eb373bc3656c76588fa61b8f8cd"
+    },
+    "remoteArtifact": {
+      "filesAndLinks": 1816,
+      "sha256": "19f8cbeb189c4877a8d103e654560a1fca714eb373bc3656c76588fa61b8f8cd"
+    },
+    "image": "localhost/crabrix-web-site:blog-20261023",
+    "imageDigest": "f86dce298bf4f30430dc9de66bf2c5b95d3bed9f929addaf3d794aef18d0de88",
+    "container": "crabrix-web-site-1",
+    "health": "healthy",
+    "runtimeNext": "16.4.2",
+    "runtimeSharp": "0.35.5",
+    "memoryMiB": 512,
+    "cpus": 0.75,
+    "pidsLimit": 256,
+    "accountsVolumePreserved": true,
+    "accountBackupBeforeActivation": true,
+    "backupTimer": "active",
+    "rollbackContainer": "crabrix-web-site-before-blog-20261023",
+    "rollbackImageDigest": "9eb52549e119626e61189ff3eb83f3bf9dda2a588be14749fb8da631626aa69f",
+    "candidateContainerRemoved": true,
+    "githubActionsEnabled": false
+  },
+  "preserved": {
+    "earlierArticleObjects": 15,
+    "nativeAppSourceAndScreenshots": "unchanged",
+    "lessonCorpusAndSignedPacks": "unchanged",
+    "userUntrackedCortexLoom": "untouched"
+  }
+}

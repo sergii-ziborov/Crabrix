@@ -4,7 +4,7 @@ import { BlogImage } from "@/components/blog-image";
 import Link from "next/link";
 import { posts } from "@/lib/posts";
 
-export const metadata = pageMetadata({"title": "Practical Rust Guides: Iterators, UTF-8, Testing and Cargo", "description": "Learn Rust with practical guides to iterators, UTF-8 strings, testing, Cargo features, enums and releases. Runnable code, original diagrams and official sources.", "path": "/blog/"});
+export const metadata = pageMetadata({"title": "Rust Guides and News: Cargo, Memoization and Releases", "description": "Practical Rust guides and verified release news. Learn Cargo builds, memoization, ownership, testing and portability with runnable examples and original diagrams.", "path": "/blog/"});
 
 export default function BlogPage() {
   return (
@@ -16,7 +16,7 @@ export default function BlogPage() {
       <div className="page-intro">
         <p className="eyebrow">Crabrix blog</p>
         <h1>Rust you can put to work.</h1>
-        <p className="lede">Practical guides to Rust iterators, text, testing, Cargo features and state machines, alongside release notes and ownership fundamentals.</p>
+        <p className="lede">Practical guides to Cargo builds, memoization, ownership, text and testing, alongside carefully sourced Rust release and infrastructure news.</p>
       </div>
       <div className="post-grid">
         {posts.map((post, index) => {

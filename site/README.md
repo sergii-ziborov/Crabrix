@@ -49,7 +49,22 @@ repository and signed release archives remain public so existing native builds
 can download and update their courses. Changing that delivery model requires
 an app release and a separate migration.
 
-`content/posts.json` contains 15 articles. The five added on 20 October have
+`content/posts.json` contains 20 articles. The five added on 23 October occupy
+previously unoccupied editorial dates of 11, 14, 21, 22 and 23 October. Two
+practical guides cover generated Cargo source and memoization; three news
+analyses cover Rust infrastructure, the announced Rust 1.100 i686 Windows
+host-tool transition, and rustup 1.29.2. News event dates are stated separately
+and precede the articles. Each has 2,307–2,363 paragraph words, exceeding the
+previous longest article (2,151), three related guides, primary sources, and
+two original built-in ImageGen images including an analytical infographic.
+Five standalone Rust programs and nine Cargo build-script scenarios passed;
+Windows cross-linking and toolchain-update commands were not executed on the
+Mac. See `../docs/blog-assets-2026-10-23.json`,
+`../docs/blog-code-verification-2026-10-23.json` and
+`../docs/blog-image-prompts-2026-10-23.md`. All fifteen earlier article objects
+are unchanged.
+
+The five added on 20 October have
 distinct editorial dates of 16–20 October and 1,551–1,685 paragraph words each.
 They cover exhaustive matching, HashMap reports, checked arithmetic, trait
 dispatch and buffered text input. Each has two original ImageGen assets,
@@ -80,10 +95,10 @@ were compiled and run with Rust 1.99. Desktop-only commands are labeled.
 `scripts/prepare-blog-images.py` produces responsive WebP delivery copies while
 retaining every original generated PNG. `BlogImage` serves a 640px card or
 full-size WebP through `picture`, with PNG fallback, explicit dimensions and
-meaningful article alt text. The 30 full-size copies total 5.57 MB versus
-57.05 MB for their PNG sources (90.2% less); card copies total 1.50 MB (97.4%
+meaningful article alt text. The 40 full-size copies total 8.27 MB versus
+77.48 MB for their PNG sources (89.3% less); card copies total 2.21 MB (97.1%
 less). These are encoded-byte comparisons, not a claimed page-speed score.
-See `../docs/blog-image-delivery-2026-10-20.json`. After adding images, run the
+See `../docs/blog-image-delivery-2026-10-23.json`. After adding images, run the
 encoder with Python/Pillow before the normal site checks and build.
 Product and legal copy remains in the top-level HTML files rendered through
 `lib/legacy.ts`.
@@ -115,6 +130,13 @@ and lesson objects match that committed corpus exactly.
 
 ## Search metadata
 
+The 23 October release pins Next.js 16.4.2 after the 16.4.0 build surfaced
+the upstream October security advisories. The lockfile change is limited to
+Next.js and its version-matched packages; sharp remains at the patched 0.35.5.
+The post-update dependency audit reports zero known advisories. Account tests,
+the full sitemap crawl, TypeScript and production build cover the patched
+runtime. See the [official security update](https://nextjs.org/blog/nextjs-security-update-october-14-2026).
+
 Public routes share canonical HTTPS addresses matching their final served URL,
 individual
 titles/descriptions, Open Graph and Twitter cards. BlogPosting, Course,
@@ -125,7 +147,7 @@ Ordinary pages end in a slash; dotted Atlas lesson IDs follow Next's
 extension-like URL rule and omit it, avoiding a redirect from sitemap URLs.
 
 The [HTML sitemap](https://crabrix.com/sitemap/) lists all seven courses, 742
-lessons and 15 articles. `/sitemap.xml` contains 774 canonical URLs and 30 public
+lessons and 20 articles. `/sitemap.xml` contains 779 canonical URLs and 40 public
 blog image URLs. Known editorial modification dates are retained for the ten
 corrected lessons and three courses; build time does not invent modification
 dates. Private lesson media and account routes are excluded. `sitemap.xml` at
@@ -133,11 +155,11 @@ the site root is a synchronized legacy snapshot; Next's metadata route serves
 the production XML. `lib/lesson-seo.ts` supplies readable, unique descriptions
 without Markdown backticks and recorded editorial change dates.
 
-The latest live audit checked all 774 sitemap pages, unique titles, one H1 per
+The latest live audit checked all 779 sitemap pages, unique titles, one H1 per
 page, canonical/social metadata, structured data, previews and private media
 denial. All ten new public image hashes matched the selected repository assets.
-Eleven site tests, TypeScript checking and the production build passed.
-See `../docs/site-release-2026-10-20-academy-blog.json` and the earlier product-page
+Twelve site tests, TypeScript checking and the production build passed.
+See `../docs/site-release-2026-10-23-blog.json` and the earlier product-page
 audit in `../docs/seo-2026-10-16.md`.
 
 ## Accounts and operation
