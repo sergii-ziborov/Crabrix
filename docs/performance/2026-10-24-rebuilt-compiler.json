@@ -190,7 +190,15 @@
         "originalCompileSeconds": 5.914826625,
         "candidateCompileSeconds": 2.506264458,
         "resultBundle": "build/compiler-optimization-20261024/rebuilt-fixed-smoke-simulator.xcresult",
-        "physicalRerun": "pending"
+        "physicalRerun": {
+          "passed": true,
+          "passedTests": 1,
+          "failedTests": 0,
+          "testSeconds": 9.801,
+          "originalCompileSeconds": 4.493116167,
+          "candidateCompileSeconds": 2.342794833,
+          "resultBundle": "build/compiler-optimization-20261024/rebuilt-fixed-smoke-device.xcresult"
+        }
       }
     },
     "limitations": [
@@ -203,6 +211,6 @@
     "Candidate is not shipped.",
     "Not the Kameo large-project workload.",
     "No general 3x speed guarantee; single physical samples with thermal differences.",
-    "Corrected full smoke gate passes simulator; separate physical rerun pending."
+    "Corrected full smoke gate passes simulator and physical iPhone; candidate remains unshipped."
   ]
 }

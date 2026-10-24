@@ -1,0 +1,71 @@
+{
+  "status": "experimental; not shipped",
+  "dateUTC": "2026-10-24",
+  "localDate": "2026-10-25",
+  "originalRuntimeRevision": "c4628141913160176dd11ced0bc6bfe42fee1f1f",
+  "newRuntimeRevision": "83406c207636837ad15f4eac9365eb9b0514b0b4",
+  "compilerSHA256": "0900e146ea3d54efb021a79165b2439d28ad67bd296a5075c4d915f6ddb353ac",
+  "dispatch": "experimental direct; software memory bounds; fuel metered",
+  "host": "arm64 macOS with concurrent native builds",
+  "cancellationProbe": "CLI nil; app installs a real cancellation probe, separately qualified",
+  "workload": "bytes 1.12.1 std/default, opt-level=0, identical input/output paths",
+  "samples": [
+    {
+      "variant": "old",
+      "elapsedSeconds": 16.81758733303286,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 1890828288,
+      "stopped": null,
+      "fuelConsumed": 15140288152,
+      "outputSHA256": "33bfa663b01f258e0810c5437110cb09312ea34c95da1fe30e4e15776a18d1cd"
+    },
+    {
+      "variant": "new",
+      "elapsedSeconds": 13.100667957914993,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 2009808896,
+      "stopped": null,
+      "fuelConsumed": 15139087921,
+      "outputSHA256": "33bfa663b01f258e0810c5437110cb09312ea34c95da1fe30e4e15776a18d1cd"
+    },
+    {
+      "variant": "new",
+      "elapsedSeconds": 12.541478665778413,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 1884045312,
+      "stopped": null,
+      "fuelConsumed": 15139427083,
+      "outputSHA256": "33bfa663b01f258e0810c5437110cb09312ea34c95da1fe30e4e15776a18d1cd"
+    },
+    {
+      "variant": "old",
+      "elapsedSeconds": 33.250350874848664,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 1887830016,
+      "stopped": null,
+      "fuelConsumed": 15140170948,
+      "outputSHA256": "33bfa663b01f258e0810c5437110cb09312ea34c95da1fe30e4e15776a18d1cd"
+    }
+  ],
+  "allOutputsIdentical": true,
+  "correctnessGate": {
+    "passedTests": 16,
+    "instructionScripts": 179,
+    "configuration": "optimized host",
+    "includes": [
+      "exact fuel accounting",
+      "memory traps and recovery",
+      "cancellation within existing interval",
+      "host-installed cancellation probe before loop-body effects"
+    ]
+  },
+  "arm64AssemblyFinding": "unsampled checkpoints branch around Swift retain/release/exclusivity calls; interval remains 64",
+  "physicalGate": "prepared; separate measurement pending",
+  "limitations": [
+    "Not a large Kameo measurement.",
+    "Host timing affected by concurrent builds.",
+    "No physical speed claim for this runtime revision yet."
+  ],
+  "originalCLISHA256": "6a2c0e784338ed22b52d7451f082b69bf019c870cab0ff891bc70a3591acf891",
+  "newCLISHA256": "68eea9bc596768b6c257ab2dcc959ff87813b2886ba7a19a96fb124d55c50f8f"
+}

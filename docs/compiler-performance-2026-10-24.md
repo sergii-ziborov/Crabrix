@@ -152,8 +152,9 @@ compiler emits the valid JSON diagnostic and traps with `unreachable`. The
 corrected gate accepts only that precise trap shape and requires a parsed E0502
 error with a primary span in `invalid.rs`; all other failures remain failures.
 The corrected gate passed separately on the owned iOS 26.5 simulator with
-optimized app/VM code, in 11.372 s, covering both compilers. A separate physical
-rerun is pending.
+optimized app/VM code, in 11.372 s, covering both compilers. The physical
+iPhone rerun also passed, in 9.801 s; original/candidate compile times were
+4.493/2.343 s.
 The [machine-readable evidence](performance/2026-10-24-rebuilt-compiler.json)
 records these limitations.
 
@@ -172,6 +173,23 @@ optimizes the app and VM while leaving the XCTest driver unoptimized to reduce
 test rebuild time. Production Release configuration and native UI are retained.
 
 The large Kameo target and the 30-second physical target remain unqualified.
+
+### Sampled cancellation fast path
+
+Research runtime `83406c2` moves access to the Swift cancellation-probe
+existential inside the existing one-in-64 sampling branch. Optimized arm64
+assembly confirms that the other 63 checkpoints avoid Swift retain/release and
+exclusivity calls. Installing a probe from a host function resets the sampling
+position; fuel costs and bulk-operation checks stay the same.
+
+The optimized host gate passed 16 tests, including 179 instruction scripts,
+exact fuel-accounting checks, memory/fuel traps, recovery and host-installed
+cancellation before the next loop-body write. Four matched `bytes` builds
+produced identical rlibs. Old direct runtime wall times were 16.818/33.250 s;
+new runtime 13.101/12.541 s, while other native builds were running. These are
+host observations, with the CLI's nil probe; the app's real cancellation probe
+and new physical speed still require the separately prepared device gate.
+See [the complete sampling evidence](performance/2026-10-25-cancellation-sampling.json).
 
 ## Upstream audit
 

@@ -10,8 +10,20 @@ import XCTest
 final class CompilerCandidateGateTests: XCTestCase {
     func testCandidateCompilesAndRunsUsingSignedSysroot() async throws {
         try XCTSkipIf(ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_CANDIDATE"] != "1")
+        let artifactName = ProcessInfo.processInfo.environment["CRABRIX_COMPILER_CANDIDATE_ARTIFACT"] ?? "Artifact"
+        guard ["Artifact", "ArtifactFat"].contains(artifactName)
+        else { throw CocoaError(.fileReadCorruptFile) }
+        try checkCandidate(artifactName: artifactName)
+    }
+
+    func testTransformedCandidateCompilesAndRunsUsingSignedSysroot() async throws {
+        try XCTSkipIf(ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_TRANSFORMED"] != "1")
+        try checkCandidate(artifactName: "ArtifactO2")
+    }
+
+    private func checkCandidate(artifactName: String) throws {
         let directory = try XCTUnwrap(Bundle(for: Self.self).resourceURL)
-            .appending(path: "CompilerCandidate/Artifact", directoryHint: .isDirectory)
+            .appending(path: "CompilerCandidate/" + artifactName, directoryHint: .isDirectory)
         let compiler = directory.appending(path: "rustc.wasm")
         let provenanceURL = directory.appending(path: "provenance.json")
         let provenance = try JSONSerialization.jsonObject(with: Data(contentsOf: provenanceURL)) as? [String: Any]

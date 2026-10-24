@@ -8,14 +8,19 @@ import XCTest
 final class BundledCompilerGateTests: XCTestCase {
     private func measuredCompiler(dependencyArtifactRoot: URL? = nil,
                                   experimentalDirectOverride: Bool? = nil,
-                                  candidateProfileOverride: Bool? = nil) throws -> WasmRustCompiler {
+                                  candidateProfileOverride: Bool? = nil,
+                                  candidateArtifactName: String? = nil) throws -> WasmRustCompiler {
         let direct = experimentalDirectOverride
             ?? (ProcessInfo.processInfo.environment["CRABRIX_EXPERIMENTAL_DIRECT_GATE"] == "1")
         print("MEASURED COMPILER DISPATCH", direct ? "experimental-direct" : "production-token")
         var candidate: BundledToolchain?
         if candidateProfileOverride ?? (ProcessInfo.processInfo.environment["CRABRIX_COMPILER_CANDIDATE_PROFILE"] == "1") {
+            let artifactName = candidateArtifactName
+                ?? ProcessInfo.processInfo.environment["CRABRIX_COMPILER_CANDIDATE_ARTIFACT"] ?? "Artifact"
+            guard ["Artifact", "ArtifactO2", "ArtifactFat"].contains(artifactName)
+            else { throw CocoaError(.fileReadCorruptFile) }
             let resources = try XCTUnwrap(Bundle(for: Self.self).resourceURL)
-                .appending(path: "CompilerCandidate/Artifact")
+                .appending(path: "CompilerCandidate/" + artifactName)
             let provenance = try JSONSerialization.jsonObject(
                 with: Data(contentsOf: resources.appending(path: "provenance.json"))) as? [String: Any]
             let compilerURL = resources.appending(path: "rustc.wasm")
@@ -290,8 +295,16 @@ final class BundledCompilerGateTests: XCTestCase {
         try await runTokioOfflineProbe(cold: true, experimentalDirectOverride: true, candidateProfileOverride: false)
     }
 
+    func testTokioCold05RebuiltO2Direct() async throws {
+        try requireColdComparison()
+        try XCTSkipIf(ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_TRANSFORMED"] != "1")
+        try await runTokioOfflineProbe(cold: true, experimentalDirectOverride: true,
+                                      candidateProfileOverride: true, candidateArtifactName: "ArtifactO2")
+    }
+
     private func runTokioOfflineProbe(cold: Bool, experimentalDirectOverride: Bool? = nil,
-                                      candidateProfileOverride: Bool? = nil) async throws {
+                                      candidateProfileOverride: Bool? = nil,
+                                      candidateArtifactName: String? = nil) async throws {
         let artifacts = cold ? FileManager.default.temporaryDirectory
             .appending(path: "ColdTokioArtifacts-\(UUID())", directoryHint: .isDirectory) : nil
         defer { if let artifacts { try? FileManager.default.removeItem(at: artifacts) } }
@@ -336,7 +349,8 @@ final class BundledCompilerGateTests: XCTestCase {
         print("TOKIO THERMAL BEGIN", ProcessInfo.processInfo.thermalState.rawValue)
         let result = try await measuredCompiler(dependencyArtifactRoot: artifacts,
                                             experimentalDirectOverride: experimentalDirectOverride,
-                                            candidateProfileOverride: candidateProfileOverride).run(
+                                            candidateProfileOverride: candidateProfileOverride,
+                                            candidateArtifactName: candidateArtifactName).run(
             source: source, sourcePath: "src/main.rs",
             supportingFiles: ["Cargo.toml": manifest, "Cargo.lock": lockfile],
             edition: "2021", plan: offline.plan,
@@ -956,7 +970,7 @@ final class BundledCompilerGateTests: XCTestCase {
             throw XCTSkip("Run the CrabrixCompilerGate scheme for the sandbox memory gate.")
         }
 
-        let compiler = WasmRustCompiler(bundle: .main)
+        let compiler = try measuredCompiler()
         let result = await compiler.run(source: RustSamples.memoryPressure)
 
         XCTAssertFalse(result.succeeded, "The 80 MiB guest unexpectedly escaped the 64 MiB limit.")
@@ -1686,7 +1700,7 @@ final class BundledCompilerGateTests: XCTestCase {
             throw XCTSkip("Run the CrabrixCompilerGate scheme for the interruption gate.")
         }
 
-        let compiler = WasmRustCompiler(bundle: .main)
+        let compiler = try measuredCompiler()
         // A unique body defeats the artifact cache so rustc really runs.
         let source = """
         fn main() {
