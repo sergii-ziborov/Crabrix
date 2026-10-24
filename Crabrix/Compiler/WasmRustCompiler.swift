@@ -35,7 +35,7 @@ final class WasmRustCompiler: @unchecked Sendable {
 
     private let bundle: Bundle
     private let ledger: CrateCompatibilityLedger
-    private let runtime = RustcRuntime()
+    private let runtime: RustcRuntime
     // rustc runs synchronously inside the Wasm interpreter. Keep that CPU-heavy work
     // below the UI's QoS so scrolling, navigation, and animations stay responsive.
     private let queue = DispatchQueue(
@@ -53,9 +53,11 @@ final class WasmRustCompiler: @unchecked Sendable {
     private var activeInterrupter: WasmInterrupter?
     private var memoryWarningObserver: NSObjectProtocol?
 
-    init(bundle: Bundle = .main, ledger: CrateCompatibilityLedger = .shared) {
+    init(bundle: Bundle = .main, ledger: CrateCompatibilityLedger = .shared,
+         runtime: RustcRuntime = RustcRuntime()) {
         self.bundle = bundle
         self.ledger = ledger
+        self.runtime = runtime
         memoryWarningObserver = NotificationCenter.default.addObserver(
             forName: UIApplication.didReceiveMemoryWarningNotification,
             object: nil,

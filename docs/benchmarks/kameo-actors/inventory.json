@@ -1,0 +1,69 @@
+{
+  "repository": "https://github.com/tqwewe/kameo",
+  "commit": "1b6bffb6d0fdc05492349c08cd3727621a810ed7",
+  "version": "0.22.2",
+  "license": "MIT OR Apache-2.0",
+  "coreRustFiles": 27,
+  "coreRustLines": 20404,
+  "repositoryRustFiles": 74,
+  "repositoryRustLines": 30129,
+  "manifestSHA256": "be2c2fe72ba6e60ccf1dd15b5ad8348ec3c4d040ede75ba54351ea5797826e7a",
+  "features": {
+    "default": [
+      "macros",
+      "tracing"
+    ],
+    "macros": [
+      "dep:kameo_macros"
+    ],
+    "console": [
+      "dep:rmp-serde",
+      "tokio/net",
+      "tokio/io-util"
+    ],
+    "remote": [
+      "dep:const-fnv1a-hash",
+      "dep:const-str",
+      "dep:either",
+      "dep:libp2p",
+      "dep:linkme",
+      "dep:rmp-serde"
+    ],
+    "tracing": [
+      "dep:tracing",
+      "tokio/tracing"
+    ],
+    "otel": [
+      "dep:opentelemetry",
+      "dep:tracing-opentelemetry"
+    ],
+    "metrics": [
+      "dep:metrics"
+    ],
+    "hotpath": [
+      "dep:hotpath",
+      "hotpath/hotpath"
+    ]
+  },
+  "tokioDependency": {
+    "workspace": true,
+    "features": [
+      "macros",
+      "rt",
+      "sync",
+      "time"
+    ]
+  },
+  "dependencyGraph": {
+    "packageCount": 32,
+    "proceduralMacros": [
+      "futures-macro 0.3.34",
+      "kameo_macros 0.21.1",
+      "serde_derive 1.0.229",
+      "tokio-macros 2.7.2",
+      "tracing-attributes 0.1.31"
+    ]
+  },
+  "hostDriverResult": "passed: kameo offline: actors=16 records=1024 sum=523776",
+  "iPhoneResult": "not yet supported: procedural macro loading is required"
+}

@@ -4,6 +4,11 @@ import XCTest
 @testable import Crabrix
 
 final class BundledCompilerGateTests: XCTestCase {
+    private func measuredCompiler() -> WasmRustCompiler {
+        let direct = ProcessInfo.processInfo.environment["CRABRIX_EXPERIMENTAL_DIRECT_GATE"] == "1"
+        print("MEASURED COMPILER DISPATCH", direct ? "experimental-direct" : "production-token")
+        return WasmRustCompiler(runtime: RustcRuntime(experimentalSoftwareDirect: direct))
+    }
     private var previousIdleTimerDisabled: Bool?
 
     override func setUp() async throws {
@@ -28,7 +33,7 @@ final class BundledCompilerGateTests: XCTestCase {
         try Self.requireCompilerGate()
         var files = WebProjectSamples.files.reduce(into: [String: String]()) { $0["web/" + $1.key] = $1.value }
         files["Cargo.toml"] = "[package]\nname = \"offline_web\"\nversion = \"0.1.0\"\nedition = \"2021\"\n"
-        let result = await WasmRustCompiler(bundle: .main).run(
+        let result = await measuredCompiler().run(
             source: "// fresh generator \(UUID())\n" + WebProjectSamples.rustGenerator,
             sourcePath: "src/main.rs", supportingFiles: files, edition: "2021",
             onStage: { stage in print("GENERATOR STAGE", Date(), stage) })
@@ -224,7 +229,7 @@ final class BundledCompilerGateTests: XCTestCase {
             });
         }
         """
-        let result = await WasmRustCompiler(bundle: .main).run(
+        let result = await measuredCompiler().run(
             source: source, sourcePath: "src/main.rs",
             supportingFiles: ["Cargo.toml": manifest, "Cargo.lock": lockfile],
             edition: "2021", plan: offline.plan,

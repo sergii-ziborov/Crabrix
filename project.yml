@@ -29,7 +29,7 @@ packages:
   WasmKit:
     # Public Crabrix fork of WasmKit 0.4.1 with read-only host WASI preopens.
     url: https://github.com/sergii-ziborov/crabrix-runtime.git
-    revision: 0689cc5df8b5b3f81ac5e9675cc3c22fe1b614f3
+    revision: c4628141913160176dd11ced0bc6bfe42fee1f1f
   SwiftSystem:
     url: https://github.com/apple/swift-system.git
     exactVersion: 1.8.1

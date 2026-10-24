@@ -142,20 +142,23 @@ final class RustcRuntime: @unchecked Sendable {
     private var programModuleEstimatedBytes = 0
     private let programModuleCacheEntryLimit: Int
     private let programModuleCacheCostLimitBytes: Int
+    private let experimentalSoftwareDirect: Bool
 
     init(
         programModuleCacheEntryLimit: Int = 8,
-        programModuleCacheCostLimitBytes: Int = 64 * 1024 * 1024
+        programModuleCacheCostLimitBytes: Int = 64 * 1024 * 1024,
+        experimentalSoftwareDirect: Bool = false
     ) {
         precondition(programModuleCacheEntryLimit > 0 && programModuleCacheCostLimitBytes > 0)
         self.programModuleCacheEntryLimit = programModuleCacheEntryLimit
         self.programModuleCacheCostLimitBytes = programModuleCacheCostLimitBytes
+        self.experimentalSoftwareDirect = experimentalSoftwareDirect
     }
 
     func engine(softwareMemoryReservationBytes: Int?) -> Engine {
         let cacheKey = softwareMemoryReservationBytes ?? 0
         if let cached = cachedEngines[cacheKey] { return cached }
-        let configuration = EngineConfiguration(
+        var configuration = EngineConfiguration(
             // WasmKit 0.3.1's direct-threaded interpreter crashed in optimized
             // iOS Simulator builds while executing the bundled rustc module.
             // Token threading remains the supported mode until the new engine's
@@ -169,6 +172,10 @@ final class RustcRuntime: @unchecked Sendable {
             // current guest's resource limit.
             softwareMemoryReservationBytes: softwareMemoryReservationBytes
         )
+        if experimentalSoftwareDirect {
+            configuration.threadingModel = .direct
+            configuration.enableExperimentalSoftwareDirectThreading()
+        }
         let engine = Engine(configuration: configuration)
         cachedEngines[cacheKey] = engine
         return engine
