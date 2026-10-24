@@ -49,7 +49,8 @@ The toolchain repository's `5b2f3d0` adds a separate **compiler-only macOS
 candidate** recipe so an ephemeral Xcode Cloud Mac can build the optimized WASI
 compiler without the local disk constraint. Inputs remain pinned: Rust source,
 four patches, source stage0 manifest and native WASI SDK SHA-256. It builds stage
-1 rustc with Cranelift and the explicit performance profile. This experiment
+2 rustc with Cranelift and the explicit performance profile, after building a
+same-source native stage1 compiler with external LLVM 22.1.8. This experiment
 does not change the controlled Linux production recipe or package a new sysroot.
 
 The app's manual **Compiler performance candidate (manual)** workflow
@@ -61,3 +62,19 @@ wide-integer operations and E0502 diagnostics with the signed target sysroot.
 Cloud's correctness test uses its normal Debug host; iPhone performance must
 subsequently use the Release host. These are prepared gates, not evidence of a
 successful compiler rebuild or device speedup.
+
+### First physical experimental result
+
+The selected Release device run completed three tests on iPhone 13 mini with
+explicit experimental-direct dispatch and interactive worker QoS 25. The fresh
+responsiveness program completed in **1.875 s**; the observed first 1.5-second
+main-actor heartbeat's largest gap was **53.47 ms**. The gate was subsequently
+extended to cover the entire compilation. A fresh web generator completed in
+**1.799 s**. A fresh root plus uncached Tokio compilation completed in
+**62.385 s**, with verified `tokio offline: 42` output. `bytes` and
+`pin-project-lite` were already cached: this is not a complete cold graph, not
+the Kameo workload, and not a controlled attribution between QoS and dispatch.
+
+Manual Cloud run 76 reached bootstrap and failed because cross-target std may
+not be compiled by stage0. The recipe now requests stage2, building a same-source
+native stage1 first. No local-rebuild or compatibility check was bypassed.

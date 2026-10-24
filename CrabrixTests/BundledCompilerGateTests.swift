@@ -52,8 +52,10 @@ final class BundledCompilerGateTests: XCTestCase {
         let compiler = measuredCompiler()
         let source = "// fresh responsiveness probe \(UUID())\nfn main() { println!(\"responsive run\"); }"
         let clock = ContinuousClock()
+        var running = true
         let task = Task {
-            await compiler.run(source: source, onStage: { stage in
+            defer { running = false }
+            return await compiler.run(source: source, onStage: { stage in
                 XCTAssertFalse(Thread.isMainThread)
                 XCTAssertGreaterThanOrEqual(qos_class_self().rawValue, QOS_CLASS_USER_INITIATED.rawValue)
                 print("INTERACTIVE RUN STAGE", Date(), stage, "qos", qos_class_self().rawValue)
@@ -61,7 +63,7 @@ final class BundledCompilerGateTests: XCTestCase {
         }
         var previous = clock.now
         var longestGap = Duration.zero
-        for _ in 0..<30 {
+        while running {
             try await Task.sleep(for: .milliseconds(50))
             let now = clock.now
             longestGap = max(longestGap, previous.duration(to: now))
