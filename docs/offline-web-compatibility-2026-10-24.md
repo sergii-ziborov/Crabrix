@@ -12,12 +12,12 @@ The compiler remains `crabrix-rust-2026-10-02.1`, Rust `1.96.0-dev`, wasm32-wasi
 | --- | --- | --- |
 | std-only root build.rs, generated include, cfg, environment and changed input | Release iOS 26.5 Simulator | Passed; initial two-run fixture 6.815 s. Later warm gate 1.535 s. |
 | Rust-generated HTML/CSS/JavaScript assets | Release iOS 26.5 Simulator | Passed; initial 1.611 s; warm 0.052 s is not a cold compiler measurement. |
-| Same Rust web generator | Physical iPhone 13 mini, signed Release test host | Passed, 11.733 s test duration including compiler invocation and output assertions. Not an app launch benchmark or a large dependency benchmark. |
+| Same Rust web generator | Physical iPhone 13 mini, signed Release test host | Passed initially in 11.733 s. A UUID-marked fresh source on October 24 later measured 7.348 s compiler duration (7.394 s test). Not an app launch benchmark or a large dependency benchmark. |
 | Actual WebKit local script, stylesheet, interactive counter and blocked external fetch | Release iOS 26.5 Simulator | Passed (1.262 s and final 3.382 s functional tests); timings are test durations, not compiler performance. |
 | Syntax, completions, build-script directives, snapshot path/byte limits | Release iOS 26.5 Simulator | Final selected 12-test gate passed with zero failures. |
 | Rust nested block comments and hashed raw strings | Host Swift/Foundation lexical gate | Passed against the production tokenizer source. |
 | Tokio 1.54.1, default features off; rt, sync, time, io-util | Release Simulator | Program compiled and its timer/task/channel assertions passed in the initial 425.824 s fixture. That test failed an additional old 512-file loader guard because Tokio has 581 text files. Loader budget is now 2,048 files; existing byte budgets remain. This is not a fully green Tokio test. |
-| Tokio 1.54.1 on physical iPhone | Signed Release test host | Started after the successful generator; Xcode lost device communication. No successful outcome or 30-second claim. |
+| Tokio 1.54.1 on physical iPhone | Signed Release test host | After reconnecting, frozen/offline preparation succeeded; a fresh dependency build reached Tokio after bytes (~63 s) and pin-project-lite (~5 s). The fixture exceeded its 240 s test bound. No pass or 30-second claim; large-project performance remains a separate compiler task. |
 | Serde JSON 1.0.151 build script | New frozen/offline fixture | Validation pending. |
 | pulldown-cmark 0.13.5 + MiniJinja 3.0.3 | New frozen/offline fixture | Validation pending. |
 | Axum 0.8.9 + Tower 0.5.2 + Tokio 1.54.1, in-memory HTTP request | New frozen/offline fixture | Long Simulator run stopped; no pass claim. Does not open a TCP listener. |

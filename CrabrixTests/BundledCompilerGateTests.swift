@@ -1,14 +1,38 @@
 import Foundation
+import UIKit
 import XCTest
 @testable import Crabrix
 
 final class BundledCompilerGateTests: XCTestCase {
+    private var previousIdleTimerDisabled: Bool?
+
+    override func setUp() async throws {
+        try await super.setUp()
+        #if !targetEnvironment(simulator)
+        previousIdleTimerDisabled = await MainActor.run {
+            let previous = UIApplication.shared.isIdleTimerDisabled
+            UIApplication.shared.isIdleTimerDisabled = true
+            return previous
+        }
+        #endif
+    }
+
+    override func tearDown() async throws {
+        if let previous = previousIdleTimerDisabled {
+            await MainActor.run { UIApplication.shared.isIdleTimerDisabled = previous }
+        }
+        try await super.tearDown()
+    }
+
     func testRustGeneratesAnOfflineHTMLCSSJavaScriptPreview() async throws {
         try Self.requireCompilerGate()
         var files = WebProjectSamples.files.reduce(into: [String: String]()) { $0["web/" + $1.key] = $1.value }
         files["Cargo.toml"] = "[package]\nname = \"offline_web\"\nversion = \"0.1.0\"\nedition = \"2021\"\n"
-        let result = await WasmRustCompiler(bundle: .main).run(source: WebProjectSamples.rustGenerator,
-            sourcePath: "src/main.rs", supportingFiles: files, edition: "2021")
+        let result = await WasmRustCompiler(bundle: .main).run(
+            source: "// fresh generator \(UUID())\n" + WebProjectSamples.rustGenerator,
+            sourcePath: "src/main.rs", supportingFiles: files, edition: "2021",
+            onStage: { stage in print("GENERATOR STAGE", Date(), stage) })
+        print("GENERATOR COMPILER DURATION", result.duration)
         XCTAssertTrue(result.succeeded, result.detail + "\n" + result.stderr)
         let preview = try XCTUnwrap(result.webPreview)
         XCTAssertEqual(preview.entryPath, "index.html")
@@ -203,8 +227,11 @@ final class BundledCompilerGateTests: XCTestCase {
         let result = await WasmRustCompiler(bundle: .main).run(
             source: source, sourcePath: "src/main.rs",
             supportingFiles: ["Cargo.toml": manifest, "Cargo.lock": lockfile],
-            edition: "2021", plan: offline.plan
+            edition: "2021", plan: offline.plan,
+            onDependencyProgress: { progress in print("TOKIO UNIT", Date(), progress) },
+            onStage: { stage in print("TOKIO STAGE", Date(), stage) }
         )
+        print("TOKIO COMPILER DURATION", result.duration)
         XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
         XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "tokio offline: 42")
     }
