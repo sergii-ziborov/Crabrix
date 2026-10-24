@@ -306,6 +306,35 @@
       downloads, and repository imports you ask for.
     </p>
 
+    <h2>Compiler acceleration: measured candidates, 25 October 2026</h2>
+    <p>
+      These measurements describe an experimental full-LTO compiler and a corrected
+      software-bounds interpreter path on iPhone 13 mini, iOS 26.5. They do not
+      describe the compiler currently bundled in the App Store version. Dependency
+      source archives were prepared before timing; every measured dependency artifact
+      was absent at the start. Compilation and execution took place on the phone.
+    </p>
+    <table>
+      <caption>Exact offline profiles under qualification</caption>
+      <thead><tr><th scope="col">Workload</th><th scope="col">Observed result</th><th scope="col">Scope</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Tokio 1.54.1</th><td>29.78 / 27.88 / 28.54 seconds</td><td>Three dependencies; defaults off, rt, sync, time and io-util. Timer, task and channel assertions passed. This is a small profile.</td></tr>
+        <tr><th scope="row">Axum 0.8.9 + Tower 0.5.2 + Tokio 1.54.1</th><td>126.29 seconds</td><td>22 dependencies; Axum defaults off. An in-memory request returned HTTP 200 and the expected body. No TCP server was started. Device thermal state changed from nominal to serious.</td></tr>
+        <tr><th scope="row">Large Tokio project / procedural macros</th><td>Still under development</td><td>The unchanged Kameo 0.22.2 graph has 32 packages. Its macro requirements and the 30-second large-project target are not yet satisfied.</td></tr>
+      </tbody>
+    </table>
+    <p>
+      Stop, memory refusal, borrow checking and Rust-generated web assets also
+      passed on the physical device with the candidate. Local HTML, CSS and
+      JavaScript previews remain supported; acceleration does not remove them.
+      Exact hashes, cache conditions and limitations are in the
+      <a href="https://github.com/sergii-ziborov/Crabrix/blob/codex/compiler-speed-20261024/docs/performance/2026-10-25-direct-emission.json">Tokio record</a>
+      and the
+      <a href="https://github.com/sergii-ziborov/Crabrix/blob/codex/compiler-speed-20261024/docs/performance/2026-10-25-axum.json">Axum record</a>.
+      The <a href="/guide/">illustrated user guide</a> explains preparation,
+      everyday workflows and the limits of the available environment.
+    </p>
+
     <h2>How to check any of this</h2>
     <p>
       App source and the current validation record are on

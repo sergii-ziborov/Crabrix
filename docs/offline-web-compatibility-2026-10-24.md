@@ -6,6 +6,18 @@ Crabrix 1.1.2 adds transparent package preparation, compilation-stage history, b
 
 The compiler remains `crabrix-rust-2026-10-02.1`, Rust `1.96.0-dev`, wasm32-wasip1. The runtime pin is `0689cc5df8b5b3f81ac5e9675cc3c22fe1b614f3`. No project sources are sent to a remote compiler.
 
+## October 25 compiler candidate follow-up
+
+The previously published results below describe the original signed compiler and runtime. The acceleration branch now pins runtime `7d0f6718597c1a1228efca3591ae91d13c6d569b`; the following physical results used its earlier qualified core at `2b97c92215dfc7580b627c87ce718c9348898baa` and the full-LTO compiler candidate (SHA-256 `8f1b313ccb59bf43546e36cfcdbd04dac9b5c8388a6ffec23efe2148564c17e6`). Neither candidate promotion nor App Store shipment is implied.
+
+- **Tokio 1.54.1**, defaults off, `rt,sync,time,io-util`: three cold, fully uncached dependency builds passed in **29.778 / 27.881 / 28.537 s** on iPhone 13 mini, iOS 26.5. This graph contains bytes, pin-project-lite and Tokio. It is not the large-project target.
+- **Axum 0.8.9**, defaults off, Tower 0.5.2 `util`, Tokio 1.54.1 `rt`: all **22 dependencies** were uncached. The offline in-memory request returned HTTP 200 and the expected body in **126.286 s**. No TCP listener was tested. Thermal state changed from nominal to serious. A subsequent small Tokio run at serious thermal state took **31.477 s**.
+- The same Axum session passed all three selected checks, including UI actor responsiveness. Highest phase-sampled physical footprint was approximately **764 MiB**; this is not a continuously measured peak. The first Axum attempt ended prematurely with no matching crash report; its root cause remains unconfirmed. The per-invocation autorelease-pool follow-up passed.
+- Rust web generation, Stop, memory refusal, wide integers and borrow-checking gates also passed on the physical device with the full-LTO candidate. Offline HTML/CSS/JavaScript support remains part of the source; the compiler experiments do not replace or remove it.
+- The unchanged **Kameo 0.22.2 / 32-package** graph and the **30-second large-project objective remain unmet**. The procedural-macro loader is experimental until actual unchanged macro and derive consumers pass. It is disabled in the signed production manifest.
+
+Machine-readable [Tokio](performance/2026-10-25-direct-emission.json) and [Axum](performance/2026-10-25-axum.json) records retain exact hashes, feature sets, cache conditions and limitations.
+
 ## Observed gates
 
 | Workload | Environment | Observed outcome |

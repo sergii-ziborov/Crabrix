@@ -1,3 +1,14 @@
+> Status verified through App Store Connect — 25 October 2026: **1.1.2 (75)**
+> is VALID, unexpired and **PENDING_DEVELOPER_RELEASE** (approved, awaiting
+> manual release). The acceleration/procedural-macro work is not in that binary.
+> New manual compiler-candidate runs are qualification jobs, not TestFlight
+> uploads. A replacement app archive and its review submission remain pending.
+> The current reviewer notes in `review-notes.txt` match Apple's saved notes
+> and describe the existing offline web lab, std-only build scripts and limits.
+> [Verified version/build status](../releases/status-2026-10-25.json).
+>
+> Earlier entries below are historical.
+
 > Delivery check — 21 October 2026: **1.1.1 (68)** is still the latest Apple
 > build, VALID, unexpired and IN_BETA_TESTING in Internal QA. App source,
 > resources, dependencies and build configuration are unchanged from its

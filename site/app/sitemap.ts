@@ -15,7 +15,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       ...(lessonModifiedDates[`${course.id}/${lesson.id}`] ? { lastModified: lessonModifiedDates[`${course.id}/${lesson.id}`] } : {}),
     }))),
   ]);
-  return [...paths.map((path) => ({ url: pageUrl(path) })), ...courseEntries,
+  const pageModifiedDates: Record<string, string> = {
+    guide: "2026-10-25", technology: "2026-10-25",
+  };
+  return [...paths.map((path) => ({ url: pageUrl(path),
+    ...(pageModifiedDates[path] ? { lastModified: pageModifiedDates[path] } : {}),
+  })), ...courseEntries,
     ...posts.map((post) => ({ url: pageUrl(`blog/${post.slug}`), lastModified: post.date,
       images: post.sections.flatMap((section) => section.image ? [new URL(section.image.src, pageUrl("/")).href] : []),
     })),

@@ -1,0 +1,134 @@
+{
+  "date": "2026-10-25",
+  "status": "physical candidate qualification; not shipped",
+  "device": "iPhone 13 mini / iOS 26.5 (23F77)",
+  "sourceRevision": "fc51ef3",
+  "runtimeRevision": "2b97c92215dfc7580b627c87ce718c9348898baa",
+  "compilerSHA256": "8f1b313ccb59bf43546e36cfcdbd04dac9b5c8388a6ffec23efe2148564c17e6",
+  "configuration": "Release",
+  "axum": {
+    "version": "0.8.9",
+    "defaultFeatures": false,
+    "towerFeatures": [
+      "util"
+    ],
+    "tokioFeatures": [
+      "rt"
+    ],
+    "dependencyCount": 22,
+    "dependencies": [
+      {
+        "name": "bytes",
+        "version": "1.12.1"
+      },
+      {
+        "name": "futures-core",
+        "version": "0.3.34"
+      },
+      {
+        "name": "itoa",
+        "version": "1.0.18"
+      },
+      {
+        "name": "http",
+        "version": "1.5.0"
+      },
+      {
+        "name": "http-body",
+        "version": "1.1.0"
+      },
+      {
+        "name": "pin-project-lite",
+        "version": "0.2.17"
+      },
+      {
+        "name": "http-body-util",
+        "version": "0.1.5"
+      },
+      {
+        "name": "mime",
+        "version": "0.3.17"
+      },
+      {
+        "name": "sync_wrapper",
+        "version": "1.0.2"
+      },
+      {
+        "name": "tower-layer",
+        "version": "0.3.3"
+      },
+      {
+        "name": "tower-service",
+        "version": "0.3.3"
+      },
+      {
+        "name": "axum-core",
+        "version": "0.5.6"
+      },
+      {
+        "name": "futures-task",
+        "version": "0.3.34"
+      },
+      {
+        "name": "slab",
+        "version": "0.4.12"
+      },
+      {
+        "name": "futures-util",
+        "version": "0.3.34"
+      },
+      {
+        "name": "matchit",
+        "version": "0.8.4"
+      },
+      {
+        "name": "memchr",
+        "version": "2.8.3"
+      },
+      {
+        "name": "percent-encoding",
+        "version": "2.3.2"
+      },
+      {
+        "name": "serde_core",
+        "version": "1.0.229"
+      },
+      {
+        "name": "tower",
+        "version": "0.5.2"
+      },
+      {
+        "name": "axum",
+        "version": "0.8.9"
+      },
+      {
+        "name": "tokio",
+        "version": "1.54.1"
+      }
+    ],
+    "compilerSeconds": 126.285982791,
+    "thermalBegin": "nominal",
+    "thermalEnd": "serious",
+    "allDependencyArtifactsUncached": true,
+    "outputVerified": "offline axum route: ok",
+    "httpStatusVerified": 200,
+    "bodyVerified": "Hello, Crabrix!",
+    "networkDuringCompilation": false,
+    "tcpServerTested": false
+  },
+  "session": {
+    "passed": 3,
+    "failed": 0,
+    "seconds": 168.74,
+    "resultBundle": "build/compiler-optimization-20261024/axum-memory-device.xcresult",
+    "highestPhaseSampledFootprintBytes": 801146592,
+    "followUpTokioSeconds": 31.477482208,
+    "followUpTokioThermal": "serious at both ends"
+  },
+  "limitations": [
+    "Axum default server features and procedural macros were not tested by this profile.",
+    "The 30-second large-project goal is unmet.",
+    "The first Axum attempt ended prematurely with test-runner exit code 0 and no matching crash report. Its root cause is unconfirmed; the per-invocation autorelease-pool follow-up passed.",
+    "Footprint is sampled at phase boundaries, not a continuous peak-memory measurement."
+  ]
+}

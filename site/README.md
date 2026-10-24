@@ -5,6 +5,16 @@ product pages, Blog, Learn, registration and Account. It now runs as a **Node.js
 server**, independently of GrantTap on Hetzner. Static export is no longer a
 production deployment option because Academy access is checked on the server.
 
+The 25 October guide revision adds a complete first-project walkthrough,
+package-state explanations, exact offline pinning steps, web editing and
+snapshot-refresh instructions, troubleshooting, and explicit resource limits.
+Its eight real product captures are preserved. Technology reports candidate
+Tokio/Axum measurements separately from the installed App Store compiler;
+procedural macros and the large-project speed target are still under qualification.
+Guide and Technology carry their actual 25 October modification date in the
+sitemap. The site retains 25 articles, 50 original blog images, all 742 lesson
+previews and the existing account gate.
+
 ## Development and checks
 
 Use Node.js 24. Copy `.env.example` to `.env.local` for localhost, then:
@@ -147,7 +157,7 @@ Ordinary pages end in a slash; dotted Atlas lesson IDs follow Next's
 extension-like URL rule and omit it, avoiding a redirect from sitemap URLs.
 
 The [HTML sitemap](https://crabrix.com/sitemap/) lists all seven courses, 742
-lessons and 25 articles. `/sitemap.xml` contains 785 canonical URLs and 40 public
+lessons and 25 articles. `/sitemap.xml` contains 785 canonical URLs and 50 public
 blog image URLs. Known editorial modification dates are retained for the ten
 corrected lessons and three courses; build time does not invent modification
 dates. Private lesson media and account routes are excluded. `sitemap.xml` at
