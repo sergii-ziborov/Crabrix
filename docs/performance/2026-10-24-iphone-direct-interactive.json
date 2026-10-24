@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-24",
+  "status": "experimental, not shipped",
+  "device": "iPhone 13 mini",
+  "hostConfiguration": "Release",
+  "xcode": "27.1 RC",
+  "runtimeRevision": "c4628141913160176dd11ced0bc6bfe42fee1f1f",
+  "compilerSHA256": "0286dc52064283ef78ba153a554d86ae742e6c8cd638aea8662e07d3529233fc",
+  "dispatch": "experimental direct, software memory bounds, fuel metered",
+  "runQoS": "userInitiated",
+  "observedQoSClass": 25,
+  "testSummary": {"executed": 3, "passed": 3, "failed": 0, "skipped": 0},
+  "cases": [
+    {
+      "name": "fresh responsiveness program",
+      "compilerSeconds": 1.875172541,
+      "testSeconds": 1.912,
+      "observedMainActorMaximumGapSeconds": 0.053469875,
+      "heartbeatCoverage": "first 1.5 seconds; subsequent gate extended to entire compilation",
+      "expectedOutput": "responsive run"
+    },
+    {
+      "name": "fresh Rust HTML/CSS/JS generator",
+      "compilerSeconds": 1.798628208,
+      "testSeconds": 1.825,
+      "verifiedAssets": ["index.html", "app.js", "styles.css"]
+    },
+    {
+      "name": "Tokio current-thread channels and timer",
+      "tokioVersion": "1.54.1",
+      "features": ["rt", "sync", "time", "io-util"],
+      "defaultFeatures": false,
+      "cachedDependencies": ["bytes 1.12.1", "pin-project-lite 0.2.17"],
+      "freshDependencies": ["tokio 1.54.1"],
+      "freshRootSource": true,
+      "frozenOfflineResolution": true,
+      "tokioGuestCompilationSeconds": 56.91404,
+      "rootGuestCompilationSeconds": 5.157636,
+      "compilerSeconds": 62.385338125,
+      "testSeconds": 65.106,
+      "expectedOutput": "tokio offline: 42"
+    }
+  ],
+  "limitations": [
+    "Not the large Kameo acceptance workload.",
+    "Not a complete cold dependency graph.",
+    "QoS and dispatch changed together; this run does not isolate their effects.",
+    "Does not meet the requested 30-second large-project target."
+  ]
+}

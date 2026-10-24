@@ -5,10 +5,13 @@ import XCTest
 @testable import Crabrix
 
 final class BundledCompilerGateTests: XCTestCase {
-    private func measuredCompiler() -> WasmRustCompiler {
-        let direct = ProcessInfo.processInfo.environment["CRABRIX_EXPERIMENTAL_DIRECT_GATE"] == "1"
+    private func measuredCompiler(dependencyArtifactRoot: URL? = nil,
+                                  experimentalDirectOverride: Bool? = nil) -> WasmRustCompiler {
+        let direct = experimentalDirectOverride
+            ?? (ProcessInfo.processInfo.environment["CRABRIX_EXPERIMENTAL_DIRECT_GATE"] == "1")
         print("MEASURED COMPILER DISPATCH", direct ? "experimental-direct" : "production-token")
-        return WasmRustCompiler(runtime: RustcRuntime(experimentalSoftwareDirect: direct))
+        return WasmRustCompiler(runtime: RustcRuntime(experimentalSoftwareDirect: direct),
+                                dependencyArtifactRoot: dependencyArtifactRoot)
     }
     private var previousIdleTimerDisabled: Bool?
 
@@ -224,6 +227,23 @@ final class BundledCompilerGateTests: XCTestCase {
 
     func testTokioCurrentThreadTimersAndChannelsRunOffline() async throws {
         try Self.requireCompilerGate()
+        let cold = ProcessInfo.processInfo.environment["CRABRIX_COLD_DEPENDENCY_GATE"] == "1"
+        try await runTokioOfflineProbe(cold: cold)
+    }
+
+    func testTokioColdDispatchComparison() async throws {
+        try Self.requireCompilerGate()
+        try XCTSkipIf(ProcessInfo.processInfo.environment["CRABRIX_RUN_COLD_COMPARISON"] != "1")
+        for direct in [false, true] {
+            try await runTokioOfflineProbe(cold: true, experimentalDirectOverride: direct)
+        }
+    }
+
+    private func runTokioOfflineProbe(cold: Bool, experimentalDirectOverride: Bool? = nil) async throws {
+        let artifacts = cold ? FileManager.default.temporaryDirectory
+            .appending(path: "ColdTokioArtifacts-\(UUID())", directoryHint: .isDirectory) : nil
+        defer { if let artifacts { try? FileManager.default.removeItem(at: artifacts) } }
+        print("TOKIO ARTIFACT MODE", cold ? "isolated-empty" : "existing-app-cache")
         let manifest = """
         [package]
         name = "tokio-offline-gate"
@@ -261,11 +281,15 @@ final class BundledCompilerGateTests: XCTestCase {
             });
         }
         """
-        let result = await measuredCompiler().run(
+        let result = await measuredCompiler(dependencyArtifactRoot: artifacts,
+                                            experimentalDirectOverride: experimentalDirectOverride).run(
             source: source, sourcePath: "src/main.rs",
             supportingFiles: ["Cargo.toml": manifest, "Cargo.lock": lockfile],
             edition: "2021", plan: offline.plan,
-            onDependencyProgress: { progress in print("TOKIO UNIT", Date(), progress) },
+            onDependencyProgress: { progress in
+                print("TOKIO UNIT", Date(), progress)
+                if cold { XCTAssertFalse(progress.wasCached, "Cold compiler gate reused a dependency artifact") }
+            },
             onStage: { stage in print("TOKIO STAGE", Date(), stage) }
         )
         print("TOKIO COMPILER DURATION", result.duration)

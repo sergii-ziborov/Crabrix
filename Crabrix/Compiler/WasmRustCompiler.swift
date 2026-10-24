@@ -36,6 +36,7 @@ final class WasmRustCompiler: @unchecked Sendable {
     private let bundle: Bundle
     private let ledger: CrateCompatibilityLedger
     private let runtime: RustcRuntime
+    private let dependencyArtifactRoot: URL?
     // The interpreter runs on its own serial queue. Explicit Run work receives
     // userInitiated QoS; background checks retain utility QoS.
     private let queue = DispatchQueue(
@@ -54,10 +55,11 @@ final class WasmRustCompiler: @unchecked Sendable {
     private var memoryWarningObserver: NSObjectProtocol?
 
     init(bundle: Bundle = .main, ledger: CrateCompatibilityLedger = .shared,
-         runtime: RustcRuntime = RustcRuntime()) {
+         runtime: RustcRuntime = RustcRuntime(), dependencyArtifactRoot: URL? = nil) {
         self.bundle = bundle
         self.ledger = ledger
         self.runtime = runtime
+        self.dependencyArtifactRoot = dependencyArtifactRoot
         memoryWarningObserver = NotificationCenter.default.addObserver(
             forName: UIApplication.didReceiveMemoryWarningNotification,
             object: nil,
@@ -1009,7 +1011,7 @@ final class WasmRustCompiler: @unchecked Sendable {
     }
 
     private var artifactsDirectory: URL? {
-        CrateStorageLayout.artifactDirectory?
+        (dependencyArtifactRoot ?? CrateStorageLayout.artifactDirectory)?
             .appending(path: Self.toolchainVersion, directoryHint: .isDirectory)
             .appending(path: CargoFingerprint.schemaVersion, directoryHint: .isDirectory)
     }
