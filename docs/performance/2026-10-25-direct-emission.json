@@ -63,9 +63,52 @@
   "allMatchedOutputsIdentical": true,
   "limitations": [
     "Host timing ranges overlap under concurrent desktop activity; no demonstrated host speedup.",
-    "Physical qualification pending.",
+    "One physical sample below 30 seconds for the selected small graph; repeats are a separate gate.",
     "Kameo unchanged 32-package graph and 30-second large-project target remain unmet."
   ],
   "oldCLISHA256": "44a3d2fc694874f1f8760ab0d1195d7afdf55a95c807623dd747c81f7f92d0a9",
-  "newCLISHA256": "b9d9dd7fd0a3c0412b8cde30efd7f5db594adf3672adbd2587200d6f88c35041"
+  "newCLISHA256": "b9d9dd7fd0a3c0412b8cde30efd7f5db594adf3672adbd2587200d6f88c35041",
+  "physicalGate": {
+    "status": "passed",
+    "passedTests": 6,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "device": "iPhone 13 mini / iOS 26.5 (23F77)",
+    "resultBundle": "build/compiler-optimization-20261024/direct-emission-device.xcresult",
+    "snapshotSourceRevision": "7c0bbf1f14d4e146be40cb93b9a1e0d499b10ca8",
+    "compilerSeconds": 29.778262166,
+    "thermalBegin": "fair",
+    "thermalEnd": "fair",
+    "selectedFeatures": [
+      "rt",
+      "sync",
+      "time",
+      "io-util"
+    ],
+    "coldDependencies": [
+      "bytes 1.12.1",
+      "pin-project-lite 0.2.17",
+      "tokio 1.54.1"
+    ],
+    "allDependenciesAssertedUncached": true,
+    "rootSourceFreshUUID": true,
+    "outputVerified": "tokio offline: 42",
+    "responsiveness": {
+      "maximumGapSeconds": 0.053588583,
+      "compilerSeconds": 1.303973209,
+      "coverage": "whole compilation"
+    },
+    "webGeneratorCompilerSeconds": 1.296359333,
+    "cancelTestSeconds": 0.223,
+    "userProgramMemoryLimit": "64 MiB enforced",
+    "signedSysrootSmoke": "Original and full-LTO compiler passed compilation, execution, wide integer and E0502 checks",
+    "coldFollowUp": {
+      "status": "waiting for device unlock",
+      "statusObservedUTC": "2026-10-24T22:57:17.633713+00:00",
+      "requestedRepetitions": 2,
+      "sameProcess": true,
+      "resultBundle": "build/compiler-optimization-20261024/direct-emission-cold-repeat-device.xcresult",
+      "noPassedResultYet": true
+    }
+  }
 }

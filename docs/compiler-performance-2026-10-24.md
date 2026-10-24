@@ -253,8 +253,15 @@ including 179 instruction scripts and saved translator fuzz regressions.
 
 Four matched `bytes` compilations produced identical rlibs. Old-runtime wall
 times were 28.621/16.132 s and new-runtime times 20.425/10.769 s under concurrent
-desktop work; their ranges overlap, so this does not establish a speedup. A
-separate physical build is being qualified with the same full-LTO compiler.
+desktop work; their ranges overlap, so this does not establish a speedup.
+The subsequent physical gate passed **6/6 tests**, with no skips. The same
+isolated cold Tokio profile took **29.778 s**, with all three dependencies
+asserted uncached and output verified; thermal state was fair at both ends.
+This is one sub-30-second observation of the selected smaller graph, not the
+large Kameo workload or a stability guarantee. Main-actor maximum gap was
+53.59 ms across the complete compile, the web generator took 1.296 s, Stop
+passed in 0.223 s, and the 64 MiB program-memory limit was enforced. Both
+original and full-LTO compilers passed the signed-sysroot/i128/E0502 smoke.
 See [emission evidence](performance/2026-10-25-direct-emission.json).
 
 ### Build-host signature verification

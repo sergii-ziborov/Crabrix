@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-25",
+  "status": "prerequisite research; macros not supported, not shipped",
+  "rustSourceRevision": "abc48c0b8aba37d3f3862a9d5c76eb4e78f90e88",
+  "compilerSHA256": "8f1b313ccb59bf43546e36cfcdbd04dac9b5c8388a6ffec23efe2148564c17e6",
+  "sysrootModified": false,
+  "nativeFixture": "passed, macro identity: 42",
+  "wasiFixture": {
+    "status": "failed",
+    "exitCode": 1,
+    "outputExists": false,
+    "diagnostics": [
+      "unsupported proc-macro crate type",
+      "E0463: missing proc_macro library",
+      "proc_macro attribute requires proc-macro crate type"
+    ]
+  },
+  "literalEscaperArchiveSHA256": "8be87abb9e40db7466e0681dc8ecd9dcfd40360cb10b4c8fe24a7c4c3669b198",
+  "libraryBuilds": [
+    {
+      "crate": "rustc_literal_escaper",
+      "exitCode": 0,
+      "seconds": 2.2016667500138283,
+      "outputExists": true,
+      "rlibSHA256": "eb011d2cead2d629aa46c97f27d2d6468e8ce516b9426e236b6093e6fb7f6b08",
+      "rlibBytes": 81512
+    },
+    {
+      "crate": "proc_macro",
+      "exitCode": 0,
+      "seconds": 16.330727957887575,
+      "outputExists": true,
+      "rlibSHA256": "caf70afc48819e7cbbe678cda4c62029bdd59655c3baae234ebfce2a2447c59b",
+      "rlibBytes": 2069412
+    }
+  ],
+  "limitations": [
+    "These rlibs do not implement the macro loader or bridge.",
+    "No Kameo run or large-project speed claim."
+  ],
+  "libraryAvailabilitySmoke": {
+    "compileExitCode": 0,
+    "compileSeconds": 8.227204875089228,
+    "outsideBridgeOnly": true,
+    "runExitCode": 0,
+    "stdout": "proc_macro outside bridge: false"
+  }
+}
