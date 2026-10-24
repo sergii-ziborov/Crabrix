@@ -221,9 +221,11 @@ Both compiler variants passed signed-sysroot, execution, i128 and E0502 tests;
 Stop and the 64 MiB program-memory limit also passed. The first responsiveness
 case observed a **401.54 ms** main-actor gap, below its 500 ms gate but larger
 than the preceding 53.49 ms observation. Its cause is not established. Two
-same-process repetitions are prepared and currently waiting at the iPhone
-unlock preflight, rather than being reported as passed. No production switch
-is made based on this uninvestigated observation.
+same-process follow-ups on the phone subsequently passed: maximum gaps were
+**53.51 ms** and **53.46 ms**, across complete 1.236 s and 1.097 s compilations.
+The 401.54 ms observation was not reproduced; its cause is still unknown.
+These are responsiveness checks on a small input, not large-project speed
+measurements or a production promotion.
 
 Manual Cloud 78 built the full-LTO compiler in **1199.96 s**, producing
 79,051,505 bytes with SHA256

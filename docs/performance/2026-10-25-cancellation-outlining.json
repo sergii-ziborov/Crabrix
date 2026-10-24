@@ -99,7 +99,25 @@
       "maximumGapSeconds": 0.401544916,
       "compilerSeconds": 1.25193075,
       "passed500msGate": true,
-      "caution": "Larger first-launch gap than prior session; repeat being checked."
+      "caution": "Initial 401.54 ms gap was not reproduced in two same-process follow-ups; its cause is not established.",
+      "followUp": {
+        "status": "passed",
+        "testRuns": 2,
+        "failedTests": 0,
+        "sameProcess": true,
+        "compilerSHA256": "8f1b313ccb59bf43546e36cfcdbd04dac9b5c8388a6ffec23efe2148564c17e6",
+        "resultBundle": "build/compiler-optimization-20261024/outlined-fat-heartbeat-device.xcresult",
+        "samples": [
+          {
+            "maximumGapSeconds": 0.053508208,
+            "compilerSeconds": 1.236132708
+          },
+          {
+            "maximumGapSeconds": 0.053463916,
+            "compilerSeconds": 1.09698775
+          }
+        ]
+      }
     },
     "cancelTestSeconds": 0.294,
     "memoryLimit": "64 MiB enforced",
