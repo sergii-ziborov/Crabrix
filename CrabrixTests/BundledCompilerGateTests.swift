@@ -1,4 +1,5 @@
 import Foundation
+import Darwin
 import UIKit
 import XCTest
 @testable import Crabrix
@@ -43,6 +44,35 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertEqual(preview.entryPath, "index.html")
         XCTAssertNotNil(preview.assets["app.js"])
         XCTAssertNotNil(preview.assets["styles.css"])
+    }
+
+    @MainActor
+    func testRunKeepsMainActorResponsiveAtUserInitiatedPriority() async throws {
+        try Self.requireCompilerGate()
+        let compiler = measuredCompiler()
+        let source = "// fresh responsiveness probe \(UUID())\nfn main() { println!(\"responsive run\"); }"
+        let clock = ContinuousClock()
+        let task = Task {
+            await compiler.run(source: source, onStage: { stage in
+                XCTAssertFalse(Thread.isMainThread)
+                XCTAssertGreaterThanOrEqual(qos_class_self().rawValue, QOS_CLASS_USER_INITIATED.rawValue)
+                print("INTERACTIVE RUN STAGE", Date(), stage, "qos", qos_class_self().rawValue)
+            })
+        }
+        var previous = clock.now
+        var longestGap = Duration.zero
+        for _ in 0..<30 {
+            try await Task.sleep(for: .milliseconds(50))
+            let now = clock.now
+            longestGap = max(longestGap, previous.duration(to: now))
+            previous = now
+        }
+        let result = await task.value
+        print("INTERACTIVE MAIN ACTOR MAX GAP", longestGap)
+        print("INTERACTIVE RUN DURATION", result.duration)
+        XCTAssertLessThan(longestGap, .milliseconds(500), "Compilation stalled the UI actor")
+        XCTAssertTrue(result.succeeded, result.detail + "\n" + result.stderr)
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "responsive run")
     }
 
     func testProjectBuildScriptTracksInputsAndExposesGeneratedCodeAndCfg() async throws {

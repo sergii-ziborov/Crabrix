@@ -36,8 +36,8 @@ final class WasmRustCompiler: @unchecked Sendable {
     private let bundle: Bundle
     private let ledger: CrateCompatibilityLedger
     private let runtime: RustcRuntime
-    // rustc runs synchronously inside the Wasm interpreter. Keep that CPU-heavy work
-    // below the UI's QoS so scrolling, navigation, and animations stay responsive.
+    // The interpreter runs on its own serial queue. Explicit Run work receives
+    // userInitiated QoS; background checks retain utility QoS.
     private let queue = DispatchQueue(
         label: "com.sergiiziborov.Crabrix.compiler",
         qos: .utility,
@@ -194,7 +194,8 @@ final class WasmRustCompiler: @unchecked Sendable {
         onStage: (@Sendable (String) -> Void)?
     ) async -> CompilationResult {
         await withCheckedContinuation { continuation in
-            queue.async { [self] in
+            queue.async(qos: action == .run ? .userInitiated : .utility,
+                        flags: .enforceQoS) { [self] in
                 assert(!Thread.isMainThread, "Bundled rustc must never execute on the UI thread")
                 continuation.resume(
                     returning: execute(

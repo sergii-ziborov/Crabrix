@@ -34,4 +34,30 @@ Local logs and result bundles are under `build/compiler-optimization-20261024/` 
 
 The locked source selects upstream `profile = "compiler"`, whose contributor defaults explicitly enable debug assertions/logging and frame pointers and disable LTO. The root's `rust.debug = false` does not cancel these independently set fields. The toolchain repository now has a candidate-only `--performance-profile` path on branch `codex/compiler-performance-profile-20261024` (commit `b728d6b`), with recorded raw profile/default merges and explicit overrides. Locked production rebuild behavior remains unchanged. This is a prepared recipe, not a rebuilt or timed compiler artifact.
 
-The controlled builder requires Linux x86_64, 8 GiB RAM and 30 GiB free disk. This Mac currently has about 12 GiB free; no old source or build snapshots were deleted to satisfy the resource gate. The new signed Release test host compiled successfully; the experimental iPhone run is waiting at Xcode's device-unlock preflight.
+The controlled builder requires Linux x86_64, 8 GiB RAM and 30 GiB free disk. No old source or build snapshots were deleted to satisfy the resource gate.
+
+## Active Run scheduling and separate compiler build
+
+Explicit Run operations now request `userInitiated` QoS on the existing serial
+compiler queue. Background checks retain `utility`. This does not move guest
+execution to the main actor or guarantee a particular CPU core. The new physical
+gate checks effective worker QoS, main-actor heartbeats and actual program output.
+Its signed Release test host builds successfully. Device execution is pending
+the unlock preflight; there is no timing claim for this change yet.
+
+The toolchain repository's `5b2f3d0` adds a separate **compiler-only macOS
+candidate** recipe so an ephemeral Xcode Cloud Mac can build the optimized WASI
+compiler without the local disk constraint. Inputs remain pinned: Rust source,
+four patches, source stage0 manifest and native WASI SDK SHA-256. It builds stage
+1 rustc with Cranelift and the explicit performance profile. This experiment
+does not change the controlled Linux production recipe or package a new sysroot.
+
+The app's manual **Compiler performance candidate (manual)** workflow
+(`dacd787e-9b39-45b8-9776-03b4de0aa930`) has one test action and no automatic
+triggers, archives or distribution. The generated compiler is copied only into
+the XCTest resource bundle. A dedicated test retains compiler/provenance
+attachments, verifies their digest and requires compilation, execution, checked
+wide-integer operations and E0502 diagnostics with the signed target sysroot.
+Cloud's correctness test uses its normal Debug host; iPhone performance must
+subsequently use the Release host. These are prepared gates, not evidence of a
+successful compiler rebuild or device speedup.

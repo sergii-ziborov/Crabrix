@@ -11,4 +11,10 @@ for dependency in xcodegen zstd; do
 done
 
 cd "${CI_PRIMARY_REPOSITORY_PATH:?Xcode Cloud checkout path is required}"
+if [[ "${CI_WORKFLOW:-}" == 'Compiler performance candidate (manual)' ]]; then
+  if ! brew list --versions python@3.13 >/dev/null 2>&1; then
+    brew install python@3.13
+  fi
+  /bin/bash ./scripts/build_cloud_compiler_candidate.sh
+fi
 ./scripts/bootstrap.sh

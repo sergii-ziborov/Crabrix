@@ -29,6 +29,7 @@
 		1D8F90248920034745A225EE /* SyntaxHighlighterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F45E02B45E3816073DFEB4F9 /* SyntaxHighlighterTests.swift */; };
 		1E5433F76A97D28EA47F967C /* CargoBuildScriptTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AA225CF00A922F2C203C36A /* CargoBuildScriptTests.swift */; };
 		1EC809E8091D8D3CB0254E43 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78CFC64D85AAA456A17738E /* ShareViewController.swift */; };
+		1F5C8B80757D5C47EFD7FF2F /* CompilerCandidate in Resources */ = {isa = PBXBuildFile; fileRef = DC7C9CD390E44F6849E4DB3B /* CompilerCandidate */; };
 		217381B5FF3494BAA7C62902 /* CrateRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04782359670767CDBCFF020E /* CrateRegistry.swift */; };
 		219FD4C86900490F7BCC947F /* CrateStorageUsageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5F8A0A5C96A9EDE1C43DA16 /* CrateStorageUsageTests.swift */; };
 		2325740CAF2FEF917DDC3453 /* CrateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E25647259ABABE1E3D1288 /* CrateStore.swift */; };
@@ -99,6 +100,7 @@
 		66974FCE7E791A4C93663C4F /* LessonQuestionAuditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9346B714527C322992CCB12D /* LessonQuestionAuditTests.swift */; };
 		67D60A5B69DCD830E71A841F /* SyntaxCodeEditorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7037316586E8A8B02149446 /* SyntaxCodeEditorTests.swift */; };
 		6890911F1854860830A6ABFF /* catalog.v1.json in Resources */ = {isa = PBXBuildFile; fileRef = D6DDAE274BAAA1B1AE274F71 /* catalog.v1.json */; };
+		68995E50E19956EA7B73B2A2 /* CompilerCandidateGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A457B5013D3B070938FFD49B /* CompilerCandidateGateTests.swift */; };
 		694DE3A0A05252A69304469D /* CratePackageManifestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00CAF54248F14F3CBC57F350 /* CratePackageManifestTests.swift */; };
 		6BBD5C04346591FFB21BB971 /* RustLessonContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB010148795840226D61C11F /* RustLessonContent.swift */; };
 		6C43878795EAF9FFF78792F6 /* LicensesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A248CC4AF57D9B4C55C1F3BF /* LicensesView.swift */; };
@@ -405,6 +407,7 @@
 		A248CC4AF57D9B4C55C1F3BF /* LicensesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicensesView.swift; sourceTree = "<group>"; };
 		A37FC36E7B204A530E6C9FD5 /* WasmKit-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "WasmKit-LICENSE.txt"; sourceTree = "<group>"; };
 		A42F9E4CE0ACDDFFC8ABDE3C /* BorrowExplanation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BorrowExplanation.swift; sourceTree = "<group>"; };
+		A457B5013D3B070938FFD49B /* CompilerCandidateGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompilerCandidateGateTests.swift; sourceTree = "<group>"; };
 		A4BBA0B03501D7E47698809C /* RustLessonProgression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustLessonProgression.swift; sourceTree = "<group>"; };
 		A7037316586E8A8B02149446 /* SyntaxCodeEditorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntaxCodeEditorTests.swift; sourceTree = "<group>"; };
 		A76DBA48FF3AB4A818F7811D /* InstalledCourseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledCourseRepository.swift; sourceTree = "<group>"; };
@@ -451,6 +454,7 @@
 		D78CFC64D85AAA456A17738E /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		D9DCC4288BCBC22B167ACD45 /* RustCourseCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustCourseCatalog.swift; sourceTree = "<group>"; };
 		DB2D37D461D0EDF4F84DD855 /* ProjectTerminalSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectTerminalSession.swift; sourceTree = "<group>"; };
+		DC7C9CD390E44F6849E4DB3B /* CompilerCandidate */ = {isa = PBXFileReference; lastKnownFileType = folder; name = CompilerCandidate; path = CrabrixTests/CompilerCandidate; sourceTree = SOURCE_ROOT; };
 		DCA31C6F7A431A34679A02D8 /* swift-argument-parser-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-argument-parser-LICENSE.txt"; sourceTree = "<group>"; };
 		DD24012B04FBCFF20EABAE25 /* ProjectLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectLibrary.swift; sourceTree = "<group>"; };
 		DEC4EF2B443C45CE8BFF5FBD /* CourseCompatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseCompatibility.swift; sourceTree = "<group>"; };
@@ -739,6 +743,8 @@
 				3837839E6347618EB4FA6AAF /* CargoRegistryAndPlanTests.swift */,
 				E59CCACF0B58534D0C509F99 /* CargoResolverTests.swift */,
 				CB910906AEB3103C7C9E6F7D /* CodeContributionTests.swift */,
+				DC7C9CD390E44F6849E4DB3B /* CompilerCandidate */,
+				A457B5013D3B070938FFD49B /* CompilerCandidateGateTests.swift */,
 				5B1EB6F0B52A3B0F7E5BF901 /* CompilerPerformanceProbeTests.swift */,
 				6CFF7795F63D1B35CF6A62BE /* CourseBootstrapTests.swift */,
 				D376BDE5EA96F1A57F8E37A5 /* CourseDeliveryGateTests.swift */,
@@ -1089,6 +1095,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1F5C8B80757D5C47EFD7FF2F /* CompilerCandidate in Resources */,
 				941AB2C020E1F2182752CD3A /* basics-1.0.1.zip in Resources */,
 				15911FD867B868D0B48AE299 /* basics.descriptor.json in Resources */,
 				6890911F1854860830A6ABFF /* catalog.v1.json in Resources */,
@@ -1273,6 +1280,7 @@
 				731E86AC6C2DF5E0CB922563 /* CargoRegistryAndPlanTests.swift in Sources */,
 				998B333FB9F8378B69B146E1 /* CargoResolverTests.swift in Sources */,
 				B2B58EF9F6DC6F1DD9B877DA /* CodeContributionTests.swift in Sources */,
+				68995E50E19956EA7B73B2A2 /* CompilerCandidateGateTests.swift in Sources */,
 				6485A82B3806F2CE516750D5 /* CompilerPerformanceProbeTests.swift in Sources */,
 				EF101C40AFF5C8D91F8EA769 /* CourseBootstrapTests.swift in Sources */,
 				64A1C94A72855F01414C8548 /* CourseDeliveryGateTests.swift in Sources */,

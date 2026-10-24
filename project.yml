@@ -180,6 +180,11 @@ targets:
     platform: iOS
     sources:
       - path: CrabrixTests
+        excludes:
+          - CompilerCandidate
+      - path: CrabrixTests/CompilerCandidate
+        type: folder
+        buildPhase: resources
     dependencies:
       - target: Crabrix
     settings:
@@ -318,6 +323,7 @@ schemes:
       targets:
         - name: CrabrixTests
           selectedTests:
+            - BundledCompilerGateTests/testRunKeepsMainActorResponsiveAtUserInitiatedPriority()
             - BundledCompilerGateTests/testTokioCurrentThreadTimersAndChannelsRunOffline()
             - BundledCompilerGateTests/testSerdeJSONBuildScriptRunsInsideTheOfflineWASISandbox()
             - OfflineWebPreviewTests
@@ -352,6 +358,21 @@ schemes:
             - BundledCompilerGateTests/testVisualTerrainRendersAValidatedCanvas()
             - BundledCompilerGateTests/testVisualColorWavesRendersAValidatedCanvas()
             - BundledCompilerGateTests/testVisualCreateTemplateRendersAValidatedCanvas()
+
+  CrabrixCompilerCandidateGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+    test:
+      gatherCoverageData: false
+      environmentVariables:
+        CRABRIX_RUN_COMPILER_CANDIDATE: "1"
+        CRABRIX_PERF_TRACE: "1"
+      targets:
+        - name: CrabrixTests
+          selectedTests:
+            - CompilerCandidateGateTests
 
   CrabrixCourseDeliveryGate:
     build:

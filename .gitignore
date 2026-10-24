@@ -14,3 +14,4 @@ Crabrix/Resources/Toolchain/.stage.*/
 node_modules/
 __pycache__/
 *.pyc
+CrabrixTests/CompilerCandidate/Artifact/
