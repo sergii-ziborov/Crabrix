@@ -277,7 +277,7 @@
           <tr><td>Registry</td><td>crates.io sparse index, archive checksum verified before source is extracted or trusted</td></tr>
           <tr><td>Dependency source</td><td>Completely viewable in the app; <strong>Vendor &amp; Edit</strong> copies it into your project and compiles your patched copy</td></tr>
           <tr><td>Offline</td><td>Cached graphs rebuild with no network; <strong>Pin for Offline</strong> keeps the exact verified archives after iOS purges its caches</td></tr>
-          <tr><td>Build scripts (<code>build.rs</code>)</td><td>Not executed</td></tr>
+          <tr><td>Build scripts (<code>build.rs</code>)</td><td>Std-only WASI scripts execute locally with bounded output and a writable OUT_DIR. Host subprocesses, native linking and independent build-dependency graphs are unsupported.</td></tr>
           <tr><td>Procedural macros</td><td>Not supported — they need a host compiler the app does not bundle</td></tr>
           <tr><td>Native C or system libraries</td><td>Not supported; there is no native linker for this target</td></tr>
         </tbody>

@@ -7,7 +7,7 @@ import { lessonModifiedDates, courseModifiedDates } from "@/lib/lesson-seo";
 export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const paths = ["", "about", "technology", "support", "privacy", "terms", "licenses", "learn", "blog", "sitemap"];
+  const paths = ["", "about", "technology", "support", "privacy", "terms", "licenses", "learn", "blog", "guide", "sitemap"];
   const courseEntries = courseSnapshot().courses.flatMap((course) => [
     { url: pageUrl(`learn/${course.id}`), ...(courseModifiedDates[course.id] ? { lastModified: courseModifiedDates[course.id] } : {}) },
     ...course.units.flatMap((unit) => unit.lessons.map((lesson) => ({

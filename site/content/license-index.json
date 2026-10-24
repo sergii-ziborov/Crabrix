@@ -1,5 +1,13 @@
 [
   {
+    "id": "highlight.js",
+    "name": "highlight.js 11.12.0",
+    "summary": "Ivan Sagalaev and contributors \u00b7 BSD-3-Clause",
+    "documents": [
+      "highlight.js-LICENSE"
+    ]
+  },
+  {
     "id": "Rust",
     "name": "Rust compiler and standard library",
     "summary": "The Rust Project Contributors \u00b7 Apache-2.0 or MIT, at your option",

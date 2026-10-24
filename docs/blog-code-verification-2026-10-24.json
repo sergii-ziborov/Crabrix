@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-24",
+  "scope": "Host rustc examples; not physical-iPhone compatibility evidence",
+  "examples": [
+    {
+      "source": "docs/blog-examples/2026-10-24/futures.rs",
+      "sha256": "a5d4f39dfaad2931ea2c7faafbbaeb6be1d3fc29bd5ed607836645dfde6b5b73",
+      "hostCompiled": true,
+      "hostAssertionsPassed": true
+    },
+    {
+      "source": "docs/blog-examples/2026-10-24/arena.rs",
+      "sha256": "8248847a4a6ead0421548e5894a28b56bc7a9366f2d13bdf7cb8dc4488479839",
+      "hostCompiled": true,
+      "hostAssertionsPassed": true
+    },
+    {
+      "source": "docs/blog-examples/2026-10-24/graph.rs",
+      "sha256": "c110c0504db860329266521d6e15140474745be318cd70167bc0078d0d3f7042",
+      "hostCompiled": true,
+      "hostAssertionsPassed": true
+    },
+    {
+      "source": "docs/blog-examples/2026-10-24/progress.rs",
+      "sha256": "796e4dbffc535b44f913eca5b9a6288ec807bc49d91dbdb7b803afe2803d5017",
+      "hostCompiled": true,
+      "hostAssertionsPassed": true
+    },
+    {
+      "source": "docs/blog-examples/2026-10-24/web.rs",
+      "sha256": "16173cabde3c711d35b859b844e7ecf5c3becbba15f71fcdca5c074a42aff008",
+      "hostCompiled": true,
+      "hostAssertionsPassed": true
+    }
+  ]
+}

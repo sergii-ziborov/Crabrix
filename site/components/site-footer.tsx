@@ -8,6 +8,7 @@ export function SiteFooter() {
         <nav aria-label="Footer navigation">
           <Link href="/learn">Learn</Link>
           <Link href="/blog">Blog</Link>
+          <Link href="/guide/">User guide</Link>
           <Link href="/sitemap/">Sitemap</Link>
           <Link href="/about">About</Link>
           <Link href="/technology">Technology</Link>

@@ -1,0 +1,141 @@
+{
+  "date": "2026-10-24",
+  "tool": "built-in image_gen",
+  "posts": [
+    {
+      "slug": "crabrix-offline-rust-web-preview",
+      "date": "2026-10-24",
+      "proseWords": 2608,
+      "images": [
+        {
+          "src": "/blog/crabrix-offline-web-editorial.png",
+          "alt": "A coral crab arranges HTML, CSS and JavaScript cards beside a small press that turns a Rust block into a web page.",
+          "caption": "A generated page is an ordinary set of local assets. Rust produces them; a browser supplies layout and interaction.",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "4f5f274ec607d34f15d29ea2847a5ba31826f0343b50d522178783af5f9cfc14",
+          "bytes": 2446839,
+          "visuallyChecked": true
+        },
+        {
+          "src": "/blog/crabrix-offline-web-infographic.png",
+          "alt": "Rust passes through the bundled compiler and WASI program to generated assets; direct web files and generated assets converge on an immutable offline WebKit preview.",
+          "caption": "The preview receives a bounded asset snapshot, and its external network is blocked. The drawing makes no performance claim.",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "842d16df903ce85bb7b06a3b349e1a387b1338e0ac248e1c30a544acaaa8fc80",
+          "bytes": 2243102,
+          "visuallyChecked": true
+        }
+      ]
+    },
+    {
+      "slug": "rust-dependency-graphs-deterministic-plans",
+      "date": "2026-10-08",
+      "proseWords": 2723,
+      "images": [
+        {
+          "src": "/blog/rust-dependency-plans-editorial.png",
+          "alt": "Ivory task blocks on a navy engineering board form a jade branching dependency graph beside a separate coral triangular cycle.",
+          "caption": "A useful plan describes dependency readiness and distinguishes an actual cycle from the work waiting behind it.",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "76b6471d429f20b893a37d988994942c4b21ea1c2b86a4bbab94f4d939eade1a",
+          "bytes": 2209770,
+          "visuallyChecked": true
+        },
+        {
+          "src": "/blog/rust-dependency-plans-infographic.png",
+          "alt": "A dependency readiness trace shows config enabling core and core enabling cli and web; a separate cycle a-b blocks c without placing c in the cycle.",
+          "caption": "Arrows in the readiness example mean enables. The cycle witness uses depends-on edges and names only the nodes on the closed walk.",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "6d12a8efb83d1f9a948f116b49fa5cad509906db8e888d049ea498efe266ee38",
+          "bytes": 1436396,
+          "visuallyChecked": true
+        }
+      ]
+    },
+    {
+      "slug": "rust-generational-handles-stable-identity",
+      "date": "2026-10-07",
+      "proseWords": 2726,
+      "images": [
+        {
+          "src": "/blog/rust-generational-handles-editorial.png",
+          "alt": "An old coral identification tag lies apart from a brass specimen rack where an ivory tray now contains a new jade specimen.",
+          "caption": "A reused position is not the same object. A handle needs enough identity to tell those cases apart.",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "f0c1e20cd2c1271ab143762a02bf3761a42e6f56c29de8ed3501221d71ff90d5",
+          "bytes": 2224844,
+          "visuallyChecked": true
+        },
+        {
+          "src": "/blog/rust-generational-handles-infographic.png",
+          "alt": "A three-stage slot lifecycle shows generation 4 holding A, removal advancing to 5, and reuse by B; an old generation-4 handle is rejected.",
+          "caption": "Lookup compares owner, slot and generation. An empty slot at the maximum generation is retired instead of wrapping.",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "ddf32707b123d6023615348917e6e73fc28c6eb13b756a1cfe4b91d0b9845f61",
+          "bytes": 1469641,
+          "visuallyChecked": true
+        }
+      ]
+    },
+    {
+      "slug": "rust-futures-cooperative-work",
+      "date": "2026-10-06",
+      "proseWords": 2676,
+      "images": [
+        {
+          "src": "/blog/rust-futures-editorial.png",
+          "alt": "Three jade computation capsules on separate brass tracks pause at gates in a dark observatory workshop.",
+          "caption": "Cooperation requires places where work returns control. A future that never yields cannot give its neighbors a turn.",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "8c079911562b513bcde12e8254f3e7b27a7339fcf047a79c7171416a8521aa29",
+          "bytes": 2233112,
+          "visuallyChecked": true
+        },
+        {
+          "src": "/blog/rust-futures-infographic.png",
+          "alt": "A poll decision diagram separates Ready, Pending with a wake request, and Pending without a wake request, with a caller-controlled budget.",
+          "caption": "The driver returns control both when work stalls and when its allotted turn ends. A wake request permits scheduling; it does not authorize unlimited work.",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "0ea73499fb9e7f94c6dbe0ecfd0d4b7d838214cb9e8a8e624f34acfcdd12597d",
+          "bytes": 1868832,
+          "visuallyChecked": true
+        }
+      ]
+    },
+    {
+      "slug": "crabrix-offline-progress-game-center",
+      "date": "2026-10-05",
+      "proseWords": 2600,
+      "images": [
+        {
+          "src": "/blog/crabrix-offline-progress-editorial.png",
+          "alt": "A coral crab places a milestone token in a local notebook, separate from an optional achievement display.",
+          "caption": "The learning record belongs to the local application. An optional social display is a projection of that record.",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "cba40be0bfa9fa5af72943ad41ae894d8de5c29e49b6ba9c20eeb33452d817ac",
+          "bytes": 2139840,
+          "visuallyChecked": true
+        },
+        {
+          "src": "/blog/crabrix-offline-progress-infographic.png",
+          "alt": "An attempt passes validation and deduplication into a local ledger; duplicate requests make no change and optional Game Center receives a separate projection.",
+          "caption": "Identical retries are harmless; conflicting reuse of an identifier is an error. The example models an in-memory transition, not durable database transactions.",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "a2431736f3e89ef0c63632985666047076a321ca71f2f77ad17930f63185583c",
+          "bytes": 1494319,
+          "visuallyChecked": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,161 @@
 [
   {
+    "slug": "crabrix-offline-rust-web-preview",
+    "title": "Crabrix update: Rust-generated pages and an offline web lab",
+    "date": "2026-10-24",
+    "summary": "Generate a real local website with Rust, keep HTML/CSS/JavaScript separate, and understand the compiler, browser, package and sandbox boundaries.",
+    "relatedSlugs": [
+      "cargo-build-scripts-generated-code",
+      "cargo-features-portable-dependencies",
+      "rust-dependency-graphs-deterministic-plans"
+    ],
+    "sections": [
+      {
+        "heading": "A new local workflow, with two execution engines",
+        "paragraphs": [
+          "Development update, 24 October 2026. Crabrix’s current work adds a local web preview alongside the existing offline Rust workspace. A web project can contain HTML, CSS and JavaScript directly; a Rust program can also generate those assets into its writable sandbox. The page is then rendered by a separate WebKit view. These are two explicit execution paths, each with its own responsibilities and limits, rather than an attempt to turn every server repository into a phone application.",
+          "This article explains the design and supplies a complete standard-library Rust example you can inspect on a desktop or adapt to the application. The implementation is undergoing release verification; this entry is a development report, not a claim that an older installed build already contains every described control. The practical goal is simple: build a small real page locally, change its behavior, read useful errors, and understand exactly which work the Rust compiler and browser each perform."
+        ],
+        "image": {
+          "src": "/blog/crabrix-offline-web-editorial.png",
+          "alt": "A coral crab arranges HTML, CSS and JavaScript cards beside a small press that turns a Rust block into a web page.",
+          "caption": "A generated page is an ordinary set of local assets. Rust produces them; a browser supplies layout and interaction.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "What belongs to Rust, and what belongs to the browser",
+        "paragraphs": [
+          "Rust handles the generator’s computation, file construction and ordinary program diagnostics. The compiler produces a WASI program, and that program runs with explicitly provided local filesystem access. For this workflow, its useful result is a set of files such as `index.html`, `styles.css` and `app.js`. A successful Rust execution establishes that the generator completed; it does not establish that every selector or event handler in the generated page behaves correctly.",
+          "WebKit reads the resulting snapshot, lays out HTML, applies CSS and executes browser JavaScript. A missing element or JavaScript exception belongs to that browser stage. Keeping the stages separate makes an error actionable: a Rust type mismatch is repaired in source before execution, whereas a misspelled DOM selector is investigated against the generated page. It also avoids reporting a successful compiler check as proof that a website has passed a functional browser test."
+        ],
+        "image": {
+          "src": "/blog/crabrix-offline-web-infographic.png",
+          "alt": "Rust passes through the bundled compiler and WASI program to generated assets; direct web files and generated assets converge on an immutable offline WebKit preview.",
+          "caption": "The preview receives a bounded asset snapshot, and its external network is blocked. The drawing makes no performance claim.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Start with three files before introducing a generator",
+        "paragraphs": [
+          "A useful first web exercise needs only one HTML document, one stylesheet and one script. Link the stylesheet with a relative `href`, and load the script with a relative `src` and `defer`. The deferred script can then find the elements declared by the parsed document. Keep the example free of remote fonts, analytics snippets, package registries and CDN imports so its offline behavior follows from the files you can actually inspect.",
+          "Add one visible interaction, such as a button that increments a counter and updates a status paragraph. This checks more than a decorative landing page: HTML must provide the element, JavaScript must attach the listener, and the rendered text must change after activation. Make the control a real button rather than a clickable generic container. Keyboard activation, a visible focus indicator and a text status make the small exercise useful to more learners without requiring a framework."
+        ]
+      },
+      {
+        "heading": "Generate the same assets with dependency-free Rust",
+        "paragraphs": [
+          "The program below constructs an HTML page, writes a stylesheet and script, and reports its generated filenames. On an ordinary desktop it writes a `web-output` directory. Under the WASI target it writes into `/sandbox`, the application’s explicitly writable program area. The location is a property of this example and Crabrix’s host configuration; a different WASI host can expose a different directory arrangement.",
+          "The example returns I/O errors to its caller instead of printing a success message after a failed write. Its browser script is fixed application code, while the supplied title is inserted as escaped HTML text. That separation is deliberate. Introducing user-provided data into a page requires an encoding appropriate to its destination, and escaping ordinary text for an HTML element does not make it safe to splice into executable JavaScript or arbitrary CSS. Keep those contexts distinct as the example grows."
+        ],
+        "code": "use std::{fs, io, path::Path};\nfn escape_html(text: &str) -> String {\n    let mut escaped = String::with_capacity(text.len());\n    for ch in text.chars() {\n        match ch {\n            '&' => escaped.push_str(\"&amp;\"),\n            '<' => escaped.push_str(\"&lt;\"),\n            '>' => escaped.push_str(\"&gt;\"),\n            '\"' => escaped.push_str(\"&quot;\"),\n            '\\'' => escaped.push_str(\"&#39;\"),\n            other => escaped.push(other),\n        }\n    }\n    escaped\n}\nfn page(title: &str) -> String {\n    let title = escape_html(title);\n    format!(r#\"<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>{title}</title><link rel=\"stylesheet\" href=\"styles.css\">\n<script src=\"app.js\" defer></script></head>\n<body><main><h1>{title}</h1><p>Generated by Rust. Interactive in the browser.</p>\n<button id=\"counter\" type=\"button\">Clicks: 0</button>\n<p id=\"status\" role=\"status\">Ready.</p></main></body></html>\"#)\n}\nfn main() -> io::Result<()> {\n    let root = Path::new(if cfg!(target_os = \"wasi\") { \"/sandbox\" } else { \"web-output\" });\n    fs::create_dir_all(root)?;\n    fs::write(root.join(\"index.html\"), page(\"Rust & local web pages\"))?;\n    fs::write(root.join(\"styles.css\"), r#\"\n:root { font-family: system-ui, sans-serif; color: #eef4f3; background: #101b26; }\nmain { max-width: 38rem; margin: 3rem auto; padding: 1.5rem; line-height: 1.6; }\nbutton { font: inherit; background: #7de0c3; border: 0; border-radius: 2rem; padding: .8rem 1.4rem; }\nbutton:focus-visible { outline: 3px solid #ffc45d; outline-offset: 4px; }\n\"#)?;\n    fs::write(root.join(\"app.js\"), r#\"\nconst button = document.querySelector('#counter');\nlet clicks = 0;\nbutton.addEventListener('click', () => {\n    button.textContent = `Clicks: ${++clicks}`;\n    document.querySelector('#status').textContent = 'This JavaScript runs locally.';\n});\n\"#)?;\n    println!(\"Generated index.html, styles.css and app.js\");\n    Ok(())\n}\n#[cfg(test)]\nmod tests {\n    #[test]\n    fn text_is_escaped_without_becoming_markup() {\n        assert_eq!(super::escape_html(\"A & <B> \\\"x\\\" 'y'\"), \"A &amp; &lt;B&gt; &quot;x&quot; &#39;y&#39;\");\n        assert!(super::page(\"<script>\").contains(\"<h1>&lt;script&gt;</h1>\"));\n    }\n}",
+        "codeLanguage": "rust"
+      },
+      {
+        "heading": "Escape at the boundary where text becomes markup",
+        "paragraphs": [
+          "The title is used in the document title and a heading, both ordinary HTML text contexts in this example. Escaping ampersands, angle brackets and quotation characters prevents a title such as `<script>` from becoming an element. The helper walks Unicode characters once and appends their representation to a new string. It does not repeatedly replace fragments in its own output, which would risk escaping freshly produced entities again.",
+          "This function is intentionally narrow. It is not an HTML sanitizer, a template engine, a URL validator or a universal protection for every page context. If you later add a link, validate its destination scheme and encode the attribute correctly. If you add structured data for JavaScript, use a serialization strategy with rules appropriate to an HTML script boundary or load it as a separate local resource where supported. A helper’s name should communicate its actual contract so future code does not quietly depend on a stronger guarantee."
+        ]
+      },
+      {
+        "heading": "Keep the generated set internally consistent",
+        "paragraphs": [
+          "Writing several files is not automatically an atomic site update. A generator can write the HTML and then fail while creating its stylesheet, leaving a mixture of old and new assets on disk. In Crabrix, each program run starts with its own temporary sandbox, and the preview snapshot is constructed after execution. That arrangement avoids treating a failed generator as a successful fresh preview, but a general desktop publishing tool needs its own deliberate commit strategy.",
+          "For a larger generator, write into a staging directory, validate the required asset set and publish only after every step succeeds. Use relative paths consistently and reject parent traversal before copying assets. If an output filename depends on source input, validate that filename separately from the HTML content. A beautifully escaped heading does not protect a filesystem operation that accepts `../` in its destination. The page boundary and the path boundary need different checks and different tests."
+        ]
+      },
+      {
+        "heading": "A snapshot is a capability boundary, not just a cache",
+        "paragraphs": [
+          "The preview receives immutable asset bytes selected from the project and successful generated output. It does not receive a file URL pointing at the application container or an unrestricted directory handle. A request for a missing asset returns a missing-resource response rather than causing an arbitrary host filesystem lookup. This makes the resource set inspectable and gives a run a stable identity even if the editor changes afterward.",
+          "The current snapshot has explicit limits: at most 256 supported assets, no individual asset above two mebibytes, and eight mebibytes in total. These are preview input limits, not claims about WebKit’s memory consumption. A tiny script can still compute indefinitely, and a small image can decode into much more memory than its compressed size. Closing or reloading the preview is therefore a distinct control from stopping a running Rust program. The application should describe those separate lifetimes honestly."
+        ]
+      },
+      {
+        "heading": "External network blocking changes how a page should be written",
+        "paragraphs": [
+          "The preview’s content policy and resource blocking rules reject external network resources. A page that depends on a stylesheet from a CDN or a remote JavaScript package will not behave like a self-contained offline project. Copy assets you are entitled to redistribute into the project, replace remote dependencies with local code where practical, and inspect the browser console when a resource does not appear.",
+          "Blocking external network also means this preview is not a general web browser or an API testing client. A button that performs a remote request should report an unavailable operation rather than silently pretending to have saved data. Build offline interactions around the document and local assets, then treat any eventual network-enabled deployment as a separate environment with its own configuration and security review. The learning value comes from making those dependencies explicit instead of letting a connection hide missing pieces."
+        ]
+      },
+      {
+        "heading": "A web preview is not an Axum server",
+        "paragraphs": [
+          "Axum’s routing and extraction abstractions are useful Rust concepts, but a typical Axum application also expects a runtime, a TCP listener and an operating-system network stack. Rendering a generated HTML document does not supply those services. Likewise, a browser executing JavaScript does not cause a server’s Rust handlers to run automatically when a page requests a route. A static page and a running HTTP service are different deliverables.",
+          "The current compatibility work includes an Axum fixture that invokes a router with an in-memory HTTP request and checks its response, without opening a TCP server. That is a deliberately narrower experiment and remains a validation target until its build gate passes. Do not convert a package’s name into a blanket compatibility claim. Record the exact version, selected features and exercised behavior; report a routing experiment as routing, not as proof that an arbitrary production server repository runs unchanged on an iPhone."
+        ]
+      },
+      {
+        "heading": "Tokio features should follow the exercise’s actual requirements",
+        "paragraphs": [
+          "A runtime crate exposes multiple capabilities, and an exercise rarely needs all of them. A current-thread runtime, channels and timers can teach scheduling and coordination without assuming a multithreaded network server. Crabrix’s compatibility fixture uses an exact Tokio version with a restricted feature selection and checks a real spawned task, a timer and a channel result. The completed Simulator execution is evidence for that selected workload, while physical-device timing is a separate measurement.",
+          "If a project enables every optional feature, identify which one introduces an unsupported operating-system dependency before changing its source. Disabling an unused network feature can be a legitimate adaptation; removing behavior the exercise actually requires is not. A useful compatibility report explains the adaptation and the resulting limits. This is also a teaching opportunity: a dependency’s feature graph reveals where a program’s portability assumptions enter the build, rather than treating portability as a property that the crate’s name alone can guarantee."
+        ]
+      },
+      {
+        "heading": "Build scripts are another explicit execution boundary",
+        "paragraphs": [
+          "The current compiler integration adds support for standard-library-only `build.rs` programs executed locally as bounded WASI guests. A verified fixture reads a project input, writes generated Rust into `OUT_DIR`, emits configuration and environment directives, and rebuilds correctly after the input changes. That is a real capability, but it does not reproduce every service available to a desktop Cargo build script.",
+          "A script that launches a host compiler, invokes Git, requires an independent build-dependency graph or links a native library crosses additional boundaries. The integration rejects unsupported directives rather than reporting a successful configuration that it did not apply. The Rust target documentation also notes that standard-library thread and process spawning are unavailable on ordinary `wasm32-wasip1`. A portable source generator that reads files and writes Rust code is therefore a different case from a native-library discovery script, even though both files share the name `build.rs`."
+        ],
+        "sources": [
+          {
+            "title": "Rust target documentation: wasm32-wasip1 requirements and limitations",
+            "url": "https://doc.rust-lang.org/rustc/platform-support/wasm32-wasip1.html"
+          }
+        ]
+      },
+      {
+        "heading": "Separate package acquisition from offline execution",
+        "paragraphs": [
+          "A new crates.io dependency must first be acquired while a connection is available. The package manager resolves its graph, verifies archive checksums and retains the prepared source archives for offline use. An offline rebuild can then use a frozen lockfile and those local artifacts. None of that means a phone can retrieve an arbitrary package for the first time while disconnected; the dependency bytes must already exist somewhere the application can read.",
+          "The new package progress view makes this preparation visible. It lists each package, its dependencies and whether the package is waiting, downloading, being verified, ready or failed. Closing that view does not cancel the underlying work. Compilation stages appear separately in Output, and diagnostics belong in Problems. Those boundaries help explain a failure precisely: an unavailable archive is an acquisition failure, an invalid Rust type is a compiler diagnostic, and an exception inside a rendered page is a browser error."
+        ]
+      },
+      {
+        "heading": "Keep responsiveness and speed as separate acceptance criteria",
+        "paragraphs": [
+          "Moving compilation to a worker queue prevents its ordinary computation from occupying the interface thread, but it does not make the computation itself faster. Similarly, an actor that owns package state provides isolation without proving that a large synchronous extraction inside it cannot consume a shared executor. Test scrolling, cancellation and view dismissal while the expensive work is actually in progress, then measure total duration separately.",
+          "For performance, distinguish a cold application launch, first parsing of the bundled compiler, cold dependency compilation, a fresh root build with prepared dependencies and a cached rerun. These cases can differ by orders of magnitude. A fast cached result cannot establish a thirty-second cold build for a large dependency graph. Report the device, build configuration, exact input and cache state with each number, and compare candidates against the same workload before describing an optimization as a demonstrated compiler speed improvement."
+        ]
+      },
+      {
+        "heading": "Use language-aware help without inventing verification",
+        "paragraphs": [
+          "The editor’s web work adds offline syntax grammars for HTML, CSS, JavaScript, TypeScript, JSON, Markdown and YAML alongside the existing Rust and TOML handling. Source text is tokenized for presentation; a highlighter does not execute the project’s script. TypeScript highlighting also does not imply a transpiler has been bundled. A file can be readable in the editor while still requiring a build step before a browser can execute it.",
+          "Local completion snippets work without an account or model. On eligible devices with Apple Intelligence available, the completion prompt now includes the source language and offline environment. Browser diagnostics can receive an explanation, while the existing Rust patch path retains its compiler-verification requirement. Do not label a web suggestion as verified by Rust merely because it came from the same advisor screen. Human review and the relevant execution stage remain necessary, especially when a model proposes a dependency that the offline environment cannot provide."
+        ]
+      },
+      {
+        "heading": "A practical test sequence for the first generated page",
+        "paragraphs": [
+          "Run the generator and require a successful exit. Confirm that the resulting snapshot contains the intended HTML, stylesheet and script. Open the preview, inspect the heading, activate the counter and verify that both the count and status change. Introduce a deliberate selector error, run again and confirm that the browser error is visible in the console and Problems without being confused with a Rust build failure.",
+          "Next, remove the stylesheet and observe a missing local resource, then restore it. Add a remote fetch and verify that it is blocked, rather than treating a temporarily available connection as part of the project. Finally, close and reopen the preview and check that its state resets as documented. This sequence exercises the complete path from generator source through output bytes to browser interaction. It gives a small project a real acceptance test before introducing larger templates, Markdown engines or additional dependency graphs."
+        ]
+      },
+      {
+        "heading": "Review accessibility and state reset as functional behavior",
+        "paragraphs": [
+          "A working click handler is only the beginning of a useful page. Check that a keyboard can reach the control, that the focus indicator remains visible against the chosen background, and that the status is understandable without relying on color. The example uses an ordinary button and a status paragraph, keeping the interaction available without inventing custom pointer-only behavior. Test a narrow preview as well as a wide one before deciding that the layout fits.",
+          "The counter in this example is intentionally temporary. Reloading the page constructs a new JavaScript environment and resets its value. If the exercise later needs persistence, define what should survive closing a preview and which storage facility is actually available in its nonpersistent browser data store. Do not use a surviving value from one accidental browser session as evidence of a supported save format. A durable learning result belongs in the application’s own reviewed storage workflow, separate from the demonstration page’s disposable interaction state.",
+          "These checks also make regressions easier to isolate. A lost counter after reload is expected here, while a lost source file is not. A remote resource being blocked is expected, while a bundled local stylesheet failing to load is not. Writing those expectations beside the exercise turns visual testing into a set of concrete decisions. The learner can then change the page deliberately and recognize which behavior changed, instead of treating every difference between runs as a mysterious compiler problem."
+        ]
+      },
+      {
+        "heading": "Choose the next project by the boundary you want to learn",
+        "paragraphs": [
+          "A personal notes page, a small quiz, a local data visualization or a generated documentation index are good next exercises because their requirements can remain inside a finite asset set. Add one capability at a time and write down its inputs and outputs. When a new dependency appears, inspect whether it only transforms data or expects a process, native library, network listener or platform-specific device API.",
+          "The [Crabrix user guide](/guide/) collects the application workflow and current limits with real screenshots. The [Cargo portability article](/blog/cargo-features-portable-dependencies/) explains how to reduce unnecessary feature assumptions, and the [build-script guide](/blog/cargo-build-scripts-generated-code/) examines host-side expectations. Together they support a more useful promise than “every repository works”: an offline workspace where you can build a concrete project, see which boundary failed, and improve the compiler or the exercise with evidence rather than guesswork."
+        ]
+      }
+    ],
+    "readingMinutes": 14
+  },
+  {
     "slug": "rustup-1-29-2-certificate-update",
     "title": "rustup 1.29.2: certificate security and toolchain checks",
     "date": "2026-10-23",
@@ -2083,7 +2239,7 @@
         "heading": "A build script is another program in your project",
         "paragraphs": [
           "Generated code can remove tedious repetition, but it also adds a second program whose behavior affects your application. A small configuration file becomes Rust source, a native library probe changes linker arguments, or a schema produces a set of types. When the result looks stale, the defect may be in the generator's declared inputs rather than in the generated function. Understanding that boundary makes build failures much easier to diagnose.",
-          "This guide builds a complete, dependency-free desktop Cargo project. Its build script reads one greeting file, optionally changes the greeting's case, and writes one Rust constant. The important result is a visible input contract that we can test. Crabrix's bundled local compiler does not execute Cargo build scripts or procedural macros: inspect this example in the app, but run the Cargo commands on a supported desktop toolchain."
+          "This guide builds a complete, dependency-free desktop Cargo project. Its build script reads one greeting file, optionally changes the greeting's case, and writes one Rust constant. The important result is a visible input contract that we can test. At initial publication, Crabrix did not execute build scripts. The October 24 development update adds bounded std-only WASI build scripts; host subprocesses, native linking, separate build-dependency graphs and procedural macros remain unsupported. The desktop Cargo commands below still require a desktop toolchain."
         ],
         "image": {
           "src": "/blog/cargo-build-scripts-editorial.png",
@@ -2847,5 +3003,683 @@
         ]
       }
     ]
+  },
+  {
+    "slug": "rust-dependency-graphs-deterministic-plans",
+    "title": "Rust dependency graphs: deterministic plans and honest cycle errors",
+    "date": "2026-10-08",
+    "summary": "Implement a deterministic topological planner in Rust, reject missing dependencies, and report a real cycle witness without blaming every blocked package.",
+    "relatedSlugs": [
+      "cargo-build-scripts-generated-code",
+      "rust-hashmap-entry-stable-reports",
+      "rust-memoization-cache-contracts"
+    ],
+    "sections": [
+      {
+        "heading": "A build order should explain why each step is ready",
+        "paragraphs": [
+          "A compiler, a static-site generator and a data pipeline all need to answer a similar question: which work can begin after its prerequisites have completed? A list of names is insufficient once one operation depends on another. You need a graph, a clear edge direction, a readiness rule and an error that distinguishes a missing prerequisite from a cycle. Otherwise a stalled pipeline tends to report whichever task happened to be inspected last.",
+          "This tutorial builds a deterministic planner using Rust's standard ordered collections. It returns prerequisites before consumers, rejects references to unknown nodes and reports one actual cycle when no complete order exists. It also reports every node blocked by unresolved cyclic work without claiming that every blocked node is itself part of a cycle. That distinction is useful in package managers, lesson prerequisites, document generation and background jobs whose dependencies need to be explained to a user."
+        ],
+        "image": {
+          "src": "/blog/rust-dependency-plans-editorial.png",
+          "alt": "Ivory task blocks on a navy engineering board form a jade branching dependency graph beside a separate coral triangular cycle.",
+          "caption": "A useful plan describes dependency readiness and distinguishes an actual cycle from the work waiting behind it.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Define edge direction in words before drawing arrows",
+        "paragraphs": [
+          "Our input maps each package to the packages it requires. If `web` contains `core` in its dependency set, web depends on core and core must appear earlier in the successful order. When the planner constructs its reverse index, it records web as a consumer of core. These are two views of the same relationship, and confusing them reverses the resulting build order while still producing output that may look superficially plausible.",
+          "Use a tiny chain as the first fixture: config has no dependencies, core depends on config, and web depends on core. The only valid order is config, core, web. That fixture catches a reversed interpretation immediately. In documentation and diagrams, label arrows with the relationship they express. An arrow meaning depends on points in the opposite direction from one meaning enables, so an unlabeled diagram can undermine an otherwise correct implementation."
+        ]
+      },
+      {
+        "heading": "Treat missing nodes as a different input error",
+        "paragraphs": [
+          "A referenced dependency that is absent from the graph is not automatically a leaf. Perhaps the caller forgot to resolve it, filtered it out incorrectly or misspelled its name. Pretending it is ready would produce a plan with a missing prerequisite. The example validates every dependency before scheduling any work and returns both the package and the unknown dependency in its error.",
+          "This validation boundary is intentionally separate from downloading or resolving packages. A resolver decides which exact package instance a requirement names; the planner receives an already identified graph. Combining those responsibilities can make a registry failure look like a graph cycle or make a dependency-version conflict disappear into an empty node. Keep the stages separate enough that an error can name the decision that failed and the information needed to reproduce it."
+        ]
+      },
+      {
+        "heading": "Make duplicate edges an explicit normalization choice",
+        "paragraphs": [
+          "The graph stores dependencies in a `BTreeSet`, so listing the same dependency twice creates one edge. Readiness counts are computed from that normalized set. This matters because decrementing a prerequisite count once per consumer relationship only works when the count and the reverse index represent the same edges. Counting duplicate declarations while storing unique consumers can leave a node permanently blocked even though every real prerequisite completed.",
+          "Normalization is a domain decision, not a universal rule. Two build steps may require distinct outputs from the same package, in which case those output requirements should be modeled explicitly rather than collapsed accidentally. Our nodes represent complete tasks and each dependency relationship means that one complete prerequisite task must finish. Repeated declarations of that exact relationship are redundant, which is why set semantics match the example's contract."
+        ]
+      },
+      {
+        "heading": "Choose a deterministic ready queue",
+        "paragraphs": [
+          "Several tasks may be ready at the same time. Any order among independent ready tasks can be topologically valid, but choosing an order reproducibly makes logs, snapshots and bug reports easier to compare. The planner uses a `BTreeSet` and removes its first element, so it consistently chooses the lexicographically smallest currently ready name. Input insertion order does not decide which task is selected next.",
+          "That tie-break rule does not imply that alphabetical order is the best production scheduler. A real scheduler might prioritize the critical path, user-visible work, memory limits or cache hits. Determinism is the requirement here, and lexical ordering is a small policy that is easy to test. If you later change the policy, keep topological correctness separate from the tie-break rule so a performance change does not accidentally weaken prerequisite enforcement."
+        ],
+        "sources": [
+          {
+            "title": "Rust standard library: ordered BTreeSet operations",
+            "url": "https://doc.rust-lang.org/std/collections/struct.BTreeSet.html"
+          }
+        ]
+      },
+      {
+        "heading": "Follow one successful plan step by step",
+        "paragraphs": [
+          "Each package begins with a count of unfinished prerequisites. The initial ready set contains packages whose count is zero. Taking a ready package appends it to the output order and decrements the counts of its consumers. A consumer enters the ready set exactly when its count reaches zero. No scan of the entire graph is needed after every completion because the reverse consumer index identifies the affected nodes.",
+          "In the runnable fixture, config enables core, then core enables both cli and web. The ordered ready set chooses cli before web. Neither consumer is allowed to run before core, and both remain valid independent choices afterward. This trace is small enough to write on paper, which makes it a useful debugging tool when a larger graph appears to schedule work prematurely or never releases a package that should be ready."
+        ],
+        "image": {
+          "src": "/blog/rust-dependency-plans-infographic.png",
+          "alt": "A dependency readiness trace shows config enabling core and core enabling cli and web; a separate cycle a-b blocks c without placing c in the cycle.",
+          "caption": "Arrows in the readiness example mean enables. The cycle witness uses depends-on edges and names only the nodes on the closed walk.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Run the complete deterministic planner",
+        "paragraphs": [
+          "Save this program as `main.rs` and run it with edition 2021. It needs no downloaded packages. The main function checks a successful branching graph and a graph with a two-node cycle plus a downstream consumer. Compiling the same file as a test harness checks an unknown prerequisite, an empty graph and repeated declarations of the same edge. The code returns structured errors rather than constructing a user-facing sentence inside the algorithm.",
+          "The example uses short string names for readability. A real package planner should use an identity that distinguishes versions, sources, targets and other build-unit properties relevant to that system. Two packages with the same display name are not necessarily the same node. Resolving that identity before planning prevents a successful topological order from concealing an incorrectly merged dependency graph."
+        ],
+        "code": "use std::collections::{BTreeMap, BTreeSet};\ntype Graph<'a> = BTreeMap<&'a str, BTreeSet<&'a str>>;\n#[derive(Debug, PartialEq)]\nenum PlanError<'a> {\n    Unknown { package: &'a str, dependency: &'a str },\n    Cycle { blocked: Vec<&'a str>, witness: Vec<&'a str> },\n}\nfn plan<'a>(graph: &Graph<'a>) -> Result<Vec<&'a str>, PlanError<'a>> {\n    let mut remaining_count = BTreeMap::new();\n    let mut consumers: BTreeMap<&str, Vec<&str>> = BTreeMap::new();\n    for (&package, dependencies) in graph {\n        remaining_count.insert(package, dependencies.len());\n        for &dependency in dependencies {\n            if !graph.contains_key(dependency) {\n                return Err(PlanError::Unknown { package, dependency });\n            }\n            consumers.entry(dependency).or_default().push(package);\n        }\n    }\n    let mut ready: BTreeSet<&str> = remaining_count.iter()\n        .filter_map(|(&name, &count)| (count == 0).then_some(name)).collect();\n    let mut order = Vec::new();\n    while let Some(package) = ready.pop_first() {\n        order.push(package);\n        for &consumer in consumers.get(package).into_iter().flatten() {\n            let count = remaining_count.get_mut(consumer).unwrap();\n            *count -= 1;\n            if *count == 0 { ready.insert(consumer); }\n        }\n    }\n    if order.len() == graph.len() { return Ok(order); }\n    let blocked: BTreeSet<&str> = remaining_count.iter()\n        .filter_map(|(&name, &count)| (count > 0).then_some(name)).collect();\n    let mut positions = BTreeMap::new();\n    let mut walk = Vec::new();\n    let mut current = *blocked.first().unwrap();\n    let witness = loop {\n        if let Some(&start) = positions.get(current) {\n            let mut cycle = walk[start..].to_vec();\n            cycle.push(current);\n            break cycle;\n        }\n        positions.insert(current, walk.len());\n        walk.push(current);\n        current = graph[current].iter().copied()\n            .find(|name| blocked.contains(*name)).unwrap();\n    };\n    Err(PlanError::Cycle { blocked: blocked.into_iter().collect(), witness })\n}\nfn graph<'a>(rows: &[(&'a str, &[&'a str])]) -> Graph<'a> {\n    rows.iter().map(|(name, dependencies)|\n        (*name, dependencies.iter().copied().collect())).collect()\n}\nfn main() {\n    let inputs = graph(&[(\"web\", &[\"core\"]), (\"cli\", &[\"core\"]),\n        (\"core\", &[\"config\"]), (\"config\", &[])]);\n    assert_eq!(plan(&inputs), Ok(vec![\"config\", \"core\", \"cli\", \"web\"]));\n    let cyclic = graph(&[(\"a\", &[\"b\"]), (\"b\", &[\"a\"]), (\"c\", &[\"a\"])]);\n    assert_eq!(plan(&cyclic), Err(PlanError::Cycle {\n        blocked: vec![\"a\", \"b\", \"c\"], witness: vec![\"a\", \"b\", \"a\"] }));\n    println!(\"deterministic plan and cycle witness: ok\");\n}\n#[test]\nfn unknown_dependency_is_not_treated_as_a_leaf() {\n    assert_eq!(plan(&graph(&[(\"app\", &[\"missing\"])])),\n        Err(PlanError::Unknown { package: \"app\", dependency: \"missing\" }));\n}\n#[test]\nfn empty_and_duplicate_edge_inputs_have_defined_results() {\n    assert_eq!(plan(&Graph::new()), Ok(vec![]));\n    assert_eq!(plan(&graph(&[(\"app\", &[\"core\", \"core\"]), (\"core\", &[])])),\n        Ok(vec![\"core\", \"app\"]));\n}",
+        "codeLanguage": "rust"
+      },
+      {
+        "heading": "Understand what Kahn’s algorithm leaves behind",
+        "paragraphs": [
+          "If the output contains every node, the plan is complete. Otherwise the ready set became empty while some nodes still had unfinished prerequisites. Those remaining nodes are blocked by the unresolved subgraph. At least one cycle exists in that subgraph, but other remaining nodes may merely depend on a cycle. Reporting the entire remaining set as the cycle would therefore accuse nodes that cannot fix the underlying problem.",
+          "Our error includes both `blocked` and `witness`. The blocked list tells the caller which work could not be scheduled. The witness identifies one closed dependency walk that can explain a real cycle. A user interface can show the witness prominently and list downstream affected packages separately. That gives a developer a smaller relationship to inspect while preserving the broader impact of the failure."
+        ]
+      },
+      {
+        "heading": "Find a cycle witness without recursive traversal",
+        "paragraphs": [
+          "After the ready queue is exhausted, every blocked node has at least one dependency that is also blocked. If it did not, all its prerequisites would already have completed and it would have become ready. The witness search starts at the first blocked node and repeatedly follows one blocked dependency. Because the remaining graph is finite, the walk must eventually revisit a node. The repeated suffix is a closed dependency walk.",
+          "The `positions` map remembers where each visited node first appeared in the walk. When a repeated node is found, slicing from its previous position and appending that node closes the witness. Prefix nodes are excluded: they may lead into a cycle without belonging to it. This iterative approach also avoids consuming the Rust call stack in a deeply nested graph. It finds one witness, not a complete decomposition into all strongly connected components."
+        ]
+      },
+      {
+        "heading": "Do not confuse a cycle witness with every cycle",
+        "paragraphs": [
+          "A graph can contain several independent cycles or one larger strongly connected region with many possible closed walks. The example reports one deterministic witness, which is enough to establish that a complete topological order is impossible. Fixing that relationship may reveal another cycle on the next run. If your product needs to display every cyclic region at once, use a strongly connected component analysis and distinguish each region from its downstream consumers.",
+          "For a package installer, one witness may be sufficient for an actionable first error. For a visual dependency editor, showing all cyclic groups can be more helpful because users may repair several relationships in one interaction. Decide based on the workflow, and name the result accurately. A field called all_cycles would be misleading for this implementation, whereas witness communicates both what the algorithm found and the limit of that evidence."
+        ]
+      },
+      {
+        "heading": "A plan is not yet a parallel scheduler",
+        "paragraphs": [
+          "The returned vector is a valid serial order. It does not create worker threads, enforce resource quotas or decide when a failed task should cancel its consumers. Parallel execution needs to preserve the same readiness invariant while tracking tasks that are queued, running, completed or failed. Decrement a consumer's unfinished count after a prerequisite succeeds, not merely after it starts or enters a worker queue.",
+          "Keep scheduling policy and execution state out of the immutable input graph when possible. The graph explains the dependency relationships; an operation-specific state structure records this run's progress. That separation helps when a user cancels a build, retries one package or compares a cached run with a fresh one. Reusing a graph must not accidentally reuse a previous run's half-decremented counters or stale running flags."
+        ]
+      },
+      {
+        "heading": "Cache evidence belongs to the exact build unit",
+        "paragraphs": [
+          "A planner can treat a verified cached prerequisite as already satisfied, but only after establishing that the artifact matches the requested build unit. A package name alone is not enough. Source content, selected features, dependency identities, compiler inputs and target configuration can all change what a package produces. Cache reuse therefore needs a separate validity decision before it influences scheduling.",
+          "In a learning application, keep the visible labels honest. A package loaded from a valid artifact cache should appear as cached, while a newly compiled package should appear as compiled. A metadata-only check should not be presented as a successful executable run. Those distinctions are useful when investigating a reported boundary: the graph may be correct and the cache entry valid for Check, while linking or execution still exposes a missing backend operation."
+        ]
+      },
+      {
+        "heading": "Progress counts need a clear denominator",
+        "paragraphs": [
+          "A dependency graph gives a useful count of planned work, but package count is not elapsed-time prediction. Ten tiny libraries may compile faster than one large generic library. If a user sees nine of ten packages completed, the final package can still dominate the run. Show the count as completed units alongside the current package and stage, rather than implying that ninety percent of the total time has passed.",
+          "The denominator can also change if resolution is still discovering the graph. Avoid reporting a final total before the relevant planning stage has completed. A good event stream can say resolving dependencies first, then publish the known package list, then report acquisition, verification and compilation transitions. This makes a stalled source download distinguishable from a slow compiler invocation without introducing a decorative percentage that obscures the actual operation."
+        ]
+      },
+      {
+        "heading": "Reject duplicate node declarations during ingestion",
+        "paragraphs": [
+          "The graph type has unique keys by construction, but that does not mean every input format is already unambiguous. Collecting repeated node declarations into a map can replace an earlier declaration with a later one. If the two declarations disagree about prerequisites, the resulting graph may be valid while no longer representing what the source actually said. Detect that conflict before constructing the planner's normalized input.",
+          "The small `graph` helper in the program constructs test fixtures; its rows are deliberately unique. A parser for a real manifest or job file should return a duplicate-node error with the relevant source locations. Identical repeated declarations may be rejected or merged under a documented rule, but contradictory declarations should not be resolved by whichever entry happened to arrive last.",
+          "This is another reason to separate parsing, normalization and planning. A missing field, duplicate identity and structural cycle need different repairs. Once the planner receives a validated map of unique identities and normalized dependency sets, its readiness counts can describe that graph precisely rather than compensating for ambiguities it no longer has enough source information to explain."
+        ]
+      },
+      {
+        "heading": "A failed prerequisite is not a newly discovered cycle",
+        "paragraphs": [
+          "Suppose a valid acyclic plan begins executing and core fails to compile. Its consumers cannot proceed, but that runtime state has not introduced a cycle into the dependency graph. If an execution controller simply leaves their unfinished counts nonzero and runs the cycle-reporting branch, it can produce an impossible diagnosis. Structural planning and runtime success tracking must remain distinct.",
+          "Give the execution layer explicit states such as waiting, running, succeeded, failed and blocked by failed prerequisite. When core fails, its own diagnostic explains the cause, while downstream tasks can name core as the reason they did not run. Keep those tasks visible if a user wants to understand the impact, but avoid repeating the entire compiler error under every dependent package.",
+          "A retry can then reset the affected execution states without changing the graph. After the prerequisite succeeds, consumers become eligible under the original readiness rules. Testing this transition is particularly useful for an interactive compiler, where a user commonly fixes one dependency or project file and expects the same open project to continue through the previously blocked stages."
+        ]
+      },
+      {
+        "heading": "Build units may need identities finer than package names",
+        "paragraphs": [
+          "One package can participate in several distinct build units. Host-side build tools and target-side libraries may need different feature sets or compilation settings, even when they come from the same source version. An alias can also give a dependency a different name in a consumer's source. Neither an alias nor a bare registry name is a complete universal build identity.",
+          "For a real compiler integration, resolve those distinctions before feeding nodes to a topological planner. Include the source and exact version, target role and relevant configuration in the unit identity; retain aliases on the edges where consumers use them. Do not unify a build script's dependencies with a target library's dependencies merely to make the graph easier to represent. A deterministic order over incorrectly merged nodes is still an incorrect build.",
+          "The tutorial's strings keep the algorithm readable, but the algorithm itself does not require display names as keys. Replacing them with an ordered domain-specific identifier should preserve readiness and cycle semantics while allowing the presentation layer to show a shorter friendly label."
+        ]
+      },
+      {
+        "heading": "Test the returned order as a property",
+        "paragraphs": [
+          "For every successful plan, build a map from node name to output position and assert that every prerequisite appears before its consumer. Also assert that the output contains every graph node exactly once. These properties catch missing nodes and premature scheduling even when a test does not require a particular tie-break policy. A separate test can require the lexical order chosen by this implementation.",
+          "For a cycle error, verify every adjacent pair in the witness against the original depends-on relation and verify that the first and last nodes are equal. Check that every witness node appears in blocked, but do not require every blocked node to appear in the witness. A deliberately downstream node such as c in the example makes that distinction observable. Tests should protect the meaning of an error field, not just compare a convenient formatted string."
+        ]
+      },
+      {
+        "heading": "Keep import and resolution failures at their own boundary",
+        "paragraphs": [
+          "A real repository can fail before this planner receives a graph. Its workspace may require a selected member, a dependency may come from an unavailable Git revision, or an optional feature may introduce a native toolchain. These are not graph-cycle failures merely because dependency preparation stopped. Preserve the original failure category and enough context to identify the unresolved requirement.",
+          "Likewise, a successful plan establishes order, not target compatibility. A library can be correctly ordered and still fail because its code uses a missing operating-system API or exposes a compiler backend defect. A useful build report keeps source acquisition, graph resolution, planning, compilation and execution as distinct stages. That separation makes it possible to improve the missing capability and rerun exactly the stage that failed without rewriting an otherwise correct explanation of the dependency graph."
+        ]
+      },
+      {
+        "heading": "Use the graph to make failures smaller and clearer",
+        "paragraphs": [
+          "The planner's main contribution is an explanation that survives changes in input order and execution timing. A successful result says which prerequisites make each step possible. A missing-node error names the incomplete relationship. A cycle result supplies one real closed walk and a separate list of affected work. Those outputs are small enough to log, compare in tests and show in an interface without exposing the entire internal implementation.",
+          "When extending the algorithm, keep those meanings intact. Add domain-specific identities before planning, choose a tie-break rule deliberately, validate cached prerequisites separately and model execution progress outside the immutable graph. Whether the application builds Rust libraries, renders a set of web pages or schedules learning exercises, the useful invariant remains concrete: a task becomes ready because every required predecessor has successfully supplied what it needs."
+        ]
+      }
+    ],
+    "readingMinutes": 14
+  },
+  {
+    "slug": "rust-generational-handles-stable-identity",
+    "title": "Rust generational handles: keep identity when storage is reused",
+    "date": "2026-10-07",
+    "summary": "Implement a safe Rust arena with owner identities, reusable slots and checked generations. Reject stale handles, test removal boundaries and plan persistence carefully.",
+    "relatedSlugs": [
+      "ownership-in-a-real-program",
+      "rust-enums-state-machines",
+      "rust-checked-arithmetic-conversions"
+    ],
+    "sections": [
+      {
+        "heading": "The wrong object can be a completely memory-safe result",
+        "paragraphs": [
+          "A project list stores documents in a vector. An asynchronous operation remembers that the selected document is at index three. The user closes that document, another document takes its place, and the operation eventually reports a result for index three. Every array access can be within bounds and every reference can obey Rust's borrow rules, yet the visible result belongs to the wrong document. Memory safety has not been violated; application identity has.",
+          "A generational handle separates the reusable position from the lifetime of its occupant. This article builds a small arena that stores values in slots, reuses empty slots and rejects handles from earlier occupants. It also gives each arena an owner identity, because a slot and generation alone cannot distinguish two independent collections. The implementation uses ordinary safe Rust and the standard library. Its purpose is to make the invariants understandable before choosing a mature arena library for a larger system."
+        ],
+        "image": {
+          "src": "/blog/rust-generational-handles-editorial.png",
+          "alt": "An old coral identification tag lies apart from a brass specimen rack where an ivory tray now contains a new jade specimen.",
+          "caption": "A reused position is not the same object. A handle needs enough identity to tell those cases apart.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Start by stating what an identifier promises",
+        "paragraphs": [
+          "An index promises a position in a collection under some set of mutation rules. A stable object identifier promises that a later lookup either finds the same logical object or reports that it no longer exists. Those are different promises. If your collection only appends and never removes, an index may satisfy your application's needs. If removal, compaction or asynchronous callbacks are involved, write down the mutation rules before deciding that an index is enough.",
+          "A handle in our arena contains an arena identity, a slot index and a generation. Lookup checks all three relevant conditions: the handle belongs to this arena, the index exists, and the slot still has the same generation and a live value. A missing object becomes `None`, which the caller can handle deliberately. There is no fallback to the new occupant, and the lookup never tries to reconstruct an object from a remembered address."
+        ]
+      },
+      {
+        "heading": "Why vector movement is not the only problem",
+        "paragraphs": [
+          "A vector may reallocate its storage when it grows. Rust's borrowing rules prevent safe code from retaining an ordinary borrowed element reference across a conflicting mutation that could invalidate it. A copied integer index has no such lifetime relationship. It remains a perfectly valid integer after the collection changes, even when its old meaning has disappeared. Solving relocation alone therefore does not solve the stale-identity problem.",
+          "Removal policies introduce further choices. Ordered removal shifts later elements, while swapping an element with the last position changes which object occupies a particular index. A slot-based arena avoids moving occupied logical positions during removal, but an empty position may later be reused. The generation is what distinguishes reuse from continuity. Think of these as separate decisions about memory location, ordering and object lifetime rather than treating every collection mutation as the same kind of instability."
+        ],
+        "sources": [
+          {
+            "title": "Rust standard library: Vec storage and mutation operations",
+            "url": "https://doc.rust-lang.org/std/vec/struct.Vec.html"
+          }
+        ]
+      },
+      {
+        "heading": "Define the slot lifecycle before writing the methods",
+        "paragraphs": [
+          "A new slot begins with generation zero and one live value. Removing that value makes the slot empty and advances its generation. The empty slot may then enter the free list, from which a later insertion can reuse it without changing the generation again. An earlier handle still carries the old generation, so it cannot access the new value. Each successful removal is the transition that invalidates the previous occupant's handles.",
+          "Generation exhaustion needs an explicit rule. Wrapping the largest generation back to zero could eventually make a very old handle appear current again. The example instead leaves an exhausted slot empty and permanently excludes it from the free list. A later insertion allocates another slot. This trades a theoretical amount of retained slot storage for a simple identity guarantee. The test suite forces exhaustion directly so the rule can be verified without attempting an impractical number of real removals."
+        ],
+        "image": {
+          "src": "/blog/rust-generational-handles-infographic.png",
+          "alt": "A three-stage slot lifecycle shows generation 4 holding A, removal advancing to 5, and reuse by B; an old generation-4 handle is rejected.",
+          "caption": "Lookup compares owner, slot and generation. An empty slot at the maximum generation is retired instead of wrapping.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Use a separate identity for each arena instance",
+        "paragraphs": [
+          "Two freshly created arenas both have slot zero at generation zero. If a handle contains only those two fields, looking it up in the wrong arena could return an unrelated value. Our example allocates a process-local arena identity from an atomic counter and includes it in every handle. The counter uses a checked increment and refuses to create another arena after its identity space is exhausted; it never silently wraps into a previously issued identity.",
+          "The relaxed atomic ordering is sufficient for allocating distinct counter values. The counter does not publish the arena's contents or provide synchronization for accessing them. An arena still requires normal Rust borrowing, or a separately chosen synchronization strategy when shared across threads. Mixing those responsibilities is a common source of confusing designs: a unique number can identify an owner without making the owner's mutable data safe for concurrent access."
+        ]
+      },
+      {
+        "heading": "Read and run the complete safe implementation",
+        "paragraphs": [
+          "Save this as `main.rs`. A normal run demonstrates slot reuse, rejection of a stale handle, mutation through a current handle and rejection of a handle from a different arena. Compiling the same file as a test harness also runs two boundary tests. The structures intentionally keep their fields private to the module, and the arena is not given an automatic clone implementation that could accidentally duplicate its owner identity.",
+          "This is a compact learning implementation, with infallible vector allocation following the standard collection API. It does not promise recovery from every memory-allocation failure or offer persistent identifiers. Its public behavior is much narrower: under the described in-process mutation rules, a lookup never treats a replaced occupant as the original object. Keeping that promise small makes the relevant edge cases visible and leaves room to discuss the additional requirements of a production collection afterward."
+        ],
+        "code": "use std::sync::atomic::{AtomicU64, Ordering};\nstatic NEXT_ARENA: AtomicU64 = AtomicU64::new(1);\n\n#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]\nstruct Handle { arena: u64, index: usize, generation: u64 }\nstruct Slot<T> { generation: u64, value: Option<T> }\nstruct Arena<T> { identity: u64, slots: Vec<Slot<T>>, free: Vec<usize> }\nimpl<T> Arena<T> {\n    fn new() -> Option<Self> {\n        let identity = loop {\n            let current = NEXT_ARENA.load(Ordering::Relaxed);\n            let next = current.checked_add(1)?;\n            if NEXT_ARENA.compare_exchange_weak(current, next,\n                Ordering::Relaxed, Ordering::Relaxed).is_ok() { break current; }\n        };\n        Some(Self { identity, slots: Vec::new(), free: Vec::new() })\n    }\n    fn insert(&mut self, value: T) -> Handle {\n        let index = if let Some(index) = self.free.pop() {\n            self.slots[index].value = Some(value);\n            index\n        } else {\n            let index = self.slots.len();\n            self.slots.push(Slot { generation: 0, value: Some(value) });\n            index\n        };\n        Handle { arena: self.identity, index, generation: self.slots[index].generation }\n    }\n    fn slot(&self, handle: Handle) -> Option<&Slot<T>> {\n        if handle.arena != self.identity { return None; }\n        self.slots.get(handle.index).filter(|slot| slot.generation == handle.generation)\n    }\n    fn get(&self, handle: Handle) -> Option<&T> { self.slot(handle)?.value.as_ref() }\n    fn get_mut(&mut self, handle: Handle) -> Option<&mut T> {\n        if handle.arena != self.identity { return None; }\n        let slot = self.slots.get_mut(handle.index)?;\n        if slot.generation != handle.generation { return None; }\n        slot.value.as_mut()\n    }\n    fn remove(&mut self, handle: Handle) -> Option<T> {\n        if handle.arena != self.identity { return None; }\n        let slot = self.slots.get_mut(handle.index)?;\n        if slot.generation != handle.generation { return None; }\n        let value = slot.value.take()?;\n        if let Some(next) = slot.generation.checked_add(1) {\n            slot.generation = next;\n            self.free.push(handle.index);\n        } // An exhausted generation permanently retires this slot.\n        Some(value)\n    }\n}\nfn main() {\n    let mut arena = Arena::new().unwrap();\n    let old = arena.insert(String::from(\"draft\"));\n    assert_eq!(arena.remove(old).as_deref(), Some(\"draft\"));\n    let current = arena.insert(String::from(\"replacement\"));\n    assert_eq!(old.index, current.index);\n    assert_ne!(old.generation, current.generation);\n    assert!(arena.get(old).is_none());\n    arena.get_mut(current).unwrap().push_str(\" page\");\n    assert_eq!(arena.get(current).map(String::as_str), Some(\"replacement page\"));\n    let other: Arena<String> = Arena::new().unwrap();\n    assert!(other.get(current).is_none());\n    println!(\"stale handles rejected: ok\");\n}\n#[test]\nfn generation_exhaustion_retires_the_slot() {\n    let mut arena = Arena::new().unwrap();\n    let first = arena.insert(\"last occupant\");\n    arena.slots[first.index].generation = u64::MAX; // Test-only boundary fixture.\n    let final_handle = Handle { generation: u64::MAX, ..first };\n    assert_eq!(arena.remove(final_handle), Some(\"last occupant\"));\n    assert!(arena.remove(final_handle).is_none());\n    let next = arena.insert(\"new slot\");\n    assert_ne!(next.index, final_handle.index);\n    assert!(arena.get(final_handle).is_none());\n}\n#[test]\nfn double_remove_does_not_duplicate_a_free_slot() {\n    let mut arena = Arena::new().unwrap();\n    let old = arena.insert(7);\n    assert_eq!(arena.remove(old), Some(7));\n    assert_eq!(arena.remove(old), None);\n    let a = arena.insert(8);\n    let b = arena.insert(9);\n    assert_ne!(a.index, b.index);\n    assert_eq!(arena.get(a), Some(&8));\n    assert_eq!(arena.get(b), Some(&9));\n}",
+        "codeLanguage": "rust"
+      },
+      {
+        "heading": "Lookup validates before returning a borrow",
+        "paragraphs": [
+          "The immutable lookup first compares owner identities, then uses `Vec::get` for a bounds-checked slot lookup. A generation comparison determines whether the handle still refers to this occupant's lifetime. Finally, the optional stored value determines whether anything is currently alive in that slot. Each failed condition returns `None`, and none requires an unsafe dereference. The returned reference borrows the arena in the ordinary Rust way.",
+          "Mutable lookup follows the same identity checks before returning a mutable reference. The generation does not weaken the borrow checker or permit two mutable references to the same live value. It only decides which value the caller is asking to borrow. If your application needs simultaneous mutation of two distinct handles, design a method that checks their distinctness and safely obtains disjoint slots; do not assume that having two different handle values proves they identify different live slots."
+        ]
+      },
+      {
+        "heading": "Removal must not put a slot into the free list twice",
+        "paragraphs": [
+          "The removal method takes the value out of its slot before adding the index to the free list. A second removal with the same handle sees either a generation mismatch or an empty value and returns `None`. It never adds another copy of the index. This matters because duplicate free-list entries could let two subsequent insertions overwrite the same slot, even while each insertion returned what appeared to be a fresh handle.",
+          "The dedicated double-removal test checks the consequence rather than merely inspecting an internal vector length. After removing the same old handle twice, it inserts two values and verifies that they occupy distinct indices and remain independently retrievable. Tests that exercise the public identity contract are more durable than tests that mirror each line of the implementation. Internal state assertions remain useful for boundary fixtures, but they should support a behavior that an application actually relies on."
+        ]
+      },
+      {
+        "heading": "Keep persistent identity separate from process-local handles",
+        "paragraphs": [
+          "The atomic owner counter restarts when the process restarts. A serialized handle from a previous launch could therefore collide with an unrelated arena in a new process. The implementation deliberately does not derive serialization for handles or advertise them as database keys. A process-local handle is suitable for a live editor model, task registry or temporary graph, provided its owner controls the lifecycle and discards stale handles after restart.",
+          "If an object must survive launches, give it a durable domain identifier and rebuild the mapping to current handles when loading. The durable identifier might come from your document format or database, with its own uniqueness and migration rules. Do not simply serialize an array index, and do not assume that increasing the generation width solves process restarts. The owner scope, storage lifetime and external identity contract all need to agree before a handle can safely cross that boundary."
+        ]
+      },
+      {
+        "heading": "Late background events should carry the identity they belong to",
+        "paragraphs": [
+          "Imagine a compiler task started for a document that is later removed. Its completion event can carry the document handle and the source revision that was compiled. When the event arrives, the state owner first looks up the handle. If the document is gone or the slot has been reused, the event is discarded. If it is still the same document but the source revision changed, the application can retain historical output without presenting it as the current build result.",
+          "The two checks solve different problems. Generations reject a different occupant of reused storage; revisions reject a different snapshot of the same occupant. A current handle alone cannot tell you whether a compiler result describes the latest text. Conversely, a source hash alone does not identify which open project should receive that result. A reliable application carries both pieces of context and makes the acceptance rule explicit at the point where visible state changes."
+        ]
+      },
+      {
+        "heading": "A handle is not an authorization token",
+        "paragraphs": [
+          "The example prevents accidental identity confusion inside a trusted application process. It does not make a handle secret or unforgeable to code that controls the containing module. If a server accepts identifiers from an untrusted client, the server still needs to check whether that client may access the requested object. A generation check can establish freshness within a collection without establishing ownership by a user or permission to perform an operation.",
+          "Keep this distinction visible in API names and documentation. An object ID identifies an object; an authenticated session identifies a principal; an authorization rule relates the principal to an allowed action on that object. Combining several numbers into a handle does not replace those rules. Even a cryptographically random identifier is not sufficient evidence that every holder should be allowed to mutate the underlying object, especially when identifiers can appear in logs or shared links."
+        ]
+      },
+      {
+        "heading": "Understand the memory and iteration tradeoffs",
+        "paragraphs": [
+          "Slots retain their positions after removal, so the arena may contain holes. A free list lets new insertions reuse those holes, but it does not automatically reduce the allocation after a temporary peak. Retired slots remain holes permanently under the exhaustion rule. For a short-lived editing session this may be entirely acceptable; a service that creates and removes objects continuously should measure high-water memory usage under its own workload.",
+          "Iteration also needs an explicit policy. Scanning the slots and selecting occupied values costs work proportional to the number of slots, not merely the number of live objects. A collection with many holes can therefore iterate slowly even when lookups remain cheap. If dense iteration is central to the application, investigate a dense arena design or a mapping between stable handles and compact storage. That extra mapping introduces invariants of its own, so choose it for measured workload needs rather than assuming one representation wins universally."
+        ]
+      },
+      {
+        "heading": "Stale graph edges need an application-level policy",
+        "paragraphs": [
+          "An arena can reject an edge whose target was removed, but it cannot decide what that rejection means for your graph. A dependency viewer might hide a removed target, mark the edge as unresolved, or remove incoming edges as part of the same transaction. A document editor might preserve a broken reference so the user can repair it. Those choices belong to the application's domain rather than to the storage container.",
+          "Choose the policy when designing deletion. If removing a node should also remove its incoming edges, keep enough indexing information to perform that update and test that the operation is complete before publishing the new graph. If dangling edges are permitted, make every traversal handle missing targets intentionally. Calling `unwrap` during traversal merely postpones the missing-object decision until it becomes a panic.",
+          "A useful fixture removes a heavily referenced node, immediately reuses its slot and then traverses the old graph. Every old edge must either be absent or explicitly unresolved; none may reach the replacement node. That test joins the arena's local guarantee to the higher-level behavior users actually see."
+        ]
+      },
+      {
+        "heading": "The identity allocator has one small synchronization job",
+        "paragraphs": [
+          "The owner counter uses a compare-and-exchange loop. It reads the current value, computes the next value with checked arithmetic and attempts to install that next value only if another caller has not changed the counter. A weak comparison may fail spuriously, so failure retries rather than being treated as identity exhaustion. Actual exhaustion occurs only when the checked increment has no representable result.",
+          "This loop gives distinct successful creations distinct process-local identities. It does not order unrelated writes to arena contents, which is why relaxed ordering is appropriate for this isolated counter. The arena's own values remain protected by normal ownership and borrowing. If the arena later moves behind a mutex or another state owner, that mechanism provides the relevant access ordering; the identity allocator should not silently take on that additional responsibility.",
+          "Keeping the allocator separate also makes its limits easier to document. An application that restores durable objects after restart should allocate fresh live arena identities and rebuild its durable-ID mapping. It should never advance this counter based on an untrusted serialized handle and then assume the resulting values establish authenticity or cross-launch continuity."
+        ]
+      },
+      {
+        "heading": "Test reuse with a small independent reference model",
+        "paragraphs": [
+          "A useful stress test keeps a map from issued handles to expected values and generates a deterministic sequence of insertions, removals and lookups. Whenever an operation returns a handle, record the expected value. Whenever removal succeeds, move that handle into a list of known stale handles. Repeatedly sample both current and stale handles and compare the arena's answers with the map's answers. Include lookups against a second arena in the same run.",
+          "Keep the reference model simpler than the arena. It does not need a free list, generations or slot reuse; it only needs to remember which exact handles are expected to be live. Use a fixed seed for reproducibility and print the operation index on failure. Small sequences that deliberately remove and reinsert the same slot are often more revealing than millions of unrelated insertions, because they repeatedly exercise the transition the generation is meant to protect."
+        ]
+      },
+      {
+        "heading": "Choose overflow and reset behavior before exposing the type",
+        "paragraphs": [
+          "The implementation retires a slot when its generation cannot advance. Other designs may choose a different policy, but wrapping deserves a written justification because it weakens the freshness guarantee. Increasing the generation size makes accidental exhaustion less likely; it does not change what wrapping means. An explicit boundary test is valuable even when the production probability is tiny, because the policy belongs to the type's correctness contract.",
+          "A `clear` operation needs similar care. If it empties slots and resets every generation to zero while retaining the same arena identity, old handles can become valid again when positions are reused. A safe design can remove values through the ordinary invalidation path or allocate a new owner identity for the cleared arena. Decide whether clear preserves capacity, which handles it invalidates, and what happens if allocating a fresh identity is impossible. Convenience methods must preserve the same guarantees as individual insertions and removals."
+        ]
+      },
+      {
+        "heading": "Use ordinary ownership for data behind the handle",
+        "paragraphs": [
+          "A handle should not become an excuse to make every relationship global and indirect. A value that has one clear owner and never outlives that owner may be simpler as an ordinary field or a borrowed reference. Generational handles are useful when relationships must survive independent insertions and removals, when callbacks arrive later, or when graph edges need to name objects without borrowing the entire collection continuously.",
+          "Inside an arena value, continue using Rust's ordinary ownership tools. Strings and vectors own their data; references obey lifetimes; shared ownership has an explicit reason. The arena solves lookup identity, not every ownership problem in the program. Start with the smallest set of relationships that needs stable handles, document their owner scope, and leave local relationships direct. This keeps errors understandable and prevents a useful storage pattern from turning into unnecessary application-wide indirection."
+        ]
+      },
+      {
+        "heading": "Pick a library by the guarantee your application needs",
+        "paragraphs": [
+          "For a production system, compare existing arena and slot-map libraries against a written checklist: owner scope, stale-key behavior, generation width, overflow policy, serialization, iteration cost, memory reclamation and support for obtaining disjoint mutable values. Read how a library treats keys from different collections rather than assuming every implementation includes an owner identity. A compact key representation may intentionally make a different tradeoff from this teaching example.",
+          "Then keep a small contract test suite at your integration boundary. Removing an object must invalidate its old key; reusing storage must not revive it; resetting or loading a collection must follow the documented lifetime rule; a late operation must not update a replacement object. Those tests remain valuable if the underlying library changes. The real benefit of generational handles is a precise answer to a practical question: does this lookup still name the same live object I originally meant?"
+        ]
+      }
+    ],
+    "readingMinutes": 14
+  },
+  {
+    "slug": "rust-futures-cooperative-work",
+    "title": "Rust futures: bounded work, wakeups and cooperative cancellation",
+    "date": "2026-10-06",
+    "summary": "Build a small, runnable future driver to understand polling, wakeups, fairness and cancellation. Learn why async code can still freeze an interface.",
+    "relatedSlugs": [
+      "rust-enums-state-machines",
+      "cargo-features-portable-dependencies",
+      "testing-rust-boundaries-fixtures-doctests"
+    ],
+    "sections": [
+      {
+        "heading": "An async function can still monopolize the application",
+        "paragraphs": [
+          "A button starts some work, a spinner appears, and then scrolling stops. Adding `async` to the function often feels like the obvious repair. Yet an asynchronous function can spend several seconds parsing a large document before it reaches a meaningful suspension point. During those seconds, its caller has gained no opportunity to run something else on the same execution thread. The syntax describes a computation that can suspend; it does not make each instruction independently scheduled.",
+          "This article investigates that boundary with a small Rust program that needs no downloaded crates. It performs an intentionally simple sum in bounded pieces and lets a caller decide how many polls one turn may consume. The result is a teaching instrument for reasoning about responsiveness. It is deliberately missing networking, operating-system event registration, timers, and a production task scheduler. Those omissions keep the experiment small enough to inspect rather than hiding scheduling decisions behind a runtime configuration."
+        ],
+        "image": {
+          "src": "/blog/rust-futures-editorial.png",
+          "alt": "Three jade computation capsules on separate brass tracks pause at gates in a dark observatory workshop.",
+          "caption": "Cooperation requires places where work returns control. A future that never yields cannot give its neighbors a turn.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Separate a future, an executor and an operating-system thread",
+        "paragraphs": [
+          "The standard `Future` interface exposes a `poll` method that receives a pinned mutable reference and a task context. Its result says either that a value is ready or that more progress must wait. The context provides a waker through which the computation can request another opportunity to be polled. These are protocol pieces, not a promise that the operating system has created a thread for each future.",
+          "An executor decides which task to poll next. A runtime may also provide services that arrange wakeups when a socket, clock or other resource changes state. A thread is an execution resource on which that machinery runs. Keep the names separate when investigating a freeze: an application may have hundreds of futures, one executor thread, and one particularly expensive poll that prevents all the others from being considered. Counting futures therefore tells you little about available parallel execution."
+        ],
+        "sources": [
+          {
+            "title": "Rust standard library: the Future polling contract",
+            "url": "https://doc.rust-lang.org/std/future/trait.Future.html"
+          }
+        ]
+      },
+      {
+        "heading": "Choose a measurable unit of cooperation",
+        "paragraphs": [
+          "Our workload adds consecutive integers. A real application might scan records, tokenize source, transform image tiles or inspect dependency metadata. In each case, begin by identifying a piece of work that can end in a valid intermediate state. If stopping after a piece leaves half a record installed in shared state, the boundary is poorly chosen even if its elapsed time looks attractive.",
+          "The demonstration processes at most 128 integers per poll. That number is an experimental work quota, not a timing guarantee. On one machine the quota may take microseconds; a more expensive operation with the same iteration count could take much longer. Start with a logical unit because it is easy to test, then measure elapsed duration on the devices that matter. If individual items vary dramatically in cost, introduce a time-aware outer budget or smaller internal operations rather than assuming every item costs the same."
+        ]
+      },
+      {
+        "heading": "Make the caller distinguish three outcomes",
+        "paragraphs": [
+          "A useful driver needs more vocabulary than success and failure. One outcome means that the future produced its value. Another means it returned pending without asking for an immediate new poll: the caller should stop and let an external event make progress possible. The third means that the caller used its poll budget while the computation still had immediately schedulable work. These states require different decisions even though two of them contain no final value.",
+          "The `Turn` enum preserves that distinction. `Stalled` does not mean that the future has failed, and `BudgetUsed` does not mean that work should be discarded. Both leave the future alive in the caller. The caller can arrange another bounded turn later, while still servicing input or other work. Keeping ownership with the caller also makes cancellation concrete: the caller may drop the future rather than leaving an invisible background computation running without an owner."
+        ],
+        "image": {
+          "src": "/blog/rust-futures-infographic.png",
+          "alt": "A poll decision diagram separates Ready, Pending with a wake request, and Pending without a wake request, with a caller-controlled budget.",
+          "caption": "The driver returns control both when work stalls and when its allotted turn ends. A wake request permits scheduling; it does not authorize unlimited work.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Run the complete bounded-work experiment",
+        "paragraphs": [
+          "Save this program as `main.rs` and run it with a Rust toolchain supporting edition 2021. It uses only the standard library. The first assertion spends one poll on a thousand-item sum and expects to use the turn budget. The next call resumes the same pinned value and completes it. The pending future demonstrates a separate stalled outcome, so the example cannot accidentally pass by spinning until every possible workload becomes ready.",
+          "The example uses an atomic notice because the safe `Wake` abstraction permits wake handles to cross threads. The demonstration itself creates no worker thread. Release and acquire operations provide an explicit signal boundary; they do not turn this helper into an event loop. In particular, a wake arriving after `Stalled` is returned needs an enclosing scheduler to arrange a later call. That scheduler is outside the example, and replacing it with a tight retry loop would defeat the purpose of the exercise."
+        ],
+        "code": "use std::{future::Future, pin::Pin, sync::{Arc, atomic::{AtomicBool, Ordering}}, task::{Context, Poll, Wake, Waker}};\n\n#[derive(Default)]\nstruct Notice(AtomicBool);\nimpl Wake for Notice {\n    fn wake(self: Arc<Self>) { self.0.store(true, Ordering::Release); }\n    fn wake_by_ref(self: &Arc<Self>) { self.0.store(true, Ordering::Release); }\n}\n#[derive(Debug, PartialEq)]\nenum Turn<T> { Ready(T), Stalled, BudgetUsed }\n\n// A bounded demonstration driver, not a runtime or an I/O event loop.\nfn drive<F: Future>(mut future: Pin<&mut F>, polls: usize) -> Turn<F::Output> {\n    let notice = Arc::new(Notice::default());\n    let waker = Waker::from(notice.clone());\n    let mut cx = Context::from_waker(&waker);\n    for _ in 0..polls {\n        notice.0.store(false, Ordering::Release);\n        match future.as_mut().poll(&mut cx) {\n            Poll::Ready(value) => return Turn::Ready(value),\n            Poll::Pending if !notice.0.load(Ordering::Acquire) => return Turn::Stalled,\n            Poll::Pending => {}\n        }\n    }\n    Turn::BudgetUsed\n}\nstruct Sum { next: u32, limit: u32, total: u64 }\nimpl Future for Sum {\n    type Output = u64;\n    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<u64> {\n        for _ in 0..128 {\n            if self.next == self.limit { return Poll::Ready(self.total); }\n            self.total += u64::from(self.next);\n            self.next += 1;\n        }\n        if self.next == self.limit { Poll::Ready(self.total) }\n        else { cx.waker().wake_by_ref(); Poll::Pending }\n    }\n}\nfn main() {\n    let mut sum = std::pin::pin!(Sum { next: 0, limit: 1_000, total: 0 });\n    assert_eq!(drive(sum.as_mut(), 1), Turn::BudgetUsed);\n    assert_eq!(drive(sum.as_mut(), 16), Turn::Ready(499_500));\n    let mut pending = std::pin::pin!(std::future::pending::<()>());\n    assert_eq!(drive(pending.as_mut(), 4), Turn::Stalled);\n    println!(\"bounded turns: ok\");\n}",
+        "codeLanguage": "rust"
+      },
+      {
+        "heading": "Read the sum as a resumable state machine",
+        "paragraphs": [
+          "The `Sum` value stores three facts: where the next piece starts, where the workload ends, and the total accumulated so far. A poll changes those facts only while processing a complete integer. It returns ready immediately when the final boundary is reached. Otherwise it requests another turn and returns pending. There is no hidden stack of partially completed loop iterations that the caller has to reconstruct.",
+          "The integer choices are intentional. The cursor and limit use `u32`; widening the cursor before addition allows the largest supported sum to fit in `u64`. The loop increments the cursor only while it is below the limit, so reaching the maximum possible limit does not require incrementing beyond that value. Such boundary reasoning matters more than the particular arithmetic example. A cooperative parser or importer likewise needs an invariant that remains true after every return to its caller."
+        ]
+      },
+      {
+        "heading": "A wakeup is a scheduling request, not execution itself",
+        "paragraphs": [
+          "The `Notice` object records whether the polled computation asked to run again. It never calls `poll` recursively from inside `wake`. Recursive polling could reenter a computation while its earlier poll still owns mutable access, and it would make the caller's budget meaningless. The driver instead observes the notice after the current poll returns, then decides whether its own quota permits another poll.",
+          "That separation becomes more valuable as a scheduler grows. Several wakeups may be combined into one ready-queue entry, and a task may be polled after a different task has already changed shared state. Code should inspect the actual resource again when polled rather than treating a wakeup as proof that the operation must now succeed. A well-designed waiting future stores or updates the relevant waker and rechecks readiness in a way that avoids losing a notification during registration."
+        ],
+        "sources": [
+          {
+            "title": "Rust standard library: Waker and scheduling notifications",
+            "url": "https://doc.rust-lang.org/std/task/struct.Waker.html"
+          }
+        ]
+      },
+      {
+        "heading": "Why repeatedly awaiting a ready future does not help",
+        "paragraphs": [
+          "Consider a loop that transforms a million records and awaits a helper after each record. If that helper is always ready, the outer future can continue through the whole loop inside one poll. The source contains many `.await` expressions, but none necessarily returns pending to the executor. Counting await points is therefore a weak way to assess fairness. The useful observation is how long a poll actually holds control.",
+          "Make a deliberately expensive record in a test fixture and observe whether input handling continues while it is processed. If the transform is fundamentally CPU-bound, moving it to an appropriate worker may be the correct design on platforms that support that execution model. If it must remain cooperative, break it into valid resumable pieces. Either approach requires an actual scheduling boundary. Decorating an existing synchronous routine with an async wrapper changes its type without changing the cost of the synchronous work inside it."
+        ]
+      },
+      {
+        "heading": "Cancellation begins with ownership and safe stopping points",
+        "paragraphs": [
+          "Dropping an ordinary future stops future polls of that value. It does not automatically undo a file already written or retract a request already sent by some external component. In our sum, cancellation simply discards a private cursor and accumulator. An importer that has already changed a project's files needs a stronger protocol: write into a temporary area, validate the complete result, then commit it in one controlled operation.",
+          "A cancellation flag is useful when a computation cannot be dropped immediately because it is executing elsewhere. Check that flag at boundaries that leave state valid, then report cancellation distinctly from a compiler or data error. Avoid making cancellation depend on the user producing more input. If a task is blocked waiting for a resource, the mechanism that owns that wait should be able to wake or interrupt it when cancellation occurs. Otherwise the interface can show Stop while the underlying operation remains alive indefinitely."
+        ]
+      },
+      {
+        "heading": "Keep background execution separate from interface updates",
+        "paragraphs": [
+          "A responsive application usually has a narrow place where visible state is changed. Heavy work reports small events to that place rather than running its parser, decompressor or compiler there. For a Rust service this might be a channel into a state owner. For a native application it may be a platform-specific interface executor. The architectural principle is the same: move facts about progress across the boundary, not the expensive operation itself.",
+          "Design those events so they can be safely ignored after the user switches projects. Include an operation identity and the relevant project revision, then discard late events that belong to an older operation. Otherwise a correctly scheduled background task can still corrupt the visible story by announcing completion for a project that is no longer open. Responsiveness and result ownership are separate requirements, and both deserve tests with deliberately slow and out-of-order fixtures."
+        ]
+      },
+      {
+        "heading": "Bound progress reporting as well as computation",
+        "paragraphs": [
+          "A worker can avoid blocking the interface and still overwhelm it by reporting every byte or instruction. A thousand queued interface updates per second can consume more visible time than the original task. Prefer meaningful stage changes, aggregate counts and throttled measurements. A dependency download might report archive acquisition, checksum verification, extraction and readiness. A compiler might report package compilation, project compilation and program execution.",
+          "Keep a bounded history for the current operation, and separate that history from the program's own output. Users should be able to find a build error in the diagnostics view while still seeing which earlier stages completed. Cached work should be labeled as cached rather than presented as a fresh compilation. These choices make the event stream useful for debugging and for explaining speed improvements; they also prevent a large project's history from growing without limit during a long editing session."
+        ]
+      },
+      {
+        "heading": "Test lost wakeups, exhausted budgets and completed values",
+        "paragraphs": [
+          "The happy-path sum checks only part of the contract. Add a future that wakes itself twice before returning pending and verify that the driver remains within its poll quota. Add one that returns pending without a wakeup and verify that the driver returns promptly. Try a zero poll budget: it should consume no work and report that the turn allowance has ended. None of these tests needs a real network connection or wall-clock sleep.",
+          "Do not poll an ordinary future again after it has returned ready unless that future explicitly documents support for doing so. Our driver returns the completed value to its owner; the owner should retire or replace the task. If an application needs a persistent operation that produces many values, model that behavior explicitly as repeated requests or a stream-like interface. Treating a completed single-result future as a reusable service leaves its post-completion behavior unspecified and makes failures difficult to reproduce."
+        ]
+      },
+      {
+        "heading": "Backpressure gives the producer a reason to pause",
+        "paragraphs": [
+          "Suppose a background parser can produce progress records much faster than the interface can display them. An unbounded queue initially looks convenient because the producer never waits. Over a long operation, however, the queue becomes a second representation of the workload, holding strings, timestamps and state snapshots that may already be obsolete. The original computation can finish while the user is still watching the interface replay its old progress.",
+          "Use different delivery rules for different kinds of information. A latest-value slot is often enough for a percentage or current-package label. A bounded queue can preserve significant transitions such as a failed checksum or completed compilation. Program output may require a byte limit and an explicit truncation or stop policy because silently dropping arbitrary lines can alter what an exercise appears to have printed. One queue policy does not serve all three purposes.",
+          "In a test, make the consumer intentionally slow and observe memory use as well as completion time. Confirm that an essential terminal event still arrives and that obsolete intermediate progress does not delay it indefinitely. A producer that respects backpressure is cooperating with the whole application, rather than simply yielding within its own internal loop."
+        ]
+      },
+      {
+        "heading": "A deadline only works where it can be observed",
+        "paragraphs": [
+          "A caller may set a deadline before polling a future, but ordinary Rust code does not become preemptible merely because a deadline exists. If a poll enters a long synchronous routine that never returns, the caller cannot inspect its clock again on that same thread. Checking elapsed time between polls is therefore useful only after the workload has acceptable internal boundaries. A timeout wrapper cannot manufacture those boundaries inside arbitrary CPU work.",
+          "For an interpreter, an instruction or fuel counter can provide an additional observation point during guest execution. For a decompressor, cancellation may be checked between bounded input chunks. For a filesystem import, check between entries and before committing the completed project. Each mechanism belongs close enough to the expensive operation that it can actually interrupt or stop further work, while leaving a valid result or a clearly discarded temporary state.",
+          "Test the deadline with an adversarial workload, not only a slow network response. A computation that repeatedly makes progress but never completes is a better way to discover whether the timeout is enforced inside the relevant loop. Report the stopping reason separately from an ordinary guest-program error so users can decide whether to reduce input, change a resource budget, or fix their code."
+        ]
+      },
+      {
+        "heading": "Fairness has to account for the expensive item",
+        "paragraphs": [
+          "A quota of one hundred items sounds fair until one item takes a thousand times longer than the rest. Imagine a source browser where most files are tiny but one generated module is several megabytes. Yielding after every file still permits the generated module to cause a long pause. The item-count quota is useful bookkeeping, but the expensive item needs its own smaller boundary or a different execution resource.",
+          "This is also why progress by package count can be misleading. Finishing nine small dependencies does not imply that a tenth large dependency will take the same fraction of time. Show the actual current stage and package name, then treat the count as completed units rather than an estimated time remaining. A precise count with a modest claim is more useful than a smooth percentage that suggests knowledge the application does not have.",
+          "When a task repeatedly dominates the schedule, profile that task before changing the global scheduler. It may be repeatedly allocating a large buffer, reparsing identical data, or hashing the same verified artifact. Removing that duplicated work can improve both throughput and the longest visible turn, whereas simply increasing a quota may improve one number by making the interface less responsive."
+        ]
+      },
+      {
+        "heading": "Measure the slowest visible turn, not just total throughput",
+        "paragraphs": [
+          "Total completion time and responsiveness answer different questions. A transform can finish sooner overall while causing a worse pause in the middle. Record the longest poll or uninterrupted chunk alongside total duration and output correctness. Test small ordinary inputs, a large valid input, a malformed input discovered late, and cancellation during the expensive part. A progress spinner that updates only before and after the operation does not establish that intermediate interaction remained possible.",
+          "On a phone, repeat the experiment after a cold launch and while the device is doing ordinary background work. Compare the same input and build configuration, and report whether dependency artifacts or parsed modules were already cached. A faster warm run does not prove a faster cold compiler. Likewise, a shorter turn obtained by doing less validation is not an improvement unless the validation contract was deliberately changed and the resulting behavior remains acceptable."
+        ]
+      },
+      {
+        "heading": "Use the experiment to choose the next boundary",
+        "paragraphs": [
+          "The program is useful precisely because it refuses to be a complete runtime. It lets you point to the moment a computation yields, the signal that permits another poll, and the budget that returns control to the caller. Once those decisions are visible, moving to an established runtime becomes easier to reason about: identify which parts it supplies, which work remains synchronous, and which resources the target environment actually offers.",
+          "For an offline learning application, start with small resumable computations and standard-library examples, then add runtime-specific exercises with explicit requirements. For a server, use the runtime's documented task, I/O and cancellation facilities and measure blocking work separately. In both cases, keep the central question concrete: after this piece of work begins, what allows the rest of the application to run again, and what evidence shows that the opportunity arrives soon enough?"
+        ]
+      }
+    ],
+    "readingMinutes": 14
+  },
+  {
+    "slug": "crabrix-offline-progress-game-center",
+    "title": "Crabrix notes: local progress before optional Game Center",
+    "date": "2026-10-05",
+    "summary": "What Crabrix’s October progress update teaches about offline records, duplicate events, achievement projections and reliable Rust state transitions.",
+    "relatedSlugs": [
+      "rust-enums-state-machines",
+      "rust-checked-arithmetic-conversions",
+      "rust-futures-cooperative-work"
+    ],
+    "sections": [
+      {
+        "heading": "The development change and its useful engineering lesson",
+        "paragraphs": [
+          "Development record, 5 October 2026. Crabrix’s changelog records two related changes on this date: an optional Game Center switch and a mapping from local achievement ladders to Apple achievements. The underlying learning record remains local. This is a development-history entry, rather than a claim that every recorded build was publicly available through the App Store on that day. The distinction matters when a product’s source history moves faster than store review.",
+          "The interesting engineering question extends beyond achievements: how can an application repeat a submission without repeating the underlying reward? A lesson can finish while a phone is offline, a screen can reopen after an interruption, and a remote service can accept a request whose response never reaches the caller. This article develops a small original Rust ledger to explore those cases. Crabrix’s native progress implementation is Swift; the Rust program below is an independent teaching example, not a translation or a description of its exact persistence format."
+        ],
+        "image": {
+          "src": "/blog/crabrix-offline-progress-editorial.png",
+          "alt": "A coral crab places a milestone token in a local notebook, separate from an optional achievement display.",
+          "caption": "The learning record belongs to the local application. An optional social display is a projection of that record.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "Crabrix source changelog, October 5 development entries",
+            "url": "https://github.com/sergii-ziborov/crabrix-poc/blob/7dcb0bece272f7039206d61e6922b7a068dc8645/CHANGELOG.md"
+          }
+        ]
+      },
+      {
+        "heading": "Start with the record that must survive without a connection",
+        "paragraphs": [
+          "Suppose a learner completes a borrowing exercise on a train. The application should remember the result before it tries to tell any other service about it. If the next tunnel interrupts connectivity, the lesson should still be completed when the learner opens the app again. Defining the local record as authoritative gives the application a clear answer even when a network operation has an ambiguous outcome.",
+          "A remote leaderboard has a different purpose: it displays selected information associated with an authenticated player. It may be unavailable, disabled, delayed or associated with a different identity after an account change. None of those conditions should make a locally completed exercise disappear. This separation is also useful without Game Center. A desktop backup, an export file and a future synchronization service can each consume a record without becoming the only place where the learner’s work exists."
+        ]
+      },
+      {
+        "heading": "Name the three identities before designing storage",
+        "paragraphs": [
+          "A lesson identifier names the educational material. An attempt identifier names one submission of work against that material. A player identity names an optional external account. These are different relationships. Using the lesson identifier as the only submission key prevents a second genuine attempt from being represented; generating a new attempt identifier during every retry permits the same attempt to receive multiple awards.",
+          "Create the attempt identity when the application starts the submission transaction, then retain it through retries and recovery. In the teaching example, the caller supplies a short string identifier so the code remains dependency free. A production design needs a documented allocation method with collision resistance appropriate to its lifetime and device boundaries. Do not infer security from the identifier’s visual appearance: the record still needs validation, and an untrusted caller must not be allowed to choose arbitrary score increments."
+        ]
+      },
+      {
+        "heading": "A duplicate and a conflict require different responses",
+        "paragraphs": [
+          "If a previously seen attempt identifier arrives with exactly the same lesson and result, the operation is a duplicate. Returning success without changing the total is a useful idempotent behavior: retrying the same logical request produces the same stored effect. It is reasonable for the caller to dismiss its pending indicator after receiving that response because the desired record already exists.",
+          "If the identifier arrives with different content, silently replacing the old event hides a real inconsistency. Perhaps the caller reused an identifier, a persistence migration changed a field incorrectly, or two devices generated a collision. The example reports a conflict and leaves both the score and stored event unchanged. Choosing this behavior makes a defect observable. It also avoids an especially confusing interface where the displayed score changes merely because an old completion screen was opened twice."
+        ],
+        "image": {
+          "src": "/blog/crabrix-offline-progress-infographic.png",
+          "alt": "An attempt passes validation and deduplication into a local ledger; duplicate requests make no change and optional Game Center receives a separate projection.",
+          "caption": "Identical retries are harmless; conflicting reuse of an identifier is an error. The example models an in-memory transition, not durable database transactions.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Validate the event before changing either collection or total",
+        "paragraphs": [
+          "The ledger accepts a bounded lesson name, a bounded attempt identifier and a small nonnegative award. A failed attempt cannot award points in this example. These are explicit demonstration rules, rather than universal rules for educational products. A product might reasonably award practice effort even after an incorrect answer; if it does, the event model and tests should say so directly.",
+          "Validation occurs before insertion or arithmetic changes. That order prevents a rejected event from occupying an identifier or altering the aggregate. The collection also has a finite event count, because an offline application still has a storage budget. Returning a full-ledger error is incomplete product behavior, but it is a better teaching boundary than allocating indefinitely. A production policy could archive old attempts while retaining deduplication evidence, provided it clearly defines how old retries will be recognized after that compaction."
+        ]
+      },
+      {
+        "heading": "A small runnable ledger in Rust",
+        "paragraphs": [
+          "The complete program uses only the standard library. `BTreeMap` gives the example stable key-ordered iteration, which is useful when inspecting a saved transcript or reproducing a test. The example does not depend on map order to decide which event is valid. That decision follows from the attempt identity, payload comparison and validation rules. Another collection could implement the same logical contract with different performance characteristics.",
+          "The checked addition is computed before either stored field changes. Once the candidate total is valid, the event is inserted and the aggregate is assigned. The `main` function verifies a new award, an identical retry and a conflicting retry. You can run this as a single Rust source file without downloading crates. It deliberately has no network client, global account identity or persistence layer, leaving those boundaries visible for the later sections rather than disguising them inside a helper."
+        ],
+        "code": "use std::collections::BTreeMap;\n#[derive(Clone, Debug, PartialEq)]\nstruct Attempt { lesson: String, passed: bool, points: u64 }\n#[derive(Default)]\nstruct Ledger { attempts: BTreeMap<String, Attempt>, score: u64 }\n#[derive(Debug, PartialEq)]\nenum Record { Added, Duplicate }\n#[derive(Debug, PartialEq)]\nenum Error { Invalid, Conflict, Full, Overflow }\nimpl Ledger {\n    fn record(&mut self, id: &str, attempt: Attempt) -> Result<Record, Error> {\n        if id.is_empty() || id.len() > 128 || attempt.lesson.is_empty()\n            || attempt.lesson.len() > 256 || attempt.points > 100\n            || (!attempt.passed && attempt.points != 0) { return Err(Error::Invalid); }\n        if let Some(previous) = self.attempts.get(id) {\n            return if previous == &attempt { Ok(Record::Duplicate) }\n                else { Err(Error::Conflict) };\n        }\n        if self.attempts.len() >= 50_000 { return Err(Error::Full); }\n        let next_score = self.score.checked_add(attempt.points).ok_or(Error::Overflow)?;\n        self.attempts.insert(id.to_owned(), attempt);\n        self.score = next_score;\n        Ok(Record::Added)\n    }\n}\nfn main() {\n    let mut ledger = Ledger::default();\n    let a = Attempt { lesson: \"ownership-1\".into(), passed: true, points: 20 };\n    assert_eq!(ledger.record(\"attempt-1\", a.clone()), Ok(Record::Added));\n    assert_eq!(ledger.record(\"attempt-1\", a), Ok(Record::Duplicate));\n    assert_eq!(ledger.score, 20);\n    let conflict = Attempt { lesson: \"ownership-1\".into(), passed: true, points: 30 };\n    assert_eq!(ledger.record(\"attempt-1\", conflict), Err(Error::Conflict));\n    assert_eq!(ledger.score, 20);\n    println!(\"one attempt, one award: ok\");\n}",
+        "sources": [
+          {
+            "title": "Rust standard library: BTreeMap",
+            "url": "https://doc.rust-lang.org/std/collections/struct.BTreeMap.html"
+          }
+        ],
+        "codeLanguage": "rust"
+      },
+      {
+        "heading": "Understand the transaction the example does not provide",
+        "paragraphs": [
+          "An in-memory function can ensure that ordinary error returns leave its fields unchanged. That does not make it crash-safe storage. If an application writes the event and aggregate into separate files, a process termination between those writes can leave them inconsistent. Returning `Ok` from the Rust method proves only that the demonstrated memory transition completed; it says nothing about whether bytes reached durable storage.",
+          "For a real application, select a persistence mechanism with an appropriate transaction boundary or design a recoverable record protocol. One strategy stores validated events and reconstructs aggregates, with explicit handling of incomplete trailing writes. Another uses a database transaction to commit the event and updated projection together. The correct choice depends on expected history size, recovery time and platform guarantees. Write down what happens if the process stops at each persistence step, then test those points with a deliberately interrupted writer."
+        ]
+      },
+      {
+        "heading": "Make derived progress reproducible",
+        "paragraphs": [
+          "A score and an achievement badge are convenient projections, but neither should be the only explanation of what happened. Given the accepted attempt records and a documented scoring policy, a diagnostic tool should be able to reconstruct the aggregate or explain why an earlier aggregate used a different rule. This is especially useful when a learner reports that an achievement sometimes fails to unlock.",
+          "Keep the scoring policy version separate from lesson content identifiers. Editing a lesson’s explanation should not accidentally create a new attempt identity or award the same completion again. Changing the scoring policy is a deliberate migration: decide whether previous attempts retain their original awards or are recalculated. Both policies can be coherent, but switching between them implicitly produces surprises. Record the chosen rule so an export, a support report and a repaired local database reach the same answer."
+        ]
+      },
+      {
+        "heading": "Project to Game Center only after local acceptance",
+        "paragraphs": [
+          "Crabrix’s October development record describes Game Center as optional and off by default. Its documentation distinguishes 37 local five-tier ladders from ten earlier individual milestones. The mapping is a product decision about which local evidence appears in the external achievement system. A local ladder with several tiers need not become several independent remote achievements, and an external catalog’s limits should not constrain the richness of local learning feedback.",
+          "Treat submission as a separate operation after a valid local transition. The application can show that learning progress is saved while reporting that the optional social update is pending. Apple’s GameKit facilities supply account and achievement APIs; they do not choose the application’s local authority or scoring semantics. Check the current platform documentation when implementing authentication and reporting. The example here intentionally contains no guessed GameKit calls or simulated claim that a remote achievement was actually accepted."
+        ],
+        "sources": [
+          {
+            "title": "Crabrix optional Game Center documentation",
+            "url": "https://github.com/sergii-ziborov/crabrix-poc/blob/7dcb0bece272f7039206d61e6922b7a068dc8645/docs/GAME-CENTER.md"
+          },
+          {
+            "title": "Apple GameKit documentation",
+            "url": "https://developer.apple.com/documentation/gamekit"
+          }
+        ]
+      },
+      {
+        "heading": "An uncertain response is a normal state",
+        "paragraphs": [
+          "Imagine that the remote service receives an achievement update, stores it and closes the connection before the phone receives confirmation. From the phone’s perspective the request failed; from the service’s perspective it succeeded. A retry strategy must tolerate this uncertainty without treating the local lesson as incomplete or inventing another local award. This is why a spinner’s visible lifetime should not define the transaction’s identity.",
+          "Store enough submission state to retry the projection deliberately. Distinguish a request that has never been sent, a request awaiting confirmation and a request confirmed for a particular external player. Apply bounded retry delays and stop automatic retries when the user disables the feature. A repeated network failure should not prevent editing projects or reading downloaded lessons. Remote submission is useful background work; the learner should not have to wait for it before continuing an offline session."
+        ]
+      },
+      {
+        "heading": "Account changes invalidate assumptions about remote state",
+        "paragraphs": [
+          "A phone can change its authenticated external player while keeping the same local learning history. A cache saying that an achievement was submitted yesterday is meaningful only in relation to the player who received it. Reusing that cache for another player can suppress legitimate submissions or make the interface claim that data was sent to the wrong account.",
+          "Associate any remote acknowledgement with the external player identity and the projection version. Decide what opting in under a new account means for existing local progress, explain that behavior to the user, and invalidate the old submission cache where appropriate. Do not silently transfer private project sources as part of an achievement update. A learning score, a lesson identifier and the source text that produced the result are different data categories and should have separately justified handling rules."
+        ]
+      },
+      {
+        "heading": "Test the awkward sequences rather than the celebration animation",
+        "paragraphs": [
+          "Begin with sequences that a real interface can produce: the learner taps twice, the application restarts immediately after completion, an old screen retries a request, and a new attempt legitimately revisits the same lesson. Verify both the stored event set and the visible aggregate after each sequence. A test that only checks that a badge appears once cannot reveal whether the underlying score was incremented twice.",
+          "Add rejection tests for a conflicting identifier, an oversized field, a failed attempt with an invalid award and an exhausted storage allowance. Test arithmetic overflow by placing the aggregate near its type’s maximum in a dedicated internal test fixture. Every rejection should preserve the previous ledger. For persistence, inject interruption around the actual commit boundary and reopen from disk. For remote projection, use a controlled service substitute that accepts a request but loses its acknowledgement, then verify that a retry remains harmless locally."
+        ]
+      },
+      {
+        "heading": "Keep privacy explanations as concrete as the state machine",
+        "paragraphs": [
+          "A useful privacy explanation says which optional action sends which kind of data to which service. It should also say which functions remain available without that action. “Offline first” is too broad if the interface leaves users guessing whether reading a lesson, compiling code or opening a leaderboard starts a connection. Concrete boundaries let a learner decide whether to use the optional feature.",
+          "For this design, the teaching ledger itself needs no account and sends nothing. The product’s actual Game Center integration follows its own published privacy and platform terms, and its settings should agree with those descriptions. When adding a new remote projection, update the native About and privacy views together with website documents. Documentation drift is a functional defect: users can encounter either copy first, and an offline application must be able to explain its behavior without requiring a browser visit."
+        ]
+      },
+      {
+        "heading": "Choose the deduplication lifetime deliberately",
+        "paragraphs": [
+          "An event identifier is useful only while the system remembers having accepted it. If a cleanup operation deletes all records older than thirty days, a delayed retry from an old export can appear new again. That may be acceptable for a temporary interaction log, but it is usually surprising for permanent learning credit. Retention and deduplication therefore belong in the same design discussion rather than in unrelated storage and networking tickets.",
+          "A compact tombstone can preserve an attempt identifier and a digest of its canonical payload after detailed evidence is archived. The digest must cover the fields that define equality, and its encoding must be versioned; concatenating ambiguous strings can make different payloads look identical. Another option retains the full accepted event in a compressed archive and indexes its identity separately. Whichever policy you choose, test a retry before and after compaction and make the expected result identical unless the product explicitly documents an expiration rule."
+        ]
+      },
+      {
+        "heading": "Separate a content update from an achievement migration",
+        "paragraphs": [
+          "Educational material changes for good reasons: an explanation becomes clearer, an exercise receives a missing edge case, or a compiler update changes a diagnostic. These edits should use stable lesson identifiers when they represent the same learning objective. A course download version identifies a package revision, while a completion event identifies work the learner actually submitted. Replacing the package version everywhere with the lesson identity merges two distinct histories.",
+          "When an exercise changes substantially, decide whether previous completion remains sufficient. Preserve the original evidence and attach a new objective or policy version if reassessment is required. Avoid resetting an entire course merely because an illustration was corrected. A migration test should install the old material, complete selected lessons, apply the new package, reopen the progress view and verify the documented carry-forward behavior. That test connects content delivery to learning state without assuming that every update must either erase progress or grant everything automatically."
+        ]
+      },
+      {
+        "heading": "Treat time as evidence rather than identity",
+        "paragraphs": [
+          "A timestamp is useful for showing when an attempt occurred, but it is a weak deduplication key. Two legitimate actions can share the same clock resolution, and a device clock can move backward or be corrected after an offline period. Sorting events by a displayed local time also gives different answers across time zones unless the stored representation and presentation policy are explicit.",
+          "Use the attempt identifier for identity and store time separately for explanation. If ordering affects scoring, define a deterministic sequence rule that survives imports and repeated synchronization. If order does not affect scoring, keep the aggregate commutative where practical so delivery order cannot change the answer. Test equal timestamps and out-of-order arrival explicitly. The objective is an understandable record, not a claim that an ordinary phone clock can establish a globally trusted timeline across disconnected devices."
+        ]
+      },
+      {
+        "heading": "Make a support report useful without exporting private projects",
+        "paragraphs": [
+          "Intermittent progress defects are easier to investigate when a report contains the attempt identifier, lesson identity, policy version, accepted transition and relevant projection status. Those fields can explain duplicate suppression, migration behavior or an account-specific submission cache without including the learner’s complete source project. A bounded report also prevents a long local history from becoming an unexpectedly large attachment.",
+          "Provide a preview of the report before sharing and use ordinary platform sharing so the learner chooses its destination. Include counts and validation errors rather than secrets, authentication tokens or raw account credentials. For the teaching ledger, a diagnostic transcript can list each accepted key and the resulting score, then verify that replay produces the same aggregate. This makes the example valuable beyond a successful assertion: it supplies a concrete method for explaining why a state was reached when the interface alone cannot reproduce the sequence."
+        ]
+      },
+      {
+        "heading": "A compact review checklist for a real implementation",
+        "paragraphs": [
+          "Before shipping, ask another engineer to trace one attempt through validation, deduplication, durable acceptance, derived progress and optional submission. At each boundary, identify the owner, the identity being used and the result of interruption. If two components can independently award the same attempt, consolidate that decision or make the shared transaction explicit. If a remote error can erase local progress, revisit which record is authoritative.",
+          "Finally, inspect the interface with networking disabled and with the optional account unavailable. Complete an exercise, reopen the application and repeat the same submission. The local record should explain the observed behavior without appealing to an eventually successful network call. That is the practical value of the October change as an engineering topic: reliable progress begins with a small, understandable local transition, and every additional display or service should preserve that transition’s meaning."
+        ]
+      }
+    ],
+    "readingMinutes": 13
   }
 ]

@@ -1,0 +1,70 @@
+[
+  {
+    "stem": "rust-futures-editorial",
+    "prompt": "Use case: editorial illustration. Asset type: original 1536x1024 landscape cover for an advanced Rust learning article about cooperative futures and fair scheduling. Create an exquisitely crafted scientific editorial scene: a dark navy miniature observatory workbench, three separate brass mechanical tracks carrying small glowing jade computation capsules; one capsule pauses at a clearly delineated gate to let the next track move. Precise physical mechanisms, ivory ceramic, fine etched brass, muted coral indicator lights, rich tactile depth, cinematic but restrained lighting. Wide balanced composition, readable silhouettes, generous dark negative space. Evoke cooperative turn taking and bounded work, not a computer motherboard. No text, letters, numbers, logos, crab mascot, hands, or watermark. High quality publication illustration, original scene, not a diagram, not stock imagery. All geometry coherent.",
+    "generatedPath": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-833689a5-053f-409e-8d83-6c60247f745b.png",
+    "visuallyChecked": true
+  },
+  {
+    "stem": "rust-futures-infographic",
+    "prompt": "Use case: analytical infographic. Asset type: landscape 1536x1024 illustration for a Rust article. Make a beautiful highly legible engineering decision diagram on deep midnight navy with ivory typography, jade successful paths, brass structural lines, and restrained coral waiting markers. Flat crisp technical diagram with subtle paper grain and elegant journal-quality composition, no tiny text. Title exactly 'A bounded polling turn'. Layout: a large left box 'Poll future' points right to a clear central diamond 'Ready?'. Upper right jade branch labeled 'Yes' goes to 'Return value'. Lower branch labeled 'No' goes to a second diamond 'Wake requested?'. Its 'No' branch goes down to 'Return Stalled'. Its 'Yes' branch goes left to diamond 'Budget left?'. This diamond's 'Yes' branch loops clearly back to 'Poll future', its 'No' branch goes to 'Return BudgetUsed'. Keep branch arrows unambiguous, do not cross labels. Bottom caption exactly 'The caller keeps the future and chooses the next turn.' All boxes roomy, few words, extremely readable, ample safe margins. No Rust code, no percentages, no invented statistics, no extra claims, no logos, no watermark. Precisely the described state transitions.",
+    "generatedPath": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-0d329204-b2d0-478c-81b3-bd8a3f945c58.png",
+    "visuallyChecked": true
+  },
+  {
+    "stem": "rust-generational-handles-editorial",
+    "prompt": "Use case: editorial illustration. Asset type: original 1536x1024 landscape cover for a technical Rust article on generational handles and stale references. A refined archival instrument in an intimate midnight navy scientific workshop: a precise brass rack with several removable ivory specimen trays; one empty tray socket, a newly inserted jade glass specimen in the same socket, and an old coral wax identification tag resting visibly disconnected on the bench. Physical identity versus reused storage is the clear visual metaphor. Crisp mechanically plausible details, high-end macro photography of handcrafted miniature engineering, subtle dust and ceramic textures, warm controlled brass highlights, dark blue shadows. Elegant composition and generous margins, visually different from a motherboard or generic network. No text, glyphs, labels, numbers, logos, hands, watermark, or recognizable commercial hardware.",
+    "generatedPath": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-4b30cc52-8d12-45dd-9387-f34bbc55f7b7.png",
+    "visuallyChecked": true
+  },
+  {
+    "stem": "rust-generational-handles-infographic",
+    "prompt": "Use case: analytical infographic. Asset type: 1536x1024 landscape technical figure for Rust generational handles. Deep midnight navy background, crisp ivory and jade type, brass lines, coral rejection marker; elegant spacious scientific journal design, no decorative complexity. Title exactly 'Same slot. Different lifetime.' Three large panels left to right linked by arrows. Left panel heading '1  Live A' with rows 'Owner 9', 'Slot 3', 'Generation 4', and jade block 'A'. Middle panel heading '2  Remove A' with rows 'Owner 9', 'Slot 3', 'Generation 5', and empty outline block 'Empty'. Right panel heading '3  Insert B' with rows 'Owner 9', 'Slot 3', 'Generation 5', and jade block 'B'. Below, a coral outlined card reads 'Old handle: owner 9 / slot 3 / generation 4'. A clear arrow points from it to a coral X beside the third panel, labeled 'Rejected: generation mismatch'. Bottom footer reads exactly 'Check owner + slot + generation. Retire exhausted slots; never wrap.' Make every word large, readable, correctly spelled and unambiguous; ample margins. No other text, no made-up statistics, no logo or watermark. Keep the exact generation transition: 4 to 5 on removal, still 5 on reinsertion.",
+    "generatedPath": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-efa018ba-e5e1-4352-bdf5-e8f4863c2b46.png",
+    "visuallyChecked": true
+  },
+  {
+    "stem": "rust-dependency-plans-editorial",
+    "prompt": "Use case: editorial illustration. Asset type: 1536x1024 landscape cover for a Rust article on deterministic dependency planning and cycle diagnostics. A beautiful overhead miniature engineering planning desk in a midnight navy observatory, a small number of ivory ceramic task blocks mounted on a slate board and linked by precise thin brass rails; several jade-lit blocks form a clear branching dependency arrangement, while off to one side three coral-lit blocks form a closed triangular loop that is visibly separate. Refined physical materials, elegant sparse composition, depth, soft cinematic lighting, high-end scientific editorial photography. No text, numbers, labels, letters, logos, screens, code, humans or watermark. Do not make a dense network or a motherboard. The branching structure and isolated cycle must be visually distinct. Ample navy margins.",
+    "generatedPath": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-142e9eae-6b78-48d7-b702-f6c47876fc90.png",
+    "visuallyChecked": true
+  },
+  {
+    "stem": "rust-dependency-plans-infographic",
+    "prompt": "Use case: analytical infographic. Asset type: landscape 1536x1024 Rust engineering article figure. Elegant crisp flat diagram on midnight navy with ivory typography, brass borders, jade readiness and restrained coral cycle warnings. Title exactly 'Ready work and blocked work'. Subtitle exactly 'Arrows mean enables'. Two clearly separated panels. LEFT heading 'A valid plan': node 'config' points to 'core'; 'core' branches to 'cli' and 'web'. Place cli above web. Beneath in a roomy card: 'Order: config, core, cli, web'. RIGHT heading 'A cycle blocks its consumers': coral node 'a' and coral node 'b' connected by two clear opposing arrows; an arrow from a goes down to an ivory node 'c'. Draw a subtle coral boundary around only a and b, leaving c outside. Beside c label 'Waiting, not in the cycle'. Bottom right two lines exactly 'Blocked: a, b, c' and 'Cycle witness: a → b → a'. Generous spacing, all words large and perfectly legible, clean graph edges, no crossing labels, no decorative artwork inside graph. No code, statistics, logos, watermark or extra claims. Make absolutely clear c is blocked but is not part of the cycle.",
+    "generatedPath": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-9c52b3f0-9c53-40e2-8d8e-eb353166d4ad.png",
+    "visuallyChecked": true
+  },
+  {
+    "stem": "crabrix-offline-progress-editorial",
+    "source": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-85cf1d75-eb00-45b8-8bc1-26e3834108bd.png",
+    "destination": "/Users/serhiirihgt/dev/crabrix-poc/site/public/blog/crabrix-offline-progress-editorial.png",
+    "visuallyChecked": true,
+    "prompt": "Create a premium editorial illustration for Crabrix's technical blog about offline learning progress and optional Game Center projection. Landscape 3:2, 1536x1024, restrained tactile 3D paper and ceramic, deep midnight navy, warm ivory and jade, precise soft studio lighting. A charming small coral-red Rust crab mascot carefully places a jade milestone token into a local notebook in the foreground. A separate translucent display with three understated achievement medallions stands farther away, connected by a thin dotted line; the solid local notebook is the main authoritative object. Clearly distinct from a cloud service illustration. No device screenshot, no invented app UI, no Apple logos, no words or labels, no huge title, no gradients of neon. Crisp shapes, rich texture and ample negative space. The crab must be clearly visible and appealing, with two claws and coherent anatomy.",
+    "tool": "built-in image_gen"
+  },
+  {
+    "stem": "crabrix-offline-progress-infographic",
+    "source": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-7362d770-2a08-442b-8d44-791043fe0faf.png",
+    "destination": "/Users/serhiirihgt/dev/crabrix-poc/site/public/blog/crabrix-offline-progress-infographic.png",
+    "visuallyChecked": true,
+    "prompt": "Create a beautiful technically accurate analytical infographic for a Crabrix blog article about idempotent offline learning progress. Landscape 3:2 1536x1024, deep navy background, ivory typography, jade success, muted coral duplicate route. Clear large legible text only as listed. Title: 'One attempt, one award'. Four primary boxes left to right: 'Attempt ID + result' → 'Validate + deduplicate' → 'Local ledger' → 'Derived progress'. A smaller curved branch from Validate + deduplicate goes downward to a box 'Duplicate: no change'. Beneath Local ledger a separate dotted arrow goes to 'Optional Game Center'. Beneath the drawing a subtle footer 'Local record first. Remote projection later.' Correct arrow directions: ledger to derived progress; ledger to optional Game Center only. A small friendly coral crab mascot bottom right holds a milestone token without obscuring labels. Refined editorial grid, elegant line art, no fake charts or numerical statistics, no Apple logo, no screenshot. Spacious, exact spellings, avoid extra text.",
+    "tool": "built-in image_gen"
+  },
+  {
+    "stem": "crabrix-offline-web-editorial",
+    "source": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-d73b9305-f6e3-4f88-a392-628760bef3d8.png",
+    "destination": "/Users/serhiirihgt/dev/crabrix-poc/site/public/blog/crabrix-offline-web-editorial.png",
+    "visuallyChecked": true,
+    "prompt": "Premium editorial illustration for the Crabrix offline Rust and local web development technical blog, landscape 3:2 1536x1024. A small engaging coral crab engineer on a midnight navy workbench arranges three luminous but restrained solid cards representing HTML document markup, a jade CSS paint swatch and a small amber JavaScript lightning symbol. Nearby a tiny brass printing press produces a paper web page from a Rust gear-shaped ceramic block. All elements physically coherent, warm ivory paper, jade details, beautiful soft studio light and refined grain. This is an artistic conceptual scene, not an app screenshot, no invented UI, no real company logos, no words or numbers or title. Clear storytelling: code and assets are on the local workbench, no cloud, no internet beams. Cute crab visible in foreground, detailed claws, professional editorial quality.",
+    "tool": "built-in image_gen"
+  },
+  {
+    "stem": "crabrix-offline-web-infographic",
+    "source": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-a066febd-e536-42c4-8ea4-5758e4fbbcba.png",
+    "destination": "/Users/serhiirihgt/dev/crabrix-poc/site/public/blog/crabrix-offline-web-infographic.png",
+    "visuallyChecked": true,
+    "prompt": "Create a precise premium analytical infographic for a Crabrix offline Rust web-development guide. Landscape 3:2 1536x1024, midnight navy, ivory typography, jade paths, restrained coral boundary. Title: 'Two local execution paths'. Top horizontal lane, exactly these boxes left to right: 'Rust source' → 'Bundled compiler' → 'WASI program' → 'Generated assets'. Lower horizontal lane: 'HTML + CSS + JavaScript' → 'Immutable snapshot' → 'Offline WebKit preview'. A jade connector descends from 'Generated assets' into 'Immutable snapshot'. On the far right beside preview a coral barrier labelled 'External network blocked'. Bottom-left small friendly coral crab with engineering notebook, not obscuring anything. Footer: 'Rust produces files. WebKit renders the page.' No performance numbers, no cloud, no Apple logo, no invented UI. All arrows correct and unambiguous, ample margins, clear typography, exactly spelled text. High quality editorial linework with subtle material texture.",
+    "tool": "built-in image_gen"
+  }
+]

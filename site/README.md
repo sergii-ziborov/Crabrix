@@ -49,7 +49,7 @@ repository and signed release archives remain public so existing native builds
 can download and update their courses. Changing that delivery model requires
 an app release and a separate migration.
 
-`content/posts.json` contains 20 articles. The five added on 23 October occupy
+`content/posts.json` contains 25 articles. The five added on 23 October occupy
 previously unoccupied editorial dates of 11, 14, 21, 22 and 23 October. Two
 practical guides cover generated Cargo source and memoization; three news
 analyses cover Rust infrastructure, the announced Rust 1.100 i686 Windows
@@ -147,7 +147,7 @@ Ordinary pages end in a slash; dotted Atlas lesson IDs follow Next's
 extension-like URL rule and omit it, avoiding a redirect from sitemap URLs.
 
 The [HTML sitemap](https://crabrix.com/sitemap/) lists all seven courses, 742
-lessons and 20 articles. `/sitemap.xml` contains 779 canonical URLs and 40 public
+lessons and 25 articles. `/sitemap.xml` contains 785 canonical URLs and 40 public
 blog image URLs. Known editorial modification dates are retained for the ten
 corrected lessons and three courses; build time does not invent modification
 dates. Private lesson media and account routes are excluded. `sitemap.xml` at
@@ -155,7 +155,7 @@ the site root is a synchronized legacy snapshot; Next's metadata route serves
 the production XML. `lib/lesson-seo.ts` supplies readable, unique descriptions
 without Markdown backticks and recorded editorial change dates.
 
-The latest live audit checked all 779 sitemap pages, unique titles, one H1 per
+The latest live audit checked all 785 sitemap pages, unique titles, one H1 per
 page, canonical/social metadata, structured data, previews and private media
 denial. All ten new public image hashes matched the selected repository assets.
 Twelve site tests, TypeScript checking and the production build passed.
@@ -210,3 +210,5 @@ edit and `--check` before release. The export includes offline Swift resources,
 GitHub-readable Markdown, website data, original third-party text files and
 byte-identical toolchain notice archives. Third-party copyrights and licenses
 are preserved. Account data is not part of any release artifact.
+
+The October 24 catalog adds five distinct long-form articles (2,600–2,726 prose words), ten ImageGen originals and optimized WebP deliveries. `/guide/` documents real product captures, offline packages, build stages and local HTML/CSS/JavaScript preview boundaries. The application legal bundle and this site share the canonical About, Privacy, Terms and license source.

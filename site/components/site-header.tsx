@@ -5,6 +5,7 @@ const links = [
   ["Overview", "/"],
   ["Learn", "/learn"],
   ["Blog", "/blog"],
+  ["Guide", "/guide"],
   ["Technology", "/technology"],
   ["About", "/about"],
   ["Support", "/support"],
