@@ -119,6 +119,7 @@ targets:
     preBuildScripts:
       - name: Prepare bundled Rust toolchain
         script: |
+          set -eu
           "$SRCROOT/scripts/fetch_toolchain.sh"
           /usr/bin/python3 "$SRCROOT/scripts/package_toolchain.py"
         basedOnDependencyAnalysis: false

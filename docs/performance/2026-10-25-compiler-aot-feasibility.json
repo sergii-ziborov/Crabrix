@@ -1,0 +1,35 @@
+{
+  "status": "feasibility only, not integrated, not shipped",
+  "date": "2026-10-25",
+  "source": "https://github.com/WebAssembly/wabt/tree/1.0.42",
+  "input": "trusted bundled compiler candidate only",
+  "translation": {
+    "status": "research only; generated C is not integrated or shipped",
+    "generator": "WABT 1.0.42 wasm2c",
+    "archiveSHA256": "3f654779b436c628db3ca4323c51538815f5fbc887a6d5f3bb1c18d36281e240",
+    "inputSHA256": "8f1b313ccb59bf43546e36cfcdbd04dac9b5c8388a6ffec23efe2148564c17e6",
+    "exitCode": 0,
+    "seconds": 32.676560833118856,
+    "peakObservedRSSBytes": 2934112256,
+    "stopped": null,
+    "generatedBytes": 1158805879
+  },
+  "iosObjectProbe": {
+    "status": "research only, one shard; no linked compiler or execution",
+    "sourceBytes": 4760544,
+    "seconds": 16.51097079180181,
+    "exitCode": 0,
+    "stopped": null,
+    "objectBytes": 2702240,
+    "objectSHA256": "d6fa822007e9abd6e876e451be2797cb8ce3535ff9af4bc909783cbdad517d66"
+  },
+  "remaining": [
+    "Build/link the complete compiler, not one shard.",
+    "Adapt bounded WASI host callbacks and fresh per-execution memory.",
+    "Implement and verify compiler cancellation/deadline checkpoints and resource limits.",
+    "Qualify compiler output equivalence, traps, bounds and physical performance.",
+    "General procedural macro support is a separate unsolved requirement."
+  ],
+  "noSpeedClaim": true,
+  "noUserCodeNativeCompilation": true
+}

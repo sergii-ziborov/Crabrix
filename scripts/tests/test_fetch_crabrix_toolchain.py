@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -78,6 +79,10 @@ class CrabrixToolchainFetchTests(unittest.TestCase):
             descriptor.write_text(json.dumps(envelope))
             with patch.object(own, "KEYRING", keyring):
                 self.assertEqual(own.verify_descriptor(descriptor, release), payload)
+                # Xcode exports an iOS SDKROOT even for host build scripts.
+                # A valid signature must still verify with the Mac's Swift SDK.
+                with patch.dict(os.environ, {"SDKROOT": "/invalid-inherited-iphone-sdk"}):
+                    self.assertEqual(own.verify_descriptor(descriptor, release), payload)
                 envelope["payloadBase64"] = base64.b64encode(raw.replace(b"test-1", b"test-2")).decode()
                 descriptor.write_text(json.dumps(envelope))
                 with self.assertRaisesRegex(ValueError, "signature is invalid"):

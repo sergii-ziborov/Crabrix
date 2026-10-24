@@ -1124,7 +1124,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/scripts/fetch_toolchain.sh\"\n/usr/bin/python3 \"$SRCROOT/scripts/package_toolchain.py\"\n";
+			shellScript = "set -eu\n\"$SRCROOT/scripts/fetch_toolchain.sh\"\n/usr/bin/python3 \"$SRCROOT/scripts/package_toolchain.py\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

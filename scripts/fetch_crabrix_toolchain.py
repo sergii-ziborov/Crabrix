@@ -106,10 +106,15 @@ def verify_descriptor(path, release):
         raise ValueError("invalid built-in toolchain public key") from error
     if len(public) != 32:
         raise ValueError("invalid built-in toolchain public key length")
+    # Xcode's iOS build phase exports SDKROOT for the guest app. This
+    # verifier runs on the build Mac, so let the selected Swift toolchain use
+    # its host SDK rather than trying to compile a macOS script with iOS stdlib.
+    verification_env = dict(os.environ)
+    verification_env.pop("SDKROOT", None)
     result = subprocess.run([
         "/usr/bin/swift", str(VERIFY_SWIFT), str(path), source["keyID"],
         matches[0]["publicKeyBase64"],
-    ], capture_output=True, check=False)
+    ], capture_output=True, check=False, env=verification_env)
     if result.returncode != 0:
         raise ValueError("toolchain descriptor signature is invalid")
     payload = unique_json(result.stdout)
