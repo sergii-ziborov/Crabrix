@@ -176,19 +176,22 @@ actor CargoPackageManager {
     private let target: RustTargetSpec
     private let toolchainVersion: String
     private let ledger: CrateCompatibilityLedger
+    private let supportsProceduralMacros: Bool
 
     init(
         index: any CrateIndexProviding = SparseRegistryIndex(),
         store: CrateStore = CrateStore(),
         target: RustTargetSpec = .wasm32WasiP1,
         toolchainVersion: String = CargoToolchain.bundledVersion,
-        ledger: CrateCompatibilityLedger = .shared
+        ledger: CrateCompatibilityLedger = .shared,
+        supportsProceduralMacros: Bool = CargoToolchain.supportsProceduralMacros
     ) {
         self.index = index
         self.store = store
         self.target = target
         self.toolchainVersion = toolchainVersion
         self.ledger = ledger
+        self.supportsProceduralMacros = supportsProceduralMacros
     }
 
     /// Resolves the graph, downloads what is missing, and produces a build plan.
@@ -343,6 +346,9 @@ actor CargoPackageManager {
     ) -> CargoBuildPlan {
         var fingerprints: [PackageID: String] = [:]
         var units: [CargoBuildUnit] = []
+        // Macro execution requires real linked dependencies even during Check.
+        // The root can still request metadata; its extern paths name rlibs.
+        let requiresLink = supportsProceduralMacros && prepared.values.contains { $0.manifest.isProcMacro }
 
         for id in graph.buildOrder {
             guard let package = graph.packages[id], let crate = prepared[id] else { continue }
@@ -360,7 +366,9 @@ actor CargoPackageManager {
                     return CargoExtern(
                         alias: CratePackageManifest.crateIdentifier(for: alias),
                         crateName: dependencyCrate.manifest.libraryCrateName,
-                        fingerprint: fingerprint
+                        fingerprint: fingerprint,
+                        isProceduralMacro: dependencyCrate.manifest.isProcMacro,
+                        requiresLink: requiresLink
                     )
                 }
                 .sorted { $0.alias < $1.alias }
@@ -369,7 +377,9 @@ actor CargoPackageManager {
                 toolchainID: toolchainVersion,
                 toolchainArtifactHash: CargoToolchain.artifactIdentity,
                 toolchainSemanticVersion: CargoToolchain.semanticVersionLabel,
-                compilerFlags: CargoFingerprint.dependencyCompilerFlags,
+                compilerFlags: CargoFingerprint.dependencyCompilerFlags
+                    + (crate.manifest.isProcMacro ? ["macro-rpc-v1", "--crate-type=proc-macro"] : [])
+                    + (requiresLink ? ["macro-graph-link"] : []),
                 targetTriple: target.triple,
                 resolverVersion: resolverVersion,
                 packageSource: crate.patch.map { "project-patch:\($0.sourceTreeHash)" }
@@ -407,7 +417,9 @@ actor CargoPackageManager {
                     buildScriptPath: crate.manifest.buildScriptPath,
                     buildScriptDependencies: crate.manifest.dependencies
                         .filter { $0.kind == .build && $0.applies(to: .wasm32WasiP1) }
-                        .map(\.alias).sorted()
+                        .map(\.alias).sorted(),
+                    isProceduralMacro: crate.manifest.isProcMacro,
+                    requiresLink: requiresLink
                 )
             )
         }
@@ -420,7 +432,9 @@ actor CargoPackageManager {
                 return CargoExtern(
                     alias: CratePackageManifest.crateIdentifier(for: alias),
                     crateName: crate.manifest.libraryCrateName,
-                    fingerprint: fingerprint
+                    fingerprint: fingerprint,
+                    isProceduralMacro: crate.manifest.isProcMacro,
+                    requiresLink: requiresLink
                 )
             }
             .sorted { $0.alias < $1.alias }
@@ -435,7 +449,7 @@ actor CargoPackageManager {
     /// Cargo's default library target is `src/lib.rs` unless `[lib] path` says
     /// otherwise. A crate with neither has no library to link.
     private func libraryPath(for crate: PreparedCrate) -> String? {
-        if crate.manifest.isProcMacro || crate.manifest.requiresUnsupportedCrateType {
+        if crate.manifest.isProcMacro ? !supportsProceduralMacros : crate.manifest.requiresUnsupportedCrateType {
             return nil
         }
         if let explicit = crate.manifest.library.path {
@@ -521,17 +535,17 @@ actor CargoPackageManager {
                     + (issue.errorDescription ?? "source access limit exceeded")
             )
         }
-        if crate.manifest.isProcMacro {
+        if crate.manifest.isProcMacro && !supportsProceduralMacros {
             return .unsupported("procedural macros need a host compiler Crabrix does not bundle")
         }
         if ["syn", "quote", "proc-macro2"].contains(package.id.name),
-           package.features.contains("proc-macro") {
+           package.features.contains("proc-macro"), !supportsProceduralMacros {
             return .unsupported(
                 "the proc-macro feature needs Rust's host-only proc_macro library, "
                     + "which is not in the bundled WASI sysroot; use the parser-only Cargo features"
             )
         }
-        if crate.manifest.requiresUnsupportedCrateType {
+        if crate.manifest.requiresUnsupportedCrateType && !(supportsProceduralMacros && crate.manifest.isProcMacro) {
             return .unsupported(
                 "builds only as \(crate.manifest.library.crateTypes.joined(separator: ", "))"
             )
@@ -643,14 +657,15 @@ actor CargoPackageManager {
         else {
             return nil
         }
-        let base = "lib\(unit.crateName)-\(unit.fingerprint)"
+        let artifact = CargoExtern(alias: unit.crateName, crateName: unit.crateName, fingerprint: unit.fingerprint,
+                                   isProceduralMacro: unit.isProceduralMacro, requiresLink: unit.requiresLink)
         if FileManager.default.fileExists(
-            atPath: directory.appending(path: "\(base).rlib").path
+            atPath: directory.appending(path: artifact.fileName(emit: .link)).path
         ) {
             return .verified
         }
         if FileManager.default.fileExists(
-            atPath: directory.appending(path: "\(base).rmeta").path
+            atPath: directory.appending(path: artifact.fileName(emit: .metadata)).path
         ) {
             return .checkVerified
         }

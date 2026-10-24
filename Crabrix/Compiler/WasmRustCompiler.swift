@@ -427,7 +427,8 @@ final class WasmRustCompiler: @unchecked Sendable {
                         [.init(guestPath: "/build-out", hostPath: $0.path, readOnly: true)]
                     } ?? []),
                     environment: rootEnvironment,
-                    interrupter: interrupter
+                    interrupter: interrupter,
+                    proceduralMacroInputs: macroInputs(for: plan)
                 )
             } catch let cancellation as WasmExecutionCancelled {
                 return cancelledResult(
@@ -569,6 +570,10 @@ final class WasmRustCompiler: @unchecked Sendable {
         }
 
         for (index, unit) in plan.units.enumerated() {
+            if unit.isProceduralMacro && !toolchain.supportsProceduralMacros {
+                return dependencyFailure(unit: unit, detail: "This toolchain has no procedural-macro transport.", stderr: "", started: started)
+            }
+            let unitEmit: CargoEmitKind = unit.requiresLink || unit.isProceduralMacro ? .link : emit
             if interrupter.wasCancelled {
                 return cancelledResult(
                     phase: .compile, started: started,
@@ -636,8 +641,8 @@ final class WasmRustCompiler: @unchecked Sendable {
                 "--target", "wasm32-wasip1",
                 "--edition", unit.edition,
                 "--crate-name", unit.crateName,
-                "--crate-type", "lib",
-                "--emit", emit.rustcEmitValue,
+                "--crate-type", unit.isProceduralMacro ? "proc-macro" : "lib",
+                "--emit", unitEmit.rustcEmitValue,
                 "-Cmetadata=\(unit.fingerprint)",
                 "-Cextra-filename=-\(unit.fingerprint)",
                 "-Copt-level=0",
@@ -650,7 +655,10 @@ final class WasmRustCompiler: @unchecked Sendable {
             for feature in unit.features.sorted() {
                 arguments += ["--cfg", "feature=\"\(feature)\""]
             }
-            arguments += externArguments(unit.externs, emit: emit)
+            arguments += externArguments(unit.externs, emit: unitEmit)
+            if unit.isProceduralMacro {
+                arguments += ["-Cprefer-dynamic=no", "-Crelocation-model=static"]
+            }
             arguments += buildOutput.compilerArguments
 
             var environment = cargoEnvironment(for: unit)
@@ -675,7 +683,8 @@ final class WasmRustCompiler: @unchecked Sendable {
                         [.init(guestPath: "/patches", hostPath: $0.path, readOnly: true)]
                     } ?? []),
                     environment: environment,
-                    interrupter: interrupter
+                    interrupter: interrupter,
+                    proceduralMacroInputs: macroInputs(for: plan)
                 )
             } catch let cancellation as WasmExecutionCancelled {
                 return cancelledResult(
@@ -716,7 +725,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             ledger.record(
                 package: unit.package,
                 fingerprint: unit.fingerprint,
-                outcome: emit == .metadata ? .checked : .built
+                outcome: unitEmit == .metadata ? .checked : .built
             )
         }
         return nil
@@ -1014,7 +1023,12 @@ final class WasmRustCompiler: @unchecked Sendable {
     }
 
     private func artifactFileName(_ unit: CargoBuildUnit, emit: CargoEmitKind) -> String {
-        "lib\(unit.crateName)-\(unit.fingerprint).\(emit.fileExtension)"
+        CargoExtern(alias: unit.crateName, crateName: unit.crateName, fingerprint: unit.fingerprint,
+                    isProceduralMacro: unit.isProceduralMacro, requiresLink: unit.requiresLink).fileName(emit: emit)
+    }
+
+    private func macroInputs(for plan: CargoBuildPlan) -> [String] {
+        plan.units.filter(\.isProceduralMacro).map { "/artifacts/" + artifactFileName($0, emit: .link) }
     }
 
     private var artifactsDirectory: URL? {
@@ -1032,7 +1046,8 @@ final class WasmRustCompiler: @unchecked Sendable {
         capturePrefix: String,
         preopens: [WASIBridgeToHost.Preopen],
         environment: [String: String] = ["CLIF2WASM_OBJECT": "1"],
-        interrupter: WasmInterrupter
+        interrupter: WasmInterrupter,
+        proceduralMacroInputs: [String] = []
     ) throws -> WasmProcessResult {
         let module = try runtime.rustcModule(at: toolchain.rustcURL)
         // Parsing the bundled rustc module is the one phase no interrupter can
@@ -1042,6 +1057,8 @@ final class WasmRustCompiler: @unchecked Sendable {
             throw WasmExecutionCancelled(reason: reason)
         }
         let invocationStarted = ContinuousClock.now
+        var environment = environment
+        if toolchain.supportsProceduralMacros { environment["CRABRIX_WASM_PROC_MACROS"] = "1" }
         let result = try autoreleasepool { try runtime.run(
             module: module,
             arguments: arguments,
@@ -1057,7 +1074,9 @@ final class WasmRustCompiler: @unchecked Sendable {
             wallClockLimit: CompilerHostPolicy.wallClockLimit,
             interrupter: interrupter,
             softwareMemoryReservationBytes: CompilerHostPolicy.memoryLimitBytes,
-            capturedOutputLimitBytes: CompilerHostPolicy.outputLimitBytes
+            capturedOutputLimitBytes: CompilerHostPolicy.outputLimitBytes,
+            enableProceduralMacros: toolchain.supportsProceduralMacros,
+            proceduralMacroInputs: proceduralMacroInputs
         ) }
         CompilerPhaseTrace.emit("rustc-after-pool", since: invocationStarted)
         return result

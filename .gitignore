@@ -17,3 +17,4 @@ __pycache__/
 CrabrixTests/CompilerCandidate/Artifact/
 CrabrixTests/CompilerCandidate/ArtifactO2/
 CrabrixTests/CompilerCandidate/ArtifactFat/
+CrabrixTests/CompilerCandidate/ArtifactMacro/

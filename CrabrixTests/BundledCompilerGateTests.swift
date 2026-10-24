@@ -6,6 +6,7 @@ import XCTest
 @testable import Crabrix
 
 final class BundledCompilerGateTests: XCTestCase {
+    private var macroSysrootOverlays: [URL] = []
     private func measuredCompiler(dependencyArtifactRoot: URL? = nil,
                                   experimentalDirectOverride: Bool? = nil,
                                   candidateProfileOverride: Bool? = nil,
@@ -17,7 +18,7 @@ final class BundledCompilerGateTests: XCTestCase {
         if candidateProfileOverride ?? (ProcessInfo.processInfo.environment["CRABRIX_COMPILER_CANDIDATE_PROFILE"] == "1") {
             let artifactName = candidateArtifactName
                 ?? ProcessInfo.processInfo.environment["CRABRIX_COMPILER_CANDIDATE_ARTIFACT"] ?? "Artifact"
-            guard ["Artifact", "ArtifactO2", "ArtifactFat"].contains(artifactName)
+            guard ["Artifact", "ArtifactO2", "ArtifactFat", "ArtifactMacro"].contains(artifactName)
             else { throw CocoaError(.fileReadCorruptFile) }
             let resources = try XCTUnwrap(Bundle(for: Self.self).resourceURL)
                 .appending(path: "CompilerCandidate/" + artifactName)
@@ -33,8 +34,33 @@ final class BundledCompilerGateTests: XCTestCase {
                   Array(bytes.prefix(8)) == [0, 97, 115, 109, 1, 0, 0, 0]
             else { throw CocoaError(.fileReadCorruptFile) }
             let baseline = try XCTUnwrap(BundledToolchain.locate(in: .main, version: CargoToolchain.bundledVersion))
-            candidate = BundledToolchain(rustcURL: compilerURL, sysrootURL: baseline.sysrootURL,
-                                         version: "candidate-" + sha)
+            var sysroot = baseline.sysrootURL
+            var identity = "candidate-" + sha
+            if artifactName == "ArtifactMacro" {
+                let supplementURL = resources.appending(path: "supplemental-sysroot.json")
+                let supplementBytes = try Data(contentsOf: supplementURL)
+                let supplement = try XCTUnwrap(try JSONSerialization.jsonObject(with: supplementBytes) as? [String: Any])
+                let libraries = try XCTUnwrap(supplement["libraries"] as? [String: [String: Any]])
+                guard supplement["candidate"] as? Bool == true,
+                      supplement["productionReplacement"] as? Bool == false,
+                      Set(libraries.keys) == Set(["libproc_macro.rlib", "librustc_literal_escaper.rlib"])
+                else { throw CocoaError(.fileReadCorruptFile) }
+                let overlay = FileManager.default.temporaryDirectory.appending(path: "MacroSysroot-\(UUID())")
+                try FileManager.default.copyItem(at: baseline.sysrootURL, to: overlay)
+                macroSysrootOverlays.append(overlay)
+                for name in libraries.keys.sorted() {
+                    let data = try Data(contentsOf: resources.appending(path: name))
+                    let digest = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+                    guard libraries[name]?["sha256"] as? String == digest,
+                          libraries[name]?["bytes"] as? Int == data.count
+                    else { throw CocoaError(.fileReadCorruptFile) }
+                    try data.write(to: overlay.appending(path: "lib/rustlib/wasm32-wasip1/lib/" + name))
+                }
+                sysroot = overlay
+                identity += "-" + SHA256.hash(data: supplementBytes).map { String(format: "%02x", $0) }.joined()
+            }
+            candidate = BundledToolchain(rustcURL: compilerURL, sysrootURL: sysroot,
+                                         version: identity, supportsProceduralMacros: artifactName == "ArtifactMacro")
             print("MEASURED COMPILER CANDIDATE SHA256", sha)
         }
         print("MEASURED COMPILER INPUT", candidate?.version ?? CargoToolchain.artifactIdentity)
@@ -45,6 +71,96 @@ final class BundledCompilerGateTests: XCTestCase {
                                 toolchainOverride: candidate)
     }
     private var previousIdleTimerDisabled: Bool?
+
+    private func requireProcMacroBridge() throws {
+        try Self.requireCompilerGate()
+        try XCTSkipIf(ProcessInfo.processInfo.environment["CRABRIX_RUN_PROC_MACRO_BRIDGE"] != "1")
+    }
+
+    func testWASIProcMacroIdentityUsesTheUnchangedMacroSource() async throws {
+        try requireProcMacroBridge()
+        let fixture = try XCTUnwrap(Bundle(for: Self.self).resourceURL)
+            .appending(path: "CompilerCandidate/Fixtures/ProcMacroIdentity")
+        let source = try String(contentsOf: fixture.appending(path: "lib.rs"), encoding: .utf8)
+        let consumer = try String(contentsOf: fixture.appending(path: "consumer/main.rs"), encoding: .utf8)
+        let manifest = try String(contentsOf: fixture.appending(path: "consumer/Cargo.toml"), encoding: .utf8)
+        let registry = try XCTUnwrap(CrateStorageLayout.sourceDirectory)
+        let directoryName = "macro-identity-fixture-\(UUID())"
+        let directory = registry.appending(path: directoryName)
+        let artifacts = FileManager.default.temporaryDirectory.appending(path: "MacroArtifacts-\(UUID())")
+        try FileManager.default.createDirectory(at: directory.appending(path: "src"), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory); try? FileManager.default.removeItem(at: artifacts) }
+        try source.write(to: directory.appending(path: "src/lib.rs"), atomically: true, encoding: .utf8)
+        let fingerprint = SHA256.hash(data: Data(source.utf8)).prefix(8).map { String(format: "%02x", $0) }.joined()
+        let unit = CargoBuildUnit(
+            package: PackageID(name: "crabrix-proc-macro-identity", version: try XCTUnwrap(SemanticVersion("0.1.0"))),
+            fingerprint: fingerprint, crateName: "crabrix_proc_macro_identity", edition: "2021", features: [],
+            libraryPath: "src/lib.rs", source: .registry(directoryName: directoryName), externs: [],
+            authors: "", description: "", repository: "", license: "", homepage: "",
+            isProceduralMacro: true, requiresLink: true)
+        let plan = CargoBuildPlan(units: [unit], rootExterns: [
+            CargoExtern(alias: unit.crateName, crateName: unit.crateName, fingerprint: fingerprint,
+                        isProceduralMacro: true, requiresLink: true)
+        ], rootFeatures: [])
+        let compiler = try measuredCompiler(dependencyArtifactRoot: artifacts, experimentalDirectOverride: true,
+                                            candidateProfileOverride: true, candidateArtifactName: "ArtifactMacro")
+        // Compiler/transport acceptance only: a local unchanged fixture is
+        // injected into the plan. Registry resolution is covered separately.
+        let checked = await compiler.check(source: consumer, sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": manifest], edition: "2021", plan: plan)
+        XCTAssertTrue(checked.succeeded, checked.detail + "\n" + checked.stderr)
+        let result = await compiler.run(source: consumer, sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": manifest], edition: "2021", plan: plan)
+        print("MACRO IDENTITY DURATION", result.duration)
+        XCTAssertTrue(result.succeeded, result.detail + "\n" + result.stderr)
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "macro identity: 42")
+    }
+
+    func testSerdeDeriveRunsThroughTheOfflineWASIMacroBridge() async throws {
+        try requireProcMacroBridge()
+        let manifest = """
+        [package]
+        name = "offline-derive-gate"
+        version = "0.1.0"
+        edition = "2021"
+        [dependencies]
+        serde = { version = "=1.0.229", features = ["derive"] }
+        serde_json = "=1.0.151"
+        """
+        let manager = CargoPackageManager(supportsProceduralMacros: true)
+        let prepared = try await manager.prepare(manifestSource: manifest)
+        XCTAssertTrue(prepared.blockingPackages.isEmpty, prepared.blockingPackages.description)
+        try await manager.pinForOffline(prepared.packages)
+        let lockfile = try XCTUnwrap(prepared.lockfile)
+        let frozen = try await CargoPackageManager(supportsProceduralMacros: true).prepare(
+            manifestSource: manifest, lockfileSource: lockfile, mode: .frozen)
+        XCTAssertTrue(frozen.isOfflinePinned)
+        XCTAssertTrue(frozen.plan.units.contains { $0.package.name == "serde_derive" && $0.isProceduralMacro })
+        let artifacts = FileManager.default.temporaryDirectory.appending(path: "DeriveArtifacts-\(UUID())")
+        defer { try? FileManager.default.removeItem(at: artifacts) }
+        let result = try await measuredCompiler(dependencyArtifactRoot: artifacts,
+            experimentalDirectOverride: true, candidateProfileOverride: true, candidateArtifactName: "ArtifactMacro").run(
+                source: """
+                // fresh derive compilation \(UUID())
+                #[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq)]
+                struct Task { name: String, done: bool }
+                fn main() {
+                    let task: Task = serde_json::from_str(r#"{"name":"offline","done":true}"#).unwrap();
+                    assert_eq!(task, Task { name: "offline".into(), done: true });
+                    let json = serde_json::to_string(&task).unwrap();
+                    assert_eq!(json, r#"{"name":"offline","done":true}"#);
+                    println!("offline derive: ok");
+                }
+                """, sourcePath: "src/main.rs", supportingFiles: ["Cargo.toml": manifest, "Cargo.lock": lockfile],
+                edition: "2021", plan: frozen.plan,
+                onDependencyProgress: { progress in
+                    print("DERIVE UNIT", progress)
+                    XCTAssertFalse(progress.wasCached)
+                }, onStage: { print("DERIVE STAGE", Date(), $0) })
+        print("DERIVE COMPILER DURATION", result.duration)
+        XCTAssertTrue(result.succeeded, result.detail + "\n" + result.stderr)
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "offline derive: ok")
+    }
 
     override func setUp() async throws {
         try await super.setUp()
@@ -58,6 +174,8 @@ final class BundledCompilerGateTests: XCTestCase {
     }
 
     override func tearDown() async throws {
+        for overlay in macroSysrootOverlays { try? FileManager.default.removeItem(at: overlay) }
+        macroSysrootOverlays.removeAll()
         if let previous = previousIdleTimerDisabled {
             await MainActor.run { UIApplication.shared.isIdleTimerDisabled = previous }
         }

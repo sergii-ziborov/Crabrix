@@ -10,6 +10,7 @@ struct BundledToolchain: Sendable {
     let rustcURL: URL
     let sysrootURL: URL
     let version: String
+    var supportsProceduralMacros = false
 
     static func locate(
         in bundle: Bundle,
@@ -44,7 +45,8 @@ struct BundledToolchain: Sendable {
             }
         }
 
-        return BundledToolchain(rustcURL: rustc, sysrootURL: sysroot, version: version)
+        return BundledToolchain(rustcURL: rustc, sysrootURL: sysroot, version: version,
+                                supportsProceduralMacros: CargoToolchain.supportsProceduralMacros)
     }
 }
 
@@ -251,7 +253,9 @@ final class RustcRuntime: @unchecked Sendable {
         wallClockLimit: Duration? = nil,
         interrupter: WasmInterrupter? = nil,
         softwareMemoryReservationBytes: Int? = nil,
-        capturedOutputLimitBytes: Int? = nil
+        capturedOutputLimitBytes: Int? = nil,
+        enableProceduralMacros: Bool = false,
+        proceduralMacroInputs: [String] = []
     ) throws -> WasmProcessResult {
         let started = ContinuousClock.now
         let outputBudget = try capturedOutputLimitBytes.map { limit in
@@ -297,6 +301,14 @@ final class RustcRuntime: @unchecked Sendable {
                 } else {
                     wasi.link(to: &imports, store: store)
                 }
+                let macroSession = enableProceduralMacros ? WasmProceduralMacroSession(
+                    engine: store.engine, arguments: arguments, inputs: proceduralMacroInputs, environment: environment,
+                    preopens: preopens, stdout: capture.stdoutHandle.fileDescriptor,
+                    stderr: capture.stderrHandle.fileDescriptor, outputBudget: outputBudget,
+                    interrupter: interrupter) : nil
+                defer { macroSession?.close() }
+                if let macroSession { macroSession.transport.link(to: &imports, store: store) }
+                else { ProcMacroTransport.linkUnavailable(to: &imports, store: store) }
                 let instance = try module.instantiate(store: store, imports: imports)
                 CompilerPhaseTrace.emit("instantiate", since: instantiateStarted)
                 let guestStarted = ContinuousClock.now

@@ -8,9 +8,12 @@ struct CargoExtern: Sendable, Equatable, Hashable {
     /// The rustc crate name of the dependency itself.
     let crateName: String
     let fingerprint: String
+    var isProceduralMacro = false
+    var requiresLink = false
 
     func fileName(emit: CargoEmitKind) -> String {
-        "lib\(crateName)-\(fingerprint).\(emit.fileExtension)"
+        if isProceduralMacro { return "\(crateName)-\(fingerprint).wasm" }
+        return "lib\(crateName)-\(fingerprint).\(requiresLink ? "rlib" : emit.fileExtension)"
     }
 }
 
@@ -69,6 +72,8 @@ struct CargoBuildUnit: Sendable, Equatable, Identifiable {
     /// Scripts currently use the bundled WASI host and standard library only.
     var buildScriptPath: String? = nil
     var buildScriptDependencies: [String] = []
+    var isProceduralMacro = false
+    var requiresLink = false
 
     var id: String { fingerprint }
     var sourceDirectoryName: String { "\(package.name)-\(package.version)" }
@@ -117,6 +122,7 @@ enum CargoToolchain {
         patch: release?.rustVersionComponents.patch ?? 0
     )
     static let rustcSHA256 = release?.rustcSHA256 ?? "unavailable"
+    static let supportsProceduralMacros = release?.supportsProceduralMacros ?? false
     static let sysrootManifestSHA256 = release?.sysrootManifestSHA256 ?? "unavailable"
     static let artifactIdentity = rustcSHA256 + ":" + sysrootManifestSHA256
 }
@@ -124,7 +130,7 @@ enum CargoToolchain {
 enum CargoFingerprint {
     /// Bumped whenever the compiler flags or artefact layout change, so stale
     /// artefacts are never reused across an app update.
-    static let schemaVersion = "cargo-units-4-wasi-build-scripts"
+    static let schemaVersion = "cargo-units-5-wasi-macro-kinds"
     static let dependencyCompilerFlags = [
         "--crate-type=lib",
         "-Copt-level=0",
@@ -173,6 +179,8 @@ enum CargoFingerprint {
             absorb(dependency.alias)
             absorb(dependency.crateName)
             absorb(dependency.fingerprint)
+            absorb(dependency.isProceduralMacro ? "proc-macro-rpc-v1" : "rlib")
+            absorb(dependency.requiresLink ? "link" : "requested-emit")
         }
         return hasher.finalize().map { String(format: "%02x", $0) }.joined().prefix(16).description
     }

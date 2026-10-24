@@ -18,6 +18,9 @@ struct AppToolchainRelease: Decodable, Sendable {
     let rustcSHA256: String
     let sysrootManifestSHA256: String
     let sysrootArchiveSHA256: String
+    let capabilities: [String]?
+
+    var supportsProceduralMacros: Bool { capabilities?.contains("proc-macro-rpc-v1") == true }
 
     static func load(in bundle: Bundle = .main) -> AppToolchainRelease? {
         guard let url = bundle.url(forResource: "toolchain.lock", withExtension: "json"),
