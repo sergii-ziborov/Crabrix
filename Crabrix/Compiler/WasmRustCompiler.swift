@@ -37,6 +37,7 @@ final class WasmRustCompiler: @unchecked Sendable {
     private let ledger: CrateCompatibilityLedger
     private let runtime: RustcRuntime
     private let dependencyArtifactRoot: URL?
+    private let toolchainOverride: BundledToolchain?
     // The interpreter runs on its own serial queue. Explicit Run work receives
     // userInitiated QoS; background checks retain utility QoS.
     private let queue = DispatchQueue(
@@ -55,11 +56,13 @@ final class WasmRustCompiler: @unchecked Sendable {
     private var memoryWarningObserver: NSObjectProtocol?
 
     init(bundle: Bundle = .main, ledger: CrateCompatibilityLedger = .shared,
-         runtime: RustcRuntime = RustcRuntime(), dependencyArtifactRoot: URL? = nil) {
+         runtime: RustcRuntime = RustcRuntime(), dependencyArtifactRoot: URL? = nil,
+         toolchainOverride: BundledToolchain? = nil) {
         self.bundle = bundle
         self.ledger = ledger
         self.runtime = runtime
         self.dependencyArtifactRoot = dependencyArtifactRoot
+        self.toolchainOverride = toolchainOverride
         memoryWarningObserver = NotificationCenter.default.addObserver(
             forName: UIApplication.didReceiveMemoryWarningNotification,
             object: nil,
@@ -79,11 +82,15 @@ final class WasmRustCompiler: @unchecked Sendable {
     // MARK: - Toolchain
 
     private var toolchain: BundledToolchain? {
-        BundledToolchain.locate(in: bundle, version: Self.toolchainVersion)
+        toolchainOverride ?? BundledToolchain.locate(in: bundle, version: Self.toolchainVersion)
     }
 
+    // A test-created compiler can use a separately verified candidate without
+    // changing signed app resources. Its outputs occupy a separate namespace.
+    private var toolchainNamespace: String { toolchainOverride?.version ?? Self.toolchainVersion }
+
     func probe() -> ToolchainStatus {
-        guard let toolchain = BundledToolchain.locate(
+        guard let toolchain = toolchainOverride ?? BundledToolchain.locate(
             in: bundle, version: Self.toolchainVersion, prepareSysroot: false
         ) else {
             return ToolchainStatus(
@@ -1012,7 +1019,7 @@ final class WasmRustCompiler: @unchecked Sendable {
 
     private var artifactsDirectory: URL? {
         (dependencyArtifactRoot ?? CrateStorageLayout.artifactDirectory)?
-            .appending(path: Self.toolchainVersion, directoryHint: .isDirectory)
+            .appending(path: toolchainNamespace, directoryHint: .isDirectory)
             .appending(path: CargoFingerprint.schemaVersion, directoryHint: .isDirectory)
     }
 
@@ -1279,8 +1286,11 @@ final class WasmRustCompiler: @unchecked Sendable {
     ) -> String {
         var hasher = SHA256()
         let actionLabel = action == .check ? "check" : "run"
+        let compilerIdentity = toolchainOverride.map {
+            CargoToolchain.artifactIdentity + ":candidate:" + $0.version
+        } ?? CargoToolchain.artifactIdentity
         for value in [
-            CargoToolchain.artifactIdentity, Self.cacheSchemaVersion,
+            compilerIdentity, Self.cacheSchemaVersion,
             actionLabel, edition, sourcePath, source,
         ] {
             hasher.update(data: Data(value.utf8))
@@ -1309,7 +1319,7 @@ final class WasmRustCompiler: @unchecked Sendable {
 
     private var programCacheURL: URL? {
         CrateStorageLayout.projectArtifactDirectory?
-            .appending(path: Self.toolchainVersion, directoryHint: .isDirectory)
+            .appending(path: toolchainNamespace, directoryHint: .isDirectory)
             .appending(path: Self.cacheSchemaVersion, directoryHint: .isDirectory)
     }
 

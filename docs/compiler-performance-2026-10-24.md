@@ -44,7 +44,7 @@ Local logs and result bundles are under `build/compiler-optimization-20261024/` 
 
 ## Rebuild profile finding
 
-The locked source selects upstream `profile = "compiler"`, whose contributor defaults explicitly enable debug assertions/logging and frame pointers and disable LTO. The root's `rust.debug = false` does not cancel these independently set fields. The toolchain repository now has a candidate-only `--performance-profile` path on branch `codex/compiler-performance-profile-20261024` (commit `b728d6b`), with recorded raw profile/default merges and explicit overrides. Locked production rebuild behavior remains unchanged. This is a prepared recipe, not a rebuilt or timed compiler artifact.
+The locked source selects upstream `profile = "compiler"`, whose contributor defaults explicitly enable debug assertions/logging and frame pointers and disable LTO. The root's `rust.debug = false` does not cancel these independently set fields. The toolchain repository has a candidate-only `--performance-profile` path on branch `codex/compiler-performance-profile-20261024` (initial commit `b728d6b`), with recorded raw profile/default merges and explicit overrides. Locked production rebuild behavior remains unchanged. The successful separate macOS candidate build is recorded below.
 
 The controlled builder requires Linux x86_64, 8 GiB RAM and 30 GiB free disk. No old source or build snapshots were deleted to satisfy the resource gate.
 
@@ -71,9 +71,8 @@ triggers, archives or distribution. The generated compiler is copied only into
 the XCTest resource bundle. A dedicated test retains compiler/provenance
 attachments, verifies their digest and requires compilation, execution, checked
 wide-integer operations and E0502 diagnostics with the signed target sysroot.
-Cloud's correctness test uses its normal Debug host; iPhone performance must
-subsequently use the Release host. These are prepared gates, not evidence of a
-successful compiler rebuild or device speedup.
+The physical comparison uses a signed Release host. Compiler artifacts are
+kept in test resources and do not replace the production app compiler.
 
 ### First physical experimental result
 
@@ -97,6 +96,32 @@ archives remain pinned and resolution is frozen. The real app cache is retained.
 The same test session holds the phone awake across both runs; network preparation
 is outside the measured compiler duration. This gate is prepared, not yet a
 completed cold-graph measurement.
+
+### Rebuilt compiler artifact
+
+Manual Cloud run **77** built the optimized compiler in 894.50 seconds after
+bootstrapping from the pinned source. Its 95,199,989-byte Wasm has SHA256
+`0900e146ea3d54efb021a79165b2439d28ad67bd296a5075c4d915f6ddb353ac`.
+The Test Products archive was downloaded and its embedded compiler digest and
+candidate provenance verified. Both original and rebuilt compilers identify as
+`rustc 1.96.0-dev`; backend labels are recorded verbatim in the
+[rebuild evidence](performance/2026-10-24-rebuilt-compiler.json).
+
+Cloud built the test host successfully but did **not** run the tests: its service
+rejected iPhone 13 mini / iOS 27.1 as an unavailable destination. The manual
+workflow now uses iPhone 18 Pro / iOS 27.1 from Apple's returned available list.
+The downloaded artifact does not need rebuilding to test locally.
+
+Four matched `bytes` compilations, alternating original/rebuilt/rebuilt/original,
+produced bit-identical rlibs. Metered guest work fell **37.532%**. Host wall times
+were 22.545/17.227 s for original and 24.899/7.931 s for rebuilt under concurrent
+desktop build activity. These timings remain too variable for a general speed
+claim. A separate signed Release device session is prepared with four isolated
+cold Tokio cases, full-compilation UI heartbeats, the web generator, and the
+signed-sysroot/math/diagnostic smoke gate. Each candidate uses its full compiler
+digest as a cache namespace and an in-memory compatibility ledger.
+
+The large Kameo target and the 30-second physical target remain unqualified.
 
 ## Upstream audit
 

@@ -1,0 +1,108 @@
+{
+  "dateUTC": "2026-10-24",
+  "localDate": "2026-10-25",
+  "status": "candidate, not shipped",
+  "sourceRevision": "abc48c0b8aba37d3f3862a9d5c76eb4e78f90e88",
+  "toolchainRecipeRevision": "17957449aab5e011f976c55cd762244449f1a803",
+  "compilerSHA256": "0900e146ea3d54efb021a79165b2439d28ad67bd296a5075c4d915f6ddb353ac",
+  "compilerBytes": 95199989,
+  "compilerBuildSeconds": 894.5019534170001,
+  "settings": {
+    "build.build": "\"aarch64-apple-darwin\"",
+    "build.host": "[\"wasm32-wasip1\"]",
+    "build.target": "[\"wasm32-wasip1\"]",
+    "build.submodules": "false",
+    "build.vendor": "false",
+    "build.extended": "false",
+    "rust.download-rustc": "false",
+    "rust.codegen-backends": "[\"llvm\",\"cranelift\"]",
+    "target.aarch64-apple-darwin.codegen-backends": "[\"llvm\"]",
+    "target.aarch64-apple-darwin.llvm-config": "\"/opt/homebrew/Cellar/llvm@22/22.1.8/bin/llvm-config\"",
+    "llvm.link-shared": "true",
+    "target.wasm32-wasip1.codegen-backends": "[\"cranelift\"]",
+    "target.wasm32-wasip1.wasi-root": "\"/Volumes/workspace/crabrix-compiler-performance/build/wasi-sdk-32.0-arm64-macos/share/wasi-sysroot\"",
+    "target.wasm32-wasip1.linker": "\"/Volumes/workspace/crabrix-compiler-performance/build/wasi-sdk-32.0-arm64-macos/bin/clang\"",
+    "llvm.download-ci-llvm": "false",
+    "rust.optimize": "true",
+    "rust.debug-assertions": "false",
+    "rust.debug-assertions-std": "false",
+    "rust.debug-assertions-tools": "false",
+    "rust.debug-logging": "false",
+    "rust.incremental": "false",
+    "rust.frame-pointers": "false",
+    "rust.lto": "thin"
+  },
+  "nativeLLVM": {
+    "version": "22.1.8",
+    "llvmConfigSHA256": "0695ca66d25392c10cc882dcee9414ff5378035fdfb41890927312ed7d7be642",
+    "role": "intermediate Darwin compiler only; not bundled into WASI candidate"
+  },
+  "sdk": {
+    "url": "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-32/wasi-sdk-32.0-arm64-macos.tar.gz",
+    "sha256": "383be7fe00ae04691e1859164fd99970a528c55d624b886ed59f7933898b933d"
+  },
+  "targetSysroot": "signed production app target sysroot reused",
+  "cloudRunNumber": 77,
+  "cloudCompilerBuild": "succeeded",
+  "cloudTests": "did not start: iPhone 13 mini / iOS 27.1 destination rejected",
+  "versions": {
+    "production": {
+      "exitCode": 0,
+      "stdout": "rustc 1.96.0-dev\nbinary: rustc\ncommit-hash: unknown\ncommit-date: unknown\nhost: wasm32-wasip1\nrelease: 1.96.0-dev\nCranelift version: 0.130.0-abc48c0b8\nfuel consumed: 1106289, fuel remaining: 299998893711\n",
+      "stderr": ""
+    },
+    "rebuilt": {
+      "exitCode": 0,
+      "stdout": "rustc 1.96.0-dev\nbinary: rustc\ncommit-hash: unknown\ncommit-date: unknown\nhost: wasm32-wasip1\nrelease: 1.96.0-dev\nCranelift version: 0.130.0\nfuel consumed: 979580, fuel remaining: 299999020420\n",
+      "stderr": ""
+    }
+  },
+  "host": "arm64 macOS, concurrent desktop activity",
+  "workload": "bytes 1.12.1 std/default, opt-level=0, identical output path",
+  "dispatch": "token",
+  "samples": [
+    {
+      "variant": "original",
+      "elapsedSeconds": 22.54451825004071,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 2282455040,
+      "stopped": null,
+      "fuelConsumed": 24239004138,
+      "outputSHA256": "1144687e0f3bc3d33f7d72c3f1d835225adb3ae003c90df920f882d9abbd3726"
+    },
+    {
+      "variant": "rebuilt",
+      "elapsedSeconds": 24.89882266591303,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 1442758656,
+      "stopped": null,
+      "fuelConsumed": 15141317802,
+      "outputSHA256": "1144687e0f3bc3d33f7d72c3f1d835225adb3ae003c90df920f882d9abbd3726"
+    },
+    {
+      "variant": "rebuilt",
+      "elapsedSeconds": 7.931084166048095,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 2442592256,
+      "stopped": null,
+      "fuelConsumed": 15141236856,
+      "outputSHA256": "1144687e0f3bc3d33f7d72c3f1d835225adb3ae003c90df920f882d9abbd3726"
+    },
+    {
+      "variant": "original",
+      "elapsedSeconds": 17.226611874997616,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 2234564608,
+      "stopped": null,
+      "fuelConsumed": 24238287376,
+      "outputSHA256": "1144687e0f3bc3d33f7d72c3f1d835225adb3ae003c90df920f882d9abbd3726"
+    }
+  ],
+  "fuelReductionPercent": 37.53249467484265,
+  "allSampleRlibsIdentical": true,
+  "physicalMatrix": "prepared; waiting for device unlock",
+  "limitations": [
+    "No physical speed claim for rebuilt compiler.",
+    "Not the Kameo large-project workload."
+  ]
+}

@@ -1,17 +1,43 @@
 import Foundation
 import Darwin
+import CryptoKit
 import UIKit
 import XCTest
 @testable import Crabrix
 
 final class BundledCompilerGateTests: XCTestCase {
     private func measuredCompiler(dependencyArtifactRoot: URL? = nil,
-                                  experimentalDirectOverride: Bool? = nil) -> WasmRustCompiler {
+                                  experimentalDirectOverride: Bool? = nil,
+                                  candidateProfileOverride: Bool? = nil) throws -> WasmRustCompiler {
         let direct = experimentalDirectOverride
             ?? (ProcessInfo.processInfo.environment["CRABRIX_EXPERIMENTAL_DIRECT_GATE"] == "1")
         print("MEASURED COMPILER DISPATCH", direct ? "experimental-direct" : "production-token")
-        return WasmRustCompiler(runtime: RustcRuntime(experimentalSoftwareDirect: direct),
-                                dependencyArtifactRoot: dependencyArtifactRoot)
+        var candidate: BundledToolchain?
+        if candidateProfileOverride ?? (ProcessInfo.processInfo.environment["CRABRIX_COMPILER_CANDIDATE_PROFILE"] == "1") {
+            let resources = try XCTUnwrap(Bundle(for: Self.self).resourceURL)
+                .appending(path: "CompilerCandidate/Artifact")
+            let provenance = try JSONSerialization.jsonObject(
+                with: Data(contentsOf: resources.appending(path: "provenance.json"))) as? [String: Any]
+            let compilerURL = resources.appending(path: "rustc.wasm")
+            let bytes = try Data(contentsOf: compilerURL, options: [.mappedIfSafe])
+            let sha = SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
+            guard provenance?["candidate"] as? Bool == true,
+                  provenance?["productionReplacement"] as? Bool == false,
+                  provenance?["compilerSHA256"] as? String == sha,
+                  provenance?["compilerBytes"] as? Int == bytes.count,
+                  Array(bytes.prefix(8)) == [0, 97, 115, 109, 1, 0, 0, 0]
+            else { throw CocoaError(.fileReadCorruptFile) }
+            let baseline = try XCTUnwrap(BundledToolchain.locate(in: .main, version: CargoToolchain.bundledVersion))
+            candidate = BundledToolchain(rustcURL: compilerURL, sysrootURL: baseline.sysrootURL,
+                                         version: "candidate-" + sha)
+            print("MEASURED COMPILER CANDIDATE SHA256", sha)
+        }
+        print("MEASURED COMPILER INPUT", candidate?.version ?? CargoToolchain.artifactIdentity)
+        return WasmRustCompiler(ledger: candidate == nil && dependencyArtifactRoot == nil
+                                    ? .shared : CrateCompatibilityLedger(storageURL: nil),
+                                runtime: RustcRuntime(experimentalSoftwareDirect: direct),
+                                dependencyArtifactRoot: dependencyArtifactRoot,
+                                toolchainOverride: candidate)
     }
     private var previousIdleTimerDisabled: Bool?
 
@@ -37,7 +63,7 @@ final class BundledCompilerGateTests: XCTestCase {
         try Self.requireCompilerGate()
         var files = WebProjectSamples.files.reduce(into: [String: String]()) { $0["web/" + $1.key] = $1.value }
         files["Cargo.toml"] = "[package]\nname = \"offline_web\"\nversion = \"0.1.0\"\nedition = \"2021\"\n"
-        let result = await measuredCompiler().run(
+        let result = try await measuredCompiler().run(
             source: "// fresh generator \(UUID())\n" + WebProjectSamples.rustGenerator,
             sourcePath: "src/main.rs", supportingFiles: files, edition: "2021",
             onStage: { stage in print("GENERATOR STAGE", Date(), stage) })
@@ -52,7 +78,7 @@ final class BundledCompilerGateTests: XCTestCase {
     @MainActor
     func testRunKeepsMainActorResponsiveAtUserInitiatedPriority() async throws {
         try Self.requireCompilerGate()
-        let compiler = measuredCompiler()
+        let compiler = try measuredCompiler()
         let source = "// fresh responsiveness probe \(UUID())\nfn main() { println!(\"responsive run\"); }"
         let clock = ContinuousClock()
         var running = true
@@ -239,7 +265,33 @@ final class BundledCompilerGateTests: XCTestCase {
         }
     }
 
-    private func runTokioOfflineProbe(cold: Bool, experimentalDirectOverride: Bool? = nil) async throws {
+    private func requireColdComparison() throws {
+        try Self.requireCompilerGate()
+        try XCTSkipIf(ProcessInfo.processInfo.environment["CRABRIX_RUN_COLD_COMPARISON"] != "1")
+    }
+
+    func testTokioCold01OriginalToken() async throws {
+        try requireColdComparison()
+        try await runTokioOfflineProbe(cold: true, experimentalDirectOverride: false, candidateProfileOverride: false)
+    }
+
+    func testTokioCold02RebuiltToken() async throws {
+        try requireColdComparison()
+        try await runTokioOfflineProbe(cold: true, experimentalDirectOverride: false, candidateProfileOverride: true)
+    }
+
+    func testTokioCold03RebuiltDirect() async throws {
+        try requireColdComparison()
+        try await runTokioOfflineProbe(cold: true, experimentalDirectOverride: true, candidateProfileOverride: true)
+    }
+
+    func testTokioCold04OriginalDirect() async throws {
+        try requireColdComparison()
+        try await runTokioOfflineProbe(cold: true, experimentalDirectOverride: true, candidateProfileOverride: false)
+    }
+
+    private func runTokioOfflineProbe(cold: Bool, experimentalDirectOverride: Bool? = nil,
+                                      candidateProfileOverride: Bool? = nil) async throws {
         let artifacts = cold ? FileManager.default.temporaryDirectory
             .appending(path: "ColdTokioArtifacts-\(UUID())", directoryHint: .isDirectory) : nil
         defer { if let artifacts { try? FileManager.default.removeItem(at: artifacts) } }
@@ -281,8 +333,10 @@ final class BundledCompilerGateTests: XCTestCase {
             });
         }
         """
-        let result = await measuredCompiler(dependencyArtifactRoot: artifacts,
-                                            experimentalDirectOverride: experimentalDirectOverride).run(
+        print("TOKIO THERMAL BEGIN", ProcessInfo.processInfo.thermalState.rawValue)
+        let result = try await measuredCompiler(dependencyArtifactRoot: artifacts,
+                                            experimentalDirectOverride: experimentalDirectOverride,
+                                            candidateProfileOverride: candidateProfileOverride).run(
             source: source, sourcePath: "src/main.rs",
             supportingFiles: ["Cargo.toml": manifest, "Cargo.lock": lockfile],
             edition: "2021", plan: offline.plan,
@@ -293,6 +347,7 @@ final class BundledCompilerGateTests: XCTestCase {
             onStage: { stage in print("TOKIO STAGE", Date(), stage) }
         )
         print("TOKIO COMPILER DURATION", result.duration)
+        print("TOKIO THERMAL END", ProcessInfo.processInfo.thermalState.rawValue)
         XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
         XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "tokio offline: 42")
     }
