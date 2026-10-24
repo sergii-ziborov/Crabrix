@@ -54,11 +54,11 @@ struct NewProjectSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    Label("Create a real Cargo project", systemImage: "shippingbox.and.arrow.backward.fill")
+                    Label("Create a project", systemImage: "shippingbox.and.arrow.backward.fill")
                         .font(.title2.bold())
                         .foregroundStyle(CrabrixTheme.coral)
 
-                    Text("Choose a starting structure. Every template stays editable and builds with the bundled compiler.")
+                    Text("Choose a starting structure. Rust templates use the bundled compiler; web pages run in the offline browser preview. Every file stays editable.")
                         .font(.subheadline)
                         .foregroundStyle(CrabrixTheme.muted)
 

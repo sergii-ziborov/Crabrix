@@ -201,9 +201,12 @@ private enum FoundationModelsRustDiagnosticAdvisor {
         guard let targetSource = project.files[targetFile] else {
             throw AppleIntelligenceDiagnosticAdvisorError.emptyResponse
         }
+        let language = SourceLanguage(filePath: targetFile)
         let session = LanguageModelSession(
-            instructions: """
+            instructions: language == .rust ? """
             You are a conservative Rust compiler diagnostic assistant inside an educational editor. Analyze only the supplied rustc diagnostic and source context. Propose the smallest stable Rust 2024 edit that addresses the diagnostic without adding dependencies, unsafe code, unwrap, expect, or unrelated refactoring. Use original one-based line numbers. Each replacement must contain complete source lines without line-number prefixes or Markdown fences. Return at most four non-overlapping edits in the target file. If the evidence is insufficient, explain the issue and return no edits.
+            """ : """
+            You are a conservative \(language.rawValue) diagnostic assistant for a fully offline HTML/CSS/JavaScript preview. Explain only the supplied browser diagnostic and source context; give concrete steps in the explanation and return an empty edits array. The preview blocks all external network, server APIs, npm packages and CDN imports. Local relative assets and browser APIs are supported. TypeScript is not automatically transpiled. Do not claim a Rust compiler verified web code. Do not suggest uploading source or adding remote services.
             """
         )
         let response = try await session.respond(

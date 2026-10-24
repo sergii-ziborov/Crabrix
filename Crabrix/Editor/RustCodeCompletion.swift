@@ -6,7 +6,7 @@ import FoundationModels
 #endif
 
 enum RustCompletionProvider: String, Sendable {
-    case local = "Instant Rust"
+    case local = "Instant code"
     case appleIntelligence = "Apple Intelligence"
 }
 
@@ -35,14 +35,17 @@ final class RustCompletionController: ObservableObject {
         suggestion = nil
         message = nil
 
-        guard filePath.lowercased().hasSuffix(".rs") else {
-            message = "Completion is available for Rust source files."
+        let language = SourceLanguage(filePath: filePath)
+        guard language.supportsCompletion else {
+            message = "Completion is available for Rust and web source files."
             return
         }
 
         let safeOffset = min(max(cursorOffset, 0), (source as NSString).length)
         let prefix = (source as NSString).substring(to: safeOffset)
-        let local = RustLocalCompleter.suggestion(for: prefix)
+        let suffix = (source as NSString).substring(from: safeOffset)
+        let local = language == .rust ? RustLocalCompleter.suggestion(for: prefix)
+            : WebLocalCompleter.suggestion(for: prefix, language: language)
 
         // Known Rust constructs should feel instant even when the on-device model is
         // enabled. The model remains the fallback for contexts the deterministic
@@ -53,7 +56,7 @@ final class RustCompletionController: ObservableObject {
         }
 
         guard useAppleIntelligence else {
-            message = "Type at least two characters of a Rust construct first."
+            message = "Type the beginning of a code construct first."
             return
         }
 
@@ -64,7 +67,7 @@ final class RustCompletionController: ObservableObject {
                 isLoading = true
                 requestTask = Task { [weak self] in
                     do {
-                        let completion = try await AppleIntelligenceRustCompleter.complete(prefix: prefix)
+                        let completion = try await AppleIntelligenceRustCompleter.complete(prefix: prefix, suffix: suffix, language: language)
                         guard !Task.isCancelled else { return }
                         self?.suggestion = completion
                         self?.message = completion == nil
@@ -334,15 +337,15 @@ enum RustLocalCompleter {
 @available(iOS 26.0, *)
 private enum AppleIntelligenceRustCompleter {
     @MainActor
-    static func complete(prefix: String) async throws -> RustCodeCompletion? {
+    static func complete(prefix: String, suffix: String, language: SourceLanguage) async throws -> RustCodeCompletion? {
         let context = String(prefix.suffix(2_400))
         let session = LanguageModelSession(
             instructions: """
-            You are a conservative Rust code completion engine. Return only the short code suffix that should be inserted at the cursor. Never use Markdown fences, explanations, or repeat the supplied prefix. Prefer valid stable Rust and at most eight lines.
+            You are a conservative \(language.rawValue) code completion engine in an offline editor. Return only the short code suffix to insert at the cursor, at most eight lines. Never repeat either surrounding fragment, add Markdown fences or explanations. Rust targets stable Rust 2024 in wasm32-wasip1: no native subprocesses or network servers. HTML, CSS and JavaScript run locally in a WKWebView with external network blocked: use relative local assets, browser APIs, and no CDN, npm imports or server APIs. TypeScript is editable but is not transpiled automatically.
             """
         )
         let response = try await session.respond(
-            to: "Complete the Rust source exactly at <CURSOR>:\n\n\(context)<CURSOR>"
+            to: "Complete \(language.rawValue) exactly at <CURSOR>:\n\n\(context)<CURSOR>\(String(suffix.prefix(1_000)))"
         )
         let cleaned = sanitize(response.content)
         guard !cleaned.isEmpty else { return nil }

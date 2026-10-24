@@ -19,7 +19,7 @@ The current screenshot set includes ten iPhone and six iPad frames from manual X
 
 The current internal test release is **1.1.1 (68)**, built manually in Xcode Cloud with SDK 27.1. It is available in TestFlight Internal QA and selected for App Review. The 1.1.1 version and the Rust Academy / Rust Compiler custom product pages report **WAITING_FOR_REVIEW**; release remains manual. [Delivery and verification evidence](docs/releases/1.1.1-build68.json) records the source, build, native checks and screenshots. Term Train, unlock, progress and the established Duo keyboard layout are preserved.
 
-The live website has canonical and social metadata for all **779 public pages**, with structured data for the product, courses, lessons and articles. The [HTML sitemap](https://crabrix.com/sitemap/) and [XML sitemap](https://crabrix.com/sitemap.xml) include all 742 lessons and 20 blog articles. [Publication evidence](docs/site-release-2026-10-23-blog.json) records the latest site checks. [SEO and App Store presentation](docs/seo-2026-10-16.md) documents account access checks, relevant search keywords and two custom product pages.
+The live website has canonical and social metadata for all **785 public pages**, with structured data for the product, courses, lessons and articles. The [HTML sitemap](https://crabrix.com/sitemap/) and [XML sitemap](https://crabrix.com/sitemap.xml) include all 742 lessons and 25 blog articles. [Publication evidence](docs/site-release-2026-10-23-blog.json) records the latest site checks. [SEO and App Store presentation](docs/seo-2026-10-16.md) documents account access checks, relevant search keywords and two custom product pages.
 
 The [21 October delivery check](docs/releases/delivery-check-2026-10-21.json)
 confirms TestFlight 1.1.1 (68) remains active and the latest Hetzner artifact is
@@ -41,14 +41,14 @@ The [Constellation Generator update](docs/constellation-generator-2026-10-11.md)
 
 The [interaction fixes](docs/interaction-fixes-2026-10-15.md) attach Term Train connections to the inner card dots and restore app-unlock retries after system interruptions. Manual Xcode Cloud run 59 passed all eleven focused tests on both iPhone and iPad: 22 successful executions, no failures or skips.
 
-For Cargo projects, Crabrix resolves a supported subset of crates.io dependencies, verifies registry checksums, builds dependencies locally, and can pin their source archives for offline rebuilds. `syn`, `quote`, and `proc-macro2` use a parser-only feature profile that works with the bundled WASI compiler; an existing plain `syn` dependency can be repaired from the project package panel. Procedural macro crates and build scripts remain unsupported. An installed course is readable offline; an exercise using crates is offline ready only after its dependencies have been prepared. The editor, diagnostics, Code Examples path, import/export, and training activities remain native UI.
+For Cargo projects, Crabrix resolves a supported subset of crates.io dependencies, verifies registry checksums, builds dependencies locally, and can pin their source archives for offline rebuilds. `syn`, `quote`, and `proc-macro2` use a parser-only feature profile that works with the bundled WASI compiler; an existing plain `syn` dependency can be repaired from the project package panel. Standard-library-only build scripts now run locally as bounded WASI guests. Native linking, host subprocesses, separate build-dependency graphs and procedural macro crates remain unsupported. An installed course is readable offline; an exercise using crates is offline ready only after its dependencies have been prepared. The editor, diagnostics, Code Examples path, import/export, and training activities remain native UI.
 
 The [free Learn site](https://crabrix.com/learn/) has expanded explanations
 and an infographic for all 742 lessons: 142 Rust lessons and 600 Algorithm
 Atlas steps. Atlas shares 40 five-pattern diagrams across all 600 steps; the
 70 previously unillustrated Rust lessons have individual code-to-rule diagrams.
 The [Blog](https://crabrix.com/blog/) has
-20 in-depth articles with two generated illustrations each, including an
+25 in-depth articles with two generated illustrations each, including an
 infographic. Five additions authored on 23 October cover Cargo build scripts,
 memoization, Rust infrastructure, the announced Rust 1.100 Windows host-tool
 transition, and rustup 1.29.2. Their editorial dates occupy 11, 14, 21, 22 and
@@ -70,7 +70,7 @@ CoursePacks; compatible app builds can download them from the release catalog.
 
 ## Runtime and compiler
 
-Crabrix 1.1 pins [CrabrixRuntime](https://github.com/sergii-ziborov/crabrix-runtime) at `d996f0d11dff54734b5670d58062e22c6e01f949`, derived from WasmKit **0.4.1** (`a0471eaee817c523b8023d8ebb1c70ff70b7950a`). The adapter uses upstream fuel metering, a separate cancellation/deadline probe sampled at fuel checkpoints, read-only compiler inputs, bounded WASI output, fresh execution stores, and virtual memory reservation to avoid copying the compiler's full Wasm memory on growth. Software-bounds execution uses token dispatch after an out-of-bounds regression was found in direct dispatch. The Wasm guest has no network import.
+Crabrix 1.1 pins [CrabrixRuntime](https://github.com/sergii-ziborov/crabrix-runtime) at `0689cc5df8b5b3f81ac5e9675cc3c22fe1b614f3`, derived from WasmKit **0.4.1** (`a0471eaee817c523b8023d8ebb1c70ff70b7950a`). The adapter uses upstream fuel metering, a separate cancellation/deadline probe sampled at fuel checkpoints, read-only compiler inputs, bounded WASI output, fresh execution stores, and virtual memory reservation to avoid copying the compiler's full Wasm memory on growth. Software-bounds execution uses token dispatch after an out-of-bounds regression was found in direct dispatch. The Wasm guest has no network import.
 
 In an A/B/A Release Simulator measurement using the same compiler and a heavy multi-crate CLI project, this runtime completed the selected workload **about 1.6× faster** than the preceding Crabrix runtime. The [raw observations](docs/performance/2026-10-02-sampled-cancellation-heavy-cli-simulator.json) document the source graph, output checks, cache preparation, and measurement limits. This result describes that workload on Simulator; other projects and devices need their own measurements. [Runtime integration](docs/runtime-integration.md) explains the implementation.
 
@@ -162,3 +162,11 @@ texts and archive bytes. Private practice with supplied starter/example code
 is permitted by [CONTENT-LICENSE.md](CONTENT-LICENSE.md); redistribution of the
 authored teaching corpus remains restricted. Original third-party licenses
 continue to govern their material.
+
+## Local web lab and transparent package preparation
+
+Create **Web Page** to edit local HTML, CSS and JavaScript, or **Rust Web Generator** to produce those files from Rust. Run opens a bounded immutable asset snapshot in an offline WebKit preview; external network resources are blocked. Browser errors appear in the web console and Problems. TypeScript highlighting does not include transpilation. WebKit has a separate process and lifetime from the WASI guest; WASI memory and time limits are not JavaScript limits.
+
+The package sheet shows waiting, downloading, verifying, ready and failed states with per-package dependencies. Verified archives are pinned outside purgeable caches during preparation; frozen/offline resolution never downloads. Output shows compilation stages and cached dependencies. Package acquisition and compiler execution run away from the interface thread. [The screenshot guide](https://crabrix.com/guide/) explains projects, imports, offline preparation, diagnostics and device layouts.
+
+The October 24 compatibility work exercises Tokio 1.54.1 with a restricted current-thread/timer/channel feature set, root std-only build scripts with generated input invalidation, and Rust-generated web assets. Exact outcomes and physical-device measurements belong in the [compatibility report](docs/offline-web-compatibility-2026-10-24.md). An Axum in-memory route fixture and Markdown/template fixtures are validation targets, not a claim that arbitrary TCP servers, native C dependencies or GPU projects run on iPhone.

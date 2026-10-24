@@ -8,6 +8,8 @@ enum RustProjectTemplate: String, CaseIterable, Identifiable, Sendable {
     case cli
     case packages
     case visual
+    case webPage
+    case rustWeb
 
     var id: String { rawValue }
 
@@ -19,6 +21,8 @@ enum RustProjectTemplate: String, CaseIterable, Identifiable, Sendable {
         case .cli: "CLI Starter"
         case .packages: "Cargo Packages"
         case .visual: "Visual Canvas"
+        case .webPage: "Web Page"
+        case .rustWeb: "Rust Web Generator"
         }
     }
 
@@ -30,6 +34,8 @@ enum RustProjectTemplate: String, CaseIterable, Identifiable, Sendable {
         case .cli: "Read command-line arguments with the standard library"
         case .packages: "Two real crates.io packages · the first build downloads and compiles them"
         case .visual: "Draw a native pixel canvas from an editable Rust program"
+        case .webPage: "HTML, CSS and JavaScript · live offline preview"
+        case .rustWeb: "Generate a static site with Rust, then run its JavaScript locally"
         }
     }
 
@@ -41,6 +47,7 @@ enum RustProjectTemplate: String, CaseIterable, Identifiable, Sendable {
         case .cli: "apple.terminal.fill"
         case .packages: "shippingbox.fill"
         case .visual: "paintpalette.fill"
+        case .webPage, .rustWeb: "globe"
         }
     }
 
@@ -51,6 +58,7 @@ enum RustProjectTemplate: String, CaseIterable, Identifiable, Sendable {
         case .cli: .commandLine
         case .packages: .application
         case .visual: .visual
+        case .webPage, .rustWeb: .application
         }
     }
 }
@@ -155,6 +163,17 @@ final class CompilerViewModel: ObservableObject {
     @Published private(set) var allProjects: [ProjectLibraryItem] = []
     @Published private(set) var lastBuild: ProjectBuildRecord?
     @Published private(set) var cargoStage: CargoPreparationStage = .idle
+    @Published private(set) var packageTransfers: [PackageTransferRow] = []
+    @Published var isPackageProgressPresented = false
+    @Published private(set) var buildEvents: [BuildStageEvent] = []
+    private var packageProgressWasPresented = false
+    private var packageTransferID: UUID?
+
+    private func appendBuildStage(_ label: String) {
+        guard buildEvents.last?.label != label else { return }
+        buildEvents.append(BuildStageEvent(label: label))
+        if buildEvents.count > 200 { buildEvents.removeFirst(buildEvents.count - 200) }
+    }
     @Published private(set) var cargoWorkspace: CargoWorkspaceSnapshot = .empty
     @Published private(set) var cargoStorage: CrateStorageUsage = CrateStorageUsage()
     @Published private(set) var diagnosticAdviceState: RustDiagnosticAdviceState = .idle
@@ -467,6 +486,8 @@ final class CompilerViewModel: ObservableObject {
         let revision = workspaceRevision
         activity = mode
         result = nil
+        buildEvents = []
+        appendBuildStage(mode == .checking ? "Check requested" : "Run requested")
         let project = projectSnapshot()
         var projectFiles = project.supporting
         projectFiles[project.entryPath] = project.main
@@ -480,6 +501,31 @@ final class CompilerViewModel: ObservableObject {
         activeCompilationID = compilationID
         compilationTask = Task { [weak self] in
             guard let self else { return }
+
+            if SourceLanguage(filePath: project.entryPath) == .html {
+                appendBuildStage("Preparing local HTML, CSS and JavaScript")
+                let files = projectFiles
+                let snapshot = await Task.detached(priority: .utility) {
+                    WebPreviewSnapshot(textFiles: files, preferredEntry: project.entryPath)
+                }.value
+                guard !Task.isCancelled, activeCompilationID == compilationID, isCurrent(revision) else {
+                    discardCompilationIfActive(compilationID)
+                    return
+                }
+                guard let snapshot else {
+                    finish(.failure(phase: .setup,
+                        detail: "The web preview needs an HTML entry and at most 256 assets, 2 MiB per asset and 8 MiB in total."), revision: revision)
+                    return
+                }
+                finish(CompilationResult(
+                    succeeded: true, phase: mode == .checking ? .check : .run,
+                    exitCode: nil, diagnostics: [], stdout: "", stderr: "", duration: .zero,
+                    detail: mode == .checking
+                        ? "Web assets prepared. Run opens the browser and executes JavaScript; this is not a Rust compiler check."
+                        : "Prepared an offline website preview. Browser errors appear in the web console.",
+                    webPreview: mode == .running ? snapshot : nil), revision: revision)
+                return
+            }
 
             var plan = CargoBuildPlan.empty
             if let manifestSource {
@@ -540,6 +586,14 @@ final class CompilerViewModel: ObservableObject {
                             index: update.index,
                             total: update.total
                         )
+                    appendBuildStage("\(update.wasCached ? "Cached" : "Compiling") \(update.package) · \(update.index)/\(update.total)")
+                }
+            }
+
+            let stageHandler: @Sendable (String) -> Void = { [weak self] label in
+                Task { @MainActor [weak self] in
+                    guard let self, activeCompilationID == compilationID, isCurrent(revision) else { return }
+                    appendBuildStage(label)
                 }
             }
 
@@ -551,7 +605,8 @@ final class CompilerViewModel: ObservableObject {
                     supportingFiles: compilerProject.supporting,
                     edition: rootEdition,
                     plan: plan,
-                    onDependencyProgress: plan.isEmpty ? nil : progress
+                    onDependencyProgress: plan.isEmpty ? nil : progress,
+                    onStage: stageHandler
                 )
             default:
                 await compiler.run(
@@ -560,7 +615,8 @@ final class CompilerViewModel: ObservableObject {
                     supportingFiles: compilerProject.supporting,
                     edition: rootEdition,
                     plan: plan,
-                    onDependencyProgress: plan.isEmpty ? nil : progress
+                    onDependencyProgress: plan.isEmpty ? nil : progress,
+                    onStage: stageHandler
                 )
             }
 
@@ -642,19 +698,53 @@ final class CompilerViewModel: ObservableObject {
            !cargoWorkspace.isEmpty {
             return cargoWorkspace
         }
+        let transferID = UUID()
+        packageTransferID = transferID
         let handler: @Sendable (CargoPreparationStage) -> Void = { [weak self] stage in
             Task { @MainActor [weak self] in
-                guard let self, isCurrent(revision) else { return }
+                guard let self, isCurrent(revision), packageTransferID == transferID else { return }
                 cargoStage = stage
+                if stage.isWorking { appendBuildStage(stage.label) }
             }
         }
-        let snapshot = try await packageManager.prepare(
-            manifestSource: manifestSource,
-            lockfileSource: lockfileSource,
-            mode: mode,
-            projectFiles: projectFiles,
-            onStage: handler
-        )
+        packageProgressWasPresented = false
+        packageTransfers = []
+        let transferHandler: @Sendable (PackageTransferEvent) -> Void = { [weak self] event in
+            Task { @MainActor [weak self] in
+                guard let self, isCurrent(revision), packageTransferID == transferID else { return }
+                switch event {
+                case let .planned(rows): packageTransfers = rows
+                case let .updated(id, state):
+                    guard let index = packageTransfers.firstIndex(where: { $0.package == id }) else { return }
+                    packageTransfers[index].state = state
+                    if state == .downloading, !packageProgressWasPresented {
+                        packageProgressWasPresented = true
+                        isPackageProgressPresented = true
+                    }
+                }
+            }
+        }
+        let snapshot: CargoWorkspaceSnapshot
+        if mode == .normal, lockfileSource != nil {
+            // Reopening an already prepared project must not wait for a registry
+            // request to time out in airplane mode. Explicit Update still uses
+            // the network; only an exact, locally available lock can take this path.
+            do {
+                snapshot = try await packageManager.prepare(
+                    manifestSource: manifestSource, lockfileSource: lockfileSource,
+                    mode: .frozen, projectFiles: projectFiles, onStage: handler, onTransfer: transferHandler)
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch {
+                snapshot = try await packageManager.prepare(
+                    manifestSource: manifestSource, lockfileSource: lockfileSource,
+                    mode: mode, projectFiles: projectFiles, onStage: handler, onTransfer: transferHandler)
+            }
+        } else {
+            snapshot = try await packageManager.prepare(
+                manifestSource: manifestSource, lockfileSource: lockfileSource,
+                mode: mode, projectFiles: projectFiles, onStage: handler, onTransfer: transferHandler)
+        }
         guard !Task.isCancelled, isCurrent(revision) else { throw CancellationError() }
         cargoWorkspace = snapshot
         resolvedManifestSource = manifestSource
@@ -1166,6 +1256,12 @@ final class CompilerViewModel: ObservableObject {
                 }
                 """,
             ]
+        case .webPage:
+            files = WebProjectSamples.files
+        case .rustWeb:
+            var site = Dictionary(uniqueKeysWithValues: WebProjectSamples.files.map { ("web/" + $0.key, $0.value) })
+            site["src/main.rs"] = WebProjectSamples.rustGenerator
+            files = site
         }
 
         let dependencies = switch request.template {
@@ -1187,11 +1283,11 @@ final class CompilerViewModel: ObservableObject {
         \(dependencies)
         """
         var projectFiles = files
-        projectFiles["Cargo.toml"] = manifest
+        if request.template != .webPage { projectFiles["Cargo.toml"] = manifest }
         loadProject(
             name: name,
             files: projectFiles,
-            entryFile: "src/main.rs",
+            entryFile: request.template == .webPage ? "index.html" : "src/main.rs",
             projectDescription: request.projectDescription,
             tags: request.tags,
             folder: request.folder,
@@ -1524,6 +1620,24 @@ final class CompilerViewModel: ObservableObject {
         result = nil
     }
 
+    func recordWebPreviewFailure(snapshotID: String, failure: WebPreviewFailure) {
+        guard !isBusy, let preview = result?.webPreview, preview.id == snapshotID,
+              (result?.diagnostics.count ?? 0) < 128 else { return }
+        let path = failure.file ?? preview.entryPath
+        let source = fileContents[path]
+        let isCurrentSource = source.map { preview.assets[path] == Data($0.utf8) } == true
+        let lines = source?.components(separatedBy: "\n") ?? []
+        let span: [RustDiagnostic.Span] = isCurrentSource ? [RustDiagnostic.Span(
+            fileName: path, lineStart: failure.line, lineEnd: failure.line,
+            columnStart: failure.column, columnEnd: failure.column + 1,
+            isPrimary: true, label: "Web preview",
+            sourceLine: lines.indices.contains(failure.line - 1) ? lines[failure.line - 1] : "")] : []
+        let diagnostic = RustDiagnostic(level: "error", message: failure.message, code: "WEB",
+            rendered: "\(path):\(failure.line):\(failure.column): \(failure.message)", spans: span)
+        guard result?.diagnostics.contains(where: { $0.code == "WEB" && $0.rendered == diagnostic.rendered }) != true else { return }
+        result?.diagnostics.append(diagnostic)
+    }
+
     func requestAppleIntelligenceAdvice() {
         guard !isBusy,
               !diagnosticAdviceState.isWorking,
@@ -1532,11 +1646,11 @@ final class CompilerViewModel: ObservableObject {
 
         let project = currentProject()
         guard let targetFile = diagnosticTargetFile(for: diagnostic, in: project.files),
-              targetFile.lowercased().hasSuffix(".rs"),
+              SourceLanguage(filePath: targetFile).supportsCompletion,
               let originalSource = project.files[targetFile]
         else {
             diagnosticAdviceState = .unavailable(
-                "The compiler did not identify an editable Rust source file for this issue."
+                "The diagnostic did not identify an editable source file for this issue."
             )
             return
         }
@@ -1558,7 +1672,7 @@ final class CompilerViewModel: ObservableObject {
 
                 guard isCurrent(revision) else { return }
 
-                guard !draft.edits.isEmpty else {
+                guard targetFile.lowercased().hasSuffix(".rs"), !draft.edits.isEmpty else {
                     diagnosticAdviceRevision = revision
                     diagnosticAdviceState = .ready(
                         RustDiagnosticAdvice(
@@ -1848,6 +1962,7 @@ final class CompilerViewModel: ObservableObject {
 
     private func finish(_ value: CompilationResult, revision: WorkspaceRevision) {
         guard isCurrent(revision) else { return }
+        appendBuildStage(value.succeeded ? "Finished successfully" : "Stopped · see Problems for details")
         result = value
         activity = .idle
         isCompilerDraining = false

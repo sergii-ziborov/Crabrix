@@ -30,7 +30,7 @@ final class WasmRustCompiler: @unchecked Sendable {
     // Bumped when the root compiler invocation changes shape: artefacts built
     // before the root crate received its own `--cfg feature="…"` flags must not
     // be reused for the same manifest.
-    private static let cacheSchemaVersion = "fast-dev-4"
+    private static let cacheSchemaVersion = "fast-dev-6-wasi-build-scripts"
     private static let checkCacheLimit = 24
 
     private let bundle: Bundle
@@ -107,7 +107,8 @@ final class WasmRustCompiler: @unchecked Sendable {
         supportingFiles: [String: String] = [:],
         edition: String = "2024",
         plan: CargoBuildPlan = .empty,
-        onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil
+        onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
+        onStage: (@Sendable (String) -> Void)? = nil
     ) async -> CompilationResult {
         await perform(
             action: .check,
@@ -116,7 +117,8 @@ final class WasmRustCompiler: @unchecked Sendable {
             supportingFiles: supportingFiles,
             edition: edition,
             plan: plan,
-            onDependencyProgress: onDependencyProgress
+            onDependencyProgress: onDependencyProgress,
+            onStage: onStage
         )
     }
 
@@ -126,7 +128,8 @@ final class WasmRustCompiler: @unchecked Sendable {
         supportingFiles: [String: String] = [:],
         edition: String = "2024",
         plan: CargoBuildPlan = .empty,
-        onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil
+        onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
+        onStage: (@Sendable (String) -> Void)? = nil
     ) async -> CompilationResult {
         await perform(
             action: .run,
@@ -135,7 +138,8 @@ final class WasmRustCompiler: @unchecked Sendable {
             supportingFiles: supportingFiles,
             edition: edition,
             plan: plan,
-            onDependencyProgress: onDependencyProgress
+            onDependencyProgress: onDependencyProgress,
+            onStage: onStage
         )
     }
 
@@ -184,7 +188,8 @@ final class WasmRustCompiler: @unchecked Sendable {
         supportingFiles: [String: String],
         edition: String,
         plan: CargoBuildPlan,
-        onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?
+        onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?,
+        onStage: (@Sendable (String) -> Void)?
     ) async -> CompilationResult {
         await withCheckedContinuation { continuation in
             queue.async { [self] in
@@ -197,7 +202,8 @@ final class WasmRustCompiler: @unchecked Sendable {
                         supportingFiles: supportingFiles,
                         edition: edition,
                         plan: plan,
-                        onDependencyProgress: onDependencyProgress
+                        onDependencyProgress: onDependencyProgress,
+                        onStage: onStage
                     )
                 )
             }
@@ -213,7 +219,8 @@ final class WasmRustCompiler: @unchecked Sendable {
         supportingFiles: [String: String],
         edition: String,
         plan: CargoBuildPlan,
-        onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?
+        onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?,
+        onStage: (@Sendable (String) -> Void)?
     ) -> CompilationResult {
         let started = clock.now
         let interrupter = WasmInterrupter()
@@ -226,6 +233,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             interrupterLock.unlock()
         }
 
+        onStage?("Preparing bundled compiler")
         guard let toolchain else {
             return .failure(phase: .setup, detail: "Bundled Rust toolchain is missing.")
         }
@@ -276,12 +284,14 @@ final class WasmRustCompiler: @unchecked Sendable {
             // Dependencies must exist before the cached-program fast path, because
             // a cached program.wasm already has them linked in.
             if action == .run, let cachedProgram = loadCachedProgramModule(for: cacheKey) {
+                onStage?("Running program")
                 return try executeProgram(
                     module: cachedProgram,
                     jobRoot: jobRoot,
                     diagnostics: [],
                     started: started,
                     interrupter: interrupter,
+                    previewSourceFiles: supportingFiles,
                     successDetail: "Executed a cached local build artifact inside the bounded WasmKit sandbox."
                 )
             }
@@ -325,6 +335,46 @@ final class WasmRustCompiler: @unchecked Sendable {
                 }
             }
 
+            var rootEnvironment = rootCargoEnvironment(
+                sourcePath: sourcePath, supportingFiles: supportingFiles, features: plan.rootFeatures)
+            var rootScriptOutput = CargoBuildScriptOutput()
+            var rootGeneratedURL: URL?
+            if let manifestText = supportingFiles["Cargo.toml"],
+               let parsed = try? CratePackageManifest.parse(manifestText) {
+                let manifest = parsed.detectingImplicitBuildScript(
+                    fileExists: fileManager.fileExists(atPath: workURL.appending(path: "build.rs").path))
+                if let script = manifest.buildScriptPath {
+                    onStage?("Building project build script")
+                    let generated = jobRoot.appending(path: "root-generated", directoryHint: .isDirectory)
+                    let unit = CargoBuildUnit(
+                        package: PackageID(name: manifest.packageName, version: manifest.version ?? .init(major: 0, minor: 0, patch: 0)),
+                        fingerprint: String(cacheKey.prefix(16)),
+                        crateName: CratePackageManifest.crateIdentifier(for: manifest.packageName),
+                        edition: manifest.edition, features: plan.rootFeatures, libraryPath: sourcePath,
+                        source: .registry(directoryName: "root"), externs: [],
+                        authors: "", description: "", repository: "", license: "", homepage: "",
+                        buildScriptPath: script,
+                        buildScriptDependencies: manifest.dependencies
+                            .filter { $0.kind == .build && $0.applies(to: .wasm32WasiP1) }.map(\.alias))
+                    do {
+                        rootScriptOutput = try runBuildScript(
+                            for: unit, toolchain: toolchain, registryRoot: workURL,
+                            patchRoot: nil, generatedURL: generated, jobRoot: jobRoot,
+                            tempURL: tempURL, interrupter: interrupter,
+                            sourceOverride: workURL, guestSourceOverride: "/work",
+                            packageEnvironment: rootEnvironment)
+                    } catch let cancellation as WasmExecutionCancelled { throw cancellation }
+                    catch {
+                        return .failure(phase: .compile,
+                                        detail: "Project build script failed: \(error.localizedDescription)",
+                                        duration: started.duration(to: clock.now))
+                    }
+                    rootGeneratedURL = generated
+                    rootEnvironment["OUT_DIR"] = "/build-out"
+                    rootEnvironment.merge(rootScriptOutput.environment) { _, new in new }
+                }
+            }
+            onStage?(action == .run ? "Compiling and linking project" : "Checking project")
             let outputName = action == .run ? "program.wasm" : "main.rmeta"
             var arguments = [
                 "rustc", "/work/\(sourcePath)",
@@ -338,6 +388,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                 arguments += ["--cfg", "feature=\"\(feature)\""]
             }
             arguments += externArguments(plan.rootExterns, emit: action.emit)
+            arguments += rootScriptOutput.compilerArguments
 
             switch action {
             case .check:
@@ -360,12 +411,10 @@ final class WasmRustCompiler: @unchecked Sendable {
                         .init(guestPath: "/tmp", hostPath: tempURL.path),
                         .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path, readOnly: true),
                         .init(guestPath: "/work", hostPath: workURL.path),
-                    ] + registryPreopens(for: plan),
-                    environment: rootCargoEnvironment(
-                        sourcePath: sourcePath,
-                        supportingFiles: supportingFiles,
-                        features: plan.rootFeatures
-                    ),
+                    ] + registryPreopens(for: plan) + (rootGeneratedURL.map {
+                        [.init(guestPath: "/build-out", hostPath: $0.path, readOnly: true)]
+                    } ?? []),
+                    environment: rootEnvironment,
                     interrupter: interrupter
                 )
             } catch let cancellation as WasmExecutionCancelled {
@@ -446,12 +495,14 @@ final class WasmRustCompiler: @unchecked Sendable {
             }
             persistProgramArtifact(at: programURL, for: cacheKey)
 
+            onStage?("Running program")
             return try executeProgram(
                 module: programModule,
                 jobRoot: jobRoot,
                 diagnostics: diagnostics,
                 started: started,
                 interrupter: interrupter,
+                previewSourceFiles: supportingFiles,
                 successDetail: plan.isEmpty
                     ? "Compiled and executed locally inside the bounded WasmKit sandbox."
                     : "Compiled \(plan.units.count) dependencies and the program locally, then ran it in the bounded sandbox."
@@ -550,6 +601,22 @@ final class WasmRustCompiler: @unchecked Sendable {
                 )
             }
 
+            let buildOutput: CargoBuildScriptOutput
+            let generatedURL = jobRoot.appending(path: "generated-\(unit.fingerprint)", directoryHint: .isDirectory)
+            do {
+                buildOutput = try runBuildScript(
+                    for: unit, toolchain: toolchain, registryRoot: registryRoot,
+                    patchRoot: patchRoot, generatedURL: generatedURL,
+                    jobRoot: jobRoot, tempURL: tempURL, interrupter: interrupter
+                )
+            } catch let cancellation as WasmExecutionCancelled {
+                return cancelledResult(phase: .compile, started: started, cancellation: cancellation)
+            } catch let failure as RustcRuntimeFailure {
+                return dependencyFailure(unit: unit, detail: "build script failed: \(failure.underlying.localizedDescription)", stderr: failure.stderr, started: started)
+            } catch {
+                return dependencyFailure(unit: unit, detail: error.localizedDescription, stderr: "", started: started)
+            }
+
             var arguments = [
                 "rustc",
                 "\(unit.guestSourceDirectory)/\(unit.libraryPath)",
@@ -572,6 +639,11 @@ final class WasmRustCompiler: @unchecked Sendable {
                 arguments += ["--cfg", "feature=\"\(feature)\""]
             }
             arguments += externArguments(unit.externs, emit: emit)
+            arguments += buildOutput.compilerArguments
+
+            var environment = cargoEnvironment(for: unit)
+            environment.merge(buildOutput.environment) { _, new in new }
+            if unit.buildScriptPath != nil { environment["OUT_DIR"] = "/build-out" }
 
             let output: WasmProcessResult
             do {
@@ -585,10 +657,12 @@ final class WasmRustCompiler: @unchecked Sendable {
                         .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path, readOnly: true),
                         .init(guestPath: "/registry", hostPath: registryRoot.path, readOnly: true),
                         .init(guestPath: "/artifacts", hostPath: artifacts.path),
-                    ] + (patchRoot.map {
+                    ] + (unit.buildScriptPath == nil ? [] : [
+                        .init(guestPath: "/build-out", hostPath: generatedURL.path, readOnly: true)
+                    ]) + (patchRoot.map {
                         [.init(guestPath: "/patches", hostPath: $0.path, readOnly: true)]
                     } ?? []),
-                    environment: cargoEnvironment(for: unit),
+                    environment: environment,
                     interrupter: interrupter
                 )
             } catch let cancellation as WasmExecutionCancelled {
@@ -742,6 +816,97 @@ final class WasmRustCompiler: @unchecked Sendable {
 
     /// `env!("CARGO_PKG_…")` is common enough in real crates that omitting these
     /// turns otherwise-compatible packages into compile errors.
+    /// Build scripts are guest programs too: immutable package input, one
+    /// writable OUT_DIR, no host subprocesses, network, or app storage access.
+    private func runBuildScript(
+        for unit: CargoBuildUnit, toolchain: BundledToolchain,
+        registryRoot: URL, patchRoot: URL?, generatedURL: URL,
+        jobRoot: URL, tempURL: URL, interrupter: WasmInterrupter,
+        sourceOverride: URL? = nil, guestSourceOverride: String? = nil,
+        packageEnvironment: [String: String]? = nil
+    ) throws -> CargoBuildScriptOutput {
+        guard let script = unit.buildScriptPath else { return .init() }
+        guard unit.buildScriptDependencies.isEmpty else {
+            throw CargoBuildScriptOutput.Failure("Build dependencies require a separate host graph: \(unit.buildScriptDependencies.joined(separator: ", "))")
+        }
+        let guestSource = guestSourceOverride ?? unit.guestSourceDirectory
+        let sourceRoot: URL
+        if let sourceOverride { sourceRoot = sourceOverride }
+        else {
+            switch unit.source {
+            case let .registry(directoryName): sourceRoot = registryRoot.appending(path: directoryName)
+            case .projectPatch:
+                guard let patchRoot else { throw CargoBuildScriptOutput.Failure("Missing build-script patch input.") }
+                sourceRoot = patchRoot.appending(path: unit.fingerprint)
+            }
+        }
+        guard projectFileURL(relativePath: script, under: sourceRoot) != nil else {
+            throw CargoBuildScriptOutput.Failure("Invalid build-script path: \(script)")
+        }
+        try FileManager.default.createDirectory(at: generatedURL, withIntermediateDirectories: true)
+        let binaryName = "build-\(unit.fingerprint).wasm"
+        var environment = packageEnvironment ?? cargoEnvironment(for: unit)
+        environment["CARGO_MANIFEST_DIR"] = guestSource
+        environment["OUT_DIR"] = "/build-out"
+        environment["HOST"] = "wasm32-wasip1"
+        environment["TARGET"] = "wasm32-wasip1"
+        environment["PROFILE"] = "debug"
+        environment["OPT_LEVEL"] = "0"
+        environment["DEBUG"] = "true"
+        environment["NUM_JOBS"] = "1"
+        environment["CARGO_ENCODED_RUSTFLAGS"] = ""
+        let target = RustTargetSpec.wasm32WasiP1
+        for flag in target.cfgFlags { environment["CARGO_CFG_\(flag.uppercased())"] = "" }
+        for (key, values) in target.cfgValues {
+            environment["CARGO_CFG_\(key.uppercased())"] = values.sorted().joined(separator: ",")
+        }
+        var arguments = [
+            "rustc", "\(guestSource)/\(script)",
+            "--sysroot", "/sysroot", "--target", "wasm32-wasip1",
+            "--edition", unit.edition, "--crate-name", "build_script_build",
+            "--error-format=json", "-Copt-level=0", "-Cpanic=abort",
+            "-Zunstable-options", "-o", "/tmp/\(binaryName)"
+        ]
+        for feature in unit.features { arguments += ["--cfg", "feature=\"\(feature)\""] }
+        let sourcePreopen = WASIBridgeToHost.Preopen(
+            guestPath: guestSource, hostPath: sourceRoot.path, readOnly: true)
+        let compilation = try invokeRustc(
+            toolchain: toolchain, arguments: arguments, jobRoot: jobRoot,
+            capturePrefix: "script-compile-\(unit.fingerprint)",
+            preopens: [sourcePreopen,
+                       .init(guestPath: "/tmp", hostPath: tempURL.path),
+                       .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path, readOnly: true)],
+            environment: environment, interrupter: interrupter)
+        guard compilation.exitCode == 0 else {
+            throw CargoBuildScriptOutput.Failure(
+                "Could not compile \(script): \(compilation.stderr)")
+        }
+        let prefix = "script-run-\(unit.fingerprint)"
+        let quota = WasmSandboxQuotaMonitor(
+            captureDirectory: jobRoot, capturePrefix: prefix,
+            writableDirectory: generatedURL, interrupter: interrupter)
+        quota.start()
+        defer { quota.stop() }
+        let output = try runtime.run(
+            module: parseWasm(filePath: tempURL.appending(path: binaryName).path),
+            arguments: ["build-script"], environment: environment,
+            preopens: [sourcePreopen,
+                       .init(guestPath: ".", hostPath: sourceRoot.path, readOnly: true),
+                       .init(guestPath: "/build-out", hostPath: generatedURL.path)],
+            captureDirectory: jobRoot, capturePrefix: prefix,
+            resourceLimiter: WasmSandboxResourceLimiter(),
+            fuelBudget: WasmSandboxPolicy.userProgramInstructionBudget,
+            wallClockLimit: WasmSandboxPolicy.userProgramWallClockLimit,
+            interrupter: interrupter,
+            softwareMemoryReservationBytes: WasmSandboxPolicy.userProgramMemoryLimitBytes,
+            capturedOutputLimitBytes: WasmSandboxPolicy.userProgramOutputLimitBytes)
+        if let reason = quota.checkNow() { throw WasmExecutionCancelled(reason: reason) }
+        guard output.exitCode == 0 else {
+            throw CargoBuildScriptOutput.Failure("\(script) exited with \(output.exitCode): \(output.stderr)")
+        }
+        return try CargoBuildScriptOutput.parse(output.stdout)
+    }
+
     private func cargoEnvironment(for unit: CargoBuildUnit) -> [String: String] {
         let version = unit.package.version
         var environment: [String: String] = [
@@ -889,6 +1054,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         diagnostics: [RustDiagnostic],
         started: ContinuousClock.Instant,
         interrupter: WasmInterrupter,
+        previewSourceFiles: [String: String],
         successDetail: String
     ) throws -> CompilationResult {
         let sandboxURL = jobRoot.appending(path: "sandbox", directoryHint: .isDirectory)
@@ -948,6 +1114,14 @@ final class WasmRustCompiler: @unchecked Sendable {
             throw failure.underlying
         }
 
+        var webAssets = previewSourceFiles.filter { WebPreviewSnapshot.mimeType(for: $0.key) != nil }.mapValues { Data($0.utf8) }
+        let generated = WebPreviewSnapshot.generated(in: sandboxURL)
+        webAssets.merge(generated) { _, new in new }
+        let printed = output.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !generated.keys.contains(where: { SourceLanguage(filePath: $0) == .html }),
+           printed.lowercased().hasPrefix("<!doctype html") || printed.lowercased().hasPrefix("<html") {
+            webAssets["index.html"] = Data(output.stdout.utf8)
+        }
         return CompilationResult(
             succeeded: output.exitCode == 0,
             phase: .run,
@@ -958,7 +1132,8 @@ final class WasmRustCompiler: @unchecked Sendable {
             duration: started.duration(to: clock.now),
             detail: output.exitCode == 0
                 ? successDetail
-                : "The program exited with code \(output.exitCode)."
+                : "The program exited with code \(output.exitCode).",
+            webPreview: output.exitCode == 0 ? WebPreviewSnapshot(files: webAssets) : nil
         )
     }
 

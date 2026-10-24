@@ -66,6 +66,36 @@
             </BuildableReference>
             <SelectedTests>
                <Test
+                  Identifier = "BundledCompilerGateTests/testTokioCurrentThreadTimersAndChannelsRunOffline()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testSerdeJSONBuildScriptRunsInsideTheOfflineWASISandbox()">
+               </Test>
+               <Test
+                  Identifier = "OfflineWebPreviewTests">
+               </Test>
+               <Test
+                  Identifier = "SyntaxHighlighterTests">
+               </Test>
+               <Test
+                  Identifier = "RustCompletionTests">
+               </Test>
+               <Test
+                  Identifier = "CargoBuildScriptTests">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testRustGeneratesAnOfflineHTMLCSSJavaScriptPreview()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testProjectBuildScriptTracksInputsAndExposesGeneratedCodeAndCfg()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testMarkdownAndTemplatesRenderARealHTMLPageOffline()">
+               </Test>
+               <Test
+                  Identifier = "BundledCompilerGateTests/testAxumRoutesARealHTTPRequestWithoutATCPServer()">
+               </Test>
+               <Test
                   Identifier = "BundledCompilerGateTests/testSuccessfulLessonRunClearsPreviousErrorWithoutCompletingLesson()">
                </Test>
                <Test

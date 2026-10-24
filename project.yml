@@ -29,7 +29,7 @@ packages:
   WasmKit:
     # Public Crabrix fork of WasmKit 0.4.1 with read-only host WASI preopens.
     url: https://github.com/sergii-ziborov/crabrix-runtime.git
-    revision: d996f0d11dff54734b5670d58062e22c6e01f949
+    revision: 0689cc5df8b5b3f81ac5e9675cc3c22fe1b614f3
   SwiftSystem:
     url: https://github.com/apple/swift-system.git
     exactVersion: 1.8.1
@@ -117,8 +117,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix
         PRODUCT_NAME: Crabrix
-        MARKETING_VERSION: 1.1.1
-        CURRENT_PROJECT_VERSION: 68
+        MARKETING_VERSION: 1.1.2
+        CURRENT_PROJECT_VERSION: 73
         CODE_SIGN_ENTITLEMENTS: Crabrix/Crabrix.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
@@ -163,8 +163,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.Crabrix.Share
         PRODUCT_NAME: CrabrixShare
-        MARKETING_VERSION: 1.1.1
-        CURRENT_PROJECT_VERSION: 68
+        MARKETING_VERSION: 1.1.2
+        CURRENT_PROJECT_VERSION: 73
         CODE_SIGN_ENTITLEMENTS: CrabrixShare/CrabrixShare.entitlements
         CODE_SIGN_STYLE: Automatic
         APPLICATION_EXTENSION_API_ONLY: YES
@@ -318,6 +318,16 @@ schemes:
       targets:
         - name: CrabrixTests
           selectedTests:
+            - BundledCompilerGateTests/testTokioCurrentThreadTimersAndChannelsRunOffline()
+            - BundledCompilerGateTests/testSerdeJSONBuildScriptRunsInsideTheOfflineWASISandbox()
+            - OfflineWebPreviewTests
+            - SyntaxHighlighterTests
+            - RustCompletionTests
+            - CargoBuildScriptTests
+            - BundledCompilerGateTests/testRustGeneratesAnOfflineHTMLCSSJavaScriptPreview()
+            - BundledCompilerGateTests/testProjectBuildScriptTracksInputsAndExposesGeneratedCodeAndCfg()
+            - BundledCompilerGateTests/testMarkdownAndTemplatesRenderARealHTMLPageOffline()
+            - BundledCompilerGateTests/testAxumRoutesARealHTTPRequestWithoutATCPServer()
             - BundledCompilerGateTests/testSuccessfulLessonRunClearsPreviousErrorWithoutCompletingLesson()
             - BundledCompilerGateTests/testSwitchingFilesDuringCompilationKeepsItsResult()
             - BundledCompilerGateTests/testHashbrownFromDeviceReportResolvesAndRuns()

@@ -3,6 +3,212 @@ import XCTest
 @testable import Crabrix
 
 final class BundledCompilerGateTests: XCTestCase {
+    func testRustGeneratesAnOfflineHTMLCSSJavaScriptPreview() async throws {
+        try Self.requireCompilerGate()
+        var files = WebProjectSamples.files.reduce(into: [String: String]()) { $0["web/" + $1.key] = $1.value }
+        files["Cargo.toml"] = "[package]\nname = \"offline_web\"\nversion = \"0.1.0\"\nedition = \"2021\"\n"
+        let result = await WasmRustCompiler(bundle: .main).run(source: WebProjectSamples.rustGenerator,
+            sourcePath: "src/main.rs", supportingFiles: files, edition: "2021")
+        XCTAssertTrue(result.succeeded, result.detail + "\n" + result.stderr)
+        let preview = try XCTUnwrap(result.webPreview)
+        XCTAssertEqual(preview.entryPath, "index.html")
+        XCTAssertNotNil(preview.assets["app.js"])
+        XCTAssertNotNil(preview.assets["styles.css"])
+    }
+
+    func testProjectBuildScriptTracksInputsAndExposesGeneratedCodeAndCfg() async throws {
+        try Self.requireCompilerGate()
+        let manifest = """
+        [package]
+        name = "generated-project"
+        version = "0.1.0"
+        edition = "2021"
+        """
+        let script = #"""
+        use std::{env, fs, path::PathBuf};
+        fn main() {
+            let text = fs::read_to_string("settings/greeting.txt").unwrap();
+            let out = PathBuf::from(env::var_os("OUT_DIR").unwrap());
+            fs::write(out.join("greeting.rs"), format!("pub const GREETING: &str = {text:?};")).unwrap();
+            println!("cargo::rustc-check-cfg=cfg(generated_greeting)");
+            println!("cargo::rustc-cfg=generated_greeting");
+            println!("cargo::rustc-env=GENERATED_KIND=offline");
+            println!("cargo::rerun-if-changed=settings/greeting.txt");
+        }
+        """#
+        let source = #"""
+        include!(concat!(env!("OUT_DIR"), "/greeting.rs"));
+        #[cfg(generated_greeting)]
+        fn main() { println!("{}:{}", env!("GENERATED_KIND"), GREETING); }
+        """#
+        let compiler = WasmRustCompiler(bundle: .main)
+        for greeting in ["hello", "changed"] {
+            let result = await compiler.run(
+                source: source, sourcePath: "src/main.rs",
+                supportingFiles: ["Cargo.toml": manifest, "build.rs": script,
+                                  "settings/greeting.txt": greeting], edition: "2021")
+            XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+            XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "offline:\(greeting)")
+        }
+    }
+
+    func testMarkdownAndTemplatesRenderARealHTMLPageOffline() async throws {
+        try Self.requireCompilerGate()
+        try await runOfflineWebFixture(name: "offline-static-page", dependencies: """
+        pulldown-cmark = { version = "=0.13.5", default-features = false, features = ["html"] }
+        minijinja = "=3.0.3"
+        """, source: """
+        use minijinja::{Environment, context};
+        fn main() {
+            let mut html = String::new();
+            pulldown_cmark::html::push_html(&mut html,
+                pulldown_cmark::Parser::new("# Offline Rust\\n\\nA **real** page."));
+            assert!(html.contains("<strong>real</strong>"));
+            let mut env = Environment::new();
+            env.add_template("page.html", "<!doctype html><title>{{ title }}</title><main>{{ body|safe }}</main>").unwrap();
+            let page = env.get_template("page.html").unwrap()
+                .render(context!(title => "Rust & Web", body => html)).unwrap();
+            assert!(page.contains("<title>Rust &amp; Web</title>"));
+            assert!(page.contains("<h1>Offline Rust</h1>"));
+            println!("offline static page: ok");
+        }
+        """, expected: "offline static page: ok")
+    }
+
+    func testAxumRoutesARealHTTPRequestWithoutATCPServer() async throws {
+        try Self.requireCompilerGate()
+        try await runOfflineWebFixture(name: "offline-axum-router", dependencies: """
+        axum = { version = "=0.8.9", default-features = false }
+        tower = { version = "=0.5.2", default-features = false, features = ["util"] }
+        tokio = { version = "=1.54.1", default-features = false, features = ["rt"] }
+        """, source: """
+        use axum::{body::{Body, to_bytes}, http::{Request, StatusCode}, routing::get, Router};
+        use tower::ServiceExt;
+        fn main() {
+            tokio::runtime::Builder::new_current_thread().build().unwrap().block_on(async {
+                let app = Router::new().route("/hello/{name}",
+                    get(|axum::extract::Path(name): axum::extract::Path<String>| async move {
+                        format!("Hello, {name}!")
+                    }));
+                let response = app.oneshot(Request::builder().uri("/hello/Crabrix")
+                    .body(Body::empty()).unwrap()).await.unwrap();
+                assert_eq!(response.status(), StatusCode::OK);
+                let body = to_bytes(response.into_body(), 1024).await.unwrap();
+                assert_eq!(&body[..], b"Hello, Crabrix!");
+                println!("offline axum route: ok");
+            });
+        }
+        """, expected: "offline axum route: ok")
+    }
+
+    private func runOfflineWebFixture(
+        name: String, dependencies: String, source: String, expected: String
+    ) async throws {
+        let manifest = """
+        [package]
+        name = "\(name)"
+        version = "0.1.0"
+        edition = "2021"
+        [dependencies]
+        \(dependencies)
+        """
+        let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
+        XCTAssertTrue(snapshot.blockingPackages.isEmpty, snapshot.blockingPackages.description)
+        let lock = try XCTUnwrap(snapshot.lockfile)
+        let frozen = try await CargoPackageManager().prepare(
+            manifestSource: manifest, lockfileSource: lock, mode: .frozen)
+        XCTAssertTrue(frozen.isOfflinePinned)
+        let result = await WasmRustCompiler(bundle: .main).run(
+            source: "// fresh web fixture \(UUID())\n" + source,
+            sourcePath: "src/main.rs", supportingFiles: ["Cargo.toml": manifest, "Cargo.lock": lock],
+            edition: "2021", plan: frozen.plan,
+            onDependencyProgress: { progress in print("OFFLINE UNIT", Date(), progress) },
+            onStage: { stage in print("OFFLINE STAGE", Date(), stage); XCTAssertFalse(Thread.isMainThread, "Compiler work reached the UI thread") })
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), expected)
+    }
+
+    func testSerdeJSONBuildScriptRunsInsideTheOfflineWASISandbox() async throws {
+        try Self.requireCompilerGate()
+        let manifest = """
+        [package]
+        name = "serde-offline-gate"
+        version = "0.1.0"
+        edition = "2021"
+        [dependencies]
+        serde_json = "=1.0.151"
+        """
+        let manager = CargoPackageManager()
+        let prepared = try await manager.prepare(manifestSource: manifest)
+        XCTAssertTrue(prepared.blockingPackages.isEmpty, prepared.blockingPackages.description)
+        try await manager.pinForOffline(prepared.packages)
+        let lockfile = try XCTUnwrap(prepared.lockfile)
+        let offline = try await CargoPackageManager().prepare(
+            manifestSource: manifest, lockfileSource: lockfile, mode: .frozen)
+        let source = """
+        // fresh serde build-script gate \(UUID())
+        fn main() {
+            let value: serde_json::Value = serde_json::from_str(r#"{"answer":42}"#).unwrap();
+            assert_eq!(value["answer"].as_u64(), Some(42));
+            println!("{}", serde_json::to_string(&value).unwrap());
+        }
+        """
+        let result = await WasmRustCompiler(bundle: .main).run(
+            source: source, sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": manifest, "Cargo.lock": lockfile],
+            edition: "2021", plan: offline.plan)
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), #"{"answer":42}"#)
+    }
+
+    func testTokioCurrentThreadTimersAndChannelsRunOffline() async throws {
+        try Self.requireCompilerGate()
+        let manifest = """
+        [package]
+        name = "tokio-offline-gate"
+        version = "0.1.0"
+        edition = "2021"
+        [dependencies]
+        tokio = { version = "=1.54.1", default-features = false, features = ["rt", "sync", "time", "io-util"] }
+        """
+        let manager = CargoPackageManager()
+        let prepared = try await manager.prepare(manifestSource: manifest)
+        XCTAssertTrue(prepared.blockingPackages.isEmpty, prepared.blockingPackages.description)
+        let lockfile = try XCTUnwrap(prepared.lockfile)
+        try await manager.pinForOffline(prepared.packages)
+        // Recreate the package manager and prohibit HTTP. This is a new
+        // resolution, not an in-memory snapshot or a cached root program.
+        let offline = try await CargoPackageManager().prepare(
+            manifestSource: manifest, lockfileSource: lockfile, mode: .frozen
+        )
+        XCTAssertTrue(offline.isOfflinePinned)
+        let source = """
+        // fresh Tokio compile \(UUID())
+        use std::time::Duration;
+        fn main() {
+            let runtime = tokio::runtime::Builder::new_current_thread()
+                .enable_time().build().unwrap();
+            runtime.block_on(async {
+                let (tx, mut rx) = tokio::sync::mpsc::channel(2);
+                let task = tokio::spawn(async move {
+                    tokio::time::sleep(Duration::from_millis(2)).await;
+                    tx.send(42_u32).await.unwrap();
+                });
+                assert_eq!(rx.recv().await, Some(42));
+                task.await.unwrap();
+                println!("tokio offline: 42");
+            });
+        }
+        """
+        let result = await WasmRustCompiler(bundle: .main).run(
+            source: source, sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": manifest, "Cargo.lock": lockfile],
+            edition: "2021", plan: offline.plan
+        )
+        XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
+        XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "tokio offline: 42")
+    }
+
     @MainActor
     func testSuccessfulLessonRunClearsPreviousErrorWithoutCompletingLesson() async throws {
         try Self.requireCompilerGate()

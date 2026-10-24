@@ -180,7 +180,10 @@ final class RustcRuntime: @unchecked Sendable {
         // WasmKit's file parser reads the module in bounded chunks. The parser
         // owns and closes its descriptor, and the returned Module retains its
         // parsed code, so no whole-file Data -> [UInt8] copy is needed here.
-        let module = try parseWasm(filePath: url.path)
+        // The signed compiler's internal Wasm names/DWARF are not Rust source
+        // diagnostics. Avoid retaining their ~40 MiB payload; ordinary user
+        // program parsing still keeps names for useful trap backtraces.
+        let module = try parseWasm(filePath: url.path, retainDebugCustomSections: false)
         CompilerPhaseTrace.emit("rustc-parse", since: started)
         cachedRustcModule = module
         return module

@@ -215,7 +215,8 @@ actor CrateStore {
         name: String,
         version: SemanticVersion,
         checksum: String,
-        allowNetwork: Bool = true
+        allowNetwork: Bool = true,
+        onArchiveVerified: (@Sendable () -> Void)? = nil
     ) async throws -> MaterializedCrate {
         guard let sourceURL = CrateStorageLayout.sourceDirectory(name: name, version: version) else {
             throw CrateDownloadError.storageUnavailable
@@ -247,6 +248,7 @@ actor CrateStore {
             checksum: checksum,
             allowNetwork: allowNetwork
         )
+        onArchiveVerified?()
         try extract(
             archive,
             name: name,

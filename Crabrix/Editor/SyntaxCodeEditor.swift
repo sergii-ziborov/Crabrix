@@ -195,7 +195,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         textView.smartQuotesType = .no
         textView.smartInsertDeleteType = .no
         textView.spellCheckingType = .no
-        textView.accessibilityLabel = "Rust source editor"
+        textView.accessibilityLabel = "Source code editor"
         canvas.lineNumberColor = UIColor(CrabrixTheme.muted).withAlphaComponent(0.82)
         canvas.gutterSeparatorColor = UIColor(CrabrixTheme.border)
         canvas.gutterBackgroundColor = UIColor(CrabrixTheme.editor)
@@ -383,7 +383,24 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         ///   scroll it into view, so a repaint with the caret still at offset 0
         ///   would yank a reader who had scrolled down back to the first line.
         ///   Typing passes false, because there the caret should lead.
-        func applyHighlighting(
+        private var highlightRevision = UUID()
+
+        func applyHighlighting(to textView: UITextView, filePath: String, preservingScroll: Bool = true) {
+            let revision = UUID()
+            highlightRevision = revision
+            let source = textView.text ?? ""
+            Task { @MainActor [weak self, weak textView] in
+                let tokens = await Task.detached(priority: .userInitiated) {
+                    SyntaxHighlighter.tokens(in: source, filePath: filePath)
+                }.value
+                guard let self, let textView, self.highlightRevision == revision,
+                      self.parent.filePath == filePath, textView.text == source else { return }
+                self.applyTokens(tokens, to: textView, filePath: filePath, preservingScroll: true)
+            }
+        }
+
+        private func applyTokens(
+            _ tokens: [SyntaxToken],
             to textView: UITextView,
             filePath: String,
             preservingScroll: Bool = true
@@ -405,7 +422,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             isApplyingHighlight = true
             textView.textStorage.beginEditing()
             textView.textStorage.setAttributes(base, range: fullRange)
-            for token in SyntaxHighlighter.tokens(in: source, filePath: filePath) {
+            for token in tokens {
                 guard NSMaxRange(token.range) <= fullRange.length else { continue }
                 textView.textStorage.addAttribute(
                     .foregroundColor,

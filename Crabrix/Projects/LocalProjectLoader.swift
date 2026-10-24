@@ -13,7 +13,7 @@ enum LocalProjectLoader {
             case .notDirectory:
                 "Choose a Cargo project folder or a saved Crabrix project."
             case .noReadableSource:
-                "No readable Rust or Cargo files were found in this project."
+                "No readable Rust, Cargo or HTML source was found in this project."
             case let .tooManyFiles(limit):
                 "This snapshot contains more than \(limit) readable files."
             case let .fileTooLarge(path):
@@ -24,7 +24,10 @@ enum LocalProjectLoader {
         }
     }
 
-    static let maximumFileCount = 512
+    // Tokio's published source includes more than 512 small text files.
+    // Keep the byte budgets independent so complete source remains editable
+    // without allowing a large package to consume unbounded memory.
+    static let maximumFileCount = 2_048
     // Match CrateSourceBrowser's 2 MiB viewing cap. Published crates can
     // contain a large text fixture even when their library source is small;
     // keep that file viewable and editable under the existing 16 MB tree cap.
@@ -36,6 +39,7 @@ enum LocalProjectLoader {
     ]
     private static let readableExtensions: Set<String> = [
         "json", "lock", "md", "rs", "toml", "txt", "yaml", "yml",
+        "html", "htm", "css", "js", "mjs", "cjs", "jsx", "ts", "tsx", "svg",
     ]
     private static let readableNames: Set<String> = [
         ".gitignore", ".rustfmt.toml", "LICENSE", "Makefile",
@@ -52,7 +56,9 @@ enum LocalProjectLoader {
 
         let rootURL = try discoverCargoRoot(in: projectURL)
         let files = try readFiles(in: rootURL)
-        guard !files.isEmpty, files.keys.contains(where: { $0.hasSuffix(".rs") || $0 == "Cargo.toml" }) else {
+        guard !files.isEmpty, files.keys.contains(where: {
+            $0.hasSuffix(".rs") || $0 == "Cargo.toml" || SourceLanguage(filePath: $0) == .html
+        }) else {
             throw ProjectError.noReadableSource
         }
 
@@ -170,6 +176,10 @@ enum LocalProjectLoader {
             return candidate
         }
         let rustFiles = files.keys.filter { $0.hasSuffix(".rs") }
+        if rustFiles.isEmpty {
+            if files["index.html"] != nil { return "index.html" }
+            if let html = files.keys.filter({ SourceLanguage(filePath: $0) == .html }).sorted().first { return html }
+        }
         for suffix in ["/src/main.rs", "/src/lib.rs", "/main.rs", "/lib.rs"] {
             if let candidate = rustFiles
                 .filter({ $0.hasSuffix(suffix) })

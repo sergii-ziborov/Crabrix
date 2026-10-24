@@ -2,6 +2,15 @@ import XCTest
 @testable import Crabrix
 
 final class SyntaxHighlighterTests: XCTestCase {
+    func testNestedCommentsAndHashedRawStringsStayOpaque() {
+        let source = "/* outer /* nested */ fn hidden() {} */\nfn main() { let s = r##\"fn hidden() {}\"##; }"
+        let tokens = SyntaxHighlighter.tokens(in: source, filePath: "main.rs")
+        let text = source as NSString
+        XCTAssertEqual(tokens.filter { $0.kind == .keyword }.map { text.substring(with: $0.range) }, ["fn", "let"])
+        XCTAssertEqual(tokens.filter { $0.kind == .comment }.count, 1)
+        XCTAssertTrue(tokens.contains { $0.kind == .string && text.substring(with: $0.range).hasPrefix("r##") })
+    }
+
     func testHighlightsRustWithoutColoringKeywordsInsideStringsOrComments() {
         let source = """
         // let comment

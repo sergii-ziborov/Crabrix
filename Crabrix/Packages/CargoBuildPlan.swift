@@ -66,6 +66,9 @@ struct CargoBuildUnit: Sendable, Equatable, Identifiable {
     let repository: String
     let license: String
     let homepage: String
+    /// Scripts currently use the bundled WASI host and standard library only.
+    var buildScriptPath: String? = nil
+    var buildScriptDependencies: [String] = []
 
     var id: String { fingerprint }
     var sourceDirectoryName: String { "\(package.name)-\(package.version)" }
@@ -121,7 +124,7 @@ enum CargoToolchain {
 enum CargoFingerprint {
     /// Bumped whenever the compiler flags or artefact layout change, so stale
     /// artefacts are never reused across an app update.
-    static let schemaVersion = "cargo-units-3"
+    static let schemaVersion = "cargo-units-4-wasi-build-scripts"
     static let dependencyCompilerFlags = [
         "--crate-type=lib",
         "-Copt-level=0",

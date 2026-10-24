@@ -11,11 +11,12 @@ struct CompilationResult: Sendable {
     let succeeded: Bool
     let phase: Phase
     let exitCode: UInt32?
-    let diagnostics: [RustDiagnostic]
+    var diagnostics: [RustDiagnostic]
     let stdout: String
     let stderr: String
     let duration: Duration
     let detail: String
+    var webPreview: WebPreviewSnapshot? = nil
 
     var wasStopped: Bool {
         !succeeded && detail.hasPrefix("Build stopped.")

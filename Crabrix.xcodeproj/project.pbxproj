@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		009994261D14A5AB525D7C4B /* ProjectTerminalSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB2D37D461D0EDF4F84DD855 /* ProjectTerminalSession.swift */; };
 		03886B8D78DCEDCE1A159287 /* AlgorithmCourseCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19F2B8BCB656C03FB95DB696 /* AlgorithmCourseCatalog.swift */; };
+		06E261C9EDD1565A7E0C336D /* OfflineWebPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 421B0B354AC6593A4245C63D /* OfflineWebPreview.swift */; };
 		08CA3D0D4FD1367DC21D5281 /* FeatureResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9793C201E70D1B6AD35202 /* FeatureResolver.swift */; };
 		0EEBBA473ED5C6ACE3500C17 /* SharedImportQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9357EF87952821B79459AE36 /* SharedImportQueue.swift */; };
 		129B29EAA7CB55C33B5E91CE /* CourseCompatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC4EF2B443C45CE8BFF5FBD /* CourseCompatibility.swift */; };
@@ -26,6 +27,7 @@
 		1BD651B7A17437422E9F0198 /* RustLessonDepthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E99B3257756AEEA188EB639C /* RustLessonDepthTests.swift */; };
 		1CF734CD1755A66BD4C6936A /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA151D9B7D5D9B22BDE4D855 /* ProfileView.swift */; };
 		1D8F90248920034745A225EE /* SyntaxHighlighterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F45E02B45E3816073DFEB4F9 /* SyntaxHighlighterTests.swift */; };
+		1E5433F76A97D28EA47F967C /* CargoBuildScriptTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AA225CF00A922F2C203C36A /* CargoBuildScriptTests.swift */; };
 		1EC809E8091D8D3CB0254E43 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78CFC64D85AAA456A17738E /* ShareViewController.swift */; };
 		217381B5FF3494BAA7C62902 /* CrateRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04782359670767CDBCFF020E /* CrateRegistry.swift */; };
 		219FD4C86900490F7BCC947F /* CrateStorageUsageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5F8A0A5C96A9EDE1C43DA16 /* CrateStorageUsageTests.swift */; };
@@ -41,7 +43,10 @@
 		2A129C11FCE30742F1CD2CE4 /* AlgorithmCourseData.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE8D71E8F886A79DC5EF3FD /* AlgorithmCourseData.swift */; };
 		2B4BE9C0F4102CCB8142F774 /* swift-system-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = E4B798EE784275F9C194D9B5 /* swift-system-LICENSE.txt */; };
 		2D5A7B2E04A0D214078674F9 /* CargoBuildPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9F0FB50E1462BCBC86DF551 /* CargoBuildPlan.swift */; };
+		2F5529FCB51DED5E6645E076 /* OfflineWebPreviewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51231AC0432B98FB181FE8DC /* OfflineWebPreviewTests.swift */; };
+		302C7622158F1FD7104F8610 /* PackageDownloadSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E42868B52F7E467F9905F3B /* PackageDownloadSheet.swift */; };
 		30378E05BFED089463AD93E2 /* InstalledCourseRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD423A006C2A2A962EE2495 /* InstalledCourseRepositoryTests.swift */; };
+		30B2800C5C2D0EB922655367 /* WebPreviewSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA729883F0ED981BAD5C56E /* WebPreviewSnapshot.swift */; };
 		31B1EA3B72D4096B6C3B60F8 /* LegalDocuments.json in Resources */ = {isa = PBXBuildFile; fileRef = 9A5377845C2374FBE4F05922 /* LegalDocuments.json */; };
 		32196C3370B0C09B1AE046F8 /* ProjectImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CB34A35CD75A3A08E600A35 /* ProjectImportTests.swift */; };
 		32A6F3F90EC3568CBDFBD0D0 /* TOMLValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40429472D2BAD0BF75F1C46A /* TOMLValue.swift */; };
@@ -69,6 +74,7 @@
 		4AEBE02C51FC37BE241D16C9 /* CrabrixTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FE59D76CC8EBC1BF4A988 /* CrabrixTheme.swift */; };
 		4F0F2BB8BA44F3561B320E78 /* production-keyring.json in Resources */ = {isa = PBXBuildFile; fileRef = EECD124647A0A13CCBE341FE /* production-keyring.json */; };
 		4F2CD25FA774D401FC368E55 /* RustDiagnosticParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D5F2FB12886D9E89DDD12A /* RustDiagnosticParserTests.swift */; };
+		4FCE4AD57026A245D5B48C62 /* WebSyntaxHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4739AE48C2A3B528E557BD05 /* WebSyntaxHighlighter.swift */; };
 		52C44E944F7455EA0DEA976C /* AdaptiveFold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5764C24D7A7235B9C83EC0F1 /* AdaptiveFold.swift */; };
 		53C0F03750BFF241447304AE /* CargoPackageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34454EEDE1F2D70EF3FC91BA /* CargoPackageManager.swift */; };
 		53C508818988C87F3CA384F9 /* BorrowExplanation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A42F9E4CE0ACDDFFC8ABDE3C /* BorrowExplanation.swift */; };
@@ -99,6 +105,7 @@
 		6D06A6E58BA0D059E0420243 /* ProjectCreationViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C552F2CEA08713116E71EC3 /* ProjectCreationViews.swift */; };
 		6F99E056CC0A8C8CD5F7E1DB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDBC8475D7DC66EBD798E277 /* ContentView.swift */; };
 		731E86AC6C2DF5E0CB922563 /* CargoRegistryAndPlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3837839E6347618EB4FA6AAF /* CargoRegistryAndPlanTests.swift */; };
+		747FB1DAEDBE60DC310E5DBC /* CargoBuildScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB6726C568A483FC9192E391 /* CargoBuildScript.swift */; };
 		75C7785DC26F26DAE60C59E2 /* LocalAvatarStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C47D79BBDE68DFCC732EF6AC /* LocalAvatarStoreTests.swift */; };
 		76680E04E311A68F3E8CA7FD /* BuildWorkflowControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4416BEF4A5157F2F6D4E2B2F /* BuildWorkflowControls.swift */; };
 		77C9A62FCFC3C6C0B4D8B183 /* CargoLockfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54941194910930A95296DE96 /* CargoLockfile.swift */; };
@@ -112,6 +119,7 @@
 		7EB7008B336CBB4C106E6720 /* SemanticVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50CA9CE9D5823AC1D63033E5 /* SemanticVersion.swift */; };
 		80256634DBDBD9C0C47CBAF8 /* EditorHorizontalScrollTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8433FE86ED600CDD3649695 /* EditorHorizontalScrollTests.swift */; };
 		8127BE2514BE0657F1C36AD2 /* CodeRecallDeck.swift in Sources */ = {isa = PBXBuildFile; fileRef = A964892281A3B80AA39A7C5B /* CodeRecallDeck.swift */; };
+		815BED44E65F83E4D11176E2 /* PackageTransferProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42FDF389242383BD6EFFA464 /* PackageTransferProgress.swift */; };
 		8386DA69D1A47B3DB60FC45C /* CargoManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72DC4FCC3E4B95BAE6574E1C /* CargoManifest.swift */; };
 		85C427DBCCA201F9EF8D0BD7 /* QuickPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C023BFC1BF760B92B847B9D /* QuickPracticeView.swift */; };
 		860486E99E1680A0D9C2AB72 /* LessonDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CAC5B86C54D56DCAC398E6A /* LessonDetailView.swift */; };
@@ -132,6 +140,7 @@
 		968B0F832E7B692C65747E9B /* RustAdvancedExpansion.swift in Sources */ = {isa = PBXBuildFile; fileRef = F49AA1772EADFFDD4CDEF91E /* RustAdvancedExpansion.swift */; };
 		972149CB1D1FD1EFD7A83D7B /* RustSourcePatchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7540BDB82103EC848B1FCC61 /* RustSourcePatchTests.swift */; };
 		979FCD96FECD7115E30A5075 /* swift-nio-NOTICE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 7C63EBB6B2847C44339CBE3A /* swift-nio-NOTICE.txt */; };
+		996F31D6BF8614C694B67159 /* WebSyntax.js in Resources */ = {isa = PBXBuildFile; fileRef = 9F1068B2F01BD06D22D254F7 /* WebSyntax.js */; };
 		998B333FB9F8378B69B146E1 /* CargoResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E59CCACF0B58534D0C509F99 /* CargoResolverTests.swift */; };
 		9B4E113026A2A4D2B054AE8E /* CrabrixApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4060928D903E08DF95C877F /* CrabrixApp.swift */; };
 		9BE2366D615746FCD0FA9E29 /* RustLessonProgression.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4BBA0B03501D7E47698809C /* RustLessonProgression.swift */; };
@@ -142,11 +151,13 @@
 		A5261C05D7F0B4A2F8086B4A /* ToolchainLicenses.zip in Resources */ = {isa = PBXBuildFile; fileRef = 53190FC1169590874EDD5C92 /* ToolchainLicenses.zip */; };
 		A7359AA071BD84A0B0199135 /* SyntaxCodeEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BAB1D7F07AC65B0B69D9260 /* SyntaxCodeEditor.swift */; };
 		A770F53B02D624E5EA6E5005 /* CourseInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25E300C5C48E25EFC49EB364 /* CourseInstaller.swift */; };
+		A78C0A5A88810F9D6264D9B8 /* WebLocalCompleter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 065123B9507F681E7EFEA6CA /* WebLocalCompleter.swift */; };
 		AB5272E92033B88001FAA52F /* swift-log-NOTICE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 791FEBF16BDA5999BCA244DF /* swift-log-NOTICE.txt */; };
 		ABDFFA5263492E9C914C3C6B /* BorrowRepairTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED805A32682154958D4A1EC2 /* BorrowRepairTests.swift */; };
 		AC73FEB6CABC3190A730FD76 /* ProblemReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CE24E0030AC4CFD4B7F6E01 /* ProblemReportView.swift */; };
 		AD40AE718B734DD2464CE5F9 /* BuildDockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08CF787A36CA91D1C110D707 /* BuildDockView.swift */; };
 		AE34749D8BFD861296CA2064 /* swift-nio-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 6E24E44406D79170CEDED477 /* swift-nio-LICENSE.txt */; };
+		AE7081B72A220336829B7988 /* highlight.js-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 96FB9D4640A39CECD01C382F /* highlight.js-LICENSE.txt */; };
 		B0D6D375D81EF9E865A0DB17 /* WorkspaceRevision.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD7933FC639F6724ED46072 /* WorkspaceRevision.swift */; };
 		B0E19E7B68ACB01F1F333C69 /* BorrowRepair.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9853B43026260AB1594084F0 /* BorrowRepair.swift */; };
 		B1F7B02DB5A6C7C387B6B023 /* ThirdPartyNotices.md in Resources */ = {isa = PBXBuildFile; fileRef = 89EA67014F3DD1B2E42E0EDE /* ThirdPartyNotices.md */; };
@@ -167,6 +178,7 @@
 		C091FDE58085A53180F24F8C /* ZIPFoundation-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8764C5B10E5325765B5506E6 /* ZIPFoundation-LICENSE.txt */; };
 		C0B43408551780E095F4F37D /* SyntaxHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CBCF49E3ACF1DE18F8E9908 /* SyntaxHighlighter.swift */; };
 		C0DA483BA5B3C3FEA41A7024 /* LearningHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ABA30545D5EEB41F7D73D2F /* LearningHubView.swift */; };
+		C215FA0F05EB8E120EBA36F5 /* WebProjectSamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 191A981A3E28B4A99AAA3556 /* WebProjectSamples.swift */; };
 		C26827466278567D30C8869C /* ToolchainVendorIndex.json in Resources */ = {isa = PBXBuildFile; fileRef = 902C61FA14DA8017D91F487A /* ToolchainVendorIndex.json */; };
 		C3E7EC12C47849AA14FD1964 /* RustLearningPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7455D4C092EC1F4E6EBF847A /* RustLearningPath.swift */; };
 		C53ABD73F0DA4F22450B6886 /* WasmSandboxPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8832CBE2C15F09166CBB610F /* WasmSandboxPolicyTests.swift */; };
@@ -185,6 +197,7 @@
 		D5050F9D62A3048C30A31F67 /* TopicMastery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1D24127CCCD6858FC76A21 /* TopicMastery.swift */; };
 		D62CE9F33D5CD754B6052DB4 /* BuildWorkspaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CEBD152D5381C70622EDD87 /* BuildWorkspaceTests.swift */; };
 		D70ECFBCDF8636B011990335 /* ProblemReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15AF611D0815ED4D2805F0C /* ProblemReportTests.swift */; };
+		D76CC0F2D94CB399650F0083 /* SourceLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DE096ACF2087A64CE3BBB9 /* SourceLanguage.swift */; };
 		D86F638C06CE9367C008A2E7 /* WasmKit-NOTICE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 73CFA57D3BA2CCAB16D8C48E /* WasmKit-NOTICE.txt */; };
 		DAB88604F8DDD7AEE079AE41 /* TOMLParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B771273BE9E83B35B042C13 /* TOMLParserTests.swift */; };
 		DB6E886AFE6EC3B085FD76D2 /* ActiveCourseCatalog in Resources */ = {isa = PBXBuildFile; fileRef = 84CD37596DAEDCB81F6DF7B0 /* ActiveCourseCatalog */; };
@@ -258,14 +271,17 @@
 		038C4428EA249D76936D4DEB /* SemanticVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersionTests.swift; sourceTree = "<group>"; };
 		04782359670767CDBCFF020E /* CrateRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrateRegistry.swift; sourceTree = "<group>"; };
 		0563B4A20D9F5691AC9F428F /* CourseSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSession.swift; sourceTree = "<group>"; };
+		065123B9507F681E7EFEA6CA /* WebLocalCompleter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebLocalCompleter.swift; sourceTree = "<group>"; };
 		08CF787A36CA91D1C110D707 /* BuildDockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildDockView.swift; sourceTree = "<group>"; };
 		0B894B9DF30A59B897021905 /* Toolchain */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Toolchain; path = build/Resources/Toolchain; sourceTree = SOURCE_ROOT; };
 		0D12CE6E93A5DC5D9852789C /* RustDiagnostic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustDiagnostic.swift; sourceTree = "<group>"; };
+		0FA729883F0ED981BAD5C56E /* WebPreviewSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPreviewSnapshot.swift; sourceTree = "<group>"; };
 		1067DEB86E13480FF37A47CB /* AlgorithmCourseCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlgorithmCourseCatalogTests.swift; sourceTree = "<group>"; };
 		109299B526E64638EEE7AC12 /* CourseDownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseDownloadManager.swift; sourceTree = "<group>"; };
 		162A3B2789B3CD0F65472A4E /* AlgorithmVerificationData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlgorithmVerificationData.swift; sourceTree = "<group>"; };
 		16E77E8ACA6B7156FA97662E /* CrateArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrateArchive.swift; sourceTree = "<group>"; };
 		1812450C699363664714AC3A /* MarkdownRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownRenderer.swift; sourceTree = "<group>"; };
+		191A981A3E28B4A99AAA3556 /* WebProjectSamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebProjectSamples.swift; sourceTree = "<group>"; };
 		19F2B8BCB656C03FB95DB696 /* AlgorithmCourseCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlgorithmCourseCatalog.swift; sourceTree = "<group>"; };
 		1B7F772FA01ED015242D773A /* ProjectLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectLibraryView.swift; sourceTree = "<group>"; };
 		1CB34A35CD75A3A08E600A35 /* ProjectImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectImportTests.swift; sourceTree = "<group>"; };
@@ -293,17 +309,21 @@
 		403C553DF49D8A3EDFEEAE4A /* CargoManifestEditorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoManifestEditorTests.swift; sourceTree = "<group>"; };
 		40429472D2BAD0BF75F1C46A /* TOMLValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOMLValue.swift; sourceTree = "<group>"; };
 		41A5B9EA24490E8E2ADABA38 /* CratesIOClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CratesIOClient.swift; sourceTree = "<group>"; };
+		421B0B354AC6593A4245C63D /* OfflineWebPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineWebPreview.swift; sourceTree = "<group>"; };
+		42FDF389242383BD6EFFA464 /* PackageTransferProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageTransferProgress.swift; sourceTree = "<group>"; };
 		43399378DEFA3EFDB3368AF9 /* CourseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseRepository.swift; sourceTree = "<group>"; };
 		43BC9814A5A0BBC245A4BFB6 /* CargoPackagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoPackagesView.swift; sourceTree = "<group>"; };
 		4416BEF4A5157F2F6D4E2B2F /* BuildWorkflowControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildWorkflowControls.swift; sourceTree = "<group>"; };
 		44ABFA97B5DA7FD2FADA63C6 /* ProjectTerminalSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectTerminalSessionTests.swift; sourceTree = "<group>"; };
 		46E231FE4DC967D6823C7FE8 /* WasmRustCompiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmRustCompiler.swift; sourceTree = "<group>"; };
+		4739AE48C2A3B528E557BD05 /* WebSyntaxHighlighter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSyntaxHighlighter.swift; sourceTree = "<group>"; };
 		4775CE41B31CD63B5B25459E /* RustCompletionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustCompletionTests.swift; sourceTree = "<group>"; };
 		4B5D547BD90275851C98865A /* TermTrainDeck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermTrainDeck.swift; sourceTree = "<group>"; };
 		4C552F2CEA08713116E71EC3 /* ProjectCreationViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectCreationViews.swift; sourceTree = "<group>"; };
 		4F3DEBE91E458885CE146E62 /* RustLessonDepth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustLessonDepth.swift; sourceTree = "<group>"; };
 		50CA9CE9D5823AC1D63033E5 /* SemanticVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersion.swift; sourceTree = "<group>"; };
 		50F06F8C4B5D398A9DEF9557 /* CrateGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrateGuide.swift; sourceTree = "<group>"; };
+		51231AC0432B98FB181FE8DC /* OfflineWebPreviewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineWebPreviewTests.swift; sourceTree = "<group>"; };
 		53190FC1169590874EDD5C92 /* ToolchainLicenses.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = ToolchainLicenses.zip; sourceTree = "<group>"; };
 		546E5E7255DED00327D28A17 /* ToolchainPrimaryIndex.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ToolchainPrimaryIndex.json; sourceTree = "<group>"; };
 		54941194910930A95296DE96 /* CargoLockfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoLockfile.swift; sourceTree = "<group>"; };
@@ -329,6 +349,7 @@
 		6D50F7CBEFD3E06F6F531774 /* RustQuestionBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustQuestionBank.swift; sourceTree = "<group>"; };
 		6DDCB70965D5433B9032EF8E /* swift-collections-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-collections-LICENSE.txt"; sourceTree = "<group>"; };
 		6E24E44406D79170CEDED477 /* swift-nio-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-nio-LICENSE.txt"; sourceTree = "<group>"; };
+		6E42868B52F7E467F9905F3B /* PackageDownloadSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageDownloadSheet.swift; sourceTree = "<group>"; };
 		6E974AA588AEAB526FF75C14 /* CoursePackVerifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePackVerifierTests.swift; sourceTree = "<group>"; };
 		72C0A9DB161BABC0D5AC50DA /* GitHubRepositoryReferenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubRepositoryReferenceTests.swift; sourceTree = "<group>"; };
 		72DC4FCC3E4B95BAE6574E1C /* CargoManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoManifest.swift; sourceTree = "<group>"; };
@@ -366,14 +387,17 @@
 		9357EF87952821B79459AE36 /* SharedImportQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedImportQueue.swift; sourceTree = "<group>"; };
 		94D9DD4F59BC0FCBE094E718 /* TargetCfgExpression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TargetCfgExpression.swift; sourceTree = "<group>"; };
 		95560270A1A9BA1DCE96A9AB /* ProjectAuthoringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectAuthoringTests.swift; sourceTree = "<group>"; };
+		96FB9D4640A39CECD01C382F /* highlight.js-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "highlight.js-LICENSE.txt"; sourceTree = "<group>"; };
 		970CA0FF8CF731730722B227 /* CargoResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoResolver.swift; sourceTree = "<group>"; };
 		9853B43026260AB1594084F0 /* BorrowRepair.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BorrowRepair.swift; sourceTree = "<group>"; };
 		9A5377845C2374FBE4F05922 /* LegalDocuments.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = LegalDocuments.json; sourceTree = "<group>"; };
 		9A933B2B0009B98281F32A47 /* toolchain.lock.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = toolchain.lock.json; sourceTree = "<group>"; };
+		9AA225CF00A922F2C203C36A /* CargoBuildScriptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoBuildScriptTests.swift; sourceTree = "<group>"; };
 		9B3FE59D76CC8EBC1BF4A988 /* CrabrixTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrabrixTheme.swift; sourceTree = "<group>"; };
 		9B771273BE9E83B35B042C13 /* TOMLParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOMLParserTests.swift; sourceTree = "<group>"; };
 		9C023BFC1BF760B92B847B9D /* QuickPracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeView.swift; sourceTree = "<group>"; };
 		9C6C5111AEF66AC8F9715CBB /* CourseInstallerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseInstallerTests.swift; sourceTree = "<group>"; };
+		9F1068B2F01BD06D22D254F7 /* WebSyntax.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = WebSyntax.js; sourceTree = "<group>"; };
 		9F5105E60F4F01CBE3743844 /* swift-log-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-log-LICENSE.txt"; sourceTree = "<group>"; };
 		9FB88EA53398F55BCADE4D5C /* CompilationResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompilationResult.swift; sourceTree = "<group>"; };
 		A19951F6B509DE6C56E27216 /* RustLessonProgressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustLessonProgressionTests.swift; sourceTree = "<group>"; };
@@ -405,6 +429,7 @@
 		BEE8D71E8F886A79DC5EF3FD /* AlgorithmCourseData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlgorithmCourseData.swift; sourceTree = "<group>"; };
 		BF144EE0C3990D3E4191546A /* CratePackageManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CratePackageManifest.swift; sourceTree = "<group>"; };
 		C17305CBAACACB768E537F24 /* CrabrixProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrabrixProgress.swift; sourceTree = "<group>"; };
+		C3DE096ACF2087A64CE3BBB9 /* SourceLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceLanguage.swift; sourceTree = "<group>"; };
 		C47D79BBDE68DFCC732EF6AC /* LocalAvatarStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAvatarStoreTests.swift; sourceTree = "<group>"; };
 		C621B6A608B74B2DCB8B6A0F /* CourseCatalogClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseCatalogClient.swift; sourceTree = "<group>"; };
 		C667F0B03C5208C296B57556 /* CrabrixShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CrabrixShare.entitlements; sourceTree = "<group>"; };
@@ -437,6 +462,7 @@
 		E59CCACF0B58534D0C509F99 /* CargoResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoResolverTests.swift; sourceTree = "<group>"; };
 		E77E2A29DC1E65C2BD1E0BE4 /* TypingLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingLedger.swift; sourceTree = "<group>"; };
 		E99B3257756AEEA188EB639C /* RustLessonDepthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustLessonDepthTests.swift; sourceTree = "<group>"; };
+		EB6726C568A483FC9192E391 /* CargoBuildScript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoBuildScript.swift; sourceTree = "<group>"; };
 		EC1B3A3F659FB05698CBD237 /* ToolchainVendorNotices.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = ToolchainVendorNotices.zip; sourceTree = "<group>"; };
 		ECC4D007E00753BF5342A699 /* Crabrix.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Crabrix.entitlements; sourceTree = "<group>"; };
 		ED805A32682154958D4A1EC2 /* BorrowRepairTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BorrowRepairTests.swift; sourceTree = "<group>"; };
@@ -497,6 +523,8 @@
 				253B1AC7EA395E9AF1BC934A /* RustSamples.swift */,
 				46E231FE4DC967D6823C7FE8 /* WasmRustCompiler.swift */,
 				FF9DD45C490DCB8EB56CB892 /* WasmSandboxPolicy.swift */,
+				0FA729883F0ED981BAD5C56E /* WebPreviewSnapshot.swift */,
+				191A981A3E28B4A99AAA3556 /* WebProjectSamples.swift */,
 			);
 			path = Compiler;
 			sourceTree = "<group>";
@@ -512,6 +540,7 @@
 		20F9150930EA5F739C099FF5 /* Licenses */ = {
 			isa = PBXGroup;
 			children = (
+				96FB9D4640A39CECD01C382F /* highlight.js-LICENSE.txt */,
 				C8B0903AB1A17FB1FEAA4301 /* Rust-COPYRIGHT.txt */,
 				646F773F58C7B624AE941CE3 /* Rust-LICENSE-APACHE.txt */,
 				F4ACC16AB86032A8DCE347FD /* Rust-LICENSE-MIT.txt */,
@@ -591,6 +620,7 @@
 			children = (
 				7E89D65D056C2A468A0AE9BD /* AppToolchainRelease.swift */,
 				A9F0FB50E1462BCBC86DF551 /* CargoBuildPlan.swift */,
+				EB6726C568A483FC9192E391 /* CargoBuildScript.swift */,
 				54941194910930A95296DE96 /* CargoLockfile.swift */,
 				F0ACD34E769B0AB48E9132A5 /* CargoManifestEditor.swift */,
 				34454EEDE1F2D70EF3FC91BA /* CargoPackageManager.swift */,
@@ -603,6 +633,7 @@
 				8A10BB944AD234E897548A76 /* CrateSourceBrowser.swift */,
 				79E25647259ABABE1E3D1288 /* CrateStore.swift */,
 				EE9793C201E70D1B6AD35202 /* FeatureResolver.swift */,
+				42FDF389242383BD6EFFA464 /* PackageTransferProgress.swift */,
 				50CA9CE9D5823AC1D63033E5 /* SemanticVersion.swift */,
 				94D9DD4F59BC0FCBE094E718 /* TargetCfgExpression.swift */,
 				40429472D2BAD0BF75F1C46A /* TOMLValue.swift */,
@@ -702,6 +733,7 @@
 				56AA1284DFED9057782C150A /* BundledCompilerGateTests.swift */,
 				8D8034113D3EF6270CBF8F84 /* BundledLicenseTests.swift */,
 				A201213590F9ECED7CE983FC /* BundledSysrootTests.swift */,
+				9AA225CF00A922F2C203C36A /* CargoBuildScriptTests.swift */,
 				403C553DF49D8A3EDFEEAE4A /* CargoManifestEditorTests.swift */,
 				D750FF719EB5B0AC11A7ECBF /* CargoManifestTests.swift */,
 				3837839E6347618EB4FA6AAF /* CargoRegistryAndPlanTests.swift */,
@@ -725,6 +757,7 @@
 				D6F4F8745EED70B20DA5D125 /* LessonNavigationFooterVisibilityTests.swift */,
 				9346B714527C322992CCB12D /* LessonQuestionAuditTests.swift */,
 				C47D79BBDE68DFCC732EF6AC /* LocalAvatarStoreTests.swift */,
+				51231AC0432B98FB181FE8DC /* OfflineWebPreviewTests.swift */,
 				E15AF611D0815ED4D2805F0C /* ProblemReportTests.swift */,
 				3EA05660FAC54CECF075853F /* ProgressAndTrainTests.swift */,
 				95560270A1A9BA1DCE96A9AB /* ProjectAuthoringTests.swift */,
@@ -755,9 +788,12 @@
 			isa = PBXGroup;
 			children = (
 				3F2DA7BB9D2572998F404B0A /* RustCodeCompletion.swift */,
+				C3DE096ACF2087A64CE3BBB9 /* SourceLanguage.swift */,
 				8BAB1D7F07AC65B0B69D9260 /* SyntaxCodeEditor.swift */,
 				1CBCF49E3ACF1DE18F8E9908 /* SyntaxHighlighter.swift */,
 				F96C7F0C50046AFC3DAB8F53 /* SyntaxTheme.swift */,
+				065123B9507F681E7EFEA6CA /* WebLocalCompleter.swift */,
+				4739AE48C2A3B528E557BD05 /* WebSyntaxHighlighter.swift */,
 			);
 			path = Editor;
 			sourceTree = "<group>";
@@ -782,6 +818,8 @@
 				5CAC5B86C54D56DCAC398E6A /* LessonDetailView.swift */,
 				A248CC4AF57D9B4C55C1F3BF /* LicensesView.swift */,
 				1812450C699363664714AC3A /* MarkdownRenderer.swift */,
+				421B0B354AC6593A4245C63D /* OfflineWebPreview.swift */,
+				6E42868B52F7E467F9905F3B /* PackageDownloadSheet.swift */,
 				8B61E3671EFD881E08389F5E /* PracticeSheet.swift */,
 				5CE24E0030AC4CFD4B7F6E01 /* ProblemReportView.swift */,
 				BA151D9B7D5D9B22BDE4D855 /* ProfileView.swift */,
@@ -861,6 +899,7 @@
 				9A933B2B0009B98281F32A47 /* toolchain.lock.json */,
 				546E5E7255DED00327D28A17 /* ToolchainPrimaryIndex.json */,
 				902C61FA14DA8017D91F487A /* ToolchainVendorIndex.json */,
+				9F1068B2F01BD06D22D254F7 /* WebSyntax.js */,
 				20F9150930EA5F739C099FF5 /* Licenses */,
 			);
 			path = Resources;
@@ -1029,7 +1068,9 @@
 				5C04E9676F6DDF6B017B7E78 /* ToolchainVendorNotices.zip in Resources */,
 				B2D6D1E82C49B6EEB20D5242 /* WasmKit-LICENSE.txt in Resources */,
 				D86F638C06CE9367C008A2E7 /* WasmKit-NOTICE.txt in Resources */,
+				996F31D6BF8614C694B67159 /* WebSyntax.js in Resources */,
 				C091FDE58085A53180F24F8C /* ZIPFoundation-LICENSE.txt in Resources */,
+				AE7081B72A220336829B7988 /* highlight.js-LICENSE.txt in Resources */,
 				1A42F7C59F55681D04B0409E /* swift-argument-parser-LICENSE.txt in Resources */,
 				9028F3BB8FEDE2FBFF3DD80D /* swift-atomics-LICENSE.txt in Resources */,
 				E287F4D8A1B87ADB7E40C15D /* swift-collections-LICENSE.txt in Resources */,
@@ -1108,6 +1149,7 @@
 				AD40AE718B734DD2464CE5F9 /* BuildDockView.swift in Sources */,
 				76680E04E311A68F3E8CA7FD /* BuildWorkflowControls.swift in Sources */,
 				2D5A7B2E04A0D214078674F9 /* CargoBuildPlan.swift in Sources */,
+				747FB1DAEDBE60DC310E5DBC /* CargoBuildScript.swift in Sources */,
 				BD946DAC662608A85827D7BE /* CargoDependencyCatalogSheet.swift in Sources */,
 				77C9A62FCFC3C6C0B4D8B183 /* CargoLockfile.swift in Sources */,
 				8386DA69D1A47B3DB60FC45C /* CargoManifest.swift in Sources */,
@@ -1159,6 +1201,9 @@
 				258C073EFB3D0D21EAB091A4 /* LocalAvatarStore.swift in Sources */,
 				135473F79A5F994AFECF654A /* LocalProjectLoader.swift in Sources */,
 				8D487FD86C6E957664E46DE4 /* MarkdownRenderer.swift in Sources */,
+				06E261C9EDD1565A7E0C336D /* OfflineWebPreview.swift in Sources */,
+				302C7622158F1FD7104F8610 /* PackageDownloadSheet.swift in Sources */,
+				815BED44E65F83E4D11176E2 /* PackageTransferProgress.swift in Sources */,
 				FCCA5F66ED8D7F43C8828B7B /* PracticeSheet.swift in Sources */,
 				AC73FEB6CABC3190A730FD76 /* ProblemReportView.swift in Sources */,
 				1CF734CD1755A66BD4C6936A /* ProfileView.swift in Sources */,
@@ -1188,6 +1233,7 @@
 				595AC021BD0F0125EC04C24D /* SettingsView.swift in Sources */,
 				B73F617DF5D444F78AFFFCF5 /* SharedImportQueue.swift in Sources */,
 				19698524933302A424041804 /* ShowcaseModels.swift in Sources */,
+				D76CC0F2D94CB399650F0083 /* SourceLanguage.swift in Sources */,
 				A7359AA071BD84A0B0199135 /* SyntaxCodeEditor.swift in Sources */,
 				C0B43408551780E095F4F37D /* SyntaxHighlighter.swift in Sources */,
 				32C788FE3C25F0F5C08BA9B2 /* SyntaxTheme.swift in Sources */,
@@ -1200,6 +1246,10 @@
 				3F8C6C5A2B1C8A3766C0F454 /* TypingLedger.swift in Sources */,
 				E37B94F8E4F4504632FD7863 /* WasmRustCompiler.swift in Sources */,
 				591DA1DC1F80A55E223227F0 /* WasmSandboxPolicy.swift in Sources */,
+				A78C0A5A88810F9D6264D9B8 /* WebLocalCompleter.swift in Sources */,
+				30B2800C5C2D0EB922655367 /* WebPreviewSnapshot.swift in Sources */,
+				C215FA0F05EB8E120EBA36F5 /* WebProjectSamples.swift in Sources */,
+				4FCE4AD57026A245D5B48C62 /* WebSyntaxHighlighter.swift in Sources */,
 				B0D6D375D81EF9E865A0DB17 /* WorkspaceRevision.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1217,6 +1267,7 @@
 				B53A042015AC822CCE2CCDFA /* BundledCompilerGateTests.swift in Sources */,
 				496103BB6AAEBCD5D49F0625 /* BundledLicenseTests.swift in Sources */,
 				C56EA75AEB015034CDCF4A1B /* BundledSysrootTests.swift in Sources */,
+				1E5433F76A97D28EA47F967C /* CargoBuildScriptTests.swift in Sources */,
 				1496FF7AFC1782BE02233B61 /* CargoManifestEditorTests.swift in Sources */,
 				174103D1F25E41077BC10B8C /* CargoManifestTests.swift in Sources */,
 				731E86AC6C2DF5E0CB922563 /* CargoRegistryAndPlanTests.swift in Sources */,
@@ -1240,6 +1291,7 @@
 				BEDE9AC825010B5A152AAC12 /* LessonNavigationFooterVisibilityTests.swift in Sources */,
 				66974FCE7E791A4C93663C4F /* LessonQuestionAuditTests.swift in Sources */,
 				75C7785DC26F26DAE60C59E2 /* LocalAvatarStoreTests.swift in Sources */,
+				2F5529FCB51DED5E6645E076 /* OfflineWebPreviewTests.swift in Sources */,
 				D70ECFBCDF8636B011990335 /* ProblemReportTests.swift in Sources */,
 				8DF2028D53ED7094662A0AB2 /* ProgressAndTrainTests.swift in Sources */,
 				4A293E482B338DF5756C828C /* ProjectAuthoringTests.swift in Sources */,
@@ -1318,14 +1370,14 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = CrabrixShare/CrabrixShare.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 68;
+				CURRENT_PROJECT_VERSION = 73;
 				INFOPLIST_FILE = CrabrixShare/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.Crabrix.Share;
 				PRODUCT_NAME = CrabrixShare;
 				SDKROOT = iphoneos;
@@ -1460,7 +1512,7 @@
 				CODE_SIGN_ENTITLEMENTS = Crabrix/Crabrix.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 68;
+				CURRENT_PROJECT_VERSION = 73;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Crabrix/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Crabrix;
@@ -1474,7 +1526,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.Crabrix;
 				PRODUCT_NAME = Crabrix;
 				SDKROOT = iphoneos;
@@ -1489,7 +1541,7 @@
 				CODE_SIGN_ENTITLEMENTS = Crabrix/Crabrix.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 68;
+				CURRENT_PROJECT_VERSION = 73;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Crabrix/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Crabrix;
@@ -1503,7 +1555,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.Crabrix;
 				PRODUCT_NAME = Crabrix;
 				PROVISIONING_PROFILE_SPECIFIER = "$(CRABRIX_APP_PROFILE)";
@@ -1581,14 +1633,14 @@
 				CODE_SIGN_ENTITLEMENTS = CrabrixShare/CrabrixShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 68;
+				CURRENT_PROJECT_VERSION = 73;
 				INFOPLIST_FILE = CrabrixShare/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.Crabrix.Share;
 				PRODUCT_NAME = CrabrixShare;
 				PROVISIONING_PROFILE_SPECIFIER = "$(CRABRIX_SHARE_PROFILE)";
@@ -1670,7 +1722,7 @@
 			repositoryURL = "https://github.com/sergii-ziborov/crabrix-runtime.git";
 			requirement = {
 				kind = revision;
-				revision = d996f0d11dff54734b5670d58062e22c6e01f949;
+				revision = 0689cc5df8b5b3f81ac5e9675cc3c22fe1b614f3;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

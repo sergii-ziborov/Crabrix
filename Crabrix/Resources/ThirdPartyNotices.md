@@ -17,7 +17,7 @@ upstream `NOTICE.txt` for those attributions.
 Upstream source and license: https://github.com/swiftwasm/WasmKit/tree/0.4.1
 
 Crabrix fork and patch history:
-https://github.com/sergii-ziborov/crabrix-runtime/tree/d996f0d11dff54734b5670d58062e22c6e01f949
+https://github.com/sergii-ziborov/crabrix-runtime/tree/0689cc5df8b5b3f81ac5e9675cc3c22fe1b614f3
 
 ### Crabrix source-built Rust toolchain
 
@@ -81,3 +81,9 @@ index includes all 1,592 source packages, including build-time dependencies.
 The original archives and their provenance remain public assets of the pinned
 toolchain release linked above. Website copies are at https://crabrix.com/licenses/. This summary does not
 replace any component's terms.
+
+### highlight.js 11.12.0
+
+Offline web syntax grammars. Copyright Ivan Sagalaev and contributors. BSD-3-Clause.
+Full license: `highlight.js-LICENSE.txt`. Source: https://github.com/highlightjs/highlight.js/tree/11.12.0
+The grammar runs against source text in JavaScriptCore; user programs run only in the separate offline web preview.

@@ -197,7 +197,8 @@ actor CargoPackageManager {
         lockfileSource: String? = nil,
         mode: CargoResolutionMode = .normal,
         projectFiles: [String: String] = [:],
-        onStage: (@Sendable (CargoPreparationStage) -> Void)? = nil
+        onStage: (@Sendable (CargoPreparationStage) -> Void)? = nil,
+        onTransfer: (@Sendable (PackageTransferEvent) -> Void)? = nil
     ) async throws -> CargoWorkspaceSnapshot {
         let manifest = try CratePackageManifest.parse(manifestSource)
         guard !manifest.isVirtualWorkspace else {
@@ -249,7 +250,13 @@ actor CargoPackageManager {
 
         var materialized: [PackageID: MaterializedCrate] = [:]
         let ordered = graph.buildOrder
+        onTransfer?(.planned(ordered.compactMap { id in
+            graph.packages[id].map {
+                PackageTransferRow(package: id, dependencies: Array(Set($0.dependencies.values)).sorted())
+            }
+        }))
         for (offset, id) in ordered.enumerated() {
+            try Task.checkCancellation()
             guard let package = graph.packages[id] else { continue }
             let alreadyOnDisk = store.isMaterialized(
                 name: id.name,
@@ -257,16 +264,31 @@ actor CargoPackageManager {
                 checksum: package.checksum
             )
             if !alreadyOnDisk {
+                onTransfer?(.updated(id, .downloading))
                 onStage?(
                     .downloading(name: id.name, index: offset + 1, total: ordered.count)
                 )
             }
-            materialized[id] = try await store.materialize(
+            do {
+                materialized[id] = try await store.materialize(
                 name: id.name,
                 version: id.version,
                 checksum: package.checksum,
-                allowNetwork: !mode.prohibitsNetwork
+                allowNetwork: !mode.prohibitsNetwork,
+                onArchiveVerified: { onTransfer?(.updated(id, .verifying)) }
             )
+            // A downloaded project must survive iOS purging Caches. Persist
+            // verified archives on preparation, rather than requiring a second
+            // manual Pin action. Frozen/offline resolution never fetches data.
+            if !mode.prohibitsNetwork {
+                try await store.pinForOffline(
+                    name: id.name, version: id.version, checksum: package.checksum)
+            }
+                onTransfer?(.updated(id, alreadyOnDisk ? .cached : .ready))
+            } catch {
+                onTransfer?(.updated(id, .failed(error.localizedDescription)))
+                throw error
+            }
         }
 
         let prepared = try preparedCrates(
@@ -381,7 +403,11 @@ actor CargoPackageManager {
                     description: "",
                     repository: "",
                     license: "",
-                    homepage: ""
+                    homepage: "",
+                    buildScriptPath: crate.manifest.buildScriptPath,
+                    buildScriptDependencies: crate.manifest.dependencies
+                        .filter { $0.kind == .build && $0.applies(to: .wasm32WasiP1) }
+                        .map(\.alias).sorted()
                 )
             )
         }
@@ -520,7 +546,13 @@ actor CargoPackageManager {
         }
         if let evidence = artifactEvidence(for: unit) { return evidence }
         if let buildScript = crate.manifest.buildScriptPath {
-            return .review("runs \(buildScript), which Crabrix does not execute")
+            if !unit.buildScriptDependencies.isEmpty {
+                return .unsupported(
+                    "\(buildScript) needs a separate build-dependency graph: "
+                        + unit.buildScriptDependencies.joined(separator: ", ")
+                )
+            }
+            return .review("runs \(buildScript) locally in the offline WASI sandbox; not yet verified")
         }
         return .expected
     }

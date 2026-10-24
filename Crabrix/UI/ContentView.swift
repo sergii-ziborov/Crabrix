@@ -276,6 +276,9 @@ struct ContentView: View {
         .sheet(isPresented: $isCargoCatalogPresented) {
             CargoDependencyCatalogSheet(onAdd: model.addCargoDependency)
         }
+        .sheet(isPresented: $model.isPackageProgressPresented) {
+            PackageDownloadSheet(model: model)
+        }
         .sheet(isPresented: $isPackageStoragePresented) {
             ProjectPackageStorageSheet(
                 storage: model.cargoStorage,
@@ -675,6 +678,9 @@ struct ContentView: View {
                 project: model.exportProject(),
                 result: model.result,
                 activity: model.activity,
+                buildEvents: model.buildEvents,
+                onShowPackageProgress: { model.isPackageProgressPresented = true },
+                onWebError: model.recordWebPreviewFailure,
                 canStartBuild: model.canStartBuild && !model.isProjectOperationInProgress,
                 onCheck: model.check,
                 onRun: model.run,

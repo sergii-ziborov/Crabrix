@@ -22,7 +22,7 @@ enum SyntaxHighlighter {
         switch URL(fileURLWithPath: filePath).pathExtension.lowercased() {
         case "rs": rustTokens(in: source)
         case "toml", "lock": tomlTokens(in: source)
-        default: []
+        default: WebSyntaxHighlighter.tokens(in: source, language: SourceLanguage(filePath: filePath))
         }
     }
 
@@ -39,9 +39,9 @@ enum SyntaxHighlighter {
             "String", "Vec",
         ].joined(separator: "|")
         let pattern = #"""
-        (?<comment>//[^\n]*|/\*[\s\S]*?\*/)|(?<string>r(#+)?\"[\s\S]*?\"\2|b?\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])')|(?<attribute>#!?\[[^\]]*\])|(?<macro>\b[A-Za-z_][A-Za-z0-9_]*!)|(?<keyword>\b(?:\#(keywords))\b)|(?<type>\b(?:\#(types))\b)|(?<number>\b(?:0x[0-9A-Fa-f_]+|0b[01_]+|\d[\d_]*(?:\.\d[\d_]*)?)\b)
+        (?<comment>//[^\n]*|/\*[\s\S]*?\*/)|(?<string>r(#+)\"[\s\S]*?\"\3|r\"[^\"]*\"|b?\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])')|(?<attribute>#!?\[[^\]]*\])|(?<macro>\b[A-Za-z_][A-Za-z0-9_]*!)|(?<keyword>\b(?:\#(keywords))\b)|(?<type>\b(?:\#(types))\b)|(?<number>\b(?:0x[0-9A-Fa-f_]+|0b[01_]+|\d[\d_]*(?:\.\d[\d_]*)?)\b)
         """#
-        return matches(
+        let tokens = matches(
             pattern: pattern,
             source: source,
             groups: [
@@ -49,6 +49,30 @@ enum SyntaxHighlighter {
                 ("macro", .macro), ("keyword", .keyword), ("type", .type), ("number", .number),
             ]
         )
+        // Regex finds the first block-comment terminator. Rust comments nest;
+        // expand the opaque region and discard any inner regex tokens.
+        let units = Array(source.utf16)
+        var result: [SyntaxToken] = []
+        var opaqueEnd = 0
+        for token in tokens {
+            guard token.range.location >= opaqueEnd else { continue }
+            let start = token.range.location
+            if token.kind == .comment, start + 1 < units.count,
+               units[start] == 47, units[start + 1] == 42 {
+                var cursor = start + 2
+                var depth = 1
+                while cursor < units.count, depth > 0 {
+                    if cursor + 1 < units.count, units[cursor] == 47, units[cursor + 1] == 42 {
+                        depth += 1; cursor += 2
+                    } else if cursor + 1 < units.count, units[cursor] == 42, units[cursor + 1] == 47 {
+                        depth -= 1; cursor += 2
+                    } else { cursor += 1 }
+                }
+                opaqueEnd = cursor
+                result.append(SyntaxToken(kind: .comment, range: NSRange(location: start, length: cursor - start)))
+            } else { result.append(token) }
+        }
+        return result
     }
 
     private static func tomlTokens(in source: String) -> [SyntaxToken] {

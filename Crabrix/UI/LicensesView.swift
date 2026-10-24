@@ -18,6 +18,9 @@ enum BundledLicenseCatalog {
     /// shipped in the app rather than linked. A compiler that works offline has
     /// to be able to show its notices offline too.
     static let all: [BundledLicense] = [
+        BundledLicense(id: "highlight.js", name: "highlight.js 11.12.0",
+            summary: "Ivan Sagalaev and contributors · BSD-3-Clause",
+            documents: ["highlight.js-LICENSE"]),
         BundledLicense(
             id: "Rust",
             name: "Rust compiler and standard library",

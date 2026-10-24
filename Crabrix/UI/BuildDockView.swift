@@ -36,6 +36,9 @@ struct BuildDockView<CodeContent: View>: View {
     let project: CrabrixProject
     let result: CompilationResult?
     let activity: CompilerViewModel.Activity
+    let buildEvents: [BuildStageEvent]
+    let onShowPackageProgress: () -> Void
+    let onWebError: (String, WebPreviewFailure) -> Void
     let canStartBuild: Bool
     let onCheck: () -> Void
     let onRun: () -> Void
@@ -67,6 +70,9 @@ struct BuildDockView<CodeContent: View>: View {
         project: CrabrixProject,
         result: CompilationResult?,
         activity: CompilerViewModel.Activity,
+        buildEvents: [BuildStageEvent] = [],
+        onShowPackageProgress: @escaping () -> Void = {},
+        onWebError: @escaping (String, WebPreviewFailure) -> Void = { _, _ in },
         canStartBuild: Bool,
         onCheck: @escaping () -> Void,
         onRun: @escaping () -> Void,
@@ -95,6 +101,9 @@ struct BuildDockView<CodeContent: View>: View {
         self.project = project
         self.result = result
         self.activity = activity
+        self.buildEvents = buildEvents
+        self.onShowPackageProgress = onShowPackageProgress
+        self.onWebError = onWebError
         self.canStartBuild = canStartBuild
         self.onCheck = onCheck
         self.onRun = onRun
@@ -292,6 +301,9 @@ struct BuildDockView<CodeContent: View>: View {
         OutputDockContent(
             result: result,
             activity: activity,
+            buildEvents: buildEvents,
+            onShowPackageProgress: onShowPackageProgress,
+            onWebError: onWebError,
             canContinueLearning: canContinueLearning,
             lessonEvidenceMessage: lessonEvidenceMessage,
             lessonHint: lessonHint,
@@ -475,6 +487,9 @@ private struct OutputDockContent: View {
     @State private var isHintExpanded = false
     let result: CompilationResult?
     let activity: CompilerViewModel.Activity
+    let buildEvents: [BuildStageEvent]
+    let onShowPackageProgress: () -> Void
+    let onWebError: (String, WebPreviewFailure) -> Void
     let canContinueLearning: Bool
     let lessonEvidenceMessage: String?
     let lessonHint: CourseHintSnapshot?
@@ -500,13 +515,15 @@ private struct OutputDockContent: View {
     }
 
     private var hasProgramOutput: Bool {
-        parsedOutput?.frame != nil
+        if result?.webPreview != nil { return true }
+        return parsedOutput?.frame != nil
             || !(parsedOutput?.plainText ?? "").isEmpty
             || (result?.phase == .run && !(result?.stderr ?? "").isEmpty)
     }
 
     private var emptyOutputTitle: String {
-        switch displayState {
+        if result?.detail.hasPrefix("Web assets prepared.") == true { return "Ready for web preview" }
+        return switch displayState {
         case .ready: "Output will appear here"
         case .checking: "Waiting for the check"
         case .running: "Waiting for program output"
@@ -523,6 +540,7 @@ private struct OutputDockContent: View {
         case .running: return "Printed text and errors will appear when the run finishes."
         case .stopped: return "This run ended before it produced any output."
         case .passed:
+            if result?.detail.hasPrefix("Web assets prepared.") == true { return "Run opens your local HTML, CSS and JavaScript. No Rust compilation is needed." }
             return result?.phase == .run
                 ? "Your program finished successfully without printing anything."
                 : "A code check compiles the project without executing it."
@@ -534,6 +552,31 @@ private struct OutputDockContent: View {
         GeometryReader { available in
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
+                    if let snapshot = result?.webPreview {
+                        OfflineWebPreviewPanel(snapshot: snapshot, height: min(640, available.size.height - 110),
+                            onError: { onWebError(snapshot.id, $0) })
+                            .id(snapshot.id)
+                    }
+                    if !buildEvents.isEmpty {
+                        DisclosureGroup("Build stages · \(buildEvents.count)") {
+                            Button("Package downloads", action: onShowPackageProgress)
+                                .padding(.vertical, 6)
+                            VStack(alignment: .leading, spacing: 7) {
+                                ForEach(buildEvents) { event in
+                                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                                        Text(event.date, style: .time).foregroundStyle(CrabrixTheme.muted)
+                                        Text(event.label).frame(maxWidth: .infinity, alignment: .leading)
+                                    }
+                                }
+                            }
+                            .font(.caption.monospaced())
+                            .textSelection(.enabled)
+                            .padding(.top, 8)
+                        }
+                        .font(.caption.weight(.semibold))
+                        .padding(12)
+                        .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 12))
+                    }
                     if !hasProgramOutput {
                         Spacer(minLength: 16)
                     }
