@@ -205,7 +205,18 @@
       "One sample per configuration; sequential runs and thermal differences.",
       "Selected smaller Tokio feature set, not large Kameo workload.",
       "No 30-second acceptance target met."
-    ]
+    ],
+    "repeatedRebuiltDirectBaseline": {
+      "runtimeRevision": "c4628141913160176dd11ced0bc6bfe42fee1f1f",
+      "compilerSeconds": 36.679818417,
+      "testSeconds": 40.202,
+      "thermalBegin": "nominal",
+      "thermalEnd": "nominal",
+      "allDependenciesAssertedUncached": true,
+      "expectedOutputVerified": true,
+      "resultBundle": "build/compiler-optimization-20261024/raw-direct-repeat-device.xcresult",
+      "note": "Fresh repeat immediately preceding preparation of sampled-cancellation runtime test host; same original compiler digest and feature set."
+    }
   },
   "limitations": [
     "Candidate is not shipped.",

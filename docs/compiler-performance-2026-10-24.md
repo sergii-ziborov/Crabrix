@@ -139,7 +139,10 @@ resolution was frozen and no remote compiler was used.
 These are single sequential samples, with different thermal conditions. The
 result demonstrates successful offline cold builds for this selected Tokio
 feature set; it does not establish a general threefold speedup. This is still
-a smaller workload than the large Kameo acceptance project.
+a smaller workload than the large Kameo acceptance project. A later fresh
+repeat of rebuilt/direct with the same runtime took **36.680 s**, with nominal
+thermal state at both ends and all three dependencies again uncached. This
+variation is another reason to preserve thermal context with every sample.
 
 The rebuilt/direct fresh responsiveness program finished in **1.244 s**; the
 main-actor heartbeat covered the entire compilation and its largest observed

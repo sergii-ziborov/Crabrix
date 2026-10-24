@@ -15,3 +15,5 @@ node_modules/
 __pycache__/
 *.pyc
 CrabrixTests/CompilerCandidate/Artifact/
+CrabrixTests/CompilerCandidate/ArtifactO2/
+CrabrixTests/CompilerCandidate/ArtifactFat/
