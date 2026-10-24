@@ -1887,7 +1887,7 @@
 			repositoryURL = "https://github.com/sergii-ziborov/crabrix-runtime.git";
 			requirement = {
 				kind = revision;
-				revision = 78aef49505a995bb049252ed1e8293c1eb1a8955;
+				revision = 2b97c92215dfc7580b627c87ce718c9348898baa;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

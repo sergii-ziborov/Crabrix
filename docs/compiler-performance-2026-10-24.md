@@ -243,6 +243,20 @@ is not met**: the best observed selected Tokio profile is 30.876 s and the
 separate Kameo graph still requires general procedural-macro support.
 See [full-LTO evidence](performance/2026-10-25-fat-lto.json).
 
+### Direct immediate emission
+
+Runtime `2b97c92` removes temporary operand arrays from instruction emission and
+patching, using synchronous nonescaping callbacks. The generator emits the same
+layout. An optimized native sample had found this allocation path during lazy
+function translation. The host correctness gate passed 17 tests in four suites,
+including 179 instruction scripts and saved translator fuzz regressions.
+
+Four matched `bytes` compilations produced identical rlibs. Old-runtime wall
+times were 28.621/16.132 s and new-runtime times 20.425/10.769 s under concurrent
+desktop work; their ranges overlap, so this does not establish a speedup. A
+separate physical build is being qualified with the same full-LTO compiler.
+See [emission evidence](performance/2026-10-25-direct-emission.json).
+
 ## Upstream audit
 
 The upstream `riw-wasm20` head was checked on October 24:

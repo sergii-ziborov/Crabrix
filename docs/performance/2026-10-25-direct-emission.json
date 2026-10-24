@@ -1,0 +1,71 @@
+{
+  "status": "experiment, not shipped",
+  "runtimeRevision": "2b97c92215dfc7580b627c87ce718c9348898baa",
+  "parentRuntimeRevision": "78aef49505a995bb049252ed1e8293c1eb1a8955",
+  "change": "Synchronous nonescaping immediate emission directly into the instruction buffer; no temporary per-instruction array",
+  "nativeProfile": {
+    "device": "arm64 macOS",
+    "sampleDurationSeconds": 5,
+    "intervalMilliseconds": 2,
+    "workerSamples": 1951,
+    "lazyCompilationSamples": 251,
+    "includesTemporaryArrayAllocations": true,
+    "file": "build/compiler-optimization-20261024/native-sample-compiler.txt"
+  },
+  "hostSafetyGate": {
+    "passedTests": 17,
+    "suites": 4,
+    "instructionScripts": 179,
+    "includesSavedTranslatorFuzzRegressions": true,
+    "seconds": 8.288,
+    "log": "build/compiler-optimization-20261024/direct-emission-runtime-tests.log"
+  },
+  "compilerSHA256": "8f1b313ccb59bf43546e36cfcdbd04dac9b5c8388a6ffec23efe2148564c17e6",
+  "dispatch": "experimental direct, software memory bounds, fuel metered",
+  "hostSamples": [
+    {
+      "variant": "old",
+      "elapsedSeconds": 28.620970292016864,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 1868644352,
+      "stopped": null,
+      "fuelConsumed": 15985753868,
+      "outputSHA256": "a782d525446d52cd8cd93689e38bbc778277e40e92ab5df86e8e4e7a48c97e86"
+    },
+    {
+      "variant": "new",
+      "elapsedSeconds": 20.42529358412139,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 1708228608,
+      "stopped": null,
+      "fuelConsumed": 15985557793,
+      "outputSHA256": "a782d525446d52cd8cd93689e38bbc778277e40e92ab5df86e8e4e7a48c97e86"
+    },
+    {
+      "variant": "new",
+      "elapsedSeconds": 10.769121415913105,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 2361638912,
+      "stopped": null,
+      "fuelConsumed": 15986067312,
+      "outputSHA256": "a782d525446d52cd8cd93689e38bbc778277e40e92ab5df86e8e4e7a48c97e86"
+    },
+    {
+      "variant": "old",
+      "elapsedSeconds": 16.132097500143573,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 1772142592,
+      "stopped": null,
+      "fuelConsumed": 15985214638,
+      "outputSHA256": "a782d525446d52cd8cd93689e38bbc778277e40e92ab5df86e8e4e7a48c97e86"
+    }
+  ],
+  "allMatchedOutputsIdentical": true,
+  "limitations": [
+    "Host timing ranges overlap under concurrent desktop activity; no demonstrated host speedup.",
+    "Physical qualification pending.",
+    "Kameo unchanged 32-package graph and 30-second large-project target remain unmet."
+  ],
+  "oldCLISHA256": "44a3d2fc694874f1f8760ab0d1195d7afdf55a95c807623dd747c81f7f92d0a9",
+  "newCLISHA256": "b9d9dd7fd0a3c0412b8cde30efd7f5db594adf3672adbd2587200d6f88c35041"
+}

@@ -1,0 +1,53 @@
+{
+  "auditUTC": "2026-10-24T22:37:52.169025+00:00",
+  "status": "general procedural macros remain unsupported by the bundled compiler; no ready upstream loader identified",
+  "pinnedCompilerRustRevision": "abc48c0b8aba37d3f3862a9d5c76eb4e78f90e88",
+  "flagCommit": {
+    "revision": "6408d389fc3b43e4710a318b991c93014bd6cc8d",
+    "url": "https://github.com/rust-lang/rust/commit/6408d389fc3b43e4710a318b991c93014bd6cc8d",
+    "date": "2026-08-11T12:53:28Z",
+    "implementedLoader": false
+  },
+  "inspectedMainFiles": [
+    {
+      "path": "compiler/rustc_expand/Cargo.toml",
+      "sha256": "11e9aa8a5d563e6fe36e0087c33803c5cb77d1b9c2c0bde1d646bca1b428787a"
+    },
+    {
+      "path": "compiler/rustc_expand/src/proc_macro.rs",
+      "sha256": "1038f462b48b9ac1b7569c2e5430e5ab66a22e16009278d74f139d551d84eb0e"
+    },
+    {
+      "path": "compiler/rustc_metadata/src/creader.rs",
+      "sha256": "ee6bb8d7332a8242e054b077eb85576b1fd3749ea042e610f1d20411bfcf7188"
+    },
+    {
+      "path": "compiler/rustc_metadata/src/host_dylib.rs",
+      "sha256": "8bfa5d3f0c45540c128791fec43d458c51eb7d973f1bdbeeb5957fd34040ab50"
+    },
+    {
+      "path": "compiler/rustc_metadata/src/locator.rs",
+      "sha256": "3e91bea232fdf8b8b01858bb55fb923f63f8c3ea66071cfc8eda9e9cebb9d758"
+    },
+    {
+      "path": "compiler/rustc_proc_macro/Cargo.toml",
+      "sha256": "19cc449e6402762e320fe04604d045b7018854f43405c25a25afbfcd9894ee79"
+    },
+    {
+      "path": "library/proc_macro/src/lib.rs",
+      "sha256": "543b998835baf58939ed5952165a559ecc6afcf0a5a0aa7c7f0284aff477c6bd"
+    }
+  ],
+  "findings": [
+    "The newer unstable flag introduces compiler/bootstrap plumbing; its introducing commit explicitly describes partial support.",
+    "The inspected main metadata loader still calls the host dylib loader to obtain macro clients.",
+    "Enabling a flag or removing the package compatibility guard does not implement macro loading inside a WASI compiler.",
+    "Watt requires a macro wrapper/ABI and is not a source-compatible drop-in for this unchanged Kameo graph."
+  ],
+  "acceptance": "Kameo 0.22.2 unchanged, 32 pinned packages; no physical successful run, no 30-second claim",
+  "sources": [
+    "https://github.com/rust-lang/rust/commit/6408d389fc3b43e4710a318b991c93014bd6cc8d",
+    "https://github.com/rust-lang/rust/blob/main/compiler/rustc_metadata/src/host_dylib.rs",
+    "https://github.com/dtolnay/watt"
+  ]
+}

@@ -35,3 +35,15 @@ Network acquisition precedes these timings and must be reported separately. A ti
 ## Current compatibility gap
 
 The selected graph includes `futures-macro`, `kameo_macros`, `serde_derive`, `tokio-macros` and `tracing-attributes`. The currently released Crabrix compiler does not support loading general procedural macro libraries. This workload therefore remains an **unmet acceptance target**, not a claim that Kameo already builds or runs in Crabrix. Removing these macros or replacing Kameo with a small Tokio-only example would test a different workload.
+
+### Upstream macro-support audit, October 25
+
+A newer upstream unstable `-Zwasm-proc-macros` flag exists, but its
+[introducing commit](https://github.com/rust-lang/rust/commit/6408d389fc3b43e4710a318b991c93014bd6cc8d)
+explicitly describes partial compiler/bootstrap support. The inspected main
+metadata path still obtains clients through the host dylib loader. This is
+not an available WASI runtime implementation to enable in our older compiler.
+Watt also needs a macro wrapper and ABI; converting published macros to it
+would change this acceptance workload. The loader and span/hygiene bridge
+remain engineering work. [Audit evidence](../../performance/2026-10-25-proc-macro-upstream.json)
+records the inspected source hashes and limitations.
