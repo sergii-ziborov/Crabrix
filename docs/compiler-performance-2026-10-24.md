@@ -210,8 +210,20 @@ See [the complete sampling evidence](performance/2026-10-25-cancellation-samplin
 Runtime `78aef49` outlines the sampled probe into a non-inlined helper. The
 optimized direct handler's native frame shrinks from 128 to 64 bytes, with
 compiler protection settings retained. The 16-test/179-script host gate passes;
-matched `bytes` rlibs agree, but host time ranges overlap. A separate physical
-measurement is required. See [outlining evidence](performance/2026-10-25-cancellation-outlining.json).
+matched `bytes` rlibs agree, but host time ranges overlap. The separate physical
+gate passed **8/8 tests**, with no skips. ThinLTO took **32.133 s** and full LTO
+**30.876 s** for the same isolated cold Tokio graph and verified output.
+ThinLTO stayed thermally nominal; full LTO ended fair. These remain individual
+samples, and the ThinLTO result does not establish an outlining-only gain over
+the preceding 32.153 s sample. See [outlining evidence](performance/2026-10-25-cancellation-outlining.json).
+
+Both compiler variants passed signed-sysroot, execution, i128 and E0502 tests;
+Stop and the 64 MiB program-memory limit also passed. The first responsiveness
+case observed a **401.54 ms** main-actor gap, below its 500 ms gate but larger
+than the preceding 53.49 ms observation. Its cause is not established. Two
+same-process repetitions are prepared and currently waiting at the iPhone
+unlock preflight, rather than being reported as passed. No production switch
+is made based on this uninvestigated observation.
 
 Manual Cloud 78 built the full-LTO compiler in **1199.96 s**, producing
 79,051,505 bytes with SHA256
@@ -223,6 +235,10 @@ does not establish a speedup. Cloud built the optimized test host, but its test
 service again rejected the advertised destination (now iPhone 18 Pro / iOS
 27.1), so no Cloud tests ran. The downloaded artifact is preserved separately
 in `ArtifactFat/` for local qualification, alongside the original candidates.
+Local physical smoke and cold-graph gates subsequently passed as recorded
+above. This candidate remains unshipped. The **30-second large-project target
+is not met**: the best observed selected Tokio profile is 30.876 s and the
+separate Kameo graph still requires general procedural-macro support.
 See [full-LTO evidence](performance/2026-10-25-fat-lto.json).
 
 ## Upstream audit

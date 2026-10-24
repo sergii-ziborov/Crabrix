@@ -169,7 +169,21 @@
   "meteredWorkIncreasePercent": 5.590943813983751,
   "limitations": [
     "No host speedup established; desktop wall times vary.",
-    "Separate signed-sysroot smoke and physical gate pending.",
-    "Not the large Kameo workload."
-  ]
+    "Single physical sample with thermal differences; no general speed guarantee.",
+    "Not the large Kameo workload.",
+    "The 30-second large-project target remains unmet."
+  ],
+  "physicalGate": {
+    "status": "passed, experimental",
+    "compilerSeconds": 30.875967167,
+    "referenceThinCompilerSeconds": 32.132657916999996,
+    "runtimeRevision": "78aef49505a995bb049252ed1e8293c1eb1a8955",
+    "device": "iPhone 13 mini / iOS 26.5 (23F77)",
+    "allDependenciesAssertedUncached": true,
+    "thermalBegin": "nominal",
+    "thermalEnd": "fair",
+    "expectedOutputVerified": "tokio offline: 42",
+    "signedSysrootSmoke": "passed",
+    "resultBundle": "build/compiler-optimization-20261024/outlined-fat-device.xcresult"
+  }
 }

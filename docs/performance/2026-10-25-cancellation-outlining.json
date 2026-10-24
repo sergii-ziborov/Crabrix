@@ -56,7 +56,7 @@
   "allOutputsIdentical": true,
   "limitations": [
     "Host timing ranges overlap; no speedup established.",
-    "Optimized safety gate passed; physical timing gate pending."
+    "Physical gate passed; no demonstrated outlining-only speedup versus the preceding 32.153 s ThinLTO result."
   ],
   "runtimeRevision": "78aef49505a995bb049252ed1e8293c1eb1a8955",
   "safetyGate": {
@@ -64,5 +64,45 @@
     "instructionScripts": 179,
     "configuration": "optimized host",
     "seconds": 7.313
+  },
+  "physicalGate": {
+    "status": "passed",
+    "passedTests": 8,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "device": "iPhone 13 mini / iOS 26.5 (23F77)",
+    "resultBundle": "build/compiler-optimization-20261024/outlined-fat-device.xcresult",
+    "snapshotSourceRevision": "a95db7c8318b72f9ab46a9ea60a230728192bd62",
+    "coldDependencies": [
+      "bytes 1.12.1",
+      "pin-project-lite 0.2.17",
+      "tokio 1.54.1"
+    ],
+    "allDependenciesAssertedUncached": true,
+    "samples": [
+      {
+        "compiler": "rebuilt thin-LTO",
+        "compilerSHA256": "0900e146ea3d54efb021a79165b2439d28ad67bd296a5075c4d915f6ddb353ac",
+        "compilerSeconds": 32.132657916999996,
+        "thermalBegin": "nominal",
+        "thermalEnd": "nominal"
+      },
+      {
+        "compiler": "rebuilt full-LTO",
+        "compilerSHA256": "8f1b313ccb59bf43546e36cfcdbd04dac9b5c8388a6ffec23efe2148564c17e6",
+        "compilerSeconds": 30.875967167,
+        "thermalBegin": "nominal",
+        "thermalEnd": "fair"
+      }
+    ],
+    "responsiveness": {
+      "maximumGapSeconds": 0.401544916,
+      "compilerSeconds": 1.25193075,
+      "passed500msGate": true,
+      "caution": "Larger first-launch gap than prior session; repeat being checked."
+    },
+    "cancelTestSeconds": 0.294,
+    "memoryLimit": "64 MiB enforced",
+    "signedSysrootSmoke": "Both compilers passed compile/run/i128/E0502"
   }
 }
