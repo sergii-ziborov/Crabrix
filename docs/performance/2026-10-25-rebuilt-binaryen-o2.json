@@ -1,0 +1,64 @@
+{
+  "dateUTC": "2026-10-24",
+  "status": "candidate, not shipped",
+  "transform": {
+    "inputSHA256": "0900e146ea3d54efb021a79165b2439d28ad67bd296a5075c4d915f6ddb353ac",
+    "exitCode": 0,
+    "seconds": 103.57108254195191,
+    "peakObservedRSSBytes": 2180628480,
+    "stopped": null,
+    "outputBytes": 63890638,
+    "outputSHA256": "c536ce70d4487ec08af4de4849f24456611e28d61ee1468438a8ddbcde35d45f"
+  },
+  "host": "arm64 macOS; concurrent desktop activity",
+  "workload": "bytes 1.12.1 std/default, opt-level=0, identical source and output paths",
+  "dispatch": "token",
+  "samples": [
+    {
+      "variant": "rebuilt",
+      "elapsedSeconds": 10.218370083021,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 1798127616,
+      "stopped": null,
+      "compilerSHA256": "0900e146ea3d54efb021a79165b2439d28ad67bd296a5075c4d915f6ddb353ac",
+      "fuelConsumed": 15139080700,
+      "outputSHA256": "c7e6f24d01b7b9ed4c47375b353a0ebda927ee1bf2b5c88fe95e23d4efcb518c"
+    },
+    {
+      "variant": "rebuilt-o2",
+      "elapsedSeconds": 15.400652750162408,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 1911078912,
+      "stopped": null,
+      "compilerSHA256": "c536ce70d4487ec08af4de4849f24456611e28d61ee1468438a8ddbcde35d45f",
+      "fuelConsumed": 14001863140,
+      "outputSHA256": "c7e6f24d01b7b9ed4c47375b353a0ebda927ee1bf2b5c88fe95e23d4efcb518c"
+    },
+    {
+      "variant": "rebuilt-o2",
+      "elapsedSeconds": 19.12493941700086,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 1884930048,
+      "stopped": null,
+      "compilerSHA256": "c536ce70d4487ec08af4de4849f24456611e28d61ee1468438a8ddbcde35d45f",
+      "fuelConsumed": 14002082447,
+      "outputSHA256": "c7e6f24d01b7b9ed4c47375b353a0ebda927ee1bf2b5c88fe95e23d4efcb518c"
+    },
+    {
+      "variant": "rebuilt",
+      "elapsedSeconds": 20.327880792086944,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 2162769920,
+      "stopped": null,
+      "compilerSHA256": "0900e146ea3d54efb021a79165b2439d28ad67bd296a5075c4d915f6ddb353ac",
+      "fuelConsumed": 15140270672,
+      "outputSHA256": "c7e6f24d01b7b9ed4c47375b353a0ebda927ee1bf2b5c88fe95e23d4efcb518c"
+    }
+  ],
+  "fuelReductionPercent": 7.514711121269658,
+  "allSampleRlibsIdentical": true,
+  "limitations": [
+    "No stable host wall-time gain established.",
+    "No physical iPhone measurement of this transformed artifact yet."
+  ]
+}

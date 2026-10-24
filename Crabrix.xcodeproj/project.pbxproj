@@ -1355,6 +1355,86 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		11F0FE4C586FBE9EB24ED826 /* CompilerCandidate */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) CRABRIX_SOCIAL CRABRIX_LEGACY_FIXTURES";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphoneos27.1*]" = "$(inherited) CRABRIX_DUO_SDK";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphonesimulator27.1*]" = "$(inherited) CRABRIX_DUO_SDK";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = CompilerCandidate;
+		};
+		3302AFA0E92CC4BD9A9E62E2 /* CompilerCandidate */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.CrabrixScreenshotTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Crabrix;
+			};
+			name = CompilerCandidate;
+		};
 		3AD2BD49E3FE6DC1553672AE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1406,6 +1486,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.CrabrixTests;
 				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = incremental;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Crabrix.app/Crabrix";
 			};
@@ -1427,6 +1509,35 @@
 				TEST_TARGET_NAME = Crabrix;
 			};
 			name = Release;
+		};
+		6559ADBF004B878B261DA8B1 /* CompilerCandidate */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Crabrix/Crabrix.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 73;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Crabrix/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Crabrix;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = NO;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.1.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.Crabrix;
+				PRODUCT_NAME = Crabrix;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = CompilerCandidate;
 		};
 		6A46E428F9FB98A037F29593 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -1512,6 +1623,47 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Crabrix.app/Crabrix";
 			};
 			name = Debug;
+		};
+		9DEADA88E126442DC5D5D652 /* CompilerCandidate */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = CrabrixShare/CrabrixShare.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 73;
+				INFOPLIST_FILE = CrabrixShare/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.Crabrix.Share;
+				PRODUCT_NAME = CrabrixShare;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = CompilerCandidate;
+		};
+		A947A55987BF0D6AFCE7FAC1 /* CompilerCandidate */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.CrabrixTests;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = incremental;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Crabrix.app/Crabrix";
+			};
+			name = CompilerCandidate;
 		};
 		D41EC020D4C06EBC55F98962 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -1664,47 +1816,52 @@
 		7E3B0CE866CF0B9F273190D0 /* Build configuration list for PBXNativeTarget "CrabrixScreenshotTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
+				3302AFA0E92CC4BD9A9E62E2 /* CompilerCandidate */,
 				3AD2BD49E3FE6DC1553672AE /* Debug */,
 				5FEFF6C91FC4A9F6E8B1E635 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = CompilerCandidate;
 		};
 		89373A5854615CBBDE7A6835 /* Build configuration list for PBXNativeTarget "CrabrixTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
+				A947A55987BF0D6AFCE7FAC1 /* CompilerCandidate */,
 				8F7E035E6FA4B8D8D4AE6479 /* Debug */,
 				54B7138FDBCE250D4E89C8D8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = CompilerCandidate;
 		};
 		C1D5A6B08FF6399491A10F5C /* Build configuration list for PBXProject "Crabrix" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
+				11F0FE4C586FBE9EB24ED826 /* CompilerCandidate */,
 				6A46E428F9FB98A037F29593 /* Debug */,
 				EB5A33134BF221B1BE5FB32A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = CompilerCandidate;
 		};
 		D6292ABD0511A5B69599120D /* Build configuration list for PBXNativeTarget "Crabrix" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
+				6559ADBF004B878B261DA8B1 /* CompilerCandidate */,
 				D41EC020D4C06EBC55F98962 /* Debug */,
 				D640978FF601D643E29D136D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = CompilerCandidate;
 		};
 		F03B2319449081BD1BB283F4 /* Build configuration list for PBXNativeTarget "CrabrixShare" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
+				9DEADA88E126442DC5D5D652 /* CompilerCandidate */,
 				4D004EF447BD1C56821CD423 /* Debug */,
 				F29E4AF546A304523E6F2695 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = CompilerCandidate;
 		};
 /* End XCConfigurationList section */
 

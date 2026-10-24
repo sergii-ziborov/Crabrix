@@ -54,8 +54,8 @@ Explicit Run operations now request `userInitiated` QoS on the existing serial
 compiler queue. Background checks retain `utility`. This does not move guest
 execution to the main actor or guarantee a particular CPU core. The new physical
 gate checks effective worker QoS, main-actor heartbeats and actual program output.
-Its signed Release test host builds successfully. Device execution is pending
-the unlock preflight; there is no timing claim for this change yet.
+Its signed Release test host builds successfully. The initial physical results
+and the subsequent isolated comparison are recorded below.
 
 The toolchain repository's `5b2f3d0` adds a separate **compiler-only macOS
 candidate** recipe so an ephemeral Xcode Cloud Mac can build the optimized WASI
@@ -90,12 +90,12 @@ Manual Cloud run 76 reached bootstrap and failed because cross-target std may
 not be compiled by stage0. The recipe now requests stage2, building a same-source
 native stage1 first. No local-rebuild or compatibility check was bypassed.
 
-The next physical comparison allocates a fresh dependency-artifact directory
+The physical comparison allocates a fresh dependency-artifact directory
 for **each** token/direct run and asserts that no dependency is cached. Source
 archives remain pinned and resolution is frozen. The real app cache is retained.
 The same test session holds the phone awake across both runs; network preparation
-is outside the measured compiler duration. This gate is prepared, not yet a
-completed cold-graph measurement.
+is outside the measured compiler duration. The completed four-case measurement
+is recorded below.
 
 ### Rebuilt compiler artifact
 
@@ -116,10 +116,60 @@ Four matched `bytes` compilations, alternating original/rebuilt/rebuilt/original
 produced bit-identical rlibs. Metered guest work fell **37.532%**. Host wall times
 were 22.545/17.227 s for original and 24.899/7.931 s for rebuilt under concurrent
 desktop build activity. These timings remain too variable for a general speed
-claim. A separate signed Release device session is prepared with four isolated
-cold Tokio cases, full-compilation UI heartbeats, the web generator, and the
-signed-sysroot/math/diagnostic smoke gate. Each candidate uses its full compiler
-digest as a cache namespace and an in-memory compatibility ledger.
+claim. The signed Release device session completed the four isolated cold Tokio
+cases, full-compilation UI heartbeats and the web generator. Each candidate uses
+its full compiler digest as a cache namespace and an in-memory compatibility
+ledger.
+
+### Complete cold-graph iPhone comparison
+
+On iPhone 13 mini, **iOS 26.5 (23F77)**, each case freshly compiled `bytes
+1.12.1`, `pin-project-lite 0.2.17`, Tokio 1.54.1 and its UUID-marked root, then
+ran the resulting program and checked `tokio offline: 42`. Every dependency
+reported `wasCached: false`. Pinned source preparation was outside the timer;
+resolution was frozen and no remote compiler was used.
+
+| Compiler | Dispatcher | Compiler duration | Thermal state start → end |
+| --- | --- | ---: | --- |
+| Original | Token | 123.995 s | nominal → fair |
+| Rebuilt | Token | 60.754 s | fair → fair |
+| Rebuilt | Experimental direct | 41.692 s | fair → fair |
+| Original | Experimental direct | 87.063 s | fair → serious |
+
+These are single sequential samples, with different thermal conditions. The
+result demonstrates successful offline cold builds for this selected Tokio
+feature set; it does not establish a general threefold speedup. This is still
+a smaller workload than the large Kameo acceptance project.
+
+The rebuilt/direct fresh responsiveness program finished in **1.244 s**; the
+main-actor heartbeat covered the entire compilation and its largest observed
+gap was **53.47 ms**. The Rust HTML/CSS/JS generator finished in **1.242 s** and
+its generated files and execution output passed validation.
+
+Six of seven tests passed. The seventh stopped on the original compiler's
+expected fatal E0502 abort: the test assumed a nonzero exit, whereas the WASI
+compiler emits the valid JSON diagnostic and traps with `unreachable`. The
+corrected gate accepts only that precise trap shape and requires a parsed E0502
+error with a primary span in `invalid.rs`; all other failures remain failures.
+The corrected gate passed separately on the owned iOS 26.5 simulator with
+optimized app/VM code, in 11.372 s, covering both compilers. A separate physical
+rerun is pending.
+The [machine-readable evidence](performance/2026-10-24-rebuilt-compiler.json)
+records these limitations.
+
+### Next candidates
+
+A bounded Binaryen `-O2` transform of the rebuilt compiler produced a
+63,890,638-byte module with SHA256
+`c536ce70d4487ec08af4de4849f24456611e28d61ee1468438a8ddbcde35d45f`.
+Matched `bytes` output hashes agree; measured guest work drops about 7.5%.
+Host wall times still overlap substantially under concurrent desktop work, so
+this is not yet a physical speed claim or a replacement for the tested artifact.
+
+The manual compiler-only workflow's next recipe compares full LTO with the
+measured ThinLTO baseline. Its dedicated `CompilerCandidate` configuration
+optimizes the app and VM while leaving the XCTest driver unoptimized to reduce
+test rebuild time. Production Release configuration and native UI are retained.
 
 The large Kameo target and the 30-second physical target remain unqualified.
 

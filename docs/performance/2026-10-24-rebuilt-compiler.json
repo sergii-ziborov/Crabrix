@@ -100,9 +100,109 @@
   ],
   "fuelReductionPercent": 37.53249467484265,
   "allSampleRlibsIdentical": true,
-  "physicalMatrix": "prepared; waiting for device unlock",
+  "physicalMatrix": {
+    "status": "completed; six passed, expected-diagnostic harness assumption failed in seventh",
+    "device": {
+      "model": "iPhone 13 mini",
+      "osVersion": "26.5",
+      "osBuild": "23F77",
+      "architecture": "arm64e"
+    },
+    "configuration": "Release; app and VM optimized",
+    "runtimeRevision": "c4628141913160176dd11ced0bc6bfe42fee1f1f",
+    "workerQoS": 25,
+    "testSummary": {
+      "passed": 6,
+      "failed": 1,
+      "skipped": 0
+    },
+    "resultBundle": "build/compiler-optimization-20261024/iphone-compiler-matrix.xcresult",
+    "workload": {
+      "tokioVersion": "1.54.1",
+      "features": [
+        "rt",
+        "sync",
+        "time",
+        "io-util"
+      ],
+      "defaultFeatures": false,
+      "freshDependencies": [
+        "bytes 1.12.1",
+        "pin-project-lite 0.2.17",
+        "tokio 1.54.1"
+      ],
+      "allDependenciesAssertedUncached": true,
+      "freshRoot": true,
+      "isolatedArtifactDirectoryPerCase": true,
+      "resolution": "frozen offline after pinned source preparation",
+      "sourcePreparationInTimer": false,
+      "expectedOutput": "tokio offline: 42"
+    },
+    "samples": [
+      {
+        "compiler": "original",
+        "dispatch": "token",
+        "compilerSeconds": 123.995332958,
+        "thermalBegin": "nominal",
+        "thermalEnd": "fair"
+      },
+      {
+        "compiler": "rebuilt",
+        "dispatch": "token",
+        "compilerSeconds": 60.754106875,
+        "thermalBegin": "fair",
+        "thermalEnd": "fair"
+      },
+      {
+        "compiler": "rebuilt",
+        "dispatch": "experimental direct",
+        "compilerSeconds": 41.691760042,
+        "thermalBegin": "fair",
+        "thermalEnd": "fair"
+      },
+      {
+        "compiler": "original",
+        "dispatch": "experimental direct",
+        "compilerSeconds": 87.062536834,
+        "thermalBegin": "fair",
+        "thermalEnd": "serious"
+      }
+    ],
+    "responsiveness": {
+      "compilerSeconds": 1.244126916,
+      "maximumMainActorGapSeconds": 0.053466875,
+      "heartbeatCoverage": "entire compilation",
+      "passed": true
+    },
+    "webGenerator": {
+      "compilerSeconds": 1.2421165,
+      "passed": true
+    },
+    "smokeGate": {
+      "originalCompiledAndExecuted": true,
+      "failedAt": "expected invalid Rust E0502 aborted via unreachable instead of nonzero process exit",
+      "fix": "accept only exact unreachable trap and require parsed E0502 primary span invalid.rs",
+      "rerun": {
+        "platform": "iOS Simulator 26.5 arm64",
+        "configuration": "Release app/VM; unoptimized XCTest driver",
+        "passed": true,
+        "testSeconds": 11.372,
+        "originalCompileSeconds": 5.914826625,
+        "candidateCompileSeconds": 2.506264458,
+        "resultBundle": "build/compiler-optimization-20261024/rebuilt-fixed-smoke-simulator.xcresult",
+        "physicalRerun": "pending"
+      }
+    },
+    "limitations": [
+      "One sample per configuration; sequential runs and thermal differences.",
+      "Selected smaller Tokio feature set, not large Kameo workload.",
+      "No 30-second acceptance target met."
+    ]
+  },
   "limitations": [
-    "No physical speed claim for rebuilt compiler.",
-    "Not the Kameo large-project workload."
+    "Candidate is not shipped.",
+    "Not the Kameo large-project workload.",
+    "No general 3x speed guarantee; single physical samples with thermal differences.",
+    "Corrected full smoke gate passes simulator; separate physical rerun pending."
   ]
 }

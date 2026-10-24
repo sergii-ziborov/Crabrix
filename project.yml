@@ -1,5 +1,10 @@
 name: Crabrix
 
+configs:
+  Debug: debug
+  Release: release
+  CompilerCandidate: release
+
 options:
   bundleIdPrefix: com.sergiiziborov
   deploymentTarget:
@@ -24,6 +29,10 @@ settings:
       SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG CRABRIX_SOCIAL
     release:
       SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) CRABRIX_SOCIAL"
+    CompilerCandidate:
+      ENABLE_TESTABILITY: YES
+      SWIFT_OPTIMIZATION_LEVEL: "-O"
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) CRABRIX_SOCIAL CRABRIX_LEGACY_FIXTURES"
 
 packages:
   WasmKit:
@@ -191,6 +200,16 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiiziborov.CrabrixTests
         GENERATE_INFOPLIST_FILE: YES
+      configs:
+        release:
+          # Keep the compiler/app and runtime optimized. Optimizing this large
+          # XCTest driver adds minutes to each candidate rebuild without
+          # affecting the guest interpreter that is being measured.
+          SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+          SWIFT_COMPILATION_MODE: incremental
+        CompilerCandidate:
+          SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+          SWIFT_COMPILATION_MODE: incremental
 
   CrabrixScreenshotTests:
     type: bundle.ui-testing
@@ -365,6 +384,7 @@ schemes:
         Crabrix: all
         CrabrixTests: [test]
     test:
+      config: CompilerCandidate
       gatherCoverageData: false
       environmentVariables:
         CRABRIX_RUN_COMPILER_CANDIDATE: "1"

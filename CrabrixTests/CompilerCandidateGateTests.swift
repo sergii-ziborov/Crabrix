@@ -8,7 +8,7 @@ import XCTest
 /// This never changes the app's production artifact identity. A test-only
 /// resource contains the compiler built by the separate manual Cloud workflow.
 final class CompilerCandidateGateTests: XCTestCase {
-    func testCandidateCompilesAndRunsUsingSignedSysroot() throws {
+    func testCandidateCompilesAndRunsUsingSignedSysroot() async throws {
         try XCTSkipIf(ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_CANDIDATE"] != "1")
         let directory = try XCTUnwrap(Bundle(for: Self.self).resourceURL)
             .appending(path: "CompilerCandidate/Artifact", directoryHint: .isDirectory)
@@ -99,9 +99,25 @@ final class CompilerCandidateGateTests: XCTestCase {
 
             let invalid = "fn main() { let mut v = vec![1]; let first = &v[0]; v.push(2); println!(\"{first}\"); }"
             try invalid.write(to: work.appending(path: "invalid.rs"), atomically: true, encoding: .utf8)
-            let diagnostic = try invoke(["/work/invalid.rs"] + flags + ["--emit=metadata", "-o", "/work/invalid.rmeta"], prefix: "diagnostic")
-            XCTAssertNotEqual(diagnostic.exitCode, 0)
-            XCTAssertTrue(diagnostic.stderr.contains("E0502"), diagnostic.stderr)
+            let diagnosticOutput: String
+            do {
+                let diagnostic = try invoke(["/work/invalid.rs"] + flags + ["--emit=metadata", "-o", "/work/invalid.rmeta"], prefix: "diagnostic")
+                XCTAssertNotEqual(diagnostic.exitCode, 0)
+                diagnosticOutput = diagnostic.stderr
+            } catch let failure as RustcRuntimeFailure {
+                // The existing WASI compiler aborts after emitting a fatal
+                // language diagnostic. Match only that exact trap shape;
+                // memory, fuel, cancellation and other failures still fail.
+                guard let trap = failure.underlying as? Trap,
+                      trap.description.split(separator: "\n").first == "Trap: unreachable"
+                else { throw failure }
+                diagnosticOutput = failure.stderr
+            }
+            let diagnostics = RustDiagnosticParser.parse(stderr: diagnosticOutput)
+            XCTAssertTrue(diagnostics.contains {
+                $0.code == "E0502" && $0.level == "error"
+                    && $0.primarySpan?.fileName == "invalid.rs"
+            }, diagnosticOutput)
         }
     }
 }

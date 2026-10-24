@@ -14,7 +14,7 @@ toolchain="$work/toolchain"
 mkdir -p "$work"
 git init "$toolchain"
 git -C "$toolchain" remote add origin https://github.com/sergii-ziborov/crabrix-toolchain.git
-revision=17957449aab5e011f976c55cd762244449f1a803
+revision=3f5cf1a281f765d313ce6b1cfa2b717ee6c69241
 git -C "$toolchain" fetch --depth 1 origin "$revision"
 git -C "$toolchain" checkout --detach FETCH_HEAD
 [[ "$(git -C "$toolchain" rev-parse HEAD)" == "$revision" ]]
@@ -22,4 +22,5 @@ python_prefix="$(brew --prefix python@3.13)"
 export PATH="$python_prefix/libexec/bin:$python_prefix/bin:$PATH"
 "$python_prefix/bin/python3.13" "$toolchain/scripts/build-macos-compiler-candidate.py" \
   --work "$work/build" --output "$root/CrabrixTests/CompilerCandidate/Artifact" \
+  --lto fat \
   --llvm-config "$(brew --prefix llvm@22)/bin/llvm-config"
