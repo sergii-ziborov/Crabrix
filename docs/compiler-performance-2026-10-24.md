@@ -29,3 +29,9 @@ Four complete `bytes` builds produced the same rlib SHA256 with original and tra
 Invoking the bundled compiler with a private `-Cincremental` directory fails before compilation: **“file locks not supported on this platform.”** It then exits through the compiler's fatal-abort path. Supporting a persistent incremental cache requires real locking/lifetime and invalidation behavior in the WASI host/compiler contract. Silently bypassing locks or declaring a cache hit to be a fresh compilation would not address the requested target.
 
 Local logs and result bundles are under `build/compiler-optimization-20261024/` and `build/web-preview-20261024/`; no user project is sent to a remote compiler. Device experimental results are recorded separately from this baseline when available.
+
+## Rebuild profile finding
+
+The locked source selects upstream `profile = "compiler"`, whose contributor defaults explicitly enable debug assertions/logging and frame pointers and disable LTO. The root's `rust.debug = false` does not cancel these independently set fields. The toolchain repository now has a candidate-only `--performance-profile` path on branch `codex/compiler-performance-profile-20261024` (commit `b728d6b`), with recorded raw profile/default merges and explicit overrides. Locked production rebuild behavior remains unchanged. This is a prepared recipe, not a rebuilt or timed compiler artifact.
+
+The controlled builder requires Linux x86_64, 8 GiB RAM and 30 GiB free disk. This Mac currently has about 12 GiB free; no old source or build snapshots were deleted to satisfy the resource gate. The new signed Release test host compiled successfully; the experimental iPhone run is waiting at Xcode's device-unlock preflight.
