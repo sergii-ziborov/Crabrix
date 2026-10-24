@@ -21,6 +21,11 @@ final class CompilerCandidateGateTests: XCTestCase {
         try checkCandidate(artifactName: "ArtifactO2")
     }
 
+    func testFatCandidateCompilesAndRunsUsingSignedSysroot() async throws {
+        try XCTSkipIf(ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_FAT"] != "1")
+        try checkCandidate(artifactName: "ArtifactFat")
+    }
+
     private func checkCandidate(artifactName: String) throws {
         let directory = try XCTUnwrap(Bundle(for: Self.self).resourceURL)
             .appending(path: "CompilerCandidate/" + artifactName, directoryHint: .isDirectory)

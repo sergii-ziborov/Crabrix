@@ -205,6 +205,26 @@ the signed-sysroot, execution, wide-integer and E0502 smoke gate on the phone.
 The large Kameo and 30-second acceptance targets remain unmet.
 See [the complete sampling evidence](performance/2026-10-25-cancellation-sampling.json).
 
+### Outlined checkpoint and full-LTO candidate
+
+Runtime `78aef49` outlines the sampled probe into a non-inlined helper. The
+optimized direct handler's native frame shrinks from 128 to 64 bytes, with
+compiler protection settings retained. The 16-test/179-script host gate passes;
+matched `bytes` rlibs agree, but host time ranges overlap. A separate physical
+measurement is required. See [outlining evidence](performance/2026-10-25-cancellation-outlining.json).
+
+Manual Cloud 78 built the full-LTO compiler in **1199.96 s**, producing
+79,051,505 bytes with SHA256
+`8f1b313ccb59bf43546e36cfcdbd04dac9b5c8388a6ffec23efe2148564c17e6`.
+Its source, patches, SDK and recipe revision were checked against provenance
+after download. Four matched `bytes` builds agree bit-for-bit, while guest work
+**increases 5.59%** relative to ThinLTO and host wall times still overlap. This
+does not establish a speedup. Cloud built the optimized test host, but its test
+service again rejected the advertised destination (now iPhone 18 Pro / iOS
+27.1), so no Cloud tests ran. The downloaded artifact is preserved separately
+in `ArtifactFat/` for local qualification, alongside the original candidates.
+See [full-LTO evidence](performance/2026-10-25-fat-lto.json).
+
 ## Upstream audit
 
 The upstream `riw-wasm20` head was checked on October 24:

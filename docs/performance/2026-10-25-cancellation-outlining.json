@@ -1,0 +1,68 @@
+{
+  "status": "experiment, not shipped",
+  "parentRuntimeRevision": "83406c207636837ad15f4eac9365eb9b0514b0b4",
+  "dateUTC": "2026-10-24",
+  "localDate": "2026-10-25",
+  "change": "outline sampled probe access into a non-inlined StoreRef helper",
+  "arm64Assembly": {
+    "handler": "wasmkit_tc_consumeFuel",
+    "parentStackFrameBytes": 128,
+    "newStackFrameBytes": 64,
+    "nativeStackProtection": "Compiler defaults retained; no disabling attributes or flags.",
+    "samplingIntervalUnchanged": 64
+  },
+  "host": "arm64 macOS with concurrent desktop activity",
+  "workload": "bytes 1.12.1 std/default, opt-level=0; matched source/output path",
+  "dispatch": "experimental direct; software bounds; fuel metered",
+  "compilerSHA256": "0900e146ea3d54efb021a79165b2439d28ad67bd296a5075c4d915f6ddb353ac",
+  "samples": [
+    {
+      "variant": "old",
+      "elapsedSeconds": 17.791032542008907,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 2046214144,
+      "stopped": null,
+      "fuelConsumed": 15139880455,
+      "outputSHA256": "f8103bda86267904f3402cb7d5b1f2c724d055b6cde631ff76df7793e76b665d"
+    },
+    {
+      "variant": "new",
+      "elapsedSeconds": 10.703171458095312,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 1953169408,
+      "stopped": null,
+      "fuelConsumed": 15139478085,
+      "outputSHA256": "f8103bda86267904f3402cb7d5b1f2c724d055b6cde631ff76df7793e76b665d"
+    },
+    {
+      "variant": "new",
+      "elapsedSeconds": 10.565076500177383,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 1521582080,
+      "stopped": null,
+      "fuelConsumed": 15139394055,
+      "outputSHA256": "f8103bda86267904f3402cb7d5b1f2c724d055b6cde631ff76df7793e76b665d"
+    },
+    {
+      "variant": "old",
+      "elapsedSeconds": 7.867099875118583,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 2440822784,
+      "stopped": null,
+      "fuelConsumed": 15140145921,
+      "outputSHA256": "f8103bda86267904f3402cb7d5b1f2c724d055b6cde631ff76df7793e76b665d"
+    }
+  ],
+  "allOutputsIdentical": true,
+  "limitations": [
+    "Host timing ranges overlap; no speedup established.",
+    "Optimized safety gate passed; physical timing gate pending."
+  ],
+  "runtimeRevision": "78aef49505a995bb049252ed1e8293c1eb1a8955",
+  "safetyGate": {
+    "passedTests": 16,
+    "instructionScripts": 179,
+    "configuration": "optimized host",
+    "seconds": 7.313
+  }
+}

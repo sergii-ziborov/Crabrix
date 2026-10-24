@@ -24,3 +24,6 @@ Tokio gates. `CRABRIX_COMPILER_CANDIDATE_ARTIFACT=ArtifactFat` selects the
 full-LTO variant for the ordinary candidate gates. Only these named test
 folders are accepted, and missing or mismatched data fails rather than falling
 back to the production compiler.
+
+`CRABRIX_RUN_COMPILER_FAT=1` enables a dedicated full-LTO smoke test and
+isolated cold Tokio test alongside the ThinLTO reference in the same session.

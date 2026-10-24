@@ -302,6 +302,13 @@ final class BundledCompilerGateTests: XCTestCase {
                                       candidateProfileOverride: true, candidateArtifactName: "ArtifactO2")
     }
 
+    func testTokioCold06RebuiltFatDirect() async throws {
+        try requireColdComparison()
+        try XCTSkipIf(ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_FAT"] != "1")
+        try await runTokioOfflineProbe(cold: true, experimentalDirectOverride: true,
+                                      candidateProfileOverride: true, candidateArtifactName: "ArtifactFat")
+    }
+
     private func runTokioOfflineProbe(cold: Bool, experimentalDirectOverride: Bool? = nil,
                                       candidateProfileOverride: Bool? = nil,
                                       candidateArtifactName: String? = nil) async throws {
