@@ -1,0 +1,31 @@
+{
+  "publishedAt": "2026-10-24",
+  "origin": "https://crabrix.com",
+  "image": "localhost/crabrix-web-site:blog-20261024",
+  "imageID": "49865b3a8af13cd0e7f82366bf4a6a47e07b3242d9841b2d840442cd9b9ab7ea",
+  "previousImageID": "f86dce298bf4f30430dc9de66bf2c5b95d3bed9f929addaf3d794aef18d0de88",
+  "rollbackContainer": "crabrix-web-site-before-blog-20261024",
+  "candidateAudit": {
+    "origin": "http://127.0.0.1:3216",
+    "publicURLs": 785,
+    "lessons": 742,
+    "articles": 25,
+    "articleImages": 50,
+    "metadata": "785 canonical/title/description/H1/social/robots checks passed",
+    "webPreviewCapture": "passed",
+    "errors": []
+  },
+  "liveMetadataAudit": "All 785 metadata assertions completed; the subsequent full-size PNG transfer timed out. Optimized public delivery is checked separately.",
+  "accountData": "Existing account volume preserved; pre-switch backup completed",
+  "guideScreenshots": 8,
+  "blogPosts": 25,
+  "newPosts": 5,
+  "newGeneratedImages": 10,
+  "unitTestsPassed": 13,
+  "proofScreenshot": "site-blog-2026-10-24.png",
+  "liveImageDelivery": {
+    "publicURLs": 785,
+    "originalImageHeaders": 50,
+    "verifiedWebPFiles": 100
+  }
+}

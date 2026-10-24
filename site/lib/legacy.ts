@@ -7,15 +7,15 @@ export type LegacyPage = (typeof legacyPages)[number];
 export const legacyMetadata: Record<LegacyPage, { title: string; description: string }> = {
   about: {
     title: "About Crabrix",
-    description: "The story behind the native Rust workspace for iPhone and iPad.",
+    description: "Meet Crabrix: the offline Rust compiler, illustrated Academy and local web lab for iPhone, iPad and Duo. Learn how projects and course updates work.",
   },
   technology: {
     title: "Crabrix technology",
-    description: "The bundled Rust toolchain, Cargo support, sandbox limits and current gaps.",
+    description: "Understand Crabrix’s bundled Rust compiler, Cargo package preparation, offline WebKit preview, WASI sandbox limits and supported build-script boundaries.",
   },
   support: {
     title: "Crabrix support",
-    description: "Help with building, packages, lessons, projects and purchases.",
+    description: "Get help with Crabrix projects, Rust build errors, package downloads, offline courses, web previews and purchases. Learn what to include in a useful report.",
   },
   privacy: {
     title: "Crabrix privacy policy",
@@ -23,7 +23,7 @@ export const legacyMetadata: Record<LegacyPage, { title: string; description: st
   },
   terms: {
     title: "Crabrix terms",
-    description: "The terms for the Crabrix app and website.",
+    description: "Read the terms for Crabrix’s offline compiler, website Academy accounts, educational content, original projects and third-party open-source components.",
   },
 };
 

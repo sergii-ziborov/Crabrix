@@ -1,0 +1,100 @@
+{
+  "version": "1.1.2",
+  "build": "75",
+  "cloudRunID": "920f1dc4-7551-42c3-8b20-eb9274e33f74",
+  "sourceCommit": "b3c2f7762112ac1bdc9201ce25d7766826c2a827",
+  "sdkProof": {
+    "xcode27_1": true,
+    "sdk27_1": true,
+    "duoCompilationFlag": true
+  },
+  "testflight": {
+    "autoNotifyEnabled": true,
+    "internalBuildState": "IN_BETA_TESTING",
+    "externalBuildState": "READY_FOR_BETA_SUBMISSION"
+  },
+  "review": {
+    "submissionID": "980f235a-40ea-4e3a-8b99-08a49c7cbb76",
+    "versionID": "4ad2dcb4-5252-4f36-bb32-99f41e3f6e9a",
+    "buildID": "255c974d-c4d0-4639-b136-cd85dc1aee5a",
+    "verifiedAtUTC": "2026-10-24T19:03:33.072654+00:00",
+    "submissionState": "WAITING_FOR_REVIEW",
+    "versionState": "WAITING_FOR_REVIEW",
+    "releaseType": "MANUAL"
+  },
+  "screenshots": {
+    "APP_IPHONE_67": 10,
+    "APP_IPHONE_DUO": 2,
+    "APP_IPAD_PRO_3GEN_129": 7,
+    "firstImage": "Code in all three sets"
+  },
+  "customProductPages": [
+    {
+      "page": "Rust Academy \u2014 Learn and Practise",
+      "id": "8880b4c7-de67-420c-a944-ff8a4b1b6bbd",
+      "state": "APPROVED",
+      "localizations": [
+        {
+          "locale": "en-US",
+          "metadata": {
+            "locale": "en-US",
+            "promotionalText": "Learn Rust step by step: 742 lessons and Atlas steps, illustrated explanations, highlighted code and practical exercises. Download courses and keep learning offline."
+          },
+          "screenshots": [
+            {
+              "displayType": "APP_IPAD_PRO_3GEN_129",
+              "count": 7,
+              "first": "v111-ipad-13-01-build.png"
+            },
+            {
+              "displayType": "APP_IPHONE_67",
+              "count": 10,
+              "first": "v111-iphone-6.9-01-build.png"
+            },
+            {
+              "displayType": "APP_IPHONE_DUO",
+              "count": 2,
+              "first": "v111-iphone-duo-qa-01-laptop-code.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page": "Rust Compiler \u2014 Build on Device",
+      "id": "aa4163f1-f049-4e82-9fac-ccb33ef2a770",
+      "state": "APPROVED",
+      "localizations": [
+        {
+          "locale": "en-US",
+          "metadata": {
+            "locale": "en-US",
+            "promotionalText": "Write Rust on iPhone, iPad and iPhone Duo. Check real compiler diagnostics, run locally, organise projects and explore 46 illustrated examples. No cloud compiler."
+          },
+          "screenshots": [
+            {
+              "displayType": "APP_IPAD_PRO_3GEN_129",
+              "count": 7,
+              "first": "v111-ipad-13-01-build.png"
+            },
+            {
+              "displayType": "APP_IPHONE_67",
+              "count": 10,
+              "first": "v111-iphone-6.9-01-build.png"
+            },
+            {
+              "displayType": "APP_IPHONE_DUO",
+              "count": 2,
+              "first": "v111-iphone-duo-qa-01-laptop-code.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "physicalDevice": {
+    "model": "iPhone 13 mini",
+    "rustWebGeneratorTestSeconds": 11.733,
+    "tokio": "No result: Xcode lost device connection; subsequent CoreDevice reads rejected; device now unavailable"
+  }
+}

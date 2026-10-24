@@ -98,7 +98,7 @@ export default function GuidePage() {
         <p>Duo adapts the workspace to the fold and posture. The compact header includes the project name and search. Code, Problems, Output and Terminal share the established tab region, with editor helper keys directly above the keyboard. Use the keyboard-dismiss control in the tab strip when it is available for that posture.</p>
         <div className="guide-screenshots"><Screenshot name="duo-laptop" alt="Duo Rust workspace with search, code tabs, helper keys and keyboard" caption="Duo: project name and search at the top; code tabs, helpers and keyboard in the fold-aware workspace." width={2007} height={2853} /><Screenshot name="ipad-build" alt="iPad Crabrix workspace with file navigation and in-file search" caption="iPad: a wider workspace with navigation and search above the code." width={2064} height={2752} /></div>
       </section>
-      <section id="limits"><h2>8. Know what the compiler can actually run</h2>
+      <section id="limits"><h2>9. Know what the compiler can actually run</h2>
         <p>The bundled compiler targets <code>wasm32-wasip1</code>, executed by an interpreter. The app does not turn downloaded source into an unsigned native iOS executable. A dependency being pure Rust is helpful, but does not by itself prove compatibility: it may still require operating-system facilities, compiler features or host tools absent from this target.</p>
         <div className="guide-table"><table><caption>Requirements and their meaning in the offline environment</caption><thead><tr><th scope="col">Requirement</th><th scope="col">What to expect</th></tr></thead><tbody>
           <tr><th scope="row">Standard-library learning programs</th><td>Use the local compiler and supported WASI operations. Check and Run remain separate checks.</td></tr>
@@ -113,7 +113,7 @@ export default function GuidePage() {
         <p>User-program policy currently caps linear memory at 64 MiB, output at 1 MiB, writable sandbox data at 8 MiB across 256 files, and execution at a 30-second deadline plus an instruction budget. Compiler execution has a separate, larger budget. These are upper bounds, not reserved physical memory; iOS can impose its own resource constraints.</p>
         <p>A failure in Crabrix's code generator is a compiler defect to investigate, not a claim that the Rust project is invalid. When reporting one, include the exact package versions, features, source and diagnostic. <Link href="/technology/">Technology</Link> describes the runtime and toolchain; the project README records the tested compatibility matrix and remaining gaps.</p>
       </section>
-      <section id="troubleshooting"><h2>9. Diagnose, save and share a reproducible project</h2>
+      <section id="troubleshooting"><h2>10. Diagnose, save and share a reproducible project</h2>
         <div className="guide-table"><table><caption>Start with the stage that failed</caption><thead><tr><th scope="col">Symptom</th><th scope="col">Next step</th></tr></thead><tbody>
           <tr><th scope="row">A download fails</th><td>Read the named package and error in the package window. Check connectivity while acquiring new material. Keep already verified packages; retry the missing step when connected.</td></tr>
           <tr><th scope="row">Problems reports a Rust error</th><td>Open the diagnostic, inspect the file and location, fix the code, then Check again.</td></tr>
