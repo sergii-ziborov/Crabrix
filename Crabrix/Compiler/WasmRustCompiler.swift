@@ -1041,7 +1041,8 @@ final class WasmRustCompiler: @unchecked Sendable {
         if let reason = interrupter.stopReason {
             throw WasmExecutionCancelled(reason: reason)
         }
-        return try runtime.run(
+        let invocationStarted = ContinuousClock.now
+        let result = try autoreleasepool { try runtime.run(
             module: module,
             arguments: arguments,
             environment: environment,
@@ -1057,7 +1058,9 @@ final class WasmRustCompiler: @unchecked Sendable {
             interrupter: interrupter,
             softwareMemoryReservationBytes: CompilerHostPolicy.memoryLimitBytes,
             capturedOutputLimitBytes: CompilerHostPolicy.outputLimitBytes
-        )
+        ) }
+        CompilerPhaseTrace.emit("rustc-after-pool", since: invocationStarted)
+        return result
     }
 
     private func executeProgram(

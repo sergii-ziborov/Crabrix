@@ -376,13 +376,21 @@ final class RustcRuntime: @unchecked Sendable {
 
 /// Local opt-in phase observations for compiler investigations. The test probe
 /// enables this only for its process; no source or diagnostics leave the device.
-private enum CompilerPhaseTrace {
+enum CompilerPhaseTrace {
     static func emit(_ phase: String, since started: ContinuousClock.Instant) {
         guard ProcessInfo.processInfo.environment["CRABRIX_PERF_TRACE"] == "1" else { return }
         let parts = started.duration(to: ContinuousClock.now).components
         let milliseconds = Double(parts.seconds) * 1_000
             + Double(parts.attoseconds) / 1_000_000_000_000_000
         print("CRABRIX_PHASE \(phase) \(milliseconds)")
+        var info = task_vm_info_data_t()
+        var count = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<integer_t>.size)
+        let status = withUnsafeMutablePointer(to: &info) { pointer in
+            pointer.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+                task_info(mach_task_self_, task_flavor_t(TASK_VM_INFO), $0, &count)
+            }
+        }
+        if status == KERN_SUCCESS { print("CRABRIX_MEMORY", phase, info.phys_footprint) }
     }
 }
 

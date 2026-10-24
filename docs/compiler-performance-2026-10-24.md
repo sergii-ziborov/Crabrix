@@ -297,3 +297,7 @@ The upstream `riw-wasm20` head was checked on October 24:
 `abc48c0b8ab`, changing only `compiler/rustc_codegen_cranelift/clif2wasm/README.md`.
 There is no functional compiler update to import from that branch. The pinned
 source and four existing arithmetic/ABI patches remain the controlled input.
+
+### Completed cold repeats, October 25
+
+Two same-process physical iPhone repeats passed with fresh root source and all three dependency artifacts asserted uncached: **27.881 s** and **28.537 s**, nominal thermal state at both ends. Both checked `tokio offline: 42`; 2/2 runs, zero failures. The first six-gate session measured 29.778 s. These are the selected Tokio `rt,sync,time,io-util` profile, not the unchanged 32-package Kameo target or Axum. Evidence: app `build/compiler-optimization-20261024/direct-emission-cold-repeat-device.xcresult`; machine-readable public record `docs/performance/2026-10-25-direct-emission.json`.

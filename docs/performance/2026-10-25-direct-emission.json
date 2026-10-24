@@ -63,7 +63,7 @@
   "allMatchedOutputsIdentical": true,
   "limitations": [
     "Host timing ranges overlap under concurrent desktop activity; no demonstrated host speedup.",
-    "One physical sample below 30 seconds for the selected small graph; repeats are a separate gate.",
+    "Three physical cold samples of the selected three-dependency Tokio graph: 29.778, 27.881, 28.537 seconds; not the large Kameo workload.",
     "Kameo unchanged 32-package graph and 30-second large-project target remain unmet."
   ],
   "oldCLISHA256": "44a3d2fc694874f1f8760ab0d1195d7afdf55a95c807623dd747c81f7f92d0a9",
@@ -103,12 +103,27 @@
     "userProgramMemoryLimit": "64 MiB enforced",
     "signedSysrootSmoke": "Original and full-LTO compiler passed compilation, execution, wide integer and E0502 checks",
     "coldFollowUp": {
-      "status": "waiting for device unlock",
-      "statusObservedUTC": "2026-10-24T22:57:17.633713+00:00",
+      "status": "passed",
       "requestedRepetitions": 2,
       "sameProcess": true,
       "resultBundle": "build/compiler-optimization-20261024/direct-emission-cold-repeat-device.xcresult",
-      "noPassedResultYet": true
+      "completedUTC": "2026-10-24T23:08:38Z",
+      "passedRuns": 2,
+      "failedRuns": 0,
+      "allDependenciesAssertedUncached": true,
+      "outputVerified": "tokio offline: 42",
+      "samples": [
+        {
+          "compilerSeconds": 27.880765541,
+          "thermalBegin": "nominal",
+          "thermalEnd": "nominal"
+        },
+        {
+          "compilerSeconds": 28.536838333,
+          "thermalBegin": "nominal",
+          "thermalEnd": "nominal"
+        }
+      ]
     }
   }
 }

@@ -172,6 +172,15 @@ final class BundledCompilerGateTests: XCTestCase {
 
     func testAxumRoutesARealHTTPRequestWithoutATCPServer() async throws {
         try Self.requireCompilerGate()
+        try await runAxumOfflineProbe(cold: false)
+    }
+
+    func testAxumColdRouterWithTokio() async throws {
+        try requireColdComparison()
+        try await runAxumOfflineProbe(cold: true)
+    }
+
+    private func runAxumOfflineProbe(cold: Bool) async throws {
         try await runOfflineWebFixture(name: "offline-axum-router", dependencies: """
         axum = { version = "=0.8.9", default-features = false }
         tower = { version = "=0.5.2", default-features = false, features = ["util"] }
@@ -193,11 +202,12 @@ final class BundledCompilerGateTests: XCTestCase {
                 println!("offline axum route: ok");
             });
         }
-        """, expected: "offline axum route: ok")
+        """, expected: "offline axum route: ok", cold: cold)
     }
 
     private func runOfflineWebFixture(
-        name: String, dependencies: String, source: String, expected: String
+        name: String, dependencies: String, source: String, expected: String,
+        cold: Bool = false
     ) async throws {
         let manifest = """
         [package]
@@ -209,16 +219,27 @@ final class BundledCompilerGateTests: XCTestCase {
         """
         let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
         XCTAssertTrue(snapshot.blockingPackages.isEmpty, snapshot.blockingPackages.description)
+        try await CargoPackageManager().pinForOffline(snapshot.packages)
         let lock = try XCTUnwrap(snapshot.lockfile)
         let frozen = try await CargoPackageManager().prepare(
             manifestSource: manifest, lockfileSource: lock, mode: .frozen)
         XCTAssertTrue(frozen.isOfflinePinned)
-        let result = await WasmRustCompiler(bundle: .main).run(
+        let artifacts = cold ? FileManager.default.temporaryDirectory
+            .appending(path: "ColdWebArtifacts-\(UUID())", directoryHint: .isDirectory) : nil
+        defer { if let artifacts { try? FileManager.default.removeItem(at: artifacts) } }
+        print("OFFLINE WEB PROFILE", name, "cold", cold, "packages", frozen.packages.count)
+        print("OFFLINE WEB THERMAL BEGIN", ProcessInfo.processInfo.thermalState.rawValue)
+        let result = try await measuredCompiler(dependencyArtifactRoot: artifacts).run(
             source: "// fresh web fixture \(UUID())\n" + source,
             sourcePath: "src/main.rs", supportingFiles: ["Cargo.toml": manifest, "Cargo.lock": lock],
             edition: "2021", plan: frozen.plan,
-            onDependencyProgress: { progress in print("OFFLINE UNIT", Date(), progress) },
+            onDependencyProgress: { progress in
+                print("OFFLINE UNIT", Date(), progress)
+                if cold { XCTAssertFalse(progress.wasCached, "Cold web gate reused a dependency artifact") }
+            },
             onStage: { stage in print("OFFLINE STAGE", Date(), stage); XCTAssertFalse(Thread.isMainThread, "Compiler work reached the UI thread") })
+        print("OFFLINE WEB COMPILER DURATION", name, result.duration)
+        print("OFFLINE WEB THERMAL END", ProcessInfo.processInfo.thermalState.rawValue)
         XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
         XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), expected)
     }
