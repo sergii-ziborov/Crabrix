@@ -59,6 +59,19 @@
   "allSampleRlibsIdentical": true,
   "limitations": [
     "No stable host wall-time gain established.",
-    "No physical iPhone measurement of this transformed artifact yet."
-  ]
+    "The transformed artifact did not improve the measured physical time."
+  ],
+  "physicalGate": {
+    "status": "passed, not selected for speed",
+    "compilerSeconds": 35.571035625,
+    "referenceRawCompilerSeconds": 32.1528055,
+    "runtimeRevision": "83406c207636837ad15f4eac9365eb9b0514b0b4",
+    "device": "iPhone 13 mini / iOS 26.5",
+    "thermalBegin": "nominal",
+    "thermalEnd": "fair",
+    "allDependenciesAssertedUncached": true,
+    "expectedOutputVerified": true,
+    "signedSysrootSmoke": "passed on phone and simulator",
+    "resultBundle": "build/compiler-optimization-20261024/sampled-cancellation-device.xcresult"
+  }
 }

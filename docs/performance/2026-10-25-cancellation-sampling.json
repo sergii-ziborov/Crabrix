@@ -60,11 +60,61 @@
     ]
   },
   "arm64AssemblyFinding": "unsampled checkpoints branch around Swift retain/release/exclusivity calls; interval remains 64",
-  "physicalGate": "prepared; separate measurement pending",
+  "physicalGate": {
+    "status": "passed",
+    "passedTests": 8,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "device": "iPhone 13 mini",
+    "osVersion": "26.5",
+    "osBuild": "23F77",
+    "configuration": "Release optimized app/VM; unoptimized test driver",
+    "resultBundle": "build/compiler-optimization-20261024/sampled-cancellation-device.xcresult",
+    "snapshotSourceRevision": "61a3f6fb63594cf9adce596b19d7249f6453db3c",
+    "coldDependencies": [
+      "bytes 1.12.1",
+      "pin-project-lite 0.2.17",
+      "tokio 1.54.1"
+    ],
+    "allDependenciesAssertedUncached": true,
+    "resolution": "frozen offline after pinned source preparation",
+    "sourcePreparationInTimer": false,
+    "samples": [
+      {
+        "compiler": "rebuilt thin-LTO",
+        "compilerSHA256": "0900e146ea3d54efb021a79165b2439d28ad67bd296a5075c4d915f6ddb353ac",
+        "compilerSeconds": 32.1528055,
+        "testSeconds": 35.511,
+        "thermalBegin": "nominal",
+        "thermalEnd": "nominal",
+        "outputVerified": "tokio offline: 42"
+      },
+      {
+        "compiler": "rebuilt thin-LTO + Binaryen O2",
+        "compilerSHA256": "c536ce70d4487ec08af4de4849f24456611e28d61ee1468438a8ddbcde35d45f",
+        "compilerSeconds": 35.571035625,
+        "testSeconds": 39.779,
+        "thermalBegin": "nominal",
+        "thermalEnd": "fair",
+        "outputVerified": "tokio offline: 42"
+      }
+    ],
+    "responsiveness": {
+      "compilerSeconds": 1.212889583,
+      "maxMainActorGapSeconds": 0.053488042,
+      "coverage": "entire compilation",
+      "passed": true
+    },
+    "webGeneratorCompilerSeconds": 1.234859292,
+    "cancelTestSeconds": 0.294,
+    "userProgramMemoryLimit": "64 MiB enforced",
+    "smokeGates": "Both raw and transformed compilers passed compile/execute/i128/E0502 with signed target sysroot"
+  },
   "limitations": [
-    "Not a large Kameo measurement.",
-    "Host timing affected by concurrent builds.",
-    "No physical speed claim for this runtime revision yet."
+    "Selected smaller Tokio feature set, not the large Kameo workload.",
+    "Single samples, with thermal conditions recorded.",
+    "No 30-second acceptance target met.",
+    "Transformed compiler did not improve device time and is not selected for speed."
   ],
   "originalCLISHA256": "6a2c0e784338ed22b52d7451f082b69bf019c870cab0ff891bc70a3591acf891",
   "newCLISHA256": "68eea9bc596768b6c257ab2dcc959ff87813b2886ba7a19a96fb124d55c50f8f"

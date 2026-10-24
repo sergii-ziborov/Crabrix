@@ -1,6 +1,6 @@
 # Compiler performance investigation — October 24, 2026
 
-This is research after the shipped 1.1.2 (75) feature release. The release app remains on runtime `0689cc5`; the `codex/compiler-speed-20261024` branch tests `c462814` with an explicitly injected experimental dispatcher. Production construction still uses token dispatch. Native layout rules are unchanged.
+This is research after the shipped 1.1.2 (75) feature release. The release app remains on runtime `0689cc5`; the `codex/compiler-speed-20261024` branch initially tested `c462814`, then sampled-cancellation runtime `83406c2`, with an explicitly injected experimental dispatcher. Production construction still uses token dispatch. Native layout rules are unchanged.
 
 ## Physical baseline
 
@@ -190,8 +190,19 @@ exact fuel-accounting checks, memory/fuel traps, recovery and host-installed
 cancellation before the next loop-body write. Four matched `bytes` builds
 produced identical rlibs. Old direct runtime wall times were 16.818/33.250 s;
 new runtime 13.101/12.541 s, while other native builds were running. These are
-host observations, with the CLI's nil probe; the app's real cancellation probe
-and new physical speed still require the separately prepared device gate.
+host observations, with the CLI's nil probe. The subsequent physical gate used
+the app's real cancellation probe and passed **8/8 tests**, with no skips.
+Fresh cold Tokio compilation took **32.153 s** with the raw rebuilt compiler
+(nominal thermal state at both ends), compared with the preceding 36.680 s
+repeat on the old runtime. Both runs verified output and rejected all dependency
+cache hits. The Binaryen-transformed compiler took **35.571 s**, ending in fair
+thermal state; it is not selected as a demonstrated speed improvement.
+
+The whole-compilation main-actor heartbeat's largest gap was **53.49 ms**, the
+web generator completed in **1.235 s**, Stop passed in **0.294 s**, and the
+64 MiB user-program memory limit was enforced. Both compiler variants passed
+the signed-sysroot, execution, wide-integer and E0502 smoke gate on the phone.
+The large Kameo and 30-second acceptance targets remain unmet.
 See [the complete sampling evidence](performance/2026-10-25-cancellation-sampling.json).
 
 ## Upstream audit
