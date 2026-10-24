@@ -24,6 +24,18 @@ Binaryen 133 completed a bounded local-pass rewrite (`optimize-instructions`, `s
 
 Four complete `bytes` builds produced the same rlib SHA256 with original and transformed compilers. Host wall times varied substantially under other native build activity; an owned native compiler was briefly paused during the third sample and resumed. These observations cannot establish a reproducible speedup. Much of the file-size saving is debug information which the production parser already discards. The transformed compiler has not replaced the signed production artifact.
 
+A subsequent bounded Binaryen `-O2` pass completed in 167.65 seconds with
+2.17 GB peak observed RSS. Its 74,407,134-byte candidate has SHA256
+`40da31c069c57c2d69a3d35575699b173364650881258594166820226bb0d6ff`.
+Four matched `bytes` compilations produced identical rlibs. Metered guest work
+fell by **8.684%**, but host wall times did not demonstrate a speedup: original
+17.637/15.324 s, candidate 18.475/16.370 s. This remains an experiment; see the
+[complete samples](performance/2026-10-24-binaryen-o2.json).
+
+A separate `-Ccodegen-units=1` probe reduced metered `bytes` work by only about
+0.1%; a single faster wall time is insufficient evidence for changing this
+flag. Production invocation flags are unchanged by these probes.
+
 ## Incremental compilation blocker
 
 Invoking the bundled compiler with a private `-Cincremental` directory fails before compilation: **“file locks not supported on this platform.”** It then exits through the compiler's fatal-abort path. Supporting a persistent incremental cache requires real locking/lifetime and invalidation behavior in the WASI host/compiler contract. Silently bypassing locks or declaring a cache hit to be a fresh compilation would not address the requested target.
@@ -78,3 +90,18 @@ the Kameo workload, and not a controlled attribution between QoS and dispatch.
 Manual Cloud run 76 reached bootstrap and failed because cross-target std may
 not be compiled by stage0. The recipe now requests stage2, building a same-source
 native stage1 first. No local-rebuild or compatibility check was bypassed.
+
+The next physical comparison allocates a fresh dependency-artifact directory
+for **each** token/direct run and asserts that no dependency is cached. Source
+archives remain pinned and resolution is frozen. The real app cache is retained.
+The same test session holds the phone awake across both runs; network preparation
+is outside the measured compiler duration. This gate is prepared, not yet a
+completed cold-graph measurement.
+
+## Upstream audit
+
+The upstream `riw-wasm20` head was checked on October 24:
+`cc6954e02cb99b83a66805a51717c6920915113a` is one commit ahead of the pinned
+`abc48c0b8ab`, changing only `compiler/rustc_codegen_cranelift/clif2wasm/README.md`.
+There is no functional compiler update to import from that branch. The pinned
+source and four existing arithmetic/ABI patches remain the controlled input.

@@ -1,0 +1,69 @@
+{
+  "date": "2026-10-24",
+  "host": "arm64 macOS, concurrent desktop activity",
+  "binaryenVersion": 133,
+  "candidate": true,
+  "productionReplacement": false,
+  "pipeline": [
+    {
+      "passes": [
+        "optimize-instructions",
+        "simplify-locals-nonesting",
+        "vacuum",
+        "strip-debug"
+      ],
+      "outputSHA256": "e5d7d53561a923c9d72da93e5ab0474e91ed567355663d2d73aba988d4f85f2b"
+    },
+    {
+      "passes": [
+        "-O2"
+      ],
+      "outputSHA256": "40da31c069c57c2d69a3d35575699b173364650881258594166820226bb0d6ff",
+      "bytes": 74407134,
+      "buildSeconds": 167.65147929196246
+    }
+  ],
+  "workload": "bytes 1.12.1, std/default, opt-level=0, one fixed output path",
+  "dispatch": "token",
+  "fuelBudget": 300000000000,
+  "samples": [
+    {
+      "variant": "original",
+      "elapsedSeconds": 17.637369707925245,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 2363817984,
+      "stopped": null,
+      "fuelConsumed": 24237831533,
+      "outputSHA256": "d31953ab505d06e91d94bd3c7a1765ac6231472233e3740f34777375139743be"
+    },
+    {
+      "variant": "o2",
+      "elapsedSeconds": 18.4754462079145,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 2308882432,
+      "stopped": null,
+      "fuelConsumed": 22133486114,
+      "outputSHA256": "d31953ab505d06e91d94bd3c7a1765ac6231472233e3740f34777375139743be"
+    },
+    {
+      "variant": "o2",
+      "elapsedSeconds": 16.36978791700676,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 2021195776,
+      "stopped": null,
+      "fuelConsumed": 22133452865,
+      "outputSHA256": "d31953ab505d06e91d94bd3c7a1765ac6231472233e3740f34777375139743be"
+    },
+    {
+      "variant": "original",
+      "elapsedSeconds": 15.323712083045393,
+      "exitCode": 0,
+      "peakObservedRSSBytes": 2147598336,
+      "stopped": null,
+      "fuelConsumed": 24238602222,
+      "outputSHA256": "d31953ab505d06e91d94bd3c7a1765ac6231472233e3740f34777375139743be"
+    }
+  ],
+  "fuelReductionPercent": 8.683590045577184,
+  "conclusion": "All four completed rlibs have identical SHA-256. Lower metered guest work did not produce a demonstrated host wall-clock speedup; no device claim."
+}
