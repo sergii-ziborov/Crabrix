@@ -32,3 +32,11 @@ the bridge and executing real macros remain unimplemented.
 [Machine-readable evidence](../../performance/2026-10-25-proc-macro-prerequisites.json)
 records hashes, source identities and the failed macro compilation. Kameo's
 unchanged 32-package graph remains the separate large-project gate.
+
+A separate custom-target probe relaxed `only-cdylib` in a scratch target JSON.
+The compiler correctly rejected the existing libraries with E0461 because the
+custom-target metadata does not match the signed sysroot. Target validation
+was retained. A supported compiler-level macro mode and a matching toolchain
+are required; a target-JSON switch alone does not provide macro execution.
+All library prerequisite timings above are macOS/WasmKit CLI observations,
+not iPhone performance results.

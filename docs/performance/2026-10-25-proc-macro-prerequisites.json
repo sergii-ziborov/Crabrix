@@ -44,5 +44,17 @@
     "outsideBridgeOnly": true,
     "runExitCode": 0,
     "stdout": "proc_macro outside bridge: false"
+  },
+  "host": "arm64 macOS WasmKit CLI; not an iPhone benchmark",
+  "customTargetProbe": {
+    "status": "research; no macro execution claimed",
+    "exitCode": 1,
+    "seconds": 3.119810832897201,
+    "changedTargetField": "only-cdylib=false",
+    "outputExists": false,
+    "diagnostics": [
+      "E0461: std, proc_macro and compiler_builtins do not match the altered custom-target metadata"
+    ],
+    "signedSysrootValidationRetained": true
   }
 }
