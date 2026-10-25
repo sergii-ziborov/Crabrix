@@ -14,12 +14,12 @@ const types = new Set([
   "i128", "isize", "str", "u8", "u16", "u32", "u64", "u128", "usize",
 ]);
 
-const tokens = /\/\/[^\n]*|\/\*[\s\S]*?\*\/|#\[[^\]\n]*\]|r#{0,3}"[\s\S]*?"#{0,3}|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])'|'[A-Za-z_]\w*|\b[A-Za-z_]\w*!|\b\d[\d_]*(?:\.\d[\d_]*)?\b|\b[A-Za-z_]\w*\b/g;
+const tokens = /\/\/[^\n]*|\/\*[\s\S]*?\*\/|#\[[^\]\n]*\]|(?:br|cr|r)(#{0,255})"[\s\S]*?"\1|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])'|'[A-Za-z_]\w*|\b[A-Za-z_]\w*!|\b\d[\d_]*(?:\.\d[\d_]*)?\b|\b[A-Za-z_]\w*\b/g;
 
 function kind(token: string): string | undefined {
   if (token.startsWith("//") || token.startsWith("/*")) return "comment";
   if (token.startsWith("#[")) return "attribute";
-  if (token.startsWith('"') || token.startsWith('r"') || /^r#+"/.test(token) || /^'(?:\\.|[^'\\])'$/.test(token)) return "string";
+  if (token.startsWith('"') || /^(?:br|cr|r)#{0,255}"/.test(token) || /^'(?:\\.|[^'\\])'$/.test(token)) return "string";
   if (token.startsWith("'")) return "lifetime";
   if (token.endsWith("!")) return "macro";
   if (/^\d/.test(token)) return "number";
