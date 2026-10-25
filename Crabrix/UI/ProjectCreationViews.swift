@@ -154,10 +154,8 @@ struct NewProjectSheet: View {
             .background(CrabrixTheme.background.ignoresSafeArea())
             .foregroundStyle(CrabrixTheme.primary)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
+                CrabrixModalCloseAction(label: "Close new project") { dismiss() }
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         UIApplication.shared.sendAction(
                             #selector(UIResponder.resignFirstResponder),
@@ -217,10 +215,8 @@ struct NewProjectItemSheet: View {
             .background(CrabrixTheme.background.ignoresSafeArea())
             .foregroundStyle(CrabrixTheme.primary)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
+                CrabrixModalCloseAction(label: "Close new file or folder") { dismiss() }
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         UIApplication.shared.sendAction(
                             #selector(UIResponder.resignFirstResponder),

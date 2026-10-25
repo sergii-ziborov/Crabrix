@@ -377,9 +377,7 @@ struct ProjectPackageStorageSheet: View {
             .navigationTitle("Package storage")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
+                CrabrixModalCloseAction(label: "Close package storage") { dismiss() }
             }
         }
         .task { await onRefreshStorage() }

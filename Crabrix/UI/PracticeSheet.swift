@@ -74,9 +74,7 @@ struct PracticeSheet: View {
             .background(CrabrixTheme.panel.ignoresSafeArea())
             .foregroundStyle(CrabrixTheme.primary)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
+                CrabrixModalCloseAction(label: "Close practice") { dismiss() }
             }
         }
     }

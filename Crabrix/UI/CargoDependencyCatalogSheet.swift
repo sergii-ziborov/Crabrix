@@ -30,10 +30,8 @@ struct CargoDependencyCatalogSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $model.query, prompt: "Search crates.io")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .primaryAction) { sortMenu }
+                ToolbarItem(placement: .topBarLeading) { sortMenu }
+                CrabrixModalCloseAction(label: "Close Cargo packages") { dismiss() }
             }
             .navigationDestination(for: CrateSearchResult.self) { crate in
                 CratePackageView(crate: crate) { version in

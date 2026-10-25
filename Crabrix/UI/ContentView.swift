@@ -357,7 +357,9 @@ struct ContentView: View {
                 }
                 .background(CrabrixTheme.background)
                 .navigationTitle("Compiler help")
-                .toolbar { Button("Done") { isDiagnosticHelpPresented = false } }
+                .toolbar {
+                    CrabrixModalCloseAction(label: "Close compiler help") { isDiagnosticHelpPresented = false }
+                }
             }
         }
         .sheet(isPresented: $model.isPracticePresented) {
@@ -1802,9 +1804,7 @@ private struct GitHubImportSheet: View {
             .background(CrabrixTheme.background.ignoresSafeArea())
             .foregroundStyle(CrabrixTheme.primary)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
+                CrabrixModalCloseAction(label: "Close GitHub import") { dismiss() }
             }
         }
     }

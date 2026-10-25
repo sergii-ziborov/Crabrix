@@ -509,9 +509,7 @@ private struct GameCenterEntrySheet: View {
                         }
                     }
                     .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Close") { dismiss() }
-                        }
+                        CrabrixModalCloseAction(label: "Close Game Center") { dismiss() }
                     }
                 }
             }

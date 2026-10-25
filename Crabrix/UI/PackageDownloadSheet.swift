@@ -50,7 +50,7 @@ struct PackageDownloadSheet: View {
             .navigationTitle("Preparing packages")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) { Button("Close") { dismiss() } }
+                CrabrixModalCloseAction(label: "Close package downloads") { dismiss() }
             }
         }
         .presentationDetents([.medium, .large])

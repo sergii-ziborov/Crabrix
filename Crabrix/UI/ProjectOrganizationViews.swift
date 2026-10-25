@@ -181,11 +181,8 @@ struct ProjectOrganizerSheet: View {
             .navigationTitle(draft.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(isSaving ? "Saving…" : "Save") {
+                ToolbarItem(placement: .topBarLeading) {
+                    CrabrixModalSaveButton(isSaving: isSaving) {
                         save()
                     }
                     .disabled(
@@ -195,6 +192,7 @@ struct ProjectOrganizerSheet: View {
                                 .isEmpty
                     )
                 }
+                CrabrixModalCloseAction(label: "Close project details", isDisabled: isSaving) { dismiss() }
             }
         }
     }
@@ -281,20 +279,10 @@ struct ProjectActionsSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button(isSaving ? "Saving…" : "Save") { saveDetails() }
-                        .buttonStyle(.borderedProminent)
-                        .tint(CrabrixTheme.blue)
-                        .foregroundStyle(Color.black)
+                    CrabrixModalSaveButton(isSaving: isSaving) { saveDetails() }
                         .disabled(isSaving || draft.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Close", systemImage: "xmark") { dismiss() }
-                        .labelStyle(.iconOnly)
-                        .buttonStyle(.bordered)
-                        .tint(CrabrixTheme.muted)
-                        .accessibilityLabel("Close project settings")
-                        .disabled(isSaving)
-                }
+                CrabrixModalCloseAction(label: "Close project settings", isDisabled: isSaving) { dismiss() }
             }
             .alert("Could not save project details", isPresented: $saveFailed) {
                 Button("OK", role: .cancel) {}

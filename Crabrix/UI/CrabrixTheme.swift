@@ -174,6 +174,37 @@ extension View {
     }
 }
 
+/// Use the system toolbar background once; adding a bordered button inside it
+/// creates a second rim on current iOS versions.
+struct CrabrixModalCloseAction: ToolbarContent {
+    var label = "Close"
+    var isDisabled = false
+    let action: () -> Void
+
+    var body: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button(label, systemImage: "xmark", action: action)
+                .labelStyle(.iconOnly)
+                .buttonStyle(.plain)
+                .foregroundStyle(CrabrixTheme.primary)
+                .accessibilityLabel(label)
+                .disabled(isDisabled)
+        }
+    }
+}
+
+struct CrabrixModalSaveButton: View {
+    var isSaving = false
+    let action: () -> Void
+
+    var body: some View {
+        Button(isSaving ? "Saving…" : "Save", action: action)
+            .buttonStyle(.borderedProminent)
+            .tint(CrabrixTheme.blue)
+            .foregroundStyle(Color.black)
+    }
+}
+
 struct CrabrixCardShape: Shape {
     let cornerRadius: CGFloat
 
