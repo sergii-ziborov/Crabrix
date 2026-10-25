@@ -1,0 +1,85 @@
+{
+  "observedAtUTC": "2026-10-25T22:23:41.625135+00:00",
+  "status": "actual-iphoneos-static-candidate-built",
+  "candidate": true,
+  "productionReplacement": false,
+  "compilerWASMSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+  "target": "arm64-apple-ios18.0",
+  "sdk": "iphoneos",
+  "sdkPath": "/Applications/Xcode-27.1-RC.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk",
+  "clangVersion": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin27.2.0\nThread model: posix\nInstalledDir: /Applications/Xcode-27.1-RC.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin\n",
+  "optimization": "O1, original full stack probes at function entries and backward edges",
+  "sourceArchiveSHA256": "6a28c35e6f70a1cf2ba422ec68ae5bbe8abd5b550523c502f3e52c3e5d0bc760",
+  "nativeLibrary": {
+    "sha256": "55cee47f66a399abf2988e621ad9576456edac0d9c4fe887d220666ba145159e",
+    "bytes": 496663824,
+    "path": "build/compiler-optimization-20261024/native-atomic-corrected-iphoneos/libCrabrixNativeCompiler.a"
+  },
+  "nativePackage": {
+    "sha256": "fbb271acfbbafbbe5bdb1841e798d929b953c0339f4d04db07cac5aea29999a1",
+    "bytes": 121276613,
+    "path": "build/compiler-optimization-20261024/native-atomic-corrected-iphoneos-arm64.zip"
+  },
+  "sourceProvenanceSHA256": "a7e97cf142fddc93435c1a3d9ae1a6a864858d0ad8cf44bf9bc442a7a6845422",
+  "flags": [
+    "-target",
+    "arm64-apple-ios18.0",
+    "-isysroot",
+    "/Applications/Xcode-27.1-RC.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.1.sdk",
+    "-I",
+    "/Users/serhiirihgt/dev/crabrix-poc/build/compiler-optimization-20261024/native-atomic89-backedges-source",
+    "-O1",
+    "-g0",
+    "-DNDEBUG=1",
+    "-fno-optimize-sibling-calls",
+    "-fno-omit-frame-pointer",
+    "-frounding-math",
+    "-DWASM_RT_USE_MMAP=1",
+    "-DWASM_RT_MEMCHECK_GUARD_PAGES=0",
+    "-DWASM_RT_MEMCHECK_BOUNDS_CHECK=1",
+    "-DWASM_RT_INSTALL_SIGNAL_HANDLER=0",
+    "-DWASM_RT_STACK_DEPTH_COUNT=1",
+    "-DWASM_RT_MAX_CALL_STACK_DEPTH=4096",
+    "-DWASM_RT_TRAP_HANDLER=crabrix_native_trap",
+    "-DWASM_RT_USE_LOCAL_MEMORY_BASE_SIZE=0",
+    "-Wframe-larger-than=131072",
+    "-Werror=frame-larger-than",
+    "-fno-unwind-tables",
+    "-fno-asynchronous-unwind-tables"
+  ],
+  "objectCount": 68,
+  "compileHelperSHA256": "de32f17a92ac9ac56fa7399f8c5c3b22ae11e58bbfa5205c79a40f6d3d2ab80a",
+  "nativeCompileWallSeconds": 1186.744347083848,
+  "noteOnBuildTime": "This is Mac SDK time spent compiling the compiler itself, not an iPhone or Rust project runtime.",
+  "qualification": {
+    "actualIOSObjects": true,
+    "simulatorObjectsRelabelled": false,
+    "nativeABIExportsChecked": true,
+    "packageCRCAndSHA256Checked": true,
+    "physicalDeviceExecution": false,
+    "physicalIPhonePerformanceEstablished": false,
+    "productionSigningOrDescriptorChanged": false,
+    "selectedAppStoreAndTestFlightBuild": "1.1.2 (93), experimental compiler not bundled"
+  },
+  "simulatorEvidence": {
+    "originalKernelTenFunctionalGates": "2026-10-25-atomic-native-simulator.json",
+    "latestMatchingSourceControlsAndExperiments": "2026-10-26-native-entry-stack-simulator.json",
+    "observedOriginalKernelColdKameoSeconds": [
+      40.43648375,
+      31.101014459,
+      19.479560583
+    ],
+    "scope": "Shared-Mac simulator observations; 31 dependencies and unchanged full fixture; package preparation excluded from compile/run timing."
+  },
+  "limits": {
+    "linearMemoryBytes": 2147483648,
+    "nativeFrameMaximumBytes": 131072,
+    "stackGuardMarginBytes": 524288,
+    "pollIntervalCheckpoints": 128
+  },
+  "evidence": {
+    "compileProvenance": "build/compiler-optimization-20261024/native-atomic-corrected-iphoneos/native-compile-provenance.json",
+    "packageProvenance": "build/compiler-optimization-20261024/native-atomic-corrected-iphoneos-package.json",
+    "sourceArchive": "build/compiler-optimization-20261024/native-atomic-corrected-backedges-source.zip"
+  }
+}

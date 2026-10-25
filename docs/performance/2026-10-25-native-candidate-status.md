@@ -136,3 +136,19 @@ A real `iphoneos` arm64 archive of the selected original kernel is now being
 compiled separately; simulator objects are never relabelled for device use.
 Production signing and build 93 remain unchanged.
 [Exact comparison](2026-10-26-native-entry-stack-simulator.json).
+
+## Selected guarded kernel: actual iOS archive built
+
+The selected original O1 kernel completed a separate real `iphoneos` SDK build
+for `arm64-apple-ios18.0`, preserving its full function/backedge stack probes,
+work charging, Stop polling, explicit memory bounds and 2 GiB ceiling. All 68
+objects were compiled for iOS; the archive was not made from simulator objects.
+The helper checked native ABI exports and package platform records. The final
+package passed CRC and SHA-256 checks and retains its original source/build
+provenance. This cross-build required no phone connection and does not establish
+physical-iPhone execution or performance. No production signing, descriptor or
+TestFlight/App Review selection was changed by it.
+
+Native library SHA-256: `55cee47f66a399abf2988e621ad9576456edac0d9c4fe887d220666ba145159e`.
+Package SHA-256: `fbb271acfbbafbbe5bdb1841e798d929b953c0339f4d04db07cac5aea29999a1`.
+[Exact iOS artifact record](2026-10-26-native-iphoneos-candidate.json).

@@ -20,3 +20,5 @@ The optimized simulator app build passed with SDK 27.1 RC. Native visual
 inspection was unavailable while the Mac was locked; no screenshot-based
 verification is claimed. Existing editor controls, Duo fold sizing, build tabs,
 keyboard helpers, compiler/runtime settings and website sources were unchanged.
+
+A follow-up visual attempt on October 26 reached the Xcode 27.1 RC Device Hub application, but the native UI tool could not read its window (AX cannot complete). No visual success is inferred from that attempt; source/build verification and the delivered build 93 status remain as recorded above.
