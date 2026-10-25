@@ -1,0 +1,46 @@
+{
+  "status": "experimental; real Rust macro consumers pending",
+  "appSourceRevision": "23143ac",
+  "runtimeRevision": "7d0f6718597c1a1228efca3591ae91d13c6d569b",
+  "rustSourceRevision": "e602f5297140aa0a34dfc0cc1597e06928bb5d2f",
+  "toolchainRecipeRevision": "f3846507f148896b27f33ad4e773321038c78769",
+  "hostTransportGate": {
+    "passed": 8,
+    "failed": 0,
+    "seconds": 0.039,
+    "coverage": [
+      "parent-child-parent RPC",
+      "shared fuel exhaustion",
+      "recursive expansion uses separate TLS store",
+      "pointer and message bounds",
+      "cancellation and OOB direct-path gates"
+    ]
+  },
+  "appIntegrationGate": {
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "configuration": "Release arm64 Simulator iOS 26.5, SDK 27.1",
+    "resultBundle": "build/compiler-optimization-20261024/macro-integration-simulator-r2.xcresult",
+    "coverage": [
+      "declared artifact and symlink admission",
+      "Check requires linked macro and support artifacts",
+      "std-only build script inputs",
+      "Rust-generated HTML/CSS/JavaScript",
+      "actual WebKit counter, CSS and blocked external fetch",
+      "web syntax and snapshot budgets"
+    ]
+  },
+  "compilerBuild": {
+    "manualCloudRun": 80,
+    "compilerSourceBuild": "success",
+    "compilerSHA256": "93d1f21ec5d4bb553f04be27b1ae4373472462cdb31702f2ccc568c311f5d437",
+    "compilerBytes": 79077873,
+    "workflow": "failed after compiler build: bootstrap restored an outdated dependency pin; no test-product artifact recovered"
+  },
+  "productionCapabilityEnabled": false,
+  "limitations": [
+    "Host transport and app admission are not proof that a real Rust procedural macro or derive works.",
+    "The unchanged Kameo graph, large-project 30-second objective and production toolchain promotion remain pending."
+  ]
+}

@@ -1,6 +1,16 @@
 # Runtime integration
 
-The public [CrabrixRuntime fork](https://github.com/sergii-ziborov/crabrix-runtime) keeps WasmKit upstream history and notices. Its base is WasmKit 0.4.1 at `a0471eaee817c523b8023d8ebb1c70ff70b7950a`; this development app pins fork commit `0689cc5df8b5b3f81ac5e9675cc3c22fe1b614f3`. There is no second production engine in the SwiftPM graph. The old vendored source remains only as historical source in the repository and is not linked into the app target.
+## Current acceleration branch — 25 October 2026
+
+This branch pins `7d0f6718597c1a1228efca3591ae91d13c6d569b` in both resolved-file copies and the generated project. It includes immediate instruction emission and the bounded procedural-macro byte transport. The production default is still token dispatch and the signed toolchain still has no macro capability; software-direct and full-LTO compiler measurements are qualification results, not a shipped release.
+
+The corrected direct path passed physical-device fuel/Stop, OOB/memory refusal, wide-integer and borrow-checking gates. Three cold small Tokio runs took 29.78/27.88/28.54 seconds. Axum's explicit 22-dependency in-memory router profile passed in 126.29 seconds. The unchanged 32-package Kameo workload and 30-second large-project goal remain unmet. [Measurements](performance/2026-10-25-direct-emission.json), [Axum limits](performance/2026-10-25-axum.json).
+
+The RPC v1 macro prototype uses separate stores, declared read-only artifact paths, 16 MiB messages, 64 MiB per macro, at most eight resident stores, bounded recursion and a shared compiler fuel/cancellation budget. No native library is loaded. Eight host transport/safety checks and nine app integration checks passed; real unchanged macro and Serde derive consumers still require the new compiler artifact. WebKit's actual local HTML/CSS/JavaScript behavior and external-resource blocking passed again. [Bridge qualification status](performance/2026-10-25-proc-macro-bridge.json).
+
+## Earlier released runtime and measurements
+
+The public [CrabrixRuntime fork](https://github.com/sergii-ziborov/crabrix-runtime) keeps WasmKit upstream history and notices. Its base is WasmKit 0.4.1 at `a0471eaee817c523b8023d8ebb1c70ff70b7950a`; the earlier 1.1 development source pinned fork commit `0689cc5df8b5b3f81ac5e9675cc3c22fe1b614f3`. There is no second production engine in the SwiftPM graph. The old vendored source remains only as historical source in the repository and is not linked into the app target.
 
 `RustcRuntime` uses token threading, software memory bounds checks, upstream fuel metering, the fork's cancellation probe sampled once per 64 fuel checkpoints (including the first charge), and a fresh `Store` and WASI instance for each invocation. Host calls and bulk memory/table operations check directly; network socket imports return guest `ENOSYS`. Separate `CompilerHostPolicy` and user program policy set memory, table, fuel, wall-clock, and output budgets. A fuel trap maps to a typed instruction-budget stop. The compiler and program each receive a write-time WASI stdout/stderr budget (16 MiB and 1 MiB respectively). The program's writable sandbox also has a quota monitor.
 
