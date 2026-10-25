@@ -10,6 +10,11 @@
       (then (if (i32.eq (memory.grow (i32.sub (local.get $pages) (memory.size))) (i32.const -1)) (then unreachable))))
     (i32.const 0))
   (func (export "__crabrix_pm_free") (param i32 i32))
-  (export "__crabrix_pm_dispatch" (func $dispatch))
-  (export "exchange" (func $exchange))
-  (export "read_reply" (func $read)))
+  ;; Defined Wasm wrappers supply Caller.instance to the imported host calls.
+  ;; Exporting the imports directly would leave that memory context absent.
+  (func (export "__crabrix_pm_dispatch") (param i32 i32) (result i64)
+    (call $dispatch (local.get 0) (local.get 1)))
+  (func (export "exchange") (param i32 i32 i32 i32 i32 i32) (result i32)
+    (call $exchange (local.get 0) (local.get 1) (local.get 2) (local.get 3) (local.get 4) (local.get 5)))
+  (func (export "read_reply") (param i32 i32) (result i32)
+    (call $read (local.get 0) (local.get 1))))
