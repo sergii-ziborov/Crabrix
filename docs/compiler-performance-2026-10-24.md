@@ -1,6 +1,6 @@
 # Compiler performance investigation — October 24, 2026
 
-This is research after the shipped 1.1.2 (75) feature release. The release app remains on runtime `0689cc5`; the `codex/compiler-speed-20261024` branch initially tested `c462814`, then sampled-cancellation runtime `83406c2`, with an explicitly injected experimental dispatcher. Production construction still uses token dispatch. Native layout rules are unchanged.
+This is research after the TestFlight 1.1.2 (75) feature build. Apple approved that build; it is awaiting manual App Store release. The release app remains on runtime `0689cc5`; the `codex/compiler-speed-20261024` branch initially tested `c462814`, then sampled-cancellation runtime `83406c2`, with an explicitly injected experimental dispatcher. Production construction still uses token dispatch. Native layout rules are unchanged.
 
 ## Physical baseline
 

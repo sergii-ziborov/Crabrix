@@ -3,7 +3,7 @@ import Foundation
 enum CargoResolutionMode: Sendable, Equatable {
     /// Preserve compatible pins and update only what the manifest requires.
     case normal
-    /// Require Cargo.lock and reject any graph change.
+    /// Require Cargo.lock and reject changes to pins used by the active build.
     case locked
     /// Prohibit network access and use cached index/source data only.
     case offline
@@ -238,7 +238,10 @@ struct CargoLockfile: Sendable, Equatable {
     ) throws {
         let registryEntries = entries.filter { $0.checksum != nil }
         let pinnedIDs = Set(registryEntries.map { PackageID(name: $0.name, version: $0.version) })
-        guard pinnedIDs == Set(graph.packages.keys) else {
+        // Cargo.lock includes all target platforms and optional workspace
+        // features. The WASI build uses a subset, but every selected package
+        // and parent-child edge must still be pinned by the original lockfile.
+        guard Set(graph.packages.keys).isSubset(of: pinnedIDs) else {
             throw CargoLockfileError.graphWouldChange
         }
 
@@ -252,13 +255,15 @@ struct CargoLockfile: Sendable, Equatable {
             guard entry.checksum == package.checksum.lowercased() else {
                 throw CargoLockfileError.checksumMismatch(package: id.description)
             }
-            guard dependencyIDs(from: entry) == Set(package.dependencies.values) else {
+            guard let pinnedDependencies = dependencyIDs(from: entry),
+                  Set(package.dependencies.values).isSubset(of: pinnedDependencies) else {
                 throw CargoLockfileError.graphWouldChange
             }
         }
 
         guard let root = rootEntry(name: rootName, version: rootVersion),
-              dependencyIDs(from: root) == Set(graph.rootDependencies.values)
+              let pinnedRootDependencies = dependencyIDs(from: root),
+              Set(graph.rootDependencies.values).isSubset(of: pinnedRootDependencies)
         else {
             throw CargoLockfileError.graphWouldChange
         }
@@ -269,7 +274,9 @@ struct CargoLockfile: Sendable, Equatable {
         for raw in entry.dependencies {
             guard let reference = Self.dependencyReference(raw) else { return nil }
             if let version = reference.version {
-                result.insert(PackageID(name: reference.name, version: version))
+                let id = PackageID(name: reference.name, version: version)
+                guard pin(for: id) != nil else { return nil }
+                result.insert(id)
                 continue
             }
             let candidates = entries.filter { $0.name == reference.name && $0.checksum != nil }

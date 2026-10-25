@@ -309,11 +309,19 @@ actor CargoPackageManager {
             prepared: prepared,
             plan: plan
         )
-        let lockfile = CargoLockfile(
-            graph: graph,
-            rootName: rootName,
-            rootVersion: rootVersion.description
-        ).render()
+        let lockfile: String
+        if mode.preservesPins, let parsedLockfile, let lockfileSource,
+           (try? parsedLockfile.validate(graph: graph, rootName: rootName, rootVersion: rootVersion)) != nil {
+            // Keep desktop Cargo's inactive target/feature entries and original
+            // formatting. Preparing an unchanged iPhone build must not prune it.
+            lockfile = lockfileSource
+        } else {
+            lockfile = CargoLockfile(
+                graph: graph,
+                rootName: rootName,
+                rootVersion: rootVersion.description
+            ).render()
+        }
 
         if let blocked = statuses.first(where: { $0.compatibility.isBlocking }) {
             onStage?(.failed("\(blocked.name) \(blocked.version) cannot build with this toolchain"))

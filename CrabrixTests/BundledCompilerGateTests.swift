@@ -205,6 +205,70 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "offline derive: ok")
     }
 
+    private func prepareKameoAcceptance() async throws -> (source: String, manifest: String, lock: String, plan: CargoBuildPlan) {
+        let fixture = try XCTUnwrap(Bundle(for: Self.self).resourceURL)
+            .appending(path: "CompilerCandidate/Fixtures/KameoActors")
+        let source = try String(contentsOf: fixture.appending(path: "main.rs"), encoding: .utf8)
+        let manifest = try String(contentsOf: fixture.appending(path: "Cargo.toml"), encoding: .utf8)
+        let lock = try String(contentsOf: fixture.appending(path: "Cargo.lock"), encoding: .utf8)
+        let manager = CargoPackageManager(supportsProceduralMacros: true)
+        let resolved = try await manager.prepare(manifestSource: manifest, lockfileSource: lock, mode: .locked)
+        XCTAssertEqual(resolved.lockfile, lock, "Preserve the unchanged desktop lockfile byte for byte")
+        XCTAssertTrue(resolved.blockingPackages.isEmpty, resolved.blockingPackages.description)
+        try await manager.pinForOffline(resolved.packages)
+        let frozen = try await CargoPackageManager(supportsProceduralMacros: true)
+            .prepare(manifestSource: manifest, lockfileSource: lock, mode: .frozen)
+        XCTAssertTrue(frozen.isOfflinePinned)
+        XCTAssertEqual(frozen.lockfile, lock)
+        XCTAssertEqual(frozen.packages.count + 1, 32, "Include the driver in Cargo's 32-package graph; do not substitute a smaller graph")
+        XCTAssertEqual(Set(frozen.plan.units.filter(\.isProceduralMacro).map { $0.package.description }), Set([
+            "futures-macro 0.3.34", "kameo_macros 0.21.1", "serde_derive 1.0.229",
+            "tokio-macros 2.7.2", "tracing-attributes 0.1.31"
+        ]))
+        let kameo = try XCTUnwrap(frozen.packages.first { $0.name == "kameo" })
+        XCTAssertTrue(kameo.features.contains("macros"))
+        XCTAssertTrue(kameo.features.contains("tracing"))
+        for (name, text) in [("manifest", manifest), ("lock", lock), ("source", source)] {
+            print("KAMEO FIXTURE SHA256", name, SHA256.hash(data: Data(text.utf8)).map { String(format: "%02x", $0) }.joined())
+        }
+        return (source, manifest, lock, frozen.plan)
+    }
+
+    func testUnchangedKameoGraphPreparesWithAllFiveMacroCrates() async throws {
+        try requireProcMacroBridge()
+        _ = try await prepareKameoAcceptance()
+    }
+
+    func testUnchangedKameoColdActorsAndChangedRootRunOffline() async throws {
+        try requireProcMacroBridge()
+        try requireColdComparison()
+        let fixture = try await prepareKameoAcceptance()
+        let artifacts = FileManager.default.temporaryDirectory.appending(path: "KameoColdArtifacts-\(UUID())")
+        defer { try? FileManager.default.removeItem(at: artifacts) }
+        let compiler = try measuredCompiler(dependencyArtifactRoot: artifacts, experimentalDirectOverride: true,
+                                            candidateProfileOverride: true, candidateArtifactName: "ArtifactMacro")
+        print("KAMEO COLD THERMAL BEGIN", ProcessInfo.processInfo.thermalState.rawValue)
+        let cold = await compiler.run(source: fixture.source, sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": fixture.manifest, "Cargo.lock": fixture.lock], edition: "2024", plan: fixture.plan,
+            onDependencyProgress: { progress in print("KAMEO COLD UNIT", progress); XCTAssertFalse(progress.wasCached) },
+            onStage: { print("KAMEO COLD STAGE", Date(), $0) })
+        print("KAMEO COLD DURATION", cold.duration)
+        print("KAMEO COLD THERMAL END", ProcessInfo.processInfo.thermalState.rawValue)
+        XCTAssertTrue(cold.succeeded, cold.detail + "\n" + cold.stderr)
+        XCTAssertEqual(cold.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "kameo offline: actors=16 records=1024 sum=523776")
+        guard cold.succeeded else { return }
+        print("KAMEO CHANGED ROOT THERMAL BEGIN", ProcessInfo.processInfo.thermalState.rawValue)
+        let changed = await compiler.run(source: "// changed root \(UUID())\n" + fixture.source, sourcePath: "src/main.rs",
+            supportingFiles: ["Cargo.toml": fixture.manifest, "Cargo.lock": fixture.lock], edition: "2024", plan: fixture.plan,
+            onDependencyProgress: { progress in print("KAMEO CHANGED ROOT UNIT", progress); XCTAssertTrue(progress.wasCached) })
+        print("KAMEO CHANGED ROOT DURATION", changed.duration)
+        print("KAMEO CHANGED ROOT THERMAL END", ProcessInfo.processInfo.thermalState.rawValue)
+        XCTAssertTrue(changed.succeeded, changed.detail + "\n" + changed.stderr)
+        XCTAssertEqual(changed.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "kameo offline: actors=16 records=1024 sum=523776")
+        // Record real timings even above the requested goal. Functional success
+        // does not imply the separate 30-second physical performance gate passed.
+    }
+
     override func setUp() async throws {
         try await super.setUp()
         #if !targetEnvironment(simulator)

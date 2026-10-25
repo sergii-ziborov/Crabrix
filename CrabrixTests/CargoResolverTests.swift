@@ -731,6 +731,74 @@ final class CargoResolverTests: XCTestCase {
         XCTAssertEqual(graph.rootDependencies["alpha"]?.version.description, "1.0.0")
     }
 
+    func testLockedAndFrozenAcceptDesktopTargetAndOptionalLockSupersets() async throws {
+        let alpha = try SparseRegistryIndex.parse(Data(indexLine("alpha", "1.0.0", deps: "[\(dep("desktop", "1", target: "cfg(windows)")),\(dep("optional", "1", optional: true))]").utf8), name: "alpha")
+        let root = try manifest("[dependencies]\nalpha = \"1\"")
+        let checksum = String(repeating: "a", count: 64)
+        let lock = CargoLockfile(entries: [
+            .init(name: "root", version: SemanticVersion("0.1.0")!, checksum: nil,
+                  dependencies: ["alpha", "desktop"]),
+            .init(name: "alpha", version: SemanticVersion("1.0.0")!, checksum: checksum,
+                  dependencies: ["desktop 1.0.0", "optional"]),
+            .init(name: "desktop", version: SemanticVersion("1.0.0")!, checksum: checksum, dependencies: []),
+            .init(name: "optional", version: SemanticVersion("1.0.0")!, checksum: checksum, dependencies: []),
+        ])
+        for mode in [CargoResolutionMode.locked, .frozen] {
+            // No index for inactive packages: WASI must not fetch them.
+            let index: any CrateIndexProviding = mode == .frozen
+                ? OfflineOnlyIndex(files: ["alpha": alpha])
+                : StubIndex(files: ["alpha": alpha])
+            let graph = try await CargoResolver(index: index).resolve(
+                rootDependencies: root.dependencies, rootFeatures: root.features,
+                lockfile: lock, mode: mode)
+            XCTAssertEqual(Set(graph.packages.keys.map(\.name)), ["alpha"])
+            XCTAssertTrue(try XCTUnwrap(graph.packages.values.first).dependencies.isEmpty)
+        }
+    }
+
+    func testLockSupersetStillRejectsMissingActiveEdgesAndWrongChecksums() async throws {
+        let index = try StubIndex.make([
+            "alpha": [indexLine("alpha", "1.0.0", deps: "[\(dep("leaf", "1"))]")],
+            "leaf": [indexLine("leaf", "1.0.0")],
+        ])
+        let root = try manifest("[dependencies]\nalpha = \"1\"")
+        let graph = try await CargoResolver(index: index).resolve(rootDependencies: root.dependencies)
+        let valid = CargoLockfile(graph: graph, rootName: "root", rootVersion: "0.1.0")
+        for (field, expected) in [
+            ("edge", CargoLockfileError.graphWouldChange),
+            ("checksum", .checksumMismatch(package: "alpha 1.0.0")),
+            ("source", .sourceMismatch(package: "alpha 1.0.0")),
+            ("dangling", .graphWouldChange),
+        ] {
+            let changed = CargoLockfile(entries: valid.entries.map { entry in
+                guard entry.name == "alpha" else { return entry }
+                return .init(name: entry.name, version: entry.version,
+                             source: field == "source" ? "registry+https://invalid.example/index" : entry.source,
+                             checksum: field == "checksum" ? String(repeating: "b", count: 64) : entry.checksum,
+                             dependencies: field == "edge" ? [] : entry.dependencies + (field == "dangling" ? ["missing 1.0.0"] : []))
+            })
+            XCTAssertThrowsError(try changed.validate(graph: graph, rootName: "root", rootVersion: SemanticVersion("0.1.0")!)) {
+                XCTAssertEqual($0 as? CargoLockfileError, expected, field)
+            }
+        }
+    }
+
+    func testLockSupersetDoesNotAuthorizeANewRootEdgeToAnExistingPin() async throws {
+        let index = try StubIndex.make([
+            "alpha": [indexLine("alpha", "1.0.0")], "leaf": [indexLine("leaf", "1.0.0")],
+        ])
+        let root = try manifest("[dependencies]\nalpha = \"1\"\nleaf = \"1\"")
+        let graph = try await CargoResolver(index: index).resolve(rootDependencies: root.dependencies)
+        let valid = CargoLockfile(graph: graph, rootName: "root", rootVersion: "0.1.0")
+        let changed = CargoLockfile(entries: valid.entries.map { entry in
+            guard entry.name == "root" else { return entry }
+            return .init(name: entry.name, version: entry.version, checksum: nil, dependencies: ["alpha 1.0.0"])
+        })
+        XCTAssertThrowsError(try changed.validate(graph: graph, rootName: "root", rootVersion: SemanticVersion("0.1.0")!)) {
+            XCTAssertEqual($0 as? CargoLockfileError, .graphWouldChange)
+        }
+    }
+
     func testOfflineResolutionNamesMissingCachedIndex() async throws {
         let root = try manifest("[dependencies]\nalpha = \"1\"")
         do {

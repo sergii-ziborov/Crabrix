@@ -1,0 +1,9 @@
+[package]
+name = "crabrix-large-tokio-benchmark"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+kameo = "=0.22.2"
+tokio = { version = "=1.54.1", default-features = false, features = ["rt", "sync", "time", "macros"] }

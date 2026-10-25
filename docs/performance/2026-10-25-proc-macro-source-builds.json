@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "status": "source builds reproduced; macro reactor compiler acceptance failed",
+  "candidate": true,
+  "productionReplacement": false,
+  "sourceRecipeCommit": "5f11926fb7bd2b20e60f4932015001081df8e57a",
+  "rustRevision": "abc48c0b8aba37d3f3862a9d5c76eb4e78f90e88",
+  "rustVersion": "1.96.0-dev",
+  "bridgePatch": {
+    "schemaVersion": 1,
+    "patch": "0005-wasi-proc-macro-bridge.candidate.patch",
+    "sha256": "c92fdbd54557ee22a251653a5d91f8b4a123b98b03289298b932a40c590f0ddf",
+    "compilerOptInEnvironment": "CRABRIX_WASM_PROC_MACROS=1"
+  },
+  "settings": {
+    "build.build": "\"aarch64-apple-darwin\"",
+    "build.host": "[\"wasm32-wasip1\"]",
+    "build.target": "[\"wasm32-wasip1\"]",
+    "build.submodules": "false",
+    "build.vendor": "false",
+    "build.extended": "false",
+    "rust.download-rustc": "false",
+    "rust.codegen-backends": "[\"llvm\",\"cranelift\"]",
+    "target.aarch64-apple-darwin.codegen-backends": "[\"llvm\"]",
+    "target.aarch64-apple-darwin.llvm-config": "\"/opt/homebrew/Cellar/llvm@22/22.1.8/bin/llvm-config\"",
+    "llvm.link-shared": "true",
+    "target.wasm32-wasip1.codegen-backends": "[\"cranelift\"]",
+    "target.wasm32-wasip1.wasi-root": "\"/Volumes/workspace/crabrix-compiler-performance/build/wasi-sdk-32.0-arm64-macos/share/wasi-sysroot\"",
+    "target.wasm32-wasip1.linker": "\"/Volumes/workspace/crabrix-compiler-performance/build/wasi-sdk-32.0-arm64-macos/bin/clang\"",
+    "llvm.download-ci-llvm": "false",
+    "rust.optimize": "true",
+    "rust.debug-assertions": "false",
+    "rust.debug-assertions-std": "false",
+    "rust.debug-assertions-tools": "false",
+    "rust.debug-logging": "false",
+    "rust.incremental": "false",
+    "rust.frame-pointers": "false",
+    "rust.lto": "fat",
+    "target.wasm32-wasip1.rustflags": "[\"-Clink-arg=-Wl,--export-if-defined=__crabrix_pm_alloc\", \"-Clink-arg=-Wl,--export-if-defined=__crabrix_pm_free\", \"-Clink-arg=-Wl,--export-if-defined=__crabrix_pm_dispatch\"]"
+  },
+  "artifacts": {
+    "compilerSHA256": "93d1f21ec5d4bb553f04be27b1ae4373472462cdb31702f2ccc568c311f5d437",
+    "compilerBytes": 79077873,
+    "sysrootArchiveSHA256": "44c0912b34520e0f85e63a8bb12e5447e83c59c9195a8bd4f7c72db2d4772842",
+    "sysrootInventorySHA256": "0349126aa9ecf80f9abf3f8a1d3c4c1266ed04d661aa38efab796c089e159da1",
+    "sysrootFileCount": 60
+  },
+  "independentBuilds": [
+    {
+      "cloudRun": 81,
+      "cloudBuildID": "0766a2bc-1365-421a-adce-3718225e3021",
+      "compilerBuildSeconds": 1110.9894858330001
+    },
+    {
+      "cloudRun": 82,
+      "cloudBuildID": "a39f2a83-3e28-4e7b-9ede-073481a27813",
+      "compilerBuildSeconds": 1121.663594125
+    }
+  ],
+  "rawCompilerMatch": true,
+  "rawSysrootArchiveMatch": true,
+  "rawInventoryMatch": true,
+  "limitations": [
+    "No procedural-macro execution or iPhone performance claim until actual compiler consumers pass.",
+    "These experiments do not replace the signed production toolchain."
+  ],
+  "acceptance": {
+    "resultBundle": "build/compiler-optimization-20261024/macro-identity-and-lock.xcresult",
+    "passedTests": 36,
+    "failedTests": 1,
+    "skippedTests": 0,
+    "kameoGraphPreflight": "passed: unchanged 32-package lock graph; five macro crates; byte-exact lockfile preserved locked/frozen",
+    "identityMacro": "failed while linking: --export __wasm_call_ctors: symbol not defined",
+    "followUpSourceFix": "7729ebabe3a",
+    "followUpRecipeCommit": "a9f1f6cb0154554645a9341ac9f0b0a20015db1e",
+    "linkerRegression": "synthesized constructor export validates; an actual C constructor executes and sets the checked value to 579"
+  }
+}
