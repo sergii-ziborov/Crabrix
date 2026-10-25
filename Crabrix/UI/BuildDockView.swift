@@ -828,6 +828,7 @@ private struct OutputStreamBlock: View {
 private struct TerminalDockContent: View {
     @ObservedObject var terminal: ProjectTerminalSession
     @State private var commandIsFocused = false
+    @State private var commandBarWidth: CGFloat = 0
     let project: CrabrixProject
     let activity: CompilerViewModel.Activity
     let canStartBuild: Bool
@@ -891,10 +892,12 @@ private struct TerminalDockContent: View {
             Divider().overlay(CrabrixTheme.border)
 
             HStack(spacing: 7) {
-                Text("\(project.name):\(terminal.promptDirectory) $")
+                Text(commandPrompt)
                     .foregroundStyle(CrabrixTheme.mint)
+                    .layoutPriority(1)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+                    .truncationMode(.middle)
+                    .fixedSize(horizontal: false, vertical: true)
                 TerminalCommandField(
                     text: $terminal.command,
                     isFocused: commandIsFocused,
@@ -902,7 +905,7 @@ private struct TerminalDockContent: View {
                     onSubmit: submit
                 )
                     .padding(.horizontal, 10)
-                    .frame(height: 34)
+                    .frame(minWidth: 140, minHeight: 34, maxHeight: 34)
                     .background(Color.black.opacity(0.22), in: RoundedRectangle(cornerRadius: 8))
                 Button {
                     terminal.recallPrevious()
@@ -930,20 +933,12 @@ private struct TerminalDockContent: View {
                         .frame(width: 24, height: 34)
                 }
                 .accessibilityLabel("Hide keyboard")
-                Button(action: submit) {
-                    Label("Run", systemImage: "return")
-                        .font(.caption.bold())
-                        .padding(.horizontal, 10)
-                        .frame(height: 34)
-                        .background(CrabrixTheme.blue.opacity(0.14), in: RoundedRectangle(cornerRadius: 8))
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(CrabrixTheme.blue)
             }
             .font(.system(size: 11, design: .monospaced))
             .padding(.horizontal, 12)
             .frame(height: 50)
             .background(CrabrixTheme.panel)
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { commandBarWidth = $0 }
         }
         .task {
             terminal.attach(to: project)
@@ -962,6 +957,15 @@ private struct TerminalDockContent: View {
                 endPoint: .bottom
             )
         )
+    }
+
+    private var commandPrompt: String {
+        let full = "\(project.name):\(terminal.promptDirectory) $"
+        let font = UIFont.monospacedSystemFont(ofSize: 11, weight: .regular)
+        let nameWidth = (full as NSString).size(withAttributes: [.font: font]).width
+        // Reserve the input, three 24-point controls, four gaps and side padding.
+        let available = commandBarWidth - 140 - 72 - 28 - 24
+        return nameWidth <= available ? full : "\(terminal.promptDirectory) $"
     }
 
     private func submit() {

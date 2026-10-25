@@ -282,11 +282,16 @@ struct ProjectActionsSheet: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(isSaving ? "Saving…" : "Save") { saveDetails() }
+                        .buttonStyle(.borderedProminent)
+                        .tint(CrabrixTheme.blue)
+                        .foregroundStyle(Color.black)
                         .disabled(isSaving || draft.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Close", systemImage: "checkmark") { dismiss() }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Close", systemImage: "xmark") { dismiss() }
                         .labelStyle(.iconOnly)
+                        .buttonStyle(.bordered)
+                        .tint(CrabrixTheme.muted)
                         .accessibilityLabel("Close project settings")
                         .disabled(isSaving)
                 }
