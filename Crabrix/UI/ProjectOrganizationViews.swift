@@ -214,16 +214,17 @@ struct ProjectOrganizerSheet: View {
 struct ProjectActionsSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var draft: ProjectDetailsDraft
-    @State private var showSaved = false
+    @State private var isSaving = false
+    @State private var saveFailed = false
 
     let project: CrabrixProject
-    let onUpdate: (ProjectDetailsDraft) -> Bool
+    let onUpdate: (ProjectDetailsDraft) async -> Bool
     let onSaveToFiles: () -> Void
     let onShareArchive: () -> Void
 
     init(
         project: CrabrixProject,
-        onUpdate: @escaping (ProjectDetailsDraft) -> Bool,
+        onUpdate: @escaping (ProjectDetailsDraft) async -> Bool,
         onSaveToFiles: @escaping () -> Void,
         onShareArchive: @escaping () -> Void
     ) {
@@ -259,41 +260,15 @@ struct ProjectActionsSheet: View {
 
                     Divider().overlay(CrabrixTheme.border)
 
-                    HStack {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text("Organize project")
-                                .font(.title3.bold())
-                            Text("These details stay with exported Crabrix packages.")
-                                .font(.caption)
-                                .foregroundStyle(CrabrixTheme.muted)
-                        }
-                        Spacer()
-                        Toggle("Favorite", isOn: $draft.isFavorite)
-                            .labelsHidden()
-                            .tint(CrabrixTheme.amber)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Organize project")
+                            .font(.title3.bold())
+                        Text("These details stay with exported Crabrix packages.")
+                            .font(.caption)
+                            .foregroundStyle(CrabrixTheme.muted)
                     }
 
                     ProjectMetadataFields(draft: $draft)
-
-                    Button {
-                        guard onUpdate(draft) else { return }
-                        showSaved = true
-                    } label: {
-                        Label(
-                            showSaved ? "Details saved" : "Save project details",
-                            systemImage: showSaved
-                                ? "checkmark.circle.fill"
-                                : "checkmark.circle"
-                        )
-                        .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(showSaved ? CrabrixTheme.mint : CrabrixTheme.blue)
-                    .disabled(
-                        draft.name
-                            .trimmingCharacters(in: .whitespacesAndNewlines)
-                            .isEmpty
-                    )
                 }
                 .padding(22)
                 .frame(maxWidth: 700)
@@ -301,15 +276,25 @@ struct ProjectActionsSheet: View {
             }
             .background(CrabrixTheme.background.ignoresSafeArea())
             .foregroundStyle(CrabrixTheme.primary)
+            .disabled(isSaving)
             .navigationTitle("Project settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(isSaving ? "Saving…" : "Save") { saveDetails() }
+                        .disabled(isSaving || draft.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+                    Button("Close", systemImage: "checkmark") { dismiss() }
+                        .labelStyle(.iconOnly)
+                        .accessibilityLabel("Close project settings")
+                        .disabled(isSaving)
                 }
             }
-            .onChange(of: draft) { _, _ in
-                showSaved = false
+            .alert("Could not save project details", isPresented: $saveFailed) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("Your changes are still here. Check the project name and try again.")
             }
         }
     }
@@ -387,15 +372,23 @@ struct ProjectActionsSheet: View {
     }
 
     private func presentFileExporter() {
-        guard onUpdate(draft) else { return }
-        dismiss()
-        DispatchQueue.main.async { onSaveToFiles() }
+        saveDetails(afterDismiss: onSaveToFiles)
     }
 
     private func presentArchiveShare() {
-        guard onUpdate(draft) else { return }
-        dismiss()
-        DispatchQueue.main.async { onShareArchive() }
+        saveDetails(afterDismiss: onShareArchive)
+    }
+
+    private func saveDetails(afterDismiss: (() -> Void)? = nil) {
+        guard !isSaving else { return }
+        isSaving = true
+        Task {
+            let saved = await onUpdate(draft)
+            isSaving = false
+            guard saved else { saveFailed = true; return }
+            dismiss()
+            if let afterDismiss { DispatchQueue.main.async(execute: afterDismiss) }
+        }
     }
 }
 

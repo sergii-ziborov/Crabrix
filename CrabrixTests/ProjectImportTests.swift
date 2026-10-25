@@ -215,9 +215,79 @@ final class ProjectImportTests: XCTestCase {
 
         XCTAssertEqual(items.count, 2)
         XCTAssertEqual(Set(items.map(\.id)), [first.id, second.id])
+        XCTAssertEqual(Set(items.map(\.project.name)), ["demo", "demo-2"])
         XCTAssertEqual(Set(items.compactMap { $0.project.files["main.rs"] }), [
             first.files["main.rs"]!, second.files["main.rs"]!,
         ])
+        // An autosave still carrying the requested base name must keep the
+        // assigned suffix instead of creating another project or name.
+        _ = try await library.record(project: second, lastBuild: nil)
+        let reopened = try await ProjectLibrary(storageURL: root.appending(path: "recent-projects.json")).allItems()
+        XCTAssertEqual(Set(reopened.map(\.project.name)), ["demo", "demo-2"])
+        XCTAssertEqual(reopened.count, 2)
+    }
+
+    func testRenamingCannotCollideWithAnotherProjectOrItsSuffix() async throws {
+        let root = temporaryRoot(named: "NameCollision")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let library = ProjectLibrary(storageURL: root.appending(path: "recent-projects.json"))
+        let first = project(name: "Demo", source: "fn main() { /* first */ }")
+        let numbered = project(name: "demo-2", source: "fn main() { /* numbered */ }")
+        var renamed = project(name: "other", source: "fn main() { /* renamed */ }")
+        for value in [first, numbered, renamed] { _ = try await library.record(project: value, lastBuild: nil) }
+        renamed.name = " demo "
+        let saved = try await library.update(project: renamed, lastBuild: nil)
+        XCTAssertEqual(saved.project.name, "demo-3")
+        XCTAssertEqual(saved.id, renamed.id)
+        XCTAssertEqual(saved.project.files, renamed.files)
+        let items = try await library.allItems()
+        XCTAssertEqual(Set(items.map(\.project.name)), ["Demo", "demo-2", "demo-3"])
+    }
+
+    func testConcurrentImportsAssignDistinctNamesWithoutDroppingProjects() async throws {
+        let root = temporaryRoot(named: "ConcurrentNames")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = ProjectStore(rootURL: root)
+        let projects = (0..<8).map { project(name: "imported", source: "fn main() { /* \($0) */ }") }
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            for value in projects { group.addTask { _ = try await store.save(project: value, lastBuild: nil) } }
+            try await group.waitForAll()
+        }
+        let items = try await store.allProjects()
+        XCTAssertEqual(Set(items.map(\.id)), Set(projects.map(\.id)))
+        XCTAssertEqual(Set(items.map(\.project.name)).count, projects.count)
+        for value in projects { XCTAssertEqual(items.first { $0.id == value.id }?.project.files, value.files) }
+    }
+
+    func testExistingDuplicateNamesAreRepairedWithoutChangingContentOrDates() async throws {
+        let root = temporaryRoot(named: "ExistingDuplicateNames")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = ProjectStore(rootURL: root)
+        let projects = [project(name: "demo", source: "fn main() { /* original */ }"),
+                        project(name: "temporary", source: "fn main() { /* duplicate */ }"),
+                        project(name: "demo-2", source: "fn main() { /* numbered */ }")]
+        let build = ProjectBuildRecord(result: CompilationResult(
+            succeeded: true, phase: .run, exitCode: 0, diagnostics: [], stdout: "kept", stderr: "",
+            duration: .milliseconds(250), detail: "passed"
+        ), finishedAt: Date(timeIntervalSince1970: 50))
+        for (index, value) in projects.enumerated() {
+            _ = try await store.save(project: value, lastBuild: build, at: Date(timeIntervalSince1970: Double(100 + index)))
+        }
+        // Emulate a snapshot written by an older release, including a stale index.
+        let metadata = root.appending(path: "projects/\(projects[1].id.uuidString.lowercased())/project.json")
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: metadata)) as? [String: Any])
+        json["name"] = "demo"
+        try JSONSerialization.data(withJSONObject: json).write(to: metadata, options: .atomic)
+        let repaired = try await store.allProjects()
+        XCTAssertEqual(Set(repaired.map(\.project.name)), ["demo", "demo-2", "demo-3"])
+        for (index, value) in projects.enumerated() {
+            let item = try XCTUnwrap(repaired.first { $0.id == value.id })
+            XCTAssertEqual(item.project.files, value.files)
+            XCTAssertEqual(item.lastBuild, build)
+            XCTAssertEqual(item.lastOpenedAt, Date(timeIntervalSince1970: Double(100 + index)))
+        }
+        let reopened = try await ProjectStore(rootURL: root).allProjects()
+        XCTAssertEqual(reopened, repaired)
     }
 
     func testRenamePreservesProjectIdentity() async throws {
@@ -447,6 +517,28 @@ final class ProjectImportTests: XCTestCase {
 
 @MainActor
 final class WorkspaceRevisionViewModelTests: XCTestCase {
+    func testSavingProjectDetailsWaitsForPersistenceAndShowsTheUniqueName() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "SettingsSave-\(UUID())")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let library = ProjectLibrary(storageURL: root.appending(path: "projects.json"))
+        let existing = CrabrixProject(name: "taken", files: ["main.rs": "fn main() {}"], entryFile: "main.rs", provenance: nil)
+        _ = try await library.record(project: existing, lastBuild: nil)
+        let model = CompilerViewModel(projectLibrary: library)
+        let id = model.projectID
+        let files = model.exportProject().files
+        let saved = await model.updateCurrentProjectDetails(name: "taken", description: "Saved description",
+            tags: ["rust"], folder: "Learning", kind: .general, isFavorite: true)
+        XCTAssertTrue(saved)
+        XCTAssertEqual(model.projectName, "taken-2")
+        let stored = try await library.project(id: id)
+        XCTAssertEqual(stored?.project.name, model.projectName)
+        XCTAssertEqual(stored?.project.files, files)
+        XCTAssertEqual(stored?.project.projectDescription, "Saved description")
+        XCTAssertEqual(stored?.project.tags, ["rust"])
+        XCTAssertEqual(stored?.project.folder, "Learning")
+        XCTAssertEqual(stored?.project.isFavorite, true)
+    }
+
     func testActiveProjectKeepsIdentityWhileEditsAdvanceRevision() {
         let model = CompilerViewModel(
             userDefaults: UserDefaults(suiteName: "crabrix.tests.\(UUID().uuidString)")!

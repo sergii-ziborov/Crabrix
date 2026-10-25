@@ -345,22 +345,38 @@ final class CompilerViewModel: ObservableObject {
         folder: String?,
         kind: CrabrixProject.Kind,
         isFavorite: Bool
-    ) -> Bool {
+    ) async -> Bool {
         let name = Self.normalizedProjectName(rawName)
         guard !name.isEmpty else {
             projectTransfer = .failed("Enter a project name.")
             return false
         }
-        projectName = name
-        projectDescription = description
+        autosaveTask?.cancel()
+        var project = currentProject()
+        project.name = name
+        project.projectDescription = description
             .trimmingCharacters(in: .whitespacesAndNewlines)
-        projectTags = CrabrixProject.normalizedTags(tags)
-        projectFolder = CrabrixProject.normalizedFolder(folder)
-        projectKind = kind
-        projectIsFavorite = isFavorite
-        projectTransfer = .ready("Updated project details.")
-        Task { await remember(currentProject(), lastBuild: lastBuild) }
-        return true
+        project.tags = CrabrixProject.normalizedTags(tags)
+        project.folder = CrabrixProject.normalizedFolder(folder)
+        project.kind = kind
+        project.isFavorite = isFavorite
+        do {
+            let saved = try await projectLibrary.update(project: project, lastBuild: lastBuild)
+            if saved.id == projectID {
+                projectName = saved.project.name
+                projectDescription = saved.project.projectDescription
+                projectTags = saved.project.tags
+                projectFolder = saved.project.folder
+                projectKind = saved.project.kind
+                projectIsFavorite = saved.project.isFavorite
+            }
+            await reloadProjectLists()
+            projectTransfer = .ready("Updated project details.")
+            return true
+        } catch {
+            projectTransfer = .failed(error.localizedDescription)
+            return false
+        }
     }
 
     func toggleFavorite(projectID: UUID) async {
@@ -410,10 +426,11 @@ final class CompilerViewModel: ObservableObject {
         project.isFavorite = isFavorite
 
         do {
-            _ = try await projectLibrary.update(
+            let saved = try await projectLibrary.update(
                 project: project,
                 lastBuild: item.lastBuild
             )
+            project = saved.project
             if projectID == self.projectID {
                 projectName = project.name
                 projectDescription = project.projectDescription
@@ -1448,6 +1465,13 @@ final class CompilerViewModel: ObservableObject {
             resetDiagnosticAdvice()
             fileContents[selectedFile] = source
             fileContents["Cargo.toml"] = updated
+            if (try? CratePackageManifest.parse(updated))?.dependencies.isEmpty == true {
+                // No pins remain to preserve. Otherwise a frozen refresh can
+                // retain the removed crate as an inactive old lockfile entry.
+                fileContents.removeValue(forKey: "Cargo.lock")
+                if selectedFile == "Cargo.lock" { selectedFile = "Cargo.toml" }
+                fileNames = fileContents.keys.sorted(by: projectFileOrder)
+            }
             if selectedFile == "Cargo.toml" {
                 source = updated
             } else {
@@ -2084,6 +2108,10 @@ final class CompilerViewModel: ObservableObject {
             recentProjects = items
         }
         allProjects = (try? await projectLibrary.allItems()) ?? allProjects
+        if projectID == project.id, projectName == project.name,
+           let saved = allProjects.first(where: { $0.id == project.id }) {
+            projectName = saved.project.name
+        }
     }
 
     private func reloadProjectLists() async {

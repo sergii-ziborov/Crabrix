@@ -1,5 +1,21 @@
 import Foundation
 
+private enum ProjectNames {
+    static func key(_ name: String) -> String {
+        name.trimmingCharacters(in: .whitespacesAndNewlines)
+            .folding(options: [.caseInsensitive, .widthInsensitive], locale: Locale(identifier: "en_US_POSIX"))
+    }
+
+    static func available(_ requested: String, occupied: Set<String>) -> String {
+        let trimmed = requested.trimmingCharacters(in: .whitespacesAndNewlines)
+        let base = trimmed.isEmpty ? "my-rust-project" : trimmed
+        if !occupied.contains(key(base)) { return base }
+        var suffix = 2
+        while occupied.contains(key("\(base)-\(suffix)")) { suffix += 1 }
+        return "\(base)-\(suffix)"
+    }
+}
+
 /// Durable storage for every user project.
 ///
 /// A project lives in its own directory and is never evicted for being old.
@@ -100,6 +116,10 @@ actor ProjectStore {
         try recoverInterruptedTransactions()
         try validate(project)
 
+        var project = project
+        let occupied = try occupiedProjectNames(excluding: project.id)
+        project.name = ProjectNames.available(project.name, occupied: occupied)
+
         let destination = directory(for: project.id)
         let existing = try? loadProject(from: destination)
         let effectiveLastBuild = lastBuild ?? existing?.lastBuild
@@ -169,6 +189,26 @@ actor ProjectStore {
                 result.append(item)
             }
         }
+        // Older releases allowed duplicate display names. Reserve every existing
+        // name first so repairing a duplicate never steals another project's name.
+        // Preserve identity, files, build history and ordering through the same
+        // recoverable snapshot transaction used for an ordinary save.
+        var occupied = Set(result.map { ProjectNames.key($0.project.name) })
+        var seen = Set<String>()
+        let oldestFirst = result.indices.sorted {
+            if result[$0].lastOpenedAt != result[$1].lastOpenedAt {
+                return result[$0].lastOpenedAt < result[$1].lastOpenedAt
+            }
+            return result[$0].id.uuidString < result[$1].id.uuidString
+        }
+        for index in oldestFirst {
+            guard !seen.insert(ProjectNames.key(result[index].project.name)).inserted else { continue }
+            var project = result[index].project
+            project.name = ProjectNames.available(project.name, occupied: occupied)
+            occupied.insert(ProjectNames.key(project.name))
+            result[index] = try save(project: project, lastBuild: result[index].lastBuild,
+                                     at: result[index].lastOpenedAt)
+        }
         return result
     }
 
@@ -192,6 +232,31 @@ actor ProjectStore {
 
     private func directory(for id: UUID) -> URL {
         projectsURL.appending(path: id.uuidString.lowercased(), directoryHint: .isDirectory)
+    }
+
+    private func occupiedProjectNames(excluding projectID: UUID) throws -> Set<String> {
+        let directories = try fileManager.contentsOfDirectory(
+            at: projectsURL, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey],
+            options: [.skipsHiddenFiles, .skipsSubdirectoryDescendants]
+        )
+        var names = Set<String>()
+        for directory in directories {
+            guard let id = UUID(uuidString: directory.lastPathComponent), id != projectID else { continue }
+            let values = try directory.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+            guard values.isDirectory == true, values.isSymbolicLink != true else { continue }
+            let current = directory.appending(path: "project.json")
+            let previous = directory.appending(path: "recovery/previous/project.json")
+            // Read only the small metadata records. Loading every source tree on
+            // each autosave would make large libraries unnecessarily expensive.
+            for url in [current, previous] {
+                if let data = try? Data(contentsOf: url),
+                   let metadata = try? decoder().decode(ProjectMetadata.self, from: data) {
+                    names.insert(ProjectNames.key(metadata.name))
+                    break
+                }
+            }
+        }
+        return names
     }
 
     private func validate(_ project: CrabrixProject) throws {
@@ -635,6 +700,9 @@ actor ProjectLibrary {
     /// identity on update.
     private func ensureLegacyMigration() async throws {
         guard !migrationChecked else { return }
+        // Recent is also a public entry point; repair old names before either
+        // Recent or My Projects returns records to the UI.
+        _ = try await store.allProjects()
         defer { migrationChecked = true }
         guard FileManager.default.fileExists(atPath: legacyAndRecentURL.path) else { return }
 

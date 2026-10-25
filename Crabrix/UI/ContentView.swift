@@ -322,7 +322,7 @@ struct ContentView: View {
             ProjectActionsSheet(
                 project: model.exportProject(),
                 onUpdate: { draft in
-                    model.updateCurrentProjectDetails(
+                    await model.updateCurrentProjectDetails(
                         name: draft.name,
                         description: draft.projectDescription,
                         tags: draft.tags,
