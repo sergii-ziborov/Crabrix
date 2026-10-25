@@ -1,0 +1,46 @@
+{
+  "publishedAtUTC": "2026-10-25T05:53:53.902550+00:00",
+  "version": "1.1.2",
+  "buildNumber": "87",
+  "buildID": "7b897245-f9fb-4744-ba6f-6a8a59641288",
+  "appSourceCommit": "f4b88ef6cd8e3a93243b732c5297cfaaa76d826a",
+  "testDriverCommit": "0c39514",
+  "cloudBuildRunID": "d167eee6-c367-4fa7-b155-a5f4429688a9",
+  "testFlight": {
+    "processingState": "VALID",
+    "group": "Internal QA"
+  },
+  "appStore": {
+    "versionID": "4ad2dcb4-5252-4f36-bb32-99f41e3f6e9a",
+    "submissionID": "06c331b2-c524-4b84-8b6a-89a4817c09d5",
+    "state": "WAITING_FOR_REVIEW",
+    "selectedBuild": "87",
+    "screenshots": {
+      "iPhone": 10,
+      "Duo": 2,
+      "iPad": 7,
+      "codeFirst": true
+    },
+    "customProductPagesApproved": 2
+  },
+  "tests": {
+    "passed": 67,
+    "failed": 0,
+    "skipped": 0,
+    "deep2048PackageGraph": "passed",
+    "2049PackageLimitError": "passed",
+    "webPreview": "passed",
+    "panicDiagnostic": "passed",
+    "mainActorMaximumGapSeconds": 0.053620042
+  },
+  "scope": {
+    "arm64SoftwareDirectInterpreter": true,
+    "directInstructionEmission": true,
+    "maximumUniqueDependencyPackages": 2048,
+    "offlineWebLab": true,
+    "nativeCompilerCandidateEnabled": false,
+    "productionProceduralMacroCapability": false,
+    "workspaceLayoutChanged": false
+  },
+  "largeTokioUnder30Seconds": "not established; further native compiler qualification continues separately"
+}

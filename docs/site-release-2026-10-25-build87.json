@@ -1,0 +1,43 @@
+{
+  "publishedAtUTC": "2026-10-25T05:53:53.902550+00:00",
+  "origin": "https://crabrix.com",
+  "image": "localhost/crabrix-web-site:release87-20261025",
+  "rollbackContainer": "crabrix-web-site-before-release87-20261025",
+  "health": "healthy",
+  "accountBackup": "completed before cutover; persistent account mount preserved",
+  "changes": [
+    "Guide documents the 2048-package graph",
+    "WABT license and license index synchronized"
+  ],
+  "tests": {
+    "siteTests": 13,
+    "typeScript": "passed",
+    "productionBuild": "passed"
+  },
+  "publicChecks": [
+    {
+      "path": "/guide/",
+      "status": 200,
+      "bytes": 82444,
+      "sha256": "cd5f6f12362e0a9c2baeb2bfbb2a0f40fa27af9c3feb9db63417f74b87c356a6"
+    },
+    {
+      "path": "/licenses/",
+      "status": 200,
+      "bytes": 34847,
+      "sha256": "e344bd7af62e1d3a37123fa64c59d25ccf44762a6233875a2d10d1e5056bfe96"
+    },
+    {
+      "path": "/screenshots/duo-laptop.png",
+      "status": 200,
+      "bytes": 367546,
+      "sha256": "10fd1f9d288a3782c56d12239dfeea536ad80b8cc3d574892e0090a40c524e95"
+    },
+    {
+      "path": "/licenses/WABT-LICENSE.txt",
+      "status": 200,
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    }
+  ]
+}
