@@ -37,19 +37,26 @@ def install(library, output):
     os.replace(temporary, target)
 
 
-def verify_platform(library):
+def verify_platform(library, simulator=False):
     archs = subprocess.check_output(['xcrun', 'lipo', '-archs', str(library)], text=True).strip()
     if archs != 'arm64': raise ValueError('Native compiler library must contain only arm64')
     load_commands = subprocess.check_output(['xcrun', 'otool', '-l', str(library)], text=True)
     platforms = [line.strip().split()[-1] for line in load_commands.splitlines() if line.strip().startswith('platform ')]
-    if not platforms or any(value not in ('2', 'IOS') for value in platforms):
-        raise ValueError('Native compiler objects were not built for the real iOS platform')
+    expected = ('7', 'IOSSIMULATOR') if simulator else ('2', 'IOS')
+    if not platforms or any(value not in expected for value in platforms):
+        raise ValueError('Native compiler objects were not built for the selected iOS platform')
 
 
 def prepare():
-    if os.environ.get('PLATFORM_NAME') != 'iphoneos': return
+    platform = os.environ.get('PLATFORM_NAME')
+    if platform not in ('iphoneos', 'iphonesimulator'): return
     if 'CRABRIX_NATIVE_COMPILER' not in os.environ.get('OTHER_SWIFT_FLAGS', ''): return
+    simulator = platform == 'iphonesimulator'
+    # The simulator ordinarily uses the WASM fallback. Its native backend is
+    # enabled only by an explicit source-built, test-only candidate input.
+    if simulator and not os.environ.get('CRABRIX_NATIVE_COMPILER_CANDIDATE_LIBRARY'): return
     output = ROOT / 'build/NativeCompiler'
+    if simulator: output = output / 'iphonesimulator'
     output.mkdir(parents=True, exist_ok=True)
     candidate = os.environ.get('CRABRIX_NATIVE_COMPILER_CANDIDATE_LIBRARY')
     if candidate:
@@ -58,9 +65,12 @@ def prepare():
             raise ValueError('A candidate native library is restricted to the explicit compiler test build')
         library = Path(candidate).resolve()
         record = json.loads((library.parent / 'native-compile-provenance.json').read_text())
-        if record['target'] != 'arm64-apple-ios18.0' or sha(library) != record['archiveSHA256']:
-            raise ValueError('Candidate native library differs from the actual iOS compile record')
-        verify_platform(library)
+        target = 'arm64-apple-ios18.0-simulator' if simulator else 'arm64-apple-ios18.0'
+        if record['target'] != target or sha(library) != record['archiveSHA256']:
+            raise ValueError('Candidate native library differs from the selected platform compile record')
+        if simulator and 'CRABRIX_NATIVE_COMPILER_SIMULATOR=1' not in os.environ.get('GCC_PREPROCESSOR_DEFINITIONS', ''):
+            raise ValueError('The native simulator candidate requires its explicit C build flag')
+        verify_platform(library, simulator=simulator)
         install(library, output)
         print('Prepared test-only iOS native compiler:', record['compilerWASMSHA256'])
         return

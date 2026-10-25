@@ -1,7 +1,7 @@
 #include "NativeCompilerAPI.h"
 #include <stddef.h>
 #include <TargetConditionals.h>
-#if TARGET_OS_SIMULATOR || defined(CRABRIX_NATIVE_COMPILER_BUILD_STUB)
+#if (TARGET_OS_SIMULATOR && !defined(CRABRIX_NATIVE_COMPILER_SIMULATOR)) || defined(CRABRIX_NATIVE_COMPILER_BUILD_STUB)
 const char* crabrix_native_compiler_source_sha256(void) { return ""; }
 CrabrixNativeCompiler* crabrix_native_compiler_create(void* c, CrabrixNativeHostCall h, CrabrixNativePoll p) { return NULL; }
 int32_t crabrix_native_compiler_run(CrabrixNativeCompiler* c, uint64_t b) { return -2; }

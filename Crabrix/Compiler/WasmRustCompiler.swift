@@ -37,6 +37,7 @@ final class WasmRustCompiler: @unchecked Sendable {
     private let ledger: CrateCompatibilityLedger
     private let runtime: RustcRuntime
     private let dependencyArtifactRoot: URL?
+    private let projectArtifactRoot: URL?
     private let toolchainOverride: BundledToolchain?
     // The interpreter runs on its own serial queue. Explicit Run work receives
     // userInitiated QoS; background checks retain utility QoS.
@@ -57,11 +58,13 @@ final class WasmRustCompiler: @unchecked Sendable {
 
     init(bundle: Bundle = .main, ledger: CrateCompatibilityLedger = .shared,
          runtime: RustcRuntime = RustcRuntime(), dependencyArtifactRoot: URL? = nil,
+         projectArtifactRoot: URL? = nil,
          toolchainOverride: BundledToolchain? = nil) {
         self.bundle = bundle
         self.ledger = ledger
         self.runtime = runtime
         self.dependencyArtifactRoot = dependencyArtifactRoot
+        self.projectArtifactRoot = projectArtifactRoot
         self.toolchainOverride = toolchainOverride
         memoryWarningObserver = NotificationCenter.default.addObserver(
             forName: UIApplication.didReceiveMemoryWarningNotification,
@@ -173,7 +176,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                 successfulChecks.removeAll(keepingCapacity: false)
                 checkCacheOrder.removeAll(keepingCapacity: false)
                 runtime.clearProgramModules()
-                if let directory = CrateStorageLayout.projectArtifactDirectory,
+                if let directory = projectArtifactRoot ?? CrateStorageLayout.projectArtifactDirectory,
                    FileManager.default.fileExists(atPath: directory.path) {
                     try? FileManager.default.removeItem(at: directory)
                 }
@@ -1363,7 +1366,7 @@ final class WasmRustCompiler: @unchecked Sendable {
     }
 
     private var programCacheURL: URL? {
-        CrateStorageLayout.projectArtifactDirectory?
+        (projectArtifactRoot ?? CrateStorageLayout.projectArtifactDirectory)?
             .appending(path: toolchainNamespace, directoryHint: .isDirectory)
             .appending(path: Self.cacheSchemaVersion, directoryHint: .isDirectory)
     }

@@ -1,3 +1,14 @@
+> Delivery verified through App Store Connect — 25 October 2026: **1.1.2 (88)**
+> is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. The App Store
+> version selects build 88 and both the version and replacement submission
+> report **WAITING_FOR_REVIEW**. Build 88 adds the verified Cargo optional
+> feature-forwarding correction to build 87. The manual Xcode Cloud archive
+> retains the offline web lab, 2,048-package limit and established UI geometry.
+> Experimental native compiler and procedural-macro inputs remain separate.
+> [Build 88 delivery evidence](release-1.1.2-build88.json).
+>
+> Build 87 delivery below is historical; its review was replaced by build 88.
+
 > Delivery verified through App Store Connect — 25 October 2026: **1.1.2 (87)**
 > is VALID in TestFlight **Internal QA** and selected for the App Store version
 > **WAITING_FOR_REVIEW**. The manual Xcode Cloud archive includes arm64 direct

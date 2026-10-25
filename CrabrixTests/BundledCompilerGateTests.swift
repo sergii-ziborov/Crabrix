@@ -7,6 +7,18 @@ import XCTest
 @testable import Crabrix
 
 final class BundledCompilerGateTests: XCTestCase {
+    private final class ProgressRecorder: @unchecked Sendable {
+        private let lock = NSLock()
+        private var values: [CargoBuildProgress] = []
+        func append(_ progress: CargoBuildProgress) {
+            lock.lock(); defer { lock.unlock() }
+            values.append(progress)
+        }
+        var snapshot: [CargoBuildProgress] {
+            lock.lock(); defer { lock.unlock() }
+            return values
+        }
+    }
     private var macroSysrootOverlays: [URL] = []
     private func measuredCompiler(dependencyArtifactRoot: URL? = nil,
                                   experimentalDirectOverride: Bool? = nil,
@@ -127,6 +139,7 @@ final class BundledCompilerGateTests: XCTestCase {
                                     ? .shared : CrateCompatibilityLedger(storageURL: nil),
                                 runtime: RustcRuntime(experimentalSoftwareDirect: direct),
                                 dependencyArtifactRoot: dependencyArtifactRoot,
+                                projectArtifactRoot: dependencyArtifactRoot?.appending(path: "root-programs"),
                                 toolchainOverride: candidate)
     }
     private var previousIdleTimerDisabled: Bool?
@@ -299,6 +312,9 @@ final class BundledCompilerGateTests: XCTestCase {
             "futures-macro 0.3.34", "kameo_macros 0.21.1", "serde_derive 1.0.229",
             "tokio-macros 2.7.2", "tracing-attributes 0.1.31"
         ]))
+        for unit in frozen.plan.units {
+            print("KAMEO UNIT INPUT", unit.package.description, "features", unit.features.sorted())
+        }
         let kameo = try XCTUnwrap(frozen.packages.first { $0.name == "kameo" })
         XCTAssertTrue(kameo.features.contains("macros"))
         XCTAssertTrue(kameo.features.contains("tracing"))
@@ -314,33 +330,180 @@ final class BundledCompilerGateTests: XCTestCase {
     }
 
     func testUnchangedKameoColdActorsAndChangedRootRunOffline() async throws {
+        try await runUnchangedKameoColdGate(direct: true)
+    }
+
+    func testUnchangedKameoColdTokenCompilerControl() async throws {
+        #if CRABRIX_NATIVE_COMPILER
+        throw XCTSkip("The token-compiler control requires a WASM-only test build; native code would override compiler dispatch")
+        #else
+        try await runUnchangedKameoColdGate(direct: false)
+        #endif
+    }
+
+    private func runUnchangedKameoColdGate(direct: Bool) async throws {
         try requireProcMacroBridge()
         try requireColdComparison()
         let fixture = try await prepareKameoAcceptance()
         let artifacts = FileManager.default.temporaryDirectory.appending(path: "KameoColdArtifacts-\(UUID())")
         defer { try? FileManager.default.removeItem(at: artifacts) }
-        let compiler = try measuredCompiler(dependencyArtifactRoot: artifacts, experimentalDirectOverride: true,
+        let compiler = try measuredCompiler(dependencyArtifactRoot: artifacts, experimentalDirectOverride: direct,
                                             candidateProfileOverride: true, candidateArtifactName: "ArtifactMacro")
+        let coldProgress = ProgressRecorder()
         print("KAMEO COLD THERMAL BEGIN", ProcessInfo.processInfo.thermalState.rawValue)
         let cold = await compiler.run(source: fixture.source, sourcePath: "src/main.rs",
             supportingFiles: ["Cargo.toml": fixture.manifest, "Cargo.lock": fixture.lock], edition: "2024", plan: fixture.plan,
-            onDependencyProgress: { progress in print("KAMEO COLD UNIT", progress); XCTAssertFalse(progress.wasCached) },
+            onDependencyProgress: { progress in
+                coldProgress.append(progress)
+                print("KAMEO COLD UNIT", progress); XCTAssertFalse(progress.wasCached)
+            },
             onStage: { print("KAMEO COLD STAGE", Date(), $0) })
         print("KAMEO COLD DURATION", cold.duration)
         print("KAMEO COLD THERMAL END", ProcessInfo.processInfo.thermalState.rawValue)
+        XCTAssertEqual(coldProgress.snapshot.count, fixture.plan.units.count, "Every dependency must compile in the cold gate")
         XCTAssertTrue(cold.succeeded, cold.detail + "\n" + cold.stderr)
         XCTAssertEqual(cold.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "kameo offline: actors=16 records=1024 sum=523776")
         guard cold.succeeded else { return }
+        let changedProgress = ProgressRecorder()
         print("KAMEO CHANGED ROOT THERMAL BEGIN", ProcessInfo.processInfo.thermalState.rawValue)
         let changed = await compiler.run(source: "// changed root \(UUID())\n" + fixture.source, sourcePath: "src/main.rs",
             supportingFiles: ["Cargo.toml": fixture.manifest, "Cargo.lock": fixture.lock], edition: "2024", plan: fixture.plan,
-            onDependencyProgress: { progress in print("KAMEO CHANGED ROOT UNIT", progress); XCTAssertTrue(progress.wasCached) })
+            onDependencyProgress: { progress in
+                changedProgress.append(progress)
+                print("KAMEO CHANGED ROOT UNIT", progress); XCTAssertTrue(progress.wasCached)
+            })
         print("KAMEO CHANGED ROOT DURATION", changed.duration)
         print("KAMEO CHANGED ROOT THERMAL END", ProcessInfo.processInfo.thermalState.rawValue)
+        XCTAssertEqual(changedProgress.snapshot.count, fixture.plan.units.count)
         XCTAssertTrue(changed.succeeded, changed.detail + "\n" + changed.stderr)
         XCTAssertEqual(changed.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "kameo offline: actors=16 records=1024 sum=523776")
         // Record real timings even above the requested goal. Functional success
         // does not imply the separate 30-second physical performance gate passed.
+    }
+
+    func testAtomicBoolAndIntegerStateRemainConsistent() async throws {
+        try Self.requireCompilerGate()
+        let compiler = try measuredCompiler()
+        let result = await compiler.run(source: """
+        // atomic-state gate \(UUID())
+        use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU16, AtomicUsize, Ordering};
+        fn main() {
+            #[repr(C)]
+            struct BoolNeighbors { flag: AtomicBool, canary: [u8; 3] }
+            #[repr(C)]
+            struct ByteNeighbors { byte: AtomicU8, canary: [u8; 3] }
+            #[repr(C)]
+            struct HalfNeighbors { half: AtomicU16, canary: [u8; 2] }
+            let adjacent = BoolNeighbors { flag: AtomicBool::new(false), canary: [0xa5, 0x5a, 0xc3] };
+            assert!(!adjacent.flag.load(Ordering::SeqCst), "atomic bool must not read its neighbors");
+            adjacent.flag.store(true, Ordering::SeqCst);
+            assert_eq!(adjacent.canary, [0xa5, 0x5a, 0xc3]);
+            assert_eq!(adjacent.flag.compare_exchange(true, false, Ordering::SeqCst, Ordering::SeqCst), Ok(true));
+            assert_eq!(adjacent.canary, [0xa5, 0x5a, 0xc3]);
+            let adjacent_byte = ByteNeighbors { byte: AtomicU8::new(254), canary: [0xa5, 0x5a, 0xc3] };
+            assert_eq!(adjacent_byte.byte.fetch_add(3, Ordering::SeqCst), 254);
+            assert_eq!(adjacent_byte.byte.load(Ordering::SeqCst), 1);
+            assert_eq!(adjacent_byte.canary, [0xa5, 0x5a, 0xc3]);
+            let adjacent_half = HalfNeighbors { half: AtomicU16::new(65534), canary: [0xa5, 0x5a] };
+            assert_eq!(adjacent_half.half.fetch_add(3, Ordering::SeqCst), 65534);
+            assert_eq!(adjacent_half.half.load(Ordering::SeqCst), 1);
+            assert_eq!(adjacent_half.canary, [0xa5, 0x5a]);
+            let flag = AtomicBool::new(false);
+            let byte = AtomicU8::new(0);
+            let word = AtomicUsize::new(0);
+            println!("atomic initial: bool={} raw={} byte={} word={} literal={}",
+                flag.load(Ordering::SeqCst), unsafe { std::ptr::read(flag.as_ptr().cast::<u8>()) },
+                byte.load(Ordering::SeqCst), word.load(Ordering::SeqCst), false as u8);
+            assert!(!flag.load(Ordering::Relaxed));
+            assert!(!flag.load(Ordering::Acquire));
+            assert!(!flag.load(Ordering::SeqCst));
+            assert_eq!(byte.load(Ordering::Relaxed), 0);
+            assert_eq!(word.load(Ordering::Relaxed), 0);
+            flag.store(true, Ordering::Release);
+            assert!(flag.load(Ordering::Acquire));
+            assert_eq!(flag.compare_exchange(true, false, Ordering::AcqRel, Ordering::Acquire), Ok(true));
+            assert!(!flag.swap(true, Ordering::SeqCst));
+            assert!(flag.load(Ordering::Relaxed));
+            assert_eq!(byte.fetch_add(3, Ordering::SeqCst), 0);
+            assert_eq!(word.fetch_add(7, Ordering::SeqCst), 0);
+            assert_eq!(byte.load(Ordering::Relaxed), 3);
+            assert_eq!(word.load(Ordering::Relaxed), 7);
+            println!("atomic state: ok");
+        }
+        """)
+        print("ATOMIC STATE RESULT", result.detail, result.stdout, result.stderr)
+        XCTAssertTrue(result.succeeded, result.detail + "\n" + result.stdout + "\n" + result.stderr)
+        XCTAssertTrue(result.stdout.contains("atomic state: ok"))
+    }
+
+    /// Diagnostic variants only; the unchanged cold gate above remains the
+    /// acceptance test. Neither waiting for startup nor a handwritten derive
+    /// replacement may substitute for that gate.
+    func testKameoActorStartupDiagnostics() async throws {
+        try requireProcMacroBridge()
+        try XCTSkipIf(ProcessInfo.processInfo.environment["CRABRIX_RUN_KAMEO_DIAGNOSTIC"] != "1")
+        let fixture = try await prepareKameoAcceptance()
+        let compiler = try measuredCompiler(candidateProfileOverride: true, candidateArtifactName: "ArtifactMacro")
+        let instrumented = fixture.source.replacingOccurrences(
+            of: "let actor = Ledger::spawn(Ledger::default());",
+            with: """
+            let actor = Ledger::spawn(Ledger::default());
+            println!("actor spawned: alive={} strong={} weak={} startup={}", actor.is_alive(), actor.strong_count(), actor.weak_count(), actor.with_startup_result(|_| ()).is_some());
+            actor.wait_for_startup().await;
+            println!("actor startup: alive={} strong={} weak={} startup={}", actor.is_alive(), actor.strong_count(), actor.weak_count(), actor.with_startup_result(|_| ()).is_some());
+            """)
+        let manual = instrumented.replacingOccurrences(of: "#[derive(Actor, Default)]", with: "#[derive(Default)]")
+            .replacingOccurrences(of: "struct Record(u64);", with: """
+            impl kameo::actor::Actor for Ledger {
+                type Args = Self;
+                type Error = kameo::error::Infallible;
+                fn name() -> &'static str { "Ledger" }
+                async fn on_start(state: Self::Args, _: kameo::actor::ActorRef<Self>) -> Result<Self, Self::Error> {
+                    println!("manual actor on_start");
+                    Ok(state)
+                }
+            }
+            struct Record(u64);
+            """)
+        let setOnce = """
+        use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
+        use tokio::sync::SetOnce;
+        fn main() {
+            let flag = AtomicBool::new(false);
+            assert!(!flag.load(Ordering::SeqCst), "atomic false starts false");
+            let cell = SetOnce::<Result<(), kameo::error::PanicError>>::new();
+            println!("setonce stack: size={} align={} initialized={}", std::mem::size_of_val(&cell), std::mem::align_of_val(&cell), cell.initialized());
+            assert!(!cell.initialized(), "new SetOnce starts empty");
+            let shared = Arc::new(cell);
+            println!("setonce arc: initialized={}", shared.initialized());
+            assert!(!shared.initialized(), "moving SetOnce into Arc preserves empty state");
+            tokio::runtime::Builder::new_current_thread().build().unwrap().block_on(async {
+                let producer = shared.clone();
+                tokio::spawn(async move {
+                    tokio::task::yield_now().await;
+                    producer.set(Ok(())).unwrap();
+                    println!("setonce producer completed");
+                });
+                let value = shared.wait().await;
+                assert!(shared.initialized(), "wait must observe initialization");
+                assert!(value.is_ok());
+                println!("setonce offline: ok");
+            });
+        }
+        """
+        for (name, source, expected) in [
+            ("setonce", setOnce, "setonce offline: ok"),
+            ("derived-startup", instrumented, "kameo offline: actors=16 records=1024 sum=523776"),
+            ("manual-startup", manual, "kameo offline: actors=16 records=1024 sum=523776")
+        ] {
+            print("KAMEO DIAGNOSTIC BEGIN", name)
+            let result = await compiler.run(source: "// diagnostic \(UUID())\n" + source, sourcePath: "src/main.rs",
+                supportingFiles: ["Cargo.toml": fixture.manifest, "Cargo.lock": fixture.lock],
+                edition: "2024", plan: fixture.plan)
+            print("KAMEO DIAGNOSTIC RESULT", name, result.duration, result.detail, result.stdout, result.stderr)
+            XCTAssertTrue(result.succeeded, name + ": " + result.detail + "\n" + result.stderr)
+            XCTAssertTrue(result.stdout.contains(expected), name)
+        }
     }
 
     override func setUp() async throws {
@@ -2040,18 +2203,30 @@ final class BundledCompilerGateTests: XCTestCase {
         }
 
         let compiler = try measuredCompiler()
-        // A unique body defeats the artifact cache so rustc really runs.
+        // An intentionally endless constant evaluation remains busy even on
+        // the native backend. A tiny valid program can finish before Stop.
+        // The unique comment also prevents a cached check from satisfying it.
         let source = """
+        #![allow(long_running_const_eval)]
+        // interrupt gate \(UUID().uuidString)
+        const WAIT: usize = loop {};
         fn main() {
-            println!("interrupt gate \(UUID().uuidString)");
+            let _ = [0u8; WAIT];
         }
         """
 
         let started = ContinuousClock.now
-        async let result = compiler.check(source: source)
-        // Optimised Release checks can finish before three seconds. Request
-        // Stop early, as the view-model drain gate below does, so this tests
-        // cancellation rather than cancelling an already completed compile.
+        let checking = XCTestExpectation(description: "Compiler entered project checking")
+        async let result = compiler.check(source: source, onStage: { stage in
+            if stage == "Checking project" { checking.fulfill() }
+        })
+        let entered = await XCTWaiter.fulfillment(of: [checking], timeout: 15)
+        guard entered == .completed else {
+            compiler.cancel()
+            _ = await result
+            XCTFail("Compiler never entered project checking")
+            return
+        }
         try await Task.sleep(for: .milliseconds(100))
         compiler.cancel()
 

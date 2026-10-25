@@ -1,0 +1,44 @@
+{
+  "recordedAtUTC": "2026-10-25T09:09:42.597110+00:00",
+  "backend": "clif2wasm",
+  "failure": "Atomic i8/i16 memory accesses were incorrectly widened to 32 bits because the Wasm local type was used instead of the CLIF memory type.",
+  "originalBackend": {
+    "result": "failed",
+    "operation": "atomic_load i8",
+    "expected": 0,
+    "actual": -1007623936,
+    "fixtureSHA256": "148499d675b159852e9c731d252d7a4ce7911187737d7cf99fcf675388c67313"
+  },
+  "fixedBackend": {
+    "result": "passed",
+    "checks": 1420,
+    "widths": [
+      8,
+      16,
+      32,
+      64
+    ],
+    "operations": [
+      "load",
+      "store",
+      "cas",
+      "add",
+      "sub",
+      "and",
+      "or",
+      "xor",
+      "xchg",
+      "nand",
+      "umin",
+      "umax",
+      "smin",
+      "smax"
+    ],
+    "fixtureSHA256": "7c5cff9643e069875d09489bbf0666870a42f55df8bfa468c6eb2216da02682c",
+    "runtime": "Wasmtime 50.0.1"
+  },
+  "scope": "Backend-level executed Wasm regression, not acceptance of a rebuilt compiler or an iPhone performance result.",
+  "rustSourceCommit": "7072a113fdc1065e63de4d49469ff5f2f999ec00",
+  "candidateBuilderCommit": "0a5970c97ef0e192c8f6e5dec460190924489f97",
+  "candidateBridgePatchSHA256": "d9c4c8338b80f7be288a7aab575a021fceb424fdaf9711469f60265655f6d011"
+}

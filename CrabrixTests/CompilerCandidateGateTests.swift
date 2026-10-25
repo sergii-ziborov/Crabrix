@@ -53,6 +53,29 @@ final class CompilerCandidateGateTests: XCTestCase {
         let smoke = #"""
         use std::collections::BTreeMap;
         fn main() {
+            #[cfg(crabrix_atomic_canaries)]
+            {
+                use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU16, Ordering};
+                #[repr(C)]
+                struct BoolNeighbors { value: AtomicBool, canary: [u8; 3] }
+                #[repr(C)]
+                struct ByteNeighbors { value: AtomicU8, canary: [u8; 3] }
+                #[repr(C)]
+                struct HalfNeighbors { value: AtomicU16, canary: [u8; 2] }
+                let flag = BoolNeighbors { value: AtomicBool::new(false), canary: [0xa5, 0x5a, 0xc3] };
+                assert!(!flag.value.load(Ordering::SeqCst));
+                flag.value.store(true, Ordering::SeqCst);
+                assert_eq!(flag.value.compare_exchange(true, false, Ordering::SeqCst, Ordering::SeqCst), Ok(true));
+                assert_eq!(flag.canary, [0xa5, 0x5a, 0xc3]);
+                let byte = ByteNeighbors { value: AtomicU8::new(254), canary: [0xa5, 0x5a, 0xc3] };
+                assert_eq!(byte.value.fetch_add(3, Ordering::SeqCst), 254);
+                assert_eq!(byte.value.load(Ordering::SeqCst), 1);
+                assert_eq!(byte.canary, [0xa5, 0x5a, 0xc3]);
+                let half = HalfNeighbors { value: AtomicU16::new(65534), canary: [0xa5, 0x5a] };
+                assert_eq!(half.value.fetch_add(3, Ordering::SeqCst), 65534);
+                assert_eq!(half.value.load(Ordering::SeqCst), 1);
+                assert_eq!(half.canary, [0xa5, 0x5a]);
+            }
             let values = BTreeMap::from([("gamma", 3_i64), ("alpha", 1), ("beta", 2)]);
             let sum: i64 = values.values().copied().sum();
             assert_eq!(sum, 6);
@@ -94,8 +117,9 @@ final class CompilerCandidateGateTests: XCTestCase {
             XCTAssertEqual(version.exitCode, 0, version.stderr)
             XCTAssertTrue(version.stdout.contains("rustc 1.96.0"), version.stdout)
             try smoke.write(to: work.appending(path: "main.rs"), atomically: true, encoding: .utf8)
-            let flags = ["--sysroot", "/sysroot", "--target", "wasm32-wasip1", "--edition", "2021",
+            var flags = ["--sysroot", "/sysroot", "--target", "wasm32-wasip1", "--edition", "2021",
                          "--error-format=json", "-Copt-level=0", "-Cpanic=abort", "-Zunstable-options"]
+            if name == "candidate" { flags += ["--cfg", "crabrix_atomic_canaries"] }
             let started = ContinuousClock.now
             let compiled = try invoke(["/work/main.rs"] + flags + ["-o", "/work/program.wasm"], prefix: "compile")
             print("COMPILER CANDIDATE COMPILE", name, started.duration(to: .now))

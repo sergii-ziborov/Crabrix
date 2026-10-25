@@ -1,0 +1,64 @@
+{
+  "publishedAtUTC": "2026-10-25T09:09:21.796377+00:00",
+  "version": "1.1.2",
+  "buildNumber": "88",
+  "buildID": "0ff57630-27af-41e0-992c-54f38f37b136",
+  "appSourceCommit": "7fd242226866775493c763f093cf6de6c7b825fb",
+  "cloudBuildRunID": "4b91d0db-3f55-4904-a5e7-84f7d70645e3",
+  "testFlight": {
+    "processingState": "VALID",
+    "group": "Internal QA",
+    "internalBuildState": "IN_BETA_TESTING"
+  },
+  "appStore": {
+    "versionID": "4ad2dcb4-5252-4f36-bb32-99f41e3f6e9a",
+    "submissionID": "19f689ef-c658-4226-8178-ba05e733b4ef",
+    "state": "WAITING_FOR_REVIEW",
+    "selectedBuild": "88",
+    "screenshots": {
+      "iPhone": 10,
+      "Duo": 2,
+      "iPad": 7,
+      "codeFirst": true
+    },
+    "customProductPagesApproved": 2,
+    "screenshotReadback": [
+      {
+        "displayType": "APP_IPHONE_67",
+        "count": 10,
+        "complete": 10
+      },
+      {
+        "displayType": "APP_IPHONE_DUO",
+        "count": 2,
+        "complete": 2
+      },
+      {
+        "displayType": "APP_IPAD_PRO_3GEN_129",
+        "count": 7,
+        "complete": 7
+      }
+    ]
+  },
+  "tests": {
+    "passed": 69,
+    "failed": 0,
+    "skipped": 0,
+    "environment": "Release iOS Simulator",
+    "resultBundle": "native85-regression-final.xcresult",
+    "sourceNote": "Current test driver exercised production resolver and compiler gates; native candidate controls are compiled only in the separate explicitly enabled candidate build."
+  },
+  "scope": {
+    "arm64SoftwareDirectInterpreter": true,
+    "directInstructionEmission": true,
+    "maximumUniqueDependencyPackages": 2048,
+    "offlineWebLab": true,
+    "nativeCompilerCandidateEnabled": false,
+    "productionProceduralMacroCapability": false,
+    "workspaceLayoutChanged": false
+  },
+  "largeTokioUnder30Seconds": "not established; further native compiler qualification continues separately",
+  "changesSince87": [
+    "Match Cargo public optional feature forwarding, including implicit, hidden dep:, explicit and explicit-with-dep: feature cases."
+  ]
+}
