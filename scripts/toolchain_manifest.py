@@ -32,6 +32,10 @@ def load_manifest():
     for key in ("rustcSHA256", "sysrootManifestSHA256", "sysrootArchiveSHA256"):
         if not isinstance(data.get(key), str) or not HEX.fullmatch(data[key]):
             raise ValueError(f"invalid {key}")
+    capabilities = data.get("capabilities", [])
+    if not isinstance(capabilities, list) or any(value != "proc-macro-rpc-v1" for value in capabilities) or \
+            len(capabilities) != len(set(capabilities)):
+        raise ValueError("invalid or unknown toolchain capabilities")
     source = data.get("source")
     if not isinstance(source, dict):
         raise ValueError("missing toolchain source")

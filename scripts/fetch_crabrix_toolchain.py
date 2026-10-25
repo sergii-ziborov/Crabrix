@@ -124,6 +124,8 @@ def verify_descriptor(path, release):
                   "sysrootArchiveSHA256", "sysrootManifestSHA256"):
         if payload.get(field) != release[field]:
             raise ValueError(f"signed toolchain {field} differs from app release input")
+    if payload.get("capabilities", []) != release.get("capabilities", []):
+        raise ValueError("signed toolchain capabilities differ from app release input")
     if payload.get("sourceLockSHA256") != source["sourceLockSHA256"] or \
             payload.get("builderSourceCommit") != source["builderSourceCommit"] or \
             payload.get("releaseTag") != source["baseURL"].rsplit("/", 1)[-1]:

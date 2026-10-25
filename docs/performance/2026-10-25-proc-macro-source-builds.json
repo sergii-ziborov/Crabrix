@@ -74,5 +74,15 @@
     "followUpSourceFix": "7729ebabe3a",
     "followUpRecipeCommit": "a9f1f6cb0154554645a9341ac9f0b0a20015db1e",
     "linkerRegression": "synthesized constructor export validates; an actual C constructor executes and sets the checked value to 579"
+  },
+  "diagnosticRPCProbe": {
+    "status": "passed",
+    "scope": "WASI compiler emits the unchanged macro object and metadata; the corrected standalone linker creates a reactor; WASI rustc consumes it through the real RPC bridge and its output program runs. This is not a cold in-app macro build.",
+    "emitResultBundle": "build/compiler-optimization-20261024/macro-object-save-emit.xcresult",
+    "consumeResultBundle": "build/compiler-optimization-20261024/macro-prelinked-consume.xcresult",
+    "output": "macro identity: 42",
+    "passedTests": 2,
+    "failedTests": 0,
+    "skippedTests": 0
   }
 }

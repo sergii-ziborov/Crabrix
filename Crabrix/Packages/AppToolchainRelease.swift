@@ -32,6 +32,8 @@ struct AppToolchainRelease: Decodable, Sendable {
               ) != nil,
               release.rustVersion == release.versionBase
                 || release.rustVersion.hasPrefix(release.versionBase + "-"),
+              (release.capabilities ?? []).allSatisfy({ $0 == "proc-macro-rpc-v1" }),
+              Set(release.capabilities ?? []).count == (release.capabilities ?? []).count,
               [release.rustcSHA256, release.sysrootManifestSHA256,
                release.sysrootArchiveSHA256].allSatisfy({ digest in
                   digest.count == 64 && digest.allSatisfy { "0123456789abcdef".contains($0) }

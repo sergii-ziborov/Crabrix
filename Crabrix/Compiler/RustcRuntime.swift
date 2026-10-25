@@ -149,22 +149,27 @@ final class RustcRuntime: @unchecked Sendable {
     init(
         programModuleCacheEntryLimit: Int = 8,
         programModuleCacheCostLimitBytes: Int = 64 * 1024 * 1024,
-        experimentalSoftwareDirect: Bool = false
+        experimentalSoftwareDirect: Bool? = nil
     ) {
         precondition(programModuleCacheEntryLimit > 0 && programModuleCacheCostLimitBytes > 0)
         self.programModuleCacheEntryLimit = programModuleCacheEntryLimit
         self.programModuleCacheCostLimitBytes = programModuleCacheCostLimitBytes
-        self.experimentalSoftwareDirect = experimentalSoftwareDirect
+        #if arch(arm64)
+        // The pinned runtime's software-bounds direct interpreter passed the
+        // Release iPhone correctness, Stop, memory and responsiveness gates.
+        self.experimentalSoftwareDirect = experimentalSoftwareDirect ?? true
+        #else
+        self.experimentalSoftwareDirect = experimentalSoftwareDirect ?? false
+        #endif
     }
 
     func engine(softwareMemoryReservationBytes: Int?) -> Engine {
         let cacheKey = softwareMemoryReservationBytes ?? 0
         if let cached = cachedEngines[cacheKey] { return cached }
         var configuration = EngineConfiguration(
-            // WasmKit 0.3.1's direct-threaded interpreter crashed in optimized
-            // iOS Simulator builds while executing the bundled rustc module.
-            // Token threading remains the supported mode until the new engine's
-            // direct mode passes Release/device correctness and speed gates.
+            // Software memory bounds and fuel remain enabled in both modes.
+            // Explicit false retains the token reference for comparisons and
+            // architectures outside the qualified arm64 device profile.
             threadingModel: .token,
             compilationMode: .lazy,
             stackSize: 16 * 1024 * 1024,

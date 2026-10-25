@@ -79,6 +79,8 @@ class CrabrixToolchainFetchTests(unittest.TestCase):
             descriptor.write_text(json.dumps(envelope))
             with patch.object(own, "KEYRING", keyring):
                 self.assertEqual(own.verify_descriptor(descriptor, release), payload)
+                with self.assertRaisesRegex(ValueError, "capabilities differ"):
+                    own.verify_descriptor(descriptor, dict(release, capabilities=["proc-macro-rpc-v1"]))
                 # Xcode exports an iOS SDKROOT even for host build scripts.
                 # A valid signature must still verify with the Mac's Swift SDK.
                 with patch.dict(os.environ, {"SDKROOT": "/invalid-inherited-iphone-sdk"}):
@@ -91,6 +93,16 @@ class CrabrixToolchainFetchTests(unittest.TestCase):
                                       '"payloadBase64":"x","signatureBase64":"y"}')
                 with self.assertRaisesRegex(ValueError, "duplicate JSON key"):
                     own.verify_descriptor(descriptor, release)
+
+    def test_manifest_rejects_unknown_or_duplicate_capabilities(self):
+        release, _ = self.signed_release()
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "toolchain.lock.json"
+            with patch.object(toolchain_manifest, "MANIFEST", source):
+                for value in (["unknown"], ["proc-macro-rpc-v1", "proc-macro-rpc-v1"], "proc-macro-rpc-v1", None):
+                    source.write_text(json.dumps(dict(release, capabilities=value)))
+                    with self.assertRaisesRegex(ValueError, "capabilities"):
+                        toolchain_manifest.load_manifest()
 
     def test_sysroot_inventory_rejects_extra_and_tampered_entries(self):
         with tempfile.TemporaryDirectory(prefix="crabrix-sysroot-test-") as temporary:

@@ -130,7 +130,7 @@ enum CargoToolchain {
 enum CargoFingerprint {
     /// Bumped whenever the compiler flags or artefact layout change, so stale
     /// artefacts are never reused across an app update.
-    static let schemaVersion = "cargo-units-5-wasi-macro-kinds"
+    static let schemaVersion = "cargo-units-6-build-script-rustc-env"
     static let dependencyCompilerFlags = [
         "--crate-type=lib",
         "-Copt-level=0",

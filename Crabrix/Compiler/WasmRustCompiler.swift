@@ -871,6 +871,10 @@ final class WasmRustCompiler: @unchecked Sendable {
         environment["OUT_DIR"] = "/build-out"
         environment["HOST"] = "wasm32-wasip1"
         environment["TARGET"] = "wasm32-wasip1"
+        // Cargo names its compiler even when subprocesses are unavailable.
+        // WASI probes can then handle Unsupported and select their conservative
+        // fallback instead of aborting on a missing environment variable.
+        environment["RUSTC"] = "rustc"
         environment["PROFILE"] = "debug"
         environment["OPT_LEVEL"] = "0"
         environment["DEBUG"] = "true"

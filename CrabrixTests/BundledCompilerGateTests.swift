@@ -3,6 +3,7 @@ import Darwin
 import CryptoKit
 import UIKit
 import XCTest
+@_spi(Fuzzing) import WasmKit
 @testable import Crabrix
 
 final class BundledCompilerGateTests: XCTestCase {
@@ -118,6 +119,64 @@ final class BundledCompilerGateTests: XCTestCase {
     private func requireProcMacroBridge() throws {
         try Self.requireCompilerGate()
         try XCTSkipIf(ProcessInfo.processInfo.environment["CRABRIX_RUN_PROC_MACRO_BRIDGE"] != "1")
+    }
+
+    func testMacroCandidateInputBindsCompilerAndCompleteSourceSysroot() throws {
+        try requireProcMacroBridge()
+        // The helper checks the compiler hash, source-build provenance, ZIP,
+        // inventory and every sysroot byte before constructing this runtime.
+        // The final signed app bundle has a separate AppToolchainRelease gate.
+        _ = try measuredCompiler(experimentalDirectOverride: true,
+            candidateProfileOverride: true, candidateArtifactName: "ArtifactMacro")
+    }
+
+    /// Diagnose RPC independently while the fixed in-compiler linker rebuilds.
+    /// A manually linked reactor is never a cold-build acceptance result.
+    func testPrelinkedIdentityRPCProbe() async throws {
+        try requireProcMacroBridge()
+        let mode = ProcessInfo.processInfo.environment["CRABRIX_PROC_MACRO_LINK_PROBE"]
+        try XCTSkipUnless(mode == "emit" || mode == "consume")
+        _ = try measuredCompiler(experimentalDirectOverride: true,
+            candidateProfileOverride: true, candidateArtifactName: "ArtifactMacro")
+        let resources = try XCTUnwrap(Bundle(for: Self.self).resourceURL)
+        let candidate = resources.appending(path: "CompilerCandidate/ArtifactMacro")
+        let fixture = resources.appending(path: "CompilerCandidate/Fixtures/ProcMacroIdentity")
+        let work = try XCTUnwrap(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first)
+            .appending(path: "CompilerBridgeLinkProbe")
+        try FileManager.default.createDirectory(at: work, withIntermediateDirectories: true)
+        let runtime = RustcRuntime(experimentalSoftwareDirect: true)
+        let module = try runtime.rustcModule(at: candidate.appending(path: "rustc.wasm"))
+        let common = ["--sysroot", "/sysroot", "--target", "wasm32-wasip1", "--edition", "2021", "-Copt-level=0", "-Cpanic=abort"]
+        let args: [String]
+        if mode == "emit" {
+            args = ["/fixture/lib.rs", "--crate-type", "proc-macro", "--crate-name", "crabrix_proc_macro_identity",
+                    "--emit=obj,metadata", "-Csave-temps", "--out-dir", "/work"] + common
+        } else {
+            args = ["/fixture/consumer/main.rs", "--extern", "crabrix_proc_macro_identity=/work/identity.wasm",
+                    "-o", "/work/program.wasm"] + common
+        }
+        let result = try runtime.run(module: module, arguments: ["rustc"] + args,
+            environment: ["CLIF2WASM_OBJECT": "1", "RUSTC_BOOTSTRAP": "1", "CRABRIX_WASM_PROC_MACROS": "1"],
+            preopens: [.init(guestPath: "/work", hostPath: work.path),
+                       .init(guestPath: "/tmp", hostPath: work.path),
+                       .init(guestPath: "/fixture", hostPath: fixture.path, readOnly: true),
+                       .init(guestPath: "/sysroot", hostPath: candidate.appending(path: "sysroot-wasip1").path, readOnly: true)],
+            captureDirectory: work, capturePrefix: "probe-\(mode ?? "")",
+            resourceLimiter: WasmSandboxResourceLimiter(memoryLimitBytes: CompilerHostPolicy.memoryLimitBytes,
+                tableElementLimit: CompilerHostPolicy.tableElementLimit),
+            fuelBudget: CompilerHostPolicy.fuelBudget, wallClockLimit: .seconds(240),
+            interrupter: WasmInterrupter(), softwareMemoryReservationBytes: CompilerHostPolicy.memoryLimitBytes,
+            capturedOutputLimitBytes: CompilerHostPolicy.outputLimitBytes, enableProceduralMacros: true)
+        XCTAssertEqual(result.exitCode, 0, result.stderr)
+        if mode == "consume", result.exitCode == 0 {
+            let program = try runtime.run(module: parseWasm(filePath: work.appending(path: "program.wasm").path),
+                arguments: ["program"], environment: [:], preopens: [], captureDirectory: work, capturePrefix: "program",
+                resourceLimiter: WasmSandboxResourceLimiter(), fuelBudget: WasmSandboxPolicy.userProgramInstructionBudget,
+                wallClockLimit: .seconds(10), interrupter: WasmInterrupter(),
+                capturedOutputLimitBytes: WasmSandboxPolicy.userProgramOutputLimitBytes)
+            XCTAssertEqual(program.exitCode, 0, program.stderr)
+            XCTAssertEqual(program.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "macro identity: 42")
+        }
     }
 
     func testWASIProcMacroIdentityUsesTheUnchangedMacroSource() async throws {
@@ -347,6 +406,8 @@ final class BundledCompilerGateTests: XCTestCase {
         let script = #"""
         use std::{env, fs, path::PathBuf};
         fn main() {
+            assert_eq!(env::var("RUSTC").unwrap(), "rustc");
+            assert!(std::process::Command::new("rustc").arg("--version").output().is_err());
             let text = fs::read_to_string("settings/greeting.txt").unwrap();
             let out = PathBuf::from(env::var_os("OUT_DIR").unwrap());
             fs::write(out.join("greeting.rs"), format!("pub const GREETING: &str = {text:?};")).unwrap();
