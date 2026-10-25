@@ -26,17 +26,20 @@
       {
         "displayType": "APP_IPHONE_67",
         "count": 10,
-        "complete": 10
+        "complete": 10,
+        "firstFile": "v111-iphone-6.9-01-build.png"
       },
       {
         "displayType": "APP_IPHONE_DUO",
         "count": 2,
-        "complete": 2
+        "complete": 2,
+        "firstFile": "v111-iphone-duo-qa-01-laptop-code.png"
       },
       {
         "displayType": "APP_IPAD_PRO_3GEN_129",
         "count": 7,
-        "complete": 7
+        "complete": 7,
+        "firstFile": "v111-ipad-13-01-build.png"
       }
     ]
   },
