@@ -1,3 +1,17 @@
+> Delivery verified through App Store Connect — 25 October 2026: **1.1.2 (92)**
+> is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. The version and
+> replacement review submission both report **WAITING_FOR_REVIEW**, selecting
+> build 92. Project settings now has a prominent Save and neutral X to close.
+> The duplicate terminal input Run is removed; keyboard Go submits, and the
+> prompt includes the project name only when there is room for it. The command
+> row stays 50 points high; Duo fold, tabs and keyboard helpers are preserved.
+> All 19 screenshots are COMPLETE, with Code first for iPhone, Duo and iPad.
+> Reviewer notes, public release notes and What to Test are saved and synchronized.
+> Release remains MANUAL. Experimental native/macro capabilities are not enabled
+> in this binary. [Build 92 delivery evidence](release-1.1.2-build92.json).
+>
+> Build 91 delivery below is historical; its review was replaced by build 92.
+
 > Delivery verified through App Store Connect — 25 October 2026: **1.1.2 (91)**
 > is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. Version and
 > replacement review submission both report **WAITING_FOR_REVIEW**, selecting

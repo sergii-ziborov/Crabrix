@@ -5,3 +5,6 @@ To test the web lab: Projects > New Project > Web Page > Run. Tap the counter; H
 Courses and examples download once and remain readable offline. Website Academy login is separate and not required in the app. Preparing a new crate or importing GitHub source requires a network connection; compilation stays on device. Optional Game Center is off by default. Optional Apple Intelligence runs on device only where available; local completion works without it. Existing iPhone/iPad/Duo layouts are preserved. Documentation: https://crabrix.com/guide/ .
 
 This update enables the corrected software-bounds direct interpreter on arm64 and improves instruction emission. The compiler remains bundled WASM, with fuel, memory bounds and Stop; it does not use JIT or native code downloaded at runtime. Cargo resolution allows up to 2,048 unique dependency packages; WASI compatibility restrictions remain. Program traps retain their printed error messages in Problems. No workspace layout changes are part of this update.
+
+
+Build 92 also updates Project settings (prominent Save, separate X to close), preserves unique project names, and removes the duplicate terminal input Run button. The keyboard Go key submits commands. Existing workspace and offline compiler capabilities are preserved.

@@ -19,7 +19,7 @@ completed before switching, and the previous container is stopped as
 [Publication evidence](site-release-2026-10-25-brand-navigation.json),
 [light theme](screenshots/site-brand-light-2026-10-25.png).
 
-## Current service verification — 25 October 2026
+## Earlier release 87 service verification — 25 October 2026
 
 The live service was read back as `crabrix-web-site-1`, image
 `localhost/crabrix-web-site:release87-20261025`, running and healthy. This

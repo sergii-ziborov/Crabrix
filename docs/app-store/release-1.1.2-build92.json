@@ -1,0 +1,75 @@
+{
+  "verifiedAtUTC": "2026-10-25T17:39:52.666087+00:00",
+  "version": "1.1.2",
+  "buildNumber": "92",
+  "buildID": "f477becf-9111-457c-887b-9921bdca7daf",
+  "appSourceCommit": "521601ac54133c141db27e208a78475060e2b106",
+  "cloudBuildRunID": "be6fd1ab-42b3-4ce0-b42b-6e11643dbf49",
+  "cloudCompletion": "SUCCEEDED",
+  "testFlight": {
+    "processingState": "VALID",
+    "group": "Internal QA",
+    "internalBuildState": "IN_BETA_TESTING"
+  },
+  "appStore": {
+    "versionID": "4ad2dcb4-5252-4f36-bb32-99f41e3f6e9a",
+    "submissionID": "cb483e5f-7340-4e5c-af75-446c78d7df70",
+    "state": "WAITING_FOR_REVIEW",
+    "reviewState": "WAITING_FOR_REVIEW",
+    "selectedBuild": "92",
+    "releaseType": "MANUAL",
+    "screenshots": [
+      {
+        "displayType": "APP_IPHONE_67",
+        "count": 10,
+        "complete": 10,
+        "firstFile": "v111-iphone-6.9-01-build.png"
+      },
+      {
+        "displayType": "APP_IPHONE_DUO",
+        "count": 2,
+        "complete": 2,
+        "firstFile": "v111-iphone-duo-qa-01-laptop-code.png"
+      },
+      {
+        "displayType": "APP_IPAD_PRO_3GEN_129",
+        "count": 7,
+        "complete": 7,
+        "firstFile": "v111-ipad-13-01-build.png"
+      }
+    ]
+  },
+  "changes": [
+    "Prominent blue Save with contrasting text; neutral X to close Project settings",
+    "Removed duplicate Run beside the terminal command field; keyboard Go still submits",
+    "Project name in terminal prompt appears only when room remains for the input and existing controls"
+  ],
+  "verification": {
+    "optimizedSimulatorAppBuild": "passed",
+    "manualCloudBuildAndArchive": "succeeded",
+    "terminalCommandRowHeightPoints": 50,
+    "foldTabKeyboardGeometryChanged": false,
+    "projectLibraryTestsFromBuild91": {
+      "passed": 35,
+      "failed": 0,
+      "skipped": 0,
+      "dataLogicChangedByBuild92": false
+    },
+    "legalCopies": "matched",
+    "reviewerNotesAndReleaseNotes": "matched saved Apple fields"
+  },
+  "scope": {
+    "arm64SoftwareDirectInterpreter": true,
+    "directInstructionEmission": true,
+    "maximumUniqueDependencyPackages": 2048,
+    "offlineWebLab": true,
+    "nativeCompilerCandidateEnabled": false,
+    "productionProceduralMacroCapability": false
+  },
+  "website": {
+    "origin": "https://crabrix.com",
+    "image": "localhost/crabrix-web-site:brand-navigation-20261025",
+    "evidence": "../site-release-2026-10-25-brand-navigation.json"
+  },
+  "experimentalCompiler": "Ten simulator gates passed separately. Candidate is not included in build 92; physical-device qualification and large-project sub-30-second objective remain outstanding."
+}

@@ -1,0 +1,10 @@
+Faster on-device compilation with the improved arm64 interpreter.
+Dependency graphs now support up to 2,048 unique packages.
+
+Local web lab: create HTML/CSS/JavaScript pages or generate them with Rust, then preview them offline.
+Package preparation now shows downloads, verification, dependencies and failures. Output includes build stages.
+Added bounded standard-library build scripts, web syntax highlighting and language-aware offline completion. Browser errors appear in Problems.
+Preserved the existing iPhone, iPad and Duo workspace layouts. Updated the offline guide, About and component licenses.
+Program panics now keep their error text in Problems instead of being reported as compiler failures.
+
+Project settings has a highlighted Save action and a separate Close button. Project names remain unique. The terminal command row is simpler and adapts its prompt to the available width.
