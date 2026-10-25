@@ -1,4 +1,13 @@
-> Status verified through App Store Connect — 25 October 2026: **1.1.2 (75)**
+> Delivery verified through App Store Connect — 25 October 2026: **1.1.2 (87)**
+> is VALID in TestFlight **Internal QA** and selected for the App Store version
+> **WAITING_FOR_REVIEW**. The manual Xcode Cloud archive includes arm64 direct
+> interpreter improvements, the offline web lab and the **2,048-package** limit.
+> Native compiler and procedural-macro candidates remain outside this binary.
+> All 19 screenshots are COMPLETE, with Code first for iPhone, Duo and iPad.
+> The two custom product pages remain approved. Release stays MANUAL.
+> [Build 87 delivery evidence](release-1.1.2-build87.json).
+>
+> Earlier verification before the replacement submission — 25 October 2026: **1.1.2 (75)**
 > is VALID, unexpired and **PENDING_DEVELOPER_RELEASE** (approved, awaiting
 > manual release). The acceleration/procedural-macro work is not in that binary.
 > New manual compiler-candidate runs are qualification jobs, not TestFlight

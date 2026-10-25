@@ -43,6 +43,8 @@ The [interaction fixes](docs/interaction-fixes-2026-10-15.md) attach Term Train 
 
 For Cargo projects, Crabrix resolves supported crates.io graphs with up to **2,048 unique dependency packages**, verifies registry checksums, builds dependencies locally, and can pin their source archives for offline rebuilds. `syn`, `quote`, and `proc-macro2` use a parser-only feature profile that works with the bundled WASI compiler; an existing plain `syn` dependency can be repaired from the project package panel. Standard-library-only build scripts now run locally as bounded WASI guests. Native linking, host subprocesses, separate build-dependency graphs and procedural macro crates remain unsupported. An installed course is readable offline; an exercise using crates is offline ready only after its dependencies have been prepared. The editor, diagnostics, Code Examples path, import/export, and training activities remain native UI.
 
+Feature resolution preserves Cargo's optional-dependency feature names when a strong `dependency/feature` request activates them, including explicit feature definitions. Names hidden by the `dep:` syntax remain hidden. Four regression cases are checked against ordinary Cargo metadata; changing a resolved feature set changes the affected package fingerprints.
+
 The [free Learn site](https://crabrix.com/learn/) has expanded explanations
 and an infographic for all 742 lessons: 142 Rust lessons and 600 Algorithm
 Atlas steps. Atlas shares 40 five-pattern diagrams across all 600 steps; the

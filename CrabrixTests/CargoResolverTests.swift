@@ -329,6 +329,35 @@ final class CargoResolverTests: XCTestCase {
         XCTAssertTrue(withFeature.packages.keys.contains { $0.name == "extra" })
     }
 
+    func testStrongOptionalFeatureForwardingMatchesCargoFeatureNames() async throws {
+        let index = try StubIndex.make([
+            "addon": [indexLine("addon", "1.0.0", features: "{\"std\":[]}")],
+        ])
+        // Checked against Cargo metadata: the namespaced dep form hides an
+        // implicit feature, but does not hide an explicitly declared one.
+        let cases: [(String, String, Set<String>)] = [
+            ("implicit", "", ["default", "std", "addon"]),
+            ("hidden", "manual = [\"dep:addon\"]", ["default", "std"]),
+            ("explicit", "addon = [\"marker\"]\nmarker = []", ["default", "std", "addon", "marker"]),
+            ("explicit namespaced", "addon = [\"marker\"]\nmarker = []\nmanual = [\"dep:addon\"]", ["default", "std", "addon", "marker"]),
+        ]
+        for (name, extra, expected) in cases {
+            let root = try manifest("""
+            [dependencies]
+            addon = { version = "1", optional = true, default-features = false }
+            [features]
+            default = ["std"]
+            std = ["addon/std"]
+            \(extra)
+            """)
+            let graph = try await CargoResolver(index: index).resolve(
+                rootDependencies: root.dependencies, rootFeatures: root.features)
+            XCTAssertEqual(Set(graph.rootFeatures), expected, name)
+            let addon = try XCTUnwrap(graph.packages.values.first { $0.id.name == "addon" })
+            XCTAssertEqual(addon.features, ["std"], name)
+        }
+    }
+
     func testFeaturesPropagateToDependenciesAndUnify() async throws {
         let index = try StubIndex.make([
             "front": [

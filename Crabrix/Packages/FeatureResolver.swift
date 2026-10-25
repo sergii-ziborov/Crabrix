@@ -101,6 +101,12 @@ enum FeatureResolver {
                     expansion.dependencyFeatures[alias, default: []].insert(child)
                     if optionalDependencyAliases.contains(alias) {
                         expansion.activatedAliases.insert(alias)
+                        // Cargo also activates the dependency's public feature
+                        // when it exists. `dep:` only suppresses implicit names;
+                        // an explicitly declared feature still expands normally.
+                        if featureTable[alias] != nil || !explicitlyReferencedDependencies.contains(alias) {
+                            pending.append(alias)
+                        }
                     }
                 }
                 continue
