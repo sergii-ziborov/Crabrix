@@ -1,0 +1,147 @@
+{
+  "observedAtUTC": "2026-10-25T21:35:56.532321+00:00",
+  "environment": {
+    "platform": "iOS Simulator",
+    "device": "iPhone 17 Pro",
+    "osVersion": "26.5",
+    "sdk": "27.1 RC",
+    "architecture": "arm64",
+    "configuration": "CompilerCandidate",
+    "sharedMacLoad": "Not isolated; timings vary across successive runs"
+  },
+  "appSourceCommit": "3a9ff97b193d9bcf6bd620fe0986625ce6075e03",
+  "compilerWASMSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+  "sourceArchiveSHA256": "6a28c35e6f70a1cf2ba422ec68ae5bbe8abd5b550523c502f3e52c3e5d0bc760",
+  "compileHelperCommit": "94cd79c",
+  "nativeArchiveSHA256": {
+    "O1": "3dd44c63a234bad2799005f732944707d3dcf686b75049e9f34b18c38f5b75de",
+    "O2": "1e78e4b86cb115b5da5c8a34f7ca29ccc52a4a23337f1bd8dbeef4f661d5ce2a"
+  },
+  "optimizationChange": "Explicit -O1 to -O2 only; source inventory, checkpoints, memory bounds, stack margin and cancellation polling unchanged",
+  "O2FullAcceptance": {
+    "summary": {
+      "passedTests": 10,
+      "failedTests": 0,
+      "skippedTests": 0
+    },
+    "compilerAndRunSeconds": {
+      "kameoCold31Dependencies": 34.096174291,
+      "changedRoot31DependenciesCached": 2.391844542,
+      "axumCold22DependenciesInMemoryRouter": 31.377459333
+    },
+    "evidence": {
+      "log": "build/compiler-optimization-20261024/native-o2-simulator-batch.log",
+      "logSHA256": "2ad475e5ecb6029379baf6450209fa81fbf2283f8718e2e78a6036a68a2729b8",
+      "xcresult": "build/compiler-optimization-20261024/native-o2-simulator-batch.xcresult"
+    },
+    "testCases": [
+      {
+        "name": "testAtomicBoolAndIntegerStateRemainConsistent",
+        "seconds": 2.341
+      },
+      {
+        "name": "testAxumColdRouterWithTokio",
+        "seconds": 41.587
+      },
+      {
+        "name": "testMacroCandidateInputBindsCompilerAndCompleteSourceSysroot",
+        "seconds": 0.437
+      },
+      {
+        "name": "testProgramPanicKeepsItsMessageAndRunPhase",
+        "seconds": 0.133
+      },
+      {
+        "name": "testRunKeepsMainActorResponsiveAtUserInitiatedPriority",
+        "seconds": 0.211
+      },
+      {
+        "name": "testRustGeneratesAnOfflineHTMLCSSJavaScriptPreview",
+        "seconds": 0.234
+      },
+      {
+        "name": "testSerdeDeriveRunsThroughTheOfflineWASIMacroBridge",
+        "seconds": 19.761
+      },
+      {
+        "name": "testStopInterruptsARunningCompile",
+        "seconds": 0.776
+      },
+      {
+        "name": "testUnchangedKameoColdActorsAndChangedRootRunOffline",
+        "seconds": 58.415
+      },
+      {
+        "name": "testWASIProcMacroIdentityUsesTheUnchangedMacroSource",
+        "seconds": 1.291
+      }
+    ]
+  },
+  "O2RepeatedColdSample": {
+    "summary": {
+      "passedTests": 2,
+      "failedTests": 0,
+      "skippedTests": 0
+    },
+    "compilerAndRunSeconds": {
+      "kameoCold31Dependencies": 43.050025708999996,
+      "changedRoot31DependenciesCached": 1.519623417,
+      "axumCold22DependenciesInMemoryRouter": 21.274671083
+    },
+    "evidence": {
+      "log": "build/compiler-optimization-20261024/native-o2-repeat01.log",
+      "logSHA256": "692888c445c2ae16f6384abcd2d33977619a2b0cf450e21c1cdcd79af6b37a45",
+      "xcresult": "build/compiler-optimization-20261024/native-o2-repeat01.xcresult"
+    },
+    "testCases": [
+      {
+        "name": "testAxumColdRouterWithTokio",
+        "seconds": 34.069
+      },
+      {
+        "name": "testUnchangedKameoColdActorsAndChangedRootRunOffline",
+        "seconds": 61.372
+      }
+    ]
+  },
+  "O1MatchingSourceColdControl": {
+    "summary": {
+      "passedTests": 2,
+      "failedTests": 0,
+      "skippedTests": 0
+    },
+    "compilerAndRunSeconds": {
+      "kameoCold31Dependencies": 31.101014459,
+      "changedRoot31DependenciesCached": 1.493509584,
+      "axumCold22DependenciesInMemoryRouter": 20.989833084
+    },
+    "evidence": {
+      "log": "build/compiler-optimization-20261024/native-o1-paired.log",
+      "logSHA256": "5afea763a69b50a362887b5d0c757efe576fa48c037293835cdf0f93c24fbfee",
+      "xcresult": "build/compiler-optimization-20261024/native-o1-paired.xcresult"
+    },
+    "testCases": [
+      {
+        "name": "testAxumColdRouterWithTokio",
+        "seconds": 26.694
+      },
+      {
+        "name": "testUnchangedKameoColdActorsAndChangedRootRunOffline",
+        "seconds": 44.578
+      }
+    ]
+  },
+  "decision": {
+    "promoteO2": false,
+    "productionCompilerChanged": false,
+    "largeProjectSub30SecondsEstablished": false,
+    "reason": "All ten functional gates pass, but two O2 cold Kameo samples do not outperform the later matching-source O1 control. Axum repeat and control are approximately equal. Shared-host variance prevents an isolated speedup claim. Keep the existing O1 default."
+  },
+  "scope": [
+    "Compilation/run timing excludes prior package preparation; full test case times include setup.",
+    "Each Kameo sample isolates both dependency and root-program caches and asserts 31 cold dependency callbacks.",
+    "Kameo source and lockfile, five procedural macros, 16 actors and 1024 records are unchanged.",
+    "Axum is in-memory HTTP request routing, not a TCP server.",
+    "These are simulator observations, not physical-iPhone qualification or shipping build 93 performance."
+  ]
+}

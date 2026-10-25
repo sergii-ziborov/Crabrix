@@ -74,5 +74,5 @@
     "image": "localhost/crabrix-web-site:brand-navigation-20261025",
     "evidence": "../site-release-2026-10-25-brand-navigation.json"
   },
-  "experimentalCompiler": "Ten simulator gates passed separately. Candidate is not included in build 92; physical-device qualification and large-project sub-30-second objective remain outstanding."
+  "experimentalCompiler": "Ten simulator gates passed separately. Candidate is not included in build 93; physical-device qualification and large-project sub-30-second objective remain outstanding."
 }

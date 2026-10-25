@@ -95,3 +95,19 @@ were archived after the tests to recover disk space. Production build 92 retains
 the existing signed compiler and does not enable this candidate. Promotion and
 physical-device checks remain outstanding.
 [Exact native simulator evidence](2026-10-25-atomic-native-simulator.json).
+
+## Explicit O2 experiment: functional pass, no accepted speedup
+
+The same verified C inventory was separately compiled with an explicit `-O2`
+override, retaining all bounds, stack, work and Stop checks. The helper records
+that override in the compile provenance and cache identity; its default remains
+the original source recipe. The actual wrapper passed hostile mock checks at O2,
+and the simulator passed all ten functional gates with no failures or skips.
+
+On the shared Mac, the two O2 cold Kameo samples took **34.096 and 43.050 seconds**;
+the subsequent O1 control from the same app source took **31.101 seconds**. Axum
+took 31.377 then 21.275 seconds with O2 and **20.990 seconds** with O1. These
+successive samples show substantial variation and establish no O2 advantage.
+The O2 kernel is retained as an experimental artifact and is not promoted.
+The previous O1 recipe and shipping build 93 remain unchanged.
+[Exact comparison](2026-10-25-native-o2-simulator.json).
