@@ -1,0 +1,71 @@
+{
+  "origin": "https://crabrix.com",
+  "pages": [
+    {
+      "path": "/guide/",
+      "canonical": "https://crabrix.com/guide/",
+      "h1": 1,
+      "status": 200
+    },
+    {
+      "path": "/technology/",
+      "canonical": "https://crabrix.com/technology/",
+      "h1": 1,
+      "status": 200
+    }
+  ],
+  "images": [
+    {
+      "src": "/screenshots/iphone-projects.png",
+      "sha256": "03dc651e7d045e58d647bccfa82425ed5303cbd9f44e200594f4510e020048d7"
+    },
+    {
+      "src": "/screenshots/iphone-build.png",
+      "sha256": "528dc7b0a13bbe5fc81b086ea3dbd8c9a3f244e374027f5d2c4aca06888df77d"
+    },
+    {
+      "src": "/screenshots/offline-web-preview.png",
+      "sha256": "2f660dc0af3d06cd642c36b5e14f0de4488acc3e53c6b6f892577fbfa2e11b24"
+    },
+    {
+      "src": "/screenshots/iphone-learn.png",
+      "sha256": "c0b91d617b9fd89ea8905e6fce62b00b7afc019c11e5be27e5a0e2b21a01862e"
+    },
+    {
+      "src": "/screenshots/iphone-examples.png",
+      "sha256": "a79c1ea37cce5cdb512a31f1d2d468f05b2e041c549a2e58a90d0e80a42181b0"
+    },
+    {
+      "src": "/screenshots/iphone-example-detail.png",
+      "sha256": "833aef37bea630212d15ab9817bc2c6ce28d9d6b33e146f106baaf8ffb40144c"
+    },
+    {
+      "src": "/screenshots/duo-laptop.png",
+      "sha256": "10fd1f9d288a3782c56d12239dfeea536ad80b8cc3d574892e0090a40c524e95"
+    },
+    {
+      "src": "/screenshots/ipad-build.png",
+      "sha256": "4d5ffbf37495fe02e31db58ca3fbe4bc8e740197e64f4b0c44ae94befb028499"
+    }
+  ],
+  "sitemapURLs": 785,
+  "blogImages": 50,
+  "privateMediaDenied": true,
+  "accountRoutesNoindex": true,
+  "publishedAtUTC": "2026-10-25T00:08:11.908306+00:00",
+  "sourceRevision": "9722dce",
+  "image": "localhost/crabrix-web-site:guide-20261025-r3",
+  "imageID": "3bda43d00469ddeb8e103931663cfb5e603cc7679538f59f863e0e4378ff14b5",
+  "rollbackContainer": "crabrix-web-site-before-guide-20261025",
+  "backup": "Existing consistent account backup completed before switching; persistent account mount preserved",
+  "checks": {
+    "siteTests": 13,
+    "typeScript": "passed",
+    "productionBuild": "passed",
+    "rawStringRenderedDelimiter": "passed",
+    "browserImages": 8,
+    "horizontalOverflow": false
+  },
+  "proofScreenshot": "screenshots/site-guide-2026-10-25.png",
+  "compilerCandidateShipment": "pending qualification and signed promotion; not a TestFlight update"
+}

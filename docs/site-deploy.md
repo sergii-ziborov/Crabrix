@@ -1,5 +1,38 @@
 # Crabrix website deployment
 
+## Detailed offline guide and compiler measurements — 25 October 2026
+
+The manual release `localhost/crabrix-web-site:guide-20261025-r3` runs on the
+existing loopback port 3212. The account mount, 512 MiB memory limit, 0.75 CPU,
+256-process limit, no-new-privileges option and backup timer are preserved.
+A consistent account backup completed before switching. The preceding server
+remains stopped as `crabrix-web-site-before-guide-20261025` for rollback.
+
+The illustrated guide now includes a first-project walkthrough, exact offline
+pinning steps, package-state explanations, Check/Run and build-stage behavior,
+web editing and snapshot refresh, code, troubleshooting and concrete limits.
+Eight distinct real captures cover Projects, Rust code, WebKit output, courses,
+examples, an example explanation with its infographic, Duo and iPad. A mistaken
+My Projects caption over the examples gallery was removed. Rust raw strings
+now use matching hash delimiters in website syntax highlighting.
+
+Technology separates the measured experimental Tokio/Axum profiles from the
+installed compiler. Three small Tokio cold runs took 29.78/27.88/28.54 seconds;
+the 22-dependency Axum in-memory router took 126.29 seconds. The large Kameo
+macro graph and 30-second large-project objective remain unqualified. No
+compiler experiment is advertised as an App Store shipment.
+
+Thirteen site tests, TypeScript and the production build passed. Candidate and
+public HTTPS checks verified both changed pages, metadata, all eight source
+image digests, actual raw-string markup, 785 sitemap entries, 50 blog images,
+recorded page modification dates, account noindex and private media denial.
+Browser verification confirmed all eight images loaded and no horizontal
+overflow. The 742-lesson snapshot, 25 articles and account gate remain intact.
+DNS, Nginx and GitHub Actions configuration are unchanged.
+
+[Release evidence](site-release-2026-10-25-guide.json),
+[browser proof](screenshots/site-guide-2026-10-25.png).
+
 ## Academy review, five Rust guides and complete sitemaps — 20 October 2026
 
 The manual release is `localhost/crabrix-web-site:academy-blog-20261020-r4`
