@@ -1,3 +1,15 @@
+> Delivery verified through App Store Connect — 25 October 2026: **1.1.2 (91)**
+> is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. Version and
+> replacement review submission both report **WAITING_FOR_REVIEW**, selecting
+> build 91. It adds the simplified Project settings Save/Close actions and
+> durable unique-name handling, including safe repair of older duplicates.
+> The final simulator verification passed 35 tests with no failures or skips.
+> Workspace fold/tab/keyboard geometry and the signed production compiler
+> remain unchanged. Experimental compiler qualification continues separately.
+> [Build 91 delivery evidence](release-1.1.2-build91.json).
+>
+> Build 88 delivery below is historical; its review was replaced by build 91.
+
 > Delivery verified through App Store Connect — 25 October 2026: **1.1.2 (88)**
 > is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. The App Store
 > version selects build 88 and both the version and replacement submission

@@ -1,0 +1,68 @@
+{
+  "publishedAtUTC": "2026-10-25T13:56:05.562151+00:00",
+  "version": "1.1.2",
+  "buildNumber": "91",
+  "buildID": "48d57df8-595f-4f53-8682-023b1a377fdf",
+  "appSourceCommit": "6f6adc79eb4b6242d005dc1cfede69543348c316",
+  "cloudBuildRunID": "e386bae2-da3d-4bb8-b552-8b6f92644ab1",
+  "testFlight": {
+    "processingState": "VALID",
+    "group": "Internal QA",
+    "internalBuildState": "IN_BETA_TESTING"
+  },
+  "appStore": {
+    "versionID": "4ad2dcb4-5252-4f36-bb32-99f41e3f6e9a",
+    "submissionID": "472325d3-7a8f-4332-87bc-ed535a468498",
+    "state": "WAITING_FOR_REVIEW",
+    "selectedBuild": "91",
+    "screenshots": {
+      "iPhone": 10,
+      "Duo": 2,
+      "iPad": 7,
+      "codeFirst": true
+    },
+    "customProductPagesApproved": 2,
+    "screenshotReadback": [
+      {
+        "displayType": "APP_IPHONE_67",
+        "count": 10,
+        "complete": 10
+      },
+      {
+        "displayType": "APP_IPHONE_DUO",
+        "count": 2,
+        "complete": 2
+      },
+      {
+        "displayType": "APP_IPAD_PRO_3GEN_129",
+        "count": 7,
+        "complete": 7
+      }
+    ]
+  },
+  "tests": {
+    "passed": 35,
+    "failed": 0,
+    "skipped": 0,
+    "environment": "optimized CompilerCandidate iOS Simulator",
+    "resultBundle": "project-settings-names-final.xcresult",
+    "ProjectImportTests": 18,
+    "ProjectAuthoringTests": 14,
+    "WorkspaceRevisionViewModelTests": 3
+  },
+  "scope": {
+    "arm64SoftwareDirectInterpreter": true,
+    "directInstructionEmission": true,
+    "maximumUniqueDependencyPackages": 2048,
+    "offlineWebLab": true,
+    "nativeCompilerCandidateEnabled": false,
+    "productionProceduralMacroCapability": false,
+    "workspaceLayoutChanged": false
+  },
+  "largeTokioUnder30Seconds": "not established; further native compiler qualification continues separately",
+  "changesSince88": [
+    "Top Save waits for persistence; checkmark Close; repeated lower save and unlabeled favorite toggle removed.",
+    "Project names are unique across create/import/rename; old duplicate names repaired without deleting project IDs, files, metadata or build history.",
+    "Remove obsolete Cargo.lock when no dependencies remain."
+  ]
+}

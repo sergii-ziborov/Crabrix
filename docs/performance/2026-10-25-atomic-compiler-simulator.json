@@ -1,0 +1,57 @@
+{
+  "recordedAtUTC": "2026-10-25T13:52:13.490608+00:00",
+  "compilerSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+  "builderCommit": "0a5970c97ef0e192c8f6e5dec460190924489f97",
+  "independentSourceBuilds": [
+    {
+      "number": 89,
+      "runID": "eb73637a-1c11-4d19-b178-f4a8666ed50f"
+    },
+    {
+      "number": 90,
+      "runID": "f719833d-1fe2-4a94-82a3-29dd3d4e34f9"
+    }
+  ],
+  "rawCompilerMatch": true,
+  "sourceSysrootArchiveMatch": true,
+  "sourceSysrootInventoryMatch": true,
+  "cloudTestOutcome": "Source builds and build-for-testing artifacts succeeded; cloud device tests were not executed because the configured iPhone 18 Pro/iOS 27.1 destination was rejected. Workflow now selects iPhone 17 Pro; a future cloud run must verify that destination.",
+  "consumer": {
+    "platform": "iOS Simulator",
+    "os": "26.5",
+    "sdk": "27.1",
+    "configuration": "CompilerCandidate (optimized)",
+    "backend": "WASM software-direct",
+    "appDriverCommit": "6f6adc79eb4b6242d005dc1cfede69543348c316",
+    "compilerSource": "Verified Cloud 89 artifact staged only into the local test bundle",
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "resultBundle": "atomic-fixed-macro-simulator-r1.xcresult",
+    "gates": [
+      "packed atomic bool/u8/u16 neighbor canaries",
+      "complete source-built macro sysroot binding",
+      "real Serde derive",
+      "unchanged 32-package Kameo/Tokio cold workload and changed-root cached dependencies",
+      "unchanged identity macro source"
+    ]
+  },
+  "measurements": {
+    "kameoColdSeconds": 238.315273542,
+    "kameoChangedRootSeconds": 7.163988167,
+    "kameoDependencyUnits": 31,
+    "kameoMacroCrates": 5,
+    "serdeTestCaseSeconds": 98.576,
+    "kameoTestCaseSeconds": 259.076,
+    "expectedOutput": "kameo offline: actors=16 records=1024 sum=523776"
+  },
+  "nativeCandidate": {
+    "checkpointPolicy": "function-and-backedge",
+    "staticCheckpoints": 188148,
+    "generatedSourcesMatch": true,
+    "sourceArchiveSHA256": "6a28c35e6f70a1cf2ba422ec68ae5bbe8abd5b550523c502f3e52c3e5d0bc760",
+    "simulatorCompilation": "in progress; not measured or qualified"
+  },
+  "productionCompilerReplaced": false,
+  "largeTokioIPhoneUnder30Seconds": "not established"
+}

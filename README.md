@@ -17,13 +17,13 @@ The [iPad workspace](docs/screenshots/ipad-build.png) shows the file sidebar and
 
 The current screenshot set includes ten iPhone and six iPad frames from manual Xcode Cloud run 62 after signed Academy updates, the final SDK 27.1 iPad editor with search and Check/Run from run 70, and two fresh native Duo laptop frames. [Capture and upload evidence](docs/app-store/asset-upload-2026-10-16-1.1.1.json) records all 19 files and their placements on the main, Rust Academy and Rust Compiler product pages.
 
-The current internal test release is **1.1.2 (88)**, built manually in Xcode Cloud with SDK 27.1. It is VALID and IN_BETA_TESTING in TestFlight Internal QA. The App Store version selects build 88 and reports **WAITING_FOR_REVIEW**; release remains manual. It retains the offline web lab, the 2,048-package resolver ceiling, arm64 interpreter improvements and the established Duo layout. Build 88 also corrects Cargo optional feature forwarding. Experimental static native compilation and the new procedural-macro bridge are still undergoing qualification and are not in this binary. [Delivery evidence](docs/app-store/release-1.1.2-build88.json) records the exact source and Apple readback.
+The current internal test release is **1.1.2 (91)**, built manually in Xcode Cloud with SDK 27.1. It is VALID and IN_BETA_TESTING in TestFlight Internal QA. The App Store version selects build 91 and reports **WAITING_FOR_REVIEW**; release remains manual. It retains the offline web lab, the 2,048-package resolver ceiling, arm64 interpreter improvements and the established Duo layout. Build 91 simplifies Project settings and keeps project display names unique, safely repairing existing duplicates. The experimental static native compiler and procedural-macro bridge remain under qualification and are not in this binary. [Delivery evidence](docs/app-store/release-1.1.2-build91.json) records the source and Apple readback.
 
 The live website has canonical and social metadata for all **785 public pages**, with structured data for the product, courses, lessons and articles. The [HTML sitemap](https://crabrix.com/sitemap/) and [XML sitemap](https://crabrix.com/sitemap.xml) include all 742 lessons and 25 blog articles. [Publication evidence](docs/site-release-2026-10-24-blog.json) records the latest site checks. [SEO and App Store presentation](docs/seo-2026-10-16.md) documents account access checks, relevant search keywords and two custom product pages.
 
 The historical [21 October delivery check](docs/releases/delivery-check-2026-10-21.json)
 records the earlier TestFlight 1.1.1 (68) delivery. That app archive has since
-been superseded by 1.1.2 (88), and the Hetzner site includes the offline web lab
+been superseded by 1.1.2 (91), and the Hetzner site includes the offline web lab
 and updated package limits. Academy material continues to arrive through
 signed course updates.
 

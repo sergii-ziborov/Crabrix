@@ -53,3 +53,13 @@ A separate source-generation option retains checkpoints on function entry and ba
 Across all 64 existing generated kernel files, the experiment retains **188,147** static checks (60,368 entries and 127,779 backward edges) and removes 1,925,034 forward-edge checks. Re-emitting the original all-branches policy matched every old generated function byte for byte. These are static code counts, not a runtime speedup, and they do not qualify the earlier compiler that failed Kameo.
 
 Two fresh corrected-compiler source builds were manually started from app driver `3222691a3ef96025dc14de5dcd685172ba563a35`: Cloud **89** (`eb73637a-1c11-4d19-b178-f4a8666ed50f`) and **90** (`f719833d-1fe2-4a94-82a3-29dd3d4e34f9`). Both bind the atomic-corrected recipe `0a5970c97ef0e192c8f6e5dec460190924489f97`. They are compiler qualification runs, separate from TestFlight build 88.
+
+## Corrected full compiler: functional simulator acceptance
+
+Cloud 89 and 90 produced identical corrected compiler `27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008`, identical source-built sysroot archives and identical inventories. Both raw records passed the exact source-profile checks. Their subsequent Cloud device tests were not executed: Xcode Cloud rejected the configured iPhone 18 Pro/iOS 27.1 destination. The manual-only workflow now selects iPhone 17 Pro; that new Cloud destination still needs a future run.
+
+The verified compiler and complete source-built sysroot were staged only into a local optimized simulator test bundle. With the WASM software-direct backend, all **5 selected tests passed, with no failures or skips**: packed atomic canaries, input/sysroot binding, real Serde derive, unchanged identity macro, and the unchanged full Kameo/Tokio gate. The Kameo program now prints the expected 16-actor/1,024-record result instead of `ActorNotRunning`. All 31 dependencies compiled cold; after changing the root, every dependency was correctly reused.
+
+The cold Kameo compile/run took **238.315 seconds**; changed-root compile/run with dependencies cached took **7.164 seconds**. The Serde test case took 98.576 seconds. These are interpreter-path simulator observations while the native kernel was being compiled, not an iPhone or native-accelerator performance claim.
+
+Both new compilers translated into identical C inventories with optional function/backedge polling. The new kernel has 188,148 static checkpoints; matching source archive SHA-256 is `6a28c35e6f70a1cf2ba422ec68ae5bbe8abd5b550523c502f3e52c3e5d0bc760`. Its real simulator SDK build is in progress. Native performance, Stop and full runtime acceptance remain pending. [Exact functional evidence](2026-10-25-atomic-compiler-simulator.json).

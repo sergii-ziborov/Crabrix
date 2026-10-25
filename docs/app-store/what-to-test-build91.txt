@@ -1,0 +1,10 @@
+Test the faster arm64 Rust compiler, Check/Run, Stop and the unchanged iPhone/iPad/Duo workspace.
+Create Web Page or Rust Web Generator and run the local HTML/CSS/JavaScript preview; external network stays blocked.
+Prepare dependencies, inspect package progress and pin them for offline use. The resolver supports up to 2,048 unique dependency packages.
+Verify compiler diagnostics and program panic messages in Problems.
+The additional static compiler and procedural macro toolchain remain candidates and are not enabled in this build. A large Tokio project under 30 seconds is not a release claim.
+
+
+Build 88: Fix Cargo optional dependency feature forwarding so feature names and dependency activation match Cargo.
+
+Build 91: Project settings now has Save at the top and a checkmark Close action; the repeated lower save button and unlabeled favorite toggle are removed. Save waits for persistence. Project names stay unique across creation, import and rename; old duplicate names are repaired without deleting IDs, files or build history. Also removes the obsolete lock after the final Cargo dependency is removed.
