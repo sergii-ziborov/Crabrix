@@ -1,3 +1,13 @@
+> Apple review readback — 26 October 2026: **1.1.2 (93)** is approved.
+> The selected version reports **PENDING_DEVELOPER_RELEASE**, and review
+> submission `31ea8182-f5f1-409a-90f4-163fc8f9aec3` is **COMPLETE**.
+> Build 93 remains **IN_BETA_TESTING** in TestFlight. App Store publication
+> awaits manual developer release. The experimental native compiler and newly
+> cross-built iOS archive are separate candidates and are not in build 93.
+> [Current Apple readback](release-1.1.2-build93.json).
+>
+> The original delivery snapshots below record their state at submission time.
+
 > Delivery verified through App Store Connect — 25 October 2026: **1.1.2 (93)**
 > is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. The version and
 > replacement review submission both report **WAITING_FOR_REVIEW**, selecting

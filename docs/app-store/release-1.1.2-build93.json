@@ -1,5 +1,5 @@
 {
-  "verifiedAtUTC": "2026-10-25T18:56:02.673632+00:00",
+  "verifiedAtUTC": "2026-10-25T22:25:46.345827+00:00",
   "version": "1.1.2",
   "buildNumber": "93",
   "buildID": "1829d873-a02e-4679-9842-de4489920a93",
@@ -14,8 +14,8 @@
   "appStore": {
     "versionID": "4ad2dcb4-5252-4f36-bb32-99f41e3f6e9a",
     "submissionID": "31ea8182-f5f1-409a-90f4-163fc8f9aec3",
-    "state": "WAITING_FOR_REVIEW",
-    "reviewState": "WAITING_FOR_REVIEW",
+    "state": "PENDING_DEVELOPER_RELEASE",
+    "reviewState": "COMPLETE",
     "selectedBuild": "93",
     "releaseType": "MANUAL",
     "screenshots": [
@@ -37,7 +37,8 @@
         "complete": 7,
         "firstFile": "v111-ipad-13-01-build.png"
       }
-    ]
+    ],
+    "publication": "Approved; pending manual developer release"
   },
   "changes": [
     "One plain native X at the trailing edge of eleven custom modal headers; no additional bordered button surface",
@@ -74,5 +75,6 @@
     "image": "localhost/crabrix-web-site:brand-navigation-20261025",
     "evidence": "../site-release-2026-10-25-brand-navigation.json"
   },
-  "experimentalCompiler": "Ten simulator gates passed separately. Candidate is not included in build 93; physical-device qualification and large-project sub-30-second objective remain outstanding."
+  "experimentalCompiler": "Ten simulator gates passed separately. Candidate is not included in build 93; physical-device qualification and large-project sub-30-second objective remain outstanding.",
+  "deliveryVerifiedAtUTC": "2026-10-25T18:56:02.673632+00:00"
 }
