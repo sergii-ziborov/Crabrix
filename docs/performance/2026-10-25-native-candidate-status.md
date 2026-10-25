@@ -63,3 +63,35 @@ The verified compiler and complete source-built sysroot were staged only into a 
 The cold Kameo compile/run took **238.315 seconds**; changed-root compile/run with dependencies cached took **7.164 seconds**. The Serde test case took 98.576 seconds. These are interpreter-path simulator observations while the native kernel was being compiled, not an iPhone or native-accelerator performance claim.
 
 Both new compilers translated into identical C inventories with optional function/backedge polling. The new kernel has 188,148 static checkpoints; matching source archive SHA-256 is `6a28c35e6f70a1cf2ba422ec68ae5bbe8abd5b550523c502f3e52c3e5d0bc760`. Its real simulator SDK build is in progress. Native performance, Stop and full runtime acceptance remain pending. [Exact functional evidence](2026-10-25-atomic-compiler-simulator.json).
+
+## Corrected native kernel: ten simulator gates passed
+
+The corrected C kernel completed its actual arm64 simulator build. The first
+archive write ran out of local disk space; the resumed build verified and reused
+the completed object files and produced archive
+`3dd44c63a234bad2799005f732944707d3dcf686b75049e9f34b18c38f5b75de`.
+The resume's 1.845-second script duration is not a full C compilation time.
+
+The optimized test driver from app source `521601ac54133c141db27e208a78475060e2b106`
+required the native compiler backend and passed **10 tests, 0 failures, 0 skips**:
+packed atomic canaries, exact compiler/sysroot binding, identity and real Serde
+macros, program panic diagnostics, unchanged Kameo/Tokio cold and changed-root
+runs, Axum, Stop, main-actor responsiveness and offline Rust web generation.
+
+The full unchanged Kameo workload produced the expected actor result. Its
+31-dependency cold compile/run took **40.436 seconds**; a changed root with all
+31 dependencies cached took **0.950 seconds**. The 22-dependency Axum in-memory
+router compile/run took **13.601 seconds**, and real Serde derive took
+**10.034 seconds**. Stop's entire test case passed in 0.889 seconds; the maximum
+observed main-actor scheduling gap was 0.0534 seconds. These compiler timings
+exclude prior package preparation; the corresponding full test cases include
+setup. All measurements are from one simulator batch.
+
+This establishes functional acceptance of the corrected native candidate on
+the simulator. It does not establish the large-project 30-second objective or
+physical-iPhone qualification. The source archive and distinct build-origin
+provenance are retained with verified hashes; redundant generated C directories
+were archived after the tests to recover disk space. Production build 92 retains
+the existing signed compiler and does not enable this candidate. Promotion and
+physical-device checks remain outstanding.
+[Exact native simulator evidence](2026-10-25-atomic-native-simulator.json).

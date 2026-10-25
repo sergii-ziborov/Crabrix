@@ -1,0 +1,10 @@
+Test Check/Run, Stop and the preserved iPhone/iPad/Duo workspace with the faster arm64 interpreter.
+Create Web Page or Rust Web Generator and run the local HTML/CSS/JavaScript preview; external network stays blocked.
+Prepare dependencies, inspect package progress and pin them for offline use. The resolver supports up to 2,048 unique dependency packages.
+Verify compiler diagnostics and program panic messages in Problems.
+
+Project settings: Save is the prominent blue action at the top left; the neutral X at the top right closes the sheet. Save waits for persistence, and a failed write keeps the draft. The repeated lower save button is removed.
+Terminal: submit with the keyboard's Go key; the duplicate Run beside the command input is removed. A project name appears before the prompt only when the row has room, retaining at least 140 points for input. History, keyboard dismissal and the existing 50-point command row remain.
+Project names stay unique on creation, import and rename. Existing duplicate names are repaired without deleting project IDs, files or build history. Removing the final dependency also removes its obsolete lockfile.
+
+The additional static compiler and procedural macro toolchain remain candidates and are not enabled in this build. A large Tokio project under 30 seconds is not a release claim.

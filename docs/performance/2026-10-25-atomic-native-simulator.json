@@ -1,0 +1,85 @@
+{
+  "observedAtUTC": "2026-10-25T17:26:26.693328+00:00",
+  "environment": {
+    "platform": "iOS Simulator",
+    "device": "iPhone 17 Pro",
+    "osVersion": "26.5",
+    "sdk": "27.1 RC",
+    "architecture": "arm64",
+    "configuration": "CompilerCandidate",
+    "backend": "statically linked generated C compiler, optional function-and-backedge checkpoints"
+  },
+  "appSourceCommit": "521601ac54133c141db27e208a78475060e2b106",
+  "compilerSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+  "nativeArchiveSHA256": "3dd44c63a234bad2799005f732944707d3dcf686b75049e9f34b18c38f5b75de",
+  "sourceArchiveSHA256": "6a28c35e6f70a1cf2ba422ec68ae5bbe8abd5b550523c502f3e52c3e5d0bc760",
+  "summary": {
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0
+  },
+  "tests": [
+    {
+      "name": "testAtomicBoolAndIntegerStateRemainConsistent",
+      "testCaseSeconds": 2.139
+    },
+    {
+      "name": "testAxumColdRouterWithTokio",
+      "testCaseSeconds": 18.582
+    },
+    {
+      "name": "testMacroCandidateInputBindsCompilerAndCompleteSourceSysroot",
+      "testCaseSeconds": 0.683
+    },
+    {
+      "name": "testProgramPanicKeepsItsMessageAndRunPhase",
+      "testCaseSeconds": 0.231
+    },
+    {
+      "name": "testRunKeepsMainActorResponsiveAtUserInitiatedPriority",
+      "testCaseSeconds": 0.207
+    },
+    {
+      "name": "testRustGeneratesAnOfflineHTMLCSSJavaScriptPreview",
+      "testCaseSeconds": 0.212
+    },
+    {
+      "name": "testSerdeDeriveRunsThroughTheOfflineWASIMacroBridge",
+      "testCaseSeconds": 11.622
+    },
+    {
+      "name": "testStopInterruptsARunningCompile",
+      "testCaseSeconds": 0.889
+    },
+    {
+      "name": "testUnchangedKameoColdActorsAndChangedRootRunOffline",
+      "testCaseSeconds": 49.286
+    },
+    {
+      "name": "testWASIProcMacroIdentityUsesTheUnchangedMacroSource",
+      "testCaseSeconds": 0.544
+    }
+  ],
+  "measuredCompilerAndRunSeconds": {
+    "unchangedKameoTokioCold31Dependencies": 40.43648375,
+    "changedRootAll31DependenciesCached": 0.950097375,
+    "axumCold22DependenciesInMemoryRouter": 13.601460708,
+    "serdeDerive": 10.034199042,
+    "rustWebGenerator": 0.085726542,
+    "identityMacro": 0.059700792
+  },
+  "mainActorMaximumSchedulingGapSeconds": 0.053432416,
+  "scope": [
+    "Unchanged full Kameo fixture with actual macros; 31 dependency units cold, all cached on changed-root run",
+    "Axum in-memory request; no TCP server claim",
+    "Package acquisition/preparation precedes the compiler timing; full test cases include setup",
+    "One simulator batch; not an iPhone measurement or proof of the large-project 30-second objective",
+    "Experimental backend is not enabled in production/TestFlight build 92",
+    "Physical-device and promotion gates remain outstanding"
+  ],
+  "evidence": {
+    "resultBundle": "build/compiler-optimization-20261024/native-atomic-simulator-batch.xcresult",
+    "testLog": "build/compiler-optimization-20261024/native-atomic-simulator-batch.log",
+    "summary": "build/compiler-optimization-20261024/native-atomic-simulator-batch-summary.json"
+  }
+}
