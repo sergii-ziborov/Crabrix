@@ -36,7 +36,49 @@ final class BundledCompilerGateTests: XCTestCase {
             let baseline = try XCTUnwrap(BundledToolchain.locate(in: .main, version: CargoToolchain.bundledVersion))
             var sysroot = baseline.sysrootURL
             var identity = "candidate-" + sha
-            if artifactName == "ArtifactMacro" {
+            if artifactName == "ArtifactMacro", let capture = provenance?["candidateSysroot"] as? [String: Any] {
+                let inventoryURL = resources.appending(path: "sysroot-files.json")
+                let inventoryBytes = try Data(contentsOf: inventoryURL)
+                let inventory = try XCTUnwrap(try JSONSerialization.jsonObject(with: inventoryBytes) as? [String: Any])
+                let files = try XCTUnwrap(inventory["files"] as? [[String: Any]])
+                let inventorySHA = SHA256.hash(data: inventoryBytes).map { String(format: "%02x", $0) }.joined()
+                let archiveSHA = SHA256.hash(data: try Data(contentsOf: resources.appending(path: "sysroot-wasip1.zip")))
+                    .map { String(format: "%02x", $0) }.joined()
+                guard capture["inventorySHA256"] as? String == inventorySHA,
+                      capture["archiveSHA256"] as? String == archiveSHA,
+                      capture["fileCount"] as? Int == files.count,
+                      inventory["schemaVersion"] as? Int == 1, !files.isEmpty
+                else { throw CocoaError(.fileReadCorruptFile) }
+                let root = resources.resolvingSymlinksInPath()
+                var names = Set<String>()
+                for item in files {
+                    let name = try XCTUnwrap(item["path"] as? String)
+                    let parts = name.split(separator: "/", omittingEmptySubsequences: false)
+                    guard parts.first == "sysroot-wasip1", parts.count > 1,
+                          parts.allSatisfy({ !$0.isEmpty && $0 != "." && $0 != ".." }),
+                          names.insert(name).inserted
+                    else { throw CocoaError(.fileReadCorruptFile) }
+                    let file = root.appending(path: name).resolvingSymlinksInPath()
+                    guard file.path.hasPrefix(root.path + "/") else { throw CocoaError(.fileReadCorruptFile) }
+                    let data = try Data(contentsOf: file)
+                    guard data.count == item["bytes"] as? Int,
+                          SHA256.hash(data: data).map({ String(format: "%02x", $0) }).joined() == item["sha256"] as? String
+                    else { throw CocoaError(.fileReadCorruptFile) }
+                }
+                guard names.contains("sysroot-wasip1/manifest.json") else { throw CocoaError(.fileReadCorruptFile) }
+                let tree = try XCTUnwrap(FileManager.default.enumerator(at: root.appending(path: "sysroot-wasip1"),
+                    includingPropertiesForKeys: [.isRegularFileKey, .isSymbolicLinkKey]))
+                var actual = Set<String>()
+                for case let file as URL in tree {
+                    let kind = try file.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
+                    guard kind.isSymbolicLink != true else { throw CocoaError(.fileReadCorruptFile) }
+                    if kind.isRegularFile == true { actual.insert(String(file.path.dropFirst(root.path.count + 1))) }
+                }
+                guard actual == names else { throw CocoaError(.fileReadCorruptFile) }
+                sysroot = resources.appending(path: "sysroot-wasip1")
+                identity += "-sysroot-" + inventorySHA
+                print("MACRO SYSROOT MODE source-built stage1", inventorySHA)
+            } else if artifactName == "ArtifactMacro" {
                 let supplementURL = resources.appending(path: "supplemental-sysroot.json")
                 let supplementBytes = try Data(contentsOf: supplementURL)
                 let supplement = try XCTUnwrap(try JSONSerialization.jsonObject(with: supplementBytes) as? [String: Any])
@@ -58,6 +100,7 @@ final class BundledCompilerGateTests: XCTestCase {
                 }
                 sysroot = overlay
                 identity += "-" + SHA256.hash(data: supplementBytes).map { String(format: "%02x", $0) }.joined()
+                print("MACRO SYSROOT MODE signed baseline with explicitly hashed prototype API overlay")
             }
             candidate = BundledToolchain(rustcURL: compilerURL, sysrootURL: sysroot,
                                          version: identity, supportsProceduralMacros: artifactName == "ArtifactMacro")
