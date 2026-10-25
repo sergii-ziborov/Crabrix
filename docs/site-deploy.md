@@ -1,5 +1,15 @@
 # Crabrix website deployment
 
+## Current service verification — 25 October 2026
+
+The live service was read back as `crabrix-web-site-1`, image
+`localhost/crabrix-web-site:release87-20261025`, running and healthy. This
+supersedes the guide-only image described below. It includes the guide
+2048-package update and synchronized WABT notices. App build 88 changes Cargo
+feature resolution and has no corresponding website layout or feature change;
+the website continues to describe the shipped capabilities.
+[Publication evidence](site-release-2026-10-25-build87.json).
+
 ## Detailed offline guide and compiler measurements — 25 October 2026
 
 The manual release `localhost/crabrix-web-site:guide-20261025-r3` runs on the

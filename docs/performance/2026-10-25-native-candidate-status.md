@@ -45,3 +45,11 @@ The explicit `arm64-apple-ios18.0-simulator` library built successfully; its SHA
 - The backend correction selects 8-, 16-, 32- or 64-bit memory operations from the original CLIF type. An executable backend regression uses nonzero neighboring canaries across loads, stores, compare/exchange and all eleven RMW operations. The original backend fails its first i8 load; the corrected backend passes **1,420 checks** in Wasmtime. [Exact regression evidence](2026-10-25-atomic-widths.json).
 
 The full compiler must still be rebuilt from the corrected source and pass the unchanged Kameo and macro gates. These backend tests alone do not prove that Kameo is fixed or establish an iPhone performance claim. App Store/TestFlight **1.1.2 (88)** was separately delivered with the verified Cargo resolver correction; it does not bundle this experimental compiler.
+
+## Optional polling experiment while the corrected compiler rebuilds
+
+A separate source-generation option retains checkpoints on function entry and backward edges, omitting forward-only branches. Every cycle within a generated function has a backward edge; recursive cycles enter a function. The parser rejects changed function boundaries, unknown targets and unfamiliar native loop syntax. Three tests, including compiled C budget exhaustion for loops and recursion, passed. The default remains the prior all-branches policy until the new option is benchmarked.
+
+Across all 64 existing generated kernel files, the experiment retains **188,147** static checks (60,368 entries and 127,779 backward edges) and removes 1,925,034 forward-edge checks. Re-emitting the original all-branches policy matched every old generated function byte for byte. These are static code counts, not a runtime speedup, and they do not qualify the earlier compiler that failed Kameo.
+
+Two fresh corrected-compiler source builds were manually started from app driver `3222691a3ef96025dc14de5dcd685172ba563a35`: Cloud **89** (`eb73637a-1c11-4d19-b178-f4a8666ed50f`) and **90** (`f719833d-1fe2-4a94-82a3-29dd3d4e34f9`). Both bind the atomic-corrected recipe `0a5970c97ef0e192c8f6e5dec460190924489f97`. They are compiler qualification runs, separate from TestFlight build 88.
