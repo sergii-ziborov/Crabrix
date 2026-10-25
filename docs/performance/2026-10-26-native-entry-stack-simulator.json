@@ -1,0 +1,175 @@
+{
+  "observedAtUTC": "2026-10-25T22:03:54.560788+00:00",
+  "environment": {
+    "platform": "iOS Simulator",
+    "device": "iPhone 17 Pro",
+    "osVersion": "26.5",
+    "sdk": "27.1 RC",
+    "architecture": "arm64",
+    "configuration": "CompilerCandidate",
+    "hostLoad": "Shared Mac; timing varies between successive batches"
+  },
+  "appSourceCommit": "4fcdb7216b5aa358c534e95a21e1144d4f360eec",
+  "compilerWASMSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+  "sourceArchiveSHA256": "f84d09244721f76791ef00ea95a7e89792c237c52fdc1e653efe07df67c8f256",
+  "nativeArchiveSHA256": "1cc92c198c4586a1795e81419578124c21705e10f32b835c822e8b7c6d267e38",
+  "sourceGeneratorCommit": "2af5d17",
+  "realWrapperGuardTestsCommit": "8eeb107",
+  "policy": {
+    "checkpointPolicy": "function-and-backedge-entry-stack",
+    "checkpointCounts": {
+      "backedges": 127779,
+      "checkpoints": 188148,
+      "forwardEdges": 1925036,
+      "functionEntries": 60369
+    },
+    "limits": {
+      "linearMemoryBytes": 2147483648,
+      "nativeFrameMaximumBytes": 131072,
+      "pollIntervalCheckpoints": 128,
+      "stackCheckPlacement": "function-entry",
+      "stackGuardMarginBytes": 524288
+    },
+    "optimizationLevel": "O1"
+  },
+  "entryStackFullAcceptance": {
+    "summary": {
+      "passedTests": 10,
+      "failedTests": 0,
+      "skippedTests": 0
+    },
+    "compilerAndRunSeconds": {
+      "kameoCold31Dependencies": 24.181658208,
+      "changedRoot31DependenciesCached": 1.178804084,
+      "axumCold22DependenciesInMemoryRouter": 10.773994
+    },
+    "testCases": [
+      {
+        "name": "testAtomicBoolAndIntegerStateRemainConsistent",
+        "seconds": 1.284
+      },
+      {
+        "name": "testAxumColdRouterWithTokio",
+        "seconds": 18.249
+      },
+      {
+        "name": "testMacroCandidateInputBindsCompilerAndCompleteSourceSysroot",
+        "seconds": 0.655
+      },
+      {
+        "name": "testProgramPanicKeepsItsMessageAndRunPhase",
+        "seconds": 0.109
+      },
+      {
+        "name": "testRunKeepsMainActorResponsiveAtUserInitiatedPriority",
+        "seconds": 0.203
+      },
+      {
+        "name": "testRustGeneratesAnOfflineHTMLCSSJavaScriptPreview",
+        "seconds": 0.189
+      },
+      {
+        "name": "testSerdeDeriveRunsThroughTheOfflineWASIMacroBridge",
+        "seconds": 18.562
+      },
+      {
+        "name": "testStopInterruptsARunningCompile",
+        "seconds": 0.688
+      },
+      {
+        "name": "testUnchangedKameoColdActorsAndChangedRootRunOffline",
+        "seconds": 38.186
+      },
+      {
+        "name": "testWASIProcMacroIdentityUsesTheUnchangedMacroSource",
+        "seconds": 0.659
+      }
+    ],
+    "evidence": {
+      "log": "build/compiler-optimization-20261024/native-entry-stack-simulator-batch.log",
+      "logSHA256": "abb85cac523437a47b1e20e378459f24a349bf1f5204365c89277b4ab614d162",
+      "xcresult": "build/compiler-optimization-20261024/native-entry-stack-simulator-batch.xcresult"
+    }
+  },
+  "entryStackRepeat": {
+    "summary": {
+      "passedTests": 2,
+      "failedTests": 0,
+      "skippedTests": 0
+    },
+    "compilerAndRunSeconds": {
+      "kameoCold31Dependencies": 23.062212166000002,
+      "changedRoot31DependenciesCached": 1.1413955,
+      "axumCold22DependenciesInMemoryRouter": 13.424944457999999
+    },
+    "testCases": [
+      {
+        "name": "testAxumColdRouterWithTokio",
+        "seconds": 18.698
+      },
+      {
+        "name": "testUnchangedKameoColdActorsAndChangedRootRunOffline",
+        "seconds": 30.914
+      }
+    ],
+    "evidence": {
+      "log": "build/compiler-optimization-20261024/native-entry-stack-repeat01.log",
+      "logSHA256": "8a83de57bdeaadc9f1723faccbfa629ab25014ac403c10d55b9ef5dffbf2dd87",
+      "xcresult": "build/compiler-optimization-20261024/native-entry-stack-repeat01.xcresult"
+    }
+  },
+  "originalFullStackProbeControl": {
+    "summary": {
+      "passedTests": 2,
+      "failedTests": 0,
+      "skippedTests": 0
+    },
+    "compilerAndRunSeconds": {
+      "kameoCold31Dependencies": 19.479560582999998,
+      "changedRoot31DependenciesCached": 0.879994208,
+      "axumCold22DependenciesInMemoryRouter": 12.3321995
+    },
+    "testCases": [
+      {
+        "name": "testAxumColdRouterWithTokio",
+        "seconds": 21.312
+      },
+      {
+        "name": "testUnchangedKameoColdActorsAndChangedRootRunOffline",
+        "seconds": 34.197
+      }
+    ],
+    "evidence": {
+      "log": "build/compiler-optimization-20261024/native-entry-stack-o1-paired.log",
+      "logSHA256": "8415d7ed6665e2afc1cff0d02a606c2620e4a23c9e072fbbc71899fbded32186",
+      "xcresult": "build/compiler-optimization-20261024/native-entry-stack-o1-paired.xcresult"
+    }
+  },
+  "auxiliaryChecks": {
+    "unitTests": {
+      "passed": 5,
+      "failed": 0
+    },
+    "realNativeTrapWrapperHostileMock": [
+      "entry checkpoint variant passed",
+      "loop checkpoint variant passed"
+    ],
+    "scope": "Mock checks exercise the real C wrapper on macOS and do not replace real-project simulator or device tests."
+  },
+  "decision": {
+    "adoptEntryOnlyStackProbes": false,
+    "selectedKernel": "Original function-and-backedge checkpoints with stack probes at every checkpoint; O1",
+    "reason": "Both new samples pass below 30 seconds, but the subsequent original-kernel control is faster. These shared-host observations do not establish a performance advantage for changing stack-probe placement. Retain the original checks.",
+    "productionCompilerChanged": false,
+    "physicalIPhoneSub30SecondsEstablished": false
+  },
+  "scope": [
+    "All three batches pass; no failures or skips.",
+    "Compiler/run timing excludes prior package preparation; full test cases include setup.",
+    "Each Kameo sample uses fresh dependency and root caches and asserts every one of the 31 dependency callbacks was cold.",
+    "Unchanged Kameo source/lockfile, five macros, 16 actors and 1024 records; no feature stripping or fixture replacement.",
+    "Axum is in-memory routing, not a TCP server.",
+    "Two entry-stack cold samples are below 30 seconds on the simulator; the original control is also below 30 seconds. No physical-iPhone result is inferred.",
+    "Shipping App Store/TestFlight build 93 does not include this experimental compiler."
+  ]
+}

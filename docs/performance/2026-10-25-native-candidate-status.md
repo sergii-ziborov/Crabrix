@@ -111,3 +111,28 @@ successive samples show substantial variation and establish no O2 advantage.
 The O2 kernel is retained as an experimental artifact and is not promoted.
 The previous O1 recipe and shipping build 93 remain unchanged.
 [Exact comparison](2026-10-25-native-o2-simulator.json).
+
+## Function-entry stack-probe experiment and sub-30 simulator samples
+
+A separate optional policy retains all 188,148 work checkpoints and the same
+Stop polling frequency, but probes the native stack only at the 60,369 guest
+function entries. It rejects dynamic native stack allocation and unfamiliar
+array bounds. Both independently generated C inventories match; source archive
+SHA-256 is `f84d09244721f76791ef00ea95a7e89792c237c52fdc1e653efe07df67c8f256`.
+Five unit tests and both entry/loop variants of the actual trap wrapper passed.
+
+The simulator passed all ten real-project gates without failures or skips.
+Cold Kameo compile/run samples took **24.182 and 23.062 seconds**; Axum took
+10.774 and 13.425 seconds. The subsequent original-kernel control, with stack
+probes retained at every checkpoint, took **19.480 seconds** for Kameo and
+12.332 seconds for Axum. All batches used the same app source and unchanged
+fixtures. Shared-host variation prevents attributing the difference to this
+policy, and the original control is faster. The original guarded O1 kernel
+is therefore retained; neither optional experiment is promoted.
+
+These are successful sub-30-second simulator observations with downloaded
+package inputs and empty build caches. They are not physical-iPhone timings.
+A real `iphoneos` arm64 archive of the selected original kernel is now being
+compiled separately; simulator objects are never relabelled for device use.
+Production signing and build 93 remain unchanged.
+[Exact comparison](2026-10-26-native-entry-stack-simulator.json).
