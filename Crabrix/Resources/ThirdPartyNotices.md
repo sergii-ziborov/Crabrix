@@ -17,7 +17,7 @@ upstream `NOTICE.txt` for those attributions.
 Upstream source and license: https://github.com/swiftwasm/WasmKit/tree/0.4.1
 
 Crabrix fork and patch history:
-https://github.com/sergii-ziborov/crabrix-runtime/tree/0689cc5df8b5b3f81ac5e9675cc3c22fe1b614f3
+https://github.com/sergii-ziborov/crabrix-runtime/tree/e714b3efb3f4973bfd20ea41cb2cf0d6eb27713d
 
 ### Crabrix source-built Rust toolchain
 
@@ -87,3 +87,11 @@ replace any component's terms.
 Offline web syntax grammars. Copyright Ivan Sagalaev and contributors. BSD-3-Clause.
 Full license: `highlight.js-LICENSE.txt`. Source: https://github.com/highlightjs/highlight.js/tree/11.12.0
 The grammar runs against source text in JavaScriptCore; user programs run only in the separate offline web preview.
+
+## WABT wasm2c runtime 1.0.42
+
+Copyright 2018 WebAssembly Community Group participants. Licensed under Apache License 2.0; the complete license is included in `Licenses/WABT-LICENSE.txt` and is available in Settings → Licenses.
+
+Source: https://github.com/WebAssembly/wabt/tree/1.0.42/wasm2c
+
+Crabrix uses wasm2c at app build time for the bundled compiler. Generated compiler C receives additional work, cancellation and native stack checkpoints. The wasm2c runtime uses explicit memory bounds checks and Crabrix's C trap scopes; no signal handler or JIT is enabled. User programs and procedural macro crates execute in the separate WasmKit sandbox.

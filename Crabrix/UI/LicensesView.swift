@@ -40,6 +40,12 @@ enum BundledLicenseCatalog {
             documents: ["WasmKit-LICENSE", "WasmKit-NOTICE"]
         ),
         BundledLicense(
+            id: "WABT",
+            name: "WABT wasm2c runtime 1.0.42",
+            summary: "WebAssembly Community Group participants · Apache-2.0",
+            documents: ["WABT-LICENSE"]
+        ),
+        BundledLicense(
             id: "ZIPFoundation",
             name: "ZIPFoundation 0.9.20",
             summary: "Thomas Zoechling · MIT",

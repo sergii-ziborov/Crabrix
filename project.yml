@@ -38,7 +38,7 @@ packages:
   WasmKit:
     # Public Crabrix fork of WasmKit 0.4.1 with read-only host WASI preopens.
     url: https://github.com/sergii-ziborov/crabrix-runtime.git
-    revision: 7d0f6718597c1a1228efca3591ae91d13c6d569b
+    revision: e714b3efb3f4973bfd20ea41cb2cf0d6eb27713d
   SwiftSystem:
     url: https://github.com/apple/swift-system.git
     exactVersion: 1.8.1
@@ -122,6 +122,7 @@ targets:
           set -eu
           "$SRCROOT/scripts/fetch_toolchain.sh"
           /usr/bin/python3 "$SRCROOT/scripts/package_toolchain.py"
+          /usr/bin/python3 "$SRCROOT/scripts/prepare_native_compiler.py"
         basedOnDependencyAnalysis: false
     settings:
       base:
@@ -140,6 +141,8 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         CODE_SIGN_STYLE: Automatic
+        SWIFT_OBJC_BRIDGING_HEADER: Crabrix/Compiler/Native/NativeCompilerBridge.h
+        OTHER_LDFLAGS[sdk=iphoneos*]: "$(inherited) -L$(SRCROOT)/build/NativeCompiler -lCrabrixNativeCompiler"
       configs:
         release:
           CODE_SIGN_STYLE: Manual

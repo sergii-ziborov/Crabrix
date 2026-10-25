@@ -35,6 +35,14 @@
     ]
   },
   {
+    "id": "WABT",
+    "name": "WABT wasm2c runtime 1.0.42",
+    "summary": "WebAssembly Community Group participants \u00b7 Apache-2.0",
+    "documents": [
+      "WABT-LICENSE"
+    ]
+  },
+  {
     "id": "ZIPFoundation",
     "name": "ZIPFoundation 0.9.20",
     "summary": "Thomas Zoechling \u00b7 MIT",

@@ -657,7 +657,9 @@ final class WasmRustCompiler: @unchecked Sendable {
             }
             arguments += externArguments(unit.externs, emit: unitEmit)
             if unit.isProceduralMacro {
-                arguments += ["-Cprefer-dynamic=no", "-Crelocation-model=static"]
+                // Cargo exposes the sysroot API through the extern prelude.
+                // Edition 2018+ macro crates may use it without extern crate.
+                arguments += ["--extern", "proc_macro", "-Cprefer-dynamic=no", "-Crelocation-model=static"]
             }
             arguments += buildOutput.compilerArguments
 
@@ -1053,6 +1055,17 @@ final class WasmRustCompiler: @unchecked Sendable {
         interrupter: WasmInterrupter,
         proceduralMacroInputs: [String] = []
     ) throws -> WasmProcessResult {
+        var environment = environment
+        if toolchain.supportsProceduralMacros { environment["CRABRIX_WASM_PROC_MACROS"] = "1" }
+        if let sha = toolchain.compilerSHA256, sha == NativeRustcSession.compilerSHA256 {
+            let started = ContinuousClock.now
+            let result = try runtime.runNativeCompiler(arguments: arguments, environment: environment,
+                preopens: preopens, captureDirectory: jobRoot, capturePrefix: capturePrefix,
+                interrupter: interrupter, enableProceduralMacros: toolchain.supportsProceduralMacros,
+                proceduralMacroInputs: proceduralMacroInputs)
+            CompilerPhaseTrace.emit("native-rustc", since: started)
+            return result
+        }
         let module = try runtime.rustcModule(at: toolchain.rustcURL)
         // Parsing the bundled rustc module is the one phase no interrupter can
         // reach into: it is host work, not guest execution. Ask once it is done
@@ -1061,8 +1074,6 @@ final class WasmRustCompiler: @unchecked Sendable {
             throw WasmExecutionCancelled(reason: reason)
         }
         let invocationStarted = ContinuousClock.now
-        var environment = environment
-        if toolchain.supportsProceduralMacros { environment["CRABRIX_WASM_PROC_MACROS"] = "1" }
         let result = try autoreleasepool { try runtime.run(
             module: module,
             arguments: arguments,

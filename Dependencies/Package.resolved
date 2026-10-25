@@ -6,7 +6,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/sergii-ziborov/crabrix-runtime.git",
       "state" : {
-        "revision" : "7d0f6718597c1a1228efca3591ae91d13c6d569b"
+        "revision" : "e714b3efb3f4973bfd20ea41cb2cf0d6eb27713d"
       }
     },
     {

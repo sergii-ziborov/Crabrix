@@ -11,6 +11,7 @@ struct BundledToolchain: Sendable {
     let sysrootURL: URL
     let version: String
     var supportsProceduralMacros = false
+    var compilerSHA256: String? = nil
 
     static func locate(
         in bundle: Bundle,
@@ -46,7 +47,8 @@ struct BundledToolchain: Sendable {
         }
 
         return BundledToolchain(rustcURL: rustc, sysrootURL: sysroot, version: version,
-                                supportsProceduralMacros: CargoToolchain.supportsProceduralMacros)
+                                supportsProceduralMacros: CargoToolchain.supportsProceduralMacros,
+                                compilerSHA256: AppToolchainRelease.load(in: bundle)?.rustcSHA256)
     }
 }
 
@@ -307,7 +309,10 @@ final class RustcRuntime: @unchecked Sendable {
                     wasi.link(to: &imports, store: store)
                 }
                 let macroSession = enableProceduralMacros ? WasmProceduralMacroSession(
-                    engine: store.engine, arguments: arguments, inputs: proceduralMacroInputs, environment: environment,
+                    // Only bytes cross the RPC boundary. Macro stores do not
+                    // need rustc's 2 GiB virtual-memory reservation each.
+                    engine: engine(softwareMemoryReservationBytes: WasmSandboxPolicy.userProgramMemoryLimitBytes),
+                    arguments: arguments, inputs: proceduralMacroInputs, environment: environment,
                     preopens: preopens, stdout: capture.stdoutHandle.fileDescriptor,
                     stderr: capture.stderrHandle.fileDescriptor, outputBudget: outputBudget,
                     interrupter: interrupter) : nil
@@ -349,6 +354,45 @@ final class RustcRuntime: @unchecked Sendable {
             }
             throw RustcRuntimeFailure(underlying: thrown, stdout: output.stdout, stderr: output.stderr)
         }
+        return WasmProcessResult(exitCode: exitCode, stdout: output.stdout, stderr: output.stderr)
+    }
+
+    /// Execute the compiler that was statically built from this exact signed
+    /// WASM input. No native code is downloaded or generated on the device.
+    func runNativeCompiler(arguments: [String], environment: [String: String],
+        preopens: [WASIBridgeToHost.Preopen], captureDirectory: URL, capturePrefix: String,
+        interrupter: WasmInterrupter, enableProceduralMacros: Bool,
+        proceduralMacroInputs: [String]) throws -> WasmProcessResult {
+        let capture = try Capture(directory: captureDirectory, prefix: capturePrefix)
+        let budget = try WASIOutputBudget(maximumBytes: CompilerHostPolicy.outputLimitBytes) {
+            interrupter.cancel(reason: .outputLimit)
+        }
+        var exitCode: UInt32 = 0
+        var thrown: (any Error)?
+        do {
+            let wasi = try WASIBridgeToHost(args: arguments, environment: environment,
+                preopens: preopens, stdout: capture.stdoutHandle.fileDescriptor,
+                stderr: capture.stderrHandle.fileDescriptor, outputBudget: budget)
+            defer { try? wasi.close() }
+            interrupter.setDeadline(after: CompilerHostPolicy.wallClockLimit)
+            exitCode = try NativeCompilerWorker.perform {
+                let macroEngine = self.engine(softwareMemoryReservationBytes: WasmSandboxPolicy.userProgramMemoryLimitBytes)
+                let macros = enableProceduralMacros ? WasmProceduralMacroSession(
+                    engine: macroEngine, arguments: arguments, inputs: proceduralMacroInputs,
+                    environment: environment, preopens: preopens,
+                    stdout: capture.stdoutHandle.fileDescriptor, stderr: capture.stderrHandle.fileDescriptor,
+                    outputBudget: budget, interrupter: interrupter) : nil
+                defer { macros?.close() }
+                let session = try NativeRustcSession(wasi: wasi, engine: macroEngine, macros: macros,
+                    interrupter: interrupter, budget: CompilerHostPolicy.fuelBudget)
+                return try session.run(budget: CompilerHostPolicy.fuelBudget)
+            }
+        } catch { thrown = error }
+        let output = try capture.finish(maxBytesPerStream: CompilerHostPolicy.outputLimitBytes)
+        if let reason = interrupter.stopReason {
+            throw WasmExecutionCancelled(reason: reason, stdout: output.stdout, stderr: output.stderr)
+        }
+        if let thrown { throw RustcRuntimeFailure(underlying: thrown, stdout: output.stdout, stderr: output.stderr) }
         return WasmProcessResult(exitCode: exitCode, stdout: output.stdout, stderr: output.stderr)
     }
 

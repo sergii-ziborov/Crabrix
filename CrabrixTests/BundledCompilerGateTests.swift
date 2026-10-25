@@ -104,7 +104,8 @@ final class BundledCompilerGateTests: XCTestCase {
                 print("MACRO SYSROOT MODE signed baseline with explicitly hashed prototype API overlay")
             }
             candidate = BundledToolchain(rustcURL: compilerURL, sysrootURL: sysroot,
-                                         version: identity, supportsProceduralMacros: artifactName == "ArtifactMacro")
+                                         version: identity, supportsProceduralMacros: artifactName == "ArtifactMacro",
+                                         compilerSHA256: sha)
             print("MEASURED COMPILER CANDIDATE SHA256", sha)
         }
         print("MEASURED COMPILER INPUT", candidate?.version ?? CargoToolchain.artifactIdentity)
