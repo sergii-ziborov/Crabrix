@@ -1,0 +1,10 @@
+Close buttons across custom sheets now use the same plain X, with no extra bordered background inside the system toolbar.
+Verify Project settings, My Projects → project details, New Project, New File/Folder, GitHub import, Cargo packages, Preparing packages, Package storage, Compiler help, Practice and the Game Center sign-in wrapper.
+Both project metadata editors have the same prominent blue Save at the top left and a neutral X at the top right. Empty names disable Save; writes complete before dismissal; failed writes keep the draft. Closing package progress leaves downloads running.
+
+Check/Run, Stop, the iPhone/iPad/Duo workspace, the terminal keyboard Go submission and the adaptive project-name prompt are retained.
+Create Web Page or Rust Web Generator and run the local HTML/CSS/JavaScript preview; external network stays blocked.
+Prepare dependencies, inspect package progress and pin them for offline use. The resolver supports up to 2,048 unique dependency packages.
+Verify compiler diagnostics and program panic messages in Problems, unique project names and reopening saved projects.
+
+The additional static compiler and procedural macro toolchain remain candidates and are not enabled in this build. A large Tokio project under 30 seconds is not a release claim.
