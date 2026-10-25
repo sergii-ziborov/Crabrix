@@ -1,3 +1,16 @@
+> Delivery verified through App Store Connect — 25 October 2026: **1.1.2 (93)**
+> is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. The version and
+> replacement review submission both report **WAITING_FOR_REVIEW**, selecting
+> build 93. Eleven custom modal headers now share a plain X without an extra
+> bordered surface, and both project metadata editors share the prominent Save.
+> The optimized simulator app build and manual Cloud build/archive passed.
+> All 19 screenshots are COMPLETE, with Code first for iPhone, Duo and iPad.
+> Review notes, release notes and What to Test are saved and synchronized.
+> Release remains MANUAL. Existing workspace geometry and shipped compiler
+> capabilities are preserved. [Build 93 delivery evidence](release-1.1.2-build93.json).
+>
+> Build 92 delivery below is historical; its review was replaced by build 93.
+
 > Delivery verified through App Store Connect — 25 October 2026: **1.1.2 (92)**
 > is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. The version and
 > replacement review submission both report **WAITING_FOR_REVIEW**, selecting

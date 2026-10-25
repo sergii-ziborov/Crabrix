@@ -1,0 +1,78 @@
+{
+  "verifiedAtUTC": "2026-10-25T18:56:02.673632+00:00",
+  "version": "1.1.2",
+  "buildNumber": "93",
+  "buildID": "1829d873-a02e-4679-9842-de4489920a93",
+  "appSourceCommit": "c004aaca8d92dfbc8d496a5bc74d6e034d6ea824",
+  "cloudBuildRunID": "75ed882e-b016-47a7-a198-b9605df7fcb0",
+  "cloudCompletion": "SUCCEEDED",
+  "testFlight": {
+    "processingState": "VALID",
+    "group": "Internal QA",
+    "internalBuildState": "IN_BETA_TESTING"
+  },
+  "appStore": {
+    "versionID": "4ad2dcb4-5252-4f36-bb32-99f41e3f6e9a",
+    "submissionID": "31ea8182-f5f1-409a-90f4-163fc8f9aec3",
+    "state": "WAITING_FOR_REVIEW",
+    "reviewState": "WAITING_FOR_REVIEW",
+    "selectedBuild": "93",
+    "releaseType": "MANUAL",
+    "screenshots": [
+      {
+        "displayType": "APP_IPHONE_67",
+        "count": 10,
+        "complete": 10,
+        "firstFile": "v111-iphone-6.9-01-build.png"
+      },
+      {
+        "displayType": "APP_IPHONE_DUO",
+        "count": 2,
+        "complete": 2,
+        "firstFile": "v111-iphone-duo-qa-01-laptop-code.png"
+      },
+      {
+        "displayType": "APP_IPAD_PRO_3GEN_129",
+        "count": 7,
+        "complete": 7,
+        "firstFile": "v111-ipad-13-01-build.png"
+      }
+    ]
+  },
+  "changes": [
+    "One plain native X at the trailing edge of eleven custom modal headers; no additional bordered button surface",
+    "One prominent blue Save at the leading edge of both project metadata editors",
+    "Existing write completion, failed-save draft retention and continuing background downloads preserved"
+  ],
+  "verification": {
+    "optimizedSimulatorAppBuild": "passed",
+    "manualCloudBuildAndArchive": "succeeded",
+    "terminalCommandRowHeightPoints": 50,
+    "foldTabKeyboardGeometryChanged": false,
+    "projectLibraryTestsFromBuild91": {
+      "passed": 35,
+      "failed": 0,
+      "skipped": 0,
+      "dataLogicChangedByBuild92": false
+    },
+    "legalCopies": "matched",
+    "reviewerNotesAndReleaseNotes": "matched saved Apple fields",
+    "customModalCloseUses": 11,
+    "sharedSaveUses": 2,
+    "nativeVisualInspection": "Unavailable while the Mac was locked; no visual verification claimed"
+  },
+  "scope": {
+    "arm64SoftwareDirectInterpreter": true,
+    "directInstructionEmission": true,
+    "maximumUniqueDependencyPackages": 2048,
+    "offlineWebLab": true,
+    "nativeCompilerCandidateEnabled": false,
+    "productionProceduralMacroCapability": false
+  },
+  "website": {
+    "origin": "https://crabrix.com",
+    "image": "localhost/crabrix-web-site:brand-navigation-20261025",
+    "evidence": "../site-release-2026-10-25-brand-navigation.json"
+  },
+  "experimentalCompiler": "Ten simulator gates passed separately. Candidate is not included in build 92; physical-device qualification and large-project sub-30-second objective remain outstanding."
+}

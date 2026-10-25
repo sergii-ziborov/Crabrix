@@ -8,3 +8,5 @@ Preserved the existing iPhone, iPad and Duo workspace layouts. Updated the offli
 Program panics now keep their error text in Problems instead of being reported as compiler failures.
 
 Project settings has a highlighted Save action and a separate Close button. Project names remain unique. The terminal command row is simpler and adapts its prompt to the available width.
+
+Consistent modal controls: highlighted Save and a standard Close icon throughout project, package and practice sheets.
