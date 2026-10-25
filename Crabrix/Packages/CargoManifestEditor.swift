@@ -4,7 +4,9 @@ enum CargoManifestEditor {
     /// These libraries expose useful parsing/token APIs on WASI without the
     /// host-only proc_macro crate. Write the choice into Cargo.toml so the
     /// dependency graph remains explicit and reproducible.
-    static func localCompilerDeclaration(name: String, requirement: String) -> String {
+    static func localCompilerDeclaration(name: String, requirement: String,
+        supportsProceduralMacros: Bool = CargoToolchain.supportsProceduralMacros) -> String {
+        if supportsProceduralMacros { return "\(name) = \"\(requirement)\"" }
         switch name {
         case "syn":
             return "syn = { version = \"\(requirement)\", default-features = false, features = [\"derive\", \"parsing\", \"printing\", \"clone-impls\"] }"
@@ -15,8 +17,9 @@ enum CargoManifestEditor {
         }
     }
 
-    static func hasLocalCompilerProfile(name: String) -> Bool {
-        name == "syn" || name == "quote" || name == "proc-macro2"
+    static func hasLocalCompilerProfile(name: String,
+        supportsProceduralMacros: Bool = CargoToolchain.supportsProceduralMacros) -> Bool {
+        !supportsProceduralMacros && (name == "syn" || name == "quote" || name == "proc-macro2")
     }
 
     /// Repairs a pre-existing plain `syn = "…"` entry without rewriting the
@@ -35,7 +38,7 @@ enum CargoManifestEditor {
             $0.path == ["dependencies", "syn"] && $0.valueRange != nil
         }), let range = statement.valueRange else { return source }
         var characters = Array(source)
-        let declaration = localCompilerDeclaration(name: "syn", requirement: requirement)
+        let declaration = localCompilerDeclaration(name: "syn", requirement: requirement, supportsProceduralMacros: false)
         guard let value = declaration.split(separator: "=", maxSplits: 1).last?
             .trimmingCharacters(in: .whitespaces) else { return source }
         characters.replaceSubrange(range, with: value)

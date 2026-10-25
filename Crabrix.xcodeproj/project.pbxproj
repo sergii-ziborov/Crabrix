@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		009994261D14A5AB525D7C4B /* ProjectTerminalSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB2D37D461D0EDF4F84DD855 /* ProjectTerminalSession.swift */; };
-		02BB4132C099E7EBBB349854 /* ProcMacroNativeProxy.wat in Resources */ = {isa = PBXBuildFile; fileRef = 6F64E96C09B2C9235463DC04 /* ProcMacroNativeProxy.wat */; };
 		03886B8D78DCEDCE1A159287 /* AlgorithmCourseCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19F2B8BCB656C03FB95DB696 /* AlgorithmCourseCatalog.swift */; };
 		06E261C9EDD1565A7E0C336D /* OfflineWebPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 421B0B354AC6593A4245C63D /* OfflineWebPreview.swift */; };
 		08CA3D0D4FD1367DC21D5281 /* FeatureResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9793C201E70D1B6AD35202 /* FeatureResolver.swift */; };
@@ -365,7 +364,6 @@
 		6E24E44406D79170CEDED477 /* swift-nio-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-nio-LICENSE.txt"; sourceTree = "<group>"; };
 		6E42868B52F7E467F9905F3B /* PackageDownloadSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageDownloadSheet.swift; sourceTree = "<group>"; };
 		6E974AA588AEAB526FF75C14 /* CoursePackVerifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePackVerifierTests.swift; sourceTree = "<group>"; };
-		6F64E96C09B2C9235463DC04 /* ProcMacroNativeProxy.wat */ = {isa = PBXFileReference; path = ProcMacroNativeProxy.wat; sourceTree = "<group>"; };
 		72C0A9DB161BABC0D5AC50DA /* GitHubRepositoryReferenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubRepositoryReferenceTests.swift; sourceTree = "<group>"; };
 		72DC4FCC3E4B95BAE6574E1C /* CargoManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoManifest.swift; sourceTree = "<group>"; };
 		73C1FC8A2234B8B8C0D7C08C /* AppLockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockTests.swift; sourceTree = "<group>"; };
@@ -705,7 +703,6 @@
 				E0C3BDD5967E4251001E6D75 /* NativeCompilerWorker.swift */,
 				9A3EBA7ECDA77AC1E94DA71D /* NativeRustcSession.swift */,
 				9E843EC00EDDA7190AA95A90 /* ProcMacroNativeProxy.swift */,
-				6F64E96C09B2C9235463DC04 /* ProcMacroNativeProxy.wat */,
 			);
 			path = Native;
 			sourceTree = "<group>";
@@ -1099,7 +1096,6 @@
 				31B1EA3B72D4096B6C3B60F8 /* LegalDocuments.json in Resources */,
 				86CFC690934610F01587597F /* MigrationCoursePacks in Resources */,
 				3504D6529B169202FB4FDC61 /* PrivacyInfo.xcprivacy in Resources */,
-				02BB4132C099E7EBBB349854 /* ProcMacroNativeProxy.wat in Resources */,
 				DF3BD723C27443199DCA4948 /* Rust-COPYRIGHT.txt in Resources */,
 				1A9A04A8AFF14ECB8DEB7D4B /* Rust-LICENSE-APACHE.txt in Resources */,
 				54D2D6A6D36DEBE5E48021BF /* Rust-LICENSE-MIT.txt in Resources */,
@@ -1576,7 +1572,6 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.1.2;
-				"OTHER_LDFLAGS[sdk=iphoneos*]" = "$(inherited) -L$(SRCROOT)/build/NativeCompiler -lCrabrixNativeCompiler";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.Crabrix;
 				PRODUCT_NAME = Crabrix;
 				SDKROOT = iphoneos;
@@ -1733,7 +1728,6 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.1.2;
-				"OTHER_LDFLAGS[sdk=iphoneos*]" = "$(inherited) -L$(SRCROOT)/build/NativeCompiler -lCrabrixNativeCompiler";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.Crabrix;
 				PRODUCT_NAME = Crabrix;
 				SDKROOT = iphoneos;
@@ -1764,7 +1758,6 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.1.2;
-				"OTHER_LDFLAGS[sdk=iphoneos*]" = "$(inherited) -L$(SRCROOT)/build/NativeCompiler -lCrabrixNativeCompiler";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.Crabrix;
 				PRODUCT_NAME = Crabrix;
 				PROVISIONING_PROFILE_SPECIFIER = "$(CRABRIX_APP_PROFILE)";

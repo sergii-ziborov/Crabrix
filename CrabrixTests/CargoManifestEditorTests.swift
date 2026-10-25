@@ -2,6 +2,17 @@ import XCTest
 @testable import Crabrix
 
 final class CargoManifestEditorTests: XCTestCase {
+    func testMacroCapableToolchainKeepsCargoDefaultFeatures() {
+        for name in ["syn", "quote", "proc-macro2", "tokio"] {
+            XCTAssertEqual(CargoManifestEditor.localCompilerDeclaration(name: name, requirement: "1",
+                supportsProceduralMacros: true), "\(name) = \"1\"")
+            XCTAssertFalse(CargoManifestEditor.hasLocalCompilerProfile(name: name, supportsProceduralMacros: true))
+        }
+        XCTAssertTrue(CargoManifestEditor.hasLocalCompilerProfile(name: "syn", supportsProceduralMacros: false))
+        XCTAssertTrue(CargoManifestEditor.localCompilerDeclaration(name: "syn", requirement: "3",
+            supportsProceduralMacros: false).contains("default-features = false"))
+    }
+
     func testSynParserProfileRepairsPlainDependencyWithoutChangingOtherEntries() throws {
         let source = """
         [package]

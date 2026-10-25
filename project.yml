@@ -56,6 +56,7 @@ targets:
           - Resources/Toolchain
           - Resources/MigrationCoursePacks
           - Resources/ActiveCourseCatalog
+          - Compiler/Native/ProcMacroNativeProxy.wat
       - path: Crabrix/Resources/MigrationCoursePacks
         type: folder
         buildPhase: resources
@@ -142,7 +143,6 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         CODE_SIGN_STYLE: Automatic
         SWIFT_OBJC_BRIDGING_HEADER: Crabrix/Compiler/Native/NativeCompilerBridge.h
-        OTHER_LDFLAGS[sdk=iphoneos*]: "$(inherited) -L$(SRCROOT)/build/NativeCompiler -lCrabrixNativeCompiler"
       configs:
         release:
           CODE_SIGN_STYLE: Manual

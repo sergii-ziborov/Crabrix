@@ -1,3 +1,4 @@
+#if CRABRIX_NATIVE_COMPILER
 // Generated from ProcMacroNativeProxy.wat with pinned WABT 1.0.42.
 // This adapter keeps all macro crates in WasmKit; it contains no Rust code.
 enum ProcMacroNativeProxy {
@@ -18,3 +19,5 @@ enum ProcMacroNativeProxy {
         65, 0, 11, 2, 0, 11,
     ]
 }
+
+#endif

@@ -82,6 +82,7 @@ enum CargoResolutionError: LocalizedError, Equatable {
     case unknownTargetPredicate(String)
     case requiresNewerRust(crate: String, required: String, bundled: String)
     case didNotConverge
+    case tooManyPackages(limit: Int)
 
     var errorDescription: String? {
         switch self {
@@ -99,6 +100,8 @@ enum CargoResolutionError: LocalizedError, Equatable {
             "\(crate) requires Rust \(required), newer than bundled rustc \(bundled)."
         case .didNotConverge:
             "Dependency resolution did not settle. The graph may contain a cycle."
+        case let .tooManyPackages(limit):
+            "This project exceeds the local limit of \(limit) resolved dependency packages."
         }
     }
 }
@@ -109,6 +112,7 @@ enum CargoResolutionError: LocalizedError, Equatable {
 /// SemVer selection with compatibility buckets, feature unification including
 /// `dep:` and weak `dep?/feature` syntax, and target-predicate filtering.
 actor CargoResolver {
+    static let maximumPackages = 2_048
     private let index: any CrateIndexProviding
     private let target: RustTargetSpec
     private let toolchainRustVersion: SemanticVersion
@@ -268,7 +272,12 @@ actor CargoResolver {
             let (id, entry) = try await select(edge: edge, lockedID: lockedID)
             rootMap[edge.alias] = id
             request(features: edge.requestedFeatures, for: id)
-            if visited.insert(id).inserted { queue.append((id, entry)) }
+            if visited.insert(id).inserted {
+                guard visited.count <= Self.maximumPackages else {
+                    throw CargoResolutionError.tooManyPackages(limit: Self.maximumPackages)
+                }
+                queue.append((id, entry))
+            }
         }
 
         var cursor = 0
@@ -312,7 +321,12 @@ actor CargoResolver {
                 let (childID, childEntry) = try await select(edge: edge, lockedID: lockedID)
                 dependencies[edge.alias] = childID
                 request(features: edge.requestedFeatures, for: childID)
-                if visited.insert(childID).inserted { queue.append((childID, childEntry)) }
+                if visited.insert(childID).inserted {
+                    guard visited.count <= Self.maximumPackages else {
+                        throw CargoResolutionError.tooManyPackages(limit: Self.maximumPackages)
+                    }
+                    queue.append((childID, childEntry))
+                }
             }
 
             packages[id] = ResolvedPackage(
@@ -662,19 +676,25 @@ actor CargoResolver {
         var order: [PackageID] = []
         var state: [PackageID: Int] = [:] // 1 = visiting, 2 = done
 
-        func visit(_ id: PackageID) {
-            // A cycle can only come from bad index data; stop rather than recurse.
-            guard state[id] == nil else { return }
-            state[id] = 1
-            for child in (packages[id]?.dependencies.values.sorted()) ?? [] {
-                visit(child)
+        // Avoid one native stack frame per package in deep supported graphs.
+        for root in roots.sorted() + packages.keys.sorted() {
+            var pending: [(PackageID, Bool)] = [(root, false)]
+            while let (id, finishing) = pending.popLast() {
+                if finishing {
+                    guard state[id] == 1 else { continue }
+                    state[id] = 2
+                    order.append(id)
+                } else {
+                    guard state[id] == nil else { continue }
+                    state[id] = 1
+                    pending.append((id, true))
+                    let children = packages[id]?.dependencies.values.sorted() ?? []
+                    for child in children.reversed() where state[child] == nil {
+                        pending.append((child, false))
+                    }
+                }
             }
-            state[id] = 2
-            order.append(id)
         }
-
-        for root in roots.sorted() { visit(root) }
-        for id in packages.keys.sorted() { visit(id) }
         return order
     }
 }

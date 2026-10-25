@@ -1057,6 +1057,7 @@ final class WasmRustCompiler: @unchecked Sendable {
     ) throws -> WasmProcessResult {
         var environment = environment
         if toolchain.supportsProceduralMacros { environment["CRABRIX_WASM_PROC_MACROS"] = "1" }
+        #if CRABRIX_NATIVE_COMPILER
         if let sha = toolchain.compilerSHA256, sha == NativeRustcSession.compilerSHA256 {
             let started = ContinuousClock.now
             let result = try runtime.runNativeCompiler(arguments: arguments, environment: environment,
@@ -1066,6 +1067,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             CompilerPhaseTrace.emit("native-rustc", since: started)
             return result
         }
+        #endif
         let module = try runtime.rustcModule(at: toolchain.rustcURL)
         // Parsing the bundled rustc module is the one phase no interrupter can
         // reach into: it is host work, not guest execution. Ask once it is done
@@ -1160,7 +1162,13 @@ final class WasmRustCompiler: @unchecked Sendable {
                     detail: detail
                 )
             }
-            throw failure.underlying
+            // A panic belongs to the running program. Preserve its captured
+            // message instead of reclassifying it as a compiler failure.
+            let trap = String(describing: failure.underlying).split(separator: "\n").first.map(String.init)
+                ?? "unexpected WebAssembly trap"
+            return CompilationResult(succeeded: false, phase: .run, exitCode: nil,
+                diagnostics: diagnostics, stdout: failure.stdout, stderr: failure.stderr,
+                duration: started.duration(to: clock.now), detail: "Program trapped: \(trap)")
         }
 
         var webAssets = previewSourceFiles.filter { WebPreviewSnapshot.mimeType(for: $0.key) != nil }.mapValues { Data($0.utf8) }

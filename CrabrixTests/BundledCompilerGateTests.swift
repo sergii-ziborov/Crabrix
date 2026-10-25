@@ -109,6 +109,20 @@ final class BundledCompilerGateTests: XCTestCase {
             print("MEASURED COMPILER CANDIDATE SHA256", sha)
         }
         print("MEASURED COMPILER INPUT", candidate?.version ?? CargoToolchain.artifactIdentity)
+        #if CRABRIX_NATIVE_COMPILER
+        if ProcessInfo.processInfo.environment["CRABRIX_REQUIRE_NATIVE_COMPILER"] == "1" {
+            guard let candidate, candidate.compilerSHA256 == NativeRustcSession.compilerSHA256 else {
+                throw NSError(domain: "CrabrixNativeQualification", code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "The requested native compiler is not linked to this exact candidate"])
+            }
+            print("MEASURED COMPILER BACKEND native-static", NativeRustcSession.compilerSHA256)
+        }
+        #else
+        if ProcessInfo.processInfo.environment["CRABRIX_REQUIRE_NATIVE_COMPILER"] == "1" {
+            throw NSError(domain: "CrabrixNativeQualification", code: 2,
+                userInfo: [NSLocalizedDescriptionKey: "This build has no enabled native compiler candidate"])
+        }
+        #endif
         return WasmRustCompiler(ledger: candidate == nil && dependencyArtifactRoot == nil
                                     ? .shared : CrateCompatibilityLedger(storageURL: nil),
                                 runtime: RustcRuntime(experimentalSoftwareDirect: direct),
@@ -423,7 +437,7 @@ final class BundledCompilerGateTests: XCTestCase {
         #[cfg(generated_greeting)]
         fn main() { println!("{}:{}", env!("GENERATED_KIND"), GREETING); }
         """#
-        let compiler = WasmRustCompiler(bundle: .main)
+        let compiler = try measuredCompiler()
         for greeting in ["hello", "changed"] {
             let result = await compiler.run(
                 source: source, sourcePath: "src/main.rs",
@@ -556,7 +570,7 @@ final class BundledCompilerGateTests: XCTestCase {
             println!("{}", serde_json::to_string(&value).unwrap());
         }
         """
-        let result = await WasmRustCompiler(bundle: .main).run(
+        let result = try await measuredCompiler().run(
             source: source, sourcePath: "src/main.rs",
             supportingFiles: ["Cargo.toml": manifest, "Cargo.lock": lockfile],
             edition: "2021", plan: offline.plan)
@@ -769,7 +783,7 @@ final class BundledCompilerGateTests: XCTestCase {
             println!("{}", values["answer"]);
         }
         """
-        let result = await WasmRustCompiler(bundle: .main).run(
+        let result = try await measuredCompiler().run(
             source: source, sourcePath: "src/main.rs", supportingFiles: ["Cargo.toml": manifest], plan: snapshot.plan
         )
         XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
@@ -808,7 +822,7 @@ final class BundledCompilerGateTests: XCTestCase {
             throw XCTSkip("Set CRABRIX_RUN_COMPILER_GATE=1 for the expensive bundled compiler gate.")
         }
 
-        let compiler = WasmRustCompiler(bundle: .main)
+        let compiler = try measuredCompiler()
         XCTAssertTrue(compiler.probe().isReady)
 
         let result = await compiler.check(source: RustSamples.broken)
@@ -821,12 +835,21 @@ final class BundledCompilerGateTests: XCTestCase {
         )
     }
 
+    func testProgramPanicKeepsItsMessageAndRunPhase() async throws {
+        try Self.requireCompilerGate()
+        let result = try await measuredCompiler().run(source: "fn main() { panic!(\"program panic stays visible\"); }")
+        XCTAssertFalse(result.succeeded)
+        XCTAssertEqual(result.phase, .run)
+        XCTAssertTrue(result.stderr.contains("program panic stays visible"), result.detail + "\n" + result.stderr)
+        XCTAssertTrue(result.problemDiagnostics.contains { $0.level == "error" })
+    }
+
     func testBundledRustcCompilesAndRunsRepairedProgram() async throws {
         guard ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_GATE"] == "1" else {
             throw XCTSkip("Run the CrabrixCompilerGate scheme for the expensive bundled compiler gate.")
         }
 
-        let compiler = WasmRustCompiler(bundle: .main)
+        let compiler = try measuredCompiler()
         let result = await compiler.run(source: RustSamples.runnable)
 
         XCTAssertTrue(
@@ -850,7 +873,7 @@ final class BundledCompilerGateTests: XCTestCase {
             println!("{}", marker);
         }
         """
-        let result = await WasmRustCompiler(bundle: .main).run(source: source)
+        let result = try await measuredCompiler().run(source: source)
         XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
         XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), marker)
     }
@@ -860,7 +883,7 @@ final class BundledCompilerGateTests: XCTestCase {
             throw XCTSkip("Run the CrabrixCompilerGate scheme for the output stress gate.")
         }
 
-        let result = await WasmRustCompiler(bundle: .main).run(
+        let result = try await measuredCompiler().run(
             source: #"fn main() { print!("{}", "x".repeat(1_048_577)); }"#
         )
 
@@ -878,7 +901,7 @@ final class BundledCompilerGateTests: XCTestCase {
             throw XCTSkip("Run the CrabrixCompilerGate scheme for the expensive multi-file gate.")
         }
 
-        let compiler = WasmRustCompiler(bundle: .main)
+        let compiler = try measuredCompiler()
         let result = await compiler.run(
             source: RustSamples.multiFileMain,
             sourcePath: "src/main.rs",
@@ -915,7 +938,7 @@ final class BundledCompilerGateTests: XCTestCase {
         }
         """
 
-        let result = await WasmRustCompiler(bundle: .main).run(
+        let result = try await measuredCompiler().run(
             source: source,
             sourcePath: "src/main.rs",
             supportingFiles: ["Cargo.toml": manifest]
@@ -957,7 +980,7 @@ final class BundledCompilerGateTests: XCTestCase {
         let snapshot = try await CargoPackageManager().prepare(manifestSource: manifest)
         XCTAssertEqual(snapshot.plan.rootFeatures, ["default", "fancy"])
 
-        let result = await WasmRustCompiler(bundle: .main).run(
+        let result = try await measuredCompiler().run(
             source: source,
             sourcePath: "src/main.rs",
             supportingFiles: ["Cargo.toml": manifest],
@@ -995,7 +1018,7 @@ final class BundledCompilerGateTests: XCTestCase {
             """
         )
 
-        let result = await WasmRustCompiler(bundle: .main).run(
+        let result = try await measuredCompiler().run(
             source: challenge.verificationSource,
             sourcePath: "main.rs",
             supportingFiles: ["solution.rs": solution]
@@ -1011,7 +1034,7 @@ final class BundledCompilerGateTests: XCTestCase {
             throw XCTSkip("Run the CrabrixCompilerGate scheme for the repeated-build gate.")
         }
 
-        let compiler = WasmRustCompiler(bundle: .main)
+        let compiler = try measuredCompiler()
         for attempt in 1...3 {
             let result = await compiler.run(source: RustSamples.runnable)
             XCTAssertTrue(
@@ -1055,7 +1078,7 @@ final class BundledCompilerGateTests: XCTestCase {
             println!("s={signed_results};u={unsigned_results}");
         }
         """
-        let result = await WasmRustCompiler(bundle: .main).run(source: source)
+        let result = try await measuredCompiler().run(source: source)
         XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
         XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
                        "s=01101;u=0101")
@@ -1071,7 +1094,7 @@ final class BundledCompilerGateTests: XCTestCase {
             println!("{}", swapped == 0xffeeddccbbaa99887766554433221100u128);
         }
         """
-        let result = await WasmRustCompiler(bundle: .main).run(source: source)
+        let result = try await measuredCompiler().run(source: source)
         XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
         XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "true")
     }
@@ -1099,7 +1122,7 @@ final class BundledCompilerGateTests: XCTestCase {
             println!("s={signs};t={below_minus_one};o={overflows}");
         }
         """
-        let result = await WasmRustCompiler(bundle: .main).run(source: source)
+        let result = try await measuredCompiler().run(source: source)
         XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
         XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
                        "s=npp;t=npp;o=1100")
@@ -1117,7 +1140,7 @@ final class BundledCompilerGateTests: XCTestCase {
             println!("{a},{b},{c},{d}");
         }
         """
-        let result = await WasmRustCompiler(bundle: .main).run(source: source)
+        let result = try await measuredCompiler().run(source: source)
         XCTAssertTrue(result.succeeded, "\(result.detail)\n\(result.stderr)")
         XCTAssertEqual(result.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
                        "4,-2,9,-7")
@@ -1154,7 +1177,7 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(snapshot.plan.units.count, 5)
         XCTAssertEqual(snapshot.plan.rootExterns.map(\.alias), ["regex"])
 
-        let result = await WasmRustCompiler(bundle: .main).run(
+        let result = try await measuredCompiler().run(
             source: source,
             sourcePath: "src/main.rs",
             supportingFiles: ["Cargo.toml": manifest],
@@ -1177,7 +1200,7 @@ final class BundledCompilerGateTests: XCTestCase {
             bundle: .main, root: root, appVersion: SemanticVersion("1.1")
         ).activateBundledBaseline()
         XCTAssertEqual(repository.showcaseProjects().count, 46)
-        let compiler = WasmRustCompiler(bundle: .main)
+        let compiler = try measuredCompiler()
         for showcase in repository.showcaseProjects() {
             var supporting = showcase.project.files
             let originalSource = try XCTUnwrap(
@@ -1200,27 +1223,27 @@ final class BundledCompilerGateTests: XCTestCase {
     }
 
     func testVisualPixelSunsetRendersAValidatedCanvas() async throws {
-        try await Self.assertVisualShowcase("pixel-sunset")
+        try await assertVisualShowcase("pixel-sunset")
     }
 
     func testVisualCellularGardenRendersAValidatedCanvas() async throws {
-        try await Self.assertVisualShowcase("cellular-garden")
+        try await assertVisualShowcase("cellular-garden")
     }
 
     func testVisualMandelbrotRendersAValidatedCanvas() async throws {
-        try await Self.assertVisualShowcase("mandelbrot-canvas")
+        try await assertVisualShowcase("mandelbrot-canvas")
     }
 
     func testVisualConstellationRendersAValidatedCanvas() async throws {
-        try await Self.assertVisualShowcase("constellation-map")
+        try await assertVisualShowcase("constellation-map")
     }
 
     func testVisualTerrainRendersAValidatedCanvas() async throws {
-        try await Self.assertVisualShowcase("terrain-map")
+        try await assertVisualShowcase("terrain-map")
     }
 
     func testVisualColorWavesRendersAValidatedCanvas() async throws {
-        try await Self.assertVisualShowcase("color-waves")
+        try await assertVisualShowcase("color-waves")
     }
 
     @MainActor
@@ -1231,14 +1254,14 @@ final class BundledCompilerGateTests: XCTestCase {
         )!
         let model = CompilerViewModel(userDefaults: defaults)
         model.createProject(name: "visual-gate", template: .visual)
-        try await Self.assertCanvas(
+        try await assertCanvas(
             project: model.exportProject(),
             id: "visual-template"
         )
     }
 
-    private static func assertVisualShowcase(_ id: String) async throws {
-        try requireCompilerGate()
+    private func assertVisualShowcase(_ id: String) async throws {
+        try Self.requireCompilerGate()
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
         let repository = try await CourseBootstrap(
@@ -1250,7 +1273,7 @@ final class BundledCompilerGateTests: XCTestCase {
         try await assertCanvas(project: showcase.project, id: id)
     }
 
-    private static func assertCanvas(
+    private func assertCanvas(
         project: CrabrixProject,
         id: String
     ) async throws {
@@ -1259,7 +1282,7 @@ final class BundledCompilerGateTests: XCTestCase {
             supporting.removeValue(forKey: project.entryFile),
             id
         )
-        let result = await WasmRustCompiler(bundle: .main).run(
+        let result = try await measuredCompiler().run(
             source: source,
             sourcePath: project.entryFile,
             supportingFiles: supporting
@@ -1334,7 +1357,7 @@ final class BundledCompilerGateTests: XCTestCase {
         )
         XCTAssertEqual(snapshot.plan.rootExterns.map(\.alias), ["smallvec"])
 
-        let compiler = WasmRustCompiler(bundle: .main)
+        let compiler = try measuredCompiler()
         let result = await compiler.run(
             source: source,
             sourcePath: "src/main.rs",
@@ -1384,7 +1407,7 @@ final class BundledCompilerGateTests: XCTestCase {
             println!("{}", ident);
         }
         """
-        let result = await WasmRustCompiler(bundle: .main).run(
+        let result = try await measuredCompiler().run(
             source: source, sourcePath: "src/main.rs",
             supportingFiles: ["Cargo.toml": manifest], plan: snapshot.plan
         )
@@ -1441,7 +1464,7 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertEqual(Set(snapshot.plan.rootExterns.map(\.alias)), ["hashbrown", "smallvec", "serde_json"])
         XCTAssertNotNil(snapshot.lockfile)
 
-        let compiler = WasmRustCompiler(bundle: .main)
+        let compiler = try measuredCompiler()
         let result = await compiler.run(
             source: source,
             sourcePath: "src/main.rs",
@@ -1498,7 +1521,7 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertEqual(Set(snapshot.plan.rootExterns.map(\.alias)), ["regex", "serde_json"])
         XCTAssertNotNil(snapshot.lockfile)
 
-        let compiler = WasmRustCompiler(bundle: .main)
+        let compiler = try measuredCompiler()
         let result = await compiler.run(
             source: source,
             sourcePath: "src/main.rs",
@@ -1593,7 +1616,7 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertEqual(Set(snapshot.plan.rootExterns.map(\.alias)), ["regex", "serde_json", "hashbrown", "smallvec"])
         XCTAssertNotNil(snapshot.lockfile)
 
-        let compiler = WasmRustCompiler(bundle: .main)
+        let compiler = try measuredCompiler()
         let result = await compiler.run(
             source: source,
             sourcePath: "src/main.rs",
@@ -1692,7 +1715,7 @@ final class BundledCompilerGateTests: XCTestCase {
                        ["clap", "regex", "hashbrown", "smallvec"])
         XCTAssertNotNil(snapshot.lockfile)
 
-        let compiler = WasmRustCompiler(bundle: .main)
+        let compiler = try measuredCompiler()
         let result = await compiler.run(
             source: source,
             sourcePath: "src/main.rs",
@@ -1796,7 +1819,7 @@ final class BundledCompilerGateTests: XCTestCase {
                        ["clap", "regex", "petgraph", "itertools"])
         XCTAssertNotNil(snapshot.lockfile)
 
-        let compiler = WasmRustCompiler(bundle: .main)
+        let compiler = try measuredCompiler()
         let result = await compiler.run(
             source: source,
             sourcePath: "src/main.rs",
@@ -1860,7 +1883,7 @@ final class BundledCompilerGateTests: XCTestCase {
         XCTAssertEqual(Set(snapshot.plan.rootExterns.map(\.alias)), ["clap", "regex", "serde_json"])
         XCTAssertNotNil(snapshot.lockfile)
 
-        let compiler = WasmRustCompiler(bundle: .main)
+        let compiler = try measuredCompiler()
         let result = await compiler.run(
             source: source,
             sourcePath: "src/main.rs",
@@ -1927,7 +1950,7 @@ final class BundledCompilerGateTests: XCTestCase {
             patched.packages.first { $0.package == package }?.isLocallyPatched == true
         )
 
-        let result = await WasmRustCompiler(bundle: .main).run(
+        let result = try await measuredCompiler().run(
             source: source,
             sourcePath: "src/main.rs",
             supportingFiles: projectFiles.merging(["Cargo.toml": manifest]) { current, _ in current },

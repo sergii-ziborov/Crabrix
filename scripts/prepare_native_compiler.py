@@ -48,6 +48,7 @@ def verify_platform(library):
 
 def prepare():
     if os.environ.get('PLATFORM_NAME') != 'iphoneos': return
+    if 'CRABRIX_NATIVE_COMPILER' not in os.environ.get('OTHER_SWIFT_FLAGS', ''): return
     output = ROOT / 'build/NativeCompiler'
     output.mkdir(parents=True, exist_ok=True)
     candidate = os.environ.get('CRABRIX_NATIVE_COMPILER_CANDIDATE_LIBRARY')

@@ -1,3 +1,4 @@
+#if CRABRIX_NATIVE_COMPILER
 import Foundation
 
 /// Native compiler frames need a larger stack than a dispatch worker supplies.
@@ -25,3 +26,5 @@ enum NativeCompilerWorker {
         return try job.result!.get()
     }
 }
+
+#endif

@@ -1,3 +1,4 @@
+#if CRABRIX_NATIVE_COMPILER
 import Foundation
 import WASI
 @_spi(Fuzzing) import WasmKit
@@ -217,3 +218,5 @@ final class NativeRustcSession {
         return memory.withUnsafeMutableBufferPointer(offset: UInt(pointer), count: Int(count)) { Array($0) }
     }
 }
+
+#endif

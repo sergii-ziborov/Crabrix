@@ -357,6 +357,7 @@ final class RustcRuntime: @unchecked Sendable {
         return WasmProcessResult(exitCode: exitCode, stdout: output.stdout, stderr: output.stderr)
     }
 
+    #if CRABRIX_NATIVE_COMPILER
     /// Execute the compiler that was statically built from this exact signed
     /// WASM input. No native code is downloaded or generated on the device.
     func runNativeCompiler(arguments: [String], environment: [String: String],
@@ -395,6 +396,7 @@ final class RustcRuntime: @unchecked Sendable {
         if let thrown { throw RustcRuntimeFailure(underlying: thrown, stdout: output.stdout, stderr: output.stderr) }
         return WasmProcessResult(exitCode: exitCode, stdout: output.stdout, stderr: output.stderr)
     }
+    #endif
 
     private struct Capture {
         let stdoutURL: URL

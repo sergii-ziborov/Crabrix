@@ -85,6 +85,35 @@ private func manifest(_ body: String) throws -> CratePackageManifest {
 }
 
 final class CargoResolverTests: XCTestCase {
+    func testDeepGraphSupports2048UniqueDependencyPackages() async throws {
+        let graph = try await resolveDeepGraph(count: CargoResolver.maximumPackages)
+        XCTAssertEqual(graph.packages.count, 2_048)
+        XCTAssertEqual(graph.buildOrder.count, 2_048)
+        XCTAssertEqual(Set(graph.buildOrder).count, 2_048)
+        XCTAssertEqual(graph.buildOrder.first?.name, "graph-2047")
+        XCTAssertEqual(graph.buildOrder.last?.name, "graph-0")
+    }
+
+    func testGraphAbove2048PackagesHasAnExplicitLimitError() async throws {
+        do {
+            _ = try await resolveDeepGraph(count: CargoResolver.maximumPackages + 1)
+            XCTFail("An oversized dependency graph must fail before preparation")
+        } catch let error as CargoResolutionError {
+            XCTAssertEqual(error, .tooManyPackages(limit: 2_048))
+        }
+    }
+
+    private func resolveDeepGraph(count: Int) async throws -> ResolvedGraph {
+        var entries: [String: [String]] = [:]
+        for index in 0..<count {
+            let name = "graph-\(index)"
+            let dependencies = index + 1 < count ? "[\(dep("graph-\(index + 1)", "1"))]" : "[]"
+            entries[name] = [indexLine(name, "1.0.0", deps: dependencies)]
+        }
+        let root = try manifest("[dependencies]\ngraph-0 = \"1\"")
+        return try await CargoResolver(index: StubIndex.make(entries)).resolve(rootDependencies: root.dependencies)
+    }
+
     func testSelectsHighestCompatibleVersionAndSkipsYanked() async throws {
         let index = try StubIndex.make([
             "alpha": [

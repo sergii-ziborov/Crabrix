@@ -126,7 +126,7 @@ final class ProjectAuthoringTests: XCTestCase {
         XCTAssertTrue(model.addCargoDependency(name: "syn", requirement: "3.0.6"))
         model.selectFile("Cargo.toml")
         model.source = model.source.replacingOccurrences(
-            of: CargoManifestEditor.localCompilerDeclaration(name: "syn", requirement: "3.0.6"),
+            of: CargoManifestEditor.localCompilerDeclaration(name: "syn", requirement: "3.0.6", supportsProceduralMacros: false),
             with: "syn = \"3.0.6\""
         )
 
