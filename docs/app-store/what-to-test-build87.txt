@@ -1,0 +1,5 @@
+Test the faster arm64 Rust compiler, Check/Run, Stop and the unchanged iPhone/iPad/Duo workspace.
+Create Web Page or Rust Web Generator and run the local HTML/CSS/JavaScript preview; external network stays blocked.
+Prepare dependencies, inspect package progress and pin them for offline use. The resolver supports up to 2,048 unique dependency packages.
+Verify compiler diagnostics and program panic messages in Problems.
+The additional static compiler and procedural macro toolchain remain candidates and are not enabled in this build. A large Tokio project under 30 seconds is not a release claim.

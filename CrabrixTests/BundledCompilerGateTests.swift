@@ -1254,9 +1254,9 @@ final class BundledCompilerGateTests: XCTestCase {
         )!
         let model = CompilerViewModel(userDefaults: defaults)
         model.createProject(name: "visual-gate", template: .visual)
-        try await assertCanvas(
+        try await Self.assertCanvas(
             project: model.exportProject(),
-            id: "visual-template"
+            id: "visual-template", compiler: try measuredCompiler()
         )
     }
 
@@ -1270,19 +1270,20 @@ final class BundledCompilerGateTests: XCTestCase {
         let showcase = try XCTUnwrap(
             repository.showcaseProjects().first { $0.id == id }
         )
-        try await assertCanvas(project: showcase.project, id: id)
+        try await Self.assertCanvas(project: showcase.project, id: id, compiler: try measuredCompiler())
     }
 
-    private func assertCanvas(
+    private static func assertCanvas(
         project: CrabrixProject,
-        id: String
+        id: String,
+        compiler: WasmRustCompiler
     ) async throws {
         var supporting = project.files
         let source = try XCTUnwrap(
             supporting.removeValue(forKey: project.entryFile),
             id
         )
-        let result = try await measuredCompiler().run(
+        let result = await compiler.run(
             source: source,
             sourcePath: project.entryFile,
             supportingFiles: supporting
