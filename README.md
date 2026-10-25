@@ -133,7 +133,7 @@ publication. These Cloud workflows have manual triggers only.
 
 ## Compatibility and limits
 
-- The bundled compiler targets `wasm32-wasip1`. Rust procedural macros, native linking, and executable Cargo build scripts are outside the supported local Cargo subset.
+- The shipped compiler targets `wasm32-wasip1`. Procedural macros, native linking, host subprocesses and separate build-dependency graphs remain outside its supported Cargo subset. Standard-library-only build scripts run locally as bounded WASI guests.
 - Crate compatibility is measured per package. A successful metadata Check does not prove code generation or linking.
 - Course update crash injection, physical-device performance and Face ID behavior still need their release gates. Selected Simulator gates include compiler output budgeting and supported heavy projects; [current validation](docs/VALIDATION.md) gives their exact scope.
 - Internet is needed to download a selected course, discover/download crates, and import a GitHub project. Compilation and program execution stay on device.

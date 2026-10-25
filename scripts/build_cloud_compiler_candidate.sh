@@ -14,7 +14,7 @@ toolchain="$work/toolchain"
 mkdir -p "$work"
 git init "$toolchain"
 git -C "$toolchain" remote add origin https://github.com/sergii-ziborov/crabrix-toolchain.git
-revision=a9f1f6cb0154554645a9341ac9f0b0a20015db1e
+revision=1bd3efbdb0ea8f42c0dc778fa7878d2461acebb2
 git -C "$toolchain" fetch --depth 1 origin "$revision"
 git -C "$toolchain" checkout --detach FETCH_HEAD
 [[ "$(git -C "$toolchain" rev-parse HEAD)" == "$revision" ]]

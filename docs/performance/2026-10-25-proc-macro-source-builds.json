@@ -84,5 +84,19 @@
     "passedTests": 2,
     "failedTests": 0,
     "skippedTests": 0
+  },
+  "constructorFixBuilds": {
+    "compilerSHA256": "61bfae42e2b95ecf5702e90dbd7cabbd4b1f0286f7ad2f2ec66825664ca19c58",
+    "cloudBuilds": [
+      83,
+      84
+    ],
+    "compilerRawMatch": true,
+    "sysrootRawMatch": true,
+    "smokeResultBundle": "build/compiler-optimization-20261024/macro83-smoke.xcresult",
+    "result": "failed",
+    "failure": "native rust_metadata_* export requested from a reactor that stores metadata in .rustc",
+    "followUpSource": "843bb08bf8c",
+    "followUpRecipe": "1bd3efbdb0ea8f42c0dc778fa7878d2461acebb2"
   }
 }
