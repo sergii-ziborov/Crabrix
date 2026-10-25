@@ -1,5 +1,24 @@
 # Crabrix website deployment
 
+## Brand and shared navigation — 25 October 2026
+
+The service now uses `localhost/crabrix-web-site:brand-navigation-20261025`.
+The header and favicon share the native orange CrabrixMark image, replacing
+the platform emoji. Main navigation highlights the current section on all
+pages, including nested lessons and articles. Light-mode secondary buttons
+and Rust syntax colors now retain readable contrast.
+
+Thirteen tests, TypeScript checking and the production build passed. Browser
+checks covered light/dark themes, route changes, 390px mobile and 820px tablet
+widths without page overflow. Fifteen candidate checks passed before cutover;
+public HTTPS checks verified the pages and the exact logo digest. The account
+mount, limits and backup schedule are retained. A consistent account backup
+completed before switching, and the previous container is stopped as
+`crabrix-web-site-before-brand-navigation-20261025`. DNS and Nginx are unchanged.
+
+[Publication evidence](site-release-2026-10-25-brand-navigation.json),
+[light theme](screenshots/site-brand-light-2026-10-25.png).
+
 ## Current service verification — 25 October 2026
 
 The live service was read back as `crabrix-web-site-1`, image

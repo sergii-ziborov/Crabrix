@@ -192,6 +192,11 @@ See `../docs/site-accounts.md` for operation and recovery.
 
 ## Production release
 
+The shared header and favicon use `/brand/crabrix-mark.png`, copied unchanged
+from the native `CrabrixMark` asset. Its orange color is independent of system
+emoji and theme rendering. Navigation uses the same active-section treatment
+across product pages, Academy and Blog; nested pages retain their section.
+
 Build locally, then prepare a server artifact:
 
 ```sh

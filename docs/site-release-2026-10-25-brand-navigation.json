@@ -1,0 +1,73 @@
+{
+  "publishedAtUTC": "2026-10-25T17:19:28.528323+00:00",
+  "origin": "https://crabrix.com",
+  "image": "localhost/crabrix-web-site:brand-navigation-20261025",
+  "health": "healthy",
+  "rollbackContainer": "crabrix-web-site-before-brand-navigation-20261025",
+  "accountBackup": "completed before cutover; persistent mount preserved",
+  "changes": [
+    "Use canonical orange CrabrixMark for header and favicon, independent of emoji rendering",
+    "Consistent current-section navigation including nested lessons and articles",
+    "Readable secondary buttons and Rust syntax in light mode"
+  ],
+  "tests": {
+    "siteTests": 13,
+    "typeScript": "passed",
+    "productionBuild": "passed",
+    "candidateHTTPChecks": 15,
+    "nativeSimulatorAppBuild": "passed"
+  },
+  "browser": {
+    "light": "passed",
+    "dark": "passed",
+    "mobileWidth": 390,
+    "tabletWidth": 820,
+    "horizontalOverflow": false,
+    "consoleErrors": 0,
+    "screenshot": "screenshots/site-brand-light-2026-10-25.png"
+  },
+  "publicChecks": [
+    {
+      "path": "/",
+      "status": 200,
+      "bytes": 47047,
+      "sha256": "d4903d8bab690040a9dc36ef7695069db98cf13273fe6d271c563f3a64ec3cd1"
+    },
+    {
+      "path": "/learn/",
+      "status": 200,
+      "bytes": 19206,
+      "sha256": "dcd9b0e8b5aea01cfef627dcd0f791a5ac4e948e9a51e128cc941a6ca37d3e5e"
+    },
+    {
+      "path": "/blog/",
+      "status": 200,
+      "bytes": 72094,
+      "sha256": "8f274ad22adecb2eff93343adec663fe61aaacb32a87a36b55086cfb4138b696"
+    },
+    {
+      "path": "/guide/",
+      "status": 200,
+      "bytes": 82036,
+      "sha256": "4adce15caf1dbc187ac3d7bc863676c98d6451633d2f960cc6c31047d8b0bdb2"
+    },
+    {
+      "path": "/login/",
+      "status": 200,
+      "bytes": 14895,
+      "sha256": "8c293cf05762b351344c265a87829fec8a42c264c4f1fc41250030f51e6d3970"
+    },
+    {
+      "path": "/brand/crabrix-mark.png",
+      "status": 200,
+      "bytes": 17443,
+      "sha256": "90fc0f674ceb75816841b99f5dc6673da87e2902da09a1fe9a7756e573b09ec7"
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "bytes": 77296,
+      "sha256": "232eae6175bac5f98ee479821ca6b1f1530b9a2388ed1d19891f8088b0af3519"
+    }
+  ]
+}
