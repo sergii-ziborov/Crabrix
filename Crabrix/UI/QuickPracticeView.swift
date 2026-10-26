@@ -82,8 +82,8 @@ struct QuickPracticeView: View {
             ProgressView(value: Double(min(step, total)), total: Double(total))
                 .tint(CrabrixTheme.mint)
         }
-        .padding(.horizontal, 22)
         .padding(.vertical, verticalSizeClass == .compact ? 5 : 14)
+        .crabrixPageContent(maximumWidth: CrabrixPageLayout.readingMaximumWidth)
         .background(CrabrixTheme.panel)
     }
 

@@ -18,3 +18,5 @@ Distinct file-type icons make Rust, JavaScript, TypeScript, HTML, CSS, package m
 Refined Amber Circuit gold theme and a new red/cyan Cyberpunk palette. Clearer Learn headers, buttons, lesson labels and code colors. Compact theme selection adapts to iPhone, iPad and larger text.
 
 Fixed Code-to-Terminal keyboard handoff: all workspace tabs stay visible when switching with the keyboard open. Code helpers return correctly after hiding and reopening the keyboard.
+
+Consistent card widths in Settings and Learn. On iPad, lesson progress and navigation align with the reading column in portrait and landscape.

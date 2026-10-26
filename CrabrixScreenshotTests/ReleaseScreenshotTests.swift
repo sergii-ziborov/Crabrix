@@ -7,6 +7,98 @@ import UIKit
 final class ReleaseScreenshotTests: XCTestCase {
     private let app = XCUIApplication()
 
+    func testAlignedSettingsAndLearnOnPhoneAndIPad() throws {
+        continueAfterFailure = true
+        let isPad = UIDevice.current.userInterfaceIdiom == .pad
+        let orientations: [UIDeviceOrientation] = isPad ? [.portrait, .landscapeLeft] : [.portrait]
+        defer { XCUIDevice.shared.orientation = .portrait }
+
+        for orientation in orientations {
+            XCUIDevice.shared.orientation = orientation
+            let name = "layout-\(isPad ? "ipad" : "iphone")-\(orientation == .portrait ? "portrait" : "landscape")"
+            let appearance = ["-crabrix.appearance", "cyberpunk"] // retained Amber Circuit
+            launch(["-CrabrixTab", "settings"] + appearance)
+            let settings = app.otherElements["settings-section-Appearance"]
+            XCTAssertTrue(settings.waitForExistence(timeout: 15))
+            let settingsFrame = settings.frame
+            print("LAYOUT \(name) Settings=\(settingsFrame), app=\(app.frame)")
+            capture(name + "-settings")
+            XCTAssertGreaterThan(settingsFrame.width, 250)
+            XCTAssertLessThanOrEqual(settingsFrame.width, 851)
+
+            launch(["-CrabrixTab", "learn"] + appearance)
+            let course = app.otherElements["learn-course-basics"]
+            XCTAssertTrue(course.waitForExistence(timeout: 120))
+            if orientation == .portrait {
+                let update = app.buttons["Update Rust Basics lessons"]
+                if update.exists {
+                    update.tap()
+                    let confirm = app.buttons.matching(NSPredicate(
+                        format: "label MATCHES %@", "^Update [0-9][0-9,. ]* (bytes|KB|MB|GB|TB)$"
+                    )).firstMatch
+                    XCTAssertTrue(confirm.waitForExistence(timeout: 10))
+                    confirm.tap()
+                    let installed = XCTNSPredicateExpectation(
+                        predicate: NSPredicate(format: "exists == false"), object: update
+                    )
+                    XCTAssertEqual(XCTWaiter.wait(for: [installed], timeout: 180), .completed)
+                }
+            }
+            let courseFrame = course.frame
+            print("LAYOUT \(name) Learn=\(courseFrame)")
+            XCTAssertEqual(courseFrame.minX, settingsFrame.minX, accuracy: 1)
+            XCTAssertEqual(courseFrame.width, settingsFrame.width, accuracy: 1)
+            capture(name + "-learn")
+
+            for identifier in ["learn-quick-practice", "learn-term-train", "learn-code-recall"] {
+                let card = app.buttons[identifier]
+                scrollTo(card)
+                XCTAssertTrue(card.exists && card.isHittable)
+                XCTAssertGreaterThanOrEqual(card.frame.minX, courseFrame.minX - 1)
+                XCTAssertLessThanOrEqual(card.frame.maxX, courseFrame.maxX + 1)
+                if !isPad { XCTAssertEqual(card.frame.width, settingsFrame.width, accuracy: 1) }
+                else { XCTAssertGreaterThan(card.frame.width, 260) }
+            }
+            capture(name + "-practice-cards")
+
+            launch(["-CrabrixTab", "learn", "-CrabrixLearn", "basics"] + appearance)
+            let courseAction = app.buttons.matching(NSPredicate(
+                format: "label IN %@", ["Start course", "Continue course", "Review course from start"]
+            )).firstMatch
+            XCTAssertTrue(courseAction.waitForExistence(timeout: 20))
+            capture(name + "-course")
+
+            launch(["-CrabrixTab", "learn", "-CrabrixLearn", "hello-rust"] + appearance)
+            let heading = app.otherElements["lesson-page-heading"]
+            XCTAssertTrue(heading.waitForExistence(timeout: 20))
+            let step = app.staticTexts["LESSON · STEP 1 OF 3"]
+            XCTAssertTrue(step.exists)
+            let readingFrame = heading.frame
+            print("LAYOUT \(name) Lesson heading=\(readingFrame), step=\(step.frame)")
+            XCTAssertEqual(step.frame.minX, readingFrame.minX, accuracy: 2)
+            XCTAssertLessThanOrEqual(readingFrame.width, 717)
+            capture(name + "-lesson")
+
+            let next = app.buttons["Try a quick check"]
+            scrollTo(next)
+            XCTAssertTrue(next.exists && next.isHittable)
+            print("LAYOUT \(name) Lesson footer=\(next.frame)")
+            // Accessibility groups exclude trailing spacers. Derive the
+            // reading column's right edge from its actual left edge instead.
+            let readingRight = app.frame.maxX - (step.frame.minX - app.frame.minX)
+            XCTAssertEqual(next.frame.maxX, readingRight, accuracy: 2)
+            XCTAssertGreaterThanOrEqual(next.frame.minX, readingFrame.minX - 2)
+            capture(name + "-lesson-footer")
+        }
+    }
+
+    private func scrollTo(_ element: XCUIElement) {
+        for _ in 0..<24 {
+            if element.exists && element.isHittable { return }
+            app.swipeUp()
+        }
+    }
+
     func testDuoDisplayScreenshots() throws {
         continueAfterFailure = false
         for (orientation, name) in [(UIDeviceOrientation.portrait, "portrait"), (.landscapeLeft, "landscape")] {
@@ -130,7 +222,13 @@ final class ReleaseScreenshotTests: XCTestCase {
     private func capture(_ name: String) {
         XCTAssertEqual(app.state, .runningForeground)
         XCTAssertEqual(app.alerts.count, 0, "Do not publish an alert-covered frame")
-        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        let screenshot = XCUIScreen.main.screenshot()
+        if name.hasPrefix("layout-") {
+            let path = FileManager.default.temporaryDirectory.appendingPathComponent(name + ".png")
+            try? screenshot.pngRepresentation.write(to: path)
+            print("LAYOUT_IMAGE_PATH \(path.path)")
+        }
+        let attachment = XCTAttachment(screenshot: screenshot)
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)

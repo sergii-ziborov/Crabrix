@@ -228,7 +228,20 @@ enum CrabrixBuildInfo {
     #endif
 }
 
+enum CrabrixPageLayout {
+    static let horizontalInset: CGFloat = 22
+    static let maximumWidth: CGFloat = 850
+    static let readingMaximumWidth: CGFloat = 760
+}
+
 extension View {
+    func crabrixPageContent(maximumWidth: CGFloat = CrabrixPageLayout.maximumWidth) -> some View {
+        frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, CrabrixPageLayout.horizontalInset)
+            .frame(maxWidth: maximumWidth)
+            .frame(maxWidth: .infinity)
+    }
+
     @ViewBuilder
     func crabrixPanel(cornerRadius: CGFloat = 12) -> some View {
         background(CrabrixTheme.panel)

@@ -21,9 +21,8 @@ struct SettingsView: View {
                     helpSection
                     aboutSection
                 }
-                .padding(22)
-                .frame(maxWidth: 850)
-                .frame(maxWidth: .infinity)
+                .padding(.vertical, 22)
+                .crabrixPageContent()
             }
             .background(CrabrixTheme.background.ignoresSafeArea())
             .foregroundStyle(CrabrixTheme.primary)
@@ -463,8 +462,11 @@ private struct SettingsSection<Content: View>: View {
             }
             content()
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
         .crabrixPanel(cornerRadius: 16)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("settings-section-\(title)")
     }
 }
 

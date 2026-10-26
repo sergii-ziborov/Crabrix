@@ -344,10 +344,8 @@ private struct CourseLibraryView: View {
                     Button("Retry") { Task { await academy.checkForUpdates() } }
                 }
             }
-            .padding(.horizontal, 26)
             .padding(.vertical, 20)
-            .frame(maxWidth: 660)
-            .frame(maxWidth: .infinity)
+            .crabrixPageContent()
         }
         .refreshable { await academy.checkForUpdates() }
         .background(CrabrixTheme.background.ignoresSafeArea())
@@ -587,6 +585,7 @@ private struct CourseLibraryView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Open \(course.title), \(completed) of \(lessons.count) lessons complete, available offline")
+                .accessibilityIdentifier("learn-open-course-\(course.id)")
                 Menu {
                     Button("Open course", systemImage: "book") {
                         navigationPath.append(.course(course.id))
@@ -611,6 +610,8 @@ private struct CourseLibraryView: View {
           .padding(15)
           .crabrixPanel(cornerRadius: 16)
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("learn-course-\(course.id)")
     }
 
     private func updateAction(_ entry: CourseCatalogPayload.Entry,
@@ -688,6 +689,7 @@ private struct CourseLibraryView: View {
                 )
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("learn-quick-practice")
 
             NavigationLink {
                 TermMatchTrainView { trainingSessions += 1 }
@@ -701,6 +703,7 @@ private struct CourseLibraryView: View {
                 )
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("learn-term-train")
 
             NavigationLink {
                 CodeRecallView { recallSessions += 1 }
@@ -716,6 +719,7 @@ private struct CourseLibraryView: View {
                 )
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("learn-code-recall")
         }
     }
 

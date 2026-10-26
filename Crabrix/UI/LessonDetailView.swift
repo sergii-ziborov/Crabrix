@@ -221,9 +221,9 @@ struct LessonDetailView: View {
             }
 
         }
-        .padding(.horizontal, 22)
         .padding(.top, 14)
         .padding(.bottom, 12)
+        .crabrixPageContent(maximumWidth: CrabrixPageLayout.readingMaximumWidth)
         .background(CrabrixTheme.panel.opacity(0.96))
     }
 
@@ -570,8 +570,8 @@ struct LessonDetailView: View {
             }
         }
         .font(.headline)
-        .padding(.horizontal, 22)
         .padding(.vertical, 14)
+        .crabrixPageContent(maximumWidth: CrabrixPageLayout.readingMaximumWidth)
     }
 
     private func lessonScrollPage<Content: View>(
@@ -697,6 +697,8 @@ private struct LessonPageHeading: View {
             }
             Spacer(minLength: 0)
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("lesson-page-heading")
     }
 }
 
