@@ -1,3 +1,14 @@
+> Delivery verified through App Store Connect — 26 October 2026: **1.1.2 (95)**
+> is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. The version and
+> replacement submission both report **WAITING_FOR_REVIEW**, selecting build 95.
+> It adds shared file-type icons and retains build 94’s terminal Hide/Show fix.
+> The optimized local app build and manual Cloud build/archive succeeded.
+> All 19 screenshots are COMPLETE, with Code first for iPhone, Duo and iPad.
+> Release remains MANUAL. No Node/Bun runtime or npm script execution is added.
+> [Build 95 delivery evidence](release-1.1.2-build95.json).
+>
+> The build 94 submission below is historical and replaced by build 95.
+
 > Delivery verified through App Store Connect — 26 October 2026: **1.1.2 (94)**
 > is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. The version and
 > replacement submission both report **WAITING_FOR_REVIEW**, selecting build 94.

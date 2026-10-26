@@ -13,6 +13,12 @@ files. The Rust entry, library, module and build-script icons are retained.
 The optimized simulator app build passed. This icon change adds no JavaScript
 runtime, package installation or shell-script execution.
 
+The icons shipped to **TestFlight 1.1.2 (95)** after a successful manual Xcode
+Cloud archive. The replacement App Store submission is WAITING_FOR_REVIEW;
+publication remains manual. All 19 existing Store screenshots are COMPLETE.
+[Delivery evidence](app-store/release-1.1.2-build95.json) records the source,
+Apple status and the unavailable native visual inspection while the Mac is locked.
+
 `package.json` is currently editable JSON. Its scripts and dependency graph are
 not executed. Import omits `node_modules`; a package without Rust or an HTML
 entry can also fail current project discovery. TS/JSX highlighting is not

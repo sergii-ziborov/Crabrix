@@ -1,7 +1,8 @@
 # Changelog
 
-## 1.1.2 (94, TestFlight and App Review) — 2026-10-26
+## 1.1.2 (95, TestFlight and App Review) — 2026-10-26
 
+- Add shared file-type icons for Rust and web sources, package manifests, configs and lock files in the tree, open-file label and file menu.
 - Restore full terminal height after hiding the keyboard; switch the same control between Hide and Show, including the existing Duo terminal control.
 - Keep Terminal entry focused and cancel stale focus requests after dismissal. Preserve fold geometry, code helpers and dock heights.
 - Share the plain Close icon across custom sheets and prominent Save across project metadata editors. Keep project names unique and adapt the terminal prompt to available width.
