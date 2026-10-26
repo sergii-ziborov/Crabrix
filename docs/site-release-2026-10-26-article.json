@@ -1,0 +1,216 @@
+{
+  "publishedAtUTC": "2026-10-26T18:22:50.980573+00:00",
+  "origin": "https://crabrix.com",
+  "sourceCommit": "05fdaafc5ef886c482d1e9e8f12b07bf65d61dc6",
+  "image": "localhost/crabrix-web-site:async-cancellation-20261026",
+  "imageID": "8fa055fbdcac5aa6c52f4a8703c2c4718b7a094edacc1b97a5eba028a3f52c94",
+  "health": "healthy",
+  "rollbackContainer": "crabrix-web-site-before-async-cancellation-20261026",
+  "accountBackup": "completed before cutover",
+  "article": {
+    "slug": "rust-async-cancellation-safe-timeouts",
+    "date": "2026-10-26",
+    "paragraphWords": 2095,
+    "generatedImages": 3,
+    "infographics": 2,
+    "previous25ArticlesUnchanged": true
+  },
+  "catalog": {
+    "courses": 7,
+    "lessons": 742,
+    "articles": 26,
+    "canonicalSitemapURLs": 786,
+    "publicBlogImageURLs": 53
+  },
+  "tests": {
+    "nativeRust": {
+      "passed": 8,
+      "failed": 0,
+      "rust": "1.99.0",
+      "tokio": "1.54.1",
+      "phoneExecutionQualified": false
+    },
+    "siteTests": 14,
+    "typeScript": "passed",
+    "productionBuild": "passed",
+    "browserConfigurations": [
+      {
+        "width": 390,
+        "colorScheme": "light",
+        "imagesLoaded": 3,
+        "horizontalOverflow": false,
+        "articleMetadata": "passed"
+      },
+      {
+        "width": 390,
+        "colorScheme": "dark",
+        "imagesLoaded": 3,
+        "horizontalOverflow": false,
+        "articleMetadata": "passed"
+      },
+      {
+        "width": 820,
+        "colorScheme": "light",
+        "imagesLoaded": 3,
+        "horizontalOverflow": false,
+        "articleMetadata": "passed"
+      },
+      {
+        "width": 820,
+        "colorScheme": "dark",
+        "imagesLoaded": 3,
+        "horizontalOverflow": false,
+        "articleMetadata": "passed"
+      },
+      {
+        "width": 1440,
+        "colorScheme": "light",
+        "imagesLoaded": 3,
+        "horizontalOverflow": false,
+        "articleMetadata": "passed"
+      },
+      {
+        "width": 1440,
+        "colorScheme": "dark",
+        "imagesLoaded": 3,
+        "horizontalOverflow": false,
+        "articleMetadata": "passed"
+      }
+    ],
+    "browserErrors": [],
+    "candidateHTTPChecks": 19,
+    "productionHTTPChecks": 19,
+    "publicHTTPSChecks": 16,
+    "TLSVerification": "enabled using trusted CA bundle"
+  },
+  "assetMetadata": "blog-assets-2026-10-26.json",
+  "prompts": "blog-image-prompts-2026-10-26.json",
+  "publicChecks": [
+    {
+      "path": "/blog/rust-async-cancellation-safe-timeouts/",
+      "status": 200,
+      "bytes": 109673,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "e18a7278f40a0d14c59cc9f454a5e9d2a3c366384274ad28e91f481a6cd51770"
+    },
+    {
+      "path": "/blog/",
+      "status": 200,
+      "bytes": 74479,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "ebda2e800ddc6bd524ffb567d1a06c98223a63978e58761cb23984308faebd4f"
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "bytes": 77782,
+      "contentType": "application/xml",
+      "sha256": "dbb3c2da6bcf0e5eba568b3618ecacf4978d92e560506247d8049a735364474a"
+    },
+    {
+      "path": "/sitemap/",
+      "status": 200,
+      "bytes": 260431,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "bfbd9c1559f4dbb9c586115233d72a6afc08a75647dff4cc8651046a342e7369"
+    },
+    {
+      "path": "/learn/basics/hello-rust/",
+      "status": 200,
+      "bytes": 22858,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "2bac9d23eb8d7f2e0a7299a317a11097a961ee968030445725f4d10efce12744"
+    },
+    {
+      "path": "/login/",
+      "status": 200,
+      "bytes": 14895,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "3a5f91518ab0980a59a08786b92172d08110df5d38072bdf68430d3a35f70f9b"
+    },
+    {
+      "path": "/blog/rust-async-cancellation-editorial.png",
+      "status": 200,
+      "bytes": 2107438,
+      "contentType": "image/png",
+      "sha256": "a4446dc6fd6ca49d694d1d0f13a75cead78e0b58ee9f0bff440056aebf5fa077"
+    },
+    {
+      "path": "/blog/rust-async-cancellation-editorial.webp",
+      "status": 200,
+      "bytes": 217352,
+      "contentType": "image/webp",
+      "sha256": "313ab107d685190dee0d950158f4115b407b9dcec342d35e42d86d6d36d1cbf5"
+    },
+    {
+      "path": "/blog/rust-async-cancellation-editorial-640.webp",
+      "status": 200,
+      "bytes": 58114,
+      "contentType": "image/webp",
+      "sha256": "61f228a4d6ec16e2e020947c9e371fb52fa24ad9f3699f5548160fe096115c67"
+    },
+    {
+      "path": "/blog/rust-async-cancellation-ownership-infographic.png",
+      "status": 200,
+      "bytes": 1549376,
+      "contentType": "image/png",
+      "sha256": "a8a823ea6e1bc48d3a99d0fa27ee96c67927c02f6711282717f437281b06cba3"
+    },
+    {
+      "path": "/blog/rust-async-cancellation-ownership-infographic.webp",
+      "status": 200,
+      "bytes": 146104,
+      "contentType": "image/webp",
+      "sha256": "e792874fde1d27c4ee5abf9948d009e37f9c20c30f1e6b05a5a90bf20e4817e5"
+    },
+    {
+      "path": "/blog/rust-async-cancellation-ownership-infographic-640.webp",
+      "status": 200,
+      "bytes": 46898,
+      "contentType": "image/webp",
+      "sha256": "3ddffef894ec4810b5b065b28e7c92468c83acbb43fdbd4263e17a80f4bdc33e"
+    },
+    {
+      "path": "/blog/rust-async-cancellation-deadline-infographic.png",
+      "status": 200,
+      "bytes": 1540189,
+      "contentType": "image/png",
+      "sha256": "0d02860281b000fcb68d5e36e6ebba82e0dd4c30932f7171356cffaae3f26b50"
+    },
+    {
+      "path": "/blog/rust-async-cancellation-deadline-infographic.webp",
+      "status": 200,
+      "bytes": 134758,
+      "contentType": "image/webp",
+      "sha256": "312d7b668e1892cf625120ec75053d4ba0d4622e3299714108e0e81c3011cd7b"
+    },
+    {
+      "path": "/blog/rust-async-cancellation-deadline-infographic-640.webp",
+      "status": 200,
+      "bytes": 43872,
+      "contentType": "image/webp",
+      "sha256": "0fd9f61183e3c07a019e346d5ada77cdaddc2621b90173cf6ad8d4755dd75172"
+    },
+    {
+      "path": "/learn-media/basics/hello-rust.png",
+      "status": 401
+    }
+  ],
+  "liveBrowser": {
+    "origin": "https://crabrix.com",
+    "article": "/blog/rust-async-cancellation-safe-timeouts/",
+    "width": 390,
+    "colorScheme": "light",
+    "imagesLoaded": 3,
+    "horizontalOverflow": false,
+    "pageErrors": [],
+    "TLSVerification": "enabled",
+    "screenshot": "site-previews/async-cancellation-live-2026-10-26.png"
+  },
+  "cleanup": {
+    "taskCandidateRemoved": true,
+    "compressedUploadCopyRemoved": true,
+    "previousProductionContainerRetained": true,
+    "localTaskPreviewStopped": true
+  }
+}

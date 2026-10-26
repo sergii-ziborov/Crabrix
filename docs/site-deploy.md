@@ -1,5 +1,32 @@
 # Crabrix website deployment
 
+## Async cancellation guide — 26 October 2026
+
+The current service uses `localhost/crabrix-web-site:async-cancellation-20261026`
+from source `05fdaafc5ef886c482d1e9e8f12b07bf65d61dc6`. The new article has
+2,095 paragraph words and three original ImageGen images, including two
+infographics. It covers Tokio deadlines, queue ownership, task cancellation,
+partial I/O, shutdown and retry contracts. All 25 preceding articles are
+unchanged. The catalog now contains 26 articles and 53 public blog images;
+XML and HTML sitemaps include the article, with 786 canonical XML URLs.
+
+Eight native Rust contract tests, 14 site tests, TypeScript checking and the
+production build passed. Browser checks covered 390, 820 and 1440-pixel widths
+in light and dark themes, with all three images decoded and no page overflow.
+Nineteen candidate and production checks passed; 16 public HTTPS checks verified
+the new article metadata, both sitemap representations, all nine original/WebP
+image digests, guest lesson gating and private-media denial. This is a focused
+release check, not a new crawl of every existing page.
+
+A consistent account backup completed before cutover. The persistent account
+mount, resource limits and backup schedule are retained. The preceding service
+is stopped as `crabrix-web-site-before-async-cancellation-20261026` for rollback.
+DNS, Nginx and the app binary were not changed.
+
+[Publication evidence](site-release-2026-10-26-article.json),
+[images and exact prompts](blog-assets-2026-10-26.json),
+[reproducible example](examples/async-cancellation/README.md).
+
 ## Brand and shared navigation — 25 October 2026
 
 The service now uses `localhost/crabrix-web-site:brand-navigation-20261025`.

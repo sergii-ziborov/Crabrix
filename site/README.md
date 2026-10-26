@@ -25,6 +25,8 @@ The eight native Rust checks pass against pinned Tokio 1.54.1. They do not
 qualify the phone's WASI runtime for those Tokio features. Three related guides,
 primary-source links, article metadata and both sitemaps include the new entry.
 All 25 earlier article objects are unchanged.
+The Hetzner publication and focused public checks are recorded in
+`../docs/site-release-2026-10-26-article.json`.
 
 [Image assets and prompts](../docs/blog-assets-2026-10-26.json),
 [reproducible Rust example](../docs/examples/async-cancellation/README.md), and
