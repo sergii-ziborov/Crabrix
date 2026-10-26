@@ -41,3 +41,10 @@ four dock tabs. It excludes the system keyboard and is not a Store screenshot.
 No physical iPhone or Duo posture verification is claimed.
 
 Result bundle: `build/compiler-optimization-20261024/code-terminal-responder-lifecycle.xcresult`.
+
+## Delivery
+
+Build **1.1.2 (97)** is VALID and IN_BETA_TESTING in TestFlight Internal QA.
+App Store Connect selects build 97 for the replacement submission, currently
+WAITING_FOR_REVIEW, with manual release.
+[Delivery evidence](../app-store/release-1.1.2-build97.json).

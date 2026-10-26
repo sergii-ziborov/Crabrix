@@ -1,0 +1,98 @@
+{
+  "verifiedAtUTC": "2026-10-26T11:56:16.694275+00:00",
+  "version": "1.1.2",
+  "buildNumber": "97",
+  "buildID": "08601dc3-c69a-41e9-8de6-9b1f7bec6373",
+  "appSourceCommit": "4534a7552c83df35dfcce387ca0733cd7d2a1b5e",
+  "cloudBuildRunID": "4bfeec98-bf2a-4b8c-b85b-46c2e058d896",
+  "cloudCompletion": "SUCCEEDED",
+  "testFlight": {
+    "processingState": "VALID",
+    "group": "Internal QA",
+    "internalBuildState": "IN_BETA_TESTING"
+  },
+  "appStore": {
+    "versionID": "4ad2dcb4-5252-4f36-bb32-99f41e3f6e9a",
+    "submissionID": "fb3e629f-71e4-49cd-889b-b70cb9ca33b9",
+    "state": "WAITING_FOR_REVIEW",
+    "reviewState": "WAITING_FOR_REVIEW",
+    "selectedBuild": "97",
+    "releaseType": "MANUAL",
+    "screenshots": [
+      {
+        "displayType": "APP_IPHONE_67",
+        "count": 10,
+        "complete": 10,
+        "firstFile": "v111-iphone-6.9-01-build.png"
+      },
+      {
+        "displayType": "APP_IPHONE_DUO",
+        "count": 2,
+        "complete": 2,
+        "firstFile": "v111-iphone-duo-qa-01-laptop-code.png"
+      },
+      {
+        "displayType": "APP_IPAD_PRO_3GEN_129",
+        "count": 7,
+        "complete": 7,
+        "firstFile": "v111-ipad-13-01-build.png"
+      }
+    ],
+    "publication": "Submitted for review; publication remains manual"
+  },
+  "changes": [
+    "Release and restore the source input accessory during native responder changes",
+    "Resign Code before selecting another dock tab, preserving all four tabs above the Terminal keyboard",
+    "Retain existing terminal Hide/Show, theme, offline execution and workspace geometry"
+  ],
+  "verification": {
+    "optimizedSimulatorAppBuild": "passed",
+    "manualCloudBuildAndArchive": "succeeded",
+    "tests": {
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0
+    },
+    "codeToTerminalKeyboardStates": [
+      "hidden",
+      "open",
+      "repeated open"
+    ],
+    "codeHelperBarRestoredPoints": 46,
+    "inputToKeyboardGapBeforePoints": 0.33333333333337123,
+    "inputToKeyboardGapAfterPoints": 46.33333333333337,
+    "appViewRender": "test-owned app view inspected; system keyboard is excluded",
+    "physicalIPhoneAndDuoPosture": "not verified",
+    "keyboardAndFoldGeometryChanged": false,
+    "manualKeyboardInsetAdded": false,
+    "evidence": "../keyboard/code-terminal-handoff-2026-10-26.md",
+    "priorAppearanceEvidence": "release-1.1.2-build96.json",
+    "descriptionReleaseReviewerAndTestFlightNotes": "matched fresh Apple readback",
+    "descriptionCharacters": 3996
+  },
+  "scope": {
+    "arm64SoftwareDirectInterpreter": true,
+    "directInstructionEmission": true,
+    "maximumUniqueDependencyPackages": 2048,
+    "offlineWebLab": true,
+    "nativeCompilerCandidateEnabled": false,
+    "productionProceduralMacroCapability": false,
+    "nodeRuntime": false,
+    "bunRuntime": false,
+    "npmScriptExecution": false
+  },
+  "website": {
+    "origin": "https://crabrix.com",
+    "image": "localhost/crabrix-web-site:brand-navigation-20261025",
+    "evidence": "../site-release-2026-10-25-brand-navigation.json"
+  },
+  "appearanceChoices": [
+    "Auto",
+    "Light",
+    "Dark",
+    "Amber Circuit",
+    "Cyberpunk"
+  ],
+  "experimentalCompiler": "Native compiler and procedural-macro candidates remain separate and disabled in this binary.",
+  "javascriptPackagesAssessment": "../javascript-packages-ios-2026-10-26.md"
+}

@@ -1,3 +1,15 @@
+> Delivery verified through App Store Connect — 26 October 2026: **1.1.2 (97)**
+> is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. The version and
+> replacement submission report **WAITING_FOR_REVIEW**, selecting build 97.
+> It fixes Code-to-Terminal keyboard handoff and restores Code helpers on
+> refocus. Thirteen focused simulator tests passed. Existing dock dimensions,
+> fold layout and terminal Hide/Show behavior are retained. The manual Cloud
+> build/archive succeeded. All 19 existing Store screenshots are COMPLETE,
+> with Code first. Release remains MANUAL.
+> [Build 97 delivery evidence](release-1.1.2-build97.json).
+>
+> The build 96 submission below is historical and replaced by build 97.
+
 > Delivery verified through App Store Connect — 26 October 2026: **1.1.2 (96)**
 > is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. The version and
 > replacement submission both report **WAITING_FOR_REVIEW**, selecting build 96.
