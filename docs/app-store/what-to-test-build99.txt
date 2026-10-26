@@ -1,0 +1,7 @@
+Compare Settings and Learn on iPhone: the section cards, installed course cards and practice cards should have matching left and right edges.
+
+On iPad, repeat in portrait and landscape. Settings and Learn use the same centered page width; practice cards stay within that column. Verify appearance selection, course cards, course maps and lesson reading remain usable after rotation.
+
+In a lesson, the progress header and bottom navigation actions should align with the centered reading column. Scroll to the end to reveal the next action. Quick Practice's header follows its content width too.
+
+Retains build 97's Code-to-Terminal keyboard handoff, keyboard Hide/Show, file icons, shared Save/Close, unique project names, Amber Circuit and Cyberpunk themes. Editor/Duo workspace geometry, offline Rust, local HTML/CSS/JavaScript preview and the 2,048-package limit are unchanged. No Node/Bun or experimental native compiler candidate is enabled.

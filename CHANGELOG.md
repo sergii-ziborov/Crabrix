@@ -1,7 +1,8 @@
 # Changelog
 
-## 1.1.2 (97, TestFlight and App Review) — 2026-10-26
+## 1.1.2 (99, TestFlight and App Review) — 2026-10-26
 
+- Align Settings/Learn card widths and center iPad lesson progress, navigation and Quick Practice headers. Native UI checks passed for iPhone portrait and iPad portrait/landscape with current Rust Basics content.
 - Keep every dock tab above the keyboard when switching Code to Terminal with the keyboard open; restore Code helpers after Hide and refocus. Thirteen focused native editor/terminal simulator tests passed.
 - Refine the retained gold appearance as Amber Circuit and add a separate midnight-blue, red and cyan Cyberpunk palette.
 - Improve Learn header/action/lesson/code contrast and provide compact phone, iPad and Large Text theme selection. Twenty focused tests passed.

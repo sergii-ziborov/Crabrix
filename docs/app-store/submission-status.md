@@ -1,3 +1,16 @@
+> Delivery verified through App Store Connect — 26 October 2026: **1.1.2 (99)**
+> is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. The version and
+> replacement submission report **WAITING_FOR_REVIEW**, selecting build 99.
+> It aligns Settings/Learn cards and iPad lesson controls. Native UI checks
+> passed for iPhone portrait and iPad portrait/landscape; screenshots were
+> inspected. The current signed Rust Basics pack was used for lesson checks.
+> Editor/Duo geometry and compiler capabilities are retained. The manual Cloud
+> build/archive succeeded. All 19 existing Store screenshots are COMPLETE,
+> with Code first. Release remains MANUAL.
+> [Build 99 delivery evidence](release-1.1.2-build99.json).
+>
+> The build 97 submission below is historical and replaced by build 99.
+
 > Delivery verified through App Store Connect — 26 October 2026: **1.1.2 (97)**
 > is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. The version and
 > replacement submission report **WAITING_FOR_REVIEW**, selecting build 97.

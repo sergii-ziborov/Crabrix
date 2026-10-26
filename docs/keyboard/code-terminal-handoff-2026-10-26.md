@@ -44,7 +44,8 @@ Result bundle: `build/compiler-optimization-20261024/code-terminal-responder-lif
 
 ## Delivery
 
-Build **1.1.2 (97)** is VALID and IN_BETA_TESTING in TestFlight Internal QA.
-App Store Connect selects build 97 for the replacement submission, currently
+Build **1.1.2 (97)** introduced this keyboard fix. It is retained in
+**1.1.2 (99)**, which is VALID and IN_BETA_TESTING in TestFlight Internal QA.
+App Store Connect selects build 99 for the replacement submission, currently
 WAITING_FOR_REVIEW, with manual release.
-[Delivery evidence](../app-store/release-1.1.2-build97.json).
+[Current delivery evidence](../app-store/release-1.1.2-build99.json).

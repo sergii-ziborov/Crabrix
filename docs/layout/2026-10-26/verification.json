@@ -55,5 +55,7 @@
   },
   "currentRustBasics": "Updated or installed through the real signed CoursePack flow before lesson checks",
   "appSourcesMatchCloudCommit": true,
-  "testHarnessFollowup": "Fresh-install setup uses Download instead of assuming an already installed baseline"
+  "testHarnessFollowup": "Fresh-install setup uses Download instead of assuming an already installed baseline",
+  "deliverySourceCommit": "227159aef20ce75d4d02de15b280bfc29d61c4f7",
+  "testedAppSourcesMatchDeliveredCommit": true
 }

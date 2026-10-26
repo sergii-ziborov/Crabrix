@@ -1,0 +1,149 @@
+{
+  "verifiedAtUTC": "2026-10-26T14:33:26.892267+00:00",
+  "version": "1.1.2",
+  "buildNumber": "99",
+  "buildID": "685139aa-f405-44a4-bc81-2f0a3b182a7c",
+  "appSourceCommit": "227159aef20ce75d4d02de15b280bfc29d61c4f7",
+  "cloudBuildRunID": "4ee4232e-a2cc-4359-b418-8b37b5f31243",
+  "cloudCompletion": "SUCCEEDED",
+  "testFlight": {
+    "processingState": "VALID",
+    "group": "Internal QA",
+    "internalBuildState": "IN_BETA_TESTING"
+  },
+  "appStore": {
+    "versionID": "4ad2dcb4-5252-4f36-bb32-99f41e3f6e9a",
+    "submissionID": "40b0acb0-d48a-4ed5-98ff-ac75886b4a5b",
+    "state": "WAITING_FOR_REVIEW",
+    "reviewState": "WAITING_FOR_REVIEW",
+    "selectedBuild": "99",
+    "releaseType": "MANUAL",
+    "screenshots": [
+      {
+        "displayType": "APP_IPHONE_67",
+        "count": 10,
+        "complete": 10,
+        "firstFile": "v111-iphone-6.9-01-build.png"
+      },
+      {
+        "displayType": "APP_IPHONE_DUO",
+        "count": 2,
+        "complete": 2,
+        "firstFile": "v111-iphone-duo-qa-01-laptop-code.png"
+      },
+      {
+        "displayType": "APP_IPAD_PRO_3GEN_129",
+        "count": 7,
+        "complete": 7,
+        "firstFile": "v111-ipad-13-01-build.png"
+      }
+    ],
+    "publication": "Submitted for review; publication remains manual"
+  },
+  "changes": [
+    "Use the same 22-point page inset and 850-point centered limit in Settings and Learn",
+    "Align iPad lesson progress and navigation with the 760-point reading column",
+    "Align Quick Practice header with its content and preserve editor/Duo geometry"
+  ],
+  "verification": {
+    "optimizedSimulatorAppBuild": "passed",
+    "manualCloudBuildAndArchive": "succeeded",
+    "nativeUIJobs": {
+      "passed": 2,
+      "failed": 0
+    },
+    "configurations": {
+      "layout-ipad-portrait": {
+        "settingsFramePoints": [
+          112.25,
+          179.25,
+          807.5,
+          157.0
+        ],
+        "learnFramePoints": [
+          112.25,
+          233.75,
+          807.5,
+          116.0
+        ]
+      },
+      "layout-ipad-landscape": {
+        "settingsFramePoints": [
+          284.25,
+          179.25,
+          807.5,
+          157.0
+        ],
+        "learnFramePoints": [
+          284.25,
+          233.75,
+          807.5,
+          116.0
+        ]
+      },
+      "layout-iphone-portrait": {
+        "settingsFramePoints": [
+          21.416666666666657,
+          220.91666666666666,
+          359.8333435058594,
+          332.8333435058594
+        ],
+        "learnFramePoints": [
+          21.25,
+          171.5833282470703,
+          359.5,
+          115.83332824707031
+        ]
+      }
+    },
+    "nativeScreenshots": "visually inspected",
+    "currentRustBasics": "updated or installed through the real signed-pack UI before lesson checks",
+    "physicalIPhoneAndDuoPosture": "not verified",
+    "editorAndFoldGeometryChanged": false,
+    "compilerChanges": false,
+    "evidence": "../layout/2026-10-26/README.md",
+    "priorKeyboardEvidence": "release-1.1.2-build97.json",
+    "descriptionCharacters": 3996,
+    "descriptionReleaseReviewerAndTestFlightNotes": "matched fresh Apple readback",
+    "localReleaseBackupArchive": {
+      "result": "succeeded",
+      "build": "99",
+      "uploaded": false
+    },
+    "testedAppSourcesMatchDeliveredCommit": true
+  },
+  "scope": {
+    "arm64SoftwareDirectInterpreter": true,
+    "directInstructionEmission": true,
+    "maximumUniqueDependencyPackages": 2048,
+    "offlineWebLab": true,
+    "nativeCompilerCandidateEnabled": false,
+    "productionProceduralMacroCapability": false,
+    "nodeRuntime": false,
+    "bunRuntime": false,
+    "npmScriptExecution": false
+  },
+  "website": {
+    "origin": "https://crabrix.com",
+    "image": "localhost/crabrix-web-site:brand-navigation-20261025",
+    "evidence": "../site-release-2026-10-25-brand-navigation.json"
+  },
+  "appearanceChoices": [
+    "Auto",
+    "Light",
+    "Dark",
+    "Amber Circuit",
+    "Cyberpunk"
+  ],
+  "experimentalCompiler": "Native compiler and procedural-macro candidates remain separate and disabled in this binary.",
+  "javascriptPackagesAssessment": "../javascript-packages-ios-2026-10-26.md",
+  "priorCloudAttempt": {
+    "buildNumber": "98",
+    "runID": "3b398db6-d141-4c34-8ed0-afb4c76530ad",
+    "completionStatus": "FAILED",
+    "issuesReturned": 0,
+    "logBundleBytes": 22,
+    "archiveAvailable": false,
+    "replacement": "99 succeeded"
+  }
+}

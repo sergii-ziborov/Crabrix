@@ -55,3 +55,17 @@ Result bundles:
 
 [Lesson reading](layout-ipad-portrait-lesson.png) and
 [landscape lesson footer](layout-ipad-landscape-lesson-footer.png).
+
+## Delivery
+
+Build **1.1.2 (99)** is VALID and IN_BETA_TESTING in TestFlight Internal QA.
+App Store Connect selects build 99 in the replacement submission, currently
+WAITING_FOR_REVIEW. Release remains manual. The manual Xcode Cloud build and
+archive succeeded; description, release/reviewer notes and TestFlight notes
+matched a fresh Apple readback. All 19 existing Store screenshots are complete,
+with Code first.
+
+The delivered source commit contains the QA documentation and first-install
+test setup added after the production layout commit. The application sources
+are identical to those used in the passing native UI checks.
+[Delivery evidence](../../app-store/release-1.1.2-build99.json).

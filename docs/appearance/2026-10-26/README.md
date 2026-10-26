@@ -45,11 +45,11 @@ capabilities are unchanged.
 
 ## Delivery
 
-Build **1.1.2 (96)** introduced these appearances. Its review submission was
-subsequently replaced by **1.1.2 (97)**, which retains the themes and fixes
-Code-to-Terminal keyboard handoff. Build 97 is **IN_BETA_TESTING** in TestFlight
-Internal QA and **WAITING_FOR_REVIEW** in App Store Connect, with manual release.
-The description, release notes, reviewer notes and What to Test matched a
-fresh Apple readback. All 19 existing Store screenshots are complete, with
-Code first; these component previews do not replace them.
-[Current delivery evidence](../../app-store/release-1.1.2-build97.json).
+Build **1.1.2 (96)** introduced these appearances. They are retained in
+**1.1.2 (99)** alongside the keyboard handoff fix and aligned Settings/Learn
+pages. Build 99 is IN_BETA_TESTING in TestFlight Internal QA and
+WAITING_FOR_REVIEW in App Store Connect, with manual release. Description,
+release/reviewer notes and What to Test matched a fresh Apple readback.
+All 19 existing Store screenshots are complete, with Code first; these
+component previews do not replace them.
+[Current delivery evidence](../../app-store/release-1.1.2-build99.json).
