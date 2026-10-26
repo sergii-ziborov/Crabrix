@@ -1,0 +1,7 @@
+File icons: open a mixed Rust/web project. The project tree and open-file label distinguish JS/JSX, TS/TSX, HTML, CSS, JSON, YAML, TOML, Markdown, SVG/images, package.json and lock files. Rust entry/library/module/build-script icons remain. Check selection colors and the file menu in light, dark and Cyberpunk appearances.
+
+This change does not add a Node.js/Bun runtime or npm script execution. Existing local HTML/CSS/JavaScript preview, Rust compiler and package limits are retained.
+
+Build 94's terminal fix remains: Hide must restore full terminal height, and the button changes to Show keyboard. Repeat Hide/Show, then switch between Code and Terminal. Duo fold positions, tab heights, code helpers and the 50-point terminal row remain.
+
+Retain the shared plain X, prominent Save, unique project names, adaptive terminal prompt, offline web lab, package preparation progress and 2,048-package resolver ceiling. Experimental native compiler and procedural macro candidates remain separate and disabled in this binary.

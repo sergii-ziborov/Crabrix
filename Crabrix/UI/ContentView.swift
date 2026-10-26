@@ -1915,12 +1915,15 @@ private struct EditorToolbar: View {
                             if file == selectedFile {
                                 Label(file, systemImage: "checkmark")
                             } else {
-                                Text(file)
+                                Label(file, systemImage: ProjectFileAppearance.forPath(file).symbol)
                             }
                         }
                     }
                 } label: {
-                    Label(selectedFile, systemImage: "doc.plaintext")
+                    HStack(spacing: 6) {
+                        ProjectFileIcon(path: selectedFile)
+                        Text(selectedFile)
+                    }
                         .font(.system(size: 11, weight: .medium, design: .monospaced))
                         .foregroundStyle(CrabrixTheme.primary)
                 }

@@ -12,3 +12,5 @@ Project settings has a highlighted Save action and a separate Close button. Proj
 Consistent modal controls: highlighted Save and a standard Close icon throughout project, package and practice sheets.
 
 The terminal keyboard button now switches between Hide and Show. Hiding the keyboard restores the full terminal height.
+
+Distinct file-type icons make Rust, JavaScript, TypeScript, HTML, CSS, package manifests and other project files easier to recognize.

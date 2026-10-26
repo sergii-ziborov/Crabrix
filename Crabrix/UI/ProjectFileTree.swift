@@ -86,13 +86,12 @@ private struct ProjectTreeBranch: View {
                 }
             }
         } else {
+            let appearance = ProjectFileAppearance.forPath(node.path)
             Button {
                 onSelect(node.path)
             } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: fileIcon(for: node.path).name)
-                        .foregroundStyle(fileIcon(for: node.path).tint)
-                        .frame(width: 18)
+                    ProjectFileIcon(path: node.path)
                     Text(node.name)
                         .font(.system(size: 11, design: .monospaced))
                         .foregroundStyle(CrabrixTheme.primary)
@@ -101,12 +100,12 @@ private struct ProjectTreeBranch: View {
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 7)
-                .background(node.path == selectedPath ? fileIcon(for: node.path).tint.opacity(0.14) : .clear)
+                .background(node.path == selectedPath ? appearance.tint.opacity(0.14) : .clear)
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .overlay {
                     if node.path == selectedPath {
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .stroke(fileIcon(for: node.path).tint.opacity(0.35))
+                            .stroke(appearance.tint.opacity(0.35))
                     }
                 }
             }
@@ -114,25 +113,6 @@ private struct ProjectTreeBranch: View {
         }
     }
 
-    private func fileIcon(for path: String) -> (name: String, tint: Color) {
-        let name = path.split(separator: "/").last.map(String.init) ?? path
-        if name == "Cargo.toml" { return ("shippingbox.fill", CrabrixTheme.amber) }
-        if name == "Cargo.lock" || path.hasSuffix(".lock") {
-            return ("lock.fill", CrabrixTheme.amber)
-        }
-        if name == "main.rs" { return ("play.square.fill", CrabrixTheme.coral) }
-        if name == "lib.rs" { return ("books.vertical.fill", CrabrixTheme.blue) }
-        if name == "build.rs" { return ("hammer.fill", CrabrixTheme.amber) }
-        if name == "mod.rs" { return ("square.stack.3d.up.fill", CrabrixTheme.mint) }
-        if path.hasSuffix(".rs") { return ("chevron.left.forwardslash.chevron.right", CrabrixTheme.coral) }
-        if path.hasSuffix(".toml") { return ("slider.horizontal.3", CrabrixTheme.amber) }
-        if path.hasSuffix(".md") { return ("doc.richtext.fill", CrabrixTheme.blue) }
-        if path.hasSuffix(".json") { return ("curlybraces", CrabrixTheme.mint) }
-        if name.uppercased().hasPrefix("LICENSE") {
-            return ("checkmark.seal.fill", CrabrixTheme.mint)
-        }
-        return ("doc.fill", CrabrixTheme.muted)
-    }
 }
 
 private struct ProjectTreeNode: Identifiable {

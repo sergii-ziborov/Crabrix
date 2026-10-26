@@ -176,6 +176,7 @@
 		B59263E867BE43AD461D82BC /* WasmKit in Frameworks */ = {isa = PBXBuildFile; productRef = 47ADF588ACB23434742BF9DC /* WasmKit */; };
 		B717E95735F9F30EE5F57674 /* CrateArchiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20BE9BBC80F38AE223BAB4A3 /* CrateArchiveTests.swift */; };
 		B73F617DF5D444F78AFFFCF5 /* SharedImportQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9357EF87952821B79459AE36 /* SharedImportQueue.swift */; };
+		B7D9BF29FE1B2E511D890C5C /* ProjectFileIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A70079C6D321E6A43BED646 /* ProjectFileIcon.swift */; };
 		B8C6E75307074EC116D3F73C /* CourseDownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 109299B526E64638EEE7AC12 /* CourseDownloadManager.swift */; };
 		B96F56CFCB21EACE91C06C10 /* CrateSourceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8811CE23D18FC4B914D532DF /* CrateSourceView.swift */; };
 		BB03AAA6D27378754CF9E02B /* CourseSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0563B4A20D9F5691AC9F428F /* CourseSession.swift */; };
@@ -410,6 +411,7 @@
 		9853B43026260AB1594084F0 /* BorrowRepair.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BorrowRepair.swift; sourceTree = "<group>"; };
 		9A3EBA7ECDA77AC1E94DA71D /* NativeRustcSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeRustcSession.swift; sourceTree = "<group>"; };
 		9A5377845C2374FBE4F05922 /* LegalDocuments.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = LegalDocuments.json; sourceTree = "<group>"; };
+		9A70079C6D321E6A43BED646 /* ProjectFileIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectFileIcon.swift; sourceTree = "<group>"; };
 		9A933B2B0009B98281F32A47 /* toolchain.lock.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = toolchain.lock.json; sourceTree = "<group>"; };
 		9AA225CF00A922F2C203C36A /* CargoBuildScriptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoBuildScriptTests.swift; sourceTree = "<group>"; };
 		9B3FE59D76CC8EBC1BF4A988 /* CrabrixTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrabrixTheme.swift; sourceTree = "<group>"; };
@@ -872,6 +874,7 @@
 				BA151D9B7D5D9B22BDE4D855 /* ProfileView.swift */,
 				F83AABD7E4AC4645DF68D801 /* ProgressViews.swift */,
 				4C552F2CEA08713116E71EC3 /* ProjectCreationViews.swift */,
+				9A70079C6D321E6A43BED646 /* ProjectFileIcon.swift */,
 				5B270F1FF867630900E5AA2C /* ProjectFileTree.swift */,
 				1B7F772FA01ED015242D773A /* ProjectLibraryView.swift */,
 				8F7C2557071F0F91665C33E1 /* ProjectOrganizationViews.swift */,
@@ -1263,6 +1266,7 @@
 				1CF734CD1755A66BD4C6936A /* ProfileView.swift in Sources */,
 				7B3A8E22CA37C0245FF282D5 /* ProgressViews.swift in Sources */,
 				6D06A6E58BA0D059E0420243 /* ProjectCreationViews.swift in Sources */,
+				B7D9BF29FE1B2E511D890C5C /* ProjectFileIcon.swift in Sources */,
 				79E46C75D12D9A21771A58C5 /* ProjectFileTree.swift in Sources */,
 				BD72040AA8F1186C56B6BD3E /* ProjectLibrary.swift in Sources */,
 				BC67E85F9C4046CF2034C022 /* ProjectLibraryView.swift in Sources */,
