@@ -42,3 +42,13 @@ Component previews were visually inspected. Full device UI inspection remains
 unavailable while the Mac is locked; no physical iPhone or Duo posture check
 is claimed. Workspace/fold geometry, compiler settings and offline execution
 capabilities are unchanged.
+
+## Delivery
+
+Build **1.1.2 (96)** was archived successfully in Xcode Cloud and is
+**IN_BETA_TESTING** in TestFlight Internal QA. App Store Connect selects build
+96 for the replacement submission, currently **WAITING_FOR_REVIEW**, with
+manual release. The description, release notes, reviewer notes and What to
+Test matched a fresh Apple readback. All 19 existing Store screenshots are
+complete, with Code first; these component previews do not replace them.
+[Delivery evidence](../../app-store/release-1.1.2-build96.json).

@@ -1,13 +1,15 @@
 # Changelog
 
-## 1.1.2 (95, TestFlight and App Review) — 2026-10-26
+## 1.1.2 (96, TestFlight and App Review) — 2026-10-26
 
+- Refine the retained gold appearance as Amber Circuit and add a separate midnight-blue, red and cyan Cyberpunk palette.
+- Improve Learn header/action/lesson/code contrast and provide compact phone, iPad and Large Text theme selection. Twenty focused tests passed.
 - Add shared file-type icons for Rust and web sources, package manifests, configs and lock files in the tree, open-file label and file menu.
 - Restore full terminal height after hiding the keyboard; switch the same control between Hide and Show, including the existing Duo terminal control.
 - Keep Terminal entry focused and cancel stale focus requests after dismissal. Preserve fold geometry, code helpers and dock heights.
 - Share the plain Close icon across custom sheets and prominent Save across project metadata editors. Keep project names unique and adapt the terminal prompt to available width.
 - Include the offline HTML/CSS/JavaScript web lab, package download progress, bounded standard-library build scripts, arm64 interpreter improvements and the 2,048-package resolver ceiling.
-- Verify ten focused tests and an additional bottom-position rerun, archive manually in Xcode Cloud and replace the previous review submission. Experimental native compiler and procedural-macro candidates remain separate.
+- Verify twenty focused appearance and regression tests, inspect component renders, archive manually in Xcode Cloud and replace the previous review submission. Experimental native compiler and procedural-macro candidates remain separate.
 
 ## 1.1.1 (68, TestFlight and App Review) — 2026-10-16
 

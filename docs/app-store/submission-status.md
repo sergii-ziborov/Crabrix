@@ -1,3 +1,17 @@
+> Delivery verified through App Store Connect — 26 October 2026: **1.1.2 (96)**
+> is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. The version and
+> replacement submission both report **WAITING_FOR_REVIEW**, selecting build 96.
+> It adds the new Cyberpunk palette, refines the retained gold Amber Circuit
+> appearance and improves Learn contrast and compact theme selection.
+> All 20 focused tests passed. Component renders were visually inspected;
+> full device/Duo posture verification is not claimed. The manual Cloud
+> build/archive succeeded. All 19 existing Store screenshots are COMPLETE,
+> with Code first. Description, What to Test and release/reviewer notes are
+> synchronized. Release remains MANUAL.
+> [Build 96 delivery evidence](release-1.1.2-build96.json).
+>
+> The build 95 submission below is historical and replaced by build 96.
+
 > Delivery verified through App Store Connect — 26 October 2026: **1.1.2 (95)**
 > is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. The version and
 > replacement submission both report **WAITING_FOR_REVIEW**, selecting build 95.

@@ -1,0 +1,95 @@
+{
+  "verifiedAtUTC": "2026-10-26T11:22:30.252658+00:00",
+  "version": "1.1.2",
+  "buildNumber": "96",
+  "buildID": "d68922a1-39f4-47e2-8cf5-05506ae81fea",
+  "appSourceCommit": "435f71ad77e4c109750961041b9098242865363e",
+  "cloudBuildRunID": "e945835e-19e1-4f48-af43-c89c15afa2c2",
+  "cloudCompletion": "SUCCEEDED",
+  "testFlight": {
+    "processingState": "VALID",
+    "group": "Internal QA",
+    "internalBuildState": "IN_BETA_TESTING"
+  },
+  "appStore": {
+    "versionID": "4ad2dcb4-5252-4f36-bb32-99f41e3f6e9a",
+    "submissionID": "93a4e1f9-91ba-4b33-b22e-6338225b6b01",
+    "state": "WAITING_FOR_REVIEW",
+    "reviewState": "WAITING_FOR_REVIEW",
+    "selectedBuild": "96",
+    "releaseType": "MANUAL",
+    "screenshots": [
+      {
+        "displayType": "APP_IPHONE_67",
+        "count": 10,
+        "complete": 10,
+        "firstFile": "v111-iphone-6.9-01-build.png"
+      },
+      {
+        "displayType": "APP_IPHONE_DUO",
+        "count": 2,
+        "complete": 2,
+        "firstFile": "v111-iphone-duo-qa-01-laptop-code.png"
+      },
+      {
+        "displayType": "APP_IPAD_PRO_3GEN_129",
+        "count": 7,
+        "complete": 7,
+        "firstFile": "v111-ipad-13-01-build.png"
+      }
+    ],
+    "publication": "Submitted for review; publication remains manual"
+  },
+  "changes": [
+    "Preserve the saved gold theme as Amber Circuit and add a separate midnight-blue/red/cyan Cyberpunk palette",
+    "Readable opaque Learn chapter surfaces, accent ink, lesson labels, practice controls, progress and syntax",
+    "Compact five-choice appearance picker with phone, iPad and Large Text layouts"
+  ],
+  "verification": {
+    "optimizedSimulatorAppBuild": "passed",
+    "manualCloudBuildAndArchive": "succeeded",
+    "tests": {
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0
+    },
+    "componentWidthsPoints": [
+      240,
+      313,
+      770
+    ],
+    "largeText": "accessibility3 passed",
+    "legacyGoldPreference": "preserved as Amber Circuit",
+    "componentRenders": "visually inspected",
+    "nativeVisualInspection": "Full native UI unavailable while the Mac was locked; no physical iPhone/Duo posture verification claimed",
+    "keyboardAndFoldGeometryChanged": false,
+    "evidence": "../appearance/2026-10-26/README.md",
+    "descriptionReleaseReviewerAndTestFlightNotes": "matched fresh Apple readback",
+    "descriptionCharacters": 3996
+  },
+  "scope": {
+    "arm64SoftwareDirectInterpreter": true,
+    "directInstructionEmission": true,
+    "maximumUniqueDependencyPackages": 2048,
+    "offlineWebLab": true,
+    "nativeCompilerCandidateEnabled": false,
+    "productionProceduralMacroCapability": false,
+    "nodeRuntime": false,
+    "bunRuntime": false,
+    "npmScriptExecution": false
+  },
+  "website": {
+    "origin": "https://crabrix.com",
+    "image": "localhost/crabrix-web-site:brand-navigation-20261025",
+    "evidence": "../site-release-2026-10-25-brand-navigation.json"
+  },
+  "appearanceChoices": [
+    "Auto",
+    "Light",
+    "Dark",
+    "Amber Circuit",
+    "Cyberpunk"
+  ],
+  "experimentalCompiler": "Native compiler and procedural-macro candidates remain separate and disabled in this binary.",
+  "javascriptPackagesAssessment": "../javascript-packages-ios-2026-10-26.md"
+}
