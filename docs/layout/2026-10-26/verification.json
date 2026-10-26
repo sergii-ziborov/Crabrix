@@ -1,0 +1,59 @@
+{
+  "verifiedAtUTC": "2026-10-26T13:59:45.293653+00:00",
+  "appSourceCommit": "9465436067b07a6131805b69b27d7c6a7e32a578",
+  "ipadPortraitPassed": true,
+  "ipadLandscapePassed": true,
+  "iphonePortraitPassed": true,
+  "visualInspection": true,
+  "nativeUIJobs": {
+    "passed": 2,
+    "failed": 0
+  },
+  "configurations": {
+    "layout-ipad-portrait": {
+      "settingsFramePoints": [
+        112.25,
+        179.25,
+        807.5,
+        157.0
+      ],
+      "learnFramePoints": [
+        112.25,
+        233.75,
+        807.5,
+        116.0
+      ]
+    },
+    "layout-ipad-landscape": {
+      "settingsFramePoints": [
+        284.25,
+        179.25,
+        807.5,
+        157.0
+      ],
+      "learnFramePoints": [
+        284.25,
+        233.75,
+        807.5,
+        116.0
+      ]
+    },
+    "layout-iphone-portrait": {
+      "settingsFramePoints": [
+        21.416666666666657,
+        220.91666666666666,
+        359.8333435058594,
+        332.8333435058594
+      ],
+      "learnFramePoints": [
+        21.25,
+        171.5833282470703,
+        359.5,
+        115.83332824707031
+      ]
+    }
+  },
+  "currentRustBasics": "Updated or installed through the real signed CoursePack flow before lesson checks",
+  "appSourcesMatchCloudCommit": true,
+  "testHarnessFollowup": "Fresh-install setup uses Download instead of assuming an already installed baseline"
+}

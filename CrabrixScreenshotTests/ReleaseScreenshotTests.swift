@@ -28,6 +28,20 @@ final class ReleaseScreenshotTests: XCTestCase {
 
             launch(["-CrabrixTab", "learn"] + appearance)
             let course = app.otherElements["learn-course-basics"]
+            if !course.exists {
+                // A simulator used for first-install tests may correctly have
+                // no courses yet. Use the real download flow, preserving its
+                // saved learner state and signature verification.
+                let download = app.buttons["Download Rust Basics for offline use"]
+                if download.waitForExistence(timeout: 10) {
+                    download.tap()
+                    let confirm = app.buttons.matching(NSPredicate(
+                        format: "label MATCHES %@", "^Download [0-9][0-9,. ]* (bytes|KB|MB|GB|TB)$"
+                    )).firstMatch
+                    XCTAssertTrue(confirm.waitForExistence(timeout: 10))
+                    confirm.tap()
+                }
+            }
             XCTAssertTrue(course.waitForExistence(timeout: 120))
             if orientation == .portrait {
                 let update = app.buttons["Update Rust Basics lessons"]
