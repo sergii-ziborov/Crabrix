@@ -47,6 +47,7 @@
 		2AEE951350A08279CB646E51 /* WABT-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2F90B2D7CF47286F181B33B6 /* WABT-LICENSE.txt */; };
 		2B4BE9C0F4102CCB8142F774 /* swift-system-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = E4B798EE784275F9C194D9B5 /* swift-system-LICENSE.txt */; };
 		2D5A7B2E04A0D214078674F9 /* CargoBuildPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9F0FB50E1462BCBC86DF551 /* CargoBuildPlan.swift */; };
+		2EDAA64A906A801232614A42 /* AppearancePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD350E97620F1FB339249C56 /* AppearancePicker.swift */; };
 		2F5529FCB51DED5E6645E076 /* OfflineWebPreviewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51231AC0432B98FB181FE8DC /* OfflineWebPreviewTests.swift */; };
 		302C7622158F1FD7104F8610 /* PackageDownloadSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E42868B52F7E467F9905F3B /* PackageDownloadSheet.swift */; };
 		30378E05BFED089463AD93E2 /* InstalledCourseRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD423A006C2A2A962EE2495 /* InstalledCourseRepositoryTests.swift */; };
@@ -204,6 +205,7 @@
 		CE4BB5894285EC57C4E3B650 /* LessonMapLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 386D9CB2F6ECA745336EB7F9 /* LessonMapLayoutTests.swift */; };
 		D10649D53E90EFB46D97F0F1 /* CourseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43399378DEFA3EFDB3368AF9 /* CourseRepository.swift */; };
 		D181A2147A44EC4C2E0E5BF6 /* TerminalKeyboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D111D533F55B983FC047F784 /* TerminalKeyboardTests.swift */; };
+		D20492B36080AEDD1B45CF7A /* AppearanceRenderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A766BDDD55FB6BEBD30B38 /* AppearanceRenderingTests.swift */; };
 		D244136DFB4BDBC64690F600 /* ProjectTerminalSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44ABFA97B5DA7FD2FADA63C6 /* ProjectTerminalSessionTests.swift */; };
 		D49C98DD06AD42D9BD560349 /* CrabrixProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17305CBAACACB768E537F24 /* CrabrixProgress.swift */; };
 		D5050F9D62A3048C30A31F67 /* TopicMastery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1D24127CCCD6858FC76A21 /* TopicMastery.swift */; };
@@ -464,10 +466,12 @@
 		CA5866457924F7521705CCD1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CB010148795840226D61C11F /* RustLessonContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustLessonContent.swift; sourceTree = "<group>"; };
 		CB910906AEB3103C7C9E6F7D /* CodeContributionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeContributionTests.swift; sourceTree = "<group>"; };
+		CD350E97620F1FB339249C56 /* AppearancePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearancePicker.swift; sourceTree = "<group>"; };
 		CF605A50A6EB406DF55C4E57 /* CodeRecallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeRecallView.swift; sourceTree = "<group>"; };
 		CFA00659D0D6FAD5318CE39C /* swift-atomics-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-atomics-LICENSE.txt"; sourceTree = "<group>"; };
 		D111D533F55B983FC047F784 /* TerminalKeyboardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalKeyboardTests.swift; sourceTree = "<group>"; };
 		D17C0F44F9A525F94B586EE7 /* GitHubProjectImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubProjectImporter.swift; sourceTree = "<group>"; };
+		D1A766BDDD55FB6BEBD30B38 /* AppearanceRenderingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceRenderingTests.swift; sourceTree = "<group>"; };
 		D376BDE5EA96F1A57F8E37A5 /* CourseDeliveryGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseDeliveryGateTests.swift; sourceTree = "<group>"; };
 		D4479B42763852BA1B452D60 /* CourseModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseModels.swift; sourceTree = "<group>"; };
 		D6DDAE274BAAA1B1AE274F71 /* catalog.v1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = catalog.v1.json; sourceTree = "<group>"; };
@@ -770,6 +774,7 @@
 			children = (
 				67D67D2D0A1619040A96DC9A /* AchievementTierTests.swift */,
 				1067DEB86E13480FF37A47CB /* AlgorithmCourseCatalogTests.swift */,
+				D1A766BDDD55FB6BEBD30B38 /* AppearanceRenderingTests.swift */,
 				73C1FC8A2234B8B8C0D7C08C /* AppLockTests.swift */,
 				24851507366B69E1C89A070E /* AppToolchainReleaseTests.swift */,
 				ED805A32682154958D4A1EC2 /* BorrowRepairTests.swift */,
@@ -852,6 +857,7 @@
 			children = (
 				8BA8750BF5000C8E1AB3AB63 /* AchievementCelebrationView.swift */,
 				5764C24D7A7235B9C83EC0F1 /* AdaptiveFold.swift */,
+				CD350E97620F1FB339249C56 /* AppearancePicker.swift */,
 				08CF787A36CA91D1C110D707 /* BuildDockView.swift */,
 				4416BEF4A5157F2F6D4E2B2F /* BuildWorkflowControls.swift */,
 				92BB070DF07D979DE9FFEE95 /* CargoDependencyCatalogSheet.swift */,
@@ -1196,6 +1202,7 @@
 				8774C7F4897814F164353FA7 /* AlgorithmVerificationData.swift in Sources */,
 				33E992EFDA0AFBF79057E3B4 /* AppLockController.swift in Sources */,
 				8F689304E1B9905A53F5FEAF /* AppToolchainRelease.swift in Sources */,
+				2EDAA64A906A801232614A42 /* AppearancePicker.swift in Sources */,
 				3678B1AFA13BEEC4505BA950 /* AppleIntelligenceDiagnosticAdvisor.swift in Sources */,
 				53C508818988C87F3CA384F9 /* BorrowExplanation.swift in Sources */,
 				B0E19E7B68ACB01F1F333C69 /* BorrowRepair.swift in Sources */,
@@ -1322,6 +1329,7 @@
 				907271D59A799311162F4CF6 /* AlgorithmCourseCatalogTests.swift in Sources */,
 				FA6604AE42D256B00E00939A /* AppLockTests.swift in Sources */,
 				EDD602BB2F5547C82174AD00 /* AppToolchainReleaseTests.swift in Sources */,
+				D20492B36080AEDD1B45CF7A /* AppearanceRenderingTests.swift in Sources */,
 				ABDFFA5263492E9C914C3C6B /* BorrowRepairTests.swift in Sources */,
 				F1F0BF0DA8B783EE070F2CA5 /* BuildProblemsTests.swift in Sources */,
 				B53A042015AC822CCE2CCDFA /* BundledCompilerGateTests.swift in Sources */,

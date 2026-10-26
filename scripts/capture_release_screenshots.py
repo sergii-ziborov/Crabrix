@@ -180,7 +180,7 @@ def main() -> None:
         ("06-profile.png", ("-CrabrixTab", "learn", "-CrabrixLearn", "profile")),
         ("07-library.png", ("-CrabrixTab", "learn", "-CrabrixLearn", "examples")),
         ("10-example-detail.png", ("-CrabrixTab", "learn", "-CrabrixLearn", "example:ferris-pixel-art")),
-        ("08-settings.png", ("-CrabrixTab", "settings", "-crabrix.appearance", "cyberpunk")),
+        ("08-settings.png", ("-CrabrixTab", "settings", "-crabrix.appearance", "cyberpunkNeon")),
     ])
     capture_set(app, args.ipad_template, "ipad-13", [
         ("01-build.png", ("--crabrix-auto-multifile",)),

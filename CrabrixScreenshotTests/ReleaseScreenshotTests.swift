@@ -54,7 +54,7 @@ final class ReleaseScreenshotTests: XCTestCase {
             ("06-profile", ["-CrabrixTab", "learn", "-CrabrixLearn", "profile"]),
             ("07-library", ["-CrabrixTab", "learn", "-CrabrixLearn", "examples"]),
             ("10-example-detail", ["-CrabrixTab", "learn", "-CrabrixLearn", "example:ferris-pixel-art"]),
-            ("08-settings", ["-CrabrixTab", "settings", "-crabrix.appearance", "cyberpunk"])
+            ("08-settings", ["-CrabrixTab", "settings", "-crabrix.appearance", "cyberpunkNeon"])
         ]
         for (name, arguments) in frames {
             launch(arguments)

@@ -61,12 +61,13 @@ struct PracticeSheet: View {
                     Task { await check() }
                 } label: {
                     HStack {
-                        if isChecking { ProgressView().tint(.white) }
+                        if isChecking { ProgressView().tint(CrabrixTheme.onAccent) }
                         Text(isChecking ? "Running bundled rustc…" : passed ? "Passed" : "Check and run locally")
                     }
                     .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .foregroundStyle(CrabrixTheme.onAccent)
                 .tint(passed ? CrabrixTheme.mint.opacity(0.6) : CrabrixTheme.coral)
                 .disabled(isChecking || passed)
             }

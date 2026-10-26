@@ -422,6 +422,7 @@ struct TermMatchTrainView: View {
                         .buttonStyle(.bordered)
                     Button("Train again") { if let mode { start(mode) } }
                         .buttonStyle(.borderedProminent)
+                        .foregroundStyle(CrabrixTheme.onAccent)
                         .tint(CrabrixTheme.coral)
                 }
                 Button("Back to Learn") { dismiss() }

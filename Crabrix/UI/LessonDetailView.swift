@@ -500,9 +500,9 @@ struct LessonDetailView: View {
             HStack(spacing: 12) {
                 Text(String(UnicodeScalar(65 + index)!))
                     .font(.caption.monospaced().bold())
-                    .foregroundStyle(isSelected ? CrabrixTheme.background : CrabrixTheme.muted)
+                    .foregroundStyle(isSelected ? CrabrixTheme.onAccent : CrabrixTheme.muted)
                     .frame(width: 28, height: 28)
-                    .background(isSelected ? brief.tint : CrabrixTheme.border, in: Circle())
+                    .background(isSelected ? brief.tint : CrabrixTheme.raised, in: Circle())
                 formattedParagraph(answer, plainColor: CrabrixTheme.primary)
                     .font(.subheadline.weight(.semibold))
                     .multilineTextAlignment(.leading)
@@ -551,6 +551,7 @@ struct LessonDetailView: View {
                     .frame(minWidth: 180)
                 }
                 .buttonStyle(.borderedProminent)
+                .foregroundStyle(CrabrixTheme.onAccent)
                 .tint(brief.tint)
                 .disabled(page == 1 && !isQuickCheckAnswered)
             } else {
@@ -564,6 +565,7 @@ struct LessonDetailView: View {
                     .frame(minWidth: 200)
                 }
                 .buttonStyle(.borderedProminent)
+                .foregroundStyle(CrabrixTheme.onAccent)
                 .tint(isLive ? CrabrixTheme.coral : CrabrixTheme.mint)
             }
         }
@@ -631,7 +633,7 @@ private struct LessonTraceStepRow: View {
         HStack(alignment: .top, spacing: 12) {
             Text("\(index)")
                 .font(.caption.monospaced().bold())
-                .foregroundStyle(CrabrixTheme.background)
+                .foregroundStyle(CrabrixTheme.onAccent)
                 .frame(width: 28, height: 28)
                 .background(tint, in: Circle())
             VStack(alignment: .leading, spacing: 4) {

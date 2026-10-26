@@ -144,6 +144,7 @@ struct CodeRecallView: View {
                 }
                 .font(.headline)
                 .buttonStyle(.borderedProminent)
+                .foregroundStyle(CrabrixTheme.onAccent)
                 .tint(CrabrixTheme.coral)
                 .disabled(snippets.isEmpty)
                 if snippets.isEmpty {
@@ -234,6 +235,7 @@ struct CodeRecallView: View {
                     Label("Next level", systemImage: "arrow.right")
                 }
                 .buttonStyle(.borderedProminent)
+                .foregroundStyle(CrabrixTheme.onAccent)
                 .tint(CrabrixTheme.mint)
             }
             Spacer(minLength: 0)
@@ -281,6 +283,7 @@ struct CodeRecallView: View {
                         Label("Play again", systemImage: "arrow.clockwise")
                     }
                     .buttonStyle(.borderedProminent)
+                    .foregroundStyle(CrabrixTheme.onAccent)
                     .tint(CrabrixTheme.coral)
                 }
             }
@@ -294,7 +297,7 @@ struct CodeRecallView: View {
         HStack(spacing: 10) {
             Text("\(index + 1)")
                 .font(.caption2.monospaced().bold())
-                .foregroundStyle(CrabrixTheme.background)
+                .foregroundStyle(CrabrixTheme.onAccent)
                 .frame(width: 22, height: 22)
                 .background(CrabrixTheme.mint, in: Circle())
             Text(SyntaxTheme.attributedString(line, filePath: "snippet.rs", fontSize: 13))

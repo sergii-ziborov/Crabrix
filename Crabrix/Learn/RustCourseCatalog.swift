@@ -1,6 +1,6 @@
 import Foundation
 
-enum RustCourseTheme: String, Sendable {
+enum RustCourseTheme: String, CaseIterable, Sendable {
     case basics
     case ownership
     case projects

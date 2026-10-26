@@ -78,7 +78,7 @@ struct AchievementCelebrationView: View {
     private var badge: some View {
         Image(systemName: achievement.systemImage)
             .font(.system(size: 52, weight: .semibold))
-            .foregroundStyle(CrabrixTheme.background)
+            .foregroundStyle(CrabrixTheme.onAccent)
             .frame(width: 108, height: 108)
             .background(
                 LinearGradient(

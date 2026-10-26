@@ -1,0 +1,9 @@
+Appearance: Settings now offers Auto, Light, Dark, Amber Circuit and Cyberpunk. The previous saved gold Cyberpunk preference stays selected as Amber Circuit. New Cyberpunk is a separate midnight-blue, burgundy, red and cyan palette. Switch between all choices and relaunch to verify persistence.
+
+Learn: check Continue/Start course, chapter names and descriptions, locked/completed/available lesson labels, progress, quick checks, practice and code highlighting. Text should stay readable on bright controls and dark panels. The chapter title no longer sits on a bright gradient.
+
+The compact theme cards wrap on iPhone and fit all five choices across an iPad content width. Enable larger accessibility text: cards should grow vertically, keeping theme names readable.
+
+Twenty focused tests passed, including contrast, preference preservation, component rendering, lesson-map geometry and terminal keyboard tests. Component renders were inspected; physical-device UI and Duo posture are not claimed as tested for this update.
+
+Retain build 95's file icons, build 94's Terminal Hide/Show behavior, shared Save/Close controls, unique names and the existing fold/tab/keyboard geometry. Offline Rust, local HTML/CSS/JavaScript preview and the 2,048-package resolver ceiling are retained. Node/Bun and native procedural-macro candidates are not enabled.

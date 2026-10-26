@@ -9,8 +9,6 @@ struct SettingsView: View {
     @AppStorage("crabrix.appleIntelligenceDiagnostics") private var appleIntelligenceDiagnostics = true
     let toolchain: ToolchainStatus
 
-    private let columns = [GridItem(.adaptive(minimum: 150), spacing: 12)]
-
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -54,48 +52,9 @@ struct SettingsView: View {
     private var appearanceSection: some View {
         SettingsSection(
             title: "Appearance",
-            detail: "Auto follows the device. Cyberpunk uses dark panels, amber controls and sharp edges throughout Crabrix."
+            detail: "Auto follows your device. Amber Circuit pairs graphite with gold; Cyberpunk uses midnight blue, red panels and cyan accents."
         ) {
-            LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(CrabrixAppearance.allCases) { appearance in
-                    Button {
-                        appearanceRaw = appearance.rawValue
-                    } label: {
-                        VStack(spacing: 9) {
-                            Image(systemName: appearance.systemImage)
-                                .font(.title2)
-                                .foregroundStyle(
-                                    appearanceRaw == appearance.rawValue
-                                        ? CrabrixTheme.coral : CrabrixTheme.muted
-                                )
-                            Text(appearance.title)
-                                .font(.subheadline.bold())
-                            if appearanceRaw == appearance.rawValue {
-                                Label("Selected", systemImage: "checkmark.circle.fill")
-                                    .font(.caption2.monospaced())
-                                    .foregroundStyle(CrabrixTheme.mint)
-                            } else {
-                                Text(" ").font(.caption2)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 104)
-                        .background(
-                            appearanceRaw == appearance.rawValue
-                                ? CrabrixTheme.coral.opacity(0.08) : CrabrixTheme.panel
-                        )
-                        .clipShape(CrabrixCardShape(cornerRadius: 14))
-                        .overlay {
-                            CrabrixCardShape(cornerRadius: 14)
-                                .stroke(
-                                    appearanceRaw == appearance.rawValue
-                                        ? CrabrixTheme.coral.opacity(0.55) : CrabrixTheme.border,
-                                    lineWidth: appearanceRaw == appearance.rawValue ? 1.5 : 1
-                                )
-                        }
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
+            AppearancePicker(selection: $appearanceRaw)
         }
     }
 

@@ -14,3 +14,5 @@ Consistent modal controls: highlighted Save and a standard Close icon throughout
 The terminal keyboard button now switches between Hide and Show. Hiding the keyboard restores the full terminal height.
 
 Distinct file-type icons make Rust, JavaScript, TypeScript, HTML, CSS, package manifests and other project files easier to recognize.
+
+Refined Amber Circuit gold theme and a new red/cyan Cyberpunk palette. Clearer Learn headers, buttons, lesson labels and code colors. Compact theme selection adapts to iPhone, iPad and larger text.

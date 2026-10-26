@@ -10,6 +10,19 @@ import UIKit
 /// measure the contrast rather than trusting that it looks fine in dark mode.
 @MainActor
 final class ThemeContrastTests: XCTestCase {
+    private var savedAppearance: Any?
+
+    override func setUp() {
+        super.setUp()
+        savedAppearance = UserDefaults.standard.object(forKey: "crabrix.appearance")
+        UserDefaults.standard.removeObject(forKey: "crabrix.appearance")
+    }
+
+    override func tearDown() {
+        UserDefaults.standard.set(savedAppearance, forKey: "crabrix.appearance")
+        super.tearDown()
+    }
+
     private func resolve(_ color: Color, style: UIUserInterfaceStyle) -> UIColor {
         UIColor(color).resolvedColor(with: UITraitCollection(userInterfaceStyle: style))
     }
@@ -92,25 +105,52 @@ final class ThemeContrastTests: XCTestCase {
         }
     }
 
-    func testCyberpunkPaletteKeepsCoreTextReadable() {
-        let previous = UserDefaults.standard.object(forKey: "crabrix.appearance")
-        UserDefaults.standard.set(CrabrixAppearance.cyberpunk.rawValue, forKey: "crabrix.appearance")
-        defer { UserDefaults.standard.set(previous, forKey: "crabrix.appearance") }
-
-        for surface in [
-            CrabrixTheme.background,
-            CrabrixTheme.panel,
-            CrabrixTheme.raised,
-            CrabrixTheme.editor,
-        ] {
-            XCTAssertGreaterThan(contrast(resolve(CrabrixTheme.primary, style: .dark), resolve(surface, style: .dark)), 7.0)
-            XCTAssertGreaterThan(contrast(resolve(CrabrixTheme.muted, style: .dark), resolve(surface, style: .dark)), 4.5)
+    func testCustomPalettesKeepCoreTextReadable() {
+        for appearance in [CrabrixAppearance.amberCircuit, .cyberpunk] {
+            UserDefaults.standard.set(appearance.rawValue, forKey: "crabrix.appearance")
+            for surface in [CrabrixTheme.background, CrabrixTheme.panel,
+                            CrabrixTheme.raised, CrabrixTheme.editor] {
+                XCTAssertGreaterThan(contrast(resolve(CrabrixTheme.primary, style: .dark), resolve(surface, style: .dark)), 7.0, appearance.title)
+                XCTAssertGreaterThan(contrast(resolve(CrabrixTheme.muted, style: .dark), resolve(surface, style: .dark)), 4.5, appearance.title)
+                XCTAssertGreaterThan(contrast(resolve(CrabrixTheme.lessonCode, style: .dark), resolve(surface, style: .dark)), 4.5, appearance.title)
+            }
+            XCTAssertGreaterThan(contrast(.white, resolve(CrabrixTheme.danger, style: .dark)), 4.5,
+                                 "Remove must remain readable in \(appearance.title)")
         }
-        XCTAssertGreaterThan(
-            contrast(.white, resolve(CrabrixTheme.danger, style: .dark)), 4.5,
-            "white Remove text must remain legible on the swipe action"
-        )
     }
+
+    func testSavedGoldThemeKeepsItsIdentityAfterRename() {
+        XCTAssertEqual(CrabrixAppearance(rawValue: "cyberpunk"), .amberCircuit)
+        XCTAssertEqual(CrabrixAppearance.amberCircuit.title, "Amber Circuit")
+        XCTAssertNotEqual(CrabrixAppearance.cyberpunk.rawValue, "cyberpunk")
+        for appearance in [CrabrixAppearance.amberCircuit, .cyberpunk] {
+            UserDefaults.standard.set(appearance.rawValue, forKey: "crabrix.appearance")
+            XCTAssertEqual(CrabrixTheme.appearance, appearance)
+            XCTAssertEqual(appearance.colorScheme, .dark)
+            XCTAssertTrue(CrabrixTheme.usesAngularPanels)
+        }
+    }
+
+    func testPrimaryCourseActionsAndLessonNodeIconsHaveContrastInEveryAppearance() {
+        for appearance in CrabrixAppearance.allCases {
+            UserDefaults.standard.set(appearance.rawValue, forKey: "crabrix.appearance")
+            let ink = resolve(CrabrixTheme.onAccent, style: .dark)
+            for course in RustCourseTheme.allCases {
+                XCTAssertGreaterThan(contrast(ink, resolve(course.primaryColor, style: .dark)), 4.5,
+                                     "\(appearance.title) \(course): primary action")
+                XCTAssertGreaterThan(contrast(ink, resolve(course.secondaryColor, style: .dark)), 3.0,
+                                     "\(appearance.title) \(course): large node icon")
+            }
+        }
+    }
+
+    func testTheOldWhiteLabelFailsOnGoldButAccentInkPasses() {
+        UserDefaults.standard.set(CrabrixAppearance.amberCircuit.rawValue, forKey: "crabrix.appearance")
+        let gold = resolve(RustCourseTheme.basics.primaryColor, style: .dark)
+        XCTAssertLessThan(contrast(.white, gold), 3.0)
+        XCTAssertGreaterThan(contrast(resolve(CrabrixTheme.onAccent, style: .dark), gold), 4.5)
+    }
+
 }
 
 /// Syntax colours have to be readable on the surface code is drawn on, in both
@@ -118,6 +158,19 @@ final class ThemeContrastTests: XCTestCase {
 /// theme `println!` in lavender on a pale block was effectively invisible.
 @MainActor
 final class SyntaxContrastTests: XCTestCase {
+    private var savedAppearance: Any?
+
+    override func setUp() {
+        super.setUp()
+        savedAppearance = UserDefaults.standard.object(forKey: "crabrix.appearance")
+        UserDefaults.standard.removeObject(forKey: "crabrix.appearance")
+    }
+
+    override func tearDown() {
+        UserDefaults.standard.set(savedAppearance, forKey: "crabrix.appearance")
+        super.tearDown()
+    }
+
     private func resolve(_ color: Color, style: UIUserInterfaceStyle) -> UIColor {
         UIColor(color).resolvedColor(with: UITraitCollection(userInterfaceStyle: style))
     }
@@ -194,15 +247,16 @@ final class SyntaxContrastTests: XCTestCase {
         }
     }
 
-    func testCyberpunkSyntaxPaletteIsReadable() {
-        let previous = UserDefaults.standard.object(forKey: "crabrix.appearance")
-        UserDefaults.standard.set(CrabrixAppearance.cyberpunk.rawValue, forKey: "crabrix.appearance")
-        defer { UserDefaults.standard.set(previous, forKey: "crabrix.appearance") }
-
-        let background = resolve(SyntaxTheme.background, style: .dark)
-        for kind in SyntaxTokenKind.allCases {
-            let token = resolve(SyntaxTheme.color(for: kind), style: .dark)
-            XCTAssertGreaterThan(contrast(token, background), 4.5, "\(kind.rawValue) is unreadable")
+    func testCustomSyntaxPalettesAreReadable() {
+        for appearance in [CrabrixAppearance.amberCircuit, .cyberpunk] {
+            UserDefaults.standard.set(appearance.rawValue, forKey: "crabrix.appearance")
+            let background = resolve(SyntaxTheme.background, style: .dark)
+            for kind in SyntaxTokenKind.allCases {
+                let token = resolve(SyntaxTheme.color(for: kind), style: .dark)
+                XCTAssertGreaterThan(contrast(token, background), 4.5,
+                                     "\(appearance.title): \(kind.rawValue) is unreadable")
+            }
         }
     }
+
 }

@@ -75,7 +75,7 @@ struct AchievementTierBadge: View {
     var body: some View {
         Text(tier.numeral)
             .font(.system(size: 10, weight: .black, design: .rounded))
-            .foregroundStyle(isEarned ? CrabrixTheme.background : CrabrixTheme.muted)
+            .foregroundStyle(isEarned ? CrabrixTheme.onAccent : CrabrixTheme.muted)
             .frame(width: 20, height: 20)
             .background(isEarned ? tier.tint : CrabrixTheme.border, in: Circle())
             .accessibilityLabel("\(tier.title) tier")

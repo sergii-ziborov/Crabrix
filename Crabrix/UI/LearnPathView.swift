@@ -111,7 +111,7 @@ struct LearnPathView: View {
     }
 }
 
-private struct LearningHero: View {
+struct LearningHero: View {
     let completedLessonCount: Int
     let totalLessonCount: Int
     let actionTitle: String
@@ -136,7 +136,7 @@ private struct LearningHero: View {
             }
 
             ProgressView(value: progress)
-                .tint(theme.primaryColor)
+                .progressViewStyle(LearningProgressStyle(tint: theme.primaryColor))
                 .accessibilityLabel("\(completedLessonCount) of \(totalLessonCount) lessons complete")
 
             Button(action: onAction) {
@@ -145,19 +145,20 @@ private struct LearningHero: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .foregroundStyle(CrabrixTheme.onAccent)
             .tint(theme.primaryColor)
         }
         .padding(20)
         .background(
             LinearGradient(
-                colors: [theme.primaryColor.opacity(0.13), CrabrixTheme.panel],
+                colors: [CrabrixTheme.raised, CrabrixTheme.panel],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         )
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .clipShape(CrabrixCardShape(cornerRadius: 24))
         .overlay {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            CrabrixCardShape(cornerRadius: 24)
                 .stroke(CrabrixTheme.border, lineWidth: 1)
         }
     }
@@ -246,10 +247,10 @@ private struct LearningUnitMap: View {
         } message: { lesson in
             Text(blockedMessage(for: lesson))
         }
-        .background(CrabrixTheme.panel.opacity(0.52))
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .background(CrabrixTheme.panel)
+        .clipShape(CrabrixCardShape(cornerRadius: 22))
         .overlay {
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
+            CrabrixCardShape(cornerRadius: 22)
                 .stroke(CrabrixTheme.border, lineWidth: 1)
         }
     }
@@ -268,7 +269,7 @@ private struct LearningUnitMap: View {
     }
 }
 
-private struct UnitBanner: View {
+struct UnitBanner: View {
     let unit: RustLearningUnit
     let palette: LearningPalette
     let completedCount: Int
@@ -282,21 +283,23 @@ private struct UnitBanner: View {
         HStack(spacing: 14) {
             ZStack {
                 RoundedRectangle(cornerRadius: 15, style: .continuous)
-                    .fill(.white.opacity(0.16))
+                    .fill(palette.primary.opacity(0.12))
                 Image(systemName: palette.symbol)
                     .font(.title2.bold())
+                    .foregroundStyle(palette.primary)
             }
             .frame(width: 54, height: 54)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("CHAPTER \(unit.level)")
                     .font(.caption2.monospaced().bold())
-                    .foregroundStyle(CrabrixTheme.primary.opacity(0.72))
+                    .foregroundStyle(CrabrixTheme.muted)
                 Text(unit.title)
                     .font(.title3.bold())
+                    .foregroundStyle(CrabrixTheme.primary)
                 Text(unit.subtitle)
                     .font(.caption)
-                    .foregroundStyle(CrabrixTheme.primary.opacity(0.70))
+                    .foregroundStyle(CrabrixTheme.muted)
                     .lineLimit(2)
             }
 
@@ -305,21 +308,38 @@ private struct UnitBanner: View {
             VStack(alignment: .trailing, spacing: 6) {
                 Text("\(completedCount)/\(unit.lessons.count)")
                     .font(.caption.monospaced().bold())
+                    .foregroundStyle(CrabrixTheme.primary)
                 ProgressView(value: progress)
-                    .tint(.white)
+                    .progressViewStyle(LearningProgressStyle(tint: palette.primary))
                     .frame(width: 66)
             }
         }
         .padding(16)
-        .background(
-            LinearGradient(
-                colors: [palette.primary, palette.secondary],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .shadow(color: palette.primary.opacity(0.24), radius: 18, y: 8)
+        .background(CrabrixTheme.raised)
+        .overlay(alignment: .top) {
+            LinearGradient(colors: [palette.primary, palette.secondary],
+                           startPoint: .leading, endPoint: .trailing)
+                .frame(height: 3)
+        }
+        .clipShape(CrabrixCardShape(cornerRadius: 22))
+        .shadow(color: palette.primary.opacity(0.12), radius: 10, y: 4)
+    }
+}
+
+/// A consistent readable track across appearances. Keep ProgressView's native
+/// value/accessibility semantics while drawing its determinate fill in SwiftUI.
+private struct LearningProgressStyle: ProgressViewStyle {
+    let tint: Color
+
+    func makeBody(configuration: Configuration) -> some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                Capsule().fill(CrabrixTheme.muted.opacity(0.18))
+                Capsule().fill(tint)
+                    .frame(width: geometry.size.width * max(0, min(1, configuration.fractionCompleted ?? 0)))
+            }
+        }
+        .frame(height: 4)
     }
 }
 
@@ -333,7 +353,7 @@ private struct TrailLine: View {
         ZStack {
             trailPath
                 .stroke(
-                    .white.opacity(0.09),
+                    CrabrixTheme.muted.opacity(0.12),
                     style: StrokeStyle(lineWidth: 12, lineCap: .round, lineJoin: .round)
                 )
             trailPath
@@ -453,14 +473,14 @@ private struct LessonMapNode: View {
                     .foregroundStyle(state.tint(palette: palette))
                 Text(lesson.title)
                     .font(.subheadline.bold())
-                    .foregroundStyle(CrabrixTheme.primary.opacity(state == .locked ? 0.52 : 1))
+                    .foregroundStyle(state == .locked ? CrabrixTheme.muted : CrabrixTheme.primary)
                     .lineLimit(1)
                 if labelToRight { Spacer(minLength: 0) }
             }
 
             Text(lesson.concept)
                 .font(.caption)
-                .foregroundStyle(CrabrixTheme.primary.opacity(state == .locked ? 0.34 : 0.58))
+                .foregroundStyle(CrabrixTheme.muted)
                 .multilineTextAlignment(labelToRight ? .leading : .trailing)
                 .lineLimit(2)
 
@@ -478,8 +498,7 @@ private struct LessonMapNode: View {
     /// own fill rather than assuming a dark background.
     private var nodeIconColor: Color {
         switch state {
-        case .completed: CrabrixTheme.background
-        case .ready: CrabrixTheme.isCyberpunk ? CrabrixTheme.background : .white
+        case .completed, .ready: CrabrixTheme.onAccent
         case .locked: CrabrixTheme.muted
         }
     }
@@ -522,7 +541,7 @@ private struct LearningLegend: View {
         HStack(spacing: 18) {
             LegendItem(color: CrabrixTheme.mint, icon: "checkmark", text: "Complete")
             LegendItem(color: CrabrixTheme.coral, icon: "play.fill", text: "Live lab")
-            LegendItem(color: CrabrixTheme.raised, icon: "lock.fill", text: "Coming next")
+            LegendItem(color: CrabrixTheme.raised, icon: "lock.fill", text: "Coming next", foreground: CrabrixTheme.muted)
         }
         .frame(maxWidth: .infinity)
         .padding(16)
@@ -534,12 +553,13 @@ private struct LegendItem: View {
     let color: Color
     let icon: String
     let text: String
+    var foreground: Color = CrabrixTheme.onAccent
 
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.system(size: 9, weight: .bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(foreground)
                 .frame(width: 22, height: 22)
                 .background(color, in: Circle())
             Text(text)
@@ -585,7 +605,7 @@ private enum LessonMapState: Equatable {
     }
 }
 
-private struct LearningPalette {
+struct LearningPalette {
     let primary: Color
     let secondary: Color
     let symbol: String

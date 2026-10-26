@@ -104,6 +104,7 @@ struct QuickPracticeView: View {
                     .frame(minWidth: 220)
             }
             .buttonStyle(.borderedProminent)
+            .foregroundStyle(CrabrixTheme.onAccent)
             .tint(CrabrixTheme.coral)
         }
         .padding(24)
@@ -171,6 +172,7 @@ private struct MatchPractice: View {
             )
             Button("Continue") { onNext(selection == answers[2]) }
                 .buttonStyle(.borderedProminent)
+                .foregroundStyle(CrabrixTheme.onAccent)
                 .tint(CrabrixTheme.coral)
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .disabled(selection == nil)
@@ -256,6 +258,7 @@ private struct ArrangeCodePractice: View {
             }
         }
         .buttonStyle(.borderedProminent)
+        .foregroundStyle(CrabrixTheme.onAccent)
         .tint(checked && correct ? CrabrixTheme.mint : CrabrixTheme.coral)
         .frame(minHeight: 44)
         .frame(maxWidth: .infinity, alignment: .trailing)
@@ -430,6 +433,7 @@ private struct LessonQuestionPractice: View {
                 }
             }
             .buttonStyle(.borderedProminent)
+            .foregroundStyle(CrabrixTheme.onAccent)
             .tint(CrabrixTheme.coral)
             .disabled(selection == nil)
             .frame(maxWidth: .infinity)

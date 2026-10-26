@@ -438,6 +438,7 @@ private struct CourseLibraryView: View {
                 confirmUpdateAll = true
             }
             .buttonStyle(.borderedProminent)
+            .foregroundStyle(CrabrixTheme.onAccent)
             .tint(CrabrixTheme.mint)
             .disabled(academy.updatingAll)
         }
