@@ -41,3 +41,16 @@ the iPhone 17 Pro simulator running iOS 26.5. The final result bundle is
 
 The compiler/runtime configuration, signed production toolchain and separate
 native compiler candidate are unchanged by this fix.
+
+## Delivery
+
+Manual Xcode Cloud run 94 archived app source
+`70f58c85157b7c07fd17ffc48c03c8bbccfb73e5` successfully. **1.1.2 (94)** is
+VALID and IN_BETA_TESTING in TestFlight Internal QA. It replaces the pending
+manual release of build 93; the new App Store submission is WAITING_FOR_REVIEW.
+Release remains MANUAL. All 19 screenshots are COMPLETE, with Code first for
+iPhone, Duo and iPad. What to Test, reviewer notes and release notes match a
+fresh Apple readback. [Delivery evidence](../app-store/release-1.1.2-build94.json).
+
+The later test-only bottom-position assertion does not change archived app
+source, resources, project configuration or compiler capabilities.

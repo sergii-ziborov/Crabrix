@@ -1,0 +1,90 @@
+{
+  "verifiedAtUTC": "2026-10-26T10:29:10.452502+00:00",
+  "version": "1.1.2",
+  "buildNumber": "94",
+  "buildID": "e288288e-4f07-44cd-a31e-34e6575f7d3f",
+  "appSourceCommit": "70f58c85157b7c07fd17ffc48c03c8bbccfb73e5",
+  "cloudBuildRunID": "f130703b-83b0-496e-9bce-68a482d8d205",
+  "cloudCompletion": "SUCCEEDED",
+  "testFlight": {
+    "processingState": "VALID",
+    "group": "Internal QA",
+    "internalBuildState": "IN_BETA_TESTING"
+  },
+  "appStore": {
+    "versionID": "4ad2dcb4-5252-4f36-bb32-99f41e3f6e9a",
+    "submissionID": "f110d71e-61d3-4ef7-a81e-28c04b899f6f",
+    "state": "WAITING_FOR_REVIEW",
+    "reviewState": "WAITING_FOR_REVIEW",
+    "selectedBuild": "94",
+    "releaseType": "MANUAL",
+    "screenshots": [
+      {
+        "displayType": "APP_IPHONE_67",
+        "count": 10,
+        "complete": 10,
+        "firstFile": "v111-iphone-6.9-01-build.png"
+      },
+      {
+        "displayType": "APP_IPHONE_DUO",
+        "count": 2,
+        "complete": 2,
+        "firstFile": "v111-iphone-duo-qa-01-laptop-code.png"
+      },
+      {
+        "displayType": "APP_IPAD_PRO_3GEN_129",
+        "count": 7,
+        "complete": 7,
+        "firstFile": "v111-ipad-13-01-build.png"
+      }
+    ],
+    "publication": "Submitted for review; publication remains manual"
+  },
+  "changes": [
+    "Dismiss the terminal first responder directly from the keyboard button, restoring full workspace height",
+    "Toggle Hide/Show keyboard from the command row and existing Duo terminal tab-row control",
+    "Cancel stale focus requests and synchronize focus state outside SwiftUI layout"
+  ],
+  "verification": {
+    "optimizedSimulatorAppBuild": "passed",
+    "manualCloudBuildAndArchive": "succeeded",
+    "tests": {
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "suites": [
+        "TerminalKeyboardTests",
+        "ProjectTerminalSessionTests"
+      ]
+    },
+    "additionalBottomPositionRerun": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "inputCenterY": 727.6666666666666,
+      "windowHeight": 874
+    },
+    "hideShowCycles": 3,
+    "restoredPositionTolerancePoints": 2,
+    "swiftUIPublishDuringUpdateWarnings": 0,
+    "terminalCommandRowHeightPoints": 50,
+    "foldGeometryAndCodeHelpersChanged": false,
+    "nativeVisualInspection": "Unavailable while the Mac was locked; no screenshot comparison or physical iPhone/Duo-posture verification claimed",
+    "whatToTestReviewerAndReleaseNotes": "matched fresh Apple readback"
+  },
+  "scope": {
+    "arm64SoftwareDirectInterpreter": true,
+    "directInstructionEmission": true,
+    "maximumUniqueDependencyPackages": 2048,
+    "offlineWebLab": true,
+    "nativeCompilerCandidateEnabled": false,
+    "productionProceduralMacroCapability": false
+  },
+  "website": {
+    "origin": "https://crabrix.com",
+    "image": "localhost/crabrix-web-site:brand-navigation-20261025",
+    "evidence": "../site-release-2026-10-25-brand-navigation.json"
+  },
+  "experimentalCompiler": "Native compiler and procedural-macro candidates remain separate and disabled in this binary.",
+  "evidence": "../releases/terminal-keyboard-2026-10-26.md"
+}

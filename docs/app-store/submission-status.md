@@ -1,3 +1,17 @@
+> Delivery verified through App Store Connect — 26 October 2026: **1.1.2 (94)**
+> is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. The version and
+> replacement submission both report **WAITING_FOR_REVIEW**, selecting build 94.
+> It fixes the terminal keyboard toggle and restores full height after Hide.
+> Ten optimized simulator tests passed; a further two-test rerun checked the
+> bottom position explicitly. Existing fold geometry and code helpers remain.
+> The manual Cloud build/archive succeeded. All 19 screenshots are COMPLETE,
+> with Code first for iPhone, Duo and iPad. What to Test, reviewer notes and
+> release notes are synchronized. Release stays MANUAL.
+> [Build 94 delivery evidence](release-1.1.2-build94.json).
+>
+> The prior build 93 approval below is historical. Its pending manual release
+> was removed and replaced by the build 94 review submission.
+
 > Apple review readback — 26 October 2026: **1.1.2 (93)** is approved.
 > The selected version reports **PENDING_DEVELOPER_RELEASE**, and review
 > submission `31ea8182-f5f1-409a-90f4-163fc8f9aec3` is **COMPLETE**.

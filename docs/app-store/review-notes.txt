@@ -10,3 +10,5 @@ This update enables the corrected software-bounds direct interpreter on arm64 an
 Build 92 also updates Project settings (prominent Save, separate X to close), preserves unique project names, and removes the duplicate terminal input Run button. The keyboard Go key submits commands. Existing workspace and offline compiler capabilities are preserved.
 
 Build 93 standardizes the plain Close icon across all custom sheets and prominent Save in both project metadata editors. It removes the extra bordered close-button layer. Save persistence, ongoing package downloads, the existing workspace layout and compiler capabilities are retained.
+
+Build 94 fixes Terminal keyboard dismissal: the transcript fills the released space, the input and tabs return to the bottom of the normal workspace, and the keyboard button toggles Hide/Show. Opening Terminal focuses the command line. The same terminal toggle is used on Duo without changing hinge, tab, code-helper or input-row geometry. Ten optimized simulator tests passed. Native compiler and procedural-macro candidates remain separate and disabled in this binary.
