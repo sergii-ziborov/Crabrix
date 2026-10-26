@@ -32,6 +32,7 @@ enum BuildDockTab: String, CaseIterable, Identifiable {
 struct BuildDockView<CodeContent: View>: View {
     @Binding var selectedTab: BuildDockTab
     @ObservedObject var terminal: ProjectTerminalSession
+    @StateObject private var terminalKeyboard = TerminalKeyboardController()
 
     let project: CrabrixProject
     let result: CompilationResult?
@@ -224,10 +225,10 @@ struct BuildDockView<CodeContent: View>: View {
 
             // The tab-row dismissal control is only needed beside Duo's hinge.
             if (duoHingePresent || tabletop) && (activeTab == .code || activeTab == .terminal) {
-                Button(action: hideKeyboard) {
+                Button(action: toggleDockKeyboard) {
                     HStack(spacing: 5) {
-                        Image(systemName: "keyboard.chevron.compact.down")
-                        if wide { Text("Hide") }
+                        Image(systemName: dockKeyboardIsFocused ? "keyboard.chevron.compact.down" : "keyboard")
+                        if wide { Text(dockKeyboardIsFocused ? "Hide" : "Show") }
                     }
                     .foregroundStyle(CrabrixTheme.blue)
                     .padding(.horizontal, 9)
@@ -238,7 +239,7 @@ struct BuildDockView<CodeContent: View>: View {
                     )
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Hide keyboard")
+                .accessibilityLabel(dockKeyboardIsFocused ? "Hide keyboard" : "Show keyboard")
             }
         }
         .font(.system(size: 9, weight: .semibold, design: .monospaced))
@@ -246,16 +247,15 @@ struct BuildDockView<CodeContent: View>: View {
         .frame(height: tabletop ? 34 : 38)
     }
 
-    private func hideKeyboard() {
+    private var dockKeyboardIsFocused: Bool {
+        selectedTab == .code || terminalKeyboard.isFocused
+    }
+
+    private func toggleDockKeyboard() {
         if selectedTab == .code {
             keyboardBridge.dismissKeyboard()
         } else {
-            UIApplication.shared.sendAction(
-                #selector(UIResponder.resignFirstResponder),
-                to: nil,
-                from: nil,
-                for: nil
-            )
+            terminalKeyboard.toggle()
         }
     }
 
@@ -285,6 +285,7 @@ struct BuildDockView<CodeContent: View>: View {
     private func terminalContent(autoFocus: Bool) -> some View {
         TerminalDockContent(
             terminal: terminal,
+            keyboard: terminalKeyboard,
             project: project,
             activity: activity,
             canStartBuild: canStartBuild,
@@ -827,7 +828,7 @@ private struct OutputStreamBlock: View {
 
 private struct TerminalDockContent: View {
     @ObservedObject var terminal: ProjectTerminalSession
-    @State private var commandIsFocused = false
+    @ObservedObject var keyboard: TerminalKeyboardController
     @State private var commandBarWidth: CGFloat = 0
     let project: CrabrixProject
     let activity: CompilerViewModel.Activity
@@ -900,8 +901,7 @@ private struct TerminalDockContent: View {
                     .fixedSize(horizontal: false, vertical: true)
                 TerminalCommandField(
                     text: $terminal.command,
-                    isFocused: commandIsFocused,
-                    onFocusChange: { commandIsFocused = $0 },
+                    keyboard: keyboard,
                     onSubmit: submit
                 )
                     .padding(.horizontal, 10)
@@ -909,7 +909,7 @@ private struct TerminalDockContent: View {
                     .background(Color.black.opacity(0.22), in: RoundedRectangle(cornerRadius: 8))
                 Button {
                     terminal.recallPrevious()
-                    commandIsFocused = true
+                    keyboard.focus()
                 } label: {
                     Image(systemName: "chevron.up")
                         .frame(width: 24, height: 34)
@@ -919,20 +919,19 @@ private struct TerminalDockContent: View {
 
                 Button {
                     terminal.recallNext()
-                    commandIsFocused = true
+                    keyboard.focus()
                 } label: {
                     Image(systemName: "chevron.down")
                         .frame(width: 24, height: 34)
                 }
                 .disabled(!terminal.canRecallNext)
                 .accessibilityLabel("Next command")
-                Button {
-                    commandIsFocused = false
-                } label: {
-                    Image(systemName: "keyboard.chevron.compact.down")
+                Button(action: keyboard.toggle) {
+                    Image(systemName: keyboard.isFocused ? "keyboard.chevron.compact.down" : "keyboard")
                         .frame(width: 24, height: 34)
                 }
-                .accessibilityLabel("Hide keyboard")
+                .accessibilityIdentifier("terminal-keyboard-toggle")
+                .accessibilityLabel(keyboard.isFocused ? "Hide keyboard" : "Show keyboard")
             }
             .font(.system(size: 11, design: .monospaced))
             .padding(.horizontal, 12)
@@ -943,11 +942,7 @@ private struct TerminalDockContent: View {
         .task {
             terminal.attach(to: project)
             guard autoFocus else { return }
-            // The editor resigns when Terminal replaces it. Wait for that
-            // transition before giving the prompt first responder status.
-            try? await Task.sleep(for: .milliseconds(180))
-            guard !Task.isCancelled else { return }
-            commandIsFocused = true
+            keyboard.focus()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
@@ -983,19 +978,20 @@ private struct TerminalDockContent: View {
     private func run(_ command: String) {
         terminal.command = command
         submit()
-        commandIsFocused = true
+        keyboard.focus()
     }
 
 }
 
 private struct TerminalCommandField: UIViewRepresentable {
     @Binding var text: String
-    let isFocused: Bool
-    let onFocusChange: (Bool) -> Void
+    let keyboard: TerminalKeyboardController
     let onSubmit: () -> Void
 
-    func makeUIView(context: Context) -> UITextField {
-        let field = UITextField()
+    func makeUIView(context: Context) -> TerminalTextField {
+        let field = TerminalTextField()
+        field.keyboardController = keyboard
+        keyboard.attach(field)
         field.delegate = context.coordinator
         field.addTarget(context.coordinator, action: #selector(Coordinator.changed(_:)), for: .editingChanged)
         field.font = .monospacedSystemFont(ofSize: 11, weight: .regular)
@@ -1019,14 +1015,17 @@ private struct TerminalCommandField: UIViewRepresentable {
         return field
     }
 
-    func updateUIView(_ field: UITextField, context: Context) {
+    func updateUIView(_ field: TerminalTextField, context: Context) {
         context.coordinator.parent = self
         if field.text != text { field.text = text }
-        if isFocused && !field.isFirstResponder {
-            DispatchQueue.main.async { [weak field] in field?.becomeFirstResponder() }
-        } else if !isFocused && field.isFirstResponder {
-            field.resignFirstResponder()
-        }
+        // Responder changes belong to explicit actions, outside SwiftUI's
+        // layout update. Resigning here can leave the keyboard safe area stuck
+        // at its old height even after UIKit has hidden the keyboard.
+    }
+
+    static func dismantleUIView(_ field: TerminalTextField, coordinator: Coordinator) {
+        coordinator.parent.keyboard.detach(field)
+        field.delegate = nil
     }
 
     func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
@@ -1041,11 +1040,11 @@ private struct TerminalCommandField: UIViewRepresentable {
         }
 
         func textFieldDidBeginEditing(_ textField: UITextField) {
-            parent.onFocusChange(true)
+            parent.keyboard.didBeginEditing(textField)
         }
 
         func textFieldDidEndEditing(_ textField: UITextField) {
-            parent.onFocusChange(false)
+            parent.keyboard.didEndEditing(textField)
         }
 
         func textFieldShouldReturn(_ textField: UITextField) -> Bool {

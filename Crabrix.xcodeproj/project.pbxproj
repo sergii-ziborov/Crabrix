@@ -11,6 +11,7 @@
 		03886B8D78DCEDCE1A159287 /* AlgorithmCourseCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19F2B8BCB656C03FB95DB696 /* AlgorithmCourseCatalog.swift */; };
 		06E261C9EDD1565A7E0C336D /* OfflineWebPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 421B0B354AC6593A4245C63D /* OfflineWebPreview.swift */; };
 		08CA3D0D4FD1367DC21D5281 /* FeatureResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9793C201E70D1B6AD35202 /* FeatureResolver.swift */; };
+		0E52D25353B91BBD7FA3B24A /* TerminalKeyboardController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021BBD5B7249F757CA8B5ED1 /* TerminalKeyboardController.swift */; };
 		0EEBBA473ED5C6ACE3500C17 /* SharedImportQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9357EF87952821B79459AE36 /* SharedImportQueue.swift */; };
 		129B29EAA7CB55C33B5E91CE /* CourseCompatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC4EF2B443C45CE8BFF5FBD /* CourseCompatibility.swift */; };
 		135473F79A5F994AFECF654A /* LocalProjectLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F2E28AF633C57EFB91DF034 /* LocalProjectLoader.swift */; };
@@ -201,6 +202,7 @@
 		CB5D1D144064727B02CE7DD0 /* SemanticVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038C4428EA249D76936D4DEB /* SemanticVersionTests.swift */; };
 		CE4BB5894285EC57C4E3B650 /* LessonMapLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 386D9CB2F6ECA745336EB7F9 /* LessonMapLayoutTests.swift */; };
 		D10649D53E90EFB46D97F0F1 /* CourseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43399378DEFA3EFDB3368AF9 /* CourseRepository.swift */; };
+		D181A2147A44EC4C2E0E5BF6 /* TerminalKeyboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D111D533F55B983FC047F784 /* TerminalKeyboardTests.swift */; };
 		D244136DFB4BDBC64690F600 /* ProjectTerminalSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44ABFA97B5DA7FD2FADA63C6 /* ProjectTerminalSessionTests.swift */; };
 		D49C98DD06AD42D9BD560349 /* CrabrixProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17305CBAACACB768E537F24 /* CrabrixProgress.swift */; };
 		D5050F9D62A3048C30A31F67 /* TopicMastery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1D24127CCCD6858FC76A21 /* TopicMastery.swift */; };
@@ -277,6 +279,7 @@
 /* Begin PBXFileReference section */
 		009E3BADFF63E9923F87995B /* GameCenterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCenterService.swift; sourceTree = "<group>"; };
 		00CAF54248F14F3CBC57F350 /* CratePackageManifestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CratePackageManifestTests.swift; sourceTree = "<group>"; };
+		021BBD5B7249F757CA8B5ED1 /* TerminalKeyboardController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalKeyboardController.swift; sourceTree = "<group>"; };
 		02D5F2FB12886D9E89DDD12A /* RustDiagnosticParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustDiagnosticParserTests.swift; sourceTree = "<group>"; };
 		038C4428EA249D76936D4DEB /* SemanticVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersionTests.swift; sourceTree = "<group>"; };
 		04782359670767CDBCFF020E /* CrateRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrateRegistry.swift; sourceTree = "<group>"; };
@@ -461,6 +464,7 @@
 		CB910906AEB3103C7C9E6F7D /* CodeContributionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeContributionTests.swift; sourceTree = "<group>"; };
 		CF605A50A6EB406DF55C4E57 /* CodeRecallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeRecallView.swift; sourceTree = "<group>"; };
 		CFA00659D0D6FAD5318CE39C /* swift-atomics-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-atomics-LICENSE.txt"; sourceTree = "<group>"; };
+		D111D533F55B983FC047F784 /* TerminalKeyboardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalKeyboardTests.swift; sourceTree = "<group>"; };
 		D17C0F44F9A525F94B586EE7 /* GitHubProjectImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubProjectImporter.swift; sourceTree = "<group>"; };
 		D376BDE5EA96F1A57F8E37A5 /* CourseDeliveryGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseDeliveryGateTests.swift; sourceTree = "<group>"; };
 		D4479B42763852BA1B452D60 /* CourseModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseModels.swift; sourceTree = "<group>"; };
@@ -814,6 +818,7 @@
 				038C4428EA249D76936D4DEB /* SemanticVersionTests.swift */,
 				A7037316586E8A8B02149446 /* SyntaxCodeEditorTests.swift */,
 				F45E02B45E3816073DFEB4F9 /* SyntaxHighlighterTests.swift */,
+				D111D533F55B983FC047F784 /* TerminalKeyboardTests.swift */,
 				6234FA291715E7AB88B78388 /* TermMatchConnectionTests.swift */,
 				3786418CA7D9446F9360AE70 /* ThemeContrastTests.swift */,
 				9B771273BE9E83B35B042C13 /* TOMLParserTests.swift */,
@@ -873,6 +878,7 @@
 				6408E7D74302DB95B47776D4 /* ProjectsHomeView.swift */,
 				9C023BFC1BF760B92B847B9D /* QuickPracticeView.swift */,
 				8E2164BBC7A4E923E01EEBBE /* SettingsView.swift */,
+				021BBD5B7249F757CA8B5ED1 /* TerminalKeyboardController.swift */,
 				559E456A8AD38F60E3A9BAD2 /* TermMatchTrainView.swift */,
 				E4D08AA163586E6C07EFEC1D /* ToolchainNoticesView.swift */,
 			);
@@ -1289,6 +1295,7 @@
 				24388B18967B56AE6C13B623 /* TargetCfgExpression.swift in Sources */,
 				8BEE3AD2A033A121F471F851 /* TermMatchTrainView.swift in Sources */,
 				4842D005B9DDCFFFEF9B8327 /* TermTrainDeck.swift in Sources */,
+				0E52D25353B91BBD7FA3B24A /* TerminalKeyboardController.swift in Sources */,
 				434ABE47B6360751A5FCD6E4 /* ToolchainNoticesView.swift in Sources */,
 				D5050F9D62A3048C30A31F67 /* TopicMastery.swift in Sources */,
 				3F8C6C5A2B1C8A3766C0F454 /* TypingLedger.swift in Sources */,
@@ -1360,6 +1367,7 @@
 				1D8F90248920034745A225EE /* SyntaxHighlighterTests.swift in Sources */,
 				DAB88604F8DDD7AEE079AE41 /* TOMLParserTests.swift in Sources */,
 				FE9E3A1BD655444608B0BF86 /* TermMatchConnectionTests.swift in Sources */,
+				D181A2147A44EC4C2E0E5BF6 /* TerminalKeyboardTests.swift in Sources */,
 				FB1DAD024CC5E08008E2D4ED /* ThemeContrastTests.swift in Sources */,
 				58E2A5D18ADA34C72BE80AEF /* TopicMasteryTests.swift in Sources */,
 				92FEF66418D13E68DA4E0A91 /* TypingEconomyTests.swift in Sources */,

@@ -1,0 +1,9 @@
+Terminal keyboard: tap Hide beside the command field. The transcript must expand into the released space, with quick commands, the input row and Code/Problems/Output/Terminal tabs returning to the bottom of the workspace. The button changes to Show keyboard; tap it to focus the command line and reopen the keyboard. Repeat several times. Entering the Terminal tab still focuses the command input automatically.
+
+On Duo, the terminal control beside the hinge uses the same toggle. The established fold positions, tab heights, code helper keys and 50-point terminal command row are retained. Check normal iPhone portrait, landscape, iPad and Duo postures.
+
+Retain the plain X across custom modal headers and prominent blue Save in both project metadata editors. Check saved details, unique project names and reopening saved projects. Keyboard Send submits terminal commands; no duplicate terminal Run button is added.
+
+Create Web Page or Rust Web Generator and run the local HTML/CSS/JavaScript preview. Prepare dependencies, inspect package progress and pin packages for offline use. The resolver supports up to 2,048 unique dependency packages. Verify compiler diagnostics and program panic messages in Problems.
+
+The experimental static compiler and procedural macro toolchain remain separate candidates and are not enabled in this build. A large Tokio project under 30 seconds is not a release claim.
