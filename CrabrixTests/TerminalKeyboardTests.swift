@@ -47,6 +47,11 @@ final class TerminalKeyboardTests: XCTestCase {
             try await self.waitUntil { !keyboard.isFocused && !field.isFirstResponder }
             try await Task.sleep(for: .milliseconds(500))
             let fullHeightY = field.convert(field.bounds, to: nil).midY
+            let window = try XCTUnwrap(field.window)
+            // The hidden-keyboard baseline must itself be at the bottom, not
+            // a stale shrunken position that happens to repeat after each Hide.
+            XCTAssertGreaterThan(fullHeightY, window.bounds.maxY - 200)
+            print("TERMINAL KEYBOARD full-height input Y=\(fullHeightY), window height=\(window.bounds.height)")
 
             for _ in 0..<3 {
                 keyboard.toggle()

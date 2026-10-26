@@ -29,6 +29,10 @@ the iPhone 17 Pro simulator running iOS 26.5. The final result bundle is
   Entering Terminal focuses the real UITextField. Three show/hide cycles check
   that the field moves upward with the system keyboard and returns within
   two points of its original full-height position after dismissal.
+- A further focused rerun passed both keyboard tests with an absolute bottom
+  position assertion: the input center returned to Y **727.67** in an
+  **874-point** window. This rejects a repeatable but stale shrunken baseline.
+  Its result is `terminal-keyboard-20261026-bottom.xcresult` in the same folder.
 - Hide cancels a queued focus request. Native UIKit dismissal followed by a
   command-binding update leaves the field unfocused.
 - The final run has no SwiftUI warning about publishing during view updates.
