@@ -1,0 +1,9 @@
+Keyboard handoff: in Code, tap the source editor to open the software keyboard, then tap Terminal while the keyboard is still visible. The command field must focus automatically and Code, Problems, Output and Terminal must all remain fully visible above the keyboard. Repeat the switch several times.
+
+Also hide Code's keyboard with its accessory button, reopen it in the same editor, and switch to Terminal. The Code symbol helpers must return when Code receives focus. Switching to Terminal from Code with the keyboard hidden must work too.
+
+In Terminal, Hide must restore the full available terminal height; the same control must switch to Show and reopen the keyboard. Sending a command and recalling history must retain focus.
+
+Thirteen focused simulator tests passed: native Code/Terminal responder handoff and dock placement, terminal Hide/Show and cancelled focus, source highlighting, typing and horizontal layout. Physical iPhone and Duo posture verification is not claimed.
+
+Retains build 96's Amber Circuit and separate red/cyan Cyberpunk appearances, compact theme picker, readable Learn surfaces, file icons, shared Save/Close controls, offline Rust, local HTML/CSS/JavaScript preview and 2,048-package resolver ceiling. No Node/Bun runtime or native procedural-macro candidate is enabled.

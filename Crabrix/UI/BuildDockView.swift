@@ -27,6 +27,16 @@ enum BuildDockTab: String, CaseIterable, Identifiable {
         case .terminal: CrabrixTheme.mint
         }
     }
+
+    @MainActor
+    func select(_ selection: Binding<BuildDockTab>, editorKeyboard: RustEditorKeyboardBridge) {
+        // End Code's responder during the tap, before SwiftUI removes its
+        // accessory view. Terminal can then focus its mounted prompt without
+        // inheriting the editor accessory's stale keyboard safe area.
+        if self != .code { editorKeyboard.dismissKeyboard() }
+        selection.wrappedValue = self
+        if self == .code { editorKeyboard.focusEditor() }
+    }
 }
 
 struct BuildDockView<CodeContent: View>: View {
@@ -184,13 +194,7 @@ struct BuildDockView<CodeContent: View>: View {
         return HStack(spacing: 4) {
             ForEach(tabs) { tab in
                 Button {
-                    if tab == .problems || tab == .output {
-                        keyboardBridge.dismissKeyboard()
-                    }
-                    selectedTab = tab
-                    if tab == .code {
-                        keyboardBridge.focusEditor()
-                    }
+                    tab.select($selectedTab, editorKeyboard: keyboardBridge)
                 } label: {
                     HStack(spacing: 5) {
                         Image(systemName: tab.systemImage)

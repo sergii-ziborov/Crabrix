@@ -636,13 +636,13 @@ final class CodeEditorCanvas: UIView {
 
     fileprivate func configureKeyboardBar(_ bar: RustKeyboardAccessoryView, tabletop: Bool) {
         keyboardBar = bar
-        textView.inputAccessoryView = tabletop ? keyboardPresentationAccessory : bar
+        textView.editorInputAccessoryView = tabletop ? keyboardPresentationAccessory : bar
     }
 
     func setTabletopCodeTabActive(_ active: Bool?) {
         guard tabletopCodeTabActive != active else { return }
         tabletopCodeTabActive = active
-        textView.inputAccessoryView = active == nil ? keyboardBar : keyboardPresentationAccessory
+        textView.editorInputAccessoryView = active == nil ? keyboardBar : keyboardPresentationAccessory
         if textView.isFirstResponder { textView.reloadInputViews() }
         if active == true {
             focusForTabletopIfNeeded()
@@ -780,6 +780,30 @@ extension CodeEditorCanvas: UIScrollViewDelegate {
 /// The text view itself: never scrolls, never wraps, and is laid out at the
 /// size of the whole file by the canvas around it.
 final class RustSourceTextView: UITextView {
+    var editorInputAccessoryView: UIView? {
+        didSet { inputAccessoryView = editorInputAccessoryView }
+    }
+
+    @discardableResult override func becomeFirstResponder() -> Bool {
+        inputAccessoryView = editorInputAccessoryView
+        return super.becomeFirstResponder()
+    }
+
+    @discardableResult override func resignFirstResponder() -> Bool {
+        guard isFirstResponder else { return super.resignFirstResponder() }
+        // Release the editor's accessory before UIKit reports keyboard changes.
+        // Leaving its 46-point bar attached can make SwiftUI subtract that
+        // height from the next responder's safe area, covering the dock tabs.
+        inputAccessoryView = nil
+        reloadInputViews()
+        let resigned = super.resignFirstResponder()
+        if !resigned {
+            inputAccessoryView = editorInputAccessoryView
+            reloadInputViews()
+        }
+        return resigned
+    }
+
     /// Called when the text or the font may have changed the laid-out size.
     var onLayoutChanged: (() -> Void)?
 

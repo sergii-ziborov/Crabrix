@@ -16,3 +16,5 @@ The terminal keyboard button now switches between Hide and Show. Hiding the keyb
 Distinct file-type icons make Rust, JavaScript, TypeScript, HTML, CSS, package manifests and other project files easier to recognize.
 
 Refined Amber Circuit gold theme and a new red/cyan Cyberpunk palette. Clearer Learn headers, buttons, lesson labels and code colors. Compact theme selection adapts to iPhone, iPad and larger text.
+
+Fixed Code-to-Terminal keyboard handoff: all workspace tabs stay visible when switching with the keyboard open. Code helpers return correctly after hiding and reopening the keyboard.
