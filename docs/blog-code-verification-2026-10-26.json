@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-26",
+  "article": "rust-async-cancellation-safe-timeouts",
+  "hostRust": "1.99.0",
+  "tokio": "1.54.1",
+  "nativeCargoTests": {
+    "passed": 8,
+    "failed": 0
+  },
+  "publishedRustBlocks": "compiled together without modification",
+  "testSource": "examples/async-cancellation/",
+  "features": [
+    "rt",
+    "sync",
+    "time",
+    "macros",
+    "test-util"
+  ],
+  "networkUsedByTests": false,
+  "phoneExecutionQualified": false,
+  "cases": [
+    "full queue preserves rejected payload",
+    "expired deadline rejects with spare capacity",
+    "closed receiver returns original payload",
+    "successful admission",
+    "capacity released before deadline preserves order",
+    "abort observed through join",
+    "progress ticker preserves work future",
+    "dropped JoinHandle leaves running task"
+  ]
+}

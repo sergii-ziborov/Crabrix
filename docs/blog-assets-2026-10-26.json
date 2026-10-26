@@ -1,0 +1,87 @@
+{
+  "date": "2026-10-26",
+  "tool": "built-in image_gen",
+  "slug": "rust-async-cancellation-safe-timeouts",
+  "proseWords": 2095,
+  "images": [
+    {
+      "src": "/blog/rust-async-cancellation-editorial.png",
+      "alt": "An orange crab holds a job envelope beside a bounded dispatch queue and a separate timer on a navy engineering workbench.",
+      "caption": "The caller keeps the job until the chosen admission boundary. A clock alone cannot tell you whether downstream work happened.",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2107438,
+      "sha256": "a4446dc6fd6ca49d694d1d0f13a75cead78e0b58ee9f0bff440056aebf5fa077",
+      "visuallyChecked": true,
+      "deliveryCopies": [
+        {
+          "src": "/blog/rust-async-cancellation-editorial.webp",
+          "bytes": 217352,
+          "width": 1536,
+          "height": 1024,
+          "sha256": "313ab107d685190dee0d950158f4115b407b9dcec342d35e42d86d6d36d1cbf5"
+        },
+        {
+          "src": "/blog/rust-async-cancellation-editorial-640.webp",
+          "bytes": 58114,
+          "width": 640,
+          "height": 427,
+          "sha256": "61f228a4d6ec16e2e020947c9e371fb52fa24ad9f3699f5548160fe096115c67"
+        }
+      ]
+    },
+    {
+      "src": "/blog/rust-async-cancellation-ownership-infographic.png",
+      "alt": "A caller owns a job while waiting for capacity; a timeout returns it, while an acquired permit allows a send without another await.",
+      "caption": "This admission design returns the job if reservation times out. A successful enqueue is still separate from processing or durable acknowledgement.",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1549376,
+      "sha256": "a8a823ea6e1bc48d3a99d0fa27ee96c67927c02f6711282717f437281b06cba3",
+      "visuallyChecked": true,
+      "deliveryCopies": [
+        {
+          "src": "/blog/rust-async-cancellation-ownership-infographic.webp",
+          "bytes": 146104,
+          "width": 1536,
+          "height": 1024,
+          "sha256": "e792874fde1d27c4ee5abf9948d009e37f9c20c30f1e6b05a5a90bf20e4817e5"
+        },
+        {
+          "src": "/blog/rust-async-cancellation-ownership-infographic-640.webp",
+          "bytes": 46898,
+          "width": 640,
+          "height": 427,
+          "sha256": "3ddffef894ec4810b5b065b28e7c92468c83acbb43fdbd4263e17a80f4bdc33e"
+        }
+      ]
+    },
+    {
+      "src": "/blog/rust-async-cancellation-deadline-infographic.png",
+      "alt": "A conceptual deadline stops a directly owned pending future, while a separately spawned task continues beyond a dropped waiting handle.",
+      "caption": "The upper row assumes the timeout owns the pending work future. The lower row shows a spawned task whose owned JoinHandle was dropped; retaining and borrowing the handle permits explicit follow-up.",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1540189,
+      "sha256": "0d02860281b000fcb68d5e36e6ebba82e0dd4c30932f7171356cffaae3f26b50",
+      "visuallyChecked": true,
+      "deliveryCopies": [
+        {
+          "src": "/blog/rust-async-cancellation-deadline-infographic.webp",
+          "bytes": 134758,
+          "width": 1536,
+          "height": 1024,
+          "sha256": "312d7b668e1892cf625120ec75053d4ba0d4622e3299714108e0e81c3011cd7b"
+        },
+        {
+          "src": "/blog/rust-async-cancellation-deadline-infographic-640.webp",
+          "bytes": 43872,
+          "width": 640,
+          "height": 427,
+          "sha256": "0fd9f61183e3c07a019e346d5ada77cdaddc2621b90173cf6ad8d4755dd75172"
+        }
+      ]
+    }
+  ],
+  "prompts": "blog-image-prompts-2026-10-26.json"
+}

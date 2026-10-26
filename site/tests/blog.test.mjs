@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 const posts = JSON.parse(readFileSync(new URL('../content/posts.json', import.meta.url)));
 const october24Slugs = ["crabrix-offline-progress-game-center", "rust-futures-cooperative-work", "rust-generational-handles-stable-identity", "rust-dependency-graphs-deterministic-plans", "crabrix-offline-rust-web-preview"];
-const earlierPosts = posts.filter(p => !october24Slugs.includes(p.slug));
+const earlierPosts = posts.filter(p => p.date <= "2026-10-23" && !october24Slugs.includes(p.slug));
 test('three 10 October Rust articles meet the requested length and image count', () => {
   const images = new Set();
   for (const slug of ['rust-1-99-upgrade', 'ownership-in-a-real-program', 'result-errors-that-help']) {
@@ -116,7 +116,8 @@ test('every article image has complete WebP delivery copies with a smaller downl
     }
     originalBytes += original.length; fullBytes += variants[0].length; cardBytes += variants[1].length;
   }
-  assert.equal(sources.size, 50);
+  assert.equal(sources.size, posts.flatMap(p => p.sections.filter(s => s.image)).length, 'article images must be unique');
+  assert.ok(sources.size >= 50);
   assert.ok(fullBytes < originalBytes * 0.15, 'full WebP copies must save at least 85%');
   assert.ok(cardBytes < originalBytes * 0.05, 'card copies must save at least 95%');
 });
@@ -168,7 +169,7 @@ test('23 October expansion adds three sourced news analyses and two longer pract
 test('24 October expansion preserves the catalog and adds five longer illustrated articles on free dates', () => {
   const batch = posts.filter(p => october24Slugs.includes(p.slug));
   const words = p => p.sections.flatMap(s => s.paragraphs).join(' ').trim().split(/\s+/).length;
-  assert.equal(posts.length, 25);
+  assert.equal(posts.filter(p => p.date <= '2026-10-24').length, 25);
   assert.equal(batch.length, 5);
   assert.deepEqual(batch.map(p => p.date), ['2026-10-24','2026-10-08','2026-10-07','2026-10-06','2026-10-05']);
   const longest = Math.max(...earlierPosts.map(words));
@@ -192,4 +193,34 @@ test('24 October expansion preserves the catalog and adds five longer illustrate
     assert.ok(p.sections.some(s => s.code && s.codeLanguage === 'rust'));
   }
   assert.equal(images.size, 10);
+});
+
+
+test('26 October cancellation guide meets its length, source and three-image contract', () => {
+  const post = posts.find(p => p.slug === 'rust-async-cancellation-safe-timeouts');
+  assert.ok(post);
+  assert.equal(post.date, '2026-10-26');
+  const words = post.sections.flatMap(s => s.paragraphs).join(' ').trim().split(/\s+/).length;
+  assert.ok(words >= 2000 && words <= 2400, words);
+  assert.equal(post.readingMinutes, Math.ceil(words / 200));
+  assert.ok(post.summary.length >= 120 && post.summary.length <= 180);
+  assert.ok(post.title.length <= 75);
+  assert.ok(post.relatedSlugs.every(slug => slug !== post.slug && posts.some(p => p.slug === slug)));
+  const sources = post.sections.flatMap(s => s.sources ?? []);
+  assert.ok(sources.some(s => s.url.startsWith('https://tokio.rs/')));
+  assert.ok(sources.every(s => /^https:\/\/(docs.rs|tokio.rs|doc.rust-lang.org|crabrix.com)\//.test(s.url)));
+  const assets = post.sections.flatMap(s => s.image ? [s.image] : []);
+  assert.equal(assets.length, 3);
+  assert.equal(assets.filter(a => a.src.endsWith('-infographic.png')).length, 2);
+  const hashes = new Set();
+  for (const image of assets) {
+    const bytes = readFileSync(new URL('../public' + image.src, import.meta.url));
+    assert.equal(bytes.readUInt32BE(16), image.width);
+    assert.equal(bytes.readUInt32BE(20), image.height);
+    assert.ok(image.alt.length > 40 && image.caption.length > 40);
+    hashes.add(createHash('sha256').update(bytes).digest('hex'));
+  }
+  assert.equal(hashes.size, 3);
+  assert.ok(post.sections.some(s => s.codeLanguage === 'rust'));
+  assert.ok(post.sections.some(s => s.codeLanguage === 'toml'));
 });

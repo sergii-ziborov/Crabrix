@@ -12,8 +12,23 @@ Its eight real product captures are preserved. Technology reports candidate
 Tokio/Axum measurements separately from the installed App Store compiler;
 procedural macros and the large-project speed target are still under qualification.
 Guide and Technology carry their actual 25 October modification date in the
-sitemap. The site retains 25 articles, 50 original blog images, all 742 lesson
+sitemap. The site retains 26 articles, 53 original blog images, all 742 lesson
 previews and the existing account gate.
+
+## 26 October: async cancellation guide
+
+The new guide explains Tokio cancellation, recoverable queue admission, absolute
+deadlines, spawned-task ownership, partial I/O, shutdown and retry contracts.
+It contains 2,095 paragraph words, three original built-in ImageGen images
+(two explanatory infographics), highlighted Rust and a complete Cargo manifest.
+The eight native Rust checks pass against pinned Tokio 1.54.1. They do not
+qualify the phone's WASI runtime for those Tokio features. Three related guides,
+primary-source links, article metadata and both sitemaps include the new entry.
+All 25 earlier article objects are unchanged.
+
+[Image assets and prompts](../docs/blog-assets-2026-10-26.json),
+[reproducible Rust example](../docs/examples/async-cancellation/README.md), and
+[code checks](../docs/blog-code-verification-2026-10-26.json).
 
 ## Development and checks
 
@@ -59,7 +74,7 @@ repository and signed release archives remain public so existing native builds
 can download and update their courses. Changing that delivery model requires
 an app release and a separate migration.
 
-`content/posts.json` contains 25 articles. The five added on 23 October occupy
+`content/posts.json` contains 26 articles. The five added on 23 October occupy
 previously unoccupied editorial dates of 11, 14, 21, 22 and 23 October. Two
 practical guides cover generated Cargo source and memoization; three news
 analyses cover Rust infrastructure, the announced Rust 1.100 i686 Windows
@@ -157,7 +172,7 @@ Ordinary pages end in a slash; dotted Atlas lesson IDs follow Next's
 extension-like URL rule and omit it, avoiding a redirect from sitemap URLs.
 
 The [HTML sitemap](https://crabrix.com/sitemap/) lists all seven courses, 742
-lessons and 25 articles. `/sitemap.xml` contains 785 canonical URLs and 50 public
+lessons and 26 articles. `/sitemap.xml` contains 786 canonical URLs and 53 public
 blog image URLs. Known editorial modification dates are retained for the ten
 corrected lessons and three courses; build time does not invent modification
 dates. Private lesson media and account routes are excluded. `sitemap.xml` at
@@ -165,7 +180,7 @@ the site root is a synchronized legacy snapshot; Next's metadata route serves
 the production XML. `lib/lesson-seo.ts` supplies readable, unique descriptions
 without Markdown backticks and recorded editorial change dates.
 
-The latest live audit checked all 785 sitemap pages, unique titles, one H1 per
+The 23 October live audit checked the then-current 785 sitemap pages, unique titles, one H1 per
 page, canonical/social metadata, structured data, previews and private media
 denial. All ten new public image hashes matched the selected repository assets.
 Twelve site tests, TypeScript checking and the production build passed.

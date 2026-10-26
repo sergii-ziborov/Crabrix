@@ -1,5 +1,228 @@
 [
   {
+    "slug": "rust-async-cancellation-safe-timeouts",
+    "title": "Rust async cancellation: timeouts without lost work",
+    "date": "2026-10-26",
+    "summary": "Design cancellation-safe Rust with Tokio: preserve queued jobs, use one deadline, control spawned tasks, handle partial I/O and test timeout boundaries.",
+    "relatedSlugs": [
+      "rust-futures-cooperative-work",
+      "ownership-in-a-real-program",
+      "rust-enums-state-machines"
+    ],
+    "sections": [
+      {
+        "heading": "A deadline can leave your system in an unexpected state",
+        "paragraphs": [
+          "A user submits an export, waits two seconds, and sees a timeout. The interface offers Retry. Behind that small interaction are several different possibilities: the job never entered the queue, a worker accepted it, a file was partly written, or a remote service completed the request while its response disappeared. Treating every timeout as permission to start again can lose work or create duplicates. Rust's ownership rules make these transitions easier to describe, but the application still has to choose their meaning.",
+          "This guide builds that meaning around one practical boundary: handing an owned job to a bounded Tokio channel. We will keep unaccepted work recoverable, preserve a single deadline, retain control of spawned tasks, and test cancellation deliberately. The same reasoning applies to editors, background downloads, service handlers and command-line tools. Before adding a timeout, write down three facts: who owns the work, which effects have already happened, and who will observe completion."
+        ],
+        "image": {
+          "src": "/blog/rust-async-cancellation-editorial.png",
+          "alt": "An orange crab holds a job envelope beside a bounded dispatch queue and a separate timer on a navy engineering workbench.",
+          "caption": "The caller keeps the job until the chosen admission boundary. A clock alone cannot tell you whether downstream work happened.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Separate the future, the task and the external operation",
+        "paragraphs": [
+          "An async operation is represented by a future containing its current state. A runtime polls that future; an incomplete poll arranges another opportunity to make progress. Dropping a directly owned future releases that state and prevents further polling of that future. Values it owns are dropped as well. This gives cancellation an ordinary Rust ownership model, while leaving the meaning of already completed effects to the surrounding protocol.",
+          "A spawned task has a different lifetime. Its join handle lets another task observe its result; disposing of that handle can leave the underlying task running. An external operation has another lifetime again: a remote server, kernel request or committed file change may outlive local interest. During review, draw these as three separate objects. Ask which object a timeout actually owns. This simple sketch often reveals that the caller stopped waiting while the operation it wanted to control continued elsewhere."
+        ],
+        "sources": [
+          {
+            "title": "Rust Future contract",
+            "url": "https://doc.rust-lang.org/std/future/trait.Future.html"
+          },
+          {
+            "title": "Tokio: cancellation and select",
+            "url": "https://tokio.rs/tokio/tutorial/select"
+          }
+        ]
+      },
+      {
+        "heading": "Define what accepted means before choosing an API",
+        "paragraphs": [
+          "For an in-memory job queue, a useful admission contract is: success means the value was handed to the channel; failure returns the original value to the caller. That contract says nothing about durable storage or successful processing. A receiver can disappear after admission, and a process can terminate with items still queued. Keep an acknowledgement or durable record when your product needs a stronger promise.",
+          "The ownership trap appears when a pending `send(job)` future owns the job. If another `select!` branch wins and that future is dropped, its owned message disappears with it. Reserving channel capacity first allows the job to remain in the outer function while it waits. Once a permit is obtained, the synchronous permit send transfers the value without another suspension point. Cancelling the reservation can still lose its fairness-queue position; preserving a value does not preserve every scheduling property."
+        ],
+        "image": {
+          "src": "/blog/rust-async-cancellation-ownership-infographic.png",
+          "alt": "A caller owns a job while waiting for capacity; a timeout returns it, while an acquired permit allows a send without another await.",
+          "caption": "This admission design returns the job if reservation times out. A successful enqueue is still separate from processing or durable acknowledgement.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "Tokio Sender: send, reserve and cancellation",
+            "url": "https://docs.rs/tokio/latest/tokio/sync/mpsc/struct.Sender.html"
+          }
+        ]
+      },
+      {
+        "heading": "Implement a recoverable admission helper",
+        "paragraphs": [
+          "The helper below makes both failure paths carry `T`, so the caller can retry intentionally, return the work to a local collection, or report exactly what was rejected. It checks an already expired deadline explicitly and rechecks after reservation. Returning at the second check drops the permit, releasing its capacity. There is no requirement for the job to implement `Clone`, and no duplicate payload is created to make error handling convenient.",
+          "The clock checks define an application policy at observed instants. Scheduler delays can still occur between the final check and the synchronous send, so this is a cooperative admission deadline rather than a hard real-time guarantee. Also distinguish internal recovery from cancelling this entire helper: if its caller drops the helper future, that caller has chosen to drop the job it passed in. When work must survive caller cancellation, retain it in an enclosing owner or persist it before starting the asynchronous handoff."
+        ],
+        "code": "use tokio::{\n    sync::mpsc,\n    time::{timeout_at, Instant},\n};\n\n#[derive(Debug, PartialEq, Eq)]\npub enum SubmitError<T> {\n    Deadline(T),\n    Closed(T),\n}\n\npub async fn submit_before<T>(\n    sender: &mpsc::Sender<T>,\n    job: T,\n    deadline: Instant,\n) -> Result<(), SubmitError<T>> {\n    // Our admission policy rejects an already expired request.\n    if Instant::now() >= deadline {\n        return Err(SubmitError::Deadline(job));\n    }\n\n    let permit = match timeout_at(deadline, sender.reserve()).await {\n        Err(_) => return Err(SubmitError::Deadline(job)),\n        Ok(Err(_)) => return Err(SubmitError::Closed(job)),\n        Ok(Ok(permit)) => permit,\n    };\n\n    // Capacity can become ready close to the deadline.\n    if Instant::now() >= deadline {\n        return Err(SubmitError::Deadline(job));\n    }\n    permit.send(job);\n    Ok(())\n}\n",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Tokio Permit: capacity and synchronous send",
+            "url": "https://docs.rs/tokio/latest/tokio/sync/mpsc/struct.Permit.html"
+          }
+        ]
+      },
+      {
+        "heading": "Make acknowledgement a separate state transition",
+        "paragraphs": [
+          "An accepted job needs a way to describe its eventual outcome. Consider an export with an operation identifier and a reply channel. Admission transfers its payload to the worker; the reply reports whether processing succeeded. If the reply wait expires, keep the operation identifier and expose an unknown or still-running state. Resubmitting the same logical export as a new operation can create two output files even though the queue behaved exactly as specified.",
+          "Name these states explicitly in your application model: rejected, queued, running, completed and outcome unknown. Record transitions where their owners can actually prove them. A producer can establish admission, while only the worker or durable commit layer can establish completion. For a user interface, a status lookup or resumable history is often more helpful than a generic failure banner. It gives Retry a deliberate meaning and allows the system to reconcile work after the original waiter has disappeared."
+        ]
+      },
+      {
+        "heading": "Use one deadline across the request",
+        "paragraphs": [
+          "Relative timeouts are easy to multiply accidentally. A three-second queue wait followed by a fresh three-second processing wait already allows six seconds; retries can extend the total again. Establish an absolute `Instant` once, then pass it through queueing, execution and acknowledgement. Each stage observes the remaining budget. Decide separately whether a background operation may continue after the request's caller has exhausted its own waiting budget.",
+          "Tokio timeouts rely on the runtime getting control. A CPU loop that does not yield can run beyond the requested duration, so a timeout cannot serve as an instruction-level execution limit. Break expensive cooperative work into bounded turns, or use an execution environment with a separate enforcement mechanism. In the helper, `timeout_at` governs capacity waiting only. Calling it does not add a deadline to a worker that later receives the job, and the worker will need its own policy for stale admitted work."
+        ],
+        "sources": [
+          {
+            "title": "Tokio timeout semantics",
+            "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html"
+          },
+          {
+            "title": "Absolute deadlines with timeout_at",
+            "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html"
+          }
+        ]
+      },
+      {
+        "heading": "Keep the handle when timing out a spawned task",
+        "paragraphs": [
+          "Passing an owned `JoinHandle` into a timeout can discard your observation handle when the timeout completes, leaving the spawned task detached. Borrow the handle mutably instead. After the wait expires, you still possess it and can choose a policy: let the task finish, request cooperative shutdown, or call `abort` and await the handle to observe its termination. The example preserves errors instead of silently converting every join failure into cancellation.",
+          "Completion can win the race with an abort request. That is why the final match accepts a completed value as well as a cancellation error. Aborting an async task is also subject to it returning control to the scheduler. An application should track task ownership beyond this demonstration's local function, especially if the function itself may be cancelled. A supervisor or task collection provides a place to finish cleanup even when the original request no longer exists."
+        ],
+        "code": "use tokio::{task::JoinError, time::{timeout, Duration}};\n\npub async fn finish_or_abort() -> Result<Option<u32>, JoinError> {\n    let mut task = tokio::spawn(async {\n        tokio::time::sleep(Duration::from_secs(60)).await;\n        42_u32\n    });\n\n    match timeout(Duration::from_secs(2), &mut task).await {\n        Ok(result) => result.map(Some),\n        Err(_) => {\n            task.abort();\n            match task.await {\n                Err(error) if error.is_cancelled() => Ok(None),\n                Err(error) => Err(error),\n                Ok(value) => Ok(Some(value)), // completion won the race\n            }\n        }\n    }\n}\n",
+        "codeLanguage": "rust",
+        "image": {
+          "src": "/blog/rust-async-cancellation-deadline-infographic.png",
+          "alt": "A conceptual deadline stops a directly owned pending future, while a separately spawned task continues beyond a dropped waiting handle.",
+          "caption": "The upper row assumes the timeout owns the pending work future. The lower row shows a spawned task whose owned JoinHandle was dropped; retaining and borrowing the handle permits explicit follow-up.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "Tokio JoinHandle: detaching, cancellation and abort",
+            "url": "https://docs.rs/tokio/latest/tokio/task/struct.JoinHandle.html"
+          }
+        ]
+      },
+      {
+        "heading": "Keep partial I/O progress in a longer-lived owner",
+        "paragraphs": [
+          "Suppose a parser wants a four-byte header followed by a payload. A `read_exact` future may read part of that header before becoming pending. If you drop it and recreate a new full-header read against the same stream, the next bytes begin after the consumed prefix. The stream position and your parser's interpretation can diverge. Similarly, restarting `write_all` can resend a prefix that already reached the destination.",
+          "A resumable design keeps the buffer and filled-byte count in an object that outlives each wait. Use operations whose documented cancellation behavior fits the loop, advance the count immediately after a successful read, and continue from that offset. Validate frame lengths before allocating the payload and impose a maximum size. When the protocol cannot resume safely, closing and discarding that connection can be the correct cancellation policy. The important decision is whether to preserve progress or explicitly abandon the resource carrying it."
+        ],
+        "sources": [
+          {
+            "title": "Tokio AsyncReadExt: cancellation contracts",
+            "url": "https://docs.rs/tokio/latest/tokio/io/trait.AsyncReadExt.html"
+          },
+          {
+            "title": "Tokio select: cancellation safety",
+            "url": "https://docs.rs/tokio/latest/tokio/macro.select.html"
+          }
+        ]
+      },
+      {
+        "heading": "Avoid restarting useful work on every progress update",
+        "paragraphs": [
+          "A progress ticker can accidentally become a restart mechanism. If a loop constructs a fresh download or parser future inside every `select!` call, each winning tick discards that iteration's work future. Operations with private progress may repeatedly begin again. Construct the intended long-lived future outside the loop, pin it, and poll a mutable reference during each iteration. A winning ticker branch then leaves the work future owned by the outer scope.",
+          "The small example finishes when the operation produces a value and never polls it after completion. Its timer is only an observation trigger. For a real transfer, progress bytes should describe completed work in persistent state, rather than the number of times a progress callback ran. When you deliberately want a restart, make it a separate transition with a reason and a retry counter. Recreating an operation should be a visible policy decision, not a side effect of refreshing the screen."
+        ],
+        "code": "pub async fn observe_progress() -> u32 {\n    let work = async {\n        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;\n        7_u32\n    };\n    tokio::pin!(work);\n    let mut ticks = tokio::time::interval(\n        tokio::time::Duration::from_millis(100),\n    );\n    loop {\n        tokio::select! {\n            value = &mut work => return value,\n            _ = ticks.tick() => { /* refresh progress only */ }\n        }\n    }\n}\n",
+        "codeLanguage": "rust"
+      },
+      {
+        "heading": "Test the boundary with a full queue and paused time",
+        "paragraphs": [
+          "A cancellation test should establish a state in which the operation must wait. Fill a one-slot channel, keep its receiver alive, and attempt to submit another job. With paused Tokio time, the deadline can advance without sleeping on the wall clock. Then assert two independent facts: the rejected payload is returned intact, and the channel still contains only the original value. A successful return alone would not catch accidental loss or unintended admission.",
+          "Add separate cases for an already expired deadline with spare capacity, a closed receiver, ordinary successful admission and capacity becoming available before expiry. For task cancellation, wait for an explicit started signal before aborting so the test exercises a running task. Use channels or barriers to establish ordering; generous sleeps merely hide scheduling assumptions. Paused-time tests are excellent for deadline logic, but they are not benchmarks and do not prove that every production interleaving has been explored."
+        ],
+        "code": "#[cfg(test)]\nmod tests {\n    use super::*;\n    use tokio::time::Duration;\n\n    #[tokio::test(start_paused = true)]\n    async fn full_queue_returns_the_unaccepted_job() {\n        let (sender, mut receiver) = mpsc::channel(1);\n        sender.try_send(String::from(\"first\")).unwrap();\n        let result = submit_before(\n            &sender,\n            String::from(\"second\"),\n            Instant::now() + Duration::from_secs(3),\n        ).await;\n        assert_eq!(result, Err(SubmitError::Deadline(\"second\".into())));\n        assert_eq!(receiver.recv().await.as_deref(), Some(\"first\"));\n        assert!(matches!(\n            receiver.try_recv(),\n            Err(mpsc::error::TryRecvError::Empty)\n        ));\n    }\n}\n",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Tokio: paused time and asynchronous unit tests",
+            "url": "https://tokio.rs/tokio/topics/testing"
+          }
+        ]
+      },
+      {
+        "heading": "Give shutdown an admission policy and an owner",
+        "paragraphs": [
+          "A shutdown request creates a scheduling problem and an ownership problem. First stop admitting new work, then tell active workers what should happen, and finally observe their completion. Existing jobs might be drained, returned, checkpointed or explicitly abandoned. Choose one policy for each class of work. A read-only preview can often be discarded immediately; an export with user-visible output may require a longer grace period and a recoverable status record.",
+          "Closing a Tokio receiver prevents ordinary new sends while allowing queued values to be drained, but outstanding permits need attention because they can still send. Include permit holders in shutdown accounting. Bound the graceful phase, report the work remaining when that budget expires, and keep a supervisor responsible for the final joins. Cancellation notification and completed cleanup are separate events. Record both when debugging shutdown so a requested stop is never mistaken for evidence that every worker actually finished."
+        ],
+        "sources": [
+          {
+            "title": "Tokio graceful shutdown",
+            "url": "https://tokio.rs/tokio/topics/shutdown"
+          },
+          {
+            "title": "Tokio Receiver: close and outstanding permits",
+            "url": "https://docs.rs/tokio/latest/tokio/sync/mpsc/struct.Receiver.html"
+          }
+        ]
+      },
+      {
+        "heading": "Treat retries as a protocol, and bound resource use",
+        "paragraphs": [
+          "After an external side effect, an expired wait can mean the outcome is unknown. Attach a stable operation identifier to retries and let the component that commits the effect recognize repeated requests. Reusing the same identifier with different content should be rejected. An in-memory deduplication map is useful within a process lifetime; restart-safe guarantees need an appropriate durable record and an atomic relationship between that record and the effect. Describe the guarantee you actually implemented.",
+          "A bounded queue limits buffered items, not the total number of producer tasks waiting to enter it. Those tasks can retain large payloads, and detached workers can outlive every visible request. Bound producers and active work separately, track the age of admitted jobs, and release payload memory when its owner intentionally abandons it. Started `spawn_blocking` closures also continue despite task abort requests; CPU work needs a cooperative stop mechanism or a stronger isolation boundary where the platform provides one."
+        ],
+        "sources": [
+          {
+            "title": "Tokio task cancellation and blocking work",
+            "url": "https://docs.rs/tokio/latest/tokio/task/index.html"
+          }
+        ]
+      },
+      {
+        "heading": "Log the transition that your system can prove",
+        "paragraphs": [
+          "A timeout counter becomes useful when it identifies a stage. Record queue-wait expiry separately from execution-budget expiry and acknowledgement-wait expiry. Include an operation identifier, a bounded error category and the last confirmed state. Avoid logging complete source files, credentials or large request bodies just to correlate work. A short identifier shared by producer and worker usually provides the relationship needed to investigate a delayed result.",
+          "Compare admitted jobs with observed completions and intentional abandonments. A growing gap suggests retained work, missing observations or a stalled worker; it does not by itself prove which cause applies. Inspect queue age, producer count and active-task count together. Test the recovery path by cancelling a waiter while a worker is paused at a controlled boundary, then releasing the worker and verifying that its final status remains discoverable. This checks the product promise that matters after a spinner has stopped."
+        ]
+      },
+      {
+        "heading": "Run the example and use an ownership checklist",
+        "paragraphs": [
+          "Put the admission helper and its test in `src/lib.rs` of a native Cargo project, using the manifest below. The task and progress examples can live in the same library. Run `cargo test --locked` after creating and retaining the lockfile. The sample requires a Tokio runtime with timers and the listed features; paused tests additionally use `test-util`. The exact pinned dependency keeps the demonstration reproducible without requiring every feature of Tokio.",
+          "For Crabrix projects, distinguish this native Tokio exercise from the phone's bundled WASI execution environment. Check the application guide for supported runtime features and sandbox limits before moving a server-oriented dependency graph onto iPhone. The underlying ownership questions remain useful in either environment. At every cancellation point, ask who holds the payload, what progress remains observable, whether retry is safe, and which owner will finish cleanup. Clear answers make timeout behavior testable and make failures explainable to the person who pressed Retry."
+        ],
+        "code": "[package]\nname = \"cancellation-boundaries\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[dependencies]\ntokio = { version = \"=1.54.1\", features = [\"rt\", \"sync\", \"time\", \"macros\"] }\n\n[dev-dependencies]\ntokio = { version = \"=1.54.1\", features = [\"test-util\"] }\n",
+        "codeLanguage": "toml",
+        "sources": [
+          {
+            "title": "Crabrix offline workflow and limits",
+            "url": "https://crabrix.com/guide/"
+          },
+          {
+            "title": "Continue with Rust ownership lessons",
+            "url": "https://crabrix.com/learn/ownership/"
+          }
+        ]
+      }
+    ],
+    "readingMinutes": 11
+  },
+  {
     "slug": "crabrix-offline-rust-web-preview",
     "title": "Crabrix update: Rust-generated pages and an offline web lab",
     "date": "2026-10-24",
