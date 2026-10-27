@@ -1,0 +1,62 @@
+{
+  "verifiedAtUTC": "2026-10-27T17:37:15.980677+00:00",
+  "origin": "https://crabrix.com",
+  "websiteSourceCommit": "925d0208f67854039a5b547324b7401297661226",
+  "image": "a921a66613ac106270da47b8022719c854e3ae2adf396ddc91b4f751a186d040",
+  "releaseDirectory": "/srv/apps/crabrix-site/releases/20261027-debugger-925d020",
+  "rollbackContainer": "crabrix-web-site-before-debugger-final-copy-20261027",
+  "accounts": "existing /srv/apps/crabrix-site/accounts preserved; consistent backup before each switch",
+  "backendCompilationOrExecution": false,
+  "sharedRoomCiphertext": "bounded RAM only; no account, DB or disk persistence",
+  "defaultSharingSeconds": 3600,
+  "maximumSharingSeconds": 86400,
+  "sourceStepping": "synchronous Rust statement checkpoints in an actual compiled Rust guest",
+  "debug": {
+    "at": "2026-10-27T17:29:06.782Z",
+    "origin": "https://crabrix.com",
+    "passed": [
+      "entry pause",
+      "breakpoint",
+      "loop locals",
+      "step into",
+      "step over",
+      "step out",
+      "call stack",
+      "actual stdout",
+      "source preserved",
+      "offline compilation",
+      "responsive Stop"
+    ],
+    "backendExecution": false
+  },
+  "sharing": {
+    "at": "2026-10-27T17:29:20.311Z",
+    "origin": "https://crabrix.com",
+    "defaultLifetimeSeconds": 3600,
+    "debugStoppedOnRemoteEdit": true,
+    "sourceAndSelection": true
+  },
+  "crossClient": {
+    "at": "2026-10-27T17:36:31.613Z",
+    "bothNativeEdits": true,
+    "browserSawFinal": true,
+    "browserRun": true,
+    "sourceUploadedForCompilation": false
+  },
+  "nativeUI": [
+    "ProductionPhoneFinal.xcresult",
+    "ProductionPadFinal.xcresult"
+  ],
+  "guideScreenshotSHA256": {
+    "playground-debug-browser": "017c6f79b6441c7f9354c6a9ec151971296c2a5ab27f84cc19d030171667876c",
+    "playground-debug-native": "b9b21b1bc4a67e19f13e184231aad2189f85fd4f3eb2d89c4e4429ce975228ed"
+  },
+  "headers": {
+    "COOP": "same-origin",
+    "COEP": "require-corp",
+    "roomReferrerPolicy": "no-referrer",
+    "roomRobots": "noindex, nofollow, noarchive",
+    "HSTS": "retained"
+  },
+  "physicalDeviceTested": false
+}

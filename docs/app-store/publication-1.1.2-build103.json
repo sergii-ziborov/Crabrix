@@ -1,0 +1,12 @@
+{
+  "verifiedAtUTC": "2026-10-27T17:40:38.642522+00:00",
+  "appID": "6809502653",
+  "version": "1.1.2",
+  "build": "103",
+  "versionID": "4ad2dcb4-5252-4f36-bb32-99f41e3f6e9a",
+  "releaseRequestID": "4ad2dcb4-5252-4f36-bb32-99f41e3f6e9a",
+  "state": "READY_FOR_SALE",
+  "authorizedBy": "User explicitly requested publication of the approved version",
+  "sourceCommit": "fe322d2679fd24173a492866d6c221377b241ae5",
+  "nextUpdate": "1.1.3; local debugger and one-hour Playground default"
+}

@@ -65,5 +65,7 @@ xcresults and screenshots are under ignored `build/debugger-20261027/`.
 - Twenty-four Chromium theme/viewport checks across phone, tablet and desktop: twelve normal and twelve paused Debug layouts.
 - Fifteen final native host tests passed, including real iOS WebKit Debug/Run and all three existing terminal keyboard regressions. The complete native UI flow passed independently on iPhone and iPad Simulators against the frozen final app bundle.
 
+The final website is published on Hetzner. Public HTTPS Debug and one-hour sharing passed; two actual Simulator apps and Chromium also exchanged edits and each ran the final shared source locally with exact stdout. See `docs/site-debugger-release-2026-10-27.json`.
+
 Physical iPhone timing and external Universal Link delivery require an available
 physical device; Simulator results are not device performance measurements.

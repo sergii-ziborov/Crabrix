@@ -17,7 +17,10 @@
     ],
     "phoneUI": "DebuggerPhoneQualified.xcresult",
     "padUI": "DebuggerPadFrozen.xcresult",
-    "host": "NativeDebuggerQualified.xcresult"
+    "host": "NativeDebuggerQualified.xcresult",
+    "normalTouchTyping": "NormalEditorTouch.xcresult (passed)",
+    "productionPhoneUI": "ProductionPhoneFinal.xcresult (passed)",
+    "productionPadUI": "ProductionPadFinal.xcresult (passed)"
   },
   "browser": {
     "at": "2026-10-27T17:02:08.161Z",
@@ -130,5 +133,38 @@
     "safe Debug fallbacks preserve normal Run",
     "browser Debug requires isolated shared memory",
     "30-minute pause cap; bounded stack/checkpoints/guest memory/output"
-  ]
+  ],
+  "productionDebug": {
+    "at": "2026-10-27T17:29:06.782Z",
+    "origin": "https://crabrix.com",
+    "passed": [
+      "entry pause",
+      "breakpoint",
+      "loop locals",
+      "step into",
+      "step over",
+      "step out",
+      "call stack",
+      "actual stdout",
+      "source preserved",
+      "offline compilation",
+      "responsive Stop"
+    ],
+    "backendExecution": false
+  },
+  "productionSharing": {
+    "at": "2026-10-27T17:29:20.311Z",
+    "origin": "https://crabrix.com",
+    "defaultLifetimeSeconds": 3600,
+    "debugStoppedOnRemoteEdit": true,
+    "sourceAndSelection": true
+  },
+  "releaseBootstrap": "Canonical legal index and offline About synchronized; --check passed",
+  "productionCrossClient": {
+    "at": "2026-10-27T17:36:31.613Z",
+    "bothNativeEdits": true,
+    "browserSawFinal": true,
+    "browserRun": true,
+    "sourceUploadedForCompilation": false
+  }
 }

@@ -1,0 +1,9 @@
+Build 106: local Rust debugger and clearer one-hour Playground sharing.
+
+Open a Rust project, then Project settings > Debug Rust project. Debug pauses at the first executable statement. Tap the gutter beside a line number for a breakpoint; try Continue, Step into, Step over and Step out. Inspect debugger state shows call frames and safe primitive locals. Stop must release the worker, and ordinary Run must still work with the original source. Debug supports synchronous source statements; it does not inspect arbitrary structs/collections or step inside async/const bodies, dependency internals or macro expansions.
+
+Share a Playground defaults to one hour. Create an encrypted link, join from another Crabrix app or https://crabrix.com/playground/ and exchange source, cursors and selections. Each participant runs code locally and explicitly. A shared edit stops a stale Debug snapshot. Save a local copy or download source before expiry. Guest rooms keep bounded ciphertext in server RAM only; no account is needed. Sharing needs a connection. Browser first Run/Debug downloads the verified compiler; compilation and execution then happen in a local Worker.
+
+Regression checks: existing phone/iPad/Duo layout, Code/Terminal keyboard transitions, offline lessons, normal Rust builds, npm browser source preparation, TypeScript/JSX and offline Web Preview. Browser npm commands remain browser operations; Node/Bun server processes and arbitrary scripts are not included. Compiler acceleration and the 2,048 Cargo-package ceiling are retained.
+
+Report the device, exact source/package versions, expected result and observed output. Guide: https://crabrix.com/guide/#debugger
