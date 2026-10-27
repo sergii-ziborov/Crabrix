@@ -36,8 +36,11 @@ final class PlaygroundTests: XCTestCase {
         XCTAssertTrue(foundofflineplaygroundrun)
         if let hide = app.buttons.matching(identifier: "Hide keyboard").allElementsBoundByIndex.first(where: { $0.isHittable }) { hide.tap() }
         app.buttons["Run project"].tap()
-        let output = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "offline-playground-run")).firstMatch
-        XCTAssertTrue(output.waitForExistence(timeout: 120), "The decrypted project must compile and run in the app")
+        XCTAssertTrue(app.buttons["Run project"].waitForExistence(timeout: 180), "Wait for the local compiler to finish")
+        app.buttons["build-dock-output"].tap()
+        XCTAssertTrue(app.staticTexts["STDOUT"].waitForExistence(timeout: 15))
+        let output = app.staticTexts.matching(NSPredicate(format: "label == %@ OR label == %@", "offline-playground-run", "offline-playground-run\n")).firstMatch
+        XCTAssertTrue(output.waitForExistence(timeout: 15), "The actual STDOUT must contain the executed result, not source text")
         capture("playground-native-run")
     }
     private func waitForSource(_ editor: XCUIElement, containing text: String) async -> Bool {
@@ -77,8 +80,11 @@ final class PlaygroundTwoDeviceTests: XCTestCase {
         let selected = XCTAttachment(screenshot: XCUIScreen.main.screenshot()); selected.name = "pair-\(pad ? "ipad" : "iphone")-editor"; selected.lifetime = .keepAlways; add(selected)
         if let hide = app.buttons.matching(identifier: "Hide keyboard").allElementsBoundByIndex.first(where: { $0.isHittable }) { hide.tap() }
         app.buttons["Run project"].tap()
-        let output = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "pair-run")).firstMatch
-        XCTAssertTrue(output.waitForExistence(timeout: 180))
+        XCTAssertTrue(app.buttons["Run project"].waitForExistence(timeout: 180), "Wait for the local compiler to finish")
+        app.buttons["build-dock-output"].tap()
+        XCTAssertTrue(app.staticTexts["STDOUT"].waitForExistence(timeout: 15))
+        let output = app.staticTexts.matching(NSPredicate(format: "label == %@ OR label == %@", "pair-run=42", "pair-run=42\n")).firstMatch
+        XCTAssertTrue(output.waitForExistence(timeout: 15))
         let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot()); screenshot.name = "pair-\(pad ? "ipad" : "iphone")-run"; screenshot.lifetime = .keepAlways; add(screenshot)
     }
 }

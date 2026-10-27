@@ -345,8 +345,14 @@ final class CompilerViewModel: ObservableObject {
         // Packages and generated outputs are never uploaded. Unsupported source
         // types fail explicitly instead of silently sharing an incomplete project.
         let ignored: Set<String> = ["target", "node_modules", ".git", ".github", ".cargo", "vendor"]
-        let files = project.files.filter { !ignored.contains($0.key.components(separatedBy: "/").first ?? "") }
-        return try PlaygroundDocument(name: playgroundSession?.document?.name ?? project.name, entryFile: project.entryFile, files: files, edition: cargoManifest?.edition ?? "2024").validated()
+        var files = project.files.filter { !ignored.contains($0.key.components(separatedBy: "/").first ?? "") }
+        let shared = playgroundSession?.document
+        if let shared, shared.files["Cargo.toml"] == nil,
+           let generated = shared.nativeFiles["Cargo.toml"], files["Cargo.toml"] == generated {
+            files.removeValue(forKey: "Cargo.toml")
+        }
+        let edition = files["Cargo.toml"] == nil ? (shared?.edition ?? "2024") : (cargoManifest?.edition ?? shared?.edition ?? "2024")
+        return try PlaygroundDocument(name: shared?.name ?? project.name, entryFile: project.entryFile, files: files, edition: edition, origin: shared?.origin).validated()
     }
 
     func createPlayground(lifetimeSeconds: Int) async throws {
@@ -385,17 +391,18 @@ final class CompilerViewModel: ObservableObject {
             defer { isApplyingPlayground = false }
             if initial {
                 initial = false
-                loadProject(name: value.name, files: value.files, entryFile: value.entryFile, projectDescription: "Local copy of a temporary Crabrix Playground. The link expires; this device copy remains available.")
+                loadProject(name: value.name, files: value.nativeFiles, entryFile: value.entryFile, projectDescription: "Local copy of a temporary Crabrix Playground. The link expires; this device copy remains available.")
                 projectTransfer = .ready("Decrypted Playground · saved a local source copy. Run when ready.")
             } else {
                 var existing = fileContents; existing[selectedFile] = source
-                guard existing != value.files || sharedNameChanged || entryFile != value.entryFile else { return }
+                let incoming = value.nativeFiles
+                guard existing != incoming || sharedNameChanged || entryFile != value.entryFile else { return }
                 let oldSelection = selectedFile
                 suppressAutosave = true
-                fileContents = value.files; fileNames = value.files.keys.sorted(by: projectFileOrder)
+                fileContents = incoming; fileNames = incoming.keys.sorted(by: projectFileOrder)
                 if sharedNameChanged { projectName = value.name }; entryFile = value.entryFile
-                selectedFile = value.files[oldSelection] == nil ? value.entryFile : oldSelection
-                source = value.files[selectedFile] ?? ""
+                selectedFile = incoming[oldSelection] == nil ? value.entryFile : oldSelection
+                source = incoming[selectedFile] ?? ""
                 suppressAutosave = false
                 workspaceGeneration &+= 1
                 scheduleAutosave()

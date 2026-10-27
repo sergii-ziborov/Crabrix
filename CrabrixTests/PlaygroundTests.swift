@@ -39,6 +39,17 @@ final class PlaygroundModelTests: XCTestCase {
         let changed = try codec.call(["type": "file", "path": "main.rs", "text": "🦁 Rust 🦑"])
         XCTAssertEqual(changed.document?.files["main.rs"], "🦁 Rust 🦑")
     }
+    func testNativeCopyKeepsA2021SnippetsEditionWithoutChangingRoomFiles() throws {
+        let document = try PlaygroundDocument(name: "edition", entryFile: "src/main.rs", files: ["src/main.rs": "fn main() { let gen = 1; println!(\"{gen}\"); }"], edition: "2021").validated()
+        XCTAssertNil(document.files["Cargo.toml"])
+        let local = document.nativeFiles
+        XCTAssertEqual(local["src/main.rs"], document.files["src/main.rs"])
+        XCTAssertTrue(local["Cargo.toml"]?.contains("edition = \"2021\"") == true)
+        XCTAssertEqual(local["Cargo.toml"].flatMap(CargoManifest.parse)?.edition, "2021")
+        XCTAssertTrue(local["Cargo.toml"]?.contains("path = \"src/main.rs\"") == true)
+        let existing = PlaygroundDocument(name: "existing", entryFile: "main.rs", files: ["main.rs": "fn main(){}", "Cargo.toml": "original manifest"], edition: "2021")
+        XCTAssertEqual(existing.nativeFiles["Cargo.toml"], "original manifest")
+    }
     func testSourceLimitsAreUTF8AndTraversalIsRejected() throws {
         XCTAssertThrowsError(try PlaygroundDocument(name: "no", entryFile: "../main.rs", files: ["../main.rs": "fn main(){}"] ).validated())
         XCTAssertThrowsError(try PlaygroundDocument(name: "no", entryFile: "main.rs", files: ["main.rs": String(repeating: "🦀", count: 17000)] ).validated())

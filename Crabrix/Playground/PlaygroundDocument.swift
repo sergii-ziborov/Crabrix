@@ -9,6 +9,26 @@ struct PlaygroundDocument: Codable, Equatable, Sendable {
     var edition = "2024"
     var origin: Origin?
 
+    /// The native project format carries edition in Cargo.toml. Preserve a
+    /// manifest-free 2021 snippet when saving a durable device copy.
+    var nativeFiles: [String: String] {
+        guard edition == "2021", files["Cargo.toml"] == nil else { return files }
+        var result = files
+        let path = entryFile.replacingOccurrences(of: "\"", with: "\\\"")
+        result["Cargo.toml"] = """
+        [package]
+        name = "playground"
+        version = "0.1.0"
+        edition = "2021"
+
+        [[bin]]
+        name = "playground"
+        path = "\(path)"
+
+        """
+        return result
+    }
+
     func validated() throws -> Self {
         guard schemaVersion == 1, !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, name.utf16.count <= 80, !name.unicodeScalars.contains(where: { $0.value < 32 || $0.value == 127 }),
               ["2021", "2024"].contains(edition), (1...16).contains(files.count), files[entryFile] != nil, entryFile.hasSuffix(".rs") else { throw PlaygroundFailure("Invalid text-only Playground project.") }
