@@ -1,5 +1,35 @@
 # Crabrix website deployment
 
+## Measured Rust performance guide — 27 October 2026
+
+The current service uses `localhost/crabrix-web-site:rust-performance-20261027`
+from source `3a909b040ff5ed1ccc35f0b9ed9235c82bb0d921`. The new article has
+2,012 paragraph words, three original ImageGen images and two infographics.
+It includes tested owned/borrowed log classifiers, Debug/Release comparisons,
+benchmark boundaries, optimizer barriers and saved raw desktop observations.
+All 26 previous article objects remain unchanged. The catalog contains
+27 articles, 56 original public blog images and 787 canonical sitemap URLs.
+
+Eight semantic tests passed in both development and Release profiles, alongside
+15 site tests, TypeScript checking and the production build. One development
+and three Release benchmark processes ran sequentially on an Apple M4; their
+raw samples and scope are preserved. No measured allocation count or qualified
+iPhone timing is claimed. Browser verification covered 390, 820 and 1440-pixel
+widths in light/dark themes, with all images decoded and no page overflow.
+
+Nineteen candidate/production HTTP checks and 16 public HTTPS checks passed,
+including article metadata, both sitemaps, nine original/WebP image digests,
+guest lesson gating and private-media denial. A public mobile browser check
+also passed. This is a focused publication check, not a new crawl of every page.
+A consistent account backup preceded cutover; the account mount and resource
+limits are retained. The old service is stopped as
+`crabrix-web-site-before-rust-performance-20261027` for rollback. DNS, Nginx
+and the app binary are unchanged.
+
+[Publication evidence](site-release-2026-10-27-article.json),
+[images and prompts](blog-assets-2026-10-27.json),
+[raw observations](benchmarks/measured-performance-2026-10-27/README.md).
+
 ## Async cancellation guide — 26 October 2026
 
 The current service uses `localhost/crabrix-web-site:async-cancellation-20261026`

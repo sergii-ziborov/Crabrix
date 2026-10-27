@@ -30,6 +30,8 @@ both sitemaps include the new entry.
 [Assets and prompts](../docs/blog-assets-2026-10-27.json),
 [reproducible sample](../docs/examples/measured-performance/README.md),
 [raw observations](../docs/benchmarks/measured-performance-2026-10-27/README.md).
+The live Hetzner publication and focused public checks are recorded in
+`../docs/site-release-2026-10-27-article.json`.
 
 ## 26 October: async cancellation guide
 

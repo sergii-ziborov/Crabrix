@@ -1,0 +1,230 @@
+{
+  "publishedAtUTC": "2026-10-27T05:33:04.097443+00:00",
+  "origin": "https://crabrix.com",
+  "sourceCommit": "3a909b040ff5ed1ccc35f0b9ed9235c82bb0d921",
+  "artifactSHA256": "be5044620973aa17e68293f8e87d0f97f0ced866084c583734a6b5c837d6bc25",
+  "image": "localhost/crabrix-web-site:rust-performance-20261027",
+  "imageID": "7688f8f3e9e83d4918d41332b926e6aa42c3ead7b47d095d9a9e419adae99144",
+  "health": "healthy",
+  "rollbackContainer": "crabrix-web-site-before-rust-performance-20261027",
+  "accountBackup": "completed before cutover",
+  "article": {
+    "slug": "rust-performance-measure-before-optimizing",
+    "date": "2026-10-27",
+    "paragraphWords": 2012,
+    "generatedImages": 3,
+    "infographics": 2,
+    "previous26ArticlesUnchanged": true
+  },
+  "catalog": {
+    "courses": 7,
+    "lessons": 742,
+    "articles": 27,
+    "canonicalSitemapURLs": 787,
+    "publicBlogImageURLs": 56
+  },
+  "tests": {
+    "semanticRustTestsPerProfile": 8,
+    "profiles": [
+      "dev",
+      "release"
+    ],
+    "totalRustPasses": 16,
+    "rustFailures": 0,
+    "deterministicDifferentialCases": 1000,
+    "siteTests": 15,
+    "typeScript": "passed",
+    "productionBuild": "passed",
+    "browserConfigurations": [
+      {
+        "width": 390,
+        "colorScheme": "light",
+        "imagesLoaded": 3,
+        "horizontalOverflow": false,
+        "articleMetadata": "passed"
+      },
+      {
+        "width": 390,
+        "colorScheme": "dark",
+        "imagesLoaded": 3,
+        "horizontalOverflow": false,
+        "articleMetadata": "passed"
+      },
+      {
+        "width": 820,
+        "colorScheme": "light",
+        "imagesLoaded": 3,
+        "horizontalOverflow": false,
+        "articleMetadata": "passed"
+      },
+      {
+        "width": 820,
+        "colorScheme": "dark",
+        "imagesLoaded": 3,
+        "horizontalOverflow": false,
+        "articleMetadata": "passed"
+      },
+      {
+        "width": 1440,
+        "colorScheme": "light",
+        "imagesLoaded": 3,
+        "horizontalOverflow": false,
+        "articleMetadata": "passed"
+      },
+      {
+        "width": 1440,
+        "colorScheme": "dark",
+        "imagesLoaded": 3,
+        "horizontalOverflow": false,
+        "articleMetadata": "passed"
+      }
+    ],
+    "browserErrors": [],
+    "candidateHTTPChecks": 19,
+    "productionHTTPChecks": 19,
+    "publicHTTPSChecks": 16,
+    "TLSVerification": "enabled using trusted CA bundle"
+  },
+  "benchmark": {
+    "report": "benchmarks/measured-performance-2026-10-27/measurements.json",
+    "source": "examples/measured-performance/",
+    "nativeProcesses": {
+      "debug": 1,
+      "release": 3
+    },
+    "samplesPerVariantPerProcess": 21,
+    "scansPerBatch": 32,
+    "phoneTimingQualified": false,
+    "allocationCountsMeasured": false
+  },
+  "assetMetadata": "blog-assets-2026-10-27.json",
+  "prompts": "blog-image-prompts-2026-10-27.json",
+  "liveBrowser": {
+    "origin": "https://crabrix.com",
+    "article": "/blog/rust-performance-measure-before-optimizing/",
+    "width": 390,
+    "colorScheme": "light",
+    "imagesLoaded": 3,
+    "horizontalOverflow": false,
+    "pageErrors": [],
+    "TLSVerification": "enabled",
+    "screenshot": "site-previews/rust-performance-live-2026-10-27.png"
+  },
+  "publicChecks": [
+    {
+      "path": "/blog/rust-performance-measure-before-optimizing/",
+      "status": 200,
+      "bytes": 92197,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "5f1d979a3c5b5cdde7efe5a5c9e953444e99b8e92f3ddcb5b01efb1aa20fc0be"
+    },
+    {
+      "path": "/blog/",
+      "status": 200,
+      "bytes": 76831,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "dbd26a5b3017d66be42accbeca23eddfcead1ab16fefe452709b4d5a45207d77"
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "bytes": 78257,
+      "contentType": "application/xml",
+      "sha256": "34100a23a2611a011bc3d5ad65d9d9b914537e4248711e0d4be691f91cd92115"
+    },
+    {
+      "path": "/sitemap/",
+      "status": 200,
+      "bytes": 260922,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "2b3f2d8a22b599d593932a832ee111e3d873558521c7859fde512acaf1d6aa04"
+    },
+    {
+      "path": "/learn/basics/hello-rust/",
+      "status": 200,
+      "bytes": 22858,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "436e736806b84df796f45b49e0521e9b6c67c605ce6171093b24f3b72e3df0bf"
+    },
+    {
+      "path": "/login/",
+      "status": 200,
+      "bytes": 14895,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "ca3e1ca15032487353f8b7943b220deb7918e63981cadf025d359f58ad44d60b"
+    },
+    {
+      "path": "/blog/rust-performance-editorial.png",
+      "status": 200,
+      "bytes": 2184716,
+      "contentType": "image/png",
+      "sha256": "4b16759e64d7ebc69ed19b237450db4dc91075461b471f58b0006466c294af57"
+    },
+    {
+      "path": "/blog/rust-performance-editorial.webp",
+      "status": 200,
+      "bytes": 259702,
+      "contentType": "image/webp",
+      "sha256": "7846e7800aec2d1696e1f7ed2bbc270ded25ad68bb501841c3f8dcf0c206843e"
+    },
+    {
+      "path": "/blog/rust-performance-editorial-640.webp",
+      "status": 200,
+      "bytes": 74424,
+      "contentType": "image/webp",
+      "sha256": "8a2ccb0f4308fc3b6b0ad386a6240b91ac0a96e8aaadd73a259d57ef1bf1f0cb"
+    },
+    {
+      "path": "/blog/rust-performance-allocations-infographic.png",
+      "status": 200,
+      "bytes": 1514317,
+      "contentType": "image/png",
+      "sha256": "9e9505372985e3b8d7241cbe5ad8b7ca3c95af64b18873ed5ff6a3ae5d6f96fc"
+    },
+    {
+      "path": "/blog/rust-performance-allocations-infographic.webp",
+      "status": 200,
+      "bytes": 138070,
+      "contentType": "image/webp",
+      "sha256": "97dac3f91efb3f79f22e4a5bb0d21d53744354dc741ce88c6c01e55f7ba462e5"
+    },
+    {
+      "path": "/blog/rust-performance-allocations-infographic-640.webp",
+      "status": 200,
+      "bytes": 46690,
+      "contentType": "image/webp",
+      "sha256": "1833c2400368883b2bd7459c29237d137b9627bd43f9134114cf5dae12245f99"
+    },
+    {
+      "path": "/blog/rust-performance-measurement-infographic.png",
+      "status": 200,
+      "bytes": 1711569,
+      "contentType": "image/png",
+      "sha256": "5dfb5566f9cce77fd99e63e459e362c0750b316664f42866fae216285ead535e"
+    },
+    {
+      "path": "/blog/rust-performance-measurement-infographic.webp",
+      "status": 200,
+      "bytes": 208518,
+      "contentType": "image/webp",
+      "sha256": "bd3fa54ae84436fddc1c56a6240c44846b9d53a28d7a389997483442cfdde9ac"
+    },
+    {
+      "path": "/blog/rust-performance-measurement-infographic-640.webp",
+      "status": 200,
+      "bytes": 66086,
+      "contentType": "image/webp",
+      "sha256": "0b728392e4bffbf4c7d175b4a5594e697f4f0c72372eb21318415dc01b3ef7e3"
+    },
+    {
+      "path": "/learn-media/basics/hello-rust.png",
+      "status": 401
+    }
+  ],
+  "cleanup": {
+    "taskCandidateRemoved": true,
+    "compressedUploadCopyRemoved": true,
+    "previousProductionContainerRetained": true,
+    "localTaskPreviewStopped": true
+  }
+}
