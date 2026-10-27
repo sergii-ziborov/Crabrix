@@ -124,7 +124,9 @@ final class ProjectTerminalSession: ObservableObject {
                 "  cargo tree|fetch        Inspect and download packages\n" +
                 "  cargo metadata          Inspect this package manifest\n" +
                 "  npm install|ci          Prepare browser imports for offline use\n" +
-                "  npm run dev|start|build  Build browser JS/TS/JSX locally\n" +
+                "  npm run dev|preview     Build and open the local web preview\n" +
+                "  npm run build|check     Build browser JS/TS/JSX locally\n" +
+                "  npm --prefix web …      Target a nested browser project\n" +
                 "  history                 Recall recent commands\n" +
                 "  env · date · uname      Sandbox information\n" +
                 "  clear                    Clear this terminal\n\n" +
@@ -205,8 +207,35 @@ final class ProjectTerminalSession: ObservableObject {
 
     private func runNpm(arguments: [String], project: CrabrixProject, isBusy: Bool,
                         onCommand: ((BrowserProjectCommand) -> Void)?) {
-        let reference = currentDirectory.isEmpty ? "package.json" : currentDirectory + "/package.json"
+        var arguments = arguments
+        var explicitDirectory: String?
+        var index = 0
+        while index < arguments.count, arguments[index] != "--" {
+            let argument = arguments[index]
+            if argument == "--prefix" || argument.hasPrefix("--prefix=") {
+                let rawDirectory: String
+                if argument == "--prefix" {
+                    guard index + 1 < arguments.count else {
+                        append("npm: --prefix requires a project directory.", kind: .error); return
+                    }
+                    rawDirectory = arguments.remove(at: index + 1)
+                } else {
+                    rawDirectory = String(argument.dropFirst("--prefix=".count))
+                }
+                guard explicitDirectory == nil, !rawDirectory.isEmpty,
+                      let directory = normalizedPath(rawDirectory, project: project) else {
+                    append("npm: use one --prefix directory inside this project.", kind: .error); return
+                }
+                explicitDirectory = directory
+                arguments.remove(at: index)
+            } else { index += 1 }
+        }
+        let directory = explicitDirectory ?? currentDirectory
+        let reference = directory.isEmpty ? "package.json" : directory + "/package.json"
         let path = BrowserProjectConfiguration.manifestPath(files: project.files, entry: reference)
+        if explicitDirectory != nil, path != reference {
+            append("npm: no package.json in \(displayPath(directory, project: project)).", kind: .error); return
+        }
         guard let text = project.files[path],
               let manifest = try? JSONSerialization.jsonObject(with: Data(text.utf8)) as? [String: Any] else {
             append("npm: add a valid package.json and an HTML entry to this browser project.", kind: .error); return
@@ -214,26 +243,27 @@ final class ProjectTerminalSession: ObservableObject {
         let scripts = manifest["scripts"] as? [String: String] ?? [:]
         if arguments.isEmpty || arguments == ["--version"] || arguments == ["run"] {
             append("Crabrix browser package tools · local JS/TS/JSX bundler, not a Node process.\n" +
-                "npm install · npm ci · npm run dev|start|build\n" +
+                "npm install (or npm i) · npm ci · npm run dev|start|preview|build|check\n" +
+                "Use npm --prefix web <command> for a nested app.\n" +
                 scripts.keys.sorted().map { "  \($0): \(scripts[$0]!)" }.joined(separator: "\n"), kind: .info)
             return
         }
         guard !isBusy else { append("Wait for the current build or package preparation to finish.", kind: .error); return }
         guard let onCommand else { append("Browser package tools are unavailable in this view.", kind: .error); return }
-        let directory = (path as NSString).deletingLastPathComponent
-        if arguments == ["install"] || arguments == ["ci"] {
+        let packageDirectory = (path as NSString).deletingLastPathComponent
+        if arguments == ["install"] || arguments == ["i"] || arguments == ["ci"] {
             append("Preparing imported browser dependencies only; npm lifecycle scripts and host build plugins are not executed.", kind: .info)
-            onCommand(.install(frozen: arguments == ["ci"], directory: directory)); return
+            onCommand(.install(frozen: arguments == ["ci"], directory: packageDirectory)); return
         }
-        let name = arguments.count == 2 && arguments[0] == "run" ? arguments[1] : arguments == ["start"] ? "start" : ""
-        guard ["dev", "start", "build", "check"].contains(name) else {
-            append("Supported: npm install, npm ci, npm start, npm run dev|start|build|check. Declare dependencies in package.json; shell scripts and package executables are not available.", kind: .error); return
+        let name = arguments.count == 2 && ["run", "run-script"].contains(arguments[0]) ? arguments[1] : arguments == ["start"] ? "start" : ""
+        guard ["dev", "start", "preview", "build", "check"].contains(name) else {
+            append("Supported: npm install (or npm i), npm ci, npm start, npm run dev|start|preview|build|check, npm --prefix <directory> <command>. Declare dependencies in package.json; shell scripts, extra script arguments and package executables are not available.", kind: .error); return
         }
         if let script = scripts[name], script.range(of: #"(?:^|[;&|]\s*)(?:node|next|nuxt|astro|bun|deno|webpack|rollup)\b"#, options: .regularExpression) != nil {
             append("This script needs a host/server build tool. Import its static browser export, or use an HTML entry with browser imports; this command does not execute Node or arbitrary package scripts.", kind: .error); return
         }
         append("Using Crabrix's browser bundler for \(name); package scripts/plugins are not executed and no dev server is started.", kind: .info)
-        onCommand(.build(run: name == "dev" || name == "start", directory: directory))
+        onCommand(.build(run: ["dev", "start", "preview"].contains(name), directory: packageDirectory))
     }
 
     func activityChanged(

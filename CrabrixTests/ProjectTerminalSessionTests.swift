@@ -3,6 +3,40 @@ import XCTest
 
 @MainActor
 final class ProjectTerminalSessionTests: XCTestCase {
+    func testNpmPreviewAliasesAndPrefixTargetOnlyTheRequestedBrowserApp() {
+        let terminal = ProjectTerminalSession()
+        let project = CrabrixProject(name: "browser", files: [
+            "package.json": "{}", "index.html": "",
+            "web/package.json": "{\"scripts\":{\"preview\":\"vite preview\"}}", "web/index.html": "",
+        ], entryFile: "index.html", provenance: nil)
+        var received: [String] = []
+        for command in ["npm --prefix web i", "npm run preview --prefix=web", "npm --prefix web run-script build", "npm run preview"] {
+            terminal.command = command
+            terminal.submit(project: project, isBusy: false, onCheck: { XCTFail("Rust check") }, onRun: { XCTFail("Rust run") }, onBrowserCommand: {
+                switch $0 {
+                case let .install(frozen, directory): received.append("install:\(frozen):\(directory)")
+                case let .build(run, directory): received.append("build:\(run):\(directory)")
+                }
+            })
+        }
+        XCTAssertEqual(received, ["install:false:web", "build:true:web", "build:false:web", "build:true:"])
+        terminal.command = "pwd"
+        terminal.submit(project: project, isBusy: false, onCheck: {}, onRun: {})
+        XCTAssertEqual(terminal.lines.last?.text, "/workspace/browser")
+    }
+
+    func testNpmRejectsEscapingOrMissingPrefixAndHostCommands() {
+        let terminal = ProjectTerminalSession()
+        let project = CrabrixProject(name: "browser", files: [
+            "package.json": "{\"scripts\":{\"dev\":\"node server.js\"}}", "index.html": "",
+        ], entryFile: "index.html", provenance: nil)
+        for command in ["npm --prefix ../outside install", "npm --prefix missing run build", "npm --prefix", "npm --prefix= run build", "npm --prefix . --prefix . install", "npm run dev", "npm run build -- --watch", "npm install react"] {
+            terminal.command = command
+            terminal.submit(project: project, isBusy: false, onCheck: {}, onRun: {}, onBrowserCommand: { _ in XCTFail("Unsupported command dispatched: \(command)") })
+            XCTAssertEqual(terminal.lines.last?.kind, .error, command)
+        }
+    }
+
     func testNpmCommandsRouteThroughBrowserToolsAndRespectWorkingDirectory() {
         let terminal = ProjectTerminalSession()
         let project = CrabrixProject(name: "browser", files: ["web/package.json": "{\"scripts\":{\"dev\":\"vite\"}}", "web/index.html": ""], entryFile: "web/index.html", provenance: nil)

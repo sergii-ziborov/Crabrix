@@ -1,0 +1,19 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Crabrix — local Rust feasibility probe</title>
+<h1>Local Rust compiler probe</h1>
+<p>Development evidence only. No source upload or production playground.</p>
+<script type="module">
+  window.probeWorker = new Worker("/worker.mjs", { type: "module" });
+  let nextID = 0;
+  window.probe = (data) => new Promise((resolve, reject) => {
+    const id = ++nextID;
+    const listener = ({ data: reply }) => {
+      if (reply.id !== id) return;
+      probeWorker.removeEventListener("message", listener);
+      reply.type === "error" ? reject(new Error(reply.error)) : resolve(reply);
+    };
+    probeWorker.addEventListener("message", listener);
+    probeWorker.postMessage({ ...data, id });
+  });
+</script>

@@ -85,6 +85,13 @@ signed Rust toolchain, runtime pin and editor/Duo geometry are unchanged.
 
 ## Verification
 
+Follow-up source after build 101 adds `npm i`, `npm run preview`, `npm run-script`
+for the supported names, and `--prefix web` / `--prefix=web` directory selection.
+The existing browser/terminal/keyboard Simulator gate passed 21 tests with zero
+failures. These additions require the next app build; the previously submitted
+101 retains the command set listed above. See the separate
+[Rust debugger and browser compiler assessment](rust-debugger-browser-feasibility-2026-10-27.md).
+
 - Host JavaScript harness: 29 semantic checks using the actual pinned compiler
   resources, including export conditions, import/require distinctions, namespace
   reexports, production branches, JSON/raw assets, CSS imports, path errors,

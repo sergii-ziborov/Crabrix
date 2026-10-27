@@ -1,0 +1,101 @@
+{
+  "browser": "151.0.7922.34",
+  "initialized": {
+    "id": 1,
+    "type": "initialized",
+    "durationMs": 826.5999999046326,
+    "compilerBytes": 129350419,
+    "sysrootBytes": 71273708,
+    "crossOriginIsolated": false
+  },
+  "result": {
+    "id": 2,
+    "type": "result",
+    "compilation": {
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "linearMemoryBytes": 81788928
+    },
+    "execution": {
+      "exitCode": 0,
+      "stdout": "answer=42\n",
+      "stderr": "",
+      "linearMemoryBytes": 1179648
+    },
+    "compileMs": 829.7000000476837,
+    "durationMs": 835.1000001430511,
+    "wasmBytes": 561094,
+    "debugSections": []
+  },
+  "borrow": {
+    "exitCode": 1,
+    "E0502": true
+  },
+  "stdin": {
+    "id": 4,
+    "type": "result",
+    "compilation": {
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "linearMemoryBytes": 84279296
+    },
+    "execution": {
+      "exitCode": 0,
+      "stdout": "sum=21\n",
+      "stderr": "",
+      "linearMemoryBytes": 1179648
+    },
+    "compileMs": 727.3999998569489,
+    "durationMs": 732.7999999523163,
+    "wasmBytes": 580180,
+    "debugSections": []
+  },
+  "debugInfo": {
+    "exitCode": 1,
+    "stderr": "\nthread 'main' (1) panicked at compiler/rustc_codegen_cranelift/src/debuginfo/line_info.rs:163:43:\ncalled `Option::unwrap()` on a `None` value\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\nerror: the compiler unexpectedly panicked. This is a bug\n\nnote: we would appreciate a bug report: https://github.com/rust-lang/rust/issues/new?labels=C-bug%2C+I-ICE%2C+T-compiler&template=ice.md\n\nnote: please make sure that you have updated to the latest nightly\n\nwarning: the ICE couldn't be written to `/rustc-ice-2026-10-27T12_56_17-1.txt`: No such file or directory (os error 44)\n\nnote: rustc 1.96.0-dev running on wasm32-wasip1\n\nnote: compiler flags: -C opt-level=0 -C panic=abort -C debuginfo=2\n\nquery stack during panic:\nend of query stack\n",
+    "trap": "RuntimeError: unreachable",
+    "compileMs": 182.29999995231628
+  },
+  "lineTablesInfo": {
+    "id": 6,
+    "type": "result",
+    "compilation": {
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "\nthread 'main' (1) panicked at compiler/rustc_codegen_cranelift/src/debuginfo/line_info.rs:163:43:\ncalled `Option::unwrap()` on a `None` value\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\nerror: the compiler unexpectedly panicked. This is a bug\n\nnote: we would appreciate a bug report: https://github.com/rust-lang/rust/issues/new?labels=C-bug%2C+I-ICE%2C+T-compiler&template=ice.md\n\nnote: please make sure that you have updated to the latest nightly\n\nwarning: the ICE couldn't be written to `/rustc-ice-2026-10-27T12_56_17-1.txt`: No such file or directory (os error 44)\n\nnote: rustc 1.96.0-dev running on wasm32-wasip1\n\nnote: compiler flags: -C opt-level=0 -C panic=abort -C debuginfo=line-tables-only\n\nquery stack during panic:\nend of query stack\n",
+      "trap": "RuntimeError: unreachable",
+      "linearMemoryBytes": 81788928
+    },
+    "compileMs": 138.79999995231628
+  },
+  "heartbeats": 422,
+  "stoppedWorkerMs": 4,
+  "unexpectedRequests": [],
+  "scope": "Chromium on the Mac; not Safari or an iPhone performance measurement",
+  "staticAssetRequests": 54,
+  "sourceUploadRequests": 0,
+  "productionPublished": false,
+  "rustcSHA256": "0286dc52064283ef78ba153a554d86ae742e6c8cd638aea8662e07d3529233fc",
+  "runtimeRevision": "e714b3efb3f4973bfd20ea41cb2cf0d6eb27713d",
+  "nativeDebuggerEngineTests": {
+    "passed": 36,
+    "failed": 0,
+    "platform": "macOS",
+    "trait": "WasmDebuggingSupport",
+    "logSHA256": "4dbd93c84b8fc0dadf9a607e43b9d0c0068a77e3a4c059a00b3fdd885aa6b568"
+  },
+  "nativeCompilerDebugInfo": {
+    "exitCode": 1,
+    "samePanicAsBrowser": true,
+    "logSHA256": "79d9475fb30fecdbb24c3b56b731eeff04289290c8203020e06f35882505c34d"
+  },
+  "npmFollowup": {
+    "nativeHostedTestsPassed": 21,
+    "failed": 0,
+    "platform": "iOS Simulator",
+    "inBuild101": false,
+    "appGeometryChanged": false
+  }
+}
