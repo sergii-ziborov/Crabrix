@@ -1,0 +1,121 @@
+{
+  "verifiedAtUTC": "2026-10-27T15:56:35.420314+00:00",
+  "version": "1.1.2",
+  "buildNumber": "103",
+  "buildID": "4955a9c4-9f63-414a-8d50-15827398810a",
+  "appSourceCommit": "fe322d2679fd24173a492866d6c221377b241ae5",
+  "cloudBuildRunID": "b0f382ea-978b-4a94-b43d-758ec5ebbfc9",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "versionID": "4ad2dcb4-5252-4f36-bb32-99f41e3f6e9a",
+  "versionState": "WAITING_FOR_REVIEW",
+  "reviewID": "eed90224-cf14-4fb5-b725-b71645ed01d8",
+  "reviewState": "WAITING_FOR_REVIEW",
+  "releaseType": "MANUAL",
+  "selectedBuild": "103",
+  "screenshots": [
+    {
+      "displayType": "APP_IPHONE_67",
+      "count": 10,
+      "complete": 10,
+      "firstFile": "v111-iphone-6.9-01-build.png"
+    },
+    {
+      "displayType": "APP_IPHONE_DUO",
+      "count": 2,
+      "complete": 2,
+      "firstFile": "v111-iphone-duo-qa-01-laptop-code.png"
+    },
+    {
+      "displayType": "APP_IPAD_PRO_3GEN_129",
+      "count": 7,
+      "complete": 7,
+      "firstFile": "v111-ipad-13-01-build.png"
+    }
+  ],
+  "storeMetadataReadback": "exact match",
+  "whatToTest": "updated",
+  "reviewNotes": "encrypted temporary sharing; local execution; guest limits; no interactive debugger",
+  "cloudCompletion": "SUCCEEDED",
+  "signedEntitlements": {
+    "build": "103",
+    "applicationIdentifier": "XMS5ZC28UJ.com.sergiiziborov.Crabrix",
+    "associatedDomains": [
+      "applinks:crabrix.com"
+    ],
+    "profileSupportsAssociatedDomains": true,
+    "getTaskAllow": false
+  },
+  "associatedDomainCDN": "exact match",
+  "qualification": "two Simulator app instances and Chromium against production HTTPS relay; exact native STDOUT; remote selection matrix",
+  "physicalDeviceGate": "not run; iPhone unavailable",
+  "interactiveSourceDebugger": "not enabled; compiler debug line metadata unfinished",
+  "customProductPages": [
+    {
+      "name": "Rust Academy \u2014 Learn and Practise",
+      "versions": [
+        {
+          "state": "APPROVED",
+          "locales": [
+            {
+              "locale": "en-US",
+              "promotionalText": "Learn Rust step by step: 742 lessons and Atlas steps, illustrated explanations, highlighted code and practical exercises. Download courses and keep learning offline.",
+              "screenshots": [
+                {
+                  "displayType": "APP_IPAD_PRO_3GEN_129",
+                  "count": 7,
+                  "complete": 7
+                },
+                {
+                  "displayType": "APP_IPHONE_67",
+                  "count": 10,
+                  "complete": 10
+                },
+                {
+                  "displayType": "APP_IPHONE_DUO",
+                  "count": 2,
+                  "complete": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rust Compiler \u2014 Build on Device",
+      "versions": [
+        {
+          "state": "APPROVED",
+          "locales": [
+            {
+              "locale": "en-US",
+              "promotionalText": "Write Rust on iPhone, iPad and iPhone Duo. Check real compiler diagnostics, run locally, organise projects and explore 46 illustrated examples. No cloud compiler.",
+              "screenshots": [
+                {
+                  "displayType": "APP_IPAD_PRO_3GEN_129",
+                  "count": 7,
+                  "complete": 7
+                },
+                {
+                  "displayType": "APP_IPHONE_67",
+                  "count": 10,
+                  "complete": 10
+                },
+                {
+                  "displayType": "APP_IPHONE_DUO",
+                  "count": 2,
+                  "complete": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "categories": [
+    "DEVELOPER_TOOLS",
+    "EDUCATION"
+  ]
+}

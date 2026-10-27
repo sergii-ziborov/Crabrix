@@ -200,7 +200,7 @@ Browser projects with an HTML entry use this path automatically through **Run/Ch
 
 Original dependency source, package manifests and license files remain editable under `node_modules`, with `crabrix-web.lock.json` recording the selected graph. Saved prepared sources survive reopening and archive-cache eviction. Browser Run/Check never acquire packages. Re-prepare explicitly after adding imports or changing versions. Node/Bun, dev servers, lifecycle scripts, native addons, build plugins, private/git/workspace dependencies, CSS Modules, `import.meta.glob` and top-level await remain outside this browser path. The 2,048-file / 16 MB editable source budget and 256-asset / 8 MiB preview budget are unchanged. [Implementation and verification](docs/browser-packages-2026-10-27.md).
 
-Follow-up source after build 101 adds `npm i`, `npm run preview`, supported `npm run-script` aliases and `npm --prefix web …`, with 21 browser/terminal/keyboard Simulator tests passing. These additions require a new app build. A separate [debugger and browser compiler feasibility report](docs/rust-debugger-browser-feasibility-2026-10-27.md) records 36 passing engine debugger tests, a confirmed compiler debug-info defect, and actual Rust compilation/execution in a browser Worker. That experiment is not enabled in the production app or website.
+Build 103 includes `npm i`, `npm run preview`, supported `npm run-script` aliases and `npm --prefix web …`, with 21 browser/terminal/keyboard Simulator tests passing. A separate [debugger and browser compiler feasibility report](docs/rust-debugger-browser-feasibility-2026-10-27.md) records 36 passing engine debugger tests and a confirmed compiler debug-info defect. The browser compiler is now available in the public Playground; interactive source debugging remains unfinished.
 
 The package sheet shows waiting, downloading, verifying, ready and failed states with per-package dependencies. Verified archives are pinned outside purgeable caches during preparation; frozen/offline resolution never downloads. Output shows compilation stages and cached dependencies. Package acquisition and compiler execution run away from the interface thread. [The screenshot guide](https://crabrix.com/guide/) explains projects, imports, offline preparation, diagnostics and device layouts.
 
@@ -210,9 +210,9 @@ The October 24 compatibility work exercises Tokio 1.54.1 with a restricted curre
 
 Five additional articles occupy October 5, 6, 7, 8 and 24: [local progress and optional Game Center](https://crabrix.com/blog/crabrix-offline-progress-game-center/), [cooperative futures](https://crabrix.com/blog/rust-futures-cooperative-work/), [generational handles](https://crabrix.com/blog/rust-generational-handles-stable-identity/), [deterministic dependency plans](https://crabrix.com/blog/rust-dependency-graphs-deterministic-plans/) and [the offline Rust web lab](https://crabrix.com/blog/crabrix-offline-rust-web-preview/). Each has 2,600–2,726 prose words, a checked runnable Rust example and two original ImageGen illustrations, including an infographic. Four new images include the crab mascot. The earlier build-script article received a dated compatibility correction; the other prior article objects remain intact. [Assets and word counts](docs/blog-assets-2026-10-24.json), [prompts](docs/blog-image-prompts-2026-10-24.json), and [example source](docs/blog-examples/2026-10-24/) are versioned with the site.
 
-## Temporary Playground — implementation in progress
+## Temporary Playground — public guest editor
 
-The new guest Playground compiles real Rust in a browser Worker, with verified
+The [guest Playground](https://crabrix.com/playground/) compiles real Rust in a browser Worker, with verified
 on-demand toolchain assets (44.7 MiB first transfer), a fresh WASI source snapshot
 and bounded user-program execution. Browser compilation never sends source to
 a compile server. The initial browser path supports the standard library and
@@ -233,12 +233,18 @@ merging after reconnect. An actual iPhone Simulator app joined, received a
 remote selection, sent UITextView edits to another native engine and compiled
 the decrypted source successfully. Two actual app instances on iPhone and iPad Simulators also exchanged edits
 in the same room as Chromium; both apps and browser ran the final shared program.
-These checks do not certify physical devices or production Universal Link
-entitlement propagation.
+The same two-app test also passed against the production HTTPS relay. Exact
+STDOUT was checked on both apps, including a Rust 2021-only snippet, and source
+and selections passed in both directions. These checks use Simulators, not
+physical devices. The signed build 103 Associated Domains entitlement and its
+provisioning profile match the AASA published at the site and Apple CDN;
+external Universal Link delivery on an installed physical device remains a
+separate check.
 
 See [implementation record](docs/playground-implementation-2026-10-27.md) and
 [reproducible probes](scripts/probes/playground/README.md). Interactive source
 debugging remains unfinished because the pinned code generator cannot emit
-valid line metadata. This work has not yet been deployed or included in a new
-TestFlight build; build 101 remains the submitted release until delivery gates
-and release receipts are updated.
+valid line metadata. Build **1.1.2 (103)** is in TestFlight Internal QA and
+**waiting for App Store review**, with manual publication. Its signed app source
+is `fe322d2679fd24173a492866d6c221377b241ae5`; later website/probe/documentation
+commits do not require another app binary. See the [delivery receipt](docs/app-store/release-1.1.2-build103.json).

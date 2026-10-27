@@ -41,7 +41,7 @@ Shared source is never served as HTML or executed by the relay.
 The real signed/pinned compiler and sysroot are static verified browser assets,
 loaded on demand and cached separately from user source. Each compilation and
 execution uses a background Worker and fresh guest filesystem. Source does not
-leave the client for Run/Check/Debug. Native Run remains local/offline after
+leave the client for Run/Check. Native Run remains local/offline after
 source import; network is only needed for link acquisition and live collaboration.
 
 Initial implementation limits: 16 text files; 64 KiB/file; 128 KiB/source project;
@@ -49,7 +49,7 @@ Initial implementation limits: 16 text files; 64 KiB/file; 128 KiB/source projec
 room memory have independent server limits. These are guest-feature budgets,
 not new paid plans or restrictions on existing app project budgets.
 
-## Status — local validation
+## Status — production relay and release 103
 
 - Browser workspace, actual WASM compiler Worker, bounded ciphertext relay,
   CRDT source/relative-selection protocol, native Swift/CryptoKit/JavaScriptCore
@@ -66,9 +66,11 @@ not new paid plans or restrictions on existing app project budgets.
   or a JavaScript-only code evaluator.
 - Twelve final Chromium theme/viewport layouts passed, including the wrapped-header
   height fix. The complete workspace and dock remain inside the viewport.
-- Associated Domains capability is enabled for the existing main Crabrix App ID.
-  Release provisioning, live AASA propagation and external Universal Link delivery
-  still need production verification. The share extension retains its App Group.
+- Associated Domains capability, the signed build 103 entitlement and its App Store
+  provisioning profile match. The HTTPS AASA returns JSON without a redirect and
+  Apple CDN returns the same document. External link delivery on a physical device
+  with build 103 installed still needs a device check. The share extension retains
+  its App Group.
 - Detailed guide screenshots and source/privacy/third-party notices are synchronized.
 - Two actual Simulator app instances (iPhone and iPad) joined the same room as
   Chromium. Changes from both actual editors reached the room. Both native apps
@@ -78,5 +80,17 @@ not new paid plans or restrictions on existing app project budgets.
   the final independent-destination runs resolve those gates.
 - Interactive source debugging remains unfinished: the production code generator
   cannot emit valid line metadata. Do not advertise a functioning source debugger.
-- No Playground website deployment or new TestFlight/App Store submission has
-  happened yet. Existing build 101 remains the submitted release.
+- The two actual Simulator apps also passed against the production HTTPS relay,
+  alongside Chromium. Both native tests waited for compilation to finish, opened
+  Output, and asserted exact STDOUT `pair-run=42`. The source uses `gen` as an
+  identifier, proving Rust 2021 survives native copying rather than silently
+  switching to Rust 2024. Earlier checks that could match text still in the editor
+  are superseded by these strict runs.
+- The website is published on Hetzner. Build 1.1.2 (103) is available in TestFlight
+  Internal QA and WAITING_FOR_REVIEW, replacing 101. Publication remains manual.
+  All 19 App Store screenshots are complete, with Code first in each device set.
+  Description, What's New, beta instructions and reviewer notes were read back
+  after updating. See the signed-source and delivery IDs in the release receipt.
+- First toolchain transfer reports received bytes. Its loading deadline measures
+  inactivity so a slow but progressing initial download can finish. Compilation
+  and program execution retain their separate 45-second and 30-second limits.

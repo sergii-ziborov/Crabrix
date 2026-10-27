@@ -1,5 +1,11 @@
 # Public reverse proxy for the independent Crabrix site on loopback port 3212.
 # Enable the HTTPS server only after a certificate for crabrix.com exists.
+map $uri $crabrix_referrer_policy {
+    default strict-origin-when-cross-origin;
+    ~^/playground/room/ no-referrer;
+    ~^/api/playground/ no-referrer;
+}
+
 server {
     listen 80;
     listen [::]:80;
@@ -31,7 +37,7 @@ server {
 
     add_header Strict-Transport-Security "max-age=31536000" always;
     add_header X-Content-Type-Options nosniff always;
-    add_header Referrer-Policy strict-origin-when-cross-origin always;
+    add_header Referrer-Policy $crabrix_referrer_policy always;
 
     # Ciphertext relay only. Heartbeats keep idle interviews alive; buffering
     # must be disabled so code and selections arrive immediately.
@@ -45,6 +51,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Forwarded-Host $host;
+        proxy_hide_header Referrer-Policy;
         proxy_buffering off;
         proxy_cache off;
         proxy_connect_timeout 5s;
@@ -63,6 +70,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Forwarded-Host $host;
+        proxy_hide_header Referrer-Policy;
         proxy_connect_timeout 5s;
         proxy_read_timeout 20s;
     }

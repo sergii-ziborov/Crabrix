@@ -1,6 +1,6 @@
 {
   "at": "2026-10-27",
-  "status": "local implementation; not published",
+  "status": "production relay published; signed build 103 in TestFlight and waiting for review",
   "unitTests": {
     "passed": 10,
     "scope": "relay TTL/capabilities/limits, source paths and bytes, AES-GCM tampering, real Wasm memory cap, slow upload deadline"
@@ -8,8 +8,8 @@
   "nativeUITest": {
     "passed": true,
     "device": "iPhone Simulator iOS 26.5",
-    "scenario": "decrypted source, remote selection, actual UITextView edits relayed to independent native client, local bundled compiler run",
-    "xcresult": "build/playground-20261027/NativePlaygroundFinal.xcresult"
+    "scenario": "production HTTPS source collaboration and exact actual STDOUT pair-run=42; Rust 2021 preserved",
+    "xcresult": "build/playground-20261027/LivePhone.xcresult"
   },
   "iosWebKit": {
     "passed": true,
@@ -18,7 +18,7 @@
     "xcresult": "build/playground-20261027/BrowserWebKit.xcresult"
   },
   "crossClientMatrix": {
-    "at": "2026-10-27T14:00:39.105Z",
+    "at": "2026-10-27T15:46:05.440Z",
     "passed": [
       "native-native source",
       "native-native selection",
@@ -31,25 +31,23 @@
       "shared page reload"
     ],
     "nativeImplementation": "same Swift transport, CryptoKit and bundled Yjs codec used in app",
-    "host": "macOS processes and Chromium; simulator UI separately required"
+    "host": "macOS processes and Chromium; simulator UI separately required",
+    "origin": "https://crabrix.com"
   },
   "twoActualAppsAndBrowser": {
-    "at": "2026-10-27T14:18:45.872Z",
+    "at": "2026-10-27T15:47:43.100Z",
     "bothNativeEdits": true,
     "browserSawFinal": true,
     "browserRun": true,
-    "sourceUploadedForCompilation": false
+    "sourceUploadedForCompilation": false,
+    "origin": "https://crabrix.com"
   },
   "twoDeviceXcodeResult": {
     "passed": true,
-    "phone": "build/playground-20261027/QualifiedPhone.xcresult",
-    "ipad": "build/playground-20261027/QualifiedPad.xcresult",
-    "scope": "both actual app editors exchange changes in the same room as Chromium; both native apps and browser compile/run final source locally",
-    "qualifiedRunsSeconds": {
-      "phoneUITest": 29.173,
-      "ipadUITest": 33.251
-    },
-    "note": "durations cover full UI test, not compiler benchmarks; earlier multi-destination runner/focus-selector failures were harness failures fixed for these runs"
+    "phone": "build/playground-20261027/LivePhone.xcresult",
+    "ipad": "build/playground-20261027/LivePad.xcresult",
+    "scope": "two actual Simulator app editors plus Chromium against production HTTPS; both apps exact actual STDOUT pair-run=42; edition 2021 retained",
+    "note": "earlier source-text output matches superseded; no physical-device claim"
   },
   "githubImportAndSourceZIP": {
     "passed": true,
@@ -65,13 +63,13 @@
   },
   "pending": [
     "interactive source debugger / compiler debug metadata",
-    "production AASA and Universal Link entitlement propagation",
-    "website deployment and new signed TestFlight/review release"
+    "physical-device installation and external Universal Link delivery"
   ],
   "siteRegressionTests": {
     "passed": 27,
     "failed": 0,
-    "scope": "auth/preview rules and Playground tests; all 742 lesson previews still withhold private exercises"
+    "scope": "auth/preview rules and Playground tests; all 742 lesson previews still withhold private exercises",
+    "log": "build/playground-20261027/site-tests-final.log"
   },
   "nativeModelsAndOfflineNotices": {
     "passed": 10,
@@ -95,6 +93,46 @@
   },
   "realHTTPRelayGate": {
     "passed": true,
-    "scope": "capability checks, cross-site origin rejection, four-peer SSE admission, owner deletion and post-deletion access"
+    "scope": "capability checks, cross-site origin rejection, four-peer SSE admission, owner deletion and post-deletion access",
+    "origin": "https://crabrix.com"
+  },
+  "associatedDomains": {
+    "build": "103",
+    "applicationIdentifier": "XMS5ZC28UJ.com.sergiiziborov.Crabrix",
+    "associatedDomains": [
+      "applinks:crabrix.com"
+    ],
+    "profileSupportsAssociatedDomains": true,
+    "getTaskAllow": false,
+    "appleCDN": "exact AASA match"
+  },
+  "release": {
+    "version": "1.1.2",
+    "build": "103",
+    "reviewState": "WAITING_FOR_REVIEW",
+    "sourceCommit": "fe322d2679fd24173a492866d6c221377b241ae5"
+  },
+  "loadingDeadline": {
+    "behavior": "180 seconds without progress while acquiring pinned assets; actual received-byte events reset only loading deadline",
+    "compileSeconds": 45,
+    "programSeconds": 30,
+    "sourceSentForCompilation": false
+  },
+  "productionPublication": {
+    "at": "2026-10-27T15:58:49.798Z",
+    "origin": "https://crabrix.com",
+    "aasa": true,
+    "guideScreenshotSHA": "65ad7b83377e0d3389daf62765b26f11d431a112b181cbc36ba59aa75db37d2e",
+    "guestBrowserWorkerSTDOUT": "public-worker=42",
+    "sourceUploadedForCompilation": false,
+    "sitemap": true
+  },
+  "websiteSourceCommit": "b1fe58d8031b95e2c63a50151c33b6a5a1735a75",
+  "websiteImage": "effe015210af3ccb5e8db6edcb4fc7c442b52ec85ed621613fafade36a0b4b42",
+  "productionRelayGateLog": "build/playground-20261027/progress-live-api.log",
+  "privateRoomHeaders": {
+    "referrerPolicy": "no-referrer",
+    "robots": "noindex, nofollow, noarchive",
+    "cache": "private, no-store"
   }
 }

@@ -1,0 +1,28 @@
+{
+  "verifiedAtUTC": "2026-10-27T16:00:24.666229+00:00",
+  "origin": "https://crabrix.com",
+  "websiteSourceCommit": "b1fe58d8031b95e2c63a50151c33b6a5a1735a75",
+  "image": "effe015210af3ccb5e8db6edcb4fc7c442b52ec85ed621613fafade36a0b4b42",
+  "releaseDirectory": "/srv/apps/crabrix-site/releases/20261027-playground-progress-b1fe58d",
+  "accountVolume": "preserved existing /srv/apps/crabrix-site/accounts; consistent backup before switch",
+  "rollbackContainer": "crabrix-web-site-before-playground-progress-20261027",
+  "nginx": "tested and reloaded; Playground buffering/cache/access log disabled; HSTS retained",
+  "tests": {
+    "at": "2026-10-27T15:58:49.798Z",
+    "origin": "https://crabrix.com",
+    "aasa": true,
+    "guideScreenshotSHA": "65ad7b83377e0d3389daf62765b26f11d431a112b181cbc36ba59aa75db37d2e",
+    "guestBrowserWorkerSTDOUT": "public-worker=42",
+    "sourceUploadedForCompilation": false,
+    "sitemap": true
+  },
+  "appRelease": "1.1.2 (103)",
+  "appSourceCommit": "fe322d2679fd24173a492866d6c221377b241ae5",
+  "reviewState": "WAITING_FOR_REVIEW",
+  "nginxConfigurationSHA256": "74abc4b94a2bfc14391b0ba47e11be3bbc03aaf89fc67b5ea21b1b368e91589d",
+  "privateRoomHeaders": {
+    "referrerPolicy": "no-referrer (single effective header)",
+    "robots": "noindex, nofollow, noarchive",
+    "cache": "private, no-store"
+  }
+}
