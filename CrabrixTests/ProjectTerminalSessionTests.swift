@@ -3,6 +3,27 @@ import XCTest
 
 @MainActor
 final class ProjectTerminalSessionTests: XCTestCase {
+    func testNpmCommandsRouteThroughBrowserToolsAndRespectWorkingDirectory() {
+        let terminal = ProjectTerminalSession()
+        let project = CrabrixProject(name: "browser", files: ["web/package.json": "{\"scripts\":{\"dev\":\"vite\"}}", "web/index.html": ""], entryFile: "web/index.html", provenance: nil)
+        var received: [String] = []
+        terminal.command = "cd web"
+        terminal.submit(project: project, isBusy: false, onCheck: {}, onRun: {})
+        for command in ["npm install", "npm ci", "npm run dev", "npm start", "npm run build", "npm run check"] {
+            terminal.command = command
+            terminal.submit(project: project, isBusy: false, onCheck: { XCTFail("Rust check") }, onRun: { XCTFail("Rust run") }, onBrowserCommand: {
+                switch $0 {
+                case let .install(frozen, directory): received.append("install:\(frozen):\(directory)")
+                case let .build(run, directory): received.append("build:\(run):\(directory)")
+                }
+            })
+        }
+        XCTAssertEqual(received, ["install:false:web", "install:true:web", "build:true:web", "build:true:web", "build:false:web", "build:false:web"])
+        terminal.command = "npm install"
+        terminal.submit(project: project, isBusy: true, onCheck: {}, onRun: {}, onBrowserCommand: { _ in XCTFail("Busy") })
+        XCTAssertTrue(terminal.lines.last?.text.contains("Wait") == true)
+    }
+
     func testTerminalCommandsUseCurrentProjectSnapshot() {
         let terminal = ProjectTerminalSession()
         let project = CrabrixProject(

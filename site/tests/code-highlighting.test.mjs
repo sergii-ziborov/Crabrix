@@ -18,3 +18,17 @@ test('lesson highlighting recognizes Rust, TOML, SQL and mixed source markers wi
   assert.ok(codeTokens(examples[2][1]).some(t => t.value === 'EXPLAIN' && t.kind === 'keyword'));
   assert.ok(codeTokens(examples[3][1]).some(t => t.value === 'use' && t.kind === 'keyword'));
 });
+
+
+test('browser examples retain every character while highlighting JSON, HTML and TypeScript', () => {
+  for (const [language, source] of [
+    ['json', '{"private":true,"version":"1.0.0"}'],
+    ['html', '<!-- offline 🦀 --><script type="module" src="/src/main.tsx"></script>'],
+    ['typescript', 'import { useState } from "react"; const [n] = useState<number>(0); return <button>{n}</button>;'],
+  ]) {
+    const tokens = codeTokens(source, language);
+    assert.equal(tokens.map(t => t.value).join(''), source);
+    assert.ok(tokens.some(t => t.kind === 'string'));
+    assert.ok(tokens.some(t => t.kind === (language === 'html' ? 'type' : 'keyword')));
+  }
+});

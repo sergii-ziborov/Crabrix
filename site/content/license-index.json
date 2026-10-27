@@ -1,5 +1,21 @@
 [
   {
+    "id": "babel-standalone",
+    "name": "Babel standalone 8.0.9",
+    "summary": "Babel contributors \u00b7 MIT",
+    "documents": [
+      "babel-standalone-LICENSE"
+    ]
+  },
+  {
+    "id": "node-semver",
+    "name": "node-semver 7.8.5",
+    "summary": "Isaac Z. Schlueter and contributors \u00b7 ISC",
+    "documents": [
+      "node-semver-LICENSE"
+    ]
+  },
+  {
     "id": "highlight.js",
     "name": "highlight.js 11.12.0",
     "summary": "Ivan Sagalaev and contributors \u00b7 BSD-3-Clause",

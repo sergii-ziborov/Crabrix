@@ -234,6 +234,21 @@
       The runtime and compiler have separate identities.
     </p>
 
+    <h2>Browser package builds</h2>
+    <p>The browser package update bundles Babel standalone 8.0.9 and node-semver
+      7.8.5 as trusted parsing and version-selection tools. Project JavaScript,
+      TypeScript syntax and JSX are parsed on a serial background worker; project
+      plugins are never loaded into that worker. Generated browser code runs only
+      in the existing isolated, network-blocked WebKit preview.</p>
+    <p>Explicit <code>npm install</code> / <code>npm ci</code> preparation downloads
+      the reachable browser source graph from the public npm HTTPS registry,
+      verifies archive integrity and saves original modules and licenses as
+      editable project files. Run and Check do not fetch browser dependencies.
+      The terminal maps supported dev/start/build commands to this local browser
+      builder; Node, Bun, arbitrary package scripts, native addons and framework
+      server runtimes are not bundled. See the <a href="/guide/#browser-packages">browser package walkthrough</a>
+      for exact capabilities, lockfiles, budgets and the tested dashboard.</p>
+
     <h2>What your program is allowed to do</h2>
     <div class="table-scroll">
       <table class="plain">

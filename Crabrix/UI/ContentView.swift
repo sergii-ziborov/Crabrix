@@ -689,6 +689,7 @@ struct ContentView: View {
                 onReplaceFiles: model.replaceProjectFilesFromTerminal,
                 workspace: model.cargoWorkspace,
                 onFetch: model.downloadDependenciesForOffline,
+                onBrowserCommand: model.performBrowserCommand,
                 onCancel: model.cancelBuild,
                 canContinueLearning: model.canContinueFromLessonResult,
                 lessonEvidenceMessage: model.lessonEvidenceMessage,

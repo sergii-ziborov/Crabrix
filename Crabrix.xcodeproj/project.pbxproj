@@ -48,6 +48,7 @@
 		2B4BE9C0F4102CCB8142F774 /* swift-system-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = E4B798EE784275F9C194D9B5 /* swift-system-LICENSE.txt */; };
 		2D5A7B2E04A0D214078674F9 /* CargoBuildPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9F0FB50E1462BCBC86DF551 /* CargoBuildPlan.swift */; };
 		2EDAA64A906A801232614A42 /* AppearancePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD350E97620F1FB339249C56 /* AppearancePicker.swift */; };
+		2F1E35EE27154CC2829FF454 /* WebCompilerRuntime.js in Resources */ = {isa = PBXBuildFile; fileRef = 6DCD1A4778EFF6EC4156CC7C /* WebCompilerRuntime.js */; };
 		2F5529FCB51DED5E6645E076 /* OfflineWebPreviewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51231AC0432B98FB181FE8DC /* OfflineWebPreviewTests.swift */; };
 		302C7622158F1FD7104F8610 /* PackageDownloadSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E42868B52F7E467F9905F3B /* PackageDownloadSheet.swift */; };
 		30378E05BFED089463AD93E2 /* InstalledCourseRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD423A006C2A2A962EE2495 /* InstalledCourseRepositoryTests.swift */; };
@@ -75,6 +76,7 @@
 		4842D005B9DDCFFFEF9B8327 /* TermTrainDeck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B5D547BD90275851C98865A /* TermTrainDeck.swift */; };
 		4885AEA71164AD51F69F6C7C /* RustCourseCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DCC4288BCBC22B167ACD45 /* RustCourseCatalog.swift */; };
 		4896B3757850D64443E080BA /* wasm-rustc-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = B2D86CD1511B6A01233B4C9B /* wasm-rustc-LICENSE.txt */; };
+		48F4658BA262324E7B476879 /* BrowserProjectBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9F5F29ED903DD6057CADC06 /* BrowserProjectBuilderTests.swift */; };
 		496103BB6AAEBCD5D49F0625 /* BundledLicenseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8034113D3EF6270CBF8F84 /* BundledLicenseTests.swift */; };
 		4A293E482B338DF5756C828C /* ProjectAuthoringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95560270A1A9BA1DCE96A9AB /* ProjectAuthoringTests.swift */; };
 		4AEBE02C51FC37BE241D16C9 /* CrabrixTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FE59D76CC8EBC1BF4A988 /* CrabrixTheme.swift */; };
@@ -93,6 +95,7 @@
 		59725272FB4F415D7DB276A9 /* GitHubProjectImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17C0F44F9A525F94B586EE7 /* GitHubProjectImporter.swift */; };
 		5991EB1178712B4CDA6BBBB4 /* CrabrixShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3F84AB4318432025CA06FD68 /* CrabrixShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		5A8F5408F2D3C761D5D6E2EF /* SystemPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 5FF229CB96783B625B672CB7 /* SystemPackage */; };
+		5B10435436E88DF87EB62125 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 91DD1737DEBABD179BA0EF7F /* README.md */; };
 		5C04E9676F6DDF6B017B7E78 /* ToolchainVendorNotices.zip in Resources */ = {isa = PBXBuildFile; fileRef = EC1B3A3F659FB05698CBD237 /* ToolchainVendorNotices.zip */; };
 		60390C36C619675DCA53E9E3 /* CrabrixProject.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE1CA198E7A3ADFE5C61CBE2 /* CrabrixProject.swift */; };
 		60B236289CF2F22BA2F7D31C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AF263BC0BDACD405CDF0BAFF /* PrivacyInfo.xcprivacy */; };
@@ -105,7 +108,9 @@
 		653BFA6F12724C8C29B018C9 /* GameCenterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 009E3BADFF63E9923F87995B /* GameCenterService.swift */; };
 		667E7CD7B3280587CF61CB1C /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = D9F926F434104202BA3A1800 /* ZIPFoundation */; };
 		66974FCE7E791A4C93663C4F /* LessonQuestionAuditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9346B714527C322992CCB12D /* LessonQuestionAuditTests.swift */; };
+		66F573E5DD5562184C4D4BB0 /* BrowserReactProject.json in Resources */ = {isa = PBXBuildFile; fileRef = EFD4DE8637BC7D39B5CE2EB9 /* BrowserReactProject.json */; };
 		67D60A5B69DCD830E71A841F /* SyntaxCodeEditorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7037316586E8A8B02149446 /* SyntaxCodeEditorTests.swift */; };
+		6854AB2EE932EB7C00FFC9CA /* BrowserProjectBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD730A61BAFD19B1C33B3AAF /* BrowserProjectBuilder.swift */; };
 		6890911F1854860830A6ABFF /* catalog.v1.json in Resources */ = {isa = PBXBuildFile; fileRef = D6DDAE274BAAA1B1AE274F71 /* catalog.v1.json */; };
 		68995E50E19956EA7B73B2A2 /* CompilerCandidateGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A457B5013D3B070938FFD49B /* CompilerCandidateGateTests.swift */; };
 		694DE3A0A05252A69304469D /* CratePackageManifestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00CAF54248F14F3CBC57F350 /* CratePackageManifestTests.swift */; };
@@ -113,6 +118,7 @@
 		6C43878795EAF9FFF78792F6 /* LicensesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A248CC4AF57D9B4C55C1F3BF /* LicensesView.swift */; };
 		6D06A6E58BA0D059E0420243 /* ProjectCreationViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C552F2CEA08713116E71EC3 /* ProjectCreationViews.swift */; };
 		6F99E056CC0A8C8CD5F7E1DB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDBC8475D7DC66EBD798E277 /* ContentView.swift */; };
+		71C82B5A52867D240DEEB514 /* BrowserNpmRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A500C7B5B20F7ADF4215D88C /* BrowserNpmRegistry.swift */; };
 		731E86AC6C2DF5E0CB922563 /* CargoRegistryAndPlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3837839E6347618EB4FA6AAF /* CargoRegistryAndPlanTests.swift */; };
 		747FB1DAEDBE60DC310E5DBC /* CargoBuildScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB6726C568A483FC9192E391 /* CargoBuildScript.swift */; };
 		75C7785DC26F26DAE60C59E2 /* LocalAvatarStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C47D79BBDE68DFCC732EF6AC /* LocalAvatarStoreTests.swift */; };
@@ -174,6 +180,7 @@
 		B2B58EF9F6DC6F1DD9B877DA /* CodeContributionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB910906AEB3103C7C9E6F7D /* CodeContributionTests.swift */; };
 		B2D6D1E82C49B6EEB20D5242 /* WasmKit-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = A37FC36E7B204A530E6C9FD5 /* WasmKit-LICENSE.txt */; };
 		B53A042015AC822CCE2CCDFA /* BundledCompilerGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56AA1284DFED9057782C150A /* BundledCompilerGateTests.swift */; };
+		B56AF876EDAEE47020C8FA1A /* node-semver-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8F93A341910B61C48E80E7CD /* node-semver-LICENSE.txt */; };
 		B59263E867BE43AD461D82BC /* WasmKit in Frameworks */ = {isa = PBXBuildFile; productRef = 47ADF588ACB23434742BF9DC /* WasmKit */; };
 		B717E95735F9F30EE5F57674 /* CrateArchiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20BE9BBC80F38AE223BAB4A3 /* CrateArchiveTests.swift */; };
 		B73F617DF5D444F78AFFFCF5 /* SharedImportQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9357EF87952821B79459AE36 /* SharedImportQueue.swift */; };
@@ -207,6 +214,7 @@
 		D181A2147A44EC4C2E0E5BF6 /* TerminalKeyboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D111D533F55B983FC047F784 /* TerminalKeyboardTests.swift */; };
 		D20492B36080AEDD1B45CF7A /* AppearanceRenderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A766BDDD55FB6BEBD30B38 /* AppearanceRenderingTests.swift */; };
 		D244136DFB4BDBC64690F600 /* ProjectTerminalSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44ABFA97B5DA7FD2FADA63C6 /* ProjectTerminalSessionTests.swift */; };
+		D332759C9A40ED02EFCFF621 /* babel-standalone-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 7B3F13A7DE7204F3C4BE384B /* babel-standalone-LICENSE.txt */; };
 		D49C98DD06AD42D9BD560349 /* CrabrixProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17305CBAACACB768E537F24 /* CrabrixProgress.swift */; };
 		D5050F9D62A3048C30A31F67 /* TopicMastery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1D24127CCCD6858FC76A21 /* TopicMastery.swift */; };
 		D62CE9F33D5CD754B6052DB4 /* BuildWorkspaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CEBD152D5381C70622EDD87 /* BuildWorkspaceTests.swift */; };
@@ -232,6 +240,7 @@
 		F18AFE001FA97304AEA1A402 /* RustLessonProgressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A19951F6B509DE6C56E27216 /* RustLessonProgressionTests.swift */; };
 		F1F0BF0DA8B783EE070F2CA5 /* BuildProblemsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC4745C09CED9CA69999E7B0 /* BuildProblemsTests.swift */; };
 		F3B4A7B2555D918F3192BB3D /* CourseModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4479B42763852BA1B452D60 /* CourseModels.swift */; };
+		F76BF289358A8DD05DE5B19C /* WebProjectBuilder.js in Resources */ = {isa = PBXBuildFile; fileRef = CDAED32DC7E25381FCA215C6 /* WebProjectBuilder.js */; };
 		F8F1E02965F5C0146D69DD89 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA5866457924F7521705CCD1 /* Assets.xcassets */; };
 		FA6604AE42D256B00E00939A /* AppLockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73C1FC8A2234B8B8C0D7C08C /* AppLockTests.swift */; };
 		FA6B3D430B69957FC2E7A2AA /* ReleaseScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E560EAA1E9DC2387BE92ED56 /* ReleaseScreenshotTests.swift */; };
@@ -367,6 +376,7 @@
 		6CFF7795F63D1B35CF6A62BE /* CourseBootstrapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseBootstrapTests.swift; sourceTree = "<group>"; };
 		6D22109AD0D3338201CEFE20 /* LearnPathView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnPathView.swift; sourceTree = "<group>"; };
 		6D50F7CBEFD3E06F6F531774 /* RustQuestionBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustQuestionBank.swift; sourceTree = "<group>"; };
+		6DCD1A4778EFF6EC4156CC7C /* WebCompilerRuntime.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = WebCompilerRuntime.js; sourceTree = "<group>"; };
 		6DDCB70965D5433B9032EF8E /* swift-collections-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-collections-LICENSE.txt"; sourceTree = "<group>"; };
 		6E24E44406D79170CEDED477 /* swift-nio-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-nio-LICENSE.txt"; sourceTree = "<group>"; };
 		6E42868B52F7E467F9905F3B /* PackageDownloadSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageDownloadSheet.swift; sourceTree = "<group>"; };
@@ -382,6 +392,7 @@
 		791FEBF16BDA5999BCA244DF /* swift-log-NOTICE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-log-NOTICE.txt"; sourceTree = "<group>"; };
 		79C55C8AFA6C00D3918A5941 /* ShowcaseModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowcaseModels.swift; sourceTree = "<group>"; };
 		79E25647259ABABE1E3D1288 /* CrateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrateStore.swift; sourceTree = "<group>"; };
+		7B3F13A7DE7204F3C4BE384B /* babel-standalone-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "babel-standalone-LICENSE.txt"; sourceTree = "<group>"; };
 		7C63EBB6B2847C44339CBE3A /* swift-nio-NOTICE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-nio-NOTICE.txt"; sourceTree = "<group>"; };
 		7E89D65D056C2A468A0AE9BD /* AppToolchainRelease.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppToolchainRelease.swift; sourceTree = "<group>"; };
 		7F50EE4654716EB67F513A70 /* CoursePackVerifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePackVerifier.swift; sourceTree = "<group>"; };
@@ -402,7 +413,9 @@
 		8D8034113D3EF6270CBF8F84 /* BundledLicenseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledLicenseTests.swift; sourceTree = "<group>"; };
 		8E2164BBC7A4E923E01EEBBE /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		8F7C2557071F0F91665C33E1 /* ProjectOrganizationViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectOrganizationViews.swift; sourceTree = "<group>"; };
+		8F93A341910B61C48E80E7CD /* node-semver-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "node-semver-LICENSE.txt"; sourceTree = "<group>"; };
 		902C61FA14DA8017D91F487A /* ToolchainVendorIndex.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ToolchainVendorIndex.json; sourceTree = "<group>"; };
+		91DD1737DEBABD179BA0EF7F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		92BB070DF07D979DE9FFEE95 /* CargoDependencyCatalogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoDependencyCatalogSheet.swift; sourceTree = "<group>"; };
 		9346B714527C322992CCB12D /* LessonQuestionAuditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonQuestionAuditTests.swift; sourceTree = "<group>"; };
 		9357EF87952821B79459AE36 /* SharedImportQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedImportQueue.swift; sourceTree = "<group>"; };
@@ -432,6 +445,7 @@
 		A42F9E4CE0ACDDFFC8ABDE3C /* BorrowExplanation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BorrowExplanation.swift; sourceTree = "<group>"; };
 		A457B5013D3B070938FFD49B /* CompilerCandidateGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompilerCandidateGateTests.swift; sourceTree = "<group>"; };
 		A4BBA0B03501D7E47698809C /* RustLessonProgression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustLessonProgression.swift; sourceTree = "<group>"; };
+		A500C7B5B20F7ADF4215D88C /* BrowserNpmRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserNpmRegistry.swift; sourceTree = "<group>"; };
 		A7037316586E8A8B02149446 /* SyntaxCodeEditorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntaxCodeEditorTests.swift; sourceTree = "<group>"; };
 		A76DBA48FF3AB4A818F7811D /* InstalledCourseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledCourseRepository.swift; sourceTree = "<group>"; };
 		A8433FE86ED600CDD3649695 /* EditorHorizontalScrollTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorHorizontalScrollTests.swift; sourceTree = "<group>"; };
@@ -449,6 +463,7 @@
 		B5027E80C0376645BB780AC1 /* MigrationCoursePacks */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MigrationCoursePacks; path = Crabrix/Resources/MigrationCoursePacks; sourceTree = SOURCE_ROOT; };
 		B5D9270FA8D46222F66AB4CE /* AcademyContentStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcademyContentStore.swift; sourceTree = "<group>"; };
 		B9D7D181612381980B5CB164 /* CrabrixProjectDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrabrixProjectDocument.swift; sourceTree = "<group>"; };
+		B9F5F29ED903DD6057CADC06 /* BrowserProjectBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserProjectBuilderTests.swift; sourceTree = "<group>"; };
 		BA151D9B7D5D9B22BDE4D855 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		BCD7933FC639F6724ED46072 /* WorkspaceRevision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceRevision.swift; sourceTree = "<group>"; };
 		BE1CA198E7A3ADFE5C61CBE2 /* CrabrixProject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrabrixProject.swift; sourceTree = "<group>"; };
@@ -467,6 +482,7 @@
 		CB010148795840226D61C11F /* RustLessonContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustLessonContent.swift; sourceTree = "<group>"; };
 		CB910906AEB3103C7C9E6F7D /* CodeContributionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeContributionTests.swift; sourceTree = "<group>"; };
 		CD350E97620F1FB339249C56 /* AppearancePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearancePicker.swift; sourceTree = "<group>"; };
+		CDAED32DC7E25381FCA215C6 /* WebProjectBuilder.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = WebProjectBuilder.js; sourceTree = "<group>"; };
 		CF605A50A6EB406DF55C4E57 /* CodeRecallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeRecallView.swift; sourceTree = "<group>"; };
 		CFA00659D0D6FAD5318CE39C /* swift-atomics-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-atomics-LICENSE.txt"; sourceTree = "<group>"; };
 		D111D533F55B983FC047F784 /* TerminalKeyboardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalKeyboardTests.swift; sourceTree = "<group>"; };
@@ -483,6 +499,7 @@
 		DC7C9CD390E44F6849E4DB3B /* CompilerCandidate */ = {isa = PBXFileReference; lastKnownFileType = folder; name = CompilerCandidate; path = CrabrixTests/CompilerCandidate; sourceTree = SOURCE_ROOT; };
 		DCA31C6F7A431A34679A02D8 /* swift-argument-parser-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-argument-parser-LICENSE.txt"; sourceTree = "<group>"; };
 		DD24012B04FBCFF20EABAE25 /* ProjectLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectLibrary.swift; sourceTree = "<group>"; };
+		DD730A61BAFD19B1C33B3AAF /* BrowserProjectBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserProjectBuilder.swift; sourceTree = "<group>"; };
 		DEC4EF2B443C45CE8BFF5FBD /* CourseCompatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseCompatibility.swift; sourceTree = "<group>"; };
 		E0C3BDD5967E4251001E6D75 /* NativeCompilerWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeCompilerWorker.swift; sourceTree = "<group>"; };
 		E15AF611D0815ED4D2805F0C /* ProblemReportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemReportTests.swift; sourceTree = "<group>"; };
@@ -501,6 +518,7 @@
 		EE9793C201E70D1B6AD35202 /* FeatureResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureResolver.swift; sourceTree = "<group>"; };
 		EECD124647A0A13CCBE341FE /* production-keyring.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "production-keyring.json"; sourceTree = "<group>"; };
 		EFB95E5F0B1274A060145AB0 /* TypingEconomyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingEconomyTests.swift; sourceTree = "<group>"; };
+		EFD4DE8637BC7D39B5CE2EB9 /* BrowserReactProject.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = BrowserReactProject.json; sourceTree = "<group>"; };
 		F0ACD34E769B0AB48E9132A5 /* CargoManifestEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoManifestEditor.swift; sourceTree = "<group>"; };
 		F4060928D903E08DF95C877F /* CrabrixApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrabrixApp.swift; sourceTree = "<group>"; };
 		F45E02B45E3816073DFEB4F9 /* SyntaxHighlighterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntaxHighlighterTests.swift; sourceTree = "<group>"; };
@@ -548,6 +566,8 @@
 			children = (
 				F573D6026476C150C5CA1696 /* AppleIntelligenceDiagnosticAdvisor.swift */,
 				9853B43026260AB1594084F0 /* BorrowRepair.swift */,
+				A500C7B5B20F7ADF4215D88C /* BrowserNpmRegistry.swift */,
+				DD730A61BAFD19B1C33B3AAF /* BrowserProjectBuilder.swift */,
 				9FB88EA53398F55BCADE4D5C /* CompilationResult.swift */,
 				3B1893C7EE28568FD5B41AC3 /* RustCanvasOutput.swift */,
 				73F18DAD70C0709D48AC363D /* RustcRuntime.swift */,
@@ -574,7 +594,9 @@
 		20F9150930EA5F739C099FF5 /* Licenses */ = {
 			isa = PBXGroup;
 			children = (
+				7B3F13A7DE7204F3C4BE384B /* babel-standalone-LICENSE.txt */,
 				96FB9D4640A39CECD01C382F /* highlight.js-LICENSE.txt */,
+				8F93A341910B61C48E80E7CD /* node-semver-LICENSE.txt */,
 				C8B0903AB1A17FB1FEAA4301 /* Rust-COPYRIGHT.txt */,
 				646F773F58C7B624AE941CE3 /* Rust-LICENSE-APACHE.txt */,
 				F4ACC16AB86032A8DCE347FD /* Rust-LICENSE-MIT.txt */,
@@ -722,6 +744,8 @@
 		6E813F931BF1A33E9CC0BCEF /* Fixtures */ = {
 			isa = PBXGroup;
 			children = (
+				EFD4DE8637BC7D39B5CE2EB9 /* BrowserReactProject.json */,
+				91DD1737DEBABD179BA0EF7F /* README.md */,
 				007343726E69BCBB369AC22D /* CoursePack */,
 			);
 			path = Fixtures;
@@ -778,6 +802,7 @@
 				73C1FC8A2234B8B8C0D7C08C /* AppLockTests.swift */,
 				24851507366B69E1C89A070E /* AppToolchainReleaseTests.swift */,
 				ED805A32682154958D4A1EC2 /* BorrowRepairTests.swift */,
+				B9F5F29ED903DD6057CADC06 /* BrowserProjectBuilderTests.swift */,
 				AC4745C09CED9CA69999E7B0 /* BuildProblemsTests.swift */,
 				56AA1284DFED9057782C150A /* BundledCompilerGateTests.swift */,
 				8D8034113D3EF6270CBF8F84 /* BundledLicenseTests.swift */,
@@ -956,6 +981,8 @@
 				9A933B2B0009B98281F32A47 /* toolchain.lock.json */,
 				546E5E7255DED00327D28A17 /* ToolchainPrimaryIndex.json */,
 				902C61FA14DA8017D91F487A /* ToolchainVendorIndex.json */,
+				6DCD1A4778EFF6EC4156CC7C /* WebCompilerRuntime.js */,
+				CDAED32DC7E25381FCA215C6 /* WebProjectBuilder.js */,
 				9F1068B2F01BD06D22D254F7 /* WebSyntax.js */,
 				20F9150930EA5F739C099FF5 /* Licenses */,
 			);
@@ -1126,9 +1153,13 @@
 				2AEE951350A08279CB646E51 /* WABT-LICENSE.txt in Resources */,
 				B2D6D1E82C49B6EEB20D5242 /* WasmKit-LICENSE.txt in Resources */,
 				D86F638C06CE9367C008A2E7 /* WasmKit-NOTICE.txt in Resources */,
+				2F1E35EE27154CC2829FF454 /* WebCompilerRuntime.js in Resources */,
+				F76BF289358A8DD05DE5B19C /* WebProjectBuilder.js in Resources */,
 				996F31D6BF8614C694B67159 /* WebSyntax.js in Resources */,
 				C091FDE58085A53180F24F8C /* ZIPFoundation-LICENSE.txt in Resources */,
+				D332759C9A40ED02EFCFF621 /* babel-standalone-LICENSE.txt in Resources */,
 				AE7081B72A220336829B7988 /* highlight.js-LICENSE.txt in Resources */,
+				B56AF876EDAEE47020C8FA1A /* node-semver-LICENSE.txt in Resources */,
 				1A42F7C59F55681D04B0409E /* swift-argument-parser-LICENSE.txt in Resources */,
 				9028F3BB8FEDE2FBFF3DD80D /* swift-atomics-LICENSE.txt in Resources */,
 				E287F4D8A1B87ADB7E40C15D /* swift-collections-LICENSE.txt in Resources */,
@@ -1147,7 +1178,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66F573E5DD5562184C4D4BB0 /* BrowserReactProject.json in Resources */,
 				1F5C8B80757D5C47EFD7FF2F /* CompilerCandidate in Resources */,
+				5B10435436E88DF87EB62125 /* README.md in Resources */,
 				941AB2C020E1F2182752CD3A /* basics-1.0.1.zip in Resources */,
 				15911FD867B868D0B48AE299 /* basics.descriptor.json in Resources */,
 				6890911F1854860830A6ABFF /* catalog.v1.json in Resources */,
@@ -1206,6 +1239,8 @@
 				3678B1AFA13BEEC4505BA950 /* AppleIntelligenceDiagnosticAdvisor.swift in Sources */,
 				53C508818988C87F3CA384F9 /* BorrowExplanation.swift in Sources */,
 				B0E19E7B68ACB01F1F333C69 /* BorrowRepair.swift in Sources */,
+				71C82B5A52867D240DEEB514 /* BrowserNpmRegistry.swift in Sources */,
+				6854AB2EE932EB7C00FFC9CA /* BrowserProjectBuilder.swift in Sources */,
 				AD40AE718B734DD2464CE5F9 /* BuildDockView.swift in Sources */,
 				76680E04E311A68F3E8CA7FD /* BuildWorkflowControls.swift in Sources */,
 				2D5A7B2E04A0D214078674F9 /* CargoBuildPlan.swift in Sources */,
@@ -1331,6 +1366,7 @@
 				EDD602BB2F5547C82174AD00 /* AppToolchainReleaseTests.swift in Sources */,
 				D20492B36080AEDD1B45CF7A /* AppearanceRenderingTests.swift in Sources */,
 				ABDFFA5263492E9C914C3C6B /* BorrowRepairTests.swift in Sources */,
+				48F4658BA262324E7B476879 /* BrowserProjectBuilderTests.swift in Sources */,
 				F1F0BF0DA8B783EE070F2CA5 /* BuildProblemsTests.swift in Sources */,
 				B53A042015AC822CCE2CCDFA /* BundledCompilerGateTests.swift in Sources */,
 				496103BB6AAEBCD5D49F0625 /* BundledLicenseTests.swift in Sources */,

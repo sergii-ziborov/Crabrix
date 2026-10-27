@@ -88,6 +88,7 @@ final class ProjectTerminalSession: ObservableObject {
         onCheck: () -> Void,
         onRun: () -> Void,
         onFetch: (() -> Void)? = nil,
+        onBrowserCommand: ((BrowserProjectCommand) -> Void)? = nil,
         onReplaceFiles: (([String: String], String?) -> Bool)? = nil
     ) {
         let raw = command.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -122,6 +123,8 @@ final class ProjectTerminalSession: ObservableObject {
                 "  cargo check|run|build   Use the bundled Rust toolchain\n" +
                 "  cargo tree|fetch        Inspect and download packages\n" +
                 "  cargo metadata          Inspect this package manifest\n" +
+                "  npm install|ci          Prepare browser imports for offline use\n" +
+                "  npm run dev|start|build  Build browser JS/TS/JSX locally\n" +
                 "  history                 Recall recent commands\n" +
                 "  env · date · uname      Sandbox information\n" +
                 "  clear                    Clear this terminal\n\n" +
@@ -160,7 +163,7 @@ final class ProjectTerminalSession: ObservableObject {
             append("Crabrix iOS sandbox · arm64 · bundled WASI Rust toolchain", kind: .info)
         case "env":
             append(
-                "HOME=/workspace/\(project.name)\nPWD=/workspace/\(project.name)\(currentDirectory.isEmpty ? "" : "/\(currentDirectory)")\nSHELL=crabrix-project-shell\nTERM=xterm-256color\nNETWORK=disabled",
+                "HOME=/workspace/\(project.name)\nPWD=/workspace/\(project.name)\(currentDirectory.isEmpty ? "" : "/\(currentDirectory)")\nSHELL=crabrix-project-shell\nTERM=xterm-256color\nNETWORK=preview-disabled; explicit package preparation only",
                 kind: .info
             )
         case "date":
@@ -179,6 +182,8 @@ final class ProjectTerminalSession: ObservableObject {
                 available ? "/app/bin/\(components[1])" : "\(components[1]) not found",
                 kind: available ? .info : .error
             )
+        case "npm":
+            runNpm(arguments: Array(components.dropFirst()), project: project, isBusy: isBusy, onCommand: onBrowserCommand)
         case "cargo":
             runCargo(
                 arguments: Array(normalized.dropFirst()),
@@ -198,6 +203,39 @@ final class ProjectTerminalSession: ObservableObject {
         }
     }
 
+    private func runNpm(arguments: [String], project: CrabrixProject, isBusy: Bool,
+                        onCommand: ((BrowserProjectCommand) -> Void)?) {
+        let reference = currentDirectory.isEmpty ? "package.json" : currentDirectory + "/package.json"
+        let path = BrowserProjectConfiguration.manifestPath(files: project.files, entry: reference)
+        guard let text = project.files[path],
+              let manifest = try? JSONSerialization.jsonObject(with: Data(text.utf8)) as? [String: Any] else {
+            append("npm: add a valid package.json and an HTML entry to this browser project.", kind: .error); return
+        }
+        let scripts = manifest["scripts"] as? [String: String] ?? [:]
+        if arguments.isEmpty || arguments == ["--version"] || arguments == ["run"] {
+            append("Crabrix browser package tools · local JS/TS/JSX bundler, not a Node process.\n" +
+                "npm install · npm ci · npm run dev|start|build\n" +
+                scripts.keys.sorted().map { "  \($0): \(scripts[$0]!)" }.joined(separator: "\n"), kind: .info)
+            return
+        }
+        guard !isBusy else { append("Wait for the current build or package preparation to finish.", kind: .error); return }
+        guard let onCommand else { append("Browser package tools are unavailable in this view.", kind: .error); return }
+        let directory = (path as NSString).deletingLastPathComponent
+        if arguments == ["install"] || arguments == ["ci"] {
+            append("Preparing imported browser dependencies only; npm lifecycle scripts and host build plugins are not executed.", kind: .info)
+            onCommand(.install(frozen: arguments == ["ci"], directory: directory)); return
+        }
+        let name = arguments.count == 2 && arguments[0] == "run" ? arguments[1] : arguments == ["start"] ? "start" : ""
+        guard ["dev", "start", "build", "check"].contains(name) else {
+            append("Supported: npm install, npm ci, npm start, npm run dev|start|build|check. Declare dependencies in package.json; shell scripts and package executables are not available.", kind: .error); return
+        }
+        if let script = scripts[name], script.range(of: #"(?:^|[;&|]\s*)(?:node|next|nuxt|astro|bun|deno|webpack|rollup)\b"#, options: .regularExpression) != nil {
+            append("This script needs a host/server build tool. Import its static browser export, or use an HTML entry with browser imports; this command does not execute Node or arbitrary package scripts.", kind: .error); return
+        }
+        append("Using Crabrix's browser bundler for \(name); package scripts/plugins are not executed and no dev server is started.", kind: .info)
+        onCommand(.build(run: name == "dev" || name == "start", directory: directory))
+    }
+
     func activityChanged(
         from oldValue: CompilerViewModel.Activity,
         to newValue: CompilerViewModel.Activity,
@@ -205,7 +243,8 @@ final class ProjectTerminalSession: ObservableObject {
     ) {
         attach(to: project)
         guard oldValue == .idle, newValue != .idle else { return }
-        let command = newValue == .checking ? "cargo check" : "cargo run"
+        let web = BrowserProjectConfiguration.isBrowserEntry(project.entryFile)
+        let command = web ? "browser build" : (newValue == .checking ? "cargo check" : "cargo run")
         append("[build] \(command) · background snapshot started", kind: .info)
     }
 
@@ -346,7 +385,7 @@ final class ProjectTerminalSession: ObservableObject {
     private static let availableCommands: Set<String> = [
         "help", "pwd", "ls", "cd", "tree", "cat", "head", "tail", "wc",
         "grep", "find", "touch", "mkdir", "rm", "cp", "mv", "echo",
-        "whoami", "uname", "env", "date", "which", "cargo", "history", "clear",
+        "whoami", "uname", "env", "date", "which", "cargo", "npm", "history", "clear",
     ]
 
     private static func shellWords(_ input: String) -> [String]? {

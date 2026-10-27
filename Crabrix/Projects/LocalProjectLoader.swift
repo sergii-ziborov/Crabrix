@@ -13,7 +13,7 @@ enum LocalProjectLoader {
             case .notDirectory:
                 "Choose a Cargo project folder or a saved Crabrix project."
             case .noReadableSource:
-                "No readable Rust, Cargo or HTML source was found in this project."
+                "No readable Rust, Cargo, HTML or package.json source was found in this project."
             case let .tooManyFiles(limit):
                 "This snapshot contains more than \(limit) readable files."
             case let .fileTooLarge(path):
@@ -57,7 +57,7 @@ enum LocalProjectLoader {
         let rootURL = try discoverCargoRoot(in: projectURL)
         let files = try readFiles(in: rootURL)
         guard !files.isEmpty, files.keys.contains(where: {
-            $0.hasSuffix(".rs") || $0 == "Cargo.toml" || SourceLanguage(filePath: $0) == .html
+            $0.hasSuffix(".rs") || $0 == "Cargo.toml" || ($0 as NSString).lastPathComponent == "package.json" || SourceLanguage(filePath: $0) == .html
         }) else {
             throw ProjectError.noReadableSource
         }
@@ -91,7 +91,7 @@ enum LocalProjectLoader {
     }
 
     private static func discoverCargoRoot(in importedURL: URL) throws -> URL {
-        if FileManager.default.fileExists(atPath: importedURL.appending(path: "Cargo.toml").path) {
+        if ["Cargo.toml", "package.json", "index.html"].contains(where: { FileManager.default.fileExists(atPath: importedURL.appending(path: $0).path) }) {
             return importedURL
         }
 
@@ -115,14 +115,14 @@ enum LocalProjectLoader {
                 if values.isDirectory == true { enumerator.skipDescendants() }
                 continue
             }
-            if values.isRegularFile == true, url.lastPathComponent == "Cargo.toml" {
+            if values.isRegularFile == true, ["Cargo.toml", "package.json", "index.html"].contains(url.lastPathComponent) {
                 candidates.append(url.deletingLastPathComponent())
             }
         }
 
-        return candidates.min {
-            $0.pathComponents.count < $1.pathComponents.count
-        } ?? importedURL
+        return candidates.sorted {
+            $0.pathComponents.count == $1.pathComponents.count ? $0.path < $1.path : $0.pathComponents.count < $1.pathComponents.count
+        }.first ?? importedURL
     }
 
     private static func readFiles(in rootURL: URL) throws -> [String: String] {
@@ -141,7 +141,9 @@ enum LocalProjectLoader {
 
         for case let url as URL in enumerator {
             let values = try url.resourceValues(forKeys: Set(keys))
-            if values.isDirectory == true, ignoredDirectories.contains(url.lastPathComponent) {
+            let isPreparedSource = url.lastPathComponent == "node_modules"
+                && hasPreparedBrowserSources(in: url.deletingLastPathComponent(), root: rootURL)
+            if values.isDirectory == true, ignoredDirectories.contains(url.lastPathComponent), !isPreparedSource {
                 enumerator.skipDescendants()
                 continue
             }
@@ -166,8 +168,26 @@ enum LocalProjectLoader {
         return files
     }
 
+    private static func hasPreparedBrowserSources(in directory: URL, root: URL) -> Bool {
+        var current = directory.standardizedFileURL
+        let rootPath = root.standardizedFileURL.path
+        while current.path == rootPath || current.path.hasPrefix(rootPath + "/") {
+            let lock = current.appending(path: "crabrix-web.lock.json")
+            if let size = try? lock.resourceValues(forKeys: [.fileSizeKey]).fileSize, size <= maximumFileBytes,
+               let data = try? Data(contentsOf: lock),
+               let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               object["schemaVersion"] as? Int == 1 { return true }
+            if current.path == rootPath { break }
+            current.deleteLastPathComponent()
+        }
+        return false
+    }
+
     private static func isReadableProjectFile(_ url: URL) -> Bool {
         readableNames.contains(url.lastPathComponent)
+            || url.lastPathComponent.uppercased().hasPrefix("LICENSE")
+            || url.lastPathComponent.uppercased().hasPrefix("LICENCE")
+            || ["NOTICE", "COPYING"].contains(url.lastPathComponent.uppercased())
             || readableExtensions.contains(url.pathExtension.lowercased())
     }
 
@@ -178,7 +198,8 @@ enum LocalProjectLoader {
         let rustFiles = files.keys.filter { $0.hasSuffix(".rs") }
         if rustFiles.isEmpty {
             if files["index.html"] != nil { return "index.html" }
-            if let html = files.keys.filter({ SourceLanguage(filePath: $0) == .html }).sorted().first { return html }
+            if let html = files.keys.filter({ !$0.contains("node_modules/") && SourceLanguage(filePath: $0) == .html }).sorted().first { return html }
+            if files["package.json"] != nil { return "package.json" }
         }
         for suffix in ["/src/main.rs", "/src/lib.rs", "/main.rs", "/lib.rs"] {
             if let candidate = rustFiles

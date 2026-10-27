@@ -39,6 +39,19 @@ final class OfflineWebPreviewTests: XCTestCase {
         </script>
         """
         let snapshot = try XCTUnwrap(WebPreviewSnapshot(textFiles: files))
+        try await verifyPreview(snapshot, react: false)
+    }
+
+    @MainActor
+    func testActualWebKitRunsPreparedReactTSXAndCSSOffline() async throws {
+        var files = try BrowserProjectBuilderTests.reactFiles()
+        files["index.html"]! += "<script>window.externalBlocked=false;fetch('https://example.com/crabrix-preview-probe').catch(()=>window.externalBlocked=true)</script>"
+        let built = try await BrowserProjectBuilder().build(files: files, preferredEntry: "index.html")
+        try await verifyPreview(built.preview, react: true)
+    }
+
+    @MainActor
+    private func verifyPreview(_ snapshot: WebPreviewSnapshot, react: Bool) async throws {
         let root = UIHostingController(rootView: OfflineWebPreview(snapshot: snapshot, onMessage: { print("WEB CONSOLE", $0) }, onError: { print("WEB ERROR", $0) }))
         let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
         let previous = scene.windows.first(where: \.isKeyWindow)
@@ -67,14 +80,16 @@ final class OfflineWebPreviewTests: XCTestCase {
         }
         if !ready { print("WEB FAILURE", preview.url?.absoluteString ?? "no URL", preview.isLoading, (try? await preview.evaluateJavaScript("document.documentElement.outerHTML")) ?? "no document") }
         XCTAssertTrue(ready, "Local script did not initialize or external fetch was not blocked")
-        let count = try await preview.evaluateJavaScript("document.querySelector('#counter').click(); document.querySelector('#counter').textContent") as? String
+        _ = try await preview.evaluateJavaScript("document.querySelector('#counter').click()")
+        try await Task.sleep(for: .milliseconds(200))
+        let count = try await preview.evaluateJavaScript("document.querySelector('#counter').textContent") as? String
         XCTAssertTrue(count?.contains("1") == true, count ?? "missing counter")
-        let style = try await preview.evaluateJavaScript("getComputedStyle(document.body).fontFamily") as? String
-        XCTAssertTrue(style?.contains("system-ui") == true, style ?? "missing stylesheet")
+        let style = try await preview.evaluateJavaScript(react ? "getComputedStyle(document.querySelector('#counter')).color" : "getComputedStyle(document.body).fontFamily") as? String
+        XCTAssertTrue(style?.contains(react ? "20, 120, 50" : "system-ui") == true, style ?? "missing stylesheet")
         try await Task.sleep(for: .milliseconds(250))
         let capture = try await preview.takeSnapshot(configuration: nil)
         let attachment = XCTAttachment(image: capture)
-        attachment.name = "offline-web-preview"
+        attachment.name = react ? "offline-react-tsx-preview" : "offline-web-preview"
         attachment.lifetime = .keepAlways
         add(attachment)
         withExtendedLifetime(root) {}

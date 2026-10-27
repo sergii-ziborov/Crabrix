@@ -15,6 +15,7 @@ from urllib.parse import urljoin
 
 ROOT = Path(__file__).resolve().parents[1]
 UPDATED = "2026-10-10"
+UPDATED_BY_SLUG = {"privacy": "2026-10-27"}
 
 
 class Node:
@@ -82,7 +83,7 @@ def outputs():
         tree = Tree()
         tree.feed(main[1])
         exported = [b for b in blocks(tree.root) if b["text"] and b["kind"] != "h1"]
-        documents.append({"id": slug, "title": title, "updated": UPDATED,
+        documents.append({"id": slug, "title": title, "updated": UPDATED_BY_SLUG.get(slug, UPDATED),
                           "sourceURL": f"https://crabrix.com/{slug}/", "blocks": exported})
     for slug, title, source in [("source-license", "Application source license", "LICENSE"),
                                 ("content-license", "Educational content rights", "CONTENT-LICENSE.md")]:

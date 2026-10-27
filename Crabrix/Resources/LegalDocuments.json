@@ -170,7 +170,7 @@
   {
     "id": "privacy",
     "title": "Privacy Policy",
-    "updated": "2026-10-10",
+    "updated": "2026-10-27",
     "sourceURL": "https://crabrix.com/privacy/",
     "blocks": [
       {
@@ -179,7 +179,7 @@
       },
       {
         "kind": "p",
-        "text": "LAST UPDATED 10 OCTOBER 2026"
+        "text": "LAST UPDATED 27 OCTOBER 2026"
       },
       {
         "kind": "p",
@@ -244,6 +244,14 @@
       {
         "kind": "p",
         "text": "When you search for or add a dependency, Crabrix talks to the crates.io registry over HTTPS: searches and package and owner metadata through the crates.io API, the sparse index at `index.crates.io`, and package archives at `static.crates.io`. Requests contain the search terms or package names needed for the action you asked for; Crabrix adds no account or device identifier. These services are operated by the Rust Foundation and its providers under their own privacy policies, and like any web service they receive normal connection information such as your IP address as part of serving the request."
+      },
+      {
+        "kind": "h3",
+        "text": "Browser package preparation (public npm registry)"
+      },
+      {
+        "kind": "p",
+        "text": "When you explicitly run `npm install` or `npm ci` in a browser project, Crabrix requests package version metadata and integrity-checked source archives from `registry.npmjs.org` over HTTPS. Requests identify the imported package names and versions; project source, answers, learning progress, account credentials and a Crabrix device identifier are not uploaded. The registry receives ordinary connection information such as your IP address and may retain access logs under its own privacy policy. Prepared modules and licenses are saved as editable local project files. Browser Run and Check use those files without fetching dependencies. The WebKit preview blocks external requests from the project program."
       },
       {
         "kind": "h3",

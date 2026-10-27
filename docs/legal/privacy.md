@@ -1,10 +1,10 @@
 # Privacy Policy
 
-Updated: 2026-10-10 · [Website copy](https://crabrix.com/privacy/)
+Updated: 2026-10-27 · [Website copy](https://crabrix.com/privacy/)
 
 The app keeps your code on your device. Website Academy accounts use a username, password and private recovery code. This page explains both.
 
-LAST UPDATED 10 OCTOBER 2026
+LAST UPDATED 27 OCTOBER 2026
 
 **The short version.** Crabrix has no required account or in-app analytics SDK. Your code, projects, answers, and course progress stay on your device. If you switch on Game Center in Profile, Crabrix sends your numeric rating and achievement ladder progress to Apple for its leaderboard and achievements. It is off by default; The app has no online profile or board of its own; website Academy accounts are separate. Other network requests are requested course downloads, package discovery and downloads, and repository imports. If you write to support — including through *Report a problem* — that email reaches a person, and this page says what happens to it.
 
@@ -37,6 +37,10 @@ Deleting the app removes all of it. Crabrix keeps no copy and has no way to reco
 ### 1. Package discovery and downloads (crates.io)
 
 When you search for or add a dependency, Crabrix talks to the crates.io registry over HTTPS: searches and package and owner metadata through the crates.io API, the sparse index at `index.crates.io`, and package archives at `static.crates.io`. Requests contain the search terms or package names needed for the action you asked for; Crabrix adds no account or device identifier. These services are operated by the Rust Foundation and its providers under their own privacy policies, and like any web service they receive normal connection information such as your IP address as part of serving the request.
+
+### Browser package preparation (public npm registry)
+
+When you explicitly run `npm install` or `npm ci` in a browser project, Crabrix requests package version metadata and integrity-checked source archives from `registry.npmjs.org` over HTTPS. Requests identify the imported package names and versions; project source, answers, learning progress, account credentials and a Crabrix device identifier are not uploaded. The registry receives ordinary connection information such as your IP address and may retain access logs under its own privacy policy. Prepared modules and licenses are saved as editable local project files. Browser Run and Check use those files without fetching dependencies. The WebKit preview blocks external requests from the project program.
 
 ### 2. Repository import (GitHub)
 

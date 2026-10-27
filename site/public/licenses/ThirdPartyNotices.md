@@ -95,3 +95,24 @@ Copyright 2018 WebAssembly Community Group participants. Licensed under Apache L
 Source: https://github.com/WebAssembly/wabt/tree/1.0.42/wasm2c
 
 Crabrix uses wasm2c at app build time for the bundled compiler. Generated compiler C receives additional work, cancellation and native stack checkpoints. The wasm2c runtime uses explicit memory bounds checks and Crabrix's C trap scopes; no signal handler or JIT is enabled. User programs and procedural macro crates execute in the separate WasmKit sandbox.
+
+## Offline browser build tools
+
+### @babel/standalone 8.0.9
+
+Copyright Babel contributors. MIT License. The bundled, unmodified standalone
+compiler parses/transpiles browser JavaScript, TypeScript syntax and JSX with
+fixed bundled plugins; project plugins and package lifecycle scripts are not run.
+Full license: `babel-standalone-LICENSE.txt`.
+Source: https://github.com/babel/babel/tree/v8.0.9/packages/babel-standalone
+
+### node-semver 7.8.5
+
+Copyright Isaac Z. Schlueter and contributors. ISC License. Bundled library code
+selects npm registry versions; the npm CLI and Node runtime are not included.
+Full license: `node-semver-LICENSE.txt`.
+Source: https://github.com/npm/node-semver/tree/v7.8.5
+
+The exact public npm archives, SRI hashes and generated runtime digest are pinned
+in `scripts/web-compiler-source-lock.json`. Downloaded browser dependencies keep
+their package manifests and license texts as editable project source.

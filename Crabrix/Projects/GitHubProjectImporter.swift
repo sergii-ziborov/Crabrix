@@ -20,7 +20,7 @@ actor GitHubProjectImporter {
             case let .unsafeArchivePath(path):
                 "The archive contains an unsafe path: \(path)"
             case .repositoryHasNoCargoProject:
-                "No Cargo.toml or Rust source was found in this repository."
+                "No Cargo, Rust, HTML or package.json source was found in this repository."
             }
         }
     }

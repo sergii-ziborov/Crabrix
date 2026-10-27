@@ -236,7 +236,7 @@
 
   <div class="wrap prose">
 
-    <p class="updated">LAST UPDATED 10 OCTOBER 2026</p>
+    <p class="updated">LAST UPDATED 27 OCTOBER 2026</p>
 
     <div class="callout">
       <p><strong>The short version.</strong> Crabrix has no required account or in-app analytics SDK.
@@ -296,6 +296,18 @@
       own privacy policies, and like any web service they receive normal connection
       information such as your IP address as part of serving the request.
     </p>
+
+    <h3>Browser package preparation (public npm registry)</h3>
+    <p>When you explicitly run <code>npm install</code> or <code>npm ci</code> in a
+      browser project, Crabrix requests package version metadata and integrity-checked
+      source archives from <code>registry.npmjs.org</code> over HTTPS. Requests identify
+      the imported package names and versions; project source, answers, learning
+      progress, account credentials and a Crabrix device identifier are not uploaded.
+      The registry receives ordinary connection information such as your IP address
+      and may retain access logs under its own privacy policy. Prepared modules and
+      licenses are saved as editable local project files. Browser Run and Check use
+      those files without fetching dependencies. The WebKit preview blocks external
+      requests from the project program.</p>
 
     <h3>2. Repository import (GitHub)</h3>
     <p>

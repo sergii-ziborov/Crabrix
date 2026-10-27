@@ -11,7 +11,7 @@ export const legacyMetadata: Record<LegacyPage, { title: string; description: st
   },
   technology: {
     title: "Crabrix technology",
-    description: "Understand Crabrix’s bundled Rust compiler, Cargo package preparation, offline WebKit preview, WASI sandbox limits and supported build-script boundaries.",
+    description: "Understand Crabrix’s bundled Rust compiler, Cargo and browser npm package preparation, TypeScript/JSX builds, offline WebKit preview, WASI sandbox limits and supported build-script boundaries.",
   },
   support: {
     title: "Crabrix support",

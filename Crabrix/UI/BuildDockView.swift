@@ -56,6 +56,7 @@ struct BuildDockView<CodeContent: View>: View {
     let onReplaceFiles: ([String: String], String?) -> Bool
     let workspace: CargoWorkspaceSnapshot
     let onFetch: () -> Void
+    var onBrowserCommand: ((BrowserProjectCommand) -> Void)? = nil
     let onCancel: () -> Void
     let canContinueLearning: Bool
     let lessonEvidenceMessage: String?
@@ -90,6 +91,7 @@ struct BuildDockView<CodeContent: View>: View {
         onReplaceFiles: @escaping ([String: String], String?) -> Bool,
         workspace: CargoWorkspaceSnapshot,
         onFetch: @escaping () -> Void,
+        onBrowserCommand: ((BrowserProjectCommand) -> Void)? = nil,
         onCancel: @escaping () -> Void,
         canContinueLearning: Bool,
         lessonEvidenceMessage: String?,
@@ -121,6 +123,7 @@ struct BuildDockView<CodeContent: View>: View {
         self.onReplaceFiles = onReplaceFiles
         self.workspace = workspace
         self.onFetch = onFetch
+        self.onBrowserCommand = onBrowserCommand
         self.onCancel = onCancel
         self.canContinueLearning = canContinueLearning
         self.lessonEvidenceMessage = lessonEvidenceMessage
@@ -298,6 +301,7 @@ struct BuildDockView<CodeContent: View>: View {
             onReplaceFiles: onReplaceFiles,
             workspace: workspace,
             onFetch: onFetch,
+            onBrowserCommand: onBrowserCommand,
             autoFocus: autoFocus
         )
     }
@@ -842,9 +846,15 @@ private struct TerminalDockContent: View {
     let onReplaceFiles: ([String: String], String?) -> Bool
     let workspace: CargoWorkspaceSnapshot
     let onFetch: () -> Void
+    var onBrowserCommand: ((BrowserProjectCommand) -> Void)? = nil
     let autoFocus: Bool
 
-    private let quickCommands = ["help", "ls", "tree", "history", "cargo check", "cargo tree", "cargo metadata", "cargo run", "clear"]
+    private var quickCommands: [String] {
+        if project.files.keys.contains(where: { ($0 as NSString).lastPathComponent == "package.json" }) {
+            return ["help", "ls", "tree", "history", "npm install", "npm ci", "npm run build", "npm run dev", "clear"]
+        }
+        return ["help", "ls", "tree", "history", "cargo check", "cargo tree", "cargo metadata", "cargo run", "clear"]
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -975,6 +985,7 @@ private struct TerminalDockContent: View {
             onCheck: onCheck,
             onRun: onRun,
             onFetch: onFetch,
+            onBrowserCommand: onBrowserCommand,
             onReplaceFiles: onReplaceFiles
         )
     }

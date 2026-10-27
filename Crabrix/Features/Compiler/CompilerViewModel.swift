@@ -256,7 +256,7 @@ final class CompilerViewModel: ObservableObject {
         !isBusy
             && !isCompilerDraining
             && !diagnosticAdviceState.isWorking
-            && toolchain.isReady
+            && (toolchain.isReady || BrowserProjectConfiguration.isBrowserEntry(entryFile))
     }
     var primaryDiagnostic: RustDiagnostic? {
         result?.diagnostics.first(where: { $0.level == "error" })
@@ -497,7 +497,15 @@ final class CompilerViewModel: ObservableObject {
 
     func run() { startBuild(.running) }
 
-    private func startBuild(_ mode: Activity) {
+    func performBrowserCommand(_ command: BrowserProjectCommand) {
+        switch command {
+        case let .install(frozen, directory): startBuild(.checking, browserDirectory: directory, prepareBrowserPackages: true, frozenBrowserPackages: frozen)
+        case let .build(run, directory): startBuild(run ? .running : .checking, browserDirectory: directory)
+        }
+    }
+
+    private func startBuild(_ mode: Activity, browserDirectory: String? = nil,
+                            prepareBrowserPackages: Bool = false, frozenBrowserPackages: Bool = false) {
         guard canStartBuild else { return }
         resetDiagnosticAdvice()
         let revision = workspaceRevision
@@ -518,29 +526,87 @@ final class CompilerViewModel: ObservableObject {
         activeCompilationID = compilationID
         compilationTask = Task { [weak self] in
             guard let self else { return }
+            guard !Task.isCancelled, activeCompilationID == compilationID, isCurrent(revision) else {
+                discardCompilationIfActive(compilationID); return
+            }
 
-            if SourceLanguage(filePath: project.entryPath) == .html {
-                appendBuildStage("Preparing local HTML, CSS and JavaScript")
-                let files = projectFiles
-                let snapshot = await Task.detached(priority: .utility) {
-                    WebPreviewSnapshot(textFiles: files, preferredEntry: project.entryPath)
-                }.value
-                guard !Task.isCancelled, activeCompilationID == compilationID, isCurrent(revision) else {
-                    discardCompilationIfActive(compilationID)
-                    return
+            if browserDirectory != nil || BrowserProjectConfiguration.isBrowserEntry(project.entryPath) {
+                let began = ContinuousClock.now
+                let entry = BrowserProjectConfiguration.entry(files: projectFiles, preferred: project.entryPath, directory: browserDirectory)
+                let transferID = UUID()
+                packageTransferID = transferID
+                packageTransfers = []
+                packageProgressWasPresented = false
+                let stageHandler: @Sendable (String) -> Void = { [weak self] label in
+                    Task { @MainActor [weak self] in
+                        guard let self, activeCompilationID == compilationID, isCurrent(revision) else { return }
+                        appendBuildStage(label)
+                    }
                 }
-                guard let snapshot else {
-                    finish(.failure(phase: .setup,
-                        detail: "The web preview needs an HTML entry and at most 256 assets, 2 MiB per asset and 8 MiB in total."), revision: revision)
-                    return
+                let transferHandler: @Sendable (PackageTransferEvent) -> Void = { [weak self] event in
+                    Task { @MainActor [weak self] in
+                        guard let self, activeCompilationID == compilationID, isCurrent(revision), packageTransferID == transferID else { return }
+                        switch event {
+                        case let .planned(rows): packageTransfers = rows
+                        case let .updated(id, state):
+                            if let index = packageTransfers.firstIndex(where: { $0.package == id }) { packageTransfers[index].state = state }
+                            if state == .downloading, !packageProgressWasPresented {
+                                packageProgressWasPresented = true
+                                isPackageProgressPresented = true
+                            }
+                        }
+                    }
                 }
-                finish(CompilationResult(
-                    succeeded: true, phase: mode == .checking ? .check : .run,
-                    exitCode: nil, diagnostics: [], stdout: "", stderr: "", duration: .zero,
-                    detail: mode == .checking
-                        ? "Web assets prepared. Run opens the browser and executes JavaScript; this is not a Rust compiler check."
-                        : "Prepared an offline website preview. Browser errors appear in the web console.",
-                    webPreview: mode == .running ? snapshot : nil), revision: revision)
+                if prepareBrowserPackages { cargoStage = .resolving }
+                do {
+                    let built = try await BrowserProjectBuilder.shared.build(files: projectFiles, preferredEntry: entry,
+                        preparePackages: prepareBrowserPackages, frozen: frozenBrowserPackages,
+                        onStage: stageHandler, onTransfer: transferHandler)
+                    guard !Task.isCancelled, activeCompilationID == compilationID, isCurrent(revision) else {
+                        discardCompilationIfActive(compilationID); return
+                    }
+                    if prepareBrowserPackages {
+                        // Installation is transactional. A changed project discards the result;
+                        // no in-flight download may overwrite a newer editor snapshot.
+                        suppressAutosave = true
+                        fileContents = projectFiles.filter { !$0.key.split(separator: "/").contains("node_modules") }
+                            .merging(built.sourceAdditions) { _, new in new }
+                        fileNames = fileContents.keys.sorted(by: projectFileOrder)
+                        if fileContents[selectedFile] == nil {
+                            selectedFile = fileContents[entryFile] != nil ? entryFile : entry
+                        }
+                        source = fileContents[selectedFile] ?? ""
+                        suppressAutosave = false
+                        workspaceGeneration &+= 1
+                        cargoStage = .ready
+                        for index in packageTransfers.indices {
+                            if packageTransfers[index].state != .cached { packageTransfers[index].state = .ready }
+                        }
+                        packageTransferID = nil
+                    }
+                    finish(CompilationResult(succeeded: true, phase: mode == .running ? .run : .check,
+                        exitCode: nil, diagnostics: [], stdout: "", stderr: "", duration: began.duration(to: .now),
+                        detail: prepareBrowserPackages
+                            ? "Prepared \(built.packageCount) browser npm packages as editable local source. Run now builds offline."
+                            : "Built \(built.moduleCount) browser modules locally. TypeScript syntax is transpiled; this is not TypeScript type checking. Browser errors appear in the web console.",
+                        webPreview: mode == .running ? built.preview : nil), revision: workspaceRevision)
+                    if prepareBrowserPackages { await remember(currentProject(), lastBuild: lastBuild) }
+                } catch {
+                    guard activeCompilationID == compilationID, isCurrent(revision) else { discardCompilationIfActive(compilationID); return }
+                    if Task.isCancelled || error is CancellationError { discardCompilationIfActive(compilationID); return }
+                    cargoStage = .failed(error.localizedDescription)
+                    let browserError = error as? BrowserBuildError
+                    let path = browserError?.file ?? ""
+                    let line = max(1, browserError?.line ?? 1), column = max(1, browserError?.column ?? 1)
+                    let lines = (projectFiles[path] ?? "").components(separatedBy: "\n")
+                    let span: [RustDiagnostic.Span] = path.isEmpty ? [] : [.init(fileName: path, lineStart: line, lineEnd: line,
+                        columnStart: column, columnEnd: column + 1, isPrimary: true, label: nil,
+                        sourceLine: line <= lines.count ? lines[line - 1] : "")]
+                    finish(CompilationResult(succeeded: false, phase: .compile, exitCode: nil,
+                        diagnostics: [.init(level: "error", message: browserError?.message ?? error.localizedDescription,
+                            code: nil, rendered: error.localizedDescription, spans: span)],
+                        stdout: "", stderr: "", duration: began.duration(to: .now), detail: error.localizedDescription), revision: revision)
+                }
                 return
             }
 
@@ -614,7 +680,7 @@ final class CompilerViewModel: ObservableObject {
                 }
             }
 
-            let value = switch mode {
+            var value = switch mode {
             case .checking:
                 await compiler.check(
                     source: compilerProject.main,
@@ -643,6 +709,25 @@ final class CompilerViewModel: ObservableObject {
             else {
                 discardCompilationIfActive(compilationID)
                 return
+            }
+            if value.succeeded, let preview = value.webPreview {
+                var browserFiles = projectFiles
+                for (path, data) in preview.assets {
+                    if let text = String(data: data, encoding: .utf8) { browserFiles[path] = text }
+                }
+                do {
+                    let built = try await BrowserProjectBuilder.shared.build(files: browserFiles, preferredEntry: preview.entryPath,
+                        onStage: stageHandler)
+                    guard !Task.isCancelled, activeCompilationID == compilationID, isCurrent(revision) else { discardCompilationIfActive(compilationID); return }
+                    // Keep binary assets captured by the Rust generator too.
+                    guard let combined = WebPreviewSnapshot(files: preview.assets.merging(built.preview.assets) { _, compiled in compiled }, preferredEntry: built.preview.entryPath) else {
+                        throw BrowserBuildError(message: "The generated browser preview exceeds its asset budget.")
+                    }
+                    value.webPreview = combined
+                } catch {
+                    guard activeCompilationID == compilationID, isCurrent(revision) else { discardCompilationIfActive(compilationID); return }
+                    value = .failure(phase: .compile, detail: error.localizedDescription, duration: value.duration)
+                }
             }
             if !plan.isEmpty { cargoStage = .ready }
             finish(value, revision: revision)
@@ -837,6 +922,10 @@ final class CompilerViewModel: ObservableObject {
 
     /// Downloads every resolved package so the project builds with no network.
     func downloadDependenciesForOffline() {
+        if BrowserProjectConfiguration.isBrowserEntry(entryFile) {
+            performBrowserCommand(.install(frozen: false, directory: (BrowserProjectConfiguration.manifestPath(files: currentProject().files, entry: entryFile) as NSString).deletingLastPathComponent))
+            return
+        }
         resolvedManifestSource = nil
         resolvedWorkspaceRevision = nil
         refreshCargoWorkspace()
@@ -1054,7 +1143,7 @@ final class CompilerViewModel: ObservableObject {
         if cargoStage.isWorking { cargoStage = .idle }
         result = .failure(
             phase: .setup,
-            detail: "Build stopped. The Wasm guest is being interrupted and its sandbox released."
+            detail: "Build stopped. The active worker is being interrupted and its snapshot released."
         )
     }
 

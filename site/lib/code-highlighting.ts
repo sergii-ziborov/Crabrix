@@ -1,4 +1,4 @@
-export type CodeLanguage = "rust" | "toml" | "sql";
+export type CodeLanguage = "rust" | "toml" | "sql" | "json" | "html" | "typescript";
 export type CodeToken = { value: string; kind?: string };
 
 const rustKeywords = new Set("as async await break const continue crate dyn else enum extern false fn for if impl in let loop match mod move mut pub ref return self Self static struct super trait true type unsafe use where while".split(" "));
@@ -13,6 +13,24 @@ export function codeLanguage(code: string): CodeLanguage {
 }
 
 function tokensFor(code: string, language: CodeLanguage): CodeToken[] {
+  if (["json", "html", "typescript"].includes(language)) {
+    const expression = language === "html"
+      ? /<!--[\s\S]*?-->|<\/?[A-Za-z][\w:-]*|[A-Za-z_:][\w:.-]*(?=\s*=)|"(?:\\.|[^"\\])*"|'[^']*'/g
+      : /\/\/[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][\w$]*\b/g;
+    const keywords = new Set("import from export default const let var function return if else new async await throw class extends true false null undefined type interface as typeof".split(" "));
+    const result: CodeToken[] = []; let cursor = 0;
+    for (const match of code.matchAll(expression)) {
+      if (match.index > cursor) result.push({ value: code.slice(cursor, match.index) });
+      const value = match[0];
+      const kind = /^(?:<!--|\/\/|\/\*)/.test(value) ? "comment"
+        : /^["'`]/.test(value) ? "string" : /^\d/.test(value) ? "number"
+        : value.startsWith("<") ? "type" : language === "html" ? "attribute"
+        : keywords.has(value) ? "keyword" : undefined;
+      result.push({ value, ...(kind ? { kind } : {}) }); cursor = match.index + value.length;
+    }
+    if (cursor < code.length) result.push({ value: code.slice(cursor) });
+    return result;
+  }
   const pattern = language === "rust"
     ? /\/\/[^\n]*|\/\*[\s\S]*?\*\/|#\[[^\]\n]*\]|(?:br|cr|r)(#{0,255})"[\s\S]*?"\1|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])'|'[A-Za-z_]\w*|\b[A-Za-z_]\w*!|\b\d[\d_]*(?:\.\d[\d_]*)?\b|\b[A-Za-z_]\w*\b/gu
     : language === "toml"
@@ -51,8 +69,8 @@ function tokensFor(code: string, language: CodeLanguage): CodeToken[] {
   return result;
 }
 
-export function codeTokens(code: string): CodeToken[] {
-  const language = codeLanguage(code);
+export function codeTokens(code: string, selectedLanguage?: CodeLanguage): CodeToken[] {
+  const language = selectedLanguage ?? codeLanguage(code);
   // Older lessons can combine a Cargo manifest and a labeled Rust source file.
   if (language === "toml" && /^\/\/[^\n]*\.rs\s*$/m.test(code)) {
     const pieces = code.split(/(?=^\/\/[^\n]*\.rs\s*$)/m);
