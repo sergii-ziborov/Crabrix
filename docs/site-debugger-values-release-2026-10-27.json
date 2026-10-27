@@ -1,0 +1,176 @@
+{
+  "verifiedAtUTC": "2026-10-27T19:36:48.877501+00:00",
+  "origin": "https://crabrix.com",
+  "sourceCommit": "ecc45983a60bd8ed794d03bcae5ada145f52edc7",
+  "image": "974708f79e132a96750fa764f902615e54cb70988c6b1c727581910417ec76ab",
+  "releaseDirectory": "/srv/apps/crabrix-site/releases/20261027-debugger-values",
+  "rollbackContainer": "crabrix-web-site-before-debugger-values-20261027",
+  "accounts": "existing accounts volume retained, consistent backup before switch",
+  "backendCompilationOrExecution": false,
+  "browser": {
+    "at": "2026-10-27T19:36:00.742Z",
+    "origin": "https://crabrix.com",
+    "backendExecution": false,
+    "layouts": [
+      {
+        "name": "phone",
+        "theme": "Light",
+        "geometry": {
+          "width": 390,
+          "body": 390,
+          "tabsBottom": 698.453125,
+          "workspaceBottom": 844,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "phone",
+        "theme": "Dark",
+        "geometry": {
+          "width": 390,
+          "body": 390,
+          "tabsBottom": 698.453125,
+          "workspaceBottom": 844,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "phone",
+        "theme": "Amber Circuit",
+        "geometry": {
+          "width": 390,
+          "body": 390,
+          "tabsBottom": 698.453125,
+          "workspaceBottom": 844,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "phone",
+        "theme": "Cyberpunk",
+        "geometry": {
+          "width": 390,
+          "body": 390,
+          "tabsBottom": 698.453125,
+          "workspaceBottom": 844,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "tablet",
+        "theme": "Light",
+        "geometry": {
+          "width": 1024,
+          "body": 1024,
+          "tabsBottom": 1043.203125,
+          "workspaceBottom": 1366,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "tablet",
+        "theme": "Dark",
+        "geometry": {
+          "width": 1024,
+          "body": 1024,
+          "tabsBottom": 1043.203125,
+          "workspaceBottom": 1366,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "tablet",
+        "theme": "Amber Circuit",
+        "geometry": {
+          "width": 1024,
+          "body": 1024,
+          "tabsBottom": 1043.203125,
+          "workspaceBottom": 1366,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "tablet",
+        "theme": "Cyberpunk",
+        "geometry": {
+          "width": 1024,
+          "body": 1024,
+          "tabsBottom": 1043.203125,
+          "workspaceBottom": 1366,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "desktop",
+        "theme": "Light",
+        "geometry": {
+          "width": 1440,
+          "body": 1440,
+          "tabsBottom": 208.4375,
+          "workspaceBottom": 1000,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "desktop",
+        "theme": "Dark",
+        "geometry": {
+          "width": 1440,
+          "body": 1440,
+          "tabsBottom": 208.4375,
+          "workspaceBottom": 1000,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "desktop",
+        "theme": "Amber Circuit",
+        "geometry": {
+          "width": 1440,
+          "body": 1440,
+          "tabsBottom": 208.4375,
+          "workspaceBottom": 1000,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "desktop",
+        "theme": "Cyberpunk",
+        "geometry": {
+          "width": 1440,
+          "body": 1440,
+          "tabsBottom": 208.4375,
+          "workspaceBottom": 1000,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      }
+    ],
+    "aggregateInspection": true,
+    "asyncBreakpointAndLocals": true,
+    "sourcePreserved": true,
+    "networkDeniedAfterAcquisition": true
+  },
+  "sharing": {
+    "at": "2026-10-27T19:36:35.595Z",
+    "origin": "https://crabrix.com",
+    "defaultLifetimeSeconds": 3600,
+    "debugStoppedOnRemoteEdit": true,
+    "sourceAndSelection": true
+  },
+  "defaultSharingSeconds": 3600,
+  "maximumSharingSeconds": 86400,
+  "nativeVerification": "docs/local-rust-debugger-values-2026-10-27.json",
+  "cleanup": "Removed only provisional d7c8b3ba image, superseded 45a3c4d image/release and QA candidate from this debugger work. Current image and previous production 925d020 are retained."
+}

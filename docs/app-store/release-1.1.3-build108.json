@@ -1,0 +1,63 @@
+{
+  "version": "1.1.3",
+  "buildNumber": "108",
+  "buildID": "2db51810-1cd4-4695-8fa9-cf6440c89c5e",
+  "appSourceCommit": "ecc45983a60bd8ed794d03bcae5ada145f52edc7",
+  "cloudBuildRunID": "db1745bc-41d0-4fea-b669-2715891fa289",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "versionID": "4c60d52b-ca5b-4bbd-a206-799d4e4cd12c",
+  "versionState": "WAITING_FOR_REVIEW",
+  "reviewID": "4782d434-d2ad-40a6-a7b2-8eb169f1d6ba",
+  "reviewState": "WAITING_FOR_REVIEW",
+  "releaseType": "MANUAL",
+  "selectedBuild": "108",
+  "screenshots": [
+    {
+      "displayType": "APP_IPHONE_DUO",
+      "count": 2,
+      "complete": 2,
+      "firstFile": "v111-iphone-duo-qa-01-laptop-code.png"
+    },
+    {
+      "displayType": "APP_IPAD_PRO_3GEN_129",
+      "count": 7,
+      "complete": 7,
+      "firstFile": "v111-ipad-13-01-build.png"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "count": 10,
+      "complete": 10,
+      "firstFile": "v111-iphone-6.9-01-build.png"
+    }
+  ],
+  "storeMetadataReadback": "exact match",
+  "verifiedAtUTC": "2026-10-27T19:51:23.051300+00:00",
+  "cloudCompletion": "SUCCEEDED",
+  "cloudExecutionProgress": "COMPLETE",
+  "signedEntitlements": {
+    "build": "108",
+    "version": "1.1.3",
+    "applicationIdentifier": "XMS5ZC28UJ.com.sergiiziborov.Crabrix",
+    "associatedDomains": [
+      "applinks:crabrix.com"
+    ],
+    "profileSupportsAssociatedDomains": true,
+    "getTaskAllow": false,
+    "appGroups": [
+      "group.com.sergiiziborov.Crabrix"
+    ],
+    "ipaSHA256": "f037a8fc31e34baf5d38ca32e685b62585af5f7bc9a0daba2b43435bdefa590d",
+    "debugCompilerMatchesSource": true,
+    "offlineLegalMatchesSource": true,
+    "appStoreDistributionProfile": true
+  },
+  "websiteSourceCommit": "ecc45983a60bd8ed794d03bcae5ada145f52edc7",
+  "websiteImage": "974708f79e132a96750fa764f902615e54cb70988c6b1c727581910417ec76ab",
+  "qualification": "17 native host tests; three UI tests each on phone/pad; 20 actual pinned-compiler normal/Debug comparisons and two safe fallbacks; 12 browser layouts; production local execution, aggregate/async inspection and encrypted sharing/selection checks",
+  "verificationReceipt": "docs/local-rust-debugger-values-2026-10-27.json",
+  "physicalDeviceGate": "Not run; iPhone unavailable. Tokio debug duration 43.5 seconds is a Simulator measurement, not physical iPhone performance.",
+  "publishedPriorVersion": "1.1.2 (103), READY_FOR_SALE; includes guest Playground, live editing and local execution",
+  "supersedes": "1.1.3 (107) review submission, canceled only after build 108 was VALID and signature verified"
+}

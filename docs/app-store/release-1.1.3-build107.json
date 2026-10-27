@@ -57,5 +57,7 @@
   "physicalDeviceGate": "not run; user requested Simulator while iPhone unavailable",
   "interactiveSourceDebugger": "source-instrumented synchronous Rust; call frames and safe primitive locals; documented async/const/macro/aggregate boundaries",
   "websiteSourceCommit": "925d0208f67854039a5b547324b7401297661226",
-  "publishedPriorVersion": "1.1.2 (103), READY_FOR_SALE, at user explicit request"
+  "publishedPriorVersion": "1.1.2 (103), READY_FOR_SALE, at user explicit request",
+  "supersededBy": "1.1.3 (108)",
+  "supersededAtUTC": "2026-10-27T19:51:23.051300+00:00"
 }
