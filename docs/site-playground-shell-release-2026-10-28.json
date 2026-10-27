@@ -1,0 +1,105 @@
+{
+  "verifiedAtUTC": "2026-10-27T22:42:52.175362+00:00",
+  "publishedAtUTC": "2026-10-27T22:39:36Z",
+  "origin": "https://crabrix.com/playground/",
+  "sourceCommit": "8bb9df7f9194d9014379ba99ae272d098d4335b4",
+  "image": "d87c08cb94e90830a6972f8078fca59d94c5e3b07ee1559ace13d16cc1679395",
+  "releaseDirectory": "/srv/apps/crabrix-site/releases/20261028-playground-shell-8bb9df7",
+  "rollbackContainer": "crabrix-web-site-before-playground-shell-20261028",
+  "changes": [
+    "Use the common site-shell width and margins for the editor and loading state.",
+    "Remove the duplicate crab logo and keep a compact Playground heading.",
+    "Match the shared navigation colors to the site and selected editor palette.",
+    "Wrap shared navigation before it overflows on narrow tablet windows.",
+    "Keep editor and output inside short landscape windows."
+  ],
+  "verification": {
+    "engine": "Playwright Chromium",
+    "localLayoutCases": 28,
+    "publishedLayoutCases": 28,
+    "themes": [
+      "Dark",
+      "Light",
+      "Amber Circuit",
+      "Cyberpunk"
+    ],
+    "viewports": [
+      {
+        "name": "desktop",
+        "viewportWidth": 1512,
+        "sharedShellWidth": 1120,
+        "sharedShellLeft": 196,
+        "logoCount": 1
+      },
+      {
+        "name": "wide",
+        "viewportWidth": 1920,
+        "sharedShellWidth": 1120,
+        "sharedShellLeft": 400,
+        "logoCount": 1
+      },
+      {
+        "name": "tablet",
+        "viewportWidth": 1024,
+        "sharedShellWidth": 980,
+        "sharedShellLeft": 22,
+        "logoCount": 1
+      },
+      {
+        "name": "phone",
+        "viewportWidth": 390,
+        "sharedShellWidth": 358,
+        "sharedShellLeft": 16,
+        "logoCount": 1
+      },
+      {
+        "name": "small-phone",
+        "viewportWidth": 320,
+        "sharedShellWidth": 288,
+        "sharedShellLeft": 16,
+        "logoCount": 1
+      },
+      {
+        "name": "landscape",
+        "viewportWidth": 844,
+        "sharedShellWidth": 800,
+        "sharedShellLeft": 22,
+        "logoCount": 1
+      },
+      {
+        "name": "phone-landscape",
+        "viewportWidth": 667,
+        "sharedShellWidth": 635,
+        "sharedShellLeft": 16,
+        "logoCount": 1
+      }
+    ],
+    "sharedWidthComparedAgainst": "/learn/ .site-header-row",
+    "noPageHorizontalOverflow": true,
+    "panesInsideWorkspace": true,
+    "build": "Next.js webpack production build and TypeScript validation passed",
+    "legalAndLicenseSync": "passed",
+    "functional": {
+      "at": "2026-10-27T22:42:23.668Z",
+      "origin": "https://crabrix.com",
+      "passed": [
+        "entry pause",
+        "breakpoint",
+        "loop locals",
+        "step into",
+        "step over",
+        "step out",
+        "call stack",
+        "actual stdout",
+        "source preserved",
+        "offline compilation",
+        "responsive Stop"
+      ],
+      "backendExecution": false
+    }
+  },
+  "accounts": "Existing account volume retained; consistent backup before switching containers.",
+  "cleanup": "Removed only the superseded debugger-925d020 image/container/release from this work. Kept the previous healthy debugger-values-20261027 container as rollback; 1.7 GiB free after cleanup.",
+  "nativeAppChanged": false,
+  "backendCompilationOrExecution": false
+}
