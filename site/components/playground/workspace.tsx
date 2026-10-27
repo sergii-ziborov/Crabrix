@@ -157,9 +157,9 @@ export default function PlaygroundWorkspace() {
   const output = compiler.result?.execution;
   const transferMiB = ((toolchain.compiler.bytes + toolchain.sysroot.bytes) / 1024**2).toFixed(1);
 
-  return <div className="pg-workspace" data-pg-theme={theme} data-pg-layout={layout} data-pg-debugging={compiler.debugging ? "true" : "false"}>
+  return <div className="pg-workspace site-shell" data-pg-theme={theme} data-pg-layout={layout} data-pg-debugging={compiler.debugging ? "true" : "false"}>
     <header className="pg-toolbar">
-      <div className="pg-brand"><img src="/brand/crabrix-mark.png" width="34" height="34" alt="" /><div><h1>Crabrix Playground</h1><span>Guest · Rust runs on your device</span></div></div>
+      <div className="pg-heading"><h1>Playground</h1><p>Guest · Rust runs on your device</p></div>
       <div className="pg-actions">
         <button className="pg-button pg-check" onClick={() => run("check")} disabled={!source || isBusy || expired}>✓ Check</button>
         <button className="pg-button" onClick={() => run("debug")} disabled={!source || isBusy || expired} aria-label="Debug Rust">◇ Debug</button>

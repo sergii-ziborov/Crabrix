@@ -265,3 +265,11 @@ table.plain td { color: var(--muted); }
 .guide-table th, .guide-table td { border-bottom: 1px solid var(--line, #283443); padding: .85rem; text-align: left; vertical-align: top; }
 .guide-table th[scope="row"] { width: 30%; }
 @media (max-width: 640px) { .guide-screenshots { grid-template-columns: 1fr; } .guide-screenshot { max-width: 24rem; } .guide-table th, .guide-table td { padding: .6rem; } }
+
+/* The shared navigation wraps before its links crowd the account button. */
+@media (max-width:950px) {
+  .site-header-row { display:grid; grid-template-columns:1fr auto; gap:8px 0; padding-block:10px 7px; }
+  .site-header-row .site-brand { width:auto; margin-bottom:5px; }
+  .site-account { grid-column:2; grid-row:1; }
+  .site-nav { grid-column:1 / -1; grid-row:2; width:100%; overflow-x:auto; padding-bottom:2px; scrollbar-width:thin; }
+}
