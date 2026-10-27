@@ -42,6 +42,9 @@ Hosted Simulator gate: **21 passed, zero failed** — seven browser integration,
 
 ## Native Rust debugger
 
+**Historical feasibility probe:** the follow-up [local debugger implementation](local-rust-debugger-2026-10-27.md) uses real compiler instrumentation and host checkpoints. Its source stepping does not depend on the DWARF defect described below. The findings below describe the earlier engine probe, not the current shipping feature.
+
+
 The app pins `crabrix-runtime` revision
 `e714b3efb3f4973bfd20ea41cb2cf0d6eb27713d`. Its `WasmDebuggingSupport` trait
 contains instruction-address breakpoints, resume/step, call frames, locals,

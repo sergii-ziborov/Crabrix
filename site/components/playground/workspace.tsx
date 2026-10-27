@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { DebugPanel } from "./debug-panel";
 import * as Y from "yjs";
 import { createPresence } from "@/lib/playground-presence";
 import { zipSync, strToU8 } from "fflate";
@@ -31,11 +32,16 @@ export default function PlaygroundWorkspace() {
   const [link, setLink] = useState<PlaygroundLink | null>(null), [created, setCreated] = useState<CreatedPlayground | null>(null);
   const session = useRef<PlaygroundSession | null>(null), [connection, setConnection] = useState("Local editor · no source upload");
   const [expiresAt, setExpiresAt] = useState<number | null>(null), [now, setNow] = useState<number | null>(null), createdAt = useRef(0);
-  const [lifetime, setLifetime] = useState(86400), [expired, setExpired] = useState(false), [sharing, setSharing] = useState(false);
+  const [lifetime, setLifetime] = useState(3600), [expired, setExpired] = useState(false), [sharing, setSharing] = useState(false);
   const [notice, setNotice] = useState(""), [stdin, setStdin] = useState(""), [dock, setDock] = useState("output");
   const [filePane, setFilePane] = useState(false), [importText, setImportText] = useState("");
   const disposal = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const compiler = useRustCompiler();
+  const [breakpoints, setBreakpoints] = useState<Record<string, number[]>>({});
+  const debugStatus = useRef({ active: false, stop: compiler.stop }); debugStatus.current = { active: compiler.debugging, stop: compiler.stop };
+  const toggleBreakpoint = useCallback((file: string, line: number) => setBreakpoints(previous => ({ ...previous, [file]: previous[file]?.includes(line) ? previous[file].filter(value => value !== line) : [...(previous[file] ?? []), line].sort((a, b) => a - b) })), []);
+  useEffect(() => { compiler.updateBreakpoints(breakpoints); }, [breakpoints, compiler.updateBreakpoints]);
+  useEffect(() => { if (compiler.debugPause) { setSelected(compiler.debugPause.site.file); setDock("debug"); } }, [compiler.debugPause]);
   const [importURL, setImportURL] = useState(""), [importFolder, setImportFolder] = useState(""), [importing, setImporting] = useState(false);
 
   useEffect(() => {
@@ -46,8 +52,9 @@ export default function PlaygroundWorkspace() {
       if (saved && themes.some(([key]) => key === saved.theme)) setTheme(saved.theme);
       if (saved?.fontSize >= 12 && saved.fontSize <= 24) setPreferences({ fontSize: saved.fontSize, wrap: saved.wrap === true, pairs: saved.pairs !== false, tabSize: saved.tabSize === 2 ? 2 : 4 });
     } catch {}
-    const update = () => {
+    const update = (transaction: Y.Transaction) => {
       try {
+        if (debugStatus.current.active && transaction.changed.size > 0) { debugStatus.current.stop(); setNotice("Debug stopped because shared source changed. Start Debug again for the new snapshot."); }
         const value = documentFromY(doc); setSource(value);
         setSelected(previous => previous in value.files ? previous : value.entryFile);
       } catch { /* Joining an empty document waits for its authenticated snapshot. */ }
@@ -61,7 +68,7 @@ export default function PlaygroundWorkspace() {
         session.current = connection; void connection.start();
       } else {
         updateYDocument(doc, newPlaygroundDocument(), "initial");
-        setExpiresAt(createdAt.current + 86400_000);
+        setExpiresAt(createdAt.current + 3600_000);
       }
     } catch (error) { setNotice(String(error)); }
     return () => { session.current?.stop(); doc.off("afterTransaction", update); disposal.current = setTimeout(() => { awareness.destroy(); doc.destroy(); }, 0); };
@@ -95,9 +102,7 @@ export default function PlaygroundWorkspace() {
     if (expired) throw new Error("This session expired. Download your code and create a new Playground.");
     setSharing(true); setNotice("");
     try {
-      const remaining = Math.floor((createdAt.current + lifetime * 1000 - Date.now()) / 1000);
-      if (remaining < 60) throw new Error("Less than one minute remains. Download the source and create a new Playground.");
-      const result = await createPlayground(doc, remaining);
+      const result = await createPlayground(doc, lifetime);
       setCreated(result); setLink(result); setExpiresAt(result.expiresAt);
       const connection = new PlaygroundSession(doc, result, setConnection, () => setExpired(true), awareness);
       session.current = connection; void connection.start();
@@ -136,9 +141,9 @@ export default function PlaygroundWorkspace() {
     if (!source || selected === source.entryFile || !confirm(`Remove ${selected} from this temporary source set?`)) return;
     doc.getMap("files").delete(selected);
   };
-  const run = (mode: "check" | "run") => {
+  const run = (mode: "check" | "run" | "debug") => {
     if (!source || expired) return;
-    try { compiler.start(mode, validatePlaygroundDocument(documentFromY(doc)), stdin); setDock(mode === "check" ? "problems" : "output"); }
+    try { compiler.start(mode, validatePlaygroundDocument(documentFromY(doc)), stdin); setDock(mode === "check" ? "problems" : mode === "debug" ? "debug" : "output"); }
     catch (error) { setNotice(String(error)); }
   };
   const sourceText = source?.files[selected] ?? "";
@@ -146,17 +151,18 @@ export default function PlaygroundWorkspace() {
   const diagnostics = (compiler.result?.compilation.stderr ?? "").split("\n").flatMap(line => {
     try { const value = JSON.parse(line); return value.$message_type === "diagnostic" ? [value] : []; } catch { return []; }
   });
-  const isBusy = compiler.activity !== "idle", readOnly = expired || link?.mode === "view";
+  const isBusy = compiler.activity !== "idle", readOnly = expired || link?.mode === "view" || compiler.debugging;
   const secondsLeft = now !== null && expiresAt !== null ? Math.max(0, Math.ceil((expiresAt - now) / 1000)) : null;
   const lifetimeLabel = secondsLeft === null ? "Preparing session…" : expired ? "Session expired" : `Expires in ${Math.floor(secondsLeft / 3600)}h ${Math.floor(secondsLeft % 3600 / 60)}m ${secondsLeft % 60}s`;
   const output = compiler.result?.execution;
   const transferMiB = ((toolchain.compiler.bytes + toolchain.sysroot.bytes) / 1024**2).toFixed(1);
 
-  return <div className="pg-workspace" data-pg-theme={theme} data-pg-layout={layout}>
+  return <div className="pg-workspace" data-pg-theme={theme} data-pg-layout={layout} data-pg-debugging={compiler.debugging ? "true" : "false"}>
     <header className="pg-toolbar">
       <div className="pg-brand"><img src="/brand/crabrix-mark.png" width="34" height="34" alt="" /><div><h1>Crabrix Playground</h1><span>Guest · Rust runs on your device</span></div></div>
       <div className="pg-actions">
         <button className="pg-button pg-check" onClick={() => run("check")} disabled={!source || isBusy || expired}>✓ Check</button>
+        <button className="pg-button" onClick={() => run("debug")} disabled={!source || isBusy || expired} aria-label="Debug Rust">◇ Debug</button>
         {isBusy ? <button className="pg-button pg-primary" onClick={compiler.stop}>■ Stop</button> : <button className="pg-button pg-primary" onClick={() => run("run")} disabled={!source || expired}>▶ Run</button>}
         <button className="pg-button" onClick={() => setModal("share")} disabled={!source || expired} aria-label="Share Playground">↗ Share<span className="pg-wide-label"> Playground</span></button>
         <button className="pg-button pg-save" onClick={save} disabled={!source} aria-label="Save to device">↓ Save<span className="pg-wide-label"> to device</span></button>
@@ -175,23 +181,24 @@ export default function PlaygroundWorkspace() {
       </aside>
       <div className="pg-editor-stack">
         <div className="pg-file-bar"><button className="pg-files-toggle pg-button" onClick={() => setFilePane(!filePane)}>☷ Files</button><strong>{selected}</strong><span>{source?.entryFile === selected ? "Entry" : "Source"}</span><span className="pg-toolchain">rustc {toolchain.rustVersion} · {toolchain.target}</span></div>
-        <section className="pg-editor-area" aria-label="Code">{text && text instanceof Y.Text ? <PlaygroundCodeEditor filePath={selected} awareness={awareness} maximumBytes={Math.min(65536, 131072 - sourceBytes(source?.files ?? {}) + new TextEncoder().encode(sourceText).length)} text={text} readOnly={readOnly} preferences={preferences} onLimit={() => setNotice("Source limit: 64 KiB per file and 128 KiB for the complete project.")} /> : <div className="pg-empty-state">{link ? "Waiting for the encrypted source…" : "Preparing the editor…"}</div>}</section>
+        <section className="pg-editor-area" aria-label="Code">{text && text instanceof Y.Text ? <PlaygroundCodeEditor filePath={selected} awareness={awareness} maximumBytes={Math.min(65536, 131072 - sourceBytes(source?.files ?? {}) + new TextEncoder().encode(sourceText).length)} text={text} readOnly={readOnly} preferences={preferences} breakpoints={breakpoints[selected] ?? []} currentLine={compiler.debugPause?.site.file === selected ? compiler.debugPause.site.line : undefined} onBreakpoint={line => toggleBreakpoint(selected, line)} onLimit={() => setNotice("Source limit: 64 KiB per file and 128 KiB for the complete project.")} /> : <div className="pg-empty-state">{link ? "Waiting for the encrypted source…" : "Preparing the editor…"}</div>}</section>
         <div className="pg-source-budget"><span>{source ? `${Object.keys(source.files).length}/16 files · ${(sourceBytes(source.files) / 1024).toFixed(1)}/128 KiB` : ""}</span><span>{sourceText ? `${new TextEncoder().encode(sourceText).length} bytes` : ""}</span></div>
-        <div className="pg-dock-tabs" role="tablist" aria-label="Build panels">{[["output", "Output"], ["problems", `Problems ${diagnostics.filter(item => item.level === "error").length}`], ["stdin", "Input"], ["details", "Session"]].map(([key, label]) => <button key={key} role="tab" aria-selected={dock === key} className={dock === key ? "pg-tab pg-tab-active" : "pg-tab"} onClick={() => setDock(key)}>{label}</button>)}</div>
+        <div className="pg-dock-tabs" role="tablist" aria-label="Build panels">{[["output", "Output"], ["problems", `Problems ${diagnostics.filter(item => item.level === "error").length}`], ["debug", "Debug"], ["stdin", "Input"], ["details", "Session"]].map(([key, label]) => <button key={key} role="tab" aria-selected={dock === key} className={dock === key ? "pg-tab pg-tab-active" : "pg-tab"} onClick={() => setDock(key)}>{label}</button>)}</div>
         <section className="pg-output" aria-live="polite">
+          {dock === "debug" ? <>{!compiler.debugPause ? <div className="pg-stage">{compiler.stage}</div> : null}<DebugPanel key={compiler.debugPause?.runningMs ?? "running"} paused={compiler.debugPause} active={compiler.debugging} command={compiler.command} pause={compiler.pauseDebug} breakpoints={breakpoints} remove={toggleBreakpoint} /></> : null}
           {dock === "output" ? <><div className="pg-stage">{compiler.stage}</div>{output ? <><pre>{output.stdout || "(No stdout)"}</pre>{output.stderr || output.trap ? <pre className="pg-error-text">{output.stderr}{output.trap}</pre> : null}<p className="pg-build-time">Exit {output.exitCode} · {(compiler.result!.durationMs / 1000).toFixed(2)}s total · compiled locally</p></> : <p>{compiler.ready ? "Use Run to execute the current Rust source." : `First Run downloads the verified Rust toolchain (${transferMiB} MiB). It is cached on this device when browser storage allows. Source is never sent for compilation.`}</p>}</> : null}
           {dock === "problems" ? diagnostics.length ? diagnostics.map((item, index) => <article className="pg-diagnostic" key={index}><strong>{item.level}{item.code?.code ? ` · ${item.code.code}` : ""}: {item.message}</strong>{item.spans?.filter((span: { is_primary: boolean }) => span.is_primary).map((span: { file_name: string; line_start: number; column_start: number }, i: number) => <button key={i} className="pg-diagnostic-location" onClick={() => setSelected(span.file_name.replace(/^\/work\//, ""))}>{span.file_name}:{span.line_start}:{span.column_start}</button>)}<pre>{item.rendered}</pre></article>) : <p>{compiler.result?.compilation.exitCode === 0 ? "Rust accepted the current build snapshot." : compiler.result?.compilation.stderr || compiler.result?.compilation.trap || "Compiler diagnostics appear here after Check or Run."}</p> : null}
           {dock === "stdin" ? <label className="pg-stdin"><span>Standard input · supplied to the next Run · maximum 32 KiB</span><textarea value={stdin} onChange={event => { if (new TextEncoder().encode(event.target.value).length <= 32768) setStdin(event.target.value); }} spellCheck={false} placeholder="Input for the program…" /></label> : null}
-          {dock === "details" ? <><h2>Temporary by design</h2><p>{lifetimeLabel}. Copy/download source before the session ends. A saved native Crabrix project remains available on your device.</p><p>Shared rooms use AES-256-GCM. The key is in the link fragment. The relay keeps encrypted data in memory until expiry; server restart can end a session earlier.</p><p>The compiler runs standard-library Rust, including multiple local modules. Cargo dependencies, native libraries and server networking are not supplied by this browser path.</p><p>Source debugger integration is being qualified separately from normal Run.</p><p><a href="/guide/#playground" target="_blank" rel="noreferrer">Playground guide</a> · <a href="/licenses/PlaygroundThirdPartyNotices.txt" target="_blank" rel="noreferrer">Editor and runtime licenses</a></p></> : null}
+          {dock === "details" ? <><h2>Temporary by design</h2><p>{lifetimeLabel}. Copy/download source before the session ends. A saved native Crabrix project remains available on your device.</p><p>Shared rooms use AES-256-GCM. The key is in the link fragment. The relay keeps encrypted data in memory until expiry; server restart can end a session earlier.</p><p>The compiler runs standard-library Rust, including multiple local modules. Cargo dependencies, native libraries and server networking are not supplied by this browser path.</p><p>Debug builds insert local checkpoints into synchronous source functions. Stepping, call stack and safe primitive locals run on this device; normal Run is unchanged. Macro expansions, const and async bodies are not stepped internally.</p><p><a href="/guide/#playground" target="_blank" rel="noreferrer">Playground guide</a> · <a href="/licenses/PlaygroundThirdPartyNotices.txt" target="_blank" rel="noreferrer">Editor and runtime licenses</a></p></> : null}
         </section>
       </div>
     </div>
     <dialog ref={dialog} className="pg-dialog" onCancel={() => setModal(null)}>
       <div className="pg-dialog-heading"><h2>{modal === "share" ? "Share this Playground" : modal === "settings" ? "Editor settings" : "Import source"}</h2><button className="pg-icon-button" aria-label="Close" onClick={() => setModal(null)}>×</button></div>
       {notice ? <p className="pg-notice" role="status">{notice}</p> : null}
-      {modal === "share" ? <div className="pg-dialog-body">
-        <p>No login required. Participants decrypt the code locally. Links stop working at the displayed expiry.</p>
-        {!link ? <><label>Lifetime from creation<select value={lifetime} onChange={event => { const seconds = Number(event.target.value); setLifetime(seconds); setExpiresAt(createdAt.current + seconds * 1000); }}><option value={3600}>1 hour</option><option value={14400}>4 hours</option><option value={43200}>12 hours</option><option value={86400}>24 hours</option></select></label><button className="pg-button pg-primary" disabled={sharing} onClick={() => void share().catch(error => setNotice(String(error)))}>{sharing ? "Encrypting…" : "Create temporary Playground link"}</button></> : <>
+      {modal === "share" ? <div className="pg-dialog-body pg-share-body">
+        <div className="pg-share-summary"><strong>Code together. Run on your device.</strong><p>No account needed. Your link contains the decryption key. Share it only with your participants.</p></div>
+        {!link ? <><fieldset className="pg-lifetime"><legend>Link lifetime</legend><div className="pg-lifetime-options">{[[3600,"1 hour"],[14400,"4 hours"],[43200,"12 hours"],[86400,"24 hours"]].map(([seconds,label]) => <button key={seconds} type="button" aria-pressed={lifetime === seconds} onClick={() => { setLifetime(Number(seconds)); setExpiresAt(createdAt.current + Number(seconds) * 1000); }}>{label}</button>)}</div><p>The timer starts when you create the link.</p></fieldset><button className="pg-button pg-save pg-share-create" disabled={sharing} onClick={() => void share().catch(error => setNotice(String(error)))}>{sharing ? "Encrypting source…" : "Create share link"}<span aria-hidden="true">↗</span></button></> : <>
           <label>{link.mode === "view" ? "View-only Playground link" : "Interview link · shared editing"}<textarea readOnly value={playgroundLink(link)} onFocus={event => event.target.select()} /></label>
           <button className="pg-button" onClick={() => void navigator.clipboard.writeText(playgroundLink(link)).then(() => setNotice("Playground link copied."), () => setNotice("Select and copy the link above."))}>Copy Playground link</button>
           {created ? <label>View-only link<textarea readOnly value={playgroundLink({ ...created, access: created.view, mode: "view" })} onFocus={event => event.target.select()} /></label> : null}
@@ -199,7 +206,7 @@ export default function PlaygroundWorkspace() {
           <button className="pg-button" onClick={() => void openInApp()}>Open / save a local copy in Crabrix</button>
           {created ? <button className="pg-button" onClick={async () => { if (!confirm("End this temporary room for every participant? Saved device copies remain.")) return; try { const response = await fetch(`/api/playground/rooms/${created.id}/`, { method: "DELETE", headers: { Authorization: "Bearer " + created.owner }, credentials: "omit" }); if (!response.ok) throw new Error("Could not end this room."); session.current?.stop(); setExpired(true); } catch (error) { setNotice(String(error)); } }}>End room for everyone</button> : null}
         </>}
-        <button className="pg-button pg-save" onClick={save}>Download source ZIP</button>
+        <div className="pg-share-download"><span>Keep a permanent copy on this device</span><button className="pg-button" onClick={save}>Download source ZIP ↓</button></div>
       </div> : null}
       {modal === "settings" ? <div className="pg-dialog-body"><h3>Appearance</h3><div className="pg-theme-grid">{themes.map(([value, label]) => <button key={value} aria-pressed={theme === value} className={theme === value ? "pg-theme pg-selected" : "pg-theme"} onClick={() => setTheme(value)}>{label}<span>{theme === value ? "●" : "○"}</span></button>)}</div><h3>Editor</h3><label>Font size<input type="range" min={12} max={24} value={preferences.fontSize} onChange={event => setPreferences({ ...preferences, fontSize: Number(event.target.value) })} /></label><label>Tab width<select value={preferences.tabSize} onChange={event => setPreferences({ ...preferences, tabSize: Number(event.target.value) })}><option value={2}>2 spaces</option><option value={4}>4 spaces</option></select></label><label className="pg-checkbox"><input type="checkbox" checked={preferences.pairs} onChange={event => setPreferences({ ...preferences, pairs: event.target.checked })} />Pair brackets and quotes</label><label className="pg-checkbox"><input type="checkbox" checked={preferences.wrap} onChange={event => setPreferences({ ...preferences, wrap: event.target.checked })} />Wrap long lines</label><label>Panels<select value={layout} onChange={event => setLayout(event.target.value)}><option value="auto">Automatic</option><option value="vertical">Output below code</option><option value="horizontal">Output beside code</option></select></label><button className="pg-button" onClick={() => { setPreferences(defaultPreferences); setTheme("system"); setLayout("auto"); }}>Reset editor preferences</button></div> : null}
       {modal === "import" ? <div className="pg-dialog-body"><p>Paste a text-only Playground project JSON, or use the source-file import below. GitHub requests go directly from this browser to GitHub. Imported source never starts automatically.</p><label>GitHub repository, gist or Rust Playground link<input type="url" value={importURL} onChange={event => setImportURL(event.target.value)} placeholder="https://github.com/owner/repository" /></label><label>Source folder (optional)<input value={importFolder} onChange={event => setImportFolder(event.target.value)} placeholder="examples/hello" /></label><button className="pg-button pg-primary" disabled={importing || !importURL} onClick={async () => {

@@ -7,7 +7,7 @@
   the earlier account-library proposal.
 - Rust compiles/executes locally in a browser Worker or the installed native app;
   no backend compilation/execution.
-- Anonymous temporary sessions and shared links last at most 24 hours from
+- Anonymous temporary sessions and shared links default to one hour and last at most 24 hours from
   creation. Show remaining time and exact expiry. Viewing/joining does not renew.
 - Live coding interviews with simultaneous editing. The user initially asked for
   pure P2P, then explicitly authorized server traffic as well. A bounded temporary
@@ -78,8 +78,10 @@ not new paid plans or restrictions on existing app project budgets.
   runs completed successfully with separate xcresults. An earlier multi-destination
   Xcode finalizer hang and an ambiguous iPad keyboard selector were harness issues;
   the final independent-destination runs resolve those gates.
-- Interactive source debugging remains unfinished: the production code generator
-  cannot emit valid line metadata. Do not advertise a functioning source debugger.
+- This release 103 record predates the source-instrumented debugger. See
+  [the follow-up record](local-rust-debugger-2026-10-27.md) for the qualified
+  local source-stepping implementation and its boundaries. DWARF emission is
+  still unsupported by this compiler; the debugger does not depend on it.
 - The two actual Simulator apps also passed against the production HTTPS relay,
   alongside Chromium. Both native tests waited for compilation to finish, opened
   Output, and asserted exact STDOUT `pair-run=42`. The source uses `gen` as an

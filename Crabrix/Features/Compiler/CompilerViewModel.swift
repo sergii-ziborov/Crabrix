@@ -166,6 +166,25 @@ final class CompilerViewModel: ObservableObject {
     @Published private(set) var packageTransfers: [PackageTransferRow] = []
     @Published var isPackageProgressPresented = false
     @Published private(set) var buildEvents: [BuildStageEvent] = []
+    @Published private(set) var debugActive = false
+    @Published private(set) var debugPause: RustDebugPause?
+    @Published private(set) var debugSites: [RustDebugSite] = []
+    @Published private(set) var debugBreakpoints: Set<RustDebugBreakpoint> = []
+    private var debugSession: RustDebugSession?
+    private var debugSessionID: UUID?
+
+    func toggleDebugBreakpoint(file: String, line: Int) {
+        guard line > 0 else { return }
+        let value = RustDebugBreakpoint(file: file, line: line)
+        if debugBreakpoints.contains(value) { debugBreakpoints.remove(value) } else { debugBreakpoints.insert(value) }
+        debugSession?.updateBreakpoints(debugBreakpoints)
+    }
+    func resumeDebug(_ command: RustDebugSession.Command) { debugPause = nil; debugSession?.resume(command) }
+    func pauseDebug() { debugSession?.requestPause() }
+    func debug() {
+        guard compilerProjectSnapshot(from: projectSnapshot()).entryPath.hasSuffix(".rs") else { result = .failure(phase: .setup, detail: "Debug is available for Rust source projects. Browser projects use normal Run and their Web Preview console."); return }
+        startBuild(.running, debugging: true)
+    }
     private var packageProgressWasPresented = false
     private var packageTransferID: UUID?
 
@@ -397,6 +416,7 @@ final class CompilerViewModel: ObservableObject {
                 var existing = fileContents; existing[selectedFile] = source
                 let incoming = value.nativeFiles
                 guard existing != incoming || sharedNameChanged || entryFile != value.entryFile else { return }
+                if debugActive { cancelBuild() }
                 let oldSelection = selectedFile
                 suppressAutosave = true
                 fileContents = incoming; fileNames = incoming.keys.sorted(by: projectFileOrder)
@@ -606,8 +626,19 @@ final class CompilerViewModel: ObservableObject {
     }
 
     private func startBuild(_ mode: Activity, browserDirectory: String? = nil,
-                            prepareBrowserPackages: Bool = false, frozenBrowserPackages: Bool = false) {
+                            prepareBrowserPackages: Bool = false, frozenBrowserPackages: Bool = false,
+                            debugging: Bool = false) {
         guard canStartBuild else { return }
+        if debugging {
+            debugActive = true; debugPause = nil; debugSites = []
+            let identity = UUID(); debugSessionID = identity
+            let session = RustDebugSession(breakpoints: debugBreakpoints, onPlan: { [weak self] sites in
+                Task { @MainActor [weak self] in guard let self, debugSessionID == identity else { return }; debugSites = sites }
+            }, onPause: { [weak self] snapshot in
+                Task { @MainActor [weak self] in guard let self, debugSessionID == identity else { return }; debugPause = snapshot }
+            })
+            debugSession = session
+        }
         resetDiagnosticAdvice()
         let revision = workspaceRevision
         activity = mode
@@ -793,7 +824,11 @@ final class CompilerViewModel: ObservableObject {
                     onStage: stageHandler
                 )
             default:
-                await compiler.run(
+                if let debugSession {
+                    await compiler.debug(source: compilerProject.main, sourcePath: compilerProject.entryPath,
+                        supportingFiles: compilerProject.supporting, edition: rootEdition, plan: plan, session: debugSession,
+                        onDependencyProgress: plan.isEmpty ? nil : progress, onStage: stageHandler)
+                } else { await compiler.run(
                     source: compilerProject.main,
                     sourcePath: compilerProject.entryPath,
                     supportingFiles: compilerProject.supporting,
@@ -801,7 +836,7 @@ final class CompilerViewModel: ObservableObject {
                     plan: plan,
                     onDependencyProgress: plan.isEmpty ? nil : progress,
                     onStage: stageHandler
-                )
+                ) }
             }
 
             guard !Task.isCancelled,
@@ -1232,6 +1267,7 @@ final class CompilerViewModel: ObservableObject {
 
     func cancelBuild() {
         guard isBusy, activeCompilationID != nil else { return }
+        debugSession?.stop(); debugSession = nil; debugSessionID = nil; debugActive = false; debugPause = nil
         // Interrupt the guest itself; the task cancellation below only detaches
         // the UI from a worker that would otherwise run to completion.
         compiler.cancel()
@@ -2178,6 +2214,7 @@ final class CompilerViewModel: ObservableObject {
 
     private func finish(_ value: CompilationResult, revision: WorkspaceRevision) {
         guard isCurrent(revision) else { return }
+        debugSession = nil; debugSessionID = nil; debugActive = false; debugPause = nil
         appendBuildStage(value.succeeded ? "Finished successfully" : "Stopped · see Problems for details")
         result = value
         activity = .idle
@@ -2317,6 +2354,7 @@ final class CompilerViewModel: ObservableObject {
 
     private func discardCompilationIfActive(_ compilationID: UUID) {
         guard activeCompilationID == compilationID else { return }
+        debugSession?.stop(); debugSession = nil; debugSessionID = nil; debugActive = false; debugPause = nil
         activity = .idle
         isCompilerDraining = false
         compilationTask = nil
@@ -2326,6 +2364,7 @@ final class CompilerViewModel: ObservableObject {
 
     private func workspaceDidChange() {
         guard !suppressAutosave else { return }
+        if debugActive { cancelBuild() }
         if !isApplyingPlayground, let connection = playgroundSession {
             do { try connection.replace(playgroundDocument()) }
             catch {

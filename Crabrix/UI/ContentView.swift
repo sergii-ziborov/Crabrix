@@ -91,6 +91,7 @@ struct ContentView: View {
     @State private var isNewProjectPresented = false
     @State private var pendingNewProjectImport: ProjectImportSource?
     @State private var isProjectActionsPresented = false
+    @State private var isDebuggerInspectorPresented = false
     @State private var isPlaygroundPresented = false
     @State private var pendingPlaygroundURL: URL?
     @State private var isCargoCatalogPresented = false
@@ -170,7 +171,7 @@ struct ContentView: View {
         }
     }
 
-    private func tabContent(tabletop: Bool, hingeGlobalY: CGFloat) -> some View {
+    private func tabNavigation(tabletop: Bool, hingeGlobalY: CGFloat) -> some View {
         TabView(selection: $selectedDestination) {
             Group {
                 if isWorkspaceOpen {
@@ -276,6 +277,12 @@ struct ContentView: View {
         .preferredColorScheme(
             CrabrixAppearance(rawValue: appearanceRaw)?.colorScheme
         )
+    }
+
+    // Opaque boundaries keep SwiftUI's type checker bounded. Modifier order
+    // and the existing navigation, keyboard and fold layout stay identical.
+    private func tabPresentations(tabletop: Bool, hingeGlobalY: CGFloat) -> some View {
+        tabNavigation(tabletop: tabletop, hingeGlobalY: hingeGlobalY)
         .sheet(isPresented: $isCargoCatalogPresented) {
             CargoDependencyCatalogSheet(onAdd: model.addCargoDependency)
         }
@@ -336,7 +343,8 @@ struct ContentView: View {
                 },
                 onSaveToFiles: prepareExport,
                 onShareArchive: prepareArchiveShare,
-                onSharePlayground: { isPlaygroundPresented = true }
+                onSharePlayground: { isPlaygroundPresented = true },
+                onDebug: { editorKeyboard.dismissKeyboard(); selectedBuildDockTab = .code; model.debug() }
             )
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
@@ -431,6 +439,10 @@ struct ContentView: View {
             case let .failure(error): model.reportProjectFailure(error)
             }
         }
+    }
+
+    private func tabContent(tabletop: Bool, hingeGlobalY: CGFloat) -> some View {
+        tabPresentations(tabletop: tabletop, hingeGlobalY: hingeGlobalY)
         .task {
             await academy.prepare()
             let arguments = ProcessInfo.processInfo.arguments
@@ -482,6 +494,11 @@ struct ContentView: View {
                 }
             }
             #if DEBUG || CRABRIX_LEGACY_FIXTURES
+            if arguments.contains("--crabrix-auto-debug-fixture") {
+                model.loadRunnableSample(projectName: "debugger-lab")
+                _ = model.replaceProjectFilesFromTerminal(["main.rs": "fn add(a: i32, b: i32) -> i32 {\n let c = a + b;\n c\n}\nfn main() {\n let mut total = 0;\n for i in 0..3 {\n total += add(i,1);\n }\n println!(\"total={total}\");\n}\n"], selecting: "main.rs")
+                openCodeWorkspace()
+            }
             if let linkArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-playground=") }),
                let url = URL(string: String(linkArgument.dropFirst("--crabrix-auto-playground=".count))) {
                 handleIncomingURL(url)
@@ -522,6 +539,8 @@ struct ContentView: View {
         .onChange(of: model.isBusy) { _, isBusy in
             UIApplication.shared.isIdleTimerDisabled = isBusy && keepAwakeDuringBuild
         }
+        .modifier(RustDebuggerPresentation(model: model, presented: $isDebuggerInspectorPresented,
+            selectedTab: $selectedBuildDockTab, navigationTarget: $editorNavigationTarget, keyboard: editorKeyboard))
         .onChange(of: model.projectID) { _, _ in
             terminal.attach(to: model.exportProject())
             selectedBuildDockTab = ProcessInfo.processInfo.arguments.contains("--crabrix-auto-terminal")
@@ -618,6 +637,7 @@ struct ContentView: View {
     }
 
     private func closeBuildWorkspace() {
+        if model.debugActive { model.cancelBuild() }
         isWorkspaceOpen = false
         if let lessonID = model.activeLessonID,
            let course = academy.repository?.course(containing: lessonID) {
@@ -688,6 +708,7 @@ struct ContentView: View {
                 projectName: model.projectName,
                 activity: model.activity,
                 cargoStage: model.cargoStage,
+                debugPaused: model.debugPause != nil,
                 files: model.fileNames,
                 selectedFile: model.selectedFile,
                 isProjectSidebarCollapsed: fixedSidebar ? false : !isCompactProjectDrawerPresented,
@@ -761,10 +782,13 @@ struct ContentView: View {
                 cursorOffset: $editorCursorOffset,
                 projectID: model.projectID,
                 filePath: model.selectedFile,
-                isEditable: !model.isProjectOperationInProgress && !model.playgroundIsReadOnly,
+                isEditable: !model.isProjectOperationInProgress && !model.playgroundIsReadOnly && !model.debugActive,
                 remoteSelections: model.playgroundSelections,
                 collaborationSelection: model.playgroundLocalSelection,
                 onSelectionChange: { [path = model.selectedFile] range in model.sharePlaygroundSelection(file: path, range: range) },
+                breakpoints: Set(model.debugBreakpoints.filter { $0.file == model.selectedFile }.map(\.line)),
+                debugLine: model.debugPause?.site.file == model.selectedFile ? model.debugPause?.site.line : nil,
+                onBreakpoint: { [path = model.selectedFile] line in model.toggleDebugBreakpoint(file: path, line: line) },
                 tracksTyping: !model.activeLessonIsReview,
                 diagnostics: model.result?.diagnostics ?? [],
                 navigationTarget: editorNavigationTarget,
@@ -814,6 +838,9 @@ struct ContentView: View {
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if model.debugActive { RustDebuggerBar(model: model, onInspect: { isDebuggerInspectorPresented = true }) }
         }
     }
 
@@ -971,7 +998,7 @@ struct ContentView: View {
                 editorPane(fixedSidebar: false, hingeGlobalY: hingeGlobalY)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                if !isCompactProjectDrawerPresented {
+                if !isCompactProjectDrawerPresented && !model.debugActive {
                     HStack(spacing: 0) {
                         CompactEdgeSwipeZone(edge: .leading) {
                             withAnimation(.easeOut(duration: 0.22)) {
@@ -1909,6 +1936,7 @@ private struct EditorToolbar: View {
     let projectName: String
     let activity: CompilerViewModel.Activity
     let cargoStage: CargoPreparationStage
+    var debugPaused = false
     let files: [String]
     let selectedFile: String
     let isProjectSidebarCollapsed: Bool
@@ -1921,13 +1949,14 @@ private struct EditorToolbar: View {
     /// The running state stays visible above the editor on both device sizes.
     private var buildStatus: some View {
         HStack(spacing: 7) {
-            ProgressView().controlSize(.mini).tint(CrabrixTheme.amber)
-            Text(cargoStage.isWorking ? cargoStage.label : activity.label)
+            if debugPaused { Image(systemName: "pause.circle").foregroundStyle(CrabrixTheme.lessonCode) }
+            else { ProgressView().controlSize(.mini).tint(CrabrixTheme.amber) }
+            Text(debugPaused ? "Debugger paused locally" : cargoStage.isWorking ? cargoStage.label : activity.label)
                 .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(CrabrixTheme.muted)
                 .lineLimit(1)
             Spacer(minLength: 0)
-            Text(activity == .checking ? "CHECK" : "RUN")
+            Text(debugPaused ? "DEBUG" : activity == .checking ? "CHECK" : "RUN")
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
                 .foregroundStyle(activity == .checking ? CrabrixTheme.blue : CrabrixTheme.coral)
         }

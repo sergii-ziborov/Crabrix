@@ -262,7 +262,8 @@ final class RustcRuntime: @unchecked Sendable {
         softwareMemoryReservationBytes: Int? = nil,
         capturedOutputLimitBytes: Int? = nil,
         enableProceduralMacros: Bool = false,
-        proceduralMacroInputs: [String] = []
+        proceduralMacroInputs: [String] = [],
+        debugSession: RustDebugSession? = nil
     ) throws -> WasmProcessResult {
         let started = ContinuousClock.now
         let outputBudget = try capturedOutputLimitBytes.map { limit in
@@ -319,6 +320,7 @@ final class RustcRuntime: @unchecked Sendable {
                 defer { macroSession?.close() }
                 if let macroSession { macroSession.transport.link(to: &imports, store: store) }
                 else { ProcMacroTransport.linkUnavailable(to: &imports, store: store) }
+                debugSession?.link(to: &imports, store: store, interrupter: interrupter)
                 let instance = try module.instantiate(store: store, imports: imports)
                 CompilerPhaseTrace.emit("instantiate", since: instantiateStarted)
                 let guestStarted = ContinuousClock.now
@@ -481,6 +483,8 @@ final class WasmInterrupter: ExecutionCancellation, @unchecked Sendable {
     }
 
     var isCancelled: Bool { state.reason != nil }
+    func pauseDeadline() { state.pauseDeadline() }
+    func resumeDeadline() { state.resumeDeadline() }
 
     /// Re-defines each WASI import as a guard that checks cancellation first.
     func wrapHostFunctions(of wasi: WASIBridgeToHost, into imports: inout Imports, store: Store) {
@@ -498,6 +502,7 @@ final class AtomicStopState: @unchecked Sendable {
     private let lock = NSLock()
     private var storedReason: WasmStopReason?
     private var deadline: ContinuousClock.Instant?
+    private var pausedRemaining: Duration?
     private let clock = ContinuousClock()
 
     var reason: WasmStopReason? {
@@ -510,7 +515,18 @@ final class AtomicStopState: @unchecked Sendable {
     }
 
     func setDeadline(after duration: Duration) {
-        lock.withLock { deadline = clock.now.advanced(by: duration) }
+        lock.withLock { pausedRemaining = nil; deadline = clock.now.advanced(by: duration) }
+    }
+
+    func pauseDeadline() {
+        lock.withLock {
+            if let value = deadline { pausedRemaining = max(.zero, clock.now.duration(to: value)); deadline = nil }
+        }
+    }
+    func resumeDeadline() {
+        lock.withLock {
+            if let remaining = pausedRemaining { deadline = clock.now.advanced(by: remaining); pausedRemaining = nil }
+        }
     }
 
     func cancel(reason: WasmStopReason) {

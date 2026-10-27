@@ -1,0 +1,134 @@
+{
+  "at": "2026-10-27T17:21:09.445682+00:00",
+  "backendCompilationOrExecution": false,
+  "implementation": "Actual pinned Rust compiler, source checkpoint instrumentation, bounded Wasm host import",
+  "normalRunAndEditableSourcePreserved": true,
+  "defaultSharingSeconds": 3600,
+  "native": {
+    "hostTests": 15,
+    "failures": 0,
+    "includes": [
+      "actual Rust steps, breakpoints, locals and stdout",
+      "Stop and normal Run recovery",
+      "paused deadline",
+      "original licenses",
+      "actual iOS WebKit Debug and Run",
+      "terminal keyboard regression"
+    ],
+    "phoneUI": "DebuggerPhoneQualified.xcresult",
+    "padUI": "DebuggerPadFrozen.xcresult",
+    "host": "NativeDebuggerQualified.xcresult"
+  },
+  "browser": {
+    "at": "2026-10-27T17:02:08.161Z",
+    "origin": "http://127.0.0.1:3393",
+    "passed": [
+      "entry pause",
+      "breakpoint",
+      "loop locals",
+      "step into",
+      "step over",
+      "step out",
+      "call stack",
+      "actual stdout",
+      "source preserved",
+      "offline compilation",
+      "responsive Stop"
+    ],
+    "backendExecution": false
+  },
+  "rustSemantics": {
+    "at": "2026-10-27T17:00:21.848Z",
+    "actualPinnedRustCompiler": true,
+    "backendExecution": false,
+    "results": [
+      {
+        "name": "recursion",
+        "pauses": 12,
+        "stdout": "120\n"
+      },
+      {
+        "name": "moves and shadowing",
+        "pauses": 9,
+        "stdout": "inner\n2\n"
+      },
+      {
+        "name": "borrow and late initialization",
+        "pauses": 7,
+        "stdout": "3 4\n"
+      },
+      {
+        "name": "const evaluation",
+        "pauses": 3,
+        "stdout": "5 2\n"
+      },
+      {
+        "name": "Unicode and JSON chars",
+        "pauses": 5,
+        "stdout": "4 '\"' '\\n'\n"
+      },
+      {
+        "name": "return break continue",
+        "pauses": 33,
+        "stdout": "7\n"
+      },
+      {
+        "name": "closure borrows",
+        "pauses": 5,
+        "stdout": "3\n"
+      },
+      {
+        "name": "match shadow binding",
+        "pauses": 5,
+        "stdout": "ok\n"
+      },
+      {
+        "name": "if let shadow binding",
+        "pauses": 7,
+        "stdout": "ok\n4\n"
+      },
+      {
+        "name": "nested modules",
+        "pauses": 5,
+        "stdout": "5\n"
+      },
+      {
+        "name": "unit tail",
+        "pauses": 5,
+        "stdout": "true\n"
+      },
+      {
+        "name": "statement attributes",
+        "debugUnavailable": true,
+        "normalRunWorks": true
+      },
+      {
+        "name": "compile-time column",
+        "debugUnavailable": true,
+        "normalRunWorks": true
+      }
+    ]
+  },
+  "sharing": {
+    "at": "2026-10-27T17:11:18.476Z",
+    "origin": "http://127.0.0.1:3393",
+    "defaultLifetimeSeconds": 3600,
+    "debugStoppedOnRemoteEdit": true,
+    "sourceAndSelection": true
+  },
+  "layouts": {
+    "normal": 12,
+    "debugPaused": 12
+  },
+  "siteUnitTests": 27,
+  "physicalDeviceTested": false,
+  "rawArtifacts": "build/debugger-20261027/",
+  "limits": [
+    "synchronous source statements",
+    "primitive locals only; aggregates/borrowed/captured not decoded",
+    "no stepping inside async/const bodies, dependency code or macro expansions",
+    "safe Debug fallbacks preserve normal Run",
+    "browser Debug requires isolated shared memory",
+    "30-minute pause cap; bounded stack/checkpoints/guest memory/output"
+  ]
+}

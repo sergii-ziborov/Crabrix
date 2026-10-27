@@ -450,6 +450,35 @@ schemes:
           selectedTests:
             - PlaygroundTests
 
+  CrabrixDebuggerGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+    test:
+      config: CompilerCandidate
+      gatherCoverageData: false
+      targets:
+        - name: CrabrixTests
+          selectedTests:
+            - RustDebuggerTests
+            - BundledLicenseTests
+            - BrowserPlaygroundWebKitTests
+            - TerminalKeyboardTests
+
+  CrabrixDebuggerUIGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixScreenshotTests: [test]
+    test:
+      config: CompilerCandidate
+      gatherCoverageData: false
+      targets:
+        - name: CrabrixScreenshotTests
+          selectedTests:
+            - RustDebuggerUITests
+
   CrabrixBrowserPlaygroundGate:
     build:
       targets:

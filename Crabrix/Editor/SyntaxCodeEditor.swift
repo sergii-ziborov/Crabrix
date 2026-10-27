@@ -133,6 +133,9 @@ struct SyntaxCodeEditor: UIViewRepresentable {
     var remoteSelections: [PlaygroundRemoteSelection] = []
     var collaborationSelection: PlaygroundRemoteSelection?
     var onSelectionChange: (NSRange) -> Void = { _ in }
+    var breakpoints: Set<Int> = []
+    var debugLine: Int?
+    var onBreakpoint: ((Int) -> Void)?
     let tracksTyping: Bool
     let diagnostics: [RustDiagnostic]
     let navigationTarget: EditorNavigationTarget?
@@ -156,6 +159,9 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         remoteSelections: [PlaygroundRemoteSelection] = [],
         collaborationSelection: PlaygroundRemoteSelection? = nil,
         onSelectionChange: @escaping (NSRange) -> Void = { _ in },
+        breakpoints: Set<Int> = [],
+        debugLine: Int? = nil,
+        onBreakpoint: ((Int) -> Void)? = nil,
         tracksTyping: Bool = true,
         diagnostics: [RustDiagnostic] = [],
         navigationTarget: EditorNavigationTarget?,
@@ -173,6 +179,9 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         self.remoteSelections = remoteSelections
         self.collaborationSelection = collaborationSelection
         self.onSelectionChange = onSelectionChange
+        self.breakpoints = breakpoints
+        self.debugLine = debugLine
+        self.onBreakpoint = onBreakpoint
         self.tracksTyping = tracksTyping
         self.diagnostics = diagnostics
         self.navigationTarget = navigationTarget
@@ -208,6 +217,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         canvas.lineNumberColor = UIColor(CrabrixTheme.muted).withAlphaComponent(0.82)
         canvas.gutterSeparatorColor = UIColor(CrabrixTheme.border)
         canvas.gutterBackgroundColor = UIColor(CrabrixTheme.editor)
+        canvas.configureDebugger(breakpoints: breakpoints, line: debugLine, onToggle: filePath.hasSuffix(".rs") ? onBreakpoint : nil)
         textView.text = text
         context.coordinator.textView = textView
         context.coordinator.canvas = canvas
@@ -263,6 +273,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         canvas.lineNumberColor = UIColor(CrabrixTheme.muted).withAlphaComponent(0.82)
         canvas.gutterSeparatorColor = UIColor(CrabrixTheme.border)
         canvas.gutterBackgroundColor = UIColor(CrabrixTheme.editor)
+        canvas.configureDebugger(breakpoints: breakpoints, line: debugLine, onToggle: filePath.hasSuffix(".rs") ? onBreakpoint : nil)
         if textView.text != text {
             textView.text = text
             let length = (text as NSString).length
@@ -593,7 +604,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
 /// wrapped or clipped at the right edge — laid out, sometimes even scrollable,
 /// and never drawn. Making the text view as wide as the widest line and
 /// scrolling it from outside is what puts the whole line on screen.
-final class CodeEditorCanvas: UIView {
+final class CodeEditorCanvas: UIView, UIGestureRecognizerDelegate {
     let textView: RustSourceTextView
     private let scrollView = UIScrollView()
     fileprivate var keyboardBar: RustKeyboardAccessoryView?
@@ -623,6 +634,29 @@ final class CodeEditorCanvas: UIView {
         view.backgroundColor = gutterBackgroundColor
         return view
     }()
+    private let debugHighlight = UIView()
+    private lazy var debugGutterTap: UITapGestureRecognizer = {
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(debugGutterTapped))
+        gesture.delegate = self
+        return gesture
+    }()
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        gestureRecognizer !== debugGutterTap || (gutterView.onToggle != nil && touch.location(in: self).x < Self.gutterWidth)
+    }
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        gestureRecognizer === debugGutterTap || otherGestureRecognizer === debugGutterTap
+    }
+    @objc private func debugGutterTapped(_ gesture: UITapGestureRecognizer) { gutterView.toggleLine(at: gesture.location(in: self).y); textView.resignFirstResponder() }
+    fileprivate func configureDebugger(breakpoints: Set<Int>, line: Int?, onToggle: ((Int) -> Void)?) {
+        gutterView.breakpoints = breakpoints; gutterView.currentLine = line; gutterView.onToggle = onToggle
+        textView.accessibilityCustomActions = onToggle == nil ? [] : [UIAccessibilityCustomAction(name: "Toggle breakpoint at current line") { [weak textView] _ in
+            guard let textView else { return false }
+            let offset = min(textView.selectedRange.location, (textView.text as NSString).length)
+            let line = (textView.text as NSString).substring(to: offset).filter { $0 == "\n" }.count + 1
+            onToggle?(line); return true
+        }]
+        positionGutter()
+    }
 
     private let remoteOverlay = PlaygroundSelectionOverlay()
     private var remoteSelections: [PlaygroundRemoteSelection] = []
@@ -658,7 +692,11 @@ final class CodeEditorCanvas: UIView {
         addSubview(scrollView)
         scrollView.addSubview(textView)
         textView.addSubview(remoteOverlay)
+        debugHighlight.isUserInteractionEnabled = false
+        debugHighlight.backgroundColor = UIColor(CrabrixTheme.blue).withAlphaComponent(0.1)
+        addSubview(debugHighlight)
         addSubview(gutterView)
+        addGestureRecognizer(debugGutterTap)
     }
 
     @available(*, unavailable)
@@ -776,6 +814,11 @@ final class CodeEditorCanvas: UIView {
             size: bounds.size
         ))
         gutterView.setNeedsDisplay()
+        gutterView.refreshAccessibility()
+        if let line = gutterView.lines.first(where: { $0.number == gutterView.currentLine }) {
+            debugHighlight.isHidden = false
+            debugHighlight.frame = CGRect(x: Self.gutterWidth, y: line.y - gutterView.verticalOffset, width: max(0, bounds.width - Self.gutterWidth), height: textView.font?.lineHeight ?? 18)
+        } else { debugHighlight.isHidden = true }
     }
 
     /// Brings a range of the file into view without moving more than it must.
@@ -1037,6 +1080,29 @@ final class GutterView: UIView {
     var lineNumberColor = UIColor.secondaryLabel
     var separatorColor = UIColor.separator
     var numberFont = UIFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular)
+    var breakpoints: Set<Int> = []
+    var currentLine: Int?
+    var onToggle: ((Int) -> Void)?
+
+    func refreshAccessibility() {
+        guard onToggle != nil else { accessibilityElements = []; return }
+        accessibilityElements = lines.compactMap { line -> UIAccessibilityElement? in
+            let y = line.y - verticalOffset
+            guard y >= 0, y < bounds.height else { return nil }
+            let element = BreakpointAccessibilityElement(accessibilityContainer: self)
+            element.accessibilityLabel = "\(breakpoints.contains(line.number) ? "Remove" : "Add") breakpoint at line \(line.number)"
+            element.accessibilityTraits = .button
+            element.accessibilityFrameInContainerSpace = CGRect(x: 0, y: y, width: bounds.width, height: max(numberFont.lineHeight, 16))
+            element.action = { [weak self] in self?.onToggle?(line.number) }
+            return element
+        }
+    }
+
+    func toggleLine(at visibleY: CGFloat) {
+        let y = visibleY + verticalOffset
+        guard let line = lines.min(by: { abs($0.y + numberFont.lineHeight / 2 - y) < abs($1.y + numberFont.lineHeight / 2 - y) }), abs(line.y + numberFont.lineHeight / 2 - y) <= numberFont.lineHeight * 1.5 else { return }
+        onToggle?(line.number)
+    }
 
     override func draw(_ rect: CGRect) {
         // Opaque behind the numbers so code scrolling past cannot show through.
@@ -1052,6 +1118,14 @@ final class GutterView: UIView {
             let y = line.y - verticalOffset
             guard y > -numberFont.lineHeight, y < bounds.height else { continue }
             let value = "\(line.number)" as NSString
+            if breakpoints.contains(line.number) {
+                UIColor(CrabrixTheme.coral).setFill()
+                UIBezierPath(ovalIn: CGRect(x: 5, y: y + max(0, (numberFont.lineHeight - 7) / 2), width: 7, height: 7)).fill()
+            }
+            if currentLine == line.number {
+                UIColor(CrabrixTheme.blue).setFill()
+                UIRectFill(CGRect(x: 0, y: y, width: 3, height: numberFont.lineHeight))
+            }
             let size = value.size(withAttributes: attributes)
             value.draw(
                 at: CGPoint(x: bounds.width - size.width - 8, y: y),
@@ -1066,6 +1140,11 @@ final class GutterView: UIView {
         separator.lineWidth = 1 / max(contentScaleFactor, 1)
         separator.stroke()
     }
+}
+
+private final class BreakpointAccessibilityElement: UIAccessibilityElement {
+    var action: (() -> Void)?
+    override func accessibilityActivate() -> Bool { action?(); return true }
 }
 
 fileprivate final class RustKeyboardAccessoryView: UIView {

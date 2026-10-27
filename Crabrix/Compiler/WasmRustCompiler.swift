@@ -157,6 +157,30 @@ final class WasmRustCompiler: @unchecked Sendable {
         )
     }
 
+    func debug(
+        source: String, sourcePath: String = "main.rs", supportingFiles: [String: String] = [:],
+        edition: String = "2024", plan: CargoBuildPlan = .empty, session: RustDebugSession,
+        onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
+        onStage: (@Sendable (String) -> Void)? = nil
+    ) async -> CompilationResult {
+        await withCheckedContinuation { continuation in
+            queue.async(qos: .userInitiated, flags: .enforceQoS) { [self] in
+                let checked = execute(action: .check, source: source, sourcePath: sourcePath, supportingFiles: supportingFiles, edition: edition, plan: plan, onDependencyProgress: onDependencyProgress, onStage: onStage)
+                guard checked.succeeded else { continuation.resume(returning: checked); return }
+                guard !session.isStopped else { continuation.resume(returning: .failure(phase: .setup, detail: "Debug stopped before execution.")); return }
+                do {
+                    onStage?("Preparing separate local Debug snapshot")
+                    var files = supportingFiles; files[sourcePath] = source
+                    let instrumented = try RustDebugInstrumenter.instrument(files: files, entryFile: sourcePath, bundle: bundle)
+                    session.prepare(instrumented)
+                    files.merge(instrumented.files) { _, debug in debug }
+                    let main = files.removeValue(forKey: sourcePath)!
+                    continuation.resume(returning: execute(action: .run, source: main, sourcePath: sourcePath, supportingFiles: files, edition: edition, plan: plan, onDependencyProgress: onDependencyProgress, onStage: onStage, debugSession: session))
+                } catch { continuation.resume(returning: .failure(phase: .setup, detail: error.localizedDescription)) }
+            }
+        }
+    }
+
     /// Stops the guest currently executing on the compiler queue.
     ///
     /// Cancellation is checked in WasmKit's dispatch loop and at every WASI
@@ -235,14 +259,17 @@ final class WasmRustCompiler: @unchecked Sendable {
         edition: String,
         plan: CargoBuildPlan,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?,
-        onStage: (@Sendable (String) -> Void)?
+        onStage: (@Sendable (String) -> Void)?,
+        debugSession: RustDebugSession? = nil
     ) -> CompilationResult {
         let started = clock.now
         let interrupter = WasmInterrupter()
         interrupterLock.lock()
         activeInterrupter = interrupter
         interrupterLock.unlock()
+        debugSession?.attach(interrupter)
         defer {
+            debugSession?.attach(nil)
             interrupterLock.lock()
             activeInterrupter = nil
             interrupterLock.unlock()
@@ -307,7 +334,8 @@ final class WasmRustCompiler: @unchecked Sendable {
                     started: started,
                     interrupter: interrupter,
                     previewSourceFiles: supportingFiles,
-                    successDetail: "Executed a cached local build artifact inside the bounded WasmKit sandbox."
+                    successDetail: "Executed a cached local build artifact inside the bounded WasmKit sandbox.",
+                    debugSession: debugSession
                 )
             }
 
@@ -352,6 +380,7 @@ final class WasmRustCompiler: @unchecked Sendable {
 
             var rootEnvironment = rootCargoEnvironment(
                 sourcePath: sourcePath, supportingFiles: supportingFiles, features: plan.rootFeatures)
+            if debugSession != nil { rootEnvironment["CLIF2WASM_IMPORTS"] = RustDebugSession.importName }
             var rootScriptOutput = CargoBuildScriptOutput()
             var rootGeneratedURL: URL?
             if let manifestText = supportingFiles["Cargo.toml"],
@@ -521,7 +550,8 @@ final class WasmRustCompiler: @unchecked Sendable {
                 previewSourceFiles: supportingFiles,
                 successDetail: plan.isEmpty
                     ? "Compiled and executed locally inside the bounded WasmKit sandbox."
-                    : "Compiled \(plan.units.count) dependencies and the program locally, then ran it in the bounded sandbox."
+                    : "Compiled \(plan.units.count) dependencies and the program locally, then ran it in the bounded sandbox.",
+                debugSession: debugSession
             )
         } catch let cancellation as WasmExecutionCancelled {
             return cancelledResult(
@@ -1109,7 +1139,8 @@ final class WasmRustCompiler: @unchecked Sendable {
         started: ContinuousClock.Instant,
         interrupter: WasmInterrupter,
         previewSourceFiles: [String: String],
-        successDetail: String
+        successDetail: String,
+        debugSession: RustDebugSession? = nil
     ) throws -> CompilationResult {
         let sandboxURL = jobRoot.appending(path: "sandbox", directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: sandboxURL, withIntermediateDirectories: true)
@@ -1142,7 +1173,8 @@ final class WasmRustCompiler: @unchecked Sendable {
                 wallClockLimit: WasmSandboxPolicy.userProgramWallClockLimit,
                 interrupter: interrupter,
                 softwareMemoryReservationBytes: WasmSandboxPolicy.userProgramMemoryLimitBytes,
-                capturedOutputLimitBytes: WasmSandboxPolicy.userProgramOutputLimitBytes
+                capturedOutputLimitBytes: WasmSandboxPolicy.userProgramOutputLimitBytes,
+                debugSession: debugSession
             )
         } catch let cancellation as WasmExecutionCancelled {
             return cancelledResult(phase: .run, started: started, cancellation: cancellation)

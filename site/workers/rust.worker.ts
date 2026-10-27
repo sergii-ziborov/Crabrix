@@ -4,6 +4,8 @@ import { gunzipSync, unzipSync } from "fflate";
 import manifest from "../lib/playground-toolchain.json";
 import { validatePlaygroundDocument } from "../lib/playground-document";
 import { limitProgramMemory } from "../lib/wasm-resource-limits";
+import { instrumentRust, debugImport } from "../lib/rust-debug-instrumentation";
+import { RustDebugSession } from "../lib/rust-debug-session";
 
 const worker = self as unknown as DedicatedWorkerGlobalScope;
 const encoder = new TextEncoder();
@@ -88,7 +90,8 @@ async function initialize() {
   stage("Local Rust compiler ready");
 }
 
-async function invoke(module: WebAssembly.Module, args: string[], input: string, mounts: PreopenDirectory[], isCompiler = false) {
+type DebugHost = { control: Int32Array; session: RustDebugSession; runningMs: number; resumedAt: number };
+async function invoke(module: WebAssembly.Module, args: string[], input: string, mounts: PreopenDirectory[], isCompiler = false, debugging?: DebugHost, compileDebug = false) {
   let stdout = "", stderr = "", capturedBytes = 0;
   const decoders = [new TextDecoder(), new TextDecoder()];
   const capture = (index: number) => new ConsoleStdout(bytes => {
@@ -97,10 +100,18 @@ async function invoke(module: WebAssembly.Module, args: string[], input: string,
     const text = decoders[index].decode(bytes, { stream: true });
     if (index === 0) stdout += text; else stderr += text;
   });
-  const wasi = new WASI(args, ["PWD=/work", "TMPDIR=/tmp", ...(isCompiler ? ["CLIF2WASM_OBJECT=1"] : [])], [
+  const wasi = new WASI(args, ["PWD=/work", "TMPDIR=/tmp", ...(isCompiler ? ["CLIF2WASM_OBJECT=1", ...(compileDebug ? [`CLIF2WASM_IMPORTS=${debugImport}`] : [])] : [])], [
     new OpenFile(new File(encoder.encode(input))), capture(0), capture(1), ...mounts,
   ]);
-  const instance = await WebAssembly.instantiate(module, { wasi_snapshot_preview1: wasi.wasiImport });
+  const instance = await WebAssembly.instantiate(module, { wasi_snapshot_preview1: wasi.wasiImport, ...(debugging ? { env: {
+    [debugImport]: (kind: number, site: number, pointer: number, length: number) => {
+      const memory = instance.exports.memory as WebAssembly.Memory;
+      pointer >>>= 0; length >>>= 0;
+      if (length > 65536 || pointer > memory.buffer.byteLength || length > memory.buffer.byteLength - pointer) throw new Error("Invalid debugger memory range.");
+      if (debugging.runningMs + performance.now() - debugging.resumedAt > 30_000) throw new Error("Debug reached its 30-second running-time limit. Paused time is excluded.");
+      debugging.session.event(kind, site, new Uint8Array(memory.buffer, pointer, length));
+    },
+  } } : {}) });
   let exitCode = 1, trap: string | undefined;
   try { exitCode = wasi.start(instance as Parameters<WASI["start"]>[0]); }
   catch (error) { trap = String(error); }
@@ -114,6 +125,8 @@ worker.onmessage = async ({ data }) => {
     if (data.type === "initialize") { await initialize(); worker.postMessage({ type: "ready" }); return; }
     if (!compiler || !sysroot) throw new Error("Load the local Rust toolchain first.");
     const source = validatePlaygroundDocument(data.document);
+    const isDebug = data.type === "debug";
+    if (isDebug && (!(data.control instanceof SharedArrayBuffer) || data.control.byteLength !== (8192 + 5) * 4)) throw new Error("Debug requires an isolated browser context with shared control memory.");
     if (typeof data.stdin !== "string" || encoder.encode(data.stdin).length > 32 * 1024) throw new Error("stdin must be at most 32 KiB.");
     const work = new Map<string, File | Directory>();
     for (const [path, text] of Object.entries(source.files)) insert(work, path, new File(encoder.encode(text)));
@@ -121,7 +134,29 @@ worker.onmessage = async ({ data }) => {
     stage(check ? "Checking Rust source locally" : "Compiling and linking Rust locally");
     const args = ["rustc", "/work/" + source.entryFile, "--crate-name", "playground", "--sysroot", "/sysroot", "--target", "wasm32-wasip1", "--edition", source.edition,
       "--error-format=json", "-Copt-level=0", "-Cpanic=abort", "-Cdebuginfo=0", ...(check ? ["--emit", "metadata"] : []), "-o", "/work/" + (check ? "program.rmeta" : "program.wasm")];
-    const compilation = await invoke(compiler, args, "", [new PreopenDirectory("/work", work), new PreopenDirectory("/sysroot", sysroot), new PreopenDirectory("/tmp", new Map())], true);
+    const mounts = [new PreopenDirectory("/work", work), new PreopenDirectory("/sysroot", sysroot), new PreopenDirectory("/tmp", new Map())];
+    let debugging: DebugHost | undefined;
+    if (isDebug) {
+      const checked = await invoke(compiler, [...args.slice(0, -2), "--emit", "metadata", "-o", "/work/debug-check.rmeta"], "", mounts, true);
+      if (checked.exitCode !== 0) { worker.postMessage({ type: "result", compilation: checked, compileMs: performance.now() - started, durationMs: performance.now() - started }); return; }
+      const plan = instrumentRust(source.files, source.entryFile);
+      for (const [path, text] of Object.entries(plan.files)) insert(work, path, new File(encoder.encode(text)));
+      const control = new Int32Array(data.control);
+      worker.postMessage({ type: "debug-plan", sites: plan.sites, notes: plan.notes });
+      debugging = { control, runningMs: 0, resumedAt: 0, session: undefined as unknown as RustDebugSession };
+      const host = debugging;
+      host.session = new RustDebugSession(plan.sites, control, state => {
+        host.runningMs += performance.now() - host.resumedAt;
+        Atomics.store(control, 0, 0);
+        worker.postMessage({ type: "paused", ...state, runningMs: host.runningMs });
+        const waited = Atomics.wait(control, 0, 0, 30 * 60_000);
+        const command = Atomics.load(control, 0);
+        if (waited === "timed-out" || command === 5) throw new Error(waited === "timed-out" ? "Debug pause expired after 30 minutes." : "Debug stopped.");
+        host.resumedAt = performance.now();
+        return command;
+      });
+    }
+    const compilation = await invoke(compiler, args, "", mounts, true, undefined, isDebug);
     const compileMs = performance.now() - started;
     if (compilation.exitCode !== 0 || check) { worker.postMessage({ type: "result", compilation, compileMs, durationMs: compileMs }); return; }
     const output = work.get("program.wasm");
@@ -129,7 +164,8 @@ worker.onmessage = async ({ data }) => {
     const bounded = limitProgramMemory(output.data);
     stage("Running the Wasm program on your device");
     worker.postMessage({ type: "executing" });
-    const execution = await invoke(await WebAssembly.compile(bounded), [source.name], data.stdin, []);
+    if (debugging) debugging.resumedAt = performance.now();
+    const execution = await invoke(await WebAssembly.compile(bounded), [source.name], data.stdin, [], false, debugging);
     worker.postMessage({ type: "result", compilation, execution, compileMs, durationMs: performance.now() - started });
   } catch (error) { worker.postMessage({ type: "error", error: error instanceof Error ? error.message : String(error) }); }
 };

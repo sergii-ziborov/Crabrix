@@ -220,19 +220,22 @@ struct ProjectActionsSheet: View {
     let onSaveToFiles: () -> Void
     let onShareArchive: () -> Void
     let onSharePlayground: () -> Void
+    let onDebug: () -> Void
 
     init(
         project: CrabrixProject,
         onUpdate: @escaping (ProjectDetailsDraft) async -> Bool,
         onSaveToFiles: @escaping () -> Void,
         onShareArchive: @escaping () -> Void,
-        onSharePlayground: @escaping () -> Void
+        onSharePlayground: @escaping () -> Void,
+        onDebug: @escaping () -> Void = {}
     ) {
         self.project = project
         self.onUpdate = onUpdate
         self.onSaveToFiles = onSaveToFiles
         self.onShareArchive = onShareArchive
         self.onSharePlayground = onSharePlayground
+        self.onDebug = onDebug
         _draft = State(initialValue: ProjectDetailsDraft(project: project))
     }
 
@@ -268,6 +271,13 @@ struct ProjectActionsSheet: View {
                     )
 
                     Divider().overlay(CrabrixTheme.border)
+                    actionButton(
+                        title: "Debug Rust project",
+                        detail: "Local breakpoints, stepping, call stack and primitive locals",
+                        systemImage: "ladybug.fill",
+                        tint: CrabrixTheme.blue,
+                        action: { saveDetails(afterDismiss: onDebug) }
+                    )
 
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Organize project")

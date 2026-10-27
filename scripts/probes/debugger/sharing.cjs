@@ -1,0 +1,25 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const {chromium}=require('/Users/serhiirihgt/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const origin=process.env.CRABRIX_PLAYGROUND_ORIGIN||'http://127.0.0.1:3393';
+(async()=>{const browser=await chromium.launch({headless:true});try{
+ const a=await browser.newPage(),b=await browser.newPage();
+ await a.goto(origin+'/playground/');await a.waitForSelector('.cm-content');await a.waitForTimeout(2500);
+ await a.getByRole('button',{name:'Share Playground',exact:true}).click();
+ assert.equal(await a.getByRole('button',{name:'1 hour',exact:true}).getAttribute('aria-pressed'),'true');
+ await a.getByRole('button',{name:'Create share link',exact:true}).click();
+ const field=a.getByRole('textbox',{name:'Interview link · shared editing',exact:true});await field.waitFor();const link=await field.inputValue();
+ const parsed=new URL(link),fragment=new URLSearchParams(parsed.hash.slice(1)),expiry=Number(fragment.get('expires'));
+ assert.ok(expiry-Date.now()>3595_000&&expiry-Date.now()<=3600_000,'Default room gets a full hour from link creation');
+ await a.keyboard.press('Escape');await a.getByRole('button',{name:'Debug Rust',exact:true}).click();
+ await a.getByRole('button',{name:'▶ Continue',exact:true}).waitFor({timeout:180000});
+ await b.goto(link);await b.waitForSelector('.cm-content');await b.locator('.cm-content').fill('fn main(){println!("new interview source");}');
+ await a.waitForFunction(()=>document.querySelector('.pg-notice')?.textContent.includes('Debug stopped because shared source changed'));
+ await a.getByRole('button',{name:'▶ Run',exact:true}).waitFor();
+ await a.waitForFunction(()=>document.querySelector('.cm-content')?.textContent.includes('new interview source'));
+ await b.locator('.cm-content').focus();await b.keyboard.press('Meta+ArrowUp');await b.keyboard.down('Shift');await b.keyboard.press('ArrowRight');await b.keyboard.press('ArrowRight');await b.keyboard.up('Shift');
+ await a.waitForSelector('.cm-ySelection');
+ console.log('PASS one-hour creation, live source change stops Debug, edits and selections still converge');
+ await a.getByRole('button',{name:'Share Playground',exact:true}).click();a.once('dialog',dialog=>dialog.accept());await a.getByRole('button',{name:'End room for everyone',exact:true}).click();
+ fs.writeFileSync('build/debugger-20261027/sharing-result.json',JSON.stringify({at:new Date().toISOString(),origin,defaultLifetimeSeconds:3600,debugStoppedOnRemoteEdit:true,sourceAndSelection:true},null,2));
+}finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

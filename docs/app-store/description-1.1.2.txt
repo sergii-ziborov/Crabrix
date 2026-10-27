@@ -12,15 +12,18 @@ Use project files, syntax highlighting, indentation, search and Code, Problems, 
 Import public GitHub repositories or Files. Organise, save and export local work. iPad has a file sidebar and search; iPhone Duo adapts the workspace to its fold.
 
 CARGO ON DEVICE
-Resolve up to 2,048 Cargo packages, verify source checksums and pin archives for offline rebuilds. Standard-library-only build scripts run as bounded WASI guests. The target is wasm32-wasip1. Native linking, host subprocesses, separate build-dependency graphs and procedural macros remain unsupported. Arbitrary desktop repositories may not build. Interactive source debugging and a cargo test harness are not included.
+Resolve up to 2,048 Cargo packages, verify source checksums and pin archives for offline rebuilds. Standard-library-only build scripts run as bounded WASI guests. The target is wasm32-wasip1. Native linking, host subprocesses, separate build-dependency graphs and procedural macros remain unsupported. Arbitrary desktop repositories may not build. A cargo test harness is not included.
 
 BROWSER PROJECTS AND NPM IMPORTS
 Create HTML/CSS/JavaScript pages, generate them with Rust, or import browser projects with package.json. Explicit npm install/ci saves imported modules and licenses as editable local source. Run/Check then build without fetching packages.
 
 Build JavaScript, TypeScript syntax and JSX/TSX locally. Supported npm dev/start/build/check commands map to browser operations. Preview runs in isolated WebKit with external requests blocked. TypeScript is transpiled without type checking. Node/Bun servers, arbitrary package scripts, build plugins and native addons are not included. The guide includes an editable React dashboard starter and exact limits.
 
+LOCAL RUST DEBUGGER
+Set breakpoints, step into/over/out and inspect call frames and primitive locals. Debug runs Rust locally. Async/const bodies, macro internals and full aggregate inspection are not supported.
+
 TEMPORARY PLAYGROUNDS
-Share an encrypted source session with another Crabrix app or the free browser Playground. Edit together with live cursors and selections, without signing in. Links expire within a creator-selected maximum of 24 hours. The relay holds ciphertext only in RAM; a server restart can end a room early. Save a local copy or download source before expiry. Sessions allow 16 text files, 64 KiB/file and 128 KiB total; packages and images are not shared. Each participant runs code locally and explicitly. The browser compiler supports the standard library and local modules.
+Share an encrypted source session with another Crabrix app or the free browser Playground. Edit together with live cursors and selections, without signing in. Links default to one hour and expire within 24 hours. The relay holds ciphertext only in RAM; a server restart can end a room early. Save a local copy or download source before expiry. Sessions allow 16 text files, 64 KiB/file and 128 KiB total; packages and images are not shared. Each participant runs code locally and explicitly. The browser compiler supports the standard library and local modules.
 
 PRACTISE AND PERSONALISE
 Quick Practice, Term Train and Code Recall reinforce learning. Progress and achievements are earned locally. Optional Game Center is off by default. Choose Auto, Light, Dark, Amber Circuit or Cyberpunk. Optional Face ID or device-passcode protection locks your workspace when you leave the app.

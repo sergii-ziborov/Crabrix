@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
       ] },
       { source: "/.well-known/apple-app-site-association", headers: [{ key: "Content-Type", value: "application/json" }] },
       { source: "/playground/room/:path*", headers: [{ key: "Referrer-Policy", value: "no-referrer" }, { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }, { key: "Cache-Control", value: "private, no-store" }] },
+      { source: "/playground/:path*", headers: [{ key: "Cross-Origin-Opener-Policy", value: "same-origin" }, { key: "Cross-Origin-Embedder-Policy", value: "require-corp" }] },
+      { source: "/_next/static/:path*", headers: [{ key: "Cross-Origin-Embedder-Policy", value: "require-corp" }] },
       { source: "/playground-runtime/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=3600" }] },
     ];
   },

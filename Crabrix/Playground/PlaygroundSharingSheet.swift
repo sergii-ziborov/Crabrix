@@ -3,7 +3,7 @@ import SwiftUI
 struct PlaygroundSharingSheet: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var model: CompilerViewModel
-    @State private var lifetime = 86400
+    @State private var lifetime = 3600
     @State private var creating = false
     @State private var failure: String?
 
@@ -18,11 +18,15 @@ struct PlaygroundSharingSheet: View {
                     if let session = model.playgroundSession {
                         PlaygroundSessionDetails(session: session, onLeave: model.leavePlayground)
                     } else {
-                        Picker("Link lifetime", selection: $lifetime) {
-                            Text("1 hour").tag(3600); Text("4 hours").tag(14400)
-                            Text("12 hours").tag(43200); Text("24 hours").tag(86400)
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Link lifetime").font(.subheadline.weight(.semibold))
+                            Picker("Link lifetime", selection: $lifetime) {
+                                Text("1 hour").tag(3600); Text("4 hours").tag(14400)
+                                Text("12 hours").tag(43200); Text("24 hours").tag(86400)
+                            }.pickerStyle(.segmented)
+                            Text("The timer starts when you create the link.")
+                                .font(.caption).foregroundStyle(CrabrixTheme.muted)
                         }
-                        .pickerStyle(.menu)
                         Text("Source only: up to 16 files, 64 KiB per file and 128 KiB total. Packages, generated files and images are excluded. The server holds encrypted data in memory; a restart can end a room early.")
                             .font(.caption).foregroundStyle(CrabrixTheme.muted)
                         Button {

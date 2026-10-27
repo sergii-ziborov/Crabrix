@@ -200,7 +200,7 @@ Browser projects with an HTML entry use this path automatically through **Run/Ch
 
 Original dependency source, package manifests and license files remain editable under `node_modules`, with `crabrix-web.lock.json` recording the selected graph. Saved prepared sources survive reopening and archive-cache eviction. Browser Run/Check never acquire packages. Re-prepare explicitly after adding imports or changing versions. Node/Bun, dev servers, lifecycle scripts, native addons, build plugins, private/git/workspace dependencies, CSS Modules, `import.meta.glob` and top-level await remain outside this browser path. The 2,048-file / 16 MB editable source budget and 256-asset / 8 MiB preview budget are unchanged. [Implementation and verification](docs/browser-packages-2026-10-27.md).
 
-Build 103 includes `npm i`, `npm run preview`, supported `npm run-script` aliases and `npm --prefix web …`, with 21 browser/terminal/keyboard Simulator tests passing. A separate [debugger and browser compiler feasibility report](docs/rust-debugger-browser-feasibility-2026-10-27.md) records 36 passing engine debugger tests and a confirmed compiler debug-info defect. The browser compiler is now available in the public Playground; interactive source debugging remains unfinished.
+Build 103 includes `npm i`, `npm run preview`, supported `npm run-script` aliases and `npm --prefix web …`, with 21 browser/terminal/keyboard Simulator tests passing. A separate [debugger and browser compiler feasibility report](docs/rust-debugger-browser-feasibility-2026-10-27.md) records 36 passing engine debugger tests and a confirmed compiler debug-info defect. The browser compiler is available in the public Playground. The follow-up [local debugger record](docs/local-rust-debugger-2026-10-27.md) describes actual Rust source breakpoints, stepping, call frames and primitive locals in the app and browser, with explicit limits.
 
 The package sheet shows waiting, downloading, verifying, ready and failed states with per-package dependencies. Verified archives are pinned outside purgeable caches during preparation; frozen/offline resolution never downloads. Output shows compilation stages and cached dependencies. Package acquisition and compiler execution run away from the interface thread. [The screenshot guide](https://crabrix.com/guide/) explains projects, imports, offline preparation, diagnostics and device layouts.
 
@@ -220,7 +220,7 @@ local modules; it is not the native app's complete Cargo environment.
 
 Sharing uses AES-256-GCM in the clients, Yjs text updates and relative cursor /
 selection positions. A temporary relay holds bounded ciphertext only in RAM,
-for a creator-selected lifetime up to 24 hours. Keys and access capabilities
+for a creator-selected lifetime up to 24 hours (one hour by default). Keys and access capabilities
 are in URL fragments; no account project or source database is created. Server
 restart can end a room early. Device downloads and native copies persist
 independently of link expiry. The app can create, open, edit and export these
