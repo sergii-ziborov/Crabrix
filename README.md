@@ -248,3 +248,11 @@ instrumentation, independently of the code generator's remaining DWARF limit.
 Release delivery is recorded separately in `docs/app-store/`; the preceding
 build 103 remains a historical sharing release receipt. New app releases keep
 manual App Store publication.
+
+The approved **1.1.2 (103)** is now published in the App Store. The debugger
+update **1.1.3 (107)** is available in TestFlight Internal QA and
+**WAITING_FOR_REVIEW**, with manual publication. Its signed app source is
+`e688d1c1cf5da49dd85b69e726f079968c0892fd`. See the
+[1.1.3 delivery receipt](docs/app-store/release-1.1.3-build107.json),
+[public website qualification](docs/site-debugger-release-2026-10-27.json),
+and [debugger scope and verification](docs/local-rust-debugger-2026-10-27.md).

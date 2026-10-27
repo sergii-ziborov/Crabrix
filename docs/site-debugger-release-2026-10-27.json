@@ -58,5 +58,11 @@
     "roomRobots": "noindex, nofollow, noarchive",
     "HSTS": "retained"
   },
-  "physicalDeviceTested": false
+  "physicalDeviceTested": false,
+  "publishedAppStoreVersion": "1.1.2 (103)",
+  "debuggerAppUpdate": "1.1.3 (107)",
+  "debuggerAppUpdateState": "WAITING_FOR_REVIEW",
+  "testFlightInternalState": "IN_BETA_TESTING",
+  "debuggerAppSourceCommit": "e688d1c1cf5da49dd85b69e726f079968c0892fd",
+  "serverCleanup": "Removed only the intermediate 4064195 image/containers/release folder from this task; current 925d020 and previous 45a3c4d rollback remain. Available space recovered to 1.3 GiB."
 }

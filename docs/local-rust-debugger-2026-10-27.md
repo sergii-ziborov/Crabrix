@@ -69,3 +69,15 @@ The final website is published on Hetzner. Public HTTPS Debug and one-hour shari
 
 Physical iPhone timing and external Universal Link delivery require an available
 physical device; Simulator results are not device performance measurements.
+
+## Delivery
+
+The user-requested publication of the already approved 1.1.2 (103) completed
+with App Store status READY_FOR_SALE. The debugger update is version 1.1.3 (107):
+Xcode Cloud succeeded, Apple processing is VALID, Internal QA is IN_BETA_TESTING,
+and the App Store submission is WAITING_FOR_REVIEW with manual publication.
+All 19 inherited screenshots are complete with Code first in every device set;
+store text, review notes and beta instructions were read back after updates.
+The actual App Store IPA matches the bundled debugger compiler and offline legal
+source; its signed entitlements retain the Crabrix App Group and Universal Links.
+See `docs/app-store/release-1.1.3-build107.json`.

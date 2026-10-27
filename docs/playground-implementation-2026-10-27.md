@@ -96,3 +96,12 @@ not new paid plans or restrictions on existing app project budgets.
 - First toolchain transfer reports received bytes. Its loading deadline measures
   inactivity so a slow but progressing initial download can finish. Compilation
   and program execution retain their separate 45-second and 30-second limits.
+
+## Debugger follow-up
+
+The [local source debugger](local-rust-debugger-2026-10-27.md) is implemented and
+qualified in the native app and browser without backend execution. Sharing
+defaults to one hour. The updated website and guide are live; the two Simulator
+apps and Chromium passed the production shared-source/local-run gate. The user
+published approved 1.1.2 (103); debugger update 1.1.3 (107) is in TestFlight and
+WAITING_FOR_REVIEW. Delivery and supported boundaries are recorded separately.
