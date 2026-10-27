@@ -41,3 +41,14 @@ handles the native iPad system accessory alongside the app's accessory.
 
 `node scripts/probes/playground/api-security.mjs` checks the actual HTTP routes,
 including four SSE participants, view-only access and owner deletion.
+
+Set `CRABRIX_PLAYGROUND_ORIGIN=https://crabrix.com` to qualify the production
+relay with the same matrix or two-app driver. The driver supplies this origin
+to the Simulator UI runners, so native clients and the browser use the actual
+HTTPS service. The UI gate requires the compiler to finish and checks exact
+STDOUT, rather than matching a string still visible in source code.
+
+`node scripts/probes/playground/publication.cjs` additionally verifies AASA,
+the real native Output screenshot, sitemap exclusion of room URLs and a fresh
+guest browser compilation. Initial toolchain transfer has an inactivity deadline;
+received byte progress extends only loading, not compilation or program execution.

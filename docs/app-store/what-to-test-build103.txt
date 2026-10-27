@@ -1,0 +1,11 @@
+Encrypted temporary Playgrounds and coding interviews
+
+1. Open https://crabrix.com/playground/ without logging in. Edit Rust, Run and inspect actual output. Compilation runs in the browser Worker, never on the server.
+2. Share a session for 1, 4, 12 or 24 hours. Join from Crabrix on a second device and from another browser. Change source concurrently and select text in both directions: cursors and selection ranges must appear in the same file.
+3. In the app, use the project action Share Playground. Open a received link, inspect its source and press Run manually. Source must not execute automatically. Save a local copy; it must remain available after leaving or expiry. Rust 2021 snippets must keep their edition.
+4. Test view-only links, reload, brief disconnection/reconnection, four participants and creator End room. Expiry must not renew on access. Packages/images are excluded from the 16-file, 64-KiB/file, 128-KiB source limit.
+5. Universal Links should open the updated app when launched externally; Safari can keep same-domain navigation in the browser. The explicit Open in Crabrix action is also available.
+
+Retained from 101: explicit npm install/ci prepares browser source and licenses; normal Run/Check and npm dev/start/build/check then build locally without fetching packages. See https://crabrix.com/guide/#browser-packages and the editable dashboard starter. No Node/Bun server, arbitrary package scripts or native addons.
+
+Regression checks: keyboard hide/show, Code-to-Terminal with keyboard open, dock tabs, Save/Close, unique names, five themes, iPad rotation and Duo layout. Rust acceleration and the 2,048 Cargo-package ceiling remain. Interactive source debugging is not enabled in this release.

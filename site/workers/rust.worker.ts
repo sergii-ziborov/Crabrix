@@ -11,7 +11,18 @@ let compiler: WebAssembly.Module | undefined;
 let sysroot: Map<string, File | Directory> | undefined;
 type Asset = { url: string; sha256: string; bytes: number };
 
-function stage(label: string) { worker.postMessage({ type: "stage", label }); }
+function stage(label: string, downloadProgress = false) { worker.postMessage({ type: "stage", label, downloadProgress }); }
+const transferred = new Map<string, number>();
+let lastProgressAt = 0;
+function downloadProgress(item: Asset, received: number) {
+  transferred.set(item.url, received);
+  const now = performance.now();
+  if (now - lastProgressAt < 250 && received !== item.bytes) return;
+  lastProgressAt = now;
+  const total = manifest.compiler.bytes + manifest.sysroot.bytes;
+  const loaded = [...transferred.values()].reduce((sum, bytes) => sum + bytes, 0);
+  stage(`Loading verified Rust toolchain · ${(loaded / 1048576).toFixed(1)} / ${(total / 1048576).toFixed(1)} MiB`, true);
+}
 async function sha(bytes: Uint8Array): Promise<string> {
   return Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new Uint8Array(bytes))), byte => byte.toString(16).padStart(2, "0")).join("");
 }
@@ -24,7 +35,7 @@ async function asset(item: Asset): Promise<Uint8Array<ArrayBuffer>> {
   let cached = !!response;
   if (response) {
     const bytes = new Uint8Array(await response.arrayBuffer());
-    if (bytes.byteLength === item.bytes && await sha(bytes) === item.sha256) return bytes;
+    if (bytes.byteLength === item.bytes && await sha(bytes) === item.sha256) { downloadProgress(item, bytes.byteLength); return bytes; }
     await cache?.delete(url); response = undefined; cached = false;
   }
   response = await fetch(url, { credentials: "omit", cache: "no-store", redirect: "error" });
@@ -35,6 +46,7 @@ async function asset(item: Asset): Promise<Uint8Array<ArrayBuffer>> {
     size += value.byteLength;
     if (size > item.bytes) { await reader.cancel(); throw new Error("Oversized compiler asset."); }
     chunks.push(value);
+    downloadProgress(item, size);
   }
   const bytes = new Uint8Array(size); let offset = 0;
   for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }

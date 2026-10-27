@@ -1,0 +1,3 @@
+Create encrypted temporary Playgrounds and share Rust source with other Crabrix apps or the browser. Edit together with live cursors and selections, choose link expiry up to 24 hours, and save a local copy. No login is required. Code compiles and runs on each participant’s device.
+
+Includes browser npm source preparation, local TypeScript/JSX builds, five themes and the existing offline Academy. Rust 2021 shared snippets retain their edition. The guide explains supported projects, privacy and limits.

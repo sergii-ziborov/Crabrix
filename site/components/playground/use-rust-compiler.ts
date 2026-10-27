@@ -39,7 +39,12 @@ export function useRustCompiler() {
       current.current = worker; pending.current = perform;
       worker.onmessage = ({ data }) => {
         if (current.current !== worker) return;
-        if (data.type === "stage") setStage(data.label);
+        if (data.type === "stage") {
+          setStage(data.label);
+          // Initial assets can take longer on a slow connection. Received bytes
+          // extend only initialization's inactivity deadline, never Run/Check.
+          if (data.downloadProgress === true && pending.current) armTimeout(180_000, "Toolchain download stopped making progress. Check the connection and retry; source was not uploaded.");
+        }
         else if (data.type === "ready") { setReady(true); const action = pending.current; pending.current = undefined; action?.(); }
         else if (data.type === "executing") armTimeout(30_000, "Program stopped at the 30-second execution limit.");
         else if (data.type === "result") {

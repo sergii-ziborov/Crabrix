@@ -1,30 +1,31 @@
-Learn Rust, then make it run. Crabrix brings a native Academy and a real coding workspace to iPhone and iPad. Read a lesson, open its starter as your own project, check actual rustc diagnostics, and run the result locally. The compiler ships in the app: no cloud compilation or app account is required.
+Learn Rust, then make it run. Crabrix brings an illustrated Academy and a native coding workspace to iPhone and iPad. The Rust compiler ships in the app: no cloud compiler or app account is required.
 
 ACADEMY, AVAILABLE OFFLINE
-Seven courses cover Rust Basics, ownership, traits, systems topics, Cargo projects and interview preparation. Algorithm Atlas teaches 200 reusable patterns through 600 ordered steps. Together the Academy has 742 lessons and steps with expanded guidance, inline code formatting, syntax-highlighted examples and illustrated explanations.
-
-Choose individual courses to download; installed lessons remain readable offline. Signed content updates appear in Learn and My Courses with an Update button and Update all. Lesson corrections preserve existing progress and editable project copies. Removing a course keeps your projects and earned progress. The companion Academy uses a separate free website account; no app account is needed.
+Seven courses and Algorithm Atlas cover Rust, Cargo and 200 algorithm patterns. Study 742 lessons and steps with explanations, highlighted code, questions and illustrations. Download courses, then study offline. Signed updates preserve progress and edited projects. Website Academy accounts are separate.
 
 46 OPEN CODE EXAMPLES
-Download the separate Code Examples path and explore every project in any order. Each stop has its own illustrated guide, source preview and README. Open in Code makes a durable, editable copy in My Projects. The first course or example download needs a connection.
+Explore every example in any order, with illustrated guides, source previews and READMEs. Open in Code creates an editable local project. Initial content downloads need a connection.
 
 PROJECT WORKSPACE
-Work with files, syntax-aware editing, in-file search, real compiler diagnostics, and Code, Problems, Output and Terminal views. The editor supports indentation and paired syntax. Check finds compiler errors; Run compiles and executes the program in a bounded WebAssembly sandbox. Problems includes compiler and dependency setup errors. Output shows text, visual results and build stages. A package sheet lists downloads, verification, failures and dependencies.
+Use project files, syntax highlighting, indentation, search and Code, Problems, Output and Terminal views. Check finds Rust compiler errors; Run builds and executes in a bounded WebAssembly sandbox. Problems includes dependency setup errors. Output shows results and build stages. Package progress shows downloads, integrity checks, failures and dependencies.
 
-My Projects manages local work. New Project offers templates and imports from public GitHub repositories and Files. Share or export your projects when you choose. iPad has a file sidebar and search. iPhone Duo adapts the header, coding tabs and keyboard controls to its fold layout.
+Import public GitHub repositories or Files. Organise, save and export local work. iPad has a file sidebar and search; iPhone Duo adapts the workspace to its fold.
 
-SUPPORTED CARGO DEPENDENCIES
-Add crates.io dependencies in Cargo.toml. Resolve up to 2,048 dependency packages, verify source checksums, build on device and pin archives for offline rebuilds. Standard-library-only build scripts run as bounded WASI guests. Native linking, host subprocesses, separate build-dependency graphs and procedural macros remain unsupported. The bundled compiler targets wasm32-wasip1; arbitrary desktop Rust projects may not build. There is no debugger or cargo test harness.
+CARGO ON DEVICE
+Resolve up to 2,048 Cargo packages, verify source checksums and pin archives for offline rebuilds. Standard-library-only build scripts run as bounded WASI guests. The target is wasm32-wasip1. Native linking, host subprocesses, separate build-dependency graphs and procedural macros remain unsupported. Arbitrary desktop repositories may not build. Interactive source debugging and a cargo test harness are not included.
+
+BROWSER PROJECTS AND NPM IMPORTS
+Create HTML/CSS/JavaScript pages, generate them with Rust, or import browser projects with package.json. Explicit npm install/ci saves imported modules and licenses as editable local source. Run/Check then build without fetching packages.
+
+Build JavaScript, TypeScript syntax and JSX/TSX locally. Supported npm dev/start/build/check commands map to browser operations. Preview runs in isolated WebKit with external requests blocked. TypeScript is transpiled without type checking. Node/Bun servers, arbitrary package scripts, build plugins and native addons are not included. The guide includes an editable React dashboard starter and exact limits.
+
+TEMPORARY PLAYGROUNDS
+Share an encrypted source session with another Crabrix app or the free browser Playground. Edit together with live cursors and selections, without signing in. Links expire within a creator-selected maximum of 24 hours. The relay holds ciphertext only in RAM; a server restart can end a room early. Save a local copy or download source before expiry. Sessions allow 16 text files, 64 KiB/file and 128 KiB total; packages and images are not shared. Each participant runs code locally and explicitly. The browser compiler supports the standard library and local modules.
 
 PRACTISE AND PERSONALISE
-Quick Practice, Term Train and Code Recall reinforce the curriculum. Progress, rating and achievements are earned locally. Optional Game Center is off by default; enable it in Profile to share your numeric rating and achievement progress with Apple. Disabling it keeps local progress. 
+Quick Practice, Term Train and Code Recall reinforce learning. Progress and achievements are earned locally. Optional Game Center is off by default. Choose Auto, Light, Dark, Amber Circuit or Cyberpunk. Optional Face ID or device-passcode protection locks your workspace when you leave the app.
 
-LOCAL WEB LAB
-Create HTML/CSS/JavaScript pages or generate them with Rust, then Run in an offline WebKit preview. Browser errors appear in Problems. External network is blocked; TypeScript is highlighted, not transpiled. This is not a TCP server.
+YOUR WORK STAYS LOCAL
+No advertising, analytics SDK or cloud compiler. Code, learning history and output stay on device unless you export or share. Requested content downloads, crates.io/npm preparation, public imports and optional live sharing need a connection. Prepare sources and lessons once, then work offline.
 
-Choose Auto, Light, Dark, Amber Circuit or Cyberpunk appearance. Optional Face ID or device-passcode protection locks the app when you leave it.
-
-YOUR CODE STAYS ON YOUR DEVICE
-No advertising, analytics SDK or cloud compiler. Projects, answers, detailed learning history and compiler output stay local unless you export or share them. Game Center is an optional Apple service. Requested course downloads, crates.io searches and packages, and public repository imports use the network; their hosts receive ordinary connection information. After downloading lessons and preparing needed dependencies, study and builds can work offline.
-
-About, Privacy, Terms and full third-party licenses are readable offline in Settings. Your original code remains yours. One purchase; no subscription or in-app purchase is required.
+Privacy, Terms and full third-party licenses are readable offline in Settings. Your original code remains yours. One purchase; no subscription or in-app purchase is required.

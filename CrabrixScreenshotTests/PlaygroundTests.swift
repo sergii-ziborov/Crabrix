@@ -60,11 +60,11 @@ final class PlaygroundTests: XCTestCase {
 @MainActor
 final class PlaygroundTwoDeviceTests: XCTestCase {
     func testTwoRealAppsAndBrowserShareTheSameRoom() async throws {
-        struct Fixture: Decodable { let url: URL }
+        struct Fixture: Decodable { let url: URL; let origin: URL? }
         let (data, _) = try await URLSession.shared.data(from: URL(string: "http://127.0.0.1:3395/fixture")!)
         let fixture = try JSONDecoder().decode(Fixture.self, from: data)
         let app = XCUIApplication()
-        app.launchArguments = ["--crabrix-playground-relay=http://127.0.0.1:3393", "--crabrix-auto-playground=\(fixture.url.absoluteString)", "-crabrix.appearance", UIDevice.current.userInterfaceIdiom == .pad ? "amber" : "dark"]
+        app.launchArguments = ["--crabrix-playground-relay=\(fixture.origin?.absoluteString ?? "http://127.0.0.1:3393")", "--crabrix-auto-playground=\(fixture.url.absoluteString)", "-crabrix.appearance", UIDevice.current.userInterfaceIdiom == .pad ? "amber" : "dark"]
         app.launch()
         let editor = app.textViews["Source code editor"]
         XCTAssertTrue(editor.waitForExistence(timeout: 45))
