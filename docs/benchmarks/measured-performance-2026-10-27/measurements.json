@@ -1,0 +1,113 @@
+{
+  "measuredAtUTC": "2026-10-27T05:22:59.443126+00:00",
+  "cpu": "Apple M4",
+  "os": "macOS 27.2",
+  "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)\nbinary: rustc\ncommit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4\ncommit-date: 2026-09-28\nhost: aarch64-apple-darwin\nrelease: 1.99.0\nLLVM version: 23.1.1",
+  "target": "aarch64-apple-darwin",
+  "fixtureBytes": 405000,
+  "fixtureSHA256": "762256a68fad329d1f2692bfcc9c31dfd6abc965a95f80060fe3cf9c27e6f9df",
+  "inputLines": 24000,
+  "expectedWarnings": 9000,
+  "timedScope": "32 repeated scans of the same already constructed in-memory input; printing and sample-vector growth excluded",
+  "isolation": "shared desktop; background tasks, thermals and CPU frequency were not controlled",
+  "phoneTimingQualified": false,
+  "allocationCountsMeasured": false,
+  "runs": [
+    {
+      "profile": "debug",
+      "repeat": 1,
+      "samplesPerVariant": 21,
+      "scansPerBatch": 32,
+      "metadata": "fixture_bytes=405000, lines=24000, warnings=9000, scans_per_batch=32, samples=21, debug_assertions=true",
+      "variants": {
+        "owned": {
+          "medianMillisecondsPerScan": 8.47547265625,
+          "p25MillisecondsPerScan": 8.19698959375,
+          "p75MillisecondsPerScan": 8.62365103125,
+          "minMillisecondsPerScan": 8.123,
+          "maxMillisecondsPerScan": 9.58784765625
+        },
+        "borrowed": {
+          "medianMillisecondsPerScan": 5.234977875,
+          "p25MillisecondsPerScan": 5.14589321875,
+          "p75MillisecondsPerScan": 5.3200143125,
+          "minMillisecondsPerScan": 4.98557421875,
+          "maxMillisecondsPerScan": 6.46419140625
+        }
+      },
+      "rawCSV": "debug-1.csv"
+    },
+    {
+      "profile": "release",
+      "repeat": 1,
+      "samplesPerVariant": 21,
+      "scansPerBatch": 32,
+      "metadata": "fixture_bytes=405000, lines=24000, warnings=9000, scans_per_batch=32, samples=21, debug_assertions=false",
+      "variants": {
+        "owned": {
+          "medianMillisecondsPerScan": 0.778346375,
+          "p25MillisecondsPerScan": 0.75873828125,
+          "p75MillisecondsPerScan": 0.80027215625,
+          "minMillisecondsPerScan": 0.75275521875,
+          "maxMillisecondsPerScan": 0.83145703125
+        },
+        "borrowed": {
+          "medianMillisecondsPerScan": 0.347115875,
+          "p25MillisecondsPerScan": 0.33719659375,
+          "p75MillisecondsPerScan": 0.3631953125,
+          "minMillisecondsPerScan": 0.32976171875,
+          "maxMillisecondsPerScan": 0.407737
+        }
+      },
+      "rawCSV": "release-1.csv"
+    },
+    {
+      "profile": "release",
+      "repeat": 2,
+      "samplesPerVariant": 21,
+      "scansPerBatch": 32,
+      "metadata": "fixture_bytes=405000, lines=24000, warnings=9000, scans_per_batch=32, samples=21, debug_assertions=false",
+      "variants": {
+        "owned": {
+          "medianMillisecondsPerScan": 0.8024049375,
+          "p25MillisecondsPerScan": 0.791009125,
+          "p75MillisecondsPerScan": 0.82177471875,
+          "minMillisecondsPerScan": 0.77237628125,
+          "maxMillisecondsPerScan": 0.9968424375
+        },
+        "borrowed": {
+          "medianMillisecondsPerScan": 0.36225390625,
+          "p25MillisecondsPerScan": 0.357727875,
+          "p75MillisecondsPerScan": 0.38186590625,
+          "minMillisecondsPerScan": 0.34811196875,
+          "maxMillisecondsPerScan": 0.44052215625
+        }
+      },
+      "rawCSV": "release-2.csv"
+    },
+    {
+      "profile": "release",
+      "repeat": 3,
+      "samplesPerVariant": 21,
+      "scansPerBatch": 32,
+      "metadata": "fixture_bytes=405000, lines=24000, warnings=9000, scans_per_batch=32, samples=21, debug_assertions=false",
+      "variants": {
+        "owned": {
+          "medianMillisecondsPerScan": 0.7727083125,
+          "p25MillisecondsPerScan": 0.7641731875,
+          "p75MillisecondsPerScan": 0.7859544375,
+          "minMillisecondsPerScan": 0.75511065625,
+          "maxMillisecondsPerScan": 0.8405416875
+        },
+        "borrowed": {
+          "medianMillisecondsPerScan": 0.35256903125,
+          "p25MillisecondsPerScan": 0.350653625,
+          "p75MillisecondsPerScan": 0.36401953125,
+          "minMillisecondsPerScan": 0.34461196875,
+          "maxMillisecondsPerScan": 0.39269140625
+        }
+      },
+      "rawCSV": "release-3.csv"
+    }
+  ]
+}

@@ -1,5 +1,214 @@
 [
   {
+    "slug": "rust-performance-measure-before-optimizing",
+    "title": "Rust performance: measure before you optimize",
+    "date": "2026-10-27",
+    "summary": "Benchmark Rust with a tested allocation-reducing example: compare Debug and Release, place black_box correctly, inspect variation and keep raw measurements.",
+    "relatedSlugs": [
+      "rust-iterators-without-extra-allocations",
+      "rust-strings-utf8-safe-parsing",
+      "testing-rust-boundaries-fixtures-doctests"
+    ],
+    "sections": [
+      {
+        "heading": "Start with the work your user is waiting for",
+        "paragraphs": [
+          "A Rust function can become twice as fast while the application feels unchanged. Perhaps it runs once, while filesystem reads dominate every request. Perhaps a background queue delays the work before the function begins. Performance engineering starts with a named workload and an observable outcome: elapsed export time, memory retained during indexing, or the latency of opening a large project. Write that outcome down before choosing an optimization.",
+          "This guide follows a small log classifier from an understandable baseline to a cheaper implementation, with executable tests and recorded measurements. The useful habit is a repeatable chain: specify behavior, establish a representative input, measure equivalent work, change one hypothesis, and check the wider application. We will examine owned string copies, Debug and Release, optimizer barriers, timing boundaries and variation. The accompanying experiment uses only the standard library, so you can inspect the entire measurement mechanism rather than trusting an unexplained benchmark score."
+        ],
+        "image": {
+          "src": "/blog/rust-performance-editorial.png",
+          "alt": "An orange crab examines two matched inspection rails: one duplicates input cards, while another inspects an original through a small jade window.",
+          "caption": "A measurement starts with comparable work. This conceptual laboratory illustrates unnecessary copying, without making a numerical performance claim.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Specify the classifier before making it faster",
+        "paragraphs": [
+          "Our workload counts lines whose trimmed text begins with the ASCII label `warn:`, ignoring ASCII letter case. Leading and trailing Unicode whitespace is trimmed. Line splitting follows `str::lines`, including its handling of CRLF and a final line without a newline. The remaining message can contain arbitrary valid UTF-8. A longer label such as `warning:` does not match, and a line containing only `warn` is too short.",
+          "These choices establish observable behavior against which an optimization can be judged. Switching to ASCII-only whitespace or a different Unicode case operation would change the task. The input is already a valid `&str`; decoding bytes and reporting malformed UTF-8 belong to an earlier boundary. The benchmark also begins after input construction. A production log reader may spend considerable time acquiring and validating that input, and those costs need their own measurements when evaluating the complete workflow."
+        ],
+        "sources": [
+          {
+            "title": "Rust str: lines, trim and ASCII conversion",
+            "url": "https://doc.rust-lang.org/std/primitive.str.html"
+          }
+        ]
+      },
+      {
+        "heading": "Keep an understandable baseline",
+        "paragraphs": [
+          "The first version expresses the rule directly: trim each line, create its lowercase ASCII representation, and inspect the prefix. Its intermediate `String` makes the data ownership easy to see. That clarity is useful while deciding what the program should do. Save this version and its tests; a proposed optimization benefits from a reference implementation that remains available for comparison.",
+          "The potential waste is concrete. The predicate needs a five-byte label, while the conversion constructs owned text for the complete trimmed line. For nonempty lines, that introduces an owned result and copying work that the borrowed approach can avoid at the source level. This observation is a hypothesis about unnecessary work, rather than a measurement of allocator calls. Compiler transformations and the allocator affect the executed program. Exact allocation counts require an appropriate separate measurement."
+        ],
+        "code": "pub fn count_owned(input: &str) -> usize {\n    input.lines()\n        .map(|line| line.trim().to_ascii_lowercase())\n        .filter(|line| line.starts_with(\"warn:\"))\n        .count()\n}\n",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Rust Performance Book: heap allocations",
+            "url": "https://nnethercote.github.io/perf-book/heap-allocations.html"
+          }
+        ]
+      },
+      {
+        "heading": "Borrow the prefix and keep the same contract",
+        "paragraphs": [
+          "The second version borrows the trimmed line's bytes and requests the first five. A short line produces `None`, which becomes a non-match. The byte slice can compare ASCII case without creating a lowercase copy of the whole message. This keeps Unicode message contents untouched. It also avoids indexing a UTF-8 string at an arbitrary character boundary: the operation is explicitly on bytes, compared with an ASCII byte pattern.",
+          "The whole classifier still scans input lines and trims whitespace. Its total work is not reduced to inspecting five bytes for the complete file. Both versions return the same count, and both discard message contents after classification. This makes the comparison suitable for this narrow question. If another caller actually needs normalized owned messages afterward, include that requirement in its benchmark; removing output that the real application needs would make the comparison misleading."
+        ],
+        "code": "pub fn count_borrowed(input: &str) -> usize {\n    input.lines()\n        .filter(|line| {\n            line.trim().as_bytes().get(..5)\n                .is_some_and(|prefix| prefix.eq_ignore_ascii_case(b\"warn:\"))\n        })\n        .count()\n}\n",
+        "codeLanguage": "rust",
+        "image": {
+          "src": "/blog/rust-performance-allocations-infographic.png",
+          "alt": "Two classifier paths share trimming; the upper creates a lowercase String while the lower borrows five bytes for an ASCII-case comparison.",
+          "caption": "The borrowed predicate removes the owned lowercase intermediate. Both implementations still split lines and trim whitespace, and short prefixes do not match.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "Rust byte slices: eq_ignore_ascii_case",
+            "url": "https://doc.rust-lang.org/std/primitive.slice.html#method.eq_ignore_ascii_case"
+          }
+        ]
+      },
+      {
+        "heading": "Make equivalence an executable requirement",
+        "paragraphs": [
+          "The sample has eight tests covering empty input, mixed case, exact prefix boundaries, whitespace with CRLF, multibyte prefixes, blank and final lines, and the complete benchmark fixture. A deterministic differential check compares both implementations across one thousand short strings assembled from ten atoms. This catches combinations that are easy to overlook when reviewing a faster-looking expression, including truncated labels and multibyte text preceding a possible match.",
+          "Differential tests supplement explicit expected answers. Two implementations can share the same mistaken interpretation, so several cases assert a known count for both. Keep an example containing Unicode whitespace because it guards the chosen trimming behavior, and retain short strings because they exercise the optional-prefix path. Performance work should preserve these requirements in optimized builds too. We ran all eight checks in both ordinary development and Release profiles before recording the timing experiment."
+        ]
+      },
+      {
+        "heading": "Compare implementations within the same build profile",
+        "paragraphs": [
+          "Cargo's default development and Release profiles use different optimization and debugging settings. Profile settings can also be overridden, so the command name alone does not describe every real project. Record the manifest, Rust version, target and relevant flags with a result. Compare baseline and candidate under the same settings first. Measuring an unoptimized baseline against an optimized candidate answers a different question from measuring the implementation change.",
+          "For this article the sample has no custom profile settings or dependencies, and the host compiler is Rust 1.99.0 for `aarch64-apple-darwin`. Development results help demonstrate how strongly configuration can affect the observation. Release results are the main implementation comparison. Flags such as LTO, target-specific CPU tuning and optimization level deserve separate experiments after the workload is understood; raising a setting does not guarantee an improvement for every program."
+        ],
+        "sources": [
+          {
+            "title": "Cargo profile configuration and defaults",
+            "url": "https://doc.rust-lang.org/cargo/reference/profiles.html"
+          }
+        ]
+      },
+      {
+        "heading": "Choose a workload matrix before chasing a result",
+        "paragraphs": [
+          "A useful performance investigation has more than one convenient input. Include tiny files, larger files, short and long messages, mostly matching and mostly non-matching labels, and representative whitespace and character distributions. Keep the expected count beside each fixture. A large reduction on long messages may coexist with a negligible difference on very short records, and your product may mostly encounter the latter. Choose cases from the operation you want to improve, then preserve them as a small named workload set.",
+          "The published measurements here intentionally cover one deterministic fixture; the functional edge cases are not additional timing results. Treat that as a starting experiment. When extending it, construct or load fixtures before the timed region and retain their identity. Avoid generating fresh random text inside each iteration unless random generation is genuinely part of the operation under study. For sensitive production logs, use a sanitized fixture or a representative synthetic shape and explain that substitution, because changing message lengths and match frequencies can change the result."
+        ]
+      },
+      {
+        "heading": "Define exactly what the clock includes",
+        "paragraphs": [
+          "The fixture is created before timing, and each sample processes the same in-memory text 32 times. The timed interval includes the classifier call, its internal work, the optimizer barriers and loop overhead. It excludes fixture creation, printing and growth of the vectors used to retain samples. This is a reused-input experiment with warm memory and allocator state. A cold file read or a request that constructs fresh input is a separate workload.",
+          "Batching gives the clock a longer interval to observe. Divide the batch duration by 32 to report a normalized cost per scan, while retaining the original batch durations. That normalized number is not an independently observed distribution of single-request latency. If setup or destruction is part of your real operation, include it deliberately. Criterion's timing-loop APIs distinguish these choices; an inappropriate setup boundary can hide more cost than the proposed optimization removes."
+        ],
+        "sources": [
+          {
+            "title": "Rust Instant clock behavior",
+            "url": "https://doc.rust-lang.org/std/time/struct.Instant.html"
+          },
+          {
+            "title": "Criterion timing-loop models",
+            "url": "https://docs.rs/criterion/latest/criterion/struct.Bencher.html"
+          }
+        ]
+      },
+      {
+        "heading": "Use black_box at the input and result boundaries",
+        "paragraphs": [
+          "The inner loop passes the input through `black_box` and consumes the classifier's result through another barrier. This discourages the optimizer from exploiting an artificially predictable benchmark context or deleting an unused result. Put the input barrier before the operation whose work should remain observable. Wrapping an already computed constant expression only hides its result; the compiler can still simplify the expression that produced it.",
+          "The standard library describes this mechanism as best effort, with behavior depending on the backend and platform. It is useful measurement scaffolding, not a correctness or constant-time security guarantee. Keep the barrier placement consistent between candidates. In the sample, a non-inlined batch function receives the classifier as a function pointer. That dispatch and loop overhead remain inside the measured interval for both paths. For extremely tiny functions, examine whether harness overhead dominates before interpreting a small difference."
+        ],
+        "code": "use std::{hint::black_box, time::Instant};\nconst SCANS: usize = 32;\n\n#[inline(never)]\nfn batch(function: fn(&str) -> usize, input: &str) -> u128 {\n    let start = Instant::now();\n    for _ in 0..SCANS {\n        black_box(function(black_box(input)));\n    }\n    start.elapsed().as_nanos()\n}\n",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Rust black_box contract and limitations",
+            "url": "https://doc.rust-lang.org/std/hint/fn.black_box.html"
+          }
+        ]
+      },
+      {
+        "heading": "Repeat, alternate order and preserve the raw observations",
+        "paragraphs": [
+          "The driver warms both implementations, then collects 21 batch samples per variant. Each round alternates which version runs first, reducing a simple fixed-order bias. Printing happens after collection. Release is executed in three separate processes, each with its own warm-up and sample set. Preserve every observation, including inconvenient slow samples; choose an exclusion rule before an experiment when a real measurement fault requires one.",
+          "Report medians alongside variation and the experiment's scope. A median is a descriptive summary, not proof that scheduling noise disappeared. Input size, prefix frequency, message lengths and character distribution can change the result. Extend the fixture set with real sanitized workloads before a product decision. This example uses a shared desktop, without controlling background activity, temperature or CPU frequency. Its raw CSV files document the observations, and the fixture hash identifies the exact generated input."
+        ],
+        "image": {
+          "src": "/blog/rust-performance-measurement-infographic.png",
+          "alt": "A four-stage method verifies equivalent results, holds build profiles constant, times equivalent work and inspects repeated observations.",
+          "caption": "The marks illustrate variation qualitatively. They are not measured chart values; the article links the separate raw timing data.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "Rust Performance Book: workload selection and benchmarking",
+            "url": "https://nnethercote.github.io/perf-book/benchmarking.html"
+          }
+        ]
+      },
+      {
+        "heading": "Read the measured result with its limits attached",
+        "paragraphs": [
+          "On an Apple M4 running the native target, the 405,000-byte fixture contains 24,000 lines and 9,000 matching warnings. Across three Release processes, the owned version's normalized per-scan medians ranged from 0.773–0.802 milliseconds; the borrowed version ranged from 0.347–0.362 milliseconds. In the development-profile process the corresponding medians were 8.48 and 5.23 milliseconds. These values come from the saved batch samples, not a stopwatch around Cargo compilation.",
+          "The direction supports keeping the borrowed predicate for this workload. The experiment changes both the owned intermediate and the amount of lowercasing work, so it cannot attribute the entire difference to allocation alone. It also does not measure peak memory, exact allocation counts or application responsiveness. The normalized scan medians are specific desktop observations, rather than predicted iPhone timings or a throughput guarantee. The linked record includes compiler information, input hash, descriptive quartiles and all four process runs."
+        ],
+        "sources": [
+          {
+            "title": "Exact measurements and raw CSV samples",
+            "url": "https://github.com/sergii-ziborov/Crabrix/tree/codex/compiler-speed-20261024/docs/benchmarks/measured-performance-2026-10-27"
+          }
+        ]
+      },
+      {
+        "heading": "Profile to explain where the time and memory go",
+        "paragraphs": [
+          "A timing comparison shows a difference; profiling helps explain where the program spends its resources. Use a CPU sampling profiler for hot execution paths and an allocation profiler for allocation sites, volume and object lifetimes. Allocated bytes over an entire run and memory retained at the peak answer different questions. A pipeline can allocate frequently while keeping little live data, or retain a large collection after doing few allocations.",
+          "For desktop Rust, platform tooling includes Instruments on macOS and perf on Linux, alongside cross-platform sampling tools. Source-line debug information can improve the readability of an optimized profile. Record any profiling-specific build changes and remeasure the final production configuration separately. This article did not collect a heap profile, so the intermediate-copy explanation remains a source-level mechanism supported by timing, not an invented allocator trace. A useful next experiment would measure allocation behavior independently."
+        ],
+        "sources": [
+          {
+            "title": "Rust Performance Book: profiling tools and debug information",
+            "url": "https://nnethercote.github.io/perf-book/profiling.html"
+          }
+        ]
+      },
+      {
+        "heading": "Test the change against the complete operation",
+        "paragraphs": [
+          "A small classifier benchmark makes a focused question cheap to investigate. Follow it with a workload that includes reading, decoding, downstream work and the lifetime of its outputs. For example, if classification accounts for twenty percent of an otherwise unchanged operation, halving that stage reduces total elapsed time to ninety percent. The arithmetic describes that assumed decomposition; it is not a measurement of this example's surrounding application.",
+          "Prefer an optimization whose mechanism and maintenance cost are understandable. Here the borrowed prefix remains safe Rust and preserves the contract with a short expression. Before adding unsafe indexing, custom allocation machinery or more parallel tasks, establish the remaining bottleneck and a new hypothesis. Also check small inputs and awkward character distributions, where fixed costs or different paths can change the outcome. Keep functional regression checks and record performance history without turning one noisy desktop sample into an arbitrary pass/fail threshold."
+        ]
+      },
+      {
+        "heading": "Reproduce the experiment, then measure your own target",
+        "paragraphs": [
+          "The linked project includes the manifest, lockfile, both implementations, deterministic tests and complete measurement driver. Copy that small project and run the commands below from its directory on a desktop Rust installation. Each CSV contains batch durations, iteration counts and sample numbers. The driver emits fixture and configuration notes separately on standard error. Its generated input and timing boundaries can be inspected directly in the source.",
+          "In Crabrix, the counting logic is a useful standard-library exercise: change the log fixture, predict the answer and verify both versions. The phone's bundled compiler, WASI target and interpreter form a different execution environment from this native Mac experiment. Consult the application guide before applying desktop tooling or profile commands there. Treat optimization as a sequence of questions you can answer with evidence: identical behavior, identified cost, comparable configuration, repeatable observation and an improvement in the operation the user actually performs."
+        ],
+        "code": "cargo test --locked\ncargo test --locked --release\ncargo run --locked --example measure > debug.csv\ncargo run --locked --release --example measure > release.csv\n",
+        "codeLanguage": "shell",
+        "sources": [
+          {
+            "title": "Complete reproducible sample",
+            "url": "https://github.com/sergii-ziborov/Crabrix/tree/codex/compiler-speed-20261024/docs/examples/measured-performance"
+          },
+          {
+            "title": "Crabrix workflow and execution limits",
+            "url": "https://crabrix.com/guide/"
+          }
+        ]
+      }
+    ],
+    "readingMinutes": 11
+  },
+  {
     "slug": "rust-async-cancellation-safe-timeouts",
     "title": "Rust async cancellation: timeouts without lost work",
     "date": "2026-10-26",

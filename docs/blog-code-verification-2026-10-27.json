@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-27",
+  "article": "rust-performance-measure-before-optimizing",
+  "hostRust": "1.99.0",
+  "target": "aarch64-apple-darwin",
+  "externalDependencies": 0,
+  "semanticTests": 8,
+  "profilesTested": [
+    "dev",
+    "release"
+  ],
+  "totalPassed": 16,
+  "totalFailed": 0,
+  "differentialCases": 1000,
+  "benchmarkSource": "examples/measured-performance/",
+  "measurements": "benchmarks/measured-performance-2026-10-27/measurements.json",
+  "publishedFunctionBodies": "exact excerpts of the compiled library and measurement driver",
+  "timedProcesses": {
+    "debug": 1,
+    "release": 3
+  },
+  "phoneTimingQualified": false,
+  "allocationCountsMeasured": false,
+  "previous26ArticlesUnchanged": true
+}

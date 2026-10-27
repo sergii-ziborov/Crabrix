@@ -1,0 +1,87 @@
+{
+  "date": "2026-10-27",
+  "tool": "built-in image_gen",
+  "slug": "rust-performance-measure-before-optimizing",
+  "proseWords": 2012,
+  "images": [
+    {
+      "src": "/blog/rust-performance-editorial.png",
+      "alt": "An orange crab examines two matched inspection rails: one duplicates input cards, while another inspects an original through a small jade window.",
+      "caption": "A measurement starts with comparable work. This conceptual laboratory illustrates unnecessary copying, without making a numerical performance claim.",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2184716,
+      "sha256": "4b16759e64d7ebc69ed19b237450db4dc91075461b471f58b0006466c294af57",
+      "visuallyChecked": true,
+      "deliveryCopies": [
+        {
+          "src": "/blog/rust-performance-editorial.webp",
+          "bytes": 259702,
+          "width": 1536,
+          "height": 1024,
+          "sha256": "7846e7800aec2d1696e1f7ed2bbc270ded25ad68bb501841c3f8dcf0c206843e"
+        },
+        {
+          "src": "/blog/rust-performance-editorial-640.webp",
+          "bytes": 74424,
+          "width": 640,
+          "height": 427,
+          "sha256": "8a2ccb0f4308fc3b6b0ad386a6240b91ac0a96e8aaadd73a259d57ef1bf1f0cb"
+        }
+      ]
+    },
+    {
+      "src": "/blog/rust-performance-allocations-infographic.png",
+      "alt": "Two classifier paths share trimming; the upper creates a lowercase String while the lower borrows five bytes for an ASCII-case comparison.",
+      "caption": "The borrowed predicate removes the owned lowercase intermediate. Both implementations still split lines and trim whitespace, and short prefixes do not match.",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1514317,
+      "sha256": "9e9505372985e3b8d7241cbe5ad8b7ca3c95af64b18873ed5ff6a3ae5d6f96fc",
+      "visuallyChecked": true,
+      "deliveryCopies": [
+        {
+          "src": "/blog/rust-performance-allocations-infographic.webp",
+          "bytes": 138070,
+          "width": 1536,
+          "height": 1024,
+          "sha256": "97dac3f91efb3f79f22e4a5bb0d21d53744354dc741ce88c6c01e55f7ba462e5"
+        },
+        {
+          "src": "/blog/rust-performance-allocations-infographic-640.webp",
+          "bytes": 46690,
+          "width": 640,
+          "height": 427,
+          "sha256": "1833c2400368883b2bd7459c29237d137b9627bd43f9134114cf5dae12245f99"
+        }
+      ]
+    },
+    {
+      "src": "/blog/rust-performance-measurement-infographic.png",
+      "alt": "A four-stage method verifies equivalent results, holds build profiles constant, times equivalent work and inspects repeated observations.",
+      "caption": "The marks illustrate variation qualitatively. They are not measured chart values; the article links the separate raw timing data.",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1711569,
+      "sha256": "5dfb5566f9cce77fd99e63e459e362c0750b316664f42866fae216285ead535e",
+      "visuallyChecked": true,
+      "deliveryCopies": [
+        {
+          "src": "/blog/rust-performance-measurement-infographic.webp",
+          "bytes": 208518,
+          "width": 1536,
+          "height": 1024,
+          "sha256": "bd3fa54ae84436fddc1c56a6240c44846b9d53a28d7a389997483442cfdde9ac"
+        },
+        {
+          "src": "/blog/rust-performance-measurement-infographic-640.webp",
+          "bytes": 66086,
+          "width": 640,
+          "height": 427,
+          "sha256": "0b728392e4bffbf4c7d175b4a5594e697f4f0c72372eb21318415dc01b3ef7e3"
+        }
+      ]
+    }
+  ],
+  "prompts": "blog-image-prompts-2026-10-27.json"
+}

@@ -12,8 +12,24 @@ Its eight real product captures are preserved. Technology reports candidate
 Tokio/Axum measurements separately from the installed App Store compiler;
 procedural macros and the large-project speed target are still under qualification.
 Guide and Technology carry their actual 25 October modification date in the
-sitemap. The site retains 26 articles, 53 original blog images, all 742 lesson
+sitemap. The site retains 27 articles, 56 original blog images, all 742 lesson
 previews and the existing account gate.
+
+## 27 October: measuring Rust performance
+
+The new guide uses a standard-library log classifier to compare owned lowercase
+copies with a borrowed byte-prefix predicate. It has 2,012 paragraph words and
+three original built-in ImageGen assets, including two explanatory infographics.
+Eight semantic tests pass in both development and Release profiles. A native
+Apple M4 experiment records one development and three Release processes, each
+with 21 batches per variant and 32 scans per batch. The fixture, raw CSV samples
+and timing scope are retained; no allocation counter or iPhone timing is claimed.
+All 26 preceding article objects are unchanged. Metadata, related guides and
+both sitemaps include the new entry.
+
+[Assets and prompts](../docs/blog-assets-2026-10-27.json),
+[reproducible sample](../docs/examples/measured-performance/README.md),
+[raw observations](../docs/benchmarks/measured-performance-2026-10-27/README.md).
 
 ## 26 October: async cancellation guide
 
@@ -76,7 +92,7 @@ repository and signed release archives remain public so existing native builds
 can download and update their courses. Changing that delivery model requires
 an app release and a separate migration.
 
-`content/posts.json` contains 26 articles. The five added on 23 October occupy
+`content/posts.json` contains 27 articles. The five added on 23 October occupy
 previously unoccupied editorial dates of 11, 14, 21, 22 and 23 October. Two
 practical guides cover generated Cargo source and memoization; three news
 analyses cover Rust infrastructure, the announced Rust 1.100 i686 Windows
@@ -174,7 +190,7 @@ Ordinary pages end in a slash; dotted Atlas lesson IDs follow Next's
 extension-like URL rule and omit it, avoiding a redirect from sitemap URLs.
 
 The [HTML sitemap](https://crabrix.com/sitemap/) lists all seven courses, 742
-lessons and 26 articles. `/sitemap.xml` contains 786 canonical URLs and 53 public
+lessons and 27 articles. `/sitemap.xml` contains 787 canonical URLs and 56 public
 blog image URLs. Known editorial modification dates are retained for the ten
 corrected lessons and three courses; build time does not invent modification
 dates. Private lesson media and account routes are excluded. `sitemap.xml` at

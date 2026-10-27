@@ -224,3 +224,49 @@ test('26 October cancellation guide meets its length, source and three-image con
   assert.ok(post.sections.some(s => s.codeLanguage === 'rust'));
   assert.ok(post.sections.some(s => s.codeLanguage === 'toml'));
 });
+
+
+test('27 October performance guide has reproducible observations and three original images', () => {
+  const post = posts.find(p => p.slug === 'rust-performance-measure-before-optimizing');
+  assert.ok(post);
+  assert.equal(post.date, '2026-10-27');
+  const prose = post.sections.flatMap(s => s.paragraphs).join(' ');
+  const words = prose.trim().split(/\s+/).length;
+  assert.ok(words >= 2000 && words <= 2400);
+  assert.equal(post.readingMinutes, Math.ceil(words / 200));
+  assert.ok(post.summary.length >= 120 && post.summary.length <= 180);
+  assert.ok(post.title.length <= 75);
+  assert.equal(post.relatedSlugs.length, 3);
+  assert.ok(post.relatedSlugs.every(slug => slug !== post.slug && posts.some(p => p.slug === slug)));
+  const images = post.sections.flatMap(s => s.image ? [s.image] : []);
+  assert.equal(images.length, 3);
+  assert.equal(images.filter(i => i.src.endsWith('-infographic.png')).length, 2);
+  const hashes = new Set();
+  for (const image of images) {
+    const bytes = readFileSync(new URL('../public' + image.src, import.meta.url));
+    assert.equal(bytes.readUInt32BE(16), image.width);
+    assert.equal(bytes.readUInt32BE(20), image.height);
+    assert.ok(image.alt.length > 40 && image.caption.length > 40);
+    hashes.add(createHash('sha256').update(bytes).digest('hex'));
+  }
+  assert.equal(hashes.size, 3);
+  const report = JSON.parse(readFileSync(new URL('../../docs/benchmarks/measured-performance-2026-10-27/measurements.json', import.meta.url)));
+  assert.equal(report.inputLines, 24000);
+  assert.equal(report.expectedWarnings, 9000);
+  assert.equal(report.phoneTimingQualified, false);
+  for (const run of report.runs) {
+    const csv = readFileSync(new URL('../../docs/benchmarks/measured-performance-2026-10-27/' + run.rawCSV, import.meta.url), 'utf8').trim().split('\n').slice(1).map(line => line.split(','));
+    assert.equal(csv.length, 42);
+    for (const variant of ['owned', 'borrowed']) {
+      const times = csv.filter(row => row[0] === variant).map(row => Number(row[3]) / Number(row[2]) / 1e6).sort((a,b) => a-b);
+      assert.equal(times.length, 21);
+      assert.ok(Math.abs(times[10] - run.variants[variant].medianMillisecondsPerScan) < 1e-9);
+    }
+  }
+  const release = report.runs.filter(r => r.profile === 'release');
+  for (const variant of ['owned','borrowed']) {
+    const values = release.map(r => r.variants[variant].medianMillisecondsPerScan);
+    assert.ok(prose.includes(Math.min(...values).toFixed(3) + '–' + Math.max(...values).toFixed(3)));
+  }
+  assert.ok(post.sections.some(s => s.codeLanguage === 'rust'));
+});

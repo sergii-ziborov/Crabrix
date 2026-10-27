@@ -1,0 +1,47 @@
+{
+  "configurations": [
+    {
+      "width": 390,
+      "colorScheme": "light",
+      "imagesLoaded": 3,
+      "horizontalOverflow": false,
+      "articleMetadata": "passed"
+    },
+    {
+      "width": 390,
+      "colorScheme": "dark",
+      "imagesLoaded": 3,
+      "horizontalOverflow": false,
+      "articleMetadata": "passed"
+    },
+    {
+      "width": 820,
+      "colorScheme": "light",
+      "imagesLoaded": 3,
+      "horizontalOverflow": false,
+      "articleMetadata": "passed"
+    },
+    {
+      "width": 820,
+      "colorScheme": "dark",
+      "imagesLoaded": 3,
+      "horizontalOverflow": false,
+      "articleMetadata": "passed"
+    },
+    {
+      "width": 1440,
+      "colorScheme": "light",
+      "imagesLoaded": 3,
+      "horizontalOverflow": false,
+      "articleMetadata": "passed"
+    },
+    {
+      "width": 1440,
+      "colorScheme": "dark",
+      "imagesLoaded": 3,
+      "horizontalOverflow": false,
+      "articleMetadata": "passed"
+    }
+  ],
+  "pageErrors": []
+}
