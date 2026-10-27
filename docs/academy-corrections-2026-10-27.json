@@ -1,0 +1,406 @@
+{
+  "date": "2026-10-27",
+  "sourceCommit": "97564ab44b4d9b53824f59354bc1d6bc7fa7e4f0",
+  "coursePublication": {
+    "catalogSequence": 15,
+    "sourceCommit": "97564ab44b4d9b53824f59354bc1d6bc7fa7e4f0",
+    "archiveVerificationScope": "Local artifacts verified by production Swift verifier; public GitHub server-computed SHA-256/size matched; public signed descriptors downloaded and verified. Full archive download was interrupted by local disk exhaustion, so no successful full public archive download is claimed.",
+    "courses": [
+      {
+        "course": "algorithms",
+        "version": "1.0.6",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/course-updates-2026-10-27.2/algorithms-1.0.6.zip",
+        "archiveBytes": 77339425,
+        "archiveSHA256": "e43296c4a7cb68d53ff9177e6a74b877d7f73778b840576c45f10efec5db9f70",
+        "githubServerDigestVerified": true,
+        "publicDescriptorSignatureVerified": true
+      },
+      {
+        "course": "concurrency",
+        "version": "1.0.5",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/course-updates-2026-10-27/concurrency-1.0.5.zip",
+        "archiveBytes": 12175892,
+        "archiveSHA256": "a1f3538f4d6f8471a1fc484598140c45581c80dada26d815e703f1709ce3cd6e",
+        "githubServerDigestVerified": true,
+        "publicDescriptorSignatureVerified": true
+      },
+      {
+        "course": "interview",
+        "version": "1.0.8",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/course-updates-2026-10-27.2/interview-1.0.8.zip",
+        "archiveBytes": 33642731,
+        "archiveSHA256": "5dd122a08432da9b45c0ecaffe33bb6e06d68ddaf47e9247dfc71bc6b470256b",
+        "githubServerDigestVerified": true,
+        "publicDescriptorSignatureVerified": true
+      },
+      {
+        "course": "ownership",
+        "version": "1.0.6",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/course-updates-2026-10-27.2/ownership-1.0.6.zip",
+        "archiveBytes": 22093268,
+        "archiveSHA256": "20b55d042f2857e6395415c0140135e1a09a6d401a0c5f25814667a7559b1339",
+        "githubServerDigestVerified": true,
+        "publicDescriptorSignatureVerified": true
+      },
+      {
+        "course": "projects",
+        "version": "1.0.6",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/course-updates-2026-10-27/projects-1.0.6.zip",
+        "archiveBytes": 13598637,
+        "archiveSHA256": "b4ec1a82bbdd677dc16ea2d3dbbbbb1699b7398d688188318714c0ae5cad7255",
+        "githubServerDigestVerified": true,
+        "publicDescriptorSignatureVerified": true
+      },
+      {
+        "course": "systems",
+        "version": "1.0.6",
+        "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/course-updates-2026-10-27/systems-1.0.6.zip",
+        "archiveBytes": 11327804,
+        "archiveSHA256": "53833fcbdbc3bceec0fa2e0c0f86fcb66a78e3eef07aaeedf88d59ca94c27362",
+        "githubServerDigestVerified": true,
+        "publicDescriptorSignatureVerified": true
+      }
+    ],
+    "publicMainCatalogSequence": 15,
+    "publicMainCatalogSignatureVerified": true,
+    "publicMainCatalogURL": "https://raw.githubusercontent.com/sergii-ziborov/crabrix-courses/main/catalog.v1.json"
+  },
+  "sourceParity": {
+    "sourceCommit": "97564ab44b4d9b53824f59354bc1d6bc7fa7e4f0",
+    "lessonObjectsMatched": 742,
+    "uniqueImageFilesMatched": 182,
+    "courseCount": 7
+  },
+  "nativeVerification": {
+    "scope": "Unmodified production verifier/compatibility/planner source compiled on macOS, actual app keyring; no new iPhone UI run.",
+    "output": " systems 1.0.6, 49 entries\nNative verifier accepted projects 1.0.6, 65 entries\nNative verifier accepted algorithms 1.0.6, 1663 entries\nNative verifier accepted interview 1.0.8, 133 entries\nNative verifier accepted ownership 1.0.6, 93 entries\nNative verifier accepted concurrency 1.0.5, 49 entries\nCatalog replay/rollback rejected\nModified archive rejected\nPASS: six compatible updates; partial-update planner; replay and tamper rejection\n"
+  },
+  "tests": {
+    "algorithmFixtureTests": 1000,
+    "packagedHarnessTests": 402,
+    "packagedHarnessCalls": 1400,
+    "authoringTests": 18,
+    "websiteTests": 16,
+    "typescript": "passed",
+    "productionBuild": "passed"
+  },
+  "browserVerification": {
+    "configurations": [
+      {
+        "width": 390,
+        "colorScheme": "light",
+        "path": "algorithms/algorithm.list-intersection.model",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 390,
+        "colorScheme": "light",
+        "path": "algorithms/algorithm.dinic-max-flow.model",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 390,
+        "colorScheme": "light",
+        "path": "interview/q-indexes/",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 390,
+        "colorScheme": "dark",
+        "path": "algorithms/algorithm.list-intersection.model",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 390,
+        "colorScheme": "dark",
+        "path": "algorithms/algorithm.dinic-max-flow.model",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 390,
+        "colorScheme": "dark",
+        "path": "interview/q-indexes/",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 820,
+        "colorScheme": "light",
+        "path": "algorithms/algorithm.list-intersection.model",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 820,
+        "colorScheme": "light",
+        "path": "algorithms/algorithm.dinic-max-flow.model",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 820,
+        "colorScheme": "light",
+        "path": "interview/q-indexes/",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 820,
+        "colorScheme": "dark",
+        "path": "algorithms/algorithm.list-intersection.model",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 820,
+        "colorScheme": "dark",
+        "path": "algorithms/algorithm.dinic-max-flow.model",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 820,
+        "colorScheme": "dark",
+        "path": "interview/q-indexes/",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 1440,
+        "colorScheme": "light",
+        "path": "algorithms/algorithm.list-intersection.model",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 1440,
+        "colorScheme": "light",
+        "path": "algorithms/algorithm.dinic-max-flow.model",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 1440,
+        "colorScheme": "light",
+        "path": "interview/q-indexes/",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 1440,
+        "colorScheme": "dark",
+        "path": "algorithms/algorithm.list-intersection.model",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 1440,
+        "colorScheme": "dark",
+        "path": "algorithms/algorithm.dinic-max-flow.model",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      },
+      {
+        "width": 1440,
+        "colorScheme": "dark",
+        "path": "interview/q-indexes/",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "horizontalOverflow": false
+      }
+    ],
+    "pageErrors": []
+  },
+  "initialBrowserConfigurations": {
+    "count": 42,
+    "output": "PASS 42 authenticated lesson configurations"
+  },
+  "sitePublication": {
+    "phase": "published",
+    "image": "localhost/crabrix-web-site:academy-corrections-20261027",
+    "imageID": "c18936b2d9384c1a1ace9d9530e9f21e81284c8240a3cb924412654dfe809a93",
+    "health": "healthy",
+    "rollbackContainer": "crabrix-web-site-before-academy-corrections-20261027",
+    "consistentAccountBackup": "completed before cutover",
+    "checks": [
+      {
+        "path": "/healthz/",
+        "status": 200,
+        "bytes": 3,
+        "sha256": "dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22"
+      },
+      {
+        "path": "/",
+        "status": 200,
+        "bytes": 47047,
+        "sha256": "8908068c39a753910d96f254211a7b87252b279a6e0de86d6561002f2bbede25"
+      },
+      {
+        "path": "/learn/",
+        "status": 200,
+        "bytes": 19206,
+        "sha256": "bbfb493877fae59c7b45f6c28448e8953e86f97859d72868872a3fc3e7d9104d"
+      },
+      {
+        "path": "/learn/algorithms/",
+        "status": 200,
+        "bytes": 303241,
+        "sha256": "3dbd466346196c22f02f1bf13d18568b9afe36222f5d1401d31ea7aff297e286"
+      },
+      {
+        "path": "/learn/algorithms/algorithm.imos-sweep.model",
+        "status": 200,
+        "bytes": 25049,
+        "sha256": "abb7375041791ebc5d1f8308ea7189a564cad25c39c7cb7228a49a8f0e0c9825"
+      },
+      {
+        "path": "/learn/concurrency/pinning-intuition/",
+        "status": 200,
+        "bytes": 23514,
+        "sha256": "c625011a2c3dd9887615b1a3e606204a2a28c489a8753b7395349589c52cc23d"
+      },
+      {
+        "path": "/learn/systems/cfg-features/",
+        "status": 200,
+        "bytes": 22736,
+        "sha256": "c7d5659db49b2e9567ba0946046867e4e76287b176cea3b583c53f3fada5c5bd"
+      },
+      {
+        "path": "/learn/interview/q-indexes/",
+        "status": 200,
+        "bytes": 23078,
+        "sha256": "4d58db96fde6990152204358f1ade3caea5c99bb3ef3b881852a39a0645aa476"
+      },
+      {
+        "path": "/blog/rust-performance-measure-before-optimizing/",
+        "status": 200,
+        "bytes": 92183,
+        "sha256": "3bb4bed9bda7c1bb7d41a1acbfca2e23c7be1826ed69eb1784268f7041b998c5"
+      },
+      {
+        "path": "/sitemap.xml",
+        "status": 200,
+        "bytes": 96617,
+        "sha256": "a40ceeeae55419a5eba9d1093778d6cb7a47f872cbcaf736b2d5f878569442db"
+      },
+      {
+        "path": "/sitemap/",
+        "status": 200,
+        "bytes": 260922,
+        "sha256": "d28e4b69ac3798dabccefa782a9cb8ca63eef7ae2679b8445361283c7269aab7"
+      },
+      {
+        "path": "/login/",
+        "status": 200,
+        "bytes": 14895,
+        "sha256": "d6e08b710b158a604fa4aa5018dc1f376f927b698535f2211f9608663cd7140c"
+      },
+      {
+        "path": "/learn-media/concurrency/pinning-intuition.png",
+        "status": 401
+      },
+      {
+        "path": "/learn-media/algorithms/algorithms-ranges-b.png",
+        "status": 401
+      },
+      {
+        "privateSourceAndDiagrams": "exact SHA-256 match",
+        "sourceCommit": "97564ab44b4d9b53824f59354bc1d6bc7fa7e4f0"
+      }
+    ]
+  },
+  "publicSiteVerification": {
+    "checks": [
+      {
+        "path": "/healthz/",
+        "status": 200,
+        "sha256": "dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22"
+      },
+      {
+        "path": "/learn/",
+        "status": 200,
+        "sha256": "bbfb493877fae59c7b45f6c28448e8953e86f97859d72868872a3fc3e7d9104d"
+      },
+      {
+        "path": "/learn/algorithms/algorithm.imos-sweep.model",
+        "status": 200,
+        "sha256": "abb7375041791ebc5d1f8308ea7189a564cad25c39c7cb7228a49a8f0e0c9825"
+      },
+      {
+        "path": "/learn/concurrency/pinning-intuition/",
+        "status": 200,
+        "sha256": "c625011a2c3dd9887615b1a3e606204a2a28c489a8753b7395349589c52cc23d"
+      },
+      {
+        "path": "/learn/interview/q-indexes/",
+        "status": 200,
+        "sha256": "4d58db96fde6990152204358f1ade3caea5c99bb3ef3b881852a39a0645aa476"
+      },
+      {
+        "path": "/sitemap.xml",
+        "status": 200,
+        "sha256": "a40ceeeae55419a5eba9d1093778d6cb7a47f872cbcaf736b2d5f878569442db"
+      },
+      {
+        "path": "/sitemap/",
+        "status": 200,
+        "sha256": "d28e4b69ac3798dabccefa782a9cb8ca63eef7ae2679b8445361283c7269aab7"
+      },
+      {
+        "path": "/blog/rust-performance-measure-before-optimizing/",
+        "status": 200,
+        "sha256": "3bb4bed9bda7c1bb7d41a1acbfca2e23c7be1826ed69eb1784268f7041b998c5"
+      },
+      {
+        "path": "/learn-media/concurrency/pinning-intuition.png",
+        "status": 401
+      },
+      {
+        "path": "/learn-media/algorithms/algorithms-ranges-b.png",
+        "status": 401
+      }
+    ]
+  },
+  "nativeInterfaceChanges": false,
+  "stableLessonIDsAndCorrectAnswerPositionsPreserved": true
+}

@@ -18,6 +18,15 @@ The [course authoring guide](https://github.com/sergii-ziborov/crabrix-courses#c
 
 ## Published content updates
 
+### 27 October 2026 Academy corrections
+
+Catalog **15** updates Algorithms **1.0.6**, Ownership **1.0.6**, Projects **1.0.6**,
+Concurrency **1.0.5**, Systems **1.0.6** and Interview **1.0.8**. The other two
+entries retain their assets. It includes 200 individual formatted programs,
+600 distinct questions, expanded challenge cases and eight Rust corrections.
+The actual Swift verifier/planner accepts all six packages and rejects replay
+and tampering. [Verification and scope](academy-corrections-2026-10-27.md).
+
 ### 20 October 2026 editorial update
 
 Catalog sequence **13** publishes Basics **1.0.6**, Systems **1.0.5** and

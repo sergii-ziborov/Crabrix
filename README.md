@@ -4,6 +4,17 @@
 
 [Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support/) · [Privacy](https://crabrix.com/privacy/) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
+## Academy corrections — 27 October 2026
+
+The shared curriculum now has 200 individual formatted Rust algorithm examples,
+600 distinct questions and five semantic fixtures per challenge. All 200
+patterns passed 1,000 comparative Rust tests; 402 harness tests and 18 authoring
+checks passed. Eight Rust lessons, two diagrams and SQL/TOML highlighting were
+corrected. [Changes, checks and delivery](docs/academy-corrections-2026-10-27.md).
+Catalog 15 delivers six course updates through Learn → refresh → **Update all**.
+The website uses the same 742 lesson objects and 182 image files. Native layout
+code and stable lesson IDs are preserved.
+
 <p>
   <img src="docs/screenshots/iphone-build.png" width="200" alt="Rust code editor and compiler workspace">
   <img src="docs/screenshots/iphone-learn.png" width="200" alt="Downloaded Crabrix courses and lesson progress">

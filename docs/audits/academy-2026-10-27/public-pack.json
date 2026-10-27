@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-27",
+  "catalogURL": "https://raw.githubusercontent.com/sergii-ziborov/crabrix-courses/main/catalog.v1.json",
+  "catalogByteIdenticalToLocal": true,
+  "sequence": 13,
+  "courseID": "algorithms",
+  "contentVersion": "1.0.4",
+  "archiveURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/download/coursepack-v1.0.8/algorithms-1.0.4.zip",
+  "archiveBytes": 75590484,
+  "archiveSHA256": "2fae298822fa03e23430adac9c229cfe1e70ce9f51c195e6bd02a99c68bc14c8",
+  "archiveDigestMatchesCatalog": true,
+  "lessonAndCheckObjectsCompared": 1200,
+  "differences": [],
+  "scope": "Archive SHA-256 and JSON parity; not a fresh Ed25519 verification or iPhone execution"
+}

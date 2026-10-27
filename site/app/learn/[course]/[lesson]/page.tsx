@@ -73,7 +73,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
   const index = lessons.findIndex((item) => item.id === lesson.id);
   const isBasics = course.id === "basics";
   const explanationParagraphs = writing?.explanation?.split(/\n\s*\n/) || [];
-  const exampleSection = (writing?.exampleCode || writing?.practiceCode) && <section><h2>Read the Rust</h2>
+  const exampleSection = (writing?.exampleCode || writing?.practiceCode) && <section><h2>Read the code</h2>
     {writing?.exampleCode && <><SyntaxCode code={writing.exampleCode} />{writing.exampleCaption && <p>{prose(writing.exampleCaption)}</p>}</>}
     {writing?.practiceCode && writing.practiceCode !== writing.exampleCode && <><h3>Practice starter</h3><SyntaxCode code={writing.practiceCode} /></>}
   </section>;
@@ -115,7 +115,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
           {algorithm.useCases && <p><strong>When to use it:</strong> {prose(algorithm.useCases)}</p>}
           {algorithm.complexity && <p><strong>Complexity:</strong> {algorithm.complexity}</p>}
           {algorithm.visibleInput && <p><strong>Input:</strong> <code>{algorithm.visibleInput}</code></p>}
-          {algorithm.rustSketch && <SyntaxCode code={algorithm.rustSketch} />}
+          {algorithm.rustSketch && algorithm.rustSketch !== writing?.exampleCode && <SyntaxCode code={algorithm.rustSketch} />}
         </section>}
         {!isBasics && exampleSection}
         {(writing?.task || algorithm?.task || writing?.success) && <section><h2>Try it</h2>

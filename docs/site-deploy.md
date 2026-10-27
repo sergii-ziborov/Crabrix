@@ -1,5 +1,17 @@
 # Crabrix website deployment
 
+## Academy corrections — 27 October 2026
+
+The live service uses `localhost/crabrix-web-site:academy-corrections-20261027`,
+pinning course source `97564ab44b4d9b53824f59354bc1d6bc7fa7e4f0`. All 742 lesson
+objects and 182 unique images match authoring. Changes include 600 Atlas steps,
+eight Rust lessons, two replacement diagrams and Rust/TOML/SQL highlighting.
+Sixteen site tests, TypeScript and production build passed. Authenticated browser
+checks covered phone, tablet and desktop in light/dark themes. A consistent
+account backup preceded cutover; the previous service is retained as
+`crabrix-web-site-before-academy-corrections-20261027`.
+[Publication evidence and scope](academy-corrections-2026-10-27.md).
+
 ## Measured Rust performance guide — 27 October 2026
 
 The current service uses `localhost/crabrix-web-site:rust-performance-20261027`

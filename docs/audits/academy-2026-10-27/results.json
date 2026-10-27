@@ -1,0 +1,1449 @@
+{
+  "date": "2026-10-27",
+  "scope": "Read-only content audit; no publication or curriculum correction",
+  "appRepositoryCommit": "a52788481ff9a76743c1b64672652d6dbd3203d0",
+  "authoringCommit": "52b6751d31a5b7a72bd5322f4e59f26ff5a1b08f",
+  "websiteSnapshotSourceCommit": "e0f3ead2a98e4fb8e08118ce27632a15516adc70",
+  "snapshotSHA256": "e887a4f8fb7b31feccf3740b2f9d6c9dfa09cbcd208ecca96779801d50676014",
+  "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "structural": {
+    "lessons": 742,
+    "websiteAuthoringDifferences": [],
+    "imageDifferences": [],
+    "invalidQuestionIndices": [],
+    "validatorQuestionDifferences": [],
+    "invalidParentReferences": []
+  },
+  "independentAnswers": {
+    "checkedPatterns": 110,
+    "checkedCases": 440,
+    "mismatches": [
+      {
+        "pattern": "imos-sweep",
+        "kind": "visible",
+        "input": "n=5 updates=(0,2,2),(1,3,3),(3,4,1)",
+        "published": "4",
+        "computed": "5"
+      },
+      {
+        "pattern": "imos-sweep",
+        "kind": "normalisation",
+        "input": "  \nn=5 updates=(0,2,2),(1,3,3),(3,4,1)\n  ",
+        "published": "4",
+        "computed": "5"
+      },
+      {
+        "pattern": "monotonic-decreasing-stack",
+        "kind": "visible",
+        "input": "[100,80,60,70,60,75,85]",
+        "published": "1,1,1,2,1,4,6",
+        "computed": "0,0,0,1,0,3,5"
+      },
+      {
+        "pattern": "monotonic-decreasing-stack",
+        "kind": "boundary",
+        "input": "[10,20,15]",
+        "published": "1,2,1",
+        "computed": "0,1,0"
+      },
+      {
+        "pattern": "monotonic-decreasing-stack",
+        "kind": "normalisation",
+        "input": "\n[10,20,15]\n",
+        "published": "1,2,1",
+        "computed": "0,1,0"
+      },
+      {
+        "pattern": "monotonic-decreasing-stack",
+        "kind": "normalisation",
+        "input": "  \n[100,80,60,70,60,75,85]\n  ",
+        "published": "1,1,1,2,1,4,6",
+        "computed": "0,0,0,1,0,3,5"
+      }
+    ],
+    "notIndependentlyComputed": [
+      "reservoir-sampling",
+      "floyd-state-cycle",
+      "complement-lookup",
+      "randomized-set",
+      "in-place-merge",
+      "min-stack",
+      "queue-with-stacks",
+      "expression-shunting-yard",
+      "merge-sort",
+      "peak-search",
+      "matrix-binary-search",
+      "binary-search-answer",
+      "partition-median",
+      "list-reversal",
+      "list-middle",
+      "list-cycle",
+      "merge-two-lists",
+      "remove-nth-from-end",
+      "list-intersection",
+      "partition-list",
+      "reorder-list",
+      "copy-random-list",
+      "reverse-k-group",
+      "tree-preorder",
+      "tree-inorder",
+      "tree-postorder",
+      "tree-level-order",
+      "tree-height-balance",
+      "bst-search-insert",
+      "lowest-common-ancestor",
+      "tree-serialize",
+      "tree-diameter",
+      "tree-rerooting",
+      "closest-k-heap",
+      "lazy-heap-deletion",
+      "priority-scheduling",
+      "meeting-rooms-heap",
+      "adjacency-list",
+      "graph-dfs",
+      "graph-bfs",
+      "connected-components",
+      "grid-flood-fill",
+      "bipartite-coloring",
+      "undirected-cycle",
+      "kahn-topological",
+      "dfs-topological",
+      "strong-components",
+      "dijkstra",
+      "zero-one-bfs",
+      "dag-shortest-path",
+      "prim-mst",
+      "kruskal-mst",
+      "bellman-ford",
+      "floyd-warshall",
+      "a-star",
+      "bidirectional-bfs",
+      "dinic-max-flow",
+      "combination-sum",
+      "parentheses-generation",
+      "word-grid-search",
+      "palindrome-partition",
+      "n-queens",
+      "sudoku",
+      "activity-selection",
+      "merge-intervals",
+      "insert-interval",
+      "sweep-line-events",
+      "jump-game",
+      "jump-game-two",
+      "gas-station",
+      "deadline-scheduling",
+      "minimum-arrows",
+      "coin-change-min",
+      "word-break-dp",
+      "decode-ways",
+      "zero-one-knapsack",
+      "matrix-chain",
+      "interval-dp",
+      "bitmask-dp",
+      "tree-dp",
+      "aho-corasick",
+      "miller-rabin",
+      "sparse-table",
+      "disjoint-set-union",
+      "treap",
+      "skip-list",
+      "dsu-rollback",
+      "mo-algorithm",
+      "heavy-light",
+      "centroid-decomposition"
+    ]
+  },
+  "atlas": {
+    "patterns": 200,
+    "uniqueSketches": 20,
+    "sketchGroups": [
+      {
+        "code": "fn scan(values: &[i32]) -> Option<usize> {\n    for (index, value) in values.iter().enumerate() {\n        if *value < 0 { return Some(index); }\n    }\n    None\n}",
+        "patterns": [
+          "linear-scan",
+          "min-max-tracking",
+          "frequency-counting",
+          "running-accumulator",
+          "adjacent-pair-scan",
+          "stable-compaction",
+          "predicate-partition",
+          "boyer-moore-majority",
+          "reservoir-sampling",
+          "floyd-state-cycle"
+        ]
+      },
+      {
+        "code": "use std::collections::HashMap;\nfn counts(values: &[i32]) -> HashMap<i32, usize> {\n    let mut map = HashMap::new();\n    for &value in values { *map.entry(value).or_insert(0) += 1; }\n    map\n}",
+        "patterns": [
+          "hash-membership",
+          "hash-frequency",
+          "complement-lookup",
+          "group-by-key",
+          "index-map",
+          "coordinate-compression",
+          "longest-consecutive-set",
+          "bidirectional-map",
+          "randomized-set",
+          "rolling-fingerprint"
+        ]
+      },
+      {
+        "code": "fn prefix(values: &[i64]) -> Vec<i64> {\n    let mut sums = vec![0; values.len() + 1];\n    for i in 0..values.len() { sums[i + 1] = sums[i] + values[i]; }\n    sums\n}",
+        "patterns": [
+          "prefix-sum",
+          "suffix-aggregate",
+          "equilibrium-index",
+          "difference-array",
+          "prefix-suffix-product",
+          "prefix-xor",
+          "prefix-sum-2d",
+          "imos-sweep",
+          "fenwick-tree",
+          "segment-tree"
+        ]
+      },
+      {
+        "code": "fn pair_sum(values: &[i32], target: i32) -> bool {\n    let (mut left, mut right) = (0, values.len().saturating_sub(1));\n    while left < right {\n        match (values[left] + values[right]).cmp(&target) {\n            std::cmp::Ordering::Less => left += 1,\n            std::cmp::Ordering::Greater => right -= 1,\n            std::cmp::Ordering::Equal => return true,\n        }\n    }\n    false\n}",
+        "patterns": [
+          "opposite-ends",
+          "same-direction",
+          "slow-fast",
+          "sorted-two-sum",
+          "palindrome-pointers",
+          "three-sum",
+          "dutch-flag",
+          "container-area",
+          "in-place-merge",
+          "trapping-water"
+        ]
+      },
+      {
+        "code": "fn best_k(values: &[i32], k: usize) -> i32 {\n    let mut sum: i32 = values[..k].iter().sum();\n    let mut best = sum;\n    for right in k..values.len() {\n        sum += values[right] - values[right - k];\n        best = best.max(sum);\n    }\n    best\n}",
+        "patterns": [
+          "fixed-window",
+          "variable-window",
+          "unique-window",
+          "at-most-k",
+          "exactly-k-difference",
+          "frequency-balanced-window",
+          "minimum-cover-window",
+          "monotonic-deque-window",
+          "rolling-window-statistic",
+          "dual-heap-window-median"
+        ]
+      },
+      {
+        "code": "fn balanced(text: &str) -> bool {\n    let mut stack = Vec::new();\n    for ch in text.chars() {\n        match ch {\n            '(' | '[' | '{' => stack.push(ch),\n            ')' => if stack.pop() != Some('(') { return false; },\n            ']' => if stack.pop() != Some('[') { return false; },\n            '}' => if stack.pop() != Some('{') { return false; },\n            _ => {}\n        }\n    }\n    stack.is_empty()\n}",
+        "patterns": [
+          "delimiter-stack",
+          "postfix-evaluation",
+          "min-stack",
+          "queue-with-stacks",
+          "next-greater-stack",
+          "monotonic-increasing-stack",
+          "monotonic-decreasing-stack",
+          "circular-monotonic-stack",
+          "expression-shunting-yard",
+          "largest-histogram"
+        ]
+      },
+      {
+        "code": "fn insertion_sort(values: &mut [i32]) {\n    for i in 1..values.len() {\n        let mut j = i;\n        while j > 0 && values[j] < values[j - 1] {\n            values.swap(j, j - 1);\n            j -= 1;\n        }\n    }\n}",
+        "patterns": [
+          "insertion-sort",
+          "selection-sort",
+          "merge-sort",
+          "quicksort",
+          "heap-sort",
+          "counting-sort",
+          "radix-sort",
+          "bucket-sort",
+          "quickselect",
+          "median-of-medians"
+        ]
+      },
+      {
+        "code": "fn lower_bound(values: &[i32], target: i32) -> usize {\n    let (mut low, mut high) = (0, values.len());\n    while low < high {\n        let mid = low + (high - low) / 2;\n        if values[mid] < target { low = mid + 1; } else { high = mid; }\n    }\n    low\n}",
+        "patterns": [
+          "binary-exact",
+          "lower-bound",
+          "upper-bound",
+          "first-last-position",
+          "rotated-search",
+          "peak-search",
+          "matrix-binary-search",
+          "binary-search-answer",
+          "exponential-search",
+          "partition-median"
+        ]
+      },
+      {
+        "code": "// Conceptual ownership-safe reversal:\n// while let Some(mut node) = head.take() {\n//     head = node.next.take();\n//     node.next = reversed;\n//     reversed = Some(node);\n// }",
+        "patterns": [
+          "list-reversal",
+          "list-middle",
+          "list-cycle",
+          "merge-two-lists",
+          "remove-nth-from-end",
+          "list-intersection",
+          "partition-list",
+          "reorder-list",
+          "copy-random-list",
+          "reverse-k-group"
+        ]
+      },
+      {
+        "code": "fn height(node: Option<&Node>) -> usize {\n    match node {\n        None => 0,\n        Some(node) => 1 + height(node.left.as_deref()).max(height(node.right.as_deref())),\n    }\n}",
+        "patterns": [
+          "tree-preorder",
+          "tree-inorder",
+          "tree-postorder",
+          "tree-level-order",
+          "tree-height-balance",
+          "bst-search-insert",
+          "lowest-common-ancestor",
+          "tree-serialize",
+          "tree-diameter",
+          "tree-rerooting"
+        ]
+      },
+      {
+        "code": "use std::cmp::Reverse;\nuse std::collections::BinaryHeap;\nfn smallest(values: &[i32]) -> Option<i32> {\n    let mut heap = BinaryHeap::new();\n    for &value in values { heap.push(Reverse(value)); }\n    heap.pop().map(|Reverse(value)| value)\n}",
+        "patterns": [
+          "binary-heap",
+          "top-k-minheap",
+          "kth-stream",
+          "k-way-merge",
+          "closest-k-heap",
+          "two-heap-median",
+          "lazy-heap-deletion",
+          "priority-scheduling",
+          "meeting-rooms-heap",
+          "huffman-greedy-heap"
+        ]
+      },
+      {
+        "code": "use std::collections::VecDeque;\nfn bfs(graph: &[Vec<usize>], start: usize) -> Vec<usize> {\n    let mut queue = VecDeque::from([start]);\n    let mut seen = vec![false; graph.len()];\n    let mut order = Vec::new();\n    seen[start] = true;\n    while let Some(node) = queue.pop_front() {\n        order.push(node);\n        for &next in &graph[node] {\n            if !seen[next] {\n                seen[next] = true;\n                queue.push_back(next);\n            }\n        }\n    }\n    order\n}",
+        "patterns": [
+          "adjacency-list",
+          "graph-dfs",
+          "graph-bfs",
+          "connected-components",
+          "grid-flood-fill",
+          "bipartite-coloring",
+          "undirected-cycle",
+          "kahn-topological",
+          "dfs-topological",
+          "strong-components"
+        ]
+      },
+      {
+        "code": "// Dijkstra invariant:\n// when the smallest tentative distance is popped and is current,\n// no later non-negative path can improve that node.",
+        "patterns": [
+          "dijkstra",
+          "zero-one-bfs",
+          "dag-shortest-path",
+          "prim-mst",
+          "kruskal-mst",
+          "bellman-ford",
+          "floyd-warshall",
+          "a-star",
+          "bidirectional-bfs",
+          "dinic-max-flow"
+        ]
+      },
+      {
+        "code": "fn choose(start: usize, values: &[i32], path: &mut Vec<i32>, out: &mut Vec<Vec<i32>>) {\n    out.push(path.clone());\n    for index in start..values.len() {\n        path.push(values[index]);\n        choose(index + 1, values, path, out);\n        path.pop();\n    }\n}",
+        "patterns": [
+          "subsets",
+          "permutations",
+          "combinations",
+          "combination-sum",
+          "parentheses-generation",
+          "word-grid-search",
+          "palindrome-partition",
+          "n-queens",
+          "sudoku",
+          "meet-in-middle"
+        ]
+      },
+      {
+        "code": "fn max_non_overlapping(mut ranges: Vec<(i32, i32)>) -> usize {\n    ranges.sort_by_key(|range| range.1);\n    let mut end = i32::MIN;\n    ranges.into_iter().filter(|&(start, next_end)| {\n        if start < end { false } else { end = next_end; true }\n    }).count()\n}",
+        "patterns": [
+          "activity-selection",
+          "merge-intervals",
+          "insert-interval",
+          "sweep-line-events",
+          "jump-game",
+          "jump-game-two",
+          "gas-station",
+          "partition-labels",
+          "deadline-scheduling",
+          "minimum-arrows"
+        ]
+      },
+      {
+        "code": "fn ways(n: usize) -> usize {\n    let (mut previous, mut current) = (1, 1);\n    for _ in 0..n {\n        (previous, current) = (current, previous + current);\n    }\n    previous\n}",
+        "patterns": [
+          "memoization",
+          "tabulation",
+          "rolling-dp",
+          "house-robber",
+          "kadane",
+          "coin-change-min",
+          "word-break-dp",
+          "decode-ways",
+          "lis-patience",
+          "zero-one-knapsack"
+        ]
+      },
+      {
+        "code": "fn grid_paths(rows: usize, columns: usize) -> usize {\n    let mut dp = vec![1; columns];\n    for _ in 1..rows {\n        for column in 1..columns { dp[column] += dp[column - 1]; }\n    }\n    dp[columns - 1]\n}",
+        "patterns": [
+          "grid-path-dp",
+          "subset-sum",
+          "longest-common-subsequence",
+          "edit-distance",
+          "longest-pal-subsequence",
+          "matrix-chain",
+          "interval-dp",
+          "digit-dp",
+          "bitmask-dp",
+          "tree-dp"
+        ]
+      },
+      {
+        "code": "fn prefix_function(bytes: &[u8]) -> Vec<usize> {\n    let mut pi = vec![0; bytes.len()];\n    for i in 1..bytes.len() {\n        let mut j = pi[i - 1];\n        while j > 0 && bytes[i] != bytes[j] { j = pi[j - 1]; }\n        if bytes[i] == bytes[j] { j += 1; }\n        pi[i] = j;\n    }\n    pi\n}",
+        "patterns": [
+          "string-frequency",
+          "string-two-pointers",
+          "run-length-encoding",
+          "kmp",
+          "z-algorithm",
+          "rabin-karp",
+          "trie",
+          "aho-corasick",
+          "suffix-array",
+          "manacher"
+        ]
+      },
+      {
+        "code": "fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        (a, b) = (b, a % b);\n    }\n    a\n}",
+        "patterns": [
+          "euclid-gcd",
+          "bitmask-enumeration",
+          "xor-cancellation",
+          "sieve",
+          "fast-power",
+          "modular-inverse",
+          "binomial-coefficients",
+          "gray-code",
+          "matrix-exponentiation",
+          "miller-rabin"
+        ]
+      },
+      {
+        "code": "// Advanced structures start from the same discipline:\n// define the query monoid, update semantics, and the invariant that\n// makes each decomposition smaller than the original problem.",
+        "patterns": [
+          "sparse-table",
+          "disjoint-set-union",
+          "lazy-segment-tree",
+          "treap",
+          "skip-list",
+          "dsu-rollback",
+          "mo-algorithm",
+          "heavy-light",
+          "centroid-decomposition",
+          "suffix-automaton"
+        ]
+      }
+    ],
+    "questionTemplates": {
+      "What should you identify before translating this pattern into Rust?": 200,
+      "Which group is the strongest signal for this pattern?": 200,
+      "Which performance target should guide this solution?": 200
+    },
+    "distinctTrimmedInputsPerChallenge": {
+      "2": 200
+    },
+    "lessonsWithGenericTraceInstruction": 600
+  },
+  "rustExamples": {
+    "total": 142,
+    "counts": {
+      "compiled": 108,
+      "requiresContextOrIntentionalFailure": 34
+    },
+    "rows": [
+      {
+        "course": "basics",
+        "lesson": "hello-rust",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "variables",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "print-formatting",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "number-types",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "booleans-comparisons",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "chars-and-text",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "compiler-feedback",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0308]: mismatched types\n --> sample.rs:2:22\n  |\n2 |     let count: u32 = \"four\";\n  |                ---   ^^^^^^ expected `u32`, found `&str`\n  |                |\n  |                expected due to this\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0308`.\n"
+      },
+      {
+        "course": "basics",
+        "lesson": "types",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "operators",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "block-expressions",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "functions",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "function-parameters",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "control-flow",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "ranges",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "loops",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "parsing",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "references-intro",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "methods-intro",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "recoverable-errors",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "debugging-values",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "comments-docs",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "structs",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "enums",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "option-result",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "collections",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "strings",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "pattern-matching",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "basics",
+        "lesson": "derive",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "ownership",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "borrowing",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "slices",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "copy-clone",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "drop-order",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "lifetimes-intro",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "generics",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "traits",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "lifetimes",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "closures",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "iterators",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "iterator-impl",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "associated-types",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "operator-traits",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "move-functions",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "mutable-borrows",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "reborrowing",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "partial-moves",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "interior-mutability-intro",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "lifetime-elision",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "owned-or-borrowed",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "trait-objects",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "blanket-impls",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "default-trait-methods",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "generic-lifetimes",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "iterator-adapters",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "closure-capture-modes",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "ownership",
+        "lesson": "phantom-data",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "projects",
+        "lesson": "modules",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0583]: file not found for module `greeter`\n --> sample.rs:2:1\n  |\n2 | mod greeter;\n  | ^^^^^^^^^^^^\n  |\n  = help: to create the module `greeter`, create file \"greeter.rs\" or \"greeter/mod.rs\"\n  = note: if there is a `mod greeter` elsewhere in the crate already, import it with `use crate::...` instead\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0583`.\n"
+      },
+      {
+        "course": "projects",
+        "lesson": "testing",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "projects",
+        "lesson": "errors",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "projects",
+        "lesson": "dependencies",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error: expected `;`, found `serde`\n --> sample.rs:2:15\n  |\n2 | [dependencies]\n  |               ^ help: add `;` here\n3 | serde = { version = \"1\", features = [\"derive\"] }\n  | ----- unexpected token\n\nerror: expected one of `.`, `;`, `?`, `}`, or an operator, found `,`\n --> sample.rs:3:24\n  |\n3 | serde = { version = \"1\", features = [\"derive\"] }\n  |                        ^ expected one of `.`, `;`, `?`, `}`, or an operator\n\nerror: expected `;`, found `smallvec`\n --> sample.rs:3:49\n  |\n3 | serde = { version = \"1\", features = [\"derive\"] }\n  |                                                 ^ help: add `;` here\n4 | smallvec = \"1\"\n  | -------- unexpected token\n\nerror: expected `;`, found `memchr`\n --> sample.rs:4:15\n  |\n4 | smallvec = \"1\"\n  |               ^ help: add `;` here\n5 | memchr = { version = \"2\", default-features = false }\n  | ------ unexpected token\n\nerror: expected one of `.`, `;`, `?`, `}`, or an operator, found `,`\n --> sample.rs:5:25\n  |\n5 | memchr = { version = \"2\", default-features = false }\n  |                         ^ expected one of `.`, `;`, `?`, `}`, or an operator\n\nerror[E0425]: cannot find value `memchr` in this scope\n --> sample.rs:5:1\n  |\n5 | memchr = { version = \"2\", default-features = false }\n  | ^^^^^^\n  |\nhelp: you might have meant to introduce a new binding\n  |\n5 | let memchr = { version = \"2\", default-features = false }\n  | +++\n\nwarning: unnecessary braces around assigned value\n --> sample.rs:5:10\n  |\n5 | memchr = { version = \"2\", default-features = false }\n  |          ^^                                       ^^\n  |\n  = note: `#[warn(unused_braces"
+      },
+      {
+        "course": "projects",
+        "lesson": "workspaces",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error: expected one of `!` or `[`, found `Cargo`\n --> sample.rs:2:3\n  |\n2 | # Cargo.toml at the workspace root\n  |   ^^^^^ expected one of `!` or `[`\n\nerror: aborting due to 1 previous error\n\n"
+      },
+      {
+        "course": "projects",
+        "lesson": "box",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "projects",
+        "lesson": "rc-refcell",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "projects",
+        "lesson": "deref-drop",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "projects",
+        "lesson": "cycles",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "projects",
+        "lesson": "package-layout",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0433]: cannot find module or crate `demo` in this scope\n --> sample.rs:6:20\n  |\n6 |     println!(\"{}\", demo::answer());\n  |                    ^^^^ use of unresolved module or unlinked crate `demo`\n  |\n  = help: you might be missing a crate named `demo`\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0433`.\n"
+      },
+      {
+        "course": "projects",
+        "lesson": "cargo-command-cycle",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "projects",
+        "lesson": "dependency-kinds",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error: expected `;`, found `log`\n --> sample.rs:2:15\n  |\n2 | [dependencies]\n  |               ^ help: add `;` here\n3 | log = \"0.4\"\n  | --- unexpected token\n\nerror: expected `;`, found `pretty_assertions`\n --> sample.rs:5:19\n  |\n5 | [dev-dependencies]\n  |                   ^ help: add `;` here\n6 | pretty_assertions = \"1\"\n  | ----------------- unexpected token\n\nerror[E0425]: cannot find value `pretty_assertions` in this scope\n --> sample.rs:6:1\n  |\n6 | pretty_assertions = \"1\"\n  | ^^^^^^^^^^^^^^^^^\n  |\nhelp: you might have meant to introduce a new binding\n  |\n6 | let pretty_assertions = \"1\"\n  | +++\n\nerror: aborting due to 3 previous errors\n\nFor more information about this error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "projects",
+        "lesson": "feature-design",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "projects",
+        "lesson": "lockfile-reproducibility",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error: expected `;`, found `name`\n --> sample.rs:2:12\n  |\n2 | [[package]]\n  |            ^ help: add `;` here\n3 | name = \"smallvec\"\n  | ---- unexpected token\n\nerror: expected `;`, found `version`\n --> sample.rs:3:18\n  |\n3 | name = \"smallvec\"\n  |                  ^ help: add `;` here\n4 | version = \"1.13.2\"\n  | ------- unexpected token\n\nerror: expected `;`, found `checksum`\n --> sample.rs:4:19\n  |\n4 | version = \"1.13.2\"\n  |                   ^ help: add `;` here\n5 | checksum = \"...\"\n  | -------- unexpected token\n\nerror[E0425]: cannot find value `checksum` in this scope\n --> sample.rs:5:1\n  |\n5 | checksum = \"...\"\n  | ^^^^^^^^\n  |\nhelp: you might have meant to introduce a new binding\n  |\n5 | let checksum = \"...\"\n  | +++\n\nerror: aborting due to 4 previous errors\n\nFor more information about this error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "projects",
+        "lesson": "integration-tests",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0432]: unresolved import `demo`\n --> sample.rs:3:5\n  |\n3 | use demo::answer;\n  |     ^^^^ use of unresolved module or unlinked crate `demo`\n  |\n  = help: you might be missing a crate named `demo`\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0432`.\n"
+      },
+      {
+        "course": "projects",
+        "lesson": "error-context",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "projects",
+        "lesson": "doc-examples",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "projects",
+        "lesson": "release-profiles",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error: expected `;`, found `opt`\n --> sample.rs:2:18\n  |\n2 | [profile.release]\n  |                  ^ help: add `;` here\n3 | opt-level = 3\n  | --- unexpected token\n\nerror: expected `;`, found `lto`\n --> sample.rs:3:14\n  |\n3 | opt-level = 3\n  |              ^ help: add `;` here\n4 | lto = \"thin\"\n  | --- unexpected token\n\nerror: expected `;`, found `debug`\n --> sample.rs:4:13\n  |\n4 | lto = \"thin\"\n  |             ^ help: add `;` here\n5 | debug = 1\n  | ----- unexpected token\n\nerror[E0425]: cannot find value `debug` in this scope\n --> sample.rs:5:1\n  |\n5 | debug = 1\n  | ^^^^^\n  |\nhelp: you might have meant to introduce a new binding\n  |\n5 | let debug = 1\n  | +++\n\nerror: aborting due to 4 previous errors\n\nFor more information about this error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "concurrency",
+        "lesson": "concurrency",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "concurrency",
+        "lesson": "channels",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "concurrency",
+        "lesson": "shared-state",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "concurrency",
+        "lesson": "send-sync",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "concurrency",
+        "lesson": "futures",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "concurrency",
+        "lesson": "async-runtime",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0433]: cannot find module or crate `tokio` in this scope\n --> sample.rs:4:3\n  |\n4 | #[tokio::main]\n  |   ^^^^^ use of unresolved module or unlinked crate `tokio`\n\nerror[E0752]: `main` function is not allowed to be `async`\n --> sample.rs:5:1\n  |\n5 | async fn main() {\n  | ^^^^^^^^^^^^^^^ `main` function is not allowed to be `async`\n\nerror: aborting due to 2 previous errors\n\nSome errors have detailed explanations: E0433, E0752.\nFor more information about an error, try `rustc --explain E0433`.\n"
+      },
+      {
+        "course": "concurrency",
+        "lesson": "async-patterns",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0432]: unresolved import `tokio`\n --> sample.rs:2:5\n  |\n2 | use tokio::join;\n  |     ^^^^^ use of unresolved module or unlinked crate `tokio`\n  |\n  = help: you might be missing a crate named `tokio`\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0432`.\n"
+      },
+      {
+        "course": "concurrency",
+        "lesson": "scoped-threads",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "concurrency",
+        "lesson": "mutex-poisoning",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "concurrency",
+        "lesson": "atomics-basics",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "concurrency",
+        "lesson": "deadlock-avoidance",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0425]: cannot find value `a_id` in this scope\n --> sample.rs:4:26\n  |\n4 | let (first, second) = if a_id < b_id {\n  |                          ^^^^ not found in this scope\n\nerror[E0425]: cannot find value `b_id` in this scope\n --> sample.rs:4:33\n  |\n4 | let (first, second) = if a_id < b_id {\n  |                                 ^^^^ not found in this scope\n\nerror[E0425]: cannot find value `a` in this scope\n --> sample.rs:5:7\n  |\n5 |     (&a, &b)\n  |       ^ not found in this scope\n\nerror[E0425]: cannot find value `b` in this scope\n --> sample.rs:5:11\n  |\n5 |     (&a, &b)\n  |           ^ not found in this scope\n\nerror[E0425]: cannot find value `b` in this scope\n --> sample.rs:7:7\n  |\n7 |     (&b, &a)\n  |       ^ not found in this scope\n\nerror[E0425]: cannot find value `a` in this scope\n --> sample.rs:7:11\n  |\n7 |     (&b, &a)\n  |           ^ not found in this scope\n\nerror: aborting due to 6 previous errors\n\nFor more information about this error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "concurrency",
+        "lesson": "pinning-intuition",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "concurrency",
+        "lesson": "async-cancellation",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0425]: cannot find function `save_record` in this scope\n --> sample.rs:3:5\n  |\n3 |     save_record().await;\n  |     ^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function `send_ack` in this scope\n --> sample.rs:6:5\n  |\n6 |     send_ack().await;\n  |     ^^^^^^^^ not found in this scope\n\nerror: aborting due to 2 previous errors\n\nFor more information about this error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "concurrency",
+        "lesson": "blocking-async",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0425]: cannot find function `async_timer` in this scope\n --> sample.rs:5:5\n  |\n5 |     async_timer().await;\n  |     ^^^^^^^^^^^ not found in this scope\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "systems",
+        "lesson": "declarative-macros",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "systems",
+        "lesson": "proc-macros",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error: expected one of `!` or `[`, found `my`\n --> sample.rs:2:3\n  |\n2 | # my-derive/Cargo.toml\n  |   ^^ expected one of `!` or `[`\n\nerror: aborting due to 1 previous error\n\n"
+      },
+      {
+        "course": "systems",
+        "lesson": "cfg-features",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "systems",
+        "lesson": "unsafe",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "systems",
+        "lesson": "ffi",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "systems",
+        "lesson": "performance",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "systems",
+        "lesson": "idioms",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "systems",
+        "lesson": "macro-hygiene",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "systems",
+        "lesson": "token-trees",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "systems",
+        "lesson": "proc-macro-boundaries",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error: the `proc_macro_derive` attribute is only usable with crates of the `proc-macro` crate type\n --> sample.rs:3:3\n  |\n3 | #[proc_macro_derive(Builder)]\n  |   ^^^^^^^^^^^^^^^^^\n\nerror[E0425]: cannot find type `TokenStream` in this scope\n --> sample.rs:4:22\n  |\n4 | pub fn derive(input: TokenStream)\n  |                      ^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find type `TokenStream` in this scope\n --> sample.rs:5:8\n  |\n5 |     -> TokenStream {\n  |        ^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function `expand` in this scope\n --> sample.rs:6:5\n  |\n6 |     expand(input)\n  |     ^^^^^^ not found in this scope\n\nerror: aborting due to 4 previous errors\n\nFor more information about this error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "systems",
+        "lesson": "raw-pointers",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "systems",
+        "lesson": "repr-layout",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "systems",
+        "lesson": "unsafe-traits",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "systems",
+        "lesson": "benchmarking-profiling",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0425]: cannot find function `workload` in this scope\n --> sample.rs:3:14\n  |\n3 | let answer = workload();\n  |              ^^^^^^^^ not found in this scope\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-ownership",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-borrowing",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-lifetimes",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-option-result",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0425]: cannot find type `Config` in this scope\n --> sample.rs:2:15\n  |\n2 | fn port(map: &Config) -> Result<u16, String> {\n  |               ^^^^^^ not found in this scope\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-send-sync",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-box-rc-arc",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-dyn-generics",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-unsafe",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-atomics",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0425]: cannot find value `READY` in this scope\n --> sample.rs:4:1\n  |\n4 | READY.store(true, Ordering::Release);\n  | ^^^^^ not found in this scope\n\nerror[E0425]: cannot find value `READY` in this scope\n --> sample.rs:5:4\n  |\n5 | if READY.load(Ordering::Acquire) {\n  |    ^^^^^ not found in this scope\n\nwarning: unused import: `AtomicBool`\n --> sample.rs:2:25\n  |\n2 | use std::sync::atomic::{AtomicBool, Ordering};\n  |                         ^^^^^^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nerror: aborting due to 2 previous errors; 1 warning emitted\n\nFor more information about this error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-deadlock",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0425]: cannot find value `a` in this scope\n --> sample.rs:3:10\n  |\n3 | let _a = a.lock().unwrap();\n  |          ^ not found in this scope\n\nerror[E0425]: cannot find value `b` in this scope\n --> sample.rs:4:10\n  |\n4 | let _b = b.lock().unwrap();\n  |          ^ not found in this scope\n\nerror[E0425]: cannot find value `b` in this scope\n --> sample.rs:7:10\n  |\n4 | let _b = b.lock().unwrap();\n  |     -- `_b` defined here\n...\n7 | let _b = b.lock().unwrap();\n  |          ^\n  |\nhelp: the leading underscore in `_b` marks it as unused, consider renaming it to `b`\n  |\n4 - let _b = b.lock().unwrap();\n4 + let b = b.lock().unwrap();\n  |\n\nerror[E0425]: cannot find value `a` in this scope\n --> sample.rs:8:10\n  |\n3 | let _a = a.lock().unwrap();\n  |     -- `_a` defined here\n...\n8 | let _a = a.lock().unwrap();\n  |          ^\n  |\nhelp: the leading underscore in `_a` marks it as unused, consider renaming it to `a`\n  |\n3 - let _a = a.lock().unwrap();\n3 + let a = a.lock().unwrap();\n  |\n\nerror: aborting due to 4 previous errors\n\nFor more information about this error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-channels-vs-mutex",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0425]: cannot find function `compute` in this scope\n --> sample.rs:4:13\n  |\n4 |     tx.send(compute()).unwrap();\n  |             ^^^^^^^ not found in this scope\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-async-vs-threads",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0425]: cannot find type `Body` in this scope\n --> sample.rs:2:35\n  |\n2 | async fn fetch(id: u32) -> Result<Body, Error> {\n  |                                   ^^^^ not found in this scope\n  |\nhelp: you might be missing a type parameter\n  |\n2 | async fn fetch<Body>(id: u32) -> Result<Body, Error> {\n  |               ++++++\n\nerror[E0425]: cannot find type `Error` in this scope\n --> sample.rs:2:41\n  |\n2 | async fn fetch(id: u32) -> Result<Body, Error> {\n  |                                         ^^^^^ not found in this scope\n  |\nhelp: consider importing one of these items\n  |\n1 + use std::error::Error;\n  |\n1 + use std::fmt::Error;\n  |\n1 + use std::io::Error;\n  |\n1 + use core::error::Error;\n  |\n  = and 1 other candidate\n\nerror[E0425]: cannot find value `client` in this scope\n --> sample.rs:3:20\n  |\n3 |     let response = client.get(id).await?;\n  |                    ^^^^^^ not found in this scope\n\nwarning: method call on a diverging inference variable\n --> sample.rs:4:17\n  |\n4 |     Ok(response.body().await?)\n  |                 ^^^^\n  |\n  = help: consider providing a type annotation\n  = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!\n  = note: for more information, see issue #156047 <https://github.com/rust-lang/rust/issues/156047>\n  = note: `#[warn(method_call_on_diverging_infer_var)]` (part of `#[warn(future_incompatible)]`) on by default\n\nerror[E0599]: no method named `body` found for type `!` in the current scope\n --> sample.rs:4:17\n  |\n4 |     Ok(response.body().await?)\n  |           "
+      },
+      {
+        "course": "interview",
+        "lesson": "q-blocking-async",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0433]: cannot find module or crate `tokio` in this scope\n --> sample.rs:2:12\n  |\n2 | let text = tokio::task::spawn_blocking(|| {\n  |            ^^^^^ use of unresolved module or unlinked crate `tokio`\n  |\n  = help: you might be missing a crate named `tokio`\n\nerror[E0728]: `await` is only allowed inside `async` functions and blocks\n --> sample.rs:5:2\n  |\n1 | fn main() {\n  | --------- this is not `async`\n...\n5 | .await??;\n  |  ^^^^^ only allowed inside `async` functions and blocks\n\nerror: aborting due to 2 previous errors\n\nSome errors have detailed explanations: E0433, E0728.\nFor more information about an error, try `rustc --explain E0433`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-cancellation",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0433]: cannot find module or crate `tokio` in this scope\n --> sample.rs:2:1\n  |\n2 | tokio::select! {\n  | ^^^^^ use of unresolved module or unlinked crate `tokio`\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0433`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-stack-heap",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-virtual-memory",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-syscalls",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-tcp-udp",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0433]: cannot find type `TcpStream` in this scope\n --> sample.rs:3:18\n  |\n3 | let mut stream = TcpStream::connect(addr)?;\n  |                  ^^^^^^^^^ use of undeclared type `TcpStream`\n  |\nhelp: consider importing this struct\n  |\n1 + use std::net::TcpStream;\n  |\n\nerror[E0425]: cannot find value `addr` in this scope\n --> sample.rs:3:37\n  |\n3 | let mut stream = TcpStream::connect(addr)?;\n  |                                     ^^^^ not found in this scope\n\nerror[E0425]: cannot find value `length` in this scope\n --> sample.rs:4:19\n  |\n4 | stream.write_all(&length.to_be_bytes())?;\n  |                   ^^^^^^ not found in this scope\n\nerror[E0433]: cannot find type `UdpSocket` in this scope\n --> sample.rs:7:14\n  |\n7 | let socket = UdpSocket::bind(\"0.0.0.0:0\")?;\n  |              ^^^^^^^^^ use of undeclared type `UdpSocket`\n  |\nhelp: consider importing this struct\n  |\n1 + use std::net::UdpSocket;\n  |\n\nerror[E0425]: cannot find value `packet` in this scope\n --> sample.rs:8:17\n  |\n8 | socket.send_to(&packet, addr)?;\n  |                 ^^^^^^\n  |\nhelp: a local variable with a similar name exists\n  |\n8 - socket.send_to(&packet, addr)?;\n8 + socket.send_to(&socket, addr)?;\n  |\n\nerror[E0425]: cannot find value `addr` in this scope\n --> sample.rs:8:25\n  |\n8 | socket.send_to(&packet, addr)?;\n  |                         ^^^^ not found in this scope\n\nerror: aborting due to 6 previous errors\n\nSome errors have detailed explanations: E0425, E0433.\nFor more information about an error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-http-versions",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0425]: cannot find value `client` in this scope\n --> sample.rs:5:16\n  |\n5 | let response = client.get(url).send().await?;\n  |                ^^^^^^ not found in this scope\n\nerror[E0425]: cannot find value `url` in this scope\n --> sample.rs:5:27\n  |\n5 | let response = client.get(url).send().await?;\n  |                           ^^^ not found in this scope\n\nerror[E0728]: `await` is only allowed inside `async` functions and blocks\n --> sample.rs:5:39\n  |\n1 | fn main() {\n  | --------- this is not `async`\n...\n5 | let response = client.get(url).send().await?;\n  |                                       ^^^^^ only allowed inside `async` functions and blocks\n\nerror: aborting due to 3 previous errors\n\nSome errors have detailed explanations: E0425, E0728.\nFor more information about an error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-tls",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0425]: cannot find value `roots` in this scope\n --> sample.rs:3:29\n  |\n3 |     .with_root_certificates(roots)\n  |                             ^^^^^ not found in this scope\n\nerror[E0433]: cannot find type `ClientConfig` in this scope\n --> sample.rs:2:14\n  |\n2 | let config = ClientConfig::builder()\n  |              ^^^^^^^^^^^^ use of undeclared type `ClientConfig`\n\nerror: aborting due to 2 previous errors\n\nSome errors have detailed explanations: E0425, E0433.\nFor more information about an error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-backpressure",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0433]: cannot find module or crate `tokio` in this scope\n --> sample.rs:2:16\n  |\n2 | let (tx, rx) = tokio::sync::mpsc::channel(256);\n  |                ^^^^^ use of unresolved module or unlinked crate `tokio`\n  |\n  = help: you might be missing a crate named `tokio`\nhelp: consider importing this module\n  |\n1 + use std::sync::mpsc;\n  |\nhelp: if you import `mpsc`, refer to it directly\n  |\n2 - let (tx, rx) = tokio::sync::mpsc::channel(256);\n2 + let (tx, rx) = mpsc::channel(256);\n  |\n\nerror[E0425]: cannot find value `job` in this scope\n --> sample.rs:5:9\n  |\n5 | tx.send(job).await?;\n  |         ^^^ not found in this scope\n\nerror[E0728]: `await` is only allowed inside `async` functions and blocks\n --> sample.rs:5:14\n  |\n1 | fn main() {\n  | --------- this is not `async`\n...\n5 | tx.send(job).await?;\n  |              ^^^^^ only allowed inside `async` functions and blocks\n\nerror: aborting due to 3 previous errors\n\nSome errors have detailed explanations: E0425, E0433, E0728.\nFor more information about an error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-acid",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error: expected one of `!`, `.`, `::`, `;`, `?`, `{`, `}`, or an operator, found `balance`\n --> sample.rs:3:8\n  |\n3 | SELECT balance FROM account WHERE id = 1;\n  |        ^^^^^^^ expected one of 8 possible tokens\n\nerror[E0425]: cannot find value `BEGIN` in this scope\n --> sample.rs:2:1\n  |\n2 | BEGIN;\n  | ^^^^^ not found in this scope\n\nerror: aborting due to 2 previous errors\n\nFor more information about this error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-indexes",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error: prefix `day` is unknown\n --> sample.rs:7:40\n  |\n7 | WHERE created_at > now() - interval '1 day'\n  |                                        ^^^ unknown prefix\n  |\n  = note: prefixed identifiers and literals are reserved since Rust 2021\nhelp: if you meant to write a string literal, use double quotes\n  |\n7 - WHERE created_at > now() - interval '1 day'\n7 + WHERE created_at > now() - interval \"1 day\"\n  |\n\nerror[E0762]: unterminated character literal\n --> sample.rs:7:43\n  |\n7 | WHERE created_at > now() - interval '1 day'\n  |                                           ^\n  |\nhelp: if you meant to write a string literal, use double quotes\n  |\n7 - WHERE created_at > now() - interval '1 day'\n7 + WHERE created_at > now() - interval \"1 day\"\n  |\n\nerror: lifetimes cannot start with a number\n --> sample.rs:7:37\n  |\n7 | WHERE created_at > now() - interval '1 day'\n  |                                     ^^\n\nerror: aborting due to 3 previous errors\n\nFor more information about this error, try `rustc --explain E0762`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-cap",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-idempotency",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0425]: cannot find value `client` in this scope\n --> sample.rs:2:16\n  |\n2 | let response = client\n  |                ^^^^^^ not found in this scope\n\nerror[E0425]: cannot find value `url` in this scope\n --> sample.rs:3:11\n  |\n3 |     .post(url)\n  |           ^^^ not found in this scope\n\nerror[E0425]: cannot find value `request_id` in this scope\n --> sample.rs:4:32\n  |\n4 |     .header(\"Idempotency-Key\", request_id)\n  |                                ^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find value `payment` in this scope\n --> sample.rs:5:12\n  |\n5 |     .json(&payment)\n  |            ^^^^^^^ not found in this scope\n\nerror[E0728]: `await` is only allowed inside `async` functions and blocks\n --> sample.rs:7:6\n  |\n1 | fn main() {\n  | --------- this is not `async`\n...\n7 |     .await?;\n  |      ^^^^^ only allowed inside `async` functions and blocks\n\nerror: aborting due to 5 previous errors\n\nSome errors have detailed explanations: E0425, E0728.\nFor more information about an error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-caching",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0425]: cannot find value `key` in this scope\n --> sample.rs:3:31\n  |\n3 | if let Some(hit) = cache.get(&key) {\n  |                               ^^^ not found in this scope\n\nerror[E0425]: cannot find value `key` in this scope\n --> sample.rs:6:19\n  |\n6 | let value = load(&key).await?;\n  |                   ^^^ not found in this scope\n\nerror[E0425]: cannot find value `key` in this scope\n --> sample.rs:7:11\n  |\n7 | cache.put(key, value.clone());\n  |           ^^^ not found in this scope\n\nerror[E0728]: `await` is only allowed inside `async` functions and blocks\n --> sample.rs:6:24\n  |\n1 | fn main() {\n  | --------- this is not `async`\n...\n6 | let value = load(&key).await?;\n  |                        ^^^^^ only allowed inside `async` functions and blocks\n\nerror[E0433]: cannot find type `LruCache` in this scope\n --> sample.rs:2:13\n  |\n2 | let cache = LruCache::new(10_000);\n  |             ^^^^^^^^ use of undeclared type `LruCache`\n\nerror[E0425]: cannot find function `load` in this scope\n --> sample.rs:6:13\n  |\n6 | let value = load(&key).await?;\n  |             ^^^^ not found in this scope\n\nerror: aborting due to 6 previous errors\n\nSome errors have detailed explanations: E0425, E0433, E0728.\nFor more information about an error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-complexity",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error: expected `;`, found `tree`\n --> sample.rs:3:40\n  |\n3 | items.iter().find(|item| item.id == id)\n  |                                        ^ help: add `;` here\n...\n6 | tree.get(&id)\n  | ---- unexpected token\n\nerror[E0425]: cannot find value `tree` in this scope\n --> sample.rs:6:1\n  |\n6 | tree.get(&id)\n  | ^^^^ not found in this scope\n\nerror[E0425]: cannot find value `id` in this scope\n --> sample.rs:6:11\n  |\n6 | tree.get(&id)\n  |           ^^ not found in this scope\n  |\nhelp: consider importing this function\n  |\n1 + use std::process::id;\n  |\n\nerror: aborting due to 3 previous errors\n\nFor more information about this error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-hashmap",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-testing-strategy",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-api-design",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-perf-profiling",
+        "status": "requiresContextOrIntentionalFailure",
+        "diagnostic": "error[E0425]: cannot find value `rows` in this scope\n --> sample.rs:3:12\n  |\n3 | for row in rows {\n  |            ^^^^ not found in this scope\n\nerror[E0425]: cannot find value `out` in this scope\n --> sample.rs:4:5\n  |\n4 |     out.push(format!(\"{}-{}\", row.a, row.b));\n  |     ^^^ not found in this scope\n\nerror: aborting due to 2 previous errors\n\nFor more information about this error, try `rustc --explain E0425`.\n"
+      },
+      {
+        "course": "interview",
+        "lesson": "q-ffi-abi",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-two-sum-rust",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-lru-design",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-parser-design",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-debugging-session",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-tradeoff-communication",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-requirements",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-code-review",
+        "status": "compiled",
+        "diagnostic": ""
+      },
+      {
+        "course": "interview",
+        "lesson": "q-postmortem",
+        "status": "compiled",
+        "diagnostic": ""
+      }
+    ]
+  },
+  "counterexamples": {
+    "listIntersectionInputDoesNotEncodeNodeIdentity": [
+      {
+        "serializedInput": "A=4->1->8->4->5; B=5->6->1->8->4->5",
+        "firstSharedNodeValue": 8
+      },
+      {
+        "serializedInput": "A=4->1->8->4->5; B=5->6->1->8->4->5",
+        "firstSharedNodeValue": 1
+      }
+    ],
+    "reservoirNeedsAnExplicitReplacementRule": [
+      {
+        "values": [
+          10,
+          20,
+          30,
+          40
+        ],
+        "choices": [
+          0,
+          1,
+          1,
+          3
+        ],
+        "replaceWhenChoiceIsZero": 10,
+        "replaceWhenChoiceIsCurrentIndex": 40
+      },
+      {
+        "values": [
+          5,
+          6,
+          7
+        ],
+        "choices": [
+          0,
+          0,
+          2
+        ],
+        "replaceWhenChoiceIsZero": 6,
+        "replaceWhenChoiceIsCurrentIndex": 7
+      }
+    ],
+    "pinStringCanMoveInSafeRust": {
+      "compile": {
+        "exitCode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "run": {
+        "exitCode": 0,
+        "stdout": "String moved out through Pin without unsafe\n",
+        "stderr": ""
+      }
+    },
+    "unwrapDoesNotAlwaysEndProcess": {
+      "compile": {
+        "exitCode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "run": {
+        "exitCode": 0,
+        "stdout": "process continued after unwinding unwrap panic\n",
+        "stderr": ""
+      }
+    },
+    "futureCanBeDroppedBeforeFirstPoll": {
+      "compile": {
+        "exitCode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "run": {
+        "exitCode": 0,
+        "stdout": "future cancelled before its body started\n",
+        "stderr": ""
+      }
+    },
+    "disabledCfgStillNeedsValidSyntax": {
+      "compile": {
+        "exitCode": 1,
+        "stdout": "",
+        "stderr": "error: expected pattern, found `=`\n --> main.rs:3:21\n  |\n3 | fn disabled() { let = ; }\n  |                     ^ expected pattern\n\nerror: aborting due to 1 previous error\n\n"
+      }
+    },
+    "packagedHarnessRejectsCorrect-imos-sweep": {
+      "compile": {
+        "exitCode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "run": {
+        "exitCode": 1,
+        "stdout": "",
+        "stderr": "PRIVATE CASE 1 FAILED\n"
+      }
+    },
+    "packagedHarnessRejectsCorrect-complement-lookup": {
+      "compile": {
+        "exitCode": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "run": {
+        "exitCode": 1,
+        "stdout": "",
+        "stderr": "PRIVATE CASE 1 FAILED\n"
+      }
+    },
+    "defaultFeaturesFalseIsNotGraphWideDisable": {
+      "exitCode": 0,
+      "stdout": "std remains enabled by another dependency\n",
+      "stderr": ""
+    }
+  }
+}
