@@ -2,7 +2,7 @@
   {
     "id": "about",
     "title": "About Crabrix",
-    "updated": "2026-10-10",
+    "updated": "2026-10-27",
     "sourceURL": "https://crabrix.com/about/",
     "blocks": [
       {
@@ -79,7 +79,7 @@
       },
       {
         "kind": "li",
-        "text": "Crates with C dependencies, build scripts, or procedural macros generally cannot build. Crabrix detects these and says so instead of failing halfway."
+        "text": "Native C linking and host procedural macros are not supported. Standard-library-only WASI build scripts can run locally; host subprocesses and separate build-dependency graphs are outside the supported build path."
       },
       {
         "kind": "li",
@@ -87,7 +87,7 @@
       },
       {
         "kind": "li",
-        "text": "There is no debugger and no `cargo test` harness yet."
+        "text": "The local source debugger supports breakpoints, stepping, call frames and safe primitive locals. Async/const bodies, macro expansions and full aggregate inspection are outside its current scope. A `cargo test` harness is not included."
       },
       {
         "kind": "p",

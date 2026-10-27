@@ -292,11 +292,10 @@
       compiler targets <code>wasm32-wasip1</code> and has no native linker, so:
     </p>
     <ul>
-      <li>Crates with C dependencies, build scripts, or procedural macros generally
-        cannot build. Crabrix detects these and says so instead of failing halfway.</li>
+      <li>Native C linking and host procedural macros are not supported. Standard-library-only WASI build scripts can run locally; host subprocesses and separate build-dependency graphs are outside the supported build path.</li>
       <li>Compilation is interpreted WebAssembly, so a first build is slower than on a
         laptop. Repeat builds come from a local artifact cache.</li>
-      <li>There is no debugger and no <code>cargo test</code> harness yet.</li>
+      <li>The local source debugger supports breakpoints, stepping, call frames and safe primitive locals. Async/const bodies, macro expansions and full aggregate inspection are outside its current scope. A <code>cargo test</code> harness is not included.</li>
     </ul>
     <p>
       The Packages screen labels every dependency verified, expected to work, needs

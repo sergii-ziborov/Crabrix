@@ -1,6 +1,6 @@
 # About Crabrix
 
-Updated: 2026-10-10 · [Website copy](https://crabrix.com/about/)
+Updated: 2026-10-27 · [Website copy](https://crabrix.com/about/)
 
 A real Rust compiler on a phone, an honest account of its limits, and one developer behind it.
 
@@ -38,11 +38,11 @@ The public [toolchain builder](https://github.com/sergii-ziborov/crabrix-toolcha
 
 Being honest about the edges is more useful than a feature list. The bundled compiler targets `wasm32-wasip1` and has no native linker, so:
 
-- Crates with C dependencies, build scripts, or procedural macros generally cannot build. Crabrix detects these and says so instead of failing halfway.
+- Native C linking and host procedural macros are not supported. Standard-library-only WASI build scripts can run locally; host subprocesses and separate build-dependency graphs are outside the supported build path.
 
 - Compilation is interpreted WebAssembly, so a first build is slower than on a laptop. Repeat builds come from a local artifact cache.
 
-- There is no debugger and no `cargo test` harness yet.
+- The local source debugger supports breakpoints, stepping, call frames and safe primitive locals. Async/const bodies, macro expansions and full aggregate inspection are outside its current scope. A `cargo test` harness is not included.
 
 The Packages screen labels every dependency verified, expected to work, needs review, or unsupported, based on real build outcomes recorded on device.
 

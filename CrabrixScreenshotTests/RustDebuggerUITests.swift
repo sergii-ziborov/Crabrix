@@ -3,6 +3,15 @@ import UIKit
 
 @MainActor
 final class RustDebuggerUITests: XCTestCase {
+    func testNormalEditorStillAcceptsTouchAndTyping() {
+        let app = XCUIApplication(); app.launchArguments = ["--crabrix-auto-debug-fixture"]; app.launch()
+        let editor = app.textViews["Source code editor"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 60))
+        editor.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 120, dy: 25)).tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 8), app.debugDescription)
+        editor.typeText("focus_proof")
+        XCTAssertTrue((editor.value as? String ?? "").contains("focus_proof"))
+    }
     func testDebuggerControlsSourceAndSharingOnNativeDevice() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--crabrix-auto-debug-fixture", "-crabrix.appearance", UIDevice.current.userInterfaceIdiom == .pad ? "cyberpunk" : "dark"]

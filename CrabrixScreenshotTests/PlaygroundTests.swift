@@ -60,7 +60,7 @@ final class PlaygroundTests: XCTestCase {
 @MainActor
 final class PlaygroundTwoDeviceTests: XCTestCase {
     func testTwoRealAppsAndBrowserShareTheSameRoom() async throws {
-        struct Fixture: Decodable { let url: URL; let origin: URL? }
+        struct Fixture: Decodable { let url: URL; let origin: URL?; let nonce: String? }
         let (data, _) = try await URLSession.shared.data(from: URL(string: "http://127.0.0.1:3395/fixture")!)
         let fixture = try JSONDecoder().decode(Fixture.self, from: data)
         let app = XCUIApplication()
@@ -70,9 +70,16 @@ final class PlaygroundTwoDeviceTests: XCTestCase {
         XCTAssertTrue(editor.waitForExistence(timeout: 45))
         let pad = UIDevice.current.userInterfaceIdiom == .pad
         var deadline = Date().addingTimeInterval(60)
+        if let nonce = fixture.nonce {
+            while Date() < deadline, (editor.value as? String)?.contains(nonce) != true { try await Task.sleep(for: .milliseconds(200)) }
+            XCTAssertTrue((editor.value as? String)?.contains(nonce) == true, "Wait for this room, not a persisted source copy from an earlier run")
+        }
+        deadline = Date().addingTimeInterval(60)
         while Date() < deadline, (editor.value as? String)?.contains(pad ? "from-phone" : "native-pair") != true { try await Task.sleep(for: .milliseconds(200)) }
         XCTAssertTrue((editor.value as? String)?.contains(pad ? "from-phone" : "native-pair") == true)
-        editor.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 80, dy: 22)).tap()
+        editor.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 120, dy: 25)).tap()
+        if !app.keyboards.firstMatch.waitForExistence(timeout: 5) { editor.tap() }
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 8), app.debugDescription)
         editor.typeText(pad ? " from-pad " : " from-phone ")
         deadline = Date().addingTimeInterval(60)
         while Date() < deadline, (editor.value as? String)?.contains("pair-run") != true { try await Task.sleep(for: .milliseconds(200)) }

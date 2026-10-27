@@ -242,9 +242,9 @@ external Universal Link delivery on an installed physical device remains a
 separate check.
 
 See [implementation record](docs/playground-implementation-2026-10-27.md) and
-[reproducible probes](scripts/probes/playground/README.md). Interactive source
-debugging remains unfinished because the pinned code generator cannot emit
-valid line metadata. Build **1.1.2 (103)** is in TestFlight Internal QA and
-**waiting for App Store review**, with manual publication. Its signed app source
-is `fe322d2679fd24173a492866d6c221377b241ae5`; later website/probe/documentation
-commits do not require another app binary. See the [delivery receipt](docs/app-store/release-1.1.2-build103.json).
+[reproducible probes](scripts/probes/playground/README.md). The [local source
+debugger](docs/local-rust-debugger-2026-10-27.md) now uses real Rust checkpoint
+instrumentation, independently of the code generator's remaining DWARF limit.
+Release delivery is recorded separately in `docs/app-store/`; the preceding
+build 103 remains a historical sharing release receipt. New app releases keep
+manual App Store publication.

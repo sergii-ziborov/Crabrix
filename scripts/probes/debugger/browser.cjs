@@ -21,6 +21,9 @@ const source = 'fn add(a: i32, b: i32) -> i32 {\n let c = a + b;\n c\n}\nfn main
       catch(error) { console.log('DEBUG STATE',await page.locator('body').innerText()); throw error; }
     };
     await page.getByRole('button', { name: 'Debug Rust', exact: true }).click();
+    // Acquisition measures download inactivity separately from execution. A
+    // public first transfer may take longer than a local 45-second compile.
+    await page.getByRole('button', { name: '▶ Continue', exact: true }).waitFor({ timeout: 300000 });
     await paused('main.rs', 6, 'main'); console.log('PASS actual Rust stops at entry');
     // No HTTP path can provide compilation, stepping, execution or state after
     // acquisition. All subsequent Debug and Run builds use the local Worker.

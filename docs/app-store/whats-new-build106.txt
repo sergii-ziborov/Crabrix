@@ -1,0 +1,5 @@
+Debug Rust locally: source breakpoints, step into/over/out, call frames and safe primitive locals. Original source and normal Run are preserved.
+
+Playground sharing now defaults to one hour, with a clearer lifetime selector. Encrypted live editing, cursors and selections work between Crabrix and the browser; code runs on each participant’s device.
+
+Includes the existing offline Academy, browser npm preparation, TypeScript/JSX builds and compiler acceleration. The guide explains debugger boundaries and supported projects.
