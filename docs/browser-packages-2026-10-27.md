@@ -127,3 +127,16 @@ workflow. The [App Review Guidelines](https://developer.apple.com/app-store/revi
 sections 2.5.2 and 2.5.6 describe the relevant educational-code and WebKit
 requirements; actual approval remains Apple's decision. Reviewer notes must
 explicitly describe the new package-preparation capability and command mapping.
+
+
+## Delivery
+
+**1.1.2 (101)** is VALID and IN_BETA_TESTING in TestFlight Internal QA.
+App Store Connect selects **101** for the WAITING_FOR_REVIEW submission; release
+remains MANUAL. The Cloud build/archive succeeded from
+`3b7a17e0199583da80078824ce34618e3cc38e9e`. The guide, screenshot, starter ZIP,
+privacy disclosure and license library are live at https://crabrix.com/guide/.
+All 19 Store screenshots are COMPLETE with Code first. Description, keywords,
+What to Test, release notes and explicit reviewer notes were updated and read
+back. [Apple delivery evidence](app-store/release-1.1.2-build101.json) and
+[website publication evidence](site-release-2026-10-27-browser-packages.json).

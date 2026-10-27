@@ -1,3 +1,18 @@
+> Delivery verified through App Store Connect — 27 October 2026: **1.1.2 (101)**
+> is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. App Store version
+> and submission are **WAITING_FOR_REVIEW**, selecting **101**. Release stays
+> MANUAL. The final Cloud build and archive both succeeded from app source
+> `3b7a17e0199583da80078824ce34618e3cc38e9e`.
+> Browser npm preparation, editable offline modules and local TS/JSX builds are
+> available through Run/Check and Terminal. Existing editor/Duo geometry, Rust
+> acceleration and package limits are retained. All 19 Store screenshots are
+> COMPLETE, with Code first for iPhone, Duo and iPad. Description, keywords,
+> promotional text, What to Test and reviewer notes passed an exact readback.
+> [Build 101 delivery evidence](release-1.1.2-build101.json).
+>
+> Build 99 was approved for a manual release, then its pending release was
+> withdrawn only after build 101 was valid. Prior snapshots below are historical.
+
 > Delivery verified through App Store Connect — 26 October 2026: **1.1.2 (99)**
 > is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. The version and
 > replacement submission report **WAITING_FOR_REVIEW**, selecting build 99.

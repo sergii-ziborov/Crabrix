@@ -1,0 +1,144 @@
+{
+  "verifiedAtUTC": "2026-10-27T08:57:21.610547+00:00",
+  "rows": [
+    {
+      "path": "/healthz/",
+      "status": 200,
+      "bytes": 3,
+      "sha256": "dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22"
+    },
+    {
+      "path": "/guide/",
+      "status": 200,
+      "bytes": 101120,
+      "sha256": "b4b0ea3b5752d1ef420ce197ee73df144f2dfb94f0f413b6edc1cd598aa5444c"
+    },
+    {
+      "path": "/technology/",
+      "status": 200,
+      "bytes": 35586,
+      "sha256": "075e129b8811c734f05b6cb39e2df9ee8ba8b2e96897eca08b5e80ed899fa765"
+    },
+    {
+      "path": "/privacy/",
+      "status": 200,
+      "bytes": 48803,
+      "sha256": "f9c2a5d861b06b1b534379fcb605d449fdb4dd73a3db3e1162d73ba61aaff996"
+    },
+    {
+      "path": "/licenses/",
+      "status": 200,
+      "bytes": 35754,
+      "sha256": "ee2899ab5634d9be65cdbe00d139f153bdd9929ee8f654ab3523bef5f9348c61"
+    },
+    {
+      "path": "/examples/offline-browser-dashboard.zip",
+      "status": 200,
+      "bytes": 3650,
+      "sha256": "782506aa4d8c5307416e3e6d06e845bc55c2210bcdc17ca2551e8fc7fa40f438"
+    },
+    {
+      "path": "/screenshots/offline-react-dashboard.png",
+      "status": 200,
+      "bytes": 114384,
+      "sha256": "180fa7d620b684efe4b5efdc07abca1516340653ee08330129c894d6808b8b1c"
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "bytes": 96677,
+      "sha256": "1c4f5d469183a6614ec25f2412ddb524bf44e8b834cf76fe07e88bbd04bb64af"
+    },
+    {
+      "path": "/learn/algorithms/algorithm.imos-sweep.model/",
+      "status": 200,
+      "bytes": 25049,
+      "sha256": "b36f3b0e95202c052fb0c9397ff6b14ccfd329719fa18a9ec50e1c1accd67dd3"
+    }
+  ],
+  "sourceCommit": "d0b65a353669138a65a2272396128691d3001ca2",
+  "image": "localhost/crabrix-web-site:browser-packages-20261027",
+  "imageID": "36c890383b22159f611879a5f0f95c9fcb5dd0802972af2ef0e36045fe8a4cb4",
+  "health": "healthy",
+  "rollbackContainer": "crabrix-web-site-before-browser-packages-20261027",
+  "accountBackup": "completed before cutover",
+  "siteTests": 17,
+  "typecheck": "passed",
+  "productionBuild": "passed",
+  "browserQA": {
+    "rows": [
+      {
+        "width": 390,
+        "colorScheme": "light",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "colorScheme": "dark",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "overflow": false
+      },
+      {
+        "width": 820,
+        "colorScheme": "light",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "overflow": false
+      },
+      {
+        "width": 820,
+        "colorScheme": "dark",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "overflow": false
+      },
+      {
+        "width": 1440,
+        "colorScheme": "light",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "overflow": false
+      },
+      {
+        "width": 1440,
+        "colorScheme": "dark",
+        "status": 200,
+        "imageDecoded": true,
+        "highlighting": true,
+        "overflow": false
+      },
+      {
+        "path": "/technology/",
+        "status": 200
+      },
+      {
+        "path": "/privacy/",
+        "status": 200
+      },
+      {
+        "path": "/licenses/",
+        "status": 200
+      },
+      {
+        "path": "/sitemap.xml",
+        "status": 200
+      },
+      {
+        "path": "/learn/algorithms/algorithm.imos-sweep.model/",
+        "status": 200
+      }
+    ],
+    "pageErrors": [],
+    "starterZIP": "exact SHA-256 match"
+  },
+  "privateAcademySource": "Unchanged SHA-256; signed course source commit 97564ab44b4d9b53824f59354bc1d6bc7fa7e4f0",
+  "stagingCleanup": "Only this new release's expanded standalone/public/static image-build copies removed after successful publication; image, rollback and account data retained."
+}

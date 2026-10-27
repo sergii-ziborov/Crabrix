@@ -1,0 +1,115 @@
+{
+  "appSourceCommit": "3b7a17e0199583da80078824ce34618e3cc38e9e",
+  "hostCompilerChecks": 29,
+  "nativeReleaseGate": {
+    "passed": 47,
+    "failed": 0,
+    "resultBundle": "ReleaseGate.xcresult"
+  },
+  "committedSourceGate": {
+    "passed": 7,
+    "failed": 0,
+    "resultBundle": "CommittedBrowserGate.xcresult"
+  },
+  "site": {
+    "tests": 17,
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "browserQA": {
+      "rows": [
+        {
+          "width": 390,
+          "colorScheme": "light",
+          "status": 200,
+          "imageDecoded": true,
+          "highlighting": true,
+          "overflow": false
+        },
+        {
+          "width": 390,
+          "colorScheme": "dark",
+          "status": 200,
+          "imageDecoded": true,
+          "highlighting": true,
+          "overflow": false
+        },
+        {
+          "width": 820,
+          "colorScheme": "light",
+          "status": 200,
+          "imageDecoded": true,
+          "highlighting": true,
+          "overflow": false
+        },
+        {
+          "width": 820,
+          "colorScheme": "dark",
+          "status": 200,
+          "imageDecoded": true,
+          "highlighting": true,
+          "overflow": false
+        },
+        {
+          "width": 1440,
+          "colorScheme": "light",
+          "status": 200,
+          "imageDecoded": true,
+          "highlighting": true,
+          "overflow": false
+        },
+        {
+          "width": 1440,
+          "colorScheme": "dark",
+          "status": 200,
+          "imageDecoded": true,
+          "highlighting": true,
+          "overflow": false
+        },
+        {
+          "path": "/technology/",
+          "status": 200
+        },
+        {
+          "path": "/privacy/",
+          "status": 200
+        },
+        {
+          "path": "/licenses/",
+          "status": 200
+        },
+        {
+          "path": "/sitemap.xml",
+          "status": 200
+        },
+        {
+          "path": "/learn/algorithms/algorithm.imos-sweep.model/",
+          "status": 200
+        }
+      ],
+      "pageErrors": [],
+      "starterZIP": "exact SHA-256 match"
+    }
+  },
+  "browserFixture": {
+    "modules": 133,
+    "npmPackages": 8,
+    "sourceBytes": 1302406,
+    "sha256": "8bc4d80a26dd8cda5fe6756be86de4a589a875fa88eb9d0aceb8047cb8ae8abc"
+  },
+  "physicalIPhoneTested": false,
+  "nodeOrBunRuntimeIncluded": false,
+  "projectScriptsExecuted": false,
+  "runCheckFetchDependencies": false,
+  "editorDuoGeometryChanged": false,
+  "finalBrowserGraphGate": {
+    "passed": 11,
+    "failed": 0,
+    "resultBundle": "BrowserNestedFinal.xcresult"
+  },
+  "nestedWebKitGate": {
+    "passed": 1,
+    "failed": 0,
+    "resultBundle": "NestedWebKit.xcresult"
+  },
+  "frozenRealRegistryGraph": "passed: eight packages, 133 modules, eight unique progress rows, shared React dependency edge, source-only repeat"
+}

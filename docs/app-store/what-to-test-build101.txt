@@ -1,0 +1,12 @@
+Browser npm projects and offline runs
+
+1. Download https://crabrix.com/examples/offline-browser-dashboard.zip and open the ZIP in Crabrix. It contains an HTML entry, package.json and TypeScript/TSX source.
+2. While connected, open Terminal and run npm install. Inspect package progress, verification states, dependency links and Output stages. Source preparation should not block the interface.
+3. Save the editable project, disconnect, and press the normal Run button or enter npm run dev / npm start. The React dashboard should display local data; tapping Count should update both the counter and list. Its real library graph has 133 modules from eight npm packages.
+4. Edit the TSX or CSS and Run again offline. Reopen the saved project and verify nested node_modules sources and licenses remain available. Missing new imports should ask for explicit preparation; Run/Check must not fetch packages.
+5. npm run build/check builds without opening Web Preview. npm ci requires a matching package-lock.json v2/v3 and integrity pins. For a nested browser app in a mixed Rust project, cd web before npm commands; root-relative browser imports should work and neighboring projects' prepared sources must remain intact.
+6. A syntax error should appear in Problems with an editable file location. Unsupported Node/server APIs, lifecycle scripts, build plugins and native addons must receive a clear limitation rather than silently executing a host process.
+
+These are Crabrix browser operations, not a Node/Bun runtime or arbitrary npm script executor. Browser requests remain blocked by the existing WebKit policy. All imported dependency source used by the browser app remains viewable and editable in the project.
+
+Regression checks: Code-to-Terminal with the keyboard already open; repeated Hide/Show keyboard; dock tabs; file icons; Save/Close; unique project names; Amber Circuit/Cyberpunk; Settings/Learn widths on iPad rotation and the established Duo workspace. Rust compiler/runtime acceleration and the 2,048 Cargo-package ceiling are retained.

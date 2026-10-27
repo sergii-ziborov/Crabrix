@@ -1,0 +1,178 @@
+{
+  "verifiedAtUTC": "2026-10-27T09:17:22.575513+00:00",
+  "version": "1.1.2",
+  "buildNumber": "101",
+  "buildID": "08548357-808b-4ce0-8a24-511b2979ee77",
+  "appSourceCommit": "3b7a17e0199583da80078824ce34618e3cc38e9e",
+  "cloudBuildRunID": "f456037c-dee6-425b-a6be-84e15e791b7d",
+  "cloudCompletion": "SUCCEEDED",
+  "testFlight": {
+    "processingState": "VALID",
+    "group": "Internal QA",
+    "internalBuildState": "IN_BETA_TESTING"
+  },
+  "appStore": {
+    "versionID": "4ad2dcb4-5252-4f36-bb32-99f41e3f6e9a",
+    "submissionID": "ec4c5e25-a7c4-40d6-938d-96e50facaa3f",
+    "state": "WAITING_FOR_REVIEW",
+    "reviewState": "WAITING_FOR_REVIEW",
+    "selectedBuild": "101",
+    "releaseType": "MANUAL",
+    "screenshots": [
+      {
+        "displayType": "APP_IPHONE_67",
+        "count": 10,
+        "complete": 10,
+        "firstFile": "v111-iphone-6.9-01-build.png"
+      },
+      {
+        "displayType": "APP_IPHONE_DUO",
+        "count": 2,
+        "complete": 2,
+        "firstFile": "v111-iphone-duo-qa-01-laptop-code.png"
+      },
+      {
+        "displayType": "APP_IPAD_PRO_3GEN_129",
+        "count": 7,
+        "complete": 7,
+        "firstFile": "v111-ipad-13-01-build.png"
+      }
+    ],
+    "publication": "Submitted for review; publication remains manual"
+  },
+  "changes": [
+    "Recognize browser HTML/package projects through Run/Check and the terminal",
+    "Explicit npm install/ci preparation with verified archives and editable offline dependency source",
+    "Local JS/TypeScript syntax/JSX bundling and isolated network-blocked WebKit preview",
+    "Preserve neighboring browser projects; handle nested root-relative modules; complete shared dependency graph links",
+    "Update guide, starter ZIP, privacy and bundled/website compiler-tool licenses"
+  ],
+  "verification": {
+    "appSourceCommit": "3b7a17e0199583da80078824ce34618e3cc38e9e",
+    "hostCompilerChecks": 29,
+    "nativeReleaseGate": {
+      "passed": 47,
+      "failed": 0,
+      "resultBundle": "ReleaseGate.xcresult"
+    },
+    "committedSourceGate": {
+      "passed": 7,
+      "failed": 0,
+      "resultBundle": "CommittedBrowserGate.xcresult"
+    },
+    "site": {
+      "tests": 17,
+      "typecheck": "passed",
+      "productionBuild": "passed",
+      "browserQA": {
+        "rows": [
+          {
+            "width": 390,
+            "colorScheme": "light",
+            "status": 200,
+            "imageDecoded": true,
+            "highlighting": true,
+            "overflow": false
+          },
+          {
+            "width": 390,
+            "colorScheme": "dark",
+            "status": 200,
+            "imageDecoded": true,
+            "highlighting": true,
+            "overflow": false
+          },
+          {
+            "width": 820,
+            "colorScheme": "light",
+            "status": 200,
+            "imageDecoded": true,
+            "highlighting": true,
+            "overflow": false
+          },
+          {
+            "width": 820,
+            "colorScheme": "dark",
+            "status": 200,
+            "imageDecoded": true,
+            "highlighting": true,
+            "overflow": false
+          },
+          {
+            "width": 1440,
+            "colorScheme": "light",
+            "status": 200,
+            "imageDecoded": true,
+            "highlighting": true,
+            "overflow": false
+          },
+          {
+            "width": 1440,
+            "colorScheme": "dark",
+            "status": 200,
+            "imageDecoded": true,
+            "highlighting": true,
+            "overflow": false
+          },
+          {
+            "path": "/technology/",
+            "status": 200
+          },
+          {
+            "path": "/privacy/",
+            "status": 200
+          },
+          {
+            "path": "/licenses/",
+            "status": 200
+          },
+          {
+            "path": "/sitemap.xml",
+            "status": 200
+          },
+          {
+            "path": "/learn/algorithms/algorithm.imos-sweep.model/",
+            "status": 200
+          }
+        ],
+        "pageErrors": [],
+        "starterZIP": "exact SHA-256 match"
+      }
+    },
+    "browserFixture": {
+      "modules": 133,
+      "npmPackages": 8,
+      "sourceBytes": 1302406,
+      "sha256": "8bc4d80a26dd8cda5fe6756be86de4a589a875fa88eb9d0aceb8047cb8ae8abc"
+    },
+    "physicalIPhoneTested": false,
+    "nodeOrBunRuntimeIncluded": false,
+    "projectScriptsExecuted": false,
+    "runCheckFetchDependencies": false,
+    "editorDuoGeometryChanged": false,
+    "finalBrowserGraphGate": {
+      "passed": 11,
+      "failed": 0,
+      "resultBundle": "BrowserNestedFinal.xcresult"
+    },
+    "nestedWebKitGate": {
+      "passed": 1,
+      "failed": 0,
+      "resultBundle": "NestedWebKit.xcresult"
+    },
+    "frozenRealRegistryGraph": "passed: eight packages, 133 modules, eight unique progress rows, shared React dependency edge, source-only repeat"
+  },
+  "storeMetadata": {
+    "descriptionCharacters": 3953,
+    "keywordsCharacters": 95,
+    "exactReadback": true,
+    "primaryCategory": "DEVELOPER_TOOLS",
+    "secondaryCategory": "EDUCATION"
+  },
+  "limitations": [
+    "No Node/Bun server, arbitrary package scripts, native addons or build plugins",
+    "TypeScript syntax is transpiled without type checking",
+    "No physical-iPhone npm timing claimed"
+  ],
+  "intermediateBuild100": "Superseded by final build 101; not selected for review"
+}

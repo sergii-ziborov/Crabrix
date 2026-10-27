@@ -520,3 +520,20 @@ match the public site. Account backup and restore are described in
 updates Release Simulator captures in `docs/screenshots` and `site`.
 `docs/screenshots/duo-laptop.png` was captured separately in Device Hub from
 the iPhone Duo laptop posture. Review the captures before publishing.
+
+
+## Browser packages guide — 27 October 2026
+
+The current public image is `localhost/crabrix-web-site:browser-packages-20261027`.
+It includes the npm/TypeScript/JSX walkthrough, an actual WebKit dashboard capture,
+a downloadable editable starter, matching third-party notices and the updated
+privacy disclosure. Six responsive guide configurations and nine public HTTPS
+routes passed; the public ZIP matched the source SHA-256. The 742-lesson private
+corpus remains byte-identical to the verified Academy release.
+
+The candidate passed on loopback 3213 before cutover. The persistent accounts
+mount was preserved and backed up consistently. The previous image/container
+`crabrix-web-site-before-browser-packages-20261027` is retained for rollback.
+Only this task's regenerated expanded image-build staging copies were removed
+after publication; runtime/rollback images, deployment receipts and all accounts
+remain. [Publication receipt](site-release-2026-10-27-browser-packages.json).
