@@ -39,6 +39,7 @@ private struct BrowserCompilerReply: Decodable, Sendable {
     let assets: [String: String]?
     let usedPaths: [String]?
     let packageRoots: [String]?
+    let packageDependencies: [String: [String]]?
     let moduleCount: Int?
 }
 
@@ -112,6 +113,8 @@ struct PreparedBrowserProject: Sendable {
     let sourceAdditions: [String: String]
     let packageCount: Int
     let moduleCount: Int
+    let transfers: [PackageTransferRow]
+    let sourceRemovalPrefix: String
 }
 
 actor BrowserProjectBuilder {
@@ -134,6 +137,7 @@ actor BrowserProjectBuilder {
         var files = initial
         let manifestPath = BrowserProjectConfiguration.manifestPath(files: initial, entry: preferredEntry ?? "index.html")
         let root = (manifestPath as NSString).deletingLastPathComponent
+        let sourceRemovalPrefix = root.isEmpty ? "node_modules/" : root + "/node_modules/"
         let lockPath = root.isEmpty ? "crabrix-web.lock.json" : root + "/crabrix-web.lock.json"
         let npmLockPath = root.isEmpty ? "package-lock.json" : root + "/package-lock.json"
         if preparePackages { files = files.filter { !$0.key.split(separator: "/").contains("node_modules") } }
@@ -239,7 +243,7 @@ actor BrowserProjectBuilder {
                 let lock = BrowserWebLock(schemaVersion: 1, manifest: initial[manifestPath] ?? "{}", packages: pins)
                 let encoder = JSONEncoder(); encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
                 additions[lockPath] = String(decoding: try encoder.encode(lock), as: UTF8.self) + "\n"
-                let retained = initial.filter { !$0.key.split(separator: "/").contains("node_modules") && $0.key != lockPath }
+                let retained = initial.filter { !$0.key.hasPrefix(sourceRemovalPrefix) && $0.key != lockPath }
                 let merged = retained.merging(additions) { _, new in new }
                 guard merged.count <= LocalProjectLoader.maximumFileCount,
                       merged.values.allSatisfy({ $0.utf8.count <= LocalProjectLoader.maximumFileBytes }),
@@ -248,8 +252,13 @@ actor BrowserProjectBuilder {
                 }
             }
             onStage("Browser bundle ready · \(reply.moduleCount ?? 0) modules · \(reply.packageRoots?.count ?? 0) npm packages")
+            let rows = states.keys.sorted().map { id in
+                let paths = packageIDs.keys.filter { packageIDs[$0] == id }
+                let dependencies = Set(paths.flatMap { reply.packageDependencies?[$0] ?? [] }.compactMap { packageIDs[$0] }).sorted()
+                return PackageTransferRow(package: id, dependencies: dependencies, state: states[id] ?? .ready)
+            }
             return PreparedBrowserProject(preview: preview, sourceAdditions: additions,
-                packageCount: reply.packageRoots?.count ?? 0, moduleCount: reply.moduleCount ?? 0)
+                packageCount: reply.packageRoots?.count ?? 0, moduleCount: reply.moduleCount ?? 0, transfers: rows, sourceRemovalPrefix: sourceRemovalPrefix)
         }
         throw BrowserBuildError(message: "This browser dependency graph exceeds 2,048 package resolutions.")
     }

@@ -83,7 +83,7 @@ var CrabrixWebBuilder = (() => {
   function build(input,preferredEntry) {
     try {
       const files=Object.assign(Object.create(null),JSON.parse(input));
-      const has=p=>own(files,p), used=new Set(), assets=Object.create(null), modules=Object.create(null);
+      const has=p=>own(files,p), used=new Set(), assets=Object.create(null), modules=Object.create(null), packageDependencies=new Map();
       const entry=preferredEntry&&has(preferredEntry)&&/\.html?$/.test(preferredEntry)?preferredEntry:
         has('index.html')?'index.html':Object.keys(files).filter(p=>/\.html?$/.test(p)&&!p.includes('node_modules/')).sort((a,b)=>a.split('/').length-b.split('/').length||a.localeCompare(b))[0];
       if(!entry)failure('A browser application needs an HTML entry. Add index.html or import a static export. Node server entry points cannot run in Web Preview.','package.json');
@@ -139,22 +139,23 @@ var CrabrixWebBuilder = (() => {
         spec=importMap(spec);
         if(typeof spec!=='string')failure('Invalid import-map target.',from);
         if(/^(?:https?:|data:|blob:|file:|node:|[A-Za-z]+:)/.test(spec))failure('External or server-only module '+spec+' is unavailable offline. Add a browser npm dependency or a local source file.',from);
+        let projectAbsolute=false;
         const parent=owner(from), m=manifest(parent);
         const mapping=m.browser&&typeof m.browser==='object'?m.browser:{};
         const relative='./'+from.slice(parent?parent.length+1:0);
         if(own(mapping,spec)){
           if(mapping[spec]===false)return {empty:true,id:'empty:'+parent+':'+spec};spec=mapping[spec];
           if(typeof spec!=='string')failure('Invalid browser mapping.',join(parent,'package.json'));
-          if(spec.startsWith('.'))spec='/'+join(parent,spec);
+          if(spec.startsWith('.')){spec='/'+join(parent,spec);projectAbsolute=true}
         }
         if(spec.startsWith('.')||spec.startsWith('/')){
           const query=spec.includes('?')?spec.slice(spec.indexOf('?')+1):'';if(query&&!['raw','url'].includes(query))failure('This asset import needs an unsupported build-tool plugin: '+spec,from);
-          spec=spec.split('?')[0];let path=spec.startsWith('/')?normalize(spec):join(directory(from),spec);
+          spec=spec.split('?')[0];let path=spec.startsWith('/')?(projectAbsolute?normalize(spec):join(root,normalize(spec))):join(directory(from),spec);
           const ownerRelative='./'+path.slice(parent?parent.length+1:0);
           if(own(mapping,ownerRelative)){
             if(mapping[ownerRelative]===false)return {empty:true,id:'empty:'+parent+':'+ownerRelative};path=join(parent,mapping[ownerRelative]);
           }
-          let found=sourceFile(path);if(!found&&has(join('public',path)))found=join('public',path);
+          let found=sourceFile(path);const relative=root&&path.startsWith(root+'/')?path.slice(root.length+1):path;if(!found&&has(join(root,'public/'+relative)))found=join(root,'public/'+relative);
           if(!found)failure('Local module or asset was not found: '+path,from);
           return {path:found,query,id:found+(query?'?'+query:'')};
         }
@@ -176,7 +177,13 @@ var CrabrixWebBuilder = (() => {
         for(const entries of locks){for(const candidate of candidates){const key=root?candidate.slice(root.length+1):candidate;const item=entries[key];if(item?.version&&satisfies(item.version)){target=candidate;locked=item;break}}if(locked)break}
         throw {missing:true,name,directory:target,requirements:ranges,importer:from,locked:locked||null};
       }
-      function visit(request) {
+      function archiveRoot(file) {
+        if(!file)return null;const parts=file.split('/'), index=parts.lastIndexOf('node_modules');
+        return index<0?null:parts.slice(0,index+(parts[index+1].startsWith('@')?3:2)).join('/');
+      }
+      function visit(request,from) {
+        const parent=archiveRoot(from), child=archiveRoot(request.path);
+        if(parent&&child&&parent!==child){if(!packageDependencies.has(parent))packageDependencies.set(parent,new Set());packageDependencies.get(parent).add(child)}
         if(modules[request.id])return request.id;
         if(request.empty){modules[request.id]={code:'module.exports={};',dependencies:{}};return request.id}
         const file=request.path;used.add(file);manifest(owner(file));
@@ -190,16 +197,16 @@ var CrabrixWebBuilder = (() => {
         if(ext==='json'){row.code='module.exports='+JSON.stringify(json(files[file],file))+';';return request.id}
         if(ext==='css'){
           if(file.endsWith('.module.css'))failure('CSS Modules need a separate transform. Use a regular CSS import in this browser build.',file);
-          const css=files[file].replace(/@import\s+(?:url\(\s*)?[\"']([^\"']+)[\"']\s*\)?\s*([^;]*);/gi,(all,spec,conditions)=>{if(conditions.trim())failure('CSS @import conditions need a prebuilt stylesheet in this browser build.',file);const target=resolve(spec.startsWith('.')||spec.startsWith('/')?spec:'./'+spec,file);row.dependencies['css:'+spec]=visit(target);return ''}).replace(/url\(\s*(["']?)([^)'"\s]+)\1\s*\)/g,(all,q,url)=>{
+          const css=files[file].replace(/@import\s+(?:url\(\s*)?[\"']([^\"']+)[\"']\s*\)?\s*([^;]*);/gi,(all,spec,conditions)=>{if(conditions.trim())failure('CSS @import conditions need a prebuilt stylesheet in this browser build.',file);const target=resolve(spec.startsWith('.')||spec.startsWith('/')?spec:'./'+spec,file);row.dependencies['css:'+spec]=visit(target,file);return ''}).replace(/url\(\s*(["']?)([^)'"\s]+)\1\s*\)/g,(all,q,url)=>{
             if(/^(?:data:|https?:|\/\/|#)/.test(url))return all;
-            const p=url.startsWith('/')?normalize(url):join(directory(file),url);if(has(p)){assets[p]=files[p];used.add(p);return 'url('+JSON.stringify(origin+p)+')'}return all;
+            const p=url.startsWith('/')?join(root,normalize(url)):join(directory(file),url);if(has(p)){assets[p]=files[p];used.add(p);return 'url('+JSON.stringify(origin+p)+')'}return all;
           });
           row.code=Object.keys(row.dependencies).map(s=>'require('+JSON.stringify(s)+');').join('')+'const s=document.createElement("style");s.textContent='+JSON.stringify(css)+';document.head.appendChild(s);module.exports={};';return request.id;
         }
         if(!['js','mjs','cjs','jsx','ts','tsx'].includes(ext))failure('Unsupported browser asset: '+file,file);
         const out=transform(files[file],file,jsxSource);row.code=out.code;
-        for(const dep of out.dependencies){const target=resolve(dep,file);row.dependencies[dep]=visit(target)}
-        for(const ref of out.assets){const p=ref.startsWith('/')?normalize(ref):join(directory(file),ref);if(!has(p))failure('Local URL asset was not found: '+p,file);assets[p]=files[p];used.add(p)}
+        for(const dep of out.dependencies){const target=resolve(dep,file);row.dependencies[dep]=visit(target,file)}
+        for(const ref of out.assets){const p=ref.startsWith('/')?join(root,normalize(ref)):join(directory(file),ref);if(!has(p))failure('Local URL asset was not found: '+p,file);assets[p]=files[p];used.add(p)}
         return request.id;
       }
       const comments=[...files[entry].matchAll(/<!--[\s\S]*?-->/g)].map(m=>[m.index,m.index+m[0].length]);
@@ -215,7 +222,7 @@ var CrabrixWebBuilder = (() => {
         if(index>0)failure('Use one module script entry and import other modules from it.',entry);
         const start=opening.length, body=tag.slice(start,tag.toLowerCase().lastIndexOf('</'));
         let file;
-        if(src){if(/^(?:[a-z]+:|\/\/)/i.test(src))failure('External module scripts cannot run offline. Use local files and prepared browser packages.',entry);file=src.startsWith('/')?normalize(src):join(directory(entry),src);if(!has(file))failure('HTML module entry was not found: '+file,entry)}
+        if(src){if(/^(?:[a-z]+:|\/\/)/i.test(src))failure('External module scripts cannot run offline. Use local files and prepared browser packages.',entry);file=src.startsWith('/')?join(root,normalize(src)):join(directory(entry),src);if(!has(file))failure('HTML module entry was not found: '+file,entry)}
         else {file=join(directory(entry),'__crabrix_inline_'+index+'.jsx');files[file]=body}
         const id=visit({id:file,path:file});const bundlePath='crabrix-web/entry-'+(index++)+'.js';
         const factories=Object.entries(modules).map(([name,row])=>JSON.stringify(name)+':[function(module,exports,require){\n'+row.code+'\n},'+JSON.stringify(row.dependencies)+']').join(',\n');
@@ -223,7 +230,7 @@ var CrabrixWebBuilder = (() => {
         return '<script src="/'+bundlePath+'" defer></script>';
       });
       for(const [path,text]of Object.entries(files))if(!path.endsWith('crabrix-web.lock.json')&&!path.includes('node_modules/')&&!/\.(?:ts|tsx|jsx)$/.test(path)&&!path.includes('__crabrix_inline_')){
-        assets[path]=text;if(path.startsWith('public/'))assets[path.slice(7)]=text;
+        assets[path]=text;const local=root&&path.startsWith(root+'/')?path.slice(root.length+1):path;if(root&&path.startsWith(root+'/'))assets[local]=text;if(local.startsWith('public/'))assets[local.slice(7)]=text;
       }
       assets[entry]=output;
       const packageRoots=[...metadata.keys()].filter(p=>{
@@ -235,7 +242,7 @@ var CrabrixWebBuilder = (() => {
         const relative=f.slice(dir.length+1);
         if(/^(?:licen[cs]e[s]?|copying|notice)(?:[._-][^/]*|\/.*)?$/i.test(relative)||/^readme(?:\.md|\.txt)?$/i.test(relative))used.add(f);
       }}
-      return JSON.stringify({entry,manifestPath:rootPath,assets,usedPaths:[...used].filter(p=>!p.includes('__crabrix_inline_')),packageRoots:packageRoots.map(directory),moduleCount:Object.keys(modules).length});
+      return JSON.stringify({entry,manifestPath:rootPath,assets,usedPaths:[...used].filter(p=>!p.includes('__crabrix_inline_')),packageRoots:packageRoots.map(directory),packageDependencies:Object.fromEntries([...packageDependencies].map(([p,children])=>[p,[...children].sort()])),moduleCount:Object.keys(modules).length});
     }catch(error){
       if(error.missing)return JSON.stringify({missing:error});
       return JSON.stringify({error:{message:error.message||String(error),file:error.file||'',line:error.line||1,column:error.column||1}});

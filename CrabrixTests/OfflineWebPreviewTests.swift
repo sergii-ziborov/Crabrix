@@ -51,6 +51,17 @@ final class OfflineWebPreviewTests: XCTestCase {
     }
 
     @MainActor
+    func testActualWebKitRunsNestedBrowserProjectWithRootRelativeModuleEntry() async throws {
+        var source = try BrowserProjectBuilderTests.reactFiles()
+        source["index.html"]! += "<script>window.externalBlocked=false;fetch('https://example.com/crabrix-preview-probe').catch(()=>window.externalBlocked=true)</script>"
+        let files = Dictionary(uniqueKeysWithValues: source.map { ("web/" + $0.key, $0.value) })
+        let built = try await BrowserProjectBuilder().build(files: files, preferredEntry: "web/index.html")
+        XCTAssertEqual(built.preview.entryPath, "web/index.html")
+        XCTAssertEqual(built.sourceRemovalPrefix, "web/node_modules/")
+        try await verifyPreview(built.preview, react: true)
+    }
+
+    @MainActor
     private func verifyPreview(_ snapshot: WebPreviewSnapshot, react: Bool) async throws {
         let root = UIHostingController(rootView: OfflineWebPreview(snapshot: snapshot, onMessage: { print("WEB CONSOLE", $0) }, onError: { print("WEB ERROR", $0) }))
         let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)

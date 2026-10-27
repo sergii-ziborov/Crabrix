@@ -19,7 +19,9 @@ The existing terminal exposes these operations:
 | `npm run build`, `npm run check` | Build locally without opening Web Preview |
 | `npm run` | Show declared scripts and the supported command mapping |
 
-Use `cd web` for a nested browser app. These operations do not execute package
+Use `cd web` for a nested browser app. Root-relative module/asset paths refer
+to that browser app, and preparation retains neighboring projects' dependency
+sources. These operations do not execute package
 scripts, Vite, npm lifecycle hooks or arbitrary host processes. The terminal's
 existing horizontal command chips, keyboard input, Hide/Show behavior and dock
 layout are retained. The normal Run button automatically selects the browser
@@ -39,7 +41,8 @@ Explicit package preparation uses public npm HTTPS registry requests, checks
 archive integrity and extracts bounded regular source files with the existing
 safe archive reader. Redirects to another host, path traversal, source path
 collisions and unbounded responses are rejected. Package identity must match its
-archive manifest. Progress uses the existing package sheet and Output stages.
+archive manifest. Progress uses the existing package sheet and Output stages. Its final graph
+also records dependencies on shared packages that were resolved earlier.
 
 Only imported original modules, needed package manifests and license/notice texts
 are retained as editable `node_modules` project files. This includes nested
@@ -82,7 +85,7 @@ signed Rust toolchain, runtime pin and editor/Duo geometry are unchanged.
 
 ## Verification
 
-- Host JavaScript harness: 27 semantic checks using the actual pinned compiler
+- Host JavaScript harness: 29 semantic checks using the actual pinned compiler
   resources, including export conditions, import/require distinctions, namespace
   reexports, production branches, JSON/raw assets, CSS imports, path errors,
   unsupported server/dynamic constructs and the full real-library fixture.

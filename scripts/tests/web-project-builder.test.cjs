@@ -38,5 +38,10 @@ result=build({'index.html':'<!-- <script type="module" src="missing.js"></script
 result=build({'src/app.ts':'import "./a.css"','src/a.css':'@import "./b.css";body {color:red}', 'src/b.css':'button {color:blue}'});assert.ok(!result.error,JSON.stringify(result));assert.match(result.assets['crabrix-web/entry-0.js'],/color:blue/);count++;
 assert.equal(context.CrabrixWebBuilder.selectVersion(['1.2.0','1.4.0','2.0.0','2.1.0-beta.1'],['^1.0.0','>=1.3']), '1.4.0');count++;
 assert.equal(run({'src/app.ts':'import {group} from \"./group\";globalThis.answer=group.answer','src/group.ts':'export * as group from \"./value\"','src/value.ts':'export const answer=19'}).answer,19);
-const fixture=JSON.parse(fs.readFileSync('CrabrixTests/Fixtures/BrowserReactProject.json','utf8'));result=JSON.parse(context.CrabrixWebBuilder.build(JSON.stringify(fixture),'index.html'));assert.equal(result.moduleCount,133);assert.equal(result.packageRoots.length,8);assert.ok(!result.assets['crabrix-web.lock.json']);count++;
+const fixture=JSON.parse(fs.readFileSync('CrabrixTests/Fixtures/BrowserReactProject.json','utf8'));result=JSON.parse(context.CrabrixWebBuilder.build(JSON.stringify(fixture),'index.html'));assert.equal(result.moduleCount,133);assert.equal(result.packageRoots.length,8);assert.ok(result.packageDependencies['node_modules/zustand'].includes('node_modules/react'));count++;assert.ok(!result.assets['crabrix-web.lock.json']);count++;
+const nested=Object.fromEntries(Object.entries(fixture).map(([p,v])=>['web/'+p,v]));
+nested['other/node_modules/keep/source.js']='original';
+result=JSON.parse(context.CrabrixWebBuilder.build(JSON.stringify(nested),'web/index.html'));
+assert.ok(!result.error&&!result.missing,JSON.stringify(result.error||result.missing));
+assert.equal(result.moduleCount,133);assert.equal(result.manifestPath,'web/package.json');assert.ok(result.assets['src/styles.css']);count++;
 console.log(`PASS ${count} offline browser compiler checks`);

@@ -569,7 +569,7 @@ final class CompilerViewModel: ObservableObject {
                         // Installation is transactional. A changed project discards the result;
                         // no in-flight download may overwrite a newer editor snapshot.
                         suppressAutosave = true
-                        fileContents = projectFiles.filter { !$0.key.split(separator: "/").contains("node_modules") }
+                        fileContents = projectFiles.filter { !$0.key.hasPrefix(built.sourceRemovalPrefix) }
                             .merging(built.sourceAdditions) { _, new in new }
                         fileNames = fileContents.keys.sorted(by: projectFileOrder)
                         if fileContents[selectedFile] == nil {
@@ -579,9 +579,9 @@ final class CompilerViewModel: ObservableObject {
                         suppressAutosave = false
                         workspaceGeneration &+= 1
                         cargoStage = .ready
-                        for index in packageTransfers.indices {
-                            if packageTransfers[index].state != .cached { packageTransfers[index].state = .ready }
-                        }
+                        // Final edges include shared packages that were already
+                        // resolved before another importer reached them.
+                        packageTransfers = built.transfers
                         packageTransferID = nil
                     }
                     finish(CompilationResult(succeeded: true, phase: mode == .running ? .run : .check,
