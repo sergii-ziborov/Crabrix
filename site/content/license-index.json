@@ -1,5 +1,29 @@
 [
   {
+    "id": "lezer-common",
+    "name": "Lezer syntax trees",
+    "summary": "Marijn Haverbeke and contributors \u00b7 MIT",
+    "documents": [
+      "lezer-common-LICENSE"
+    ]
+  },
+  {
+    "id": "lezer-lr",
+    "name": "Lezer parser runtime",
+    "summary": "Marijn Haverbeke and contributors \u00b7 MIT",
+    "documents": [
+      "lezer-lr-LICENSE"
+    ]
+  },
+  {
+    "id": "lezer-rust",
+    "name": "Lezer Rust grammar",
+    "summary": "Marijn Haverbeke and contributors \u00b7 MIT",
+    "documents": [
+      "lezer-rust-LICENSE"
+    ]
+  },
+  {
     "id": "yjs",
     "name": "Yjs 13.6.33",
     "summary": "Kevin Jahns and contributors \u00b7 MIT",
