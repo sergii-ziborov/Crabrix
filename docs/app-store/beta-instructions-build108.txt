@@ -1,0 +1,3 @@
+Test local Debug from Project settings → Debug Rust project. Set line breakpoints and inspect String, Vec and concrete local structs, including Unicode and large values. Check async functions across await, current-thread Tokio tasks/timers/channels, and Stop/recovery. Normal Run and editable source must remain unchanged. Verify inspector readability on iPhone/iPad and existing keyboard/dock behavior.
+
+Also verify encrypted guest Playground links between the app and browser, live source/cursor/selection exchange, one-hour default expiry and Save to Crabrix. Browser compilation/execution runs in a Worker; no code runs on the backend. Browser Cargo/Tokio dependencies, const-body stepping, macro internals and arbitrary memory inspection are not supplied.

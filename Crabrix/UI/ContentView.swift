@@ -499,6 +499,11 @@ struct ContentView: View {
                 _ = model.replaceProjectFilesFromTerminal(["main.rs": "fn add(a: i32, b: i32) -> i32 {\n let c = a + b;\n c\n}\nfn main() {\n let mut total = 0;\n for i in 0..3 {\n total += add(i,1);\n }\n println!(\"total={total}\");\n}\n"], selecting: "main.rs")
                 openCodeWorkspace()
             }
+            if arguments.contains("--crabrix-auto-debug-values-fixture") {
+                model.loadRunnableSample(projectName: "debugger-values")
+                _ = model.replaceProjectFilesFromTerminal(["main.rs": "struct Crab { name: String, scores: Vec<u32> }\nfn main() {\n let text=String::from(\"Ferris 🦀\");\n let numbers=vec![1u32,2,42];\n let crab=Crab{name:String::from(\"Crab\"),scores:vec![7,8]};\n println!(\"{text} {} {}\",numbers.len(),crab.name);\n}\n"], selecting: "main.rs")
+                openCodeWorkspace()
+            }
             if let linkArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-playground=") }),
                let url = URL(string: String(linkArgument.dropFirst("--crabrix-auto-playground=".count))) {
                 handleIncomingURL(url)

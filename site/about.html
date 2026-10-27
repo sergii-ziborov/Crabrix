@@ -295,7 +295,7 @@
       <li>Native C linking and host procedural macros are not supported. Standard-library-only WASI build scripts can run locally; host subprocesses and separate build-dependency graphs are outside the supported build path.</li>
       <li>Compilation is interpreted WebAssembly, so a first build is slower than on a
         laptop. Repeat builds come from a local artifact cache.</li>
-      <li>The local source debugger supports breakpoints, stepping, call frames and safe primitive locals. Async/const bodies, macro expansions and full aggregate inspection are outside its current scope. A <code>cargo test</code> harness is not included.</li>
+      <li>The local source debugger supports breakpoints, stepping, active async poll frames and bounded primitive, String, Vec and concrete local struct previews. Const bodies, macro expansions, dependency internals and arbitrary memory inspection remain outside its scope. A <code>cargo test</code> harness is not included.</li>
     </ul>
     <p>
       The Packages screen labels every dependency verified, expected to work, needs

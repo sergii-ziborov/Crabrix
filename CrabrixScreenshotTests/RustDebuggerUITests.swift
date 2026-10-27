@@ -8,6 +8,11 @@ final class RustDebuggerUITests: XCTestCase {
         let editor = app.textViews["Source code editor"]
         XCTAssertTrue(editor.waitForExistence(timeout: 60))
         editor.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 120, dy: 25)).tap()
+        if !app.keyboards.firstMatch.waitForExistence(timeout: 3) {
+            // A fresh fixture can finish replacing its document after the first
+            // AX tree. Re-tap the real editor once its final layout is present.
+            editor.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.15)).tap()
+        }
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 8), app.debugDescription)
         editor.typeText("focus_proof")
         XCTAssertTrue((editor.value as? String ?? "").contains("focus_proof"))
@@ -53,6 +58,31 @@ final class RustDebuggerUITests: XCTestCase {
         XCTAssertTrue(hour.waitForExistence(timeout: 15)); XCTAssertTrue(hour.isSelected)
         capture("native-share-one-hour")
         app.buttons["Close Playground sharing"].tap()
+    }
+    func testAggregateLocalsFitNativeInspector() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--crabrix-auto-debug-values-fixture", "-crabrix.appearance", "light"]
+        app.launch()
+        XCTAssertTrue(app.textViews["Source code editor"].waitForExistence(timeout: 60))
+        openProjectSettings(app)
+        let debug = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Debug Rust project")).firstMatch
+        XCTAssertTrue(debug.waitForExistence(timeout: 15), app.debugDescription)
+        debug.tap()
+        try waitLine(3, in: app, timeout: 120)
+        app.buttons["Add breakpoint at line 6"].tap()
+        app.buttons["Continue"].tap(); try waitLine(6, in: app)
+        app.buttons["Inspect debugger state"].tap()
+        XCTAssertTrue(app.staticTexts["Locals"].waitForExistence(timeout: 10))
+        for expected in ["Ferris 🦀", "[len=3] [1, 2, 42]", "scores: [len=2] [7, 8]"] {
+            let value = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", expected)).firstMatch
+            XCTAssertTrue(value.waitForExistence(timeout: 10), "Actual aggregate preview missing: \(expected)")
+        }
+        capture("native-debug-aggregate-locals")
+        XCTAssertTrue(app.buttons["Close debugger state"].isHittable)
+        app.buttons["Close debugger state"].tap()
+        app.buttons["Remove breakpoint at line 6"].tap()
+        app.buttons["Continue"].tap()
+        XCTAssertTrue(app.buttons["Run project"].waitForExistence(timeout: 60))
     }
     private func openProjectSettings(_ app: XCUIApplication) {
         if app.buttons["Project menu"].exists { app.buttons["Project menu"].tap() }

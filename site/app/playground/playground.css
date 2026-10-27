@@ -97,10 +97,15 @@ body:has(.pg-workspace) { overflow: hidden; }
 .pg-debug-location { color: var(--pg-secondary) !important; font-family: ui-monospace,monospace; }
 .pg-debug-columns { display: grid; grid-template-columns: minmax(130px,1fr) minmax(180px,2fr); gap: 20px; }
 .pg-debug-panel h3 { font-size: 11px; color: var(--pg-muted); text-transform: uppercase; letter-spacing: .06em; }
-.pg-debug-panel table { width: 100%; border-collapse: collapse; font: 11px/1.5 ui-monospace,monospace; }
+.pg-debug-columns > section { min-width: 0; }
+.pg-debug-panel table { width: 100%; table-layout: fixed; border-collapse: collapse; font: 11px/1.5 ui-monospace,monospace; }
 .pg-debug-panel :is(th,td) { padding: 5px 8px; text-align: left; border-bottom: 1px solid var(--pg-border); overflow-wrap: anywhere; }
+.pg-debug-panel th:first-child { width: 22%; }
+.pg-debug-panel th:nth-child(2) { width: 28%; }
 .pg-debug-panel th { color: var(--pg-muted); font-weight: 500; }
 .pg-debug-panel p { font-size: 11px; }
+.pg-debug-panel details { background: var(--pg-panel); color: var(--pg-text); border: 1px solid var(--pg-border); border-radius: 8px; padding: 8px 10px; }
+.pg-debug-panel summary { color: var(--pg-text); font-size: 11px; }
 .pg-frame { display: grid; width: 100%; gap: 3px; text-align: left; border: 1px solid transparent; border-radius: 6px; color: var(--pg-text); background: transparent; padding: 6px 8px; font: 12px ui-monospace,monospace; cursor: pointer; }
 .pg-frame small { color: var(--pg-muted); font-size: 10px; }
 .pg-frame-selected { background: var(--pg-raised); border-color: var(--pg-border); }
@@ -181,12 +186,12 @@ body:has(.pg-workspace) { overflow: hidden; }
 @media (max-width: 700px) {
   body:has(.pg-workspace) .site-header-row { min-height: 54px; }
   .pg-workspace { height: calc(100dvh - 55px); min-height: 350px; }
-  .pg-toolbar { display: grid; gap: 9px; }
+  .pg-toolbar { display: grid; grid-template-columns: minmax(0,1fr); gap: 9px; }
   .pg-brand { gap: 8px; }
   .pg-brand img { width: 26px; height: 26px; }
   .pg-brand h1 { font-size: 16px; }
   .pg-brand span { display: none; }
-  .pg-actions { display: flex; flex-wrap: nowrap; min-width: 0; }
+  .pg-actions { display: flex; flex-wrap: wrap; min-width: 0; }
   .pg-actions .pg-button { padding: 6px 8px; min-height: 34px; font-size: 11px !important; }
   .pg-actions .pg-icon-button { min-height: 34px; width: 34px; }
   .pg-session-bar { padding: 5px 12px; font-size: 10px; gap: 3px 10px; }
@@ -204,7 +209,7 @@ body:has(.pg-workspace) { overflow: hidden; }
   .pg-workspace[data-pg-layout="horizontal"] .pg-editor-area, .pg-workspace[data-pg-layout="horizontal"] .pg-source-budget, .pg-workspace[data-pg-layout="horizontal"] .pg-dock-tabs, .pg-workspace[data-pg-layout="horizontal"] .pg-output { grid-column: auto; grid-row: auto; }
 }
 
-@media(max-width:600px){.pg-wide-label{display:none}.pg-actions{gap:6px}.pg-actions .pg-button{padding:8px 10px}.pg-actions .pg-icon-button{width:36px;min-width:36px}}
+@media(max-width:600px){.pg-wide-label{display:none}.pg-actions{gap:5px}.pg-actions .pg-button{padding:6px}.pg-actions .pg-icon-button{width:36px;min-width:36px}}
 /* The site header wraps on phones. Give the workspace the actual remaining
    height instead of assuming a fixed desktop navigation height. */
 body:has(.pg-workspace) { height: var(--pg-window-height, 100dvh); display: flex; flex-direction: column; }

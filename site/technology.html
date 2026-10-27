@@ -306,7 +306,7 @@
 
     <h2>What it cannot do</h2>
     <ul>
-      <li>The local source debugger steps synchronous Rust statements and shows call frames and safe primitive locals. Async/const bodies, macro expansions, dependency internals and full Rust aggregate inspection are not supported. See the <a href="/guide/#debugger">debugger guide</a>.</li>
+      <li>The local source debugger steps synchronous and async Rust statements and shows active poll frames, primitive values and bounded String, Vec and concrete local struct previews. Const bodies, macro expansions, dependency internals and arbitrary Rust memory inspection are not supported. See the <a href="/guide/#debugger">debugger guide</a>.</li>
       <li>No <code>cargo test</code> harness yet.</li>
       <li>No Git commit or push — import and export only.</li>
       <li>A first compile is interpreted WebAssembly, so it is slower than a laptop. Identical repeat runs come from a local artifact cache.</li>

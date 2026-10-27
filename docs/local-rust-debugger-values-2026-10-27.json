@@ -1,0 +1,322 @@
+{
+  "verifiedAtUTC": "2026-10-27T19:35:26.466042+00:00",
+  "backendCompilationOrExecution": false,
+  "nativeHostTests": 17,
+  "nativeUITests": {
+    "phone": 3,
+    "iPad": 3
+  },
+  "actualPinnedCompilerComparisons": 20,
+  "safeUnsupportedDebugFallbacks": 2,
+  "semanticResults": [
+    {
+      "name": "recursion",
+      "pauses": 12,
+      "stdout": "120\n"
+    },
+    {
+      "name": "moves and shadowing",
+      "pauses": 9,
+      "stdout": "inner\n2\n"
+    },
+    {
+      "name": "borrow and late initialization",
+      "pauses": 7,
+      "stdout": "3 4\n"
+    },
+    {
+      "name": "const evaluation",
+      "pauses": 3,
+      "stdout": "5 2\n"
+    },
+    {
+      "name": "Unicode and JSON chars",
+      "pauses": 5,
+      "stdout": "4 '\"' '\\n'\n"
+    },
+    {
+      "name": "return break continue",
+      "pauses": 33,
+      "stdout": "7\n"
+    },
+    {
+      "name": "closure borrows",
+      "pauses": 5,
+      "stdout": "3\n"
+    },
+    {
+      "name": "match shadow binding",
+      "pauses": 5,
+      "stdout": "ok\n"
+    },
+    {
+      "name": "if let shadow binding",
+      "pauses": 7,
+      "stdout": "ok\n4\n"
+    },
+    {
+      "name": "nested modules",
+      "pauses": 5,
+      "stdout": "5\n"
+    },
+    {
+      "name": "String Vec and non-Debug nested structs",
+      "pauses": 7,
+      "stdout": "Ferris 🦀\nRust 4 Crab\n"
+    },
+    {
+      "name": "Vec of structs and nested containers",
+      "pauses": 3,
+      "stdout": "1\n"
+    },
+    {
+      "name": "bounded previews never call user Debug",
+      "pauses": 5,
+      "stdout": "100000 40000 safe\n"
+    },
+    {
+      "name": "tuple unit and unsupported fields",
+      "pauses": 5,
+      "stdout": "pair 42 kept\n"
+    },
+    {
+      "name": "aggregate moves partial moves and mutable borrows",
+      "pauses": 10,
+      "stdout": "a b 3\n"
+    },
+    {
+      "name": "async polls interleave and cancel",
+      "pauses": 28,
+      "stdout": "async crab 2\nasync crab 2\nasync complete\n"
+    },
+    {
+      "name": "async blocks nested await returns and Send",
+      "pauses": 24,
+      "stdout": "nested\n5 7\n"
+    },
+    {
+      "name": "async expression at statement start",
+      "pauses": 13,
+      "stdout": "nested=3\n9\n"
+    },
+    {
+      "name": "packed and cfg fields stay opaque",
+      "pauses": 4,
+      "stdout": "ok\n"
+    },
+    {
+      "name": "unit tail",
+      "pauses": 5,
+      "stdout": "true\n"
+    },
+    {
+      "name": "statement attributes",
+      "debugUnavailable": true,
+      "normalRunWorks": true
+    },
+    {
+      "name": "compile-time column",
+      "debugUnavailable": true,
+      "normalRunWorks": true
+    }
+  ],
+  "browser": {
+    "at": "2026-10-27T19:35:07.070Z",
+    "origin": "http://127.0.0.1:3396",
+    "backendExecution": false,
+    "layouts": [
+      {
+        "name": "phone",
+        "theme": "Light",
+        "geometry": {
+          "width": 390,
+          "body": 390,
+          "tabsBottom": 698.453125,
+          "workspaceBottom": 844,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "phone",
+        "theme": "Dark",
+        "geometry": {
+          "width": 390,
+          "body": 390,
+          "tabsBottom": 698.453125,
+          "workspaceBottom": 844,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "phone",
+        "theme": "Amber Circuit",
+        "geometry": {
+          "width": 390,
+          "body": 390,
+          "tabsBottom": 698.453125,
+          "workspaceBottom": 844,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "phone",
+        "theme": "Cyberpunk",
+        "geometry": {
+          "width": 390,
+          "body": 390,
+          "tabsBottom": 698.453125,
+          "workspaceBottom": 844,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "tablet",
+        "theme": "Light",
+        "geometry": {
+          "width": 1024,
+          "body": 1024,
+          "tabsBottom": 1043.203125,
+          "workspaceBottom": 1366,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "tablet",
+        "theme": "Dark",
+        "geometry": {
+          "width": 1024,
+          "body": 1024,
+          "tabsBottom": 1043.203125,
+          "workspaceBottom": 1366,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "tablet",
+        "theme": "Amber Circuit",
+        "geometry": {
+          "width": 1024,
+          "body": 1024,
+          "tabsBottom": 1043.203125,
+          "workspaceBottom": 1366,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "tablet",
+        "theme": "Cyberpunk",
+        "geometry": {
+          "width": 1024,
+          "body": 1024,
+          "tabsBottom": 1043.203125,
+          "workspaceBottom": 1366,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "desktop",
+        "theme": "Light",
+        "geometry": {
+          "width": 1440,
+          "body": 1440,
+          "tabsBottom": 208.4375,
+          "workspaceBottom": 1000,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "desktop",
+        "theme": "Dark",
+        "geometry": {
+          "width": 1440,
+          "body": 1440,
+          "tabsBottom": 208.4375,
+          "workspaceBottom": 1000,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "desktop",
+        "theme": "Amber Circuit",
+        "geometry": {
+          "width": 1440,
+          "body": 1440,
+          "tabsBottom": 208.4375,
+          "workspaceBottom": 1000,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      },
+      {
+        "name": "desktop",
+        "theme": "Cyberpunk",
+        "geometry": {
+          "width": 1440,
+          "body": 1440,
+          "tabsBottom": 208.4375,
+          "workspaceBottom": 1000,
+          "workspaceScroll": 0,
+          "toolbarOverflow": 0
+        }
+      }
+    ],
+    "aggregateInspection": true,
+    "asyncBreakpointAndLocals": true,
+    "sourcePreserved": true,
+    "networkDeniedAfterAcquisition": true
+  },
+  "tokio": {
+    "version": "1.54.1",
+    "features": [
+      "rt",
+      "sync",
+      "time"
+    ],
+    "execution": "offline frozen Cargo plan, Simulator",
+    "cases": [
+      "interleaved tasks",
+      "yield and await",
+      "timers",
+      "mpsc channel",
+      "task cancellation",
+      "String/Vec locals",
+      "separate active poll frames",
+      "same stdout with normal Run"
+    ],
+    "actualPauses": 27,
+    "debugDurationSeconds": 43.46553175,
+    "physicalIPhoneTiming": false
+  },
+  "valueSafety": {
+    "customUserDebugCalled": false,
+    "layoutGuessing": false,
+    "previewBytes": 256,
+    "containerItems": 16,
+    "structFields": 16,
+    "maxNesting": 4,
+    "opaqueTypes": [
+      "generic structs",
+      "packed structs",
+      "conditionally shaped structs",
+      "unsupported field types"
+    ],
+    "ownership": "potentially moved, borrowed and captured variables may be omitted"
+  },
+  "unchanged": [
+    "ordinary Run compiler flags/cache",
+    "shared-source storage and encryption",
+    "Duo/editor/dock/keyboard layout"
+  ],
+  "rawResultsDirectory": "build/debugger-values-20261027",
+  "bundledInstrumenterSHA256": "58a8bd76cd91adf2b930d5895a5c8b8474df8685f2336b4dbddf9878fb35ba9b"
+}

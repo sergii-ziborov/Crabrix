@@ -42,7 +42,7 @@ Being honest about the edges is more useful than a feature list. The bundled com
 
 - Compilation is interpreted WebAssembly, so a first build is slower than on a laptop. Repeat builds come from a local artifact cache.
 
-- The local source debugger supports breakpoints, stepping, call frames and safe primitive locals. Async/const bodies, macro expansions and full aggregate inspection are outside its current scope. A `cargo test` harness is not included.
+- The local source debugger supports breakpoints, stepping, active async poll frames and bounded primitive, String, Vec and concrete local struct previews. Const bodies, macro expansions, dependency internals and arbitrary memory inspection remain outside its scope. A `cargo test` harness is not included.
 
 The Packages screen labels every dependency verified, expected to work, needs review, or unsupported, based on real build outcomes recorded on device.
 

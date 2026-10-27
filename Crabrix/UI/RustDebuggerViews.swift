@@ -73,15 +73,20 @@ struct RustDebuggerInspector: View {
                                     .padding(10).background(selectedFrame == index ? CrabrixTheme.blue.opacity(0.12) : .clear, in: RoundedRectangle(cornerRadius: 8))
                             }.buttonStyle(.plain)
                         }
-                        Text("Locals · primitive values").font(.headline)
+                        Text("Locals").font(.headline)
                         let variables = frames[min(selectedFrame, frames.count - 1)].locals
-                        if variables.isEmpty { Text("No inspectable primitive locals at this statement.").foregroundStyle(CrabrixTheme.muted) }
+                        if variables.isEmpty { Text("No inspectable locals at this statement.").foregroundStyle(CrabrixTheme.muted) }
                         ForEach(variables.indices, id: \.self) { index in
                             let value = variables[index]
-                            HStack(alignment: .top) {
-                                VStack(alignment: .leading, spacing: 3) { Text(value.name).font(.body.monospaced()); Text(value.type).font(.caption.monospaced()).foregroundStyle(CrabrixTheme.muted) }
-                                Spacer(); Text(value.value).font(.body.monospaced()).textSelection(.enabled)
-                            }.accessibilityElement(children: .combine)
+                            VStack(alignment: .leading, spacing: 5) {
+                                HStack(alignment: .firstTextBaseline) {
+                                    Text(value.name).font(.body.monospaced())
+                                    Spacer(minLength: 8)
+                                    Text(value.type).font(.caption.monospaced()).foregroundStyle(CrabrixTheme.muted)
+                                }
+                                Text(value.value).font(.body.monospaced()).textSelection(.enabled)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }.frame(maxWidth: .infinity, alignment: .leading).accessibilityElement(children: .combine)
                         }
                     }
                     Text("Breakpoints").font(.headline)
@@ -89,7 +94,7 @@ struct RustDebuggerInspector: View {
                     ForEach(model.debugBreakpoints.sorted { ($0.file, $0.line) < ($1.file, $1.line) }, id: \.self) { breakpoint in
                         Button { model.toggleDebugBreakpoint(file: breakpoint.file, line: breakpoint.line) } label: { HStack { Image(systemName: "circle.fill").foregroundStyle(CrabrixTheme.coral); Text("\(breakpoint.file):\(breakpoint.line)").font(.callout.monospaced()); Spacer(); Image(systemName: "xmark") } }.buttonStyle(.plain)
                     }
-                    Text("Safe primitive locals are inspected. Aggregates and borrowed/captured locals are not decoded. Macro expansions, const and async bodies are not stepped internally. Execution is local; paused time is excluded from the running-time budget.").font(.caption).foregroundStyle(CrabrixTheme.muted)
+                    Text("String, Vec and concrete local structs have bounded previews. Borrowed, moved or captured values may be omitted. Async frames show active polls; const bodies and macro expansions are not stepped internally. Execution is local; paused time is excluded from the running-time budget.").font(.caption).foregroundStyle(CrabrixTheme.muted)
                 }.padding(20).frame(maxWidth: 680).frame(maxWidth: .infinity, alignment: .center)
             }
             .background(CrabrixTheme.background).foregroundStyle(CrabrixTheme.primary)

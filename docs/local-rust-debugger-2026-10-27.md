@@ -5,14 +5,14 @@
 Debug uses the same pinned Rust compiler and interpreter as Run. A shared Lezer
 Rust parser inserts checkpoints into a separate source snapshot; the actual Rust
 compiler compiles that snapshot. The executing Wasm calls a bounded host import
-with source-site IDs and primitive-value snapshots. No user Rust is evaluated as
+with source-site IDs and bounded local-value snapshots. No user Rust is evaluated as
 JavaScript and no code is compiled or executed by the website backend.
 
 The native app prepares and executes Debug on its compiler queue, pausing that
 queue with a condition variable. The browser compiler lives in a Worker and
 waits on shared atomic control memory. Both interfaces support source
 breakpoints, Continue, Step into/over/out, Pause, Stop, call frames and safe
-primitive locals. The original source and normal Run flags remain unchanged.
+primitive, String, Vec and concrete local struct previews. The original source and normal Run flags remain unchanged.
 Generated artifacts have separate cache identities. No runtime/compiler package
 pin or native Duo/editor/dock/keyboard layout was replaced.
 
@@ -21,10 +21,22 @@ implementation uses source checkpoints rather than claiming DWARF support.
 
 ## Boundaries shown in the interface
 
-- Synchronous source functions and statements are stepped. Async and const
-  function bodies, macro expansions and dependencies are not stepped internally.
-- Safe primitive arguments/locals are inspected. Arbitrary structs, collections,
-  borrowed or captured values are not decoded. No watch expression is evaluated.
+- Synchronous and async source functions/statements are stepped. A small Future
+  wrapper enters and leaves a frame on each poll, so suspended or cancelled
+  futures do not leave stale frames on another task's active stack. This is an
+  active poll stack, not a persistent Tokio task history or concurrency profiler.
+- Primitive values, String, Vec, arrays, Option and concrete local structs have
+  bounded previews. Generated field readers work without derive(Debug) and never
+  call a user's Debug implementation. Structs/collections show up to 16 fields or
+  elements, nesting stops at four levels, and each preview has a 256-byte UTF-8
+  budget. Opaque fields are marked `<not inspected>`.
+- Generic, packed and conditionally shaped structs can stay opaque. Potentially
+  moved, borrowed or captured locals are conservatively omitted. Const bodies,
+  macro expansions and dependency internals are not stepped. No watch expression
+  is evaluated. Normal Run is available for unsupported Debug source forms.
+- Tokio current-thread execution is provided by the app's offline Cargo path.
+  Browser compilation supports std and local modules; browser Tokio/Cargo packages
+  have not been added by this debugger change.
 - Statement attributes and compile-time source-introspection forms that cannot
   safely preserve their meaning fail Debug with an explanation; normal Run is
   still available. Debug can alter timing and is not a concurrency profiler.
@@ -81,3 +93,12 @@ store text, review notes and beta instructions were read back after updates.
 The actual App Store IPA matches the bundled debugger compiler and offline legal
 source; its signed entitlements retain the Crabrix App Group and Universal Links.
 See `docs/app-store/release-1.1.3-build107.json`.
+
+
+## Aggregate and async follow-up
+
+The follow-up extends the existing inspector and protocol without changing editor,
+Duo, dock or keyboard geometry. The native inspector wraps long values below their
+name/type. The browser table constrains long fields; narrow toolbars wrap within
+screen width. Qualification is recorded separately in
+`docs/local-rust-debugger-values-2026-10-27.json`: 17 native host tests, six native UI tests, 20 normal-versus-Debug semantic comparisons, two explicit safe fallbacks, and twelve browser layouts. Tokio 1.54.1 current-thread tasks, timers, channels and cancellation run from a frozen offline plan. The Simulator debug run took 43.5 seconds; this is not a physical iPhone performance claim.

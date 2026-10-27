@@ -17,7 +17,7 @@ export function instrumentRust(files: Record<string, string>, entryFile: string)
   const paths = Object.keys(files).filter(path => path.endsWith(".rs")).sort();
   if (!paths.includes(entryFile) || paths.length > 256 || paths.reduce((n, p) => n + files[p].length, 0) > 4 * 1024 * 1024) throw new Error("Debug supports an editable Rust entry and up to 256 source files / 4 MiB.");
   const sites: DebugSite[] = [], output = { ...files };
-  const notes = ["Source-instrumented Rust: breakpoints and stepping use the actual compiled program.", "Locals show safe primitive values. Aggregates, borrowed/captured locals, async bodies and macro expansions are not decoded or stepped internally."];
+  const notes = ["Source-instrumented Rust: breakpoints and stepping use the actual compiled program.", "Locals include bounded String, Vec and local struct previews without calling user Debug implementations. Borrowed, moved and captured values may be omitted. Async stacks show active polls; const bodies and macro expansions are not stepped internally."];
   for (const file of paths) {
     const source = files[file];
     if (/\b__crabrix_debug_(?:v1|guard_)/.test(source)) throw new Error("The __crabrix_debug_ prefix is reserved by the Debug build.");
@@ -34,28 +34,65 @@ export function instrumentRust(files: Record<string, string>, entryFile: string)
       if (node.name === "Identifier" && node.nextSibling?.name === "!" && ["column", "include", "include_str", "include_bytes"].includes(text(node))) throw new Error(`Debug leaves compile-time source introspection to normal Run (${file}:${location(node.from).line}).`);
       if (node.name === "MacroInvocation" && ["column", "include", "include_str", "include_bytes"].includes(text(node.getChild("Identifier") ?? node))) throw new Error(`Debug leaves compile-time source introspection to normal Run (${file}:${location(node.from).line}).`);
     });
+    // Implement inspection beside each concrete struct so private fields remain
+    // accessible. Never take references to packed or conditionally absent fields.
+    walk(tree.topNode, node => {
+      if (node.name !== "StructItem" || node.getChild("TypeParamList")) return;
+      let attrs = "";
+      for (let n = node.parent; n?.name === "AttributeItem"; n = n.parent) attrs += n.getChildren("Attribute").map(text).join("");
+      if (/packed|cfg_attr/.test(attrs)) return;
+      const list = node.getChild("FieldDeclarationList") ?? node.getChild("OrderedFieldDeclarationList");
+      if (list && /#/.test(text(list))) return;
+      const fields = list?.name === "FieldDeclarationList" ? list.getChildren("FieldDeclaration").map(n => text(n.getChild("FieldIdentifier")!))
+        : list ? children(list).filter(n => !["(", ")", ",", "Vis"].includes(n.name)).map((_, i) => String(i)) : [];
+      const name = text(node.getChild("TypeIdentifier")!);
+      const cfg = attrs.match(/#\[cfg\([^\n]*?\)\]/g)?.join("") ?? "";
+      add(node.to, `${cfg} impl crate::${helperName}::Value for ${name} {fn view(&self,s:&mut crate::${helperName}::Sink,d:usize){ use crate::${helperName}::Inspect as _; if d>=4 {s.push("…");return;} s.push(${JSON.stringify(name + " { ")}); ${fields.slice(0,16).map((f,i)=>`s.push(${JSON.stringify((i ? ", " : "") + f + ": ")}); (&crate::${helperName}::Probe(&self.${f})).inspect(s,d+1);`).join("")} ${fields.length>16 ? 's.push(", …");' : ''} s.push(" }");}}`, 30);
+    });
     const functions: SyntaxNode[] = [];
-    walk(tree.topNode, node => { if (node.name === "FunctionItem") functions.push(node); });
+    walk(tree.topNode, node => { if (node.name === "FunctionItem" || node.name === "AsyncBlock") functions.push(node); });
     for (const fn of functions) {
       const parts = children(fn), body = fn.getChild("Block"); if (!body) continue;
-      // Const functions must remain usable in constant evaluation. Async guards
-      // span suspended futures and would misrepresent the running call stack.
-      if (parts.some(n => n.name === "const" || n.name === "async")) continue;
-      const name = text(fn.getChild("BoundIdentifier") ?? fn), functionID = site(fn.from, name, 0, "entry");
+      // Enter/leave async frames per poll, never for a suspended future's lifetime.
+      let constant = parts.some(n => n.name === "const");
+      for (let n = fn.parent; n; n = n.parent) if (n.name === "ConstBlock" || n.name === "ConstItem" || n.name === "FunctionItem" && children(n).some(n => n.name === "const")) constant = true;
+      if (constant) continue;
+      const asynchronous = fn.name === "AsyncBlock" || parts.some(n => n.name === "async");
+      const name = fn.name === "AsyncBlock" ? "async block" : text(fn.getChild("BoundIdentifier") ?? fn), functionID = site(fn.from, name, 0, "entry");
       const guard = `__crabrix_debug_guard_${functionID}`;
       const unavailable = new Set<string>();
       const disableIdentifiers = (node: SyntaxNode) => walk(node, n => { if (n.name === "Identifier") unavailable.add(text(n)); });
       walk(body, node => {
         if (node.name === "FunctionItem") return false;
-        if (node.name === "ReferenceExpression" || node.name === "ClosureExpression") { disableIdentifiers(node); return false; }
+        if (node.name === "ReferenceExpression" || node.name === "ClosureExpression" || node.name === "AsyncBlock") { disableIdentifiers(node); return false; }
         if (node.name === "MacroInvocation" && !formattingMacros.has(text(node.getChild("Identifier") ?? node))) { disableIdentifiers(node); return false; }
         if (/Attribute/.test(node.name) && node.name !== "InnerAttribute") throw new Error(`Debug does not rewrite statement attributes (${file}:${location(node.from).line}). Normal Run remains available.`);
       });
-      type Environment = Map<string, boolean>;
+      type Environment = Map<string, boolean | "owned">;
       const env: Environment = new Map();
+      const containers = new Set<string>(), ownershipUses = new Set<string>();
+      const containerType = (value: string) => /^(?:(?:std|alloc)::(?:string|vec)::)?(?:String|Vec)(?:$|<|::)/.test(value.replace(/\s/g,""));
+      walk(fn, n => {
+        if (n !== fn && (n.name === "FunctionItem" || n.name === "ClosureExpression" || n.name === "AsyncBlock")) return false;
+        if (n.name === "LetDeclaration" || n.name === "Parameter") {
+          const binding = n.getChild("BoundIdentifier");
+          if (binding && children(n).some(part => containerType(text(part)))) containers.add(text(binding));
+          if (binding && /(?:=\s*vec!|=\s*(?:String|Vec)::)/.test(text(n))) containers.add(text(binding));
+        }
+      });
+      walk(body, n => {
+        if (n.name === "FunctionItem") return false;
+        if (n.name === "MacroInvocation") return false; // handled conservatively above
+        if (n.name !== "Identifier") return;
+        const parent = n.parent;
+        // Only known standard containers get the non-consuming method whitelist.
+        const method = parent?.name === "FieldExpression" && parent.firstChild?.from === n.from && parent.parent?.name === "CallExpression" ? parent.getChild("FieldIdentifier") : null;
+        if (containers.has(text(n)) && method && /^(?:len|capacity|is_empty|push|push_str|pop|clear|reserve|reserve_exact|shrink_to_fit|truncate|insert|remove|swap_remove|retain|sort|sort_unstable|reverse|dedup)$/.test(text(method))) return;
+        ownershipUses.add(text(n));
+      });
       for (const parameter of fn.getChild("ParamList")?.getChildren("Parameter") ?? []) {
         const binding = parameter.getChild("BoundIdentifier"), type = parameter.getChild("TypeIdentifier");
-        if (binding) env.set(text(binding), !!type && primitives.test(text(type)) && !unavailable.has(text(binding)));
+        if (binding) env.set(text(binding), !!type && primitives.test(text(type)) ? true : "owned");
       }
       const safe = (node: SyntaxNode | undefined, scope: Environment): boolean => {
         if (!node) return false;
@@ -69,11 +106,11 @@ export function instrumentRust(files: Record<string, string>, entryFile: string)
       };
       const checkpoint = (offset: number, scope: Environment) => {
         const id = site(offset, name, functionID, "statement");
-        const variables = [...scope].filter(([variable, enabled]) => enabled && !unavailable.has(variable)).slice(-32).map(([variable]) => `(${JSON.stringify(variable)}, &${variable} as &dyn ::std::fmt::Debug, ::std::any::type_name_of_val(&${variable}))`).join(",");
+        const variables = [...scope].filter(([variable, enabled]) => enabled && !unavailable.has(variable) && (enabled !== "owned" || !ownershipUses.has(variable))).slice(-32).map(([variable]) => `(${JSON.stringify(variable)}, crate::${helperName}::preview(&${variable}, |s| {use crate::${helperName}::Inspect as _; (&crate::${helperName}::Probe(&${variable})).inspect(s,0);}), ::std::any::type_name_of_val(&${variable}))`).join(",");
         add(offset, `crate::${helperName}::point(${id}, &[${variables}]);`);
       };
       const descend = (node: SyntaxNode, scope: Environment) => {
-        if (node.name === "FunctionItem" || node.name === "ClosureExpression" || node.name === "MacroInvocation" || node.name === "ConstBlock") return;
+        if (node.name === "FunctionItem" || node.name === "ClosureExpression" || node.name === "AsyncBlock" || node.name === "MacroInvocation" || node.name === "ConstBlock") return;
         if (node.name === "Block") { block(node, scope); return; }
         const nested = new Map(scope);
         // Pattern bindings in for/if-let/match arms shadow outer names, even
@@ -98,8 +135,8 @@ export function instrumentRust(files: Record<string, string>, entryFile: string)
             const bindings: string[] = []; walk(statement, n => { if (n.name === "BoundIdentifier") bindings.push(text(n)); if (n.name === "Block" || n.name === "ClosureExpression") return false; });
             const pieces = children(statement), equal = pieces.findIndex(n => n.name === "=");
             const binding = statement.getChild("BoundIdentifier"), type = statement.getChild("TypeIdentifier");
-            const enabled = equal >= 0 && !!binding && bindings.length === 1 && !unavailable.has(text(binding)) && (type ? primitives.test(text(type)) : safe(pieces[equal + 1], scope));
-            for (const variable of bindings) scope.set(variable, enabled && variable === (binding ? text(binding) : ""));
+            const enabled = equal >= 0 && !!binding && bindings.length === 1 && !unavailable.has(text(binding)) ? (type ? primitives.test(text(type)) : safe(pieces[equal + 1], scope)) ? true : "owned" : false;
+            for (const variable of bindings) scope.set(variable, variable === (binding ? text(binding) : "") ? enabled : false);
           }
         }
         const last = statements.at(-1);
@@ -107,7 +144,15 @@ export function instrumentRust(files: Record<string, string>, entryFile: string)
       };
       const descendStatement = (node: SyntaxNode, scope: Environment) => { for (const child of children(node)) descend(child, scope); };
       const first = children(body).find(n => !["{", "}", "LineComment", "BlockComment", "InnerAttribute"].includes(n.name));
-      add(first?.from ?? body.to - 1, `let ${guard} = crate::${helperName}::Frame::enter(${functionID});`, 0);
+      if (asynchronous) {
+        if (fn.name === "AsyncBlock") {
+          add(fn.from, `crate::${helperName}::poll_frame(${functionID},`, 20);
+          add(fn.to, ")", 0);
+        } else {
+          add(first?.from ?? body.to - 1, `crate::${helperName}::poll_frame(${functionID}, async move {`, 0);
+          add(body.to - 1, "}).await", 20);
+        }
+      } else add(first?.from ?? body.to - 1, `let ${guard} = crate::${helperName}::Frame::enter(${functionID});`, 0);
       block(body, env);
     }
     const chunks: string[] = []; let cursor = 0;
@@ -121,31 +166,78 @@ export function instrumentRust(files: Record<string, string>, entryFile: string)
     if (transformed.length > 8 * 1024 * 1024) throw new Error("Debug instrumentation exceeds its generated-source limit.");
     output[file] = transformed;
   }
-  if (!sites.some(site => site.kind === "statement")) throw new Error("No synchronous Rust function body is available to debug. Const/async bodies are not instrumented.");
+  if (!sites.some(site => site.kind === "statement")) throw new Error("No Rust function body is available to debug. Const bodies are not instrumented.");
   return { version: 1, files: output, sites, notes };
 }
 
-const rustHelper = `
+
+const rustHelper = String.raw`
 #[doc(hidden)] #[allow(dead_code)] mod ${helperName} {
     unsafe extern "C" { fn ${debugImport}(kind:u32, site:u32, ptr:*const u8, len:u32); }
     pub struct Frame { site:u32 }
     impl Frame { pub fn enter(site:u32)->Self { unsafe { ${debugImport}(1,site,::std::ptr::null(),0); } Self{site} } }
     impl Drop for Frame { fn drop(&mut self) { unsafe { ${debugImport}(3,self.site,::std::ptr::null(),0); } } }
-    fn quote(out:&mut ::std::string::String, value:&str) {
-        out.push('"');
-        for c in value.chars().take(256) { match c {
-            '"' => out.push_str("\\\\\\\""), '\\\\' => out.push_str("\\\\\\\\"),
-            c if (c as u32)<32 => { use ::std::fmt::Write; let _=write!(out,"\\\\u{:04x}",c as u32); },
-            c => out.push(c)
-        } } out.push('"');
+    pub struct PollFrame<F> { inner:F, site:u32 }
+    pub fn poll_frame<F: ::std::future::Future>(site:u32,inner:F)->PollFrame<F>{PollFrame{inner,site}}
+    impl<F: ::std::future::Future> ::std::future::Future for PollFrame<F> {
+        type Output=F::Output;
+        fn poll(self: ::std::pin::Pin<&mut Self>,cx:&mut ::std::task::Context<'_>)->::std::task::Poll<Self::Output>{
+            // SAFETY: inner is structurally pinned. It is never moved by this
+            // wrapper, which has no Drop implementation or unpin projection.
+            let this=unsafe{self.get_unchecked_mut()};
+            let _frame=Frame::enter(this.site);
+            unsafe{::std::pin::Pin::new_unchecked(&mut this.inner)}.poll(cx)
+        }
     }
-    pub fn point(site:u32, values:&[(&str,&dyn ::std::fmt::Debug,&str)]) {
+    pub struct Sink { text: ::std::string::String, clipped:bool }
+    impl Sink {
+        pub fn push(&mut self,text:&str){ use ::std::fmt::Write; let _=self.write_str(text); }
+    }
+    impl ::std::fmt::Write for Sink {
+        fn write_str(&mut self,text:&str)->::std::fmt::Result {
+            let remaining=256usize.saturating_sub(self.text.len());
+            if text.len()<=remaining {self.text.push_str(text);return Ok(());}
+            let mut end=remaining.min(text.len());while !text.is_char_boundary(end){end-=1;}
+            self.text.push_str(&text[..end]);self.clipped=true;Err(::std::fmt::Error)
+        }
+    }
+    pub trait Value {fn view(&self,s:&mut Sink,d:usize);}
+    pub struct Probe<'a,T:?Sized>(pub &'a T);
+    pub trait Inspect {fn inspect(self,s:&mut Sink,d:usize);}
+    impl<T:Value+?Sized> Inspect for &Probe<'_,T>{fn inspect(self,s:&mut Sink,d:usize){self.0.view(s,d);}}
+    impl<T:?Sized> Inspect for &&Probe<'_,T>{fn inspect(self,s:&mut Sink,_:usize){s.push("<not inspected>");}}
+    pub fn preview<T:?Sized>(_:&T,render:impl FnOnce(&mut Sink))->::std::string::String {
+        let mut s=Sink{text: ::std::string::String::new(),clipped:false};render(&mut s);
+        if s.clipped{s.text.push('…');} s.text
+    }
+    macro_rules! scalar {($($ty:ty),*)=>{$(impl Value for $ty{fn view(&self,s:&mut Sink,_:usize){use ::std::fmt::Write;let _=write!(s,"{:?}",self);}})*};}
+    scalar!(u8,u16,u32,u64,u128,usize,i8,i16,i32,i64,i128,isize,f32,f64,bool,char);
+    impl Value for str{fn view(&self,s:&mut Sink,_:usize){
+        s.push("\"");for c in self.chars().take(128){for e in c.escape_debug(){use ::std::fmt::Write;let _=s.write_char(e);}if s.clipped{break;}}
+        s.push("\"");if self.chars().take(129).count()>128{s.push("…");}
+        use ::std::fmt::Write;let _=write!(s," ({} bytes)",self.len());
+    }}
+    impl Value for ::std::string::String{fn view(&self,s:&mut Sink,d:usize){self.as_str().view(s,d);}}
+    impl<T:Value+?Sized> Value for &T{fn view(&self,s:&mut Sink,d:usize){(**self).view(s,d);}}
+    impl<T:Value> Value for [T]{fn view(&self,s:&mut Sink,d:usize){
+        if d>=4{s.push("…");return;} use ::std::fmt::Write;let _=write!(s,"[len={}] [",self.len());
+        for (i,v) in self.iter().take(16).enumerate(){if i>0{s.push(", ");}v.view(s,d+1);if s.clipped{break;}}
+        if self.len()>16{s.push(", …");}s.push("]");
+    }}
+    impl<T:Value> Value for ::std::vec::Vec<T>{fn view(&self,s:&mut Sink,d:usize){self.as_slice().view(s,d);}}
+    impl<T:Value,const N:usize> Value for [T;N]{fn view(&self,s:&mut Sink,d:usize){self.as_slice().view(s,d);}}
+    impl<T:Value> Value for Option<T>{fn view(&self,s:&mut Sink,d:usize){if d>=4{s.push("…");return;}match self{Some(v)=>{s.push("Some(");v.view(s,d+1);s.push(")");},None=>s.push("None")}}}
+    fn quote(out:&mut ::std::string::String,value:&str){
+        out.push('"');for c in value.chars().take(512){match c{
+            '"'=>out.push_str("\\\""),'\\'=>out.push_str("\\\\"),
+            c if (c as u32)<32=>{use ::std::fmt::Write;let _=write!(out,"\\u{:04x}",c as u32);},c=>out.push(c)
+        }}out.push('"');
+    }
+    pub fn point(site:u32,values:&[(&str,::std::string::String,&str)]){
         let mut out=::std::string::String::from("[");
-        for (i,(name,value,ty)) in values.iter().enumerate().take(32) {
-            if i>0 {out.push(',');} out.push('['); quote(&mut out,name); out.push(','); quote(&mut out,ty); out.push(',');
-            quote(&mut out,&::std::format!("{:?}",value)); out.push(']');
-        } out.push(']');
-        unsafe { ${debugImport}(2,site,out.as_ptr(),out.len() as u32); }
+        for (i,(name,value,ty)) in values.iter().enumerate().take(32){
+            if out.len()>52000{break;}if i>0{out.push(',');}out.push('[');quote(&mut out,name);out.push(',');quote(&mut out,ty);out.push(',');quote(&mut out,value);out.push(']');
+        }out.push(']');unsafe{${debugImport}(2,site,out.as_ptr(),out.len() as u32);}
     }
 }
 `;
