@@ -6,8 +6,12 @@ enum SharedImportQueue {
     private static let maximumPendingImports = 10
 
     @discardableResult
-    static func enqueue(_ rawURL: String) throws -> GitHubRepositoryReference {
-        let reference = try GitHubRepositoryReference.parse(rawURL)
+    static func enqueue(_ rawURL: String) throws -> SharedLink {
+        let reference: SharedLink
+        if let playground = try? PlaygroundLink.parse(rawURL) {
+            guard playground.expiresAt > Date() else { throw PlaygroundFailureProxy.expired }
+            reference = .playground(playground)
+        } else { reference = .github(try GitHubRepositoryReference.parse(rawURL)) }
         guard let defaults = UserDefaults(suiteName: appGroupIdentifier) else {
             throw QueueError.appGroupUnavailable
         }
@@ -30,6 +34,15 @@ enum SharedImportQueue {
         return value
     }
 
+    enum SharedLink {
+        case github(GitHubRepositoryReference)
+        case playground(PlaygroundLink)
+        var label: String { switch self { case .github(let value): "\(value.owner)/\(value.repository)"; case .playground: "The encrypted Playground" } }
+    }
+    enum PlaygroundFailureProxy: LocalizedError {
+        case expired
+        var errorDescription: String? { "This temporary Playground has expired." }
+    }
     enum QueueError: LocalizedError {
         case appGroupUnavailable
 

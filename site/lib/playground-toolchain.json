@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "toolchainID": "crabrix-rust-2026-10-02.1",
+  "rustVersion": "1.96.0-dev",
+  "target": "wasm32-wasip1",
+  "compiler": {
+    "url": "/playground-runtime/rustc.wasm.gz",
+    "sha256": "97347ad1440e86877ffd91a469977494d48814d30bfc364eb971ec089af3cd57",
+    "bytes": 23474168,
+    "expandedSHA256": "0286dc52064283ef78ba153a554d86ae742e6c8cd638aea8662e07d3529233fc",
+    "expandedBytes": 129350419
+  },
+  "sysroot": {
+    "url": "/playground-runtime/sysroot.zip",
+    "sha256": "085fece5602fdd3af4efde3e08388090928c33b03fc874d99aba741a0b85283b",
+    "bytes": 23430722
+  }
+}

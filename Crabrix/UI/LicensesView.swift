@@ -18,6 +18,10 @@ enum BundledLicenseCatalog {
     /// shipped in the app rather than linked. A compiler that works offline has
     /// to be able to show its notices offline too.
     static let all: [BundledLicense] = [
+        BundledLicense(id: "yjs", name: "Yjs 13.6.33", summary: "Kevin Jahns and contributors · MIT", documents: ["yjs-LICENSE"]),
+        BundledLicense(id: "y-protocols", name: "Yjs protocols 1.0.7", summary: "Kevin Jahns and contributors · MIT", documents: ["y-protocols-LICENSE"]),
+        BundledLicense(id: "lib0", name: "lib0 0.2.119", summary: "Kevin Jahns and contributors · MIT", documents: ["lib0-LICENSE"]),
+        BundledLicense(id: "isomorphic.js", name: "isomorphic.js", summary: "Kevin Jahns and contributors · MIT", documents: ["isomorphic.js-LICENSE"]),
         BundledLicense(id: "babel-standalone", name: "Babel standalone 8.0.9",
             summary: "Babel contributors · MIT", documents: ["babel-standalone-LICENSE"]),
         BundledLicense(id: "node-semver", name: "node-semver 7.8.5",

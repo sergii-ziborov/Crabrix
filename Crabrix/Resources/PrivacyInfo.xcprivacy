@@ -12,7 +12,9 @@
 
 	<!-- Optional Game Center reports a numeric score and selected achievement
 	     milestones directly to Apple after player opt-in. Crabrix operates no
-	     account, board, or analytics server and collects no app data itself.
+	     account, board, or analytics server. Temporary Playground source is
+	     encrypted on clients; the relay cannot decrypt it and keeps ciphertext
+	     only in RAM for at most 24 hours. Keys stay in the link fragment.
 	     Apple service data follows Apple's privacy terms. -->
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array/>

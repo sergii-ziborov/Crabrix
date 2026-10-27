@@ -130,6 +130,9 @@ struct SyntaxCodeEditor: UIViewRepresentable {
     let projectID: UUID?
     let filePath: String
     let isEditable: Bool
+    var remoteSelections: [PlaygroundRemoteSelection] = []
+    var collaborationSelection: PlaygroundRemoteSelection?
+    var onSelectionChange: (NSRange) -> Void = { _ in }
     let tracksTyping: Bool
     let diagnostics: [RustDiagnostic]
     let navigationTarget: EditorNavigationTarget?
@@ -150,6 +153,9 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         projectID: UUID? = nil,
         filePath: String,
         isEditable: Bool,
+        remoteSelections: [PlaygroundRemoteSelection] = [],
+        collaborationSelection: PlaygroundRemoteSelection? = nil,
+        onSelectionChange: @escaping (NSRange) -> Void = { _ in },
         tracksTyping: Bool = true,
         diagnostics: [RustDiagnostic] = [],
         navigationTarget: EditorNavigationTarget?,
@@ -164,6 +170,9 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         self.projectID = projectID
         self.filePath = filePath
         self.isEditable = isEditable
+        self.remoteSelections = remoteSelections
+        self.collaborationSelection = collaborationSelection
+        self.onSelectionChange = onSelectionChange
         self.tracksTyping = tracksTyping
         self.diagnostics = diagnostics
         self.navigationTarget = navigationTarget
@@ -231,6 +240,8 @@ struct SyntaxCodeEditor: UIViewRepresentable {
 
     func updateUIView(_ canvas: CodeEditorCanvas, context: Context) {
         let textView = canvas.textView
+        context.coordinator.isUpdatingView = true
+        defer { context.coordinator.isUpdatingView = false }
         context.coordinator.parent = self
         context.coordinator.canvas = canvas
         canvas.keyboardBar?.setUsesAppleIntelligence(assistantUsesAppleIntelligence)
@@ -254,10 +265,11 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         canvas.gutterBackgroundColor = UIColor(CrabrixTheme.editor)
         if textView.text != text {
             textView.text = text
-            textView.selectedRange = NSRange(
-                location: min(cursorOffset, (text as NSString).length),
-                length: 0
-            )
+            let length = (text as NSString).length
+            let shared = collaborationSelection?.file == filePath ? collaborationSelection?.range : nil
+            let previous = shared ?? textView.selectedRange
+            let start = min(previous.location, length)
+            textView.selectedRange = NSRange(location: start, length: min(previous.length, length - start))
         }
         if context.coordinator.highlightedText != text
             || context.coordinator.highlightedFilePath != filePath
@@ -267,6 +279,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             || context.coordinator.highlightedDiagnosticsSignature != diagnosticsSignature {
             context.coordinator.applyHighlighting(to: textView, filePath: filePath)
         }
+        canvas.setRemoteSelections(remoteSelections.filter { $0.file == filePath })
         if let navigationTarget,
            navigationTarget.filePath == filePath,
            context.coordinator.lastNavigationID != navigationTarget.id {
@@ -291,6 +304,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         weak var canvas: CodeEditorCanvas?
         var lastNavigationID: UUID?
         private var isApplyingHighlight = false
+        var isUpdatingView = false
 
         func textViewDidBeginEditing(_ textView: UITextView) {
             parent.onEditorFocus()
@@ -347,13 +361,16 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             canvas?.setNeedsSizeUpdate()
             parent.text = textView.text
             parent.cursorOffset = textView.selectedRange.location
+            parent.onSelectionChange(textView.selectedRange)
             applyHighlighting(to: textView, filePath: parent.filePath, preservingScroll: false)
             canvas?.layoutIfNeeded()
             canvas?.scrollCaretToVisible()
         }
 
         func textViewDidChangeSelection(_ textView: UITextView) {
-            guard !isApplyingHighlight else { return }
+            guard !isApplyingHighlight, !isUpdatingView else { return }
+            let range = textView.selectedRange
+            DispatchQueue.main.async { [weak self] in self?.parent.onSelectionChange(range) }
             let offset = textView.selectedRange.location
             guard parent.cursorOffset != offset else { return }
             DispatchQueue.main.async { [weak self] in
@@ -607,6 +624,20 @@ final class CodeEditorCanvas: UIView {
         return view
     }()
 
+    private let remoteOverlay = PlaygroundSelectionOverlay()
+    private var remoteSelections: [PlaygroundRemoteSelection] = []
+    func setRemoteSelections(_ values: [PlaygroundRemoteSelection]) {
+        remoteSelections = values
+        refreshRemoteSelections()
+    }
+    private func refreshRemoteSelections() {
+        remoteOverlay.isHidden = remoteSelections.isEmpty
+        guard !remoteSelections.isEmpty else { return }
+        remoteOverlay.frame = textView.bounds
+        remoteOverlay.update(textView: textView, selections: remoteSelections)
+        textView.bringSubviewToFront(remoteOverlay)
+    }
+
     private var needsSizeUpdate = true
     private var lastLaidOutBounds = CGSize.zero
 
@@ -626,6 +657,7 @@ final class CodeEditorCanvas: UIView {
 
         addSubview(scrollView)
         scrollView.addSubview(textView)
+        textView.addSubview(remoteOverlay)
         addSubview(gutterView)
     }
 
@@ -704,6 +736,7 @@ final class CodeEditorCanvas: UIView {
         gutterView.frame = CGRect(x: 0, y: 0, width: Self.gutterWidth, height: bounds.height)
         if subviews.last !== gutterView { bringSubviewToFront(gutterView) }
         positionGutter()
+        refreshRemoteSelections()
     }
 
     private func resizeTextView() {

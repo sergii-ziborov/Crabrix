@@ -27,6 +27,7 @@ export default function LicensesPage() {
         <section>
           <h2>Third-party open-source components</h2>
           <p>These components retain their original licenses. Neither the application source license nor the course content terms restrict rights they grant you. Read the <a href="/licenses/ThirdPartyNotices.md">complete notices summary</a> and each original text below.</p>
+          <p><a href="/licenses/PlaygroundThirdPartyNotices.txt">Playground browser editor, WASI runtime and collaboration: original dependency notices</a></p>
           {licenses.map((license) => (
             <details className="license-disclosure" key={license.id}>
               <summary>{license.name}</summary>

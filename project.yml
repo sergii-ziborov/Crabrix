@@ -71,6 +71,10 @@ targets:
       path: Crabrix/Resources/Info.plist
       properties:
         CFBundleDisplayName: Crabrix
+        CFBundleURLTypes:
+          - CFBundleURLName: com.sergiiziborov.Crabrix.playground
+            CFBundleURLSchemes:
+              - crabrix
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         ITSAppUsesNonExemptEncryption: false
@@ -220,6 +224,14 @@ targets:
     platform: iOS
     sources:
       - path: CrabrixScreenshotTests
+      - path: Crabrix/Playground/PlaygroundDocument.swift
+      - path: Crabrix/Playground/PlaygroundCodec.swift
+      - path: Crabrix/Playground/PlaygroundEncryption.swift
+      - path: Crabrix/Playground/PlaygroundLiveSession.swift
+      - path: Crabrix/Playground/PlaygroundRelayConfiguration.swift
+      - path: CrabrixShared/PlaygroundLink.swift
+      - path: Crabrix/Resources/PlaygroundCodec.js
+        buildPhase: resources
     dependencies:
       - target: Crabrix
     settings:
@@ -424,3 +436,42 @@ schemes:
         - name: CrabrixTests
           selectedTests:
             - BundledLicenseTests
+
+  CrabrixPlaygroundGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixScreenshotTests: [test]
+    test:
+      config: CompilerCandidate
+      gatherCoverageData: false
+      targets:
+        - name: CrabrixScreenshotTests
+          selectedTests:
+            - PlaygroundTests
+
+  CrabrixBrowserPlaygroundGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+    test:
+      config: CompilerCandidate
+      gatherCoverageData: false
+      targets:
+        - name: CrabrixTests
+          selectedTests:
+            - BrowserPlaygroundWebKitTests
+
+  CrabrixTwoDevicePlaygroundGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixScreenshotTests: [test]
+    test:
+      config: CompilerCandidate
+      gatherCoverageData: false
+      targets:
+        - name: CrabrixScreenshotTests
+          selectedTests:
+            - PlaygroundTwoDeviceTests

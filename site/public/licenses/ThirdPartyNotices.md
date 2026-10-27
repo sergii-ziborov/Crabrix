@@ -116,3 +116,11 @@ Source: https://github.com/npm/node-semver/tree/v7.8.5
 The exact public npm archives, SRI hashes and generated runtime digest are pinned
 in `scripts/web-compiler-source-lock.json`. Downloaded browser dependencies keep
 their package manifests and license texts as editable project source.
+
+## Temporary Playground collaboration
+
+The fixed JavaScriptCore collaboration codec bundles Yjs 13.6.33, y-protocols
+1.0.7, lib0 0.2.119 and isomorphic.js. Original MIT license texts are included
+in Open-source licenses. User project source is data and is never evaluated by
+this codec. Browser-only editor/runtime notices are available at
+https://crabrix.com/licenses/PlaygroundThirdPartyNotices.txt.

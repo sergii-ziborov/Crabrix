@@ -1,0 +1,17 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "XMS5ZC28UJ.com.sergiiziborov.Crabrix"
+        ],
+        "components": [
+          {
+            "/": "/playground/room/*",
+            "comment": "Temporary encrypted Crabrix Playgrounds"
+          }
+        ]
+      }
+    ]
+  }
+}

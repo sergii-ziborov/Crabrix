@@ -1,0 +1,4 @@
+# The pinned platform binary is supplied by esbuild's optional dependency.
+# Native bridge generation needs no package install hooks.
+allowBuilds:
+  esbuild: false

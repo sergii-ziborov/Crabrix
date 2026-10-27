@@ -193,6 +193,12 @@ final class CompilerViewModel: ObservableObject {
     private var unresolvedDiagnosticEvidence: (signature: String, beforeHash: String)?
     private var activeLessonInitialSourceTreeHash: String?
     private var activeLessonObservedDiagnosticCodes: Set<String> = []
+    @Published private(set) var playgroundSession: PlaygroundLiveSession?
+    @Published private(set) var playgroundStatus = ""
+    @Published private(set) var playgroundLocalSelection: PlaygroundRemoteSelection?
+    @Published private(set) var playgroundSelections: [PlaygroundRemoteSelection] = []
+    private var isApplyingPlayground = false
+    var playgroundIsReadOnly: Bool { playgroundSession.map { $0.link.isReadOnly || $0.expired } ?? false }
     private var fileContents = ["main.rs": RustSamples.runnable]
     private var entryFile = "main.rs"
     private var compilationTask: Task<Void, Never>?
@@ -328,9 +334,97 @@ final class CompilerViewModel: ObservableObject {
     }
 
     func consumePendingSharedImport() async {
+        guard !isProjectOperationInProgress else { return }
         guard let rawURL = SharedImportQueue.dequeue() else { return }
-        await importGitHub(rawURL)
+        if let link = try? PlaygroundLink.parse(rawURL) { await openPlayground(link) }
+        else { await importGitHub(rawURL) }
     }
+
+    private func playgroundDocument() throws -> PlaygroundDocument {
+        let project = currentProject()
+        // Packages and generated outputs are never uploaded. Unsupported source
+        // types fail explicitly instead of silently sharing an incomplete project.
+        let ignored: Set<String> = ["target", "node_modules", ".git", ".github", ".cargo", "vendor"]
+        let files = project.files.filter { !ignored.contains($0.key.components(separatedBy: "/").first ?? "") }
+        return try PlaygroundDocument(name: playgroundSession?.document?.name ?? project.name, entryFile: project.entryFile, files: files, edition: cargoManifest?.edition ?? "2024").validated()
+    }
+
+    func createPlayground(lifetimeSeconds: Int) async throws {
+        if playgroundSession != nil { return }
+        let revision = projectID
+        let connection = try await PlaygroundLiveSession.create(document: playgroundDocument(), lifetimeSeconds: lifetimeSeconds)
+        guard revision == projectID else { connection.stop(); throw PlaygroundFailure("The active project changed. Share it again from its settings.") }
+        attachPlayground(connection, needsInitialProject: false)
+        try connection.replace(playgroundDocument())
+        connection.start()
+    }
+
+    func openPlayground(_ link: PlaygroundLink) async {
+        if playgroundSession?.link == link, playgroundSession?.expired == false { return }
+        guard prepareForProjectSwitch() else { return }
+        guard link.expiresAt > Date() else { projectTransfer = .failed("This temporary Playground has expired."); return }
+        do {
+            let connection = try PlaygroundLiveSession(link: link)
+            projectTransfer = .openingFiles
+            attachPlayground(connection, needsInitialProject: true)
+            connection.start()
+        } catch { projectTransfer = .failed(error.localizedDescription) }
+    }
+
+    private func attachPlayground(_ connection: PlaygroundLiveSession, needsInitialProject: Bool) {
+        playgroundSession?.stop()
+        playgroundSession = connection
+        playgroundStatus = connection.status
+        var initial = needsInitialProject
+        var sharedName = connection.document?.name
+        connection.onDocument = { [weak self, weak connection] value in
+            guard let self, let connection, playgroundSession === connection else { return }
+            let sharedNameChanged = sharedName != nil && sharedName != value.name
+            sharedName = value.name
+            isApplyingPlayground = true
+            defer { isApplyingPlayground = false }
+            if initial {
+                initial = false
+                loadProject(name: value.name, files: value.files, entryFile: value.entryFile, projectDescription: "Local copy of a temporary Crabrix Playground. The link expires; this device copy remains available.")
+                projectTransfer = .ready("Decrypted Playground · saved a local source copy. Run when ready.")
+            } else {
+                var existing = fileContents; existing[selectedFile] = source
+                guard existing != value.files || sharedNameChanged || entryFile != value.entryFile else { return }
+                let oldSelection = selectedFile
+                suppressAutosave = true
+                fileContents = value.files; fileNames = value.files.keys.sorted(by: projectFileOrder)
+                if sharedNameChanged { projectName = value.name }; entryFile = value.entryFile
+                selectedFile = value.files[oldSelection] == nil ? value.entryFile : oldSelection
+                source = value.files[selectedFile] ?? ""
+                suppressAutosave = false
+                workspaceGeneration &+= 1
+                scheduleAutosave()
+            }
+        }
+        connection.onSelections = { [weak self, weak connection] values in
+            guard let self, playgroundSession === connection else { return }
+            playgroundSelections = values
+        }
+        connection.onLocalSelection = { [weak self] value in self?.playgroundLocalSelection = value }
+        connection.onStatus = { [weak self, weak connection] value in
+            guard let self, playgroundSession === connection else { return }
+            playgroundStatus = value
+            if case .openingFiles = projectTransfer, !value.hasPrefix("Connected") {
+                // A failing join remains recoverable; the existing project is intact.
+                if value.contains("expired") || value.hasPrefix("Reconnecting") { projectTransfer = .failed(value) }
+            }
+        }
+    }
+
+    func leavePlayground() {
+        playgroundSession?.stop(); playgroundSession = nil; playgroundSelections = []; playgroundLocalSelection = nil; playgroundStatus = ""
+    }
+
+    func sharePlaygroundSelection(file: String, range: NSRange) {
+        guard file == selectedFile else { return }
+        playgroundSession?.select(file: file, range: range)
+    }
+
 
     func markProjectSaved() {
         projectTransfer = .ready("Saved \(projectName) to Files.")
@@ -1637,6 +1731,7 @@ final class CompilerViewModel: ObservableObject {
         isFavorite: Bool = false,
         lastBuild: ProjectBuildRecord? = nil
     ) {
+        if !isApplyingPlayground { leavePlayground() }
         if isBusy { cancelBuild() }
         resetDiagnosticAdvice()
         autosaveTask?.cancel()
@@ -1716,6 +1811,7 @@ final class CompilerViewModel: ObservableObject {
 
     private func prepareForProjectSwitch() -> Bool {
         guard !isProjectOperationInProgress else { return false }
+        if !isApplyingPlayground { leavePlayground() }
         if isBusy { cancelBuild() }
         resetDiagnosticAdvice()
         return true
@@ -2223,6 +2319,13 @@ final class CompilerViewModel: ObservableObject {
 
     private func workspaceDidChange() {
         guard !suppressAutosave else { return }
+        if !isApplyingPlayground, let connection = playgroundSession {
+            do { try connection.replace(playgroundDocument()) }
+            catch {
+                leavePlayground()
+                projectTransfer = .failed("Playground sharing stopped; your local source is kept. " + error.localizedDescription)
+            }
+        }
         workspaceGeneration &+= 1
         if diagnosticAdviceState != .idle {
             resetDiagnosticAdvice()

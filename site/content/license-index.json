@@ -1,5 +1,37 @@
 [
   {
+    "id": "yjs",
+    "name": "Yjs 13.6.33",
+    "summary": "Kevin Jahns and contributors \u00b7 MIT",
+    "documents": [
+      "yjs-LICENSE"
+    ]
+  },
+  {
+    "id": "y-protocols",
+    "name": "Yjs protocols 1.0.7",
+    "summary": "Kevin Jahns and contributors \u00b7 MIT",
+    "documents": [
+      "y-protocols-LICENSE"
+    ]
+  },
+  {
+    "id": "lib0",
+    "name": "lib0 0.2.119",
+    "summary": "Kevin Jahns and contributors \u00b7 MIT",
+    "documents": [
+      "lib0-LICENSE"
+    ]
+  },
+  {
+    "id": "isomorphic.js",
+    "name": "isomorphic.js",
+    "summary": "Kevin Jahns and contributors \u00b7 MIT",
+    "documents": [
+      "isomorphic.js-LICENSE"
+    ]
+  },
+  {
     "id": "babel-standalone",
     "name": "Babel standalone 8.0.9",
     "summary": "Babel contributors \u00b7 MIT",

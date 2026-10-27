@@ -10,15 +10,30 @@
     "test": "node --experimental-strip-types --test tests/*.test.mjs"
   },
   "dependencies": {
+    "@bjorn3/browser_wasi_shim": "0.4.2",
+    "@codemirror/autocomplete": "6.20.4",
+    "@codemirror/commands": "6.11.1",
+    "@codemirror/lang-markdown": "6.5.2",
+    "@codemirror/lang-rust": "6.0.2",
+    "@codemirror/language": "6.13.1",
+    "@codemirror/legacy-modes": "6.5.5",
+    "@codemirror/state": "6.7.6",
+    "@codemirror/view": "6.43.15",
+    "@lezer/highlight": "1.2.5",
+    "fflate": "0.8.3",
     "next": "16.4.2",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "y-codemirror.next": "0.3.6",
+    "y-protocols": "1.0.7",
+    "yjs": "13.6.33"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "esbuild": "0.25.12",
     "typescript": "^5.9.0"
   }
 }

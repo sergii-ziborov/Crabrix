@@ -1,6 +1,6 @@
 # Terms of Use
 
-Updated: 2026-10-10 · [Website copy](https://crabrix.com/terms/)
+Updated: 2026-10-27 · [Website copy](https://crabrix.com/terms/)
 
 The app is a one-time purchase. Website Academy access is free with an account. Your own code remains yours.
 
@@ -26,7 +26,15 @@ Buying Crabrix gives you a personal, non-transferable licence to use it on the A
 
 ## Your code is yours
 
-Everything you write in Crabrix belongs to you. No licence to it is claimed, it is never uploaded, and it is never read by anyone else. It is compiled on your device by a compiler that ships inside the app.
+Your own source remains yours. Crabrix claims no ownership of it. Compilation runs on your device. Source is shared with other people only when you choose to export it or use the temporary Playground sharing feature.
+
+## Temporary public Playgrounds
+
+You may use the guest Playground without an account. Shared links provide temporary access to encrypted source and live editing, for a lifetime chosen at creation and no longer than 24 hours. Opening a link does not extend it. This is not account storage or a backup service. Rooms are held in memory and may end early after a restart or service interruption. Save a device copy of code you need to keep.
+
+Share only code you have permission to share. Anyone holding an edit link can read, modify, run locally and retain the source; holders of a view-only link can read, run locally and retain it. Link expiry or room deletion does not delete copies already saved by participants. Participants must not insert secrets or personal information, attack other clients, impersonate another participant, or use the service for malware, spam or illegal material.
+
+Source is never run automatically on the server. Imported programs run only after a participant chooses Run on their device. The browser compiler has explicit file, memory, output and execution limits and does not provide the native app's complete Cargo environment. We may rate-limit, end or restrict rooms used for abuse or service attacks. Report an abusive link to [Support](https://crabrix.com/support/); include its room path, not its secret key.
 
 ## Your responsibility for what you run
 
@@ -34,7 +42,7 @@ Crabrix compiles and runs code you write or import, including third-party packag
 
 ## Optional Game Center
 
-The app does not publish your projects or detailed learning progress. Rating, ranks and achievements are earned locally. If you enable Game Center in Profile, your numeric rating and achievement ladder progress are also submitted to Apple's service as 37 ladder achievements plus ten earlier individual milestones. You can disable future submissions without losing local progress; scores Apple already holds may remain there. The iOS app operates no account or leaderboard server of its own; website Academy accounts are separate. See the [privacy policy](https://crabrix.com/privacy).
+The app does not automatically publish your projects or detailed learning progress. Temporary source links are created only when you choose sharing. Rating, ranks and achievements are earned locally. If you enable Game Center in Profile, your numeric rating and achievement ladder progress are also submitted to Apple's service as 37 ladder achievements plus ten earlier individual milestones. You can disable future submissions without losing local progress; scores Apple already holds may remain there. The iOS app operates no account or leaderboard server of its own; website Academy accounts are separate. See the [privacy policy](https://crabrix.com/privacy).
 
 ## Public course materials
 

@@ -1,5 +1,11 @@
-import { cpSync, mkdirSync, rmSync } from 'node:fs';
+import { cpSync, mkdirSync, rmSync, readFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
+const toolchain = JSON.parse(readFileSync('lib/playground-toolchain.json', 'utf8'));
+for (const asset of [toolchain.compiler, toolchain.sysroot]) {
+  const bytes = readFileSync('public' + asset.url);
+  const { createHash } = await import('node:crypto');
+  if (bytes.length !== asset.bytes || createHash('sha256').update(bytes).digest('hex') !== asset.sha256) throw new Error('Stage the pinned Playground assets with scripts/prepare_browser_playground.py before packaging a release.');
+}
 const destination = resolve(process.argv[2] || '../build/site-server-release');
 rmSync(destination, { recursive: true, force: true });
 mkdirSync(destination, { recursive: true });

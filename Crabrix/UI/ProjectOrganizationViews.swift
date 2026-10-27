@@ -219,17 +219,20 @@ struct ProjectActionsSheet: View {
     let onUpdate: (ProjectDetailsDraft) async -> Bool
     let onSaveToFiles: () -> Void
     let onShareArchive: () -> Void
+    let onSharePlayground: () -> Void
 
     init(
         project: CrabrixProject,
         onUpdate: @escaping (ProjectDetailsDraft) async -> Bool,
         onSaveToFiles: @escaping () -> Void,
-        onShareArchive: @escaping () -> Void
+        onShareArchive: @escaping () -> Void,
+        onSharePlayground: @escaping () -> Void
     ) {
         self.project = project
         self.onUpdate = onUpdate
         self.onSaveToFiles = onSaveToFiles
         self.onShareArchive = onShareArchive
+        self.onSharePlayground = onSharePlayground
         _draft = State(initialValue: ProjectDetailsDraft(project: project))
     }
 
@@ -255,6 +258,14 @@ struct ProjectActionsSheet: View {
                             action: presentArchiveShare
                         )
                     }
+
+                    actionButton(
+                        title: "Share a Playground",
+                        detail: "Encrypted link · live interview · up to 24 hours",
+                        systemImage: "person.2.wave.2.fill",
+                        tint: CrabrixTheme.blue,
+                        action: { saveDetails(afterDismiss: onSharePlayground) }
+                    )
 
                     Divider().overlay(CrabrixTheme.border)
 

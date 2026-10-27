@@ -1,0 +1,100 @@
+{
+  "at": "2026-10-27",
+  "status": "local implementation; not published",
+  "unitTests": {
+    "passed": 10,
+    "scope": "relay TTL/capabilities/limits, source paths and bytes, AES-GCM tampering, real Wasm memory cap, slow upload deadline"
+  },
+  "nativeUITest": {
+    "passed": true,
+    "device": "iPhone Simulator iOS 26.5",
+    "scenario": "decrypted source, remote selection, actual UITextView edits relayed to independent native client, local bundled compiler run",
+    "xcresult": "build/playground-20261027/NativePlaygroundFinal.xcresult"
+  },
+  "iosWebKit": {
+    "passed": true,
+    "device": "iPad Simulator iOS 26.5",
+    "scenario": "complete website page, editor hydration, real Rust compilation and execution inside browser Worker",
+    "xcresult": "build/playground-20261027/BrowserWebKit.xcresult"
+  },
+  "crossClientMatrix": {
+    "at": "2026-10-27T14:00:39.105Z",
+    "passed": [
+      "native-native source",
+      "native-native selection",
+      "native-web source",
+      "web-native source",
+      "web-native selection",
+      "native-web selection",
+      "web-web source",
+      "reconnect concurrent merge",
+      "shared page reload"
+    ],
+    "nativeImplementation": "same Swift transport, CryptoKit and bundled Yjs codec used in app",
+    "host": "macOS processes and Chromium; simulator UI separately required"
+  },
+  "twoActualAppsAndBrowser": {
+    "at": "2026-10-27T14:18:45.872Z",
+    "bothNativeEdits": true,
+    "browserSawFinal": true,
+    "browserRun": true,
+    "sourceUploadedForCompilation": false
+  },
+  "twoDeviceXcodeResult": {
+    "passed": true,
+    "phone": "build/playground-20261027/QualifiedPhone.xcresult",
+    "ipad": "build/playground-20261027/QualifiedPad.xcresult",
+    "scope": "both actual app editors exchange changes in the same room as Chromium; both native apps and browser compile/run final source locally",
+    "qualifiedRunsSeconds": {
+      "phoneUITest": 29.173,
+      "ipadUITest": 33.251
+    },
+    "note": "durations cover full UI test, not compiler benchmarks; earlier multi-destination runner/focus-selector failures were harness failures fixed for these runs"
+  },
+  "githubImportAndSourceZIP": {
+    "passed": true,
+    "files": [
+      "Playground.toml",
+      "playground.rs"
+    ],
+    "login": false,
+    "sourceRunAutomatically": false
+  },
+  "dependencyAudit": {
+    "productionVulnerabilities": 0
+  },
+  "pending": [
+    "interactive source debugger / compiler debug metadata",
+    "production AASA and Universal Link entitlement propagation",
+    "website deployment and new signed TestFlight/review release"
+  ],
+  "siteRegressionTests": {
+    "passed": 27,
+    "failed": 0,
+    "scope": "auth/preview rules and Playground tests; all 742 lesson previews still withhold private exercises"
+  },
+  "nativeModelsAndOfflineNotices": {
+    "passed": 10,
+    "failed": 0,
+    "scope": "real bundled native codec, Unicode, concurrent CRDT edits and relative selections, CryptoKit, safe source limits and complete original licenses"
+  },
+  "responsiveLayouts": {
+    "passed": 12,
+    "viewports": [
+      "390x844",
+      "1024x1366",
+      "1440x1000"
+    ],
+    "themes": [
+      "Light",
+      "Dark",
+      "Amber Circuit",
+      "Cyberpunk"
+    ],
+    "scope": "final wrapped-header height and dock within viewport"
+  },
+  "realHTTPRelayGate": {
+    "passed": true,
+    "scope": "capability checks, cross-site origin rejection, four-peer SSE admission, owner deletion and post-deletion access"
+  }
+}

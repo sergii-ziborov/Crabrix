@@ -26,14 +26,15 @@ final class ShareViewController: UIViewController {
         statusLabel.textColor = .white
         statusLabel.font = .preferredFont(forTextStyle: .headline)
         statusLabel.textAlignment = .center
-        detailLabel.text = "Crabrix will import the repository when you open the app."
+        detailLabel.text = "Crabrix opens the source when you open the app. Shared code never runs automatically."
         detailLabel.textColor = .secondaryLabel
         detailLabel.font = .preferredFont(forTextStyle: .subheadline)
         detailLabel.numberOfLines = 0
         detailLabel.textAlignment = .center
         spinner.color = UIColor(red: 1.0, green: 0.39, blue: 0.27, alpha: 1)
         spinner.startAnimating()
-        doneButton.setTitle("Done", for: .normal)
+        doneButton.setImage(UIImage(systemName: "xmark"), for: .normal)
+        doneButton.accessibilityLabel = "Close"
         doneButton.titleLabel?.font = .preferredFont(forTextStyle: .headline)
         doneButton.isHidden = true
         doneButton.addTarget(self, action: #selector(finish), for: .touchUpInside)
@@ -78,7 +79,7 @@ final class ShareViewController: UIViewController {
             }
             return
         }
-        showFailure("Share a GitHub repository URL to Crabrix.")
+        showFailure("Share a GitHub repository or Crabrix Playground link.")
     }
 
     nonisolated private static func stringValue(from item: NSSecureCoding?) -> String? {
@@ -103,7 +104,7 @@ final class ShareViewController: UIViewController {
             let reference = try SharedImportQueue.enqueue(rawValue)
             spinner.stopAnimating()
             statusLabel.text = "Saved to Crabrix"
-            detailLabel.text = "\(reference.owner)/\(reference.repository) will import when Crabrix opens."
+            detailLabel.text = "\(reference.label) will open when Crabrix opens. Run it when ready."
             doneButton.isHidden = false
         } catch {
             showFailure(error.localizedDescription)

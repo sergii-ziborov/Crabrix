@@ -6,15 +6,15 @@ The app keeps your code on your device. Website Academy accounts use a username,
 
 LAST UPDATED 27 OCTOBER 2026
 
-**The short version.** Crabrix has no required account or in-app analytics SDK. Your code, projects, answers, and course progress stay on your device. If you switch on Game Center in Profile, Crabrix sends your numeric rating and achievement ladder progress to Apple for its leaderboard and achievements. It is off by default; The app has no online profile or board of its own; website Academy accounts are separate. Other network requests are requested course downloads, package discovery and downloads, and repository imports. If you write to support — including through *Report a problem* — that email reaches a person, and this page says what happens to it.
+**The short version.** Crabrix has no required account or in-app analytics SDK. Your code, projects, answers, and course progress stay on your device unless you explicitly export source or create/join a temporary encrypted Playground. If you switch on Game Center in Profile, Crabrix sends your numeric rating and achievement ladder progress to Apple for its leaderboard and achievements. It is off by default; The app has no online profile or board of its own; website Academy accounts are separate. Other network requests are requested course downloads, package discovery and downloads, repository imports, and optional encrypted Playground collaboration. If you write to support — including through *Report a problem* — that email reaches a person, and this page says what happens to it.
 
 ## Who is responsible
 
-Crabrix is made by Serhii Ziborov, an independent developer. There is no company, no investor. Hosting providers receive ordinary requests for the public assets described below; they do not receive your source or learning progress from Crabrix. Contact: [write to support](https://crabrix.com/support/).
+Crabrix is made by Serhii Ziborov, an independent developer. There is no company, no investor. Hosting providers receive ordinary requests for the public assets described below. Optional Playground sharing sends encrypted source to the relay; its decryption key stays with participants. Learning progress is not sent to the relay. Contact: [write to support](https://crabrix.com/support/).
 
 ## What stays on your device
 
-These items are stored locally. Only the numeric rating and achievement ladder progress are sent to Apple if you enable Game Center:
+These items are stored locally. Optional source sharing is described below; the numeric rating and achievement ladder progress are sent to Apple if you enable Game Center:
 
 - **Your Rust code and projects** — files you write, import from GitHub, or open from the Files app.
 
@@ -30,9 +30,19 @@ These items are stored locally. Only the numeric rating and achievement ladder p
 
 - **Installed CoursePacks** — lesson text, media, starter source, and checks, stored separately from your progress and projects.
 
-Deleting the app removes all of it. Crabrix keeps no copy and has no way to recover it. Apple may retain Game Center scores and achievements already shared after you switch the feature off or delete Crabrix. Your code, projects, answers, and lesson history reach someone else only if you export or share them yourself.
+Deleting the app removes its local container. Copies in Files, iCloud Drive or a device backup follow those storage settings. Unshared local projects have no Crabrix server backup; temporary encrypted rooms are not a backup and may expire or end early. Apple may retain Game Center scores and achievements already shared after you switch the feature off or delete Crabrix. Your code, projects, answers, and lesson history reach someone else only if you export or share them yourself.
 
 ## What leaves your device
+
+### Temporary encrypted Playgrounds and interviews
+
+Playground is a public feature without login. Unshared editor source stays in browser memory. Run and Check compile and execute on your device; there is no compilation service receiving your source. The browser downloads and may cache verified compiler assets separately from source. Only editor preferences are stored in browser local storage.
+
+Creating or joining a shared Playground sends encrypted source snapshots, edits, participant names, cursors and selections to Crabrix over HTTPS. Clients use AES-256-GCM and keep the encryption key in the link fragment after #; the key is not included in HTTP requests to the relay. Anyone who has the complete edit link can decrypt, edit, run and copy the source; a view-only link permits reading, running and copying. Do not share secrets or private credentials.
+
+The relay keeps bounded ciphertext only in process memory for the chosen lifetime, up to 24 hours from creation. Opening a link never renews it. Expired rooms are removed automatically; no source is written to an account, database, application log or source backup. A process restart can remove a room earlier. Connection addresses and ordinary HTTP metadata may appear in infrastructure access logs, but link fragments and decrypted source do not. Temporary hashed request counters protect the service against abuse.
+
+There is no public room directory or account project library. Downloading or opening a room in Crabrix creates a separate local source copy, which remains on your device after link expiry and may follow your device backup settings. Other participants can also keep copies; expiry cannot recall those copies. Stop sharing or use the creator's End room action to remove relay access early. Live collaboration needs a connection; local compilation and a saved native project work without the relay.
 
 ### 1. Package discovery and downloads (crates.io)
 
@@ -50,7 +60,7 @@ If you import a public repository, Crabrix downloads its archive from `github.co
 
 The initial signed course list is included in the app. When you choose to download a course, Crabrix requests its signed descriptor and archive from `github.com` and GitHub's release asset hosts. The request identifies the selected course asset and carries no Crabrix account, tracking ID, project code, answers, or progress. GitHub and its delivery providers receive normal connection information, including your IP address, and may keep access logs under their own policies. Crabrix does not control those provider logs.
 
-Those are the app's content and import requests: course downloads, package discovery, and public file downloads. As with any HTTPS request, the receiving service sees your connection, including your IP address; Crabrix itself adds no account or device identifier.
+Other app content and import requests include: course downloads, package discovery, and public file downloads. As with any HTTPS request, the receiving service sees your connection, including your IP address; Crabrix itself adds no account or device identifier.
 
 ### 4. Optional Game Center (Apple)
 
@@ -92,7 +102,7 @@ A public [GitHub](https://github.com/sergii-ziborov/Crabrix) issue is a differen
 
 There is no Crabrix account, proprietary leaderboard, online profile, or Crabrix progress server. Rating, ranks and achievements are calculated and kept on your device; optional Game Center sharing is described above. Your source code is never uploaded for compilation: the compiler runs inside the app.
 
-Crabrix has no remote compiler, required account, or server that stores your projects and learning progress. Public course files are delivered by GitHub and its asset hosts; their request logs are described above.
+Crabrix has no remote compiler or required account. It does not provide permanent server project storage or learning-progress synchronization. Optional Playground rooms retain bounded ciphertext temporarily, as described above. Public course files are delivered by GitHub and its asset hosts; their request logs are described above.
 
 ## What the iOS app does not do
 
@@ -102,7 +112,7 @@ Crabrix has no remote compiler, required account, or server that stores your pro
 
 - No third-party analytics, crash reporting, or attribution SDK. None is linked into the app.
 
-- No selling or sharing of data. There is nobody to sell it to and nothing to sell.
+- No selling of data or disclosure to advertisers. Source reaches other participants only through exports or encrypted sharing you choose.
 
 - No broad photo-library access: the only photo Crabrix ever sees is the one you explicitly select as a local avatar through the system photo picker. No camera, microphone, location, contacts, or health permissions are requested.
 

@@ -209,3 +209,36 @@ The October 24 compatibility work exercises Tokio 1.54.1 with a restricted curre
 ### October 24 publication
 
 Five additional articles occupy October 5, 6, 7, 8 and 24: [local progress and optional Game Center](https://crabrix.com/blog/crabrix-offline-progress-game-center/), [cooperative futures](https://crabrix.com/blog/rust-futures-cooperative-work/), [generational handles](https://crabrix.com/blog/rust-generational-handles-stable-identity/), [deterministic dependency plans](https://crabrix.com/blog/rust-dependency-graphs-deterministic-plans/) and [the offline Rust web lab](https://crabrix.com/blog/crabrix-offline-rust-web-preview/). Each has 2,600–2,726 prose words, a checked runnable Rust example and two original ImageGen illustrations, including an infographic. Four new images include the crab mascot. The earlier build-script article received a dated compatibility correction; the other prior article objects remain intact. [Assets and word counts](docs/blog-assets-2026-10-24.json), [prompts](docs/blog-image-prompts-2026-10-24.json), and [example source](docs/blog-examples/2026-10-24/) are versioned with the site.
+
+## Temporary Playground — implementation in progress
+
+The new guest Playground compiles real Rust in a browser Worker, with verified
+on-demand toolchain assets (44.7 MiB first transfer), a fresh WASI source snapshot
+and bounded user-program execution. Browser compilation never sends source to
+a compile server. The initial browser path supports the standard library and
+local modules; it is not the native app's complete Cargo environment.
+
+Sharing uses AES-256-GCM in the clients, Yjs text updates and relative cursor /
+selection positions. A temporary relay holds bounded ciphertext only in RAM,
+for a creator-selected lifetime up to 24 hours. Keys and access capabilities
+are in URL fragments; no account project or source database is created. Server
+restart can end a room early. Device downloads and native copies persist
+independently of link expiry. The app can create, open, edit and export these
+source sessions; received code requires an explicit Run. Associated Domains
+and the AASA route are prepared for Universal Links.
+
+Cross-client protocol checks passed for Swift ↔ Swift, Swift ↔ Chromium,
+remote selections, four concurrent peers and disconnected concurrent edits
+merging after reconnect. An actual iPhone Simulator app joined, received a
+remote selection, sent UITextView edits to another native engine and compiled
+the decrypted source successfully. Two actual app instances on iPhone and iPad Simulators also exchanged edits
+in the same room as Chromium; both apps and browser ran the final shared program.
+These checks do not certify physical devices or production Universal Link
+entitlement propagation.
+
+See [implementation record](docs/playground-implementation-2026-10-27.md) and
+[reproducible probes](scripts/probes/playground/README.md). Interactive source
+debugging remains unfinished because the pinned code generator cannot emit
+valid line metadata. This work has not yet been deployed or included in a new
+TestFlight build; build 101 remains the submitted release until delivery gates
+and release receipts are updated.

@@ -78,6 +78,7 @@ struct ContentView: View {
     @StateObject private var terminal = ProjectTerminalSession()
     @StateObject private var editorKeyboard = RustEditorKeyboardBridge()
     @EnvironmentObject private var progress: CrabrixProgressStore
+    @EnvironmentObject private var appLock: AppLockController
     @EnvironmentObject private var academy: AcademyContentStore
     /// Lessons already turned into rating, seeded from persisted progress so a
     /// relaunch never re-awards them.
@@ -90,6 +91,8 @@ struct ContentView: View {
     @State private var isNewProjectPresented = false
     @State private var pendingNewProjectImport: ProjectImportSource?
     @State private var isProjectActionsPresented = false
+    @State private var isPlaygroundPresented = false
+    @State private var pendingPlaygroundURL: URL?
     @State private var isCargoCatalogPresented = false
     @State private var isPackageStoragePresented = false
     @State private var projectsPath: [ProjectsRoute] = []
@@ -332,10 +335,16 @@ struct ContentView: View {
                     )
                 },
                 onSaveToFiles: prepareExport,
-                onShareArchive: prepareArchiveShare
+                onShareArchive: prepareArchiveShare,
+                onSharePlayground: { isPlaygroundPresented = true }
             )
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $isPlaygroundPresented) {
+            PlaygroundSharingSheet(model: model)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $isDiagnosticHelpPresented) {
             NavigationStack {
@@ -472,20 +481,42 @@ struct ContentView: View {
                     selectedDestination = .learn
                 }
             }
+            #if DEBUG || CRABRIX_LEGACY_FIXTURES
+            if let linkArgument = arguments.first(where: { $0.hasPrefix("--crabrix-auto-playground=") }),
+               let url = URL(string: String(linkArgument.dropFirst("--crabrix-auto-playground=".count))) {
+                handleIncomingURL(url)
+            }
+            #endif
             if arguments.contains("--crabrix-auto-run") {
                 model.run()
             } else if arguments.contains("--crabrix-auto-check") {
                 model.check()
             }
-            if !arguments.contains(where: { $0.hasPrefix("--crabrix-auto-") }) {
+            if !appLock.isLocked && !arguments.contains(where: { $0.hasPrefix("--crabrix-auto-") }) {
                 await model.consumePendingSharedImport()
                 if case .ready = model.projectTransfer {
                     openCodeWorkspace()
                 }
             }
         }
+        .onOpenURL { url in
+            if appLock.isLocked { pendingPlaygroundURL = url }
+            else { handleIncomingURL(url) }
+        }
+        .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
+            if let url = activity.webpageURL {
+                if appLock.isLocked { pendingPlaygroundURL = url }
+                else { handleIncomingURL(url) }
+            }
+        }
+        .onChange(of: appLock.isLocked) { _, locked in
+            if !locked {
+                if let url = pendingPlaygroundURL { pendingPlaygroundURL = nil; handleIncomingURL(url) }
+                else { Task { await model.consumePendingSharedImport() } }
+            }
+        }
         .onChange(of: scenePhase) { _, phase in
-            guard phase == .active else { return }
+            guard phase == .active, !appLock.isLocked else { return }
             Task { await model.consumePendingSharedImport() }
         }
         .onChange(of: model.isBusy) { _, isBusy in
@@ -713,6 +744,16 @@ struct ContentView: View {
         .background(CrabrixTheme.background)
     }
 
+    private func handleIncomingURL(_ url: URL) {
+        if let link = try? PlaygroundLink.parse(url.absoluteString) {
+            openCodeWorkspace()
+            Task { await model.openPlayground(link) }
+        } else if url.isFileURL {
+            openCodeWorkspace()
+            Task { await model.openProject(from: url) }
+        }
+    }
+
     private var codeWorkspace: some View {
         ZStack(alignment: .topLeading) {
             SyntaxCodeEditor(
@@ -720,7 +761,10 @@ struct ContentView: View {
                 cursorOffset: $editorCursorOffset,
                 projectID: model.projectID,
                 filePath: model.selectedFile,
-                isEditable: !model.isProjectOperationInProgress,
+                isEditable: !model.isProjectOperationInProgress && !model.playgroundIsReadOnly,
+                remoteSelections: model.playgroundSelections,
+                collaborationSelection: model.playgroundLocalSelection,
+                onSelectionChange: { [path = model.selectedFile] range in model.sharePlaygroundSelection(file: path, range: range) },
                 tracksTyping: !model.activeLessonIsReview,
                 diagnostics: model.result?.diagnostics ?? [],
                 navigationTarget: editorNavigationTarget,
