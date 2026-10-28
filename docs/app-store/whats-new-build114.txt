@@ -1,0 +1,5 @@
+Native Git, directly on your device: local commits, diffs, history, previewed Restore and branches. Clone GitHub repositories over HTTPS, fetch, pull clean fast-forwards and explicitly push committed history. Optional private access stays in repository-scoped device-only Keychain.
+
+Save a complete .crabrixrepo archive with real commit IDs, branches, binary files and executable modes. Import it as a new local copy. Tokens and prepared package caches are excluded; source ZIP exports keep their separate text-only scope.
+
+Preserved binary worktree resources now participate in local compilation, Debug and cache identity. Existing unit tests, rustfmt, encrypted Playgrounds, browser previews and iPhone/iPad/Duo layouts remain available. Compilation and execution stay local.

@@ -99,13 +99,14 @@ final class ProjectTerminalSession: ObservableObject {
         attach(to: project)
         command = ""
         guard !raw.isEmpty else { return }
-        commandHistories[project.id, default: []].append(raw)
+        let visibleCommand = Self.redactedCommand(raw)
+        commandHistories[project.id, default: []].append(visibleCommand)
         if commandHistories[project.id, default: []].count > 100 {
             commandHistories[project.id]?.removeFirst()
         }
         historyPositions[project.id] = nil
         historyDrafts[project.id] = nil
-        append("$ \(raw)", kind: .command)
+        append("$ \(visibleCommand)", kind: .command)
 
         guard let components = Self.shellWords(raw), !components.isEmpty else {
             append("shell: unmatched quote", kind: .error)
@@ -135,6 +136,9 @@ final class ProjectTerminalSession: ObservableObject {
                 "  git diff <path>          Inspect one changed file\n" +
                 "  git branch|switch       Local branches; clean checkout only\n" +
                 "  git commit -m msg -- paths  Commit selected paths\n" +
+                "  git clone <HTTPS URL>   New GitHub project with real history\n" +
+                "  git remote add origin URL  Connect this local repository\n" +
+                "  git fetch|pull --ff-only|push  Explicit HTTPS operations\n" +
                 "  npm install|ci          Prepare browser imports for offline use\n" +
                 "  npm run dev|preview     Build and open the local web preview\n" +
                 "  npm run build|check     Build browser JS/TS/JSX locally\n" +
@@ -966,6 +970,23 @@ final class ProjectTerminalSession: ObservableObject {
         } else {
             append("\(command): project is busy; no files were changed", kind: .error)
         }
+    }
+
+    private static func redactedCommand(_ raw: String) -> String {
+        var result = raw
+        if let expression = try? NSRegularExpression(pattern: #"(?:https?|ssh)://[^\s"']+"#) {
+            for match in expression.matches(in: raw, range: NSRange(raw.startIndex..., in: raw)).reversed() {
+                guard let range = Range(match.range, in: raw), let url = URLComponents(string: String(raw[range])) else { continue }
+                if url.user != nil || url.password != nil || url.query != nil || url.fragment != nil,
+                   let target = Range(match.range, in: result) {
+                    result.replaceSubrange(target, with: "<redacted URL>")
+                }
+            }
+        }
+        if let pattern = try? NSRegularExpression(pattern: #"(?:gh[pousr]_[A-Za-z0-9_]{10,}|github_pat_[A-Za-z0-9_]{10,})"#) {
+            result = pattern.stringByReplacingMatches(in: result, range: NSRange(result.startIndex..., in: result), withTemplate: "<redacted token>")
+        }
+        return result
     }
 
     private func append(_ text: String, kind: Line.Kind) {

@@ -1,5 +1,6 @@
 import Foundation
 import CryptoKit
+import CrabrixGit
 import UIKit
 @_spi(Fuzzing) import WasmKit
 import WasmKitWASI
@@ -149,6 +150,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         source: String,
         sourcePath: String = "main.rs",
         supportingFiles: [String: String] = [:],
+        resourceFiles: [String: Data] = [:],
         edition: String = "2024",
         plan: CargoBuildPlan = .empty,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
@@ -158,7 +160,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             action: .check,
             source: source,
             sourcePath: sourcePath,
-            supportingFiles: supportingFiles,
+            supportingFiles: supportingFiles, resourceFiles: resourceFiles,
             edition: edition,
             plan: plan,
             onDependencyProgress: onDependencyProgress,
@@ -170,6 +172,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         source: String,
         sourcePath: String = "main.rs",
         supportingFiles: [String: String] = [:],
+        resourceFiles: [String: Data] = [:],
         edition: String = "2024",
         plan: CargoBuildPlan = .empty,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
@@ -179,7 +182,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             action: .run,
             source: source,
             sourcePath: sourcePath,
-            supportingFiles: supportingFiles,
+            supportingFiles: supportingFiles, resourceFiles: resourceFiles,
             edition: edition,
             plan: plan,
             onDependencyProgress: onDependencyProgress,
@@ -190,17 +193,19 @@ final class WasmRustCompiler: @unchecked Sendable {
     /// Link and cache the executable without instantiating or invoking main.
     func build(
         source: String, sourcePath: String = "main.rs", supportingFiles: [String: String] = [:],
+        resourceFiles: [String: Data] = [:],
         edition: String = "2024", plan: CargoBuildPlan = .empty,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
         onStage: (@Sendable (String) -> Void)? = nil
     ) async -> CompilationResult {
-        await perform(action: .build, source: source, sourcePath: sourcePath, supportingFiles: supportingFiles,
+        await perform(action: .build, source: source, sourcePath: sourcePath, supportingFiles: supportingFiles, resourceFiles: resourceFiles,
                       edition: edition, plan: plan, onDependencyProgress: onDependencyProgress, onStage: onStage)
     }
 
     /// The standard libtest harness for one selected entry. Dev-dependencies,
     /// custom harnesses and virtual workspaces are explicitly outside this profile.
     func unitTest(source: String, sourcePath: String = "main.rs", supportingFiles: [String: String] = [:],
+        resourceFiles: [String: Data] = [:],
                   edition: String = "2024", plan: CargoBuildPlan = .empty,
                   invocation: RustUnitTestInvocation,
                   onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
@@ -226,19 +231,20 @@ final class WasmRustCompiler: @unchecked Sendable {
             } catch { return .failure(phase: .setup, detail: error.localizedDescription) }
         }
         return await perform(action: .test(invocation), source: source, sourcePath: sourcePath,
-            supportingFiles: supportingFiles, edition: edition, plan: plan,
+            supportingFiles: supportingFiles, resourceFiles: resourceFiles, edition: edition, plan: plan,
             onDependencyProgress: onDependencyProgress, onStage: onStage)
     }
 
     func debug(
         source: String, sourcePath: String = "main.rs", supportingFiles: [String: String] = [:],
+        resourceFiles: [String: Data] = [:],
         edition: String = "2024", plan: CargoBuildPlan = .empty, session: RustDebugSession,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
         onStage: (@Sendable (String) -> Void)? = nil
     ) async -> CompilationResult {
         await withCheckedContinuation { continuation in
             queue.async(qos: .userInitiated, flags: .enforceQoS) { [self] in
-                let checked = execute(action: .check, source: source, sourcePath: sourcePath, supportingFiles: supportingFiles, edition: edition, plan: plan, onDependencyProgress: onDependencyProgress, onStage: onStage)
+                let checked = execute(action: .check, source: source, sourcePath: sourcePath, supportingFiles: supportingFiles, resourceFiles: resourceFiles, edition: edition, plan: plan, onDependencyProgress: onDependencyProgress, onStage: onStage)
                 guard checked.succeeded else { continuation.resume(returning: checked); return }
                 guard !session.isStopped else { continuation.resume(returning: .failure(phase: .setup, detail: "Debug stopped before execution.")); return }
                 do {
@@ -248,7 +254,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                     session.prepare(instrumented)
                     files.merge(instrumented.files) { _, debug in debug }
                     let main = files.removeValue(forKey: sourcePath)!
-                    continuation.resume(returning: execute(action: .run, source: main, sourcePath: sourcePath, supportingFiles: files, edition: edition, plan: plan, onDependencyProgress: onDependencyProgress, onStage: onStage, debugSession: session))
+                    continuation.resume(returning: execute(action: .run, source: main, sourcePath: sourcePath, supportingFiles: files, resourceFiles: resourceFiles, edition: edition, plan: plan, onDependencyProgress: onDependencyProgress, onStage: onStage, debugSession: session))
                 } catch { continuation.resume(returning: .failure(phase: .setup, detail: error.localizedDescription)) }
             }
         }
@@ -297,6 +303,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         source: String,
         sourcePath: String,
         supportingFiles: [String: String],
+        resourceFiles: [String: Data],
         edition: String,
         plan: CargoBuildPlan,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?,
@@ -311,7 +318,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                         action: action,
                         source: source,
                         sourcePath: sourcePath,
-                        supportingFiles: supportingFiles,
+                        supportingFiles: supportingFiles, resourceFiles: resourceFiles,
                         edition: edition,
                         plan: plan,
                         onDependencyProgress: onDependencyProgress,
@@ -329,6 +336,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         source: String,
         sourcePath: String,
         supportingFiles: [String: String],
+        resourceFiles: [String: Data],
         edition: String,
         plan: CargoBuildPlan,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?,
@@ -365,11 +373,14 @@ final class WasmRustCompiler: @unchecked Sendable {
             return cancelledResult(phase: .setup, started: started, cancellation: .init(reason: reason))
         }
 
+        do { try validateResources(resourceFiles, source: source, sourcePath: sourcePath, supportingFiles: supportingFiles) }
+        catch { return .failure(phase: .setup, detail: error.localizedDescription) }
+
         let cacheKey = artifactKey(
             action: action,
             source: source,
             sourcePath: sourcePath,
-            supportingFiles: supportingFiles,
+            supportingFiles: supportingFiles, resourceFiles: resourceFiles,
             edition: edition,
             plan: plan
         )
@@ -416,6 +427,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                     started: started,
                     interrupter: interrupter,
                     previewSourceFiles: action.testInvocation == nil ? supportingFiles : [:],
+                    previewResourceFiles: action.testInvocation == nil ? resourceFiles : [:],
                     successDetail: "Executed a cached local build artifact inside the bounded WasmKit sandbox.",
                     debugSession: debugSession,
                     programArguments: action.testInvocation?.arguments ?? []
@@ -428,7 +440,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                 try writeProject(
                     source: source,
                     sourcePath: sourcePath,
-                    supportingFiles: supportingFiles,
+                    supportingFiles: supportingFiles, resourceFiles: resourceFiles,
                     into: workURL
                 )
             } catch let error as ProjectLayoutError {
@@ -647,6 +659,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                 started: started,
                 interrupter: interrupter,
                 previewSourceFiles: action.testInvocation == nil ? supportingFiles : [:],
+                    previewResourceFiles: action.testInvocation == nil ? resourceFiles : [:],
                 successDetail: plan.isEmpty
                     ? "Compiled and executed locally inside the bounded WasmKit sandbox."
                     : "Compiled \(plan.units.count) dependencies and the program locally, then ran it in the bounded sandbox.",
@@ -1239,6 +1252,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         started: ContinuousClock.Instant,
         interrupter: WasmInterrupter,
         previewSourceFiles: [String: String],
+        previewResourceFiles: [String: Data],
         successDetail: String,
         debugSession: RustDebugSession? = nil,
         programArguments: [String] = []
@@ -1308,6 +1322,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         }
 
         var webAssets = previewSourceFiles.filter { WebPreviewSnapshot.mimeType(for: $0.key) != nil }.mapValues { Data($0.utf8) }
+        webAssets.merge(previewResourceFiles.filter { WebPreviewSnapshot.mimeType(for: $0.key) != nil }) { _, resource in resource }
         let generated = WebPreviewSnapshot.generated(in: sandboxURL)
         webAssets.merge(generated) { _, new in new }
         let printed = output.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1418,6 +1433,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         source: String,
         sourcePath: String,
         supportingFiles: [String: String],
+        resourceFiles: [String: Data],
         into workURL: URL
     ) throws {
         let fileManager = FileManager.default
@@ -1440,6 +1456,11 @@ final class WasmRustCompiler: @unchecked Sendable {
             )
             try Data(contents.utf8).write(to: fileURL, options: .atomic)
         }
+        for (path, data) in resourceFiles {
+            guard let url = projectFileURL(relativePath: path, under: workURL) else { throw ProjectLayoutError.invalidPath(path) }
+            try fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try data.write(to: url, options: .atomic)
+        }
     }
 
     private func projectFileURL(relativePath: String, under root: URL) -> URL? {
@@ -1455,6 +1476,29 @@ final class WasmRustCompiler: @unchecked Sendable {
         }
     }
 
+    private func validateResources(_ resources: [String: Data], source: String, sourcePath: String,
+                                   supportingFiles: [String: String]) throws {
+        guard !resources.isEmpty else { return }
+        var text = supportingFiles; text[sourcePath] = source
+        guard Set(text.keys).isDisjoint(with: resources.keys), text.count + resources.count <= 8192,
+              resources.values.allSatisfy({ $0.count <= 8 * 1024 * 1024 }),
+              text.values.reduce(0, { $0 + $1.utf8.count }) + resources.values.reduce(0, { $0 + $1.count }) <= 64 * 1024 * 1024 else {
+            throw GitRepositoryFailure("Compiler resources conflict with text or exceed the 8 MiB/file, 8,192-file, 64 MiB input profile.")
+        }
+        var names: Set<String> = [], folders: [String: String] = [:]
+        for path in Set(text.keys).union(resources.keys).sorted() {
+            try ProjectFilePolicy.validatePath(path)
+            let normalized = path.precomposedStringWithCanonicalMapping.lowercased()
+            guard names.insert(normalized).inserted, folders[normalized] == nil else { throw ProjectLayoutError.invalidPath(path) }
+            let parts = path.split(separator: "/")
+            for length in 1..<parts.count {
+                let folder = parts.prefix(length).joined(separator: "/"), key = folder.precomposedStringWithCanonicalMapping.lowercased()
+                guard !names.contains(key), folders[key] == nil || folders[key] == folder else { throw ProjectLayoutError.invalidPath(path) }
+                folders[key] = folder
+            }
+        }
+    }
+
     // MARK: - Program artifact cache
 
     private func isLibraryEntry(_ sourcePath: String, supportingFiles: [String: String]) -> Bool {
@@ -1467,6 +1511,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         source: String,
         sourcePath: String,
         supportingFiles: [String: String],
+        resourceFiles: [String: Data],
         edition: String,
         plan: CargoBuildPlan
     ) -> String {
@@ -1487,6 +1532,9 @@ final class WasmRustCompiler: @unchecked Sendable {
             hasher.update(data: Data([0]))
             hasher.update(data: Data(contents.utf8))
             hasher.update(data: Data([0]))
+        }
+        if let fingerprint = GitRepositoryStore.resourceFingerprint(resourceFiles) {
+            hasher.update(data: Data(("opaque-resources-v1:" + fingerprint).utf8))
         }
         // The root's own active features change what compiles, so they are part
         // of the identity even though they are derived from the manifest above.

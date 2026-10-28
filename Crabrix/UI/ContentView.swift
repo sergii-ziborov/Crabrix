@@ -409,13 +409,14 @@ struct ContentView: View {
         }
         .fileImporter(
             isPresented: $isFileImporterPresented,
-            allowedContentTypes: [.folder, .crabrixProject, .zip],
+            allowedContentTypes: [.folder, .crabrixProject, .crabrixRepository, .zip],
             allowsMultipleSelection: false
         ) { result in
             switch result {
             case let .success(urls):
                 guard let url = urls.first else { return }
                 Task {
+                    if url.pathExtension.lowercased() == "crabrixrepo" { isGitPresented = true }
                     await model.openProject(from: url)
                     if case .ready = model.projectTransfer {
                         openCodeWorkspace()
@@ -873,6 +874,7 @@ struct ContentView: View {
             Task { await model.openPlayground(link) }
         } else if url.isFileURL {
             openCodeWorkspace()
+            if url.pathExtension.lowercased() == "crabrixrepo" { isGitPresented = true }
             Task { await model.openProject(from: url) }
         }
     }

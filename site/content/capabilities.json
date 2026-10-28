@@ -193,6 +193,35 @@
         "memoryBytes": 134217728,
         "perFileDeadlineSeconds": 15
       }
+    },
+    {
+      "id": "projects.native-git",
+      "name": "Native Git history and GitHub HTTPS",
+      "surfaces": [
+        {
+          "surface": "ios",
+          "state": "implemented-candidate",
+          "profile": "libgit2 1.9.7; status/diff/selected commits/history/restore/branches; GitHub HTTPS clone/fetch, clean fast-forward pull and explicit non-force push; private access in device-only Keychain. No SSH/LFS/submodules/rebase or arbitrary hooks. Not included in build 113."
+        }
+      ],
+      "evidence": "docs/git-https-portability-2026-10-28.md"
+    },
+    {
+      "id": "projects.complete-repository-transfer",
+      "name": "Complete local repository transfer",
+      "surfaces": [
+        {
+          "surface": "ios",
+          "state": "implemented-candidate",
+          "profile": ".crabrixrepo: actual commit IDs, refs, worktree bytes and modes; new local identity on import; validated inventory/objects/config. Package caches and credentials excluded. Opaque resources participate in local build/Debug cache identity. Not included in build 113."
+        }
+      ],
+      "limits": {
+        "worktreeFiles": 8192,
+        "worktreeBytes": 67108864,
+        "opaqueFileBytes": 8388608,
+        "archiveBytes": 234881024
+      }
     }
   ],
   "verifiedAtUTC": "2026-10-28T18:39:01.284541+00:00"

@@ -3,6 +3,51 @@ import UIKit
 
 @MainActor
 final class RustDebuggerUITests: XCTestCase {
+    func testNativeHTTPSCloneRemoteAndFullRepositoryExport() throws {
+        let app = XCUIApplication(); app.launchArguments = ["--crabrix-auto-rust-tools-fixture"]; app.launch()
+        XCTAssertTrue(app.textViews["Source code editor"].waitForExistence(timeout: 60))
+        openProjectSettings(app)
+        let git = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Local Git changes")).firstMatch
+        if !git.isHittable { app.scrollViews.firstMatch.swipeUp() }
+        XCTAssertTrue(git.waitForExistence(timeout: 10)); git.tap()
+        let address = app.textFields["GitHub repository URL"]
+        if !address.isHittable { app.scrollViews["local-git-scroll"].swipeUp() }
+        XCTAssertTrue(address.waitForExistence(timeout: 15)); address.tap()
+        address.typeText("https://github.com/octocat/Hello-World.git")
+        let hide = app.buttons["Hide Git keyboard"]
+        XCTAssertTrue(hide.waitForExistence(timeout: 10)); hide.tap()
+        let clone = app.buttons["Clone as a new project"]
+        if !clone.isHittable { app.scrollViews["local-git-scroll"].swipeUp() }
+        XCTAssertTrue(clone.isHittable); clone.tap()
+        let done = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Cloned Hello-World")).firstMatch
+        XCTAssertTrue(done.waitForExistence(timeout: 90), app.debugDescription)
+        let scroll = app.scrollViews["local-git-scroll"]
+        let remote = app.segmentedControls.buttons["Remote"]
+        for _ in 0..<3 where !remote.isHittable { scroll.swipeDown() }
+        XCTAssertTrue(remote.isHittable); remote.tap()
+        XCTAssertTrue(app.staticTexts["https://github.com/octocat/Hello-World.git"].waitForExistence(timeout: 10))
+        app.buttons["Fetch"].tap()
+        let fetched = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Fetched origin")).firstMatch
+        XCTAssertTrue(fetched.waitForExistence(timeout: 60), app.debugDescription)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "0 ahead · 0 behind")).firstMatch.exists)
+        capture("native-git-https-remote")
+        app.segmentedControls.buttons["Changes"].tap()
+        app.buttons["Save the complete repository"].tap()
+        let prepare = app.buttons["Prepare repository export"]
+        if !prepare.isHittable { scroll.swipeUp() }
+        XCTAssertTrue(prepare.isHittable); prepare.tap()
+        let export = app.buttons["Save or share repository"]
+        XCTAssertTrue(export.waitForExistence(timeout: 30), app.debugDescription)
+        XCTAssertTrue(export.isEnabled)
+        capture("native-git-full-export")
+        app.buttons["Close local Git"].tap()
+        app.buttons["build-dock-code"].tap()
+        XCTAssertTrue((app.textViews["Source code editor"].value as? String ?? "").contains("Hello World"))
+        for tab in ["build-dock-code", "build-dock-problems", "build-dock-output", "build-dock-terminal"] {
+            XCTAssertTrue(app.buttons[tab].exists)
+        }
+    }
+
     func testLocalGitTerminalCommitHistoryAndEditorStayIntact() throws {
         let app = XCUIApplication(); app.launchArguments = ["--crabrix-auto-rust-tools-fixture"]; app.launch()
         let editor = app.textViews["Source code editor"]
@@ -24,7 +69,7 @@ final class RustDebuggerUITests: XCTestCase {
         let selectAll = app.buttons["Select all changes"]
         XCTAssertTrue(selectAll.waitForExistence(timeout: 15)); selectAll.tap()
         let message = app.textFields["git-commit-message"]
-        if !message.isHittable { app.scrollViews.firstMatch.swipeUp() }
+        if !message.isHittable { app.scrollViews["local-git-scroll"].swipeUp() }
         XCTAssertTrue(message.waitForExistence(timeout: 10)); message.tap(); message.typeText("Native UI commit")
         let hideKeyboard = app.buttons["Hide Git keyboard"]
         XCTAssertTrue(hideKeyboard.waitForExistence(timeout: 10)); hideKeyboard.tap()
@@ -34,9 +79,9 @@ final class RustDebuggerUITests: XCTestCase {
         let committed = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Committed ")).firstMatch
         XCTAssertTrue(committed.waitForExistence(timeout: 30), app.debugDescription)
         capture("native-git-commit")
-        app.scrollViews.firstMatch.swipeDown()
+        app.scrollViews["local-git-scroll"].swipeDown()
         let history = app.segmentedControls.buttons["History"]
-        if !history.isHittable { app.scrollViews.firstMatch.swipeDown() }
+        if !history.isHittable { app.scrollViews["local-git-scroll"].swipeDown() }
         XCTAssertTrue(history.waitForExistence(timeout: 10)); history.tap()
         let version = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Native UI commit")).firstMatch
         XCTAssertTrue(version.waitForExistence(timeout: 10)); version.tap()

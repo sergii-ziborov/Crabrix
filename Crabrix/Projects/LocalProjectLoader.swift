@@ -205,7 +205,7 @@ enum LocalProjectLoader {
             || readableExtensions.contains(url.pathExtension.lowercased())
     }
 
-    private static func preferredEntryFile(in files: [String: String]) -> String {
+    static func preferredEntryFile(in files: [String: String]) -> String {
         for candidate in ["src/main.rs", "main.rs", "src/lib.rs", "lib.rs"] where files[candidate] != nil {
             return candidate
         }
@@ -227,7 +227,7 @@ enum LocalProjectLoader {
         return rustFiles
             .filter { !$0.hasSuffix("/build.rs") && $0 != "build.rs" }
             .sorted { $0.localizedStandardCompare($1) == .orderedAscending }
-            .first ?? rustFiles.sorted().first ?? "main.rs"
+            .first ?? rustFiles.sorted().first ?? files.keys.sorted().first ?? "main.rs"
     }
 
     private static func readStoredMetadata(

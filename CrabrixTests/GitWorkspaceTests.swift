@@ -99,9 +99,74 @@ final class GitWorkspaceTests: XCTestCase {
         XCTAssertEqual(try ProjectGitCommand.parse(["commit", "-m", "Keep Case", "--", "src/MyFile.rs"]), .commit(message: "Keep Case", paths: ["src/MyFile.rs"]))
         XCTAssertEqual(try ProjectGitCommand.parse(["restore", "--source", String(repeating: "a", count: 40), "--", "src/MyFile.rs"]), .restore(commit: String(repeating: "a", count: 40), path: "src/MyFile.rs"))
         XCTAssertEqual(try ProjectGitCommand.parse(["config", "user.name", "My Name"]), .identity(key: "user.name", value: "My Name"))
-        for args in [["clone", "https://example.invalid"], ["add", "."], ["commit", "-a"], ["status", "--porcelain"], ["config", "credential.helper", "exec"]] {
+        XCTAssertEqual(try ProjectGitCommand.parse(["clone", "https://github.com/owner/repo"]), .clone("https://github.com/owner/repo"))
+        XCTAssertEqual(try ProjectGitCommand.parse(["fetch", "origin"]), .fetch)
+        XCTAssertEqual(try ProjectGitCommand.parse(["pull", "--ff-only"]), .pull)
+        for args in [["push", "--force"], ["add", "."], ["commit", "-a"], ["status", "--porcelain"], ["config", "credential.helper", "exec"]] {
             XCTAssertThrowsError(try ProjectGitCommand.parse(args))
         }
+    }
+
+    func testDeviceKeychainCredentialIsScopedReplaceableAndRemovable() async throws {
+        let vault = GitCredentialVault(service: "com.sergiiziborov.Crabrix.git-qa." + UUID().uuidString)
+        let address = "https://github.com/crabrix-qa/" + UUID().uuidString
+        let other = address + "-different"
+        let missing = try await vault.load(url: address)
+        XCTAssertNil(missing)
+        try await vault.save(url: address, username: "qa-user", token: "qa-token-not-a-real-secret")
+        let username = try await vault.username(url: address + ".git")
+        XCTAssertEqual(username, "qa-user")
+        let loaded = try await vault.load(url: address)
+        XCTAssertNotNil(loaded)
+        let unrelated = try await vault.load(url: other)
+        XCTAssertNil(unrelated)
+        try await vault.save(url: address, username: "new-user", token: "new-qa-token")
+        let updated = try await vault.username(url: address)
+        XCTAssertEqual(updated, "new-user")
+        try await vault.remove(url: address)
+        let removed = try await vault.load(url: address)
+        XCTAssertNil(removed)
+    }
+
+    func testTerminalDoesNotRetainCredentialsFromRejectedURLs() {
+        let session = ProjectTerminalSession()
+        let project = CrabrixProject(name: "credential-qa", files: ["main.rs": "fn main(){}"], entryFile: "main.rs", provenance: nil)
+        let token = "ghp_qaOnlyNotARealToken1234567890"
+        session.command = "git clone https://\(token)@github.com/owner/repo?token=hidden#key"
+        session.submit(project: project, isBusy: false, onCheck: {}, onRun: {}, onGitCommand: { _ in })
+        XCTAssertFalse(session.lines.contains { $0.text.contains(token) || $0.text.contains("token=hidden") || $0.text.contains("#key") })
+        session.recallPrevious()
+        XCTAssertFalse(session.command.contains(token))
+        XCTAssertTrue(session.command.contains("<redacted URL>"))
+    }
+
+    func testRealNativeIOSHTTPSCloneFetchAndTerminalShareOneService() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "GitNativeHTTPS-" + UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let library = ProjectLibrary(storageURL: root.appending(path: "recent.json"))
+        let model = CompilerViewModel(projectLibrary: library)
+        model.createProject(name: "before-clone", template: .hello)
+        let originalID = model.projectID, original = model.source
+        model.performGitCommand(.clone("https://github.com/octocat/Hello-World.git"))
+        XCTAssertTrue(model.gitIsWorking)
+        XCTAssertFalse(model.isProjectOperationInProgress, "Downloading Git objects must leave the editor usable")
+        try await wait(model)
+        XCTAssertNotEqual(model.projectID, originalID, model.gitMessage)
+        XCTAssertNotNil(model.gitState?.head, model.gitMessage)
+        XCTAssertEqual(model.gitRemote?.ahead, 0)
+        XCTAssertEqual(model.gitRemote?.behind, 0)
+        let cloneID = model.projectID, cloneFiles = model.exportProject().files, head = model.gitState?.head
+        XCTAssertTrue(cloneFiles.keys.contains("README"))
+        model.performGitCommand(.fetch); try await wait(model)
+        XCTAssertEqual(model.projectID, cloneID)
+        XCTAssertEqual(model.exportProject().files, cloneFiles)
+        XCTAssertEqual(model.gitState?.head, head)
+        XCTAssertNil(model.result, "Cloning/fetching must not run source or become learning evidence")
+        let before = try await library.project(id: originalID)
+        XCTAssertEqual(before?.project.files[before?.project.entryFile ?? "main.rs"], original)
+        let store = GitRepositoryStore(root: library.gitStorageURL)
+        let persisted = try await store.inspect(cloneID)
+        XCTAssertEqual(persisted.head, head)
     }
 
     func testDeletingDuringBackgroundInitializationCannotLeaveResurrectedHistory() async throws {

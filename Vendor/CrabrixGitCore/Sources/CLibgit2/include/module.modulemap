@@ -1,0 +1,5 @@
+module CLibgit2 {
+    header "git2.h"
+    header "crabrix_git.h"
+    export *
+}

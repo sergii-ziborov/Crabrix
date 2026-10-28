@@ -46,6 +46,7 @@
 		236C594F43D32B64EF77B7A6 /* AchievementTierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67D67D2D0A1619040A96DC9A /* AchievementTierTests.swift */; };
 		23BFF4C106ED3BB60652DDE2 /* CrateSourceBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A10BB944AD234E897548A76 /* CrateSourceBrowser.swift */; };
 		24388B18967B56AE6C13B623 /* TargetCfgExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D9DD4F59BC0FCBE094E718 /* TargetCfgExpression.swift */; };
+		251ED7CF9301309005B02E29 /* GitCredentialVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4D1BA14FA62EFB6EB82614 /* GitCredentialVault.swift */; };
 		256049342F025616B4A8483E /* PlaygroundDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3547C51F8AB034BAFB46B4B /* PlaygroundDocument.swift */; };
 		258C073EFB3D0D21EAB091A4 /* LocalAvatarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B46F92CEEBDC8BB435442587 /* LocalAvatarStore.swift */; };
 		25BCB8C64DECFAE94BD6E999 /* ProjectsHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6408E7D74302DB95B47776D4 /* ProjectsHomeView.swift */; };
@@ -76,6 +77,7 @@
 		3BD2CC466071F1AEE79D6F6D /* RustCanvasOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B1893C7EE28568FD5B41AC3 /* RustCanvasOutput.swift */; };
 		3C7DE8EAB650ACCCE0150A93 /* CargoManifestEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0ACD34E769B0AB48E9132A5 /* CargoManifestEditor.swift */; };
 		3DDB7B55DF460338CEDE8A61 /* LegalDocumentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31CD8399BD51110CC32C0859 /* LegalDocumentView.swift */; };
+		3DF3B052EAF8F78FF9389CC5 /* GitTransferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8DEFEC25242225D1983D2C /* GitTransferTests.swift */; };
 		3E77536EC5C27544F072DB4C /* RustCompletionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4775CE41B31CD63B5B25459E /* RustCompletionTests.swift */; };
 		3E776601C645D5C41738DE7A /* PlaygroundEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FB7C46C669C95EE0D5F7ECB /* PlaygroundEncryption.swift */; };
 		3F8C6C5A2B1C8A3766C0F454 /* TypingLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = E77E2A29DC1E65C2BD1E0BE4 /* TypingLedger.swift */; };
@@ -139,6 +141,7 @@
 		71C82B5A52867D240DEEB514 /* BrowserNpmRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A500C7B5B20F7ADF4215D88C /* BrowserNpmRegistry.swift */; };
 		722E906BE22E10AE38DCE9FA /* y-protocols-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = A9D04AD2FDAA6C6918358345 /* y-protocols-LICENSE.txt */; };
 		731E86AC6C2DF5E0CB922563 /* CargoRegistryAndPlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3837839E6347618EB4FA6AAF /* CargoRegistryAndPlanTests.swift */; };
+		7401BC044F459D37A2BDD72B /* GitRepositoryTransfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 386B310C4F20C4E128A8A19C /* GitRepositoryTransfer.swift */; };
 		747FB1DAEDBE60DC310E5DBC /* CargoBuildScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB6726C568A483FC9192E391 /* CargoBuildScript.swift */; };
 		75522BE84F3E34C2E26013AC /* PlaygroundCodec.js in Resources */ = {isa = PBXBuildFile; fileRef = D36DAB1C755D61A62E455241 /* PlaygroundCodec.js */; };
 		756F6E56F2DA0EE0E4C7FEA1 /* PlaygroundSelectionOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 163AA64CC0EA67D11087E31E /* PlaygroundSelectionOverlay.swift */; };
@@ -377,6 +380,7 @@
 		3786418CA7D9446F9360AE70 /* ThemeContrastTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeContrastTests.swift; sourceTree = "<group>"; };
 		3837839E6347618EB4FA6AAF /* CargoRegistryAndPlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoRegistryAndPlanTests.swift; sourceTree = "<group>"; };
 		383BF5A77A159E435B3711B1 /* ProjectGitCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectGitCommand.swift; sourceTree = "<group>"; };
+		386B310C4F20C4E128A8A19C /* GitRepositoryTransfer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitRepositoryTransfer.swift; sourceTree = "<group>"; };
 		386D9CB2F6ECA745336EB7F9 /* LessonMapLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonMapLayoutTests.swift; sourceTree = "<group>"; };
 		39D97AA40E91AE59E7678D33 /* RustUnitTestRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustUnitTestRunner.swift; sourceTree = "<group>"; };
 		3AFD7F928F3DB4E5A7CBCC6C /* CourseBootstrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseBootstrap.swift; sourceTree = "<group>"; };
@@ -421,6 +425,7 @@
 		5CE0AE33708537F763F3EC87 /* RustDebuggerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustDebuggerUITests.swift; sourceTree = "<group>"; };
 		5CE24E0030AC4CFD4B7F6E01 /* ProblemReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemReportView.swift; sourceTree = "<group>"; };
 		5CEBD152D5381C70622EDD87 /* BuildWorkspaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildWorkspaceTests.swift; sourceTree = "<group>"; };
+		5D4D1BA14FA62EFB6EB82614 /* GitCredentialVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitCredentialVault.swift; sourceTree = "<group>"; };
 		5F250162E0D44C864E253DBA /* PlaygroundLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundLink.swift; sourceTree = "<group>"; };
 		5F2E28AF633C57EFB91DF034 /* LocalProjectLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalProjectLoader.swift; sourceTree = "<group>"; };
 		610A135ADD4192782FBD84D3 /* GitWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitWorkspaceView.swift; sourceTree = "<group>"; };
@@ -539,6 +544,7 @@
 		BE1CA198E7A3ADFE5C61CBE2 /* CrabrixProject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrabrixProject.swift; sourceTree = "<group>"; };
 		BEE8D71E8F886A79DC5EF3FD /* AlgorithmCourseData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlgorithmCourseData.swift; sourceTree = "<group>"; };
 		BF144EE0C3990D3E4191546A /* CratePackageManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CratePackageManifest.swift; sourceTree = "<group>"; };
+		BF8DEFEC25242225D1983D2C /* GitTransferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitTransferTests.swift; sourceTree = "<group>"; };
 		C17305CBAACACB768E537F24 /* CrabrixProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrabrixProgress.swift; sourceTree = "<group>"; };
 		C2F841226BB842F0217630B9 /* PlaygroundLiveSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundLiveSession.swift; sourceTree = "<group>"; };
 		C3DE096ACF2087A64CE3BBB9 /* SourceLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceLanguage.swift; sourceTree = "<group>"; };
@@ -735,7 +741,9 @@
 				BE1CA198E7A3ADFE5C61CBE2 /* CrabrixProject.swift */,
 				B9D7D181612381980B5CB164 /* CrabrixProjectDocument.swift */,
 				41A5B9EA24490E8E2ADABA38 /* CratesIOClient.swift */,
+				5D4D1BA14FA62EFB6EB82614 /* GitCredentialVault.swift */,
 				D17C0F44F9A525F94B586EE7 /* GitHubProjectImporter.swift */,
+				386B310C4F20C4E128A8A19C /* GitRepositoryTransfer.swift */,
 				5F2E28AF633C57EFB91DF034 /* LocalProjectLoader.swift */,
 				DD24012B04FBCFF20EABAE25 /* ProjectLibrary.swift */,
 				BCD7933FC639F6724ED46072 /* WorkspaceRevision.swift */,
@@ -937,6 +945,7 @@
 				F5F8A0A5C96A9EDE1C43DA16 /* CrateStorageUsageTests.swift */,
 				A8433FE86ED600CDD3649695 /* EditorHorizontalScrollTests.swift */,
 				72C0A9DB161BABC0D5AC50DA /* GitHubRepositoryReferenceTests.swift */,
+				BF8DEFEC25242225D1983D2C /* GitTransferTests.swift */,
 				3F7FB611E7693C23229E7F63 /* GitWorkspaceTests.swift */,
 				6CD423A006C2A2A962EE2495 /* InstalledCourseRepositoryTests.swift */,
 				386D9CB2F6ECA745336EB7F9 /* LessonMapLayoutTests.swift */,
@@ -1363,7 +1372,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -eu\n\"$SRCROOT/scripts/fetch_toolchain.sh\"\n/usr/bin/python3 \"$SRCROOT/scripts/package_toolchain.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/prepare_native_compiler.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/verify_rust_tools.py\"\n";
+			shellScript = "set -eu\n\"$SRCROOT/scripts/fetch_toolchain.sh\"\n/usr/bin/python3 \"$SRCROOT/scripts/package_toolchain.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/prepare_native_compiler.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/verify_rust_tools.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/verify_git_core.py\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1446,8 +1455,10 @@
 				C554687050F486FE98581C6B /* CratesIOClient.swift in Sources */,
 				08CA3D0D4FD1367DC21D5281 /* FeatureResolver.swift in Sources */,
 				653BFA6F12724C8C29B018C9 /* GameCenterService.swift in Sources */,
+				251ED7CF9301309005B02E29 /* GitCredentialVault.swift in Sources */,
 				59725272FB4F415D7DB276A9 /* GitHubProjectImporter.swift in Sources */,
 				CA6298656CA96584D5791FAB /* GitHubRepositoryReference.swift in Sources */,
+				7401BC044F459D37A2BDD72B /* GitRepositoryTransfer.swift in Sources */,
 				07A4E989FB0CC80282D9FD6A /* GitWorkspaceView.swift in Sources */,
 				C7C8B5BA51A4A63B29454B56 /* InspectorViews.swift in Sources */,
 				23560A181485665C5325D292 /* InstalledCourseRepository.swift in Sources */,
@@ -1568,6 +1579,7 @@
 				376D4021B4FB4071CAD1B8C1 /* CratesIOClientTests.swift in Sources */,
 				80256634DBDBD9C0C47CBAF8 /* EditorHorizontalScrollTests.swift in Sources */,
 				26138CBF6B814EFC7A25482B /* GitHubRepositoryReferenceTests.swift in Sources */,
+				3DF3B052EAF8F78FF9389CC5 /* GitTransferTests.swift in Sources */,
 				0F392C6E026B23A1A93A675E /* GitWorkspaceTests.swift in Sources */,
 				30378E05BFED089463AD93E2 /* InstalledCourseRepositoryTests.swift in Sources */,
 				CE4BB5894285EC57C4E3B650 /* LessonMapLayoutTests.swift in Sources */,

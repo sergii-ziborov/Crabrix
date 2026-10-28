@@ -119,6 +119,61 @@ final class RepositoryTests: XCTestCase {
         XCTAssertEqual(try String(contentsOf: worktree.appending(path: "main.rs"), encoding: .utf8), files["main.rs"])
     }
 
+    func testCompleteRepositoryTransferPreservesHistoryIndexBinaryModesAndResourceIdentity() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "GitPortable-" + UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = GitRepositoryStore(root: root), a = UUID(), b = UUID()
+        let files = ["main.rs": "fn main(){println!(\"{}\",include_bytes!(\"asset.bin\").len());}\n", ".rustfmt.toml": "max_width=100\n", "run.sh": "echo crab\n"]
+        let initialized = try await store.initialize(a, files: files)
+        let source = root.appending(path: a.uuidString.lowercased() + "/worktree")
+        let binary = Data([0,255,127,0,32])
+        try binary.write(to: source.appending(path: "asset.bin"))
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: source.appending(path: "run.sh").path)
+        let committed = try await store.commit(a, files: files, selected: Array(files.keys) + ["asset.bin"], author: "QA", email: "qa@example.invalid", message: "Portable history", expectedHead: nil, expectedRevision: initialized.revision)
+        XCTAssertNotNil(committed.state.resourceTreeHash)
+        let copy = try await store.exportCopy(a, files: files, expectedRevision: committed.state.revision)
+        defer { try? FileManager.default.removeItem(at: copy.directory) }
+        let imported = try await store.importCopy(b, directory: copy.directory, origin: "https://github.com/octocat/Hello-World.git")
+        XCTAssertEqual(imported.state.head, committed.state.head)
+        XCTAssertEqual(imported.snapshot.files, files)
+        XCTAssertEqual(imported.state.resourceTreeHash, committed.state.resourceTreeHash)
+        let history = try await store.history(b)
+        XCTAssertEqual(history.map(\.id), [committed.commit.id])
+        let resources = try await store.resources(b, files: files)
+        XCTAssertEqual(resources, ["asset.bin": binary])
+        let worktree = root.appending(path: b.uuidString.lowercased() + "/worktree")
+        XCTAssertEqual(try Data(contentsOf: worktree.appending(path: "asset.bin")), binary)
+        let mode = try FileManager.default.attributesOfItem(atPath: worktree.appending(path: "run.sh").path)[.posixPermissions] as? Int ?? 0
+        XCTAssertNotEqual(mode & 0o111, 0)
+        #if os(macOS)
+        try git(["-C", worktree.path, "fsck", "--full"])
+        try git(["clone", worktree.path, root.appending(path: "desktop-copy").path])
+        #endif
+    }
+
+    func testInvalidGitTransferNeverInstallsOrOverwritesAnExistingProject() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "GitPortableBad-" + UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = GitRepositoryStore(root: root), a = UUID(), rejected = UUID()
+        let files = ["main.rs": "fn main(){}\n"]
+        let initialized = try await store.initialize(a, files: files)
+        let committed = try await store.commit(a, files: files, selected: ["main.rs"], author: "QA", email: "qa@example.invalid", message: "Kept", expectedHead: nil, expectedRevision: initialized.revision)
+        let copy = try await store.exportCopy(a, files: files, expectedRevision: committed.state.revision)
+        defer { try? FileManager.default.removeItem(at: copy.directory) }
+        let alternates = copy.directory.appending(path: "repo/objects/info/alternates")
+        try FileManager.default.createDirectory(at: alternates.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("/private/external-object-store\n".utf8).write(to: alternates)
+        do { _ = try await store.importCopy(rejected, directory: copy.directory, origin: nil); XCTFail("External objects were accepted") }
+        catch { XCTAssertTrue(error.localizedDescription.contains("external/partial")) }
+        let exists = try await store.exists(rejected)
+        XCTAssertFalse(exists)
+        do { _ = try await store.importCopy(a, directory: copy.directory, origin: nil); XCTFail("An existing root was overwritten") }
+        catch { XCTAssertTrue(error.localizedDescription.contains("new local copy")) }
+        let intact = try await store.inspect(a)
+        XCTAssertEqual(intact.head, committed.state.head)
+        XCTAssertEqual(intact.revision, committed.state.revision)
+    }
+
     #if os(macOS)
     private func git(_ arguments: [String]) throws {
         let process = Process(); process.executableURL = URL(fileURLWithPath: "/usr/bin/git")

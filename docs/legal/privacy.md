@@ -1,6 +1,6 @@
 # Privacy Policy
 
-Updated: 2026-10-27 · [Website copy](https://crabrix.com/privacy/)
+Updated: 2026-10-28 · [Website copy](https://crabrix.com/privacy/)
 
 The app keeps your code on your device. Website Academy accounts use a username, password and private recovery code. This page explains both.
 
@@ -52,9 +52,13 @@ When you search for or add a dependency, Crabrix talks to the crates.io registry
 
 When you explicitly run `npm install` or `npm ci` in a browser project, Crabrix requests package version metadata and integrity-checked source archives from `registry.npmjs.org` over HTTPS. Requests identify the imported package names and versions; project source, answers, learning progress, account credentials and a Crabrix device identifier are not uploaded. The registry receives ordinary connection information such as your IP address and may retain access logs under its own privacy policy. Prepared modules and licenses are saved as editable local project files. Browser Run and Check use those files without fetching dependencies. The WebKit preview blocks external requests from the project program.
 
-### 2. Repository import (GitHub)
+### 2. Repository import and optional native Git (GitHub)
 
-If you import a public repository, Crabrix downloads its archive from `github.com` over HTTPS. The request identifies the public repository or archive you selected; it carries no account credentials, and no private repositories are accessed. GitHub is operated under its own privacy policy and, like any web service, receives normal connection information such as your IP address as part of serving the request.
+If you import a public repository, Crabrix downloads its archive from `github.com` over HTTPS. The request identifies the public repository or archive you selected; this public-archive importer carries no account credentials. GitHub is operated under its own privacy policy and, like any web service, receives normal connection information such as your IP address as part of serving the request.
+
+In app versions that include native Git, local commits and history stay on your device until you explicitly export or push them. Clone and Fetch request the selected repository and Git objects from GitHub over HTTPS. Pull fetches before applying a clean fast-forward. Push uploads the committed branch and its reachable history to the selected GitHub repository, including any personal information or secrets you put in those commits. It does not upload uncommitted editor changes. These actions do not use a Crabrix compiler server.
+
+Private repository access is optional. When you choose Save access on this device, the repository-scoped GitHub username and access token are stored in the device Keychain, accessible only while the device is unlocked and marked not to migrate or synchronize. They are sent only to the selected GitHub repository for authentication; they are not placed in project source, Git configuration, repository exports, Playground messages or application logs. Remove saved access deletes that Keychain entry. Revoking the token on GitHub is a separate action. GitHub handles repository contents and authentication under its own privacy policy. Local repository exports contain the complete Git history and worktree, so share them only with intended recipients.
 
 ### 3. Course downloads (GitHub)
 

@@ -389,8 +389,9 @@ struct ProjectBuildRecord: Codable, Equatable, Sendable {
     let finishedAt: Date
     let sourceTreeHash: String?
     let toolchainID: String?
+    let resourceTreeHash: String?
 
-    init(result: CompilationResult, finishedAt: Date = Date(), sourceTreeHash: String? = nil, toolchainID: String? = nil) {
+    init(result: CompilationResult, finishedAt: Date = Date(), sourceTreeHash: String? = nil, toolchainID: String? = nil, resourceTreeHash: String? = nil) {
         succeeded = result.succeeded
         phase = result.phase
         let parts = result.duration.components
@@ -400,6 +401,7 @@ struct ProjectBuildRecord: Codable, Equatable, Sendable {
         self.finishedAt = finishedAt
         self.sourceTreeHash = sourceTreeHash
         self.toolchainID = toolchainID
+        self.resourceTreeHash = resourceTreeHash
     }
 }
 
@@ -411,8 +413,10 @@ struct ProjectLibraryItem: Codable, Equatable, Identifiable, Sendable {
     var recoveryMessage: String?
     let sourceTreeHash: String?
     let storageVersion: Int?
+    var resourceTreeHash: String? = nil
     var currentBuild: ProjectBuildRecord? {
         guard let lastBuild, let sourceTreeHash, sourceTreeHash == lastBuild.sourceTreeHash,
+              lastBuild.resourceTreeHash == resourceTreeHash,
               lastBuild.toolchainID == WasmRustCompiler.executionIdentity else { return nil }
         return lastBuild
     }

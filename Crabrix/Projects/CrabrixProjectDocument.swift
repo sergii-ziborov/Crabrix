@@ -3,6 +3,7 @@ import UniformTypeIdentifiers
 import ZIPFoundation
 
 extension UTType {
+    static let crabrixRepository = UTType(exportedAs: "com.sergiiziborov.crabrix.repository", conformingTo: .zip)
     static let crabrixProject = UTType(
         exportedAs: "com.sergiiziborov.crabrix.project",
         conformingTo: .package

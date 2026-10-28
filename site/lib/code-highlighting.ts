@@ -1,4 +1,4 @@
-export type CodeLanguage = "rust" | "toml" | "sql" | "json" | "html" | "typescript";
+export type CodeLanguage = "rust" | "toml" | "sql" | "json" | "html" | "typescript" | "shell";
 export type CodeToken = { value: string; kind?: string };
 
 const rustKeywords = new Set("as async await break const continue crate dyn else enum extern false fn for if impl in let loop match mod move mut pub ref return self Self static struct super trait true type unsafe use where while".split(" "));
@@ -13,8 +13,10 @@ export function codeLanguage(code: string): CodeLanguage {
 }
 
 function tokensFor(code: string, language: CodeLanguage): CodeToken[] {
-  if (["json", "html", "typescript"].includes(language)) {
-    const expression = language === "html"
+  if (["json", "html", "typescript", "shell"].includes(language)) {
+    const expression = language === "shell"
+      ? /#[^\n]*|"(?:\\.|[^"\\])*"|'[^']*'|--?[A-Za-z][\w-]*|\b(?:git|cargo|rustfmt|npm)\b/g
+      : language === "html"
       ? /<!--[\s\S]*?-->|<\/?[A-Za-z][\w:-]*|[A-Za-z_:][\w:.-]*(?=\s*=)|"(?:\\.|[^"\\])*"|'[^']*'/g
       : /\/\/[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][\w$]*\b/g;
     const keywords = new Set("import from export default const let var function return if else new async await throw class extends true false null undefined type interface as typeof".split(" "));
@@ -22,8 +24,9 @@ function tokensFor(code: string, language: CodeLanguage): CodeToken[] {
     for (const match of code.matchAll(expression)) {
       if (match.index > cursor) result.push({ value: code.slice(cursor, match.index) });
       const value = match[0];
-      const kind = /^(?:<!--|\/\/|\/\*)/.test(value) ? "comment"
+      const kind = /^(?:<!--|\/\/|\/\*)/.test(value) || (language === "shell" && value.startsWith("#")) ? "comment"
         : /^["'`]/.test(value) ? "string" : /^\d/.test(value) ? "number"
+        : language === "shell" ? (value.startsWith("-") ? "attribute" : "keyword")
         : value.startsWith("<") ? "type" : language === "html" ? "attribute"
         : keywords.has(value) ? "keyword" : undefined;
       result.push({ value, ...(kind ? { kind } : {}) }); cursor = match.index + value.length;

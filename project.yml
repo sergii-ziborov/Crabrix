@@ -112,6 +112,11 @@ targets:
             LSHandlerRank: Owner
             LSItemContentTypes:
               - com.sergiiziborov.crabrix.project
+          - CFBundleTypeName: Crabrix Git Repository
+            CFBundleTypeRole: Editor
+            LSHandlerRank: Owner
+            LSItemContentTypes:
+              - com.sergiiziborov.crabrix.repository
         UTExportedTypeDeclarations:
           - UTTypeIdentifier: com.sergiiziborov.crabrix.project
             UTTypeDescription: Crabrix Rust Project
@@ -120,6 +125,13 @@ targets:
             UTTypeTagSpecification:
               public.filename-extension:
                 - crabrixproject
+          - UTTypeIdentifier: com.sergiiziborov.crabrix.repository
+            UTTypeDescription: Crabrix Portable Git Repository
+            UTTypeConformsTo:
+              - public.zip-archive
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - crabrixrepo
     dependencies:
       - target: CrabrixShare
         embed: true
@@ -141,6 +153,7 @@ targets:
           /usr/bin/python3 "$SRCROOT/scripts/package_toolchain.py"
           /usr/bin/python3 "$SRCROOT/scripts/prepare_native_compiler.py"
           /usr/bin/python3 "$SRCROOT/scripts/verify_rust_tools.py"
+          /usr/bin/python3 "$SRCROOT/scripts/verify_git_core.py"
         basedOnDependencyAnalysis: false
     settings:
       base:
@@ -475,6 +488,8 @@ schemes:
         - name: CrabrixTests
           selectedTests:
             - GitWorkspaceTests
+            - GitTransferTests
+            - RustDebuggerTests/testOpaqueResourceBytesMatchNormalRunDuringRealDebug
             - BundledLicenseTests
 
   CrabrixReliabilityGate:

@@ -760,7 +760,8 @@ actor ProjectLibrary {
 
     func allItems() async throws -> [ProjectLibraryItem] {
         try await ensureLegacyMigration()
-        return try await store.allProjects()
+        let items = try await store.allProjects()
+        return await attachResourceEvidence(to: items)
     }
 
     func readFailures() async -> [ProjectReadFailure] { await store.readFailures }
@@ -769,6 +770,8 @@ actor ProjectLibrary {
     func project(id: UUID) async throws -> ProjectLibraryItem? {
         try await ensureLegacyMigration()
         guard var item = try await store.project(id: id) else { return nil }
+        do { item.resourceTreeHash = try await GitRepositoryStore(root: gitStorageURL).resourceIdentity(id) }
+        catch { item.lastBuild = nil }
         let now = Date()
         try await recent.touch(projectID: id, at: now)
         item.lastOpenedAt = now
@@ -817,9 +820,21 @@ actor ProjectLibrary {
         for entry in entries {
             guard var item = try await store.project(id: entry.projectID) else { continue }
             item.lastOpenedAt = entry.lastOpenedAt
+            do { item.resourceTreeHash = try await GitRepositoryStore(root: gitStorageURL).resourceIdentity(item.id) }
+            catch { item.lastBuild = nil }
             result.append(item)
         }
         return result
+    }
+
+    private func attachResourceEvidence(to pending: [ProjectLibraryItem]) async -> [ProjectLibraryItem] {
+        let git = GitRepositoryStore(root: gitStorageURL)
+        var items = pending
+        for index in items.indices {
+            do { items[index].resourceTreeHash = try await git.resourceIdentity(items[index].id) }
+            catch { items[index].lastBuild = nil }
+        }
+        return items
     }
 
     /// Migrates the old ten-item payload once. Its `ProjectLibraryItem.id`

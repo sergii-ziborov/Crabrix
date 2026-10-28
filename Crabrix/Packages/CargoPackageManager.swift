@@ -1,4 +1,5 @@
 import CryptoKit
+import CrabrixGit
 import Foundation
 
 /// How well Crabrix expects a crate to build against the bundled toolchain.
@@ -200,6 +201,7 @@ actor CargoPackageManager {
         lockfileSource: String? = nil,
         mode: CargoResolutionMode = .normal,
         projectFiles: [String: String] = [:],
+        resourceFiles: [String: Data] = [:],
         onStage: (@Sendable (CargoPreparationStage) -> Void)? = nil,
         onTransfer: (@Sendable (PackageTransferEvent) -> Void)? = nil
     ) async throws -> CargoWorkspaceSnapshot {
@@ -297,7 +299,7 @@ actor CargoPackageManager {
         let prepared = try preparedCrates(
             graph: graph,
             materialized: materialized,
-            projectFiles: projectFiles
+            projectFiles: projectFiles, resourceFiles: resourceFiles
         )
         let plan = buildPlan(
             graph: graph,
@@ -584,7 +586,7 @@ actor CargoPackageManager {
     private func preparedCrates(
         graph: ResolvedGraph,
         materialized: [PackageID: MaterializedCrate],
-        projectFiles: [String: String]
+        projectFiles: [String: String], resourceFiles: [String: Data]
     ) throws -> [PackageID: PreparedCrate] {
         var result: [PackageID: PreparedCrate] = [:]
         for id in graph.buildOrder {
@@ -592,7 +594,7 @@ actor CargoPackageManager {
             let patch = try projectPatch(
                 for: id,
                 registryManifest: registry.manifest,
-                projectFiles: projectFiles
+                projectFiles: projectFiles, resourceFiles: resourceFiles
             )
             result[id] = PreparedCrate(registry: registry, patch: patch)
         }
@@ -602,7 +604,7 @@ actor CargoPackageManager {
     private func projectPatch(
         for id: PackageID,
         registryManifest: CratePackageManifest,
-        projectFiles: [String: String]
+        projectFiles: [String: String], resourceFiles: [String: Data]
     ) throws -> ProjectCratePatch? {
         let root = "vendor/\(id.name)-\(id.version)"
         let prefix = root + "/"
@@ -640,7 +642,7 @@ actor CargoPackageManager {
         return ProjectCratePatch(
             relativeDirectory: root,
             manifest: manifest,
-            sourceTreeHash: sourceTreeHash(patchFiles),
+            sourceTreeHash: sourceTreeHash(patchFiles) + (GitRepositoryStore.resourceFingerprint(resourceFiles.filter { $0.key.hasPrefix(prefix) }).map { ":resources:" + $0 } ?? ""),
             files: patchFiles
         )
     }

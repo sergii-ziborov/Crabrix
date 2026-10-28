@@ -69,6 +69,12 @@
                   Identifier = "GitWorkspaceTests">
                </Test>
                <Test
+                  Identifier = "GitTransferTests">
+               </Test>
+               <Test
+                  Identifier = "RustDebuggerTests/testOpaqueResourceBytesMatchNormalRunDuringRealDebug">
+               </Test>
+               <Test
                   Identifier = "BundledLicenseTests">
                </Test>
             </SelectedTests>

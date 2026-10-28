@@ -1,0 +1,12 @@
+Build 114 — native Git and complete repository transfer. No app account required.
+
+1. Project settings → Local Git → Start local Git history. Select changed files, enter author/email/message and commit. Inspect History and a file preview; Restore requires its separate explicit action. Change source during a background operation: newer editor text must remain uncommitted and refreshable.
+2. Clone a small public GitHub HTTPS repository from Local Git or Terminal git clone URL. It becomes a separate project with real history. Nothing executes automatically. Remote → Fetch preserves source and local HEAD. Pull accepts clean fast-forwards only. Push explicitly sends committed history; force, SSH, LFS, submodules and rebase are outside scope.
+3. For a private test repository, save its URL, GitHub username and token using Save access on this device. Clone/fetch/push use repository-scoped Keychain access. Remove saved access; unauthorized attempts must preserve local work. Never put a real token in a URL, source, room or bug report.
+4. Changes → Save the complete repository → Prepare repository export → Save or share. Open the .crabrixrepo file from Files: a new local copy must retain commit IDs, branches, metadata, binary files and modes. Prepared package caches and access tokens are not transferred. A source ZIP is a separate text-only export.
+5. Compile a repository program using include_bytes! on a preserved resource. Run and Debug must see identical bytes. Changing the resource invalidates the prior artifact and saved-build badge. Repeat after full export/import.
+6. Stop a transfer, then retry or open another project. Keep editor text, saved history and older projects intact. Try invalid URLs and malformed archives; errors must be explicit without exposing credentials.
+7. Repeat real selected-entry cargo test, rustfmt/Undo, Rust + Web breakpoint/Step/preview, source saving and keyboard Code↔Terminal transitions on phone/iPad. Four dock tabs and existing Duo geometry must remain.
+8. Share a one-hour encrypted Playground, join from browser/second app, edit/select and run locally. Git metadata and credentials must never enter the room. Git commits and push are explicit local actions.
+
+Qualification uses phone/iPad Simulators and desktop interoperability; physical-device timing is separate. Report build, exact source and operation without credentials or private room keys.

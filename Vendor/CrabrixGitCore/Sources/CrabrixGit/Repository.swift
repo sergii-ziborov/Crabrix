@@ -20,6 +20,7 @@ public struct GitState: Sendable {
     public let branch: String
     public let head: String?
     public let changes: [GitChange]
+    public let resourceTreeHash: String?
 }
 
 public struct GitDiff: Sendable { public let text: String; public let state: GitState }
@@ -45,10 +46,13 @@ public struct GitTreeSnapshot: Sendable {
 /// together, retaining the previous root until the next successful transaction.
 public actor GitRepositoryStore {
     private static let lock = NSRecursiveLock()
-    private static let initialized = git_libgit2_init()
+    private static let initialized: Int32 = {
+        let status = git_libgit2_init()
+        return status < 0 ? status : crabrix_git_network_limits()
+    }()
     private let root: URL
     private let fm = FileManager.default
-    private struct State: Codable { var editableDigests: [String: String]; var revision = UUID().uuidString }
+    private struct State: Codable { var editableDigests: [String: String]; var revision = UUID().uuidString; var resourceTreeHash: String? = nil }
     private struct File { let data: Data; let executable: Bool }
     public static let maximumRepositoryBytes = 192 * 1024 * 1024
     public static let maximumWorktreeBytes = 64 * 1024 * 1024
@@ -291,7 +295,7 @@ public actor GitRepositoryStore {
                     try check(git_repository_index(&index, repository)); defer { git_index_free(index) }
                     try check(git_index_read_tree(index, tree)); try check(git_index_write(index))
                     try check(git_repository_set_head(repository, "refs/heads/" + branch))
-                    try writeState(State(editableDigests: digests(snapshot!.files)), stage)
+                    try writeState(State(editableDigests: digests(snapshot!.files), resourceTreeHash: Self.resourceFingerprint(treeFiles.filter { snapshot!.files[$0.key] == nil }.mapValues(\.data))), stage)
                 }
             }
             return GitCheckout(snapshot: snapshot!, state: try readStatus(project))
@@ -355,7 +359,7 @@ public actor GitRepositoryStore {
     }
 
     private func withRepository<T>(_ directory: URL, _ body: (OpaquePointer) throws -> T) throws -> T {
-        _ = Self.initialized
+        try check(Self.initialized)
         if let project = UUID(uuidString: directory.lastPathComponent),
            directory.deletingLastPathComponent().resolvingSymlinksInPath().standardizedFileURL.path == root.resolvingSymlinksInPath().standardizedFileURL.path {
             try recover(project)
@@ -383,10 +387,13 @@ public actor GitRepositoryStore {
     }
 
     private func readStatus(_ project: UUID) throws -> GitState {
-        try withRepository(location(project)) { try status($0, revision: state(location(project)).revision) }
+        try withRepository(location(project)) { repository in
+            let stored = try state(location(project))
+            return try status(repository, revision: stored.revision, resourceTreeHash: stored.resourceTreeHash)
+        }
     }
 
-    private func status(_ repository: OpaquePointer, revision: String) throws -> GitState {
+    private func status(_ repository: OpaquePointer, revision: String, resourceTreeHash: String? = nil) throws -> GitState {
         var list: OpaquePointer?
         var options = git_status_options()
         try check(git_status_options_init(&options, UInt32(GIT_STATUS_OPTIONS_VERSION)))
@@ -411,7 +418,7 @@ public actor GitRepositoryStore {
             defer { git_reference_free(head) }
             if let name = git_reference_shorthand(head) { branch = String(cString: name) }
         } else if result != GIT_EUNBORNBRANCH.rawValue { try check(result) }
-        return GitState(revision: revision, branch: branch, head: try headOID(repository).map(Self.oidString), changes: changes.sorted { $0.path < $1.path })
+        return GitState(revision: revision, branch: branch, head: try headOID(repository).map(Self.oidString), changes: changes.sorted { $0.path < $1.path }, resourceTreeHash: resourceTreeHash)
     }
 
     private func validateBranch(_ name: String) throws {
@@ -426,7 +433,9 @@ public actor GitRepositoryStore {
     }
 
     private func state(_ directory: URL) throws -> State {
-        try JSONDecoder().decode(State.self, from: Data(contentsOf: directory.appending(path: "state.json")))
+        let url = directory.appending(path: "state.json")
+        guard (try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? Int.max) <= 8 * 1024 * 1024 else { throw GitRepositoryFailure("Git workspace metadata exceeds 8 MiB.") }
+        return try JSONDecoder().decode(State.self, from: Data(contentsOf: url))
     }
 
     private func writeState(_ value: State, _ directory: URL) throws {
@@ -464,7 +473,7 @@ public actor GitRepositoryStore {
         try fm.removeItem(at: worktree)
         try writeFiles(tree, worktree)
         try Data("gitdir: ../repo\n".utf8).write(to: worktree.appending(path: ".git"))
-        try writeState(State(editableDigests: digests(files)), stage)
+        try writeState(State(editableDigests: digests(files), resourceTreeHash: Self.resourceFingerprint(tree.filter { files[$0.key] == nil }.mapValues(\.data))), stage)
     }
 
     private func workingFiles(_ worktree: URL) throws -> [String: File] {
@@ -601,6 +610,10 @@ public actor GitRepositoryStore {
         var files: [String: String] = [:]; var opaque: [String] = []; var bytes = 0
         for path in tree.keys.sorted() {
             let data = tree[path]!.data
+            let prefix = String(decoding: data.prefix(1024), as: UTF8.self).replacingOccurrences(of: "\r\n", with: "\n")
+            if prefix.hasPrefix("version https://git-lfs.github.com/spec/v1\n"), prefix.contains("\noid sha256:") {
+                throw GitRepositoryFailure("Git LFS content is outside this repository profile: " + path)
+            }
             if data.count <= 2 * 1024 * 1024, !data.contains(0), let text = String(data: data, encoding: .utf8) { files[path] = text }
             else { opaque.append(path); bytes += data.count }
         }
@@ -609,7 +622,7 @@ public actor GitRepositoryStore {
     }
 
     private func transaction(_ project: UUID, create: Bool = false, expectedRevision: String? = nil, _ operation: (URL) throws -> Void) throws {
-        _ = Self.initialized
+        try check(Self.initialized)
         try Task.checkCancellation()
         try fm.createDirectory(at: root, withIntermediateDirectories: true)
         let current = location(project)
@@ -674,5 +687,433 @@ public actor GitRepositoryStore {
         if !fm.fileExists(atPath: current.path), fm.fileExists(atPath: previous.path) {
             try fm.moveItem(at: previous, to: current)
         }
+    }
+}
+
+// Kept in Repository.swift so storage primitives remain private to the service.
+extension GitRepositoryStore {
+    public func connectRemote(_ project: UUID, url: String, expectedRevision: String) throws -> GitState {
+        try Self.lock.withLock {
+            let address = try GitHTTPSAddress.canonical(url)
+            try transaction(project, expectedRevision: expectedRevision) { stage in
+                try withRepository(stage) { repository in
+                    var remote: OpaquePointer?
+                    let found = git_remote_lookup(&remote, repository, "origin")
+                    defer { git_remote_free(remote) }
+                    if found == GIT_ENOTFOUND.rawValue { try check(git_remote_create(&remote, repository, "origin", address)) }
+                    else {
+                        try check(found)
+                        guard let url = git_remote_url(remote), try GitHTTPSAddress.canonical(String(cString: url)) == address else {
+                            throw GitRepositoryFailure("This repository already has another origin. Its remote and tracking refs were kept unchanged.")
+                        }
+                    }
+                }
+            }
+            return try readStatus(project)
+        }
+    }
+
+    public func remoteState(_ project: UUID) throws -> GitRemoteState? {
+        try Self.lock.withLock {
+            try withRepository(location(project)) { repository in
+                var remote: OpaquePointer?
+                let found = git_remote_lookup(&remote, repository, "origin")
+                if found == GIT_ENOTFOUND.rawValue { return nil }
+                try check(found); defer { git_remote_free(remote) }
+                guard let pointer = git_remote_url(remote) else { throw GitRepositoryFailure("Origin has no HTTPS address.") }
+                let address = try GitHTTPSAddress.canonical(String(cString: pointer))
+                let current = try status(repository, revision: state(location(project)).revision)
+                var tracking = git_oid()
+                let known = git_reference_name_to_id(&tracking, repository, "refs/remotes/origin/" + current.branch)
+                var ahead: Int?, behind: Int?
+                if known >= 0, var local = try headOID(repository) {
+                    var a = 0, b = 0
+                    try check(git_graph_ahead_behind(&a, &b, repository, &local, &tracking))
+                    ahead = a; behind = b
+                } else if known != GIT_ENOTFOUND.rawValue && known < 0 { try check(known) }
+                return GitRemoteState(url: address, branch: current.branch, ahead: ahead, behind: behind)
+            }
+        }
+    }
+
+    public func clone(_ project: UUID, url: String, credential: GitHTTPSCredential? = nil) async throws -> GitCheckout {
+        let context = GitNetworkContext(try GitHTTPSAddress.canonical(url), credential)
+        return try await withTaskCancellationHandler {
+            try cloneSynchronously(project, url: url, context: context)
+        } onCancel: { context.cancel() }
+    }
+
+    private func cloneSynchronously(_ project: UUID, url: String, context: GitNetworkContext) throws -> GitCheckout {
+        try Self.lock.withLock {
+            try recover(project)
+            guard !fm.fileExists(atPath: location(project).path) else { throw GitRepositoryFailure("Clone requires a new project identity; the existing project was kept.") }
+            let address = try GitHTTPSAddress.canonical(url)
+            var snapshot: GitTreeSnapshot?
+            try transaction(project, create: true) { stage in
+                try check(crabrix_git_network_limits())
+                var options = git_clone_options()
+                try check(git_clone_options_init(&options, UInt32(GIT_CLONE_OPTIONS_VERSION)))
+                options.checkout_opts.checkout_strategy = UInt32(GIT_CHECKOUT_NONE.rawValue)
+                options.fetch_opts.callbacks = context.callbacks
+                options.fetch_opts.follow_redirects = GIT_REMOTE_REDIRECT_NONE
+                options.fetch_opts.download_tags = GIT_REMOTE_DOWNLOAD_TAGS_NONE
+                options.fetch_opts.proxy_opts.type = GIT_PROXY_NONE
+                var cloned: OpaquePointer?
+                let path = stage.appending(path: "incoming")
+                let code = git_clone(&cloned, address, path.path, &options)
+                git_repository_free(cloned)
+                try networkCheck(code, context)
+                try fm.moveItem(at: path.appending(path: ".git"), to: stage.appending(path: "repo"))
+                try fm.removeItem(at: path)
+                try fm.createDirectory(at: stage.appending(path: "worktree"), withIntermediateDirectories: true)
+                var config: OpaquePointer?
+                try check(git_config_open_ondisk(&config, stage.appending(path: "repo/config").path))
+                defer { git_config_free(config) }
+                try check(git_config_set_string(config, "core.worktree", "../worktree"))
+                try withRepository(stage) { repository in
+                    guard var id = try headOID(repository) else { throw GitRepositoryFailure("This remote has no commit. Initialize a local project and push its first commit instead.") }
+                    snapshot = try installTree(repository, &id, stage)
+                }
+            }
+            return GitCheckout(snapshot: snapshot!, state: try readStatus(project))
+        }
+    }
+
+    /// Fetch only updates objects/tracking refs, never the worktree or local HEAD.
+    public func fetch(_ project: UUID, credential: GitHTTPSCredential? = nil, expectedRevision: String) async throws -> GitState {
+        guard let remote = try remoteState(project) else { throw GitRepositoryFailure("Connect an HTTPS origin first.") }
+        let context = GitNetworkContext(remote.url, credential)
+        return try await withTaskCancellationHandler {
+            try fetchSynchronously(project, context: context, expectedRevision: expectedRevision)
+        } onCancel: { context.cancel() }
+    }
+
+    private func fetchSynchronously(_ project: UUID, context: GitNetworkContext, expectedRevision: String) throws -> GitState {
+        try Self.lock.withLock {
+            try transaction(project, expectedRevision: expectedRevision) { stage in
+                try withRepository(stage) { repository in
+                    try withHTTPSRemote(repository, context: context) { remote, context in
+                        var options = git_fetch_options()
+                        try check(git_fetch_options_init(&options, UInt32(GIT_FETCH_OPTIONS_VERSION)))
+                        options.callbacks = context.callbacks; options.follow_redirects = GIT_REMOTE_REDIRECT_NONE
+                        options.download_tags = GIT_REMOTE_DOWNLOAD_TAGS_NONE; options.proxy_opts.type = GIT_PROXY_NONE
+                        let spec = strdup("+refs/heads/*:refs/remotes/origin/*")!
+                        defer { free(spec) }
+                        var pointer: UnsafeMutablePointer<CChar>? = spec
+                        try withUnsafeMutablePointer(to: &pointer) { strings in
+                            var refspecs = git_strarray(strings: strings, count: 1)
+                            try networkCheck(git_remote_fetch(remote, &refspecs, &options, "Crabrix explicit fetch"), context)
+                        }
+                    }
+                }
+            }
+            return try readStatus(project)
+        }
+    }
+
+    /// Applies the last fetched branch only; caller fetches explicitly first.
+    public func fastForward(_ project: UUID, files: [String: String], expectedHead: String, expectedRevision: String) throws -> GitCheckout {
+        try Self.lock.withLock {
+            var snapshot: GitTreeSnapshot?
+            try transaction(project, expectedRevision: expectedRevision) { stage in
+                try reconcile(files, stage)
+                try withRepository(stage) { repository in
+                    let current = try status(repository, revision: state(stage).revision)
+                    guard current.head == expectedHead, current.changes.isEmpty,
+                          git_repository_head_detached(repository) == 0 else {
+                        throw GitRepositoryFailure("Fast-forward requires the unchanged, clean local branch. Commit or restore local work first.")
+                    }
+                    var local = git_oid(), upstream = git_oid()
+                    try check(git_oid_fromstr(&local, expectedHead))
+                    try check(git_reference_name_to_id(&upstream, repository, "refs/remotes/origin/" + current.branch))
+                    var ahead = 0, behind = 0
+                    try check(git_graph_ahead_behind(&ahead, &behind, repository, &local, &upstream))
+                    guard behind == 0 || ahead == 0 else { throw GitRepositoryFailure("Local and remote history diverged. No merge, rebase or overwrite was performed; continue in desktop Git.") }
+                    if behind == 0 { snapshot = try editableSnapshot(workingFiles(stage.appending(path: "worktree"))); return }
+                    snapshot = try installTree(repository, &upstream, stage)
+                    var reference: OpaquePointer?, updated: OpaquePointer?
+                    try check(git_reference_lookup(&reference, repository, "refs/heads/" + current.branch))
+                    defer { git_reference_free(reference); git_reference_free(updated) }
+                    try check(git_reference_set_target(&updated, reference, &upstream, "Crabrix fast-forward"))
+                }
+            }
+            return GitCheckout(snapshot: snapshot!, state: try readStatus(project))
+        }
+    }
+
+    public func push(_ project: UUID, credential: GitHTTPSCredential? = nil, expectedHead: String, expectedRevision: String) async throws -> GitState {
+        guard let remote = try remoteState(project) else { throw GitRepositoryFailure("Connect an HTTPS origin first.") }
+        let context = GitNetworkContext(remote.url, credential)
+        return try await withTaskCancellationHandler {
+            try pushSynchronously(project, context: context, expectedHead: expectedHead, expectedRevision: expectedRevision)
+        } onCancel: { context.cancel() }
+    }
+
+    private func pushSynchronously(_ project: UUID, context: GitNetworkContext, expectedHead: String, expectedRevision: String) throws -> GitState {
+        try Self.lock.withLock {
+            do {
+                try transaction(project, expectedRevision: expectedRevision) { stage in
+                    try withRepository(stage) { repository in
+                        let current = try status(repository, revision: state(stage).revision)
+                        guard current.head == expectedHead, git_repository_head_detached(repository) == 0 else { throw GitRepositoryFailure("The local branch changed or is detached. Refresh before pushing.") }
+                        try validateBranch(current.branch)
+                        try withHTTPSRemote(repository, context: context) { remote, context in
+                            var options = git_push_options()
+                            try check(git_push_options_init(&options, UInt32(GIT_PUSH_OPTIONS_VERSION)))
+                            options.callbacks = context.callbacks; options.follow_redirects = GIT_REMOTE_REDIRECT_NONE
+                            options.pb_parallelism = 1; options.proxy_opts.type = GIT_PROXY_NONE
+                            let spec = strdup("refs/heads/" + current.branch + ":refs/heads/" + current.branch)!
+                            defer { free(spec) }
+                            var pointer: UnsafeMutablePointer<CChar>? = spec
+                            try withUnsafeMutablePointer(to: &pointer) { strings in
+                                var refspecs = git_strarray(strings: strings, count: 1)
+                                try networkCheck(git_remote_push(remote, &refspecs, &options), context)
+                            }
+                            guard !context.pushRejected else { throw GitRepositoryFailure("The server rejected the push. Local commits were kept; fetch to inspect remote changes and access rights.") }
+                            var config: OpaquePointer?
+                            try check(git_repository_config(&config, repository)); defer { git_config_free(config) }
+                            try check(git_config_set_string(config, "branch." + current.branch + ".remote", "origin"))
+                            try check(git_config_set_string(config, "branch." + current.branch + ".merge", "refs/heads/" + current.branch))
+                        }
+                    }
+                }
+            } catch {
+                throw GitRepositoryFailure(error.localizedDescription + "\nA request may have reached the server before interruption. Local history is kept; fetch to verify remote state before retrying.")
+            }
+            return try readStatus(project)
+        }
+    }
+
+    private func installTree(_ repository: OpaquePointer, _ id: inout git_oid, _ stage: URL) throws -> GitTreeSnapshot {
+        var commit: OpaquePointer?, tree: OpaquePointer?, index: OpaquePointer?
+        try check(git_commit_lookup(&commit, repository, &id)); defer { git_commit_free(commit); git_tree_free(tree); git_index_free(index) }
+        try check(git_commit_tree(&tree, commit))
+        let files = try readTree(repository, tree!)
+        guard files[".gitmodules"] == nil else { throw GitRepositoryFailure("Submodules require desktop Git; no partial worktree was installed.") }
+        for (path, file) in files where file.data.starts(with: Data("version https://git-lfs.github.com/spec/v1\n".utf8)) {
+            throw GitRepositoryFailure("Git LFS content is outside this profile: " + path)
+        }
+        let snapshot = try editableSnapshot(files)
+        guard !snapshot.files.isEmpty else { throw GitRepositoryFailure("This tree has no editable UTF-8 source; no project was installed.") }
+        let worktree = stage.appending(path: "worktree")
+        if fm.fileExists(atPath: worktree.path) { try fm.removeItem(at: worktree) }
+        try writeFiles(files, worktree)
+        try Data("gitdir: ../repo\n".utf8).write(to: worktree.appending(path: ".git"))
+        try check(git_repository_index(&index, repository))
+        try check(git_index_read_tree(index, tree)); try check(git_index_write(index))
+        try writeState(State(editableDigests: digests(snapshot.files), resourceTreeHash: Self.resourceFingerprint(files.filter { snapshot.files[$0.key] == nil }.mapValues(\.data))), stage)
+        return snapshot
+    }
+
+    private func withHTTPSRemote<T>(_ repository: OpaquePointer, context: GitNetworkContext, _ body: (OpaquePointer, GitNetworkContext) throws -> T) throws -> T {
+        try check(crabrix_git_network_limits())
+        var remote: OpaquePointer?
+        try check(git_remote_lookup(&remote, repository, "origin")); defer { git_remote_free(remote) }
+        guard let pointer = git_remote_url(remote) else { throw GitRepositoryFailure("Connect an HTTPS origin first.") }
+        let address = try GitHTTPSAddress.canonical(String(cString: pointer))
+        try check(git_remote_set_instance_url(remote, address))
+        try check(git_remote_set_instance_pushurl(remote, address))
+        guard address == context.address else { throw GitRepositoryFailure("The remote address changed before connection; refresh and retry.") }
+        return try body(remote!, context)
+    }
+
+    private func networkCheck(_ result: Int32, _ context: GitNetworkContext) throws {
+        if context.failure == "cancelled" { throw CancellationError() }
+        if let failure = context.failure { throw GitRepositoryFailure(failure) }
+        do { try check(result) }
+        catch {
+            var text = error.localizedDescription
+            if let token = context.credential?.token { text = text.replacingOccurrences(of: token, with: "<redacted>") }
+            text = String(text.prefix(1000))
+            throw GitRepositoryFailure(text)
+        }
+    }
+}
+
+public struct GitPortableCopy: Sendable {
+    public let directory: URL
+    public let snapshot: GitTreeSnapshot
+    public let state: GitState
+    public let origin: String?
+}
+
+extension GitRepositoryStore {
+    /// A frozen complete copy for the archive writer. The caller owns/removes it.
+    public func exportCopy(_ project: UUID, files: [String: String], expectedRevision: String) throws -> GitPortableCopy {
+        try Self.lock.withLock {
+            try synchronize(project, files, expectedRevision: expectedRevision)
+            let directory = location(project)
+            try verifyRepositoryBudget(directory)
+            let snapshot = try editableSnapshot(workingFiles(directory.appending(path: "worktree")))
+            let remote = try remoteState(project)
+            let copy = fm.temporaryDirectory.appending(path: "CrabrixGitExport-" + UUID().uuidString)
+            do {
+                try fm.copyItem(at: directory, to: copy)
+                try Task.checkCancellation()
+                return GitPortableCopy(directory: copy, snapshot: snapshot, state: try readStatus(project), origin: remote?.url)
+            } catch { try? fm.removeItem(at: copy); throw error }
+        }
+    }
+
+    /// Import is always a fresh project identity, never replacement of an
+    /// existing root. Config is rebuilt before libgit2 opens the supplied data.
+    public func importCopy(_ project: UUID, directory: URL, origin: String?) throws -> GitCheckout {
+        try Self.lock.withLock {
+            try recover(project)
+            guard !fm.fileExists(atPath: location(project).path) else { throw GitRepositoryFailure("Import a repository as a new local copy; existing projects cannot be overwritten.") }
+            try verifyRepositoryBudget(directory)
+            var snapshot: GitTreeSnapshot?
+            try transaction(project, create: true) { stage in
+                for name in ["repo", "worktree"] {
+                    try fm.copyItem(at: directory.appending(path: name), to: stage.appending(path: name))
+                }
+                for name in ["repo/commondir", "repo/worktrees", "repo/objects/info/alternates", "repo/objects/info/http-alternates", "repo/info/grafts", "repo/shallow", "repo/config.worktree"] {
+                    guard !fm.fileExists(atPath: stage.appending(path: name).path) else {
+                        throw GitRepositoryFailure("This transfer requires unsupported external/partial Git storage: " + name)
+                    }
+                }
+                let hooks = stage.appending(path: "repo/hooks")
+                if fm.fileExists(atPath: hooks.path) {
+                    let custom = try fm.contentsOfDirectory(at: hooks, includingPropertiesForKeys: nil).filter { !$0.lastPathComponent.hasSuffix(".sample") }
+                    guard custom.isEmpty else { throw GitRepositoryFailure("Custom Git hooks are outside the portable repository profile; the existing project was kept.") }
+                }
+                // Only the portable profile is reconstructed. Includes, custom
+                // filters, hooks paths, helpers, URLs and credentials cannot be
+                // activated by a configuration supplied in an archive.
+                let configURL = stage.appending(path: "repo/config")
+                try Data("[core]\nrepositoryformatversion = 0\nbare = false\nfilemode = true\nlogallrefupdates = true\nworktree = ../worktree\n".utf8).write(to: configURL, options: .atomic)
+                let files = try workingFiles(stage.appending(path: "worktree"))
+                snapshot = try editableSnapshot(files)
+                guard !snapshot!.files.isEmpty else { throw GitRepositoryFailure("This transfer has no editable text source.") }
+                try writeState(State(editableDigests: digests(snapshot!.files), resourceTreeHash: Self.resourceFingerprint(files.filter { snapshot!.files[$0.key] == nil }.mapValues(\.data))), stage)
+                try withRepository(stage) { repository in
+                    try verifyObjectInventory(repository)
+                    guard var head = try headOID(repository) else { throw GitRepositoryFailure("Create a first commit before a full repository transfer.") }
+                    var commit: OpaquePointer?, headTree: OpaquePointer?, index: OpaquePointer?
+                    try check(git_commit_lookup(&commit, repository, &head))
+                    defer { git_commit_free(commit); git_tree_free(headTree); git_index_free(index) }
+                    try check(git_commit_tree(&headTree, commit))
+                    _ = try readTree(repository, headTree!)
+                    guard files[".gitmodules"] == nil else { throw GitRepositoryFailure("Submodules are outside the portable repository profile.") }
+                    try check(git_repository_index(&index, repository))
+                    for position in 0..<git_index_entrycount(index) {
+                        guard let entry = git_index_get_byindex(index, position), [UInt32(GIT_FILEMODE_BLOB.rawValue), UInt32(GIT_FILEMODE_BLOB_EXECUTABLE.rawValue)].contains(entry.pointee.mode) else { throw GitRepositoryFailure("The transferred index contains a link, submodule or unsupported sparse entry.") }
+                    }
+                    let state = try status(repository, revision: self.state(stage).revision)
+                    guard state.head != nil else { throw GitRepositoryFailure("Create a first commit before exporting a portable repository.") }
+                    if let origin {
+                        let address = try GitHTTPSAddress.canonical(origin)
+                        var remote: OpaquePointer?
+                        try check(git_remote_create(&remote, repository, "origin", address)); git_remote_free(remote)
+                        if git_repository_head_detached(repository) == 0 {
+                            var tracking = git_oid()
+                            if git_reference_name_to_id(&tracking, repository, "refs/remotes/origin/" + state.branch) >= 0 {
+                                var config: OpaquePointer?
+                                try check(git_repository_config(&config, repository)); defer { git_config_free(config) }
+                                try check(git_config_set_string(config, "branch." + state.branch + ".remote", "origin"))
+                                try check(git_config_set_string(config, "branch." + state.branch + ".merge", "refs/heads/" + state.branch))
+                            }
+                        }
+                    }
+                }
+            }
+            return GitCheckout(snapshot: snapshot!, state: try readStatus(project))
+        }
+    }
+
+    /// These bytes can be copied into a compiler/runtime input snapshot. Git
+    /// internals and credentials are never part of this resource overlay.
+    public func resources(_ project: UUID, files: [String: String]) throws -> [String: Data] {
+        try Self.lock.withLock {
+            try validateEditable(files)
+            let directory = location(project), owned = try state(directory).editableDigests
+            var tree = try workingFiles(directory.appending(path: "worktree"))
+            for (path, hash) in owned {
+                guard let data = tree[path]?.data,
+                      SHA256.hash(data: data).map({ String(format: "%02x", $0) }).joined() == hash else {
+                    throw GitRepositoryFailure("The canonical worktree changed outside this editor: " + path)
+                }
+                tree.removeValue(forKey: path)
+            }
+            var resources = tree.mapValues(\.data)
+            for (path, source) in files {
+                let data = Data(source.utf8)
+                guard tree[path] == nil || tree[path]!.data == data else { throw GitRepositoryFailure("An opaque resource conflicts with edited source: " + path) }
+                resources.removeValue(forKey: path)
+                tree[path] = File(data: data, executable: false)
+            }
+            try validateTree(tree)
+            return resources
+        }
+    }
+
+    private func verifyObjectInventory(_ repository: OpaquePointer) throws {
+        var database: OpaquePointer?
+        try check(git_repository_odb(&database, repository)); defer { git_odb_free(database) }
+        let verifier = GitObjectInventory(database!)
+        let code = git_odb_foreach(database, { oid, payload in
+            guard let oid, let payload else { return GIT_EUSER.rawValue }
+            return Unmanaged<GitObjectInventory>.fromOpaque(payload).takeUnretainedValue().visit(oid)
+        }, Unmanaged.passUnretained(verifier).toOpaque())
+        if let failure = verifier.failure { throw failure }
+        try check(code)
+    }
+}
+
+/// Header limits precede any complete object read, including for loose and
+/// delta-packed objects. Every materialized object is hashed against its ID.
+private final class GitObjectInventory {
+    let database: OpaquePointer
+    let deadline = Date().addingTimeInterval(30)
+    var count = 0, bytes = 0
+    var failure: Error?
+    init(_ database: OpaquePointer) { self.database = database }
+    func visit(_ oid: UnsafePointer<git_oid>) -> Int32 {
+        do {
+            try Task.checkCancellation()
+            count += 1
+            guard count <= 100_000, Date() < deadline else { throw GitRepositoryFailure("Repository object verification exceeded its 30-second / 100,000-object profile.") }
+            var size = 0, kind = GIT_OBJECT_INVALID
+            guard git_odb_read_header(&size, &kind, database, oid) >= 0,
+                  size <= GitRepositoryStore.maximumFileBytes else { throw GitRepositoryFailure("A transferred Git object is invalid or exceeds 8 MiB.") }
+            bytes += size
+            guard bytes <= 512 * 1024 * 1024 else { throw GitRepositoryFailure("Transferred Git objects exceed the 512 MiB expanded-history profile.") }
+            var object: OpaquePointer?
+            guard git_odb_read(&object, database, oid) >= 0 else { throw GitRepositoryFailure("A transferred Git object cannot be read.") }
+            defer { git_odb_object_free(object) }
+            guard git_odb_object_size(object) == size, git_odb_object_type(object) == kind else { throw GitRepositoryFailure("Transferred Git object header differs from its content.") }
+            var actual = git_oid()
+            guard git_odb_hash(&actual, git_odb_object_data(object), size, kind) >= 0, git_oid_equal(&actual, oid) == 1 else { throw GitRepositoryFailure("A transferred Git object does not match its content hash.") }
+            return 0
+        } catch { failure = error; return GIT_EUSER.rawValue }
+    }
+}
+
+extension GitRepositoryStore {
+    public nonisolated static func resourceFingerprint(_ files: [String: Data]) -> String? {
+        guard !files.isEmpty else { return nil }
+        var hasher = SHA256()
+        for path in files.keys.sorted() {
+            let name = Data(path.utf8), data = files[path]!
+            var nameLength = UInt64(name.count).bigEndian, length = UInt64(data.count).bigEndian
+            withUnsafeBytes(of: &nameLength) { hasher.update(bufferPointer: $0) }
+            hasher.update(data: name)
+            withUnsafeBytes(of: &length) { hasher.update(bufferPointer: $0) }
+            hasher.update(data: Data(SHA256.hash(data: data)))
+        }
+        return hasher.finalize().map { String(format: "%02x", $0) }.joined()
+    }
+
+    public func resourceIdentity(_ project: UUID) throws -> String? {
+        // A small read-only metadata probe must not queue autosaves behind a
+        // network operation holding the Git mutation lock. Atomic root moves
+        // yield either a complete metadata file or an explicit transient miss.
+        let directory = location(project)
+        if !fm.fileExists(atPath: directory.path) {
+            let previous = root.appending(path: ".previous-" + project.uuidString.lowercased())
+            guard !fm.fileExists(atPath: previous.path) else { throw GitRepositoryFailure("Git storage is being replaced; refresh its build evidence.") }
+            return nil
+        }
+        return try state(directory).resourceTreeHash
     }
 }

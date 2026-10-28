@@ -3,6 +3,21 @@ import XCTest
 @testable import Crabrix
 
 final class RustDebuggerTests: XCTestCase {
+    func testOpaqueResourceBytesMatchNormalRunDuringRealDebug() async throws {
+        let source = "fn main(){\n let bytes=include_bytes!(\"asset.bin\");\n println!(\"{:?}\",bytes);\n}\n"
+        let resources = ["asset.bin": Data([0,255,42])]
+        let compiler = WasmRustCompiler()
+        let normal = await compiler.run(source: source, resourceFiles: resources)
+        XCTAssertTrue(normal.succeeded, normal.detail + normal.stderr)
+        let recorder = StepRecorder()
+        let session = RustDebugSession(onPlan: { _ in }, onPause: recorder.receive)
+        recorder.session = session
+        let debug = await compiler.debug(source: source, resourceFiles: resources, session: session)
+        XCTAssertTrue(debug.succeeded, debug.detail + debug.stderr)
+        XCTAssertEqual(debug.stdout, normal.stdout)
+        XCTAssertEqual(debug.stdout.trimmingCharacters(in: .whitespacesAndNewlines), "[0, 255, 42]")
+        XCTAssertGreaterThan(recorder.snapshots.count, 1)
+    }
     func testGeneratedBindingsAndMacroOwnershipMatchActualRun() async throws {
         let cases = [
             "fn main(){let s=String::from(\"x\");println!(\"{}\",s);}",

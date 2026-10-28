@@ -11,9 +11,12 @@ failures, bounded reports and Stop. Pinned bundled rustfmt supports a file or
 project, check mode, revision guards and Undo. Both run locally. Build **113**
 is **VALID / IN_BETA_TESTING** from source `d868251`; it is selected for **WAITING_FOR_REVIEW** with manual publication. [Profile and qualification](docs/rust-tools-2026-10-28.md),
 [delivery identity](docs/app-store/release-1.1.3-build113.json).
-The next [local Git candidate](docs/local-git-2026-10-28.md) has passed real
-service, native and iPhone/iPad UI qualification. HTTPS/private access and complete
-repository portability are the next stage; Git is not included in build 113.
+The next [Git candidate](docs/local-git-2026-10-28.md) adds local history,
+GitHub HTTPS/private access and complete `.crabrixrepo` portability. Real private
+push/fetch/cancellation checks and all 18 native cases passed on both phone and
+iPad Simulators, including binary-resource compilation and Debug after import.
+Four UI flows passed on each phone/iPad Simulator; signed-delivery
+qualification continues. Git is not included in build 113. [HTTPS and portability profile](docs/git-https-portability-2026-10-28.md).
 
 ## Academy corrections — 27 October 2026
 
@@ -211,7 +214,7 @@ Browser projects with an HTML entry use this path automatically through **Run/Ch
 
 Original dependency source, package manifests and license files remain editable under `node_modules`, with `crabrix-web.lock.json` recording the selected graph. Saved prepared sources survive reopening and archive-cache eviction. Browser Run/Check never acquire packages. Re-prepare explicitly after adding imports or changing versions. Node/Bun, dev servers, lifecycle scripts, native addons, build plugins, private/git/workspace dependencies, CSS Modules, `import.meta.glob` and top-level await remain outside this browser path. The 2,048-file / 16 MB editable source budget and 256-asset / 8 MiB preview budget are unchanged. [Implementation and verification](docs/browser-packages-2026-10-27.md).
 
-Build 103 includes `npm i`, `npm run preview`, supported `npm run-script` aliases and `npm --prefix web …`, with 21 browser/terminal/keyboard Simulator tests passing. A separate [debugger and browser compiler feasibility report](docs/rust-debugger-browser-feasibility-2026-10-27.md) records 36 passing engine debugger tests and a confirmed compiler debug-info defect. The browser compiler is available in the public Playground. Guest Playground sharing, live editing and local execution are already published in 1.1.2 (103). The extended local debugger, one-hour default sharing and project reliability update are in 1.1.3 (111), available in TestFlight and submitted for review. The [resource follow-up](docs/local-rust-debugger-resources-2026-10-28.md) fixes included files and pre-Debug breakpoint taps. The follow-up [local debugger record](docs/local-rust-debugger-2026-10-27.md) describes actual Rust source breakpoints, stepping, active async poll frames and bounded primitive, String, Vec and concrete local struct previews in the app and browser, with explicit limits.
+Build 103 includes `npm i`, `npm run preview`, supported `npm run-script` aliases and `npm --prefix web …`, with 21 browser/terminal/keyboard Simulator tests passing. A separate [debugger and browser compiler feasibility report](docs/rust-debugger-browser-feasibility-2026-10-27.md) records 36 passing engine debugger tests and a confirmed compiler debug-info defect. The browser compiler is available in the public Playground. Guest Playground sharing, live editing and local execution are already published in 1.1.2 (103). The extended local debugger, one-hour default sharing and project reliability update were first delivered in 1.1.3 (111), superseded by the Test/Format build 113 described above. The [resource follow-up](docs/local-rust-debugger-resources-2026-10-28.md) fixes included files and pre-Debug breakpoint taps. The follow-up [local debugger record](docs/local-rust-debugger-2026-10-27.md) describes actual Rust source breakpoints, stepping, active async poll frames and bounded primitive, String, Vec and concrete local struct previews in the app and browser, with explicit limits.
 
 The package sheet shows waiting, downloading, verifying, ready and failed states with per-package dependencies. Verified archives are pinned outside purgeable caches during preparation; frozen/offline resolution never downloads. Output shows compilation stages and cached dependencies. Package acquisition and compiler execution run away from the interface thread. [The screenshot guide](https://crabrix.com/guide/) explains projects, imports, offline preparation, diagnostics and device layouts.
 
@@ -260,11 +263,12 @@ Release delivery is recorded separately in `docs/app-store/`; the preceding
 build 103 remains a historical sharing release receipt. New app releases keep
 manual App Store publication.
 
-The approved **1.1.2 (103)** is published in the App Store. The debugger
-update **1.1.3 (110)** is available in TestFlight Internal QA and
-**WAITING_FOR_REVIEW**, with manual publication. Its signed app source is
-`077bea71624298e501e292c0f52dfc21e66fa6bb`. It supersedes the approved build
-108 after the included-resource and compact breakpoint fixes. See the
+The approved **1.1.2 (103)** is published in the App Store. The initial debugger
+update **1.1.3 (110)** was delivered to TestFlight and App Review from signed
+source `077bea71624298e501e292c0f52dfc21e66fa6bb`; later qualified 111 and 113
+superseded it. Build 110 itself replaced approved build 108 after the included-
+resource and compact breakpoint fixes. Current release identity is recorded at
+the top of this README; historical receipts remain immutable. See the
 [1.1.3 delivery receipt](docs/app-store/release-1.1.3-build110.json),
 [resource fix and public website qualification](docs/local-rust-debugger-resources-2026-10-28.json),
 and [debugger scope](docs/local-rust-debugger-2026-10-27.md).

@@ -1,13 +1,22 @@
 # Changelog
 
-## In development — local Git
+## In development — native Git and complete repository transfer
 
 - Real local Git history in storage independent of editable-project snapshots.
   Status, per-file diff, selected commits, History, previewed Restore and branches.
 - Shared revision guards, opaque/hidden-file and executable-mode preservation;
   native terminal and Project settings entry without changing editor geometry.
-- Standard desktop Git interoperability, native and phone/iPad UI gates passed.
-  Separate from TestFlight/review build 113; HTTPS/complete portability continue.
+- GitHub HTTPS clone/fetch, clean fast-forward pull and explicit non-force push;
+  private access in repository-scoped device-only Keychain, visible Stop.
+- Complete `.crabrixrepo` archives retain real commit IDs, branches, binary files
+  and modes; importing creates a new local project. Tokens and package caches
+  stay outside exports. Text-project exports keep their existing scope.
+- Opaque Git worktree inputs participate in local compiler/cache identity,
+  `include_bytes!`, Debug and saved-build evidence. Neither Git metadata nor
+  credentials enter the guest filesystem.
+- Standard desktop Git interoperability, actual private HTTPS/cancellation,
+  and 18 native cases plus four UI scenarios on each phone/iPad Simulator passed.
+  Signed-delivery qualification continues separately from build 113.
 
 ## 1.1.3 (113) — TestFlight and App Review
 

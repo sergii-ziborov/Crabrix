@@ -12,11 +12,13 @@ struct WorkspaceRevision: Hashable, Sendable {
     let manifestHash: String?
     let lockfileHash: String?
     let toolchainID: String
+    let resourceTreeHash: String?
 
     static func capture(
         project: CrabrixProject,
         generation: UInt64,
-        toolchainID: String
+        toolchainID: String,
+        resourceTreeHash: String? = nil
     ) -> WorkspaceRevision {
         WorkspaceRevision(
             projectID: project.id,
@@ -24,7 +26,8 @@ struct WorkspaceRevision: Hashable, Sendable {
             sourceTreeHash: sourceTreeHash(project.files),
             manifestHash: project.files["Cargo.toml"].map(contentHash),
             lockfileHash: project.files["Cargo.lock"].map(contentHash),
-            toolchainID: toolchainID
+            toolchainID: toolchainID,
+            resourceTreeHash: resourceTreeHash
         )
     }
 

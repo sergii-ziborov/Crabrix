@@ -128,12 +128,12 @@ struct RustUnitTestRunner: Sendable {
     }
 
     func run(compiler: WasmRustCompiler, source: String, sourcePath: String,
-             supportingFiles: [String: String], edition: String, plan: CargoBuildPlan,
+             supportingFiles: [String: String], resourceFiles: [String: Data] = [:], edition: String, plan: CargoBuildPlan,
              filter: String? = nil, listOnly: Bool = false,
              onStage: (@Sendable (String) -> Void)? = nil) async -> RustUnitTestReport {
         let started = ContinuousClock.now
         let scope = "Selected entry only · std/normal prepared dependencies · no integration targets, dev-dependencies or doctests. #[should_panic] is unsupported in this panic-abort profile."
-        let discovery = await compiler.unitTest(source: source, sourcePath: sourcePath, supportingFiles: supportingFiles,
+        let discovery = await compiler.unitTest(source: source, sourcePath: sourcePath, supportingFiles: supportingFiles, resourceFiles: resourceFiles,
             edition: edition, plan: plan, invocation: .discover, onStage: onStage)
         guard discovery.succeeded else {
             return .init(cases: [], compilerFailure: discovery, discoveryOnly: listOnly,
@@ -180,7 +180,7 @@ struct RustUnitTestRunner: Sendable {
             }
             if tests[index].ignored { continue }
             onStage?("Testing \(tests[index].name) · isolated local guest")
-            let result = await compiler.unitTest(source: source, sourcePath: sourcePath, supportingFiles: supportingFiles,
+            let result = await compiler.unitTest(source: source, sourcePath: sourcePath, supportingFiles: supportingFiles, resourceFiles: resourceFiles,
                 edition: edition, plan: plan, invocation: .single(tests[index].name), onStage: onStage)
             if result.wasStopped || Task.isCancelled {
                 canceled = true; tests[index].state = .canceled; tests[index].detail = result.detail

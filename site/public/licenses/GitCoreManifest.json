@@ -311,6 +311,7 @@
     "deps/zlib/zutil.h": "dddb2dc7a1dc339ecf2c8e089b366f08bb731c0839c7110240d17ce731bb4fea",
     "generated/config.h": "03caf916ad228f3a252609fdd5718ff8a03c4453b349f04acf8aa2bcf21c380e",
     "generated/git2_features.h": "5254cdbf66852db5d80c1c201ea7a638aa50439c1c8fcfda2e9713e8383e3373",
+    "include/crabrix_git.h": "9f00a9b378b410adf8fc207c2c709928977506786f87c1cb8f874f1a961eed19",
     "include/git2/annotated_commit.h": "db6ae80abe996c772311f8f922c95107e5da2d34e3cfb7eb5516614b011d56ee",
     "include/git2/apply.h": "ffb13a162ad33bfa60840c4062669d8e752c6eb2f16b02ec5ef01e4a2f3ef8b2",
     "include/git2/attr.h": "781cdbcb3e11892c9df464d3750689edf17063136d1e674b8c5dbce22da1097b",
@@ -404,6 +405,7 @@
     "include/git2/version.h": "100ef9344db447af63381746eb3a7560b9c3656032927f63bc9926117e630b18",
     "include/git2/worktree.h": "b74eae1f0f41140112578dd48602ac5cb73759f0e7847a2a1987665c6d8ea6a0",
     "include/git2.h": "04b93d6a4dac32d661a56c3ca222ba62e8896f8148774ed52565d631ebf8d0e0",
+    "include/module.modulemap": "9ba02eff87a066b233ffdcaa12e1ae3c5076233e86684b73973aa3e67151f358",
     "src/cli/cmd.h": "3167f21423f29220c77e754509c45697cf14683b78a9686e61d18a5848852d93",
     "src/cli/common.h": "126bd9b643f68209cfa0fc0c77125bf81a14ba18e677d6fca604d0458b1c54b5",
     "src/cli/error.h": "ebd8eadd5527dc381acbd08c45aab5a21e2d4d2beff0a4baf462389b1cb0aeab",
@@ -751,5 +753,5 @@
     "src/util/zstream.c": "51e507d17742366b91e6f427a48b566b52013f06502c3f05fbd6f5120b3d6afb",
     "src/util/zstream.h": "daa41460cf0ed019ef62a1936fb18626e8abac2b9a05061b6a377d4ab74a4cc5"
   },
-  "configuration": "Apple 64-bit SecureTransport; generated pinned CMake profile; SwiftPM disables Clang modules for C translation units to avoid Darwin private-struct module collisions."
+  "configuration": "Apple 64-bit SecureTransport; generated pinned CMake profile; SwiftPM disables Clang modules for C translation units to avoid Darwin private-struct module collisions. Custom public shim bounds native HTTP/cache/object inputs and disables inherited global/system/XDG Git configuration."
 }

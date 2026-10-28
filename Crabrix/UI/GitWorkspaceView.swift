@@ -11,7 +11,10 @@ struct GitWorkspaceView: View {
     @State private var message = ""
     @State private var branchName = ""
     @State private var showsDiff = false
-    private enum Field: Hashable { case author, email, message, branch }
+    @State private var remoteURL = ""
+    @State private var gitUsername = ""
+    @State private var accessToken = ""
+    private enum Field: Hashable { case author, email, message, branch, url, username, token }
     @FocusState private var focusedField: Field?
 
     var body: some View {
@@ -33,14 +36,15 @@ struct GitWorkspaceView: View {
                         overview
                         if model.gitAvailable {
                             Picker("Git section", selection: $tab) {
-                                ForEach(["Changes", "History", "Branches"], id: \.self) { Text($0) }
+                                ForEach(["Changes", "History", "Branches", "Remote"], id: \.self) { Text($0) }
                             }.pickerStyle(.segmented)
                             switch tab {
                             case "History": history
                             case "Branches": branches
+                            case "Remote": remote
                             default: changes
                             }
-                        }
+                        } else { clone }
                     }
                     if !model.gitMessage.isEmpty {
                         Text(String(model.gitMessage.prefix(2000)))
@@ -68,7 +72,11 @@ struct GitWorkspaceView: View {
                         .labelStyle(.iconOnly)
                 }
             }
-            .onAppear { model.refreshGit() }
+            .onAppear { if !model.gitIsWorking { model.refreshGit() } }
+            .onDisappear { accessToken = "" }
+            .onChange(of: model.gitRemote?.url) { _, value in if let value { remoteURL = value } }
+            .onChange(of: model.gitCredentialUsername) { _, value in gitUsername = value ?? "" }
+            .onChange(of: tab) { _, _ in focusedField = nil }
             .onChange(of: model.gitState?.revision) { _, _ in
                 selected.formIntersection(Set(model.gitState?.changes.map(\.path) ?? []))
             }
@@ -102,6 +110,19 @@ struct GitWorkspaceView: View {
             }.font(.caption)
             if let state = model.gitState, state.changes.isEmpty {
                 Label("Working tree is clean", systemImage: "checkmark.circle").foregroundStyle(CrabrixTheme.primary)
+            }
+            DisclosureGroup("Save the complete repository") {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("A .crabrixrepo archive keeps the worktree, binary files and local Git history. Import creates a new local copy. Prepared package caches and access tokens stay on this device. Text project/ZIP exports have a separate scope.")
+                        .font(.caption).foregroundStyle(CrabrixTheme.muted)
+                    Button("Prepare repository export", action: model.exportGitRepository)
+                        .buttonStyle(.bordered).disabled(model.gitState?.head == nil || model.gitNeedsRefresh)
+                    if let url = model.gitArchiveURL {
+                        ShareLink("Save or share repository", item: url)
+                            .buttonStyle(.borderedProminent).tint(CrabrixTheme.blue).foregroundStyle(CrabrixTheme.onAccent)
+                            .disabled(!model.gitArchiveIsCurrent)
+                    }
+                }.padding(.vertical, 8)
             }
             ForEach(model.gitState?.changes ?? []) { change in
                 HStack(spacing: 12) {
@@ -220,5 +241,77 @@ struct GitWorkspaceView: View {
     private func bounded(_ source: String) -> String {
         String(decoding: source.utf8.prefix(64 * 1024), as: UTF8.self)
             + (source.utf8.count > 64 * 1024 ? "\n// Preview limited to 64 KiB; Restore uses the complete file." : "")
+    }
+
+    private var repositoryAddress: some View {
+        TextField("https://github.com/owner/repository", text: $remoteURL)
+            .textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.URL)
+            .textFieldStyle(.roundedBorder).focused($focusedField, equals: .url)
+            .accessibilityLabel("GitHub repository URL")
+    }
+
+    private var access: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Private repository access").font(.headline)
+            Text("Public clones need no token. For private repositories, save a GitHub access token on this device.")
+                .font(.caption).foregroundStyle(CrabrixTheme.muted)
+            if let username = model.gitCredentialUsername {
+                Label("Saved in Keychain · \(username)", systemImage: "key.fill")
+                    .font(.caption).foregroundStyle(CrabrixTheme.primary)
+            }
+            TextField("GitHub username", text: $gitUsername).textFieldStyle(.roundedBorder)
+                .textInputAutocapitalization(.never).autocorrectionDisabled().focused($focusedField, equals: .username)
+            SecureField("GitHub access token", text: $accessToken).textFieldStyle(.roundedBorder)
+                .textInputAutocapitalization(.never).autocorrectionDisabled().focused($focusedField, equals: .token)
+            Button("Save access on this device") {
+                focusedField = nil
+                model.saveGitCredential(url: remoteURL, username: gitUsername, token: accessToken)
+                accessToken = ""
+            }.buttonStyle(.bordered).disabled(remoteURL.isEmpty || gitUsername.isEmpty || accessToken.isEmpty)
+            if model.gitCredentialUsername != nil {
+                Button("Remove saved access", role: .destructive) { model.removeGitCredential(url: remoteURL) }
+            }
+        }.padding(16).crabrixPanel()
+    }
+
+    private var clone: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Clone a GitHub repository").font(.headline)
+            Text("Create a separate project with its real commit history. Source acquisition uses HTTPS; compilation and execution stay on this device.")
+                .font(.subheadline).foregroundStyle(CrabrixTheme.muted)
+            repositoryAddress
+            Button("Clone as a new project", systemImage: "arrow.down.doc") { focusedField = nil; model.cloneGit(remoteURL) }
+                .buttonStyle(.borderedProminent).tint(CrabrixTheme.blue).foregroundStyle(CrabrixTheme.onAccent)
+                .disabled(remoteURL.isEmpty)
+            access
+        }.disabled(model.gitIsWorking)
+    }
+
+    private var remote: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            if let remote = model.gitRemote {
+                Text(remote.url).font(.subheadline.monospaced()).textSelection(.enabled)
+                if let ahead = remote.ahead, let behind = remote.behind {
+                    Text("\(remote.branch) · \(ahead) ahead · \(behind) behind last fetch")
+                        .font(.caption).foregroundStyle(CrabrixTheme.muted)
+                } else {
+                    Text("Fetch to inspect this branch's remote history.").font(.caption).foregroundStyle(CrabrixTheme.muted)
+                }
+                HStack {
+                    Button("Fetch", systemImage: "arrow.down") { focusedField = nil; model.fetchGit() }
+                    Button("Pull", systemImage: "arrow.down.to.line") { focusedField = nil; model.pullGit() }
+                        .disabled(!model.gitCanSwitchBranch)
+                    Button("Push", systemImage: "arrow.up") { focusedField = nil; model.pushGit() }
+                        .disabled(model.gitNeedsRefresh || model.gitState?.head == nil)
+                }.buttonStyle(.bordered)
+                Text("Pull accepts clean fast-forwards. Push sends committed history only, when you press it.")
+                    .font(.caption).foregroundStyle(CrabrixTheme.muted)
+            } else {
+                repositoryAddress
+                Button("Connect origin") { focusedField = nil; model.connectGitRemote(remoteURL) }
+                    .buttonStyle(.bordered).disabled(remoteURL.isEmpty)
+            }
+            access
+        }.disabled(model.gitIsWorking)
     }
 }

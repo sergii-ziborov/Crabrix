@@ -39,7 +39,7 @@ backup не удаляется из-за неудачного decode; возвр
 | --- | --- | --- |
 | 2 | RUST-01, RUST-02 | Реализован кандидат: real libtest, file/project rustfmt, терминал, версии, Undo и Stop. 35 native проверок и по два UI-сценария на phone/iPad прошли; финальный повтор девяти кейсов после изоляции ошибочных запросов тоже прошёл. 1.1.3 (113) — VALID / IN_BETA_TESTING / WAITING_FOR_REVIEW; гайд и notices опубликованы на сайте. [Профиль](../rust-tools-2026-10-28.md) |
 | 3A | GIT-01 | Кандидат квалифицирован: долговечное отдельное хранилище, status/diff/selected commit/history/restore/branches, терминал и Changes UI. Три macOS service-теста, десять native-кейсов и по два UI-сценария на phone/iPad прошли. Не входит в build 113. [Профиль и доказательства](../local-git-2026-10-28.md) |
-| 3B | GIT-02, PORT-01 | HTTPS remote и приватный доступ, Keychain, fast-forward, перенос полной истории и непрозрачных файлов |
+| 3B | GIT-02, PORT-01 | Кандидат квалифицирован: HTTPS/private Git, Keychain, clean fast-forward, полный `.crabrixrepo` и бинарные ресурсы compiler/Debug. 9 реальных core-тестов, 18 native-кейсов на phone и iPad, по 4 UI-сценария прошли. Подготовка подписанной поставки. [Профиль](../git-https-portability-2026-10-28.md) |
 | 4 | LEARN-02, LEARN-01, IDE-01 | Урок → запись → личная копия → Debug; подписанные офлайн-трассы; затем семантическая навигация |
 | 5 | COMPAT-01, WEB-02 | Project preflight, настоящий TS checker и типы зависимостей; не выдавать transpilation за typecheck |
 | Отдельно | COMPAT-02 | Продолжить существующие compiler/proc-macro candidates; без устройства не заявлять физические benchmarks или Published |

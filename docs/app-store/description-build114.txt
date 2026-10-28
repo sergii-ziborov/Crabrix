@@ -1,0 +1,29 @@
+Learn Rust, then make it run. Crabrix brings an illustrated Academy and native project workspace to iPhone and iPad. The Rust compiler ships in the app: no cloud compiler or app account is required.
+
+ACADEMY, AVAILABLE OFFLINE
+Seven courses and Algorithm Atlas cover Rust, Cargo and 200 algorithm patterns. Study 742 lessons and steps with highlighted code, questions and illustrations. Download courses, then study offline. Signed updates preserve progress and edited projects. Website Academy accounts are separate. Explore 46 open code examples and turn them into your own projects.
+
+PROJECT WORKSPACE
+Work with files, syntax highlighting, search and Code, Problems, Output and Terminal views. Check finds compiler errors; Build compiles without running main; Run executes locally in a bounded WebAssembly sandbox. Output shows results and build stages. Package progress shows downloads, integrity checks, failures and dependencies. iPad has a file sidebar; Duo adapts to its fold.
+
+NATIVE GIT
+Record local commits, inspect diffs and history, preview Restore and switch clean branches. Clone GitHub repositories over HTTPS, fetch, pull clean fast-forwards and explicitly push committed history. Optional private access uses repository-scoped device-only Keychain. Complete .crabrixrepo archives preserve commit IDs, branches, worktree bytes and binary files. Import creates a new local copy. Tokens and prepared package caches stay outside exports. SSH, LFS, submodules and rebase are not included.
+
+RUST TOOLS ON DEVICE
+Resolve up to 2,048 Cargo packages, verify checksums and prepare sources for offline builds. Standard-library-only build scripts run as bounded WASI guests. The target is wasm32-wasip1; native linking, host subprocesses, separate build-dependency graphs and procedural macros remain unsupported. Arbitrary desktop repositories may not build.
+
+Run real selected-entry unit tests with discovery, filtering, isolated failures and Stop. Dev-dependencies, integration targets and doctests are outside this test profile. Format a Rust file or project with bundled rustfmt, check formatting and undo changes.
+
+LOCAL RUST DEBUGGER
+Set breakpoints, step through Rust and active async functions, and inspect frames, String, Vec and concrete struct previews. Const bodies, macro internals and arbitrary memory inspection remain outside scope.
+
+BROWSER PROJECTS
+Create HTML/CSS/JavaScript pages or generate them with Rust. Explicit npm install/ci prepares supported browser modules and licenses as local source. Run/Check then build without downloading packages. JavaScript, TypeScript syntax and JSX/TSX run in isolated WebKit with external requests blocked. TypeScript is transpiled without type checking. Node/Bun servers, arbitrary scripts, plugins and native addons are not included.
+
+TEMPORARY PLAYGROUNDS
+Share an encrypted source session with another Crabrix app or the free browser Playground. Edit with live cursors and selections without signing in. One hour by default; 24 hours maximum. The relay holds ciphertext only in RAM; restart can end a room early. Save a copy before expiry. Rooms allow four participants, 16 text files, 64 KiB/file and 128 KiB total. Packages and images are not shared. Each client runs code locally and explicitly.
+
+PRACTISE AND PERSONALISE
+Quick Practice, Term Train and Code Recall reinforce learning. Progress stays local. Choose Auto, Light, Dark, Amber Circuit or Cyberpunk. Optional Face ID or device-passcode protection locks the workspace when you leave.
+
+No advertising, analytics SDK or cloud compiler. Requested downloads, GitHub transfers and live sharing need a connection. Prepare sources and lessons, then work offline. Privacy, Terms and full third-party licenses are readable offline. Your original code remains yours. One purchase; no subscription or in-app purchase.

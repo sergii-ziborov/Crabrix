@@ -214,6 +214,10 @@ final class CompilerViewModel: ObservableObject {
     @Published private(set) var gitHistory: [GitCommit] = []
     @Published private(set) var gitBranches: [String] = []
     @Published private(set) var gitDiff: GitDiff?
+    @Published private(set) var gitRemote: GitRemoteState?
+    @Published private(set) var gitCredentialUsername: String?
+    @Published private(set) var gitArchiveURL: URL?
+    private var gitArchiveRevision: WorkspaceRevision?
     @Published private(set) var gitRevisionTree: GitTreeSnapshot?
     @Published var gitViewingCommit: GitCommit?
     @Published var gitRestorePreview: GitRestorePreview?
@@ -222,10 +226,13 @@ final class CompilerViewModel: ObservableObject {
     private var gitJob: Task<Void, Never>?
     private var gitJobProjectID: UUID?
     private lazy var gitStore = GitRepositoryStore(root: projectLibrary.gitStorageURL)
+    private let gitCredentialVault = GitCredentialVault()
+    private var projectResourceDigest: String?
     private enum PendingGitURL { case project(URL), playground(PlaygroundLink) }
     private var pendingGitURL: PendingGitURL?
 
     var gitNeedsRefresh: Bool { gitState != nil && gitObservedGeneration != workspaceGeneration }
+    var gitArchiveIsCurrent: Bool { gitArchiveURL != nil && gitArchiveRevision.map(isCurrent) == true }
     var gitCanSwitchBranch: Bool { gitState?.head != nil && gitState?.changes.isEmpty == true && !gitNeedsRefresh && playgroundSession == nil }
     @Published private(set) var compatibilityReport: ProjectCompatibilityReport
     @Published private(set) var provenance: CrabrixProject.Provenance?
@@ -372,7 +379,7 @@ final class CompilerViewModel: ObservableObject {
         return completedLessonIDs.contains(activeLessonID)
     }
     var canStartBuild: Bool {
-        !isBusy
+        !isBusy && !gitIsWorking
             && !isProjectOperationInProgress
             && !isCompilerDraining
             && !diagnosticAdviceState.isWorking
@@ -394,7 +401,8 @@ final class CompilerViewModel: ObservableObject {
         WorkspaceRevision.capture(
             project: currentProject(),
             generation: workspaceGeneration,
-            toolchainID: WasmRustCompiler.executionIdentity
+            toolchainID: WasmRustCompiler.executionIdentity,
+            resourceTreeHash: projectResourceDigest
         )
     }
 
@@ -408,6 +416,7 @@ final class CompilerViewModel: ObservableObject {
 
     func openProject(from url: URL) async {
         if gitLocksWorkspace { pendingGitURL = .project(url); return }
+        if url.pathExtension.lowercased() == "crabrixrepo" { await importGitRepository(from: url); return }
         guard prepareForProjectSwitch() else { return }
         let revision = workspaceRevision
         projectTransfer = .openingFiles
@@ -716,7 +725,7 @@ final class CompilerViewModel: ObservableObject {
         do {
             guard let item = try await projectLibrary.project(id: id) else { return false }
             guard isCurrent(revision) else { return false }
-            loadProject(item.project, lastBuild: item.lastBuild)
+            loadProject(item.project, lastBuild: item.lastBuild, resourceTreeHash: item.resourceTreeHash)
             projectTransfer = .ready(
                 stoppedBuild
                     ? "Stopped the previous build and opened \(item.project.name)."
@@ -861,7 +870,7 @@ final class CompilerViewModel: ObservableObject {
             debugSession = session
         }
         resetDiagnosticAdvice()
-        let revision = workspaceRevision
+        let preparationRevision = workspaceRevision
         activity = mode
         result = nil
         unitTestReport = nil
@@ -889,9 +898,27 @@ final class CompilerViewModel: ObservableObject {
         activeCompilationID = compilationID
         compilationTask = Task { [weak self] in
             guard let self else { return }
-            guard !Task.isCancelled, activeCompilationID == compilationID, isCurrent(revision) else {
+            guard !Task.isCancelled, activeCompilationID == compilationID, isCurrent(preparationRevision) else {
                 discardCompilationIfActive(compilationID); return
             }
+            let resourceFiles: [String: Data]
+            do {
+                let store = GitRepositoryStore(root: projectLibrary.gitStorageURL)
+                if try await store.resourceIdentity(preparationRevision.projectID) != nil {
+                    appendBuildStage("Reading repository resources into a local build snapshot")
+                    resourceFiles = try await store.resources(preparationRevision.projectID, files: projectFiles)
+                } else { resourceFiles = [:] }
+            } catch {
+                guard isCurrent(preparationRevision) else { discardCompilationIfActive(compilationID); return }
+                finish(.failure(phase: .setup, detail: error.localizedDescription), revision: preparationRevision, recordsLearningEvidence: mode != .testing)
+                return
+            }
+            let resourceDigest = await Task.detached(priority: .userInitiated) { GitRepositoryStore.resourceFingerprint(resourceFiles) }.value
+            guard !Task.isCancelled, activeCompilationID == compilationID, isCurrent(preparationRevision) else {
+                discardCompilationIfActive(compilationID); return
+            }
+            projectResourceDigest = resourceDigest
+            let revision = workspaceRevision
 
             if browserDirectory != nil || BrowserProjectConfiguration.isBrowserEntry(project.entryPath) {
                 let began = ContinuousClock.now
@@ -949,12 +976,18 @@ final class CompilerViewModel: ObservableObject {
                         packageTransfers = built.transfers
                         packageTransferID = nil
                     }
+                    let preview: WebPreviewSnapshot
+                    if resourceFiles.isEmpty { preview = built.preview }
+                    else {
+                        guard let combined = WebPreviewSnapshot(files: resourceFiles.filter { WebPreviewSnapshot.mimeType(for: $0.key) != nil }.merging(built.preview.assets) { _, built in built }, preferredEntry: built.preview.entryPath) else { throw BrowserBuildError(message: "The browser preview exceeds its asset budget.") }
+                        preview = combined
+                    }
                     finish(CompilationResult(succeeded: true, phase: mode == .running ? .run : (mode == .building ? .compile : .check),
                         exitCode: nil, diagnostics: [], stdout: "", stderr: "", duration: began.duration(to: .now),
                         detail: prepareBrowserPackages
                             ? "Prepared \(built.packageCount) browser npm packages as editable local source. Run now builds offline."
                             : "Built \(built.moduleCount) browser modules locally. TypeScript syntax is transpiled; this is not TypeScript type checking. Browser errors appear in the web console.",
-                        webPreview: mode == .running ? built.preview : nil), revision: workspaceRevision)
+                        webPreview: mode == .running ? preview : nil), revision: workspaceRevision)
                     if prepareBrowserPackages { await remember(currentProject(), lastBuild: lastBuild) }
                 } catch {
                     guard activeCompilationID == compilationID, isCurrent(revision) else { discardCompilationIfActive(compilationID); return }
@@ -981,7 +1014,7 @@ final class CompilerViewModel: ObservableObject {
                     let snapshot = try await resolveWorkspace(
                         manifestSource: manifestSource,
                         lockfileSource: lockfileSource,
-                        projectFiles: projectFiles,
+                        projectFiles: projectFiles, resourceFiles: resourceFiles,
                         revision: revision
                     )
                     guard activeCompilationID == compilationID, isCurrent(revision) else {
@@ -1047,17 +1080,17 @@ final class CompilerViewModel: ObservableObject {
 
             var value = switch mode {
             case .testing:
-                await testSnapshot(compilerProject, request: unitTestRequest ?? .init(), edition: rootEdition,
+                await testSnapshot(compilerProject, resourceFiles: resourceFiles, request: unitTestRequest ?? .init(), edition: rootEdition,
                     plan: plan, revision: revision, compilationID: compilationID, onStage: stageHandler)
             case .building:
                 await compiler.build(source: compilerProject.main, sourcePath: compilerProject.entryPath,
-                    supportingFiles: compilerProject.supporting, edition: rootEdition, plan: plan,
+                    supportingFiles: compilerProject.supporting, resourceFiles: resourceFiles, edition: rootEdition, plan: plan,
                     onDependencyProgress: plan.isEmpty ? nil : progress, onStage: stageHandler)
             case .checking:
                 await compiler.check(
                     source: compilerProject.main,
                     sourcePath: compilerProject.entryPath,
-                    supportingFiles: compilerProject.supporting,
+                    supportingFiles: compilerProject.supporting, resourceFiles: resourceFiles,
                     edition: rootEdition,
                     plan: plan,
                     onDependencyProgress: plan.isEmpty ? nil : progress,
@@ -1066,12 +1099,12 @@ final class CompilerViewModel: ObservableObject {
             default:
                 if let debugSession {
                     await compiler.debug(source: compilerProject.main, sourcePath: compilerProject.entryPath,
-                        supportingFiles: compilerProject.supporting, edition: rootEdition, plan: plan, session: debugSession,
+                        supportingFiles: compilerProject.supporting, resourceFiles: resourceFiles, edition: rootEdition, plan: plan, session: debugSession,
                         onDependencyProgress: plan.isEmpty ? nil : progress, onStage: stageHandler)
                 } else { await compiler.run(
                     source: compilerProject.main,
                     sourcePath: compilerProject.entryPath,
-                    supportingFiles: compilerProject.supporting,
+                    supportingFiles: compilerProject.supporting, resourceFiles: resourceFiles,
                     edition: rootEdition,
                     plan: plan,
                     onDependencyProgress: plan.isEmpty ? nil : progress,
@@ -1168,6 +1201,7 @@ final class CompilerViewModel: ObservableObject {
         lockfileSource: String?,
         mode: CargoResolutionMode = .normal,
         projectFiles: [String: String],
+        resourceFiles providedResources: [String: Data]? = nil,
         revision: WorkspaceRevision
     ) async throws -> CargoWorkspaceSnapshot {
         guard isCurrent(revision) else { throw CancellationError() }
@@ -1176,6 +1210,14 @@ final class CompilerViewModel: ObservableObject {
            !cargoWorkspace.isEmpty {
             return cargoWorkspace
         }
+        let resources: [String: Data]
+        if let providedResources { resources = providedResources }
+        else {
+            let store = GitRepositoryStore(root: projectLibrary.gitStorageURL)
+            if try await store.resourceIdentity(revision.projectID) != nil { resources = try await store.resources(revision.projectID, files: projectFiles) }
+            else { resources = [:] }
+        }
+        guard isCurrent(revision), !Task.isCancelled else { throw CancellationError() }
         let transferID = UUID()
         packageTransferID = transferID
         let handler: @Sendable (CargoPreparationStage) -> Void = { [weak self] stage in
@@ -1210,18 +1252,18 @@ final class CompilerViewModel: ObservableObject {
             do {
                 snapshot = try await packageManager.prepare(
                     manifestSource: manifestSource, lockfileSource: lockfileSource,
-                    mode: .frozen, projectFiles: projectFiles, onStage: handler, onTransfer: transferHandler)
+                    mode: .frozen, projectFiles: projectFiles, resourceFiles: resources, onStage: handler, onTransfer: transferHandler)
             } catch is CancellationError {
                 throw CancellationError()
             } catch {
                 snapshot = try await packageManager.prepare(
                     manifestSource: manifestSource, lockfileSource: lockfileSource,
-                    mode: mode, projectFiles: projectFiles, onStage: handler, onTransfer: transferHandler)
+                    mode: mode, projectFiles: projectFiles, resourceFiles: resources, onStage: handler, onTransfer: transferHandler)
             }
         } else {
             snapshot = try await packageManager.prepare(
                 manifestSource: manifestSource, lockfileSource: lockfileSource,
-                mode: mode, projectFiles: projectFiles, onStage: handler, onTransfer: transferHandler)
+                mode: mode, projectFiles: projectFiles, resourceFiles: resources, onStage: handler, onTransfer: transferHandler)
         }
         guard !Task.isCancelled, isCurrent(revision) else { throw CancellationError() }
         cargoWorkspace = snapshot
@@ -2015,7 +2057,8 @@ final class CompilerViewModel: ObservableObject {
         folder: String? = nil,
         kind: CrabrixProject.Kind = .general,
         isFavorite: Bool = false,
-        lastBuild: ProjectBuildRecord? = nil
+        lastBuild: ProjectBuildRecord? = nil,
+        resourceTreeHash: String? = nil
     ) {
         latestProjectSnapshots[projectID] = currentProject()
         if !isApplyingPlayground { leavePlayground() }
@@ -2024,9 +2067,12 @@ final class CompilerViewModel: ObservableObject {
         autosaveTask?.cancel()
         suppressAutosave = true
         projectID = id
+        projectResourceDigest = resourceTreeHash
         gitState = nil; gitAvailable = false; gitHistory = []; gitBranches = []
         gitDiff = nil; gitRevisionTree = nil; gitViewingCommit = nil; gitRestorePreview = nil
         gitObservedGeneration = nil; gitMessage = ""
+        gitRemote = nil; gitCredentialUsername = nil
+        gitArchiveURL = nil; gitArchiveRevision = nil
         projectName = name
         self.projectDescription = projectDescription
         projectTags = CrabrixProject.normalizedTags(tags)
@@ -2040,7 +2086,7 @@ final class CompilerViewModel: ObservableObject {
         selectedFile = entryFile
         source = files[entryFile] ?? ""
         self.provenance = provenance
-        self.lastBuild = lastBuild?.sourceTreeHash == workspaceRevision.sourceTreeHash && lastBuild?.toolchainID == WasmRustCompiler.executionIdentity ? lastBuild : nil
+        self.lastBuild = lastBuild?.sourceTreeHash == workspaceRevision.sourceTreeHash && lastBuild?.toolchainID == WasmRustCompiler.executionIdentity && lastBuild?.resourceTreeHash == projectResourceDigest ? lastBuild : nil
         compatibilityReport = ProjectCompatibilityReport.scan(
             CrabrixProject(
                 id: id,
@@ -2085,7 +2131,7 @@ final class CompilerViewModel: ObservableObject {
         cargoStage = .idle
     }
 
-    private func loadProject(_ project: CrabrixProject, lastBuild: ProjectBuildRecord? = nil) {
+    private func loadProject(_ project: CrabrixProject, lastBuild: ProjectBuildRecord? = nil, resourceTreeHash: String? = nil) {
         loadProject(
             name: project.name,
             id: project.id,
@@ -2097,7 +2143,8 @@ final class CompilerViewModel: ObservableObject {
             folder: project.folder,
             kind: project.kind,
             isFavorite: project.isFavorite,
-            lastBuild: lastBuild
+            lastBuild: lastBuild,
+            resourceTreeHash: resourceTreeHash
         )
     }
 
@@ -2466,11 +2513,11 @@ final class CompilerViewModel: ObservableObject {
     }
 
     private func testSnapshot(_ project: (entryPath: String, main: String, supporting: [String: String]),
-                              request: RustUnitTestRequest, edition: String, plan: CargoBuildPlan,
+                              resourceFiles: [String: Data], request: RustUnitTestRequest, edition: String, plan: CargoBuildPlan,
                               revision: WorkspaceRevision, compilationID: UUID,
                               onStage: @escaping @Sendable (String) -> Void) async -> CompilationResult {
         let report = await RustUnitTestRunner().run(compiler: compiler, source: project.main,
-            sourcePath: project.entryPath, supportingFiles: project.supporting, edition: edition,
+            sourcePath: project.entryPath, supportingFiles: project.supporting, resourceFiles: resourceFiles, edition: edition,
             plan: plan, filter: request.filter, listOnly: request.listOnly, onStage: onStage)
         if isCurrent(revision), activeCompilationID == compilationID { unitTestReport = report }
         return report.rendered
@@ -2488,7 +2535,7 @@ final class CompilerViewModel: ObservableObject {
         // User tests and formatter tools must not complete Academy lessons,
         // mint repair rewards or replace the last ordinary Build/Run record.
         guard recordsLearningEvidence else { return }
-        lastBuild = ProjectBuildRecord(result: value, sourceTreeHash: revision.sourceTreeHash, toolchainID: revision.toolchainID)
+        lastBuild = ProjectBuildRecord(result: value, sourceTreeHash: revision.sourceTreeHash, toolchainID: revision.toolchainID, resourceTreeHash: revision.resourceTreeHash)
 
         let errorDiagnostic = value.diagnostics.first(where: { $0.level == "error" })
         activeLessonObservedDiagnosticCodes.formUnion(value.diagnostics.compactMap(\.code))
@@ -2607,18 +2654,18 @@ final class CompilerViewModel: ObservableObject {
             guard let self else { return }
             let latest = project.id == projectID ? currentProject() : latestProjectSnapshots[project.id]
             guard latest == nil || latest == project else { return }
-            if let revision, isCurrent(revision) { saveState = .saving }
+            if let revision, isCurrentSource(revision) { saveState = .saving }
             do {
                 try ProjectFilePolicy.validate(project.files, entryFile: project.entryFile)
                 recentProjects = try await projectLibrary.record(project: project, lastBuild: lastBuild)
-                if let revision, isCurrent(revision) {
+                if let revision, isCurrentSource(revision) {
                     saveState = .saved
                     if projectName == project.name, let saved = recentProjects.first(where: { $0.id == project.id }) { projectName = saved.project.name }
                     if case let .failed(message) = projectTransfer, message.hasPrefix("Autosave failed:") { projectTransfer = .ready("Saved on this device.") }
                 }
                 await reloadProjectLists()
             } catch {
-                if let revision, isCurrent(revision) {
+                if let revision, isCurrentSource(revision) {
                     saveState = .failed(error.localizedDescription)
                     projectTransfer = .failed("Autosave failed: " + error.localizedDescription)
                 }
@@ -2634,6 +2681,12 @@ final class CompilerViewModel: ObservableObject {
             allProjects = try await projectLibrary.allItems()
             projectReadFailures = await projectLibrary.readFailures()
         } catch { projectTransfer = .failed("Cannot read the saved project library: " + error.localizedDescription) }
+    }
+
+    private func isCurrentSource(_ revision: WorkspaceRevision) -> Bool {
+        let current = workspaceRevision
+        return current.projectID == revision.projectID && current.generation == revision.generation
+            && current.sourceTreeHash == revision.sourceTreeHash && current.toolchainID == revision.toolchainID
     }
 
     private func isCurrent(_ revision: WorkspaceRevision) -> Bool {
@@ -2706,6 +2759,18 @@ extension CompilerViewModel {
         let previousEvent = gitConsoleEvent?.id
         switch command {
         case .initialize: initializeGit()
+        case .fetch: fetchGit()
+        case .pull: pullGit()
+        case .push: pushGit()
+        case let .clone(url): cloneGit(url)
+        case let .connectRemote(url): connectGitRemote(url)
+        case .remote:
+            runGit("Reading origin") { store, project, _ in
+                guard let remote = try await store.remoteState(project.id) else { return "No origin configured." }
+                let ahead = remote.ahead.map { "\($0) ahead" } ?? "fetch to compare"
+                let behind = remote.behind.map { "\($0) behind last fetch" } ?? "unknown remote branch"
+                return "\(remote.url)\n\(remote.branch) · \(ahead) · \(behind)"
+            }
         case .status: refreshGit()
         case let .diff(path): showGitDiff(path)
         case let .branch(name): createGitBranch(name)
@@ -2744,7 +2809,7 @@ extension CompilerViewModel {
             gitConsoleEvent = GitConsoleEvent(projectID: projectID, text: gitMessage, isError: true)
         }
     }
-    private func runGit(_ label: String, exclusive: Bool = false,
+    private func runGit(_ label: String, exclusive: Bool = false, destinationProject: UUID? = nil,
                         operation: @escaping @MainActor (GitRepositoryStore, CrabrixProject, WorkspaceRevision) async throws -> String) {
         guard !isBusy, !isCompilerDraining, !isProjectOperationInProgress, !gitIsWorking else {
             gitMessage = "Wait for the active compiler/project operation to finish, or stop it before starting Git."
@@ -2771,13 +2836,13 @@ extension CompilerViewModel {
             }
             do {
                 let text = try await operation(gitStore, snapshot, revision)
-                guard projectID == snapshot.id else { return }
+                guard projectID == snapshot.id || projectID == destinationProject else { return }
                 gitMessage = text
-                gitConsoleEvent = GitConsoleEvent(projectID: snapshot.id, text: text, isError: false)
+                gitConsoleEvent = GitConsoleEvent(projectID: projectID, text: text, isError: false)
             } catch {
-                guard projectID == snapshot.id else { return }
+                guard projectID == snapshot.id || projectID == destinationProject else { return }
                 gitMessage = error is CancellationError ? "Git operation stopped. Refresh to read the current state." : error.localizedDescription
-                gitConsoleEvent = GitConsoleEvent(projectID: snapshot.id, text: gitMessage, isError: true)
+                gitConsoleEvent = GitConsoleEvent(projectID: projectID, text: gitMessage, isError: true)
             }
         }
     }
@@ -2793,14 +2858,20 @@ extension CompilerViewModel {
         runGit("Reading local Git changes") { [self] store, project, revision in
             guard try await store.exists(project.id) else {
                 gitAvailable = false; gitState = nil; gitHistory = []; gitBranches = []
+                gitRemote = nil; gitCredentialUsername = nil
                 return "No local Git history. Initialize it to start recording explicit commits."
             }
             let observed = try await store.inspect(project.id)
             let state = try await store.status(project.id, files: project.files, expectedRevision: observed.revision)
             let history = try await store.history(project.id)
             let branches = try await store.branches(project.id)
+            let remote = try await store.remoteState(project.id)
+            let username: String?
+            if let remote { username = try? await gitCredentialVault.username(url: remote.url) }
+            else { username = nil }
             guard projectID == project.id else { return "Project changed." }
             acceptGit(state, revision: revision); gitHistory = history; gitBranches = branches
+            gitRemote = remote; gitCredentialUsername = username
             return "\(state.branch) · \(state.head.map { String($0.prefix(8)) } ?? "no commits")\n" +
                 (state.changes.isEmpty ? "Working tree is clean." : state.changes.map { "\($0.kind)  \($0.path)" }.joined(separator: "\n"))
         }
@@ -2818,6 +2889,7 @@ extension CompilerViewModel {
         guard let state = gitState, !gitNeedsRefresh else { gitMessage = "Refresh Changes before opening this diff."; return }
         runGit("Reading diff · \(path)") { [self] store, project, revision in
             let result = try await store.diff(project.id, files: project.files, path: path, expectedRevision: state.revision)
+            guard projectID == project.id else { return "Diff prepared for the captured project." }
             acceptGit(result.state, revision: revision); gitDiff = result
             return result.text.isEmpty ? "No text changes in \(path)." : result.text
         }
@@ -2829,7 +2901,9 @@ extension CompilerViewModel {
             let receipt = try await store.commit(project.id, files: project.files, selected: paths,
                 author: author, email: email, message: message, expectedHead: state.head, expectedRevision: state.revision)
             let history = try await store.history(project.id), branches = try await store.branches(project.id)
+            guard projectID == project.id else { return "Committed the captured project snapshot." }
             acceptGit(receipt.state, revision: revision); gitHistory = history; gitBranches = branches; gitDiff = nil
+            gitRemote = try await store.remoteState(project.id)
             userDefaults.set(author, forKey: "crabrix.git.author.name")
             userDefaults.set(email, forKey: "crabrix.git.author.email")
             return "Committed \(receipt.commit.id.prefix(8)): \(message)" +
@@ -2842,6 +2916,7 @@ extension CompilerViewModel {
         runGit("Creating local branch") { [self] store, project, revision in
             let result = try await store.createBranch(project.id, name: name, expectedHead: head, expectedRevision: state.revision)
             let branches = try await store.branches(project.id)
+            guard projectID == project.id else { return "Created the branch in the captured project." }
             acceptGit(result, revision: revision); gitBranches = branches
             return "Created branch \(name). Your current branch is still \(result.branch)."
         }
@@ -2865,8 +2940,10 @@ extension CompilerViewModel {
             gitLocksWorkspace = true
             guard applied else { throw GitRepositoryFailure("The checked-out tree could not be applied to the editor; existing source is kept.") }
             await retryProjectSave()
+            projectResourceDigest = checkout.state.resourceTreeHash
             acceptGit(checkout.state, revision: workspaceRevision)
             gitHistory = try await store.history(project.id); gitDiff = nil
+            gitRemote = try await store.remoteState(project.id)
             return "Switched to \(branch). Kept \(checkout.snapshot.opaquePaths.count) opaque files in repository storage. Diagnostics and dependency state were refreshed."
         }
     }
@@ -2914,5 +2991,193 @@ extension CompilerViewModel {
             await retryProjectSave()
             return "Restored \(preview.path) from \(preview.commit.prefix(8)). This is a working-tree edit; refresh and commit it when ready."
         }
+    }
+}
+
+extension CompilerViewModel {
+    func connectGitRemote(_ url: String) {
+        guard let state = gitState else { gitMessage = "Start local Git history first."; return }
+        runGit("Connecting HTTPS origin") { [self] store, project, revision in
+            let updated = try await store.connectRemote(project.id, url: url, expectedRevision: state.revision)
+            let remote = try await store.remoteState(project.id)
+            guard projectID == project.id else { return "Origin connected." }
+            acceptGit(updated, revision: revision); gitRemote = remote
+            if let remote { gitCredentialUsername = try? await gitCredentialVault.username(url: remote.url) }
+            return "Connected origin. Fetch and push are explicit actions."
+        }
+    }
+
+    func saveGitCredential(url: String, username: String, token: String) {
+        runGit("Saving HTTPS access in Keychain") { [self] _, project, _ in
+            try await gitCredentialVault.save(url: url, username: username, token: token)
+            if projectID == project.id { gitCredentialUsername = username }
+            return "HTTPS access saved in this device's Keychain."
+        }
+    }
+
+    func removeGitCredential(url: String) {
+        runGit("Removing saved HTTPS access") { [self] _, project, _ in
+            try await gitCredentialVault.remove(url: url)
+            if projectID == project.id { gitCredentialUsername = nil }
+            return "Removed this repository's saved access token. Local source and commits are unchanged."
+        }
+    }
+
+    func cloneGit(_ rawURL: String) {
+        let id = UUID()
+        runGit("Cloning GitHub repository", destinationProject: id) { [self] store, _, revision in
+            let address = try GitHTTPSAddress.canonical(rawURL)
+            let credential = try await gitCredentialVault.load(url: address)
+            var persisted = false
+            do {
+                let clone = try await store.clone(id, url: address, credential: credential)
+                try Task.checkCancellation()
+                try ProjectFilePolicy.validate(clone.snapshot.files)
+                let parts = URL(string: address)!.path.split(separator: "/").map(String.init)
+                let name = String(parts.last!.dropLast(4))
+                let project = CrabrixProject(id: id, name: name, files: clone.snapshot.files,
+                    entryFile: LocalProjectLoader.preferredEntryFile(in: clone.snapshot.files),
+                    provenance: .init(source: .github, owner: parts[0], repository: name,
+                        reference: clone.state.branch, commit: clone.state.head, importedAt: Date()))
+                let saved = try await projectLibrary.update(project: project, lastBuild: nil)
+                persisted = true
+                await reloadProjectLists()
+                guard isCurrent(revision), playgroundSession == nil, !Task.isCancelled else {
+                    return "Cloned \(saved.project.name) with its real Git history. Open it from My Projects; newer editor/room work was kept."
+                }
+                await retryProjectSave()
+                guard isCurrent(revision), playgroundSession == nil, !Task.isCancelled else {
+                    return "Cloned \(saved.project.name). Open it from My Projects; your current editor was kept."
+                }
+                loadProject(saved.project, resourceTreeHash: clone.state.resourceTreeHash)
+                acceptGit(clone.state, revision: workspaceRevision)
+                let history = try await store.history(id), branches = try await store.branches(id)
+                let remote = try await store.remoteState(id)
+                let username = try? await gitCredentialVault.username(url: address)
+                guard projectID == id else { return "Cloned the repository. Open it in My Projects." }
+                gitHistory = history; gitBranches = branches; gitRemote = remote; gitCredentialUsername = username
+                return "Cloned \(saved.project.name) · \(clone.state.branch) · \(clone.state.head.map { String($0.prefix(8)) } ?? "no commits"). Preserved \(clone.snapshot.opaquePaths.count) opaque files in repository storage. Nothing was executed."
+            } catch {
+                if !persisted { try? await store.delete(id) }
+                throw error
+            }
+        }
+    }
+
+    func fetchGit() {
+        guard let state = gitState, let remote = gitRemote else { gitMessage = "Connect an HTTPS origin first."; return }
+        runGit("Fetching origin") { [self] store, project, revision in
+            let credential = try await gitCredentialVault.load(url: remote.url)
+            let fetched = try await store.fetch(project.id, credential: credential, expectedRevision: state.revision)
+            let updated = try await store.status(project.id, files: project.files, expectedRevision: fetched.revision)
+            let remote = try await store.remoteState(project.id)
+            guard projectID == project.id else { return "Fetch completed for the captured project." }
+            acceptGit(updated, revision: revision); gitRemote = remote
+            return "Fetched origin. Your local branch and editor source were kept."
+        }
+    }
+
+    func pullGit() {
+        guard gitCanSwitchBranch, let state = gitState, let head = state.head, let remote = gitRemote else {
+            gitMessage = "Fast-forward pull requires a fresh, clean local branch outside a live Playground."; return
+        }
+        runGit("Fetching before fast-forward") { [self] store, project, revision in
+            let credential = try await gitCredentialVault.load(url: remote.url)
+            let fetched = try await store.fetch(project.id, credential: credential, expectedRevision: state.revision)
+            guard isCurrent(revision), playgroundSession == nil else {
+                throw GitRepositoryFailure("Fetched origin; newer editor/room work was kept. Refresh before trying a fast-forward.")
+            }
+            gitRemote = try await store.remoteState(project.id)
+            acceptGit(fetched, revision: revision)
+            gitLocksWorkspace = true; gitActivity = "Applying clean fast-forward"
+            await retryProjectSave()
+            guard isCurrent(revision), playgroundSession == nil else { throw GitRepositoryFailure("The editor changed before fast-forward. Refresh and retry.") }
+            let checkout = try await store.fastForward(project.id, files: project.files, expectedHead: head, expectedRevision: fetched.revision)
+            guard isCurrent(revision), playgroundSession == nil else { throw GitRepositoryFailure("Newer editor work was kept. Refresh Git to inspect its completed branch state.") }
+            gitLocksWorkspace = false
+            let applied = replaceProjectFilesFromTerminal(checkout.snapshot.files)
+            gitLocksWorkspace = true
+            guard applied else { throw GitRepositoryFailure("The fetched tree could not be applied to the editor; existing editor source was kept.") }
+            await retryProjectSave()
+            projectResourceDigest = checkout.state.resourceTreeHash
+            acceptGit(checkout.state, revision: workspaceRevision)
+            gitHistory = try await store.history(project.id); gitRemote = try await store.remoteState(project.id)
+            gitDiff = nil
+            return checkout.state.head == head ? "Already up to date; your local branch was kept." : "Fast-forwarded to \(checkout.state.head.map { String($0.prefix(8)) } ?? "HEAD"). No merge or rebase was performed."
+        }
+    }
+
+    func pushGit() {
+        guard let state = gitState, let head = state.head, let remote = gitRemote, !gitNeedsRefresh else {
+            gitMessage = "Refresh Git and create a commit before pushing."; return
+        }
+        runGit("Pushing committed branch") { [self] store, project, revision in
+            let credential = try await gitCredentialVault.load(url: remote.url)
+            let updated = try await store.push(project.id, credential: credential, expectedHead: head, expectedRevision: state.revision)
+            let remote = try await store.remoteState(project.id)
+            guard projectID == project.id else { return "Push completed for the captured project." }
+            acceptGit(updated, revision: revision); gitRemote = remote
+            return "Pushed \(state.branch) at \(head.prefix(8)). Uncommitted editor changes were not uploaded."
+        }
+    }
+}
+
+extension CompilerViewModel {
+    func exportGitRepository() {
+        guard let state = gitState, state.head != nil, !gitNeedsRefresh else { gitMessage = "Refresh and create a first commit before a complete repository export."; return }
+        runGit("Preparing complete repository export") { [self] store, project, revision in
+            let copy = try await store.exportCopy(project.id, files: project.files, expectedRevision: state.revision)
+            defer { try? FileManager.default.removeItem(at: copy.directory) }
+            let archive = try await GitRepositoryTransfer.create(copy: copy, project: project)
+            guard isCurrent(revision), !Task.isCancelled else {
+                try? FileManager.default.removeItem(at: archive.deletingLastPathComponent())
+                throw GitRepositoryFailure("The editor changed while the repository export was prepared. Retry for the current snapshot.")
+            }
+            acceptGit(copy.state, revision: revision)
+            gitArchiveURL = archive; gitArchiveRevision = revision
+            return "Repository export ready · complete local history and \(copy.snapshot.opaquePaths.count) opaque files."
+        }
+    }
+
+    func importGitRepository(from url: URL) async {
+        let id = UUID()
+        runGit("Importing complete repository", destinationProject: id) { [self] store, _, revision in
+            let prepared = try await GitRepositoryTransfer.unpack(url)
+            defer { try? FileManager.default.removeItem(at: prepared.directory) }
+            var persisted = false
+            do {
+                let checkout = try await store.importCopy(id, directory: prepared.directory, origin: prepared.envelope.origin)
+                try Task.checkCancellation()
+                let metadata = prepared.envelope.project, files = checkout.snapshot.files
+                try ProjectFilePolicy.validate(files)
+                try ProjectFilePolicy.verify(metadata.fileDigests, files: files)
+                let entry = files[metadata.entryFile] == nil ? LocalProjectLoader.preferredEntryFile(in: files) : metadata.entryFile
+                let project = CrabrixProject(id: id, name: metadata.name, files: files, entryFile: entry,
+                    provenance: metadata.provenance, projectDescription: metadata.projectDescription ?? "",
+                    tags: metadata.tags ?? [], folder: metadata.folder, kind: metadata.kind ?? .general, isFavorite: metadata.isFavorite ?? false)
+                let saved = try await projectLibrary.update(project: project, lastBuild: nil)
+                persisted = true
+                await reloadProjectLists()
+                guard isCurrent(revision), playgroundSession == nil, !Task.isCancelled else {
+                    return "Imported \(saved.project.name) as a new local copy with its Git history. Open it in My Projects; current editor/room work was kept."
+                }
+                await retryProjectSave()
+                guard isCurrent(revision), playgroundSession == nil, !Task.isCancelled else { return "Imported \(saved.project.name). Open the new copy in My Projects." }
+                loadProject(saved.project, resourceTreeHash: checkout.state.resourceTreeHash)
+                acceptGit(checkout.state, revision: workspaceRevision)
+                let history = try await store.history(id), branches = try await store.branches(id)
+                let remote = try await store.remoteState(id)
+                let username: String?
+                if let remote { username = try? await gitCredentialVault.username(url: remote.url) } else { username = nil }
+                guard projectID == id else { return "Imported the repository. Open the new copy in My Projects." }
+                gitHistory = history; gitBranches = branches; gitRemote = remote; gitCredentialUsername = username
+                projectTransfer = .ready("Imported a new local repository copy with complete Git history.")
+                return "Imported \(saved.project.name) · preserved commit IDs, refs and \(checkout.snapshot.opaquePaths.count) opaque files."
+            } catch {
+                if !persisted { try? await store.delete(id) }
+                throw error
+            }
+        }
+        await gitJob?.value
     }
 }
