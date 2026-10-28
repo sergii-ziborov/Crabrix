@@ -69,8 +69,7 @@ participant-name decorations as source text. The assertion now excludes those
 decorations. Two following complete runs passed both native UI tests and the
 coordinator; the last includes nonoverlapping native participant labels. Evidence: `build/playground-mcp-20261028/`.
 
-Publication and App Store delivery are recorded separately. Build 114 remains
-the selected review build until an explicit newer signed-delivery receipt exists.
+Publication and App Store delivery are recorded separately. Build 115 is now VALID / IN_BETA_TESTING / WAITING_FOR_REVIEW; its [signed-delivery receipt](app-store/release-1.1.3-build115.json) identifies the exact source and checks.
 The bridge uses existing Shared-client behavior; native Atlas and IDE changes
 are not retroactively declared part of 114.
 
@@ -89,3 +88,9 @@ A pre-activation deployment gate caught macOS AppleDouble metadata in the first
 uploaded website archive. The live container had not switched. Validated metadata
 files were removed, the image rebuilt, and the expected 402 trace assets checked
 before activation. Account storage and rollback were retained.
+
+The subsequent guide-only website release `8bbd6d0` retains the identical MCP
+0.1.0 tarball and protocol. Public responsive/download checks passed again,
+including the new Atlas guide gallery. App 1.1.3 (115) includes the qualified
+native label and offline Atlas changes; the separate desktop bridge is not an
+iOS downloaded executable. Semantic IDE prototype work is not in this build.

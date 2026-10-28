@@ -1,7 +1,7 @@
 # Offline Atlas replay and personal-code route — build 115
 
 This is the LEARN-01/LEARN-02 portion of roadmap stage 4. It is in signed
-TestFlight build 115. App Review selection is recorded separately in the delivery receipt; build 114 remains selected until replacement is confirmed.
+TestFlight/App Review build 115 (VALID / IN_BETA_TESTING / WAITING_FOR_REVIEW), source `adbc23e`. The published guide includes actual phone/iPad captures at an equal display height.
 Semantic navigation remains the subsequent IDE-01 work.
 
 ## Data and trust
