@@ -1,0 +1,47 @@
+{
+  "version": "1.1.3",
+  "buildNumber": "115",
+  "buildID": "2b8ce0c7-94e1-473e-8362-68f013c570ba",
+  "appSourceCommit": "adbc23ee49fefa50ecb09695ed9dffdaceb1146a",
+  "cloudBuildRunID": "d425fa2b-e050-40ec-987c-cb4ec14cb542",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "appStoreReview": "Build 114 remains selected until qualified website delivery and explicit review replacement",
+  "signedArtifact": {
+    "build": "115",
+    "version": "1.1.3",
+    "applicationIdentifier": "XMS5ZC28UJ.com.sergiiziborov.Crabrix",
+    "associatedDomains": [
+      "applinks:crabrix.com"
+    ],
+    "profileSupportsAssociatedDomains": true,
+    "getTaskAllow": false,
+    "appGroups": [
+      "group.com.sergiiziborov.Crabrix"
+    ],
+    "ipaSHA256": "4f7a9bbf492fe260837fc7e9f78702a28f5a02c7ad03d0b57ebe979a9810352a",
+    "debugCompilerMatchesSource": true,
+    "offlineLegalMatchesSource": true,
+    "appStoreDistributionProfile": true,
+    "rustfmtBundleMatchesSource": true,
+    "gitCoreBundleMatchesSource": true,
+    "atlasCatalogMatchesSource": true,
+    "activeAcademyCatalogMatchesSource": true,
+    "archiveActionSucceeded": true,
+    "secondaryBuildAction": "Homebrew xcodegen connection reset before source bootstrap; separate archive succeeded"
+  },
+  "qualification": {
+    "native": "34/34 on each of iPhone and iPad Simulators; no skips",
+    "nativeUI": "complete replay/personal-copy/local Run+Debug/return route on both; extra iPad Cyberpunk pass",
+    "mcp": "official SDK + Chromium + two native Simulator clients, source/selections and local Run/Debug; exact public download also passed production relay/browser Run",
+    "physicalDeviceTiming": "not claimed",
+    "semanticIDE": "prototype only; not in this build"
+  },
+  "archiveAction": "SUCCEEDED",
+  "secondaryBuildAction": {
+    "state": "FAILED",
+    "cause": "Homebrew XcodeGen bottle connection reset before source bootstrap",
+    "appArchiveAffected": false
+  },
+  "verifiedAtUTC": "2026-10-28T21:56:37.670228+00:00"
+}

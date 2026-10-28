@@ -259,6 +259,8 @@ table.plain td { color: var(--muted); }
 .guide-screenshot { margin: 2rem auto; width: 100%; max-width: 32rem; }
 .guide-screenshot img { display: block; width: 100%; height: auto; max-height: 46rem; object-fit: contain; background: #0b1016; border: 1px solid var(--line, #283443); border-radius: 1.25rem; }
 .guide-screenshot figcaption { margin-top: .8rem; font-size: .88rem; line-height: 1.65; color: var(--muted, #aab8c8); }
+.guide-atlas-screenshots .guide-screenshot a { display: flex; height: 30rem; align-items: center; justify-content: center; }
+.guide-atlas-screenshots .guide-screenshot img { width: auto; max-width: 100%; height: 100%; object-fit: contain; }
 .guide-table { overflow-x: auto; margin: 1.5rem 0; }
 .guide-table table { width: 100%; border-collapse: collapse; font-size: .95rem; line-height: 1.7; }
 .guide-table caption { text-align: left; font-weight: 700; margin-bottom: .75rem; }

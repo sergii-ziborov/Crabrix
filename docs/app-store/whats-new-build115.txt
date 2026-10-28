@@ -1,0 +1,5 @@
+Algorithm Atlas, now offline: download signed sections and play 400 source-bound recordings across 600 lesson steps. Inspect arrays, matrices, graphs, linked nodes and call frames. Pause, step, scrub and change speed. Open an editable personal copy, then run and debug your own code locally.
+
+Playground collaboration now has clearer participant labels. The optional desktop MCP bridge lets Claude and other MCP hosts read and edit an explicitly connected encrypted room and share a selection with your phone, tablet or browser. Source changes never execute automatically. Download and setup: crabrix.com/playground/mcp/.
+
+Includes native Git, complete repository transfer, local unit tests, rustfmt and the existing Rust + Web workspace. Compilation and execution stay on each client. No app account required.

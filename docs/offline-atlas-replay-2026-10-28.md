@@ -1,7 +1,7 @@
-# Offline Atlas replay and personal-code route — candidate
+# Offline Atlas replay and personal-code route — build 115
 
-This is the LEARN-01/LEARN-02 portion of roadmap stage 4. It is not in signed
-TestFlight/App Review build 114, which contains the qualified Git delivery.
+This is the LEARN-01/LEARN-02 portion of roadmap stage 4. It is in signed
+TestFlight build 115. App Review selection is recorded separately in the delivery receipt; build 114 remains selected until replacement is confirmed.
 Semantic navigation remains the subsequent IDE-01 work.
 
 ## Data and trust
@@ -69,8 +69,9 @@ formats preserve optional provenance.
 - Course preparation reuses the actual public archive after its SHA-256 check.
   The large illustrated course is separate from small optional trace sections.
   An interrupted network-preparation attempt is not counted as a product pass.
-- No signed-delivery or physical-device claim is made. This app candidate is
-  separate from signed build 114. Semantic IDE work remains open.
+- Signed build 115 has been verified against source `adbc23e` and is VALID / IN_BETA_TESTING. Its archive action succeeded; a redundant Cloud Build action failed while downloading XcodeGen before source bootstrap. No physical-device timing is claimed. Semantic IDE work remains open.
+
+[Build 115 delivery receipt](app-store/release-1.1.3-build115.json).
 
 Evidence is in `build/atlas-offline-20261028/`. Rebuild data with
 `scripts/build_atlas_packs.py` and an explicitly supplied publisher seed outside

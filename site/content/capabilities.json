@@ -9,9 +9,9 @@
     },
     "testFlightApp": {
       "version": "1.1.3",
-      "build": "114",
-      "sourceCommit": "c213fbf71a70431364272cd21ff90fafe07c834d",
-      "evidence": "docs/app-store/release-1.1.3-build114.json"
+      "build": "115",
+      "sourceCommit": "adbc23ee49fefa50ecb09695ed9dffdaceb1146a",
+      "evidence": "docs/app-store/release-1.1.3-build115.json"
     }
   },
   "capabilities": [
@@ -52,7 +52,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (114)",
+          "version": "1.1.3 (115)",
           "profile": "Source checkpoints; bounded String/Vec/concrete-struct previews; active async polls. No DWARF or arbitrary watch expressions."
         },
         {
@@ -70,7 +70,7 @@
           "surface": "ios",
           "state": "testflight",
           "profile": "Selected executable or rlib entry; distinct from Check and Run. Terminal cargo build does not invoke main; bounded supported build scripts remain compile-time work.",
-          "version": "1.1.3 (114)"
+          "version": "1.1.3 (115)"
         }
       ]
     },
@@ -133,8 +133,9 @@
         },
         {
           "surface": "ios",
-          "state": "planned",
-          "profile": "Offline signed delivery and native playback are roadmap stage 4."
+          "state": "testflight",
+          "profile": "20 optional signed sections; 400 source-bound recordings for 600 Atlas steps. Offline native replay, exact data inspection and personal editable copies with real local Run/Debug. Recordings do not execute changed code.",
+          "version": "1.1.3 (115)"
         }
       ]
     },
@@ -158,7 +159,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (114)",
+          "version": "1.1.3 (115)",
           "profile": "Format-3 file inventory; supported hidden files; visible save outcomes, retry and raw recovery/source exports. Full Git history and opaque resources use the separate .crabrixrepo format."
         }
       ],
@@ -175,7 +176,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (114)",
+          "version": "1.1.3 (115)",
           "profile": "Real bundled libtest, isolated single-threaded WASM guests, discovery/filter/Stop and source-bound results. Ignored tests skipped; should_panic unsupported in panic-abort profile. No integration targets, dev-dependencies or doctests."
         }
       ]
@@ -187,7 +188,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (114)",
+          "version": "1.1.3 (115)",
           "profile": "Pinned real rustfmt WASI, file/project/check mode, edition/root scalar config subset, atomic revision-checked replacement and Undo. No user Rust execution or network."
         }
       ],
@@ -204,7 +205,7 @@
           "surface": "ios",
           "state": "testflight",
           "profile": "libgit2 1.9.7; status/diff/selected commits/history/restore/branches; GitHub HTTPS clone/fetch, clean fast-forward pull and explicit non-force push; private access in device-only Keychain. No SSH/LFS/submodules/rebase or arbitrary hooks.",
-          "version": "1.1.3 (114)"
+          "version": "1.1.3 (115)"
         }
       ],
       "evidence": "docs/git-https-portability-2026-10-28.md"
@@ -217,7 +218,7 @@
           "surface": "ios",
           "state": "testflight",
           "profile": ".crabrixrepo: actual commit IDs, refs, worktree bytes and modes; new local identity on import; validated inventory/objects/config. Package caches and credentials excluded. Opaque resources participate in local build/Debug cache identity.",
-          "version": "1.1.3 (114)"
+          "version": "1.1.3 (115)"
         }
       ],
       "limits": {
@@ -228,5 +229,5 @@
       }
     }
   ],
-  "verifiedAtUTC": "2026-10-28T20:28:45.598963+00:00"
+  "verifiedAtUTC": "2026-10-28T21:56:09.206825+00:00"
 }

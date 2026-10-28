@@ -18,6 +18,7 @@ const contents = [
   ["git", "Git history, GitHub and full repository copies"],
   ["web", "Local HTML, CSS and JavaScript"],
   ["terminal", "The project terminal"], ["learn", "Lessons and examples"],
+  ["atlas", "Offline Algorithm Atlas replay"],
   ["devices", "iPhone, iPad and Duo"], ["limits", "Compiler and runtime boundaries"],
   ["playground", "Playgrounds and live interviews"],
   ["troubleshooting", "Troubleshooting and sharing"],
@@ -50,7 +51,7 @@ export default function GuidePage() {
       <h1>From your first Rust file to an offline project.</h1>
       <p className="lede">Create, edit, check and run Rust on your device. This guide shows where each part of Crabrix lives, how to prepare dependencies before going offline, and how to tell a code error from a platform requirement.</p>
       <p>Compilation and program execution take place on the device. Crabrix does not upload your project to a remote compiler. Downloading a public repository, a new crate or a course update needs a connection; using material already prepared on the device does not require an app account.</p>
-      <p><strong>Version note:</strong> the offline web lab is published in Crabrix 1.1.2. TestFlight 1.1.3 (114) adds native Git and full repository copies alongside local unit tests, rustfmt, saving/recovery, compile-only Build and source Debug. Compiler experiments are identified separately on the <Link href="/technology/">Technology page</Link>; a benchmark of a candidate compiler does not mean that compiler is already installed in your App Store build. Check your app version in Settings before following a newly added workflow.</p>
+      <p><strong>Version note:</strong> the offline web lab is published in Crabrix 1.1.2. TestFlight 1.1.3 (115) adds offline Atlas playback and clearer Shared participant labels. It includes native Git, full repository copies, local unit tests, rustfmt, saving/recovery, compile-only Build and source Debug. Compiler experiments are identified separately on the <Link href="/technology/">Technology page</Link>; a benchmark of a candidate compiler does not mean that compiler is already installed in your App Store build. Check your app version in Settings before following a newly added workflow.</p>
       <nav className="article-toc" aria-label="Guide contents"><strong>In this guide</strong><ol>{contents.map(([id, label]) => <li key={id}><a href={`#${id}`}>{label}</a></li>)}</ol></nav>
     </div>
     <article className="article-content guide-content">
@@ -189,6 +190,18 @@ export default function GuidePage() {
         <p>The website's <Link href="/learn/">Academy</Link> provides public lesson previews and complete lessons in a free website account. The native app's local compiler and downloaded learning material do not require that website login. Optional online account or Game Center features are separate from local compilation.</p>
         <div className="guide-screenshots"><Screenshot name="iphone-learn" alt="Downloaded Rust courses in Crabrix Learn" caption="Download a course while connected, then keep reading it offline." /><Screenshot name="iphone-examples" alt="Crabrix Code Examples learning path" caption="Examples connect the explanation and illustration to an editable Rust project." /></div>
         <Screenshot name="iphone-example-detail" alt="Ferris Pixel Art example with its explanation, infographic and Open in Code button" caption="An example guide explains what to notice. Open in Code creates your own editable project; future course updates keep that project intact." />
+      </section>
+      <section id="atlas"><h2>Offline Algorithm Atlas replay</h2>
+        <p><strong>Available in TestFlight 1.1.3 (115).</strong> In Learn, open Algorithms, choose a lesson and tap <strong>Watch algorithm steps</strong>. Download its signed section while connected. The 20 optional sections contain 400 recordings covering all 600 Atlas lesson steps; install only the sections you need. After acquisition, playback and data inspection work offline without an account.</p>
+        <ol>
+          <li><strong>Follow the state:</strong> the highlighted Rust statement is the next recorded statement. Values describe the state before that statement. Blue identifies the current array index; green marks a changed value. Open the exact data to inspect values that do not fit in a diagram.</li>
+          <li><strong>Control the recording:</strong> use Previous, Next, Restart, Play/Pause, playback speed or the scrubber. The controls stay at the bottom while you inspect source, variables and call frames. Moving away pauses playback.</li>
+          <li><strong>Try your own input:</strong> choose <strong>Open personal copy in Code</strong>, edit the source and use Run or Debug. This creates an ordinary durable project. A recording stays bound to its original source; it does not pretend to show your changed program.</li>
+          <li><strong>Return safely:</strong> open Project settings → <strong>Return to lesson</strong>. Your edited copy remains available in My Projects. Replaying or opening a copy does not silently complete a challenge or replace your course progress.</li>
+        </ol>
+        <p>The app checks publisher signatures, recording bytes and the lesson source digest before opening a replay. If an older installed course does not match, update that course explicitly, then reopen the lesson. Removing a downloaded Atlas section leaves your projects and learning progress intact. Course illustrations and the small replay section are separate downloads.</p>
+        <div className="guide-screenshots guide-atlas-screenshots"><Screenshot name="iphone-atlas-replay" alt="Crabrix offline Algorithm Atlas recording on iPhone with fixed step controls" caption="iPhone: a verified recording, state before the highlighted statement, and playback controls. Open the image for full size." width={1206} height={2622} /><Screenshot name="ipad-atlas-replay" alt="Crabrix Algorithm Atlas playback in an iPad sheet using Amber Circuit" caption="iPad: the same replay in a bounded sheet, with the lesson still visible behind it. Open the image for full size." width={2064} height={2752} /></div>
+        <p><strong>Recorded target:</strong> these examples were recorded using native Rust 1.99.0. Personal projects use the bundled wasm32-wasip1 compiler; target-sized types can have different limits. Recording details identify that target and any omitted captures. For the live state of your own source, use local Debug. The website also offers <Link href="/learn/algorithms/">interactive Atlas recordings</Link>.</p>
       </section>
       <section id="devices"><h2>8. Work on iPhone, iPad and Duo</h2>
         <p>On iPhone, Files opens the project navigator while the editor stays focused on the selected source. On iPad, the wider workspace can show the file sidebar alongside the editor and in-file search. Search finds text within the open file; it does not change which project is compiled.</p>
