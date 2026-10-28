@@ -13,15 +13,16 @@ participate in local compilation, Debug and cache identity. Compilation and
 execution stay on the device; the editor/Duo geometry is preserved.
 [Profile and qualification](docs/git-https-portability-2026-10-28.md),
 [delivery identity](docs/app-store/release-1.1.3-build114.json).
-The website and replacement App Review selection are being updated; build 113
-remains the prior review submission until the replacement is confirmed.
+Build 114 is selected for **WAITING_FOR_REVIEW** with manual publication.
+The website guide/capability record and offline source/license downloads are
+published and read back. Build 113 was superseded after these gates passed.
 
 ## Local Rust tools — TestFlight 1.1.3 (113)
 
 Real selected-entry `cargo test` now provides discovery, filtering, isolated
 failures, bounded reports and Stop. Pinned bundled rustfmt supports a file or
 project, check mode, revision guards and Undo. Both run locally. Build **113**
-is **VALID / IN_BETA_TESTING** from source `d868251`; it is selected for **WAITING_FOR_REVIEW** with manual publication. [Profile and qualification](docs/rust-tools-2026-10-28.md),
+is **VALID / IN_BETA_TESTING** from source `d868251`; it was superseded by build 114 for App Review after signed qualification. [Profile and qualification](docs/rust-tools-2026-10-28.md),
 [delivery identity](docs/app-store/release-1.1.3-build113.json).
 The [Git follow-up](docs/local-git-2026-10-28.md) adds local history,
 GitHub HTTPS/private access and complete `.crabrixrepo` portability. Real private

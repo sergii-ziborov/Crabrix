@@ -1,6 +1,6 @@
 # Changelog
 
-## In development — native Git and complete repository transfer
+## 1.1.3 (114) — native Git, TestFlight and App Review
 
 - Real local Git history in storage independent of editable-project snapshots.
   Status, per-file diff, selected commits, History, previewed Restore and branches.
@@ -16,7 +16,8 @@
   credentials enter the guest filesystem.
 - Standard desktop Git interoperability, actual private HTTPS/cancellation,
   and 18 native cases plus four UI scenarios on each phone/iPad Simulator passed.
-  Signed-delivery qualification continues separately from build 113.
+  Signed build114 is VALID / IN_BETA_TESTING / WAITING_FOR_REVIEW; the public
+  guide, capability record and source/license downloads are updated.
 
 ## 1.1.3 (113) — TestFlight and App Review
 

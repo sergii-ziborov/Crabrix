@@ -1,8 +1,9 @@
 # Native Git HTTPS and complete portability — stage 3B
 
-Candidate on `codex/offline-browser-packages-20261027`; separate from TestFlight
-and App Review 1.1.3 (113). The latter contains Test/Format and reliability work,
-but no Git. A source implementation is not a signed delivery.
+Delivered in signed **1.1.3 (114)** from `c213fbf`: VALID / IN_BETA_TESTING /
+WAITING_FOR_REVIEW, manual publication. [Delivery identity](app-store/release-1.1.3-build114.json).
+Build113 contains Test/Format and reliability work but no Git; it was superseded
+only after signed qualification, TestFlight availability and the public guide.
 
 ## Using the candidate
 
@@ -89,7 +90,7 @@ Remote/fetch and full export; local commit/history/Restore; Rust Test/Format/Und
 and the existing Rust + Web breakpoint/Step/offline preview. The four editor dock
 tabs and source remain intact. Remote and export captures are retained under
 `docs/screenshots/iphone-git-*` and `ipad-git-*`; the public guide uses actual phone
-captures. Website type checking, 34 tests and production build passed. A final
-signed bundle and confirmed Apple delivery remain release gates.
+captures. Website type checking, 34 tests and production build passed. The signed bundle and delivery gates passed: exact corresponding-source resources,
+App Store profile, original entitlements and public website bytes were verified.
 
 These Simulator/desktop results do not claim physical-iPhone measurements.

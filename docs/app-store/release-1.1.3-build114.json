@@ -29,6 +29,37 @@
   },
   "qualification": "Nine actual desktop core cases including private HTTPS/push/cancellation. 18 native cases passed on each phone/iPad Simulator; final 18-case bundle rerun passed after resource refresh. Four UI scenarios passed on each platform. Site type check, 34 tests, production build and responsive guide browser flow passed.",
   "physicalDeviceGate": "Not run; physical iPhone unavailable. No new physical-device benchmark or Universal Link claim.",
-  "deliveryStage": "TestFlight available; website and replacement App Review submission in progress",
-  "verifiedAtUTC": "2026-10-28T20:28:45.598963+00:00"
+  "deliveryStage": "TestFlight available; selected for App Review; website published",
+  "verifiedAtUTC": "2026-10-28T20:40:23.907820+00:00",
+  "versionID": "4c60d52b-ca5b-4bbd-a206-799d4e4cd12c",
+  "versionState": "WAITING_FOR_REVIEW",
+  "reviewID": "a4ea61ab-27ad-41c9-b79b-555f35e7d879",
+  "reviewState": "WAITING_FOR_REVIEW",
+  "releaseType": "MANUAL",
+  "selectedBuild": "114",
+  "screenshots": [
+    {
+      "displayType": "APP_IPHONE_DUO",
+      "count": 2,
+      "complete": 2,
+      "firstFile": "v111-iphone-duo-qa-01-laptop-code.png"
+    },
+    {
+      "displayType": "APP_IPAD_PRO_3GEN_129",
+      "count": 7,
+      "complete": 7,
+      "firstFile": "v111-ipad-13-01-build.png"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "count": 10,
+      "complete": 10,
+      "firstFile": "v111-iphone-6.9-01-build.png"
+    }
+  ],
+  "storeMetadataReadback": "exact match",
+  "websiteSourceCommit": "1a07134",
+  "websiteImage": "79b25ce1c50b89ea36c62278e89e9f6f5a6e7fd98c4b6549352ff139c0171223",
+  "websitePublishedAtUTC": "2026-10-28T20:38:17Z",
+  "supersedes": "Build113 review replaced only after 114 was VALID, signed resources matched, TestFlight was available and the public guide was updated."
 }
