@@ -1,0 +1,47 @@
+{
+  "package": "crabrix-playground-mcp",
+  "version": "0.1.1",
+  "tarball": "https://registry.npmjs.org/crabrix-playground-mcp/-/crabrix-playground-mcp-0.1.1.tgz",
+  "sha256": "883ec089d808fa91ec26fffab18b7ba4232d95e3d74fc3d88e99a38c009b4d5b",
+  "integrity": "sha512-SZFvO8wF88i+yRBIJuuhGeQGVYa8+7EKGSuiIT8W02x2H8ULpTvER28bY8he7E8IwOfAB+eicfklwyTW3Rz01w==",
+  "exactWebsiteArchive": true,
+  "maintainers": [
+    "sergii-ziborov"
+  ],
+  "scripts": {
+    "test": "node test.mjs",
+    "build": "node build.mjs",
+    "check": "tsc --noEmit"
+  },
+  "runtimeDependencies": {},
+  "qualification": {
+    "at": "2026-10-28T22:43:17.223Z",
+    "origin": "https://crabrix.com",
+    "exactRegistryInstalledCLI": true,
+    "tools": 8,
+    "conditionalEdits": true,
+    "mcpChangesInBrowser": true,
+    "namedSelection": true,
+    "browserLocalStdout": "mcp-public=42",
+    "creatorClosedRoom": true,
+    "noBackendExecution": true,
+    "pageErrors": [],
+    "liveModelProviderInvocation": false
+  },
+  "website": {
+    "source": "eadec50f0b873b6fff5705ed1823dd13247deb68",
+    "publishedAt": "2026-10-28T22:46:13Z",
+    "imageDigest": "5318195dc08cd6dfbe04ed9704d6fbd5741eb700763f8a8ac46c201879e6d7b3",
+    "url": "https://crabrix.com/playground/mcp/",
+    "qaAt": "2026-10-28T22:46:37.261Z",
+    "equalCardsAndResponsiveCases": 6,
+    "rollback": "crabrix-web-site-before-mcp011-20261029",
+    "accountBindUnchanged": true
+  },
+  "appReviewReadback": {
+    "version": "1.1.3",
+    "state": "WAITING_FOR_REVIEW",
+    "selectedBuild": "115",
+    "processing": "VALID"
+  }
+}

@@ -46,3 +46,8 @@ the pinned install/configuration text and exact downloadable archive.
 
 Discovery, diagnostics and explicitly permitted local execution through MCP
 remain separate open work in the [full plan audit](roadmap/audit-2026-10-29.md).
+
+The page, pinned archive and capability metadata were published at
+2026-10-28T22:46:13Z from `eadec50`. Public readback passed all six layout cases
+and the archive digest. Accounts retain the existing bind; the previous image
+is kept for rollback. [Delivery receipt](playground-mcp-npm-qualification-2026-10-29.json).
