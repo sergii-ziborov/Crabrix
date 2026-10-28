@@ -8,6 +8,7 @@ import { SyntaxCode } from "@/components/SyntaxCode";
 import { currentViewer } from "@/lib/auth";
 import { lessonPreview } from "@/lib/lesson-preview";
 import { StructuredData } from "@/components/structured-data";
+import { CourseIcon } from "@/components/course-icon";
 
 export const dynamic = "force-dynamic";
 
@@ -51,7 +52,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
     return <div className="site-shell lesson-page">
       {structuredData}
       <nav className="breadcrumbs" aria-label="Breadcrumbs"><Link href="/learn/">Learn</Link><span>/</span><Link href={`/learn/${course.id}/`}>{course.title}</Link><span>/</span><span>{unit.title}</span></nav>
-      <div className="page-intro lesson-content"><p className="eyebrow">{unit.title} · {lesson.minutes} min · free with an account</p><h1>{lesson.title}</h1>
+      <div className="page-intro lesson-content"><p className="eyebrow">{unit.title} · {lesson.minutes} min · free with an account</p><div className="academy-heading"><CourseIcon course={course.id} size={64} /><h1>{lesson.title}</h1></div>
         <span className="preview-label">Lesson preview · about 30%</span><p className="lede">{prose(preview.summary)}</p>
         {preview.rule && <div className="lesson-callout"><strong>Core idea</strong><p>{prose(preview.rule)}</p></div>}
       </div>
@@ -87,7 +88,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
       </nav>
       <div className="page-intro lesson-content">
         <p className="eyebrow">{unit.title} · {lesson.minutes} min · free lesson</p>
-        <h1>{lesson.title}</h1>
+        <div className="academy-heading"><CourseIcon course={course.id} size={64} /><h1>{lesson.title}</h1></div>
         <p className="lede">{prose(writing?.summary || lesson.concept)}</p>
         {writing?.rule && <div className="lesson-callout"><strong>Core idea</strong><p>{prose(writing.rule)}</p></div>}
       </div>

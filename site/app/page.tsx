@@ -1,10 +1,12 @@
 import { pageMetadata } from "@/lib/seo";
 import { StructuredData } from "@/components/structured-data";
 import { legacyMain } from "@/lib/legacy";
+import { ScreenshotGalleries } from "@/components/screenshot-galleries";
 
 export const metadata = pageMetadata({"title": "Rust Compiler for iPhone, iPad & Duo", "description": "Compile Rust locally on iPhone, iPad and iPhone Duo. Explore supported Cargo projects, 742 illustrated lessons and 46 code examples with Crabrix.", "path": "/"});
 
 export default function HomePage() {
+  const [beforeGallery, afterGallery] = legacyMain("index").split("<!-- screenshot-galleries -->");
   return <>
     <StructuredData data={{ "@context": "https://schema.org", "@graph": [
       { "@type": "WebSite", name: "Crabrix", url: "https://crabrix.com/", inLanguage: "en" },
@@ -15,6 +17,10 @@ export default function HomePage() {
         featureList: ["Local Rust compilation", "Supported Cargo dependencies", "742 lessons and steps", "46 code examples"],
       },
     ] }} />
-    <div className="home-page legacy-page" dangerouslySetInnerHTML={{ __html: legacyMain("index") }} />
+    <div className="home-page legacy-page">
+      <div dangerouslySetInnerHTML={{ __html: beforeGallery }} />
+      <ScreenshotGalleries />
+      <div dangerouslySetInnerHTML={{ __html: afterGallery }} />
+    </div>
   </>;
 }

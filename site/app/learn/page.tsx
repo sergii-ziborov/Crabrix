@@ -1,6 +1,7 @@
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { courseSnapshot, courseLessons } from "@/lib/courses";
+import { CourseIcon } from "@/components/course-icon";
 
 export const metadata = pageMetadata({"title": "Learn Rust Free: 742 Lessons and Algorithm Atlas Steps", "description": "Start Rust Basics, ownership, Cargo and algorithms with clear examples and infographics. Preview any lesson; a free account opens the complete Academy.", "path": "/learn/"});
 
@@ -18,7 +19,7 @@ export default function LearnPage() {
         {snapshot.courses.map((course) => (
           <Link className="course-card" href={`/learn/${course.id}`} key={course.id}>
             <span className="card-kicker">{course.level} · {course.units.length} units</span>
-            <h2>{course.title}</h2>
+            <div className="course-card-heading"><CourseIcon course={course.id} /><h2>{course.title}</h2></div>
             <p>{course.subtitle}</p>
             <span className="card-meta">{courseLessons(course).length} lessons →</span>
           </Link>

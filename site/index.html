@@ -323,28 +323,7 @@
     </div>
   </section>
 
-  <section id="screens">
-    <div class="wrap">
-      <h2>On the device</h2>
-      <p class="section-lede">Choose a course, keep it offline, then turn an idea into a project in the native Rust editor.</p>
-      <div class="shots reveal-group">
-        <figure><img src="screenshots/iphone-academy.png" alt="Downloaded Crabrix courses with lesson progress and Start buttons"><figcaption>Study offline</figcaption></figure>
-        <figure><img src="screenshots/iphone-lesson.png" alt="Borrowing lesson with a highlighted Rust example and an infographic explaining when a borrow ends"><figcaption>Code, diagrams and explanations</figcaption></figure>
-        <figure><img src="screenshots/iphone-build.png" alt="Crabrix Rust project editor with source files and Code, Problems, Output and Terminal tabs"><figcaption>Edit and run Rust</figcaption></figure>
-        <figure><img src="screenshots/duo-laptop.png" alt="Crabrix on iPhone Duo in laptop posture with project search, Rust editor, code tabs and keyboard"><figcaption>Write Rust on Duo</figcaption></figure>
-        <figure><img src="screenshots/duo-output.png" alt="Crabrix on iPhone Duo showing a completed local run, program output and rating"><figcaption>See the result on Duo</figcaption></figure>
-        <figure><img src="screenshots/iphone-examples.png" alt="Code Examples path with every Rust example open"><figcaption>Code Examples</figcaption></figure>
-        <figure><img src="screenshots/iphone-example-detail.png" alt="Example description, source preview and Open in Code button"><figcaption>Read, then open in Code</figcaption></figure>
-        <figure><img src="screenshots/iphone-cyberpunk-settings.png" alt="Cyberpunk appearance and local app protection in Settings"><figcaption>Cyberpunk and app protection</figcaption></figure>
-      </div>
-      <div class="wide">
-        <figure>
-          <img src="screenshots/ipad-build.png" alt="Crabrix workspace on iPad with project files, in-file search and Rust editor">
-          <figcaption>The iPad workspace: project files, in-file search, and the Rust editor.</figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
+  <!-- screenshot-galleries -->
 
   <section id="learn">
     <div class="wrap">
@@ -353,17 +332,18 @@
         Six language courses with 142 lessons, plus 20 independent solution-method chapters with 200 patterns and 600 steps ordered inside their method.
       </p>
       <div class="curriculum reveal-group">
-        <div class="unit"><strong>Rust Foundations</strong><span>Types, operators, functions, control flow, docs</span></div>
-        <div class="unit"><strong>Ownership &amp; Borrowing</strong><span>Moves, borrows, slices, Copy, Drop, lifetimes</span></div>
-        <div class="unit"><strong>Modeling Data</strong><span>Structs, enums, Option/Result, strings, patterns</span></div>
-        <div class="unit"><strong>Abstractions</strong><span>Generics, traits, closures, iterators, operators</span></div>
-        <div class="unit"><strong>Real Projects</strong><span>Modules, tests, errors, dependencies, workspaces</span></div>
-        <div class="unit"><strong>Smart Pointers</strong><span>Box, Rc, RefCell, Deref, Drop, cycles</span></div>
-        <div class="unit"><strong>Fearless Concurrency</strong><span>Threads, channels, Mutex, Send &amp; Sync</span></div>
-        <div class="unit"><strong>Async Rust</strong><span>Futures, runtimes, join and cancellation</span></div>
-        <div class="unit"><strong>Macros</strong><span>macro_rules!, proc macros, cfg and features</span></div>
-        <div class="unit"><strong>Systems Rust</strong><span>unsafe, FFI, performance, idioms</span></div>
-        <div class="unit"><strong>Algorithm Atlas</strong><span>20 independent methods, 200 patterns, HOW → WHEN → Rust challenge</span></div>
+        <a class="unit" href="/learn/basics/#foundations"><img class="course-icon" src="/course-icons/basics.webp" width="44" height="44" alt="" loading="lazy"><strong>Rust Foundations</strong><span>Types, operators, functions, control flow, docs</span></a>
+        <a class="unit" href="/learn/ownership/#ownership"><img class="course-icon" src="/course-icons/ownership.webp" width="44" height="44" alt="" loading="lazy"><strong>Ownership &amp; Borrowing</strong><span>Moves, borrows, slices, Copy, Drop, lifetimes</span></a>
+        <a class="unit" href="/learn/basics/#modeling"><img class="course-icon" src="/course-icons/basics.webp" width="44" height="44" alt="" loading="lazy"><strong>Modeling Data</strong><span>Structs, enums, Option/Result, strings, patterns</span></a>
+        <a class="unit" href="/learn/ownership/#abstraction"><img class="course-icon" src="/course-icons/ownership.webp" width="44" height="44" alt="" loading="lazy"><strong>Abstractions</strong><span>Generics, traits, closures, iterators, operators</span></a>
+        <a class="unit" href="/learn/projects/#projects"><img class="course-icon" src="/course-icons/projects.webp" width="44" height="44" alt="" loading="lazy"><strong>Real Projects</strong><span>Modules, tests, errors, dependencies, workspaces</span></a>
+        <a class="unit" href="/learn/projects/#pointers"><img class="course-icon" src="/course-icons/projects.webp" width="44" height="44" alt="" loading="lazy"><strong>Smart Pointers</strong><span>Box, Rc, RefCell, Deref, Drop, cycles</span></a>
+        <a class="unit" href="/learn/concurrency/#threads"><img class="course-icon" src="/course-icons/concurrency.webp" width="44" height="44" alt="" loading="lazy"><strong>Fearless Concurrency</strong><span>Threads, channels, Mutex, Send &amp; Sync</span></a>
+        <a class="unit" href="/learn/concurrency/#async"><img class="course-icon" src="/course-icons/concurrency.webp" width="44" height="44" alt="" loading="lazy"><strong>Async Rust</strong><span>Futures, runtimes, join and cancellation</span></a>
+        <a class="unit" href="/learn/systems/#meta"><img class="course-icon" src="/course-icons/systems.webp" width="44" height="44" alt="" loading="lazy"><strong>Macros</strong><span>macro_rules!, proc macros, cfg and features</span></a>
+        <a class="unit" href="/learn/systems/#systems"><img class="course-icon" src="/course-icons/systems.webp" width="44" height="44" alt="" loading="lazy"><strong>Systems Rust</strong><span>unsafe, FFI, performance, idioms</span></a>
+        <a class="unit" href="/learn/algorithms/"><img class="course-icon" src="/course-icons/algorithms.webp" width="44" height="44" alt="" loading="lazy"><strong>Algorithm Atlas</strong><span>20 independent methods, 200 patterns, HOW → WHEN → Rust challenge</span></a>
+        <a class="unit" href="/learn/interview/"><img class="course-icon" src="/course-icons/interview.webp" width="44" height="44" alt="" loading="lazy"><strong>Rust Interview Prep</strong><span>Language questions, systems design and live coding</span></a>
       </div>
       <p class="section-lede" style="margin-top:28px">
         Plus Quick Practice, Term Train with a timed mode, Code Recall, 37 achievement ladders of five tiers each, and a rating you earn across everything you do.
