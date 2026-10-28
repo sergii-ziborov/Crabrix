@@ -1,0 +1,36 @@
+Learn Rust, then make it run. Crabrix brings an illustrated Academy and a native coding workspace to iPhone and iPad. The Rust compiler ships in the app: no cloud compiler or app account is required.
+
+ACADEMY, AVAILABLE OFFLINE
+Seven courses and Algorithm Atlas cover Rust, Cargo and 200 algorithm patterns. Study 742 lessons and steps with explanations, highlighted code, questions and illustrations. Download courses, then study offline. Signed updates preserve progress and edited projects. Website Academy accounts are separate.
+
+46 OPEN CODE EXAMPLES
+Explore every example in any order with guides, source previews and READMEs. Open in Code creates an editable local project. 
+
+PROJECT WORKSPACE
+Use project files, syntax highlighting, indentation, search and Code, Problems, Output and Terminal views. Check finds Rust compiler errors; Run builds and executes in a bounded WebAssembly sandbox. Output shows results and build stages. Package progress shows downloads, integrity checks, failures and dependencies.
+
+Format Rust files or projects with bundled rustfmt, check formatting and undo changes.
+
+Import public GitHub repositories or Files. Organise, save and export local work. iPad has a file sidebar and search; iPhone Duo adapts the workspace to its fold.
+
+CARGO ON DEVICE
+Resolve up to 2,048 Cargo packages, verify source checksums and pin archives for offline rebuilds. Standard-library-only build scripts run as bounded WASI guests. The target is wasm32-wasip1. Native linking, host subprocesses, separate build-dependency graphs and procedural macros remain unsupported. Arbitrary desktop repositories may not build. Selected-entry unit tests use real local libtest with filtering and isolated failures. Dev-dependencies, integration tests and doctests remain unsupported.
+
+BROWSER PROJECTS AND NPM IMPORTS
+Create HTML/CSS/JavaScript pages, generate them with Rust, or import browser projects with package.json. Explicit npm install/ci saves imported modules and licenses as editable local source. Run/Check then build without fetching packages.
+
+Build JavaScript, TypeScript syntax and JSX/TSX locally. Supported npm dev/start/build/check commands map to browser operations. Preview runs in isolated WebKit with external requests blocked. TypeScript is transpiled without type checking. Node/Bun servers, arbitrary package scripts, build plugins and native addons are not included. 
+
+LOCAL RUST DEBUGGER
+Set breakpoints, step through Rust and async functions, and inspect frames, String, Vec and concrete struct previews locally. Const bodies, macro internals and arbitrary memory inspection remain outside scope.
+
+TEMPORARY PLAYGROUNDS
+Share an encrypted source session with another Crabrix app or the free browser Playground. Edit together with live cursors and selections, without signing in. Links default to one hour and expire within 24 hours. The relay holds ciphertext only in RAM; a server restart can end a room early. Save a local copy or download source before expiry. Sessions allow 16 text files, 64 KiB/file and 128 KiB total; packages and images are not shared. Each participant runs code locally and explicitly. The browser compiler supports the standard library and local modules.
+
+PRACTISE AND PERSONALISE
+Quick Practice, Term Train and Code Recall reinforce learning. Progress and achievements are earned locally.  Choose Auto, Light, Dark, Amber Circuit or Cyberpunk. Optional Face ID or device-passcode protection locks your workspace when you leave the app.
+
+YOUR WORK STAYS LOCAL
+No advertising, analytics SDK or cloud compiler. Code, learning history and output stay on device unless you export or share. Requested content downloads, crates.io/npm preparation, public imports and optional live sharing need a connection. Prepare sources and lessons once, then work offline.
+
+Privacy, Terms and full third-party licenses are readable offline in Settings. Your original code remains yours. One purchase; no subscription or in-app purchase is required.

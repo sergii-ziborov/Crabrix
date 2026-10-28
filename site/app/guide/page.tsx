@@ -14,6 +14,7 @@ const contents = [
   ["quick-start", "A ten-minute walkthrough"],
   ["first-project", "Your first project"], ["files", "Files and imports"], ["saving", "Saving and recovery"],
   ["packages", "Packages and offline preparation"], ["build", "Check, Run and build stages"],
+  ["rust-tools", "Local unit tests and rustfmt"],
   ["web", "Local HTML, CSS and JavaScript"],
   ["terminal", "The project terminal"], ["learn", "Lessons and examples"],
   ["devices", "iPhone, iPad and Duo"], ["limits", "Compiler and runtime boundaries"],
@@ -48,7 +49,7 @@ export default function GuidePage() {
       <h1>From your first Rust file to an offline project.</h1>
       <p className="lede">Create, edit, check and run Rust on your device. This guide shows where each part of Crabrix lives, how to prepare dependencies before going offline, and how to tell a code error from a platform requirement.</p>
       <p>Compilation and program execution take place on the device. Crabrix does not upload your project to a remote compiler. Downloading a public repository, a new crate or a course update needs a connection; using material already prepared on the device does not require an app account.</p>
-      <p><strong>Version note:</strong> the offline web lab is published in Crabrix 1.1.2; the saving/recovery and compile-only Build update is in 1.1.3 (111), available in TestFlight and submitted for App Review. Compiler experiments are identified separately on the <Link href="/technology/">Technology page</Link>; a benchmark of a candidate compiler does not mean that compiler is already installed in your App Store build. Check your app version in Settings before following a newly added workflow.</p>
+      <p><strong>Version note:</strong> the offline web lab is published in Crabrix 1.1.2. TestFlight 1.1.3 (113) adds local unit tests and rustfmt alongside saving/recovery, compile-only Build and source Debug. Compiler experiments are identified separately on the <Link href="/technology/">Technology page</Link>; a benchmark of a candidate compiler does not mean that compiler is already installed in your App Store build. Check your app version in Settings before following a newly added workflow.</p>
       <nav className="article-toc" aria-label="Guide contents"><strong>In this guide</strong><ol>{contents.map(([id, label]) => <li key={id}><a href={`#${id}`}>{label}</a></li>)}</ol></nav>
     </div>
     <article className="article-content guide-content">
@@ -105,6 +106,24 @@ export default function GuidePage() {
         <p>Use <strong>Stop</strong> to cancel a long operation. Cancellation has its own stopping reason; it should not be confused with a Rust syntax error. After cancellation, wait for the worker to finish stopping before starting another operation. Your editable source remains the project you were working on.</p>
         <p>For a concrete exercise, leave out the closing quote of a string and Check. Follow the reported source location, restore the quote, Check again, then Run. If instead a dependency fails during preparation, inspect that package's diagnostic first: there may be no useful line number in your own file. Keep the build-stage context with the error when asking for help.</p>
         <Screenshot name="iphone-build" alt="iPhone Rust editor showing a borrow-checking exercise and Code Problems Output Terminal tabs" caption="The editor shows source; Problems explains errors; Output shows what a completed program printed. This capture is a deliberate borrowing exercise, not a successful-build claim." />
+      </section>
+      <section id="rust-tools"><h2>Local unit tests and Rust formatting</h2>
+        <p>Available in native TestFlight 1.1.3 (113). Open project settings for <strong>Unit tests · selected Rust entry</strong>, <strong>Format current Rust file</strong> and <strong>Format project Rust files</strong>. These actions use bundled local tools. User tests are separate from Academy validators and do not award lesson progress.</p>
+        <SyntaxCode language="rust" code={'#[test]\nfn adds() {\n    assert_eq!(2 + 2, 4);\n}\n\n#[test]\nfn fails() {\n    assert_eq!(1, 2);\n}\n\nfn main() {\n    println!("ordinary Run");\n}'} />
+        <p>Run <code>cargo test</code> in Terminal. Real libtest discovers the tests and runs each selected case in an isolated, single-threaded WASM guest. A failed assertion can abort that case; later cases still run. Output lists results and lets you open the available test declaration. Stop interrupts a hanging guest. Editing source invalidates the old report.</p>
+        <ul>
+          <li><code>cargo test name_filter</code> filters names; <code>cargo test -- --list</code> lists without executing.</li>
+          <li><code>cargo test --lib</code> or <code>cargo test --bin NAME</code> selects one entry. This profile does not run integration targets or doctests and does not resolve dev-dependencies or custom harnesses.</li>
+          <li>Ignored tests remain skipped. <code>#[should_panic]</code> is explicitly unsupported in the panic-abort profile and is never reported as passed.</li>
+          <li>The profile permits up to 256 discovered tests and has a 120-second execution-suite budget. Captured output is bounded; individual test details retain stdout, stderr and raw harness output within those limits.</li>
+        </ul>
+        <p><code>cargo fmt</code> formats project-owned Rust files with real bundled rustfmt; <code>rustfmt src/main.rs</code> selects one file. <code>cargo fmt --check</code> keeps source unchanged and reports whether formatting is needed. Vendor, node_modules, target and internal trees are excluded from project formatting.</p>
+        <p>The formatter follows Cargo.toml edition and accepts a documented scalar subset from one root <code>rustfmt.toml</code> or <code>.rustfmt.toml</code>. Unsupported options, conflicting editions and parse errors preserve source. A result applies only to the unchanged original revision and within the local/Shared file budget. Native editor Undo restores the selected file; <strong>Undo formatting</strong> restores the whole formatted tree while its revision still matches. Formatting can move existing line-based breakpoints, so review affected positions.</p>
+        <p>Rustfmt runs on its own background worker, with a 15-second per-file deadline and a 128 MiB memory cap. It does not execute your Rust or fetch configuration. <Link href="/licenses/">Original formatter notices and MPL dependency source</Link> are also readable/exportable offline in the app.</p>
+        <div className="guide-screenshots">
+          <Screenshot name="iphone-rustfmt-113" alt="Crabrix formats Rust tests while keeping a Unicode crab comment and existing editor tabs" caption="Real rustfmt output in the native editor; the original file can be restored with Undo." width={1206} height={2622} />
+          <Screenshot name="iphone-unit-tests-113" alt="Crabrix local unit-test results show a passed test and a failed assertion separately" caption="Real libtest results: passing and failing cases remain separate, with expandable details." width={1206} height={2622} />
+        </div>
       </section>
       <section id="web"><h2>5. Build a local web page</h2>
         <p>Choose <strong>Web Page</strong> for an HTML entry with <code>styles.css</code> and <code>app.js</code>, or <strong>Rust Web Generator</strong> to write those assets from a Rust program into <code>/sandbox</code>. Run opens the successful output as an offline WebKit preview. Check parses, transpiles and bundles module-based browser code without opening the page. It does not execute the browser app or type-check TypeScript.</p>

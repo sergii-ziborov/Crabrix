@@ -1,0 +1,11 @@
+Build 113 — local unit tests and real bundled rustfmt; no app account required.
+
+1. Create a Rust project. Add module-level #[test] functions: one passing assert_eq!(2+2,4), one failing assert_eq!(1,2), and one #[ignore]. Project settings → Unit tests, or Terminal → cargo test. Passing and failing cases must be distinct; ignored cases remain skipped. A panic in one isolated test must not prevent later tests.
+2. cargo test name_filter selects matching names; cargo test -- --list only discovers. --lib or --bin NAME selects one package entry. Dev-dependencies, integration targets, doctests and custom harnesses are unsupported. #[should_panic] must be reported unsupported, never passed. Unsupported flags must be rejected.
+3. Stop an infinite unit test and run another project. Edit source after a result: the old report must disappear. User tests must not finish an Academy lesson or award rating.
+4. Project settings → Format current Rust file / Format project Rust files. Verify comments, Unicode and raw strings remain. Repeat: source must be identical. Undo formatting restores the previous tree; native editor Undo restores the current file. cargo fmt --check keeps source unchanged and reports whether formatting is needed.
+5. Invalid Rust or unsupported root rustfmt.toml options must keep original files. Project formatting excludes vendor, node_modules, target and other internal trees. Edit while formatting: stale output must not replace the new text.
+6. Repeat existing Rust + Web Debug with include_str!/include_bytes!, breakpoint/Step and JavaScript counter. Check Code↔Terminal keyboard transitions and project save/recovery on iPhone and iPad.
+7. Share a one-hour encrypted Playground, join from browser/second app, edit/select and execute locally. Sharing does not run code on the relay. Prepared browser packages, standalone Run/Build and the 2,048 Cargo-package ceiling remain available.
+
+Qualification uses phone/iPad Simulators; physical-device timing and Universal Links are separate. Please report build, exact source and operation without credentials or private room keys.

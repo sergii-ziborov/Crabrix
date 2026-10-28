@@ -1,7 +1,9 @@
-# Local Rust tools — stage 2 candidate
+# Local Rust tools — TestFlight build 113
 
-This work is newer than App Review build **1.1.3 (111)**. It is not in that
-signed build. Qualification and a subsequent signed delivery are separate gates.
+Signed build **1.1.3 (113)** is VALID / IN_BETA_TESTING from source `d868251`.
+The app archive includes the exact pinned formatter resources and notices.
+App Review submission and public website delivery are tracked in the
+[delivery receipt](app-store/release-1.1.3-build113.json).
 
 ## User tests
 

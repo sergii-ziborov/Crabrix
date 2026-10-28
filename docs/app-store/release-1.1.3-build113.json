@@ -1,0 +1,40 @@
+{
+  "version": "1.1.3",
+  "buildNumber": "113",
+  "buildID": "be6f640f-deca-4e2d-9044-3ce558c0abc0",
+  "appSourceCommit": "d868251f0527fe34d097520be1938655c63ba4c2",
+  "cloudBuildRunID": "81a962a9-8099-4f20-91e9-29457fbee77f",
+  "cloudCompletion": "SUCCEEDED",
+  "cloudExecutionProgress": "COMPLETE",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "versionID": "4c60d52b-ca5b-4bbd-a206-799d4e4cd12c",
+  "reviewState": "NOT_SUBMITTED",
+  "releaseType": "MANUAL",
+  "signedEntitlements": {
+    "build": "113",
+    "version": "1.1.3",
+    "applicationIdentifier": "XMS5ZC28UJ.com.sergiiziborov.Crabrix",
+    "associatedDomains": [
+      "applinks:crabrix.com"
+    ],
+    "profileSupportsAssociatedDomains": true,
+    "getTaskAllow": false,
+    "appGroups": [
+      "group.com.sergiiziborov.Crabrix"
+    ],
+    "ipaSHA256": "bc5681d65b955e5fb39ced88c924ea5a88bcb88c8659a262b3d873b2e1315f5f",
+    "debugCompilerMatchesSource": true,
+    "offlineLegalMatchesSource": true,
+    "appStoreDistributionProfile": true,
+    "rustfmtBundleMatchesSource": true
+  },
+  "qualification": "35 distinct native host cases passed on iPad Simulator; final nine-case phone rerun after error-path isolation passed. Two UI scenarios passed on each phone/iPad Simulator. Site type check, 34 tests and production build passed; packaged byte-exact notice downloads checked.",
+  "physicalDeviceGate": "Not run; iPhone unavailable. No new physical-device speed or Universal Link qualification.",
+  "previousAttempt": {
+    "build": "112",
+    "state": "FAILED_BEFORE_COMPILATION",
+    "reason": "Generated website license index was stale; synchronized and full bootstrap verified before retry."
+  },
+  "verifiedAtUTC": "2026-10-28T18:42:48.957708+00:00"
+}

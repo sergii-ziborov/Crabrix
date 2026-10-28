@@ -9,10 +9,9 @@
     },
     "testFlightApp": {
       "version": "1.1.3",
-      "build": "111",
-      "sourceCommit": "13741f391c10d0dbd8c0fde7d71f839a56b7dd74",
-      "reviewState": "WAITING_FOR_REVIEW",
-      "evidence": "docs/app-store/release-1.1.3-build111.json"
+      "build": "113",
+      "sourceCommit": "d868251f0527fe34d097520be1938655c63ba4c2",
+      "evidence": "docs/app-store/release-1.1.3-build113.json"
     }
   },
   "capabilities": [
@@ -53,7 +52,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (111)",
+          "version": "1.1.3 (113)",
           "profile": "Source checkpoints; bounded String/Vec/concrete-struct previews; active async polls. No DWARF or arbitrary watch expressions."
         },
         {
@@ -71,7 +70,7 @@
           "surface": "ios",
           "state": "testflight",
           "profile": "Selected executable or rlib entry; distinct from Check and Run. Terminal cargo build does not invoke main; bounded supported build scripts remain compile-time work.",
-          "version": "1.1.3 (111)"
+          "version": "1.1.3 (113)"
         }
       ]
     },
@@ -157,7 +156,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (111)",
+          "version": "1.1.3 (113)",
           "profile": "Format-3 file inventory; supported hidden files; visible save outcomes, retry and raw recovery/source exports. Full Git history and opaque binary portability are later roadmap work."
         }
       ],
@@ -166,7 +165,35 @@
         "fileBytes": 2097152,
         "projectBytes": 16000000
       }
+    },
+    {
+      "id": "rust.unit-tests",
+      "name": "Selected-entry unit tests",
+      "surfaces": [
+        {
+          "surface": "ios",
+          "state": "testflight",
+          "version": "1.1.3 (113)",
+          "profile": "Real bundled libtest, isolated single-threaded WASM guests, discovery/filter/Stop and source-bound results. Ignored tests skipped; should_panic unsupported in panic-abort profile. No integration targets, dev-dependencies or doctests."
+        }
+      ]
+    },
+    {
+      "id": "rust.formatting",
+      "name": "Bundled local rustfmt",
+      "surfaces": [
+        {
+          "surface": "ios",
+          "state": "testflight",
+          "version": "1.1.3 (113)",
+          "profile": "Pinned real rustfmt WASI, file/project/check mode, edition/root scalar config subset, atomic revision-checked replacement and Undo. No user Rust execution or network."
+        }
+      ],
+      "limits": {
+        "memoryBytes": 134217728,
+        "perFileDeadlineSeconds": 15
+      }
     }
   ],
-  "verifiedAtUTC": "2026-10-28T16:04:09.291531+00:00"
+  "verifiedAtUTC": "2026-10-28T18:39:01.284541+00:00"
 }

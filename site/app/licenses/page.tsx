@@ -46,8 +46,8 @@ export default function LicensesPage() {
           <p>These archives are copied byte for byte from the signed release and also ship inside the app under Settings → About Crabrix → Open-source licenses → Compiler and sysroot dependency notices. Website, native app, and GitHub copies are checked by the same release script.</p>
         </section>
         <section>
-          <h2>Local formatter candidate</h2>
-          <p>The next native Rust-tools build bundles real rustfmt 1.10.0-nightly, separate from the project compiler. This work is newer than App Review build 1.1.3 (111). Original notices and unmodified MPL option-ext source are available here and in the candidate app for offline export.</p>
+          <h2>Local Rust formatter</h2>
+          <p>TestFlight 1.1.3 (113) bundles real rustfmt 1.10.0-nightly, separate from the project compiler. Original notices and unmodified MPL option-ext source are available here and in that app build for offline export.</p>
           <ul>
             <li><a href="/licenses/Rustfmt-NOTICE.txt">Rustfmt and Scalar license texts</a></li>
             <li><a href="/licenses/RustfmtVendorNotices.zip">Formatter dependency notices and MPL source archive</a></li>

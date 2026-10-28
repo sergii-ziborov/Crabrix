@@ -1,0 +1,7 @@
+Run real selected-entry Rust unit tests locally, with discovery, name filters, isolated failures and Stop. Results show passed, failed, skipped and unsupported cases, with source navigation. Integration targets, dev-dependencies and doctests remain outside this first test profile.
+
+Format a Rust file or project with bundled rustfmt. Keep comments and Unicode, check formatting without edits, and undo changes. Stale results and parse failures preserve the original source.
+
+Use cargo test, cargo fmt, cargo fmt --check and rustfmt paths in the terminal. User tests are separate from Academy validation and ratings.
+
+Includes the durable-project saving, recovery exports, compile-only cargo build and improved local Debug from the preceding build. Shared Playgrounds, offline browser previews and the existing iPhone/iPad/Duo layout remain available.

@@ -4,15 +4,16 @@
 
 [Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support/) · [Privacy](https://crabrix.com/privacy/) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
-## Rust tools candidate — 28 October 2026
+## Local Rust tools — TestFlight 1.1.3 (113)
 
-The next candidate adds real local selected-entry `cargo test`, discovery and
-filtering, isolated test failures and Stop, plus pinned bundled rustfmt for a
-file or project with check mode, revision guards and Undo. These tools are newer
-than signed build **1.1.3 (111)**; that build remains the current submitted
-release. [Exact profile, limits and qualification](docs/rust-tools-2026-10-28.md).
+Real selected-entry `cargo test` now provides discovery, filtering, isolated
+failures, bounded reports and Stop. Pinned bundled rustfmt supports a file or
+project, check mode, revision guards and Undo. Both run locally. Build **113**
+is **VALID / IN_BETA_TESTING** from source `d868251`; its App Review submission
+is being completed. [Profile and qualification](docs/rust-tools-2026-10-28.md),
+[delivery identity](docs/app-store/release-1.1.3-build113.json).
 Git has passed a [native iOS feasibility probe](docs/native-git-prototype-2026-10-28.md),
-including standard objects and HTTPS; it is not yet a shipping workspace feature.
+including standard objects and HTTPS; it is not included in build 113.
 
 ## Academy corrections — 27 October 2026
 
@@ -38,7 +39,7 @@ The [iPad workspace](docs/screenshots/ipad-build.png) shows the file sidebar and
 
 The current screenshot set includes ten iPhone and six iPad frames from manual Xcode Cloud run 62 after signed Academy updates, the final SDK 27.1 iPad editor with search and Check/Run from run 70, and two fresh native Duo laptop frames. [Capture and upload evidence](docs/app-store/asset-upload-2026-10-16-1.1.1.json) records all 19 files and their placements on the main, Rust Academy and Rust Compiler product pages.
 
-The current internal test release is **1.1.3 (111)** from source `13741f3`, archived successfully in Xcode Cloud. It is **VALID / IN_BETA_TESTING** in TestFlight **Internal QA**, and selected build **111** is **WAITING_FOR_REVIEW** with **MANUAL** publication. It adds hidden-file preservation, format-3 inventories, consistent editable-tree/export limits, visible save failure and recovery/source exports, revision-checked saves, compile-only `cargo build`, and Debug ownership/name hygiene. Existing local execution, web previews, guest sharing and editor geometry remain. [Delivery evidence](docs/app-store/release-1.1.3-build111.json), [qualification and recovery details](docs/project-reliability-2026-10-28.md), and the [staged roadmap](docs/roadmap/implementation-2026-10-28.md) distinguish shipped work from Test/Format, Git and future MCP work still in development.
+The previous reliability delivery **1.1.3 (111)** remains the currently selected App Review build until the qualified 113 replacement is submitted. [Build 111 evidence](docs/app-store/release-1.1.3-build111.json) records its source, signature and qualification separately.
 
 The live website has canonical and social metadata for all **787 public pages**, with structured data for the product, courses, lessons and articles. The [HTML sitemap](https://crabrix.com/sitemap/) and [XML sitemap](https://crabrix.com/sitemap.xml) include all 742 lessons and 27 blog articles. The [27 October Rust performance guide](https://crabrix.com/blog/rust-performance-measure-before-optimizing/) has 2,012 paragraph words, three original ImageGen images (two infographics), eight semantic tests passing in both development and Release profiles, and saved native measurement CSVs. [Latest publication evidence](docs/site-release-2026-10-27-article.json) records the article, media, sitemap and account-access checks; [the preceding cancellation guide](docs/site-release-2026-10-26-article.json) and [brand/navigation evidence](docs/site-release-2026-10-25-brand-navigation.json) record the previous updates. [SEO and App Store presentation](docs/seo-2026-10-16.md) documents account access checks, relevant search keywords and two custom product pages.
 
