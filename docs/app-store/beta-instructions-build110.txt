@@ -1,0 +1,10 @@
+Debug resource regression fix:
+1. Create a Rust + Web project from the built-in template.
+2. Set a breakpoint on line 7 of src/main.rs, then choose Debug Rust project.
+3. Continue to line 7 and Step over the app.js write. Continue to finish.
+4. Open Output. The generated HTML/CSS/JavaScript preview must load locally; tap the counter and verify that it increments.
+5. Run normally and compare the output. Editing source files must show the original include_str! calls, never generated Debug helpers.
+
+Also check existing String/Vec/struct inspection, async stepping, Stop, keyboard/dock layout, and encrypted guest Playground sharing with selections. Execution remains local; no backend compiler is used.
+
+On iPhone, verify that swiping right from the editor edge still opens Files, and that a single tap on line 7 sets the breakpoint before starting Debug.

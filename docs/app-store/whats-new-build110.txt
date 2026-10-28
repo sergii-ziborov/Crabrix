@@ -1,0 +1,9 @@
+The local Rust debugger now shows bounded String, Vec and concrete structure previews, including nested fields. Large values are shortened so inspection stays responsive; custom Debug implementations are not executed.
+
+Step through async functions and blocks with an active poll stack that separates suspended tasks. Tokio current-thread timers, tasks and channels are qualified in the offline app. Browser Debug uses std and local modules.
+
+Playground is already available in 1.1.2. This update keeps encrypted guest links, live editing, cursors, selections and one-hour default sharing. Compilation and execution stay on each participant’s device.
+
+Fixes local Debug for Rust projects that embed HTML, CSS, JavaScript or text with include_str! and include_bytes!. Resource bytes are preserved, including Rust source included as data.
+
+Also fixes taps on breakpoint line numbers before Debug on compact screens, while retaining the Files edge-swipe gesture.

@@ -1007,19 +1007,6 @@ struct ContentView: View {
                 editorPane(fixedSidebar: false, hingeGlobalY: hingeGlobalY)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                if !isCompactProjectDrawerPresented && !model.debugActive {
-                    HStack(spacing: 0) {
-                        CompactEdgeSwipeZone(edge: .leading) {
-                            withAnimation(.easeOut(duration: 0.22)) {
-                                isCompactProjectDrawerPresented = true
-                            }
-                        }
-                        Spacer(minLength: 0)
-                    }
-                    .padding(.top, 52)
-                    .zIndex(0.5)
-                }
-
                 if isCompactProjectDrawerPresented {
                     Color.black.opacity(0.46)
                         .frame(height: drawerHeight)
@@ -1313,34 +1300,6 @@ struct ContentView: View {
             return
         }
         learningPath = [.course(step.courseID), .lesson(step.lessonID)]
-    }
-}
-
-private struct CompactEdgeSwipeZone: View {
-    enum Edge {
-        case leading
-        case trailing
-    }
-
-    let edge: Edge
-    let onOpen: () -> Void
-
-    var body: some View {
-        Color.clear
-            .frame(width: 28)
-            .frame(maxHeight: .infinity)
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 12)
-                    .onEnded { value in
-                        let horizontal = value.translation.width
-                        let vertical = value.translation.height
-                        guard abs(horizontal) > abs(vertical), abs(horizontal) > 48 else { return }
-                        if edge == .leading, horizontal > 0 { onOpen() }
-                        if edge == .trailing, horizontal < 0 { onOpen() }
-                    }
-            )
-            .accessibilityHidden(true)
     }
 }
 

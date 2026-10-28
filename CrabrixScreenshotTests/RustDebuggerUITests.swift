@@ -10,11 +10,23 @@ final class RustDebuggerUITests: XCTestCase {
         let editor = app.textViews["Source code editor"]
         XCTAssertTrue(editor.waitForExistence(timeout: 60))
         XCTAssertTrue((editor.value as? String ?? "").contains("include_str!"))
-        app.buttons["Add breakpoint at line 7"].tap()
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            let edge = editor.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 4, dy: 145))
+            let destination = editor.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 220, dy: 145))
+            edge.press(forDuration: 0.1, thenDragTo: destination)
+            XCTAssertTrue(app.buttons["Close project files"].waitForExistence(timeout: 8), "The edge swipe must still open Files")
+            app.buttons["Close project files"].tap()
+        }
+        let addBreakpoint = app.buttons["Add breakpoint at line 7"]
+        let removeBreakpoint = app.buttons["Remove breakpoint at line 7"]
+        addBreakpoint.tap()
+        XCTAssertTrue(removeBreakpoint.waitForExistence(timeout: 5), app.debugDescription)
+        capture("debug-web-resources-breakpoint-set")
         openProjectSettings(app)
         let debug = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Debug Rust project")).firstMatch
         XCTAssertTrue(debug.waitForExistence(timeout: 15)); debug.tap()
         try waitLine(5, in: app, timeout: 120)
+        XCTAssertTrue(removeBreakpoint.exists, "The breakpoint must survive Debug preparation")
         app.buttons["Continue"].tap(); try waitLine(7, in: app)
         capture("debug-web-resources-breakpoint")
         app.buttons["Step over"].tap(); try waitLine(8, in: app)
