@@ -314,7 +314,7 @@ struct RustSemanticInspector: View {
                 dismiss()
             }.buttonStyle(.borderedProminent).tint(CrabrixTheme.blue).foregroundStyle(CrabrixTheme.onAccent)
                 .disabled(controller.working || model.playgroundIsReadOnly).accessibilityIdentifier("semantic-apply")
-        }.accessibilityIdentifier("semantic-change-preview")
+        }
     }
     private func open(_ target: RustSemanticTarget) {
         guard let context = controller.context, model.workspaceRevision == context.revision else { controller.invalidate(); return }

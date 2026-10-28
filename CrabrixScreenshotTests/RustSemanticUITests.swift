@@ -4,6 +4,7 @@ import UIKit
 @MainActor
 final class RustSemanticUITests: XCTestCase {
     func testActualCompletionImportPreviewAndEditorGeometry() throws {
+        continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["--crabrix-auto-semantic-fixture", "-crabrix.appearance", UIDevice.current.userInterfaceIdiom == .pad ? "cyberpunkNeon" : "cyberpunk"]
         app.launch()
