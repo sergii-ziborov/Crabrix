@@ -1,0 +1,1936 @@
+[
+  {
+    "id": "semantic/allocator-api2/0.2.21",
+    "name": "allocator-api2 0.2.21",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/allocator-api2-0.2.21/LICENSE-APACHE",
+      "crates/allocator-api2-0.2.21/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/arrayvec/0.7.8",
+    "name": "arrayvec 0.7.8",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/arrayvec-0.7.8/LICENSE-APACHE",
+      "crates/arrayvec-0.7.8/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/autocfg/1.5.1",
+    "name": "autocfg 1.5.1",
+    "summary": "Apache-2.0 OR MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/autocfg-1.5.1/LICENSE-APACHE",
+      "crates/autocfg-1.5.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/base-db/0.0.0",
+    "name": "base-db 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/bitflags/2.13.2",
+    "name": "bitflags 2.13.2",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/bitflags-2.13.2/LICENSE-APACHE",
+      "crates/bitflags-2.13.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/borsh/1.8.1",
+    "name": "borsh 1.8.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/borsh-1.8.1/LICENSE-APACHE",
+      "crates/borsh-1.8.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/boxcar/0.2.14",
+    "name": "boxcar 0.2.14",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/boxcar-0.2.14/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/bytes/1.12.1",
+    "name": "bytes 1.12.1",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/bytes-1.12.1/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/camino/1.2.6",
+    "name": "camino 1.2.6",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/camino-1.2.6/LICENSE-APACHE",
+      "crates/camino-1.2.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/cfg/0.0.0",
+    "name": "cfg 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/cfg-if/1.0.5",
+    "name": "cfg-if 1.0.5",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/cfg-if-1.0.5/LICENSE-APACHE",
+      "crates/cfg-if-1.0.5/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/cfg_aliases/0.2.2",
+    "name": "cfg_aliases 0.2.2",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/cfg_aliases-0.2.2/LICENSE",
+      "crates/cfg_aliases-0.2.2/NOTICES.md"
+    ]
+  },
+  {
+    "id": "semantic/countme/3.0.1",
+    "name": "countme 3.0.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/countme-3.0.1/LICENSE-APACHE",
+      "crates/countme-3.0.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/cov-mark/2.2.0",
+    "name": "cov-mark 2.2.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/cov-mark-2.2.0/LICENSE-APACHE",
+      "crates/cov-mark-2.2.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/crossbeam-channel/0.5.17",
+    "name": "crossbeam-channel 0.5.17",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/crossbeam-channel-0.5.17/LICENSE-APACHE",
+      "crates/crossbeam-channel-0.5.17/LICENSE-MIT",
+      "crates/crossbeam-channel-0.5.17/LICENSE-THIRD-PARTY"
+    ]
+  },
+  {
+    "id": "semantic/crossbeam-deque/0.8.8",
+    "name": "crossbeam-deque 0.8.8",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/crossbeam-deque-0.8.8/LICENSE-APACHE",
+      "crates/crossbeam-deque-0.8.8/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/crossbeam-epoch/0.9.21",
+    "name": "crossbeam-epoch 0.9.21",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/crossbeam-epoch-0.9.21/LICENSE-APACHE",
+      "crates/crossbeam-epoch-0.9.21/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/crossbeam-queue/0.3.14",
+    "name": "crossbeam-queue 0.3.14",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/crossbeam-queue-0.3.14/LICENSE-APACHE",
+      "crates/crossbeam-queue-0.3.14/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/crossbeam-utils/0.8.23",
+    "name": "crossbeam-utils 0.8.23",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/crossbeam-utils-0.8.23/LICENSE-APACHE",
+      "crates/crossbeam-utils-0.8.23/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/dashmap/6.1.0",
+    "name": "dashmap 6.1.0",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/dashmap-6.1.0/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/deranged/0.5.9",
+    "name": "deranged 0.5.9",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/deranged-0.5.9/LICENSE-Apache",
+      "crates/deranged-0.5.9/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/derive-where/1.7.0",
+    "name": "derive-where 1.7.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/derive-where-1.7.0/LICENSE-APACHE",
+      "crates/derive-where-1.7.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/displaydoc/0.2.7",
+    "name": "displaydoc 0.2.7",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/displaydoc-0.2.7/LICENSE-APACHE",
+      "crates/displaydoc-0.2.7/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/dissimilar/1.0.11",
+    "name": "dissimilar 1.0.11",
+    "summary": "Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/dissimilar-1.0.11/LICENSE-APACHE",
+      "crates/dissimilar-1.0.11/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/dot/0.1.4",
+    "name": "dot 0.1.4",
+    "summary": "MIT/Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/dot-0.1.4/LICENSE-APACHE",
+      "crates/dot-0.1.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/drop_bomb/0.1.5",
+    "name": "drop_bomb 0.1.5",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/drop_bomb-0.1.5/LICENSE-APACHE",
+      "crates/drop_bomb-0.1.5/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/edition/0.0.0",
+    "name": "edition 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/either/1.19.0",
+    "name": "either 1.19.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/either-1.19.0/LICENSE-APACHE",
+      "crates/either-1.19.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ena/0.14.4",
+    "name": "ena 0.14.4",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/ena-0.14.4/LICENSE-APACHE",
+      "crates/ena-0.14.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/equivalent/1.0.3",
+    "name": "equivalent 1.0.3",
+    "summary": "Apache-2.0 OR MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/equivalent-1.0.3/LICENSE-APACHE",
+      "crates/equivalent-1.0.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/fixedbitset/0.5.7",
+    "name": "fixedbitset 0.5.7",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/fixedbitset-0.5.7/LICENSE-APACHE",
+      "crates/fixedbitset-0.5.7/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/foldhash/0.1.5",
+    "name": "foldhash 0.1.5",
+    "summary": "Zlib \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/foldhash-0.1.5/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/form_urlencoded/1.2.2",
+    "name": "form_urlencoded 1.2.2",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/form_urlencoded-1.2.2/LICENSE-APACHE",
+      "crates/form_urlencoded-1.2.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/fst/0.4.7",
+    "name": "fst 0.4.7",
+    "summary": "Unlicense/MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/fst-0.4.7/COPYING",
+      "crates/fst-0.4.7/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/hashbrown/0.14.5",
+    "name": "hashbrown 0.14.5",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/hashbrown-0.14.5/LICENSE-APACHE",
+      "crates/hashbrown-0.14.5/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/hashbrown/0.15.5",
+    "name": "hashbrown 0.15.5",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/hashbrown-0.15.5/LICENSE-APACHE",
+      "crates/hashbrown-0.15.5/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/hashbrown/0.17.1",
+    "name": "hashbrown 0.17.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/hashbrown-0.17.1/LICENSE-APACHE",
+      "crates/hashbrown-0.17.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/hashlink/0.10.0",
+    "name": "hashlink 0.10.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/hashlink-0.10.0/LICENSE-APACHE",
+      "crates/hashlink-0.10.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/hir/0.0.0",
+    "name": "hir 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/hir-def/0.0.0",
+    "name": "hir-def 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/hir-expand/0.0.0",
+    "name": "hir-expand 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/hir-ty/0.0.0",
+    "name": "hir-ty 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/home/0.5.12",
+    "name": "home 0.5.12",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/home-0.5.12/LICENSE-APACHE",
+      "crates/home-0.5.12/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/icu_collections/2.4.0",
+    "name": "icu_collections 2.4.0",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/icu_collections-2.4.0/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/icu_locale_core/2.4.0",
+    "name": "icu_locale_core 2.4.0",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/icu_locale_core-2.4.0/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/icu_normalizer/2.4.0",
+    "name": "icu_normalizer 2.4.0",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/icu_normalizer-2.4.0/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/icu_normalizer_data/2.4.0",
+    "name": "icu_normalizer_data 2.4.0",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/icu_normalizer_data-2.4.0/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/icu_properties/2.4.0",
+    "name": "icu_properties 2.4.0",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/icu_properties-2.4.0/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/icu_properties_data/2.4.0",
+    "name": "icu_properties_data 2.4.0",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/icu_properties_data-2.4.0/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/icu_provider/2.4.0",
+    "name": "icu_provider 2.4.0",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/icu_provider-2.4.0/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/ide/0.0.0",
+    "name": "ide 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ide-assists/0.0.0",
+    "name": "ide-assists 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ide-completion/0.0.0",
+    "name": "ide-completion 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ide-db/0.0.0",
+    "name": "ide-db 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ide-diagnostics/0.0.0",
+    "name": "ide-diagnostics 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ide-ssr/0.0.0",
+    "name": "ide-ssr 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/idna/1.1.0",
+    "name": "idna 1.1.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/idna-1.1.0/LICENSE-APACHE",
+      "crates/idna-1.1.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/idna_adapter/1.2.2",
+    "name": "idna_adapter 1.2.2",
+    "summary": "Apache-2.0 OR MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/idna_adapter-1.2.2/LICENSE-APACHE",
+      "crates/idna_adapter-1.2.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/indexmap/2.14.2",
+    "name": "indexmap 2.14.2",
+    "summary": "Apache-2.0 OR MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/indexmap-2.14.2/LICENSE-APACHE",
+      "crates/indexmap-2.14.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/intern/0.0.0",
+    "name": "intern 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/intrusive-collections/0.9.7",
+    "name": "intrusive-collections 0.9.7",
+    "summary": "Apache-2.0/MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/intrusive-collections-0.9.7/LICENSE-APACHE",
+      "crates/intrusive-collections-0.9.7/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/inventory/0.3.25",
+    "name": "inventory 0.3.25",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/inventory-0.3.25/LICENSE-APACHE",
+      "crates/inventory-0.3.25/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/itertools/0.14.0",
+    "name": "itertools 0.14.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/itertools-0.14.0/LICENSE-APACHE",
+      "crates/itertools-0.14.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/itoa/1.0.18",
+    "name": "itoa 1.0.18",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/itoa-1.0.18/LICENSE-APACHE",
+      "crates/itoa-1.0.18/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/jod-thread/1.0.0",
+    "name": "jod-thread 1.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/jod-thread-1.0.0/LICENSE-APACHE",
+      "crates/jod-thread-1.0.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/la-arena/0.3.1",
+    "name": "la-arena 0.3.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/la-arena-0.3.1/Cargo.toml.orig",
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/lazy_static/1.5.1",
+    "name": "lazy_static 1.5.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/lazy_static-1.5.1/LICENSE-APACHE",
+      "crates/lazy_static-1.5.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/libc/0.2.191",
+    "name": "libc 0.2.191",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/libc-0.2.191/LICENSE-APACHE",
+      "crates/libc-0.2.191/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/line-index/0.1.2",
+    "name": "line-index 0.1.2",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/line-index-0.1.2/Cargo.toml.orig",
+      "crates/line-index-0.1.2/README.md",
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/litemap/0.8.3",
+    "name": "litemap 0.8.3",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/litemap-0.8.3/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/lock_api/0.4.14",
+    "name": "lock_api 0.4.14",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/lock_api-0.4.14/LICENSE-APACHE",
+      "crates/lock_api-0.4.14/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/log/0.4.34",
+    "name": "log 0.4.34",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/log-0.4.34/LICENSE-APACHE",
+      "crates/log-0.4.34/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/macros/0.0.0",
+    "name": "macros 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/mbe/0.0.0",
+    "name": "mbe 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/memchr/2.8.3",
+    "name": "memchr 2.8.3",
+    "summary": "Unlicense OR MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/memchr-2.8.3/COPYING",
+      "crates/memchr-2.8.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/memoffset/0.9.1",
+    "name": "memoffset 0.9.1",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/memoffset-0.9.1/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/miow/0.6.1",
+    "name": "miow 0.6.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/miow-0.6.1/LICENSE-APACHE",
+      "crates/miow-0.6.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/nohash-hasher/0.2.0",
+    "name": "nohash-hasher 0.2.0",
+    "summary": "Apache-2.0 OR MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/nohash-hasher-0.2.0/LICENSE-APACHE",
+      "crates/nohash-hasher-0.2.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/nu-ansi-term/0.50.3",
+    "name": "nu-ansi-term 0.50.3",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/nu-ansi-term-0.50.3/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/num-conv/0.2.2",
+    "name": "num-conv 0.2.2",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/num-conv-0.2.2/LICENSE-Apache",
+      "crates/num-conv-0.2.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/num_threads/0.1.8",
+    "name": "num_threads 0.1.8",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/num_threads-0.1.8/LICENSE-Apache",
+      "crates/num_threads-0.1.8/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/once_cell/1.21.4",
+    "name": "once_cell 1.21.4",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/once_cell-1.21.4/LICENSE-APACHE",
+      "crates/once_cell-1.21.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/oorandom/11.1.5",
+    "name": "oorandom 11.1.5",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/oorandom-11.1.5/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/parking_lot/0.12.5",
+    "name": "parking_lot 0.12.5",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/parking_lot-0.12.5/LICENSE-APACHE",
+      "crates/parking_lot-0.12.5/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/parking_lot_core/0.9.12",
+    "name": "parking_lot_core 0.9.12",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/parking_lot_core-0.9.12/LICENSE-APACHE",
+      "crates/parking_lot_core-0.9.12/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/parser/0.0.0",
+    "name": "parser 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/paths/0.0.0",
+    "name": "paths 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/percent-encoding/2.3.2",
+    "name": "percent-encoding 2.3.2",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/percent-encoding-2.3.2/LICENSE-APACHE",
+      "crates/percent-encoding-2.3.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/perf-event/0.4.7",
+    "name": "perf-event 0.4.7",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/perf-event-0.4.7/LICENSE-APACHE",
+      "crates/perf-event-0.4.7/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/perf-event-open-sys/1.0.1",
+    "name": "perf-event-open-sys 1.0.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/perf-event-open-sys-1.0.1/LICENSE-APACHE",
+      "crates/perf-event-open-sys-1.0.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/petgraph/0.8.3",
+    "name": "petgraph 0.8.3",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/petgraph-0.8.3/LICENSE-APACHE",
+      "crates/petgraph-0.8.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/pin-project-lite/0.2.17",
+    "name": "pin-project-lite 0.2.17",
+    "summary": "Apache-2.0 OR MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/pin-project-lite-0.2.17/LICENSE-APACHE",
+      "crates/pin-project-lite-0.2.17/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/portable-atomic/1.15.0",
+    "name": "portable-atomic 1.15.0",
+    "summary": "Apache-2.0 OR MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/portable-atomic-1.15.0/LICENSE-APACHE",
+      "crates/portable-atomic-1.15.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/potential_utf/0.1.6",
+    "name": "potential_utf 0.1.6",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/potential_utf-0.1.6/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/powerfmt/0.2.1",
+    "name": "powerfmt 0.2.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/powerfmt-0.2.1/LICENSE-Apache",
+      "crates/powerfmt-0.2.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/proc-macro2/1.0.107",
+    "name": "proc-macro2 1.0.107",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/proc-macro2-1.0.107/LICENSE-APACHE",
+      "crates/proc-macro2-1.0.107/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/profile/0.0.0",
+    "name": "profile 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/pulldown-cmark/0.9.6",
+    "name": "pulldown-cmark 0.9.6",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/pulldown-cmark-0.9.6/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/pulldown-cmark-to-cmark/10.0.4",
+    "name": "pulldown-cmark-to-cmark 10.0.4",
+    "summary": "Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/pulldown-cmark-to-cmark-10.0.4/Cargo.toml.orig",
+      "crates/pulldown-cmark-to-cmark-10.0.4/README.md",
+      "upstream/LICENSE-APACHE"
+    ]
+  },
+  {
+    "id": "semantic/query-group-macro/0.0.0",
+    "name": "query-group-macro 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/quote/1.0.47",
+    "name": "quote 1.0.47",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/quote-1.0.47/LICENSE-APACHE",
+      "crates/quote-1.0.47/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ra-ap-rustc_abi/0.143.0",
+    "name": "ra-ap-rustc_abi 0.143.0",
+    "summary": "MIT / Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/ra-ap-rustc_abi-0.143.0/Cargo.toml.orig",
+      "rust/LICENSE-APACHE",
+      "rust/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ra-ap-rustc_ast_ir/0.143.0",
+    "name": "ra-ap-rustc_ast_ir 0.143.0",
+    "summary": "MIT / Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/ra-ap-rustc_ast_ir-0.143.0/Cargo.toml.orig",
+      "rust/LICENSE-APACHE",
+      "rust/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ra-ap-rustc_hashes/0.143.0",
+    "name": "ra-ap-rustc_hashes 0.143.0",
+    "summary": "MIT / Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/ra-ap-rustc_hashes-0.143.0/Cargo.toml.orig",
+      "rust/LICENSE-APACHE",
+      "rust/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ra-ap-rustc_index/0.143.0",
+    "name": "ra-ap-rustc_index 0.143.0",
+    "summary": "MIT / Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/ra-ap-rustc_index-0.143.0/Cargo.toml.orig",
+      "rust/LICENSE-APACHE",
+      "rust/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ra-ap-rustc_index_macros/0.143.0",
+    "name": "ra-ap-rustc_index_macros 0.143.0",
+    "summary": "MIT / Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/ra-ap-rustc_index_macros-0.143.0/Cargo.toml.orig",
+      "rust/LICENSE-APACHE",
+      "rust/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ra-ap-rustc_lexer/0.143.0",
+    "name": "ra-ap-rustc_lexer 0.143.0",
+    "summary": "MIT / Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/ra-ap-rustc_lexer-0.143.0/Cargo.toml.orig",
+      "rust/LICENSE-APACHE",
+      "rust/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ra-ap-rustc_next_trait_solver/0.143.0",
+    "name": "ra-ap-rustc_next_trait_solver 0.143.0",
+    "summary": "MIT / Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/ra-ap-rustc_next_trait_solver-0.143.0/Cargo.toml.orig",
+      "rust/LICENSE-APACHE",
+      "rust/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ra-ap-rustc_parse_format/0.143.0",
+    "name": "ra-ap-rustc_parse_format 0.143.0",
+    "summary": "MIT / Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/ra-ap-rustc_parse_format-0.143.0/Cargo.toml.orig",
+      "rust/LICENSE-APACHE",
+      "rust/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ra-ap-rustc_pattern_analysis/0.143.0",
+    "name": "ra-ap-rustc_pattern_analysis 0.143.0",
+    "summary": "MIT / Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/ra-ap-rustc_pattern_analysis-0.143.0/Cargo.toml.orig",
+      "rust/LICENSE-APACHE",
+      "rust/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ra-ap-rustc_type_ir/0.143.0",
+    "name": "ra-ap-rustc_type_ir 0.143.0",
+    "summary": "MIT / Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/ra-ap-rustc_type_ir-0.143.0/Cargo.toml.orig",
+      "rust/LICENSE-APACHE",
+      "rust/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/ra-ap-rustc_type_ir_macros/0.143.0",
+    "name": "ra-ap-rustc_type_ir_macros 0.143.0",
+    "summary": "MIT / Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/ra-ap-rustc_type_ir_macros-0.143.0/Cargo.toml.orig",
+      "rust/LICENSE-APACHE",
+      "rust/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/rayon/1.12.0",
+    "name": "rayon 1.12.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/rayon-1.12.0/LICENSE-APACHE",
+      "crates/rayon-1.12.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/rayon-core/1.13.0",
+    "name": "rayon-core 1.13.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/rayon-core-1.13.0/LICENSE-APACHE",
+      "crates/rayon-core-1.13.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/redox_syscall/0.5.18",
+    "name": "redox_syscall 0.5.18",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/redox_syscall-0.5.18/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/rowan/0.15.17",
+    "name": "rowan 0.15.17",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/rowan-0.15.17/LICENSE-APACHE",
+      "crates/rowan-0.15.17/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/rustc-hash/1.1.0",
+    "name": "rustc-hash 1.1.0",
+    "summary": "Apache-2.0/MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/rustc-hash-1.1.0/LICENSE-APACHE",
+      "crates/rustc-hash-1.1.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/rustc-hash/2.1.3",
+    "name": "rustc-hash 2.1.3",
+    "summary": "Apache-2.0 OR MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/rustc-hash-2.1.3/LICENSE-APACHE",
+      "crates/rustc-hash-2.1.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/rustc-literal-escaper/0.0.4",
+    "name": "rustc-literal-escaper 0.0.4",
+    "summary": "Apache-2.0 OR MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/rustc-literal-escaper-0.0.4/LICENSE-APACHE",
+      "crates/rustc-literal-escaper-0.0.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/rustc-literal-escaper/0.0.5",
+    "name": "rustc-literal-escaper 0.0.5",
+    "summary": "Apache-2.0 OR MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/rustc-literal-escaper-0.0.5/LICENSE-APACHE",
+      "crates/rustc-literal-escaper-0.0.5/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/rustc-stable-hash/0.1.2",
+    "name": "rustc-stable-hash 0.1.2",
+    "summary": "Apache-2.0 OR MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/rustc-stable-hash-0.1.2/LICENSE-APACHE",
+      "crates/rustc-stable-hash-0.1.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/rustc_apfloat/0.2.3+llvm-462a31f5a5ab",
+    "name": "rustc_apfloat 0.2.3+llvm-462a31f5a5ab",
+    "summary": "Apache-2.0 WITH LLVM-exception \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/rustc_apfloat-0.2.3+llvm-462a31f5a5ab/LICENSE-DETAILS.md",
+      "crates/rustc_apfloat-0.2.3+llvm-462a31f5a5ab/LICENSE.txt"
+    ]
+  },
+  {
+    "id": "semantic/rustversion/1.0.23",
+    "name": "rustversion 1.0.23",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/rustversion-1.0.23/LICENSE-APACHE",
+      "crates/rustversion-1.0.23/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/salsa/0.25.2",
+    "name": "salsa 0.25.2",
+    "summary": "Apache-2.0 OR MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/salsa-0.25.2/LICENSE-APACHE",
+      "crates/salsa-0.25.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/salsa-macro-rules/0.25.2",
+    "name": "salsa-macro-rules 0.25.2",
+    "summary": "Apache-2.0 OR MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/salsa-macro-rules-0.25.2/LICENSE-APACHE",
+      "crates/salsa-macro-rules-0.25.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/salsa-macros/0.25.2",
+    "name": "salsa-macros 0.25.2",
+    "summary": "Apache-2.0 OR MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/salsa-macros-0.25.2/LICENSE-APACHE",
+      "crates/salsa-macros-0.25.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/scopeguard/1.2.0",
+    "name": "scopeguard 1.2.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/scopeguard-1.2.0/LICENSE-APACHE",
+      "crates/scopeguard-1.2.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/semver/1.0.28",
+    "name": "semver 1.0.28",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/semver-1.0.28/LICENSE-APACHE",
+      "crates/semver-1.0.28/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/serde/1.0.229",
+    "name": "serde 1.0.229",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/serde-1.0.229/LICENSE-APACHE",
+      "crates/serde-1.0.229/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/serde_core/1.0.229",
+    "name": "serde_core 1.0.229",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/serde_core-1.0.229/LICENSE-APACHE",
+      "crates/serde_core-1.0.229/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/serde_derive/1.0.229",
+    "name": "serde_derive 1.0.229",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/serde_derive-1.0.229/LICENSE-APACHE",
+      "crates/serde_derive-1.0.229/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/serde_json/1.0.154",
+    "name": "serde_json 1.0.154",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/serde_json-1.0.154/LICENSE-APACHE",
+      "crates/serde_json-1.0.154/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/sharded-slab/0.1.7",
+    "name": "sharded-slab 0.1.7",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/sharded-slab-0.1.7/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/smallvec/1.16.4",
+    "name": "smallvec 1.16.4",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/smallvec-1.16.4/LICENSE-APACHE",
+      "crates/smallvec-1.16.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/smol_str/0.3.7",
+    "name": "smol_str 0.3.7",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/smol_str-0.3.7/LICENSE-APACHE",
+      "crates/smol_str-0.3.7/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/span/0.0.0",
+    "name": "span 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/stable_deref_trait/1.2.1",
+    "name": "stable_deref_trait 1.2.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/stable_deref_trait-1.2.1/LICENSE-APACHE",
+      "crates/stable_deref_trait-1.2.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/stdx/0.0.0",
+    "name": "stdx 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/syn/2.0.119",
+    "name": "syn 2.0.119",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/syn-2.0.119/LICENSE-APACHE",
+      "crates/syn-2.0.119/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/syn/3.0.9",
+    "name": "syn 3.0.9",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/syn-3.0.9/LICENSE-APACHE",
+      "crates/syn-3.0.9/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/synstructure/0.13.2",
+    "name": "synstructure 0.13.2",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/synstructure-0.13.2/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/synstructure/0.14.0",
+    "name": "synstructure 0.14.0",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/synstructure-0.14.0/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/syntax/0.0.0",
+    "name": "syntax 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/syntax-bridge/0.0.0",
+    "name": "syntax-bridge 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/test-fixture/0.0.0",
+    "name": "test-fixture 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/test-utils/0.0.0",
+    "name": "test-utils 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/text-size/1.1.1",
+    "name": "text-size 1.1.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/text-size-1.1.1/LICENSE-APACHE",
+      "crates/text-size-1.1.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/thin-vec/0.2.21",
+    "name": "thin-vec 0.2.21",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/thin-vec-0.2.21/LICENSE-APACHE",
+      "crates/thin-vec-0.2.21/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/thread_local/1.1.10",
+    "name": "thread_local 1.1.10",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/thread_local-1.1.10/LICENSE-APACHE",
+      "crates/thread_local-1.1.10/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/time/0.3.55",
+    "name": "time 0.3.55",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/time-0.3.55/LICENSE-Apache",
+      "crates/time-0.3.55/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/time-core/0.1.9",
+    "name": "time-core 0.1.9",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/time-core-0.1.9/LICENSE-Apache",
+      "crates/time-core-0.1.9/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/time-macros/0.2.32",
+    "name": "time-macros 0.2.32",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/time-macros-0.2.32/LICENSE-Apache",
+      "crates/time-macros-0.2.32/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/tinystr/0.8.5",
+    "name": "tinystr 0.8.5",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/tinystr-0.8.5/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/toolchain/0.0.0",
+    "name": "toolchain 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/tracing/0.1.44",
+    "name": "tracing 0.1.44",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/tracing-0.1.44/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/tracing-attributes/0.1.31",
+    "name": "tracing-attributes 0.1.31",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/tracing-attributes-0.1.31/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/tracing-core/0.1.36",
+    "name": "tracing-core 0.1.36",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/tracing-core-0.1.36/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/tracing-log/0.2.0",
+    "name": "tracing-log 0.2.0",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/tracing-log-0.2.0/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/tracing-subscriber/0.3.23",
+    "name": "tracing-subscriber 0.3.23",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/tracing-subscriber-0.3.23/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/tracing-tree/0.4.1",
+    "name": "tracing-tree 0.4.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/tracing-tree-0.4.1/LICENSE-APACHE",
+      "crates/tracing-tree-0.4.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/triomphe/0.1.17",
+    "name": "triomphe 0.1.17",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/triomphe-0.1.17/LICENSE-APACHE",
+      "crates/triomphe-0.1.17/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/tt/0.0.0",
+    "name": "tt 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/typed-arena/2.0.2",
+    "name": "typed-arena 2.0.2",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/typed-arena-2.0.2/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/unicase/2.10.0",
+    "name": "unicase 2.10.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/unicase-2.10.0/LICENSE-APACHE",
+      "crates/unicase-2.10.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/unicode-ident/1.0.27",
+    "name": "unicode-ident 1.0.27",
+    "summary": "(MIT OR Apache-2.0) AND Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/unicode-ident-1.0.27/LICENSE-APACHE",
+      "crates/unicode-ident-1.0.27/LICENSE-MIT",
+      "crates/unicode-ident-1.0.27/LICENSE-UNICODE"
+    ]
+  },
+  {
+    "id": "semantic/unicode-properties/0.1.4",
+    "name": "unicode-properties 0.1.4",
+    "summary": "MIT/Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/unicode-properties-0.1.4/LICENSE-APACHE",
+      "crates/unicode-properties-0.1.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/unicode-xid/0.2.6",
+    "name": "unicode-xid 0.2.6",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/unicode-xid-0.2.6/LICENSE-APACHE",
+      "crates/unicode-xid-0.2.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/url/2.5.8",
+    "name": "url 2.5.8",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/url-2.5.8/LICENSE-APACHE",
+      "crates/url-2.5.8/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/utf8_iter/1.0.4",
+    "name": "utf8_iter 1.0.4",
+    "summary": "Apache-2.0 OR MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/utf8_iter-1.0.4/LICENSE-APACHE",
+      "crates/utf8_iter-1.0.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/valuable/0.1.1",
+    "name": "valuable 0.1.1",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/valuable-0.1.1/Cargo.toml.orig",
+      "crates/valuable-0.1.1/README.md",
+      "upstream-notices/valuable-0.1.1-LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/vfs/0.0.0",
+    "name": "vfs 0.0.0",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "upstream/LICENSE-APACHE",
+      "upstream/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/windows-link/0.2.1",
+    "name": "windows-link 0.2.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/windows-link-0.2.1/license-apache-2.0",
+      "crates/windows-link-0.2.1/license-mit"
+    ]
+  },
+  {
+    "id": "semantic/windows-sys/0.60.2",
+    "name": "windows-sys 0.60.2",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/windows-sys-0.60.2/license-apache-2.0",
+      "crates/windows-sys-0.60.2/license-mit"
+    ]
+  },
+  {
+    "id": "semantic/windows-sys/0.61.2",
+    "name": "windows-sys 0.61.2",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/windows-sys-0.61.2/license-apache-2.0",
+      "crates/windows-sys-0.61.2/license-mit"
+    ]
+  },
+  {
+    "id": "semantic/windows-targets/0.53.5",
+    "name": "windows-targets 0.53.5",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/windows-targets-0.53.5/license-apache-2.0",
+      "crates/windows-targets-0.53.5/license-mit"
+    ]
+  },
+  {
+    "id": "semantic/windows_aarch64_gnullvm/0.53.1",
+    "name": "windows_aarch64_gnullvm 0.53.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/windows_aarch64_gnullvm-0.53.1/license-apache-2.0",
+      "crates/windows_aarch64_gnullvm-0.53.1/license-mit"
+    ]
+  },
+  {
+    "id": "semantic/windows_aarch64_msvc/0.53.1",
+    "name": "windows_aarch64_msvc 0.53.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/windows_aarch64_msvc-0.53.1/license-apache-2.0",
+      "crates/windows_aarch64_msvc-0.53.1/license-mit"
+    ]
+  },
+  {
+    "id": "semantic/windows_i686_gnu/0.53.1",
+    "name": "windows_i686_gnu 0.53.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/windows_i686_gnu-0.53.1/license-apache-2.0",
+      "crates/windows_i686_gnu-0.53.1/license-mit"
+    ]
+  },
+  {
+    "id": "semantic/windows_i686_gnullvm/0.53.1",
+    "name": "windows_i686_gnullvm 0.53.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/windows_i686_gnullvm-0.53.1/license-apache-2.0",
+      "crates/windows_i686_gnullvm-0.53.1/license-mit"
+    ]
+  },
+  {
+    "id": "semantic/windows_i686_msvc/0.53.1",
+    "name": "windows_i686_msvc 0.53.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/windows_i686_msvc-0.53.1/license-apache-2.0",
+      "crates/windows_i686_msvc-0.53.1/license-mit"
+    ]
+  },
+  {
+    "id": "semantic/windows_x86_64_gnu/0.53.1",
+    "name": "windows_x86_64_gnu 0.53.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/windows_x86_64_gnu-0.53.1/license-apache-2.0",
+      "crates/windows_x86_64_gnu-0.53.1/license-mit"
+    ]
+  },
+  {
+    "id": "semantic/windows_x86_64_gnullvm/0.53.1",
+    "name": "windows_x86_64_gnullvm 0.53.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/windows_x86_64_gnullvm-0.53.1/license-apache-2.0",
+      "crates/windows_x86_64_gnullvm-0.53.1/license-mit"
+    ]
+  },
+  {
+    "id": "semantic/windows_x86_64_msvc/0.53.1",
+    "name": "windows_x86_64_msvc 0.53.1",
+    "summary": "MIT OR Apache-2.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/windows_x86_64_msvc-0.53.1/license-apache-2.0",
+      "crates/windows_x86_64_msvc-0.53.1/license-mit"
+    ]
+  },
+  {
+    "id": "semantic/winnow/0.7.15",
+    "name": "winnow 0.7.15",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/winnow-0.7.15/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/writeable/0.6.4",
+    "name": "writeable 0.6.4",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/writeable-0.6.4/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/yoke/0.8.4",
+    "name": "yoke 0.8.4",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/yoke-0.8.4/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/yoke-derive/0.8.4",
+    "name": "yoke-derive 0.8.4",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/yoke-derive-0.8.4/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/zerofrom/0.1.8",
+    "name": "zerofrom 0.1.8",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/zerofrom-0.1.8/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/zerofrom-derive/0.1.8",
+    "name": "zerofrom-derive 0.1.8",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/zerofrom-derive-0.1.8/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/zerotrie/0.2.5",
+    "name": "zerotrie 0.2.5",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/zerotrie-0.2.5/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/zerovec/0.11.9",
+    "name": "zerovec 0.11.9",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/zerovec-0.11.9/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/zerovec-derive/0.11.7",
+    "name": "zerovec-derive 0.11.7",
+    "summary": "Unicode-3.0 \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/zerovec-derive-0.11.7/LICENSE"
+    ]
+  },
+  {
+    "id": "semantic/zmij/1.0.23",
+    "name": "zmij 1.0.23",
+    "summary": "MIT \u00b7 semantic engine source/build inventory",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "crates/zmij-1.0.23/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "semantic/rust-standard-library/abc48c0",
+    "name": "Rust core, alloc and std source",
+    "summary": "MIT OR Apache-2.0 \u00b7 exact compiler source abc48c0; text-only analysis library",
+    "archive": "SemanticVendorNotices",
+    "documents": [
+      "rust/LICENSE-MIT",
+      "rust/LICENSE-APACHE",
+      "rust/COPYRIGHT",
+      "rust/license-metadata.json",
+      "rust/LICENSES/Apache-2.0.txt",
+      "rust/LICENSES/BSD-2-Clause.txt",
+      "rust/LICENSES/CC-BY-SA-4.0.txt",
+      "rust/LICENSES/GCC-exception-3.1.txt",
+      "rust/LICENSES/GPL-2.0-only.txt",
+      "rust/LICENSES/GPL-3.0-or-later.txt",
+      "rust/LICENSES/ISC.txt",
+      "rust/LICENSES/LLVM-exception.txt",
+      "rust/LICENSES/MIT.txt",
+      "rust/LICENSES/NCSA.txt",
+      "rust/LICENSES/OFL-1.1.txt",
+      "rust/LICENSES/Unicode-3.0.txt"
+    ]
+  }
+]

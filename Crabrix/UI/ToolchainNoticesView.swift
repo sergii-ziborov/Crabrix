@@ -11,10 +11,11 @@ struct ToolchainNotice: Decodable, Identifiable, Sendable {
 
 enum ToolchainNoticeCatalog {
     static func load() throws -> [ToolchainNotice] {
-        try ["ToolchainPrimaryIndex", "ToolchainVendorIndex", "RustfmtNoticeIndex", "GitCoreNoticeIndex"].flatMap { name in
+        try ["ToolchainPrimaryIndex", "ToolchainVendorIndex", "RustfmtNoticeIndex", "GitCoreNoticeIndex", "SemanticNoticeIndex"].flatMap { name in
             guard let url = Bundle.main.url(forResource: name, withExtension: "json")
                     ?? Bundle.main.url(forResource: name, withExtension: "json", subdirectory: "RustTools")
-                    ?? Bundle.main.url(forResource: name, withExtension: "json", subdirectory: "GitCore") else {
+                    ?? Bundle.main.url(forResource: name, withExtension: "json", subdirectory: "GitCore")
+                    ?? Bundle.main.url(forResource: name, withExtension: "json", subdirectory: "SemanticCore") else {
                 throw CocoaError(.fileNoSuchFile)
             }
             return try JSONDecoder().decode([ToolchainNotice].self, from: Data(contentsOf: url))
@@ -24,7 +25,8 @@ enum ToolchainNoticeCatalog {
     static func text(archive name: String, path: String) throws -> String {
         guard let url = Bundle.main.url(forResource: name, withExtension: "zip")
                 ?? Bundle.main.url(forResource: name, withExtension: "zip", subdirectory: "RustTools")
-                ?? Bundle.main.url(forResource: name, withExtension: "zip", subdirectory: "GitCore") else {
+                ?? Bundle.main.url(forResource: name, withExtension: "zip", subdirectory: "GitCore")
+                ?? Bundle.main.url(forResource: name, withExtension: "zip", subdirectory: "SemanticCore") else {
             throw CocoaError(.fileNoSuchFile)
         }
         let archive = try Archive(url: url, accessMode: .read)
@@ -54,7 +56,7 @@ struct ToolchainNoticesView: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 10) {
-                Text("Original compiler/sysroot, rustfmt and native Git dependency notices. All files are bundled for offline reading; inventories also include source-only and build-time dependencies. The formatter archive includes unmodified MPL option-ext sources; the Git archive contains the complete configured source package.")
+                Text("Original compiler/sysroot, rustfmt, native Git and semantic analyzer dependency notices. All files are bundled for offline reading; inventories also include source-only and build-time dependencies. The formatter archive includes unmodified MPL option-ext sources; the Git archive contains the complete configured source package.")
                     .font(.subheadline)
                     .foregroundStyle(CrabrixTheme.muted)
                     .padding(.bottom, 8)

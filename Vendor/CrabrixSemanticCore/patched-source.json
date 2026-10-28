@@ -1,0 +1,16 @@
+{
+  "upstreamCommit": "abc48c0b8aba37d3f3862a9d5c76eb4e78f90e88",
+  "upstreamArchiveSHA256": "da2fa97689ffc535e34e37bae0c63c58a596348d9069070161b8b7d95be27fd2",
+  "patches": [
+    {
+      "path": "patches/0001-public-abi.patch",
+      "sha256": "6fcd3c08d193aa6404745e3f16d75c2a3492fc11e769aae7abb4366555a34f6a"
+    },
+    {
+      "path": "patches/0002-virtual-wasm-paths.patch",
+      "sha256": "cb22737255db9364f402fc9f47d6cbf325882ae7809894d51f8d28b87ab7fadf"
+    }
+  ],
+  "patchedSourceSHA256": "06bba4228d82c9669ceb2eea65f0d49658ee3c68a8c2032531746209b8919a3a",
+  "sourceFiles": 2262
+}

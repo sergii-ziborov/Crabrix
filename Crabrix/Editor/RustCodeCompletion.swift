@@ -104,6 +104,13 @@ final class RustCompletionController: ObservableObject {
 }
 
 enum RustCompletionSupport {
+    static func prefersSemantic(prefix: String, useAppleIntelligence: Bool) -> Bool {
+        let token = String(prefix.reversed().prefix {
+            $0.isLetter || $0.isNumber || $0 == "_" || $0 == "." || $0 == ":"
+        }.reversed())
+        if token.contains(".") || token.contains("::") { return true }
+        return RustLocalCompleter.suggestion(for: prefix) == nil && !useAppleIntelligence
+    }
     /// Whether Apple Intelligence would actually answer on this device right
     /// now. The editor asks before showing a sparkle: an Apple Intelligence
     /// glyph over a deterministic offline completion promises the wrong thing.
@@ -196,8 +203,6 @@ enum RustLocalCompleter {
             insertion = "collections::HashMap;"
         case trimmed.hasSuffix("Vec::"):
             insertion = "new()"
-        case trimmed.hasSuffix("."):
-            insertion = "iter()"
         default:
             insertion = completionForCurrentToken(in: trimmed)
         }
@@ -316,11 +321,6 @@ enum RustLocalCompleter {
             "Result<T, E>",
             "Option<T>",
             "std::collections::HashMap",
-            ".iter()",
-            ".iter_mut()",
-            ".into_iter()",
-            ".collect::<Vec<_>>()",
-            ".unwrap_or_default()",
         ]
 
         let candidate = candidates.first(where: {

@@ -226,6 +226,8 @@ struct ProjectActionsSheet: View {
     let onFormatProject: (() -> Void)?
     let onUndoFormatting: (() -> Void)?
     let onGit: (() -> Void)?
+    let onRustSymbols: (() -> Void)?
+    let onUndoRustSymbols: (() -> Void)?
     let onReturnToLesson: (() -> Void)?
 
     init(
@@ -240,6 +242,8 @@ struct ProjectActionsSheet: View {
         onFormatProject: (() -> Void)? = nil,
         onUndoFormatting: (() -> Void)? = nil,
         onGit: (() -> Void)? = nil,
+        onRustSymbols: (() -> Void)? = nil,
+        onUndoRustSymbols: (() -> Void)? = nil,
         onReturnToLesson: (() -> Void)? = nil
     ) {
         self.project = project
@@ -253,6 +257,8 @@ struct ProjectActionsSheet: View {
         self.onFormatProject = onFormatProject
         self.onUndoFormatting = onUndoFormatting
         self.onGit = onGit
+        self.onRustSymbols = onRustSymbols
+        self.onUndoRustSymbols = onUndoRustSymbols
         self.onReturnToLesson = onReturnToLesson
         _draft = State(initialValue: ProjectDetailsDraft(project: project))
     }
@@ -313,6 +319,16 @@ struct ProjectActionsSheet: View {
                             detail: "Real local libtest · separate from Academy checks",
                             systemImage: "testtube.2", tint: CrabrixTheme.mint,
                             action: { saveDetails(afterDismiss: onTest) })
+                    }
+                    if let onUndoRustSymbols {
+                        actionButton(title: "Undo symbol changes", detail: "Restore every file from before the last reviewed change",
+                            systemImage: "arrow.uturn.backward", tint: CrabrixTheme.blue,
+                            action: { dismiss(); DispatchQueue.main.async(execute: onUndoRustSymbols) })
+                    }
+                    if let onRustSymbols {
+                        actionButton(title: "Rust symbols", detail: "Local definitions, references, types, completion and rename preview",
+                            systemImage: "curlybraces", tint: CrabrixTheme.blue,
+                            action: { saveDetails(beforeDismiss: onRustSymbols) })
                     }
                     if let onGit {
                         actionButton(title: "Local Git changes", detail: "Selected-file commits, diff, history and local branches",
@@ -438,6 +454,7 @@ struct ProjectActionsSheet: View {
             .padding(13)
             .frame(maxWidth: .infinity, alignment: .leading)
             .crabrixPanel(cornerRadius: 13)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -450,13 +467,14 @@ struct ProjectActionsSheet: View {
         saveDetails(afterDismiss: onShareArchive)
     }
 
-    private func saveDetails(afterDismiss: (() -> Void)? = nil) {
+    private func saveDetails(beforeDismiss: (() -> Void)? = nil, afterDismiss: (() -> Void)? = nil) {
         guard !isSaving else { return }
         isSaving = true
         Task {
             let saved = await onUpdate(draft)
             isSaving = false
             guard saved else { saveFailed = true; return }
+            beforeDismiss?()
             dismiss()
             if let afterDismiss { DispatchQueue.main.async(execute: afterDismiss) }
         }

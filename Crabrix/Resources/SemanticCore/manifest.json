@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "toolchainID": "crabrix-rust-2026-10-02.1",
+  "files": {
+    "engine.wasm": {
+      "bytes": 20932943,
+      "sha256": "c67132fb1ed7eced4617a6eb408c497e7c0706e6a24a55aec1c826019bdae9a5"
+    },
+    "host.js": {
+      "bytes": 2127,
+      "sha256": "66f4841c8a02341de75a22d6e27e1581e6c8c16c58a0f5f1f33d3b81487fcdb0"
+    },
+    "index.html": {
+      "bytes": 158,
+      "sha256": "57ec18ce30833b5e6a591637f28b1c30c76236aeaa6ff83a742ca220b5191107"
+    },
+    "stdlib.json": {
+      "bytes": 13961151,
+      "sha256": "fd400a4dadc88daf3bea394ea3ae91394d6206e32eca92e7182c4e021ae0739e"
+    },
+    "worker.js": {
+      "bytes": 4920,
+      "sha256": "cf08833681a575d283d68b842abbf4bafb68c6f4f115261053d5a99a273fc1ca"
+    }
+  },
+  "notices": {
+    "SemanticVendorNotices.zip": {
+      "bytes": 630123,
+      "sha256": "42212cac6b966b0b4b8b3c0bcaba7fb84adb565bd721f5ee68184d2592f478fa"
+    },
+    "SemanticNoticeIndex.json": {
+      "bytes": 60657,
+      "sha256": "0ae1b02aff5ec0dcaa2e1b41fac59e533a15273d159f5c8f194f60673ce35773"
+    },
+    "build-receipt.json": {
+      "bytes": 1768,
+      "sha256": "605aa5ea22b3c2a67a2200109a6f48a1f37dbbd0b151bff1ccf92d4421efd433"
+    }
+  },
+  "candidateOnly": true
+}

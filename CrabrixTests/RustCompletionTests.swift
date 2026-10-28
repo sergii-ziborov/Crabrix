@@ -2,6 +2,13 @@ import XCTest
 @testable import Crabrix
 
 final class RustCompletionTests: XCTestCase {
+    func testActualMemberLookupKeepsOptionalCodeGenerationSeparate() {
+        XCTAssertTrue(RustCompletionSupport.prefersSemantic(prefix: "name.", useAppleIntelligence: true))
+        XCTAssertTrue(RustCompletionSupport.prefersSemantic(prefix: "Vec::", useAppleIntelligence: false))
+        XCTAssertTrue(RustCompletionSupport.prefersSemantic(prefix: "cou", useAppleIntelligence: false))
+        XCTAssertFalse(RustCompletionSupport.prefersSemantic(prefix: "fn count_items", useAppleIntelligence: false))
+        XCTAssertFalse(RustCompletionSupport.prefersSemantic(prefix: "build_widget(", useAppleIntelligence: true))
+    }
     func testCompletesPrintlnPrefixWithoutUsingAModel() {
         let suggestion = RustLocalCompleter.suggestion(
             for: "fn main() {\n    pri"
@@ -24,10 +31,8 @@ final class RustCompletionTests: XCTestCase {
             RustLocalCompleter.suggestion(for: "fn main() {\n    Vec")?.insertion,
             "::new()"
         )
-        XCTAssertEqual(
-            RustLocalCompleter.suggestion(for: "fn main() {\n    items.it")?.insertion,
-            "er()"
-        )
+        XCTAssertNil(RustLocalCompleter.suggestion(for: "fn main() {\n    items.it"))
+        XCTAssertNil(RustLocalCompleter.suggestion(for: "fn main() {\n    text."))
     }
 }
 

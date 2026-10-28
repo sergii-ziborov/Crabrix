@@ -60,6 +60,7 @@ targets:
           - Resources/ActiveCourseCatalog
           - Resources/RustTools
           - Resources/GitCore
+          - Resources/SemanticCore
           - Compiler/Native/ProcMacroNativeProxy.wat
       - path: Crabrix/Resources/MigrationCoursePacks
         type: folder
@@ -71,6 +72,9 @@ targets:
         type: folder
         buildPhase: resources
       - path: Crabrix/Resources/GitCore
+        type: folder
+        buildPhase: resources
+      - path: Crabrix/Resources/SemanticCore
         type: folder
         buildPhase: resources
       - path: build/Resources/Toolchain
@@ -154,6 +158,7 @@ targets:
           /usr/bin/python3 "$SRCROOT/scripts/prepare_native_compiler.py"
           /usr/bin/python3 "$SRCROOT/scripts/verify_rust_tools.py"
           /usr/bin/python3 "$SRCROOT/scripts/verify_git_core.py"
+          /usr/bin/python3 "$SRCROOT/scripts/verify_semantic_core.py"
           /bin/bash "$SRCROOT/scripts/verify_atlas_catalog.sh" "$SRCROOT"
         basedOnDependencyAnalysis: false
     settings:
@@ -496,6 +501,27 @@ schemes:
             - GitTransferTests
             - RustDebuggerTests/testOpaqueResourceBytesMatchNormalRunDuringRealDebug
             - BundledLicenseTests
+
+  CrabrixSemanticGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+        CrabrixScreenshotTests: [test]
+    test:
+      config: CompilerCandidate
+      gatherCoverageData: false
+      targets:
+        - name: CrabrixTests
+          selectedTests:
+            - RustSemanticRuntimeTests
+            - RustSemanticTextTests
+            - RustSemanticIntegrationTests
+            - RustCompletionTests
+            - RustDeclarationCompletionTests
+        - name: CrabrixScreenshotTests
+          selectedTests:
+            - RustSemanticUITests
 
   CrabrixAtlasGate:
     build:

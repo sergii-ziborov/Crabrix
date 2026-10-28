@@ -7,6 +7,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 /usr/bin/python3 "$SCRIPT_DIR/sync_legal_documents.py" --check
 /usr/bin/python3 "$SCRIPT_DIR/verify_rust_tools.py"
 /usr/bin/python3 "$SCRIPT_DIR/verify_git_core.py"
+/usr/bin/python3 "$SCRIPT_DIR/verify_semantic_core.py"
 /bin/bash "$SCRIPT_DIR/verify_atlas_catalog.sh" "$PROJECT_ROOT"
 
 if ! command -v xcodegen >/dev/null 2>&1; then

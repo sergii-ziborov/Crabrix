@@ -314,6 +314,12 @@ final class CompilerViewModel: ObservableObject {
         let generation: UInt64
     }
     private var formatUndo: FormatUndo?
+    private var semanticUndo: FormatUndo?
+
+    var canUndoSymbolChanges: Bool {
+        !isBusy && !isCompilerDraining && !isProjectOperationInProgress && !playgroundIsReadOnly
+            && semanticUndo?.projectID == projectID && semanticUndo?.generation == workspaceGeneration
+    }
 
     var canUndoFormatting: Bool {
         !isBusy && !isCompilerDraining && !playgroundIsReadOnly
@@ -412,6 +418,63 @@ final class CompilerViewModel: ObservableObject {
 
     func exportProject() -> CrabrixProject {
         currentProject()
+    }
+
+    var semanticGeneration: UInt64 { workspaceGeneration }
+
+    func semanticContext() throws -> RustSemanticContext {
+        guard !isBusy, !isCompilerDraining, !isProjectOperationInProgress, !cargoStage.isWorking else {
+            throw RustSemanticError.unavailable("Wait for the current project operation before requesting Rust analysis.")
+        }
+        let project = currentProject()
+        var plan = CargoBuildPlan.empty
+        if let manifest = project.files["Cargo.toml"] {
+            let parsed = try CratePackageManifest.parse(manifest)
+            guard !parsed.isVirtualWorkspace else { throw RustSemanticError.unavailable("Select a prepared package before requesting semantic analysis of a workspace.") }
+            guard !parsed.isProcMacro, parsed.buildScriptPath == nil,
+                  parsed.buildScriptDisabled || project.files["build.rs"] == nil else {
+                throw RustSemanticError.unavailable("This package uses a procedural-macro target or generated-source build graph outside semantic analysis. Compiler Check remains separate.")
+            }
+            if resolvedManifestSource == manifest, cargoWorkspace.lockfile == project.files["Cargo.lock"] {
+                plan = cargoWorkspace.plan
+            } else if !parsed.dependencies.isEmpty || !parsed.features.isEmpty {
+                throw RustSemanticError.unavailable("Prepare the current Cargo graph first so analysis uses its exact features and dependencies. Analysis never downloads packages.")
+            }
+        }
+        return RustSemanticContext(project: project, revision: workspaceRevision,
+                                   edition: rootEdition(from: project.files["Cargo.toml"]), plan: plan)
+    }
+
+    @discardableResult
+    func applySemanticProposal(_ proposal: RustSemanticProposal, expected: WorkspaceRevision,
+                               applyToEditor: ((UUID, String, String, String) -> Bool)? = nil) -> Bool {
+        guard isCurrent(expected), !isBusy, !isCompilerDraining, !isProjectOperationInProgress, !playgroundIsReadOnly,
+              currentProject().files == proposal.before else { return false }
+        do {
+            try ProjectFilePolicy.validate(proposal.after, entryFile: entryFile)
+            if playgroundSession != nil {
+                var shared = try playgroundDocument(); shared.files = proposal.after
+                _ = try shared.validated()
+            }
+            applyFormattedFiles(proposal.after, applyToEditor: applyToEditor)
+            semanticUndo = FormatUndo(projectID: projectID, files: proposal.before, generation: workspaceGeneration)
+            return true
+        } catch { return false }
+    }
+
+    @discardableResult
+    func undoSymbolChanges() -> Bool {
+        guard canUndoSymbolChanges, let undo = semanticUndo else { return false }
+        do {
+            try ProjectFilePolicy.validate(undo.files, entryFile: entryFile)
+            if playgroundSession != nil {
+                var shared = try playgroundDocument(); shared.files = undo.files
+                _ = try shared.validated()
+            }
+            applyFormattedFiles(undo.files, applyToEditor: nil)
+            semanticUndo = nil
+            return true
+        } catch { return false }
     }
 
     func openProject(from url: URL) async {
@@ -2722,6 +2785,7 @@ final class CompilerViewModel: ObservableObject {
 
     private func workspaceDidChange() {
         guard !suppressAutosave else { return }
+        semanticUndo = nil
         if debugActive { cancelBuild() }
         if !isApplyingPlayground, let connection = playgroundSession {
             do { try connection.replace(playgroundDocument()) }

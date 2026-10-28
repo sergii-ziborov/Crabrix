@@ -94,6 +94,8 @@ struct ContentView: View {
     @State private var isProjectActionsPresented = false
     @State private var isGitPresented = false
     @State private var isDebuggerInspectorPresented = false
+    @State private var semanticInvocation: RustSemanticInvocation?
+    @State private var pendingSemanticInvocation: RustSemanticInvocation?
     @State private var isPlaygroundPresented = false
     @State private var pendingPlaygroundURL: URL?
     @State private var isCargoCatalogPresented = false
@@ -339,7 +341,12 @@ struct ContentView: View {
             .presentationDetents([.medium])
             .presentationDragIndicator(.visible)
         }
-        .sheet(isPresented: $isProjectActionsPresented) {
+        .sheet(isPresented: $isProjectActionsPresented, onDismiss: {
+            if let pending = pendingSemanticInvocation {
+                pendingSemanticInvocation = nil
+                semanticInvocation = pending
+            }
+        }) {
             projectActionsSheet
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
@@ -509,6 +516,15 @@ struct ContentView: View {
                 }
             }
             #if DEBUG || CRABRIX_LEGACY_FIXTURES
+            if arguments.contains("--crabrix-auto-semantic-fixture") {
+                model.loadRunnableSample(projectName: "semantic-lab")
+                let text = "mod models;\nfn main() { let value: Widg; }\n"
+                _ = model.replaceProjectFilesFromTerminal(["main.rs": text, "models.rs": "pub struct Widget { pub count: usize }"], selecting: "main.rs")
+                let range = (text as NSString).range(of: "Widg")
+                editorCursorOffset = NSMaxRange(range)
+                editorNavigationTarget = EditorNavigationTarget(filePath: "main.rs", line: 2, column: 28)
+                openCodeWorkspace()
+            }
             if arguments.contains("--crabrix-auto-rust-tools-fixture") {
                 model.loadRunnableSample(projectName: "rust-tools")
                 _ = model.replaceProjectFilesFromTerminal(["main.rs": "// Keep this comment 🦀\n#[test]fn adds(){println!(\"unit-output\");assert_eq!(2+2,4);}\n#[test]fn failure(){assert_eq!(1,2);}\nfn main(){println!(\"ordinary run\");}\n"], selecting: "main.rs")
@@ -570,6 +586,8 @@ struct ContentView: View {
         }
         .modifier(RustDebuggerPresentation(model: model, presented: $isDebuggerInspectorPresented,
             selectedTab: $selectedBuildDockTab, navigationTarget: $editorNavigationTarget, keyboard: editorKeyboard))
+        .modifier(RustSemanticPresentation(model: model, invocation: $semanticInvocation,
+            selectedTab: $selectedBuildDockTab, navigation: $editorNavigationTarget, keyboard: editorKeyboard))
         .onChange(of: model.projectID) { _, _ in
             terminal.attach(to: model.exportProject())
             selectedBuildDockTab = ProcessInfo.processInfo.arguments.contains("--crabrix-auto-terminal")
@@ -820,8 +838,7 @@ struct ContentView: View {
                 duoHingePresent: duoHingePresent,
                 hingePartiallyOpen: duoPartiallyOpen,
                 hingeGlobalY: hingeGlobalY,
-                assistantUsesAppleIntelligence: appleIntelligenceCompletion
-                    && RustCompletionSupport.isAppleIntelligenceAvailable,
+                assistantUsesAppleIntelligence: editorCompletionUsesAppleIntelligence,
                 onRequestCompletion: requestEditorAssistant
             ) {
                 codeWorkspace
@@ -877,6 +894,12 @@ struct ContentView: View {
                 onFormatProject: formatProjectAction,
                 onUndoFormatting: undo,
                 onGit: { editorKeyboard.dismissKeyboard(); isGitPresented = true },
+                onRustSymbols: model.selectedFile.hasSuffix(".rs") ? {
+                    let cursor = currentEditorCursor
+                    completion.dismiss(); editorKeyboard.dismissKeyboard()
+                    pendingSemanticInvocation = .init(file: model.selectedFile, offset: cursor, action: .definition, revision: model.workspaceRevision)
+                } : nil,
+                onUndoRustSymbols: model.canUndoSymbolChanges ? { _ = model.undoSymbolChanges() } : nil,
                 onReturnToLesson: returnToLesson
             )
     }
@@ -903,14 +926,14 @@ struct ContentView: View {
                 remoteSelections: model.playgroundSelections,
                 collaborationSelection: model.playgroundLocalSelection,
                 onSelectionChange: { [path = model.selectedFile] range in model.sharePlaygroundSelection(file: path, range: range) },
+                onRequestSemantic: { action, offset in requestRustSymbols(action, offset: offset) },
                 breakpoints: Set(model.debugBreakpoints.filter { $0.file == model.selectedFile }.map(\.line)),
                 debugLine: model.debugPause?.site.file == model.selectedFile ? model.debugPause?.site.line : nil,
                 onBreakpoint: { [path = model.selectedFile] line in model.toggleDebugBreakpoint(file: path, line: line) },
                 tracksTyping: !model.activeLessonIsReview,
                 diagnostics: model.result?.diagnostics ?? [],
                 navigationTarget: editorNavigationTarget,
-                assistantUsesAppleIntelligence: appleIntelligenceCompletion
-                    && RustCompletionSupport.isAppleIntelligenceAvailable,
+                assistantUsesAppleIntelligence: editorCompletionUsesAppleIntelligence,
                 tabletopCodeTabActive: tabletopTabsGlobalY == nil
                     ? nil : selectedBuildDockTab == .code,
                 keyboardBridge: editorKeyboard,
@@ -1217,12 +1240,46 @@ struct ContentView: View {
 
     private func requestCompletion() {
         guard !model.isBusy && !model.isProjectOperationInProgress else { return }
+        if editorUsesSemanticCompletion {
+            requestRustSymbols(.complete, offset: currentEditorCursor)
+            return
+        }
         completion.request(
             source: model.source,
-            cursorOffset: editorCursorOffset,
+            cursorOffset: currentEditorCursor,
             filePath: model.selectedFile,
             useAppleIntelligence: appleIntelligenceCompletion
         )
+    }
+
+    private func requestRustSymbols(_ action: RustSemanticAction, offset: Int) {
+        guard model.selectedFile.hasSuffix(".rs"), !model.isBusy, !model.isProjectOperationInProgress else { return }
+        completion.dismiss()
+        editorKeyboard.dismissKeyboard()
+        semanticInvocation = .init(file: model.selectedFile, offset: offset, action: action, revision: model.workspaceRevision)
+    }
+
+    private var currentEditorCursor: Int {
+        editorKeyboard.cursorOffset(projectID: model.projectID, file: model.selectedFile) ?? editorCursorOffset
+    }
+
+    private var editorCompletionPrefix: String {
+        let text = model.source as NSString
+        let end = min(max(0, currentEditorCursor), text.length)
+        let start = max(0, end - 128)
+        return text.substring(with: NSRange(location: start, length: end - start))
+    }
+
+    private var editorUsesSemanticCompletion: Bool {
+        model.selectedFile.hasSuffix(".rs") && RustCompletionSupport.prefersSemantic(
+            prefix: editorCompletionPrefix,
+            useAppleIntelligence: appleIntelligenceCompletion && RustCompletionSupport.isAppleIntelligenceAvailable)
+    }
+
+    private var editorCompletionUsesAppleIntelligence: Bool {
+        appleIntelligenceCompletion && RustCompletionSupport.isAppleIntelligenceAvailable
+            && !editorUsesSemanticCompletion
+            && (!model.selectedFile.hasSuffix(".rs") || RustLocalCompleter.suggestion(for: editorCompletionPrefix) == nil)
     }
 
     /// The keyboard sparkle is one contextual assistant action. With a current
@@ -1313,9 +1370,10 @@ struct ContentView: View {
     }
 
     private func acceptCompletion() {
-        guard let suggestion = completion.suggestion else { return }
+        guard let suggestion = completion.suggestion, !model.playgroundIsReadOnly,
+              !model.isBusy, !model.isProjectOperationInProgress else { return }
         let source = model.source as NSString
-        let offset = min(max(editorCursorOffset, 0), source.length)
+        let offset = min(max(currentEditorCursor, 0), source.length)
         model.source = source.replacingCharacters(
             in: NSRange(location: offset, length: 0),
             with: suggestion.insertion

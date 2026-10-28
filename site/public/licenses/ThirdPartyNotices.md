@@ -138,3 +138,15 @@ SwiftPM package, configured C sources, wrapper, tests and untouched upstream
 source archive. Read notices and export corresponding source offline from
 Open-source licenses. The iOS profile uses Apple SecureTransport and system
 zlib/iconv; it does not run external Git processes or project hooks.
+
+## Local Rust semantic analysis
+
+The MIT/Apache-2.0 rust-analyzer source is pinned to the compiler's Rust source
+revision abc48c0b8aba37d3f3862a9d5c76eb4e78f90e88. The local wrapper and two
+documented compatibility patches compile to an import-free WebAssembly module.
+The analysis library contains text from the same Rust core/alloc/std revision.
+SemanticCore/SemanticVendorNotices.zip retains original notices for the complete
+194-component source/build inventory, including Rust COPYRIGHT, per-file license
+metadata and original LICENSES. These notices are readable offline from
+Open-source licenses. User code is analysis data; the analyzer executes no
+project build scripts, external procedural macros or network requests.

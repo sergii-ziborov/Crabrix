@@ -1,0 +1,44 @@
+{
+  "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "upstream": {
+    "schemaVersion": 1,
+    "upstreamURL": "https://github.com/AngelOnFira/rust.git",
+    "upstreamCommit": "abc48c0b8aba37d3f3862a9d5c76eb4e78f90e88",
+    "upstreamSubdirectory": "src/tools/rust-analyzer",
+    "upstreamArchiveSHA256": "da2fa97689ffc535e34e37bae0c63c58a596348d9069070161b8b7d95be27fd2",
+    "compilerRustSourceCommit": "abc48c0b8aba37d3f3862a9d5c76eb4e78f90e88",
+    "toolchainID": "crabrix-rust-2026-10-02.1",
+    "patches": [
+      {
+        "path": "patches/0001-public-abi.patch",
+        "sha256": "6fcd3c08d193aa6404745e3f16d75c2a3492fc11e769aae7abb4366555a34f6a"
+      },
+      {
+        "path": "patches/0002-virtual-wasm-paths.patch",
+        "sha256": "cb22737255db9364f402fc9f47d6cbf325882ae7809894d51f8d28b87ab7fadf"
+      }
+    ],
+    "buildCfg": [
+      "no_salsa_async_drops"
+    ],
+    "maximumWasmMemoryBytes": 268435456,
+    "wasmStackBytes": 2097152,
+    "networkAtRuntime": false,
+    "externalProcMacros": false
+  },
+  "moduleSHA256": "c67132fb1ed7eced4617a6eb408c497e7c0706e6a24a55aec1c826019bdae9a5",
+  "moduleBytes": 20932943,
+  "sourceFiles": {
+    "src/lib.rs": "f49af07054669904932e4aaefabde2cadb57fab214624fdf4b0fd62fa486d10a",
+    "Cargo.toml": "d00b63879c8db356016a7238e0fe7eb464a4ab37333661ec4f6f8ae33c57788a",
+    "Cargo.lock": "5493622c0b683e28eeeab03732b13e3d70d955ef0375a44b3a282a9814f2f96b"
+  },
+  "staged": true,
+  "patchedSourceAudit": {
+    "patchedSourceSHA256": "06bba4228d82c9669ceb2eea65f0d49658ee3c68a8c2032531746209b8919a3a",
+    "sourceFiles": 2262,
+    "upstreamArchiveSHA256": "da2fa97689ffc535e34e37bae0c63c58a596348d9069070161b8b7d95be27fd2",
+    "checkedAfterBuild": true,
+    "observedAt": "2026-10-28T23:28:41.963915+00:00"
+  }
+}

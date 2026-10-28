@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "upstreamURL": "https://github.com/AngelOnFira/rust.git",
+  "upstreamCommit": "abc48c0b8aba37d3f3862a9d5c76eb4e78f90e88",
+  "upstreamSubdirectory": "src/tools/rust-analyzer",
+  "upstreamArchiveSHA256": "da2fa97689ffc535e34e37bae0c63c58a596348d9069070161b8b7d95be27fd2",
+  "compilerRustSourceCommit": "abc48c0b8aba37d3f3862a9d5c76eb4e78f90e88",
+  "toolchainID": "crabrix-rust-2026-10-02.1",
+  "patches": [
+    {
+      "path": "patches/0001-public-abi.patch",
+      "sha256": "6fcd3c08d193aa6404745e3f16d75c2a3492fc11e769aae7abb4366555a34f6a"
+    },
+    {
+      "path": "patches/0002-virtual-wasm-paths.patch",
+      "sha256": "cb22737255db9364f402fc9f47d6cbf325882ae7809894d51f8d28b87ab7fadf"
+    }
+  ],
+  "buildCfg": [
+    "no_salsa_async_drops"
+  ],
+  "maximumWasmMemoryBytes": 268435456,
+  "wasmStackBytes": 2097152,
+  "networkAtRuntime": false,
+  "externalProcMacros": false
+}

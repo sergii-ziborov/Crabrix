@@ -1,0 +1,29 @@
+--- a/crates/paths/src/lib.rs
++++ b/crates/paths/src/lib.rs
+@@ -66,7 +66,7 @@
+ impl TryFrom<Utf8PathBuf> for AbsPathBuf {
+     type Error = Utf8PathBuf;
+     fn try_from(path_buf: Utf8PathBuf) -> Result<AbsPathBuf, Utf8PathBuf> {
+-        if !path_buf.is_absolute() {
++        if !(path_buf.is_absolute() || (cfg!(all(target_arch = "wasm32", target_os = "unknown")) && path_buf.has_root())) {
+             return Err(path_buf);
+         }
+         Ok(AbsPathBuf(path_buf))
+@@ -193,7 +193,7 @@
+ impl<'a> TryFrom<&'a Utf8Path> for &'a AbsPath {
+     type Error = &'a Utf8Path;
+     fn try_from(path: &'a Utf8Path) -> Result<&'a AbsPath, &'a Utf8Path> {
+-        if !path.is_absolute() {
++        if !(path.is_absolute() || (cfg!(all(target_arch = "wasm32", target_os = "unknown")) && path.has_root())) {
+             return Err(path);
+         }
+         Ok(AbsPath::assert(path))
+@@ -207,7 +207,7 @@
+     ///
+     /// Panics if `path` is not absolute.
+     pub fn assert(path: &Utf8Path) -> &AbsPath {
+-        assert!(path.is_absolute(), "{path} is not absolute");
++        assert!((path.is_absolute() || (cfg!(all(target_arch = "wasm32", target_os = "unknown")) && path.has_root())), "{path} is not absolute");
+         unsafe { &*(path as *const Utf8Path as *const AbsPath) }
+     }
+ 

@@ -7,10 +7,12 @@ final class RustEditorKeyboardBridge: ObservableObject {
     var dismiss: (() -> Void)?
     var focus: (() -> Void)?
     var replaceDocument: ((UUID, String, String, String) -> Bool)?
+    var readCursor: ((UUID, String) -> Int?)?
 
     func insertSymbol(_ symbol: String) { insert?(symbol) }
     func dismissKeyboard() { dismiss?() }
     func focusEditor() { focus?() }
+    func cursorOffset(projectID: UUID, file: String) -> Int? { readCursor?(projectID, file) }
     func applyFormattedText(projectID: UUID, file: String, expected: String, replacement: String) -> Bool {
         replaceDocument?(projectID, file, expected, replacement) ?? false
     }
@@ -137,6 +139,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
     var remoteSelections: [PlaygroundRemoteSelection] = []
     var collaborationSelection: PlaygroundRemoteSelection?
     var onSelectionChange: (NSRange) -> Void = { _ in }
+    var onRequestSemantic: ((RustSemanticAction, Int) -> Void)?
     var breakpoints: Set<Int> = []
     var debugLine: Int?
     var onBreakpoint: ((Int) -> Void)?
@@ -163,6 +166,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         remoteSelections: [PlaygroundRemoteSelection] = [],
         collaborationSelection: PlaygroundRemoteSelection? = nil,
         onSelectionChange: @escaping (NSRange) -> Void = { _ in },
+        onRequestSemantic: ((RustSemanticAction, Int) -> Void)? = nil,
         breakpoints: Set<Int> = [],
         debugLine: Int? = nil,
         onBreakpoint: ((Int) -> Void)? = nil,
@@ -183,6 +187,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         self.remoteSelections = remoteSelections
         self.collaborationSelection = collaborationSelection
         self.onSelectionChange = onSelectionChange
+        self.onRequestSemantic = onRequestSemantic
         self.breakpoints = breakpoints
         self.debugLine = debugLine
         self.onBreakpoint = onBreakpoint
@@ -250,6 +255,9 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         keyboardBridge?.replaceDocument = { [weak coordinator = context.coordinator] projectID, file, expected, replacement in
             coordinator?.replaceDocument(projectID: projectID, file: file, expected: expected, replacement: replacement) ?? false
         }
+        keyboardBridge?.readCursor = { [weak coordinator = context.coordinator] projectID, file in
+            coordinator?.cursorOffset(projectID: projectID, file: file)
+        }
         canvas.setTabletopCodeTabActive(tabletopCodeTabActive)
         context.coordinator.applyHighlighting(to: textView, filePath: filePath)
         return canvas
@@ -279,6 +287,9 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         }
         keyboardBridge?.replaceDocument = { [weak coordinator = context.coordinator] projectID, file, expected, replacement in
             coordinator?.replaceDocument(projectID: projectID, file: file, expected: expected, replacement: replacement) ?? false
+        }
+        keyboardBridge?.readCursor = { [weak coordinator = context.coordinator] projectID, file in
+            coordinator?.cursorOffset(projectID: projectID, file: file)
         }
         textView.isEditable = isEditable
         canvas.backgroundColor = UIColor(CrabrixTheme.editor)
@@ -316,7 +327,28 @@ struct SyntaxCodeEditor: UIViewRepresentable {
     }
 
     final class Coordinator: NSObject, UITextViewDelegate {
+        func textView(_ textView: UITextView, editMenuForTextIn range: NSRange,
+                      suggestedActions: [UIMenuElement]) -> UIMenu? {
+            guard parent.filePath.hasSuffix(".rs"), parent.onRequestSemantic != nil else {
+                return UIMenu(children: suggestedActions)
+            }
+            let projectID = parent.projectID, file = parent.filePath
+            let actions = RustSemanticAction.allCases.filter {
+                parent.isEditable || ($0 != .rename && $0 != .complete)
+            }.map { operation in
+                UIAction(title: operation.title) { [weak self] _ in
+                    guard let self, parent.projectID == projectID, parent.filePath == file else { return }
+                    parent.onRequestSemantic?(operation, range.location)
+                }
+            }
+            return UIMenu(children: suggestedActions + [UIMenu(title: "Rust symbols", children: actions)])
+        }
         var parent: SyntaxCodeEditor
+        func cursorOffset(projectID: UUID, file: String) -> Int? {
+            guard parent.projectID == projectID, parent.filePath == file, let textView,
+                  textView.text == parent.text else { return nil }
+            return min(max(0, textView.selectedRange.location), (textView.text as NSString).length)
+        }
         var highlightedText = ""
         var highlightedFilePath = ""
         var highlightedFontSize = 0.0

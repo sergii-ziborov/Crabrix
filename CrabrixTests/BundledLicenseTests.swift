@@ -57,7 +57,7 @@ final class BundledLicenseTests: XCTestCase {
 
     func testEveryInventoriedCompilerNoticeCanBeReadOffline() throws {
         let notices = try ToolchainNoticeCatalog.load()
-        XCTAssertEqual(notices.count, 1829) // Compiler, formatter/WASI and native Git notices.
+        XCTAssertEqual(notices.count, 2023) // Compiler, formatter/WASI, native Git and semantic analyzer.
         for notice in notices {
             XCTAssertFalse(notice.documents.isEmpty, notice.name)
             for path in notice.documents {
