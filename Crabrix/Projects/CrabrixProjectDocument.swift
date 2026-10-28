@@ -46,6 +46,8 @@ struct CrabrixProjectDocument: FileDocument {
             kind: metadata?.kind ?? .general,
             isFavorite: metadata?.isFavorite ?? false
         )
+        try ProjectFilePolicy.validate(files, entryFile: project.entryFile)
+        try ProjectFilePolicy.verify(metadata?.fileDigests, files: files)
     }
 
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
@@ -53,6 +55,7 @@ struct CrabrixProjectDocument: FileDocument {
     }
 
     func packageWrapper() throws -> FileWrapper {
+        try ProjectFilePolicy.validate(project.files, entryFile: project.entryFile)
         let root = FileWrapper(directoryWithFileWrappers: [:])
         for (path, source) in project.files.sorted(by: { $0.key < $1.key }) {
             try Self.add(data: Data(source.utf8), at: path, to: root)
@@ -60,8 +63,10 @@ struct CrabrixProjectDocument: FileDocument {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        let metadata = try encoder.encode(CrabrixProject.PackageMetadata(project: project))
+        guard metadata.count <= ProjectFilePolicy.maximumMetadataBytes else { throw ProjectFilePolicy.Failure.metadataTooLarge }
         try Self.add(
-            data: encoder.encode(CrabrixProject.PackageMetadata(project: project)),
+            data: metadata,
             at: ".crabrix/project.json",
             to: root
         )
@@ -87,34 +92,44 @@ struct CrabrixProjectDocument: FileDocument {
         directory.addFileWrapper(file)
     }
 
-    private static func readFiles(from root: FileWrapper, prefix: String = "") throws -> [String: String] {
+    static func readFiles(from root: FileWrapper, prefix: String = "") throws -> [String: String] {
         var result: [String: String] = [:]
+        var totalBytes = 0
         for (name, child) in root.fileWrappers ?? [:] {
-            if name == ".crabrix" { continue }
+            if prefix.isEmpty, name == ".crabrix" { continue }
             let path = prefix.isEmpty ? name : "\(prefix)/\(name)"
+            try ProjectFilePolicy.validatePath(path)
             if child.isDirectory {
-                result.merge(try readFiles(from: child, prefix: path)) { _, new in new }
-            } else if child.isRegularFile,
-                      let data = child.regularFileContents,
-                      data.count <= LocalProjectLoader.maximumFileBytes,
-                      let source = String(data: data, encoding: .utf8) {
+                let nested = try readFiles(from: child, prefix: path)
+                totalBytes += nested.values.reduce(0) { $0 + $1.utf8.count }
+                result.merge(nested) { _, new in new }
+            } else if child.isRegularFile, let data = child.regularFileContents {
+                guard data.count <= ProjectFilePolicy.maximumFileBytes else { throw ProjectFilePolicy.Failure.fileTooLarge(path) }
+                guard let source = String(data: data, encoding: .utf8) else { throw ProjectFilePolicy.Failure.unreadable(path) }
                 result[path] = source
-            }
+                totalBytes += data.count
+            } else { throw ProjectFilePolicy.Failure.unreadable(path) }
+            guard result.count <= ProjectFilePolicy.maximumFileCount else { throw ProjectFilePolicy.Failure.tooManyFiles }
+            guard totalBytes <= ProjectFilePolicy.maximumProjectBytes else { throw ProjectFilePolicy.Failure.projectTooLarge }
         }
+        try ProjectFilePolicy.validate(result)
         return result
     }
 
     private static func readMetadata(
         from root: FileWrapper
     ) throws -> CrabrixProject.PackageMetadata? {
-        guard let metadataDirectory = root.fileWrappers?[".crabrix"],
+        guard let metadataDirectory = root.fileWrappers?[".crabrix"] else { return nil }
+        guard metadataDirectory.isDirectory,
               let metadataFile = metadataDirectory.fileWrappers?["project.json"],
               let data = metadataFile.regularFileContents
-        else { return nil }
+        else { throw ProjectFilePolicy.Failure.snapshotMismatch(".crabrix/project.json") }
+        guard data.count <= ProjectFilePolicy.maximumMetadataBytes else { throw ProjectFilePolicy.Failure.metadataTooLarge }
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         if let metadata = try? decoder.decode(CrabrixProject.PackageMetadata.self, from: data) {
+            guard metadata.version <= CrabrixProject.PackageMetadata.currentVersion else { throw CocoaError(.fileReadUnknown) }
             return metadata
         }
 
@@ -152,7 +167,24 @@ enum CrabrixProjectArchive {
     }
 
     private static let maximumArchiveBytes: UInt64 = 32_000_000
-    private static let maximumArchiveEntries = 1_024
+    // A supported tree can have one distinct directory per path component,
+    // plus its parent and package metadata. This is independent of Cargo units.
+    private static let maximumArchiveEntries = ProjectFilePolicy.maximumFileCount * (ProjectFilePolicy.maximumPathDepth + 1) + 4
+
+    /// Raw UTF-8 rescue deliberately bypasses the editable-project byte limit.
+    /// It lets a user keep an oversized paste before reducing it to save.
+    static func createSourceRescue(source: String, fileName: String) throws -> URL {
+        try ProjectFilePolicy.validatePath(fileName)
+        guard !fileName.contains("/") else { throw ArchiveError.unsafePath(fileName) }
+        let manager = FileManager.default
+        let work = manager.temporaryDirectory.appending(path: "CrabrixShare-\(UUID().uuidString)", directoryHint: .isDirectory)
+        let destination = work.appending(path: fileName)
+        try manager.createDirectory(at: work, withIntermediateDirectories: true)
+        do {
+            try Data(source.utf8).write(to: destination, options: .atomic)
+            return destination
+        } catch { try? manager.removeItem(at: work); throw error }
+    }
 
     static func create(project: CrabrixProject) throws -> URL {
         let fileManager = FileManager.default
@@ -167,6 +199,7 @@ enum CrabrixProjectArchive {
             let wrapper = try CrabrixProjectDocument(project: project).packageWrapper()
             try wrapper.write(to: projectURL, options: .atomic, originalContentsURL: nil)
             try fileManager.zipItem(at: projectURL, to: archiveURL, shouldKeepParent: true)
+            try validate(archiveURL)
             return archiveURL
         } catch {
             try? fileManager.removeItem(at: workURL)
@@ -203,6 +236,7 @@ enum CrabrixProjectArchive {
         let archive = try Archive(url: url, accessMode: .read)
         var totalBytes: UInt64 = 0
         var entryCount = 0
+        var paths: Set<String> = []
         for entry in archive {
             entryCount += 1
             guard entryCount <= maximumArchiveEntries else { throw ArchiveError.archiveTooLarge }
@@ -212,7 +246,11 @@ enum CrabrixProjectArchive {
             let path = entry.path.replacingOccurrences(of: "\\", with: "/")
             let components = path.split(separator: "/", omittingEmptySubsequences: false)
             guard !path.hasPrefix("/"),
-                  !components.contains(".."),
+                  !path.contains("\\"), !path.contains("\0"),
+                  !components.contains(".."), !components.contains("."),
+                  !components.dropLast(entry.type == .directory ? 1 : 0).contains(where: { $0.isEmpty }),
+                  components.count <= ProjectFilePolicy.maximumPathDepth + 3,
+                  paths.insert(path.trimmingCharacters(in: CharacterSet(charactersIn: "/")).precomposedStringWithCanonicalMapping.lowercased()).inserted,
                   entry.type != .symlink
             else {
                 throw ArchiveError.unsafePath(entry.path)

@@ -1,4 +1,12 @@
 import Foundation
+import ZIPFoundation
+
+struct ProjectReadFailure: Equatable, Identifiable, Sendable {
+    let projectID: UUID
+    let name: String
+    let message: String
+    var id: UUID { projectID }
+}
 
 private enum ProjectNames {
     static func key(_ name: String) -> String {
@@ -22,9 +30,14 @@ private enum ProjectNames {
 /// The index is only an accelerator: if it is damaged, the individual project
 /// directories remain independently decodable and the index is rebuilt.
 actor ProjectStore {
+    // Different scenes/libraries can create separate actors for the same
+    // directory. Their synchronous snapshot transactions must still serialize.
+    private static let transactionLock = NSRecursiveLock()
+    private(set) var readFailures: [ProjectReadFailure] = []
     enum StoreError: LocalizedError {
         case invalidProjectPath(String)
         case missingProject(UUID)
+        case unsupportedVersion(Int)
 
         var errorDescription: String? {
             switch self {
@@ -32,12 +45,14 @@ actor ProjectStore {
                 "The project contains an unsafe file path: \(path)"
             case let .missingProject(id):
                 "Project \(id.uuidString) is no longer available on this device."
+            case let .unsupportedVersion(version):
+                "This project uses snapshot format \(version), newer than this app supports. Its files were kept unchanged."
             }
         }
     }
 
     private struct ProjectMetadata: Codable {
-        static let currentVersion = 2
+        static let currentVersion = 3
 
         let version: Int
         let id: UUID
@@ -51,6 +66,7 @@ actor ProjectStore {
         let isFavorite: Bool?
         let updatedAt: Date
         let lastBuild: ProjectBuildRecord?
+        let fileDigests: [String: String]?
 
         init(
             project: CrabrixProject,
@@ -69,6 +85,7 @@ actor ProjectStore {
             isFavorite = project.isFavorite
             self.updatedAt = updatedAt
             self.lastBuild = lastBuild
+            fileDigests = ProjectFilePolicy.digests(project.files)
         }
     }
 
@@ -112,6 +129,7 @@ actor ProjectStore {
         lastBuild: ProjectBuildRecord?,
         at date: Date = Date()
     ) throws -> ProjectLibraryItem {
+        Self.transactionLock.lock(); defer { Self.transactionLock.unlock() }
         try prepareStorage()
         try recoverInterruptedTransactions()
         try validate(project)
@@ -121,7 +139,15 @@ actor ProjectStore {
         project.name = ProjectNames.available(project.name, occupied: occupied)
 
         let destination = directory(for: project.id)
-        let existing = try? loadProject(from: destination)
+        var existing: ProjectLibraryItem?
+        if fileManager.fileExists(atPath: destination.path) {
+            do { existing = try loadProject(from: destination) }
+            catch {
+                if let failure = error as? StoreError, case .unsupportedVersion = failure { throw error }
+                // Preserve an unreadable original as a raw backup if the caller
+                // explicitly supplies a valid replacement of the same project.
+            }
+        }
         let effectiveLastBuild = lastBuild ?? existing?.lastBuild
         let staging = projectsURL.appending(
             path: ".staging-\(project.id.uuidString)-\(UUID().uuidString)",
@@ -155,8 +181,22 @@ actor ProjectStore {
             }
 
             if fileManager.fileExists(atPath: backup.path) {
-                try installRecoverySnapshot(from: backup, in: destination)
-                try? fileManager.removeItem(at: backup)
+                if let oldSnapshot = try? decodeProjectSnapshot(at: backup) {
+                    try installRecoverySnapshot(from: backup, in: destination)
+                    if (oldSnapshot.storageVersion ?? 0) < 3 {
+                        // Preserve the entire original, including its previous
+                        // recovery. Old readers could have dropped hidden files.
+                        let migration = projectsURL.appending(path: ".migration-\(project.id.uuidString.lowercased())-\(UUID().uuidString)", directoryHint: .isDirectory)
+                        try fileManager.moveItem(at: backup, to: migration)
+                    } else { try? fileManager.removeItem(at: backup) }
+                } else {
+                    // Keep the damaged original for extraction. Never replace
+                    // the last readable recovery with a damaged snapshot.
+                    let previous = backup.appending(path: "recovery/previous", directoryHint: .isDirectory)
+                    if (try? decodeProjectSnapshot(at: previous)) != nil {
+                        try installRecoverySnapshot(from: previous, in: destination)
+                    }
+                }
             }
         } catch {
             try? fileManager.removeItem(at: staging)
@@ -172,6 +212,7 @@ actor ProjectStore {
     }
 
     func project(id: UUID) throws -> ProjectLibraryItem? {
+        Self.transactionLock.lock(); defer { Self.transactionLock.unlock() }
         try prepareStorage()
         try recoverInterruptedTransactions()
         let url = directory(for: id)
@@ -180,14 +221,15 @@ actor ProjectStore {
     }
 
     func allProjects() throws -> [ProjectLibraryItem] {
+        Self.transactionLock.lock(); defer { Self.transactionLock.unlock() }
         try prepareStorage()
         try recoverInterruptedTransactions()
         let entries = try loadOrRebuildIndex()
         var result: [ProjectLibraryItem] = []
+        readFailures = []
         for entry in entries.sorted(by: { $0.updatedAt > $1.updatedAt }) {
-            if let item = try? loadProject(from: directory(for: entry.id)) {
-                result.append(item)
-            }
+            do { result.append(try loadProject(from: directory(for: entry.id))) }
+            catch { readFailures.append(ProjectReadFailure(projectID: entry.id, name: entry.name, message: error.localizedDescription)) }
         }
         // Older releases allowed duplicate display names. Reserve every existing
         // name first so repairing a duplicate never steals another project's name.
@@ -215,15 +257,61 @@ actor ProjectStore {
     /// Deletion is intentionally explicit. No age, count, or recency policy
     /// calls this method.
     func delete(projectID: UUID) throws {
+        Self.transactionLock.lock(); defer { Self.transactionLock.unlock() }
         try prepareStorage()
         let url = directory(for: projectID)
-        guard fileManager.fileExists(atPath: url.path) else {
+        let retained = try retainedSnapshots(for: projectID)
+        guard fileManager.fileExists(atPath: url.path) || !retained.isEmpty else {
             throw StoreError.missingProject(projectID)
         }
-        try fileManager.removeItem(at: url)
+        for snapshot in retained { try fileManager.removeItem(at: snapshot) }
+        if fileManager.fileExists(atPath: url.path) { try fileManager.removeItem(at: url) }
         var index = try loadOrRebuildIndex()
         index.removeAll { $0.id == projectID }
         try persistIndex(index)
+    }
+
+    /// A separate rescue format: raw files, metadata and previous snapshot.
+    /// It is not advertised as an ordinary editable-project or Git export.
+    func recoveryArchive(projectID: UUID) throws -> URL {
+        Self.transactionLock.lock(); defer { Self.transactionLock.unlock() }
+        let root = directory(for: projectID)
+        guard fileManager.fileExists(atPath: root.path) else { throw StoreError.missingProject(projectID) }
+        let sources = [root] + (try retainedSnapshots(for: projectID))
+        var total = 0, count = 0
+        for source in sources {
+            let sourceValues = try source.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+            guard sourceValues.isDirectory == true, sourceValues.isSymbolicLink != true else { throw ProjectFilePolicy.Failure.unreadable(source.lastPathComponent) }
+            var traversalError: Error?
+            guard let entries = fileManager.enumerator(at: source, includingPropertiesForKeys: [.isSymbolicLinkKey, .fileSizeKey, .isRegularFileKey], options: [], errorHandler: { _, error in traversalError = error; return false }) else { throw ProjectFilePolicy.Failure.unreadable(source.lastPathComponent) }
+            for case let url as URL in entries {
+                let values = try url.resourceValues(forKeys: [.isSymbolicLinkKey, .fileSizeKey, .isRegularFileKey])
+                guard values.isSymbolicLink != true else { throw ProjectFilePolicy.Failure.unreadable(url.lastPathComponent) }
+                count += 1
+                if values.isRegularFile == true { total += values.fileSize ?? 0 }
+                guard total <= 128_000_000, count <= 300_000 else { throw CocoaError(.fileWriteOutOfSpace, userInfo: [NSLocalizedDescriptionKey: "The raw recovery exceeds the 128 MB / 300,000-entry rescue budget. Original files remain unchanged."]) }
+            }
+            if let traversalError { throw traversalError }
+        }
+        let work = fileManager.temporaryDirectory.appending(path: "CrabrixShare-\(UUID().uuidString)", directoryHint: .isDirectory)
+        try fileManager.createDirectory(at: work, withIntermediateDirectories: true)
+        let bundle = work.appending(path: "SavedSnapshots", directoryHint: .isDirectory)
+        try fileManager.createDirectory(at: bundle, withIntermediateDirectories: true)
+        let archive = work.appending(path: "Recovery-\(projectID.uuidString).zip")
+        do {
+            for (index, source) in sources.enumerated() { try fileManager.copyItem(at: source, to: bundle.appending(path: index == 0 ? "Current" : "Retained-\(index)", directoryHint: .isDirectory)) }
+            try fileManager.zipItem(at: bundle, to: archive, shouldKeepParent: true)
+            return archive
+        }
+        catch { try? fileManager.removeItem(at: work); throw error }
+    }
+
+    private func retainedSnapshots(for projectID: UUID) throws -> [URL] {
+        let migration = ".migration-\(projectID.uuidString.lowercased())-"
+        let backup = ".backup-\(projectID.uuidString)-"
+        return try fileManager.contentsOfDirectory(at: projectsURL, includingPropertiesForKeys: [.isSymbolicLinkKey], options: [])
+            .filter { $0.lastPathComponent.hasPrefix(migration) || $0.lastPathComponent.hasPrefix(backup) }
+            .sorted { $0.lastPathComponent < $1.lastPathComponent }
     }
 
     private func prepareStorage() throws {
@@ -260,18 +348,7 @@ actor ProjectStore {
     }
 
     private func validate(_ project: CrabrixProject) throws {
-        for path in project.files.keys {
-            let components = path.split(separator: "/", omittingEmptySubsequences: false)
-            guard !path.isEmpty,
-                  !path.hasPrefix("/"),
-                  !path.contains("\\"),
-                  !path.contains("\0"),
-                  !components.contains(where: { $0.isEmpty || $0 == "." || $0 == ".." })
-            else { throw StoreError.invalidProjectPath(path) }
-        }
-        guard project.files[project.entryFile] != nil else {
-            throw StoreError.invalidProjectPath(project.entryFile)
-        }
+        try ProjectFilePolicy.validate(project.files, entryFile: project.entryFile)
     }
 
     private func writeSnapshot(
@@ -298,7 +375,9 @@ actor ProjectStore {
             updatedAt: updatedAt,
             lastBuild: lastBuild
         )
-        try encoder().encode(metadata).write(
+        let encoded = try encoder().encode(metadata)
+        guard encoded.count <= ProjectFilePolicy.maximumMetadataBytes else { throw ProjectFilePolicy.Failure.metadataTooLarge }
+        try encoded.write(
             to: directory.appending(path: "project.json"),
             options: .atomic
         )
@@ -308,22 +387,41 @@ actor ProjectStore {
         do {
             return try decodeProjectSnapshot(at: directory)
         } catch {
+            if let failure = error as? StoreError, case .unsupportedVersion = failure { throw error }
+            // An old oversized file must not silently turn into an older,
+            // smaller project. Its exact bytes remain available on disk.
+            if let failure = error as? ProjectFilePolicy.Failure {
+                switch failure {
+                case .fileTooLarge, .tooManyFiles, .projectTooLarge, .unsafePath, .metadataTooLarge: throw error
+                default: break
+                }
+            }
             let recovery = directory
                 .appending(path: "recovery", directoryHint: .isDirectory)
                 .appending(path: "previous", directoryHint: .isDirectory)
-            guard fileManager.fileExists(atPath: recovery.path) else { throw error }
-            return try decodeProjectSnapshot(at: recovery)
+            let retained = UUID(uuidString: directory.lastPathComponent).flatMap { try? retainedSnapshots(for: $0) } ?? []
+            for candidate in [recovery] + retained {
+                if var recovered = try? decodeProjectSnapshot(at: candidate) {
+                    recovered.recoveryMessage = "Opened a previous saved snapshot because the current one could not be read: \(error.localizedDescription)"
+                    return recovered
+                }
+            }
+            throw error
         }
     }
 
     private func decodeProjectSnapshot(at directory: URL) throws -> ProjectLibraryItem {
+        let metadataURL = directory.appending(path: "project.json")
+        guard (try metadataURL.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) <= ProjectFilePolicy.maximumMetadataBytes else { throw ProjectFilePolicy.Failure.metadataTooLarge }
         let metadata = try decoder().decode(
             ProjectMetadata.self,
-            from: Data(contentsOf: directory.appending(path: "project.json"))
+            from: Data(contentsOf: metadataURL)
         )
+        guard metadata.version <= ProjectMetadata.currentVersion else { throw StoreError.unsupportedVersion(metadata.version) }
         let files = try readFiles(
             beneath: directory.appending(path: "files", directoryHint: .isDirectory)
         )
+        try ProjectFilePolicy.verify(metadata.fileDigests, files: files)
         let project = CrabrixProject(
             id: metadata.id,
             name: metadata.name,
@@ -340,30 +438,44 @@ actor ProjectStore {
         return ProjectLibraryItem(
             project: project,
             lastOpenedAt: metadata.updatedAt,
-            lastBuild: metadata.lastBuild
+            lastBuild: metadata.lastBuild,
+            storageVersion: metadata.version
         )
     }
 
     private func readFiles(beneath filesURL: URL) throws -> [String: String] {
+        let rootValues = try filesURL.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+        guard rootValues.isDirectory == true, rootValues.isSymbolicLink != true else {
+            throw ProjectFilePolicy.Failure.unreadable("files")
+        }
+        var traversalError: Error?
         guard let enumerator = fileManager.enumerator(
             at: filesURL,
-            includingPropertiesForKeys: [.isRegularFileKey, .isSymbolicLinkKey],
-            options: [.skipsHiddenFiles]
-        ) else { return [:] }
+            includingPropertiesForKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey],
+            options: [],
+            errorHandler: { _, error in traversalError = error; return false }
+        ) else { throw ProjectFilePolicy.Failure.unreadable("files") }
 
         var result: [String: String] = [:]
+        var totalBytes = 0
         let rootPath = filesURL.standardizedFileURL.path
         for case let url as URL in enumerator {
-            let values = try url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
-            guard values.isRegularFile == true, values.isSymbolicLink != true else { continue }
             let path = String(url.standardizedFileURL.path.dropFirst(rootPath.count))
                 .trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+            let values = try url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey])
+            guard values.isSymbolicLink != true else { throw ProjectFilePolicy.Failure.unreadable(path) }
+            guard values.isRegularFile == true else { continue }
+            guard (values.fileSize ?? 0) <= ProjectFilePolicy.maximumFileBytes else { throw ProjectFilePolicy.Failure.fileTooLarge(path) }
+            totalBytes += values.fileSize ?? 0
+            guard totalBytes <= ProjectFilePolicy.maximumProjectBytes else { throw ProjectFilePolicy.Failure.projectTooLarge }
             let data = try Data(contentsOf: url, options: [.mappedIfSafe])
-            guard data.count <= LocalProjectLoader.maximumFileBytes,
-                  let source = String(data: data, encoding: .utf8)
-            else { continue }
+            guard let source = String(data: data, encoding: .utf8) else { throw ProjectFilePolicy.Failure.unreadable(path) }
             result[path] = source
+            // Enforce the running budget before retaining another file.
+            guard result.count <= ProjectFilePolicy.maximumFileCount else { throw ProjectFilePolicy.Failure.tooManyFiles }
         }
+        if let traversalError { throw traversalError }
+        try ProjectFilePolicy.validate(result)
         return result
     }
 
@@ -418,15 +530,16 @@ actor ProjectStore {
 
         for backup in backups {
             guard let item = try? decodeProjectSnapshot(at: backup) else {
-                try? fileManager.removeItem(at: backup)
+                // A failed decode is not permission to erase recoverable bytes.
                 continue
             }
             let destination = directory(for: item.id)
             if !fileManager.fileExists(atPath: destination.path) {
                 try fileManager.moveItem(at: backup, to: destination)
-            } else {
-                try? fileManager.removeItem(at: backup)
             }
+            // An interrupted transaction can leave both the committed tree and
+            // an older backup. Keep it until explicit project deletion; it can
+            // contain bytes absent from an incomplete recovery subdirectory.
         }
 
         for staging in children where staging.lastPathComponent.hasPrefix(".staging-") {
@@ -473,12 +586,19 @@ actor ProjectStore {
             options: [.skipsHiddenFiles, .skipsSubdirectoryDescendants]
         )
         return children.compactMap { url in
-            guard let item = try? loadProject(from: url) else { return nil }
-            return IndexEntry(
-                id: item.id,
-                name: item.project.name,
-                updatedAt: item.lastOpenedAt
-            )
+            guard let id = UUID(uuidString: url.lastPathComponent) else { return nil }
+            if let item = try? loadProject(from: url) {
+                return IndexEntry(id: item.id, name: item.project.name, updatedAt: item.lastOpenedAt)
+            }
+            // Rebuilding an index must keep unreadable projects discoverable.
+            // allProjects reports their failure and offers the raw rescue ZIP.
+            let metadataURL = url.appending(path: "project.json")
+            let size = try? metadataURL.resourceValues(forKeys: [.fileSizeKey]).fileSize
+            let metadata = (size ?? Int.max) <= ProjectFilePolicy.maximumMetadataBytes
+                ? (try? Data(contentsOf: metadataURL)).flatMap { try? decoder().decode(ProjectMetadata.self, from: $0) }
+                : nil
+            return IndexEntry(id: id, name: metadata?.name ?? "Saved project \(id.uuidString.prefix(8))",
+                              updatedAt: metadata?.updatedAt ?? .distantPast)
         }
     }
 
@@ -640,6 +760,9 @@ actor ProjectLibrary {
         try await ensureLegacyMigration()
         return try await store.allProjects()
     }
+
+    func readFailures() async -> [ProjectReadFailure] { await store.readFailures }
+    func recoveryArchive(projectID: UUID) async throws -> URL { try await store.recoveryArchive(projectID: projectID) }
 
     func project(id: UUID) async throws -> ProjectLibraryItem? {
         try await ensureLegacyMigration()

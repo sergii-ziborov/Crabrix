@@ -86,6 +86,7 @@ struct ContentView: View {
     @State private var scoredPractice = false
     @State private var isFileImporterPresented = false
     @State private var isFileExporterPresented = false
+    @State private var isSaveStatusPresented = false
     @State private var archiveShareItem: ArchiveShareItem?
     @State private var isGitHubImporterPresented = false
     @State private var isNewProjectPresented = false
@@ -198,7 +199,10 @@ struct ContentView: View {
                     projectCount: model.allProjects.count,
                 onOpenCurrentProject: openCodeWorkspace,
                 onNewProject: { isNewProjectPresented = true },
-                onOpenMyProjects: { projectsPath = [.myProjects] }
+                onOpenMyProjects: { projectsPath = [.myProjects] },
+                transfer: model.projectTransfer,
+                readFailures: model.projectReadFailures,
+                onExportRecovery: prepareRecoveryExport
                 )
                 .navigationDestination(for: ProjectsRoute.self) { route in
                     switch route {
@@ -229,7 +233,10 @@ struct ContentView: View {
                                     kind: draft.kind,
                                     isFavorite: draft.isFavorite
                                 )
-                            }
+                            },
+                            transfer: model.projectTransfer,
+                            readFailures: model.projectReadFailures,
+                            onExportRecovery: prepareRecoveryExport
                         )
                         .toolbar(.visible, for: .navigationBar)
                     }
@@ -435,10 +442,17 @@ struct ContentView: View {
             defaultFilename: model.projectName
         ) { result in
             switch result {
-            case .success: model.markProjectSaved()
+            case .success: model.markProjectSaved(exportDocument.project)
             case let .failure(error): model.reportProjectFailure(error)
             }
         }
+        .alert(model.saveState.label, isPresented: $isSaveStatusPresented) {
+            Button("Retry save") { Task { await model.retryProjectSave() } }
+            Button("Save project to Files…", action: prepareExport)
+            Button("Export current file…", action: prepareSourceRescueExport)
+            Button("Export recovery snapshots…") { prepareRecoveryExport(model.projectID) }
+            Button("Close", role: .cancel) { }
+        } message: { Text(model.saveState.message) }
     }
 
     private func tabContent(tabletop: Bool, hingeGlobalY: CGFloat) -> some View {
@@ -446,6 +460,13 @@ struct ContentView: View {
         .task {
             await academy.prepare()
             let arguments = ProcessInfo.processInfo.arguments
+            #if DEBUG || CRABRIX_LEGACY_FIXTURES
+            if arguments.contains("--crabrix-auto-save-failure-fixture") {
+                model.createProject(name: "unsaved-fixture", template: .hello)
+                openCodeWorkspace()
+                await model.retryProjectSave()
+            }
+            #endif
             if arguments.contains("-CrabrixLibrary") || arguments.contains("-CrabrixCanvasGallery") {
                 selectedDestination = .learn
             }
@@ -628,6 +649,26 @@ struct ContentView: View {
         isFileExporterPresented = true
     }
 
+    private func prepareRecoveryExport(_ projectID: UUID) {
+        Task {
+            do { archiveShareItem = ArchiveShareItem(url: try await model.recoveryArchive(projectID: projectID)) }
+            catch { model.reportProjectFailure(error) }
+        }
+    }
+
+    private func prepareSourceRescueExport() {
+        let text = model.source
+        let name = (model.selectedFile as NSString).lastPathComponent
+        Task {
+            do {
+                let url = try await Task.detached(priority: .userInitiated) {
+                    try CrabrixProjectArchive.createSourceRescue(source: text, fileName: name)
+                }.value
+                archiveShareItem = ArchiveShareItem(url: url)
+            } catch { model.reportProjectFailure(error) }
+        }
+    }
+
     private func prepareArchiveShare() {
         cleanupSharedArchive()
         do {
@@ -715,6 +756,8 @@ struct ContentView: View {
         VStack(spacing: 0) {
             EditorToolbar(
                 projectName: model.projectName,
+                saveState: model.saveState,
+                onSaveStatus: { isSaveStatusPresented = true },
                 activity: model.activity,
                 cargoStage: model.cargoStage,
                 debugPaused: model.debugPause != nil,
@@ -747,6 +790,7 @@ struct ContentView: View {
                 canStartBuild: model.canStartBuild && !model.isProjectOperationInProgress,
                 onCheck: model.check,
                 onRun: model.run,
+                onBuild: model.build,
                 onReplaceFiles: model.replaceProjectFilesFromTerminal,
                 workspace: model.cargoWorkspace,
                 onFetch: model.downloadDependenciesForOffline,
@@ -1538,7 +1582,7 @@ private struct AppHeader: View {
     }
 }
 
-private struct ProjectTransferStrip: View {
+struct ProjectTransferStrip: View {
     let transfer: CompilerViewModel.ProjectTransfer
 
     var body: some View {
@@ -1859,6 +1903,8 @@ private struct GitHubImportSheet: View {
 /// The editor's code icon and accessibility label identify the environment.
 struct ProgrammingEnvironmentBar: View {
     let projectName: String
+    var saveState: CompilerViewModel.SaveState? = nil
+    var onSaveStatus: () -> Void = { }
     private var toolchainDetail: String {
         "rustc \(CargoToolchain.semanticVersionLabel) · \(RustTargetSpec.wasm32WasiP1.triple)"
     }
@@ -1879,12 +1925,21 @@ struct ProgrammingEnvironmentBar: View {
                 }
                 label
             }
+            if let saveState {
+                Button(action: onSaveStatus) {
+                    Image(systemName: saveState.symbol).font(.system(size: 10))
+                        .foregroundStyle(saveState.label == "Save failed" ? CrabrixTheme.coral : CrabrixTheme.muted)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(saveState.label)
+                .accessibilityIdentifier("project-save-status")
+            }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 5)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(CrabrixTheme.panel)
-        .accessibilityElement(children: .ignore)
+        .accessibilityElement(children: .contain)
         .accessibilityLabel(
             "\(projectName). Rust programming environment. Bundled \(toolchainDetail)."
         )
@@ -1902,6 +1957,8 @@ struct ProgrammingEnvironmentBar: View {
 
 private struct EditorToolbar: View {
     let projectName: String
+    var saveState: CompilerViewModel.SaveState? = nil
+    var onSaveStatus: () -> Void = { }
     let activity: CompilerViewModel.Activity
     let cargoStage: CargoPreparationStage
     var debugPaused = false
@@ -1924,7 +1981,7 @@ private struct EditorToolbar: View {
                 .foregroundStyle(CrabrixTheme.muted)
                 .lineLimit(1)
             Spacer(minLength: 0)
-            Text(debugPaused ? "DEBUG" : activity == .checking ? "CHECK" : "RUN")
+            Text(debugPaused ? "DEBUG" : activity == .checking ? "CHECK" : activity == .building ? "BUILD" : "RUN")
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
                 .foregroundStyle(activity == .checking ? CrabrixTheme.blue : CrabrixTheme.coral)
         }
@@ -1934,7 +1991,7 @@ private struct EditorToolbar: View {
     var body: some View {
         VStack(spacing: 0) {
             if showsEnvironmentBar {
-                ProgrammingEnvironmentBar(projectName: projectName)
+                ProgrammingEnvironmentBar(projectName: projectName, saveState: saveState, onSaveStatus: onSaveStatus)
                 Divider().overlay(CrabrixTheme.border)
             }
 

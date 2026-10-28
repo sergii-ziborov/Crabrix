@@ -3,6 +3,74 @@ import XCTest
 @testable import Crabrix
 
 final class RustDebuggerTests: XCTestCase {
+    func testGeneratedBindingsAndMacroOwnershipMatchActualRun() async throws {
+        let cases = [
+            "fn main(){let s=String::from(\"x\");println!(\"{}\",s);}",
+            "fn main(){let r#s=String::from(\"raw\");let d=vec![1,2];println!(\"{} {}\",r#s,d.len());}",
+            "macro_rules! println {($x:ident)=>{drop($x)};} fn main(){let value=String::from(\"x\");println!(value);std::println!(\"ok\");}",
+            "fn main(){let value=String::from(\"x\");dbg!(value);}",
+            "fn consume(_:String)->u8{7} fn main(){let value=String::from(\"x\");println!(\"{}\",consume(value));}",
+            "struct String; impl String{fn new()->Self{Self}fn len(self)->u8{4}} fn main(){let value=String::new();let n=value.len();println!(\"{n}\");}"
+        ]
+        for source in cases {
+            let recorder = StepRecorder()
+            let session = RustDebugSession(onPlan: { _ in }, onPause: recorder.receive)
+            recorder.session = session
+            let compiler = WasmRustCompiler()
+            let normal = await compiler.run(source: source)
+            XCTAssertTrue(normal.succeeded, normal.detail + normal.stderr)
+            let debug = await compiler.debug(source: source, session: session)
+            XCTAssertTrue(debug.succeeded, source + "\n" + debug.detail + debug.stderr)
+            XCTAssertEqual(debug.stdout, normal.stdout)
+            if source.contains("let s=") {
+                XCTAssertTrue(recorder.snapshots.flatMap { $0.frames.flatMap(\.locals) }.contains { $0.name == "s" && $0.value.contains("x") })
+            }
+            if source.contains("dbg!(value)") { XCTAssertTrue(debug.stderr.contains("value = \"x\""), debug.stderr) }
+        }
+    }
+
+    func testShadowedResourceMacroKeepsNormalRunAndFailsBeforeRewrite() async throws {
+        let source = "macro_rules! include_str {($x:literal)=>{$x};} fn main(){println!(\"{}\",include_str!(\"main.rs\"));}"
+        let compiler = WasmRustCompiler()
+        let normal = await compiler.run(source: source)
+        XCTAssertTrue(normal.succeeded, normal.detail)
+        XCTAssertEqual(normal.stdout, "main.rs\n")
+        let session = RustDebugSession(onPlan: { _ in }, onPause: { _ in })
+        let debug = await compiler.debug(source: source, session: session)
+        XCTAssertFalse(debug.succeeded)
+        XCTAssertTrue(debug.detail.contains("resolve the resource macro"), debug.detail)
+        let after = await compiler.run(source: "fn main(){println!(\"recovered\");}")
+        XCTAssertEqual(after.stdout, "recovered\n")
+    }
+
+    func testCompileOnlyLibraryBuildDoesNotRequireMain() async throws {
+        let compiler = WasmRustCompiler()
+        let library = await compiler.build(source: "pub fn answer()->u32{42}", sourcePath: "src/lib.rs")
+        XCTAssertTrue(library.succeeded, library.detail + library.stderr)
+        XCTAssertEqual(library.phase, .compile)
+        XCTAssertEqual(library.stdout, "")
+        XCTAssertNil(library.webPreview)
+    }
+
+    func testCompileOnlyBuildNeverExecutesMainAndCachesExecutableForRun() async throws {
+        let source = "fn main(){std::fs::write(\"/sandbox/index.html\",\"<h1>Executed</h1>\").unwrap();println!(\"MAIN-EXECUTED\");}"
+        let cache = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: cache) }
+        let compiler = WasmRustCompiler(projectArtifactRoot: cache)
+        for _ in 0..<2 {
+            let built = await compiler.build(source: source)
+            XCTAssertTrue(built.succeeded, built.detail + built.stderr)
+            XCTAssertEqual(built.phase, .compile)
+            XCTAssertEqual(built.stdout, "")
+            XCTAssertNil(built.webPreview)
+        }
+        let run = await compiler.run(source: source)
+        XCTAssertTrue(run.succeeded, run.detail + run.stderr)
+        XCTAssertEqual(run.stdout, "MAIN-EXECUTED\n")
+        XCTAssertEqual(run.webPreview?.assets["index.html"], Data("<h1>Executed</h1>".utf8))
+        XCTAssertTrue(run.detail.contains("cached"), run.detail)
+    }
+
     private static let source = "fn add(a: i32, b: i32) -> i32 {\n let c = a + b;\n c\n}\nfn main() {\n let mut total = 0;\n for i in 0..3 {\n total += add(i,1);\n }\n println!(\"total={total}\");\n}\n"
     private final class Recorder: @unchecked Sendable {
         let lock = NSLock()

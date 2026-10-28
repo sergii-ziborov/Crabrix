@@ -16,17 +16,21 @@ struct CargoBuildProgress: Sendable, Equatable {
 final class WasmRustCompiler: @unchecked Sendable {
     private enum Action {
         case check
+        case build
         case run
 
         var emit: CargoEmitKind {
             switch self {
             case .check: .metadata
-            case .run: .link
+            case .build, .run: .link
             }
         }
     }
 
     static var toolchainVersion: String { CargoToolchain.bundledVersion }
+    static var executionIdentity: String {
+        CargoToolchain.artifactIdentity + ":app-" + (Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "development")
+    }
     // Bumped when the root compiler invocation changes shape: artefacts built
     // before the root crate received its own `--cfg feature="…"` flags must not
     // be reused for the same manifest.
@@ -157,6 +161,17 @@ final class WasmRustCompiler: @unchecked Sendable {
         )
     }
 
+    /// Link and cache the executable without instantiating or invoking main.
+    func build(
+        source: String, sourcePath: String = "main.rs", supportingFiles: [String: String] = [:],
+        edition: String = "2024", plan: CargoBuildPlan = .empty,
+        onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
+        onStage: (@Sendable (String) -> Void)? = nil
+    ) async -> CompilationResult {
+        await perform(action: .build, source: source, sourcePath: sourcePath, supportingFiles: supportingFiles,
+                      edition: edition, plan: plan, onDependencyProgress: onDependencyProgress, onStage: onStage)
+    }
+
     func debug(
         source: String, sourcePath: String = "main.rs", supportingFiles: [String: String] = [:],
         edition: String = "2024", plan: CargoBuildPlan = .empty, session: RustDebugSession,
@@ -230,7 +245,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         onStage: (@Sendable (String) -> Void)?
     ) async -> CompilationResult {
         await withCheckedContinuation { continuation in
-            queue.async(qos: action == .run ? .userInitiated : .utility,
+            queue.async(qos: action == .check ? .utility : .userInitiated,
                         flags: .enforceQoS) { [self] in
                 assert(!Thread.isMainThread, "Bundled rustc must never execute on the UI thread")
                 continuation.resume(
@@ -300,6 +315,11 @@ final class WasmRustCompiler: @unchecked Sendable {
             edition: edition,
             plan: plan
         )
+        let libraryBuild = action == .build && isLibraryEntry(sourcePath, supportingFiles: supportingFiles)
+        if libraryBuild, let manifest = supportingFiles["Cargo.toml"].flatMap({ try? CratePackageManifest.parse($0) }),
+           manifest.library.isProcMacro || manifest.library.crateTypes.contains(where: { !["lib", "rlib"].contains($0) }) {
+            return .failure(phase: .setup, detail: "Compile-only Build supports an rlib library entry. This manifest requests a different library target; it was not substituted.")
+        }
 
         if action == .check, let cached = cachedCheck(for: cacheKey) {
             return CompilationResult(
@@ -325,7 +345,11 @@ final class WasmRustCompiler: @unchecked Sendable {
         do {
             // Dependencies must exist before the cached-program fast path, because
             // a cached program.wasm already has them linked in.
-            if action == .run, let cachedProgram = loadCachedProgramModule(for: cacheKey) {
+            if action != .check, !libraryBuild, let cachedProgram = loadCachedProgramModule(for: cacheKey) {
+                if action == .build {
+                    onStage?("Build artifact ready · main was not executed")
+                    return CompilationResult(succeeded: true, phase: .compile, exitCode: 0, diagnostics: [], stdout: "", stderr: "", duration: started.duration(to: clock.now), detail: "Unchanged executable accepted from the local build cache. main was not executed.")
+                }
                 onStage?("Running program")
                 return try executeProgram(
                     module: cachedProgram,
@@ -418,8 +442,8 @@ final class WasmRustCompiler: @unchecked Sendable {
                     rootEnvironment.merge(rootScriptOutput.environment) { _, new in new }
                 }
             }
-            onStage?(action == .run ? "Compiling and linking project" : "Checking project")
-            let outputName = action == .run ? "program.wasm" : "main.rmeta"
+            onStage?(action == .check ? "Checking project" : "Compiling and linking project")
+            let outputName = action == .check ? "main.rmeta" : libraryBuild ? "library.rlib" : "program.wasm"
             var arguments = [
                 "rustc", "/work/\(sourcePath)",
                 "--sysroot", "/sysroot",
@@ -433,11 +457,12 @@ final class WasmRustCompiler: @unchecked Sendable {
             }
             arguments += externArguments(plan.rootExterns, emit: action.emit)
             arguments += rootScriptOutput.compilerArguments
+            if libraryBuild { arguments += ["--crate-type=rlib"] }
 
             switch action {
             case .check:
                 arguments += ["--emit", "metadata", "-o", "/work/\(outputName)"]
-            case .run:
+            case .build, .run:
                 arguments += [
                     "-Zunstable-options", "-Copt-level=0", "-Cpanic=abort",
                     "-o", "/work/\(outputName)",
@@ -507,7 +532,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                 )
             }
 
-            guard action == .run else {
+            if action == .check {
                 let result = CompilationResult(
                     succeeded: true,
                     phase: .check,
@@ -528,10 +553,17 @@ final class WasmRustCompiler: @unchecked Sendable {
             guard fileManager.fileExists(atPath: programURL.path) else {
                 return .failure(
                     phase: .compile,
-                    detail: "rustc exited successfully but emitted no program.wasm.",
+                    detail: "rustc exited successfully but emitted no \(outputName).",
                     stderr: compilerOutput.stderr,
                     duration: started.duration(to: clock.now)
                 )
+            }
+
+            if libraryBuild {
+                onStage?("Library compiled · no program was executed")
+                return CompilationResult(succeeded: true, phase: .compile, exitCode: 0, diagnostics: diagnostics,
+                    stdout: compilerOutput.stdout, stderr: diagnostics.isEmpty ? compilerOutput.stderr : "",
+                    duration: started.duration(to: clock.now), detail: "Compiled a local rlib library. No program was executed.")
             }
 
             let programModule = try parseWasm(filePath: programURL.path)
@@ -539,6 +571,13 @@ final class WasmRustCompiler: @unchecked Sendable {
                 runtime.cacheProgramModule(programModule, for: cacheKey, wasmFileBytes: byteCount)
             }
             persistProgramArtifact(at: programURL, for: cacheKey)
+
+            if action == .build {
+                onStage?("Build artifact ready · main was not executed")
+                return CompilationResult(succeeded: true, phase: .compile, exitCode: 0, diagnostics: diagnostics,
+                    stdout: compilerOutput.stdout, stderr: diagnostics.isEmpty ? compilerOutput.stderr : "",
+                    duration: started.duration(to: clock.now), detail: "Compiled and linked locally. main was not executed.")
+            }
 
             onStage?("Running program")
             return try executeProgram(
@@ -555,13 +594,13 @@ final class WasmRustCompiler: @unchecked Sendable {
             )
         } catch let cancellation as WasmExecutionCancelled {
             return cancelledResult(
-                phase: action == .check ? .check : .run,
+                phase: action == .check ? .check : (action == .build ? .compile : .run),
                 started: started,
                 cancellation: cancellation
             )
         } catch {
             return .failure(
-                phase: action == .check ? .check : .run,
+                phase: action == .check ? .check : (action == .build ? .compile : .run),
                 detail: "Native compiler runtime failed: \(error)",
                 duration: started.duration(to: clock.now)
             )
@@ -1356,6 +1395,11 @@ final class WasmRustCompiler: @unchecked Sendable {
 
     // MARK: - Program artifact cache
 
+    private func isLibraryEntry(_ sourcePath: String, supportingFiles: [String: String]) -> Bool {
+        let manifest = supportingFiles["Cargo.toml"].flatMap { try? CratePackageManifest.parse($0) }
+        return sourcePath == manifest?.library.path || sourcePath == "lib.rs" || sourcePath.hasSuffix("/lib.rs")
+    }
+
     private func artifactKey(
         action: Action,
         source: String,
@@ -1365,7 +1409,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         plan: CargoBuildPlan
     ) -> String {
         var hasher = SHA256()
-        let actionLabel = action == .check ? "check" : "run"
+        let actionLabel = action == .check ? "check" : action == .build && isLibraryEntry(sourcePath, supportingFiles: supportingFiles) ? "library" : "run"
         let compilerIdentity = toolchainOverride.map {
             CargoToolchain.artifactIdentity + ":candidate:" + $0.version
         } ?? CargoToolchain.artifactIdentity

@@ -27,12 +27,12 @@ enum LocalProjectLoader {
     // Tokio's published source includes more than 512 small text files.
     // Keep the byte budgets independent so complete source remains editable
     // without allowing a large package to consume unbounded memory.
-    static let maximumFileCount = 2_048
+    static let maximumFileCount = ProjectFilePolicy.maximumFileCount
     // Match CrateSourceBrowser's 2 MiB viewing cap. Published crates can
     // contain a large text fixture even when their library source is small;
     // keep that file viewable and editable under the existing 16 MB tree cap.
-    static let maximumFileBytes = 2 * 1_024 * 1_024
-    static let maximumProjectBytes = 16_000_000
+    static let maximumFileBytes = ProjectFilePolicy.maximumFileBytes
+    static let maximumProjectBytes = ProjectFilePolicy.maximumProjectBytes
 
     private static let ignoredDirectories: Set<String> = [
         ".git", ".build", ".swiftpm", "DerivedData", "node_modules", "target",
@@ -55,7 +55,9 @@ enum LocalProjectLoader {
         guard values.isDirectory == true else { throw ProjectError.notDirectory }
 
         let rootURL = try discoverCargoRoot(in: projectURL)
-        let files = try readFiles(in: rootURL)
+        let storedMetadata = try readStoredMetadata(in: rootURL)
+        let files = try readFiles(in: rootURL, preservingPackage: storedMetadata != nil)
+        try ProjectFilePolicy.verify(storedMetadata?.fileDigests, files: files)
         guard !files.isEmpty, files.keys.contains(where: {
             $0.hasSuffix(".rs") || $0 == "Cargo.toml" || ($0 as NSString).lastPathComponent == "package.json" || SourceLanguage(filePath: $0) == .html
         }) else {
@@ -64,7 +66,6 @@ enum LocalProjectLoader {
 
         // ZIP imports commonly contain one parent directory. Metadata belongs
         // to the discovered Cargo root, not necessarily to the picker URL.
-        let storedMetadata = try readStoredMetadata(in: rootURL)
         let manifest = files["Cargo.toml"].flatMap(CargoManifest.parse)
         let name = storedMetadata.flatMap { $0.name.isEmpty ? nil : $0.name }
             ?? manifest?.name
@@ -74,7 +75,9 @@ enum LocalProjectLoader {
             .replacingOccurrences(of: "-master", with: "")
         let entryFile = storedMetadata.flatMap { files[$0.entryFile] == nil ? nil : $0.entryFile }
             ?? preferredEntryFile(in: files)
-        let storedProvenance = storedMetadata?.provenance ?? provenance
+        // A package deliberately storing nil provenance is still authoritative;
+        // importing its ZIP must not manufacture a different source identity.
+        let storedProvenance: CrabrixProject.Provenance? = if let storedMetadata { storedMetadata.provenance } else { provenance }
 
         return CrabrixProject(
             id: storedMetadata?.projectID ?? UUID(),
@@ -91,7 +94,7 @@ enum LocalProjectLoader {
     }
 
     private static func discoverCargoRoot(in importedURL: URL) throws -> URL {
-        if ["Cargo.toml", "package.json", "index.html"].contains(where: { FileManager.default.fileExists(atPath: importedURL.appending(path: $0).path) }) {
+        if ["Cargo.toml", "package.json", "index.html", ".crabrix/project.json"].contains(where: { FileManager.default.fileExists(atPath: importedURL.appending(path: $0).path) }) {
             return importedURL
         }
 
@@ -99,7 +102,7 @@ enum LocalProjectLoader {
         guard let enumerator = FileManager.default.enumerator(
             at: importedURL,
             includingPropertiesForKeys: keys,
-            options: [.skipsHiddenFiles, .skipsPackageDescendants]
+            options: [.skipsPackageDescendants]
         ) else {
             return importedURL
         }
@@ -118,6 +121,9 @@ enum LocalProjectLoader {
             if values.isRegularFile == true, ["Cargo.toml", "package.json", "index.html"].contains(url.lastPathComponent) {
                 candidates.append(url.deletingLastPathComponent())
             }
+            if values.isRegularFile == true, url.lastPathComponent == "project.json", url.deletingLastPathComponent().lastPathComponent == ".crabrix" {
+                candidates.append(url.deletingLastPathComponent().deletingLastPathComponent())
+            }
         }
 
         return candidates.sorted {
@@ -125,12 +131,14 @@ enum LocalProjectLoader {
         }.first ?? importedURL
     }
 
-    private static func readFiles(in rootURL: URL) throws -> [String: String] {
+    private static func readFiles(in rootURL: URL, preservingPackage: Bool) throws -> [String: String] {
         let keys: [URLResourceKey] = [.fileSizeKey, .isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey]
+        var traversalError: Error?
         guard let enumerator = FileManager.default.enumerator(
             at: rootURL,
             includingPropertiesForKeys: keys,
-            options: [.skipsHiddenFiles, .skipsPackageDescendants]
+            options: [],
+            errorHandler: { _, error in traversalError = error; return false }
         ) else {
             throw ProjectError.noReadableSource
         }
@@ -141,17 +149,21 @@ enum LocalProjectLoader {
 
         for case let url as URL in enumerator {
             let values = try url.resourceValues(forKeys: Set(keys))
+            if values.isDirectory == true, url.deletingLastPathComponent().standardizedFileURL == rootURL.standardizedFileURL, [".git", ".crabrix"].contains(url.lastPathComponent) {
+                enumerator.skipDescendants(); continue
+            }
             let isPreparedSource = url.lastPathComponent == "node_modules"
                 && hasPreparedBrowserSources(in: url.deletingLastPathComponent(), root: rootURL)
-            if values.isDirectory == true, ignoredDirectories.contains(url.lastPathComponent), !isPreparedSource {
+            if values.isDirectory == true, ignoredDirectories.contains(url.lastPathComponent), !isPreparedSource, !preservingPackage {
                 enumerator.skipDescendants()
                 continue
             }
             if values.isSymbolicLink == true {
+                if preservingPackage { throw ProjectFilePolicy.Failure.unreadable(url.lastPathComponent) }
                 if values.isDirectory == true { enumerator.skipDescendants() }
                 continue
             }
-            guard values.isRegularFile == true, isReadableProjectFile(url) else { continue }
+            guard values.isRegularFile == true, preservingPackage || isReadableProjectFile(url) else { continue }
 
             let fileSize = values.fileSize ?? 0
             let relativePath = String(url.standardizedFileURL.path.dropFirst(rootPath.count))
@@ -162,9 +174,11 @@ enum LocalProjectLoader {
             guard totalBytes <= maximumProjectBytes else { throw ProjectError.projectTooLarge }
 
             let data = try Data(contentsOf: url, options: [.mappedIfSafe])
-            guard let source = String(data: data, encoding: .utf8) else { continue }
+            guard let source = String(data: data, encoding: .utf8) else { throw ProjectFilePolicy.Failure.unreadable(relativePath) }
             files[relativePath] = source
         }
+        if let traversalError { throw traversalError }
+        try ProjectFilePolicy.validate(files)
         return files
     }
 
@@ -221,10 +235,15 @@ enum LocalProjectLoader {
     ) throws -> CrabrixProject.PackageMetadata? {
         let metadataURL = rootURL.appending(path: ".crabrix/project.json")
         guard FileManager.default.fileExists(atPath: metadataURL.path) else { return nil }
+        for url in [metadataURL.deletingLastPathComponent(), metadataURL] {
+            guard try url.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink != true else { throw ProjectFilePolicy.Failure.unreadable(".crabrix/project.json") }
+        }
+        guard (try metadataURL.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) <= ProjectFilePolicy.maximumMetadataBytes else { throw ProjectError.fileTooLarge(".crabrix/project.json metadata") }
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         let data = try Data(contentsOf: metadataURL)
         if let metadata = try? decoder.decode(CrabrixProject.PackageMetadata.self, from: data) {
+            guard metadata.version <= CrabrixProject.PackageMetadata.currentVersion else { throw CocoaError(.fileReadUnknown) }
             return metadata
         }
         // Version 0 saved provenance as the whole metadata document.

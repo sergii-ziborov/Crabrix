@@ -2,7 +2,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || '/Users/serhiirihgt/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const origin = process.env.CRABRIX_PLAYGROUND_ORIGIN || 'http://127.0.0.1:3393';
-const output = 'build/debugger-resources-20261028';
+const output = process.env.CRABRIX_PROBE_OUTPUT || 'build/debugger-resources-20261028';
+fs.mkdirSync(output, { recursive: true });
 const resource = 'Crab 🦀 <b>local</b>';
 // Text resources follow the existing guest Playground file policy. The exact
 // built-in HTML/CSS/JS generator is separately exercised by the native tests.

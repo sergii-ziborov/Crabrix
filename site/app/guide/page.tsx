@@ -12,7 +12,7 @@ export const metadata = pageMetadata({
 
 const contents = [
   ["quick-start", "A ten-minute walkthrough"],
-  ["first-project", "Your first project"], ["files", "Files and imports"],
+  ["first-project", "Your first project"], ["files", "Files and imports"], ["saving", "Saving and recovery"],
   ["packages", "Packages and offline preparation"], ["build", "Check, Run and build stages"],
   ["web", "Local HTML, CSS and JavaScript"],
   ["terminal", "The project terminal"], ["learn", "Lessons and examples"],
@@ -38,7 +38,7 @@ export default function GuidePage() {
     <StructuredData data={{ "@context": "https://schema.org", "@graph": [
       { "@type": "TechArticle", headline: "Crabrix user guide", description: metadata.description,
         mainEntityOfPage: pageUrl("/guide/"), inLanguage: "en", isAccessibleForFree: true,
-        dateModified: "2026-10-27",
+        dateModified: "2026-10-28",
         author: { "@type": "Person", name: "Serhii Ziborov", url: pageUrl("/about/") },
         image: [pageUrl("/screenshots/duo-laptop.png"), pageUrl("/screenshots/iphone-build.png")],
       }, breadcrumbs([{ name: "Crabrix", path: "/" }, { name: "User guide", path: "/guide/" }]),
@@ -76,6 +76,12 @@ export default function GuidePage() {
         <p>Under <strong>New Project</strong>, import from Files or GitHub. Public GitHub import downloads a source archive, not the repository's prebuilt native executable. An imported project still has to fit the supported manifest, dependency and target requirements. Large workspaces, Git/path dependencies and host-specific build tools may need preparation before the selected package can be compiled.</p>
         <p>Keep a copy of your original project when investigating a complex import. Read its <code>README</code>, license and <code>Cargo.toml</code> first. A GitHub URL is a source location; it is not a guarantee that the project targets the offline WebAssembly environment.</p>
       </section>
+      <section id="saving"><h2>Saving and recovering your work</h2>
+        <p>The reliability update for Crabrix 1.1.3 adds a save-status control beside the project information: unsaved, saving, saved or failed. If saving fails, open that control to retry, save an editable project to Files or export the current file. Failed changes remain in the open editor; export them or resolve the error before closing the app.</p>
+        <p>An editable project supports up to <strong>2,048 files</strong>, <strong>2 MiB of UTF-8 text per file</strong> and <strong>16,000,000 UTF-8 bytes in total</strong>. These file limits are separate from the Cargo-package ceiling and the smaller Shared-room limits. A file that exceeds a limit is reported with its path. Reduce it and retry; saving must not silently remove it from the project.</p>
+        <p>Editable project packages and source ZIPs preserve supported hidden files, project identity and supporting text. <code>.crabrix</code> holds package metadata; <code>.git</code> is reserved for repository history and is not part of this text-source export. New snapshots include a file inventory so a missing supporting file is detected when reopening. Keep a separate copy before editing an exported package with another tool.</p>
+        <p>If a saved project cannot be read, My Projects displays its recovery error and an <strong>Export recovery ZIP</strong> action. A previous readable snapshot may open with an explicit recovery notice. The recovery ZIP contains raw saved snapshots and metadata for extracting files; use the ordinary editable-project export when you want a package ready to reopen in Crabrix. This update cannot recreate bytes already absent from all older saved copies.</p>
+      </section>
       <section id="packages"><h2>3. Prepare packages before going offline</h2>
         <p>A Cargo project declares crates in <code>Cargo.toml</code>. Open the package controls to add or resolve a dependency. Crabrix resolves the graph, downloads exact source archives, checks their registry checksums and builds the required libraries locally. The dependency graph supports up to <strong>2,048 unique packages</strong>. This counts resolved package versions, not aliases or files; each crate still needs to support the local WASI target. Larger graphs can take longer to prepare and compile. The original package source remains available to view; <strong>Vendor &amp; Edit</strong> creates an editable project-local overlay.</p>
         <p>The package window shows what is waiting, being acquired or unpacked, what is already available, and the exact package that failed. Expand a package to inspect its dependencies. Closing this window leaves the operation running. You can return to its details from the build-stage log in Output.</p>
@@ -93,6 +99,7 @@ export default function GuidePage() {
       </section>
       <section id="build"><h2>4. Check code, run it, and read the right panel</h2>
         <p><strong>Check</strong> asks the compiler to analyze the current project and produce diagnostics. It does not execute your program. <strong>Run</strong> builds an executable WebAssembly module and runs it in the local sandbox. The first dependency build can take much longer than an unchanged build that reuses verified artifacts.</p>
+        <p>In the 1.1.3 reliability update, Terminal <code>cargo build</code> compiles and links the selected executable without running <code>main</code>. A selected library entry produces an <code>rlib</code>. Build scripts may still run as part of compilation within the bounded supported profile. Use <code>cargo run</code> to execute the program; unsupported command flags are reported instead of silently selecting another operation.</p>
         <p><strong>Problems</strong> contains compiler and setup errors, including failures with no source location. Open a diagnostic to inspect its relevant file and location when available. A package build failure is not evidence that the root file is error-free; the compiler may not have reached it yet.</p>
         <p><strong>Output</strong> contains the program's printed text or validated visual output. The expandable <strong>Build stages</strong> log records dependency preparation, compilation, cached work and execution separately. A count of completed packages is not a prediction of time remaining: one large package can take longer than many small ones combined.</p>
         <p>Use <strong>Stop</strong> to cancel a long operation. Cancellation has its own stopping reason; it should not be confused with a Rust syntax error. After cancellation, wait for the worker to finish stopping before starting another operation. Your editable source remains the project you were working on.</p>

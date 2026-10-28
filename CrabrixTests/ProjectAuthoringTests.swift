@@ -3,6 +3,64 @@ import XCTest
 
 @MainActor
 final class ProjectAuthoringTests: XCTestCase {
+    func testQueuedSaveAndOldExportCannotReplaceNewerSource() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let library = ProjectLibrary(storageURL: root.appending(path: "recent.json"))
+        let model = CompilerViewModel(projectLibrary: library)
+        model.createProject(name: "save-order", template: .hello)
+        model.source = "fn main(){println!(\"first\");}"
+        let old = model.exportProject()
+        let pending = Task { await model.retryProjectSave() }
+        await Task.yield()
+        model.source = "fn main(){println!(\"newest\");}"
+        model.markProjectSaved(old)
+        await model.retryProjectSave()
+        await pending.value
+        XCTAssertEqual(model.saveState, .saved)
+        let loaded = try await library.project(id: model.projectID)
+        XCTAssertEqual(loaded?.project.files[model.selectedFile], model.source)
+        XCTAssertTrue(model.source.contains("newest"))
+    }
+
+    func testAutosaveFailureKeepsTextAndSuccessfulRetryChangesState() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try Data("blocks a directory".utf8).write(to: root)
+        let library = ProjectLibrary(storageURL: root.appending(path: "recent.json"))
+        let model = CompilerViewModel(projectLibrary: library)
+        model.createProject(name: "save-failure", template: .hello)
+        model.source = "fn main(){println!(\"keep this\");}"
+        let expected = model.source
+        await model.retryProjectSave()
+        guard case .failed = model.saveState else { return XCTFail("A write failure must be visible, got \(model.saveState)") }
+        XCTAssertEqual(model.source, expected)
+        try FileManager.default.removeItem(at: root)
+        await model.retryProjectSave()
+        XCTAssertEqual(model.saveState, .saved)
+        let reopened = try await library.project(id: model.projectID)
+        XCTAssertEqual(reopened?.project.files[model.selectedFile], expected)
+    }
+
+    func testOversizedEditorTextStaysInMemoryAndTerminalChangeIsTransactional() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let model = CompilerViewModel(projectLibrary: ProjectLibrary(storageURL: root.appending(path: "recent.json")))
+        model.createProject(name: "limits", template: .hello)
+        await model.retryProjectSave()
+        let original = model.exportProject()
+        var changed = original.files; changed["notes.txt"] = String(repeating: "x", count: ProjectFilePolicy.maximumFileBytes + 1)
+        XCTAssertFalse(model.replaceProjectFilesFromTerminal(changed))
+        XCTAssertEqual(model.exportProject(), original)
+        model.source = changed["notes.txt"]!
+        await model.retryProjectSave()
+        guard case .failed = model.saveState else { return XCTFail("The oversized edit must not be called saved") }
+        XCTAssertEqual(model.source.utf8.count, ProjectFilePolicy.maximumFileBytes + 1)
+        model.source = original.files[original.entryFile]!
+        await model.retryProjectSave()
+        XCTAssertEqual(model.saveState, .saved)
+    }
+
     func testNewProjectCreatesCargoLayout() {
         let model = CompilerViewModel()
 

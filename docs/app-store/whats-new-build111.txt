@@ -1,0 +1,9 @@
+Keep more of your work safely: hidden source and configuration files now survive reopening and editable-project exports. Projects support up to 2,048 text files, 2 MiB each and 16,000,000 bytes in total.
+
+See whether changes are unsaved, saving, saved or failed. Retry a failed save, export the current file or extract a recovery ZIP. Damaged projects remain visible in My Projects. New snapshots detect missing supporting files.
+
+Terminal cargo build now compiles the selected binary or library without running main. Run remains a separate operation.
+
+Improve local Debug for shadowed names, owned values and formatting expressions. Preserve normal Run behavior or explain an unsupported macro scope before rewriting. String, Vec, structure previews, async stepping and embedded web resources remain available.
+
+Keep encrypted guest Playgrounds, live edits and selections, one-hour defaults and offline browser projects. Compilation and execution remain on your device.

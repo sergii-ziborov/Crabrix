@@ -3,6 +3,19 @@ import XCTest
 
 @MainActor
 final class ProjectTerminalSessionTests: XCTestCase {
+    func testCargoBuildUsesItsOwnOperationAndNeverFallsBackToRun() {
+        let terminal = ProjectTerminalSession()
+        let project = CrabrixProject(name: "build", files: ["main.rs": "fn main(){}"], entryFile: "main.rs", provenance: nil)
+        var builds = 0
+        terminal.command = "cargo build"
+        terminal.submit(project: project, isBusy: false, onCheck: { XCTFail("Not Check") }, onRun: { XCTFail("Must not run main") }, onBuild: { builds += 1 })
+        XCTAssertEqual(builds, 1)
+        terminal.command = "cargo build --release"
+        terminal.submit(project: project, isBusy: false, onCheck: {}, onRun: { XCTFail("Must not run") }, onBuild: { builds += 1 })
+        XCTAssertEqual(builds, 1)
+        XCTAssertEqual(terminal.lines.last?.kind, .error)
+    }
+
     func testNpmPreviewAliasesAndPrefixTargetOnlyTheRequestedBrowserApp() {
         let terminal = ProjectTerminalSession()
         let project = CrabrixProject(name: "browser", files: [

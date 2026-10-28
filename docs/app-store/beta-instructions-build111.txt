@@ -1,0 +1,12 @@
+Build 111 — durable projects and truthful Rust operations.
+
+1. Create Rust + Web. Set a breakpoint on src/main.rs line 7 before Debug. Continue, Step over, finish and click the generated page's counter. The editor source must remain unchanged.
+2. Debug String, Vec, nested structures and current-thread async examples. Confirm shadowed names, dbg! and consuming formatting expressions either preserve normal Run output or report a supported Debug boundary explicitly.
+3. Save a project containing .gitignore, .rustfmt.toml, .cargo/config.toml and nested hidden source. Reopen it and round-trip both editable package and ZIP. Supported tree: 2,048 files, 2 MiB/file and 16,000,000 UTF-8 bytes total.
+4. Watch the save-status control beside project information. After a failed save, Retry or export to Files/current-file export before closing the app. Unreadable saved projects offer a raw recovery ZIP in My Projects. This ZIP is for extracting saved snapshots, not the ordinary project importer.
+5. In Terminal, cargo build must compile without invoking main; cargo run then executes. A library entry can compile as rlib. Unsupported flags must explain their limitation. Bounded supported build scripts can run during compilation.
+6. Edit while another operation completes and switch projects. Older saves, diagnostics or exported copies must not replace the newer editor source.
+7. Check Code/Terminal transitions with the keyboard open and hidden on iPhone and iPad. Keep existing dock tabs and file gestures available.
+8. Share a one-hour encrypted Playground, join from browser/second app, edit and select text, run locally and save a local copy. Execution never occurs on the relay. Browser packages need explicit preparation before offline use; npm commands do not execute Node/Bun servers or arbitrary scripts.
+
+Simulator qualification is recorded separately from physical-device speed and Universal Link checks. Please report version/build, exact project files and the failing operation without credentials or private room keys. No app account is required.

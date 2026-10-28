@@ -3,6 +3,34 @@ import UIKit
 
 @MainActor
 final class RustDebuggerUITests: XCTestCase {
+    func testSaveFailureAndRecoveryActionsKeepTheEditorIntact() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--crabrix-auto-save-failure-fixture"]
+        app.launch()
+        let editor = app.textViews["Source code editor"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 60))
+        let original = editor.value as? String
+        let status = app.buttons["Save failed"]
+        XCTAssertTrue(status.waitForExistence(timeout: 15))
+        status.tap()
+        XCTAssertTrue(app.alerts["Save failed"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.alerts.buttons["Save project to Files…"].exists)
+        XCTAssertTrue(app.alerts.buttons["Export current file…"].exists)
+        capture("save-failure-recovery-actions")
+        app.alerts.buttons["Retry save"].tap()
+        XCTAssertTrue(status.waitForExistence(timeout: 10))
+        XCTAssertEqual(editor.value as? String, original)
+        status.tap()
+        app.alerts.buttons["Export current file…"].tap()
+        // The rescue uses the same native sharing surface as the project ZIP;
+        // Save to Files is available there without a second file-export modal.
+        let close = app.buttons["Close"].firstMatch
+        XCTAssertTrue(close.waitForExistence(timeout: 15), app.debugDescription)
+        capture("save-failure-file-export")
+        close.tap()
+        XCTAssertTrue(editor.waitForExistence(timeout: 10))
+        XCTAssertEqual(editor.value as? String, original)
+    }
     func testIncludedWebResourcesBreakpointAndOfflinePreview() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--crabrix-auto-debug-web-fixture"]

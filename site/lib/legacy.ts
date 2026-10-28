@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import capabilities from "../content/capabilities.json";
 
 export const legacyPages = ["about", "technology", "support", "privacy", "terms"] as const;
 export type LegacyPage = (typeof legacyPages)[number];
@@ -34,6 +35,12 @@ export function legacyMain(name: LegacyPage | "index"): string {
   const match = source.match(/<main>([\s\S]*?)<\/main>/i);
   if (!match) throw new Error(`Missing <main> in ${name}.html`);
   return match[1]
+    .replace(/(<li data-capability="rust\.build-scripts">)[\s\S]*?(<\/li>)/, (_, start: string, end: string) => {
+      const description = capabilities.capabilities.find(item => item.id === "rust.build-scripts")?.publicDescription;
+      if (!description) throw new Error("Missing build-script capability profile");
+      const escaped = description.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+      return start + escaped + end;
+    })
     .replaceAll('src="screenshots/', 'src="/screenshots/')
     .replaceAll('href="screenshots/', 'href="/screenshots/');
 }

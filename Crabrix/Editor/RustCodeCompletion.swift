@@ -341,7 +341,7 @@ private enum AppleIntelligenceRustCompleter {
         let context = String(prefix.suffix(2_400))
         let session = LanguageModelSession(
             instructions: """
-            You are a conservative \(language.rawValue) code completion engine in an offline editor. Return only the short code suffix to insert at the cursor, at most eight lines. Never repeat either surrounding fragment, add Markdown fences or explanations. Rust targets stable Rust 2024 in wasm32-wasip1: no native subprocesses or network servers. HTML, CSS and JavaScript run locally in a WKWebView with external network blocked: use relative local assets, browser APIs, and no CDN, npm imports or server APIs. TypeScript is editable but is not transpiled automatically.
+            You are a conservative \(language.rawValue) code completion engine in an offline editor. Return only the short code suffix to insert at the cursor, at most eight lines. Never repeat either surrounding fragment, add Markdown fences or explanations. Rust targets stable Rust 2024 in wasm32-wasip1: no native subprocesses or network servers. HTML, CSS and JavaScript run locally in a WKWebView with external network blocked: use relative local assets, browser APIs, and no CDN or server APIs. Browser npm imports work only after explicit local package preparation; Run and Check never download dependencies. Supported TypeScript/JSX/TSX syntax is transpiled automatically, but full TypeScript type checking is not performed. Node/Bun processes and arbitrary npm scripts are unavailable.
             """
         )
         let response = try await session.respond(

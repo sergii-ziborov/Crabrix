@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-28",
+  "startingCommit": "19e0296d711df137f973b5334588d335df839ac1",
+  "roadmapSourceSHA256": "a47fffbd4751bd0a4db2eced7b6b69950268dc4584b01ab5e88d00a0abdc31c5",
+  "native": {
+    "hostPassed": 68,
+    "hostEvidence": [
+      "native-final.xcresult",
+      "native-source-rescue.xcresult"
+    ],
+    "phoneAndPad": "Five actual UI scenarios each; initial failures and focused successful reruns are retained. Exact Rust + Web source/breakpoint/step/JavaScript, aggregates, controls/share default, typing and save-failure rescue.",
+    "newRescueEvidence": [
+      "phone-share-rescue.xcresult",
+      "pad-share-rescue.xcresult"
+    ],
+    "resourceReruns": [
+      "phone-web-rescue.xcresult",
+      "pad-web-retry.xcresult"
+    ],
+    "physicalDevice": "Not run; device unavailable."
+  },
+  "browser": {
+    "actualCompilerRunDebugComparisons": 32,
+    "explicitUnsupportedCases": 8,
+    "offlinePackagedUI": "local-browser/browser-result.json",
+    "responsiveEntryWidths": [
+      390,
+      1024,
+      1440
+    ]
+  },
+  "debugCompilerSHA256": "5a9257002b767c4fa1fbe60012f88c0214dde4259e931312bef197c5566d6af4",
+  "limits": {
+    "editableFiles": 2048,
+    "editableFileBytes": 2097152,
+    "editableProjectBytes": 16000000,
+    "metadataBytes": 8000000,
+    "rawRecoveryBytes": 128000000
+  },
+  "delivery": "Signed cloud build, website publication and App Review readback are recorded separately.",
+  "futureMCP": "Planned; no connector or backend execution enabled.",
+  "rawEvidenceRoot": "build/reliability-20261028/"
+}

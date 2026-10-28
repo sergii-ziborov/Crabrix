@@ -87,6 +87,7 @@ final class ProjectTerminalSession: ObservableObject {
         workspace: CargoWorkspaceSnapshot = .empty,
         onCheck: () -> Void,
         onRun: () -> Void,
+        onBuild: (() -> Void)? = nil,
         onFetch: (() -> Void)? = nil,
         onBrowserCommand: ((BrowserProjectCommand) -> Void)? = nil,
         onReplaceFiles: (([String: String], String?) -> Bool)? = nil
@@ -194,6 +195,7 @@ final class ProjectTerminalSession: ObservableObject {
                 isBusy: isBusy,
                 onCheck: onCheck,
                 onRun: onRun,
+                onBuild: onBuild,
                 onFetch: onFetch
             )
         case "clear":
@@ -274,7 +276,7 @@ final class ProjectTerminalSession: ObservableObject {
         attach(to: project)
         guard oldValue == .idle, newValue != .idle else { return }
         let web = BrowserProjectConfiguration.isBrowserEntry(project.entryFile)
-        let command = web ? "browser build" : (newValue == .checking ? "cargo check" : "cargo run")
+        let command = web ? "browser build" : (newValue == .checking ? "cargo check" : newValue == .building ? "cargo build · compile only" : "cargo run")
         append("[build] \(command) · background snapshot started", kind: .info)
     }
 
@@ -311,6 +313,7 @@ final class ProjectTerminalSession: ObservableObject {
         isBusy: Bool,
         onCheck: () -> Void,
         onRun: () -> Void,
+        onBuild: (() -> Void)?,
         onFetch: (() -> Void)?
     ) {
         guard let command = arguments.first else {
@@ -319,12 +322,19 @@ final class ProjectTerminalSession: ObservableObject {
         }
         switch command {
         case "check":
+            guard arguments.count == 1 else { append("cargo check options are not supported; use the project manifest profile.", kind: .error); return }
             guard !isBusy else {
                 append("A build is already running.", kind: .error)
                 return
             }
             onCheck()
-        case "run", "build":
+        case "build":
+            guard !isBusy else { append("A build is already running.", kind: .error); return }
+            guard arguments.count == 1 else { append("cargo build options are not supported; set the profile in your project manifest.", kind: .error); return }
+            guard let onBuild else { append("Compile-only Build is unavailable in this workspace.", kind: .error); return }
+            onBuild()
+        case "run":
+            guard arguments.count == 1 else { append("cargo run options and extra program arguments are not supported in this terminal profile.", kind: .error); return }
             guard !isBusy else {
                 append("A build is already running.", kind: .error)
                 return

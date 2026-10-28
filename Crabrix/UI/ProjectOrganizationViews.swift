@@ -435,6 +435,9 @@ struct MyProjectsView: View {
     let onToggleFavorite: (UUID) -> Void
     let onDelete: (UUID) -> Void
     let onUpdate: (UUID, ProjectDetailsDraft) async -> Bool
+    var transfer: CompilerViewModel.ProjectTransfer = .idle
+    var readFailures: [ProjectReadFailure] = []
+    var onExportRecovery: (UUID) -> Void = { _ in }
 
     private let columns = [
         GridItem(.adaptive(minimum: 270), spacing: 12),
@@ -506,6 +509,8 @@ struct MyProjectsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
+                if transfer.isFailure, readFailures.isEmpty { ProjectTransferStrip(transfer: transfer) }
+                ProjectReadIssuesView(issues: readFailures, onExport: onExportRecovery)
                 header
                 filters
 
@@ -801,15 +806,16 @@ private struct MyProjectCard: View {
                     Spacer()
                     if let build = item.lastBuild {
                         Image(
-                            systemName: build.succeeded
+                            systemName: item.currentBuild == nil ? "clock" : build.succeeded
                                 ? "checkmark.circle.fill"
                                 : "xmark.circle.fill"
                         )
                         .foregroundStyle(
-                            build.succeeded
+                            item.currentBuild == nil ? CrabrixTheme.muted : build.succeeded
                                 ? CrabrixTheme.mint
                                 : CrabrixTheme.coral
                         )
+                        .accessibilityLabel(item.currentBuild == nil ? "Previous build; source or toolchain changed" : build.succeeded ? "Current build passed" : "Current build failed")
                     }
                 }
             }

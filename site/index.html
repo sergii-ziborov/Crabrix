@@ -275,10 +275,10 @@
       packages and producing real diagnostics, with the network off.
     </p>
     <div class="cta-row">
-      <a class="btn" href="/learn">Read the lessons free</a>
-      <a class="btn ghost" href="#price">See the app price</a>
-      <a class="btn ghost" href="https://github.com/sergii-ziborov/Crabrix">Source on GitHub</a>
-      <span class="cta-note">No subscription. No accounts. No ads.</span>
+      <a class="btn" href="/playground/">Try Rust now</a>
+      <a class="btn ghost" href="/learn/algorithms/">Watch an algorithm step by step</a>
+      <a class="btn ghost" href="https://apps.apple.com/app/id6809502653">Continue on iPhone or iPad</a>
+      <span class="cta-note">Playground needs no login. Change the greeting, Run, then save your source. <a href="/learn/">Browse the Academy →</a></span>
     </div>
   </div>
 
@@ -408,7 +408,7 @@
       </p>
       <ul class="honest">
         <li><strong>Procedural macros do not run.</strong> They need a host-native compiler, so <code>serde</code>'s <code>derive</code> feature and anything like it is reported as unsupported rather than silently mis-built.</li>
-        <li><strong>Build scripts are not executed.</strong> Many crates whose <code>build.rs</code> only probes compiler features still work, and those are flagged for review rather than blocked.</li>
+        <li data-capability="rust.build-scripts">Bounded std-only WASI build scripts run locally. Scripts requiring host subprocesses, native linking or separate build-dependency graphs remain unsupported. Compatibility depends on the selected versions and features.</li>
         <li><strong>Crates that link native C libraries are out of reach</strong>, as are ones that build only as <code>cdylib</code> or <code>staticlib</code>.</li>
         <li><strong>Cold builds take time.</strong> <code>rustc</code> runs in an interpreter. Cached identical runs avoid recompiling; actual timings depend on the project, dependencies, device, and cache state.</li>
         <li><strong>The codegen backend has gaps.</strong> Some crates hit unimplemented integer operations. Crabrix records the real outcome of every dependency build and shows it, with the compiler's own reason.</li>

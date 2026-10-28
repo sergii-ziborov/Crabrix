@@ -13,6 +13,15 @@ worker.on('message',message=>{
 });
 function job(data){return new Promise((yes,no)=>{done=yes;reject=no;worker.postMessage(data)})}
 const samples=[
+  ['primitive-named alias is not Copy','#[allow(non_camel_case_types)]type u32=String;fn take(_:u32){}fn main(){let value:u32=String::from("x");take(value);}'],
+  ['extension trait consumes standard Vec','trait EatLen{fn len(self)->usize;}impl EatLen for Vec<i32>{fn len(self)->usize{42}}fn main(){let value=vec![1];let n=value.len();println!("{n}");}'],
+  ['qualified standard resource with a shadowed prelude name','macro_rules! include_str{($x:literal)=>{$x};}fn main(){println!("{}",std::include_str!("main.rs").len());}'],
+  ['ordinary s and nested shadowing','fn main(){let s=String::from("outer");{let s=String::from("inner");println!("{s}");}println!("{s}");}'],
+  ['raw identifiers and generated-name lookalikes','fn main(){let r#s=String::from("raw");let __crabrix_debug_sink=vec![1,2];println!("{} {}",r#s,__crabrix_debug_sink.len());}'],
+  ['shadowed println consumes its argument','macro_rules! println {($x:ident)=>{drop($x)};} fn main(){let value=String::from("x");println!(value);std::println!("ok");}'],
+  ['owned standard dbg','fn main(){let value=String::from("x");dbg!(value);}'],
+  ['formatting expression consumes owned argument','fn consume(_:String)->u8{7}fn main(){let value=String::from("x");println!("{}",consume(value));}'],
+  ['custom standard-named container consumes self','struct String;impl String{fn new()->Self{Self}fn len(self)->u8{4}}fn main(){let value=String::new();let n=value.len();println!("{n}");}'],
   ['recursion','fn fact(n:u32)->u32 {if n<2 {return 1;} n*fact(n-1)} fn main(){println!("{}",fact(5));}'],
   ['moves and shadowing','fn main(){let x=1; {let x=String::from("inner");let y=x;println!("{y}");} let x=2;println!("{x}");}'],
   ['borrow and late initialization','fn main(){let mut x=1;let p=&mut x;*p+=2;let late:i32;late=4;println!("{} {}",x,late);}'],
@@ -65,11 +74,17 @@ try {
     results.push({name,pauses:pauses.length,stdout:debug.execution.stdout});console.log('PASS',name,pauses.length,'real pauses');
   }
   for(const [name,source] of [
+    ['resource inside stringify','fn main(){println!("{}",stringify!(include_str!("main.rs")));}'],
+    ['qualified custom resource','mod other{macro_rules! include_str{($x:literal)=>{$x};}pub(crate) use include_str;}fn main(){println!("{}",other::include_str!("main.rs"));}'],
+    ['generated macro scope','macro_rules! define{()=>{struct Generated;}}define!();fn main(){println!("{}",include_str!("main.rs").len());}'],
+    ['shadowed resource macro','macro_rules! include_str {($x:literal)=>{$x};}fn main(){println!("{}",include_str!("main.rs"));}'],
+    ['aliased resource macro','use std::include_str as resource;fn main(){println!("{}",resource!("main.rs").len());}'],
+    ['wildcard macro scope','use std::*;fn main(){println!("{}",include_str!("main.rs").len());}'],
     ['statement attributes','fn main(){ #[cfg(any())] let hidden=1; println!("ok"); }'],
     ['compile-time column','fn main(){println!("{}",column!());}'],
   ]) {
     const document={schemaVersion:1,name:'debug-gate',entryFile:'main.rs',edition:'2024',files:{'main.rs':source}};
-    const normal=await job({type:'run',document,stdin:''});assert.equal(normal.compilation?.exitCode,0);
+    const normal=await job({type:'run',document,stdin:''});assert.equal(normal.compilation?.exitCode,0,`${name}: normal ${JSON.stringify(normal)}`);
     control=new Int32Array(new SharedArrayBuffer((8192+5)*4));
     const debug=await job({type:'debug',document,stdin:'',control:control.buffer});assert.equal(debug.type,'error',`${name}: must fail closed instead of changing source semantics`);
     results.push({name,debugUnavailable:true,normalRunWorks:true});console.log('PASS safe fallback',name);

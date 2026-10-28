@@ -9,7 +9,7 @@ export type DebugPlan = { version: 1; files: Record<string, string>; sites: Debu
 const helperName = "__crabrix_debug_v1";
 const primitives = /^(?:[iu](?:8|16|32|64|128|size)|f(?:32|64)|bool|char)$/;
 const scalarNodes = new Set(["Integer", "Float", "Boolean", "Char", "Character"]);
-const formattingMacros = new Set(["print", "println", "eprint", "eprintln", "format", "format_args", "dbg", "assert", "assert_eq", "assert_ne", "debug_assert", "debug_assert_eq", "debug_assert_ne"]);
+const formattingMacros = new Set(["print", "println", "eprint", "eprintln", "format", "format_args", "assert", "assert_eq", "assert_ne", "debug_assert", "debug_assert_eq", "debug_assert_ne"]);
 function children(node: SyntaxNode): SyntaxNode[] { const result: SyntaxNode[] = []; for (let child = node.firstChild; child; child = child.nextSibling) result.push(child); return result; }
 function walk(node: SyntaxNode, visit: (node: SyntaxNode) => boolean | void) { if (visit(node) === false) return; for (let child = node.firstChild; child; child = child.nextSibling) walk(child, visit); }
 function resourceLiteral(value: string): string | undefined {
@@ -36,18 +36,88 @@ export function instrumentRust(files: Record<string, string>, entryFile: string,
   const paths = Object.keys(files).filter(path => path.endsWith(".rs") && !excludedRustFiles.includes(path)).sort();
   if (!paths.includes(entryFile) || paths.length > 256 || paths.reduce((n, p) => n + files[p].length, 0) > 4 * 1024 * 1024) throw new Error("Debug supports an editable Rust entry and up to 256 source files / 4 MiB.");
   const sites: DebugSite[] = [], output = { ...files };
+  const trees = new Map(paths.map(file => [file, parser.parse(files[file])]));
+  const shadowedMacros = new Set<string>(), shadowedTypes = new Set<string>();
+  const itemMacroPaths: string[] = [];
+  let wildcardImports = false, standardNamespaceShadowed = false, ambiguousMethods = false;
+  // This parser is not Rust's name resolver. When project-wide declarations
+  // could change a prelude name, omit previews or refuse resource rewriting.
+  // Explicit std/core paths remain usable unless that namespace is shadowed.
+  for (const file of paths) walk(trees.get(file)!.topNode, node => {
+    const value = files[file].slice(node.from, node.to);
+    if (node.name === "MacroDefinition") {
+      const name = node.getChild("Identifier");
+      if (name) shadowedMacros.add(files[file].slice(name.from, name.to));
+    }
+    if (node.name === "UseDeclaration") {
+      if (!/^use\s+(?:::)?(?:std|core|alloc)::/.test(value.trim())) ambiguousMethods = true;
+      if (value.includes("*")) wildcardImports = true;
+      walk(node, child => { if (child.name === "BoundIdentifier") { const name = files[file].slice(child.from, child.to); shadowedMacros.add(name); shadowedTypes.add(name); if (["std", "core", "alloc"].includes(name)) standardNamespaceShadowed = true; } });
+      if (/\binclude_(?:str|bytes)\b/.test(value) && /\bas\b/.test(value)) throw new Error("Debug cannot safely resolve aliased resource macros. Use a direct std::include_str!/include_bytes! call or normal Run.");
+    }
+    if (node.name.includes("Attribute") && /\bmacro_use\b/.test(value)) wildcardImports = true;
+    if (node.name === "TraitItem") ambiguousMethods = true;
+    if (node.name === "MacroInvocation") {
+      let inFunction = false;
+      for (let parent = node.parent; parent; parent = parent.parent) if (parent.name === "FunctionItem") inFunction = true;
+      const path = node.getChild("ScopedIdentifier") ?? node.getChild("Identifier");
+      if (!inFunction && path) itemMacroPaths.push(files[file].slice(path.from, path.to).replace(/\s/g, ""));
+    }
+    if (["StructItem", "EnumItem", "TypeItem", "UnionItem", "TypeParamList"].includes(node.name)) {
+      if (node.name === "TypeParamList") {
+        walk(node, child => { if (child.name === "TypeIdentifier") shadowedTypes.add(files[file].slice(child.from, child.to)); });
+      } else {
+        const name = node.getChild("TypeIdentifier") ?? node.getChild("BoundIdentifier");
+        if (name) shadowedTypes.add(files[file].slice(name.from, name.to));
+      }
+    }
+    if (node.name === "ModItem") {
+      const name = node.getChild("BoundIdentifier");
+      if (name && ["std", "core", "alloc"].includes(files[file].slice(name.from, name.to))) standardNamespaceShadowed = true;
+    }
+  });
+  for (const path of itemMacroPaths) {
+    const name = path.split("::").at(-1)!;
+    const pure = ["include_str", "include_bytes", "env", "option_env", "concat", "line", "file", "column", "stringify", "vec", "format", "format_args"].includes(name);
+    const resolved = path === name ? !wildcardImports && !shadowedMacros.has(name) : !standardNamespaceShadowed && /^(?:::)?(?:std|core)::\w+$/.test(path);
+    if (!pure || !resolved) {
+      // An item macro can introduce another macro, type or extension trait.
+      wildcardImports = true; standardNamespaceShadowed = true; ambiguousMethods = true;
+    }
+  }
+  const primitiveType = (name: string) => primitives.test(name) && !shadowedTypes.has(name);
   let resourceCopyUnits = 0;
   const notes = ["Source-instrumented Rust: breakpoints and stepping use the actual compiled program.", "Locals include bounded String, Vec and local struct previews without calling user Debug implementations. Borrowed, moved and captured values may be omitted. Async stacks show active polls; const bodies and macro expansions are not stepped internally."];
   for (const file of paths) {
     const source = files[file];
     if (/\b__crabrix_debug_(?:v1|guard_)/.test(source)) throw new Error("The __crabrix_debug_ prefix is reserved by the Debug build.");
-    const tree = parser.parse(source);
+    const tree = trees.get(file)!;
     const resourceMacros = new Set<number>();
     const edits = new Map<number, { priority: number; text: string }[]>();
     const replacements: { from: number; to: number; text: string }[] = [];
     const resourceAliases = new Map<string, string>();
     const add = (position: number, text: string, priority = 10) => { const list = edits.get(position) ?? []; list.push({ priority, text }); edits.set(position, list); };
     const text = (node: SyntaxNode) => source.slice(node.from, node.to);
+    const isBuiltinMacroPath = (value: string, name: string) => {
+      const path = value.replace(/\s/g, "");
+      if (path === name) return !wildcardImports && !shadowedMacros.has(name);
+      return !standardNamespaceShadowed && [`std::${name}`, `::std::${name}`, `core::${name}`, `::core::${name}`].includes(path);
+    };
+    const invocationPath = (invocation: SyntaxNode) => {
+      // Inside another macro Lezer exposes std::include_str as sibling tokens,
+      // not a ScopedIdentifier. Keep the complete path for name resolution.
+      let start = invocation;
+      while (start.prevSibling?.name === "::" && start.prevSibling.prevSibling) start = start.prevSibling.prevSibling;
+      const from = start.prevSibling?.name === "::" ? start.prevSibling.from : start.from;
+      return source.slice(from, invocation.to);
+    };
+    const isBuiltinMacro = (invocation: SyntaxNode, name: string) => isBuiltinMacroPath(invocationPath(invocation), name);
+    const macroPath = (node: SyntaxNode) => node.getChild("ScopedIdentifier") ?? node.getChild("Identifier");
+    const standardFormattingMacro = (node: SyntaxNode) => {
+      const path = macroPath(node); if (!path) return false;
+      const name = text(path).replace(/\s/g, "").split("::").at(-1)!;
+      return formattingMacros.has(name) && isBuiltinMacro(path, name);
+    };
     const lineStarts = [0]; for (let i = 0; i < source.length; i++) if (source[i] === "\n") lineStarts.push(i + 1);
     const location = (offset: number) => { let lo = 0, hi = lineStarts.length; while (lo + 1 < hi) { const mid = (lo + hi) >> 1; if (lineStarts[mid] <= offset) lo = mid; else hi = mid; } return { line: lo + 1, column: offset - lineStarts[lo] + 1 }; };
     const site = (offset: number, name: string, functionID: number, kind: DebugSite["kind"]) => { if (sites.length >= 8192) throw new Error("Debug source exceeds 8,192 executable locations."); const id = sites.length + 1; sites.push({ id, file, ...location(offset), function: name, functionID: functionID || id, kind }); return id; };
@@ -63,6 +133,19 @@ export function instrumentRust(files: Record<string, string>, entryFile: string,
       // redirect the literal to an original sidecar so it cannot observe the
       // instrumented snapshot. Token nodes cover includes inside println! too.
       if (!invocation || !["include_str", "include_bytes"].includes(macroName) || resourceMacros.has(node.from)) return;
+      if (!isBuiltinMacro(invocation, macroName)) throw new Error(`Debug cannot safely resolve the resource macro ${invocationPath(invocation)}! (${file}:${location(node.from).line}). Its arguments were not changed. Use normal Run for this macro scope.`);
+      for (let parent = invocation.parent; parent; parent = parent.parent) {
+        if (parent.name === "MacroDefinition" || parent.name === "MacroInvocation" && macroPath(parent)?.from !== invocation.from && !standardFormattingMacro(parent)) throw new Error(`Debug does not rewrite resources inside an unresolved macro expansion (${file}:${location(node.from).line}). Use normal Run.`);
+        if (/Tokens$/.test(parent.name) && parent.prevSibling?.name === "!") {
+          const end = parent.prevSibling.prevSibling;
+          if (end) {
+            let start = end;
+            while (start.prevSibling?.name === "::" && start.prevSibling.prevSibling) start = start.prevSibling.prevSibling;
+            const path = source.slice(start.from, end.to), name = text(end);
+            if (!formattingMacros.has(name) || !isBuiltinMacroPath(path, name)) throw new Error(`Debug does not rewrite resources inside an unresolved macro expansion (${file}:${location(node.from).line}). Use normal Run.`);
+          }
+        }
+      }
       resourceMacros.add(node.from);
       const group = invocation.nextSibling?.nextSibling;
       if (!group || !/Tokens$/.test(group.name)) return;
@@ -118,25 +201,64 @@ export function instrumentRust(files: Record<string, string>, entryFile: string,
       const name = fn.name === "AsyncBlock" ? "async block" : text(fn.getChild("BoundIdentifier") ?? fn), functionID = site(fn.from, name, 0, "entry");
       const guard = `__crabrix_debug_guard_${functionID}`;
       const unavailable = new Set<string>();
+      const opaqueAfter = new Map<string, number>();
       const disableIdentifiers = (node: SyntaxNode) => walk(node, n => { if (n.name === "Identifier") unavailable.add(text(n)); });
-      walk(body, node => {
-        if (node.name === "FunctionItem") return false;
-        if (node.name === "ReferenceExpression" || node.name === "ClosureExpression" || node.name === "AsyncBlock") { disableIdentifiers(node); return false; }
-        if (node.name === "MacroInvocation" && !formattingMacros.has(text(node.getChild("Identifier") ?? node))) { disableIdentifiers(node); return false; }
-        if (/Attribute/.test(node.name) && node.name !== "InnerAttribute") throw new Error(`Debug does not rewrite statement attributes (${file}:${location(node.from).line}). Normal Run remains available.`);
-      });
-      type Environment = Map<string, boolean | "owned">;
-      const env: Environment = new Map();
       const containers = new Set<string>(), ownershipUses = new Set<string>();
-      const containerType = (value: string) => /^(?:(?:std|alloc)::(?:string|vec)::)?(?:String|Vec)(?:$|<|::)/.test(value.replace(/\s/g,""));
+      const containerType = (value: string) => {
+        const compact = value.replace(/\s/g, "");
+        const qualified = compact.match(/^(?:::)?(?:std|alloc)::(?:string|vec)::(String|Vec)(?:$|<|::)/);
+        if (qualified) return !standardNamespaceShadowed && !ambiguousMethods;
+        const local = compact.match(/^(String|Vec)(?:$|<|::)/);
+        return !!local && !wildcardImports && !ambiguousMethods && !shadowedTypes.has(local[1]);
+      };
       walk(fn, n => {
         if (n !== fn && (n.name === "FunctionItem" || n.name === "ClosureExpression" || n.name === "AsyncBlock")) return false;
         if (n.name === "LetDeclaration" || n.name === "Parameter") {
           const binding = n.getChild("BoundIdentifier");
           if (binding && children(n).some(part => containerType(text(part)))) containers.add(text(binding));
-          if (binding && /(?:=\s*vec!|=\s*(?:String|Vec)::)/.test(text(n))) containers.add(text(binding));
+          if (binding && !ambiguousMethods && (/=\s*vec!/.test(text(n)) && !wildcardImports && !shadowedMacros.has("vec") || /=\s*(?:String|Vec)::/.test(text(n)) && !wildcardImports && !["String", "Vec"].some(name => shadowedTypes.has(name)))) containers.add(text(binding));
         }
       });
+      walk(body, node => {
+        if (node.name === "FunctionItem") return false;
+        if (node.name === "ReferenceExpression" || node.name === "ClosureExpression" || node.name === "AsyncBlock") { disableIdentifiers(node); return false; }
+        if (node.name === "MacroInvocation") {
+          if (!standardFormattingMacro(node)) { disableIdentifiers(node); return false; }
+          // A standard formatting macro borrows simple arguments, but an
+          // expression such as consume(value) or (value,) can still move them.
+          // Reparse token arguments as Rust expressions before granting that
+          // borrowing exception; unsupported forms stay conservatively opaque.
+          const group = children(node).find(child => /Tokens$/.test(child.name));
+          if (group) {
+            const tokens = text(group).slice(1, -1);
+            const expressionSource = `fn __probe(){__args(${tokens});}`;
+            const expressionTree = parser.parse(expressionSource);
+            let malformed = false; walk(expressionTree.topNode, child => { if (child.type.isError) malformed = true; });
+            if (malformed) { disableIdentifiers(node); return false; }
+            const args: SyntaxNode[] = [];
+            walk(expressionTree.topNode, child => { if (child.name === "ArgList") { args.push(...children(child).filter(n => !["(", ")", ","].includes(n.name))); return false; } });
+            for (const arg of args) {
+              if (["Identifier", "ScopedIdentifier", "String"].includes(arg.name)) continue;
+              if (["FieldExpression", "ReferenceExpression"].includes(arg.name)) {
+                let invokesCode = false;
+                walk(arg, child => { if (child.name === "CallExpression" || child.name === "MacroInvocation" || child.name === "Block") invokesCode = true; });
+                if (!invokesCode) continue;
+              }
+              const accessor = expressionSource.slice(arg.from, arg.to).match(/^(r#)?([\w]+)\.(len|capacity|is_empty)\(\)$/);
+              if (accessor && containers.has((accessor[1] ?? "") + accessor[2])) continue;
+              walk(arg, child => {
+                if (child.name === "Identifier") {
+                  const identifier = expressionSource.slice(child.from, child.to);
+                  opaqueAfter.set(identifier, Math.min(opaqueAfter.get(identifier) ?? Infinity, node.to));
+                }
+              });
+            }
+          }
+        }
+        if (/Attribute/.test(node.name) && node.name !== "InnerAttribute") throw new Error(`Debug does not rewrite statement attributes (${file}:${location(node.from).line}). Normal Run remains available.`);
+      });
+      type Environment = Map<string, boolean | "owned">;
+      const env: Environment = new Map();
       walk(body, n => {
         if (n.name === "FunctionItem") return false;
         if (n.name === "MacroInvocation") return false; // handled conservatively above
@@ -149,7 +271,7 @@ export function instrumentRust(files: Record<string, string>, entryFile: string,
       });
       for (const parameter of fn.getChild("ParamList")?.getChildren("Parameter") ?? []) {
         const binding = parameter.getChild("BoundIdentifier"), type = parameter.getChild("TypeIdentifier");
-        if (binding) env.set(text(binding), !!type && primitives.test(text(type)) ? true : "owned");
+        if (binding) env.set(text(binding), !!type && primitiveType(text(type)) ? true : "owned");
       }
       const safe = (node: SyntaxNode | undefined, scope: Environment): boolean => {
         if (!node) return false;
@@ -163,7 +285,8 @@ export function instrumentRust(files: Record<string, string>, entryFile: string,
       };
       const checkpoint = (offset: number, scope: Environment) => {
         const id = site(offset, name, functionID, "statement");
-        const variables = [...scope].filter(([variable, enabled]) => enabled && !unavailable.has(variable) && (enabled !== "owned" || !ownershipUses.has(variable))).slice(-32).map(([variable]) => `(${JSON.stringify(variable)}, crate::${helperName}::preview(&${variable}, |s| {use crate::${helperName}::Inspect as _; (&crate::${helperName}::Probe(&${variable})).inspect(s,0);}), ::std::any::type_name_of_val(&${variable}))`).join(",");
+        const sink = `${helperName}_sink`;
+        const variables = [...scope].filter(([variable, enabled]) => enabled && !unavailable.has(variable) && (enabled !== "owned" || !ownershipUses.has(variable) && offset < (opaqueAfter.get(variable) ?? Infinity))).slice(-32).map(([variable]) => `(${JSON.stringify(variable)}, crate::${helperName}::preview(&${variable}, |${sink}| {use crate::${helperName}::Inspect as _; (&crate::${helperName}::Probe(&${variable})).inspect(${sink},0);}), ::std::any::type_name_of_val(&${variable}))`).join(",");
         add(offset, `crate::${helperName}::point(${id}, &[${variables}]);`);
       };
       const descend = (node: SyntaxNode, scope: Environment) => {
@@ -192,7 +315,7 @@ export function instrumentRust(files: Record<string, string>, entryFile: string,
             const bindings: string[] = []; walk(statement, n => { if (n.name === "BoundIdentifier") bindings.push(text(n)); if (n.name === "Block" || n.name === "ClosureExpression") return false; });
             const pieces = children(statement), equal = pieces.findIndex(n => n.name === "=");
             const binding = statement.getChild("BoundIdentifier"), type = statement.getChild("TypeIdentifier");
-            const enabled = equal >= 0 && !!binding && bindings.length === 1 && !unavailable.has(text(binding)) ? (type ? primitives.test(text(type)) : safe(pieces[equal + 1], scope)) ? true : "owned" : false;
+            const enabled = equal >= 0 && !!binding && bindings.length === 1 && !unavailable.has(text(binding)) ? (type ? primitiveType(text(type)) : safe(pieces[equal + 1], scope)) ? true : "owned" : false;
             for (const variable of bindings) scope.set(variable, variable === (binding ? text(binding) : "") ? enabled : false);
           }
         }

@@ -53,6 +53,7 @@ struct BuildDockView<CodeContent: View>: View {
     let canStartBuild: Bool
     let onCheck: () -> Void
     let onRun: () -> Void
+    var onBuild: (() -> Void)? = nil
     let onReplaceFiles: ([String: String], String?) -> Bool
     let workspace: CargoWorkspaceSnapshot
     let onFetch: () -> Void
@@ -88,6 +89,7 @@ struct BuildDockView<CodeContent: View>: View {
         canStartBuild: Bool,
         onCheck: @escaping () -> Void,
         onRun: @escaping () -> Void,
+        onBuild: (() -> Void)? = nil,
         onReplaceFiles: @escaping ([String: String], String?) -> Bool,
         workspace: CargoWorkspaceSnapshot,
         onFetch: @escaping () -> Void,
@@ -120,6 +122,7 @@ struct BuildDockView<CodeContent: View>: View {
         self.canStartBuild = canStartBuild
         self.onCheck = onCheck
         self.onRun = onRun
+        self.onBuild = onBuild
         self.onReplaceFiles = onReplaceFiles
         self.workspace = workspace
         self.onFetch = onFetch
@@ -298,6 +301,7 @@ struct BuildDockView<CodeContent: View>: View {
             canStartBuild: canStartBuild,
             onCheck: onCheck,
             onRun: onRun,
+            onBuild: onBuild,
             onReplaceFiles: onReplaceFiles,
             workspace: workspace,
             onFetch: onFetch,
@@ -531,6 +535,7 @@ private struct OutputDockContent: View {
     }
 
     private var emptyOutputTitle: String {
+        if activity == .building { return "Building without running main" }
         if result?.detail.hasPrefix("Web assets prepared.") == true { return "Ready for web preview" }
         return switch displayState {
         case .ready: "Output will appear here"
@@ -543,6 +548,7 @@ private struct OutputDockContent: View {
     }
 
     private var emptyOutputDetail: String {
+        if activity == .building { return "Compiler diagnostics will appear when linking finishes. Build does not execute your program." }
         switch displayState {
         case .ready: return "Run your project to see printed text or a visual result."
         case .checking: return "Compiler diagnostics will appear when the check finishes."
@@ -843,6 +849,7 @@ private struct TerminalDockContent: View {
     let canStartBuild: Bool
     let onCheck: () -> Void
     let onRun: () -> Void
+    var onBuild: (() -> Void)? = nil
     let onReplaceFiles: ([String: String], String?) -> Bool
     let workspace: CargoWorkspaceSnapshot
     let onFetch: () -> Void
@@ -853,7 +860,7 @@ private struct TerminalDockContent: View {
         if project.files.keys.contains(where: { ($0 as NSString).lastPathComponent == "package.json" }) {
             return ["help", "ls", "tree", "history", "npm install", "npm ci", "npm run build", "npm run dev", "clear"]
         }
-        return ["help", "ls", "tree", "history", "cargo check", "cargo tree", "cargo metadata", "cargo run", "clear"]
+        return ["help", "ls", "tree", "history", "cargo check", "cargo build", "cargo tree", "cargo metadata", "cargo run", "clear"]
     }
 
     var body: some View {
@@ -984,6 +991,7 @@ private struct TerminalDockContent: View {
             workspace: workspace,
             onCheck: onCheck,
             onRun: onRun,
+            onBuild: onBuild,
             onFetch: onFetch,
             onBrowserCommand: onBrowserCommand,
             onReplaceFiles: onReplaceFiles

@@ -1,7 +1,126 @@
 import XCTest
+import ZIPFoundation
 @testable import Crabrix
 
 final class ProjectImportTests: XCTestCase {
+    func testCurrentSourceRescuePreservesOverBudgetUTF8AndCleansUp() throws {
+        let text = String(repeating: "🦀\n", count: 500_000)
+        XCTAssertGreaterThan(text.utf8.count, ProjectFilePolicy.maximumFileBytes)
+        let url = try CrabrixProjectArchive.createSourceRescue(source: text, fileName: "main.rs")
+        XCTAssertEqual(try Data(contentsOf: url), Data(text.utf8))
+        XCTAssertEqual(url.lastPathComponent, "main.rs")
+        CrabrixProjectArchive.removeTemporaryArchive(at: url)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: url.path))
+    }
+    func testLegacyMigrationRetainsItsOriginalPreviousSnapshot() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = ProjectStore(rootURL: root)
+        var project = CrabrixProject(name: "migrate", files: ["main.rs": "fn main(){}", ".hidden.txt": "older hidden data"], entryFile: "main.rs", provenance: nil)
+        _ = try await store.save(project: project, lastBuild: nil)
+        let folder = root.appending(path: "projects/\(project.id.uuidString.lowercased())")
+        let previous = folder.appending(path: "recovery/previous")
+        try FileManager.default.createDirectory(at: previous, withIntermediateDirectories: true)
+        try FileManager.default.copyItem(at: folder.appending(path: "files"), to: previous.appending(path: "files"))
+        try FileManager.default.copyItem(at: folder.appending(path: "project.json"), to: previous.appending(path: "project.json"))
+        try FileManager.default.removeItem(at: folder.appending(path: "files/.hidden.txt"))
+        let metadata = folder.appending(path: "project.json")
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: metadata)) as? [String: Any])
+        object["version"] = 2; object.removeValue(forKey: "fileDigests")
+        try JSONSerialization.data(withJSONObject: object).write(to: metadata)
+        project.files.removeValue(forKey: ".hidden.txt")
+        _ = try await store.save(project: project, lastBuild: nil)
+        _ = try await store.allProjects() // Recovery scan must not delete migration bytes.
+        let rescue = try await store.recoveryArchive(projectID: project.id)
+        defer { CrabrixProjectArchive.removeTemporaryArchive(at: rescue) }
+        let expanded = root.appending(path: "migration-expanded")
+        try FileManager.default.unzipItem(at: rescue, to: expanded)
+        let data = try Data(contentsOf: expanded.appending(path: "SavedSnapshots/Retained-1/recovery/previous/files/.hidden.txt"))
+        XCTAssertEqual(String(data: data, encoding: .utf8), "older hidden data")
+    }
+
+    func testHiddenAndCustomFilesRoundTripThroughStorePackageAndLargeZIP() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        var files = ["main.rs": "fn main(){}", ".gitignore": "target/", ".rustfmt.toml": "edition = \"2024\"",
+                     ".cargo/config.toml": "[build]", ".hidden/nested/source.rs": "pub const X:u8=1;",
+                     "config.custom": "preserved", "target/kept.txt": "project file, not a generated cache"]
+        for i in 0..<(ProjectFilePolicy.maximumFileCount - files.count) { files["modules/deep/part-\(i)/item.txt"] = "value \(i) 🦀" }
+        let project = CrabrixProject(name: "complete-snapshot", files: files, entryFile: "main.rs", provenance: nil)
+        let store = ProjectStore(rootURL: root)
+        _ = try await store.save(project: project, lastBuild: nil)
+        let reopened = try await ProjectStore(rootURL: root).project(id: project.id)
+        XCTAssertEqual(reopened?.project, project)
+        let package = root.appending(path: "copy.crabrixproject")
+        try CrabrixProjectDocument(project: project).packageWrapper().write(to: package, options: .atomic, originalContentsURL: nil)
+        let packaged = try LocalProjectLoader.load(from: package)
+        XCTAssertEqual(packaged.id, project.id)
+        XCTAssertEqual(packaged.files.count, ProjectFilePolicy.maximumFileCount)
+        XCTAssertEqual(ProjectFilePolicy.digests(packaged.files), ProjectFilePolicy.digests(project.files))
+        XCTAssertEqual(packaged.provenance, project.provenance)
+        let zip = try CrabrixProjectArchive.create(project: project)
+        defer { CrabrixProjectArchive.removeTemporaryArchive(at: zip) }
+        let unzipped = try CrabrixProjectArchive.load(from: zip)
+        XCTAssertEqual(unzipped.id, project.id)
+        XCTAssertEqual(unzipped.files.count, ProjectFilePolicy.maximumFileCount)
+        XCTAssertEqual(ProjectFilePolicy.digests(unzipped.files), ProjectFilePolicy.digests(project.files))
+        XCTAssertEqual(unzipped.provenance, project.provenance)
+    }
+
+    func testFileBudgetRejectsWriteWithoutReplacingGoodSnapshotAndLegacyReadNeverDropsAuxiliary() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = ProjectStore(rootURL: root)
+        var project = CrabrixProject(name: "budgets", files: ["main.rs": "fn main(){}", "notes.txt": String(repeating: "x", count: ProjectFilePolicy.maximumFileBytes)], entryFile: "main.rs", provenance: nil)
+        _ = try await store.save(project: project, lastBuild: nil)
+        project.files["notes.txt"]! += "x"
+        do { _ = try await store.save(project: project, lastBuild: nil); XCTFail("Must reject before replacing the good snapshot") }
+        catch { XCTAssertEqual(error as? ProjectFilePolicy.Failure, .fileTooLarge("notes.txt")) }
+        let good = try await store.project(id: project.id)
+        XCTAssertEqual(good?.project.files["notes.txt"]?.utf8.count, ProjectFilePolicy.maximumFileBytes)
+        let folder = root.appending(path: "projects/\(project.id.uuidString.lowercased())")
+        try Data(project.files["notes.txt"]!.utf8).write(to: folder.appending(path: "files/notes.txt"))
+        let metadata = folder.appending(path: "project.json")
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: metadata)) as? [String: Any])
+        object.removeValue(forKey: "fileDigests"); object["version"] = 2
+        try JSONSerialization.data(withJSONObject: object).write(to: metadata)
+        do { _ = try await store.project(id: project.id); XCTFail("An oversized legacy auxiliary file must not disappear") }
+        catch { XCTAssertEqual(error as? ProjectFilePolicy.Failure, .fileTooLarge("notes.txt")) }
+        XCTAssertEqual(try Data(contentsOf: folder.appending(path: "files/notes.txt")).count, ProjectFilePolicy.maximumFileBytes + 1)
+        try FileManager.default.removeItem(at: root.appending(path: "project-index.json"))
+        let listed = try await store.allProjects()
+        XCTAssertTrue(listed.isEmpty)
+        let failures = await store.readFailures
+        XCTAssertEqual(failures.map(\.projectID), [project.id])
+        XCTAssertTrue(failures[0].message.contains("notes.txt"))
+        let rescue = try await store.recoveryArchive(projectID: project.id)
+        defer { CrabrixProjectArchive.removeTemporaryArchive(at: rescue) }
+        let expanded = root.appending(path: "rescue-expanded")
+        try FileManager.default.unzipItem(at: rescue, to: expanded)
+        XCTAssertEqual(try Data(contentsOf: expanded.appending(path: "SavedSnapshots/Current/files/notes.txt")).count, ProjectFilePolicy.maximumFileBytes + 1)
+    }
+
+    func testMissingAuxiliaryIsDetectedAndRecoveryIsExplicit() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = ProjectStore(rootURL: root)
+        var project = CrabrixProject(name: "integrity", files: ["main.rs": "fn main(){}", ".hidden.txt": "first"], entryFile: "main.rs", provenance: nil)
+        _ = try await store.save(project: project, lastBuild: nil)
+        project.files[".hidden.txt"] = "second"
+        _ = try await store.save(project: project, lastBuild: nil)
+        let folder = root.appending(path: "projects/\(project.id.uuidString.lowercased())")
+        try FileManager.default.removeItem(at: folder.appending(path: "files/.hidden.txt"))
+        let recovered = try await store.project(id: project.id)
+        XCTAssertEqual(recovered?.project.files[".hidden.txt"], "first")
+        XCTAssertNotNil(recovered?.recoveryMessage)
+    }
+
+    func testPathAliasesAndFileDirectoryCollisionsAreRefusedBeforeExport() throws {
+        for files in [["a.rs": "a", "A.rs": "b"], ["src": "a", "src/main.rs": "b"], ["Src/a.rs": "a", "src/b.rs": "b"], [".git/config": "secret"]] {
+            XCTAssertThrowsError(try ProjectFilePolicy.validate(files))
+        }
+    }
+
     private struct LegacyProject: Codable {
         let name: String
         let files: [String: String]
@@ -65,9 +184,9 @@ final class ProjectImportTests: XCTestCase {
         XCTAssertEqual(report.status, .inspect)
         XCTAssertEqual(report.dependencies, 1)
         XCTAssertEqual(report.rustFiles, 2)
-        // Registry dependencies are resolved by the package manager now, so the
-        // only remaining note is the build script the local build does not run.
-        XCTAssertEqual(report.notes, ["build.rs is not executed by the local build."])
+        // Registry dependencies are resolved; build scripts need an honest
+        // supported profile rather than the older blanket "not executed" note.
+        XCTAssertEqual(report.notes, ["Std-only WASI build scripts can run locally. Scripts needing host subprocesses, native linking or separate build dependencies require a different profile."])
     }
 
     func testRecentProjectLibraryPersistsBuildStatus() async throws {

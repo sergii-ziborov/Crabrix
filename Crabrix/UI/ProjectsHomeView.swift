@@ -10,12 +10,17 @@ struct ProjectsHomeView: View {
     let onOpenCurrentProject: () -> Void
     let onNewProject: () -> Void
     let onOpenMyProjects: () -> Void
+    var transfer: CompilerViewModel.ProjectTransfer = .idle
+    var readFailures: [ProjectReadFailure] = []
+    var onExportRecovery: (UUID) -> Void = { _ in }
 
     private let columns = [GridItem(.adaptive(minimum: 230), spacing: 14)]
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
+                if transfer.isFailure, readFailures.isEmpty { ProjectTransferStrip(transfer: transfer) }
+                ProjectReadIssuesView(issues: readFailures, onExport: onExportRecovery)
                 currentProject
                 LazyVGrid(columns: columns, spacing: 14) {
                     actionCard(
@@ -115,6 +120,24 @@ struct ProjectsHomeView: View {
             .crabrixPanel()
         }
         .buttonStyle(.plain)
+    }
+}
+
+struct ProjectReadIssuesView: View {
+    let issues: [ProjectReadFailure]
+    let onExport: (UUID) -> Void
+    var body: some View {
+        ForEach(issues) { issue in
+            VStack(alignment: .leading, spacing: 8) {
+                Label("Cannot open \(issue.name)", systemImage: "exclamationmark.triangle")
+                    .font(.subheadline.bold()).foregroundStyle(CrabrixTheme.coral)
+                Text(issue.message).font(.caption).foregroundStyle(CrabrixTheme.primary)
+                Button("Export recovery ZIP") { onExport(issue.projectID) }
+                    .buttonStyle(.bordered)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(14).background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 14))
+        }
     }
 }
 

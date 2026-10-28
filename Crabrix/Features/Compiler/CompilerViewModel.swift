@@ -74,6 +74,29 @@ struct NewRustProjectRequest: Sendable {
 
 @MainActor
 final class CompilerViewModel: ObservableObject {
+    enum SaveState: Equatable {
+        case unsaved, saving, saved, failed(String)
+        var label: String {
+            switch self {
+            case .unsaved: "Unsaved changes"
+            case .saving: "Saving…"
+            case .saved: "Saved on this device"
+            case .failed: "Save failed"
+            }
+        }
+        var message: String {
+            if case let .failed(message) = self { return message + "\nYour current text is still in memory. Retry, save the project to Files, or export the current file." }
+            return label
+        }
+        var symbol: String {
+            switch self {
+            case .unsaved: "circle.dotted"
+            case .saving: "arrow.trianglehead.2.clockwise"
+            case .saved: "checkmark.circle"
+            case .failed: "exclamationmark.triangle"
+            }
+        }
+    }
     enum ProjectTransfer: Equatable {
         case idle
         case openingFiles
@@ -98,12 +121,14 @@ final class CompilerViewModel: ObservableObject {
     enum Activity: Equatable {
         case idle
         case checking
+        case building
         case running
 
         var label: String {
             switch self {
             case .idle: "Ready"
-            case .checking: "Type-checking with bundled rustc…"
+            case .checking: "Checking the current project…"
+            case .building: "Compiling locally · main is not run…"
             case .running: "Compiling and running locally…"
             }
         }
@@ -161,7 +186,9 @@ final class CompilerViewModel: ObservableObject {
     @Published private(set) var provenance: CrabrixProject.Provenance?
     @Published private(set) var recentProjects: [ProjectLibraryItem] = []
     @Published private(set) var allProjects: [ProjectLibraryItem] = []
+    @Published private(set) var projectReadFailures: [ProjectReadFailure] = []
     @Published private(set) var lastBuild: ProjectBuildRecord?
+    @Published private(set) var saveState: SaveState = .unsaved
     @Published private(set) var cargoStage: CargoPreparationStage = .idle
     @Published private(set) var packageTransfers: [PackageTransferRow] = []
     @Published var isPackageProgressPresented = false
@@ -225,6 +252,9 @@ final class CompilerViewModel: ObservableObject {
     private var diagnosticAdviceTask: Task<Void, Never>?
     private var diagnosticAdviceRevision: WorkspaceRevision?
     private var autosaveTask: Task<Void, Never>?
+    private var autosaveRequestID: UUID?
+    private var saveQueue: Task<Void, Never>?
+    private var latestProjectSnapshots: [UUID: CrabrixProject] = [:]
     private var suppressAutosave = false
     private(set) var workspaceGeneration: UInt64 = 0
     private let userDefaults: UserDefaults
@@ -243,7 +273,15 @@ final class CompilerViewModel: ObservableObject {
     ) {
         self.compiler = compiler
         self.githubImporter = githubImporter
+        #if DEBUG || CRABRIX_LEGACY_FIXTURES
+        if ProcessInfo.processInfo.arguments.contains("--crabrix-auto-save-failure-fixture") {
+            let blocker = FileManager.default.temporaryDirectory.appending(path: "CrabrixSaveFailure-\(UUID().uuidString)")
+            try? Data("injected storage failure".utf8).write(to: blocker)
+            self.projectLibrary = ProjectLibrary(storageURL: blocker.appending(path: "recent.json"))
+        } else { self.projectLibrary = projectLibrary }
+        #else
         self.projectLibrary = projectLibrary
+        #endif
         self.packageManager = packageManager
         self.userDefaults = userDefaults
         completedLessonIDs = Set(userDefaults.stringArray(forKey: Self.completedLessonsKey) ?? [])
@@ -266,8 +304,7 @@ final class CompilerViewModel: ObservableObject {
         provenance = nil
         lastBuild = nil
         Task {
-            recentProjects = (try? await projectLibrary.items()) ?? []
-            allProjects = (try? await projectLibrary.allItems()) ?? []
+            await reloadProjectLists()
         }
     }
 
@@ -299,7 +336,7 @@ final class CompilerViewModel: ObservableObject {
         WorkspaceRevision.capture(
             project: currentProject(),
             generation: workspaceGeneration,
-            toolchainID: WasmRustCompiler.toolchainVersion
+            toolchainID: WasmRustCompiler.executionIdentity
         )
     }
 
@@ -453,10 +490,20 @@ final class CompilerViewModel: ObservableObject {
     }
 
 
-    func markProjectSaved() {
-        projectTransfer = .ready("Saved \(projectName) to Files.")
-        Task { await remember(currentProject(), lastBuild: lastBuild) }
+    func markProjectSaved(_ exported: CrabrixProject? = nil) {
+        // Export completion must never save an older exported copy over newer
+        // edits, or mark a different workspace as durably saved.
+        let exported = exported ?? currentProject()
+        guard exported == currentProject() else { return }
+        projectTransfer = .ready("Saved \(exported.name) to Files.")
     }
+
+    func retryProjectSave() async {
+        autosaveTask?.cancel()
+        await remember(currentProject(), lastBuild: lastBuild)
+    }
+
+    func recoveryArchive(projectID: UUID) async throws -> URL { try await projectLibrary.recoveryArchive(projectID: projectID) }
 
     @discardableResult
     func updateCurrentProjectDetails(
@@ -481,26 +528,27 @@ final class CompilerViewModel: ObservableObject {
         project.folder = CrabrixProject.normalizedFolder(folder)
         project.kind = kind
         project.isFavorite = isFavorite
-        do {
-            let saved = try await projectLibrary.update(project: project, lastBuild: lastBuild)
-            if saved.id == projectID {
-                projectName = saved.project.name
-                projectDescription = saved.project.projectDescription
-                projectTags = saved.project.tags
-                projectFolder = saved.project.folder
-                projectKind = saved.project.kind
-                projectIsFavorite = saved.project.isFavorite
-            }
-            await reloadProjectLists()
-            projectTransfer = .ready("Updated project details.")
-            return true
-        } catch {
-            projectTransfer = .failed(error.localizedDescription)
-            return false
-        }
+        projectName = project.name
+        projectDescription = project.projectDescription
+        projectTags = project.tags
+        projectFolder = project.folder
+        projectKind = project.kind
+        projectIsFavorite = project.isFavorite
+        workspaceGeneration &+= 1
+        latestProjectSnapshots[projectID] = currentProject()
+        saveState = .unsaved
+        await remember(currentProject(), lastBuild: lastBuild)
+        if case .saved = saveState { projectTransfer = .ready("Updated project details."); return true }
+        return false
     }
 
     func toggleFavorite(projectID: UUID) async {
+        if projectID == self.projectID {
+            projectIsFavorite.toggle()
+            workspaceDidChange()
+            await retryProjectSave()
+            return
+        }
         guard let item = allProjects.first(where: { $0.id == projectID }) else { return }
         var project = item.project
         project.isFavorite.toggle()
@@ -527,6 +575,10 @@ final class CompilerViewModel: ObservableObject {
         kind: CrabrixProject.Kind,
         isFavorite: Bool
     ) async -> Bool {
+        if projectID == self.projectID {
+            return await updateCurrentProjectDetails(name: rawName, description: description, tags: tags,
+                folder: folder, kind: kind, isFavorite: isFavorite)
+        }
         guard let item = allProjects.first(where: { $0.id == projectID }) else {
             projectTransfer = .failed("That project is no longer available.")
             return false
@@ -606,6 +658,7 @@ final class CompilerViewModel: ObservableObject {
                     ? "Stopped the previous build and opened \(item.project.name)."
                     : "Opened recent project \(item.project.name)."
             )
+            if let message = item.recoveryMessage { projectTransfer = .failed(message) }
             return true
         } catch {
             guard isCurrent(revision) else { return false }
@@ -617,11 +670,12 @@ final class CompilerViewModel: ObservableObject {
     func check() { startBuild(.checking) }
 
     func run() { startBuild(.running) }
+    func build() { startBuild(.building) }
 
     func performBrowserCommand(_ command: BrowserProjectCommand) {
         switch command {
         case let .install(frozen, directory): startBuild(.checking, browserDirectory: directory, prepareBrowserPackages: true, frozenBrowserPackages: frozen)
-        case let .build(run, directory): startBuild(run ? .running : .checking, browserDirectory: directory)
+        case let .build(run, directory): startBuild(run ? .running : .building, browserDirectory: directory)
         }
     }
 
@@ -629,6 +683,8 @@ final class CompilerViewModel: ObservableObject {
                             prepareBrowserPackages: Bool = false, frozenBrowserPackages: Bool = false,
                             debugging: Bool = false) {
         guard canStartBuild else { return }
+        do { try ProjectFilePolicy.validate(currentProject().files, entryFile: entryFile) }
+        catch { result = .failure(phase: .setup, detail: error.localizedDescription); return }
         if debugging {
             debugActive = true; debugPause = nil; debugSites = []
             let identity = UUID(); debugSessionID = identity
@@ -644,7 +700,7 @@ final class CompilerViewModel: ObservableObject {
         activity = mode
         result = nil
         buildEvents = []
-        appendBuildStage(mode == .checking ? "Check requested" : "Run requested")
+        appendBuildStage(mode == .checking ? "Check requested" : mode == .building ? "Build requested · main will not run" : "Run requested")
         let project = projectSnapshot()
         var projectFiles = project.supporting
         projectFiles[project.entryPath] = project.main
@@ -700,9 +756,11 @@ final class CompilerViewModel: ObservableObject {
                     if prepareBrowserPackages {
                         // Installation is transactional. A changed project discards the result;
                         // no in-flight download may overwrite a newer editor snapshot.
-                        suppressAutosave = true
-                        fileContents = projectFiles.filter { !$0.key.hasPrefix(built.sourceRemovalPrefix) }
+                        let installedFiles = projectFiles.filter { !$0.key.hasPrefix(built.sourceRemovalPrefix) }
                             .merging(built.sourceAdditions) { _, new in new }
+                        try ProjectFilePolicy.validate(installedFiles, entryFile: entryFile)
+                        suppressAutosave = true
+                        fileContents = installedFiles
                         fileNames = fileContents.keys.sorted(by: projectFileOrder)
                         if fileContents[selectedFile] == nil {
                             selectedFile = fileContents[entryFile] != nil ? entryFile : entry
@@ -716,7 +774,7 @@ final class CompilerViewModel: ObservableObject {
                         packageTransfers = built.transfers
                         packageTransferID = nil
                     }
-                    finish(CompilationResult(succeeded: true, phase: mode == .running ? .run : .check,
+                    finish(CompilationResult(succeeded: true, phase: mode == .running ? .run : (mode == .building ? .compile : .check),
                         exitCode: nil, diagnostics: [], stdout: "", stderr: "", duration: began.duration(to: .now),
                         detail: prepareBrowserPackages
                             ? "Prepared \(built.packageCount) browser npm packages as editable local source. Run now builds offline."
@@ -813,6 +871,10 @@ final class CompilerViewModel: ObservableObject {
             }
 
             var value = switch mode {
+            case .building:
+                await compiler.build(source: compilerProject.main, sourcePath: compilerProject.entryPath,
+                    supportingFiles: compilerProject.supporting, edition: rootEdition, plan: plan,
+                    onDependencyProgress: plan.isEmpty ? nil : progress, onStage: stageHandler)
             case .checking:
                 await compiler.check(
                     source: compilerProject.main,
@@ -1550,7 +1612,7 @@ final class CompilerViewModel: ObservableObject {
             return false
         }
 
-        addProjectFile(path: path, source: "// \(path)\n")
+        guard addProjectFile(path: path, source: "// \(path)\n") else { return false }
         projectTransfer = .ready("Created \(path).")
         return true
     }
@@ -1565,7 +1627,7 @@ final class CompilerViewModel: ObservableObject {
             return false
         }
 
-        addProjectFile(path: path, source: "")
+        guard addProjectFile(path: path, source: "") else { return false }
         projectTransfer = .ready("Created \(path).")
         return true
     }
@@ -1582,7 +1644,7 @@ final class CompilerViewModel: ObservableObject {
         }
 
         let moduleName = folder.split(separator: "/").last.map(String.init) ?? "module"
-        addProjectFile(path: path, source: "// \(moduleName) module\n")
+        guard addProjectFile(path: path, source: "// \(moduleName) module\n") else { return false }
         projectTransfer = .ready("Created \(folder) with mod.rs.")
         return true
     }
@@ -1734,6 +1796,8 @@ final class CompilerViewModel: ObservableObject {
         selecting requestedSelection: String? = nil
     ) -> Bool {
         guard !isBusy, !isProjectOperationInProgress, !files.isEmpty else { return false }
+        do { try ProjectFilePolicy.validate(files) }
+        catch { projectTransfer = .failed(error.localizedDescription); return false }
 
         resetDiagnosticAdvice()
         fileContents = files
@@ -1774,6 +1838,7 @@ final class CompilerViewModel: ObservableObject {
         isFavorite: Bool = false,
         lastBuild: ProjectBuildRecord? = nil
     ) {
+        latestProjectSnapshots[projectID] = currentProject()
         if !isApplyingPlayground { leavePlayground() }
         if isBusy { cancelBuild() }
         resetDiagnosticAdvice()
@@ -1793,7 +1858,7 @@ final class CompilerViewModel: ObservableObject {
         selectedFile = entryFile
         source = files[entryFile] ?? ""
         self.provenance = provenance
-        self.lastBuild = lastBuild
+        self.lastBuild = lastBuild?.sourceTreeHash == workspaceRevision.sourceTreeHash && lastBuild?.toolchainID == WasmRustCompiler.executionIdentity ? lastBuild : nil
         compatibilityReport = ProjectCompatibilityReport.scan(
             CrabrixProject(
                 id: id,
@@ -1822,6 +1887,8 @@ final class CompilerViewModel: ObservableObject {
         resetCargoWorkspace()
         suppressAutosave = false
         workspaceGeneration &+= 1
+        latestProjectSnapshots[projectID] = currentProject()
+        saveState = .unsaved
         let project = currentProject()
         Task { await remember(project, lastBuild: lastBuild) }
     }
@@ -2124,9 +2191,12 @@ final class CompilerViewModel: ObservableObject {
             : lhsRank < rhsRank
     }
 
-    private func addProjectFile(path: String, source newSource: String) {
-        fileContents[selectedFile] = source
-        fileContents[path] = newSource
+    private func addProjectFile(path: String, source newSource: String) -> Bool {
+        var proposed = currentProject().files
+        proposed[path] = newSource
+        do { try ProjectFilePolicy.validate(proposed, entryFile: entryFile) }
+        catch { projectTransfer = .failed(error.localizedDescription); return false }
+        fileContents = proposed
         fileNames = fileContents.keys.sorted(by: projectFileOrder)
         selectedFile = path
         source = newSource
@@ -2138,6 +2208,7 @@ final class CompilerViewModel: ObservableObject {
         compatibilityReport = ProjectCompatibilityReport.scan(currentProject())
         let project = currentProject()
         Task { await remember(project, lastBuild: nil) }
+        return true
     }
 
     private func normalizedProjectPath(_ rawPath: String, defaultRoot: String) -> String? {
@@ -2221,7 +2292,7 @@ final class CompilerViewModel: ObservableObject {
         isCompilerDraining = false
         compilationTask = nil
         activeCompilationID = nil
-        lastBuild = ProjectBuildRecord(result: value)
+        lastBuild = ProjectBuildRecord(result: value, sourceTreeHash: revision.sourceTreeHash, toolchainID: revision.toolchainID)
 
         let errorDiagnostic = value.diagnostics.first(where: { $0.level == "error" })
         activeLessonObservedDiagnosticCodes.formUnion(value.diagnostics.compactMap(\.code))
@@ -2333,19 +2404,40 @@ final class CompilerViewModel: ObservableObject {
     }
 
     private func remember(_ project: CrabrixProject, lastBuild: ProjectBuildRecord?) async {
-        if let items = try? await projectLibrary.record(project: project, lastBuild: lastBuild) {
-            recentProjects = items
+        let revision = project.id == projectID ? workspaceRevision : nil
+        let previous = saveQueue
+        let task = Task { [weak self] in
+            await previous?.value
+            guard let self else { return }
+            let latest = project.id == projectID ? currentProject() : latestProjectSnapshots[project.id]
+            guard latest == nil || latest == project else { return }
+            if let revision, isCurrent(revision) { saveState = .saving }
+            do {
+                try ProjectFilePolicy.validate(project.files, entryFile: project.entryFile)
+                recentProjects = try await projectLibrary.record(project: project, lastBuild: lastBuild)
+                if let revision, isCurrent(revision) {
+                    saveState = .saved
+                    if projectName == project.name, let saved = recentProjects.first(where: { $0.id == project.id }) { projectName = saved.project.name }
+                    if case let .failed(message) = projectTransfer, message.hasPrefix("Autosave failed:") { projectTransfer = .ready("Saved on this device.") }
+                }
+                await reloadProjectLists()
+            } catch {
+                if let revision, isCurrent(revision) {
+                    saveState = .failed(error.localizedDescription)
+                    projectTransfer = .failed("Autosave failed: " + error.localizedDescription)
+                }
+            }
         }
-        allProjects = (try? await projectLibrary.allItems()) ?? allProjects
-        if projectID == project.id, projectName == project.name,
-           let saved = allProjects.first(where: { $0.id == project.id }) {
-            projectName = saved.project.name
-        }
+        saveQueue = task
+        await task.value
     }
 
     private func reloadProjectLists() async {
-        recentProjects = (try? await projectLibrary.items()) ?? recentProjects
-        allProjects = (try? await projectLibrary.allItems()) ?? allProjects
+        do {
+            recentProjects = try await projectLibrary.items()
+            allProjects = try await projectLibrary.allItems()
+            projectReadFailures = await projectLibrary.readFailures()
+        } catch { projectTransfer = .failed("Cannot read the saved project library: " + error.localizedDescription) }
     }
 
     private func isCurrent(_ revision: WorkspaceRevision) -> Bool {
@@ -2373,6 +2465,12 @@ final class CompilerViewModel: ObservableObject {
             }
         }
         workspaceGeneration &+= 1
+        latestProjectSnapshots[projectID] = currentProject()
+        saveState = .unsaved
+        // A successful result belongs to the exact tree which produced it.
+        // Editing invalidates its diagnostics instead of showing them as current.
+        result = nil
+        lastBuild = nil
         if diagnosticAdviceState != .idle {
             resetDiagnosticAdvice()
         }
@@ -2385,6 +2483,8 @@ final class CompilerViewModel: ObservableObject {
     private func scheduleAutosave() {
         guard !suppressAutosave else { return }
         autosaveTask?.cancel()
+        let requestID = UUID()
+        autosaveRequestID = requestID
         autosaveTask = Task { [weak self] in
             do {
                 try await Task.sleep(for: .milliseconds(500))
@@ -2393,7 +2493,7 @@ final class CompilerViewModel: ObservableObject {
             }
             guard let self, !Task.isCancelled else { return }
             await remember(currentProject(), lastBuild: lastBuild)
-            autosaveTask = nil
+            if autosaveRequestID == requestID { autosaveTask = nil }
         }
     }
 }
