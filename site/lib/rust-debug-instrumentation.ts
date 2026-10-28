@@ -12,17 +12,40 @@ const scalarNodes = new Set(["Integer", "Float", "Boolean", "Char", "Character"]
 const formattingMacros = new Set(["print", "println", "eprint", "eprintln", "format", "format_args", "dbg", "assert", "assert_eq", "assert_ne", "debug_assert", "debug_assert_eq", "debug_assert_ne"]);
 function children(node: SyntaxNode): SyntaxNode[] { const result: SyntaxNode[] = []; for (let child = node.firstChild; child; child = child.nextSibling) result.push(child); return result; }
 function walk(node: SyntaxNode, visit: (node: SyntaxNode) => boolean | void) { if (visit(node) === false) return; for (let child = node.firstChild; child; child = child.nextSibling) walk(child, visit); }
+function resourceLiteral(value: string): string | undefined {
+  const raw = value.match(/^r(#+)?"([\s\S]*)"\1$/); if (raw) return raw[2];
+  if (!value.startsWith('"') || !value.endsWith('"')) return;
+  let result = "";
+  for (let i = 1; i < value.length - 1; i++) {
+    if (value[i] !== "\\") { result += value[i]; continue; }
+    const escape = value[++i], simple: Record<string, string> = { n: "\n", r: "\r", t: "\t", "0": "\0", "\\": "\\", '"': '"', "'": "'" };
+    if (Object.hasOwn(simple, escape)) result += simple[escape];
+    else if (escape === "x" && /^[0-9a-f]{2}$/i.test(value.slice(i + 1, i + 3))) { result += String.fromCharCode(parseInt(value.slice(i + 1, i + 3), 16)); i += 2; }
+    else if (escape === "u" && value[i + 1] === "{") {
+      const end = value.indexOf("}", i + 2), hex = value.slice(i + 2, end).replaceAll("_", "");
+      if (end < 0 || !/^[0-9a-f]{1,6}$/i.test(hex)) return;
+      const point = parseInt(hex, 16); if (point > 0x10ffff || point >= 0xd800 && point <= 0xdfff) return;
+      result += String.fromCodePoint(point); i = end;
+    } else if (escape === "\n" || escape === "\r" && value[i + 1] === "\n") { while (/\s/.test(value[i + 1] ?? "") && i + 1 < value.length - 1) i++; }
+    else return;
+  }
+  return result;
+}
 
-export function instrumentRust(files: Record<string, string>, entryFile: string): DebugPlan {
-  const paths = Object.keys(files).filter(path => path.endsWith(".rs")).sort();
+export function instrumentRust(files: Record<string, string>, entryFile: string, excludedRustFiles: string[] = []): DebugPlan {
+  const paths = Object.keys(files).filter(path => path.endsWith(".rs") && !excludedRustFiles.includes(path)).sort();
   if (!paths.includes(entryFile) || paths.length > 256 || paths.reduce((n, p) => n + files[p].length, 0) > 4 * 1024 * 1024) throw new Error("Debug supports an editable Rust entry and up to 256 source files / 4 MiB.");
   const sites: DebugSite[] = [], output = { ...files };
+  let resourceCopyUnits = 0;
   const notes = ["Source-instrumented Rust: breakpoints and stepping use the actual compiled program.", "Locals include bounded String, Vec and local struct previews without calling user Debug implementations. Borrowed, moved and captured values may be omitted. Async stacks show active polls; const bodies and macro expansions are not stepped internally."];
   for (const file of paths) {
     const source = files[file];
     if (/\b__crabrix_debug_(?:v1|guard_)/.test(source)) throw new Error("The __crabrix_debug_ prefix is reserved by the Debug build.");
     const tree = parser.parse(source);
+    const resourceMacros = new Set<number>();
     const edits = new Map<number, { priority: number; text: string }[]>();
+    const replacements: { from: number; to: number; text: string }[] = [];
+    const resourceAliases = new Map<string, string>();
     const add = (position: number, text: string, priority = 10) => { const list = edits.get(position) ?? []; list.push({ priority, text }); edits.set(position, list); };
     const text = (node: SyntaxNode) => source.slice(node.from, node.to);
     const lineStarts = [0]; for (let i = 0; i < source.length; i++) if (source[i] === "\n") lineStarts.push(i + 1);
@@ -31,8 +54,42 @@ export function instrumentRust(files: Record<string, string>, entryFile: string)
     walk(tree.topNode, node => {
       if (node.type.isError) throw new Error(`Debug cannot safely instrument this syntax at ${file}:${location(node.from).line}. Use normal Run for this source.`);
       if (node.name === "InnerAttribute" && /\bno_std\b/.test(text(node))) throw new Error("Source Debug currently requires the Rust standard library.");
-      if (node.name === "Identifier" && node.nextSibling?.name === "!" && ["column", "include", "include_str", "include_bytes"].includes(text(node))) throw new Error(`Debug leaves compile-time source introspection to normal Run (${file}:${location(node.from).line}).`);
-      if (node.name === "MacroInvocation" && ["column", "include", "include_str", "include_bytes"].includes(text(node.getChild("Identifier") ?? node))) throw new Error(`Debug leaves compile-time source introspection to normal Run (${file}:${location(node.from).line}).`);
+      const macroName = node.name === "Identifier" ? text(node) : "";
+      const invocation = node.nextSibling?.name === "!" ? node : node.parent?.name === "ScopedIdentifier" && node.parent.nextSibling?.name === "!" && node.parent.lastChild?.from === node.from ? node.parent : undefined;
+      if (invocation && ["column", "include"].includes(macroName)) throw new Error(`Debug leaves compile-time source introspection to normal Run (${file}:${location(node.from).line}).`);
+      if (node.name === "MacroInvocation" && ["column", "include"].includes(text(node.getChild("Identifier") ?? node))) throw new Error(`Debug leaves compile-time source introspection to normal Run (${file}:${location(node.from).line}).`);
+      // These macros load resources, not executable Rust. Leave HTML/CSS/JS
+      // untouched. If Rust source is included as data (even this very file),
+      // redirect the literal to an original sidecar so it cannot observe the
+      // instrumented snapshot. Token nodes cover includes inside println! too.
+      if (!invocation || !["include_str", "include_bytes"].includes(macroName) || resourceMacros.has(node.from)) return;
+      resourceMacros.add(node.from);
+      const group = invocation.nextSibling?.nextSibling;
+      if (!group || !/Tokens$/.test(group.name)) return;
+      const argument = text(group).slice(1, -1).trim().replace(/,\s*$/, "").trim();
+      const resourcePath = resourceLiteral(argument);
+      if (typeof resourcePath !== "string") throw new Error(`Debug needs a literal resource path for ${text(node)}! (${file}:${location(node.from).line}).`);
+      if (resourcePath.startsWith("/") && !resourcePath.startsWith("/work/")) return;
+      const absolute = resourcePath.startsWith("/work/");
+      const parts = absolute ? [] : file.split("/").slice(0, -1);
+      let outside = false;
+      for (const part of (absolute ? resourcePath.slice(6) : resourcePath).split("/")) { if (!part || part === ".") continue; if (part === "..") { if (!parts.length) outside = true; parts.pop(); } else parts.push(part); }
+      if (outside) return;
+      const target = parts.join("/");
+      if (!paths.includes(target)) return;
+      const directory = file.split("/").slice(0, -1).join("/");
+      let alias = resourceAliases.get(target);
+      if (!alias) {
+        alias = `__crabrix_debug_original_${resourceMacros.size}.txt`;
+        while (Object.hasOwn(output, directory ? `${directory}/${alias}` : alias)) alias = "_" + alias;
+        resourceCopyUnits += files[target].length;
+        if (resourceCopyUnits > 8 * 1024 * 1024) throw new Error("Debug original-resource snapshots exceed their preparation limit.");
+        output[directory ? `${directory}/${alias}` : alias] = files[target];
+        resourceAliases.set(target, alias);
+      }
+      const literal = JSON.stringify(alias);
+      const start = group.from + 1 + text(group).slice(1, -1).indexOf(argument);
+      replacements.push({ from: start, to: start + argument.length, text: literal + "\n".repeat((argument.match(/\n/g) ?? []).length) });
     });
     // Implement inspection beside each concrete struct so private fields remain
     // accessible. Never take references to packed or conditionally absent fields.
@@ -155,9 +212,12 @@ export function instrumentRust(files: Record<string, string>, entryFile: string)
       } else add(first?.from ?? body.to - 1, `let ${guard} = crate::${helperName}::Frame::enter(${functionID});`, 0);
       block(body, env);
     }
+    for (const replacement of replacements) { add(replacement.from, replacement.text, 0); add(replacement.to, "", -1); }
     const chunks: string[] = []; let cursor = 0;
     for (const [position, insertions] of [...edits].sort((a, b) => a[0] - b[0])) {
-      chunks.push(source.slice(cursor, position), insertions.sort((a, b) => a.priority - b.priority).map(v => v.text).join("")); cursor = position;
+      if (position < cursor) continue;
+      chunks.push(source.slice(cursor, position), insertions.sort((a, b) => a.priority - b.priority).map(v => v.text).join(""));
+      cursor = replacements.find(r => r.from === position)?.to ?? position;
     }
     chunks.push(source.slice(cursor)); let transformed = chunks.join("");
     // Each Cargo crate root gets its own helper; module files resolve crate::

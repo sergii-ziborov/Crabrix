@@ -494,6 +494,10 @@ struct ContentView: View {
                 }
             }
             #if DEBUG || CRABRIX_LEGACY_FIXTURES
+            if arguments.contains("--crabrix-auto-debug-web-fixture") {
+                model.createProject(name: "debugger-web-resources", template: .rustWeb)
+                openCodeWorkspace()
+            }
             if arguments.contains("--crabrix-auto-debug-fixture") {
                 model.loadRunnableSample(projectName: "debugger-lab")
                 _ = model.replaceProjectFilesFromTerminal(["main.rs": "fn add(a: i32, b: i32) -> i32 {\n let c = a + b;\n c\n}\nfn main() {\n let mut total = 0;\n for i in 0..3 {\n total += add(i,1);\n }\n println!(\"total={total}\");\n}\n"], selecting: "main.rs")

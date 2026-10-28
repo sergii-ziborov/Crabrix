@@ -28,6 +28,44 @@ final class RustDebuggerTests: XCTestCase {
             if count > 500 { session?.stop() } else { session?.resume(.into) }
         }
     }
+    func testWebGeneratorDebugsIncludedHTMLCSSAndJavaScript() async throws {
+        let recorder = StepRecorder()
+        let session = RustDebugSession(breakpoints: [RustDebugBreakpoint(file: "src/main.rs", line: 7)], onPlan: { _ in }, onPause: recorder.receive)
+        recorder.session = session
+        let files = WebProjectSamples.files.reduce(into: [String: String]()) { $0["web/" + $1.key] = $1.value }
+        let compiler = WasmRustCompiler()
+        let debug = await compiler.debug(source: WebProjectSamples.rustGenerator, sourcePath: "src/main.rs", supportingFiles: files, session: session)
+        XCTAssertTrue(debug.succeeded, debug.detail + "\n" + debug.stderr)
+        let preview = try XCTUnwrap(debug.webPreview)
+        for (path, contents) in WebProjectSamples.files {
+            XCTAssertEqual(preview.assets[path], Data(contents.utf8), "Debug must preserve included resource bytes")
+        }
+        XCTAssertTrue(recorder.snapshots.contains { $0.site.file == "src/main.rs" && $0.site.line == 7 && $0.reason == "breakpoint" })
+        let normal = await compiler.run(source: WebProjectSamples.rustGenerator, sourcePath: "src/main.rs", supportingFiles: files)
+        XCTAssertTrue(normal.succeeded, normal.detail + normal.stderr)
+        XCTAssertEqual(debug.stdout, normal.stdout)
+        XCTAssertEqual(debug.webPreview?.assets, normal.webPreview?.assets)
+    }
+    func testDebugIncludesOriginalRustSourceAsData() async throws {
+        let source = #"""
+        fn main() {
+            let text = std::include_str!(r#"main.rs"#);
+            let bytes = include_bytes!("/work/main.rs");
+            assert_eq!(text.as_bytes(), bytes);
+            println!("{}", text.len());
+        }
+        """#
+        let recorder = StepRecorder()
+        let session = RustDebugSession(onPlan: { _ in }, onPause: recorder.receive)
+        recorder.session = session
+        let compiler = WasmRustCompiler()
+        let debug = await compiler.debug(source: source, session: session)
+        XCTAssertTrue(debug.succeeded, debug.detail + debug.stderr)
+        let normal = await compiler.run(source: source)
+        XCTAssertTrue(normal.succeeded, normal.detail + normal.stderr)
+        XCTAssertEqual(debug.stdout, normal.stdout)
+        XCTAssertGreaterThan(recorder.snapshots.count, 2)
+    }
     func testAggregatePreviewsWithoutUserDebugAndWithBoundedUnicode() async throws {
         let recorder = StepRecorder()
         let session = RustDebugSession(onPlan: { _ in }, onPause: recorder.receive)

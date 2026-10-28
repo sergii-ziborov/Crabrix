@@ -3,6 +3,32 @@ import UIKit
 
 @MainActor
 final class RustDebuggerUITests: XCTestCase {
+    func testIncludedWebResourcesBreakpointAndOfflinePreview() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--crabrix-auto-debug-web-fixture"]
+        app.launch()
+        let editor = app.textViews["Source code editor"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 60))
+        XCTAssertTrue((editor.value as? String ?? "").contains("include_str!"))
+        app.buttons["Add breakpoint at line 7"].tap()
+        openProjectSettings(app)
+        let debug = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Debug Rust project")).firstMatch
+        XCTAssertTrue(debug.waitForExistence(timeout: 15)); debug.tap()
+        try waitLine(5, in: app, timeout: 120)
+        app.buttons["Continue"].tap(); try waitLine(7, in: app)
+        capture("debug-web-resources-breakpoint")
+        app.buttons["Step over"].tap(); try waitLine(8, in: app)
+        app.buttons["Remove breakpoint at line 7"].tap()
+        app.buttons["Continue"].tap()
+        XCTAssertTrue(app.buttons["Run project"].waitForExistence(timeout: 60))
+        app.buttons["build-dock-output"].tap()
+        XCTAssertTrue(app.staticTexts["OFFLINE WEB PREVIEW"].waitForExistence(timeout: 15))
+        let counter = app.webViews.buttons["Clicks: 0"].firstMatch
+        XCTAssertTrue(counter.waitForExistence(timeout: 20), app.debugDescription)
+        counter.tap()
+        XCTAssertTrue(app.webViews.buttons["Clicks: 1"].firstMatch.waitForExistence(timeout: 10), "Generated JavaScript must execute after Debug")
+        capture("debug-web-resources-preview")
+    }
     func testNormalEditorStillAcceptsTouchAndTyping() {
         let app = XCUIApplication(); app.launchArguments = ["--crabrix-auto-debug-fixture"]; app.launch()
         let editor = app.textViews["Source code editor"]

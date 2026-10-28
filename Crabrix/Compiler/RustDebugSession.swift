@@ -24,8 +24,8 @@ enum RustDebugInstrumenter {
     static func instrument(files: [String: String], entryFile: String, bundle: Bundle = .main) throws -> RustDebugPlan {
         guard let url = bundle.url(forResource: "RustDebugCompiler", withExtension: "js"), let context = JSContext() else { throw RustDebugFailure(message: "The bundled Debug compiler is unavailable.") }
         let buildScript = files["Cargo.toml"].flatMap { try? CratePackageManifest.parse($0) }?.buildScriptPath
-        let rust = files.filter { $0.key.hasSuffix(".rs") && $0.key != buildScript && ($0.key as NSString).lastPathComponent != "build.rs" }
-        let input = try JSONSerialization.data(withJSONObject: ["files": rust, "entryFile": entryFile])
+        let excluded = files.keys.filter { $0 == buildScript || ($0 as NSString).lastPathComponent == "build.rs" }
+        let input = try JSONSerialization.data(withJSONObject: ["files": files, "entryFile": entryFile, "excludedRustFiles": excluded])
         guard input.count <= 24 * 1024 * 1024 else { throw RustDebugFailure(message: "Debug source exceeds its preparation limit.") }
         context.evaluateScript(try String(contentsOf: url, encoding: .utf8))
         guard context.exception == nil,
