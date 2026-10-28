@@ -36,4 +36,4 @@ const sources = {};
 for (const file of ["src/cli.ts", "src/server.ts", "src/room.ts", "package.json", "LICENSE", "../../site/lib/playground-collab.ts", "../../site/lib/playground-presence.ts", "../../site/lib/playground-document.ts", "../../site/lib/playground-crypto.ts", "../../site/lib/playground-session.ts"]) {
   sources[file.startsWith("../../") ? file.slice(6) : "packages/crabrix-playground-mcp/" + file] = createHash("sha256").update(await readFile(path.resolve(root, file))).digest("hex");
 }
-await writeFile(path.join(root, "dist/source-manifest.json"), JSON.stringify({ version: "0.1.0", sourceSHA256: sources }, null, 2) + "\n");
+await writeFile(path.join(root, "dist/source-manifest.json"), JSON.stringify({ version: JSON.parse(await readFile(path.join(root, "package.json"), "utf8")).version, sourceSHA256: sources }, null, 2) + "\n");

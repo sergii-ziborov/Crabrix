@@ -1,6 +1,6 @@
 {
   "name": "crabrix-playground-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Connect Claude and other MCP clients to an encrypted Crabrix Playground. Edit together; run locally on your phone.",
   "type": "module",
   "bin": {
@@ -31,5 +31,19 @@
     "yjs": "13.6.33",
     "y-protocols": "1.0.7",
     "zod": "4.3.6"
-  }
+  },
+  "homepage": "https://crabrix.com/playground/mcp/",
+  "bugs": {
+    "url": "https://crabrix.com/support/"
+  },
+  "keywords": [
+    "mcp",
+    "claude",
+    "rust",
+    "playground",
+    "crabrix",
+    "ios",
+    "ipad",
+    "collaboration"
+  ]
 }

@@ -146,9 +146,9 @@
         {
           "surface": "mcp",
           "state": "published",
-          "version": "0.1.0",
-          "profile": "Downloadable local stdio bridge: encrypted Shared rooms, source reads, relay-enforced conditional edits, named UTF-16 selections, creator-only early closure and one-hour default creation. Tested MCP + browser + two Simulator apps. No shell or remote execution.",
-          "evidence": "docs/playground-mcp-2026-10-28.md"
+          "version": "0.1.1",
+          "profile": "npm and downloadable local stdio bridge: encrypted Shared rooms, source reads, relay-enforced conditional edits, named UTF-16 selections, creator-only early closure and one-hour default creation. Tested MCP + browser + two Simulator apps. No shell or remote execution.",
+          "evidence": "docs/playground-mcp-npm-2026-10-29.md"
         }
       ]
     },

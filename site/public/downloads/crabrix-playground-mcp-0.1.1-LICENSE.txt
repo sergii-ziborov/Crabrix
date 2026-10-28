@@ -1,0 +1,21 @@
+Crabrix Playground MCP — Official Bridge License
+Copyright © 2026 Serhii Ziborov. All rights reserved.
+
+Permission is granted to download, install and run the official unmodified
+Crabrix Playground MCP bridge to connect your MCP client to Crabrix Playground,
+for personal, educational or commercial project work. No fee or Crabrix account
+is required for this permission. You retain your rights to your own source code.
+
+This permission is specific to the official bridge distribution. It grants no
+right to redistribute, sublicense, sell or publish the Crabrix-authored bridge
+or modified versions, incorporate it into another product, or use Crabrix names
+or marks for your own product. The main Crabrix application and educational
+content retain their separate licenses.
+
+Third-party components retain their own licenses and rights. Their original
+notices are included in ThirdPartyNotices.txt. Nothing in this license limits
+rights granted by those component licenses.
+
+THE BRIDGE IS PROVIDED AS IS, WITHOUT WARRANTY OF ANY KIND. TO THE MAXIMUM
+EXTENT PERMITTED BY APPLICABLE LAW, THE AUTHOR IS NOT LIABLE FOR CLAIMS OR
+DAMAGES ARISING FROM ITS USE.

@@ -1,21 +1,35 @@
-# Crabrix Playground MCP
+# 🦀 Crabrix Playground MCP
 
 Connect Claude Code, Claude Desktop or another local MCP host to a temporary
 Crabrix Playground. Source edits and named selections appear in the phone, tablet
 and web editors through the existing encrypted Shared protocol.
 
-Requires Node.js 22+. Install the official versioned download:
+Requires Node.js 22+ and npm. Install the official pinned package:
 
 ```sh
-npm install -g https://crabrix.com/downloads/crabrix-playground-mcp-0.1.0.tgz
+npm install -g crabrix-playground-mcp@0.1.1
 claude mcp add --transport stdio crabrix -- crabrix-mcp
 ```
 
+For Claude Desktop or another MCP host, the equivalent configuration is:
+
+```json
+{
+  "mcpServers": {
+    "crabrix": {
+      "command": "npx",
+      "args": ["-y", "crabrix-playground-mcp@0.1.1"]
+    }
+  }
+}
+```
+
+Use the full path to `npx` if a desktop host does not inherit your terminal PATH.
 Alternatively extract the archive, then configure the host to execute
 `node /absolute/path/package/dist/cli.mjs`. Use an absolute Node path if the
 desktop host does not inherit your terminal PATH. The bundled executable needs
-no runtime npm dependencies. This package is distributed by Crabrix; it is not
-claimed to be published on the npm registry.
+no runtime npm dependencies. The official package is `crabrix-playground-mcp`; the pinned version is 0.1.1.
+The [versioned archive](https://crabrix.com/downloads/crabrix-playground-mcp-0.1.1.tgz) remains available for a manual installation.
 
 Open Share in Crabrix or https://crabrix.com/playground/ and create an editable
 link. Give the full link, including its fragment, to Claude only when you intend
@@ -52,7 +66,8 @@ local actions in Crabrix or the browser. There is no shell, local-filesystem,
 credential, package-install, Git-push or server execution tool. Save a copy in
 Crabrix before the room ends. View-only links cannot edit source.
 
-Source: `packages/crabrix-playground-mcp/` in the Crabrix repository. From the repo,
+Documentation and support: https://crabrix.com/playground/mcp/.
+Source within the Crabrix repository: `packages/crabrix-playground-mcp/`. From the repo,
 install `site` and this package's development dependencies, then run
 `pnpm check`, `pnpm test`, `pnpm build` in this directory. See `LICENSE` for the
 official bridge permission and `ThirdPartyNotices.txt` for original component
