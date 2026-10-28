@@ -2,7 +2,9 @@
 
 This is delivery 1 of the accepted [roadmap](roadmap/implementation-2026-10-28.md),
 verified against starting revision `19e0296d711df137f973b5334588d335df839ac1`.
-Delivery and final test identities are recorded after qualification below.
+App delivery: **1.1.3 (111)**, source `13741f391c10d0dbd8c0fde7d71f839a56b7dd74`,
+VALID / IN_BETA_TESTING / WAITING_FOR_REVIEW, manual publication.
+[Signed delivery and metadata readback](app-store/release-1.1.3-build111.json).
 
 ## User-visible changes
 
@@ -60,7 +62,7 @@ The final native host gate passed all 67 tests on iPad Simulator: 17 authoring,
 and three keyboard/layout regressions. A further native test verifies exact over-budget UTF-8 rescue and cleanup,
 bringing qualified host cases to 68. Phone and tablet checks cover the five UI
 scenarios each through the initial runs and focused successful reruns. Signed
-delivery is recorded separately when complete.
+delivery is recorded in the signed delivery receipt above.
 The real browser compiler corpus has passed 32 Run/Debug output comparisons and
 eight explicit safe unsupported cases. A packaged Chromium flow has hit a real
 breakpoint, stepped, inspected a local value and matched Run after networking was

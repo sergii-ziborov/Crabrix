@@ -1,0 +1,62 @@
+{
+  "version": "1.1.3",
+  "buildNumber": "111",
+  "buildID": "7623bea9-6743-4c0b-99b8-2830f68d62d8",
+  "appSourceCommit": "13741f391c10d0dbd8c0fde7d71f839a56b7dd74",
+  "cloudBuildRunID": "9ebf3e4b-9b67-409e-a092-fab7c17272ae",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "versionID": "4c60d52b-ca5b-4bbd-a206-799d4e4cd12c",
+  "versionState": "WAITING_FOR_REVIEW",
+  "reviewID": "8684a44b-612b-4235-bc6b-425a739a82ce",
+  "reviewState": "WAITING_FOR_REVIEW",
+  "releaseType": "MANUAL",
+  "selectedBuild": "111",
+  "screenshots": [
+    {
+      "displayType": "APP_IPHONE_DUO",
+      "count": 2,
+      "complete": 2,
+      "firstFile": "v111-iphone-duo-qa-01-laptop-code.png"
+    },
+    {
+      "displayType": "APP_IPAD_PRO_3GEN_129",
+      "count": 7,
+      "complete": 7,
+      "firstFile": "v111-ipad-13-01-build.png"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "count": 10,
+      "complete": 10,
+      "firstFile": "v111-iphone-6.9-01-build.png"
+    }
+  ],
+  "storeMetadataReadback": "exact match",
+  "verifiedAtUTC": "2026-10-28T16:04:09.291531+00:00",
+  "cloudCompletion": "SUCCEEDED",
+  "cloudExecutionProgress": "COMPLETE",
+  "websiteSourceCommit": "13741f391c10d0dbd8c0fde7d71f839a56b7dd74",
+  "websiteImage": "986297003fc71ba83e6204f5ff150c5cdc50823c96a63aa75f87bda3b76d51de",
+  "signedEntitlements": {
+    "build": "111",
+    "version": "1.1.3",
+    "applicationIdentifier": "XMS5ZC28UJ.com.sergiiziborov.Crabrix",
+    "associatedDomains": [
+      "applinks:crabrix.com"
+    ],
+    "profileSupportsAssociatedDomains": true,
+    "getTaskAllow": false,
+    "appGroups": [
+      "group.com.sergiiziborov.Crabrix"
+    ],
+    "ipaSHA256": "35daef9bcbf8a7985eb09a4a8b8c22b901e4f416498a9e7e7995e372f2613481",
+    "debugCompilerMatchesSource": true,
+    "offlineLegalMatchesSource": true,
+    "appStoreDistributionProfile": true
+  },
+  "qualification": "68 native host cases, five native UI scenarios on each of iPhone and iPad Simulators through documented initial runs and focused reruns; 32 actual browser compiler comparisons and eight explicit unsupported cases; actual packaged/public offline Run/Debug flow; 34 site tests, type and production build checks.",
+  "physicalDeviceGate": "Not run; iPhone unavailable. No new physical performance or Universal Link qualification.",
+  "verificationReceipt": "docs/project-reliability-2026-10-28.json",
+  "supersedes": "Build 110 was replaced only after build 111 was VALID, signature verified and IN_BETA_TESTING."
+}

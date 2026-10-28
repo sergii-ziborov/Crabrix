@@ -37,7 +37,14 @@
     "metadataBytes": 8000000,
     "rawRecoveryBytes": 128000000
   },
-  "delivery": "Signed cloud build, website publication and App Review readback are recorded separately.",
+  "delivery": {
+    "version": "1.1.3",
+    "build": "111",
+    "sourceCommit": "13741f391c10d0dbd8c0fde7d71f839a56b7dd74",
+    "testFlight": "IN_BETA_TESTING",
+    "review": "WAITING_FOR_REVIEW",
+    "receipt": "docs/app-store/release-1.1.3-build111.json"
+  },
   "futureMCP": "Planned; no connector or backend execution enabled.",
   "rawEvidenceRoot": "build/reliability-20261028/"
 }

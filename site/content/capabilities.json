@@ -2,59 +2,171 @@
   "schemaVersion": 1,
   "verifiedAt": "2026-10-28",
   "release": {
-    "publishedApp": { "version": "1.1.2", "build": "103", "evidence": "docs/playground-implementation-2026-10-27.md" },
-    "testFlightApp": { "version": "1.1.3", "build": "110", "sourceCommit": "077bea71624298e501e292c0f52dfc21e66fa6bb", "reviewState": "WAITING_FOR_REVIEW", "evidence": "docs/app-store/release-1.1.3-build110.json" }
+    "publishedApp": {
+      "version": "1.1.2",
+      "build": "103",
+      "evidence": "docs/playground-implementation-2026-10-27.md"
+    },
+    "testFlightApp": {
+      "version": "1.1.3",
+      "build": "111",
+      "sourceCommit": "13741f391c10d0dbd8c0fde7d71f839a56b7dd74",
+      "reviewState": "WAITING_FOR_REVIEW",
+      "evidence": "docs/app-store/release-1.1.3-build111.json"
+    }
   },
   "capabilities": [
     {
-      "id": "rust.local-execution", "name": "Local Rust compiler",
+      "id": "rust.local-execution",
+      "name": "Local Rust compiler",
       "surfaces": [
-        { "surface": "ios", "state": "published", "version": "1.1.2 (103)", "profile": "Bundled wasm32-wasip1 compiler and interpreter; prepared supported Cargo graph; no network inside the Rust guest." },
-        { "surface": "browser", "state": "published", "profile": "Browser Worker; std and local modules after toolchain acquisition. No backend compilation or execution." }
+        {
+          "surface": "ios",
+          "state": "published",
+          "version": "1.1.2 (103)",
+          "profile": "Bundled wasm32-wasip1 compiler and interpreter; prepared supported Cargo graph; no network inside the Rust guest."
+        },
+        {
+          "surface": "browser",
+          "state": "published",
+          "profile": "Browser Worker; std and local modules after toolchain acquisition. No backend compilation or execution."
+        }
       ]
     },
     {
-      "id": "rust.build-scripts", "name": "Bounded build scripts",
+      "id": "rust.build-scripts",
+      "name": "Bounded build scripts",
       "publicDescription": "Bounded std-only WASI build scripts run locally. Scripts requiring host subprocesses, native linking or separate build-dependency graphs remain unsupported. Compatibility depends on the selected versions and features.",
-      "surfaces": [{ "surface": "ios", "state": "published", "version": "1.1.2 (103)", "profile": "Std-only WASI scripts, bounded output and writable OUT_DIR; no native host subprocess or independent build-dependency graph." }]
-    },
-    {
-      "id": "rust.source-debugger", "name": "Local source debugger",
       "surfaces": [
-        { "surface": "ios", "state": "testflight", "version": "1.1.3 (110)", "profile": "Source checkpoints; bounded String/Vec/concrete-struct previews; active async polls. No DWARF or arbitrary watch expressions." },
-        { "surface": "browser", "state": "published", "profile": "Source checkpoints in an isolated Worker with SharedArrayBuffer; std and local modules." }
+        {
+          "surface": "ios",
+          "state": "published",
+          "version": "1.1.2 (103)",
+          "profile": "Std-only WASI scripts, bounded output and writable OUT_DIR; no native host subprocess or independent build-dependency graph."
+        }
       ]
     },
     {
-      "id": "rust.compile-only", "name": "Build without running main",
-      "surfaces": [{ "surface": "ios", "state": "implemented_candidate", "profile": "Selected executable or rlib entry; distinct from Check and Run. Not part of build 110." }]
-    },
-    {
-      "id": "web.browser-packages", "name": "Prepared browser npm source",
-      "surfaces": [{ "surface": "ios", "state": "published", "version": "1.1.2 (103)", "profile": "Explicit npm preparation, integrity-verified editable source, local browser builds. Run/Check never download packages; no Node/Bun server, native addons or arbitrary scripts." }]
-    },
-    {
-      "id": "web.typescript-checker", "name": "TypeScript type checking",
-      "surfaces": [{ "surface": "ios", "state": "unsupported", "profile": "TypeScript/JSX/TSX syntax is transpiled; a full TypeScript checker is a later roadmap stage." }]
-    },
-    {
-      "id": "playground.shared", "name": "Encrypted guest rooms",
+      "id": "rust.source-debugger",
+      "name": "Local source debugger",
       "surfaces": [
-        { "surface": "ios", "state": "published", "version": "1.1.2 (103)", "profile": "Source edits, cursors and selections; local execution; no account required." },
-        { "surface": "browser", "state": "published", "profile": "Source edits, cursors and selections; local execution; no account required." }
+        {
+          "surface": "ios",
+          "state": "testflight",
+          "version": "1.1.3 (111)",
+          "profile": "Source checkpoints; bounded String/Vec/concrete-struct previews; active async polls. No DWARF or arbitrary watch expressions."
+        },
+        {
+          "surface": "browser",
+          "state": "published",
+          "profile": "Source checkpoints in an isolated Worker with SharedArrayBuffer; std and local modules."
+        }
+      ]
+    },
+    {
+      "id": "rust.compile-only",
+      "name": "Build without running main",
+      "surfaces": [
+        {
+          "surface": "ios",
+          "state": "testflight",
+          "profile": "Selected executable or rlib entry; distinct from Check and Run. Terminal cargo build does not invoke main; bounded supported build scripts remain compile-time work.",
+          "version": "1.1.3 (111)"
+        }
+      ]
+    },
+    {
+      "id": "web.browser-packages",
+      "name": "Prepared browser npm source",
+      "surfaces": [
+        {
+          "surface": "ios",
+          "state": "published",
+          "version": "1.1.2 (103)",
+          "profile": "Explicit npm preparation, integrity-verified editable source, local browser builds. Run/Check never download packages; no Node/Bun server, native addons or arbitrary scripts."
+        }
+      ]
+    },
+    {
+      "id": "web.typescript-checker",
+      "name": "TypeScript type checking",
+      "surfaces": [
+        {
+          "surface": "ios",
+          "state": "unsupported",
+          "profile": "TypeScript/JSX/TSX syntax is transpiled; a full TypeScript checker is a later roadmap stage."
+        }
+      ]
+    },
+    {
+      "id": "playground.shared",
+      "name": "Encrypted guest rooms",
+      "surfaces": [
+        {
+          "surface": "ios",
+          "state": "published",
+          "version": "1.1.2 (103)",
+          "profile": "Source edits, cursors and selections; local execution; no account required."
+        },
+        {
+          "surface": "browser",
+          "state": "published",
+          "profile": "Source edits, cursors and selections; local execution; no account required."
+        }
       ],
-      "limits": { "participants": 4, "files": 16, "fileBytes": 65536, "projectBytes": 131072, "defaultLifetimeSeconds": 3600, "maximumLifetimeSeconds": 86400 }
+      "limits": {
+        "participants": 4,
+        "files": 16,
+        "fileBytes": 65536,
+        "projectBytes": 131072,
+        "defaultLifetimeSeconds": 3600,
+        "maximumLifetimeSeconds": 86400
+      }
     },
     {
-      "id": "academy.algorithm-replay", "name": "Verified Algorithm Atlas replay",
+      "id": "academy.algorithm-replay",
+      "name": "Verified Algorithm Atlas replay",
       "surfaces": [
-        { "surface": "browser", "state": "published", "profile": "400 source-bound recordings for 200 patterns; separate from debugging changed code." },
-        { "surface": "ios", "state": "planned", "profile": "Offline signed delivery and native playback are roadmap stage 4." }
+        {
+          "surface": "browser",
+          "state": "published",
+          "profile": "400 source-bound recordings for 200 patterns; separate from debugging changed code."
+        },
+        {
+          "surface": "ios",
+          "state": "planned",
+          "profile": "Offline signed delivery and native playback are roadmap stage 4."
+        }
       ]
     },
     {
-      "id": "mcp.shared-projects", "name": "GPT access through Shared",
-      "surfaces": [{ "surface": "mcp", "state": "planned", "profile": "Explicit participant access, revision-checked source edits and selections. Execution remains in the connected app/browser; no MCP server is enabled." }]
+      "id": "mcp.shared-projects",
+      "name": "GPT access through Shared",
+      "surfaces": [
+        {
+          "surface": "mcp",
+          "state": "planned",
+          "profile": "Explicit participant access, revision-checked source edits and selections. Execution remains in the connected app/browser; no MCP server is enabled."
+        }
+      ]
+    },
+    {
+      "id": "projects.durable-text-tree",
+      "name": "Recoverable editable text snapshots",
+      "surfaces": [
+        {
+          "surface": "ios",
+          "state": "testflight",
+          "version": "1.1.3 (111)",
+          "profile": "Format-3 file inventory; supported hidden files; visible save outcomes, retry and raw recovery/source exports. Full Git history and opaque binary portability are later roadmap work."
+        }
+      ],
+      "limits": {
+        "files": 2048,
+        "fileBytes": 2097152,
+        "projectBytes": 16000000
+      }
     }
-  ]
+  ],
+  "verifiedAtUTC": "2026-10-28T16:04:09.291531+00:00"
 }

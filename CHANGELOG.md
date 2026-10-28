@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.3 (111, TestFlight and App Review) — 2026-10-28
+
+- Preserve supported hidden source/config files and round-trip 2,048 editable files through saved projects, packages and ZIPs. Detect missing snapshot files with format-3 inventories; retain legacy originals during migration.
+- Show save outcomes, retry failed writes and export a current-file rescue or raw saved snapshots. Keep oversized text in the open editor and unreadable saved projects visible.
+- Serialize saves, reject stale completion effects and bind current build history to source/compiler identities.
+- Separate compile-only `cargo build` from Run, including selected rlib entries. Preserve bounded supported build scripts as compile-time work.
+- Fix Debug generated names and owned-value/macros/formatting cases; reject unresolved resource-macro scopes explicitly.
+- Qualify 68 native host cases, phone/tablet UI scenarios with documented reruns, 32 real browser compiler comparisons and eight safe unsupported cases; retain keyboard/dock geometry. [Evidence](docs/project-reliability-2026-10-28.md).
+- Publish the first roadmap delivery to Internal QA and submit signed build 111 for manual App Store publication. Test/Format, Git and MCP remain separate later deliveries.
+
 ## 1.1.3 (110, TestFlight and App Review) — 2026-10-28
 
 - Fix local Debug for the built-in Rust + Web generator and literal `include_str!` / `include_bytes!` resources. Preserve original Rust source when included as data, without changing the editable project.
