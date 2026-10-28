@@ -9,8 +9,7 @@
 Real selected-entry `cargo test` now provides discovery, filtering, isolated
 failures, bounded reports and Stop. Pinned bundled rustfmt supports a file or
 project, check mode, revision guards and Undo. Both run locally. Build **113**
-is **VALID / IN_BETA_TESTING** from source `d868251`; its App Review submission
-is being completed. [Profile and qualification](docs/rust-tools-2026-10-28.md),
+is **VALID / IN_BETA_TESTING** from source `d868251`; it is selected for **WAITING_FOR_REVIEW** with manual publication. [Profile and qualification](docs/rust-tools-2026-10-28.md),
 [delivery identity](docs/app-store/release-1.1.3-build113.json).
 Git has passed a [native iOS feasibility probe](docs/native-git-prototype-2026-10-28.md),
 including standard objects and HTTPS; it is not included in build 113.
@@ -39,7 +38,7 @@ The [iPad workspace](docs/screenshots/ipad-build.png) shows the file sidebar and
 
 The current screenshot set includes ten iPhone and six iPad frames from manual Xcode Cloud run 62 after signed Academy updates, the final SDK 27.1 iPad editor with search and Check/Run from run 70, and two fresh native Duo laptop frames. [Capture and upload evidence](docs/app-store/asset-upload-2026-10-16-1.1.1.json) records all 19 files and their placements on the main, Rust Academy and Rust Compiler product pages.
 
-The previous reliability delivery **1.1.3 (111)** remains the currently selected App Review build until the qualified 113 replacement is submitted. [Build 111 evidence](docs/app-store/release-1.1.3-build111.json) records its source, signature and qualification separately.
+The previous reliability delivery **1.1.3 (111)** was superseded by qualified build 113 for App Review. [Build 111 evidence](docs/app-store/release-1.1.3-build111.json) records its source, signature and qualification separately.
 
 The live website has canonical and social metadata for all **787 public pages**, with structured data for the product, courses, lessons and articles. The [HTML sitemap](https://crabrix.com/sitemap/) and [XML sitemap](https://crabrix.com/sitemap.xml) include all 742 lessons and 27 blog articles. The [27 October Rust performance guide](https://crabrix.com/blog/rust-performance-measure-before-optimizing/) has 2,012 paragraph words, three original ImageGen images (two infographics), eight semantic tests passing in both development and Release profiles, and saved native measurement CSVs. [Latest publication evidence](docs/site-release-2026-10-27-article.json) records the article, media, sitemap and account-access checks; [the preceding cancellation guide](docs/site-release-2026-10-26-article.json) and [brand/navigation evidence](docs/site-release-2026-10-25-brand-navigation.json) record the previous updates. [SEO and App Store presentation](docs/seo-2026-10-16.md) documents account access checks, relevant search keywords and two custom product pages.
 

@@ -1,6 +1,6 @@
 # Changelog
 
-## In development — local Rust tools
+## 1.1.3 (113) — TestFlight and App Review
 
 - Real libtest discovery and isolated selected-entry tests, case-sensitive filters,
   explicit unsupported profiles, bounded report, source navigation and Stop.
@@ -8,7 +8,7 @@
   whole-project Undo and revision/Shared budget guards. No network or AI formatter.
 - Terminal and existing Project settings integration; no editor/Duo geometry changes.
 - Full offline formatter notices and MPL source export.
-- Not included in the already submitted 1.1.3 (111); see the staged roadmap.
+- Delivered as VALID / IN_BETA_TESTING / WAITING_FOR_REVIEW. Git work is a separate next stage.
 
 
 ## 1.1.3 (111, TestFlight and App Review) — 2026-10-28

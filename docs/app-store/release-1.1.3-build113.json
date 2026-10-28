@@ -9,7 +9,7 @@
   "processingState": "VALID",
   "internalBuildState": "IN_BETA_TESTING",
   "versionID": "4c60d52b-ca5b-4bbd-a206-799d4e4cd12c",
-  "reviewState": "NOT_SUBMITTED",
+  "reviewState": "WAITING_FOR_REVIEW",
   "releaseType": "MANUAL",
   "signedEntitlements": {
     "build": "113",
@@ -36,5 +36,33 @@
     "state": "FAILED_BEFORE_COMPILATION",
     "reason": "Generated website license index was stale; synchronized and full bootstrap verified before retry."
   },
-  "verifiedAtUTC": "2026-10-28T18:42:48.957708+00:00"
+  "verifiedAtUTC": "2026-10-28T18:48:24.324171+00:00",
+  "versionState": "WAITING_FOR_REVIEW",
+  "reviewID": "f6ea2f2b-53c4-4750-98bc-6c6cea369615",
+  "selectedBuild": "113",
+  "screenshots": [
+    {
+      "displayType": "APP_IPHONE_DUO",
+      "count": 2,
+      "complete": 2,
+      "firstFile": "v111-iphone-duo-qa-01-laptop-code.png"
+    },
+    {
+      "displayType": "APP_IPAD_PRO_3GEN_129",
+      "count": 7,
+      "complete": 7,
+      "firstFile": "v111-ipad-13-01-build.png"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "count": 10,
+      "complete": 10,
+      "firstFile": "v111-iphone-6.9-01-build.png"
+    }
+  ],
+  "storeMetadataReadback": "exact match",
+  "websiteSourceCommit": "180cb0c4a9f1918fc1955cf16d6be0a432b23916",
+  "websiteImage": "f955994cb2b35e2bae64cd876eee88f8bd69e7952775bb7b9d3271b97ee3c327",
+  "websitePublishedAtUTC": "2026-10-28T18:45:09Z",
+  "supersedes": "Build 111 was replaced only after 113 was VALID, signed resources verified, IN_BETA_TESTING and the public guide updated."
 }
