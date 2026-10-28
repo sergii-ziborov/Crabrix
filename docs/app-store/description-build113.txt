@@ -4,7 +4,7 @@ ACADEMY, AVAILABLE OFFLINE
 Seven courses and Algorithm Atlas cover Rust, Cargo and 200 algorithm patterns. Study 742 lessons and steps with explanations, highlighted code, questions and illustrations. Download courses, then study offline. Signed updates preserve progress and edited projects. Website Academy accounts are separate.
 
 46 OPEN CODE EXAMPLES
-Explore every example in any order with guides, source previews and READMEs. Open in Code creates an editable local project. 
+Explore every example in any order with guides, source previews and READMEs. Open in Code creates an editable local project.
 
 PROJECT WORKSPACE
 Use project files, syntax highlighting, indentation, search and Code, Problems, Output and Terminal views. Check finds Rust compiler errors; Run builds and executes in a bounded WebAssembly sandbox. Output shows results and build stages. Package progress shows downloads, integrity checks, failures and dependencies.
@@ -19,7 +19,7 @@ Resolve up to 2,048 Cargo packages, verify source checksums and pin archives for
 BROWSER PROJECTS AND NPM IMPORTS
 Create HTML/CSS/JavaScript pages, generate them with Rust, or import browser projects with package.json. Explicit npm install/ci saves imported modules and licenses as editable local source. Run/Check then build without fetching packages.
 
-Build JavaScript, TypeScript syntax and JSX/TSX locally. Supported npm dev/start/build/check commands map to browser operations. Preview runs in isolated WebKit with external requests blocked. TypeScript is transpiled without type checking. Node/Bun servers, arbitrary package scripts, build plugins and native addons are not included. 
+Build JavaScript, TypeScript syntax and JSX/TSX locally. Supported npm dev/start/build/check commands map to browser operations. Preview runs in isolated WebKit with external requests blocked. TypeScript is transpiled without type checking. Node/Bun servers, arbitrary package scripts, build plugins and native addons are not included.
 
 LOCAL RUST DEBUGGER
 Set breakpoints, step through Rust and async functions, and inspect frames, String, Vec and concrete struct previews locally. Const bodies, macro internals and arbitrary memory inspection remain outside scope.
