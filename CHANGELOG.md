@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.3 (110, TestFlight and App Review) — 2026-10-28
+
+- Fix local Debug for the built-in Rust + Web generator and literal `include_str!` / `include_bytes!` resources. Preserve original Rust source when included as data, without changing the editable project.
+- Restore single-tap breakpoint placement before Debug on compact screens by removing a redundant invisible swipe overlay. The existing Files edge-swipe gesture and editor geometry are retained.
+- Include local breakpoints, stepping, active async poll frames and bounded String, Vec and concrete structure previews. Verify the actual offline Tokio current-thread path.
+- Keep guest Playground sharing, live source/cursor/selection exchange, one-hour defaults, browser npm preparation and local execution. The website receives the same resource fix.
+- Verify the exact generator, breakpoint, step and generated JavaScript on iPhone and iPad Simulators, plus real browser compiler parity and offline UI execution. Publish to TestFlight Internal QA and submit build 110 for manual App Store release. [Evidence](docs/app-store/release-1.1.3-build110.json).
+
 ## 1.1.2 (99, TestFlight and App Review) — 2026-10-26
 
 - Align Settings/Learn card widths and center iPad lesson progress, navigation and Quick Practice headers. Native UI checks passed for iPhone portrait and iPad portrait/landscape with current Rust Basics content.

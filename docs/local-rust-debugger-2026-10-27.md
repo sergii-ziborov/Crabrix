@@ -40,6 +40,9 @@ implementation uses source checkpoints rather than claiming DWARF support.
 - Statement attributes and compile-time source-introspection forms that cannot
   safely preserve their meaning fail Debug with an explanation; normal Run is
   still available. Debug can alter timing and is not a concurrency profiler.
+  Literal `include_str!` and `include_bytes!` resource paths are supported;
+  included Rust source is preserved as original data. Computed resource paths,
+  executable `include!` and `column!` remain explicit normal-Run fallbacks.
 - A breakpoint on a non-executable line binds to the next available statement in
   the same file. Highlighting identifies the next statement to execute.
 - Editing shared source stops a stale Debug snapshot. Remote cursor/selection
@@ -85,14 +88,17 @@ physical device; Simulator results are not device performance measurements.
 ## Delivery
 
 The user-requested publication of the already approved 1.1.2 (103) completed
-with App Store status READY_FOR_SALE. The debugger update is version 1.1.3 (108), which supersedes build 107:
-The actual signed App Store package is verified, Apple processing is VALID, Internal QA is IN_BETA_TESTING,
-and the App Store submission is WAITING_FOR_REVIEW with manual publication.
-All 19 inherited screenshots are complete with Code first in every device set;
-store text, review notes and beta instructions were read back after updates.
-The actual App Store IPA matches the bundled debugger compiler and offline legal
-source; its signed entitlements retain the Crabrix App Group and Universal Links.
-See `docs/app-store/release-1.1.3-build108.json`.
+with App Store status READY_FOR_SALE. The current debugger update is version
+**1.1.3 (110)**: Apple processing is VALID, Internal QA is IN_BETA_TESTING,
+and its App Store submission is WAITING_FOR_REVIEW with manual publication.
+Build 108 had been approved but remained unpublished; it was replaced only after
+110 passed the signed-package and TestFlight gates. Build 109 was an intermediate
+archive and was not distributed. All 19 inherited screenshots remain complete
+with Code first in every device set. Store text, review notes and beta
+instructions were read back after updates. The actual App Store IPA matches the
+bundled debugger and offline legal source; signed entitlements retain the App
+Group and Universal Links. See `docs/app-store/release-1.1.3-build110.json`.
+Historical build 108 verification remains in its separate release receipt.
 
 
 ## Aggregate and async follow-up
@@ -102,3 +108,11 @@ Duo, dock or keyboard geometry. The native inspector wraps long values below the
 name/type. The browser table constrains long fields; narrow toolbars wrap within
 screen width. Qualification is recorded separately in
 `docs/local-rust-debugger-values-2026-10-27.json`: 17 native host tests, six native UI tests, 20 normal-versus-Debug semantic comparisons, two explicit safe fallbacks, and twelve browser layouts. Tokio 1.54.1 current-thread tasks, timers, channels and cancellation run from a frozen offline plan. The Simulator debug run took 43.5 seconds; this is not a physical iPhone performance claim.
+
+## Included-resource follow-up
+
+The 28 October fix supports the built-in Rust + Web generator and restores
+pre-Debug gutter taps on compact screens. See
+`docs/local-rust-debugger-resources-2026-10-28.md` for the report, limits and
+verification. That follow-up supersedes build 108; its delivery receipt records
+the actual selected TestFlight and review build.

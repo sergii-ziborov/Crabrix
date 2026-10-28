@@ -1,0 +1,280 @@
+{
+  "verifiedAtUTC": "2026-10-28T01:48:37.770183+00:00",
+  "appSourceCommit": "077bea71624298e501e292c0f52dfc21e66fa6bb",
+  "debugCompilerSourceCommit": "8d4c5dcd0a40b60b0cdade933892c8e1ee9ef07c",
+  "resourceFix": "Literal include_str!/include_bytes! preserve original assets; instrumented Rust used as data is redirected to bounded original sidecars.",
+  "compactFix": "Redundant transparent edge-swipe overlay removed; existing parent Files gesture retained.",
+  "nativeHost": {
+    "passed": 8,
+    "failures": 0,
+    "result": "build/debugger-resources-20261028/native-final.xcresult",
+    "actualOfflineCompiler": true,
+    "exactBuiltInRustWebTemplate": true,
+    "breakpointReasonAtLine7": true,
+    "htmlCssJsByteEquality": true,
+    "normalRunParity": true,
+    "stringVecStructAndTokioAsyncRegression": true
+  },
+  "nativeUI": {
+    "phone": {
+      "passed": 1,
+      "seconds": 30.483,
+      "result": "build/debugger-resources-20261028/phone-touch.xcresult",
+      "singleTapBeforeDebug": true,
+      "filesEdgeSwipe": true
+    },
+    "ipad": {
+      "passed": 1,
+      "seconds": 26.993,
+      "result": "build/debugger-resources-20261028/pad-touch.xcresult",
+      "singleTapBeforeDebug": true
+    },
+    "phoneTyping": {
+      "passed": 1,
+      "seconds": 9.476,
+      "result": "build/debugger-resources-20261028/phone-editor-touch.xcresult"
+    },
+    "generatedWebViewJavaScriptCounter": true,
+    "screenshots": {
+      "phone-touch": [
+        {
+          "name": "debug-web-resources-preview",
+          "file": "build/debugger-resources-20261028/phone-touch-attachments/0A386C2F-5629-4F70-ACCF-0957A4FE180D.png",
+          "sha256": "b81b5968f45da921d3e93c0faa2abbdd81f98ace7630a11b4fe57a9a3cec098c"
+        },
+        {
+          "name": "debug-web-resources-breakpoint",
+          "file": "build/debugger-resources-20261028/phone-touch-attachments/CA2F66F1-B424-4597-A83E-ACD8801CF9EE.png",
+          "sha256": "16854e84de9a2193877849a0f7eb71df708a03a8b9dbf12ae6332bbe5e714c68"
+        },
+        {
+          "name": "debug-web-resources-breakpoint-set",
+          "file": "build/debugger-resources-20261028/phone-touch-attachments/AB508D28-5B7E-45C6-9D5B-D511B418AE5C.png",
+          "sha256": "b623d044212a0d920c1e46d83b77ddaa7102fe7c6fd1036066f277fe35008f49"
+        }
+      ],
+      "pad-touch": [
+        {
+          "name": "debug-web-resources-preview",
+          "file": "build/debugger-resources-20261028/pad-touch-attachments/163807F0-43A4-4963-9727-4C070B77682B.png",
+          "sha256": "bef2bc368583b9fd3e707f720a5d5886d4a275804b1b4ccaae485d8464f47449"
+        },
+        {
+          "name": "debug-web-resources-breakpoint",
+          "file": "build/debugger-resources-20261028/pad-touch-attachments/5030A576-0D9E-4E78-BDF3-B5744ACF5770.png",
+          "sha256": "f1c784eab3a3160ac97e295a1064ca4cc4ed93531355034a076c7377af1999c1"
+        },
+        {
+          "name": "debug-web-resources-breakpoint-set",
+          "file": "build/debugger-resources-20261028/pad-touch-attachments/730A6FF0-C79C-4E14-A387-43A3A82B8D50.png",
+          "sha256": "28c0ea925974e1d2d1113b517f942c6a77570b04b87f64f2f63450218563282b"
+        }
+      ]
+    }
+  },
+  "browserSemanticComparisons": {
+    "at": "2026-10-28T01:31:57.275Z",
+    "actualPinnedRustCompiler": true,
+    "backendExecution": false,
+    "results": [
+      {
+        "name": "recursion",
+        "pauses": 12,
+        "stdout": "120\n"
+      },
+      {
+        "name": "moves and shadowing",
+        "pauses": 9,
+        "stdout": "inner\n2\n"
+      },
+      {
+        "name": "borrow and late initialization",
+        "pauses": 7,
+        "stdout": "3 4\n"
+      },
+      {
+        "name": "const evaluation",
+        "pauses": 3,
+        "stdout": "5 2\n"
+      },
+      {
+        "name": "Unicode and JSON chars",
+        "pauses": 5,
+        "stdout": "4 '\"' '\\n'\n"
+      },
+      {
+        "name": "return break continue",
+        "pauses": 33,
+        "stdout": "7\n"
+      },
+      {
+        "name": "closure borrows",
+        "pauses": 5,
+        "stdout": "3\n"
+      },
+      {
+        "name": "match shadow binding",
+        "pauses": 5,
+        "stdout": "ok\n"
+      },
+      {
+        "name": "if let shadow binding",
+        "pauses": 7,
+        "stdout": "ok\n4\n"
+      },
+      {
+        "name": "nested modules",
+        "pauses": 5,
+        "stdout": "5\n"
+      },
+      {
+        "name": "included HTML CSS JS and UTF8 bytes",
+        "pauses": 7,
+        "stdout": "<h1>Crab 🦀</h1>|body { color: coral; }|console.log(\"local\");\n"
+      },
+      {
+        "name": "nested source asset original bytes",
+        "pauses": 2,
+        "stdout": "102 102\n"
+      },
+      {
+        "name": "multiline raw resource path preserves line macros",
+        "pauses": 3,
+        "stdout": "<b>source lines</b> 3\n"
+      },
+      {
+        "name": "String Vec and non-Debug nested structs",
+        "pauses": 7,
+        "stdout": "Ferris 🦀\nRust 4 Crab\n"
+      },
+      {
+        "name": "Vec of structs and nested containers",
+        "pauses": 3,
+        "stdout": "1\n"
+      },
+      {
+        "name": "bounded previews never call user Debug",
+        "pauses": 5,
+        "stdout": "100000 40000 safe\n"
+      },
+      {
+        "name": "tuple unit and unsupported fields",
+        "pauses": 5,
+        "stdout": "pair 42 kept\n"
+      },
+      {
+        "name": "aggregate moves partial moves and mutable borrows",
+        "pauses": 10,
+        "stdout": "a b 3\n"
+      },
+      {
+        "name": "async polls interleave and cancel",
+        "pauses": 28,
+        "stdout": "async crab 2\nasync crab 2\nasync complete\n"
+      },
+      {
+        "name": "async blocks nested await returns and Send",
+        "pauses": 24,
+        "stdout": "nested\n5 7\n"
+      },
+      {
+        "name": "async expression at statement start",
+        "pauses": 13,
+        "stdout": "nested=3\n9\n"
+      },
+      {
+        "name": "packed and cfg fields stay opaque",
+        "pauses": 4,
+        "stdout": "ok\n"
+      },
+      {
+        "name": "unit tail",
+        "pauses": 5,
+        "stdout": "true\n"
+      },
+      {
+        "name": "statement attributes",
+        "debugUnavailable": true,
+        "normalRunWorks": true
+      },
+      {
+        "name": "compile-time column",
+        "debugUnavailable": true,
+        "normalRunWorks": true
+      }
+    ]
+  },
+  "siteUnitTests": {
+    "passed": 34,
+    "failures": 0
+  },
+  "siteTypeCheck": true,
+  "siteProductionBuild": true,
+  "browserUI": {
+    "local": {
+      "at": "2026-10-28T01:37:31.603Z",
+      "origin": "http://127.0.0.1:3393",
+      "passed": [
+        "included UTF8 resource",
+        "include_bytes equality",
+        "original Rust source bytes",
+        "real breakpoint at line 7",
+        "step over",
+        "local variable",
+        "normal Run parity",
+        "source preserved",
+        "network blocked after acquisition"
+      ],
+      "stdout": "Crab 🦀 <b>local</b>|22|258\n",
+      "backendExecution": false,
+      "pageErrors": []
+    },
+    "public": {
+      "at": "2026-10-28T01:46:39.025Z",
+      "origin": "https://crabrix.com",
+      "passed": [
+        "included UTF8 resource",
+        "include_bytes equality",
+        "original Rust source bytes",
+        "real breakpoint at line 7",
+        "step over",
+        "local variable",
+        "normal Run parity",
+        "source preserved",
+        "network blocked after acquisition"
+      ],
+      "stdout": "Crab 🦀 <b>local</b>|22|258\n",
+      "backendExecution": false,
+      "pageErrors": []
+    }
+  },
+  "production": {
+    "origin": "https://crabrix.com",
+    "publishedAtUTC": "2026-10-28T01:42:07Z",
+    "sourceCommit": "8d4c5dcd0a40b60b0cdade933892c8e1ee9ef07c",
+    "image": "419e08dab235b09bf48849f3f456ef394f8c844fe1932037adc1feba3f268509",
+    "imageTag": "localhost/crabrix-web-site:debug-resources-8d4c5dc",
+    "releaseDirectory": "/srv/apps/crabrix-site/releases/20261028-debug-resources-8d4c5dc",
+    "health": "healthy",
+    "rollbackContainer": "crabrix-web-site-before-debug-resources-20261028",
+    "rollbackImage": "dd7fb969fa61a3d4f0853cd9ec73b3397ae05cf6ba79b80301e93509a630a4ed",
+    "accounts": "Existing accounts volume and consistent pre-switch backup retained.",
+    "algorithmTraceFilesRetained": 402,
+    "cleanup": "Retired only the stopped galleries-998bdb9 container/image and staging after public verification. Receipts archived; current and immediate rollback retained.",
+    "diskAfterCleanup": "1.4 GiB available"
+  },
+  "boundaries": {
+    "backendExecution": false,
+    "physicalDeviceQualification": false,
+    "normalRunFlagsChanged": false,
+    "nativeGeometryChanged": false,
+    "newEntitlements": false,
+    "browserFilePolicyChanged": false,
+    "unsupportedDebugForms": [
+      "computed resource paths",
+      "executable include!",
+      "column!",
+      "statement attributes"
+    ]
+  }
+}
