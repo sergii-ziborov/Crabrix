@@ -50,7 +50,7 @@ export default function GuidePage() {
       <h1>From your first Rust file to an offline project.</h1>
       <p className="lede">Create, edit, check and run Rust on your device. This guide shows where each part of Crabrix lives, how to prepare dependencies before going offline, and how to tell a code error from a platform requirement.</p>
       <p>Compilation and program execution take place on the device. Crabrix does not upload your project to a remote compiler. Downloading a public repository, a new crate or a course update needs a connection; using material already prepared on the device does not require an app account.</p>
-      <p><strong>Version note:</strong> the offline web lab is published in Crabrix 1.1.2. TestFlight 1.1.3 (113) adds local unit tests and rustfmt alongside saving/recovery, compile-only Build and source Debug. Compiler experiments are identified separately on the <Link href="/technology/">Technology page</Link>; a benchmark of a candidate compiler does not mean that compiler is already installed in your App Store build. Check your app version in Settings before following a newly added workflow.</p>
+      <p><strong>Version note:</strong> the offline web lab is published in Crabrix 1.1.2. TestFlight 1.1.3 (114) adds native Git and full repository copies alongside local unit tests, rustfmt, saving/recovery, compile-only Build and source Debug. Compiler experiments are identified separately on the <Link href="/technology/">Technology page</Link>; a benchmark of a candidate compiler does not mean that compiler is already installed in your App Store build. Check your app version in Settings before following a newly added workflow.</p>
       <nav className="article-toc" aria-label="Guide contents"><strong>In this guide</strong><ol>{contents.map(([id, label]) => <li key={id}><a href={`#${id}`}>{label}</a></li>)}</ol></nav>
     </div>
     <article className="article-content guide-content">
@@ -163,7 +163,7 @@ export default function GuidePage() {
         <p>For a complete generator with escaping, local CSS and an interactive counter, see <Link href="/blog/crabrix-offline-rust-web-preview/">the Rust web lab article</Link>.</p>
       </section>
       <section id="git"><h2>Git history, GitHub and full repository copies</h2>
-        <p><strong>Availability:</strong> native Git is a candidate for the next TestFlight build; it is not in build 113. Check the installed version and <Link href="/technology/">capability record</Link> before following this workflow.</p>
+        <p><strong>Availability:</strong> native Git is available in TestFlight 1.1.3 (114). Earlier build 113 does not include Git. Check the installed version and <Link href="/technology/">capability record</Link> before following this workflow.</p>
         <ol>
           <li>Open Project settings → <strong>Local Git</strong>. Start local history for the current project, or enter a GitHub HTTPS repository URL and choose <strong>Clone as a new project</strong>. A clone creates a separate project with real commit history. Opening or cloning source never executes it.</li>
           <li>In <strong>Changes</strong>, select the files to record, enter your author name, email and message, then commit. Autosave protects current text independently and does not create commits. <strong>History</strong> opens a source preview; restoring a file requires its separate Restore action. Switch branches only with a clean tree outside a live Playground.</li>

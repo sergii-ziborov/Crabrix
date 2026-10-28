@@ -4,6 +4,18 @@
 
 [Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support/) · [Privacy](https://crabrix.com/privacy/) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
+## Native Git — TestFlight 1.1.3 (114)
+
+Build **114** is **VALID / IN_BETA_TESTING**, from signed source `c213fbf`.
+It adds native local history, GitHub HTTPS/private access, clean fast-forward
+pull, explicit push and complete `.crabrixrepo` transfer. Binary worktree inputs
+participate in local compilation, Debug and cache identity. Compilation and
+execution stay on the device; the editor/Duo geometry is preserved.
+[Profile and qualification](docs/git-https-portability-2026-10-28.md),
+[delivery identity](docs/app-store/release-1.1.3-build114.json).
+The website and replacement App Review selection are being updated; build 113
+remains the prior review submission until the replacement is confirmed.
+
 ## Local Rust tools — TestFlight 1.1.3 (113)
 
 Real selected-entry `cargo test` now provides discovery, filtering, isolated
@@ -11,12 +23,12 @@ failures, bounded reports and Stop. Pinned bundled rustfmt supports a file or
 project, check mode, revision guards and Undo. Both run locally. Build **113**
 is **VALID / IN_BETA_TESTING** from source `d868251`; it is selected for **WAITING_FOR_REVIEW** with manual publication. [Profile and qualification](docs/rust-tools-2026-10-28.md),
 [delivery identity](docs/app-store/release-1.1.3-build113.json).
-The next [Git candidate](docs/local-git-2026-10-28.md) adds local history,
+The [Git follow-up](docs/local-git-2026-10-28.md) adds local history,
 GitHub HTTPS/private access and complete `.crabrixrepo` portability. Real private
 push/fetch/cancellation checks and all 18 native cases passed on both phone and
 iPad Simulators, including binary-resource compilation and Debug after import.
-Four UI flows passed on each phone/iPad Simulator; signed-delivery
-qualification continues. Git is not included in build 113. [HTTPS and portability profile](docs/git-https-portability-2026-10-28.md).
+Four UI flows passed on each phone/iPad Simulator; signed build 114
+is available in TestFlight. Git is not included in build 113. [HTTPS and portability profile](docs/git-https-portability-2026-10-28.md).
 
 ## Academy corrections — 27 October 2026
 

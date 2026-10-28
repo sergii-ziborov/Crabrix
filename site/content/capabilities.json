@@ -9,9 +9,9 @@
     },
     "testFlightApp": {
       "version": "1.1.3",
-      "build": "113",
-      "sourceCommit": "d868251f0527fe34d097520be1938655c63ba4c2",
-      "evidence": "docs/app-store/release-1.1.3-build113.json"
+      "build": "114",
+      "sourceCommit": "c213fbf71a70431364272cd21ff90fafe07c834d",
+      "evidence": "docs/app-store/release-1.1.3-build114.json"
     }
   },
   "capabilities": [
@@ -52,7 +52,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (113)",
+          "version": "1.1.3 (114)",
           "profile": "Source checkpoints; bounded String/Vec/concrete-struct previews; active async polls. No DWARF or arbitrary watch expressions."
         },
         {
@@ -70,7 +70,7 @@
           "surface": "ios",
           "state": "testflight",
           "profile": "Selected executable or rlib entry; distinct from Check and Run. Terminal cargo build does not invoke main; bounded supported build scripts remain compile-time work.",
-          "version": "1.1.3 (113)"
+          "version": "1.1.3 (114)"
         }
       ]
     },
@@ -156,8 +156,8 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (113)",
-          "profile": "Format-3 file inventory; supported hidden files; visible save outcomes, retry and raw recovery/source exports. Full Git history and opaque binary portability are later roadmap work."
+          "version": "1.1.3 (114)",
+          "profile": "Format-3 file inventory; supported hidden files; visible save outcomes, retry and raw recovery/source exports. Full Git history and opaque resources use the separate .crabrixrepo format."
         }
       ],
       "limits": {
@@ -173,7 +173,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (113)",
+          "version": "1.1.3 (114)",
           "profile": "Real bundled libtest, isolated single-threaded WASM guests, discovery/filter/Stop and source-bound results. Ignored tests skipped; should_panic unsupported in panic-abort profile. No integration targets, dev-dependencies or doctests."
         }
       ]
@@ -185,7 +185,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (113)",
+          "version": "1.1.3 (114)",
           "profile": "Pinned real rustfmt WASI, file/project/check mode, edition/root scalar config subset, atomic revision-checked replacement and Undo. No user Rust execution or network."
         }
       ],
@@ -200,8 +200,9 @@
       "surfaces": [
         {
           "surface": "ios",
-          "state": "implemented-candidate",
-          "profile": "libgit2 1.9.7; status/diff/selected commits/history/restore/branches; GitHub HTTPS clone/fetch, clean fast-forward pull and explicit non-force push; private access in device-only Keychain. No SSH/LFS/submodules/rebase or arbitrary hooks. Not included in build 113."
+          "state": "testflight",
+          "profile": "libgit2 1.9.7; status/diff/selected commits/history/restore/branches; GitHub HTTPS clone/fetch, clean fast-forward pull and explicit non-force push; private access in device-only Keychain. No SSH/LFS/submodules/rebase or arbitrary hooks.",
+          "version": "1.1.3 (114)"
         }
       ],
       "evidence": "docs/git-https-portability-2026-10-28.md"
@@ -212,8 +213,9 @@
       "surfaces": [
         {
           "surface": "ios",
-          "state": "implemented-candidate",
-          "profile": ".crabrixrepo: actual commit IDs, refs, worktree bytes and modes; new local identity on import; validated inventory/objects/config. Package caches and credentials excluded. Opaque resources participate in local build/Debug cache identity. Not included in build 113."
+          "state": "testflight",
+          "profile": ".crabrixrepo: actual commit IDs, refs, worktree bytes and modes; new local identity on import; validated inventory/objects/config. Package caches and credentials excluded. Opaque resources participate in local build/Debug cache identity.",
+          "version": "1.1.3 (114)"
         }
       ],
       "limits": {
@@ -224,5 +226,5 @@
       }
     }
   ],
-  "verifiedAtUTC": "2026-10-28T18:39:01.284541+00:00"
+  "verifiedAtUTC": "2026-10-28T20:28:45.598963+00:00"
 }

@@ -1,0 +1,34 @@
+{
+  "version": "1.1.3",
+  "buildNumber": "114",
+  "buildID": "45091bad-2977-4957-a545-6b2fb7752628",
+  "appSourceCommit": "c213fbf71a70431364272cd21ff90fafe07c834d",
+  "cloudBuildRunID": "f0347c1e-38d9-457b-b37c-e5f4033bf21e",
+  "cloudCompletion": "SUCCEEDED",
+  "cloudExecutionProgress": "COMPLETE",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "signedEntitlements": {
+    "build": "114",
+    "version": "1.1.3",
+    "applicationIdentifier": "XMS5ZC28UJ.com.sergiiziborov.Crabrix",
+    "associatedDomains": [
+      "applinks:crabrix.com"
+    ],
+    "profileSupportsAssociatedDomains": true,
+    "getTaskAllow": false,
+    "appGroups": [
+      "group.com.sergiiziborov.Crabrix"
+    ],
+    "ipaSHA256": "1182bc2e78bee568ec901d7c64d3c7d5d500171e8c95051c5e74e3f28b3f4057",
+    "debugCompilerMatchesSource": true,
+    "offlineLegalMatchesSource": true,
+    "appStoreDistributionProfile": true,
+    "rustfmtBundleMatchesSource": true,
+    "gitCoreBundleMatchesSource": true
+  },
+  "qualification": "Nine actual desktop core cases including private HTTPS/push/cancellation. 18 native cases passed on each phone/iPad Simulator; final 18-case bundle rerun passed after resource refresh. Four UI scenarios passed on each platform. Site type check, 34 tests, production build and responsive guide browser flow passed.",
+  "physicalDeviceGate": "Not run; physical iPhone unavailable. No new physical-device benchmark or Universal Link claim.",
+  "deliveryStage": "TestFlight available; website and replacement App Review submission in progress",
+  "verifiedAtUTC": "2026-10-28T20:28:45.598963+00:00"
+}
