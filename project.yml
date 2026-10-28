@@ -154,6 +154,7 @@ targets:
           /usr/bin/python3 "$SRCROOT/scripts/prepare_native_compiler.py"
           /usr/bin/python3 "$SRCROOT/scripts/verify_rust_tools.py"
           /usr/bin/python3 "$SRCROOT/scripts/verify_git_core.py"
+          /bin/bash "$SRCROOT/scripts/verify_atlas_catalog.sh" "$SRCROOT"
         basedOnDependencyAnalysis: false
     settings:
       base:
@@ -225,6 +226,10 @@ targets:
       - path: CrabrixTests
         excludes:
           - CompilerCandidate
+          - Fixtures/AtlasReplay
+      - path: CrabrixTests/Fixtures/AtlasReplay
+        type: folder
+        buildPhase: resources
       - path: CrabrixTests/CompilerCandidate
         type: folder
         buildPhase: resources
@@ -491,6 +496,24 @@ schemes:
             - GitTransferTests
             - RustDebuggerTests/testOpaqueResourceBytesMatchNormalRunDuringRealDebug
             - BundledLicenseTests
+
+  CrabrixAtlasGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+    test:
+      config: CompilerCandidate
+      gatherCoverageData: false
+      targets:
+        - name: CrabrixTests
+          selectedTests:
+            - AtlasReplayTests
+            - CourseBootstrapTests
+            - CoursePackVerifierTests
+            - CourseInstallerTests
+            - CourseDownloadManagerTests
+            - InstalledCourseRepositoryTests
 
   CrabrixReliabilityGate:
     build:

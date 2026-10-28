@@ -130,10 +130,19 @@ struct CrabrixProject: Codable, Equatable, Sendable {
         }
 
         struct CourseOrigin: Codable, Equatable, Sendable {
+            struct Recording: Codable, Equatable, Sendable {
+                let key: String
+                let sourceHash: String
+                let input: String
+                let packVersion: String
+                let packDigest: String
+                let courseContentVersion: String
+            }
             let courseID: String
             let contentVersion: String
             let lessonID: String
             let templateHash: String
+            var recording: Recording? = nil
         }
 
         let source: Source

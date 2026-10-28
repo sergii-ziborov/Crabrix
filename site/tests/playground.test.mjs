@@ -6,6 +6,18 @@ import { limitedJSON, guardPlaygroundOrigin } from "../lib/playground-api.ts";
 
 const packet = () => ({ iv: Buffer.alloc(12, 7).toString("base64url"), data: Buffer.alloc(32, 8).toString("base64url") });
 
+test("conditional MCP edits reject stale source before mutation and retry one acknowledged message once", () => {
+  const rooms = new PlaygroundRooms(), room = rooms.create(packet(), 3600), peer = "mcp_peer_00000001";
+  rooms.subscribe(room.id, room.edit, peer, () => {});
+  assert.equal(rooms.state(room.id, room.view).protocol.conditionalUpdates, 1);
+  const first = rooms.append(room.id, room.edit, peer, "conditional_0001", packet(), 0);
+  assert.equal(first.sequence, 1);
+  assert.throws(() => rooms.append(room.id, room.edit, peer, "conditional_0002", packet(), 0), /project changed/);
+  assert.equal(rooms.state(room.id, room.edit).sequence, 1);
+  assert.equal(rooms.append(room.id, room.edit, peer, "conditional_0001", packet(), 0).sequence, 1);
+  assert.throws(() => rooms.append(room.id, room.view, peer, "conditional_0003", packet(), 1), /authorized/);
+});
+
 test("encrypted rooms expire without extending on reads; no source or account is needed", () => {
   let time = 1000;
   const rooms = new PlaygroundRooms(() => time);

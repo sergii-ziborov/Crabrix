@@ -1,0 +1,35 @@
+{
+  "name": "crabrix-playground-mcp",
+  "version": "0.1.0",
+  "description": "Connect Claude and other MCP clients to an encrypted Crabrix Playground. Edit together; run locally on your phone.",
+  "type": "module",
+  "bin": {
+    "crabrix-mcp": "dist/cli.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "ThirdPartyNotices.txt"
+  ],
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node test.mjs",
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.4.0",
+    "@types/node": "24.0.0",
+    "typescript": "5.9.3",
+    "tsx": "4.21.0",
+    "esbuild": "0.25.12",
+    "@modelcontextprotocol/server": "2.4.0",
+    "yjs": "13.6.33",
+    "y-protocols": "1.0.7",
+    "zod": "4.3.6"
+  }
+}

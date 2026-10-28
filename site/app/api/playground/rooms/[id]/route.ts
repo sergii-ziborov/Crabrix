@@ -32,7 +32,8 @@ export async function POST(request: Request, context: Context) {
     }
     if (body.type === "update" && typeof body.peer === "string" && typeof body.messageID === "string") {
       const packet = validatePacket(body.packet, ROOM_LIMITS.updateBytes);
-      return Response.json(playgroundRooms.append(id, capability, body.peer, body.messageID, packet), { headers: privateHeaders });
+      if (body.expectedSequence !== undefined && (!Number.isSafeInteger(body.expectedSequence) || Number(body.expectedSequence) < 0)) throw new PlaygroundError("Invalid expected revision.");
+      return Response.json(playgroundRooms.append(id, capability, body.peer, body.messageID, packet, body.expectedSequence as number | undefined), { headers: privateHeaders });
     }
     throw new PlaygroundError("Unsupported relay message.");
   } catch (error) { return playgroundFailure(error); }

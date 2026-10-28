@@ -5,6 +5,11 @@ interactive walkthrough is tied to the SHA-256 of its exact `writing.exampleCode
 Model and recognition lessons share a fixture; challenges use a second fixture.
 There are 400 distinct lesson traces plus one independent public demonstration.
 
+The same corpus now has a separately signed
+[native offline-replay candidate](offline-atlas-replay-2026-10-28.md). Its optional
+data packs are public GitHub release assets; website lesson routes retain their
+existing account gate. This does not add backend execution.
+
 ## What the learner sees
 
 - Forward/backward stepping, restart, explicit play/pause, speed and scrubbing.

@@ -263,6 +263,9 @@ struct ContentView: View {
                         project, courseID: courseID, contentVersion: contentVersion
                     )
                     openCodeWorkspace()
+                },
+                onOpenReplay: { recording, session in
+                    if model.openAtlasRecording(recording, session: session) { openCodeWorkspace() }
                 }
             )
             .tabItem { Label("Learn", systemImage: "graduationcap.fill") }
@@ -844,6 +847,15 @@ struct ContentView: View {
 
     private var projectActionsSheet: some View {
         let undo: (() -> Void)? = model.canUndoFormatting ? { model.undoFormatting() } : nil
+        let lessonOrigin = model.provenance?.course
+        let returnToLesson: (() -> Void)? = lessonOrigin.flatMap { origin in
+            guard !origin.lessonID.hasPrefix("example/") else { return nil }
+            return {
+                editorKeyboard.dismissKeyboard()
+                learningPath = [.course(origin.courseID), .lesson(origin.lessonID)]
+                selectedDestination = .learn
+            }
+        }
         return ProjectActionsSheet(
                 project: model.exportProject(),
                 onUpdate: { draft in
@@ -864,7 +876,8 @@ struct ContentView: View {
                 onFormatFile: formatFileAction,
                 onFormatProject: formatProjectAction,
                 onUndoFormatting: undo,
-                onGit: { editorKeyboard.dismissKeyboard(); isGitPresented = true }
+                onGit: { editorKeyboard.dismissKeyboard(); isGitPresented = true },
+                onReturnToLesson: returnToLesson
             )
     }
 

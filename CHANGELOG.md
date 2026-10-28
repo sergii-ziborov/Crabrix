@@ -1,5 +1,17 @@
 # Changelog
 
+## In progress — native Atlas replay and Playground MCP
+
+- Optional signed offline Atlas sections, 400 recordings for 600 lesson steps,
+  exact values and source hashes. Native stepping, personal copy and return to
+  lesson; current edited source runs/debugs independently of the original replay.
+  Thirty-four native cases plus the full UI route passed on phone/iPad Simulators.
+- Downloadable local MCP bridge, encrypted Shared rooms, revision-checked edits,
+  relative selections, expiry, explicit creator-only closure and original notices.
+  MCP, Chromium and two actual Simulator editors passed the same collaborative
+  flow; all three local compilers/debuggers were exercised. Website/download
+  publication is recorded separately. These changes are not part of build 114.
+
 ## 1.1.3 (114) — native Git, TestFlight and App Review
 
 - Real local Git history in storage independent of editable-project snapshots.

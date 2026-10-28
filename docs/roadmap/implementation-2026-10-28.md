@@ -39,17 +39,17 @@ backup не удаляется из-за неудачного decode; возвр
 | --- | --- | --- |
 | 2 | RUST-01, RUST-02 | Реализован кандидат: real libtest, file/project rustfmt, терминал, версии, Undo и Stop. 35 native проверок и по два UI-сценария на phone/iPad прошли; финальный повтор девяти кейсов после изоляции ошибочных запросов тоже прошёл. 1.1.3 (113) — VALID / IN_BETA_TESTING / WAITING_FOR_REVIEW; гайд и notices опубликованы на сайте. [Профиль](../rust-tools-2026-10-28.md) |
 | 3A | GIT-01 | Кандидат квалифицирован: долговечное отдельное хранилище, status/diff/selected commit/history/restore/branches, терминал и Changes UI. Три macOS service-теста, десять native-кейсов и по два UI-сценария на phone/iPad прошли. Не входит в build 113. [Профиль и доказательства](../local-git-2026-10-28.md) |
-| 3B | GIT-02, PORT-01 | Кандидат квалифицирован: HTTPS/private Git, Keychain, clean fast-forward, полный `.crabrixrepo` и бинарные ресурсы compiler/Debug. 9 реальных core-тестов, 18 native-кейсов на phone и iPad, по 4 UI-сценария прошли. Подготовка подписанной поставки. [Профиль](../git-https-portability-2026-10-28.md) |
-| 4 | LEARN-02, LEARN-01, IDE-01 | Урок → запись → личная копия → Debug; подписанные офлайн-трассы; затем семантическая навигация |
+| 3B | GIT-02, PORT-01 | Кандидат квалифицирован: HTTPS/private Git, Keychain, clean fast-forward, полный `.crabrixrepo` и бинарные ресурсы compiler/Debug. 9 реальных core-тестов, 18 native-кейсов на phone и iPad, по 4 UI-сценария прошли. Поставлено: подписанная 1.1.3 (114) — VALID / IN_BETA_TESTING / WAITING_FOR_REVIEW; сайт, гайд и notices опубликованы. [Профиль](../git-https-portability-2026-10-28.md) |
+| 4 | LEARN-02, LEARN-01, IDE-01 | LEARN-кандидат квалифицирован: 20 подписанных разделов, 400 записей / 600 уроков; 34 native-кейса и полный UI-маршрут прошли на phone и iPad. Личная копия использует настоящий Run/Debug. Семантический редактор остаётся в работе; первый rust-analyzer scope-прототип прошёл, интеграция ещё не готова. Не входит в 114. |
 | 5 | COMPAT-01, WEB-02 | Project preflight, настоящий TS checker и типы зависимостей; не выдавать transpilation за typecheck |
 | Отдельно | COMPAT-02 | Продолжить существующие compiler/proc-macro candidates; без устройства не заявлять физические benchmarks или Published |
 | 6 | LANG-01 → LANG-02; LANG-03 отдельно | Ограниченный C→Wasm prototype, затем Systems Lab и выбранный ABI; C++ условен по результатам и задачам |
-| Позже | MCP-01 | GPT через Shared; контракт ниже. MCP-сервер и GPT-коннектор сейчас не включены |
+| Активирован пользователем 28 октября | MCP-01 | Playground bridge 0.1.0: stdio, код, revision guard, выделения, TTL и owner closure. Полный SDK↔web↔два native-клиента прошёл; страница и пакет готовятся к публикации. Remote execution через MCP не включён. [Профиль](../playground-mcp-2026-10-28.md) |
 
 Командная игра, matchmaking и игровая инфраструктура отложены пользователем.
 Автоматическая облачная синхронизация и обязательный app account не добавляются.
 
-## MCP-01 — будущая работа через Shared
+## MCP-01 — активная работа через Shared
 
 MCP использует общий проект как явно подключённый участник с отдельным видимым
 именем. Это расширение существующего обмена, а не второй механизм хранения кода.

@@ -140,12 +140,14 @@
     },
     {
       "id": "mcp.shared-projects",
-      "name": "GPT access through Shared",
+      "name": "Playground MCP bridge",
       "surfaces": [
         {
           "surface": "mcp",
-          "state": "planned",
-          "profile": "Explicit participant access, revision-checked source edits and selections. Execution remains in the connected app/browser; no MCP server is enabled."
+          "state": "published",
+          "version": "0.1.0",
+          "profile": "Downloadable local stdio bridge: encrypted Shared rooms, source reads, relay-enforced conditional edits, named UTF-16 selections, creator-only early closure and one-hour default creation. Tested MCP + browser + two Simulator apps. No shell or remote execution.",
+          "evidence": "docs/playground-mcp-2026-10-28.md"
         }
       ]
     },

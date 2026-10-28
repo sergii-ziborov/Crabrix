@@ -22,6 +22,7 @@ final class PlaygroundSelectionOverlay: UIView {
         setNeedsDisplay()
     }
     override func draw(_ rect: CGRect) {
+        var badges: [CGRect] = []
         for mark in marks {
             mark.color.withAlphaComponent(0.24).setFill()
             for area in mark.rectangles { UIBezierPath(rect: area).fill() }
@@ -31,9 +32,38 @@ final class PlaygroundSelectionOverlay: UIView {
             let font = UIFont.systemFont(ofSize: 10, weight: .semibold)
             let attributes: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: UIColor.white]
             let text = mark.name as NSString, size = text.size(withAttributes: attributes)
-            let badge = CGRect(x: min(max(0, caret.minX), max(0, bounds.width - size.width - 8)), y: max(0, caret.minY - 17), width: size.width + 8, height: 16)
+            guard let badge = Self.badgeFrame(preferred: CGRect(x: caret.minX, y: max(0, caret.minY - 17), width: size.width + 8, height: 16),
+                                             inside: bounds, occupied: badges) else { continue }
+            badges.append(badge)
             UIBezierPath(roundedRect: badge, cornerRadius: 3).fill()
-            text.draw(at: CGPoint(x: badge.minX + 4, y: badge.minY + 1), withAttributes: attributes)
+            let paragraph = NSMutableParagraphStyle(); paragraph.lineBreakMode = .byTruncatingTail
+            var labelAttributes = attributes; labelAttributes[.paragraphStyle] = paragraph
+            text.draw(in: badge.insetBy(dx: 4, dy: 1), withAttributes: labelAttributes)
         }
+    }
+
+    /// Nearby collaborators can point at the same word. Keep names separate
+    /// inside the existing overlay; this never changes editor/keyboard geometry.
+    static func badgeFrame(preferred: CGRect, inside bounds: CGRect, occupied: [CGRect]) -> CGRect? {
+        let width = min(preferred.width, bounds.width), height = preferred.height
+        guard width >= 8, height > 0, bounds.height >= height else { return nil }
+        let x = min(max(bounds.minX, preferred.minX), bounds.maxX - width)
+        let y = min(max(bounds.minY, preferred.minY), bounds.maxY - height)
+        var columns: [CGFloat] = [x, bounds.minX, bounds.maxX - width]
+        for frame in occupied {
+            columns.append(frame.maxX + 4)
+            columns.append(frame.minX - width - 4)
+        }
+        let allowed = columns.filter { $0 >= bounds.minX && $0 + width <= bounds.maxX }
+        let xs = allowed.sorted { abs($0 - x) < abs($1 - x) }
+        for offset in [CGFloat(0), -18, 18, -36, 36] {
+            let row = y + offset
+            guard row >= bounds.minY, row + height <= bounds.maxY else { continue }
+            for column in xs {
+                let candidate = CGRect(x: column, y: row, width: width, height: height)
+                if occupied.allSatisfy({ !$0.insetBy(dx: -2, dy: -1).intersects(candidate) }) { return candidate }
+            }
+        }
+        return nil
     }
 }

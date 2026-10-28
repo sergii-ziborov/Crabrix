@@ -41,13 +41,14 @@ export class PlaygroundSession {
   onStatus: (status: string) => void;
   onExpiry: () => void;
   awareness?: Awareness; presenceTimer?: ReturnType<typeof setTimeout>; heartbeat?: ReturnType<typeof setInterval>; presenceSending = false;
+  private relayOrigin: string;
 
-  constructor(doc: Y.Doc, link: PlaygroundLink, onStatus: (status: string) => void, onExpiry: () => void, awareness?: Awareness) {
-    this.doc = doc; this.link = link; this.onStatus = onStatus; this.onExpiry = onExpiry; this.awareness = awareness;
+  constructor(doc: Y.Doc, link: PlaygroundLink, onStatus: (status: string) => void, onExpiry: () => void, awareness?: Awareness, relayOrigin = "") {
+    this.doc = doc; this.link = link; this.onStatus = onStatus; this.onExpiry = onExpiry; this.awareness = awareness; this.relayOrigin = relayOrigin;
   }
 
   private headers() { return { Authorization: "Bearer " + this.link.access, "Content-Type": "application/json" }; }
-  private endpoint() { return "/api/playground/rooms/" + this.link.id + "/"; }
+  private endpoint() { return this.relayOrigin + "/api/playground/rooms/" + this.link.id + "/"; }
   private update = (bytes: Uint8Array, origin: unknown) => {
     if (origin === this || this.link.mode === "view" || this.stopped) return;
     this.pending.push(bytes);

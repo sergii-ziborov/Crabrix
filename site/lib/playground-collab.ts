@@ -1,5 +1,6 @@
 import * as Y from "yjs";
 import { validatePlaygroundDocument, type PlaygroundDocument } from "./playground-document.ts";
+export { Y };
 
 export function documentFromY(doc: Y.Doc): PlaygroundDocument {
   const metadata = doc.getMap<unknown>("meta");

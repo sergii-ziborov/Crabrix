@@ -243,6 +243,10 @@
       },
       {
         "kind": "p",
+        "text": "The optional downloadable Crabrix Playground MCP bridge lets a local MCP host, such as Claude Code or Claude Desktop, join a room you authorize. The bridge decrypts source on that computer and can return source and selections to its host/model or send source edits as a named participant. Giving an AI host the complete link grants access to that room's decrypted source; the host and AI provider apply their own data and retention policies. The bridge keeps room keys and source in process memory, without writing them to Crabrix accounts, files or telemetry. Disconnect releases that process's room state, but cannot delete another host/provider's conversation history. The relay continues to receive encrypted packets; MCP adds no backend compilation or execution."
+      },
+      {
+        "kind": "p",
         "text": "Playground is a public feature without login. Unshared editor source stays in browser memory. Run and Check compile and execute on your device; there is no compilation service receiving your source. The browser downloads and may cache verified compiler assets separately from source. Only editor preferences are stored in browser local storage."
       },
       {
@@ -296,6 +300,10 @@
       {
         "kind": "p",
         "text": "The initial signed course list is included in the app. When you choose to download a course, Crabrix requests its signed descriptor and archive from `github.com` and GitHub's release asset hosts. The request identifies the selected course asset and carries no Crabrix account, tracking ID, project code, answers, or progress. GitHub and its delivery providers receive normal connection information, including your IP address, and may keep access logs under their own policies. Crabrix does not control those provider logs."
+      },
+      {
+        "kind": "p",
+        "text": "In versions with offline Algorithm Atlas replay, optional signed recording sections use the same public GitHub delivery. A request identifies the selected section. Your edited source, replay position, answers and learning progress are not uploaded. Prepared playback and execution of your own saved copy take place on your device."
       },
       {
         "kind": "p",

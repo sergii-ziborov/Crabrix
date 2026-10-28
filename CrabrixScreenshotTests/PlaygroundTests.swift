@@ -80,7 +80,7 @@ final class PlaygroundTwoDeviceTests: XCTestCase {
     /// Two independently running app editors and the production website share
     /// source/presence; each debugger executes on its own device.
     func testLinksSelectionsAndDebugAcrossTwoAppsAndWebsite() async throws {
-        struct Fixture: Decodable { let url: URL; let nonce: String }
+        struct Fixture: Decodable { let url: URL; let nonce: String; let origin: URL? }
         let base = URL(string: "http://127.0.0.1:3395")!
         let (data, _) = try await URLSession.shared.data(from: base.appendingPathComponent("fixture"))
         let fixture = try JSONDecoder().decode(Fixture.self, from: data)
@@ -105,7 +105,8 @@ final class PlaygroundTwoDeviceTests: XCTestCase {
             image.name = "cross-\(role)-\(name)"; image.lifetime = .keepAlways; add(image)
         }
         let app = XCUIApplication()
-        app.launchArguments = ["-crabrix.appearance", pad ? "amber" : "dark"]
+        app.launchArguments = ["-crabrix.appearance", pad ? "cyberpunkNeon" : "dark"]
+        if let origin = fixture.origin { app.launchArguments.append("--crabrix-playground-relay=\(origin.absoluteString)") }
         app.launch()
         // Exercise the production URL handler rather than the auto-open fixture.
         let native = fixture.url.absoluteString.replacingOccurrences(of: "https://crabrix.com/playground/", with: "crabrix://playground/")

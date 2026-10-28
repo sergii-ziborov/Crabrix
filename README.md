@@ -239,6 +239,13 @@ Five additional articles occupy October 5, 6, 7, 8 and 24: [local progress and o
 
 ## Temporary Playground — public guest editor
 
+The [Playground MCP bridge](https://crabrix.com/playground/mcp/) connects Claude
+Code/Desktop or another local MCP host as a named participant. The candidate
+download supports source reads, relay-enforced revision checks, edits and relative
+selections. MCP + Chromium + two actual Simulator apps passed a joint flow with
+independent local String/Vec debugging and real final stdout. It exposes no
+backend execution. [Scope and qualification](docs/playground-mcp-2026-10-28.md).
+
 The [guest Playground](https://crabrix.com/playground/) compiles real Rust in a browser Worker, with verified
 on-demand toolchain assets (44.7 MiB first transfer), a fresh WASI source snapshot
 and bounded user-program execution. Browser compilation never sends source to

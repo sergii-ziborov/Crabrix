@@ -46,6 +46,7 @@ struct LearningHubView: View {
     let onResetCourseProgress: (Set<String>) -> Void
     let onAnswerLesson: (RustLesson, Int, Bool) -> Void
     let onOpenExample: (RustShowcaseProject, String, String) -> Void
+    let onOpenReplay: (AtlasRecording, CourseSession) -> Void
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -185,6 +186,10 @@ struct LearningHubView: View {
                     courseTheme: course.theme,
                     isCompleted: isReview,
                     savedAnswer: lessonAnswerIndices[lesson.id],
+                    replayMethod: course.id == "algorithms"
+                        ? course.units.first(where: { $0.lessons.contains(where: { $0.id == lessonID }) })
+                            .map { String($0.id.dropFirst("algorithms-".count)) } : nil,
+                    onOpenReplay: { recording in onOpenReplay(recording, session) },
                     onStart: { onStartLesson(lesson, session) },
                     onComplete: {
                         completeAndContinue(from: lesson)

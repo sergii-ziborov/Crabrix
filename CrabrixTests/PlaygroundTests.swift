@@ -3,6 +3,20 @@ import XCTest
 
 @MainActor
 final class PlaygroundModelTests: XCTestCase {
+    func testNearbyParticipantBadgesStayInsideCanvasWithoutCoveringEachOther() throws {
+        for width in [CGFloat(240), 402, 1024] {
+            let bounds = CGRect(x: 0, y: 0, width: width, height: 200)
+            var frames: [CGRect] = []
+            for nameWidth in [CGFloat(95), 130, 170] {
+                let frame = try XCTUnwrap(PlaygroundSelectionOverlay.badgeFrame(
+                    preferred: CGRect(x: width - 60, y: 0, width: nameWidth, height: 16), inside: bounds, occupied: frames))
+                XCTAssertTrue(bounds.contains(frame))
+                XCTAssertTrue(frames.allSatisfy { !$0.intersects(frame) })
+                frames.append(frame)
+            }
+        }
+        XCTAssertNil(PlaygroundSelectionOverlay.badgeFrame(preferred: CGRect(x: 0, y: 0, width: 120, height: 16), inside: .zero, occupied: []))
+    }
     func testFragmentsStayOutOfHTTPAndNativeCodecRoundTripsUnicode() throws {
         let link = PlaygroundLink(id: String(repeating: "a", count: 24), key: PlaygroundEncryption.newSecret(), access: PlaygroundEncryption.newSecret(), expiresAt: Date(timeIntervalSince1970: 1793200000), isReadOnly: true)
         XCTAssertEqual(try PlaygroundLink.parse(link.url.absoluteString), link)

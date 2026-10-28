@@ -1610,6 +1610,23 @@ final class CompilerViewModel: ObservableObject {
         )
     }
 
+    @discardableResult
+    func openAtlasRecording(_ recording: AtlasRecording, session: CourseSession) -> Bool {
+        let replay = recording.replay
+        guard session.courseID == "algorithms", session.lessonID == recording.lessonID,
+              session.repository.writing(for: recording.lessonID)?.exampleCode == replay.source,
+              AtlasReplay.digest(Data(replay.source.utf8)) == replay.sourceHash else { return false }
+        let template = CourseProjectTemplate(name: "atlas-\(replay.pattern)", entryFile: "main.rs",
+                                             files: ["main.rs": replay.source])
+        var origin = CrabrixProject.Provenance.academy(session: session, templateHash: template.templateHash)
+        origin.course?.recording = .init(key: replay.key, sourceHash: replay.sourceHash, input: replay.input,
+            packVersion: recording.packVersion, packDigest: recording.packDigest,
+            courseContentVersion: recording.courseContentVersion)
+        loadProject(name: template.name, files: template.files, entryFile: template.entryFile,
+                    provenance: origin, kind: .learning)
+        return true
+    }
+
     func beginLesson(_ id: String, isReview: Bool = false,
                      content: CourseLessonExecution? = nil) {
         activeLessonID = id

@@ -9,6 +9,7 @@ export function SiteFooter() {
           <Link href="/learn">Learn</Link>
           <Link href="/blog">Blog</Link>
           <Link href="/guide/">User guide</Link>
+          <Link href="/playground/mcp/">Playground MCP</Link>
           <Link href="/sitemap/">Sitemap</Link>
           <Link href="/about">About</Link>
           <Link href="/technology">Technology</Link>

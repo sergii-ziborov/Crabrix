@@ -57,7 +57,8 @@ final class CourseBootstrapTests: XCTestCase {
         XCTAssertTrue(installed.courses.isEmpty)
         let activeCatalog = try bootstrap.bundledCatalog()
         XCTAssertEqual(activeCatalog.courses.count, 8)
-        XCTAssertEqual(activeCatalog.sequence, 3)
+        XCTAssertEqual(activeCatalog.sequence, 15)
+        XCTAssertEqual(activeCatalog.courses.first { $0.courseID == "algorithms" }?.contentVersion, "1.0.6")
         XCTAssertEqual(
             activeCatalog.courses.first { $0.courseID == "examples" }?.requiredCapabilities,
             ["coursepack-v1", "examples-gallery-v1"]
@@ -66,7 +67,13 @@ final class CourseBootstrapTests: XCTestCase {
         XCTAssertTrue(afterRelaunch.courses.isEmpty)
 
         let packs = try XCTUnwrap(Bundle.main.url(forResource: "MigrationCoursePacks", withExtension: nil))
-        let entry = try XCTUnwrap(bootstrap.bundledCatalog().courses.first { $0.courseID == "basics" })
+        // The offline migration archive is deliberately pinned. Advancing the
+        // fresh-install catalog must not substitute its remote archive here.
+        let migrationCatalog = try CoursePackVerifier.catalog(
+            bytes: Data(contentsOf: packs.appending(path: "catalog.v1.json")),
+            keyring: bootstrap.keyring(), lastAcceptedSequence: 0
+        )
+        let entry = try XCTUnwrap(migrationCatalog.courses.first { $0.courseID == "basics" })
         let installer = try CourseInstaller(root: root, appVersion: XCTUnwrap(SemanticVersion("1.1")))
         _ = try await installer.install(
             descriptorBytes: Data(contentsOf: packs.appending(path: "basics.descriptor.json")),

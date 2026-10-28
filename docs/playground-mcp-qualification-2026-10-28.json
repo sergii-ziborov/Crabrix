@@ -1,0 +1,104 @@
+{
+  "at": "2026-10-28T21:35:53.758953+00:00",
+  "bridgeVersion": "0.1.0",
+  "publication": "pending public readback",
+  "download": {
+    "version": "0.1.0",
+    "url": "/downloads/crabrix-playground-mcp-0.1.0.tgz",
+    "bytes": 234902,
+    "sizeLabel": "229 KiB",
+    "sha256": "9894e4d99f07eac13497669e850e60b9762b739cbd292789e84d71a5401350ee",
+    "noticesURL": "/downloads/crabrix-playground-mcp-0.1.0-NOTICES.txt",
+    "licenseURL": "/downloads/crabrix-playground-mcp-0.1.0-LICENSE.txt"
+  },
+  "protocolCases": 3,
+  "siteTests": 35,
+  "nativeModelAndLicenseCases": 12,
+  "physicalDevices": false,
+  "backendExecution": false,
+  "liveModelProviderInvocation": false,
+  "fourClientResult": {
+    "at": "2026-10-28T21:30:47.811Z",
+    "participants": "MCP + browser + iPhone Simulator + iPad Simulator",
+    "reports": [
+      {
+        "role": "phone",
+        "event": "opened-link"
+      },
+      {
+        "event": "opened-link",
+        "role": "pad"
+      },
+      {
+        "role": "phone",
+        "event": "selected"
+      },
+      {
+        "role": "pad",
+        "event": "selected"
+      },
+      {
+        "role": "phone",
+        "event": "selection-captured"
+      },
+      {
+        "role": "pad",
+        "event": "selection-captured"
+      },
+      {
+        "event": "debug-paused",
+        "role": "phone"
+      },
+      {
+        "event": "debug-paused",
+        "role": "pad"
+      },
+      {
+        "event": "debug-stopped",
+        "role": "pad"
+      },
+      {
+        "role": "phone",
+        "event": "debug-stopped"
+      },
+      {
+        "event": "done",
+        "role": "phone"
+      },
+      {
+        "role": "pad",
+        "event": "done"
+      }
+    ],
+    "nativeSelectionParticipants": 2,
+    "passed": [
+      "MCP creates room",
+      "both actual app editors send source to MCP and web",
+      "MCP receives human selections",
+      "MCP selection reaches app and browser",
+      "MCP edits reach all clients",
+      "three independent local String/Vec debug sessions",
+      "selection preserves paused Debug",
+      "MCP edit cancels stale Debug",
+      "all three clients execute actual final stdout",
+      "native custom and HTTPS links"
+    ],
+    "backendExecution": false,
+    "physicalDevices": false
+  },
+  "nativeUI": {
+    "phone": "passed",
+    "pad": "passed",
+    "source": "current Simulator candidate, with nonoverlapping selection labels"
+  },
+  "atlas": {
+    "nativeCasesPerDevice": 34,
+    "phoneUI": "passed Dark",
+    "padUI": "passed Amber Circuit and Cyberpunk",
+    "signedDelivery": "not in 114"
+  },
+  "screenshots": {
+    "screenshots/mcp-iphone-selection.png": "35cad43511df72d149346f7c36708d02a41a2f7ca696172fa2fb84bf09f1c7b8",
+    "screenshots/mcp-ipad-local-debug.png": "b831c7fa0436cc93dbc5fa1b3e727461b90b4b1f34fce76e04d00af6701d8c53"
+  }
+}

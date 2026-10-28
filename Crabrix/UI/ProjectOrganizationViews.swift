@@ -226,6 +226,7 @@ struct ProjectActionsSheet: View {
     let onFormatProject: (() -> Void)?
     let onUndoFormatting: (() -> Void)?
     let onGit: (() -> Void)?
+    let onReturnToLesson: (() -> Void)?
 
     init(
         project: CrabrixProject,
@@ -238,7 +239,8 @@ struct ProjectActionsSheet: View {
         onFormatFile: (() -> Void)? = nil,
         onFormatProject: (() -> Void)? = nil,
         onUndoFormatting: (() -> Void)? = nil,
-        onGit: (() -> Void)? = nil
+        onGit: (() -> Void)? = nil,
+        onReturnToLesson: (() -> Void)? = nil
     ) {
         self.project = project
         self.onUpdate = onUpdate
@@ -251,6 +253,7 @@ struct ProjectActionsSheet: View {
         self.onFormatProject = onFormatProject
         self.onUndoFormatting = onUndoFormatting
         self.onGit = onGit
+        self.onReturnToLesson = onReturnToLesson
         _draft = State(initialValue: ProjectDetailsDraft(project: project))
     }
 
@@ -259,6 +262,17 @@ struct ProjectActionsSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     overview
+
+                    if let origin = project.provenance?.course, let onReturnToLesson {
+                        actionButton(title: "Return to lesson",
+                            detail: "Personal copy · course \(origin.contentVersion)" + (origin.recording == nil ? "" : " · original recording kept"),
+                            systemImage: "graduationcap.fill", tint: CrabrixTheme.blue,
+                            action: { saveDetails(afterDismiss: onReturnToLesson) })
+                        if let recording = origin.recording {
+                            Text("Recording input: \(recording.input)\nChanged code uses Run or Debug; the original replay remains attached to source \(recording.sourceHash.prefix(12)).")
+                                .font(.caption).foregroundStyle(CrabrixTheme.muted)
+                        }
+                    }
 
                     VStack(spacing: 10) {
                         actionButton(
@@ -335,6 +349,7 @@ struct ProjectActionsSheet: View {
                 .frame(maxWidth: 700)
                 .frame(maxWidth: .infinity)
             }
+            .accessibilityIdentifier("project-settings-scroll")
             .background(CrabrixTheme.background.ignoresSafeArea())
             .foregroundStyle(CrabrixTheme.primary)
             .disabled(isSaving)

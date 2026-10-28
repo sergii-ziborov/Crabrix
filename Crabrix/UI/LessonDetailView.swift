@@ -50,10 +50,13 @@ struct LessonDetailView: View {
     let onStart: () -> Void
     let onComplete: () -> Void
     let onShowAchievements: () -> Void
+    let replayMethod: String?
+    let onOpenReplay: ((AtlasRecording) -> Void)?
     /// Called once, with the first answer the reader commits to.
     var onAnswer: (Int, Bool) -> Void = { _, _ in }
 
     @State private var page = 0
+    @State private var showsReplay = false
     @State private var selectedAnswer: Int?
     @State private var lastWrongAnswer: Int?
     /// How many times this lesson's quick check has been answered wrongly, so
@@ -92,6 +95,8 @@ struct LessonDetailView: View {
         courseTheme: RustCourseTheme,
         isCompleted: Bool,
         savedAnswer: Int? = nil,
+        replayMethod: String? = nil,
+        onOpenReplay: ((AtlasRecording) -> Void)? = nil,
         onStart: @escaping () -> Void,
         onComplete: @escaping () -> Void,
         onShowAchievements: @escaping () -> Void,
@@ -101,6 +106,8 @@ struct LessonDetailView: View {
         self.writing = writing
         self.lessonDepth = lessonDepth
         self.illustration = illustration
+        self.replayMethod = replayMethod
+        self.onOpenReplay = onOpenReplay
         self.courseTheme = courseTheme
         self.isCompleted = isCompleted
         self.onStart = onStart
@@ -159,6 +166,13 @@ struct LessonDetailView: View {
         .foregroundStyle(CrabrixTheme.primary)
         .navigationTitle(lesson.title)
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showsReplay) {
+            if let replayMethod, let onOpenReplay {
+                AtlasReplayScreen(method: replayMethod, lessonID: lesson.id,
+                    source: writing.exampleCode, variation: depth.transferChallenge, onOpenCopy: onOpenReplay)
+                    .presentationDetents([.large]).presentationDragIndicator(.visible)
+            }
+        }
     }
 
     @ViewBuilder
@@ -275,6 +289,16 @@ struct LessonDetailView: View {
                         HighlightedCodeBlock(code: example.code)
                     }
                     .padding(.top, 4)
+                }
+            }
+
+            if replayMethod != nil, onOpenReplay != nil {
+                LessonCard(title: "See the algorithm unfold", systemImage: "play.rectangle.fill", tint: CrabrixTheme.blue) {
+                    Text("Replay this exact example with its Rust source, call stack and changing data. Download just this section for offline playback.")
+                        .font(.subheadline).foregroundStyle(CrabrixTheme.muted)
+                    Button("Watch algorithm steps", systemImage: "play.fill") { showsReplay = true }
+                        .buttonStyle(.borderedProminent).tint(CrabrixTheme.blue).foregroundStyle(CrabrixTheme.onAccent)
+                        .accessibilityIdentifier("atlas-open-replay")
                 }
             }
 
@@ -596,6 +620,7 @@ struct LessonDetailView: View {
                 // with three different text widths.
                 .containerRelativeFrame(.horizontal)
             }
+            .accessibilityIdentifier("lesson-reading-\(index)")
             .onChange(of: answerScrollVersion) { _, _ in
                 guard index == 1 else { return }
                 Task { @MainActor in

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		009994261D14A5AB525D7C4B /* ProjectTerminalSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB2D37D461D0EDF4F84DD855 /* ProjectTerminalSession.swift */; };
+		01C468DFEA1B78C4CC42D0EE /* AtlasReplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF80F54BFA59501ADCB52C45 /* AtlasReplayTests.swift */; };
 		03886B8D78DCEDCE1A159287 /* AlgorithmCourseCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19F2B8BCB656C03FB95DB696 /* AlgorithmCourseCatalog.swift */; };
 		06E261C9EDD1565A7E0C336D /* OfflineWebPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 421B0B354AC6593A4245C63D /* OfflineWebPreview.swift */; };
 		07A4E989FB0CC80282D9FD6A /* GitWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610A135ADD4192782FBD84D3 /* GitWorkspaceView.swift */; };
@@ -25,6 +26,7 @@
 		15911FD867B868D0B48AE299 /* basics.descriptor.json in Resources */ = {isa = PBXBuildFile; fileRef = 3B621FFEC5BAF1FC182B7701 /* basics.descriptor.json */; };
 		161F065843C9BB96E2399159 /* PlaygroundRelayConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A2D94257A41AF39A8D7B7A /* PlaygroundRelayConfiguration.swift */; };
 		168F68F03C1D7878723D2E35 /* swift-log-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F5105E60F4F01CBE3743844 /* swift-log-LICENSE.txt */; };
+		17388DFEEB0DD2E645DDFCBD /* AtlasReplayCatalog.json in Resources */ = {isa = PBXBuildFile; fileRef = 3F3BA50A6921633958491F69 /* AtlasReplayCatalog.json */; };
 		174103D1F25E41077BC10B8C /* CargoManifestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D750FF719EB5B0AC11A7ECBF /* CargoManifestTests.swift */; };
 		176D4AA2F72B07A0A78FCB1E /* CrateArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E77E8ACA6B7156FA97662E /* CrateArchive.swift */; };
 		19698524933302A424041804 /* ShowcaseModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C55C8AFA6C00D3918A5941 /* ShowcaseModels.swift */; };
@@ -63,6 +65,7 @@
 		30378E05BFED089463AD93E2 /* InstalledCourseRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD423A006C2A2A962EE2495 /* InstalledCourseRepositoryTests.swift */; };
 		30509E7AF637BB3744529240 /* PlaygroundLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F250162E0D44C864E253DBA /* PlaygroundLink.swift */; };
 		30B2800C5C2D0EB922655367 /* WebPreviewSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA729883F0ED981BAD5C56E /* WebPreviewSnapshot.swift */; };
+		312D5829B94096271C1B6361 /* AtlasReplay in Resources */ = {isa = PBXBuildFile; fileRef = 038C6DCF9B99F84403896D09 /* AtlasReplay */; };
 		31B1EA3B72D4096B6C3B60F8 /* LegalDocuments.json in Resources */ = {isa = PBXBuildFile; fileRef = 9A5377845C2374FBE4F05922 /* LegalDocuments.json */; };
 		32196C3370B0C09B1AE046F8 /* ProjectImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CB34A35CD75A3A08E600A35 /* ProjectImportTests.swift */; };
 		32A6F3F90EC3568CBDFBD0D0 /* TOMLValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40429472D2BAD0BF75F1C46A /* TOMLValue.swift */; };
@@ -154,6 +157,7 @@
 		79E46C75D12D9A21771A58C5 /* ProjectFileTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B270F1FF867630900E5AA2C /* ProjectFileTree.swift */; };
 		7B3A8E22CA37C0245FF282D5 /* ProgressViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F83AABD7E4AC4645DF68D801 /* ProgressViews.swift */; };
 		7B4B46C33F7A4CCC9BA17624 /* CodeContribution.swift in Sources */ = {isa = PBXBuildFile; fileRef = F77FAA3BB1D8FEC4282AAA92 /* CodeContribution.swift */; };
+		7B65128BEBCE8771F995ADA1 /* AtlasReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07DABF5E72AD54A68CFCB6A1 /* AtlasReplay.swift */; };
 		7BD7CCB71584EB821FB533AB /* CourseInstallerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6C5111AEF66AC8F9715CBB /* CourseInstallerTests.swift */; };
 		7CBCEF1EC91B19195BE56AB6 /* RustFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93513300C9BDAAA8BB21A490 /* RustFormatter.swift */; };
 		7EB7008B336CBB4C106E6720 /* SemanticVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50CA9CE9D5823AC1D63033E5 /* SemanticVersion.swift */; };
@@ -179,6 +183,7 @@
 		91ECB094FD58185239CF957C /* CrateGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50F06F8C4B5D398A9DEF9557 /* CrateGuide.swift */; };
 		92FEF66418D13E68DA4E0A91 /* TypingEconomyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB95E5F0B1274A060145AB0 /* TypingEconomyTests.swift */; };
 		941AB2C020E1F2182752CD3A /* basics-1.0.1.zip in Resources */ = {isa = PBXBuildFile; fileRef = 68A15F83CEFC441BA39AF0FC /* basics-1.0.1.zip */; };
+		94B7FB7739043A98CB65C618 /* AtlasReplayLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52C3D8CDBE822289F79CF8C /* AtlasReplayLibrary.swift */; };
 		9679960EF2BB40E7F7457FB9 /* RustUnitTestRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39D97AA40E91AE59E7678D33 /* RustUnitTestRunner.swift */; };
 		968B0F832E7B692C65747E9B /* RustAdvancedExpansion.swift in Sources */ = {isa = PBXBuildFile; fileRef = F49AA1772EADFFDD4CDEF91E /* RustAdvancedExpansion.swift */; };
 		972149CB1D1FD1EFD7A83D7B /* RustSourcePatchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7540BDB82103EC848B1FCC61 /* RustSourcePatchTests.swift */; };
@@ -268,6 +273,7 @@
 		DD74E3CFB5C4836F4B571E46 /* AchievementCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BA8750BF5000C8E1AB3AB63 /* AchievementCelebrationView.swift */; };
 		DF3BD723C27443199DCA4948 /* Rust-COPYRIGHT.txt in Resources */ = {isa = PBXBuildFile; fileRef = C8B0903AB1A17FB1FEAA4301 /* Rust-COPYRIGHT.txt */; };
 		E2216E5248D4491E75B7070B /* signature-vectors.json in Resources */ = {isa = PBXBuildFile; fileRef = 2CF793829AF37658DEFE52CB /* signature-vectors.json */; };
+		E251297DF8E2B142C7BE02AC /* AtlasReplayScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21BDEFD062989EB8A8A957E0 /* AtlasReplayScreen.swift */; };
 		E287F4D8A1B87ADB7E40C15D /* swift-collections-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 6DDCB70965D5433B9032EF8E /* swift-collections-LICENSE.txt */; };
 		E2DCA1B908BDDD547C3AED33 /* RustcRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73F18DAD70C0709D48AC363D /* RustcRuntime.swift */; };
 		E3639AF276481DCC95EEE516 /* CoursePackVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F50EE4654716EB67F513A70 /* CoursePackVerifier.swift */; };
@@ -289,6 +295,7 @@
 		F8F1E02965F5C0146D69DD89 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA5866457924F7521705CCD1 /* Assets.xcassets */; };
 		FA6604AE42D256B00E00939A /* AppLockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73C1FC8A2234B8B8C0D7C08C /* AppLockTests.swift */; };
 		FA6B3D430B69957FC2E7A2AA /* ReleaseScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E560EAA1E9DC2387BE92ED56 /* ReleaseScreenshotTests.swift */; };
+		FAE74B70FF6B9FB281864E75 /* AtlasValueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E20A77FEDA44BB55308AB2E /* AtlasValueView.swift */; };
 		FB1DAD024CC5E08008E2D4ED /* ThemeContrastTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3786418CA7D9446F9360AE70 /* ThemeContrastTests.swift */; };
 		FB1FA3A02859248961D1B842 /* lib0-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 7D7984860DD790021AB2EBC8 /* lib0-LICENSE.txt */; };
 		FCCA5F66ED8D7F43C8828B7B /* PracticeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B61E3671EFD881E08389F5E /* PracticeSheet.swift */; };
@@ -340,10 +347,12 @@
 		021BBD5B7249F757CA8B5ED1 /* TerminalKeyboardController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalKeyboardController.swift; sourceTree = "<group>"; };
 		02D5F2FB12886D9E89DDD12A /* RustDiagnosticParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustDiagnosticParserTests.swift; sourceTree = "<group>"; };
 		038C4428EA249D76936D4DEB /* SemanticVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersionTests.swift; sourceTree = "<group>"; };
+		038C6DCF9B99F84403896D09 /* AtlasReplay */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AtlasReplay; path = CrabrixTests/Fixtures/AtlasReplay; sourceTree = SOURCE_ROOT; };
 		04782359670767CDBCFF020E /* CrateRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrateRegistry.swift; sourceTree = "<group>"; };
 		052DDDC2E6C838168E7840C9 /* Rustfmt-NOTICE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Rustfmt-NOTICE.txt"; sourceTree = "<group>"; };
 		0563B4A20D9F5691AC9F428F /* CourseSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSession.swift; sourceTree = "<group>"; };
 		065123B9507F681E7EFEA6CA /* WebLocalCompleter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebLocalCompleter.swift; sourceTree = "<group>"; };
+		07DABF5E72AD54A68CFCB6A1 /* AtlasReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlasReplay.swift; sourceTree = "<group>"; };
 		08CF787A36CA91D1C110D707 /* BuildDockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildDockView.swift; sourceTree = "<group>"; };
 		0A5A60C859397029EE97D7B2 /* NativeCompilerStub.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = NativeCompilerStub.c; sourceTree = "<group>"; };
 		0B894B9DF30A59B897021905 /* Toolchain */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Toolchain; path = build/Resources/Toolchain; sourceTree = SOURCE_ROOT; };
@@ -367,6 +376,7 @@
 		1DE43E81E450434AC8E261A4 /* CrabrixTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CrabrixTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1EDD832E3CBFDA7EC6D5408D /* lezer-rust-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "lezer-rust-LICENSE.txt"; sourceTree = "<group>"; };
 		20BE9BBC80F38AE223BAB4A3 /* CrateArchiveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrateArchiveTests.swift; sourceTree = "<group>"; };
+		21BDEFD062989EB8A8A957E0 /* AtlasReplayScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlasReplayScreen.swift; sourceTree = "<group>"; };
 		21D39E7ED069B1905F8B82E5 /* CrabrixGitCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = CrabrixGitCore; path = Vendor/CrabrixGitCore; sourceTree = SOURCE_ROOT; };
 		24851507366B69E1C89A070E /* AppToolchainReleaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppToolchainReleaseTests.swift; sourceTree = "<group>"; };
 		253B1AC7EA395E9AF1BC934A /* RustSamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustSamples.swift; sourceTree = "<group>"; };
@@ -389,6 +399,7 @@
 		3E7AAE0FF41DA6B6F6831225 /* NativeCompilerBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NativeCompilerBridge.h; sourceTree = "<group>"; };
 		3EA05660FAC54CECF075853F /* ProgressAndTrainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressAndTrainTests.swift; sourceTree = "<group>"; };
 		3F2DA7BB9D2572998F404B0A /* RustCodeCompletion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustCodeCompletion.swift; sourceTree = "<group>"; };
+		3F3BA50A6921633958491F69 /* AtlasReplayCatalog.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = AtlasReplayCatalog.json; sourceTree = "<group>"; };
 		3F7FB611E7693C23229E7F63 /* GitWorkspaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitWorkspaceTests.swift; sourceTree = "<group>"; };
 		3F84AB4318432025CA06FD68 /* CrabrixShare.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = CrabrixShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		403C553DF49D8A3EDFEEAE4A /* CargoManifestEditorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoManifestEditorTests.swift; sourceTree = "<group>"; };
@@ -426,6 +437,7 @@
 		5CE24E0030AC4CFD4B7F6E01 /* ProblemReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemReportView.swift; sourceTree = "<group>"; };
 		5CEBD152D5381C70622EDD87 /* BuildWorkspaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildWorkspaceTests.swift; sourceTree = "<group>"; };
 		5D4D1BA14FA62EFB6EB82614 /* GitCredentialVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitCredentialVault.swift; sourceTree = "<group>"; };
+		5E20A77FEDA44BB55308AB2E /* AtlasValueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlasValueView.swift; sourceTree = "<group>"; };
 		5F250162E0D44C864E253DBA /* PlaygroundLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundLink.swift; sourceTree = "<group>"; };
 		5F2E28AF633C57EFB91DF034 /* LocalProjectLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalProjectLoader.swift; sourceTree = "<group>"; };
 		610A135ADD4192782FBD84D3 /* GitWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitWorkspaceView.swift; sourceTree = "<group>"; };
@@ -534,6 +546,7 @@
 		B2D86CD1511B6A01233B4C9B /* wasm-rustc-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "wasm-rustc-LICENSE.txt"; sourceTree = "<group>"; };
 		B46F92CEEBDC8BB435442587 /* LocalAvatarStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAvatarStore.swift; sourceTree = "<group>"; };
 		B5027E80C0376645BB780AC1 /* MigrationCoursePacks */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MigrationCoursePacks; path = Crabrix/Resources/MigrationCoursePacks; sourceTree = SOURCE_ROOT; };
+		B52C3D8CDBE822289F79CF8C /* AtlasReplayLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlasReplayLibrary.swift; sourceTree = "<group>"; };
 		B5D9270FA8D46222F66AB4CE /* AcademyContentStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcademyContentStore.swift; sourceTree = "<group>"; };
 		B764DA54BC3599CE4F4C5A11 /* RustDebugCompiler.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = RustDebugCompiler.js; sourceTree = "<group>"; };
 		B9D7D181612381980B5CB164 /* CrabrixProjectDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrabrixProjectDocument.swift; sourceTree = "<group>"; };
@@ -565,6 +578,7 @@
 		CDAED32DC7E25381FCA215C6 /* WebProjectBuilder.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = WebProjectBuilder.js; sourceTree = "<group>"; };
 		CF605A50A6EB406DF55C4E57 /* CodeRecallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeRecallView.swift; sourceTree = "<group>"; };
 		CF7DB287D36ACF2B45D2CA19 /* PlaygroundTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundTests.swift; sourceTree = "<group>"; };
+		CF80F54BFA59501ADCB52C45 /* AtlasReplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlasReplayTests.swift; sourceTree = "<group>"; };
 		CFA00659D0D6FAD5318CE39C /* swift-atomics-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-atomics-LICENSE.txt"; sourceTree = "<group>"; };
 		D111D533F55B983FC047F784 /* TerminalKeyboardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalKeyboardTests.swift; sourceTree = "<group>"; };
 		D17C0F44F9A525F94B586EE7 /* GitHubProjectImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubProjectImporter.swift; sourceTree = "<group>"; };
@@ -757,6 +771,8 @@
 				19F2B8BCB656C03FB95DB696 /* AlgorithmCourseCatalog.swift */,
 				BEE8D71E8F886A79DC5EF3FD /* AlgorithmCourseData.swift */,
 				162A3B2789B3CD0F65472A4E /* AlgorithmVerificationData.swift */,
+				07DABF5E72AD54A68CFCB6A1 /* AtlasReplay.swift */,
+				B52C3D8CDBE822289F79CF8C /* AtlasReplayLibrary.swift */,
 				A964892281A3B80AA39A7C5B /* CodeRecallDeck.swift */,
 				F49AA1772EADFFDD4CDEF91E /* RustAdvancedExpansion.swift */,
 				803DCDE8E1FA58CCCBB670AF /* RustBasicsExpansion.swift */,
@@ -859,6 +875,7 @@
 		6E813F931BF1A33E9CC0BCEF /* Fixtures */ = {
 			isa = PBXGroup;
 			children = (
+				038C6DCF9B99F84403896D09 /* AtlasReplay */,
 				EFD4DE8637BC7D39B5CE2EB9 /* BrowserReactProject.json */,
 				91DD1737DEBABD179BA0EF7F /* README.md */,
 				007343726E69BCBB369AC22D /* CoursePack */,
@@ -917,6 +934,7 @@
 				D1A766BDDD55FB6BEBD30B38 /* AppearanceRenderingTests.swift */,
 				73C1FC8A2234B8B8C0D7C08C /* AppLockTests.swift */,
 				24851507366B69E1C89A070E /* AppToolchainReleaseTests.swift */,
+				CF80F54BFA59501ADCB52C45 /* AtlasReplayTests.swift */,
 				ED805A32682154958D4A1EC2 /* BorrowRepairTests.swift */,
 				CB639C49FB0B78A964478AF2 /* BrowserPlaygroundWebKitTests.swift */,
 				B9F5F29ED903DD6057CADC06 /* BrowserProjectBuilderTests.swift */,
@@ -1005,6 +1023,8 @@
 				8BA8750BF5000C8E1AB3AB63 /* AchievementCelebrationView.swift */,
 				5764C24D7A7235B9C83EC0F1 /* AdaptiveFold.swift */,
 				CD350E97620F1FB339249C56 /* AppearancePicker.swift */,
+				21BDEFD062989EB8A8A957E0 /* AtlasReplayScreen.swift */,
+				5E20A77FEDA44BB55308AB2E /* AtlasValueView.swift */,
 				08CF787A36CA91D1C110D707 /* BuildDockView.swift */,
 				4416BEF4A5157F2F6D4E2B2F /* BuildWorkflowControls.swift */,
 				92BB070DF07D979DE9FFEE95 /* CargoDependencyCatalogSheet.swift */,
@@ -1106,6 +1126,7 @@
 			children = (
 				84CD37596DAEDCB81F6DF7B0 /* ActiveCourseCatalog */,
 				CA5866457924F7521705CCD1 /* Assets.xcassets */,
+				3F3BA50A6921633958491F69 /* AtlasReplayCatalog.json */,
 				AA04BBFEA122899821E83B68 /* GitCore */,
 				B2888F23BE9517E3AC3CA427 /* Info.plist */,
 				9A5377845C2374FBE4F05922 /* LegalDocuments.json */,
@@ -1288,6 +1309,7 @@
 			files = (
 				DB6E886AFE6EC3B085FD76D2 /* ActiveCourseCatalog in Resources */,
 				F8F1E02965F5C0146D69DD89 /* Assets.xcassets in Resources */,
+				17388DFEEB0DD2E645DDFCBD /* AtlasReplayCatalog.json in Resources */,
 				CFFADC07DACA0221CB930503 /* GitCore in Resources */,
 				31B1EA3B72D4096B6C3B60F8 /* LegalDocuments.json in Resources */,
 				86CFC690934610F01587597F /* MigrationCoursePacks in Resources */,
@@ -1341,6 +1363,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				312D5829B94096271C1B6361 /* AtlasReplay in Resources */,
 				66F573E5DD5562184C4D4BB0 /* BrowserReactProject.json in Resources */,
 				1F5C8B80757D5C47EFD7FF2F /* CompilerCandidate in Resources */,
 				5B10435436E88DF87EB62125 /* README.md in Resources */,
@@ -1372,7 +1395,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -eu\n\"$SRCROOT/scripts/fetch_toolchain.sh\"\n/usr/bin/python3 \"$SRCROOT/scripts/package_toolchain.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/prepare_native_compiler.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/verify_rust_tools.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/verify_git_core.py\"\n";
+			shellScript = "set -eu\n\"$SRCROOT/scripts/fetch_toolchain.sh\"\n/usr/bin/python3 \"$SRCROOT/scripts/package_toolchain.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/prepare_native_compiler.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/verify_rust_tools.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/verify_git_core.py\"\n/bin/bash \"$SRCROOT/scripts/verify_atlas_catalog.sh\" \"$SRCROOT\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1408,6 +1431,10 @@
 				8F689304E1B9905A53F5FEAF /* AppToolchainRelease.swift in Sources */,
 				2EDAA64A906A801232614A42 /* AppearancePicker.swift in Sources */,
 				3678B1AFA13BEEC4505BA950 /* AppleIntelligenceDiagnosticAdvisor.swift in Sources */,
+				7B65128BEBCE8771F995ADA1 /* AtlasReplay.swift in Sources */,
+				94B7FB7739043A98CB65C618 /* AtlasReplayLibrary.swift in Sources */,
+				E251297DF8E2B142C7BE02AC /* AtlasReplayScreen.swift in Sources */,
+				FAE74B70FF6B9FB281864E75 /* AtlasValueView.swift in Sources */,
 				53C508818988C87F3CA384F9 /* BorrowExplanation.swift in Sources */,
 				B0E19E7B68ACB01F1F333C69 /* BorrowRepair.swift in Sources */,
 				71C82B5A52867D240DEEB514 /* BrowserNpmRegistry.swift in Sources */,
@@ -1552,6 +1579,7 @@
 				FA6604AE42D256B00E00939A /* AppLockTests.swift in Sources */,
 				EDD602BB2F5547C82174AD00 /* AppToolchainReleaseTests.swift in Sources */,
 				D20492B36080AEDD1B45CF7A /* AppearanceRenderingTests.swift in Sources */,
+				01C468DFEA1B78C4CC42D0EE /* AtlasReplayTests.swift in Sources */,
 				ABDFFA5263492E9C914C3C6B /* BorrowRepairTests.swift in Sources */,
 				AF159F24CBA8AB4A62BF7484 /* BrowserPlaygroundWebKitTests.swift in Sources */,
 				48F4658BA262324E7B476879 /* BrowserProjectBuilderTests.swift in Sources */,

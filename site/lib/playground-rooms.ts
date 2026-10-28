@@ -90,6 +90,7 @@ export class PlaygroundRooms {
   state(id: string, supplied: string) {
     const room = this.access(id, supplied);
     return { id, createdAt: room.createdAt, expiresAt: room.expiresAt, sequence: room.sequence,
+      protocol: { conditionalUpdates: 1 },
       snapshotSequence: room.snapshotSequence, snapshot: room.snapshot, events: room.events, presence: Array.from(room.presence, ([peer, value]) => ({ peer, packet: value.packet })) };
   }
 
@@ -102,13 +103,16 @@ export class PlaygroundRooms {
     return () => { room.listeners.delete(peer); room.presence.delete(peer); };
   }
 
-  append(id: string, supplied: string, peer: string, messageID: string, packet: EncryptedPacket) {
+  append(id: string, supplied: string, peer: string, messageID: string, packet: EncryptedPacket, expectedSequence?: number) {
     const room = this.access(id, supplied, true);
     packet = validatePacket(packet, ROOM_LIMITS.updateBytes);
     if (!room.listeners.has(peer) || !/^[A-Za-z0-9_-]{16,64}$/.test(messageID)) throw new PlaygroundError("Join the interview before sending changes.", 409);
     this.limit(`updates:${id}:${peer}`, 180);
     const previous = room.recentMessages.get(messageID);
     if (previous !== undefined) return { sequence: previous };
+    if (expectedSequence !== undefined && (!Number.isSafeInteger(expectedSequence) || expectedSequence < 0 || expectedSequence !== room.sequence)) {
+      throw new PlaygroundError("The shared project changed. Read its latest revision before applying changes.", 409);
+    }
     if (room.events.length >= ROOM_LIMITS.events || this.residentBytes() + packetBytes(packet) > ROOM_LIMITS.residentBytes) throw new PlaygroundError("Waiting for a fresh encrypted snapshot; retry your update.", 409);
     const event = { sequence: ++room.sequence, peer, packet };
     room.events.push(event); room.recentMessages.set(messageID, event.sequence);

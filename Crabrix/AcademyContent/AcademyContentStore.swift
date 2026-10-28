@@ -66,7 +66,25 @@ final class AcademyContentStore: ObservableObject {
         preparing = task
         defer { loading = false; preparing = nil }
         do {
-            repository = try await task.value
+            let prepared = try await task.value
+            #if CRABRIX_LEGACY_FIXTURES
+            // Explicit Simulator qualification uses the actual public signed
+            // course update. No replacement curriculum or test key is shipped.
+            if ProcessInfo.processInfo.arguments.contains("--crabrix-atlas-public-course-fixture") {
+                let bootstrap = try CourseBootstrap()
+                let latest = CourseUpdatePlanner.latestCompatible(in: try bootstrap.bundledCatalog(),
+                                                                  appVersion: bootstrap.appVersion)
+                guard let entry = latest["algorithms|en"] else { throw CoursePackError.invalidCatalog }
+                let downloader = try CourseDownloadManager()
+                let download = try await downloader.download(entry)
+                let installer = try CourseInstaller(root: bootstrap.root, appVersion: bootstrap.appVersion)
+                _ = try await installer.install(descriptorBytes: download.descriptor,
+                    downloadedArchive: download.archive, keyring: bootstrap.keyring())
+                repository = try await bootstrap.loadInstalled()
+            } else { repository = prepared }
+            #else
+            repository = prepared
+            #endif
             if catalog == nil, let bootstrap = try? CourseBootstrap(),
                let keyring = try? bootstrap.keyring() {
                 let client = CourseCatalogClient(

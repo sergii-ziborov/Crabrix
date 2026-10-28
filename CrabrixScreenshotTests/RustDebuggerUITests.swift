@@ -3,6 +3,69 @@ import UIKit
 
 @MainActor
 final class RustDebuggerUITests: XCTestCase {
+    func testAtlasOfflineStepsAndPersonalCopyKeepLearningAndEditorIntact() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-CrabrixTab", "learn", "-CrabrixLearn", "algorithm.linear-scan.model",
+            "--crabrix-atlas-public-course-fixture", "-crabrix.appearance",
+            UIDevice.current.userInterfaceIdiom == .pad ? "cyberpunkNeon" : "dark"]
+        app.launch()
+        let watch = app.buttons["atlas-open-replay"]
+        let reading = app.scrollViews["lesson-reading-0"]
+        XCTAssertTrue(reading.waitForExistence(timeout: 180), app.debugDescription)
+        for _ in 0..<16 where !watch.isHittable { reading.swipeUp() }
+        XCTAssertTrue(watch.isHittable, app.debugDescription); watch.tap()
+        let play = app.buttons["atlas-replay-play"]
+        let download = app.buttons["atlas-download-section"]
+        if download.waitForExistence(timeout: 8) { download.tap() }
+        XCTAssertTrue(play.waitForExistence(timeout: 90), app.debugDescription)
+        let step = app.staticTexts["atlas-replay-step"]
+        XCTAssertTrue(step.label.hasPrefix("Step 1 /"))
+        for _ in 0..<4 { app.buttons["Next replay step"].tap() }
+        XCTAssertTrue(step.label.hasPrefix("Step 5 /"))
+        app.buttons["Previous replay step"].tap()
+        XCTAssertTrue(step.label.hasPrefix("Step 4 /"))
+        capture("native-atlas-data-and-code")
+        app.buttons["Restart replay"].tap()
+        XCTAssertTrue(step.label.hasPrefix("Step 1 /"))
+        app.buttons["Close algorithm replay"].tap()
+        // The prepared section is opened again through the actual lesson flow.
+        // The loader has no implicit network call during this second open.
+        XCTAssertTrue(watch.waitForExistence(timeout: 10)); watch.tap()
+        XCTAssertTrue(play.waitForExistence(timeout: 15))
+        let open = app.buttons["atlas-open-personal-copy"], scroll = app.scrollViews["atlas-replay-scroll"]
+        for _ in 0..<14 where !open.isHittable { scroll.swipeUp() }
+        XCTAssertTrue(open.isHittable, app.debugDescription)
+        capture("native-atlas-personal-copy")
+        open.tap()
+        let editor = app.textViews["Source code editor"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 15), app.debugDescription)
+        XCTAssertTrue((editor.value as? String ?? "").contains("fn main()"))
+        for tab in ["build-dock-code", "build-dock-problems", "build-dock-output", "build-dock-terminal"] {
+            XCTAssertTrue(app.buttons[tab].exists)
+        }
+        app.buttons["Run project"].tap()
+        app.buttons["build-dock-output"].tap()
+        XCTAssertTrue(app.staticTexts["STDOUT"].waitForExistence(timeout: 120), app.debugDescription)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label == %@ OR label == %@", "2", "2\n")).firstMatch.exists)
+        app.buttons["build-dock-code"].tap()
+        openProjectSettings(app)
+        let debug = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Debug Rust project")).firstMatch
+        for _ in 0..<5 where !debug.isHittable { app.scrollViews["project-settings-scroll"].swipeUp() }
+        XCTAssertTrue(debug.isHittable, app.debugDescription); debug.tap()
+        XCTAssertTrue(app.staticTexts["debugger-location"].waitForExistence(timeout: 120), app.debugDescription)
+        capture("native-atlas-personal-debug")
+        app.buttons["Continue"].tap()
+        XCTAssertTrue(app.buttons["Run project"].waitForExistence(timeout: 60))
+        app.buttons["build-dock-output"].tap()
+        XCTAssertTrue(app.staticTexts["STDOUT"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label == %@ OR label == %@", "2", "2\n")).firstMatch.exists)
+        app.buttons["build-dock-code"].tap()
+        openProjectSettings(app)
+        let back = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Return to lesson")).firstMatch
+        XCTAssertTrue(back.waitForExistence(timeout: 10), app.debugDescription); back.tap()
+        XCTAssertTrue(reading.waitForExistence(timeout: 10))
+    }
+
     func testNativeHTTPSCloneRemoteAndFullRepositoryExport() throws {
         let app = XCUIApplication(); app.launchArguments = ["--crabrix-auto-rust-tools-fixture"]; app.launch()
         XCTAssertTrue(app.textViews["Source code editor"].waitForExistence(timeout: 60))
