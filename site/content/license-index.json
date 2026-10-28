@@ -1,5 +1,13 @@
 [
   {
+    "id": "Rustfmt",
+    "name": "Rustfmt 1.10.0-nightly \u00b7 local formatter",
+    "summary": "Rust Project Contributors and Scalar \u00b7 full dependency notices and source below",
+    "documents": [
+      "Rustfmt-NOTICE"
+    ]
+  },
+  {
     "id": "lezer-common",
     "name": "Lezer syntax trees",
     "summary": "Marijn Haverbeke and contributors \u00b7 MIT",

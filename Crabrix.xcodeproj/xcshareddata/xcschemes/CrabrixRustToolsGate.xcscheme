@@ -65,7 +65,9 @@
                ReferencedContainer = "container:Crabrix.xcodeproj">
             </BuildableReference>
             <SelectedTests>
-               <Test Identifier = "RustToolsTests" />
+               <Test
+                  Identifier = "RustToolsTests">
+               </Test>
             </SelectedTests>
          </TestableReference>
       </Testables>

@@ -455,6 +455,23 @@ schemes:
           selectedTests:
             - RustToolsTests
 
+  CrabrixReliabilityGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+    test:
+      config: CompilerCandidate
+      gatherCoverageData: false
+      targets:
+        - name: CrabrixTests
+          selectedTests:
+            - ProjectImportTests
+            - TerminalKeyboardTests
+            - ProjectAuthoringTests
+            - ProjectTerminalSessionTests
+            - RustDebuggerTests
+
   CrabrixPlaygroundGate:
     build:
       targets:

@@ -65,11 +65,21 @@
                ReferencedContainer = "container:Crabrix.xcodeproj">
             </BuildableReference>
             <SelectedTests>
-               <Test Identifier = "ProjectImportTests" />
-               <Test Identifier = "TerminalKeyboardTests" />
-               <Test Identifier = "ProjectAuthoringTests" />
-               <Test Identifier = "ProjectTerminalSessionTests" />
-               <Test Identifier = "RustDebuggerTests" />
+               <Test
+                  Identifier = "ProjectImportTests">
+               </Test>
+               <Test
+                  Identifier = "TerminalKeyboardTests">
+               </Test>
+               <Test
+                  Identifier = "ProjectAuthoringTests">
+               </Test>
+               <Test
+                  Identifier = "ProjectTerminalSessionTests">
+               </Test>
+               <Test
+                  Identifier = "RustDebuggerTests">
+               </Test>
             </SelectedTests>
          </TestableReference>
       </Testables>

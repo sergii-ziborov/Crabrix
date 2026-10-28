@@ -114,6 +114,13 @@ def outputs():
         if "version" in pin["state"] and pin["state"]["version"] not in entry["name"]:
             raise ValueError(f"License catalog does not match resolved version: {identity}")
     generated[ROOT / "site/content/license-index.json"] = json.dumps(entries, indent=2) + "\n"
+    formatter = ROOT / "Crabrix/Resources/RustTools"
+    formatter_manifest = json.loads((formatter / "manifest.json").read_text())
+    formatter_notices = (formatter / "RustfmtVendorNotices.zip").read_bytes()
+    if hashlib.sha256(formatter_notices).hexdigest() != formatter_manifest["licenseArchiveSHA256"]:
+        raise ValueError("Pinned formatter notice archive changed")
+    generated[ROOT / "site/public/licenses/RustfmtVendorNotices.zip"] = formatter_notices
+    generated[ROOT / "site/public/licenses/RustfmtManifest.json"] = (formatter / "manifest.json").read_text()
     provenance = json.loads((ROOT / "docs/legal/toolchain-notice-provenance.json").read_text())
     for original, bundled in [("licenses.zip", "ToolchainLicenses.zip"), ("vendor-notices.zip", "ToolchainVendorNotices.zip")]:
         data = (ROOT / "Crabrix/Resources/Licenses" / bundled).read_bytes()
