@@ -59,6 +59,119 @@ final class PlaygroundTests: XCTestCase {
 
 @MainActor
 final class PlaygroundTwoDeviceTests: XCTestCase {
+    func testHTTPSLinkOpensFreshRoomWithoutAutoOpenArguments() async throws {
+        let nonce = "https-link-" + UUID().uuidString
+        let codec = Bundle(for: Self.self).url(forResource: "PlaygroundCodec", withExtension: "js")!
+        let document = PlaygroundDocument(name: nonce, entryFile: "main.rs", files: ["main.rs": "fn main(){println!(\"\(nonce)\");}\n"])
+        let owner = try await PlaygroundLiveSession.create(document: document, lifetimeSeconds: 3600, origin: URL(string: "https://crabrix.com"), codecURL: codec)
+        defer { owner.stop() }
+        owner.start()
+        let app = XCUIApplication(); app.launchArguments = ["-crabrix.appearance", "dark"]; app.launch()
+        app.open(owner.link.url)
+        let editor = app.textViews["Source code editor"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 45))
+        let deadline = Date().addingTimeInterval(45)
+        while Date() < deadline, (editor.value as? String)?.contains(nonce) != true { try await Task.sleep(for: .milliseconds(200)) }
+        XCTAssertTrue((editor.value as? String)?.contains(nonce) == true, "The HTTPS entry point must load this new room, rather than a previous project")
+        let capture = XCTAttachment(screenshot: XCUIScreen.main.screenshot()); capture.name = "https-new-room"; capture.lifetime = .keepAlways; add(capture)
+        try await owner.closeRoom()
+    }
+
+    /// Two independently running app editors and the production website share
+    /// source/presence; each debugger executes on its own device.
+    func testLinksSelectionsAndDebugAcrossTwoAppsAndWebsite() async throws {
+        struct Fixture: Decodable { let url: URL; let nonce: String }
+        let base = URL(string: "http://127.0.0.1:3395")!
+        let (data, _) = try await URLSession.shared.data(from: base.appendingPathComponent("fixture"))
+        let fixture = try JSONDecoder().decode(Fixture.self, from: data)
+        let pad = UIDevice.current.userInterfaceIdiom == .pad
+        let role = pad ? "pad" : "phone"
+        func report(_ event: String) async throws {
+            var request = URLRequest(url: base.appendingPathComponent("event")); request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try JSONSerialization.data(withJSONObject: ["role": role, "event": event])
+            _ = try await URLSession.shared.data(for: request)
+        }
+        func waitSource(_ editor: XCUIElement, _ text: String) async throws {
+            let until = Date().addingTimeInterval(120)
+            while Date() < until {
+                if editor.exists, (editor.value as? String)?.contains(text) == true { return }
+                try await Task.sleep(for: .milliseconds(200))
+            }
+            XCTFail("Shared source missing: \(text)"); throw NSError(domain: "CrossClient", code: 1)
+        }
+        func capture(_ name: String) {
+            let image = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+            image.name = "cross-\(role)-\(name)"; image.lifetime = .keepAlways; add(image)
+        }
+        let app = XCUIApplication()
+        app.launchArguments = ["-crabrix.appearance", pad ? "amber" : "dark"]
+        app.launch()
+        // Exercise the production URL handler rather than the auto-open fixture.
+        let native = fixture.url.absoluteString.replacingOccurrences(of: "https://crabrix.com/playground/", with: "crabrix://playground/")
+        app.open(URL(string: native)!)
+        let editor = app.textViews["Source code editor"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 45))
+        try await waitSource(editor, fixture.nonce)
+        try await report("opened-link")
+        if pad { try await waitSource(editor, "from-phone") }
+        editor.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 120, dy: 25)).tap()
+        if !app.keyboards.firstMatch.waitForExistence(timeout: 3) { editor.tap() }
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 8))
+        editor.typeText(" from-\(role) ")
+        // Native UITextView selection must reach the other peers as a range.
+        editor.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 115, dy: 25)).doubleTap()
+        try await report("selected")
+        let selectionDeadline = Date().addingTimeInterval(60)
+        while Date() < selectionDeadline {
+            let (phaseData, _) = try await URLSession.shared.data(from: base.appendingPathComponent("phase"))
+            if let value = try JSONSerialization.jsonObject(with: phaseData) as? [String: String], value["phase"] == "selection-ready" { break }
+            try await Task.sleep(for: .milliseconds(200))
+        }
+        capture("selection")
+        try await report("selection-captured")
+        try await waitSource(editor, "shared-debug")
+        if let hide = app.buttons.matching(identifier: "Hide keyboard").allElementsBoundByIndex.first(where: { $0.isHittable }) { hide.tap() }
+        if app.buttons["Project menu"].exists { app.buttons["Project menu"].tap() }
+        if app.buttons["PROJECT"].exists { app.buttons["PROJECT"].tap(); app.buttons["Project Details & Share"].tap() }
+        else { app.buttons["Project settings and share"].tap() }
+        let debug = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Debug Rust project")).firstMatch
+        XCTAssertTrue(debug.waitForExistence(timeout: 10)); debug.tap()
+        let location = app.staticTexts["debugger-location"]
+        func waitLine(_ line: Int) throws {
+            let predicate = NSPredicate(format: "label CONTAINS %@", "main.rs:\(line) ·")
+            let result = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: predicate, object: location)], timeout: 120)
+            XCTAssertEqual(result, .completed)
+            if result != .completed { throw NSError(domain: "CrossClientDebug", code: line) }
+        }
+        try waitLine(2)
+        app.buttons["Step over"].tap(); try waitLine(3)
+        app.buttons["Step over"].tap(); try waitLine(4)
+        app.buttons["Inspect debugger state"].tap()
+        let preview = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "shared-debug")).firstMatch
+        XCTAssertTrue(preview.waitForExistence(timeout: 10))
+        let vector = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "[len=2] [2, 40]")).firstMatch
+        XCTAssertTrue(vector.waitForExistence(timeout: 10)); capture("debug-values")
+        app.buttons["Close debugger state"].tap()
+        try await report("debug-paused")
+        XCTAssertTrue(app.buttons["Run project"].waitForExistence(timeout: 120), "Remote edits cancel stale local Debug")
+        XCTAssertFalse(app.buttons["Step over"].exists)
+        app.buttons["build-dock-code"].tap()
+        try await waitSource(editor, "shared-final=42")
+        try await report("debug-stopped")
+        app.buttons["Run project"].tap()
+        XCTAssertTrue(app.buttons["Run project"].waitForExistence(timeout: 180))
+        app.buttons["build-dock-output"].tap()
+        let output = app.staticTexts.matching(NSPredicate(format: "label == %@ OR label == %@", "shared-final=42", "shared-final=42\n")).firstMatch
+        XCTAssertTrue(output.waitForExistence(timeout: 15)); capture("local-output")
+        // The HTTPS link must also be accepted by the app's link entry point.
+        app.open(fixture.url)
+        XCTAssertTrue(app.buttons["build-dock-code"].waitForExistence(timeout: 15))
+        app.buttons["build-dock-code"].tap()
+        try await waitSource(editor, "shared-final=42")
+        try await report("done")
+    }
+
     func testTwoRealAppsAndBrowserShareTheSameRoom() async throws {
         struct Fixture: Decodable { let url: URL; let origin: URL?; let nonce: String? }
         let (data, _) = try await URLSession.shared.data(from: URL(string: "http://127.0.0.1:3395/fixture")!)

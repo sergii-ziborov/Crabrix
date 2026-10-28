@@ -52,3 +52,18 @@ STDOUT, rather than matching a string still visible in source code.
 the real native Output screenshot, sitemap exclusion of room URLs and a fresh
 guest browser compilation. Initial toolchain transfer has an inactivity deadline;
 received byte progress extends only loading, not compilation or program execution.
+
+## Paired local debugger and URL gate (2026-10-28)
+
+The coordinator drives two real Simulator apps and Chromium through the production encrypted relay. Each client compiles and runs locally. It checks source convergence, native selections in the browser, browser selections in native transport/canvases, String/Vec inspection, cancellation when shared source changes, and exact stdout on all three clients.
+
+1. Run `bash scripts/probes/playground/build-native-peer.sh` to build the observer from the same Swift codec, CryptoKit and transport sources used by the app.
+2. Build the `CrabrixTwoDevicePlaygroundGate` scheme for testing with configuration `CompilerCandidate` and a Simulator destination.
+3. Start `node scripts/probes/playground/cross-client.cjs` from the repository root. `CRABRIX_PLAYWRIGHT_MODULE` can point to an installed Playwright module; `CRABRIX_NATIVE_PROBE` can override the observer binary. Wait for `READY`.
+4. Run `PlaygroundTwoDeviceTests/testLinksSelectionsAndDebugAcrossTwoAppsAndWebsite` concurrently on an iPhone Simulator and an iPad Simulator using `xcodebuild test-without-building`. Disable parallel testing within each Xcode process. Use separate result bundles. The local coordinator owns port 3395.
+5. Run `PlaygroundTwoDeviceTests/testHTTPSLinkOpensFreshRoomWithoutAutoOpenArguments` on each Simulator. It creates a new production room and verifies its unique source through the native HTTPS URL entry point. It does not use auto-open launch fixtures.
+6. Require one actual executed/passed test per result bundle, zero failures and zero skipped tests. A successful Xcode exit with zero executed tests is not a pass. After an interrupted Simulator runner, reinstall that test runner before retrying.
+
+`CRABRIX_LOCAL_TOOLCHAIN_MIRROR=1` supplies only the two large compiler assets from `site/public`, after comparing their SHA-256 with the pinned manifest. The page, encrypted relay, source/presence transport and app clients still use production HTTPS. Compilation and execution still happen in the browser Worker. This option does not test the initial public download; test that separately when the toolchain or serving rules change.
+
+The results qualify Simulator UI and app URL handlers. They do not prove Safari's external Universal Link policy on a physical device. Check the site's AASA, Apple's cached AASA and the signed release entitlements separately, and verify physical-device handoff when a device is available.

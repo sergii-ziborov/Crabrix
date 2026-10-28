@@ -1,0 +1,269 @@
+{
+  "verifiedAtUTC": "2026-10-28T00:51:35.308911+00:00",
+  "productionOrigin": "https://crabrix.com",
+  "collaboration": {
+    "at": "2026-10-28T00:46:45.479Z",
+    "origin": "https://crabrix.com",
+    "toolchainBytesFromVerifiedLocalMirror": true,
+    "sourceCommit": "ecc45983a60bd8ed794d03bcae5ada145f52edc7",
+    "reports": [
+      {
+        "role": "pad",
+        "event": "opened-link",
+        "at": "2026-10-28T00:45:04.522Z"
+      },
+      {
+        "event": "opened-link",
+        "role": "phone",
+        "at": "2026-10-28T00:45:54.378Z"
+      },
+      {
+        "event": "selected",
+        "role": "phone",
+        "at": "2026-10-28T00:45:59.523Z"
+      },
+      {
+        "role": "pad",
+        "event": "selected",
+        "at": "2026-10-28T00:46:04.325Z"
+      },
+      {
+        "event": "selection-captured",
+        "role": "phone",
+        "at": "2026-10-28T00:46:06.431Z"
+      },
+      {
+        "role": "pad",
+        "event": "selection-captured",
+        "at": "2026-10-28T00:46:06.457Z"
+      },
+      {
+        "role": "phone",
+        "event": "debug-paused",
+        "at": "2026-10-28T00:46:21.110Z"
+      },
+      {
+        "role": "pad",
+        "event": "debug-paused",
+        "at": "2026-10-28T00:46:24.313Z"
+      },
+      {
+        "event": "debug-stopped",
+        "role": "phone",
+        "at": "2026-10-28T00:46:28.138Z"
+      },
+      {
+        "event": "debug-stopped",
+        "role": "pad",
+        "at": "2026-10-28T00:46:29.418Z"
+      },
+      {
+        "role": "phone",
+        "event": "done",
+        "at": "2026-10-28T00:46:45.193Z"
+      },
+      {
+        "event": "done",
+        "role": "pad",
+        "at": "2026-10-28T00:46:45.403Z"
+      }
+    ],
+    "nativeSelectionParticipants": 2,
+    "passed": [
+      "custom scheme opens both actual apps",
+      "native-native and native-web source",
+      "both native selections render in browser",
+      "browser selection reaches native transport and both app canvases",
+      "independent native and browser String/Vec debugging",
+      "selection does not invalidate browser Debug",
+      "remote source cancels stale Debug on all clients",
+      "actual local stdout on all three clients"
+    ],
+    "sourceExecutedOnBackend": false,
+    "physicalDevices": false
+  },
+  "nativeUITests": {
+    "PhoneQualified": {
+      "result": "Passed",
+      "totalTestCount": 1,
+      "passedTests": 1,
+      "failedTests": 0,
+      "skippedTests": 0
+    },
+    "PadFinal": {
+      "result": "Passed",
+      "totalTestCount": 1,
+      "passedTests": 1,
+      "failedTests": 0,
+      "skippedTests": 0
+    },
+    "PhoneHTTPS": {
+      "result": "Passed",
+      "totalTestCount": 1,
+      "passedTests": 1,
+      "failedTests": 0,
+      "skippedTests": 0
+    },
+    "PadHTTPS": {
+      "result": "Passed",
+      "totalTestCount": 1,
+      "passedTests": 1,
+      "failedTests": 0,
+      "skippedTests": 0
+    }
+  },
+  "nativeResultsDirectory": "build/playground-crossclient-20261028",
+  "visualSelectionInspection": {
+    "phone": "phone-attachments/0E6587B0-C114-4254-8C41-FEDAE2D99F64.png",
+    "pad": "pad-attachments/24CE71BC-6E29-41DE-8EA4-E6D60C51B0E1.png",
+    "observed": "Remote colored ranges/carets and participant labels appear in both native canvases; browser decoration also checked."
+  },
+  "testQualifications": [
+    "iPhone and iPad Simulators running iOS 26.5, Chromium on macOS; no physical-device claim.",
+    "Native app sources match the signed source for App Store build 108. Only UI-test code and test tools changed.",
+    "Each client owns its Debug session; breakpoints/locals and step controls are local, while source and selections are collaborative.",
+    "Repeated browser compiler assets came from a SHA-256-verified local mirror; page and room transport used production HTTPS. Initial public browser acquisition/execution was separately verified in docs/site-playground-shell-release-2026-10-28.json.",
+    "First UI harness incorrectly read a missing editable TextView during Debug; fixed the harness to wait for cancellation and reopen Code. A zero-test runner result was rejected and retried after reinstalling the test runner. All four qualified bundles executed exactly one passing test."
+  ],
+  "links": {
+    "customScheme": "Fresh shared room opened in both actual Simulator apps, without auto-open fixture arguments.",
+    "https": "Separate fresh production room with a unique source nonce opened through each app HTTPS entry point.",
+    "siteAndAppleCachedAASAExactMatch": true,
+    "signedAssociatedDomainsReceipt": "docs/app-store/release-1.1.3-build108.json",
+    "physicalSafariUniversalLinkHandoff": "Not verified; physical iPhone unavailable."
+  },
+  "apple": {
+    "verifiedAtUTC": "2026-10-28T00:49:15.566574+00:00",
+    "version": "1.1.3",
+    "versionState": "PENDING_DEVELOPER_RELEASE",
+    "selectedBuildID": "2db51810-1cd4-4695-8fa9-cf6440c89c5e",
+    "reviewState": "COMPLETE",
+    "buildNumber": "108",
+    "processingState": "VALID",
+    "appSourceCommit": "ecc45983a60bd8ed794d03bcae5ada145f52edc7",
+    "includedFeatures": [
+      "guest Playground",
+      "one-hour default encrypted sharing (up to 24 hours)",
+      "live source and selection collaboration",
+      "native custom-scheme and HTTPS entry points",
+      "local debugger, String/Vec/concrete structures and async checkpoints"
+    ],
+    "releaseAction": "No manual App Store release requested by this verification turn; approved build remains selected."
+  },
+  "website": {
+    "publishedAtUTC": "2026-10-28T00:48:30Z",
+    "sourceCommit": "998bdb9e19fef8be32fe1ffb7bec50f9de978392",
+    "image": "173d231e15c5c019f08f74020d0710c2e2d8a85828584ad7da753df8b3e1e4f7",
+    "releaseDirectory": "/srv/apps/crabrix-site/releases/20261028-galleries-998bdb9",
+    "rollbackContainer": "crabrix-web-site-before-galleries-20261028",
+    "changes": [
+      "Three device galleries with equal-height uncropped previews, previous/next and accessible enlargement.",
+      "Twelve curriculum cards link to real course pages or unit anchors.",
+      "Original app course artwork exported to seven compact web assets and used on curriculum, catalog, course and both public/authenticated lesson headers.",
+      "Responsive title sizes, fluid card widths and centered lesson reading column."
+    ],
+    "productionUI": {
+      "at": "2026-10-28T00:50:19.469Z",
+      "origin": "https://crabrix.com",
+      "results": [
+        {
+          "width": 1512,
+          "height": 982,
+          "colorScheme": "dark",
+          "equalPreviewHeight": true,
+          "linkedCurriculumCards": 12,
+          "courseIcons": true,
+          "noPageOverflow": true
+        },
+        {
+          "width": 1512,
+          "height": 982,
+          "colorScheme": "light",
+          "equalPreviewHeight": true,
+          "linkedCurriculumCards": 12,
+          "courseIcons": true,
+          "noPageOverflow": true
+        },
+        {
+          "width": 1024,
+          "height": 1366,
+          "colorScheme": "dark",
+          "equalPreviewHeight": true,
+          "linkedCurriculumCards": 12,
+          "courseIcons": true,
+          "noPageOverflow": true
+        },
+        {
+          "width": 1024,
+          "height": 1366,
+          "colorScheme": "light",
+          "equalPreviewHeight": true,
+          "linkedCurriculumCards": 12,
+          "courseIcons": true,
+          "noPageOverflow": true
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "colorScheme": "dark",
+          "equalPreviewHeight": true,
+          "linkedCurriculumCards": 12,
+          "courseIcons": true,
+          "noPageOverflow": true
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "colorScheme": "light",
+          "equalPreviewHeight": true,
+          "linkedCurriculumCards": 12,
+          "courseIcons": true,
+          "noPageOverflow": true
+        },
+        {
+          "width": 320,
+          "height": 640,
+          "colorScheme": "dark",
+          "equalPreviewHeight": true,
+          "linkedCurriculumCards": 12,
+          "courseIcons": true,
+          "noPageOverflow": true
+        },
+        {
+          "width": 320,
+          "height": 640,
+          "colorScheme": "light",
+          "equalPreviewHeight": true,
+          "linkedCurriculumCards": 12,
+          "courseIcons": true,
+          "noPageOverflow": true
+        },
+        {
+          "width": 844,
+          "height": 390,
+          "colorScheme": "dark",
+          "equalPreviewHeight": true,
+          "linkedCurriculumCards": 12,
+          "courseIcons": true,
+          "noPageOverflow": true
+        },
+        {
+          "width": 844,
+          "height": 390,
+          "colorScheme": "light",
+          "equalPreviewHeight": true,
+          "linkedCurriculumCards": 12,
+          "courseIcons": true,
+          "noPageOverflow": true
+        }
+      ]
+    },
+    "siteUnitTests": {
+      "passed": 27,
+      "failed": 0
+    },
+    "accountVolume": "Retained with consistent backup before switching.",
+    "cleanup": "Retired only the superseded debugger-values-20261027 image/container/release; previous healthy playground-shell-8bb9df7 retained as rollback. Removed obsolete local staging copies created by this work; no projects or accounts removed."
+  },
+  "backendSourceCompilationOrExecution": false
+}
