@@ -1,0 +1,189 @@
+{
+  "feature": "Algorithm Atlas step-by-step visualizations",
+  "sourceCommit": "b4e22e22b4b92b2368845508f5a8a15c38a060b9",
+  "publishedAt": "2026-10-28T01:20:36Z",
+  "url": "https://crabrix.com/learn/algorithms/#visualization",
+  "deployment": {
+    "image": "localhost/crabrix-web-site:algorithms-b4e22e2",
+    "imageDigest": "dd7fb969fa61a3d4f0853cd9ec73b3397ae05cf6ba79b80301e93509a630a4ed",
+    "health": "healthy",
+    "rollbackImageDigest": "173d231e15c5c019f08f74020d0710c2e2d8a85828584ad7da753df8b3e1e4f7",
+    "accountBackupCompleted": true
+  },
+  "coverage": {
+    "patterns": 200,
+    "lessons": 600,
+    "distinctLessonExamples": 400,
+    "separatePublicDemos": 1,
+    "traceFiles": 401,
+    "traceAggregateSHA256": "87ed29bd2f345a93005323b9a4c3b3eb519aea1f6ab34c1052f297e3ece1e329"
+  },
+  "execution": {
+    "authorTimeCompiler": "rustc 1.99.0 (b940084d7 2026-09-28)",
+    "originalAndInstrumentedStdoutMatch": 401,
+    "independentTypedFixtureAnswers": 400,
+    "separateDemoExpectedAnswer": "3",
+    "errors": [],
+    "maximumTraceBytes": 951471,
+    "model": "Pre-recorded verified Rust execution; playback entirely in the browser. No visitor code is executed by the website backend."
+  },
+  "verification": {
+    "siteTests": {
+      "passed": 30,
+      "failed": 0
+    },
+    "productionBuild": {
+      "passed": true,
+      "typeScriptPassed": true,
+      "allLessonTraceGateTests": 3,
+      "standaloneTraceFilesIncludingManifest": 402
+    },
+    "browserProductionBuild": {
+      "layouts": [
+        {
+          "scheme": "dark",
+          "width": 320,
+          "pageWidth": 320,
+          "left": 16,
+          "right": 304,
+          "lineVisible": true,
+          "stacked": true
+        },
+        {
+          "scheme": "dark",
+          "width": 390,
+          "pageWidth": 390,
+          "left": 16,
+          "right": 374,
+          "lineVisible": true,
+          "stacked": true
+        },
+        {
+          "scheme": "dark",
+          "width": 768,
+          "pageWidth": 768,
+          "left": 22,
+          "right": 746,
+          "lineVisible": true,
+          "stacked": false
+        },
+        {
+          "scheme": "dark",
+          "width": 1024,
+          "pageWidth": 1024,
+          "left": 22,
+          "right": 1002,
+          "lineVisible": true,
+          "stacked": false
+        },
+        {
+          "scheme": "dark",
+          "width": 1440,
+          "pageWidth": 1440,
+          "left": 160,
+          "right": 1280,
+          "lineVisible": true,
+          "stacked": false
+        },
+        {
+          "scheme": "light",
+          "width": 320,
+          "pageWidth": 320,
+          "left": 16,
+          "right": 304,
+          "lineVisible": true,
+          "stacked": true
+        },
+        {
+          "scheme": "light",
+          "width": 390,
+          "pageWidth": 390,
+          "left": 16,
+          "right": 374,
+          "lineVisible": true,
+          "stacked": true
+        },
+        {
+          "scheme": "light",
+          "width": 768,
+          "pageWidth": 768,
+          "left": 22,
+          "right": 746,
+          "lineVisible": true,
+          "stacked": false
+        },
+        {
+          "scheme": "light",
+          "width": 1024,
+          "pageWidth": 1024,
+          "left": 22,
+          "right": 1002,
+          "lineVisible": true,
+          "stacked": false
+        },
+        {
+          "scheme": "light",
+          "width": 1440,
+          "pageWidth": 1440,
+          "left": 160,
+          "right": 1280,
+          "lineVisible": true,
+          "stacked": false
+        }
+      ],
+      "authenticatedLessons": [
+        {
+          "lessonID": "algorithm.insertion-sort.model",
+          "visualization": ".atlas-cells",
+          "output": "1,2,3,4,5,6"
+        },
+        {
+          "lessonID": "algorithm.dijkstra.model",
+          "visualization": ".atlas-graph",
+          "output": "0,3,1,4"
+        },
+        {
+          "lessonID": "algorithm.list-reversal.model",
+          "visualization": ".atlas-tree",
+          "output": "4,3,2,1"
+        },
+        {
+          "lessonID": "algorithm.longest-common-subsequence.model",
+          "visualization": ".atlas-matrix",
+          "output": "3"
+        },
+        {
+          "lessonID": "algorithm.treap.model",
+          "visualization": ".atlas-tree",
+          "output": "1,5,8"
+        },
+        {
+          "lessonID": "algorithm.frequency-counting.model",
+          "visualization": ".atlas-map",
+          "output": "4"
+        },
+        {
+          "lessonID": "algorithm.hash-membership.model",
+          "visualization": ".atlas-set",
+          "output": "true"
+        },
+        {
+          "lessonID": "algorithm.xor-cancellation.model",
+          "visualization": ".atlas-locals",
+          "output": "4"
+        }
+      ],
+      "offlinePlayback": true,
+      "anonymousGate": true,
+      "pageErrors": []
+    },
+    "liveSite": {
+      "layouts": 10,
+      "offlinePlayback": true,
+      "anonymousGateAndPrivateFile404": true,
+      "pageErrors": []
+    },
+    "browserEngine": "Chromium; responsive viewport checks, not physical-device testing"
+  },
+  "scope": "Website only. Existing app/compiler/debugger code is unchanged."
+}

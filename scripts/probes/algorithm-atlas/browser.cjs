@@ -70,6 +70,8 @@ async function main() {
     const html = await anonymous.text();
     assert.equal(await page.locator('.algorithm-atlas').count(), 0);
     assert.ok(!html.includes(traceFor(id).sourceHash), 'full trace is absent from anonymous HTML/RSC');
+    const privateFile = await context.request.get(`${origin}/content/algorithm-traces/${manifest.lessons[id]}.json`);
+    assert.equal(privateFile.status(), 404, 'full lesson data has no public file URL');
     assert.ok(await page.getByRole('link', { name: 'Try an interactive algorithm walkthrough →' }).count());
     result.authGate = true;
     if (sessionFile) {
