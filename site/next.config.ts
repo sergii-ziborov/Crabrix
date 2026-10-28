@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   images: { unoptimized: true },
   poweredByHeader: false,
-  outputFileTracingIncludes: { "/*": ["./content/courses.json", "./*.html"], "/learn-media/*": ["./content/learn-media/**/*.png"] },
+  outputFileTracingIncludes: { "/*": ["./content/courses.json", "./*.html"], "/learn/*": ["./content/algorithm-traces/*.json"], "/learn-media/*": ["./content/learn-media/**/*.png"] },
   outputFileTracingExcludes: { "/*": ["./auth-data/**/*", "./tests/**/*"] },
   experimental: { serverActions: { bodySizeLimit: "16kb" } },
   async redirects() {

@@ -13,8 +13,9 @@ for (const path of ["concurrency/pinning-intuition", "concurrency/async-cancella
   "interview/q-indexes", "interview/q-complexity", "ownership/phantom-data"]) {
   lessonModifiedDates[path] = "2026-10-27";
 }
-// Every Atlas step was revised in this recorded editorial pass.
-const atlasPatternsRevised20261027 = [
+// All Atlas text was revised on 27 October; verified interactive walkthroughs
+// were added to every pattern on 28 October.
+const atlasPatterns = [
   "a-star", "activity-selection", "adjacency-list", "adjacent-pair-scan", "aho-corasick",
   "at-most-k", "bellman-ford", "bidirectional-bfs", "bidirectional-map", "binary-exact",
   "binary-heap", "binary-search-answer", "binomial-coefficients", "bipartite-coloring", "bitmask-dp",
@@ -56,14 +57,14 @@ const atlasPatternsRevised20261027 = [
   "undirected-cycle", "unique-window", "upper-bound", "variable-window", "word-break-dp",
   "word-grid-search", "xor-cancellation", "z-algorithm", "zero-one-bfs", "zero-one-knapsack",
 ];
-for (const pattern of atlasPatternsRevised20261027) {
+for (const pattern of atlasPatterns) {
   for (const stage of ["model", "recognize", "challenge"]) {
-    lessonModifiedDates[`algorithms/algorithm.${pattern}.${stage}`] = "2026-10-27";
+    lessonModifiedDates[`algorithms/algorithm.${pattern}.${stage}`] = "2026-10-28";
   }
 }
 export const courseModifiedDates: Record<string, string> = {
   basics: "2026-10-20", systems: "2026-10-27", interview: "2026-10-27",
-  algorithms: "2026-10-27", ownership: "2026-10-27", projects: "2026-10-27", concurrency: "2026-10-27",
+  algorithms: "2026-10-28", ownership: "2026-10-27", projects: "2026-10-27", concurrency: "2026-10-27",
 };
 
 export function searchDescription(text: string): string {

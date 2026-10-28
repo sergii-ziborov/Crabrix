@@ -21,7 +21,7 @@ export default function LearnPage() {
             <span className="card-kicker">{course.level} · {course.units.length} units</span>
             <div className="course-card-heading"><CourseIcon course={course.id} /><h2>{course.title}</h2></div>
             <p>{course.subtitle}</p>
-            <span className="card-meta">{courseLessons(course).length} lessons →</span>
+            <span className="card-meta">{courseLessons(course).length} lessons{course.id === "algorithms" ? " · step-by-step visuals" : ""} →</span>
           </Link>
         ))}
       </div>

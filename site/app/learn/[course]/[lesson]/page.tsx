@@ -9,6 +9,8 @@ import { currentViewer } from "@/lib/auth";
 import { lessonPreview } from "@/lib/lesson-preview";
 import { StructuredData } from "@/components/structured-data";
 import { CourseIcon } from "@/components/course-icon";
+import { AlgorithmVisualizer } from "@/components/algorithm-visualizer";
+import { lessonAlgorithmTrace } from "@/lib/algorithm-traces";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +64,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
           <p>Create a free account to read the complete explanation, see the infographic, explore the code, and try the exercises. All 742 lessons and algorithm steps are included.</p>
           <div className="access-actions"><Link className="btn" href={`/register/?next=${next}`}>Create free account →</Link><Link href={`/login/?next=${next}`}>Already learning? Sign in</Link></div>
           <p className="auth-note">No payment details. Your account opens the complete Academy.</p>
+          {course.id === "algorithms" && <p><Link href="/learn/algorithms/#visualization">Try an interactive algorithm walkthrough →</Link></p>}
         </section>
         <Link href={`/learn/${course.id}/`}>← All lessons in {course.title}</Link>
       </article>
@@ -70,6 +73,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
   const writing = lesson.writing;
   const depth = lesson.depth;
   const algorithm = lesson.algorithm;
+  const algorithmTrace = course.id === "algorithms" ? lessonAlgorithmTrace(lesson) : undefined;
   const lessons = courseLessons(course);
   const index = lessons.findIndex((item) => item.id === lesson.id);
   const isBasics = course.id === "basics";
@@ -93,6 +97,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
         {writing?.rule && <div className="lesson-callout"><strong>Core idea</strong><p>{prose(writing.rule)}</p></div>}
       </div>
       <article className="lesson-content lesson-full">
+        {algorithmTrace && <AlgorithmVisualizer key={algorithmTrace.key} trace={algorithmTrace} />}
         {!isBasics && lesson.illustration && <figure className="lesson-infographic">
           <img src={`/learn-media/${course.id}/${lesson.illustration.path.slice(6)}`} alt={lesson.illustration.alt} loading="lazy" />
           <figcaption>{lesson.illustration.caption}</figcaption>

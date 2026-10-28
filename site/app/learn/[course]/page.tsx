@@ -5,6 +5,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { courseById, courseLessons, courseSnapshot } from "@/lib/courses";
 import { CourseIcon } from "@/components/course-icon";
+import { AlgorithmVisualizer } from "@/components/algorithm-visualizer";
+import { publicAlgorithmDemo } from "@/lib/algorithm-traces";
 
 export function generateStaticParams() {
   return courseSnapshot().courses.map((course) => ({ course: course.id }));
@@ -12,7 +14,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ course: string }> }): Promise<Metadata> {
   const course = courseById((await params).course);
-  return course ? pageMetadata({ title: `${course.title} — Free Rust Lessons`, description: course.subtitle, path: `/learn/${course.id}/` }) : {};
+  return course ? pageMetadata({ title: `${course.title} — Free Rust Lessons`, description: course.id === "algorithms" ? "Explore 200 Rust algorithm patterns with step-by-step visualizations, real execution traces, code and exercises. Try the interactive demo without signing in." : course.subtitle, path: `/learn/${course.id}/` }) : {};
 }
 
 export default async function CoursePage({ params }: { params: Promise<{ course: string }> }) {
@@ -36,6 +38,10 @@ export default async function CoursePage({ params }: { params: Promise<{ course:
         <p className="lede">{course.subtitle}</p>
         <p className="card-meta">{course.units.length} units · {courseLessons(course).length} lessons · complete lessons free with an account</p>
       </div>
+      {course.id === "algorithms" && <>
+        <AlgorithmVisualizer trace={publicAlgorithmDemo()} demo />
+        <p className="card-meta">Every pattern below includes a walkthrough of its actual Rust example: arrays, graphs, trees, call stacks and more. Sign in to explore all 200 patterns and their practice examples.</p>
+      </>}
       <div className="unit-list">
         {course.units.map((unit) => (
           <section className="unit-panel" key={unit.id} id={unit.id}>

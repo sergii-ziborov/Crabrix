@@ -32,6 +32,8 @@ export type Lesson = {
     connections?: { title: string; concept: string; direction: string }[];
   };
   algorithm?: {
+    categoryID?: string;
+    patternID?: string;
     categoryTitle?: string;
     difficulty?: string;
     stage?: string;
