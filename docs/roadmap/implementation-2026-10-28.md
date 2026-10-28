@@ -44,7 +44,7 @@ backup не удаляется из-за неудачного decode; возвр
 | 5 | COMPAT-01, WEB-02 | Project preflight, настоящий TS checker и типы зависимостей; не выдавать transpilation за typecheck |
 | Отдельно | COMPAT-02 | Продолжить существующие compiler/proc-macro candidates; без устройства не заявлять физические benchmarks или Published |
 | 6 | LANG-01 → LANG-02; LANG-03 отдельно | Ограниченный C→Wasm prototype, затем Systems Lab и выбранный ABI; C++ условен по результатам и задачам |
-| Активирован пользователем 28 октября | MCP-01 | Playground bridge 0.1.0: stdio, код, revision guard, выделения, TTL и owner closure. Полный SDK↔web↔два native-клиента прошёл; страница и пакет готовятся к публикации. Remote execution через MCP не включён. [Профиль](../playground-mcp-2026-10-28.md) |
+| Активирован пользователем 28 октября | MCP-01 | Playground bridge 0.1.0: stdio, код, revision guard, выделения, TTL и owner closure. Полный SDK↔web↔два native-клиента прошёл; страница и пакет опубликованы, точный публичный архив проверен через SDK/production relay/browser local Run. Remote execution через MCP не включён. [Профиль](../playground-mcp-2026-10-28.md) |
 
 Командная игра, matchmaking и игровая инфраструктура отложены пользователем.
 Автоматическая облачная синхронизация и обязательный app account не добавляются.

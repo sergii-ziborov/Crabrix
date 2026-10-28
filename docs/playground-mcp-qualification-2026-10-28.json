@@ -1,7 +1,7 @@
 {
   "at": "2026-10-28T21:35:53.758953+00:00",
   "bridgeVersion": "0.1.0",
-  "publication": "pending public readback",
+  "publication": "publicly read back and qualified",
   "download": {
     "version": "0.1.0",
     "url": "/downloads/crabrix-playground-mcp-0.1.0.tgz",
@@ -100,5 +100,29 @@
   "screenshots": {
     "screenshots/mcp-iphone-selection.png": "35cad43511df72d149346f7c36708d02a41a2f7ca696172fa2fb84bf09f1c7b8",
     "screenshots/mcp-ipad-local-debug.png": "b831c7fa0436cc93dbc5fa1b3e727461b90b4b1f34fce76e04d00af6701d8c53"
+  },
+  "website": {
+    "url": "https://crabrix.com/playground/mcp/",
+    "sourceCommit": "adbc23ee49fefa50ecb09695ed9dffdaceb1146a",
+    "publishedAt": "2026-10-28T21:42:23Z",
+    "image": "localhost/crabrix-web-site:playground-mcp-adbc23e-r2",
+    "imageDigest": "d8b86162364006f1f8faa54f47a17069f5ddb6e5112608ee2b5e11005c9743b0",
+    "state": "running healthy",
+    "accountBind": "/srv/apps/crabrix-site/accounts:/data",
+    "rollback": "crabrix-web-site-before-playground-mcp-20261028"
+  },
+  "publicQualification": {
+    "at": "2026-10-28T21:45:20.926Z",
+    "origin": "https://crabrix.com",
+    "exactDownloadedCLI": true,
+    "tools": 8,
+    "conditionalEdits": true,
+    "mcpChangesInBrowser": true,
+    "namedSelection": true,
+    "browserLocalStdout": "mcp-public=42",
+    "creatorClosedRoom": true,
+    "noBackendExecution": true,
+    "pageErrors": [],
+    "liveModelProviderInvocation": false
   }
 }

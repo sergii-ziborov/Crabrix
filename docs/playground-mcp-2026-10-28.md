@@ -73,3 +73,19 @@ Publication and App Store delivery are recorded separately. Build 114 remains
 the selected review build until an explicit newer signed-delivery receipt exists.
 The bridge uses existing Shared-client behavior; native Atlas and IDE changes
 are not retroactively declared part of 114.
+
+## Public delivery
+
+Published at **2026-10-28T21:42:23Z**, website source `adbc23e`. The
+[public page](https://crabrix.com/playground/mcp/) and versioned archive were
+read back. The archive SHA-256 is
+`9894e4d99f07eac13497669e850e60b9762b739cbd292789e84d71a5401350ee`.
+The exact downloaded executable passed official SDK stdio → production encrypted
+relay → browser source/selection → actual local `mcp-public=42` stdout → owner
+closure. There were no browser page errors. No npm-registry publication is claimed.
+[Machine-readable delivery and qualification](playground-mcp-qualification-2026-10-28.json).
+
+A pre-activation deployment gate caught macOS AppleDouble metadata in the first
+uploaded website archive. The live container had not switched. Validated metadata
+files were removed, the image rebuilt, and the expected 402 trace assets checked
+before activation. Account storage and rollback were retained.
