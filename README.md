@@ -4,6 +4,16 @@
 
 [Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support/) · [Privacy](https://crabrix.com/privacy/) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
+## Rust tools candidate — 28 October 2026
+
+The next candidate adds real local selected-entry `cargo test`, discovery and
+filtering, isolated test failures and Stop, plus pinned bundled rustfmt for a
+file or project with check mode, revision guards and Undo. These tools are newer
+than signed build **1.1.3 (111)**; that build remains the current submitted
+release. [Exact profile, limits and qualification](docs/rust-tools-2026-10-28.md).
+Git has passed a [native iOS feasibility probe](docs/native-git-prototype-2026-10-28.md),
+including standard objects and HTTPS; it is not yet a shipping workspace feature.
+
 ## Academy corrections — 27 October 2026
 
 The shared curriculum now has 200 individual formatted Rust algorithm examples,

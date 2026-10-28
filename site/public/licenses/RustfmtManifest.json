@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "tool": "rustfmt 1.10.0-nightly / Rust 1.100.0",
+  "artifactSHA256": "a3d4f84da1d32de38d2c2805db86ceb293ed2547b18bdcb87214e41bc2db6eee",
+  "sourceRepository": "https://github.com/scalar/formatters",
+  "sourceCommit": "2d82e2487968175b844ca84fa57d51ddc0f95d97",
+  "rustSourceCommit": "1303417c416e1595173d9689e7394c31e136ae95",
+  "target": "wasm32-wasip1",
+  "entrypoint": "run",
+  "byteLength": 6597055,
+  "licenseArchiveSHA256": "7df2855d3c319dce5d0eb95d1e62331c6c66900f1ac35dc285e3a2073b2e9a86",
+  "licenseClosure": "All 233 registry packages reachable from pinned rustfmt-nightly/rustc_parse/rustc_expand/rustc_ast_pretty Cargo.lock roots, including host-only dependencies. Original manifests and notices preserved; unmodified MPL option-ext sources included.",
+  "networkAtRuntime": false,
+  "supplementalWasiLicenseRevision": "f6e9006376e6f8e8f91ab84fc956be4e345588bc"
+}

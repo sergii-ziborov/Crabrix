@@ -3,6 +3,30 @@ import XCTest
 
 @MainActor
 final class ProjectTerminalSessionTests: XCTestCase {
+    func testUnitTestAndFormatCommandsPreserveCaseAndRejectUnsupportedOptions() {
+        let terminal = ProjectTerminalSession()
+        let project = CrabrixProject(name: "tools", files: ["src/main.rs":"fn main(){}", "web/Foo.rs":"fn foo(){}"], entryFile: "src/main.rs", provenance: nil)
+        var tests: [RustUnitTestRequest] = []
+        var formats: [RustFormatRequest] = []
+        func send(_ command: String, busy: Bool = false) {
+            terminal.command = command
+            terminal.submit(project: project, isBusy: busy, onCheck: {}, onRun: {}, onTest: { tests.append($0) }, onFormat: { formats.append($0) })
+        }
+        send("cargo test MyCase --bin MyApp -- --list")
+        send("cargo test --lib lower")
+        send("cargo fmt --check")
+        send("cargo fmt")
+        send("rustfmt web/Foo.rs")
+        XCTAssertEqual(tests, [.init(target: .binary("MyApp"), filter: "MyCase", listOnly: true), .init(target: .library, filter: "lower")])
+        XCTAssertEqual(formats, [.init(scope: .project, checkOnly: true), .init(scope: .project), .init(scope: .file("web/Foo.rs"))])
+        for command in ["cargo test --all", "cargo test -- --ignored", "cargo test --lib --bin app", "cargo test --bin", "cargo fmt --all", "rustfmt ../outside.rs", "cargo test one two"] {
+            send(command)
+            XCTAssertEqual(terminal.lines.last?.kind, .error, command)
+        }
+        send("cargo test", busy: true); send("cargo fmt", busy: true)
+        XCTAssertEqual(tests.count, 2); XCTAssertEqual(formats.count, 3)
+    }
+
     func testCargoBuildUsesItsOwnOperationAndNeverFallsBackToRun() {
         let terminal = ProjectTerminalSession()
         let project = CrabrixProject(name: "build", files: ["main.rs": "fn main(){}"], entryFile: "main.rs", provenance: nil)

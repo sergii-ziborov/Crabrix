@@ -88,6 +88,8 @@ final class ProjectTerminalSession: ObservableObject {
         onCheck: () -> Void,
         onRun: () -> Void,
         onBuild: (() -> Void)? = nil,
+        onTest: ((RustUnitTestRequest) -> Void)? = nil,
+        onFormat: ((RustFormatRequest) -> Void)? = nil,
         onFetch: (() -> Void)? = nil,
         onBrowserCommand: ((BrowserProjectCommand) -> Void)? = nil,
         onReplaceFiles: (([String: String], String?) -> Bool)? = nil
@@ -122,6 +124,10 @@ final class ProjectTerminalSession: ObservableObject {
                 "  touch · mkdir · rm      Edit the project snapshot\n" +
                 "  cp · mv · echo          Copy, move, and write files\n" +
                 "  cargo check|run|build   Use the bundled Rust toolchain\n" +
+                "  cargo test [filter]     Selected-entry unit tests; --lib or --bin NAME\n" +
+                "  cargo test -- --list    Discover unit tests without running them\n" +
+                "  cargo fmt [--check]     Format owned Rust files; check keeps source\n" +
+                "  rustfmt path.rs         Format one file; Undo in project settings\n" +
                 "  cargo tree|fetch        Inspect and download packages\n" +
                 "  cargo metadata          Inspect this package manifest\n" +
                 "  npm install|ci          Prepare browser imports for offline use\n" +
@@ -189,15 +195,24 @@ final class ProjectTerminalSession: ObservableObject {
             runNpm(arguments: Array(components.dropFirst()), project: project, isBusy: isBusy, onCommand: onBrowserCommand)
         case "cargo":
             runCargo(
-                arguments: Array(normalized.dropFirst()),
+                arguments: Array(components.dropFirst()),
                 project: project,
                 workspace: workspace,
                 isBusy: isBusy,
                 onCheck: onCheck,
                 onRun: onRun,
                 onBuild: onBuild,
+                onTest: onTest,
+                onFormat: onFormat,
                 onFetch: onFetch
             )
+        case "rustfmt":
+            guard !isBusy else { append("Wait for the current operation to finish.", kind: .error); return }
+            guard components.count == 2, let path = normalizedPath(components[1], project: project),
+                  !components[1].hasPrefix("-"), let onFormat else {
+                append("usage: rustfmt <project/path.rs>; use cargo fmt --check for a project formatting check.", kind: .error); return
+            }
+            onFormat(.init(scope: .file(path)))
         case "clear":
             lines = []
             buffers[project.id] = []
@@ -276,7 +291,12 @@ final class ProjectTerminalSession: ObservableObject {
         attach(to: project)
         guard oldValue == .idle, newValue != .idle else { return }
         let web = BrowserProjectConfiguration.isBrowserEntry(project.entryFile)
-        let command = web ? "browser build" : (newValue == .checking ? "cargo check" : newValue == .building ? "cargo build · compile only" : "cargo run")
+        let command: String
+        switch newValue {
+        case .testing: command = "selected-entry unit tests"
+        case .formatting: command = "rustfmt · source formatting"
+        default: command = web ? "browser build" : (newValue == .checking ? "cargo check" : newValue == .building ? "cargo build · compile only" : "cargo run")
+        }
         append("[build] \(command) · background snapshot started", kind: .info)
     }
 
@@ -314,13 +334,47 @@ final class ProjectTerminalSession: ObservableObject {
         onCheck: () -> Void,
         onRun: () -> Void,
         onBuild: (() -> Void)?,
+        onTest: ((RustUnitTestRequest) -> Void)?,
+        onFormat: ((RustFormatRequest) -> Void)?,
         onFetch: (() -> Void)?
     ) {
         guard let command = arguments.first else {
-            append("usage: cargo <check|run|build|tree|fetch|metadata>", kind: .error)
+            append("usage: cargo <check|run|build|test|fmt|tree|fetch|metadata>", kind: .error)
             return
         }
         switch command {
+        case "test":
+            guard !isBusy else { append("Wait for the current operation to finish.", kind: .error); return }
+            guard let onTest else { append("Unit Test is unavailable in this workspace.", kind: .error); return }
+            var request = RustUnitTestRequest()
+            let options = Array(arguments.dropFirst())
+            var index = 0
+            var hasTarget = false
+            while index < options.count {
+                let option = options[index]
+                if option == "--", Array(options.dropFirst(index + 1)) == ["--list"] {
+                    request.listOnly = true; index = options.count; break
+                } else if option == "--lib", !hasTarget {
+                    request.target = .library; hasTarget = true
+                } else if option == "--bin", !hasTarget, index + 1 < options.count,
+                          !options[index + 1].hasPrefix("-"), !options[index + 1].isEmpty {
+                    index += 1; request.target = .binary(options[index]); hasTarget = true
+                } else if !option.hasPrefix("-"), request.filter == nil {
+                    request.filter = option
+                } else {
+                    append("Supported: cargo test [name-filter] [--lib | --bin NAME] [-- --list]. This profile tests one entry, not integration targets or doctests; ignored/should_panic and extra harness options are not enabled.", kind: .error); return
+                }
+                index += 1
+            }
+            append("Unit Test uses the selected entry (or explicit --lib/--bin), with real local libtest. Integration targets, dev-dependencies and doctests are not covered.", kind: .info)
+            onTest(request)
+        case "fmt":
+            guard !isBusy else { append("Wait for the current operation to finish.", kind: .error); return }
+            guard arguments.count == 1 || Array(arguments.dropFirst()) == ["--check"] else {
+                append("Supported: cargo fmt or cargo fmt --check. Root rustfmt.toml is validated; external/vendor trees are excluded.", kind: .error); return
+            }
+            guard let onFormat else { append("Rustfmt is unavailable in this workspace.", kind: .error); return }
+            onFormat(.init(scope: .project, checkOnly: arguments.count > 1))
         case "check":
             guard arguments.count == 1 else { append("cargo check options are not supported; use the project manifest profile.", kind: .error); return }
             guard !isBusy else {
@@ -425,7 +479,7 @@ final class ProjectTerminalSession: ObservableObject {
     private static let availableCommands: Set<String> = [
         "help", "pwd", "ls", "cd", "tree", "cat", "head", "tail", "wc",
         "grep", "find", "touch", "mkdir", "rm", "cp", "mv", "echo",
-        "whoami", "uname", "env", "date", "which", "cargo", "npm", "history", "clear",
+        "whoami", "uname", "env", "date", "which", "cargo", "rustfmt", "npm", "history", "clear",
     ]
 
     private static func shellWords(_ input: String) -> [String]? {

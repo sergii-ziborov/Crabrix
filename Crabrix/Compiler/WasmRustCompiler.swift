@@ -13,16 +13,42 @@ struct CargoBuildProgress: Sendable, Equatable {
     let wasCached: Bool
 }
 
+enum RustUnitTestInvocation: Equatable, Sendable {
+    case discover
+    case single(String)
+
+    var arguments: [String] {
+        switch self {
+        case .discover: ["--list", "--format=json", "-Z", "unstable-options"]
+        case let .single(name): [name, "--exact", "--test-threads=1", "--format=json", "-Z", "unstable-options", "--force-run-in-process", "--nocapture"]
+        }
+    }
+}
+
 final class WasmRustCompiler: @unchecked Sendable {
-    private enum Action {
+    private enum Action: Equatable {
         case check
         case build
         case run
+        case test(RustUnitTestInvocation)
+
+        var testInvocation: RustUnitTestInvocation? {
+            if case let .test(invocation) = self { return invocation }
+            return nil
+        }
+
+        var executionStage: String {
+            switch testInvocation {
+            case .discover: "Listing selected-entry unit tests locally"
+            case .single: "Running isolated unit test locally"
+            case nil: "Running program"
+            }
+        }
 
         var emit: CargoEmitKind {
             switch self {
             case .check: .metadata
-            case .build, .run: .link
+            case .build, .run, .test: .link
             }
         }
     }
@@ -170,6 +196,38 @@ final class WasmRustCompiler: @unchecked Sendable {
     ) async -> CompilationResult {
         await perform(action: .build, source: source, sourcePath: sourcePath, supportingFiles: supportingFiles,
                       edition: edition, plan: plan, onDependencyProgress: onDependencyProgress, onStage: onStage)
+    }
+
+    /// The standard libtest harness for one selected entry. Dev-dependencies,
+    /// custom harnesses and virtual workspaces are explicitly outside this profile.
+    func unitTest(source: String, sourcePath: String = "main.rs", supportingFiles: [String: String] = [:],
+                  edition: String = "2024", plan: CargoBuildPlan = .empty,
+                  invocation: RustUnitTestInvocation,
+                  onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
+                  onStage: (@Sendable (String) -> Void)? = nil) async -> CompilationResult {
+        if case let .single(name) = invocation,
+           name.isEmpty || name.hasPrefix("-") || name.utf8.count > 1_024 || name.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) }) {
+            return .failure(phase: .setup, detail: "Unsupported unit-test name.")
+        }
+        if let manifestSource = supportingFiles["Cargo.toml"] {
+            do {
+                let manifest = try CratePackageManifest.parse(manifestSource)
+                guard !manifest.isProcMacro, !manifest.isVirtualWorkspace else {
+                    return .failure(phase: .setup, detail: "Unit Test needs a selected non-procedural-macro Rust entry.")
+                }
+                guard !manifest.dependencies.contains(where: { $0.kind == .dev }) else {
+                    return .failure(phase: .setup, detail: "The initial Unit Test profile does not resolve dev-dependencies. They were not silently omitted.")
+                }
+                let document = try TOMLParser.parse(manifestSource)
+                if document["lib"]?["harness"]?.boolValue == false,
+                   isLibraryEntry(sourcePath, supportingFiles: supportingFiles) {
+                    return .failure(phase: .setup, detail: "This library disables the standard libtest harness; custom harnesses are not supported.")
+                }
+            } catch { return .failure(phase: .setup, detail: error.localizedDescription) }
+        }
+        return await perform(action: .test(invocation), source: source, sourcePath: sourcePath,
+            supportingFiles: supportingFiles, edition: edition, plan: plan,
+            onDependencyProgress: onDependencyProgress, onStage: onStage)
     }
 
     func debug(
@@ -350,16 +408,17 @@ final class WasmRustCompiler: @unchecked Sendable {
                     onStage?("Build artifact ready · main was not executed")
                     return CompilationResult(succeeded: true, phase: .compile, exitCode: 0, diagnostics: [], stdout: "", stderr: "", duration: started.duration(to: clock.now), detail: "Unchanged executable accepted from the local build cache. main was not executed.")
                 }
-                onStage?("Running program")
+                onStage?(action.executionStage)
                 return try executeProgram(
                     module: cachedProgram,
                     jobRoot: jobRoot,
                     diagnostics: [],
                     started: started,
                     interrupter: interrupter,
-                    previewSourceFiles: supportingFiles,
+                    previewSourceFiles: action.testInvocation == nil ? supportingFiles : [:],
                     successDetail: "Executed a cached local build artifact inside the bounded WasmKit sandbox.",
-                    debugSession: debugSession
+                    debugSession: debugSession,
+                    programArguments: action.testInvocation?.arguments ?? []
                 )
             }
 
@@ -462,12 +521,13 @@ final class WasmRustCompiler: @unchecked Sendable {
             switch action {
             case .check:
                 arguments += ["--emit", "metadata", "-o", "/work/\(outputName)"]
-            case .build, .run:
+            case .build, .run, .test:
                 arguments += [
                     "-Zunstable-options", "-Copt-level=0", "-Cpanic=abort",
                     "-o", "/work/\(outputName)",
                 ]
             }
+            if action.testInvocation != nil { arguments += ["--test", "-Zpanic_abort_tests"] }
 
             let compilerOutput: WasmProcessResult
             do {
@@ -579,18 +639,19 @@ final class WasmRustCompiler: @unchecked Sendable {
                     duration: started.duration(to: clock.now), detail: "Compiled and linked locally. main was not executed.")
             }
 
-            onStage?("Running program")
+            onStage?(action.executionStage)
             return try executeProgram(
                 module: programModule,
                 jobRoot: jobRoot,
                 diagnostics: diagnostics,
                 started: started,
                 interrupter: interrupter,
-                previewSourceFiles: supportingFiles,
+                previewSourceFiles: action.testInvocation == nil ? supportingFiles : [:],
                 successDetail: plan.isEmpty
                     ? "Compiled and executed locally inside the bounded WasmKit sandbox."
                     : "Compiled \(plan.units.count) dependencies and the program locally, then ran it in the bounded sandbox.",
-                debugSession: debugSession
+                debugSession: debugSession,
+                programArguments: action.testInvocation?.arguments ?? []
             )
         } catch let cancellation as WasmExecutionCancelled {
             return cancelledResult(
@@ -1179,7 +1240,8 @@ final class WasmRustCompiler: @unchecked Sendable {
         interrupter: WasmInterrupter,
         previewSourceFiles: [String: String],
         successDetail: String,
-        debugSession: RustDebugSession? = nil
+        debugSession: RustDebugSession? = nil,
+        programArguments: [String] = []
     ) throws -> CompilationResult {
         let sandboxURL = jobRoot.appending(path: "sandbox", directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: sandboxURL, withIntermediateDirectories: true)
@@ -1197,7 +1259,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         do {
             output = try runtime.run(
                 module: module,
-                arguments: ["program"],
+                arguments: ["program"] + programArguments,
                 environment: [:],
                 preopens: [
                     .init(
@@ -1409,7 +1471,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         plan: CargoBuildPlan
     ) -> String {
         var hasher = SHA256()
-        let actionLabel = action == .check ? "check" : action == .build && isLibraryEntry(sourcePath, supportingFiles: supportingFiles) ? "library" : "run"
+        let actionLabel = action.testInvocation != nil ? "libtest-abort-v1" : action == .check ? "check" : action == .build && isLibraryEntry(sourcePath, supportingFiles: supportingFiles) ? "library" : "run"
         let compilerIdentity = toolchainOverride.map {
             CargoToolchain.artifactIdentity + ":candidate:" + $0.version
         } ?? CargoToolchain.artifactIdentity

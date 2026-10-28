@@ -336,23 +336,7 @@ struct ContentView: View {
             .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $isProjectActionsPresented) {
-            ProjectActionsSheet(
-                project: model.exportProject(),
-                onUpdate: { draft in
-                    await model.updateCurrentProjectDetails(
-                        name: draft.name,
-                        description: draft.projectDescription,
-                        tags: draft.tags,
-                        folder: draft.optionalFolder,
-                        kind: draft.kind,
-                        isFavorite: draft.isFavorite
-                    )
-                },
-                onSaveToFiles: prepareExport,
-                onShareArchive: prepareArchiveShare,
-                onSharePlayground: { isPlaygroundPresented = true },
-                onDebug: { editorKeyboard.dismissKeyboard(); selectedBuildDockTab = .code; model.debug() }
-            )
+            projectActionsSheet
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
@@ -515,6 +499,11 @@ struct ContentView: View {
                 }
             }
             #if DEBUG || CRABRIX_LEGACY_FIXTURES
+            if arguments.contains("--crabrix-auto-rust-tools-fixture") {
+                model.loadRunnableSample(projectName: "rust-tools")
+                _ = model.replaceProjectFilesFromTerminal(["main.rs": "// Keep this comment 🦀\n#[test]fn adds(){println!(\"unit-output\");assert_eq!(2+2,4);}\n#[test]fn failure(){assert_eq!(1,2);}\nfn main(){println!(\"ordinary run\");}\n"], selecting: "main.rs")
+                openCodeWorkspace()
+            }
             if arguments.contains("--crabrix-auto-debug-web-fixture") {
                 model.createProject(name: "debugger-web-resources", template: .rustWeb)
                 openCodeWorkspace()
@@ -589,7 +578,9 @@ struct ContentView: View {
             terminal.record(result, project: model.exportProject())
             recordBuildProgress(result)
             withAnimation(.easeOut(duration: 0.18)) {
-                if !result.succeeded {
+                if result.phase == .test {
+                    selectedBuildDockTab = .output
+                } else if !result.succeeded {
                     selectedBuildDockTab = .problems
                 } else if result.phase == .run {
                     selectedBuildDockTab = .output
@@ -783,6 +774,7 @@ struct ContentView: View {
                 terminal: terminal,
                 project: model.exportProject(),
                 result: model.result,
+                unitTestReport: model.unitTestReport,
                 activity: model.activity,
                 buildEvents: model.buildEvents,
                 onShowPackageProgress: { model.isPackageProgressPresented = true },
@@ -791,6 +783,8 @@ struct ContentView: View {
                 onCheck: model.check,
                 onRun: model.run,
                 onBuild: model.build,
+                onTest: model.runUnitTests,
+                onFormat: { model.formatRust($0, applyToEditor: editorKeyboard.applyFormattedText) },
                 onReplaceFiles: model.replaceProjectFilesFromTerminal,
                 workspace: model.cargoWorkspace,
                 onFetch: model.downloadDependenciesForOffline,
@@ -816,6 +810,46 @@ struct ContentView: View {
             }
         }
         .background(CrabrixTheme.background)
+    }
+
+    private var unitTestAction: (() -> Void)? {
+        guard model.exportProject().entryFile.hasSuffix(".rs") else { return nil }
+        return { model.runUnitTests() }
+    }
+
+    private var formatFileAction: (() -> Void)? {
+        guard model.selectedFile.hasSuffix(".rs"), !model.playgroundIsReadOnly else { return nil }
+        return { model.formatRust(.init(scope: .file(model.selectedFile)), applyToEditor: editorKeyboard.applyFormattedText) }
+    }
+
+    private var formatProjectAction: (() -> Void)? {
+        guard !model.playgroundIsReadOnly else { return nil }
+        return { model.formatRust(.init(scope: .project), applyToEditor: editorKeyboard.applyFormattedText) }
+    }
+
+    private var projectActionsSheet: some View {
+        let undo: (() -> Void)? = model.canUndoFormatting ? { model.undoFormatting() } : nil
+        return ProjectActionsSheet(
+                project: model.exportProject(),
+                onUpdate: { draft in
+                    await model.updateCurrentProjectDetails(
+                        name: draft.name,
+                        description: draft.projectDescription,
+                        tags: draft.tags,
+                        folder: draft.optionalFolder,
+                        kind: draft.kind,
+                        isFavorite: draft.isFavorite
+                    )
+                },
+                onSaveToFiles: prepareExport,
+                onShareArchive: prepareArchiveShare,
+                onSharePlayground: { isPlaygroundPresented = true },
+                onDebug: { editorKeyboard.dismissKeyboard(); selectedBuildDockTab = .code; model.debug() },
+                onTest: unitTestAction,
+                onFormatFile: formatFileAction,
+                onFormatProject: formatProjectAction,
+                onUndoFormatting: undo
+            )
     }
 
     private func handleIncomingURL(_ url: URL) {

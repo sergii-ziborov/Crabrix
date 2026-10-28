@@ -280,6 +280,11 @@
 		FCCA5F66ED8D7F43C8828B7B /* PracticeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B61E3671EFD881E08389F5E /* PracticeSheet.swift */; };
 		FE77A6E9CE5D66CE12DA11FD /* CrabrixProjectDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9D7D181612381980B5CB164 /* CrabrixProjectDocument.swift */; };
 		FE9E3A1BD655444608B0BF86 /* TermMatchConnectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6234FA291715E7AB88B78388 /* TermMatchConnectionTests.swift */; };
+		8494FAD790F86E1D822A91BA /* RustFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCCC31A26AF491369DE6A398 /* RustFormatter.swift */; };
+		9B274A4CB5F329702C7BBE00 /* RustTools in Resources */ = {isa = PBXBuildFile; fileRef = E8905347A31CF786C5C0C93E /* RustTools */; };
+		2AF4A23325158495A80BEA3D /* Rustfmt-NOTICE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 785A9E56E34FDE8586B6CE0D /* Rustfmt-NOTICE.txt */; };
+		5EBB8AEC9284E1EFC37EBC81 /* RustToolsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58228B92572BB4AF4CA8BC4D /* RustToolsTests.swift */; };
+		E11BF9EC098F704DC473ED52 /* RustUnitTestRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DFF45633DCE50D9EF104DCF /* RustUnitTestRunner.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -588,6 +593,11 @@
 		FB2D4DBF3CAA21D1AF0BB788 /* CrabrixProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrabrixProgressStore.swift; sourceTree = "<group>"; };
 		FDBC8475D7DC66EBD798E277 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		FF9DD45C490DCB8EB56CB892 /* WasmSandboxPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmSandboxPolicy.swift; sourceTree = "<group>"; };
+		BCCC31A26AF491369DE6A398 /* RustFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustFormatter.swift; sourceTree = "<group>"; };
+		E8905347A31CF786C5C0C93E /* RustTools */ = {isa = PBXFileReference; lastKnownFileType = folder; path = RustTools; sourceTree = "<group>"; };
+		785A9E56E34FDE8586B6CE0D /* Rustfmt-NOTICE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Rustfmt-NOTICE.txt; sourceTree = "<group>"; };
+		58228B92572BB4AF4CA8BC4D /* RustToolsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustToolsTests.swift; sourceTree = "<group>"; };
+		0DFF45633DCE50D9EF104DCF /* RustUnitTestRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustUnitTestRunner.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -620,6 +630,8 @@
 		017EF58F174C5A132310D96C /* Compiler */ = {
 			isa = PBXGroup;
 			children = (
+				0DFF45633DCE50D9EF104DCF /* RustUnitTestRunner.swift */,
+				BCCC31A26AF491369DE6A398 /* RustFormatter.swift */,
 				F573D6026476C150C5CA1696 /* AppleIntelligenceDiagnosticAdvisor.swift */,
 				9853B43026260AB1594084F0 /* BorrowRepair.swift */,
 				A500C7B5B20F7ADF4215D88C /* BrowserNpmRegistry.swift */,
@@ -651,6 +663,7 @@
 		20F9150930EA5F739C099FF5 /* Licenses */ = {
 			isa = PBXGroup;
 			children = (
+				785A9E56E34FDE8586B6CE0D /* Rustfmt-NOTICE.txt */,
 				7B3F13A7DE7204F3C4BE384B /* babel-standalone-LICENSE.txt */,
 				96FB9D4640A39CECD01C382F /* highlight.js-LICENSE.txt */,
 				1C4DFAE5B72EB13F01C83FCE /* isomorphic.js-LICENSE.txt */,
@@ -875,6 +888,7 @@
 		9148689B17692A2B66CA2E57 /* CrabrixTests */ = {
 			isa = PBXGroup;
 			children = (
+				58228B92572BB4AF4CA8BC4D /* RustToolsTests.swift */,
 				67D67D2D0A1619040A96DC9A /* AchievementTierTests.swift */,
 				1067DEB86E13480FF37A47CB /* AlgorithmCourseCatalogTests.swift */,
 				D1A766BDDD55FB6BEBD30B38 /* AppearanceRenderingTests.swift */,
@@ -1055,6 +1069,7 @@
 		E8C4C63036CC75C075DB8AB1 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				E8905347A31CF786C5C0C93E /* RustTools */,
 				84CD37596DAEDCB81F6DF7B0 /* ActiveCourseCatalog */,
 				CA5866457924F7521705CCD1 /* Assets.xcassets */,
 				B2888F23BE9517E3AC3CA427 /* Info.plist */,
@@ -1233,6 +1248,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2AF4A23325158495A80BEA3D /* Rustfmt-NOTICE.txt in Resources */,
+				9B274A4CB5F329702C7BBE00 /* RustTools in Resources */,
 				DB6E886AFE6EC3B085FD76D2 /* ActiveCourseCatalog in Resources */,
 				F8F1E02965F5C0146D69DD89 /* Assets.xcassets in Resources */,
 				31B1EA3B72D4096B6C3B60F8 /* LegalDocuments.json in Resources */,
@@ -1315,7 +1332,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -eu\n\"$SRCROOT/scripts/fetch_toolchain.sh\"\n/usr/bin/python3 \"$SRCROOT/scripts/package_toolchain.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/prepare_native_compiler.py\"\n";
+			shellScript = "set -eu\n\"$SRCROOT/scripts/fetch_toolchain.sh\"\n/usr/bin/python3 \"$SRCROOT/scripts/package_toolchain.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/prepare_native_compiler.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/verify_rust_tools.py\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1341,6 +1358,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E11BF9EC098F704DC473ED52 /* RustUnitTestRunner.swift in Sources */,
+				8494FAD790F86E1D822A91BA /* RustFormatter.swift in Sources */,
 				79148B2203952A72C77D5388 /* AcademyContentStore.swift in Sources */,
 				DD74E3CFB5C4836F4B571E46 /* AchievementCelebrationView.swift in Sources */,
 				52C44E944F7455EA0DEA976C /* AdaptiveFold.swift in Sources */,
@@ -1484,6 +1503,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5EBB8AEC9284E1EFC37EBC81 /* RustToolsTests.swift in Sources */,
 				236C594F43D32B64EF77B7A6 /* AchievementTierTests.swift in Sources */,
 				907271D59A799311162F4CF6 /* AlgorithmCourseCatalogTests.swift in Sources */,
 				FA6604AE42D256B00E00939A /* AppLockTests.swift in Sources */,

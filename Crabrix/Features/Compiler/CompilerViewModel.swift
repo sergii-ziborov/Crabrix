@@ -123,6 +123,8 @@ final class CompilerViewModel: ObservableObject {
         case checking
         case building
         case running
+        case testing
+        case formatting
 
         var label: String {
             switch self {
@@ -130,6 +132,8 @@ final class CompilerViewModel: ObservableObject {
             case .checking: "Checking the current project…"
             case .building: "Compiling locally · main is not run…"
             case .running: "Compiling and running locally…"
+            case .testing: "Testing the selected Rust entry locally…"
+            case .formatting: "Formatting Rust locally…"
             }
         }
     }
@@ -167,6 +171,7 @@ final class CompilerViewModel: ObservableObject {
     @Published private(set) var activity: Activity = .idle
     @Published private(set) var isCompilerDraining = false
     @Published private(set) var result: CompilationResult?
+    @Published private(set) var unitTestReport: RustUnitTestReport?
     @Published private(set) var toolchain: ToolchainStatus
     @Published private(set) var completedStages: Set<Stage> = []
     @Published private(set) var practiceCompleted = false
@@ -255,6 +260,18 @@ final class CompilerViewModel: ObservableObject {
     private var autosaveRequestID: UUID?
     private var saveQueue: Task<Void, Never>?
     private var latestProjectSnapshots: [UUID: CrabrixProject] = [:]
+    private let formatter = RustFormatter()
+    private struct FormatUndo {
+        let projectID: UUID
+        let files: [String: String]
+        let generation: UInt64
+    }
+    private var formatUndo: FormatUndo?
+
+    var canUndoFormatting: Bool {
+        !isBusy && !isCompilerDraining && !playgroundIsReadOnly
+            && formatUndo?.projectID == projectID && formatUndo?.generation == workspaceGeneration
+    }
     private var suppressAutosave = false
     private(set) var workspaceGeneration: UInt64 = 0
     private let userDefaults: UserDefaults
@@ -679,9 +696,110 @@ final class CompilerViewModel: ObservableObject {
         }
     }
 
+    func runUnitTests(_ request: RustUnitTestRequest = .init()) {
+        guard canStartBuild else { return }
+        unitTestReport = nil
+        do { _ = try request.entry(in: currentProject()) }
+        catch { result = .failure(phase: .setup, detail: error.localizedDescription); return }
+        startBuild(.testing, unitTestRequest: request)
+    }
+
+    func formatRust(_ request: RustFormatRequest,
+                    applyToEditor: ((UUID, String, String, String) -> Bool)? = nil) {
+        guard canStartBuild, !playgroundIsReadOnly else { return }
+        unitTestReport = nil
+        let snapshot = currentProject()
+        let revision = workspaceRevision
+        let paths: [String]
+        let configuration: String?
+        do {
+            try ProjectFilePolicy.validate(snapshot.files, entryFile: snapshot.entryFile)
+            paths = try request.paths(in: snapshot)
+            guard !paths.isEmpty else { throw RustFormatter.Failure.rejected("no project-owned Rust files were selected") }
+            let configurations = [".rustfmt.toml", "rustfmt.toml"].compactMap { snapshot.files[$0] }
+            guard configurations.count <= 1 else { throw RustFormatter.Failure.configuration("keep one root .rustfmt.toml or rustfmt.toml") }
+            configuration = configurations.first
+        } catch { result = .failure(phase: .format, detail: error.localizedDescription); return }
+        activity = .formatting
+        result = nil; unitTestReport = nil; buildEvents = []
+        let id = UUID(); activeCompilationID = id
+        appendBuildStage(request.checkOnly ? "Checking Rust formatting locally" : "Formatting project-owned Rust source locally")
+        let edition = rootEdition(from: snapshot.files["Cargo.toml"])
+        compilationTask = Task { [weak self] in
+            guard let self else { return }
+            let started = ContinuousClock.now
+            do {
+                var proposed = snapshot.files
+                for path in paths {
+                    guard !Task.isCancelled, isCurrent(revision), activeCompilationID == id else { discardCompilationIfActive(id); return }
+                    appendBuildStage("Rustfmt · \(path)")
+                    proposed[path] = try await formatter.format(source: snapshot.files[path]!, edition: edition, configuration: configuration)
+                }
+                guard !Task.isCancelled, isCurrent(revision), activeCompilationID == id else { discardCompilationIfActive(id); return }
+                guard !playgroundIsReadOnly else { throw RustFormatter.Failure.rejected("the shared source became read-only") }
+                try ProjectFilePolicy.validate(proposed, entryFile: snapshot.entryFile)
+                if playgroundSession != nil {
+                    var shared = try playgroundDocument(); shared.files = proposed
+                    _ = try shared.validated()
+                }
+                let changed = paths.filter { Data(proposed[$0]!.utf8) != Data(snapshot.files[$0]!.utf8) }
+                if !request.checkOnly, !changed.isEmpty {
+                    applyFormattedFiles(proposed, applyToEditor: applyToEditor)
+                    formatUndo = FormatUndo(projectID: projectID, files: snapshot.files, generation: workspaceGeneration)
+                }
+                let message = request.checkOnly
+                    ? (changed.isEmpty ? "Rust formatting check passed." : "\(changed.count) Rust file(s) need formatting; source was kept unchanged.")
+                    : (changed.isEmpty ? "Rust source is already formatted." : "Formatted \(changed.count) Rust file(s). Native editor Undo and Undo formatting are available.")
+                let breakpoints = debugBreakpoints.filter { changed.contains($0.file) }.count
+                let note = breakpoints > 0 && !request.checkOnly ? "\nReview \(breakpoints) existing breakpoint position(s), because formatting can move source lines." : ""
+                result = CompilationResult(succeeded: !request.checkOnly || changed.isEmpty, phase: .format,
+                    exitCode: request.checkOnly && !changed.isEmpty ? 1 : 0, diagnostics: [],
+                    stdout: message + "\n" + RustFormatter.version + note, stderr: "",
+                    duration: started.duration(to: .now), detail: message)
+                appendBuildStage(message)
+                activity = .idle; isCompilerDraining = false; activeCompilationID = nil; compilationTask = nil
+            } catch {
+                guard activeCompilationID == id else { return }
+                if Task.isCancelled || !isCurrent(revision) { discardCompilationIfActive(id); return }
+                result = .failure(phase: .format, detail: error.localizedDescription, duration: started.duration(to: .now))
+                appendBuildStage("Formatting failed · original source kept")
+                activity = .idle; isCompilerDraining = false; activeCompilationID = nil; compilationTask = nil
+            }
+        }
+    }
+
+    func undoFormatting() {
+        guard canUndoFormatting, let undo = formatUndo else { return }
+        do {
+            try ProjectFilePolicy.validate(undo.files, entryFile: entryFile)
+            if playgroundSession != nil {
+                var shared = try playgroundDocument(); shared.files = undo.files
+                _ = try shared.validated()
+            }
+            applyFormattedFiles(undo.files, applyToEditor: nil)
+            formatUndo = nil
+            result = CompilationResult(succeeded: true, phase: .format, exitCode: 0, diagnostics: [],
+                stdout: "Restored the source from before formatting.", stderr: "", duration: .zero,
+                detail: "Formatting undone.")
+        } catch { result = .failure(phase: .format, detail: error.localizedDescription) }
+    }
+
+    private func applyFormattedFiles(_ files: [String: String],
+                                     applyToEditor: ((UUID, String, String, String) -> Bool)?) {
+        if let replacement = files[selectedFile], Data(replacement.utf8) != Data(source.utf8) {
+            let expected = source
+            fileContents = files
+            _ = applyToEditor?(projectID, selectedFile, expected, replacement)
+            if Data(source.utf8) != Data(replacement.utf8) { source = replacement }
+        } else {
+            fileContents = files
+            workspaceDidChange()
+        }
+    }
+
     private func startBuild(_ mode: Activity, browserDirectory: String? = nil,
                             prepareBrowserPackages: Bool = false, frozenBrowserPackages: Bool = false,
-                            debugging: Bool = false) {
+                            debugging: Bool = false, unitTestRequest: RustUnitTestRequest? = nil) {
         guard canStartBuild else { return }
         do { try ProjectFilePolicy.validate(currentProject().files, entryFile: entryFile) }
         catch { result = .failure(phase: .setup, detail: error.localizedDescription); return }
@@ -699,12 +817,22 @@ final class CompilerViewModel: ObservableObject {
         let revision = workspaceRevision
         activity = mode
         result = nil
+        unitTestReport = nil
         buildEvents = []
-        appendBuildStage(mode == .checking ? "Check requested" : mode == .building ? "Build requested · main will not run" : "Run requested")
-        let project = projectSnapshot()
+        appendBuildStage(mode == .testing ? "Selected-entry Unit Test requested · not an Academy validator" : mode == .checking ? "Check requested" : mode == .building ? "Build requested · main will not run" : "Run requested")
+        var project = projectSnapshot()
+        if let unitTestRequest {
+            do {
+                let snapshot = currentProject()
+                let path = try unitTestRequest.entry(in: snapshot)
+                var supporting = snapshot.files
+                let main = supporting.removeValue(forKey: path)!
+                project = (path, main, supporting)
+            } catch { activity = .idle; result = .failure(phase: .setup, detail: error.localizedDescription); return }
+        }
         var projectFiles = project.supporting
         projectFiles[project.entryPath] = project.main
-        let compilerProject = compilerProjectSnapshot(from: project)
+        let compilerProject = mode == .testing ? project : compilerProjectSnapshot(from: project)
         let manifestSource = manifestSource(in: project)
         let lockfileSource = project.entryPath == "Cargo.lock"
             ? project.main
@@ -820,7 +948,7 @@ final class CompilerViewModel: ObservableObject {
                                 detail: "\(blocked.name) \(blocked.version) cannot be built locally: "
                                     + (blocked.compatibility.detail ?? "unsupported package")
                             ),
-                            revision: revision
+                            revision: revision, recordsLearningEvidence: mode != .testing
                         )
                         return
                     }
@@ -836,7 +964,7 @@ final class CompilerViewModel: ObservableObject {
                             phase: .setup,
                             detail: "Dependency resolution failed: \(error.localizedDescription)"
                         ),
-                        revision: revision
+                        revision: revision, recordsLearningEvidence: mode != .testing
                     )
                     return
                 }
@@ -871,6 +999,9 @@ final class CompilerViewModel: ObservableObject {
             }
 
             var value = switch mode {
+            case .testing:
+                await testSnapshot(compilerProject, request: unitTestRequest ?? .init(), edition: rootEdition,
+                    plan: plan, revision: revision, compilationID: compilationID, onStage: stageHandler)
             case .building:
                 await compiler.build(source: compilerProject.main, sourcePath: compilerProject.entryPath,
                     supportingFiles: compilerProject.supporting, edition: rootEdition, plan: plan,
@@ -928,7 +1059,7 @@ final class CompilerViewModel: ObservableObject {
                 }
             }
             if !plan.isEmpty { cargoStage = .ready }
-            finish(value, revision: revision)
+            finish(value, revision: revision, recordsLearningEvidence: mode != .testing)
             // A build is the only source of verified compatibility, so refresh
             // the package list with whatever the compiler just learned.
             if !plan.isEmpty, let manifestSource {
@@ -1333,6 +1464,7 @@ final class CompilerViewModel: ObservableObject {
         // Interrupt the guest itself; the task cancellation below only detaches
         // the UI from a worker that would otherwise run to completion.
         compiler.cancel()
+        formatter.cancel()
         compilationTask?.cancel()
         // Keep the active identity until the queue callback returns. Clearing it
         // here made `discardCompilationIfActive` reject that callback, leaving
@@ -2283,7 +2415,18 @@ final class CompilerViewModel: ObservableObject {
         return lines.joined(separator: "\n")
     }
 
-    private func finish(_ value: CompilationResult, revision: WorkspaceRevision) {
+    private func testSnapshot(_ project: (entryPath: String, main: String, supporting: [String: String]),
+                              request: RustUnitTestRequest, edition: String, plan: CargoBuildPlan,
+                              revision: WorkspaceRevision, compilationID: UUID,
+                              onStage: @escaping @Sendable (String) -> Void) async -> CompilationResult {
+        let report = await RustUnitTestRunner().run(compiler: compiler, source: project.main,
+            sourcePath: project.entryPath, supportingFiles: project.supporting, edition: edition,
+            plan: plan, filter: request.filter, listOnly: request.listOnly, onStage: onStage)
+        if isCurrent(revision), activeCompilationID == compilationID { unitTestReport = report }
+        return report.rendered
+    }
+
+    private func finish(_ value: CompilationResult, revision: WorkspaceRevision, recordsLearningEvidence: Bool = true) {
         guard isCurrent(revision) else { return }
         debugSession = nil; debugSessionID = nil; debugActive = false; debugPause = nil
         appendBuildStage(value.succeeded ? "Finished successfully" : "Stopped · see Problems for details")
@@ -2292,6 +2435,9 @@ final class CompilerViewModel: ObservableObject {
         isCompilerDraining = false
         compilationTask = nil
         activeCompilationID = nil
+        // User tests and formatter tools must not complete Academy lessons,
+        // mint repair rewards or replace the last ordinary Build/Run record.
+        guard recordsLearningEvidence else { return }
         lastBuild = ProjectBuildRecord(result: value, sourceTreeHash: revision.sourceTreeHash, toolchainID: revision.toolchainID)
 
         let errorDiagnostic = value.diagnostics.first(where: { $0.level == "error" })
@@ -2470,6 +2616,7 @@ final class CompilerViewModel: ObservableObject {
         // A successful result belongs to the exact tree which produced it.
         // Editing invalidates its diagnostics instead of showing them as current.
         result = nil
+        unitTestReport = nil
         lastBuild = nil
         if diagnosticAdviceState != .idle {
             resetDiagnosticAdvice()

@@ -6,6 +6,8 @@ struct CompilationResult: Sendable {
         case compile
         case run
         case setup
+        case test
+        case format
     }
 
     let succeeded: Bool

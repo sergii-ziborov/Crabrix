@@ -56,11 +56,15 @@ targets:
           - Resources/Toolchain
           - Resources/MigrationCoursePacks
           - Resources/ActiveCourseCatalog
+          - Resources/RustTools
           - Compiler/Native/ProcMacroNativeProxy.wat
       - path: Crabrix/Resources/MigrationCoursePacks
         type: folder
         buildPhase: resources
       - path: Crabrix/Resources/ActiveCourseCatalog
+        type: folder
+        buildPhase: resources
+      - path: Crabrix/Resources/RustTools
         type: folder
         buildPhase: resources
       - path: build/Resources/Toolchain
@@ -128,6 +132,7 @@ targets:
           "$SRCROOT/scripts/fetch_toolchain.sh"
           /usr/bin/python3 "$SRCROOT/scripts/package_toolchain.py"
           /usr/bin/python3 "$SRCROOT/scripts/prepare_native_compiler.py"
+          /usr/bin/python3 "$SRCROOT/scripts/verify_rust_tools.py"
         basedOnDependencyAnalysis: false
     settings:
       base:
@@ -436,6 +441,19 @@ schemes:
         - name: CrabrixTests
           selectedTests:
             - BundledLicenseTests
+
+  CrabrixRustToolsGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+    test:
+      config: CompilerCandidate
+      gatherCoverageData: false
+      targets:
+        - name: CrabrixTests
+          selectedTests:
+            - RustToolsTests
 
   CrabrixPlaygroundGate:
     build:

@@ -11,8 +11,9 @@ struct ToolchainNotice: Decodable, Identifiable, Sendable {
 
 enum ToolchainNoticeCatalog {
     static func load() throws -> [ToolchainNotice] {
-        try ["ToolchainPrimaryIndex", "ToolchainVendorIndex"].flatMap { name in
-            guard let url = Bundle.main.url(forResource: name, withExtension: "json") else {
+        try ["ToolchainPrimaryIndex", "ToolchainVendorIndex", "RustfmtNoticeIndex"].flatMap { name in
+            guard let url = Bundle.main.url(forResource: name, withExtension: "json")
+                    ?? Bundle.main.url(forResource: name, withExtension: "json", subdirectory: "RustTools") else {
                 throw CocoaError(.fileNoSuchFile)
             }
             return try JSONDecoder().decode([ToolchainNotice].self, from: Data(contentsOf: url))
@@ -20,7 +21,8 @@ enum ToolchainNoticeCatalog {
     }
 
     static func text(archive name: String, path: String) throws -> String {
-        guard let url = Bundle.main.url(forResource: name, withExtension: "zip") else {
+        guard let url = Bundle.main.url(forResource: name, withExtension: "zip")
+                ?? Bundle.main.url(forResource: name, withExtension: "zip", subdirectory: "RustTools") else {
             throw CocoaError(.fileNoSuchFile)
         }
         let archive = try Archive(url: url, accessMode: .read)
@@ -50,10 +52,15 @@ struct ToolchainNoticesView: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 10) {
-                Text("Original notices from toolchain-2026-10-02.1, including the exact 1,592-package source inventory. All files are bundled for offline reading; this inventory also includes build-time dependencies.")
+                Text("Original compiler/sysroot notices and the pinned rustfmt dependency inventory. All files are bundled for offline reading; inventories also include build-time dependencies. Unmodified MPL option-ext sources are included in the formatter archive.")
                     .font(.subheadline)
                     .foregroundStyle(CrabrixTheme.muted)
                     .padding(.bottom, 8)
+                if let archive = Bundle.main.url(forResource: "RustfmtVendorNotices", withExtension: "zip", subdirectory: "RustTools") {
+                    ShareLink("Export formatter notices and MPL source", item: archive)
+                        .font(.subheadline)
+                        .padding(.bottom, 8)
+                }
                 if failed {
                     Text("The bundled toolchain notice index could not be read.")
                 }

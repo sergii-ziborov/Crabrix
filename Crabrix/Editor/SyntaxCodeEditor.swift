@@ -6,10 +6,14 @@ final class RustEditorKeyboardBridge: ObservableObject {
     var insert: ((String) -> Void)?
     var dismiss: (() -> Void)?
     var focus: (() -> Void)?
+    var replaceDocument: ((UUID, String, String, String) -> Bool)?
 
     func insertSymbol(_ symbol: String) { insert?(symbol) }
     func dismissKeyboard() { dismiss?() }
     func focusEditor() { focus?() }
+    func applyFormattedText(projectID: UUID, file: String, expected: String, replacement: String) -> Bool {
+        replaceDocument?(projectID, file, expected, replacement) ?? false
+    }
 }
 
 struct RustSmartNewlineEdit: Equatable {
@@ -243,6 +247,9 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         keyboardBridge?.focus = { [weak textView] in
             textView?.becomeFirstResponder()
         }
+        keyboardBridge?.replaceDocument = { [weak coordinator = context.coordinator] projectID, file, expected, replacement in
+            coordinator?.replaceDocument(projectID: projectID, file: file, expected: expected, replacement: replacement) ?? false
+        }
         canvas.setTabletopCodeTabActive(tabletopCodeTabActive)
         context.coordinator.applyHighlighting(to: textView, filePath: filePath)
         return canvas
@@ -250,6 +257,11 @@ struct SyntaxCodeEditor: UIViewRepresentable {
 
     func updateUIView(_ canvas: CodeEditorCanvas, context: Context) {
         let textView = canvas.textView
+        let documentIdentity = "\(projectID?.uuidString ?? ""):\(filePath)"
+        if context.coordinator.documentIdentity != documentIdentity {
+            textView.undoManager?.removeAllActions()
+            context.coordinator.documentIdentity = documentIdentity
+        }
         context.coordinator.isUpdatingView = true
         defer { context.coordinator.isUpdatingView = false }
         context.coordinator.parent = self
@@ -264,6 +276,9 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         }
         keyboardBridge?.focus = { [weak textView] in
             textView?.becomeFirstResponder()
+        }
+        keyboardBridge?.replaceDocument = { [weak coordinator = context.coordinator] projectID, file, expected, replacement in
+            coordinator?.replaceDocument(projectID: projectID, file: file, expected: expected, replacement: replacement) ?? false
         }
         textView.isEditable = isEditable
         canvas.backgroundColor = UIColor(CrabrixTheme.editor)
@@ -314,6 +329,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         weak var textView: UITextView?
         weak var canvas: CodeEditorCanvas?
         var lastNavigationID: UUID?
+        var documentIdentity = ""
         private var isApplyingHighlight = false
         var isUpdatingView = false
 
@@ -323,6 +339,47 @@ struct SyntaxCodeEditor: UIViewRepresentable {
 
         init(parent: SyntaxCodeEditor) {
             self.parent = parent
+        }
+
+        @discardableResult
+        func replaceDocument(projectID: UUID, file: String, expected: String, replacement: String,
+                             restoringSelection: NSRange? = nil) -> Bool {
+            guard parent.isEditable, parent.projectID == projectID, parent.filePath == file,
+                  let textView, Data((textView.text ?? "").utf8) == Data(expected.utf8) else { return false }
+            let oldSelection = textView.selectedRange
+            let offset = textView.contentOffset
+            // Assigning UITextView.text clears UIKit's undo stack. Replace the
+            // storage instead, then register one inverse after highlighting.
+            textView.textStorage.replaceCharacters(in: NSRange(location: 0, length: (textView.text as NSString).length), with: replacement)
+            let length = (replacement as NSString).length
+            let wanted = restoringSelection ?? oldSelection
+            var start = min(max(0, wanted.location), length)
+            var end = min(length, start + max(0, wanted.length))
+            let string = replacement as NSString
+            if start < length { start = string.rangeOfComposedCharacterSequence(at: start).location }
+            if wanted.length == 0 { end = start }
+            else if end > 0, end < length { end = NSMaxRange(string.rangeOfComposedCharacterSequence(at: end - 1)) }
+            textView.selectedRange = NSRange(location: start, length: max(0, end - start))
+            parent.text = replacement
+            parent.cursorOffset = start
+            parent.onSelectionChange(textView.selectedRange)
+            highlightedText = ""
+            applyHighlighting(to: textView, filePath: file)
+            textView.layoutIfNeeded()
+            let maxY = max(-textView.adjustedContentInset.top,
+                           textView.contentSize.height - textView.bounds.height + textView.adjustedContentInset.bottom)
+            textView.setContentOffset(CGPoint(x: offset.x, y: min(maxY, max(-textView.adjustedContentInset.top, offset.y))), animated: false)
+            let undo = textView.undoManager
+            let needsGroup = undo?.groupingLevel == 0
+            if needsGroup { undo?.beginUndoGrouping() }
+            undo?.registerUndo(withTarget: self) { target in
+                _ = target.replaceDocument(projectID: projectID, file: file, expected: replacement,
+                                           replacement: expected, restoringSelection: oldSelection)
+            }
+            undo?.setActionName("Format Rust")
+            if needsGroup { undo?.endUndoGrouping() }
+            canvas?.setNeedsDisplay()
+            return true
         }
 
         private struct LiveSpan {

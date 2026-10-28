@@ -1,5 +1,16 @@
 # Changelog
 
+## In development — local Rust tools
+
+- Real libtest discovery and isolated selected-entry tests, case-sensitive filters,
+  explicit unsupported profiles, bounded report, source navigation and Stop.
+- Pinned bundled rustfmt for file/project, check mode, exact native Undo/Redo,
+  whole-project Undo and revision/Shared budget guards. No network or AI formatter.
+- Terminal and existing Project settings integration; no editor/Duo geometry changes.
+- Full offline formatter notices and MPL source export.
+- Not included in the already submitted 1.1.3 (111); see the staged roadmap.
+
+
 ## 1.1.3 (111, TestFlight and App Review) — 2026-10-28
 
 - Preserve supported hidden source/config files and round-trip 2,048 editable files through saved projects, packages and ZIPs. Detect missing snapshot files with format-3 inventories; retain legacy originals during migration.

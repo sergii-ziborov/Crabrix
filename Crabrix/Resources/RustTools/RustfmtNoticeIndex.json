@@ -1,0 +1,2326 @@
+[
+  {
+    "id": "rustfmt-adler2-2.0.1",
+    "name": "adler2-2.0.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/adler2-2.0.1/LICENSE-0BSD",
+      "crates/adler2-2.0.1/LICENSE-APACHE",
+      "crates/adler2-2.0.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-aho-corasick-1.1.4",
+    "name": "aho-corasick-1.1.4",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/aho-corasick-1.1.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-allocator-api2-0.2.21",
+    "name": "allocator-api2-0.2.21",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/allocator-api2-0.2.21/LICENSE-APACHE",
+      "crates/allocator-api2-0.2.21/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-annotate-snippets-0.12.16",
+    "name": "annotate-snippets-0.12.16",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/annotate-snippets-0.12.16/LICENSE-APACHE",
+      "crates/annotate-snippets-0.12.16/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-anstream-0.6.21",
+    "name": "anstream-0.6.21",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/anstream-0.6.21/LICENSE-APACHE",
+      "crates/anstream-0.6.21/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-anstream-1.0.0",
+    "name": "anstream-1.0.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/anstream-1.0.0/LICENSE-APACHE",
+      "crates/anstream-1.0.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-anstyle-1.0.13",
+    "name": "anstyle-1.0.13",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/anstyle-1.0.13/LICENSE-APACHE",
+      "crates/anstyle-1.0.13/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-anstyle-parse-0.2.7",
+    "name": "anstyle-parse-0.2.7",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/anstyle-parse-0.2.7/LICENSE-APACHE",
+      "crates/anstyle-parse-0.2.7/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-anstyle-parse-1.0.0",
+    "name": "anstyle-parse-1.0.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/anstyle-parse-1.0.0/LICENSE-APACHE",
+      "crates/anstyle-parse-1.0.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-anstyle-query-1.1.5",
+    "name": "anstyle-query-1.1.5",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/anstyle-query-1.1.5/LICENSE-APACHE",
+      "crates/anstyle-query-1.1.5/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-anstyle-wincon-3.0.11",
+    "name": "anstyle-wincon-3.0.11",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/anstyle-wincon-3.0.11/LICENSE-APACHE",
+      "crates/anstyle-wincon-3.0.11/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-anyhow-1.0.102",
+    "name": "anyhow-1.0.102",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/anyhow-1.0.102/LICENSE-APACHE",
+      "crates/anyhow-1.0.102/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-arrayref-0.3.9",
+    "name": "arrayref-0.3.9",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/arrayref-0.3.9/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-arrayvec-0.7.6",
+    "name": "arrayvec-0.7.6",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/arrayvec-0.7.6/LICENSE-APACHE",
+      "crates/arrayvec-0.7.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-bitflags-2.10.0",
+    "name": "bitflags-2.10.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/bitflags-2.10.0/LICENSE-APACHE",
+      "crates/bitflags-2.10.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-blake3-1.8.2",
+    "name": "blake3-1.8.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/blake3-1.8.2/LICENSE_A2",
+      "crates/blake3-1.8.2/LICENSE_A2LLVM",
+      "crates/blake3-1.8.2/LICENSE_CC0"
+    ]
+  },
+  {
+    "id": "rustfmt-block-buffer-0.10.4",
+    "name": "block-buffer-0.10.4",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/block-buffer-0.10.4/LICENSE-APACHE",
+      "crates/block-buffer-0.10.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-bstr-1.12.1",
+    "name": "bstr-1.12.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/bstr-1.12.1/LICENSE-APACHE",
+      "crates/bstr-1.12.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-bytecount-0.6.9",
+    "name": "bytecount-0.6.9",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/bytecount-0.6.9/LICENSE.Apache2",
+      "crates/bytecount-0.6.9/LICENSE.MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-camino-1.2.1",
+    "name": "camino-1.2.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/camino-1.2.1/LICENSE-APACHE",
+      "crates/camino-1.2.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-cargo-platform-0.3.1",
+    "name": "cargo-platform-0.3.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/cargo-platform-0.3.1/LICENSE-APACHE",
+      "crates/cargo-platform-0.3.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-cargo_metadata-0.23.1",
+    "name": "cargo_metadata-0.23.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/cargo_metadata-0.23.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-cc-1.4.3",
+    "name": "cc-1.4.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/cc-1.4.3/LICENSE-APACHE",
+      "crates/cc-1.4.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-cfg-if-1.0.4",
+    "name": "cfg-if-1.0.4",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/cfg-if-1.0.4/LICENSE-APACHE",
+      "crates/cfg-if-1.0.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-clap-4.6.1",
+    "name": "clap-4.6.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/clap-4.6.1/LICENSE-APACHE",
+      "crates/clap-4.6.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-clap-cargo-0.18.3",
+    "name": "clap-cargo-0.18.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/clap-cargo-0.18.3/LICENSE-APACHE",
+      "crates/clap-cargo-0.18.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-clap_builder-4.6.0",
+    "name": "clap_builder-4.6.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/clap_builder-4.6.0/LICENSE-APACHE",
+      "crates/clap_builder-4.6.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-clap_derive-4.6.1",
+    "name": "clap_derive-4.6.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/clap_derive-4.6.1/LICENSE-APACHE",
+      "crates/clap_derive-4.6.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-clap_lex-1.1.0",
+    "name": "clap_lex-1.1.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/clap_lex-1.1.0/LICENSE-APACHE",
+      "crates/clap_lex-1.1.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-colorchoice-1.0.4",
+    "name": "colorchoice-1.0.4",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/colorchoice-1.0.4/LICENSE-APACHE",
+      "crates/colorchoice-1.0.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-console-0.16.3",
+    "name": "console-0.16.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/console-0.16.3/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-constant_time_eq-0.3.1",
+    "name": "constant_time_eq-0.3.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/constant_time_eq-0.3.1/LICENSE-APACHE",
+      "crates/constant_time_eq-0.3.1/LICENSE-CC0",
+      "crates/constant_time_eq-0.3.1/LICENSE-MIT0"
+    ]
+  },
+  {
+    "id": "rustfmt-cpufeatures-0.2.17",
+    "name": "cpufeatures-0.2.17",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/cpufeatures-0.2.17/LICENSE-APACHE",
+      "crates/cpufeatures-0.2.17/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-crc32fast-1.5.0",
+    "name": "crc32fast-1.5.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/crc32fast-1.5.0/LICENSE-APACHE",
+      "crates/crc32fast-1.5.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-crossbeam-deque-0.8.6",
+    "name": "crossbeam-deque-0.8.6",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/crossbeam-deque-0.8.6/LICENSE-APACHE",
+      "crates/crossbeam-deque-0.8.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-crossbeam-epoch-0.9.20",
+    "name": "crossbeam-epoch-0.9.20",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/crossbeam-epoch-0.9.20/LICENSE-APACHE",
+      "crates/crossbeam-epoch-0.9.20/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-crossbeam-utils-0.8.21",
+    "name": "crossbeam-utils-0.8.21",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/crossbeam-utils-0.8.21/LICENSE-APACHE",
+      "crates/crossbeam-utils-0.8.21/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-crypto-common-0.1.7",
+    "name": "crypto-common-0.1.7",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/crypto-common-0.1.7/LICENSE-APACHE",
+      "crates/crypto-common-0.1.7/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-darling-0.20.11",
+    "name": "darling-0.20.11",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/darling-0.20.11/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-darling_core-0.20.11",
+    "name": "darling_core-0.20.11",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/darling_core-0.20.11/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-darling_macro-0.20.11",
+    "name": "darling_macro-0.20.11",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/darling_macro-0.20.11/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-derive-where-1.6.1",
+    "name": "derive-where-1.6.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/derive-where-1.6.1/LICENSE-APACHE",
+      "crates/derive-where-1.6.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-derive_setters-0.1.8",
+    "name": "derive_setters-0.1.8",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/derive_setters-0.1.8/LICENSE-APACHE",
+      "crates/derive_setters-0.1.8/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-diff-0.1.13",
+    "name": "diff-0.1.13",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/diff-0.1.13/LICENSE-APACHE",
+      "crates/diff-0.1.13/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-digest-0.10.7",
+    "name": "digest-0.10.7",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/digest-0.10.7/LICENSE-APACHE",
+      "crates/digest-0.10.7/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-dirs-6.0.0",
+    "name": "dirs-6.0.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/dirs-6.0.0/LICENSE-APACHE",
+      "crates/dirs-6.0.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-dirs-sys-0.5.0",
+    "name": "dirs-sys-0.5.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/dirs-sys-0.5.0/LICENSE-APACHE",
+      "crates/dirs-sys-0.5.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-displaydoc-0.2.5",
+    "name": "displaydoc-0.2.5",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/displaydoc-0.2.5/LICENSE-APACHE",
+      "crates/displaydoc-0.2.5/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-dissimilar-1.0.10",
+    "name": "dissimilar-1.0.10",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/dissimilar-1.0.10/LICENSE-APACHE",
+      "crates/dissimilar-1.0.10/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-dyn-clone-1.0.20",
+    "name": "dyn-clone-1.0.20",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/dyn-clone-1.0.20/LICENSE-APACHE",
+      "crates/dyn-clone-1.0.20/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-either-1.15.0",
+    "name": "either-1.15.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/either-1.15.0/LICENSE-APACHE",
+      "crates/either-1.15.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-elsa-1.11.2",
+    "name": "elsa-1.11.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/elsa-1.11.2/LICENSE-APACHE",
+      "crates/elsa-1.11.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-ena-0.14.4",
+    "name": "ena-0.14.4",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/ena-0.14.4/LICENSE-APACHE",
+      "crates/ena-0.14.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-encode_unicode-1.0.0",
+    "name": "encode_unicode-1.0.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/encode_unicode-1.0.0/LICENSE-APACHE",
+      "crates/encode_unicode-1.0.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-equivalent-1.0.2",
+    "name": "equivalent-1.0.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/equivalent-1.0.2/LICENSE-APACHE",
+      "crates/equivalent-1.0.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-errno-0.3.14",
+    "name": "errno-0.3.14",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/errno-0.3.14/LICENSE-APACHE",
+      "crates/errno-0.3.14/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-expect-test-1.5.1",
+    "name": "expect-test-1.5.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/expect-test-1.5.1/LICENSE-APACHE",
+      "crates/expect-test-1.5.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-fastrand-2.3.0",
+    "name": "fastrand-2.3.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/fastrand-2.3.0/LICENSE-APACHE",
+      "crates/fastrand-2.3.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-find-msvc-tools-0.1.11",
+    "name": "find-msvc-tools-0.1.11",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/find-msvc-tools-0.1.11/LICENSE-APACHE",
+      "crates/find-msvc-tools-0.1.11/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-flate2-1.1.9",
+    "name": "flate2-1.1.9",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/flate2-1.1.9/LICENSE-APACHE",
+      "crates/flate2-1.1.9/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-fluent-bundle-0.16.0",
+    "name": "fluent-bundle-0.16.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/fluent-bundle-0.16.0/LICENSE-APACHE",
+      "crates/fluent-bundle-0.16.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-fluent-langneg-0.13.1",
+    "name": "fluent-langneg-0.13.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/fluent-langneg-0.13.1/Cargo.toml",
+      "crates/fluent-langneg-0.13.1/README.md"
+    ]
+  },
+  {
+    "id": "rustfmt-fluent-syntax-0.12.0",
+    "name": "fluent-syntax-0.12.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/fluent-syntax-0.12.0/LICENSE-APACHE",
+      "crates/fluent-syntax-0.12.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-fnv-1.0.7",
+    "name": "fnv-1.0.7",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/fnv-1.0.7/LICENSE-APACHE",
+      "crates/fnv-1.0.7/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-foldhash-0.2.0",
+    "name": "foldhash-0.2.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/foldhash-0.2.0/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-generic-array-0.14.7",
+    "name": "generic-array-0.14.7",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/generic-array-0.14.7/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-getopts-0.2.24",
+    "name": "getopts-0.2.24",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/getopts-0.2.24/LICENSE-APACHE",
+      "crates/getopts-0.2.24/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-getrandom-0.2.16",
+    "name": "getrandom-0.2.16",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/getrandom-0.2.16/LICENSE-APACHE",
+      "crates/getrandom-0.2.16/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-getrandom-0.3.3",
+    "name": "getrandom-0.3.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/getrandom-0.3.3/LICENSE-APACHE",
+      "crates/getrandom-0.3.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-globset-0.4.18",
+    "name": "globset-0.4.18",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/globset-0.4.18/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-hashbrown-0.17.1",
+    "name": "hashbrown-0.17.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/hashbrown-0.17.1/LICENSE-APACHE",
+      "crates/hashbrown-0.17.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-heck-0.5.0",
+    "name": "heck-0.5.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/heck-0.5.0/LICENSE-APACHE",
+      "crates/heck-0.5.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-icu_list-2.3.0",
+    "name": "icu_list-2.3.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/icu_list-2.3.0/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-icu_locale_core-2.3.0",
+    "name": "icu_locale_core-2.3.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/icu_locale_core-2.3.0/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-icu_locale_fallback-2.3.0",
+    "name": "icu_locale_fallback-2.3.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/icu_locale_fallback-2.3.0/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-icu_locale_fallback_data-2.3.0",
+    "name": "icu_locale_fallback_data-2.3.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/icu_locale_fallback_data-2.3.0/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-icu_provider-2.3.0",
+    "name": "icu_provider-2.3.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/icu_provider-2.3.0/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-ident_case-1.0.1",
+    "name": "ident_case-1.0.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/ident_case-1.0.1/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-ignore-0.4.25",
+    "name": "ignore-0.4.25",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/ignore-0.4.25/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-indexmap-2.14.0",
+    "name": "indexmap-2.14.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/indexmap-2.14.0/LICENSE-APACHE",
+      "crates/indexmap-2.14.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-insta-1.48.0",
+    "name": "insta-1.48.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/insta-1.48.0/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-intl-memoizer-0.5.3",
+    "name": "intl-memoizer-0.5.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/intl-memoizer-0.5.3/LICENSE-APACHE",
+      "crates/intl-memoizer-0.5.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-intl_pluralrules-7.0.2",
+    "name": "intl_pluralrules-7.0.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/intl_pluralrules-7.0.2/Cargo.toml",
+      "crates/intl_pluralrules-7.0.2/README.md"
+    ]
+  },
+  {
+    "id": "rustfmt-is_terminal_polyfill-1.70.2",
+    "name": "is_terminal_polyfill-1.70.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/is_terminal_polyfill-1.70.2/LICENSE-APACHE",
+      "crates/is_terminal_polyfill-1.70.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-itertools-0.15.0",
+    "name": "itertools-0.15.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/itertools-0.15.0/LICENSE-APACHE",
+      "crates/itertools-0.15.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-itoa-1.0.15",
+    "name": "itoa-1.0.15",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/itoa-1.0.15/LICENSE-APACHE",
+      "crates/itoa-1.0.15/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-jobserver-0.1.34",
+    "name": "jobserver-0.1.34",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/jobserver-0.1.34/LICENSE-APACHE",
+      "crates/jobserver-0.1.34/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-lazy_static-1.5.0",
+    "name": "lazy_static-1.5.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/lazy_static-1.5.0/LICENSE-APACHE",
+      "crates/lazy_static-1.5.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-libc-0.2.189",
+    "name": "libc-0.2.189",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/libc-0.2.189/LICENSE-APACHE",
+      "crates/libc-0.2.189/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-libredox-0.1.10",
+    "name": "libredox-0.1.10",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/libredox-0.1.10/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-linux-raw-sys-0.11.0",
+    "name": "linux-raw-sys-0.11.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/linux-raw-sys-0.11.0/COPYRIGHT",
+      "crates/linux-raw-sys-0.11.0/LICENSE-APACHE",
+      "crates/linux-raw-sys-0.11.0/LICENSE-Apache-2.0_WITH_LLVM-exception",
+      "crates/linux-raw-sys-0.11.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-litemap-0.8.1",
+    "name": "litemap-0.8.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/litemap-0.8.1/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-lock_api-0.4.14",
+    "name": "lock_api-0.4.14",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/lock_api-0.4.14/LICENSE-APACHE",
+      "crates/lock_api-0.4.14/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-log-0.4.28",
+    "name": "log-0.4.28",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/log-0.4.28/LICENSE-APACHE",
+      "crates/log-0.4.28/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-matchers-0.2.0",
+    "name": "matchers-0.2.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/matchers-0.2.0/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-md-5-0.10.6",
+    "name": "md-5-0.10.6",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/md-5-0.10.6/LICENSE-APACHE",
+      "crates/md-5-0.10.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-measureme-12.0.3",
+    "name": "measureme-12.0.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/measureme-12.0.3/LICENSE-APACHE",
+      "crates/measureme-12.0.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-memchr-2.8.0",
+    "name": "memchr-2.8.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/memchr-2.8.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-memmap2-0.2.3",
+    "name": "memmap2-0.2.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/memmap2-0.2.3/LICENSE-APACHE",
+      "crates/memmap2-0.2.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-miniz_oxide-0.8.9",
+    "name": "miniz_oxide-0.8.9",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/miniz_oxide-0.8.9/LICENSE",
+      "crates/miniz_oxide-0.8.9/LICENSE-APACHE.md",
+      "crates/miniz_oxide-0.8.9/LICENSE-MIT.md",
+      "crates/miniz_oxide-0.8.9/LICENSE-ZLIB.md"
+    ]
+  },
+  {
+    "id": "rustfmt-nu-ansi-term-0.50.3",
+    "name": "nu-ansi-term-0.50.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/nu-ansi-term-0.50.3/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-object-0.39.1",
+    "name": "object-0.39.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/object-0.39.1/LICENSE-APACHE",
+      "crates/object-0.39.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-odht-0.3.1",
+    "name": "odht-0.3.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/odht-0.3.1/LICENSE-APACHE",
+      "crates/odht-0.3.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-once_cell-1.21.3",
+    "name": "once_cell-1.21.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/once_cell-1.21.3/LICENSE-APACHE",
+      "crates/once_cell-1.21.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-once_cell_polyfill-1.70.2",
+    "name": "once_cell_polyfill-1.70.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/once_cell_polyfill-1.70.2/LICENSE-APACHE",
+      "crates/once_cell_polyfill-1.70.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-option-ext-0.2.0",
+    "name": "option-ext-0.2.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/option-ext-0.2.0/LICENSE.txt",
+      "crates/option-ext-0.2.0/src/impl.rs",
+      "crates/option-ext-0.2.0/src/lib.rs"
+    ]
+  },
+  {
+    "id": "rustfmt-parking_lot-0.12.5",
+    "name": "parking_lot-0.12.5",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/parking_lot-0.12.5/LICENSE-APACHE",
+      "crates/parking_lot-0.12.5/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-parking_lot_core-0.9.12",
+    "name": "parking_lot_core-0.9.12",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/parking_lot_core-0.9.12/LICENSE-APACHE",
+      "crates/parking_lot_core-0.9.12/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-perf-event-open-sys-3.0.0",
+    "name": "perf-event-open-sys-3.0.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/perf-event-open-sys-3.0.0/Cargo.toml",
+      "crates/perf-event-open-sys-3.0.0/README.md"
+    ]
+  },
+  {
+    "id": "rustfmt-pin-project-lite-0.2.16",
+    "name": "pin-project-lite-0.2.16",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/pin-project-lite-0.2.16/LICENSE-APACHE",
+      "crates/pin-project-lite-0.2.16/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-portable-atomic-1.13.1",
+    "name": "portable-atomic-1.13.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/portable-atomic-1.13.1/LICENSE-APACHE",
+      "crates/portable-atomic-1.13.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-potential_utf-0.1.4",
+    "name": "potential_utf-0.1.4",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/potential_utf-0.1.4/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-ppv-lite86-0.2.21",
+    "name": "ppv-lite86-0.2.21",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/ppv-lite86-0.2.21/LICENSE-APACHE",
+      "crates/ppv-lite86-0.2.21/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-proc-macro-hack-0.5.20+deprecated",
+    "name": "proc-macro-hack-0.5.20+deprecated",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/proc-macro-hack-0.5.20+deprecated/LICENSE-APACHE",
+      "crates/proc-macro-hack-0.5.20+deprecated/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-proc-macro2-1.0.106",
+    "name": "proc-macro2-1.0.106",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/proc-macro2-1.0.106/LICENSE-APACHE",
+      "crates/proc-macro2-1.0.106/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-quote-1.0.45",
+    "name": "quote-1.0.45",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/quote-1.0.45/LICENSE-APACHE",
+      "crates/quote-1.0.45/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-r-efi-5.3.0",
+    "name": "r-efi-5.3.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/r-efi-5.3.0/Cargo.toml",
+      "crates/r-efi-5.3.0/README.md"
+    ]
+  },
+  {
+    "id": "rustfmt-rand-0.9.3",
+    "name": "rand-0.9.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/rand-0.9.3/COPYRIGHT",
+      "crates/rand-0.9.3/LICENSE-APACHE",
+      "crates/rand-0.9.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-rand_chacha-0.9.0",
+    "name": "rand_chacha-0.9.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/rand_chacha-0.9.0/COPYRIGHT",
+      "crates/rand_chacha-0.9.0/LICENSE-APACHE",
+      "crates/rand_chacha-0.9.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-rand_core-0.9.3",
+    "name": "rand_core-0.9.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/rand_core-0.9.3/COPYRIGHT",
+      "crates/rand_core-0.9.3/LICENSE-APACHE",
+      "crates/rand_core-0.9.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-rand_xorshift-0.4.0",
+    "name": "rand_xorshift-0.4.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/rand_xorshift-0.4.0/COPYRIGHT",
+      "crates/rand_xorshift-0.4.0/LICENSE-APACHE",
+      "crates/rand_xorshift-0.4.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-rand_xoshiro-0.7.0",
+    "name": "rand_xoshiro-0.7.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/rand_xoshiro-0.7.0/COPYRIGHT",
+      "crates/rand_xoshiro-0.7.0/LICENSE-APACHE",
+      "crates/rand_xoshiro-0.7.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-redox_syscall-0.5.18",
+    "name": "redox_syscall-0.5.18",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/redox_syscall-0.5.18/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-redox_users-0.5.2",
+    "name": "redox_users-0.5.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/redox_users-0.5.2/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-ref-cast-1.0.25",
+    "name": "ref-cast-1.0.25",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/ref-cast-1.0.25/LICENSE-APACHE",
+      "crates/ref-cast-1.0.25/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-ref-cast-impl-1.0.25",
+    "name": "ref-cast-impl-1.0.25",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/ref-cast-impl-1.0.25/LICENSE-APACHE",
+      "crates/ref-cast-impl-1.0.25/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-regex-1.12.2",
+    "name": "regex-1.12.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/regex-1.12.2/LICENSE-APACHE",
+      "crates/regex-1.12.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-regex-automata-0.4.13",
+    "name": "regex-automata-0.4.13",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/regex-automata-0.4.13/LICENSE-APACHE",
+      "crates/regex-automata-0.4.13/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-regex-syntax-0.8.8",
+    "name": "regex-syntax-0.8.8",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/regex-syntax-0.8.8/LICENSE-APACHE",
+      "crates/regex-syntax-0.8.8/LICENSE-MIT",
+      "crates/regex-syntax-0.8.8/src/unicode_tables/LICENSE-UNICODE"
+    ]
+  },
+  {
+    "id": "rustfmt-rustc-hash-1.1.0",
+    "name": "rustc-hash-1.1.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/rustc-hash-1.1.0/LICENSE-APACHE",
+      "crates/rustc-hash-1.1.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-rustc-hash-2.1.1",
+    "name": "rustc-hash-2.1.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/rustc-hash-2.1.1/LICENSE-APACHE",
+      "crates/rustc-hash-2.1.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-rustc-literal-escaper-0.0.8",
+    "name": "rustc-literal-escaper-0.0.8",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/rustc-literal-escaper-0.0.8/LICENSE-APACHE",
+      "crates/rustc-literal-escaper-0.0.8/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-rustc-stable-hash-0.1.2",
+    "name": "rustc-stable-hash-0.1.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/rustc-stable-hash-0.1.2/LICENSE-APACHE",
+      "crates/rustc-stable-hash-0.1.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-rustix-1.1.2",
+    "name": "rustix-1.1.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/rustix-1.1.2/COPYRIGHT",
+      "crates/rustix-1.1.2/LICENSE-APACHE",
+      "crates/rustix-1.1.2/LICENSE-Apache-2.0_WITH_LLVM-exception",
+      "crates/rustix-1.1.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-ruzstd-0.8.2",
+    "name": "ruzstd-0.8.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/ruzstd-0.8.2/Cargo.toml"
+    ]
+  },
+  {
+    "id": "rustfmt-ryu-1.0.20",
+    "name": "ryu-1.0.20",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/ryu-1.0.20/LICENSE-APACHE",
+      "crates/ryu-1.0.20/LICENSE-BOOST"
+    ]
+  },
+  {
+    "id": "rustfmt-same-file-1.0.6",
+    "name": "same-file-1.0.6",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/same-file-1.0.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-schemars-1.1.0",
+    "name": "schemars-1.1.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/schemars-1.1.0/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-schemars_derive-1.1.0",
+    "name": "schemars_derive-1.1.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/schemars_derive-1.1.0/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-scoped-tls-1.0.1",
+    "name": "scoped-tls-1.0.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/scoped-tls-1.0.1/LICENSE-APACHE",
+      "crates/scoped-tls-1.0.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-scopeguard-1.2.0",
+    "name": "scopeguard-1.2.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/scopeguard-1.2.0/LICENSE-APACHE",
+      "crates/scopeguard-1.2.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-self_cell-1.2.1",
+    "name": "self_cell-1.2.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/self_cell-1.2.1/Cargo.toml",
+      "crates/self_cell-1.2.1/README.md"
+    ]
+  },
+  {
+    "id": "rustfmt-semver-1.0.27",
+    "name": "semver-1.0.27",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/semver-1.0.27/LICENSE-APACHE",
+      "crates/semver-1.0.27/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-serde-1.0.228",
+    "name": "serde-1.0.228",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/serde-1.0.228/LICENSE-APACHE",
+      "crates/serde-1.0.228/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-serde_core-1.0.228",
+    "name": "serde_core-1.0.228",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/serde_core-1.0.228/LICENSE-APACHE",
+      "crates/serde_core-1.0.228/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-serde_derive-1.0.228",
+    "name": "serde_derive-1.0.228",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/serde_derive-1.0.228/LICENSE-APACHE",
+      "crates/serde_derive-1.0.228/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-serde_derive_internals-0.29.1",
+    "name": "serde_derive_internals-0.29.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/serde_derive_internals-0.29.1/LICENSE-APACHE",
+      "crates/serde_derive_internals-0.29.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-serde_json-1.0.145",
+    "name": "serde_json-1.0.145",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/serde_json-1.0.145/LICENSE-APACHE",
+      "crates/serde_json-1.0.145/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-serde_path_to_error-0.1.20",
+    "name": "serde_path_to_error-0.1.20",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/serde_path_to_error-0.1.20/LICENSE-APACHE",
+      "crates/serde_path_to_error-0.1.20/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-serde_spanned-1.1.0",
+    "name": "serde_spanned-1.1.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/serde_spanned-1.1.0/LICENSE-APACHE",
+      "crates/serde_spanned-1.1.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-sha1-0.10.6",
+    "name": "sha1-0.10.6",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/sha1-0.10.6/LICENSE-APACHE",
+      "crates/sha1-0.10.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-sha2-0.10.9",
+    "name": "sha2-0.10.9",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/sha2-0.10.9/LICENSE-APACHE",
+      "crates/sha2-0.10.9/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-sharded-slab-0.1.7",
+    "name": "sharded-slab-0.1.7",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/sharded-slab-0.1.7/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-shlex-2.0.1",
+    "name": "shlex-2.0.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/shlex-2.0.1/LICENSE-APACHE",
+      "crates/shlex-2.0.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-simd-adler32-0.3.7",
+    "name": "simd-adler32-0.3.7",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/simd-adler32-0.3.7/LICENSE.md"
+    ]
+  },
+  {
+    "id": "rustfmt-similar-2.7.0",
+    "name": "similar-2.7.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/similar-2.7.0/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-smallvec-1.15.1",
+    "name": "smallvec-1.15.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/smallvec-1.15.1/LICENSE-APACHE",
+      "crates/smallvec-1.15.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-stable_deref_trait-1.2.1",
+    "name": "stable_deref_trait-1.2.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/stable_deref_trait-1.2.1/LICENSE-APACHE",
+      "crates/stable_deref_trait-1.2.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-strip-ansi-escapes-0.2.1",
+    "name": "strip-ansi-escapes-0.2.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/strip-ansi-escapes-0.2.1/LICENSE-APACHE",
+      "crates/strip-ansi-escapes-0.2.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-strsim-0.11.1",
+    "name": "strsim-0.11.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/strsim-0.11.1/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-syn-2.0.117",
+    "name": "syn-2.0.117",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/syn-2.0.117/LICENSE-APACHE",
+      "crates/syn-2.0.117/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-syn-3.0.3",
+    "name": "syn-3.0.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/syn-3.0.3/LICENSE-APACHE",
+      "crates/syn-3.0.3/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-synstructure-0.13.2",
+    "name": "synstructure-0.13.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/synstructure-0.13.2/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-tempfile-3.23.0",
+    "name": "tempfile-3.23.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/tempfile-3.23.0/LICENSE-APACHE",
+      "crates/tempfile-3.23.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-term-1.2.1",
+    "name": "term-1.2.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/term-1.2.1/LICENSE-APACHE",
+      "crates/term-1.2.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-termize-0.2.1",
+    "name": "termize-0.2.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/termize-0.2.1/LICENSE-APACHE",
+      "crates/termize-0.2.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-thin-vec-0.2.19",
+    "name": "thin-vec-0.2.19",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/thin-vec-0.2.19/LICENSE-APACHE",
+      "crates/thin-vec-0.2.19/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-thiserror-1.0.69",
+    "name": "thiserror-1.0.69",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/thiserror-1.0.69/LICENSE-APACHE",
+      "crates/thiserror-1.0.69/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-thiserror-2.0.17",
+    "name": "thiserror-2.0.17",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/thiserror-2.0.17/LICENSE-APACHE",
+      "crates/thiserror-2.0.17/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-thiserror-impl-1.0.69",
+    "name": "thiserror-impl-1.0.69",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/thiserror-impl-1.0.69/LICENSE-APACHE",
+      "crates/thiserror-impl-1.0.69/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-thiserror-impl-2.0.17",
+    "name": "thiserror-impl-2.0.17",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/thiserror-impl-2.0.17/LICENSE-APACHE",
+      "crates/thiserror-impl-2.0.17/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-thread_local-1.1.9",
+    "name": "thread_local-1.1.9",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/thread_local-1.1.9/LICENSE-APACHE",
+      "crates/thread_local-1.1.9/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-tinystr-0.8.4",
+    "name": "tinystr-0.8.4",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/tinystr-0.8.4/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-tinyvec-1.10.0",
+    "name": "tinyvec-1.10.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/tinyvec-1.10.0/LICENSE-APACHE.md",
+      "crates/tinyvec-1.10.0/LICENSE-MIT.md",
+      "crates/tinyvec-1.10.0/LICENSE-ZLIB.md"
+    ]
+  },
+  {
+    "id": "rustfmt-tinyvec_macros-0.1.1",
+    "name": "tinyvec_macros-0.1.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/tinyvec_macros-0.1.1/LICENSE-APACHE.md",
+      "crates/tinyvec_macros-0.1.1/LICENSE-MIT.md",
+      "crates/tinyvec_macros-0.1.1/LICENSE-ZLIB.md"
+    ]
+  },
+  {
+    "id": "rustfmt-toml-1.1.0+spec-1.1.0",
+    "name": "toml-1.1.0+spec-1.1.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/toml-1.1.0+spec-1.1.0/LICENSE-APACHE",
+      "crates/toml-1.1.0+spec-1.1.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-toml_datetime-1.1.0+spec-1.1.0",
+    "name": "toml_datetime-1.1.0+spec-1.1.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/toml_datetime-1.1.0+spec-1.1.0/LICENSE-APACHE",
+      "crates/toml_datetime-1.1.0+spec-1.1.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-toml_parser-1.1.0+spec-1.1.0",
+    "name": "toml_parser-1.1.0+spec-1.1.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/toml_parser-1.1.0+spec-1.1.0/LICENSE-APACHE",
+      "crates/toml_parser-1.1.0+spec-1.1.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-toml_writer-1.1.0+spec-1.1.0",
+    "name": "toml_writer-1.1.0+spec-1.1.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/toml_writer-1.1.0+spec-1.1.0/LICENSE-APACHE",
+      "crates/toml_writer-1.1.0+spec-1.1.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-tracing-0.1.44",
+    "name": "tracing-0.1.44",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/tracing-0.1.44/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-tracing-attributes-0.1.31",
+    "name": "tracing-attributes-0.1.31",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/tracing-attributes-0.1.31/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-tracing-core-0.1.36",
+    "name": "tracing-core-0.1.36",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/tracing-core-0.1.36/LICENSE",
+      "crates/tracing-core-0.1.36/src/spin/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-tracing-log-0.2.0",
+    "name": "tracing-log-0.2.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/tracing-log-0.2.0/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-tracing-serde-0.2.0",
+    "name": "tracing-serde-0.2.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/tracing-serde-0.2.0/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-tracing-subscriber-0.3.23",
+    "name": "tracing-subscriber-0.3.23",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/tracing-subscriber-0.3.23/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-twox-hash-2.1.2",
+    "name": "twox-hash-2.1.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/twox-hash-2.1.2/LICENSE.txt"
+    ]
+  },
+  {
+    "id": "rustfmt-type-map-0.5.1",
+    "name": "type-map-0.5.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/type-map-0.5.1/LICENSE-APACHE",
+      "crates/type-map-0.5.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-typenum-1.20.0",
+    "name": "typenum-1.20.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/typenum-1.20.0/LICENSE",
+      "crates/typenum-1.20.0/LICENSE-APACHE",
+      "crates/typenum-1.20.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-unic-langid-0.9.6",
+    "name": "unic-langid-0.9.6",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/unic-langid-0.9.6/LICENSE-APACHE",
+      "crates/unic-langid-0.9.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-unic-langid-impl-0.9.6",
+    "name": "unic-langid-impl-0.9.6",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/unic-langid-impl-0.9.6/LICENSE-APACHE",
+      "crates/unic-langid-impl-0.9.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-unic-langid-macros-0.9.6",
+    "name": "unic-langid-macros-0.9.6",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/unic-langid-macros-0.9.6/LICENSE-APACHE",
+      "crates/unic-langid-macros-0.9.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-unic-langid-macros-impl-0.9.6",
+    "name": "unic-langid-macros-impl-0.9.6",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/unic-langid-macros-impl-0.9.6/LICENSE-APACHE",
+      "crates/unic-langid-macros-impl-0.9.6/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-unicode-ident-1.0.24",
+    "name": "unicode-ident-1.0.24",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/unicode-ident-1.0.24/LICENSE-APACHE",
+      "crates/unicode-ident-1.0.24/LICENSE-MIT",
+      "crates/unicode-ident-1.0.24/LICENSE-UNICODE"
+    ]
+  },
+  {
+    "id": "rustfmt-unicode-normalization-0.1.25",
+    "name": "unicode-normalization-0.1.25",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/unicode-normalization-0.1.25/COPYRIGHT",
+      "crates/unicode-normalization-0.1.25/LICENSE-APACHE",
+      "crates/unicode-normalization-0.1.25/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-unicode-properties-0.1.4",
+    "name": "unicode-properties-0.1.4",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/unicode-properties-0.1.4/COPYRIGHT",
+      "crates/unicode-properties-0.1.4/LICENSE-APACHE",
+      "crates/unicode-properties-0.1.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-unicode-segmentation-1.12.0",
+    "name": "unicode-segmentation-1.12.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/unicode-segmentation-1.12.0/COPYRIGHT",
+      "crates/unicode-segmentation-1.12.0/LICENSE-APACHE",
+      "crates/unicode-segmentation-1.12.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-unicode-width-0.1.14",
+    "name": "unicode-width-0.1.14",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/unicode-width-0.1.14/COPYRIGHT",
+      "crates/unicode-width-0.1.14/LICENSE-APACHE",
+      "crates/unicode-width-0.1.14/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-unicode-width-0.2.2",
+    "name": "unicode-width-0.2.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/unicode-width-0.2.2/COPYRIGHT",
+      "crates/unicode-width-0.2.2/LICENSE-APACHE",
+      "crates/unicode-width-0.2.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-utf8parse-0.2.2",
+    "name": "utf8parse-0.2.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/utf8parse-0.2.2/LICENSE-APACHE",
+      "crates/utf8parse-0.2.2/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-valuable-0.1.1",
+    "name": "valuable-0.1.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/valuable-0.1.1/Cargo.toml",
+      "crates/valuable-0.1.1/README.md"
+    ]
+  },
+  {
+    "id": "rustfmt-version_check-0.9.5",
+    "name": "version_check-0.9.5",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/version_check-0.9.5/LICENSE-APACHE",
+      "crates/version_check-0.9.5/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-vte-0.14.1",
+    "name": "vte-0.14.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/vte-0.14.1/LICENSE-APACHE",
+      "crates/vte-0.14.1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-walkdir-2.5.0",
+    "name": "walkdir-2.5.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/walkdir-2.5.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-wasi-0.11.1+wasi-snapshot-preview1",
+    "name": "wasi-0.11.1+wasi-snapshot-preview1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/wasi-0.11.1+wasi-snapshot-preview1/LICENSE-APACHE",
+      "crates/wasi-0.11.1+wasi-snapshot-preview1/LICENSE-Apache-2.0_WITH_LLVM-exception",
+      "crates/wasi-0.11.1+wasi-snapshot-preview1/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-wasi-0.14.2+wasi-0.2.4",
+    "name": "wasi-0.14.2+wasi-0.2.4",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/wasi-0.14.2+wasi-0.2.4/LICENSE-APACHE",
+      "crates/wasi-0.14.2+wasi-0.2.4/LICENSE-Apache-2.0_WITH_LLVM-exception",
+      "crates/wasi-0.14.2+wasi-0.2.4/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-wasmparser-0.247.0",
+    "name": "wasmparser-0.247.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/wasmparser-0.247.0/LICENSE-APACHE",
+      "crates/wasmparser-0.247.0/LICENSE-Apache-2.0_WITH_LLVM-exception",
+      "crates/wasmparser-0.247.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-winapi-util-0.1.11",
+    "name": "winapi-util-0.1.11",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/winapi-util-0.1.11/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-windows-0.61.3",
+    "name": "windows-0.61.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/windows-0.61.3/license-apache-2.0",
+      "crates/windows-0.61.3/license-mit"
+    ]
+  },
+  {
+    "id": "rustfmt-windows-collections-0.2.0",
+    "name": "windows-collections-0.2.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/windows-collections-0.2.0/license-apache-2.0",
+      "crates/windows-collections-0.2.0/license-mit"
+    ]
+  },
+  {
+    "id": "rustfmt-windows-core-0.61.2",
+    "name": "windows-core-0.61.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/windows-core-0.61.2/license-apache-2.0",
+      "crates/windows-core-0.61.2/license-mit"
+    ]
+  },
+  {
+    "id": "rustfmt-windows-future-0.2.1",
+    "name": "windows-future-0.2.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/windows-future-0.2.1/license-apache-2.0",
+      "crates/windows-future-0.2.1/license-mit"
+    ]
+  },
+  {
+    "id": "rustfmt-windows-implement-0.60.2",
+    "name": "windows-implement-0.60.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/windows-implement-0.60.2/license-apache-2.0",
+      "crates/windows-implement-0.60.2/license-mit"
+    ]
+  },
+  {
+    "id": "rustfmt-windows-interface-0.59.3",
+    "name": "windows-interface-0.59.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/windows-interface-0.59.3/license-apache-2.0",
+      "crates/windows-interface-0.59.3/license-mit"
+    ]
+  },
+  {
+    "id": "rustfmt-windows-link-0.1.3",
+    "name": "windows-link-0.1.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/windows-link-0.1.3/license-apache-2.0",
+      "crates/windows-link-0.1.3/license-mit"
+    ]
+  },
+  {
+    "id": "rustfmt-windows-link-0.2.1",
+    "name": "windows-link-0.2.1",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/windows-link-0.2.1/license-apache-2.0",
+      "crates/windows-link-0.2.1/license-mit"
+    ]
+  },
+  {
+    "id": "rustfmt-windows-numerics-0.2.0",
+    "name": "windows-numerics-0.2.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/windows-numerics-0.2.0/license-apache-2.0",
+      "crates/windows-numerics-0.2.0/license-mit"
+    ]
+  },
+  {
+    "id": "rustfmt-windows-result-0.3.4",
+    "name": "windows-result-0.3.4",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/windows-result-0.3.4/license-apache-2.0",
+      "crates/windows-result-0.3.4/license-mit"
+    ]
+  },
+  {
+    "id": "rustfmt-windows-strings-0.4.2",
+    "name": "windows-strings-0.4.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/windows-strings-0.4.2/license-apache-2.0",
+      "crates/windows-strings-0.4.2/license-mit"
+    ]
+  },
+  {
+    "id": "rustfmt-windows-sys-0.61.2",
+    "name": "windows-sys-0.61.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/windows-sys-0.61.2/license-apache-2.0",
+      "crates/windows-sys-0.61.2/license-mit"
+    ]
+  },
+  {
+    "id": "rustfmt-windows-threading-0.1.0",
+    "name": "windows-threading-0.1.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/windows-threading-0.1.0/license-apache-2.0",
+      "crates/windows-threading-0.1.0/license-mit"
+    ]
+  },
+  {
+    "id": "rustfmt-winnow-1.0.0",
+    "name": "winnow-1.0.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/winnow-1.0.0/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-wit-bindgen-rt-0.39.0",
+    "name": "wit-bindgen-rt-0.39.0",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/wit-bindgen-rt-0.39.0/Cargo.toml"
+    ]
+  },
+  {
+    "id": "rustfmt-writeable-0.6.4",
+    "name": "writeable-0.6.4",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/writeable-0.6.4/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-yoke-0.8.3",
+    "name": "yoke-0.8.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/yoke-0.8.3/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-yoke-derive-0.8.2",
+    "name": "yoke-derive-0.8.2",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/yoke-derive-0.8.2/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-zerocopy-0.8.27",
+    "name": "zerocopy-0.8.27",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/zerocopy-0.8.27/LICENSE-APACHE",
+      "crates/zerocopy-0.8.27/LICENSE-BSD",
+      "crates/zerocopy-0.8.27/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-zerocopy-derive-0.8.27",
+    "name": "zerocopy-derive-0.8.27",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/zerocopy-derive-0.8.27/LICENSE-APACHE",
+      "crates/zerocopy-derive-0.8.27/LICENSE-BSD",
+      "crates/zerocopy-derive-0.8.27/LICENSE-MIT"
+    ]
+  },
+  {
+    "id": "rustfmt-zerofrom-0.1.6",
+    "name": "zerofrom-0.1.6",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/zerofrom-0.1.6/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-zerofrom-derive-0.1.6",
+    "name": "zerofrom-derive-0.1.6",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/zerofrom-derive-0.1.6/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-zerotrie-0.2.5",
+    "name": "zerotrie-0.2.5",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/zerotrie-0.2.5/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-zerovec-0.11.7",
+    "name": "zerovec-0.11.7",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/zerovec-0.11.7/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-zerovec-derive-0.11.5",
+    "name": "zerovec-derive-0.11.5",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/zerovec-derive-0.11.5/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-zlib-rs-0.6.3",
+    "name": "zlib-rs-0.6.3",
+    "summary": "Pinned rustfmt dependency source inventory \u00b7 includes build-time packages",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "crates/zlib-rs-0.6.3/LICENSE"
+    ]
+  },
+  {
+    "id": "rustfmt-wasi",
+    "name": "wasi-libc supplemental notices",
+    "summary": "Original upstream notices; artifact does not identify its wasi-libc revision",
+    "archive": "RustfmtVendorNotices",
+    "documents": [
+      "wasi-libc/LICENSE",
+      "wasi-libc/LICENSE-APACHE",
+      "wasi-libc/LICENSE-APACHE-LLVM",
+      "wasi-libc/LICENSE-MIT",
+      "wasi-libc/dlmalloc/src/malloc.c",
+      "wasi-libc/emmalloc/emmalloc.c",
+      "wasi-libc/fts/musl-fts/COPYING",
+      "wasi-libc/libc-bottom-half/cloudlibc/LICENSE",
+      "wasi-libc/libc-top-half/musl/COPYRIGHT",
+      "wasi-libc/test/open-posix-test-suite/COPYING",
+      "wasi-libc/tools/wasi-headers/LICENSE"
+    ]
+  }
+]

@@ -36,8 +36,8 @@
   "verifiedAtUTC": "2026-10-28T16:04:09.291531+00:00",
   "cloudCompletion": "SUCCEEDED",
   "cloudExecutionProgress": "COMPLETE",
-  "websiteSourceCommit": "13741f391c10d0dbd8c0fde7d71f839a56b7dd74",
-  "websiteImage": "986297003fc71ba83e6204f5ff150c5cdc50823c96a63aa75f87bda3b76d51de",
+  "websiteSourceCommit": "b11ce075ddaa20cdb17af9d08dfef397ed3fd391",
+  "websiteImage": "e24cf6d59b7d27aa7bea90d09de430fd08d022c70a0c446b9a2e5c6ec74af5c1",
   "signedEntitlements": {
     "build": "111",
     "version": "1.1.3",
@@ -58,5 +58,6 @@
   "qualification": "68 native host cases, five native UI scenarios on each of iPhone and iPad Simulators through documented initial runs and focused reruns; 32 actual browser compiler comparisons and eight explicit unsupported cases; actual packaged/public offline Run/Debug flow; 34 site tests, type and production build checks.",
   "physicalDeviceGate": "Not run; iPhone unavailable. No new physical performance or Universal Link qualification.",
   "verificationReceipt": "docs/project-reliability-2026-10-28.json",
-  "supersedes": "Build 110 was replaced only after build 111 was VALID, signature verified and IN_BETA_TESTING."
+  "supersedes": "Build 110 was replaced only after build 111 was VALID, signature verified and IN_BETA_TESTING.",
+  "websitePublishedAtUTC": "2026-10-28T16:17:26Z"
 }

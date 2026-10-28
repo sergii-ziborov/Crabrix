@@ -71,7 +71,7 @@ struct BuildWorkflowControls: View {
                 action: activity == .checking ? onCancel : onCheck
             )
             .keyboardShortcut(.return, modifiers: .command)
-            .disabled(activity == .running || (activity == .idle && !canRun))
+            .disabled((activity != .idle && activity != .checking) || (activity == .idle && !canRun))
 
             workflowConnector
 
@@ -90,7 +90,7 @@ struct BuildWorkflowControls: View {
                 action: activity == .running ? onCancel : onRun
             )
             .keyboardShortcut("r", modifiers: .command)
-            .disabled(activity == .checking || (activity == .idle && !canRun))
+            .disabled((activity != .idle && activity != .running) || (activity == .idle && !canRun))
         }
     }
 
@@ -107,7 +107,7 @@ struct BuildWorkflowControls: View {
                 action: activity == .checking ? onCancel : onCheck
             )
             .keyboardShortcut(.return, modifiers: .command)
-            .disabled(activity == .running || (activity == .idle && !canRun))
+            .disabled((activity != .idle && activity != .checking) || (activity == .idle && !canRun))
 
             Image(systemName: runPassed ? "checkmark" : "arrow.right")
                 .font(.caption.bold())
@@ -124,7 +124,7 @@ struct BuildWorkflowControls: View {
                 action: activity == .running ? onCancel : onRun
             )
             .keyboardShortcut("r", modifiers: .command)
-            .disabled(activity == .checking || (activity == .idle && !canRun))
+            .disabled((activity != .idle && activity != .running) || (activity == .idle && !canRun))
         }
     }
 

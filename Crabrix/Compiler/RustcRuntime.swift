@@ -263,7 +263,8 @@ final class RustcRuntime: @unchecked Sendable {
         capturedOutputLimitBytes: Int? = nil,
         enableProceduralMacros: Bool = false,
         proceduralMacroInputs: [String] = [],
-        debugSession: RustDebugSession? = nil
+        debugSession: RustDebugSession? = nil,
+        reactorEntrypoint: String? = nil
     ) throws -> WasmProcessResult {
         let started = ContinuousClock.now
         let outputBudget = try capturedOutputLimitBytes.map { limit in
@@ -324,7 +325,16 @@ final class RustcRuntime: @unchecked Sendable {
                 let instance = try module.instantiate(store: store, imports: imports)
                 CompilerPhaseTrace.emit("instantiate", since: instantiateStarted)
                 let guestStarted = ContinuousClock.now
-                let exitCode = try wasi.start(instance)
+                let exitCode: UInt32
+                if let reactorEntrypoint {
+                    try wasi.initialize(instance)
+                    guard let entry = instance.exports[function: reactorEntrypoint],
+                          case let .i32(code)? = try entry().first else {
+                        throw NSError(domain: "Crabrix.RustTool", code: 1,
+                                      userInfo: [NSLocalizedDescriptionKey: "The bundled Rust tool has an incompatible reactor entry point."])
+                    }
+                    exitCode = code
+                } else { exitCode = try wasi.start(instance) }
                 CompilerPhaseTrace.emit("guest-execution", since: guestStarted)
                 return exitCode
             }

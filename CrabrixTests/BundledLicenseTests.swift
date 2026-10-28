@@ -57,7 +57,7 @@ final class BundledLicenseTests: XCTestCase {
 
     func testEveryInventoriedCompilerNoticeCanBeReadOffline() throws {
         let notices = try ToolchainNoticeCatalog.load()
-        XCTAssertEqual(notices.count, 1594) // Primary group, supplemental group, 1592 source packages.
+        XCTAssertEqual(notices.count, 1828) // Existing 1594 groups + 233 formatter packages + WASI notices.
         for notice in notices {
             XCTAssertFalse(notice.documents.isEmpty, notice.name)
             for path in notice.documents {

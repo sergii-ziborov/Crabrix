@@ -18,6 +18,9 @@ enum BundledLicenseCatalog {
     /// shipped in the app rather than linked. A compiler that works offline has
     /// to be able to show its notices offline too.
     static let all: [BundledLicense] = [
+        BundledLicense(id: "Rustfmt", name: "Rustfmt 1.10.0-nightly · local formatter",
+            summary: "Rust Project Contributors and Scalar · full dependency notices and source below",
+            documents: ["Rustfmt-NOTICE"]),
         BundledLicense(id: "lezer-common", name: "Lezer syntax trees", summary: "Marijn Haverbeke and contributors · MIT", documents: ["lezer-common-LICENSE"]),
         BundledLicense(id: "lezer-lr", name: "Lezer parser runtime", summary: "Marijn Haverbeke and contributors · MIT", documents: ["lezer-lr-LICENSE"]),
         BundledLicense(id: "lezer-rust", name: "Lezer Rust grammar", summary: "Marijn Haverbeke and contributors · MIT", documents: ["lezer-rust-LICENSE"]),

@@ -46,6 +46,7 @@ struct BuildDockView<CodeContent: View>: View {
 
     let project: CrabrixProject
     let result: CompilationResult?
+    var unitTestReport: RustUnitTestReport? = nil
     let activity: CompilerViewModel.Activity
     let buildEvents: [BuildStageEvent]
     let onShowPackageProgress: () -> Void
@@ -54,6 +55,8 @@ struct BuildDockView<CodeContent: View>: View {
     let onCheck: () -> Void
     let onRun: () -> Void
     var onBuild: (() -> Void)? = nil
+    var onTest: ((RustUnitTestRequest) -> Void)? = nil
+    var onFormat: ((RustFormatRequest) -> Void)? = nil
     let onReplaceFiles: ([String: String], String?) -> Bool
     let workspace: CargoWorkspaceSnapshot
     let onFetch: () -> Void
@@ -82,6 +85,7 @@ struct BuildDockView<CodeContent: View>: View {
         terminal: ProjectTerminalSession,
         project: CrabrixProject,
         result: CompilationResult?,
+        unitTestReport: RustUnitTestReport? = nil,
         activity: CompilerViewModel.Activity,
         buildEvents: [BuildStageEvent] = [],
         onShowPackageProgress: @escaping () -> Void = {},
@@ -90,6 +94,8 @@ struct BuildDockView<CodeContent: View>: View {
         onCheck: @escaping () -> Void,
         onRun: @escaping () -> Void,
         onBuild: (() -> Void)? = nil,
+        onTest: ((RustUnitTestRequest) -> Void)? = nil,
+        onFormat: ((RustFormatRequest) -> Void)? = nil,
         onReplaceFiles: @escaping ([String: String], String?) -> Bool,
         workspace: CargoWorkspaceSnapshot,
         onFetch: @escaping () -> Void,
@@ -115,6 +121,7 @@ struct BuildDockView<CodeContent: View>: View {
         self.terminal = terminal
         self.project = project
         self.result = result
+        self.unitTestReport = unitTestReport
         self.activity = activity
         self.buildEvents = buildEvents
         self.onShowPackageProgress = onShowPackageProgress
@@ -123,6 +130,8 @@ struct BuildDockView<CodeContent: View>: View {
         self.onCheck = onCheck
         self.onRun = onRun
         self.onBuild = onBuild
+        self.onTest = onTest
+        self.onFormat = onFormat
         self.onReplaceFiles = onReplaceFiles
         self.workspace = workspace
         self.onFetch = onFetch
@@ -302,6 +311,8 @@ struct BuildDockView<CodeContent: View>: View {
             onCheck: onCheck,
             onRun: onRun,
             onBuild: onBuild,
+            onTest: onTest,
+            onFormat: onFormat,
             onReplaceFiles: onReplaceFiles,
             workspace: workspace,
             onFetch: onFetch,
@@ -313,6 +324,8 @@ struct BuildDockView<CodeContent: View>: View {
     private var outputContent: some View {
         OutputDockContent(
             result: result,
+            unitTestReport: unitTestReport,
+            onOpenDiagnostic: onOpenDiagnostic,
             activity: activity,
             buildEvents: buildEvents,
             onShowPackageProgress: onShowPackageProgress,
@@ -499,6 +512,8 @@ private struct ProblemsDockContent: View {
 private struct OutputDockContent: View {
     @State private var isHintExpanded = false
     let result: CompilationResult?
+    let unitTestReport: RustUnitTestReport?
+    let onOpenDiagnostic: (RustDiagnostic) -> Void
     let activity: CompilerViewModel.Activity
     let buildEvents: [BuildStageEvent]
     let onShowPackageProgress: () -> Void
@@ -535,6 +550,8 @@ private struct OutputDockContent: View {
     }
 
     private var emptyOutputTitle: String {
+        if activity == .testing { return "Running selected-entry unit tests" }
+        if activity == .formatting { return "Formatting Rust source" }
         if activity == .building { return "Building without running main" }
         if result?.detail.hasPrefix("Web assets prepared.") == true { return "Ready for web preview" }
         return switch displayState {
@@ -548,6 +565,8 @@ private struct OutputDockContent: View {
     }
 
     private var emptyOutputDetail: String {
+        if activity == .testing { return "Each unit test runs in its own local WASM guest. Stop interrupts the active guest." }
+        if activity == .formatting { return "Rustfmt runs locally. Edits are applied together only if the project version is unchanged." }
         if activity == .building { return "Compiler diagnostics will appear when linking finishes. Build does not execute your program." }
         switch displayState {
         case .ready: return "Run your project to see printed text or a visual result."
@@ -600,14 +619,17 @@ private struct OutputDockContent: View {
                         emptyOutputCard
                     }
 
+                    if let report = unitTestReport, report.compilerFailure == nil {
+                        UnitTestReportPanel(report: report, onOpenDiagnostic: onOpenDiagnostic)
+                    }
                     if let result {
                         if let frame = parsedOutput?.frame {
                             RustCanvasPreview(frame: frame)
                         }
                         if let plainText = parsedOutput?.plainText,
-                           !plainText.isEmpty {
+                           !plainText.isEmpty, unitTestReport == nil || unitTestReport?.compilerFailure != nil {
                             OutputStreamBlock(
-                                label: "STDOUT",
+                                label: result.phase == .test ? "UNIT TESTS" : result.phase == .format ? "RUSTFMT" : "STDOUT",
                                 text: plainText,
                                 tint: CrabrixTheme.mint,
                                 systemImage: "arrow.right.circle.fill"
@@ -740,6 +762,52 @@ private struct OutputDockContent: View {
 
 }
 
+private struct UnitTestReportPanel: View {
+    let report: RustUnitTestReport
+    let onOpenDiagnostic: (RustDiagnostic) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(report.discoveryOnly ? "DISCOVERED UNIT TESTS" : "SELECTED-ENTRY UNIT TESTS")
+                .font(.caption.monospaced().bold())
+                .foregroundStyle(CrabrixTheme.mint)
+            Text(report.detail).font(.caption).foregroundStyle(CrabrixTheme.muted)
+            if report.canceled { Text("Canceled · completed results are kept below").foregroundStyle(CrabrixTheme.amber) }
+            if report.cases.isEmpty { Text("No matching unit tests.") }
+            ForEach(report.cases) { test in
+                DisclosureGroup {
+                    VStack(alignment: .leading, spacing: 10) {
+                        if !test.detail.isEmpty { Text(test.detail).font(.caption) }
+                        if let file = test.file {
+                            Button("Open \(file):\(test.line ?? 1) · declaration") {
+                                onOpenDiagnostic(RustDiagnostic(level: "note", message: test.name, code: nil,
+                                    rendered: "", spans: [.init(fileName: file, lineStart: test.line ?? 1,
+                                        lineEnd: test.line ?? 1, columnStart: 1, columnEnd: 1, isPrimary: true,
+                                        label: "unit test declaration", sourceLine: "")]))
+                            }.font(.caption)
+                        }
+                        if !test.stdout.isEmpty { Text("stdout\n" + test.stdout).font(.caption.monospaced()).textSelection(.enabled) }
+                        if !test.stderr.isEmpty { Text("stderr\n" + test.stderr).font(.caption.monospaced()).textSelection(.enabled) }
+                        if !test.rawHarnessOutput.isEmpty {
+                            DisclosureGroup("Raw libtest output") {
+                                Text(test.rawHarnessOutput).font(.caption2.monospaced()).textSelection(.enabled)
+                            }
+                        }
+                    }.padding(.top, 8).frame(maxWidth: .infinity, alignment: .leading)
+                } label: {
+                    HStack(alignment: .top, spacing: 8) {
+                        Text(test.state.rawValue.uppercased()).font(.caption2.monospaced().bold())
+                            .foregroundStyle(test.state == .passed ? CrabrixTheme.mint : test.state == .failed ? CrabrixTheme.coral : CrabrixTheme.amber)
+                        Text(test.name).font(.caption.monospaced()).foregroundStyle(CrabrixTheme.primary)
+                    }
+                }
+                .padding(12)
+                .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 11))
+            }
+        }.frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
 private struct RustCanvasPreview: View {
     let frame: RustCanvasFrame
 
@@ -850,6 +918,8 @@ private struct TerminalDockContent: View {
     let onCheck: () -> Void
     let onRun: () -> Void
     var onBuild: (() -> Void)? = nil
+    var onTest: ((RustUnitTestRequest) -> Void)? = nil
+    var onFormat: ((RustFormatRequest) -> Void)? = nil
     let onReplaceFiles: ([String: String], String?) -> Bool
     let workspace: CargoWorkspaceSnapshot
     let onFetch: () -> Void
@@ -860,7 +930,7 @@ private struct TerminalDockContent: View {
         if project.files.keys.contains(where: { ($0 as NSString).lastPathComponent == "package.json" }) {
             return ["help", "ls", "tree", "history", "npm install", "npm ci", "npm run build", "npm run dev", "clear"]
         }
-        return ["help", "ls", "tree", "history", "cargo check", "cargo build", "cargo tree", "cargo metadata", "cargo run", "clear"]
+        return ["help", "ls", "tree", "history", "cargo check", "cargo build", "cargo test", "cargo fmt --check", "cargo tree", "cargo metadata", "cargo run", "clear"]
     }
 
     var body: some View {
@@ -992,6 +1062,8 @@ private struct TerminalDockContent: View {
             onCheck: onCheck,
             onRun: onRun,
             onBuild: onBuild,
+            onTest: onTest,
+            onFormat: onFormat,
             onFetch: onFetch,
             onBrowserCommand: onBrowserCommand,
             onReplaceFiles: onReplaceFiles

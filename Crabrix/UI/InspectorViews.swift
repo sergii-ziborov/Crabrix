@@ -386,7 +386,9 @@ struct SuccessInspector: View {
             Text(
                 performanceGateFailed
                     ? "Runs locally — performance gate failed"
-                    : (result.phase == .run ? "The code compiled and ran locally" : "The code passed rustc — run it next")
+                    : (result.phase == .test ? "Selected-entry unit tests finished locally"
+                        : result.phase == .format ? "Rustfmt finished locally"
+                        : result.phase == .run ? "The code compiled and ran locally" : "The code passed rustc — run it next")
             )
                 .font(.system(size: 28, weight: .bold, design: .rounded))
             Text(result.detail)

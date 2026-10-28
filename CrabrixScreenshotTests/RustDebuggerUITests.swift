@@ -3,6 +3,41 @@ import UIKit
 
 @MainActor
 final class RustDebuggerUITests: XCTestCase {
+    func testRustToolsMenuTerminalAndUndoKeepDockAndSource() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--crabrix-auto-rust-tools-fixture", "-crabrix.appearance", "cyberpunk"]
+        app.launch()
+        let editor = app.textViews["Source code editor"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 60))
+        let original = editor.value as? String
+        openProjectSettings(app)
+        let format = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Format current Rust file")).firstMatch
+        if !format.isHittable { app.scrollViews.firstMatch.swipeUp() }
+        XCTAssertTrue(format.waitForExistence(timeout: 10)); format.tap()
+        XCTAssertTrue(app.buttons["Run project"].waitForExistence(timeout: 60))
+        XCTAssertNotEqual(editor.value as? String, original)
+        XCTAssertTrue((editor.value as? String ?? "").contains("Keep this comment 🦀"))
+        capture("native-rustfmt-source")
+        openProjectSettings(app)
+        let undo = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Undo formatting")).firstMatch
+        for _ in 0..<3 where !undo.isHittable { app.scrollViews.firstMatch.swipeUp() }
+        XCTAssertTrue(undo.waitForExistence(timeout: 10)); undo.tap()
+        XCTAssertTrue(editor.waitForExistence(timeout: 10))
+        XCTAssertEqual(editor.value as? String, original)
+        app.buttons["build-dock-terminal"].tap()
+        let input = app.textFields["Terminal command"]
+        XCTAssertTrue(input.waitForExistence(timeout: 10)); input.tap(); input.typeText("cargo test\n")
+        let summary = app.staticTexts["SELECTED-ENTRY UNIT TESTS"]
+        XCTAssertTrue(summary.waitForExistence(timeout: 120), app.debugDescription)
+        XCTAssertTrue(app.staticTexts["PASSED"].exists)
+        XCTAssertTrue(app.staticTexts["FAILED"].exists)
+        capture("native-unit-test-results")
+        app.buttons["build-dock-code"].tap()
+        XCTAssertEqual(editor.value as? String, original)
+        for tab in ["build-dock-code", "build-dock-problems", "build-dock-output", "build-dock-terminal"] {
+            XCTAssertTrue(app.buttons[tab].exists)
+        }
+    }
     func testSaveFailureAndRecoveryActionsKeepTheEditorIntact() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--crabrix-auto-save-failure-fixture"]

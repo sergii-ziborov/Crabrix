@@ -221,6 +221,10 @@ struct ProjectActionsSheet: View {
     let onShareArchive: () -> Void
     let onSharePlayground: () -> Void
     let onDebug: () -> Void
+    let onTest: (() -> Void)?
+    let onFormatFile: (() -> Void)?
+    let onFormatProject: (() -> Void)?
+    let onUndoFormatting: (() -> Void)?
 
     init(
         project: CrabrixProject,
@@ -228,7 +232,11 @@ struct ProjectActionsSheet: View {
         onSaveToFiles: @escaping () -> Void,
         onShareArchive: @escaping () -> Void,
         onSharePlayground: @escaping () -> Void,
-        onDebug: @escaping () -> Void = {}
+        onDebug: @escaping () -> Void = {},
+        onTest: (() -> Void)? = nil,
+        onFormatFile: (() -> Void)? = nil,
+        onFormatProject: (() -> Void)? = nil,
+        onUndoFormatting: (() -> Void)? = nil
     ) {
         self.project = project
         self.onUpdate = onUpdate
@@ -236,6 +244,10 @@ struct ProjectActionsSheet: View {
         self.onShareArchive = onShareArchive
         self.onSharePlayground = onSharePlayground
         self.onDebug = onDebug
+        self.onTest = onTest
+        self.onFormatFile = onFormatFile
+        self.onFormatProject = onFormatProject
+        self.onUndoFormatting = onUndoFormatting
         _draft = State(initialValue: ProjectDetailsDraft(project: project))
     }
 
@@ -273,11 +285,33 @@ struct ProjectActionsSheet: View {
                     Divider().overlay(CrabrixTheme.border)
                     actionButton(
                         title: "Debug Rust project",
-                        detail: "Local breakpoints, stepping, call stack and primitive locals",
+                        detail: "Local breakpoints, stepping, String, Vec and structure previews",
                         systemImage: "ladybug.fill",
                         tint: CrabrixTheme.blue,
                         action: { saveDetails(afterDismiss: onDebug) }
                     )
+
+                    if let onTest {
+                        actionButton(title: "Unit tests · selected Rust entry",
+                            detail: "Real local libtest · separate from Academy checks",
+                            systemImage: "testtube.2", tint: CrabrixTheme.mint,
+                            action: { saveDetails(afterDismiss: onTest) })
+                    }
+                    if let onFormatFile {
+                        actionButton(title: "Format current Rust file", detail: "Bundled rustfmt · comments kept · Undo available",
+                            systemImage: "text.alignleft", tint: CrabrixTheme.blue,
+                            action: { saveDetails(afterDismiss: onFormatFile) })
+                    }
+                    if let onFormatProject {
+                        actionButton(title: "Format project Rust files", detail: "One checked replacement · excludes vendor and build trees",
+                            systemImage: "text.badge.checkmark", tint: CrabrixTheme.blue,
+                            action: { saveDetails(afterDismiss: onFormatProject) })
+                    }
+                    if let onUndoFormatting {
+                        actionButton(title: "Undo formatting", detail: "Restore the complete source before the last format",
+                            systemImage: "arrow.uturn.backward", tint: CrabrixTheme.amber,
+                            action: { dismiss(); onUndoFormatting() })
+                    }
 
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Organize project")
