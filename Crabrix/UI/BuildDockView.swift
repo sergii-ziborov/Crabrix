@@ -57,6 +57,7 @@ struct BuildDockView<CodeContent: View>: View {
     var onBuild: (() -> Void)? = nil
     var onTest: ((RustUnitTestRequest) -> Void)? = nil
     var onFormat: ((RustFormatRequest) -> Void)? = nil
+    var onGitCommand: ((ProjectGitCommand) -> Void)? = nil
     let onReplaceFiles: ([String: String], String?) -> Bool
     let workspace: CargoWorkspaceSnapshot
     let onFetch: () -> Void
@@ -96,6 +97,7 @@ struct BuildDockView<CodeContent: View>: View {
         onBuild: (() -> Void)? = nil,
         onTest: ((RustUnitTestRequest) -> Void)? = nil,
         onFormat: ((RustFormatRequest) -> Void)? = nil,
+        onGitCommand: ((ProjectGitCommand) -> Void)? = nil,
         onReplaceFiles: @escaping ([String: String], String?) -> Bool,
         workspace: CargoWorkspaceSnapshot,
         onFetch: @escaping () -> Void,
@@ -132,6 +134,7 @@ struct BuildDockView<CodeContent: View>: View {
         self.onBuild = onBuild
         self.onTest = onTest
         self.onFormat = onFormat
+        self.onGitCommand = onGitCommand
         self.onReplaceFiles = onReplaceFiles
         self.workspace = workspace
         self.onFetch = onFetch
@@ -313,6 +316,7 @@ struct BuildDockView<CodeContent: View>: View {
             onBuild: onBuild,
             onTest: onTest,
             onFormat: onFormat,
+            onGitCommand: onGitCommand,
             onReplaceFiles: onReplaceFiles,
             workspace: workspace,
             onFetch: onFetch,
@@ -920,6 +924,7 @@ private struct TerminalDockContent: View {
     var onBuild: (() -> Void)? = nil
     var onTest: ((RustUnitTestRequest) -> Void)? = nil
     var onFormat: ((RustFormatRequest) -> Void)? = nil
+    var onGitCommand: ((ProjectGitCommand) -> Void)? = nil
     let onReplaceFiles: ([String: String], String?) -> Bool
     let workspace: CargoWorkspaceSnapshot
     let onFetch: () -> Void
@@ -1064,6 +1069,7 @@ private struct TerminalDockContent: View {
             onBuild: onBuild,
             onTest: onTest,
             onFormat: onFormat,
+            onGitCommand: onGitCommand,
             onFetch: onFetch,
             onBrowserCommand: onBrowserCommand,
             onReplaceFiles: onReplaceFiles

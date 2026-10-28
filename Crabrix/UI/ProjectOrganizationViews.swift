@@ -225,6 +225,7 @@ struct ProjectActionsSheet: View {
     let onFormatFile: (() -> Void)?
     let onFormatProject: (() -> Void)?
     let onUndoFormatting: (() -> Void)?
+    let onGit: (() -> Void)?
 
     init(
         project: CrabrixProject,
@@ -236,7 +237,8 @@ struct ProjectActionsSheet: View {
         onTest: (() -> Void)? = nil,
         onFormatFile: (() -> Void)? = nil,
         onFormatProject: (() -> Void)? = nil,
-        onUndoFormatting: (() -> Void)? = nil
+        onUndoFormatting: (() -> Void)? = nil,
+        onGit: (() -> Void)? = nil
     ) {
         self.project = project
         self.onUpdate = onUpdate
@@ -248,6 +250,7 @@ struct ProjectActionsSheet: View {
         self.onFormatFile = onFormatFile
         self.onFormatProject = onFormatProject
         self.onUndoFormatting = onUndoFormatting
+        self.onGit = onGit
         _draft = State(initialValue: ProjectDetailsDraft(project: project))
     }
 
@@ -296,6 +299,11 @@ struct ProjectActionsSheet: View {
                             detail: "Real local libtest · separate from Academy checks",
                             systemImage: "testtube.2", tint: CrabrixTheme.mint,
                             action: { saveDetails(afterDismiss: onTest) })
+                    }
+                    if let onGit {
+                        actionButton(title: "Local Git changes", detail: "Selected-file commits, diff, history and local branches",
+                            systemImage: "arrow.triangle.branch", tint: CrabrixTheme.mint,
+                            action: { saveDetails(afterDismiss: onGit) })
                     }
                     if let onFormatFile {
                         actionButton(title: "Format current Rust file", detail: "Bundled rustfmt · comments kept · Undo available",

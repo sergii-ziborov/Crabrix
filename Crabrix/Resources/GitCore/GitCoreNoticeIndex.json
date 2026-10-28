@@ -1,0 +1,18 @@
+[
+  {
+    "id": "libgit2-1.9.7",
+    "name": "libgit2 1.9.7 and original dependency notices",
+    "summary": "GPLv2 with upstream linking exception; dependency terms preserved. Inventory includes source-only components.",
+    "archive": "GitCoreNotices",
+    "documents": [
+      "AUTHORS",
+      "COPYING",
+      "deps/llhttp/LICENSE-MIT",
+      "deps/pcre2/LICENCE.md",
+      "deps/winhttp/COPYING.GPL",
+      "deps/winhttp/COPYING.LGPL",
+      "deps/zlib/LICENSE",
+      "examples/COPYING"
+    ]
+  }
+]

@@ -18,6 +18,9 @@ enum BundledLicenseCatalog {
     /// shipped in the app rather than linked. A compiler that works offline has
     /// to be able to show its notices offline too.
     static let all: [BundledLicense] = [
+        BundledLicense(id: "libgit2", name: "libgit2 1.9.7 · local Git",
+            summary: "libgit2 contributors · GPLv2 with upstream linking exception; complete source and dependency notices below",
+            documents: ["libgit2-NOTICE"]),
         BundledLicense(id: "Rustfmt", name: "Rustfmt 1.10.0-nightly · local formatter",
             summary: "Rust Project Contributors and Scalar · full dependency notices and source below",
             documents: ["Rustfmt-NOTICE"]),

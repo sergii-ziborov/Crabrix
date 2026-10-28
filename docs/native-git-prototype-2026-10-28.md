@@ -9,7 +9,8 @@ Source archive SHA-256:
 `1a4fbe7589e814777ae76b64734ad80f4ecad22cd33a22682a2aaea4ae5375e7`.
 `scripts/probes/build_native_git.py` pins/checks that input and builds a static
 arm64 library for iOS 18 Simulator, with SSH disabled and SecureTransport enabled.
-The source is not compiled by the shipping app target at this stage.
+The later [stage 3A candidate](local-git-2026-10-28.md) compiles the configured
+source package in the app target. It is not included in submitted build 113.
 
 Actual native Simulator probe `scripts/probes/native-git.c` confirmed:
 
@@ -29,8 +30,8 @@ the standard repository, build logs and static-library provenance. The probe
 has no user credentials, private repo access, push, UI or project-store mutation.
 It is **not** evidence of a complete Git feature or physical-device performance.
 
-The next implementation must add a durable Git/object location outside replaceable
-project snapshots, a canonical complete tree with opaque-file preservation,
-revision-checked operations, the Changes UI and terminal service, then HTTPS
-credentials in Keychain and the remote acceptance matrix. No existing GitHub
-snapshot-import provenance is silently promoted into a historical commit.
+Stage 3A adds a durable Git/object location outside replaceable project snapshots,
+a complete tree with opaque-file preservation, revision-checked operations and
+the Changes UI/terminal service. HTTPS credentials in Keychain and the remote
+acceptance matrix remain stage 3B. No existing GitHub snapshot-import provenance
+is silently promoted into a historical commit.

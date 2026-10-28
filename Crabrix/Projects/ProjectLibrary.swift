@@ -1,5 +1,6 @@
 import Foundation
 import ZIPFoundation
+import CrabrixGit
 
 struct ProjectReadFailure: Equatable, Identifiable, Sendable {
     let projectID: UUID
@@ -710,6 +711,7 @@ actor RecentProjectIndex {
 /// Compatibility facade used by the UI. Durable storage and recency are
 /// deliberately separate actors even though callers often need both.
 actor ProjectLibrary {
+    nonisolated var gitStorageURL: URL { rootURL.appending(path: "repositories", directoryHint: .isDirectory) }
     private struct LegacyProject: Codable {
         let name: String
         let files: [String: String]
@@ -788,6 +790,8 @@ actor ProjectLibrary {
     func delete(projectID: UUID) async throws {
         try await ensureLegacyMigration()
         try await store.delete(projectID: projectID)
+        // A failed text-project deletion must not erase its still-usable history.
+        try await GitRepositoryStore(root: gitStorageURL).delete(projectID)
         try await recent.remove(projectID: projectID)
     }
 

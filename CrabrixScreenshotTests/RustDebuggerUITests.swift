@@ -3,6 +3,53 @@ import UIKit
 
 @MainActor
 final class RustDebuggerUITests: XCTestCase {
+    func testLocalGitTerminalCommitHistoryAndEditorStayIntact() throws {
+        let app = XCUIApplication(); app.launchArguments = ["--crabrix-auto-rust-tools-fixture"]; app.launch()
+        let editor = app.textViews["Source code editor"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 60))
+        let original = editor.value as? String
+        app.buttons["build-dock-terminal"].tap()
+        let input = app.textFields["Terminal command"]
+        XCTAssertTrue(input.waitForExistence(timeout: 10)); input.tap()
+        input.typeText("git config user.name \"UI Tester\"\n")
+        input.typeText("git config user.email ui@example.invalid\n")
+        input.typeText("git init\n")
+        let initialized = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Initialized a new local Git repository")).firstMatch
+        XCTAssertTrue(initialized.waitForExistence(timeout: 60), app.debugDescription)
+        if app.buttons["terminal-keyboard-toggle"].label == "Hide keyboard" { app.buttons["terminal-keyboard-toggle"].tap() }
+        openProjectSettings(app)
+        let git = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Local Git changes")).firstMatch
+        if !git.isHittable { app.scrollViews.firstMatch.swipeUp() }
+        XCTAssertTrue(git.waitForExistence(timeout: 10)); git.tap()
+        let selectAll = app.buttons["Select all changes"]
+        XCTAssertTrue(selectAll.waitForExistence(timeout: 15)); selectAll.tap()
+        let message = app.textFields["git-commit-message"]
+        if !message.isHittable { app.scrollViews.firstMatch.swipeUp() }
+        XCTAssertTrue(message.waitForExistence(timeout: 10)); message.tap(); message.typeText("Native UI commit")
+        let hideKeyboard = app.buttons["Hide Git keyboard"]
+        XCTAssertTrue(hideKeyboard.waitForExistence(timeout: 10)); hideKeyboard.tap()
+        let commit = app.buttons["Commit 1 selected file(s)"]
+        for _ in 0..<3 where !commit.isHittable { app.scrollViews["local-git-scroll"].swipeUp() }
+        XCTAssertTrue(commit.isHittable, app.debugDescription); commit.tap()
+        let committed = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Committed ")).firstMatch
+        XCTAssertTrue(committed.waitForExistence(timeout: 30), app.debugDescription)
+        capture("native-git-commit")
+        app.scrollViews.firstMatch.swipeDown()
+        let history = app.segmentedControls.buttons["History"]
+        if !history.isHittable { app.scrollViews.firstMatch.swipeDown() }
+        XCTAssertTrue(history.waitForExistence(timeout: 10)); history.tap()
+        let version = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Native UI commit")).firstMatch
+        XCTAssertTrue(version.waitForExistence(timeout: 10)); version.tap()
+        let file = app.scrollViews["local-git-scroll"].buttons.matching(NSPredicate(format: "label == %@", "main.rs")).firstMatch
+        XCTAssertTrue(file.waitForExistence(timeout: 10), app.debugDescription); file.tap()
+        XCTAssertTrue(app.staticTexts["Version to restore"].waitForExistence(timeout: 10))
+        capture("native-git-history-preview")
+        app.buttons["Close local Git"].tap()
+        app.buttons["build-dock-code"].tap()
+        XCTAssertEqual(editor.value as? String, original)
+        XCTAssertTrue(app.buttons["build-dock-terminal"].exists)
+        XCTAssertTrue(app.buttons["build-dock-output"].exists)
+    }
     func testRustToolsMenuTerminalAndUndoKeepDockAndSource() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--crabrix-auto-rust-tools-fixture", "-crabrix.appearance", "cyberpunk"]

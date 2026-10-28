@@ -11,8 +11,9 @@ failures, bounded reports and Stop. Pinned bundled rustfmt supports a file or
 project, check mode, revision guards and Undo. Both run locally. Build **113**
 is **VALID / IN_BETA_TESTING** from source `d868251`; it is selected for **WAITING_FOR_REVIEW** with manual publication. [Profile and qualification](docs/rust-tools-2026-10-28.md),
 [delivery identity](docs/app-store/release-1.1.3-build113.json).
-Git has passed a [native iOS feasibility probe](docs/native-git-prototype-2026-10-28.md),
-including standard objects and HTTPS; it is not included in build 113.
+The next [local Git candidate](docs/local-git-2026-10-28.md) has passed real
+service, native and iPhone/iPad UI qualification. HTTPS/private access and complete
+repository portability are the next stage; Git is not included in build 113.
 
 ## Academy corrections — 27 October 2026
 

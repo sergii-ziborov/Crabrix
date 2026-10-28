@@ -92,6 +92,7 @@ struct ContentView: View {
     @State private var isNewProjectPresented = false
     @State private var pendingNewProjectImport: ProjectImportSource?
     @State private var isProjectActionsPresented = false
+    @State private var isGitPresented = false
     @State private var isDebuggerInspectorPresented = false
     @State private var isPlaygroundPresented = false
     @State private var pendingPlaygroundURL: URL?
@@ -345,6 +346,11 @@ struct ContentView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
+        .sheet(isPresented: $isGitPresented) {
+            GitWorkspaceView(model: model)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
         .sheet(isPresented: $isDiagnosticHelpPresented) {
             NavigationStack {
                 ScrollView {
@@ -587,6 +593,13 @@ struct ContentView: View {
                 }
             }
         }
+        .onReceive(model.$gitConsoleEvent) { event in
+            guard let event, event.projectID == model.projectID else { return }
+            terminal.recordGit(event.text, isError: event.isError, project: model.exportProject())
+        }
+        .onReceive(model.$gitRestorePreview) { preview in
+            if preview != nil { isGitPresented = true }
+        }
         .onReceive(model.$completedLessonIDs) { ids in
             guard let scored = scoredLessonIDs else {
                 scoredLessonIDs = ids
@@ -785,6 +798,7 @@ struct ContentView: View {
                 onBuild: model.build,
                 onTest: model.runUnitTests,
                 onFormat: { model.formatRust($0, applyToEditor: editorKeyboard.applyFormattedText) },
+                onGitCommand: model.performGitCommand,
                 onReplaceFiles: model.replaceProjectFilesFromTerminal,
                 workspace: model.cargoWorkspace,
                 onFetch: model.downloadDependenciesForOffline,
@@ -848,7 +862,8 @@ struct ContentView: View {
                 onTest: unitTestAction,
                 onFormatFile: formatFileAction,
                 onFormatProject: formatProjectAction,
-                onUndoFormatting: undo
+                onUndoFormatting: undo,
+                onGit: { editorKeyboard.dismissKeyboard(); isGitPresented = true }
             )
     }
 

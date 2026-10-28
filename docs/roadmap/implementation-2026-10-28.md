@@ -38,7 +38,7 @@ backup не удаляется из-за неудачного decode; возвр
 | Этап | ID | Статус / порядок |
 | --- | --- | --- |
 | 2 | RUST-01, RUST-02 | Реализован кандидат: real libtest, file/project rustfmt, терминал, версии, Undo и Stop. 35 native проверок и по два UI-сценария на phone/iPad прошли; финальный повтор девяти кейсов после изоляции ошибочных запросов тоже прошёл. 1.1.3 (113) — VALID / IN_BETA_TESTING / WAITING_FOR_REVIEW; гайд и notices опубликованы на сайте. [Профиль](../rust-tools-2026-10-28.md) |
-| 3A | GIT-01 | В работе: libgit2 1.9.7 нативно проверена на iOS Simulator, обычные commits/refs, binary/hidden сохранность и HTTPS clone. Привязка долговечного Git-хранилища к проектам и Changes UI ещё не завершены. [Прототип](../native-git-prototype-2026-10-28.md) |
+| 3A | GIT-01 | Кандидат квалифицирован: долговечное отдельное хранилище, status/diff/selected commit/history/restore/branches, терминал и Changes UI. Три macOS service-теста, десять native-кейсов и по два UI-сценария на phone/iPad прошли. Не входит в build 113. [Профиль и доказательства](../local-git-2026-10-28.md) |
 | 3B | GIT-02, PORT-01 | HTTPS remote и приватный доступ, Keychain, fast-forward, перенос полной истории и непрозрачных файлов |
 | 4 | LEARN-02, LEARN-01, IDE-01 | Урок → запись → личная копия → Debug; подписанные офлайн-трассы; затем семантическая навигация |
 | 5 | COMPAT-01, WEB-02 | Project preflight, настоящий TS checker и типы зависимостей; не выдавать transpilation за typecheck |

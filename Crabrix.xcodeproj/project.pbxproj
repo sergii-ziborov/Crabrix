@@ -10,11 +10,13 @@
 		009994261D14A5AB525D7C4B /* ProjectTerminalSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB2D37D461D0EDF4F84DD855 /* ProjectTerminalSession.swift */; };
 		03886B8D78DCEDCE1A159287 /* AlgorithmCourseCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19F2B8BCB656C03FB95DB696 /* AlgorithmCourseCatalog.swift */; };
 		06E261C9EDD1565A7E0C336D /* OfflineWebPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 421B0B354AC6593A4245C63D /* OfflineWebPreview.swift */; };
+		07A4E989FB0CC80282D9FD6A /* GitWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610A135ADD4192782FBD84D3 /* GitWorkspaceView.swift */; };
 		07E08AB0A3426FB94F784CB0 /* PlaygroundLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F250162E0D44C864E253DBA /* PlaygroundLink.swift */; };
 		07FE1A8B9F66AFA4B9D045FF /* lezer-rust-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1EDD832E3CBFDA7EC6D5408D /* lezer-rust-LICENSE.txt */; };
 		08CA3D0D4FD1367DC21D5281 /* FeatureResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9793C201E70D1B6AD35202 /* FeatureResolver.swift */; };
 		0E52D25353B91BBD7FA3B24A /* TerminalKeyboardController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021BBD5B7249F757CA8B5ED1 /* TerminalKeyboardController.swift */; };
 		0EEBBA473ED5C6ACE3500C17 /* SharedImportQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9357EF87952821B79459AE36 /* SharedImportQueue.swift */; };
+		0F392C6E026B23A1A93A675E /* GitWorkspaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F7FB611E7693C23229E7F63 /* GitWorkspaceTests.swift */; };
 		1086954E8B15E7518003D1C6 /* PlaygroundTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF7DB287D36ACF2B45D2CA19 /* PlaygroundTests.swift */; };
 		11BB7FCD7EF125F5C409AD0D /* PlaygroundLiveSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F841226BB842F0217630B9 /* PlaygroundLiveSession.swift */; };
 		129B29EAA7CB55C33B5E91CE /* CourseCompatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC4EF2B443C45CE8BFF5FBD /* CourseCompatibility.swift */; };
@@ -67,6 +69,7 @@
 		33C5C8FEBAD6BD0652D8E902 /* RustCodeCompletion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F2DA7BB9D2572998F404B0A /* RustCodeCompletion.swift */; };
 		33E992EFDA0AFBF79057E3B4 /* AppLockController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C9F871191DDF3A4EC7DD7F9 /* AppLockController.swift */; };
 		3433C7BF28D4B95A57BC2299 /* PlaygroundCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68F186A0D0CF091F824D05EE /* PlaygroundCodec.swift */; };
+		34C2A6E05F15C2E91CE62E7F /* libgit2-NOTICE.txt in Resources */ = {isa = PBXBuildFile; fileRef = CCE2E81E088C7B397DCF7E8F /* libgit2-NOTICE.txt */; };
 		3504D6529B169202FB4FDC61 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6166C001764BC9D14984D241 /* PrivacyInfo.xcprivacy */; };
 		3678B1AFA13BEEC4505BA950 /* AppleIntelligenceDiagnosticAdvisor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F573D6026476C150C5CA1696 /* AppleIntelligenceDiagnosticAdvisor.swift */; };
 		376D4021B4FB4071CAD1B8C1 /* CratesIOClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D1D5EDD67676C767C0FF0E3 /* CratesIOClientTests.swift */; };
@@ -214,6 +217,7 @@
 		B8C6E75307074EC116D3F73C /* CourseDownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 109299B526E64638EEE7AC12 /* CourseDownloadManager.swift */; };
 		B925F63CB40C7D523E7BA3BD /* PlaygroundLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F250162E0D44C864E253DBA /* PlaygroundLink.swift */; };
 		B96F56CFCB21EACE91C06C10 /* CrateSourceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8811CE23D18FC4B914D532DF /* CrateSourceView.swift */; };
+		BAEC6309ECF1CE7779E39670 /* ProjectGitCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 383BF5A77A159E435B3711B1 /* ProjectGitCommand.swift */; };
 		BB03AAA6D27378754CF9E02B /* CourseSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0563B4A20D9F5691AC9F428F /* CourseSession.swift */; };
 		BC67E85F9C4046CF2034C022 /* ProjectLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B7F772FA01ED015242D773A /* ProjectLibraryView.swift */; };
 		BD72040AA8F1186C56B6BD3E /* ProjectLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD24012B04FBCFF20EABAE25 /* ProjectLibrary.swift */; };
@@ -228,6 +232,7 @@
 		C215FA0F05EB8E120EBA36F5 /* WebProjectSamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 191A981A3E28B4A99AAA3556 /* WebProjectSamples.swift */; };
 		C26827466278567D30C8869C /* ToolchainVendorIndex.json in Resources */ = {isa = PBXBuildFile; fileRef = 902C61FA14DA8017D91F487A /* ToolchainVendorIndex.json */; };
 		C3E7EC12C47849AA14FD1964 /* RustLearningPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7455D4C092EC1F4E6EBF847A /* RustLearningPath.swift */; };
+		C49F1387D78CE2E9B25D5157 /* CrabrixGit in Frameworks */ = {isa = PBXBuildFile; productRef = 6EE5FF6675FF3282625EA72B /* CrabrixGit */; };
 		C53ABD73F0DA4F22450B6886 /* WasmSandboxPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8832CBE2C15F09166CBB610F /* WasmSandboxPolicyTests.swift */; };
 		C554687050F486FE98581C6B /* CratesIOClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41A5B9EA24490E8E2ADABA38 /* CratesIOClient.swift */; };
 		C56EA75AEB015034CDCF4A1B /* BundledSysrootTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A201213590F9ECED7CE983FC /* BundledSysrootTests.swift */; };
@@ -239,6 +244,7 @@
 		CB5D1D144064727B02CE7DD0 /* SemanticVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038C4428EA249D76936D4DEB /* SemanticVersionTests.swift */; };
 		CE4BB5894285EC57C4E3B650 /* LessonMapLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 386D9CB2F6ECA745336EB7F9 /* LessonMapLayoutTests.swift */; };
 		CEF656FA1A534296367AF705 /* RustDebugCompiler.js in Resources */ = {isa = PBXBuildFile; fileRef = B764DA54BC3599CE4F4C5A11 /* RustDebugCompiler.js */; };
+		CFFADC07DACA0221CB930503 /* GitCore in Resources */ = {isa = PBXBuildFile; fileRef = AA04BBFEA122899821E83B68 /* GitCore */; };
 		D10649D53E90EFB46D97F0F1 /* CourseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43399378DEFA3EFDB3368AF9 /* CourseRepository.swift */; };
 		D181A2147A44EC4C2E0E5BF6 /* TerminalKeyboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D111D533F55B983FC047F784 /* TerminalKeyboardTests.swift */; };
 		D20492B36080AEDD1B45CF7A /* AppearanceRenderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A766BDDD55FB6BEBD30B38 /* AppearanceRenderingTests.swift */; };
@@ -358,6 +364,7 @@
 		1DE43E81E450434AC8E261A4 /* CrabrixTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CrabrixTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1EDD832E3CBFDA7EC6D5408D /* lezer-rust-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "lezer-rust-LICENSE.txt"; sourceTree = "<group>"; };
 		20BE9BBC80F38AE223BAB4A3 /* CrateArchiveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrateArchiveTests.swift; sourceTree = "<group>"; };
+		21D39E7ED069B1905F8B82E5 /* CrabrixGitCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = CrabrixGitCore; path = Vendor/CrabrixGitCore; sourceTree = SOURCE_ROOT; };
 		24851507366B69E1C89A070E /* AppToolchainReleaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppToolchainReleaseTests.swift; sourceTree = "<group>"; };
 		253B1AC7EA395E9AF1BC934A /* RustSamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustSamples.swift; sourceTree = "<group>"; };
 		25E300C5C48E25EFC49EB364 /* CourseInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseInstaller.swift; sourceTree = "<group>"; };
@@ -369,6 +376,7 @@
 		34454EEDE1F2D70EF3FC91BA /* CargoPackageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoPackageManager.swift; sourceTree = "<group>"; };
 		3786418CA7D9446F9360AE70 /* ThemeContrastTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeContrastTests.swift; sourceTree = "<group>"; };
 		3837839E6347618EB4FA6AAF /* CargoRegistryAndPlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoRegistryAndPlanTests.swift; sourceTree = "<group>"; };
+		383BF5A77A159E435B3711B1 /* ProjectGitCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectGitCommand.swift; sourceTree = "<group>"; };
 		386D9CB2F6ECA745336EB7F9 /* LessonMapLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonMapLayoutTests.swift; sourceTree = "<group>"; };
 		39D97AA40E91AE59E7678D33 /* RustUnitTestRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustUnitTestRunner.swift; sourceTree = "<group>"; };
 		3AFD7F928F3DB4E5A7CBCC6C /* CourseBootstrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseBootstrap.swift; sourceTree = "<group>"; };
@@ -377,6 +385,7 @@
 		3E7AAE0FF41DA6B6F6831225 /* NativeCompilerBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NativeCompilerBridge.h; sourceTree = "<group>"; };
 		3EA05660FAC54CECF075853F /* ProgressAndTrainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressAndTrainTests.swift; sourceTree = "<group>"; };
 		3F2DA7BB9D2572998F404B0A /* RustCodeCompletion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustCodeCompletion.swift; sourceTree = "<group>"; };
+		3F7FB611E7693C23229E7F63 /* GitWorkspaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitWorkspaceTests.swift; sourceTree = "<group>"; };
 		3F84AB4318432025CA06FD68 /* CrabrixShare.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = CrabrixShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		403C553DF49D8A3EDFEEAE4A /* CargoManifestEditorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoManifestEditorTests.swift; sourceTree = "<group>"; };
 		40429472D2BAD0BF75F1C46A /* TOMLValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOMLValue.swift; sourceTree = "<group>"; };
@@ -414,6 +423,7 @@
 		5CEBD152D5381C70622EDD87 /* BuildWorkspaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildWorkspaceTests.swift; sourceTree = "<group>"; };
 		5F250162E0D44C864E253DBA /* PlaygroundLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundLink.swift; sourceTree = "<group>"; };
 		5F2E28AF633C57EFB91DF034 /* LocalProjectLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalProjectLoader.swift; sourceTree = "<group>"; };
+		610A135ADD4192782FBD84D3 /* GitWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitWorkspaceView.swift; sourceTree = "<group>"; };
 		6166C001764BC9D14984D241 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6234FA291715E7AB88B78388 /* TermMatchConnectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermMatchConnectionTests.swift; sourceTree = "<group>"; };
 		6408E7D74302DB95B47776D4 /* ProjectsHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectsHomeView.swift; sourceTree = "<group>"; };
@@ -509,6 +519,7 @@
 		A9D04AD2FDAA6C6918358345 /* y-protocols-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "y-protocols-LICENSE.txt"; sourceTree = "<group>"; };
 		A9EA7BB3A35BFD1457A7B8C5 /* GitHubRepositoryReference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubRepositoryReference.swift; sourceTree = "<group>"; };
 		A9F0FB50E1462BCBC86DF551 /* CargoBuildPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoBuildPlan.swift; sourceTree = "<group>"; };
+		AA04BBFEA122899821E83B68 /* GitCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = GitCore; path = Crabrix/Resources/GitCore; sourceTree = SOURCE_ROOT; };
 		AAD3161C843E95583F80834C /* Crabrix.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Crabrix.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABB041C5A186A0E2DB1CB3F9 /* CrateSourceBrowserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrateSourceBrowserTests.swift; sourceTree = "<group>"; };
 		AC4745C09CED9CA69999E7B0 /* BuildProblemsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildProblemsTests.swift; sourceTree = "<group>"; };
@@ -543,6 +554,7 @@
 		CB639C49FB0B78A964478AF2 /* BrowserPlaygroundWebKitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserPlaygroundWebKitTests.swift; sourceTree = "<group>"; };
 		CB7A1067675E929228E42967 /* PlaygroundTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundTests.swift; sourceTree = "<group>"; };
 		CB910906AEB3103C7C9E6F7D /* CodeContributionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeContributionTests.swift; sourceTree = "<group>"; };
+		CCE2E81E088C7B397DCF7E8F /* libgit2-NOTICE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "libgit2-NOTICE.txt"; sourceTree = "<group>"; };
 		CD350E97620F1FB339249C56 /* AppearancePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearancePicker.swift; sourceTree = "<group>"; };
 		CDAED32DC7E25381FCA215C6 /* WebProjectBuilder.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = WebProjectBuilder.js; sourceTree = "<group>"; };
 		CF605A50A6EB406DF55C4E57 /* CodeRecallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeRecallView.swift; sourceTree = "<group>"; };
@@ -609,6 +621,7 @@
 				C8A99B7CFD55D2B5409AF326 /* WasmKitWASI in Frameworks */,
 				5A8F5408F2D3C761D5D6E2EF /* SystemPackage in Frameworks */,
 				667E7CD7B3280587CF61CB1C /* ZIPFoundation in Frameworks */,
+				C49F1387D78CE2E9B25D5157 /* CrabrixGit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -670,6 +683,7 @@
 				79E542E4C249E9B6C5C5A01A /* lezer-lr-LICENSE.txt */,
 				1EDD832E3CBFDA7EC6D5408D /* lezer-rust-LICENSE.txt */,
 				7D7984860DD790021AB2EBC8 /* lib0-LICENSE.txt */,
+				CCE2E81E088C7B397DCF7E8F /* libgit2-NOTICE.txt */,
 				8F93A341910B61C48E80E7CD /* node-semver-LICENSE.txt */,
 				C8B0903AB1A17FB1FEAA4301 /* Rust-COPYRIGHT.txt */,
 				646F773F58C7B624AE941CE3 /* Rust-LICENSE-APACHE.txt */,
@@ -780,6 +794,7 @@
 			children = (
 				A42F9E4CE0ACDDFFC8ABDE3C /* BorrowExplanation.swift */,
 				83162DA802CA86A5A232D638 /* CompilerViewModel.swift */,
+				383BF5A77A159E435B3711B1 /* ProjectGitCommand.swift */,
 				DB2D37D461D0EDF4F84DD855 /* ProjectTerminalSession.swift */,
 			);
 			path = Compiler;
@@ -881,6 +896,7 @@
 				75A8C38ADD6CB5D59CDB5AC3 /* CrabrixShare */,
 				A68C05224AE5392908F03339 /* CrabrixShared */,
 				9148689B17692A2B66CA2E57 /* CrabrixTests */,
+				C90BA78614D553B55994B6F2 /* Packages */,
 				A5076AEEF014A5EA52501CDC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -921,6 +937,7 @@
 				F5F8A0A5C96A9EDE1C43DA16 /* CrateStorageUsageTests.swift */,
 				A8433FE86ED600CDD3649695 /* EditorHorizontalScrollTests.swift */,
 				72C0A9DB161BABC0D5AC50DA /* GitHubRepositoryReferenceTests.swift */,
+				3F7FB611E7693C23229E7F63 /* GitWorkspaceTests.swift */,
 				6CD423A006C2A2A962EE2495 /* InstalledCourseRepositoryTests.swift */,
 				386D9CB2F6ECA745336EB7F9 /* LessonMapLayoutTests.swift */,
 				D6F4F8745EED70B20DA5D125 /* LessonNavigationFooterVisibilityTests.swift */,
@@ -987,6 +1004,7 @@
 				FDBC8475D7DC66EBD798E277 /* ContentView.swift */,
 				9B3FE59D76CC8EBC1BF4A988 /* CrabrixTheme.swift */,
 				8811CE23D18FC4B914D532DF /* CrateSourceView.swift */,
+				610A135ADD4192782FBD84D3 /* GitWorkspaceView.swift */,
 				E28616F40A43EF200A8D0265 /* InspectorViews.swift */,
 				2ABA30545D5EEB41F7D73D2F /* LearningHubView.swift */,
 				6D22109AD0D3338201CEFE20 /* LearnPathView.swift */,
@@ -1045,6 +1063,14 @@
 			path = CrabrixShared;
 			sourceTree = "<group>";
 		};
+		C90BA78614D553B55994B6F2 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				21D39E7ED069B1905F8B82E5 /* CrabrixGitCore */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
 		E6BF3C14415993F717645BFB /* Progress */ = {
 			isa = PBXGroup;
 			children = (
@@ -1071,6 +1097,7 @@
 			children = (
 				84CD37596DAEDCB81F6DF7B0 /* ActiveCourseCatalog */,
 				CA5866457924F7521705CCD1 /* Assets.xcassets */,
+				AA04BBFEA122899821E83B68 /* GitCore */,
 				B2888F23BE9517E3AC3CA427 /* Info.plist */,
 				9A5377845C2374FBE4F05922 /* LegalDocuments.json */,
 				B5027E80C0376645BB780AC1 /* MigrationCoursePacks */,
@@ -1162,6 +1189,7 @@
 				6E683BBD11D8232CD6BB8038 /* WasmKitWASI */,
 				5FF229CB96783B625B672CB7 /* SystemPackage */,
 				D9F926F434104202BA3A1800 /* ZIPFoundation */,
+				6EE5FF6675FF3282625EA72B /* CrabrixGit */,
 			);
 			productName = Crabrix;
 			productReference = AAD3161C843E95583F80834C /* Crabrix.app */;
@@ -1213,6 +1241,7 @@
 				8E7AFC4ED9E7FE8EF8D49AF6 /* XCRemoteSwiftPackageReference "swift-system" */,
 				BB1D2A6AAAC44CC0312796EE /* XCRemoteSwiftPackageReference "crabrix-runtime" */,
 				06925429AE9E9619735498E6 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+				344C58E65013E80B427CAE0D /* XCLocalSwiftPackageReference "Vendor/CrabrixGitCore" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A5076AEEF014A5EA52501CDC /* Products */;
@@ -1250,6 +1279,7 @@
 			files = (
 				DB6E886AFE6EC3B085FD76D2 /* ActiveCourseCatalog in Resources */,
 				F8F1E02965F5C0146D69DD89 /* Assets.xcassets in Resources */,
+				CFFADC07DACA0221CB930503 /* GitCore in Resources */,
 				31B1EA3B72D4096B6C3B60F8 /* LegalDocuments.json in Resources */,
 				86CFC690934610F01587597F /* MigrationCoursePacks in Resources */,
 				F29BBFB0A222A5ACFEBF5BDF /* PlaygroundCodec.js in Resources */,
@@ -1280,6 +1310,7 @@
 				6990EEB4FC19EF63F362F1F0 /* lezer-lr-LICENSE.txt in Resources */,
 				07FE1A8B9F66AFA4B9D045FF /* lezer-rust-LICENSE.txt in Resources */,
 				FB1FA3A02859248961D1B842 /* lib0-LICENSE.txt in Resources */,
+				34C2A6E05F15C2E91CE62E7F /* libgit2-NOTICE.txt in Resources */,
 				B56AF876EDAEE47020C8FA1A /* node-semver-LICENSE.txt in Resources */,
 				1A42F7C59F55681D04B0409E /* swift-argument-parser-LICENSE.txt in Resources */,
 				9028F3BB8FEDE2FBFF3DD80D /* swift-atomics-LICENSE.txt in Resources */,
@@ -1417,6 +1448,7 @@
 				653BFA6F12724C8C29B018C9 /* GameCenterService.swift in Sources */,
 				59725272FB4F415D7DB276A9 /* GitHubProjectImporter.swift in Sources */,
 				CA6298656CA96584D5791FAB /* GitHubRepositoryReference.swift in Sources */,
+				07A4E989FB0CC80282D9FD6A /* GitWorkspaceView.swift in Sources */,
 				C7C8B5BA51A4A63B29454B56 /* InspectorViews.swift in Sources */,
 				23560A181485665C5325D292 /* InstalledCourseRepository.swift in Sources */,
 				F0B9BBE785A01AD1ACC83D6F /* LearnPathView.swift in Sources */,
@@ -1449,6 +1481,7 @@
 				6D06A6E58BA0D059E0420243 /* ProjectCreationViews.swift in Sources */,
 				B7D9BF29FE1B2E511D890C5C /* ProjectFileIcon.swift in Sources */,
 				79E46C75D12D9A21771A58C5 /* ProjectFileTree.swift in Sources */,
+				BAEC6309ECF1CE7779E39670 /* ProjectGitCommand.swift in Sources */,
 				BD72040AA8F1186C56B6BD3E /* ProjectLibrary.swift in Sources */,
 				BC67E85F9C4046CF2034C022 /* ProjectLibraryView.swift in Sources */,
 				CB51AF90EDD746C59DC88188 /* ProjectOrganizationViews.swift in Sources */,
@@ -1535,6 +1568,7 @@
 				376D4021B4FB4071CAD1B8C1 /* CratesIOClientTests.swift in Sources */,
 				80256634DBDBD9C0C47CBAF8 /* EditorHorizontalScrollTests.swift in Sources */,
 				26138CBF6B814EFC7A25482B /* GitHubRepositoryReferenceTests.swift in Sources */,
+				0F392C6E026B23A1A93A675E /* GitWorkspaceTests.swift in Sources */,
 				30378E05BFED089463AD93E2 /* InstalledCourseRepositoryTests.swift in Sources */,
 				CE4BB5894285EC57C4E3B650 /* LessonMapLayoutTests.swift in Sources */,
 				BEDE9AC825010B5A152AAC12 /* LessonNavigationFooterVisibilityTests.swift in Sources */,
@@ -2116,6 +2150,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		344C58E65013E80B427CAE0D /* XCLocalSwiftPackageReference "Vendor/CrabrixGitCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Vendor/CrabrixGitCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		06925429AE9E9619735498E6 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -2158,6 +2199,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = BB1D2A6AAAC44CC0312796EE /* XCRemoteSwiftPackageReference "crabrix-runtime" */;
 			productName = WasmKitWASI;
+		};
+		6EE5FF6675FF3282625EA72B /* CrabrixGit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CrabrixGit;
 		};
 		D9F926F434104202BA3A1800 /* ZIPFoundation */ = {
 			isa = XCSwiftPackageProductDependency;

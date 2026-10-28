@@ -1,5 +1,13 @@
 [
   {
+    "id": "libgit2",
+    "name": "libgit2 1.9.7 \u00b7 local Git",
+    "summary": "libgit2 contributors \u00b7 GPLv2 with upstream linking exception; complete source and dependency notices below",
+    "documents": [
+      "libgit2-NOTICE"
+    ]
+  },
+  {
     "id": "Rustfmt",
     "name": "Rustfmt 1.10.0-nightly \u00b7 local formatter",
     "summary": "Rust Project Contributors and Scalar \u00b7 full dependency notices and source below",

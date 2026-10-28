@@ -121,6 +121,10 @@ def outputs():
         raise ValueError("Pinned formatter notice archive changed")
     generated[ROOT / "site/public/licenses/RustfmtVendorNotices.zip"] = formatter_notices
     generated[ROOT / "site/public/licenses/RustfmtManifest.json"] = (formatter / "manifest.json").read_text()
+    git_core = ROOT / "Crabrix/Resources/GitCore"
+    for name in ["CrabrixGitCoreSource.zip", "GitCoreNotices.zip"]:
+        generated[ROOT / "site/public/licenses" / name] = (git_core / name).read_bytes()
+    generated[ROOT / "site/public/licenses/GitCoreManifest.json"] = (ROOT / "Vendor/CrabrixGitCore/upstream-manifest.json").read_text()
     provenance = json.loads((ROOT / "docs/legal/toolchain-notice-provenance.json").read_text())
     for original, bundled in [("licenses.zip", "ToolchainLicenses.zip"), ("vendor-notices.zip", "ToolchainVendorNotices.zip")]:
         data = (ROOT / "Crabrix/Resources/Licenses" / bundled).read_bytes()

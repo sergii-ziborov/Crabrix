@@ -35,6 +35,8 @@ settings:
       SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) CRABRIX_SOCIAL CRABRIX_LEGACY_FIXTURES"
 
 packages:
+  CrabrixGitCore:
+    path: Vendor/CrabrixGitCore
   WasmKit:
     # Public Crabrix fork of WasmKit 0.4.1 with read-only host WASI preopens.
     url: https://github.com/sergii-ziborov/crabrix-runtime.git
@@ -57,6 +59,7 @@ targets:
           - Resources/MigrationCoursePacks
           - Resources/ActiveCourseCatalog
           - Resources/RustTools
+          - Resources/GitCore
           - Compiler/Native/ProcMacroNativeProxy.wat
       - path: Crabrix/Resources/MigrationCoursePacks
         type: folder
@@ -65,6 +68,9 @@ targets:
         type: folder
         buildPhase: resources
       - path: Crabrix/Resources/RustTools
+        type: folder
+        buildPhase: resources
+      - path: Crabrix/Resources/GitCore
         type: folder
         buildPhase: resources
       - path: build/Resources/Toolchain
@@ -125,6 +131,8 @@ targets:
         product: SystemPackage
       - package: ZIPFoundation
         product: ZIPFoundation
+      - package: CrabrixGitCore
+        product: CrabrixGit
     preBuildScripts:
       - name: Prepare bundled Rust toolchain
         script: |
@@ -454,6 +462,20 @@ schemes:
         - name: CrabrixTests
           selectedTests:
             - RustToolsTests
+
+  CrabrixGitGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+    test:
+      config: CompilerCandidate
+      gatherCoverageData: false
+      targets:
+        - name: CrabrixTests
+          selectedTests:
+            - GitWorkspaceTests
+            - BundledLicenseTests
 
   CrabrixReliabilityGate:
     build:

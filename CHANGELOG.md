@@ -1,5 +1,14 @@
 # Changelog
 
+## In development — local Git
+
+- Real local Git history in storage independent of editable-project snapshots.
+  Status, per-file diff, selected commits, History, previewed Restore and branches.
+- Shared revision guards, opaque/hidden-file and executable-mode preservation;
+  native terminal and Project settings entry without changing editor geometry.
+- Standard desktop Git interoperability, native and phone/iPad UI gates passed.
+  Separate from TestFlight/review build 113; HTTPS/complete portability continue.
+
 ## 1.1.3 (113) — TestFlight and App Review
 
 - Real libtest discovery and isolated selected-entry tests, case-sensitive filters,

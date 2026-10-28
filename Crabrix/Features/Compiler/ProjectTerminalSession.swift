@@ -90,6 +90,7 @@ final class ProjectTerminalSession: ObservableObject {
         onBuild: (() -> Void)? = nil,
         onTest: ((RustUnitTestRequest) -> Void)? = nil,
         onFormat: ((RustFormatRequest) -> Void)? = nil,
+        onGitCommand: ((ProjectGitCommand) -> Void)? = nil,
         onFetch: (() -> Void)? = nil,
         onBrowserCommand: ((BrowserProjectCommand) -> Void)? = nil,
         onReplaceFiles: (([String: String], String?) -> Bool)? = nil
@@ -130,6 +131,10 @@ final class ProjectTerminalSession: ObservableObject {
                 "  rustfmt path.rs         Format one file; Undo in project settings\n" +
                 "  cargo tree|fetch        Inspect and download packages\n" +
                 "  cargo metadata          Inspect this package manifest\n" +
+                "  git init|status|log     Local history without an account\n" +
+                "  git diff <path>          Inspect one changed file\n" +
+                "  git branch|switch       Local branches; clean checkout only\n" +
+                "  git commit -m msg -- paths  Commit selected paths\n" +
                 "  npm install|ci          Prepare browser imports for offline use\n" +
                 "  npm run dev|preview     Build and open the local web preview\n" +
                 "  npm run build|check     Build browser JS/TS/JSX locally\n" +
@@ -193,6 +198,13 @@ final class ProjectTerminalSession: ObservableObject {
             )
         case "npm":
             runNpm(arguments: Array(components.dropFirst()), project: project, isBusy: isBusy, onCommand: onBrowserCommand)
+        case "git":
+            guard !isBusy else { append("Wait for the current exclusive project/build operation to finish.", kind: .error); return }
+            do {
+                let command = try ProjectGitCommand.parse(Array(components.dropFirst()))
+                guard let onGitCommand else { append("Local Git is unavailable in this view.", kind: .error); return }
+                onGitCommand(command)
+            } catch { append(error.localizedDescription, kind: .error) }
         case "cargo":
             runCargo(
                 arguments: Array(components.dropFirst()),
@@ -324,6 +336,11 @@ final class ProjectTerminalSession: ObservableObject {
         if !result.succeeded, result.stderr.isEmpty {
             append(result.detail, kind: .error)
         }
+    }
+
+    func recordGit(_ text: String, isError: Bool, project: CrabrixProject) {
+        attach(to: project)
+        append("[git] " + text, kind: isError ? .error : .info)
     }
 
     private func runCargo(
@@ -479,7 +496,7 @@ final class ProjectTerminalSession: ObservableObject {
     private static let availableCommands: Set<String> = [
         "help", "pwd", "ls", "cd", "tree", "cat", "head", "tail", "wc",
         "grep", "find", "touch", "mkdir", "rm", "cp", "mv", "echo",
-        "whoami", "uname", "env", "date", "which", "cargo", "rustfmt", "npm", "history", "clear",
+        "whoami", "uname", "env", "date", "which", "cargo", "rustfmt", "git", "npm", "history", "clear",
     ]
 
     private static func shellWords(_ input: String) -> [String]? {

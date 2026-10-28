@@ -128,3 +128,13 @@ https://crabrix.com/licenses/PlaygroundThirdPartyNotices.txt.
 ## Local Rust formatting
 
 Pinned rustfmt 1.10.0-nightly runs in WasmKit from bundled RustTools/rust_fmt.wasm. Rustfmt-NOTICE.txt contains original Rust/Scalar license texts. RustTools/RustfmtVendorNotices.zip includes the pinned registry dependency notices, original manifests and unmodified MPL option-ext sources. All can be read or exported offline from Open-source licenses. This formatter is separate from the bundled Rust compiler; it does not execute project Rust or fetch configuration.
+
+## Native Git
+
+libgit2 1.9.7 uses its original GPLv2 with linking exception. Its full COPYING
+text is in libgit2-NOTICE.txt. GitCore/GitCoreNotices.zip retains original
+dependency notices; GitCore/CrabrixGitCoreSource.zip contains the complete local
+SwiftPM package, configured C sources, wrapper, tests and untouched upstream
+source archive. Read notices and export corresponding source offline from
+Open-source licenses. The iOS profile uses Apple SecureTransport and system
+zlib/iconv; it does not run external Git processes or project hooks.

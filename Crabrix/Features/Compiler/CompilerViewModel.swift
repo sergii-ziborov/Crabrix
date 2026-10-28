@@ -1,5 +1,23 @@
 import Foundation
 import SwiftUI
+import CrabrixGit
+
+struct GitRestorePreview: Identifiable {
+    let id = UUID()
+    let projectID: UUID
+    let generation: UInt64
+    let commit: String
+    let path: String
+    let original: String?
+    let replacement: String
+}
+
+struct GitConsoleEvent {
+    let id = UUID()
+    let projectID: UUID
+    let text: String
+    let isError: Bool
+}
 
 enum RustProjectTemplate: String, CaseIterable, Identifiable, Sendable {
     case hello
@@ -187,6 +205,28 @@ final class CompilerViewModel: ObservableObject {
     }
     @Published private(set) var activeLessonIsReview = false
     @Published private(set) var projectTransfer: ProjectTransfer = .idle
+    @Published private(set) var gitState: GitState?
+    @Published private(set) var gitAvailable = false
+    @Published private(set) var gitIsWorking = false
+    @Published private(set) var gitLocksWorkspace = false
+    @Published private(set) var gitActivity = ""
+    @Published private(set) var gitMessage = ""
+    @Published private(set) var gitHistory: [GitCommit] = []
+    @Published private(set) var gitBranches: [String] = []
+    @Published private(set) var gitDiff: GitDiff?
+    @Published private(set) var gitRevisionTree: GitTreeSnapshot?
+    @Published var gitViewingCommit: GitCommit?
+    @Published var gitRestorePreview: GitRestorePreview?
+    @Published private(set) var gitConsoleEvent: GitConsoleEvent?
+    private var gitObservedGeneration: UInt64?
+    private var gitJob: Task<Void, Never>?
+    private var gitJobProjectID: UUID?
+    private lazy var gitStore = GitRepositoryStore(root: projectLibrary.gitStorageURL)
+    private enum PendingGitURL { case project(URL), playground(PlaygroundLink) }
+    private var pendingGitURL: PendingGitURL?
+
+    var gitNeedsRefresh: Bool { gitState != nil && gitObservedGeneration != workspaceGeneration }
+    var gitCanSwitchBranch: Bool { gitState?.head != nil && gitState?.changes.isEmpty == true && !gitNeedsRefresh && playgroundSession == nil }
     @Published private(set) var compatibilityReport: ProjectCompatibilityReport
     @Published private(set) var provenance: CrabrixProject.Provenance?
     @Published private(set) var recentProjects: [ProjectLibraryItem] = []
@@ -333,6 +373,7 @@ final class CompilerViewModel: ObservableObject {
     }
     var canStartBuild: Bool {
         !isBusy
+            && !isProjectOperationInProgress
             && !isCompilerDraining
             && !diagnosticAdviceState.isWorking
             && (toolchain.isReady || BrowserProjectConfiguration.isBrowserEntry(entryFile))
@@ -347,7 +388,7 @@ final class CompilerViewModel: ObservableObject {
         return files["Cargo.toml"].flatMap(CargoManifest.parse)
     }
 
-    var isProjectOperationInProgress: Bool { projectTransfer.isWorking }
+    var isProjectOperationInProgress: Bool { projectTransfer.isWorking || gitLocksWorkspace }
 
     var workspaceRevision: WorkspaceRevision {
         WorkspaceRevision.capture(
@@ -366,6 +407,7 @@ final class CompilerViewModel: ObservableObject {
     }
 
     func openProject(from url: URL) async {
+        if gitLocksWorkspace { pendingGitURL = .project(url); return }
         guard prepareForProjectSwitch() else { return }
         let revision = workspaceRevision
         projectTransfer = .openingFiles
@@ -439,6 +481,7 @@ final class CompilerViewModel: ObservableObject {
     }
 
     func openPlayground(_ link: PlaygroundLink) async {
+        if gitLocksWorkspace { pendingGitURL = .playground(link); return }
         if playgroundSession?.link == link, playgroundSession?.expired == false { return }
         guard prepareForProjectSwitch() else { return }
         guard link.expiresAt > Date() else { projectTransfer = .failed("This temporary Playground has expired."); return }
@@ -640,6 +683,10 @@ final class CompilerViewModel: ObservableObject {
 
     @discardableResult
     func deleteProject(projectID: UUID) async -> Bool {
+        if gitJobProjectID == projectID, let job = gitJob { job.cancel(); await job.value }
+        if projectID == self.projectID { autosaveTask?.cancel(); autosaveTask = nil }
+        if let saveQueue { await saveQueue.value }
+        latestProjectSnapshots.removeValue(forKey: projectID)
         do {
             try await projectLibrary.delete(projectID: projectID)
             await reloadProjectLists()
@@ -1977,6 +2024,9 @@ final class CompilerViewModel: ObservableObject {
         autosaveTask?.cancel()
         suppressAutosave = true
         projectID = id
+        gitState = nil; gitAvailable = false; gitHistory = []; gitBranches = []
+        gitDiff = nil; gitRevisionTree = nil; gitViewingCommit = nil; gitRestorePreview = nil
+        gitObservedGeneration = nil; gitMessage = ""
         projectName = name
         self.projectDescription = projectDescription
         projectTags = CrabrixProject.normalizedTags(tags)
@@ -2641,6 +2691,228 @@ final class CompilerViewModel: ObservableObject {
             guard let self, !Task.isCancelled else { return }
             await remember(currentProject(), lastBuild: lastBuild)
             if autosaveRequestID == requestID { autosaveTask = nil }
+        }
+    }
+}
+
+extension CompilerViewModel {
+    func closeGitRevision() { gitViewingCommit = nil; gitRevisionTree = nil; gitRestorePreview = nil }
+    func closeGitRestorePreview() { gitRestorePreview = nil }
+    func performGitCommand(_ command: ProjectGitCommand) {
+        guard !gitIsWorking else {
+            gitConsoleEvent = GitConsoleEvent(projectID: projectID, text: "A Git operation is still running. Stop it in Local Git or wait for its result.", isError: true)
+            return
+        }
+        let previousEvent = gitConsoleEvent?.id
+        switch command {
+        case .initialize: initializeGit()
+        case .status: refreshGit()
+        case let .diff(path): showGitDiff(path)
+        case let .branch(name): createGitBranch(name)
+        case let .checkout(name): switchGitBranch(name)
+        case let .restore(commit, path): previewGitFile(commit: commit, path: path)
+        case let .commit(message, paths):
+            commitGit(paths: paths, author: userDefaults.string(forKey: "crabrix.git.author.name") ?? "",
+                email: userDefaults.string(forKey: "crabrix.git.author.email") ?? "", message: message)
+        case let .identity(key, value):
+            let preference = key == "user.name" ? "crabrix.git.author.name" : "crabrix.git.author.email"
+            if let value {
+                guard !value.isEmpty, value.utf8.count <= 320, !value.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) }) else {
+                    gitConsoleEvent = GitConsoleEvent(projectID: projectID, text: "Enter a bounded single-line commit identity.", isError: true); return
+                }
+                userDefaults.set(value, forKey: preference)
+            }
+            gitConsoleEvent = GitConsoleEvent(projectID: projectID, text: "This device's commit identity: \(key)=\(userDefaults.string(forKey: preference) ?? "not set")", isError: false)
+        case .log:
+            runGit("Reading local history") { store, project, _ in
+                let commits = try await store.history(project.id)
+                return commits.isEmpty ? "No local commits." : commits.map { "\($0.id.prefix(8))  \($0.author)\n\($0.message)" }.joined(separator: "\n\n")
+            }
+        case .branches:
+            runGit("Reading local branches") { store, project, _ in
+                let state = try await store.inspect(project.id), branches = try await store.branches(project.id)
+                return branches.isEmpty ? "No local branch commits." : branches.map { ($0 == state.branch ? "* " : "  ") + $0 }.joined(separator: "\n")
+            }
+        case let .show(commit, path):
+            runGit("Reading historical source") { store, project, _ in
+                let data = try await store.file(project.id, commit: commit, path: path)
+                guard !data.contains(0), String(data: data, encoding: .utf8) != nil else { throw GitRepositoryFailure("This is opaque repository data, not text.") }
+                return String(decoding: data.prefix(64 * 1024), as: UTF8.self) + (data.count > 64 * 1024 ? "\n[Terminal preview limited to 64 KiB; repository bytes are unchanged.]" : "")
+            }
+        }
+        if !gitIsWorking, gitConsoleEvent?.id == previousEvent, !gitMessage.isEmpty {
+            gitConsoleEvent = GitConsoleEvent(projectID: projectID, text: gitMessage, isError: true)
+        }
+    }
+    private func runGit(_ label: String, exclusive: Bool = false,
+                        operation: @escaping @MainActor (GitRepositoryStore, CrabrixProject, WorkspaceRevision) async throws -> String) {
+        guard !isBusy, !isCompilerDraining, !isProjectOperationInProgress, !gitIsWorking else {
+            gitMessage = "Wait for the active compiler/project operation to finish, or stop it before starting Git."
+            gitConsoleEvent = GitConsoleEvent(projectID: projectID, text: gitMessage, isError: true)
+            return
+        }
+        let snapshot = currentProject(), revision = workspaceRevision
+        gitIsWorking = true; gitJobProjectID = snapshot.id; gitLocksWorkspace = exclusive; gitActivity = label; gitMessage = ""
+        resetDiagnosticAdvice()
+        gitJob = Task { [weak self] in
+            guard let self else { return }
+            defer {
+                gitIsWorking = false; gitLocksWorkspace = false; gitActivity = ""; gitJob = nil; gitJobProjectID = nil
+                if let pending = pendingGitURL {
+                    pendingGitURL = nil
+                    Task { [weak self] in
+                        guard let self else { return }
+                        switch pending {
+                        case let .project(url): await openProject(from: url)
+                        case let .playground(link): await openPlayground(link)
+                        }
+                    }
+                }
+            }
+            do {
+                let text = try await operation(gitStore, snapshot, revision)
+                guard projectID == snapshot.id else { return }
+                gitMessage = text
+                gitConsoleEvent = GitConsoleEvent(projectID: snapshot.id, text: text, isError: false)
+            } catch {
+                guard projectID == snapshot.id else { return }
+                gitMessage = error is CancellationError ? "Git operation stopped. Refresh to read the current state." : error.localizedDescription
+                gitConsoleEvent = GitConsoleEvent(projectID: snapshot.id, text: gitMessage, isError: true)
+            }
+        }
+    }
+
+    func stopGit() { gitJob?.cancel() }
+
+    private func acceptGit(_ state: GitState, revision: WorkspaceRevision) {
+        guard projectID == revision.projectID else { return }
+        gitState = state; gitAvailable = true; gitObservedGeneration = revision.generation
+    }
+
+    func refreshGit() {
+        runGit("Reading local Git changes") { [self] store, project, revision in
+            guard try await store.exists(project.id) else {
+                gitAvailable = false; gitState = nil; gitHistory = []; gitBranches = []
+                return "No local Git history. Initialize it to start recording explicit commits."
+            }
+            let observed = try await store.inspect(project.id)
+            let state = try await store.status(project.id, files: project.files, expectedRevision: observed.revision)
+            let history = try await store.history(project.id)
+            let branches = try await store.branches(project.id)
+            guard projectID == project.id else { return "Project changed." }
+            acceptGit(state, revision: revision); gitHistory = history; gitBranches = branches
+            return "\(state.branch) · \(state.head.map { String($0.prefix(8)) } ?? "no commits")\n" +
+                (state.changes.isEmpty ? "Working tree is clean." : state.changes.map { "\($0.kind)  \($0.path)" }.joined(separator: "\n"))
+        }
+    }
+
+    func initializeGit() {
+        runGit("Starting local Git history") { [self] store, project, revision in
+            let state = try await store.initialize(project.id, files: project.files)
+            acceptGit(state, revision: revision)
+            return "Initialized a new local Git repository. Previous snapshot imports have no invented parent commit. Select files and create your first commit."
+        }
+    }
+
+    func showGitDiff(_ path: String) {
+        guard let state = gitState, !gitNeedsRefresh else { gitMessage = "Refresh Changes before opening this diff."; return }
+        runGit("Reading diff · \(path)") { [self] store, project, revision in
+            let result = try await store.diff(project.id, files: project.files, path: path, expectedRevision: state.revision)
+            acceptGit(result.state, revision: revision); gitDiff = result
+            return result.text.isEmpty ? "No text changes in \(path)." : result.text
+        }
+    }
+
+    func commitGit(paths: [String], author: String, email: String, message: String) {
+        guard let state = gitState, !gitNeedsRefresh else { gitMessage = "Refresh Changes before committing this editor revision."; return }
+        runGit("Committing selected files") { [self] store, project, revision in
+            let receipt = try await store.commit(project.id, files: project.files, selected: paths,
+                author: author, email: email, message: message, expectedHead: state.head, expectedRevision: state.revision)
+            let history = try await store.history(project.id), branches = try await store.branches(project.id)
+            acceptGit(receipt.state, revision: revision); gitHistory = history; gitBranches = branches; gitDiff = nil
+            userDefaults.set(author, forKey: "crabrix.git.author.name")
+            userDefaults.set(email, forKey: "crabrix.git.author.email")
+            return "Committed \(receipt.commit.id.prefix(8)): \(message)" +
+                (isCurrent(revision) ? "" : "\nThe captured source was committed; newer editor/room edits remain uncommitted. Refresh Changes.")
+        }
+    }
+
+    func createGitBranch(_ name: String) {
+        guard let state = gitState, let head = state.head, !gitNeedsRefresh else { gitMessage = "Refresh Changes and create a first commit before creating a branch."; return }
+        runGit("Creating local branch") { [self] store, project, revision in
+            let result = try await store.createBranch(project.id, name: name, expectedHead: head, expectedRevision: state.revision)
+            let branches = try await store.branches(project.id)
+            acceptGit(result, revision: revision); gitBranches = branches
+            return "Created branch \(name). Your current branch is still \(result.branch)."
+        }
+    }
+
+    func switchGitBranch(_ branch: String) {
+        guard gitCanSwitchBranch, let state = gitState, let head = state.head else {
+            gitMessage = playgroundSession != nil ? "Leave the live Playground before switching local Git branches." : "Refresh, then commit or restore local changes before switching branches."
+            return
+        }
+        runGit("Switching local branch", exclusive: true) { [self] store, project, revision in
+            await retryProjectSave()
+            guard isCurrent(revision), playgroundSession == nil else { throw GitRepositoryFailure("The editor changed before checkout. Refresh and retry.") }
+            let checkout = try await store.checkout(project.id, branch: branch, files: project.files,
+                expectedHead: head, expectedRevision: state.revision)
+            guard isCurrent(revision), playgroundSession == nil else { throw GitRepositoryFailure("Git completed checkout, but the editor changed. Your editor source was kept; refresh Git before continuing.") }
+            guard !checkout.snapshot.files.isEmpty else { throw GitRepositoryFailure("This branch has no editable source files. Its opaque files remain in local Git storage.") }
+            try ProjectFilePolicy.validate(checkout.snapshot.files)
+            gitLocksWorkspace = false
+            let applied = replaceProjectFilesFromTerminal(checkout.snapshot.files)
+            gitLocksWorkspace = true
+            guard applied else { throw GitRepositoryFailure("The checked-out tree could not be applied to the editor; existing source is kept.") }
+            await retryProjectSave()
+            acceptGit(checkout.state, revision: workspaceRevision)
+            gitHistory = try await store.history(project.id); gitDiff = nil
+            return "Switched to \(branch). Kept \(checkout.snapshot.opaquePaths.count) opaque files in repository storage. Diagnostics and dependency state were refreshed."
+        }
+    }
+
+    func viewGitCommit(_ commit: GitCommit) {
+        runGit("Reading commit \(commit.id.prefix(8))") { [self] store, project, _ in
+            let tree = try await store.tree(project.id, commit: commit.id)
+            guard projectID == project.id else { return "Project changed." }
+            gitViewingCommit = commit; gitRevisionTree = tree; gitRestorePreview = nil
+            return "\(commit.id.prefix(8)) · \(tree.files.count) editable files · \(tree.opaquePaths.count) opaque files."
+        }
+    }
+
+    func previewGitFile(commit: String, path: String) {
+        runGit("Reading file from history") { [self] store, project, revision in
+            let data = try await store.file(project.id, commit: commit, path: path)
+            guard data.count <= ProjectFilePolicy.maximumFileBytes, !data.contains(0),
+                  let replacement = String(data: data, encoding: .utf8) else {
+                throw GitRepositoryFailure("This file is preserved as opaque repository data and cannot be restored into the text editor.")
+            }
+            guard isCurrent(revision) else { throw GitRepositoryFailure("The editor changed. Open the history preview again.") }
+            gitRestorePreview = GitRestorePreview(projectID: project.id, generation: revision.generation,
+                commit: commit, path: path, original: project.files[path], replacement: replacement)
+            return "Previewing \(path) from \(commit.prefix(8)). Restore is an explicit action."
+        }
+    }
+
+    func restoreGitPreview() {
+        guard let preview = gitRestorePreview, preview.projectID == projectID,
+              preview.generation == workspaceGeneration, !playgroundIsReadOnly else {
+            gitMessage = "The source changed or is read-only. Open the history preview again."; return
+        }
+        runGit("Restoring one source file", exclusive: true) { [self] _, _, _ in
+            await retryProjectSave()
+            guard preview.projectID == projectID, preview.generation == workspaceGeneration,
+                  currentProject().files[preview.path] == preview.original else { throw GitRepositoryFailure("Newer source was kept; reopen the preview before restoring.") }
+            var files = currentProject().files; files[preview.path] = preview.replacement
+            try ProjectFilePolicy.validate(files)
+            if playgroundSession != nil { var document = try playgroundDocument(); document.files = files; _ = try document.validated() }
+            gitLocksWorkspace = false
+            let applied = replaceProjectFilesFromTerminal(files, selecting: preview.path)
+            gitLocksWorkspace = true
+            guard applied else { throw GitRepositoryFailure("The source file could not be restored.") }
+            gitRestorePreview = nil; gitDiff = nil
+            await retryProjectSave()
+            return "Restored \(preview.path) from \(preview.commit.prefix(8)). This is a working-tree edit; refresh and commit it when ready."
         }
     }
 }
