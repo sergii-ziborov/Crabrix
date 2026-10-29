@@ -11,7 +11,10 @@ enum ProjectExecutionProfile {
                   let data = try? Data(contentsOf: url) else { return "unavailable" }
             hasher.update(data: Data(name.utf8)); hasher.update(data: data)
         }
-        return "browser-bundle-v1:" + hasher.finalize().map { String(format: "%02x", $0) }.joined()
+        guard let url = Bundle.main.url(forResource: "manifest", withExtension: "json", subdirectory: "TypeScriptCore"),
+              let data = try? Data(contentsOf: url) else { return "unavailable" }
+        hasher.update(data: data)
+        return "browser-bundle-types-v2:" + hasher.finalize().map { String(format: "%02x", $0) }.joined()
     }()
     static var identity: String { WasmRustCompiler.executionIdentity + ":" + browserIdentity }
 }
@@ -71,6 +74,9 @@ struct ProjectPreflight: Sendable {
     static func inspect(_ input: Input) -> Self {
         let project = input.project
         let browser = input.browserDirectory != nil || BrowserProjectConfiguration.isBrowserEntry(project.entryFile)
+        let browserEntry = BrowserProjectConfiguration.entry(files: project.files, preferred: project.entryFile, directory: input.browserDirectory)
+        let typedBrowser = browser && BrowserTypeScriptProfile.applies(files: project.files,
+            directory: BrowserTypeScriptProfile.directory(files: project.files, entry: browserEntry))
         let all = Set(ProjectVerifiedOperation.allCases)
         var issues: [Issue] = []
         func issue(_ origin: Origin, _ detail: String, blocks: Set<ProjectVerifiedOperation> = []) {
@@ -88,7 +94,9 @@ struct ProjectPreflight: Sendable {
             if ProjectExecutionProfile.browserIdentity == "unavailable" {
                 issue(.browser, "The bundled browser compiler is unavailable.", blocks: all)
             }
-            issue(.browser, "Check parses, transpiles and bundles browser modules. It does not check TypeScript types. A Web Preview opening is not evidence of successful JavaScript execution.")
+            issue(.browser, typedBrowser
+                ? "Check uses bundled TypeScript \(BrowserTypeScriptProfile.version), standard libraries and prepared declarations, followed by browser bundling. Missing types require explicit preparation. Run and Build transpile/bundle separately; opening a Web Preview does not prove successful JavaScript execution."
+                : "Check parses and bundles browser modules. This project has no TypeScript checking input. A Web Preview opening is not evidence of successful JavaScript execution.")
             issue(.profile, "Rust Debug is unavailable for a browser entry. Use Run and the Web Preview console.", blocks: [.debug])
         } else if let text = project.files["Cargo.toml"] {
             do {
@@ -168,13 +176,22 @@ struct ProjectPreflight: Sendable {
             let blocker = issues.first { $0.blocked.contains(operation) }
             // Web Run records mean that a preview was constructed, not that a
             // browser acknowledged successful execution. Keep that unverified.
-            let verified = !browser && input.lastBuild?.verifies(operation, revision: input.revision) == true
+            let hasEvidence = input.lastBuild?.verifies(operation, revision: input.revision,
+                kind: browser ? .browser : .rust, compilerEntry: browser ? browserEntry : project.entryFile) == true
+            let verified: Bool
+            if browser {
+                switch operation {
+                case .check: verified = hasEvidence && (!typedBrowser || (input.lastBuild?.phase == .check && input.lastBuild?.browserTypeCheckVersion == BrowserTypeScriptProfile.version))
+                case .build: verified = hasEvidence
+                case .run, .debug: verified = false
+                }
+            } else { verified = hasEvidence }
             let state: State = blocker != nil ? .blocked : verified ? .verified : .unverified
             let detail = blocker?.detail ?? (verified
                 ? "Confirmed by the latest successful result for these exact source, resource and compiler identities."
                 : browser && operation == .run ? "Run opens a local Web Preview. Runtime success must be checked in its console."
                 : "No successful result for this operation and exact current snapshot. Inspection does not execute it.")
-            let title = browser && operation == .check ? "Check · syntax and bundle" : operation.rawValue.capitalized
+            let title = browser && operation == .check ? (typedBrowser ? "Check · TypeScript types and bundle" : "Check · syntax and bundle") : operation.rawValue.capitalized
             return Operation(kind: operation, title: title, state: state, detail: detail)
         }
         return Self(revision: input.revision, target: browser ? "Local browser · HTML / CSS / JavaScript" : RustTargetSpec.wasm32WasiP1.triple,

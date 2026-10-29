@@ -53,6 +53,7 @@ final class ProjectTerminalSessionTests: XCTestCase {
                 switch $0 {
                 case let .install(frozen, directory): received.append("install:\(frozen):\(directory)")
                 case let .build(run, directory): received.append("build:\(run):\(directory)")
+                case let .check(directory): received.append("check:\(directory)")
                 }
             })
         }
@@ -80,16 +81,17 @@ final class ProjectTerminalSessionTests: XCTestCase {
         var received: [String] = []
         terminal.command = "cd web"
         terminal.submit(project: project, isBusy: false, onCheck: {}, onRun: {})
-        for command in ["npm install", "npm ci", "npm run dev", "npm start", "npm run build", "npm run check"] {
+        for command in ["npm install", "npm ci", "npm run dev", "npm start", "npm run build", "npm run check", "npm run typecheck"] {
             terminal.command = command
             terminal.submit(project: project, isBusy: false, onCheck: { XCTFail("Rust check") }, onRun: { XCTFail("Rust run") }, onBrowserCommand: {
                 switch $0 {
                 case let .install(frozen, directory): received.append("install:\(frozen):\(directory)")
                 case let .build(run, directory): received.append("build:\(run):\(directory)")
+                case let .check(directory): received.append("check:\(directory)")
                 }
             })
         }
-        XCTAssertEqual(received, ["install:false:web", "install:true:web", "build:true:web", "build:true:web", "build:false:web", "build:false:web"])
+        XCTAssertEqual(received, ["install:false:web", "install:true:web", "build:true:web", "build:true:web", "build:false:web", "check:web", "check:web"])
         terminal.command = "npm install"
         terminal.submit(project: project, isBusy: true, onCheck: {}, onRun: {}, onBrowserCommand: { _ in XCTFail("Busy") })
         XCTAssertTrue(terminal.lines.last?.text.contains("Wait") == true)

@@ -68,7 +68,7 @@ final class BrowserJavaScriptCompiler: @unchecked Sendable {
         return created
     }
 
-    fileprivate func build(files: [String: String], entry: String?) async throws -> BrowserCompilerReply {
+    fileprivate func build(files: [String: String], entry: String?, prepareTypes: Bool = false) async throws -> BrowserCompilerReply {
         try Task.checkCancellation()
         return try await withCheckedThrowingContinuation { continuation in
             queue.async { [self] in
@@ -77,7 +77,7 @@ final class BrowserJavaScriptCompiler: @unchecked Sendable {
                     context.exception = nil
                     let input = String(decoding: try JSONEncoder().encode(files), as: UTF8.self)
                     let function = context.objectForKeyedSubscript("CrabrixWebBuilder")?.objectForKeyedSubscript("build")
-                    guard let value = function?.call(withArguments: [input, entry ?? ""]),
+                    guard let value = function?.call(withArguments: [input, entry ?? "", prepareTypes]),
                           context.exception == nil, let text = value.toString() else {
                         throw BrowserBuildError(message: context.exception?.toString() ?? "The browser compiler returned no result.")
                     }
@@ -167,7 +167,7 @@ actor BrowserProjectBuilder {
         onStage(preparePackages ? "Preparing browser package imports" : "Building local browser modules")
         for _ in 0..<2_048 {
             try Task.checkCancellation()
-            let reply = try await compiler.build(files: files, entry: preferredEntry)
+            let reply = try await compiler.build(files: files, entry: preferredEntry, prepareTypes: preparePackages)
             try Task.checkCancellation()
             if let error = reply.error {
                 throw BrowserBuildError(message: error.message, file: error.file, line: error.line, column: error.column)
@@ -274,6 +274,7 @@ private struct BrowserWebLock: Codable {
 enum BrowserProjectCommand {
     case install(frozen: Bool, directory: String)
     case build(run: Bool, directory: String)
+    case check(directory: String)
 }
 
 enum BrowserProjectConfiguration {

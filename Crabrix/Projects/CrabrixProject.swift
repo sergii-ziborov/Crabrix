@@ -395,6 +395,8 @@ enum ProjectVerifiedOperation: String, CaseIterable, Hashable, Sendable {
     case check, build, run, debug
 }
 
+enum ProjectExecutionKind: String, Codable, Sendable { case rust, browser }
+
 struct ProjectBuildRecord: Codable, Equatable, Sendable {
     let succeeded: Bool
     let phase: CompilationResult.Phase
@@ -406,8 +408,12 @@ struct ProjectBuildRecord: Codable, Equatable, Sendable {
     /// Older records did not distinguish ordinary execution from source Debug.
     /// Nil deliberately retains that ambiguity during migration.
     let isDebugExecution: Bool?
+    let browserTypeCheckVersion: String?
+    let workspaceEntryFile: String?
+    let compilerEntryFile: String?
+    let executionKind: ProjectExecutionKind?
 
-    init(result: CompilationResult, finishedAt: Date = Date(), sourceTreeHash: String? = nil, toolchainID: String? = nil, resourceTreeHash: String? = nil, isDebugExecution: Bool? = nil) {
+    init(result: CompilationResult, finishedAt: Date = Date(), sourceTreeHash: String? = nil, toolchainID: String? = nil, resourceTreeHash: String? = nil, isDebugExecution: Bool? = nil, browserTypeCheckVersion: String? = nil, workspaceEntryFile: String? = nil, compilerEntryFile: String? = nil, executionKind: ProjectExecutionKind? = nil) {
         succeeded = result.succeeded
         phase = result.phase
         let parts = result.duration.components
@@ -419,13 +425,20 @@ struct ProjectBuildRecord: Codable, Equatable, Sendable {
         self.toolchainID = toolchainID
         self.resourceTreeHash = resourceTreeHash
         self.isDebugExecution = isDebugExecution
+        self.browserTypeCheckVersion = browserTypeCheckVersion
+        self.workspaceEntryFile = workspaceEntryFile
+        self.compilerEntryFile = compilerEntryFile
+        self.executionKind = executionKind
     }
 
     /// Historical evidence for identical source/resources and compiler profile.
     /// It never authorizes editing or an operation against a stale generation.
-    func verifies(_ operation: ProjectVerifiedOperation, revision: WorkspaceRevision) -> Bool {
+    func verifies(_ operation: ProjectVerifiedOperation, revision: WorkspaceRevision, kind: ProjectExecutionKind? = nil, compilerEntry: String? = nil) -> Bool {
+        let expectedKind = kind ?? (BrowserProjectConfiguration.isBrowserEntry(revision.entryFile) ? .browser : .rust)
         guard succeeded, let sourceTreeHash, sourceTreeHash == revision.sourceTreeHash,
               let toolchainID, toolchainID == revision.toolchainID,
+              workspaceEntryFile == revision.entryFile, executionKind == expectedKind,
+              compilerEntryFile == (compilerEntry ?? revision.entryFile),
               resourceTreeHash == revision.resourceTreeHash else { return false }
         switch phase {
         case .check:

@@ -250,6 +250,8 @@ final class CompilerViewModel: ObservableObject {
     @Published private(set) var debugSites: [RustDebugSite] = []
     @Published private(set) var debugBreakpoints: Set<RustDebugBreakpoint> = []
     private var debugSession: RustDebugSession?
+    private let typeScriptChecker = BrowserTypeScriptChecker()
+    private var typeScriptCheckPending = false
     private var debugSessionID: UUID?
 
     func toggleDebugBreakpoint(file: String, line: Int) {
@@ -824,6 +826,7 @@ final class CompilerViewModel: ObservableObject {
         switch command {
         case let .install(frozen, directory): startBuild(.checking, browserDirectory: directory, prepareBrowserPackages: true, frozenBrowserPackages: frozen)
         case let .build(run, directory): startBuild(run ? .running : .building, browserDirectory: directory)
+        case let .check(directory): startBuild(.checking, browserDirectory: directory)
         }
     }
 
@@ -972,6 +975,8 @@ final class CompilerViewModel: ObservableObject {
         let compilationID = UUID()
         let inspectionInput = preflightInput(browserDirectory: browserDirectory)
         activeCompilationID = compilationID
+        typeScriptCheckPending = mode == .checking && !prepareBrowserPackages
+            && (browserDirectory != nil || BrowserProjectConfiguration.isBrowserEntry(project.entryPath))
         compilationTask = Task { [weak self] in
             guard let self else { return }
             guard !Task.isCancelled, activeCompilationID == compilationID, isCurrent(preparationRevision) else {
@@ -1070,12 +1075,32 @@ final class CompilerViewModel: ObservableObject {
                         guard let combined = WebPreviewSnapshot(files: resourceFiles.filter { WebPreviewSnapshot.mimeType(for: $0.key) != nil }.merging(built.preview.assets) { _, built in built }, preferredEntry: built.preview.entryPath) else { throw BrowserBuildError(message: "The browser preview exceeds its asset budget.") }
                         preview = combined
                     }
+                    var checkedTypeScript: BrowserTypeScriptResult?
+                    if mode == .checking && !prepareBrowserPackages {
+                        let directory = BrowserTypeScriptProfile.directory(files: projectFiles, entry: entry)
+                        if BrowserTypeScriptProfile.applies(files: projectFiles, directory: directory) {
+                            appendBuildStage("Checking TypeScript types locally · \(BrowserTypeScriptProfile.version)")
+                        }
+                        checkedTypeScript = try await typeScriptChecker.check(files: projectFiles, directory: directory)
+                        guard activeCompilationID == compilationID, !Task.isCancelled, isCurrent(revision) else { discardCompilationIfActive(compilationID); return }
+                        if let checked = checkedTypeScript, !checked.succeeded {
+                            finish(CompilationResult(succeeded: false, phase: .check, exitCode: 1,
+                                diagnostics: checked.diagnostics.map { $0.rustDiagnostic(files: projectFiles) }, stdout: "", stderr: "",
+                                duration: began.duration(to: .now), detail: "TypeScript \(checked.version) reported type/configuration errors. Missing dependency declarations require explicit package preparation.\(checked.omittedDiagnostics > 0 ? " Additional diagnostics omitted: \(checked.omittedDiagnostics)." : "")"), revision: revision,
+                                executionKind: .browser, compilerEntryFile: entry)
+                            return
+                        }
+                    }
                     finish(CompilationResult(succeeded: true, phase: mode == .running ? .run : (mode == .building ? .compile : .check),
-                        exitCode: nil, diagnostics: [], stdout: "", stderr: "", duration: began.duration(to: .now),
+                        exitCode: nil, diagnostics: checkedTypeScript?.diagnostics.map { $0.rustDiagnostic(files: projectFiles) } ?? [], stdout: "", stderr: "", duration: began.duration(to: .now),
                         detail: prepareBrowserPackages
                             ? "Prepared \(built.packageCount) browser npm packages as editable local source. Run now builds offline."
+                            : checkedTypeScript?.checked == true
+                            ? "TypeScript \(BrowserTypeScriptProfile.version) checked \(checkedTypeScript!.roots) source entries locally; bundled \(built.moduleCount) browser modules. Browser runtime errors remain separate in the Web Preview console."
                             : "Built \(built.moduleCount) browser modules locally. TypeScript syntax is transpiled; this is not TypeScript type checking. Browser errors appear in the web console.",
-                        webPreview: mode == .running ? preview : nil), revision: workspaceRevision)
+                        webPreview: mode == .running ? preview : nil), revision: workspaceRevision,
+                        browserTypeCheckVersion: checkedTypeScript?.checked == true ? BrowserTypeScriptProfile.version : nil,
+                        executionKind: .browser, compilerEntryFile: entry)
                     if prepareBrowserPackages { await remember(currentProject(), lastBuild: lastBuild) }
                 } catch {
                     guard activeCompilationID == compilationID, isCurrent(revision) else { discardCompilationIfActive(compilationID); return }
@@ -1091,7 +1116,8 @@ final class CompilerViewModel: ObservableObject {
                     finish(CompilationResult(succeeded: false, phase: .compile, exitCode: nil,
                         diagnostics: [.init(level: "error", message: browserError?.message ?? error.localizedDescription,
                             code: nil, rendered: error.localizedDescription, spans: span)],
-                        stdout: "", stderr: "", duration: began.duration(to: .now), detail: error.localizedDescription), revision: revision)
+                        stdout: "", stderr: "", duration: began.duration(to: .now), detail: error.localizedDescription), revision: revision,
+                        executionKind: .browser, compilerEntryFile: entry)
                 }
                 return
             }
@@ -1642,6 +1668,8 @@ final class CompilerViewModel: ObservableObject {
         // the UI from a worker that would otherwise run to completion.
         compiler.cancel()
         formatter.cancel()
+        typeScriptChecker.cancel()
+        typeScriptCheckPending = false
         compilationTask?.cancel()
         // Keep the active identity until the queue callback returns. Clearing it
         // here made `discardCompilationIfActive` reject that callback, leaving
@@ -1653,6 +1681,10 @@ final class CompilerViewModel: ObservableObject {
             phase: .setup,
             detail: "Build stopped. The active worker is being interrupted and its snapshot released."
         )
+    }
+
+    func stopTypeScriptForBackground() {
+        if typeScriptCheckPending || typeScriptChecker.isWorking { cancelBuild() }
     }
 
     func loadRunnableSample(projectName: String = "hello-crabrix") {
@@ -2190,7 +2222,10 @@ final class CompilerViewModel: ObservableObject {
         selectedFile = entryFile
         source = files[entryFile] ?? ""
         self.provenance = provenance
-        self.lastBuild = lastBuild?.sourceTreeHash == workspaceRevision.sourceTreeHash && lastBuild?.toolchainID == ProjectExecutionProfile.identity && lastBuild?.resourceTreeHash == projectResourceDigest ? lastBuild : nil
+        let expectedKind: ProjectExecutionKind = BrowserProjectConfiguration.isBrowserEntry(entryFile) ? .browser : .rust
+        let expectedCompilerEntry = expectedKind == .browser ? BrowserProjectConfiguration.entry(files: files, preferred: entryFile) : entryFile
+        self.lastBuild = lastBuild?.sourceTreeHash == workspaceRevision.sourceTreeHash && lastBuild?.toolchainID == ProjectExecutionProfile.identity && lastBuild?.resourceTreeHash == projectResourceDigest
+            && lastBuild?.workspaceEntryFile == entryFile && lastBuild?.compilerEntryFile == expectedCompilerEntry && lastBuild?.executionKind == expectedKind ? lastBuild : nil
         compatibilityReport = ProjectCompatibilityReport.scan(
             CrabrixProject(
                 id: id,
@@ -2627,8 +2662,9 @@ final class CompilerViewModel: ObservableObject {
         return report.rendered
     }
 
-    private func finish(_ value: CompilationResult, revision: WorkspaceRevision, recordsLearningEvidence: Bool = true, isDebugExecution: Bool = false) {
+    private func finish(_ value: CompilationResult, revision: WorkspaceRevision, recordsLearningEvidence: Bool = true, isDebugExecution: Bool = false, browserTypeCheckVersion: String? = nil, executionKind: ProjectExecutionKind = .rust, compilerEntryFile: String? = nil) {
         guard isCurrent(revision) else { return }
+        typeScriptCheckPending = false
         debugSession = nil; debugSessionID = nil; debugActive = false; debugPause = nil
         appendBuildStage(value.succeeded ? "Finished successfully" : "Stopped · see Problems for details")
         result = value
@@ -2639,7 +2675,8 @@ final class CompilerViewModel: ObservableObject {
         // User tests and formatter tools must not complete Academy lessons,
         // mint repair rewards or replace the last ordinary Build/Run record.
         guard recordsLearningEvidence else { return }
-        lastBuild = ProjectBuildRecord(result: value, sourceTreeHash: revision.sourceTreeHash, toolchainID: revision.toolchainID, resourceTreeHash: revision.resourceTreeHash, isDebugExecution: isDebugExecution)
+        lastBuild = ProjectBuildRecord(result: value, sourceTreeHash: revision.sourceTreeHash, toolchainID: revision.toolchainID, resourceTreeHash: revision.resourceTreeHash, isDebugExecution: isDebugExecution, browserTypeCheckVersion: browserTypeCheckVersion,
+            workspaceEntryFile: revision.entryFile, compilerEntryFile: compilerEntryFile ?? revision.entryFile, executionKind: executionKind)
 
         let errorDiagnostic = value.diagnostics.first(where: { $0.level == "error" })
         activeLessonObservedDiagnosticCodes.formUnion(value.diagnostics.compactMap(\.code))
@@ -2664,7 +2701,10 @@ final class CompilerViewModel: ObservableObject {
             let diagnosticsSetting = userDefaults.object(
                 forKey: Self.appleIntelligenceDiagnosticsKey
             ) as? Bool ?? true
-            if diagnosticsSetting { requestAppleIntelligenceAdvice() }
+            // TypeScript already has precise local diagnostics. Keep optional
+            // web advice explicit so a new Check error does not start an AI
+            // request that temporarily disables the independent Run action.
+            if diagnosticsSetting, diagnostic.code?.hasPrefix("TS") != true { requestAppleIntelligenceAdvice() }
         } else if value.succeeded, let evidence = unresolvedDiagnosticEvidence {
             completedStages.insert(.repair)
             // Check proves the original compiler error is gone. Rating waits
@@ -2790,6 +2830,7 @@ final class CompilerViewModel: ObservableObject {
     private func isCurrentSource(_ revision: WorkspaceRevision) -> Bool {
         let current = workspaceRevision
         return current.projectID == revision.projectID && current.generation == revision.generation
+            && current.entryFile == revision.entryFile
             && current.sourceTreeHash == revision.sourceTreeHash && current.toolchainID == revision.toolchainID
     }
 
@@ -2799,6 +2840,7 @@ final class CompilerViewModel: ObservableObject {
 
     private func discardCompilationIfActive(_ compilationID: UUID) {
         guard activeCompilationID == compilationID else { return }
+        typeScriptCheckPending = false
         debugSession?.stop(); debugSession = nil; debugSessionID = nil; debugActive = false; debugPause = nil
         activity = .idle
         isCompilerDraining = false
@@ -2810,7 +2852,7 @@ final class CompilerViewModel: ObservableObject {
     private func workspaceDidChange() {
         guard !suppressAutosave else { return }
         semanticUndo = nil
-        if debugActive { cancelBuild() }
+        if debugActive || typeScriptCheckPending { cancelBuild() }
         if !isApplyingPlayground, let connection = playgroundSession {
             do { try connection.replace(playgroundDocument()) }
             catch {

@@ -67,6 +67,7 @@
 		30509E7AF637BB3744529240 /* PlaygroundLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F250162E0D44C864E253DBA /* PlaygroundLink.swift */; };
 		30B2800C5C2D0EB922655367 /* WebPreviewSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA729883F0ED981BAD5C56E /* WebPreviewSnapshot.swift */; };
 		312D5829B94096271C1B6361 /* AtlasReplay in Resources */ = {isa = PBXBuildFile; fileRef = 038C6DCF9B99F84403896D09 /* AtlasReplay */; };
+		312FD492DE626CCEA198B41C /* BrowserTypeScriptCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D99AE47DD410C8942EAA227 /* BrowserTypeScriptCheckerTests.swift */; };
 		31B1EA3B72D4096B6C3B60F8 /* LegalDocuments.json in Resources */ = {isa = PBXBuildFile; fileRef = 9A5377845C2374FBE4F05922 /* LegalDocuments.json */; };
 		32196C3370B0C09B1AE046F8 /* ProjectImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CB34A35CD75A3A08E600A35 /* ProjectImportTests.swift */; };
 		32A6F3F90EC3568CBDFBD0D0 /* TOMLValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40429472D2BAD0BF75F1C46A /* TOMLValue.swift */; };
@@ -218,6 +219,7 @@
 		AD40AE718B734DD2464CE5F9 /* BuildDockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08CF787A36CA91D1C110D707 /* BuildDockView.swift */; };
 		AE34749D8BFD861296CA2064 /* swift-nio-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 6E24E44406D79170CEDED477 /* swift-nio-LICENSE.txt */; };
 		AE7081B72A220336829B7988 /* highlight.js-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 96FB9D4640A39CECD01C382F /* highlight.js-LICENSE.txt */; };
+		AEEE68CFA283BA2FA6D2B9EC /* BrowserTypeScriptRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8380644BE1AE639C1333BD1 /* BrowserTypeScriptRuntime.swift */; };
 		AF159F24CBA8AB4A62BF7484 /* BrowserPlaygroundWebKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB639C49FB0B78A964478AF2 /* BrowserPlaygroundWebKitTests.swift */; };
 		B0C7F94ADC84C46D396A23A7 /* RustDebugSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 937214CDEBA36C6789AB16C0 /* RustDebugSession.swift */; };
 		B0D6D375D81EF9E865A0DB17 /* WorkspaceRevision.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD7933FC639F6724ED46072 /* WorkspaceRevision.swift */; };
@@ -255,6 +257,7 @@
 		C53ABD73F0DA4F22450B6886 /* WasmSandboxPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8832CBE2C15F09166CBB610F /* WasmSandboxPolicyTests.swift */; };
 		C554687050F486FE98581C6B /* CratesIOClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41A5B9EA24490E8E2ADABA38 /* CratesIOClient.swift */; };
 		C56EA75AEB015034CDCF4A1B /* BundledSysrootTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A201213590F9ECED7CE983FC /* BundledSysrootTests.swift */; };
+		C5FE34F2CC2AD957A6819C95 /* TypeScriptCore in Resources */ = {isa = PBXBuildFile; fileRef = 0DC68BEFB640ABE32A355ED7 /* TypeScriptCore */; };
 		C7C8B5BA51A4A63B29454B56 /* InspectorViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E28616F40A43EF200A8D0265 /* InspectorViews.swift */; };
 		C8A99B7CFD55D2B5409AF326 /* WasmKitWASI in Frameworks */ = {isa = PBXBuildFile; productRef = 6E683BBD11D8232CD6BB8038 /* WasmKitWASI */; };
 		CA03D546DF3D180170F3342A /* CrabrixProgressStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2D4DBF3CAA21D1AF0BB788 /* CrabrixProgressStore.swift */; };
@@ -275,6 +278,7 @@
 		D62CE9F33D5CD754B6052DB4 /* BuildWorkspaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CEBD152D5381C70622EDD87 /* BuildWorkspaceTests.swift */; };
 		D70ECFBCDF8636B011990335 /* ProblemReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15AF611D0815ED4D2805F0C /* ProblemReportTests.swift */; };
 		D76CC0F2D94CB399650F0083 /* SourceLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DE096ACF2087A64CE3BBB9 /* SourceLanguage.swift */; };
+		D7D2F78FB1C6AF5EFC197114 /* BrowserTypeScriptChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D11A16D2052B9EB171D59562 /* BrowserTypeScriptChecker.swift */; };
 		D86F638C06CE9367C008A2E7 /* WasmKit-NOTICE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 73CFA57D3BA2CCAB16D8C48E /* WasmKit-NOTICE.txt */; };
 		DAA998F3C928678602B1A6F6 /* yjs-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5A72A15781FCE77B7709379C /* yjs-LICENSE.txt */; };
 		DAB04BF988C5B0A4333E6407 /* RustTools in Resources */ = {isa = PBXBuildFile; fileRef = 1587BFA9C7CED501E0C49CF7 /* RustTools */; };
@@ -304,6 +308,7 @@
 		F3B4A7B2555D918F3192BB3D /* CourseModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4479B42763852BA1B452D60 /* CourseModels.swift */; };
 		F45D8BC9C4B3DA20720E7DF3 /* ProjectPreflightSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05621B4F21D02E6A72A3B711 /* ProjectPreflightSheet.swift */; };
 		F76BF289358A8DD05DE5B19C /* WebProjectBuilder.js in Resources */ = {isa = PBXBuildFile; fileRef = CDAED32DC7E25381FCA215C6 /* WebProjectBuilder.js */; };
+		F8376E6F8802C3726DDFEF8B /* BrowserReactTypes.json in Resources */ = {isa = PBXBuildFile; fileRef = 6144900292EBA554C0536077 /* BrowserReactTypes.json */; };
 		F8F1E02965F5C0146D69DD89 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA5866457924F7521705CCD1 /* Assets.xcassets */; };
 		FA6604AE42D256B00E00939A /* AppLockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73C1FC8A2234B8B8C0D7C08C /* AppLockTests.swift */; };
 		FA6B3D430B69957FC2E7A2AA /* ReleaseScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E560EAA1E9DC2387BE92ED56 /* ReleaseScreenshotTests.swift */; };
@@ -370,6 +375,7 @@
 		0A5A60C859397029EE97D7B2 /* NativeCompilerStub.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = NativeCompilerStub.c; sourceTree = "<group>"; };
 		0B894B9DF30A59B897021905 /* Toolchain */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Toolchain; path = build/Resources/Toolchain; sourceTree = SOURCE_ROOT; };
 		0D12CE6E93A5DC5D9852789C /* RustDiagnostic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustDiagnostic.swift; sourceTree = "<group>"; };
+		0DC68BEFB640ABE32A355ED7 /* TypeScriptCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TypeScriptCore; path = Crabrix/Resources/TypeScriptCore; sourceTree = SOURCE_ROOT; };
 		0FA729883F0ED981BAD5C56E /* WebPreviewSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPreviewSnapshot.swift; sourceTree = "<group>"; };
 		1067DEB86E13480FF37A47CB /* AlgorithmCourseCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlgorithmCourseCatalogTests.swift; sourceTree = "<group>"; };
 		109299B526E64638EEE7AC12 /* CourseDownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseDownloadManager.swift; sourceTree = "<group>"; };
@@ -456,6 +462,7 @@
 		5F250162E0D44C864E253DBA /* PlaygroundLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundLink.swift; sourceTree = "<group>"; };
 		5F2E28AF633C57EFB91DF034 /* LocalProjectLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalProjectLoader.swift; sourceTree = "<group>"; };
 		610A135ADD4192782FBD84D3 /* GitWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitWorkspaceView.swift; sourceTree = "<group>"; };
+		6144900292EBA554C0536077 /* BrowserReactTypes.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = BrowserReactTypes.json; sourceTree = "<group>"; };
 		6166C001764BC9D14984D241 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6234FA291715E7AB88B78388 /* TermMatchConnectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermMatchConnectionTests.swift; sourceTree = "<group>"; };
 		6408E7D74302DB95B47776D4 /* ProjectsHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectsHomeView.swift; sourceTree = "<group>"; };
@@ -489,6 +496,7 @@
 		7B3F13A7DE7204F3C4BE384B /* babel-standalone-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "babel-standalone-LICENSE.txt"; sourceTree = "<group>"; };
 		7C63EBB6B2847C44339CBE3A /* swift-nio-NOTICE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-nio-NOTICE.txt"; sourceTree = "<group>"; };
 		7D7984860DD790021AB2EBC8 /* lib0-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "lib0-LICENSE.txt"; sourceTree = "<group>"; };
+		7D99AE47DD410C8942EAA227 /* BrowserTypeScriptCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserTypeScriptCheckerTests.swift; sourceTree = "<group>"; };
 		7E89D65D056C2A468A0AE9BD /* AppToolchainRelease.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppToolchainRelease.swift; sourceTree = "<group>"; };
 		7F50EE4654716EB67F513A70 /* CoursePackVerifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePackVerifier.swift; sourceTree = "<group>"; };
 		7FB7C46C669C95EE0D5F7ECB /* PlaygroundEncryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundEncryption.swift; sourceTree = "<group>"; };
@@ -567,6 +575,7 @@
 		B52C3D8CDBE822289F79CF8C /* AtlasReplayLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlasReplayLibrary.swift; sourceTree = "<group>"; };
 		B5D9270FA8D46222F66AB4CE /* AcademyContentStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcademyContentStore.swift; sourceTree = "<group>"; };
 		B764DA54BC3599CE4F4C5A11 /* RustDebugCompiler.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = RustDebugCompiler.js; sourceTree = "<group>"; };
+		B8380644BE1AE639C1333BD1 /* BrowserTypeScriptRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserTypeScriptRuntime.swift; sourceTree = "<group>"; };
 		B9D7D181612381980B5CB164 /* CrabrixProjectDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrabrixProjectDocument.swift; sourceTree = "<group>"; };
 		B9F5F29ED903DD6057CADC06 /* BrowserProjectBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserProjectBuilderTests.swift; sourceTree = "<group>"; };
 		BA151D9B7D5D9B22BDE4D855 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
@@ -601,6 +610,7 @@
 		CF80F54BFA59501ADCB52C45 /* AtlasReplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlasReplayTests.swift; sourceTree = "<group>"; };
 		CFA00659D0D6FAD5318CE39C /* swift-atomics-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-atomics-LICENSE.txt"; sourceTree = "<group>"; };
 		D111D533F55B983FC047F784 /* TerminalKeyboardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalKeyboardTests.swift; sourceTree = "<group>"; };
+		D11A16D2052B9EB171D59562 /* BrowserTypeScriptChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserTypeScriptChecker.swift; sourceTree = "<group>"; };
 		D17C0F44F9A525F94B586EE7 /* GitHubProjectImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubProjectImporter.swift; sourceTree = "<group>"; };
 		D1A766BDDD55FB6BEBD30B38 /* AppearanceRenderingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceRenderingTests.swift; sourceTree = "<group>"; };
 		D36DAB1C755D61A62E455241 /* PlaygroundCodec.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = PlaygroundCodec.js; sourceTree = "<group>"; };
@@ -691,6 +701,8 @@
 				9853B43026260AB1594084F0 /* BorrowRepair.swift */,
 				A500C7B5B20F7ADF4215D88C /* BrowserNpmRegistry.swift */,
 				DD730A61BAFD19B1C33B3AAF /* BrowserProjectBuilder.swift */,
+				D11A16D2052B9EB171D59562 /* BrowserTypeScriptChecker.swift */,
+				B8380644BE1AE639C1333BD1 /* BrowserTypeScriptRuntime.swift */,
 				9FB88EA53398F55BCADE4D5C /* CompilationResult.swift */,
 				3B1893C7EE28568FD5B41AC3 /* RustCanvasOutput.swift */,
 				73F18DAD70C0709D48AC363D /* RustcRuntime.swift */,
@@ -914,6 +926,7 @@
 			children = (
 				038C6DCF9B99F84403896D09 /* AtlasReplay */,
 				EFD4DE8637BC7D39B5CE2EB9 /* BrowserReactProject.json */,
+				6144900292EBA554C0536077 /* BrowserReactTypes.json */,
 				91DD1737DEBABD179BA0EF7F /* README.md */,
 				007343726E69BCBB369AC22D /* CoursePack */,
 			);
@@ -975,6 +988,7 @@
 				ED805A32682154958D4A1EC2 /* BorrowRepairTests.swift */,
 				CB639C49FB0B78A964478AF2 /* BrowserPlaygroundWebKitTests.swift */,
 				B9F5F29ED903DD6057CADC06 /* BrowserProjectBuilderTests.swift */,
+				7D99AE47DD410C8942EAA227 /* BrowserTypeScriptCheckerTests.swift */,
 				AC4745C09CED9CA69999E7B0 /* BuildProblemsTests.swift */,
 				56AA1284DFED9057782C150A /* BundledCompilerGateTests.swift */,
 				8D8034113D3EF6270CBF8F84 /* BundledLicenseTests.swift */,
@@ -1182,6 +1196,7 @@
 				9A933B2B0009B98281F32A47 /* toolchain.lock.json */,
 				546E5E7255DED00327D28A17 /* ToolchainPrimaryIndex.json */,
 				902C61FA14DA8017D91F487A /* ToolchainVendorIndex.json */,
+				0DC68BEFB640ABE32A355ED7 /* TypeScriptCore */,
 				6DCD1A4778EFF6EC4156CC7C /* WebCompilerRuntime.js */,
 				CDAED32DC7E25381FCA215C6 /* WebProjectBuilder.js */,
 				9F1068B2F01BD06D22D254F7 /* WebSyntax.js */,
@@ -1372,6 +1387,7 @@
 				6117F6548CAF02FB65B73903 /* ToolchainPrimaryIndex.json in Resources */,
 				C26827466278567D30C8869C /* ToolchainVendorIndex.json in Resources */,
 				5C04E9676F6DDF6B017B7E78 /* ToolchainVendorNotices.zip in Resources */,
+				C5FE34F2CC2AD957A6819C95 /* TypeScriptCore in Resources */,
 				2AEE951350A08279CB646E51 /* WABT-LICENSE.txt in Resources */,
 				B2D6D1E82C49B6EEB20D5242 /* WasmKit-LICENSE.txt in Resources */,
 				D86F638C06CE9367C008A2E7 /* WasmKit-NOTICE.txt in Resources */,
@@ -1410,6 +1426,7 @@
 			files = (
 				312D5829B94096271C1B6361 /* AtlasReplay in Resources */,
 				66F573E5DD5562184C4D4BB0 /* BrowserReactProject.json in Resources */,
+				F8376E6F8802C3726DDFEF8B /* BrowserReactTypes.json in Resources */,
 				1F5C8B80757D5C47EFD7FF2F /* CompilerCandidate in Resources */,
 				5B10435436E88DF87EB62125 /* README.md in Resources */,
 				941AB2C020E1F2182752CD3A /* basics-1.0.1.zip in Resources */,
@@ -1440,7 +1457,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -eu\n\"$SRCROOT/scripts/fetch_toolchain.sh\"\n/usr/bin/python3 \"$SRCROOT/scripts/package_toolchain.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/prepare_native_compiler.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/verify_rust_tools.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/verify_git_core.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/verify_semantic_core.py\"\n/bin/bash \"$SRCROOT/scripts/verify_atlas_catalog.sh\" \"$SRCROOT\"\n";
+			shellScript = "set -eu\n\"$SRCROOT/scripts/fetch_toolchain.sh\"\n/usr/bin/python3 \"$SRCROOT/scripts/package_toolchain.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/prepare_native_compiler.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/verify_rust_tools.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/verify_git_core.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/verify_semantic_core.py\"\n/usr/bin/python3 \"$SRCROOT/scripts/verify_typescript_core.py\"\n/bin/bash \"$SRCROOT/scripts/verify_atlas_catalog.sh\" \"$SRCROOT\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1485,6 +1502,8 @@
 				B0E19E7B68ACB01F1F333C69 /* BorrowRepair.swift in Sources */,
 				71C82B5A52867D240DEEB514 /* BrowserNpmRegistry.swift in Sources */,
 				6854AB2EE932EB7C00FFC9CA /* BrowserProjectBuilder.swift in Sources */,
+				D7D2F78FB1C6AF5EFC197114 /* BrowserTypeScriptChecker.swift in Sources */,
+				AEEE68CFA283BA2FA6D2B9EC /* BrowserTypeScriptRuntime.swift in Sources */,
 				AD40AE718B734DD2464CE5F9 /* BuildDockView.swift in Sources */,
 				76680E04E311A68F3E8CA7FD /* BuildWorkflowControls.swift in Sources */,
 				2D5A7B2E04A0D214078674F9 /* CargoBuildPlan.swift in Sources */,
@@ -1635,6 +1654,7 @@
 				ABDFFA5263492E9C914C3C6B /* BorrowRepairTests.swift in Sources */,
 				AF159F24CBA8AB4A62BF7484 /* BrowserPlaygroundWebKitTests.swift in Sources */,
 				48F4658BA262324E7B476879 /* BrowserProjectBuilderTests.swift in Sources */,
+				312FD492DE626CCEA198B41C /* BrowserTypeScriptCheckerTests.swift in Sources */,
 				F1F0BF0DA8B783EE070F2CA5 /* BuildProblemsTests.swift in Sources */,
 				B53A042015AC822CCE2CCDFA /* BundledCompilerGateTests.swift in Sources */,
 				496103BB6AAEBCD5D49F0625 /* BundledLicenseTests.swift in Sources */,

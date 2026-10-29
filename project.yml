@@ -61,6 +61,7 @@ targets:
           - Resources/RustTools
           - Resources/GitCore
           - Resources/SemanticCore
+          - Resources/TypeScriptCore
           - Compiler/Native/ProcMacroNativeProxy.wat
       - path: Crabrix/Resources/MigrationCoursePacks
         type: folder
@@ -75,6 +76,9 @@ targets:
         type: folder
         buildPhase: resources
       - path: Crabrix/Resources/SemanticCore
+        type: folder
+        buildPhase: resources
+      - path: Crabrix/Resources/TypeScriptCore
         type: folder
         buildPhase: resources
       - path: build/Resources/Toolchain
@@ -159,6 +163,7 @@ targets:
           /usr/bin/python3 "$SRCROOT/scripts/verify_rust_tools.py"
           /usr/bin/python3 "$SRCROOT/scripts/verify_git_core.py"
           /usr/bin/python3 "$SRCROOT/scripts/verify_semantic_core.py"
+          /usr/bin/python3 "$SRCROOT/scripts/verify_typescript_core.py"
           /bin/bash "$SRCROOT/scripts/verify_atlas_catalog.sh" "$SRCROOT"
         basedOnDependencyAnalysis: false
     settings:
@@ -521,6 +526,45 @@ schemes:
             - RustDeclarationCompletionTests
         - name: CrabrixScreenshotTests
           selectedTests:
+            - RustSemanticUITests
+
+  CrabrixTypeScriptGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+        CrabrixScreenshotTests: [test]
+    test:
+      config: CompilerCandidate
+      gatherCoverageData: false
+      targets:
+        - name: CrabrixTests
+          selectedTests:
+            - BrowserTypeScriptCheckerTests
+            - BrowserProjectBuilderTests
+            - ProjectPreflightTests
+            - ProjectPreflightEvidenceTests
+            - ProjectPreflightCompilerEvidenceTests
+            - ProjectTerminalSessionTests
+            - CrateCompatibilityLedgerTests
+            - OfflineWebPreviewTests
+            - TerminalKeyboardTests
+            - BundledLicenseTests
+            - RustSemanticRuntimeTests
+            - RustSemanticTextTests
+            - RustSemanticIntegrationTests
+            - RustCompletionTests
+            - RustDeclarationCompletionTests
+            - RustDebuggerTests/testCompileOnlyLibraryBuildDoesNotRequireMain
+            - RustDebuggerTests/testCompileOnlyBuildNeverExecutesMainAndCachesExecutableForRun
+            - RustDebuggerTests/testWebGeneratorDebugsIncludedHTMLCSSAndJavaScript
+            - RustDebuggerTests/testAggregatePreviewsWithoutUserDebugAndWithBoundedUnicode
+            - RustDebuggerTests/testActualTokioAsyncPollStacksAndLocalsOffline
+            - RustDebuggerTests/testStopReleasesAPausedActualGuest
+        - name: CrabrixScreenshotTests
+          selectedTests:
+            - BrowserTypeScriptUITests
+            - ProjectPreflightUITests
             - RustSemanticUITests
 
   CrabrixAtlasGate:

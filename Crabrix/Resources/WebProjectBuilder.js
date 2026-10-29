@@ -7,7 +7,7 @@ var CrabrixWebBuilder = (() => {
   const cache = new Map();
   const prefix = 'crabrix-import:';
   const origin = 'crabrix-preview://project/';
-  const extensions = ['', '.js', '.mjs', '.cjs', '.json', '.jsx', '.ts', '.tsx'];
+  const extensions = ['', '.js', '.mjs', '.cjs', '.json', '.jsx', '.ts', '.tsx', '.mts', '.cts'];
   const builtins = new Set('assert async_hooks buffer child_process cluster console constants crypto dgram diagnostics_channel dns domain events fs http http2 https inspector module net os path perf_hooks process punycode querystring readline repl stream string_decoder sys timers tls trace_events tty url util v8 vm wasi worker_threads zlib'.split(' '));
   function failure(message,file='',line=1,column=1) { throw {webFailure:true,message,file,line,column}; }
   function normalize(path) {
@@ -64,7 +64,7 @@ var CrabrixWebBuilder = (() => {
     let result;
     try {
       const presets=[['react',{runtime:'automatic',importSource:jsxSource}]];
-      if(/\.(?:ts|tsx)$/.test(file))presets.unshift(['typescript',{onlyRemoveTypeImports:true}]);
+      if(/\.(?:ts|tsx|mts|cts)$/.test(file))presets.unshift(['typescript',{onlyRemoveTypeImports:true}]);
       result=Babel.transform(source,{filename:file,sourceType:'unambiguous',presets,
         plugins:[plugin,'transform-export-namespace-from','transform-dynamic-import','transform-modules-commonjs'],ast:true,code:true,sourceMaps:false,comments:false,compact:false});
     } catch(error) {
@@ -80,7 +80,7 @@ var CrabrixWebBuilder = (() => {
     const compiled={code:result.code,dependencies,assets};
     if(cache.size>=256)cache.clear();cache.set(key,compiled);return compiled;
   }
-  function build(input,preferredEntry) {
+  function build(input,preferredEntry,prepareTypes=false) {
     try {
       const files=Object.assign(Object.create(null),JSON.parse(input));
       const has=p=>own(files,p), used=new Set(), assets=Object.create(null), modules=Object.create(null), packageDependencies=new Map();
@@ -160,13 +160,17 @@ var CrabrixWebBuilder = (() => {
           return {path:found,query,id:found+(query?'?'+query:'')};
         }
         if(builtins.has(spec)||builtins.has(spec.split('/')[0]))failure(spec+' requires Node APIs. Choose its browser export or a browser alternative.',from);
+        return resolvePackage(spec,from,mode);
+      }
+      function resolvePackage(spec,from,mode,typesOnly=false) {
+        const parent=owner(from), m=manifest(parent);
         const parts=spec.split('/'), name=spec.startsWith('@')?parts.slice(0,2).join('/'):parts[0], subpath=parts.slice(spec.startsWith('@')?2:1).join('/');
         if(!/^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/.test(name))failure('Unsupported npm package name: '+name,from);
         const declared=m.dependencies?.[name]||m.optionalDependencies?.[name]||m.peerDependencies?.[name]||(parent===root?m.devDependencies?.[name]:null);
         const candidates=[];let d=directory(from);
         while(true){if(!d.endsWith('node_modules'))candidates.push(join(d,'node_modules/'+name));if(!d)break;d=directory(d)}
         const satisfies=v=>!declared||CrabrixNpmSemver.satisfies(v,declared);
-        for(const candidate of candidates)if(has(join(candidate,'package.json'))){const p=manifest(candidate);if(satisfies(p.version))return {path:packageEntry(candidate,subpath,mode),id:packageEntry(candidate,subpath,mode)}}
+        for(const candidate of candidates)if(has(join(candidate,'package.json'))){const p=manifest(candidate);if(satisfies(p.version)){if(typesOnly)return {directory:candidate};const path=packageEntry(candidate,subpath,mode);return {path,id:path}}}
         if(typeof declared!=='string')failure('Declare '+name+' in '+join(parent,'package.json')+' before preparing browser packages.',from);
         if(!CrabrixNpmSemver.validRange(declared))failure('Only npm registry version ranges are supported: '+name+' '+declared,join(parent,'package.json'));
         let target=join(parent,'node_modules/'+name), ranges=[declared];
@@ -229,14 +233,34 @@ var CrabrixWebBuilder = (() => {
         assets[bundlePath]='(()=>{"use strict";const modules={'+factories+'},cache=Object.create(null);function load(id){if(Object.prototype.hasOwnProperty.call(cache,id))return cache[id].exports;const pair=modules[id];if(!pair)throw Error("Missing browser module "+id);const m=cache[id]={exports:{}};pair[0](m,m.exports,s=>{if(!Object.prototype.hasOwnProperty.call(pair[1],s))throw Error("Unprepared module "+s);return load(pair[1][s])});return m.exports}load('+JSON.stringify(id)+')})();';
         return '<script src="/'+bundlePath+'" defer></script>';
       });
-      for(const [path,text]of Object.entries(files))if(!path.endsWith('crabrix-web.lock.json')&&!path.includes('node_modules/')&&!/\.(?:ts|tsx|jsx)$/.test(path)&&!path.includes('__crabrix_inline_')){
+      for(const [path,text]of Object.entries(files))if(!path.endsWith('crabrix-web.lock.json')&&!path.includes('node_modules/')&&!/\.(?:ts|tsx|mts|cts|jsx)$/.test(path)&&!path.includes('__crabrix_inline_')){
         assets[path]=text;const local=root&&path.startsWith(root+'/')?path.slice(root.length+1):path;if(root&&path.startsWith(root+'/'))assets[local]=text;if(local.startsWith('public/'))assets[local.slice(7)]=text;
       }
       assets[entry]=output;
-      const packageRoots=[...metadata.keys()].filter(p=>{
+      let packageRoots=[...metadata.keys()].filter(p=>{
         const parts=directory(p).split('/'), index=parts.lastIndexOf('node_modules');
         return index>=0 && parts.length-index-1===(parts[index+1].startsWith('@')?2:1);
       });
+      if(prepareTypes){
+        const queued=packageRoots.map(path=>({directory:directory(path),required:false})), retained=new Set();
+        for(const name of new Set([...Object.keys(rootManifest.dependencies||{}),...Object.keys(rootManifest.devDependencies||{})].filter(name=>name.startsWith('@types/')))){
+          queued.push({...resolvePackage(name,rootPath,'types',true),required:true});
+        }
+        for(let index=0;index<queued.length;index++){
+          if(index>=2048)failure('The declaration dependency graph exceeds 2,048 packages.',rootPath);
+          const item=queued[index], dir=item.directory;
+          if(retained.has(dir))continue;
+          const declarations=Object.keys(files).filter(path=>path.startsWith(dir+'/')&&!path.slice(dir.length+1).includes('node_modules/')&&/\.d\.(?:ts|mts|cts)$/.test(path));
+          if(!declarations.length&&!item.required)continue;
+          retained.add(dir);manifest(dir);for(const path of declarations)used.add(path);
+          for(const name of Object.keys(manifest(dir).dependencies||{})){
+            const child=resolvePackage(name,join(dir,'package.json'),'types',true).directory;
+            if(!packageDependencies.has(dir))packageDependencies.set(dir,new Set());packageDependencies.get(dir).add(child);
+            queued.push({directory:child,required:true});
+          }
+        }
+        packageRoots=[...new Set([...packageRoots,...[...retained].map(dir=>join(dir,'package.json'))])];
+      }
       for(const p of packageRoots){const dir=directory(p);for(const f of Object.keys(files)){
         if(!f.startsWith(dir+'/'))continue;
         const relative=f.slice(dir.length+1);

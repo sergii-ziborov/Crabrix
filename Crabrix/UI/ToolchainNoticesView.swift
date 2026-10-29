@@ -11,11 +11,12 @@ struct ToolchainNotice: Decodable, Identifiable, Sendable {
 
 enum ToolchainNoticeCatalog {
     static func load() throws -> [ToolchainNotice] {
-        try ["ToolchainPrimaryIndex", "ToolchainVendorIndex", "RustfmtNoticeIndex", "GitCoreNoticeIndex", "SemanticNoticeIndex"].flatMap { name in
+        try ["ToolchainPrimaryIndex", "ToolchainVendorIndex", "RustfmtNoticeIndex", "GitCoreNoticeIndex", "SemanticNoticeIndex", "TypeScriptNoticeIndex"].flatMap { name in
             guard let url = Bundle.main.url(forResource: name, withExtension: "json")
                     ?? Bundle.main.url(forResource: name, withExtension: "json", subdirectory: "RustTools")
                     ?? Bundle.main.url(forResource: name, withExtension: "json", subdirectory: "GitCore")
-                    ?? Bundle.main.url(forResource: name, withExtension: "json", subdirectory: "SemanticCore") else {
+                    ?? Bundle.main.url(forResource: name, withExtension: "json", subdirectory: "SemanticCore")
+                    ?? Bundle.main.url(forResource: name, withExtension: "json", subdirectory: "TypeScriptCore") else {
                 throw CocoaError(.fileNoSuchFile)
             }
             return try JSONDecoder().decode([ToolchainNotice].self, from: Data(contentsOf: url))
@@ -26,7 +27,8 @@ enum ToolchainNoticeCatalog {
         guard let url = Bundle.main.url(forResource: name, withExtension: "zip")
                 ?? Bundle.main.url(forResource: name, withExtension: "zip", subdirectory: "RustTools")
                 ?? Bundle.main.url(forResource: name, withExtension: "zip", subdirectory: "GitCore")
-                ?? Bundle.main.url(forResource: name, withExtension: "zip", subdirectory: "SemanticCore") else {
+                ?? Bundle.main.url(forResource: name, withExtension: "zip", subdirectory: "SemanticCore")
+                ?? Bundle.main.url(forResource: name, withExtension: "zip", subdirectory: "TypeScriptCore") else {
             throw CocoaError(.fileNoSuchFile)
         }
         let archive = try Archive(url: url, accessMode: .read)

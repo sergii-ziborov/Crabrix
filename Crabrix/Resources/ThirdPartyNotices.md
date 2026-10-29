@@ -46,6 +46,17 @@ Copyright and license sources:
 
 ## Direct Swift package dependencies
 
+### TypeScript 5.9.3
+
+The local TypeScript checker includes the original Microsoft TypeScript compiler
+and 100 standard declaration libraries from the pinned npm distribution. They
+retain their upstream Apache-2.0 terms and attributions. The complete original
+`LICENSE.txt` and `ThirdPartyNoticeText.txt` are bundled for offline reading in
+the toolchain notice catalog. Project JavaScript and compiler plugins are not
+executed by the checker.
+
+Source and license: https://github.com/microsoft/TypeScript/tree/v5.9.3
+
 ### ZIPFoundation 0.9.20
 
 Copyright (c) 2017-2025 Thomas Zoechling. Licensed under the MIT License.

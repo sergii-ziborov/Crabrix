@@ -1,0 +1,12 @@
+[
+  {
+    "id": "typescript-5.9.3",
+    "name": "TypeScript 5.9.3",
+    "summary": "Original Apache-2.0 compiler and standard declaration libraries; complete upstream third-party notices.",
+    "archive": "TypeScriptNotices",
+    "documents": [
+      "LICENSE.txt",
+      "ThirdPartyNoticeText.txt"
+    ]
+  }
+]

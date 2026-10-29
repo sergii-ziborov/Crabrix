@@ -276,7 +276,7 @@ final class ProjectTerminalSession: ObservableObject {
         let scripts = manifest["scripts"] as? [String: String] ?? [:]
         if arguments.isEmpty || arguments == ["--version"] || arguments == ["run"] {
             append("Crabrix browser package tools · local JS/TS/JSX bundler, not a Node process.\n" +
-                "npm install (or npm i) · npm ci · npm run dev|start|preview|build|check\n" +
+                "npm install (or npm i) · npm ci · npm run dev|start|preview|build|check|typecheck\n" +
                 "Use npm --prefix web <command> for a nested app.\n" +
                 scripts.keys.sorted().map { "  \($0): \(scripts[$0]!)" }.joined(separator: "\n"), kind: .info)
             return
@@ -289,11 +289,15 @@ final class ProjectTerminalSession: ObservableObject {
             onCommand(.install(frozen: arguments == ["ci"], directory: packageDirectory)); return
         }
         let name = arguments.count == 2 && ["run", "run-script"].contains(arguments[0]) ? arguments[1] : arguments == ["start"] ? "start" : ""
-        guard ["dev", "start", "preview", "build", "check"].contains(name) else {
+        guard ["dev", "start", "preview", "build", "check", "typecheck"].contains(name) else {
             append("Supported: npm install (or npm i), npm ci, npm start, npm run dev|start|preview|build|check, npm --prefix <directory> <command>. Declare dependencies in package.json; shell scripts, extra script arguments and package executables are not available.", kind: .error); return
         }
         if let script = scripts[name], script.range(of: #"(?:^|[;&|]\s*)(?:node|next|nuxt|astro|bun|deno|webpack|rollup)\b"#, options: .regularExpression) != nil {
             append("This script needs a host/server build tool. Import its static browser export, or use an HTML entry with browser imports; this command does not execute Node or arbitrary package scripts.", kind: .error); return
+        }
+        if ["check", "typecheck"].contains(name) {
+            append("Using Crabrix's bundled TypeScript checker and browser bundler. No package script or plugin is executed and no package is downloaded.", kind: .info)
+            onCommand(.check(directory: packageDirectory)); return
         }
         append("Using Crabrix's browser bundler for \(name); package scripts/plugins are not executed and no dev server is started.", kind: .info)
         onCommand(.build(run: ["dev", "start", "preview"].contains(name), directory: packageDirectory))

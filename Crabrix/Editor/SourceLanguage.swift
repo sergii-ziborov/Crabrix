@@ -18,7 +18,7 @@ enum SourceLanguage: String, Sendable {
         case "html", "htm": self = .html
         case "css": self = .css
         case "js", "mjs", "cjs", "jsx": self = .javascript
-        case "ts", "tsx": self = .typescript
+        case "ts", "tsx", "mts", "cts": self = .typescript
         case "json": self = .json
         case "toml", "lock": self = .toml
         case "md", "markdown": self = .markdown

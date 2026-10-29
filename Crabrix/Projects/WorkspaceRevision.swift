@@ -7,6 +7,7 @@ import Foundation
 /// the hashes independently prove which source tree and Cargo inputs were used.
 struct WorkspaceRevision: Hashable, Sendable {
     let projectID: UUID
+    let entryFile: String
     let generation: UInt64
     let sourceTreeHash: String
     let manifestHash: String?
@@ -22,6 +23,7 @@ struct WorkspaceRevision: Hashable, Sendable {
     ) -> WorkspaceRevision {
         WorkspaceRevision(
             projectID: project.id,
+            entryFile: project.entryFile,
             generation: generation,
             sourceTreeHash: sourceTreeHash(project.files),
             manifestHash: project.files["Cargo.toml"].map(contentHash),

@@ -526,6 +526,15 @@ struct ContentView: View {
                 }
             }
             #if DEBUG || CRABRIX_LEGACY_FIXTURES
+            if arguments.contains("--crabrix-auto-typescript-fixture") {
+                model.loadRunnableSample(projectName: "typescript-lab")
+                _ = model.replaceProjectFilesFromTerminal([
+                    "index.html": "<!doctype html><body><script type='module' src='./main.ts'></script></body>",
+                    "main.ts": "const score: string = 42;\ndocument.body.textContent = String(score);\n"
+                ], selecting: "index.html")
+                model.selectFile("main.ts")
+                openCodeWorkspace()
+            }
             if arguments.contains("--crabrix-auto-semantic-fixture") {
                 model.loadRunnableSample(projectName: "semantic-lab")
                 let text = "mod models;\nfn main() { let value: Widg; }\n"
@@ -588,6 +597,7 @@ struct ContentView: View {
             }
         }
         .onChange(of: scenePhase) { _, phase in
+            if phase != .active { model.stopTypeScriptForBackground() }
             guard phase == .active, !appLock.isLocked else { return }
             Task { await model.consumePendingSharedImport() }
         }

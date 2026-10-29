@@ -2,6 +2,32 @@ import XCTest
 import UIKit
 
 @MainActor
+final class BrowserTypeScriptUITests: XCTestCase {
+    func testCheckShowsRealTypeErrorAndRunRemainsAvailableWithEditorTabsIntact() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["--crabrix-auto-typescript-fixture", "-crabrix.appearance", UIDevice.current.userInterfaceIdiom == .pad ? "cyberpunkNeon" : "cyberpunk"]
+        app.launch()
+        let editor = app.textViews["Source code editor"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 60))
+        let original = editor.value as? String
+        app.buttons["Check project"].tap()
+        let problems = app.buttons["build-dock-problems"]
+        XCTAssertTrue(problems.waitForExistence(timeout: 30)); problems.tap()
+        let error = app.buttons.matching(NSPredicate(format:"label CONTAINS %@", "TS2322")).firstMatch
+        XCTAssertTrue(error.waitForExistence(timeout: 40), app.debugDescription)
+        XCTAssertTrue(error.label.contains("main.ts:1:"),error.label)
+        let screen=app.frame
+        XCTAssertGreaterThanOrEqual(error.frame.minX,0); XCTAssertLessThanOrEqual(error.frame.maxX,screen.maxX+1)
+        let capture=XCTAttachment(screenshot:XCUIScreen.main.screenshot()); capture.name="typescript-diagnostic";capture.lifetime = .keepAlways;add(capture)
+        XCTAssertTrue(app.buttons["Run project"].isEnabled,"Optional AI advice must not lock independent browser Run")
+        error.tap()
+        XCTAssertTrue(editor.waitForExistence(timeout:15));XCTAssertEqual(editor.value as? String,original)
+        for identifier in ["build-dock-code","build-dock-problems","build-dock-output","build-dock-terminal"]{XCTAssertTrue(app.buttons[identifier].exists,identifier)}
+    }
+}
+
+@MainActor
 final class ProjectPreflightUITests: XCTestCase {
     func testReportOpensFromFilesAndReturnsToTheUnchangedEditor() throws {
         continueAfterFailure = false

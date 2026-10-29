@@ -14,7 +14,8 @@ final class ProjectPreflightTests: XCTestCase {
         XCTAssertTrue(report.operations.allSatisfy { $0.state == .unverified })
         XCTAssertEqual(report.edition, "2024")
         let result = CompilationResult(succeeded: true, phase: .check, exitCode: 0, diagnostics: [], stdout: "", stderr: "", duration: .zero, detail: "checked")
-        let record = ProjectBuildRecord(result: result, sourceTreeHash: snapshot.revision.sourceTreeHash, toolchainID: "profile", isDebugExecution: false)
+        let record = ProjectBuildRecord(result: result, sourceTreeHash: snapshot.revision.sourceTreeHash, toolchainID: "profile", isDebugExecution: false,
+            workspaceEntryFile: "main.rs", compilerEntryFile: "main.rs", executionKind: .rust)
         let checked = ProjectPreflight.inspect(.init(project: snapshot.project, revision: snapshot.revision, workspace: .empty, graphIsCurrent: false, lastBuild: record))
         XCTAssertEqual(checked.operations.first { $0.kind == .check }?.state, .verified)
         XCTAssertEqual(checked.operations.first { $0.kind == .run }?.state, .unverified)
@@ -76,7 +77,8 @@ final class ProjectPreflightTests: XCTestCase {
     func testBrowserTranspilationNeverClaimsTypeCheckOrJavaScriptExecution() {
         let snapshot = input(["index.html": "<html></html>"], entry: "index.html")
         let value = CompilationResult(succeeded: true, phase: .run, exitCode: nil, diagnostics: [], stdout: "", stderr: "", duration: .zero, detail: "preview opened")
-        let result = ProjectBuildRecord(result: value, sourceTreeHash: snapshot.revision.sourceTreeHash, toolchainID: "profile", isDebugExecution: false)
+        let result = ProjectBuildRecord(result: value, sourceTreeHash: snapshot.revision.sourceTreeHash, toolchainID: "profile", isDebugExecution: false,
+            workspaceEntryFile: "index.html", compilerEntryFile: "index.html", executionKind: .browser)
         let report = ProjectPreflight.inspect(.init(project: snapshot.project, revision: snapshot.revision, workspace: .empty, graphIsCurrent: false, lastBuild: result))
         XCTAssertEqual(report.operations.first { $0.kind == .run }?.state, .unverified)
         XCTAssertTrue(report.operations.first { $0.kind == .check }?.title.contains("syntax and bundle") == true)
@@ -86,5 +88,15 @@ final class ProjectPreflightTests: XCTestCase {
     func testFeatureSuggestionNeverReplacesAnExplicitCustomFeatureSelection() {
         let snapshot = input(["main.rs": "fn main(){}", "Cargo.toml": manifest + "[dependencies]\nsyn={version='2',features=['full']}\n"])
         XCTAssertThrowsError(try CargoFeatureProposal(project: snapshot.project, revision: snapshot.revision))
+    }
+    func testBrowserPreparationOrTranspiledRunCannotClaimTypeCheckEvidence() {
+        let snapshot=input(["index.html":"<script type='module' src='main.ts'></script>","main.ts":"const n:number=42;"],entry:"index.html")
+        for version in [nil, BrowserTypeScriptProfile.version] as [String?] {
+            let result=CompilationResult(succeeded:true,phase:.check,exitCode:0,diagnostics:[],stdout:"",stderr:"",duration:.zero,detail:"fixture")
+            let record=ProjectBuildRecord(result:result,sourceTreeHash:snapshot.revision.sourceTreeHash,toolchainID:"profile",isDebugExecution:false,browserTypeCheckVersion:version,
+                workspaceEntryFile:"index.html",compilerEntryFile:"index.html",executionKind:.browser)
+            let report=ProjectPreflight.inspect(.init(project:snapshot.project,revision:snapshot.revision,workspace:.empty,graphIsCurrent:false,lastBuild:record))
+            XCTAssertEqual(report.operations.first{$0.kind == .check}?.state,version == nil ? .unverified : .verified)
+        }
     }
 }

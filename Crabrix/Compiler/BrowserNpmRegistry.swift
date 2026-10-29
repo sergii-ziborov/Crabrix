@@ -94,16 +94,18 @@ actor BrowserNpmRegistry {
         limits.maximumFileBytes = 4 * 1024 * 1024
         limits.maximumEntries = 12_000
         let expanded = try GzipDecoder.decompress(data, limit: limits.maximumExpandedBytes)
+        let entries = try TarArchiveReader.entries(in: expanded, limits: limits)
+        let root = try Self.archiveRoot(packageName: package.name, paths: entries.map(\.path))
         var files: [String: String] = [:], names = Set<String>()
-        for file in try TarArchiveReader.entries(in: expanded, limits: limits) {
+        for file in entries {
             try Task.checkCancellation()
-            guard let path = try TarArchiveReader.normalizedRelativePath(file.path, strippingRoot: "package", limits: limits),
+            guard let path = try TarArchiveReader.normalizedRelativePath(file.path, strippingRoot: root, limits: limits),
                   WebPreviewSnapshot.isSafePath(path) else { continue }
             let folded = path.precomposedStringWithCanonicalMapping.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "en_US_POSIX"))
             guard names.insert(folded).inserted else { throw BrowserBuildError(message: "The npm archive has colliding source paths: \(path)") }
             let ext = (path as NSString).pathExtension.lowercased()
             let name = (path as NSString).lastPathComponent.uppercased()
-            guard ["js","mjs","cjs","jsx","ts","tsx","json","css","svg","html","txt","md"].contains(ext)
+            guard ["js","mjs","cjs","jsx","ts","tsx","mts","cts","json","css","svg","html","txt","md"].contains(ext)
                     || name.hasPrefix("LICENSE") || name.hasPrefix("LICENCE") || name == "COPYING" || name.hasPrefix("NOTICE") else { continue }
             if let text = String(data: file.contents, encoding: .utf8) { files[path] = text }
         }
@@ -114,6 +116,21 @@ actor BrowserNpmRegistry {
         }
         onState(cached ? .cached : .ready)
         return Source(files: files, cached: cached, integrity: integrity)
+    }
+
+    /// DefinitelyTyped's published archives may use `react/` rather than the
+    /// npm `package/` prefix. Accept only that exact legacy name and one root;
+    /// normalized paths and package.json identity are still verified afterward.
+    static func archiveRoot(packageName: String, paths: [String]) throws -> String {
+        let roots = Set(paths.compactMap { path -> String? in
+            let path = path.hasPrefix("./") ? String(path.dropFirst(2)) : path
+            return path.split(separator: "/").first.map(String.init)
+        })
+        guard roots.count == 1, let root = roots.first,
+              root == "package" || (packageName.hasPrefix("@types/") && packageName.split(separator: "/").count == 2 && root == packageName.split(separator: "/").last.map(String.init)) else {
+            throw BrowserBuildError(message: "The npm archive has an unexpected or mixed package root.")
+        }
+        return root
     }
 
     private func download(_ request: URLRequest, maximum: Int) async throws -> Data {

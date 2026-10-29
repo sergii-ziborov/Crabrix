@@ -9,7 +9,8 @@ final class ProjectPreflightEvidenceTests: XCTestCase {
     private func record(_ phase: CompilationResult.Phase, debug: Bool? = nil, succeeded: Bool = true) -> ProjectBuildRecord {
         let source = revision()
         return .init(result: .init(succeeded: succeeded, phase: phase, exitCode: succeeded ? 0 : 1, diagnostics: [], stdout: "", stderr: "", duration: .zero, detail: "fixture"),
-            sourceTreeHash: source.sourceTreeHash, toolchainID: source.toolchainID, resourceTreeHash: source.resourceTreeHash, isDebugExecution: debug)
+            sourceTreeHash: source.sourceTreeHash, toolchainID: source.toolchainID, resourceTreeHash: source.resourceTreeHash, isDebugExecution: debug,
+            workspaceEntryFile: project.entryFile, compilerEntryFile: project.entryFile, executionKind: .rust)
     }
     func testMetadataCheckNeverClaimsLinkOrExecutionAndUserToolsAreSeparate() {
         let checked = record(.check)
@@ -42,6 +43,19 @@ final class ProjectPreflightEvidenceTests: XCTestCase {
         XCTAssertFalse(executed.verifies(.run, revision: revision(resources: "resources-b")))
         var changed = project; changed.files["main.rs"] = "fn main(){println!(\"new\");}"
         XCTAssertFalse(executed.verifies(.run, revision: .capture(project: changed, generation: 8, toolchainID: "compiler-a", resourceTreeHash: "resources-a")))
+    }
+    func testChangedEntryOrBrowserCommandCannotSupplyRustCompilerEvidence() {
+        let checked=record(.check)
+        var changed=project; changed.entryFile="other.rs"
+        let other=WorkspaceRevision.capture(project:changed,generation:7,toolchainID:"compiler-a",resourceTreeHash:"resources-a")
+        XCTAssertNotEqual(other,revision())
+        XCTAssertFalse(checked.verifies(.check,revision:other))
+        let browser=ProjectBuildRecord(result:.init(succeeded:true,phase:.check,exitCode:0,diagnostics:[],stdout:"",stderr:"",duration:.zero,detail:"web prefix"),
+            sourceTreeHash:revision().sourceTreeHash,toolchainID:"compiler-a",resourceTreeHash:"resources-a",isDebugExecution:false,
+            browserTypeCheckVersion:BrowserTypeScriptProfile.version,workspaceEntryFile:"main.rs",compilerEntryFile:"web/index.html",executionKind:.browser)
+        XCTAssertFalse(browser.verifies(.check,revision:revision()))
+        XCTAssertTrue(browser.verifies(.check,revision:revision(),kind:.browser,compilerEntry:"web/index.html"))
+        XCTAssertFalse(browser.verifies(.check,revision:revision(),kind:.browser,compilerEntry:"another/index.html"))
     }
 }
 
