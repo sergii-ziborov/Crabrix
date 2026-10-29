@@ -17,6 +17,8 @@ final class PlaygroundLiveSession: ObservableObject {
     var onSelections: (([PlaygroundRemoteSelection]) -> Void)?
     var onLocalSelection: ((PlaygroundRemoteSelection) -> Void)?
     var onStatus: ((String) -> Void)?
+    var onRuntimeFrames: (([PlaygroundCodec.RuntimePresenceFrame]) -> Void)?
+    var onRuntimeReset: (() -> Void)?
     private let codec: PlaygroundCodec
     private let origin: URL
     private let network: URLSession
@@ -31,6 +33,29 @@ final class PlaygroundLiveSession: ObservableObject {
     private var snapshotTask: Task<Void, Never>?
     private var pending: [(id: String, bytes: Data)] = []
     private var presence: Data?
+    private var runtimeFrames: [PlaygroundCodec.RuntimePresenceFrame] = []
+    private var runtimeConnection: UInt64 = 0
+    private var confirmedRuntimeConnection: UInt64?
+    var runtimeEditConfirmed: Bool { connected && !stopped && !expired && !link.isReadOnly && link.expiresAt > Date() && confirmedRuntimeConnection == runtimeConnection }
+    private func resetRuntime() { runtimeConnection &+= 1; confirmedRuntimeConnection = nil; onRuntimeReset?() }
+    func runtimeSourceIdentity() throws -> PlaygroundCodec.RuntimeSourceIdentity { try codec.runtimeSourceIdentity() }
+    func publishRuntimePresence(_ envelope: Data?) throws {
+        guard !stopped, !expired else { throw PlaygroundFailure("This Playground is disconnected.") }
+        if let envelope, envelope.count > PlaygroundRuntimeProtocol.envelopeBytes { throw PlaygroundFailure("Oversized runtime presence.") }
+        let value: Any = try envelope.map { try JSONSerialization.jsonObject(with: $0) } ?? NSNull()
+        try absorb(codec.call(["type": "runtime-presence", "envelope": value])); schedulePresence()
+    }
+    func confirmRuntimeEditAccess() async throws {
+        guard connected, !stopped, !expired, !link.isReadOnly, link.expiresAt > Date() else { throw PlaygroundFailure("Runtime access requires a connected editable room.") }
+        if runtimeEditConfirmed { return }
+        let generation = runtimeConnection
+        let packet = try PlaygroundEncryption.seal(Data([0, 0]), secret: link.key)
+        let (data, _) = try await post(["type": "update", "peer": peer, "messageID": PlaygroundEncryption.newSecret(), "packet": ["iv": packet.iv, "data": packet.data]])
+        struct Confirmation: Decodable { let sequence: Int }
+        let response = try JSONDecoder().decode(Confirmation.self, from: data)
+        guard response.sequence > 0, generation == runtimeConnection, connected, !stopped, !expired, link.expiresAt > Date() else { throw PlaygroundFailure("Runtime connection changed during edit confirmation.") }
+        confirmedRuntimeConnection = generation
+    }
 
     init(link: PlaygroundLink, origin: URL? = nil, codecURL: URL? = nil) throws {
         self.link = link; self.origin = origin ?? PlaygroundRelayConfiguration.origin; self.codec = try PlaygroundCodec(resourceURL: codecURL)
@@ -79,6 +104,7 @@ final class PlaygroundLiveSession: ObservableObject {
             while !stopped, !Task.isCancelled, Date() < link.expiresAt {
                 do { try await stream() }
                 catch { if !stopped && !Task.isCancelled { updateStatus("Reconnecting · local changes retained. " + error.localizedDescription) } }
+                resetRuntime()
                 connected = false
                 if !stopped && !Task.isCancelled { try? await Task.sleep(for: .seconds(2)) }
             }
@@ -107,6 +133,7 @@ final class PlaygroundLiveSession: ObservableObject {
     func stop() {
         guard !stopped else { return }
         stopped = true; connected = false
+        resetRuntime(); runtimeFrames = []; onRuntimeFrames?([])
         streamTask?.cancel(); flushTask?.cancel(); presenceTask?.cancel(); heartbeatTask?.cancel(); snapshotTask?.cancel()
         network.invalidateAndCancel(); selections = []; onSelections?([])
         updateStatus(expired ? "Playground expired · local copies remain available" : "Disconnected · local copy retained")
@@ -148,6 +175,7 @@ final class PlaygroundLiveSession: ObservableObject {
         if let count = value.participants { participants = count }
         if let update = value.update, update.count > 2 { pending.append((PlaygroundEncryption.newSecret(), Data(update))) }
         if let bytes = value.presence { presence = Data(bytes) }
+        if let frames = value.runtimeFrames, frames != runtimeFrames { runtimeFrames = frames; onRuntimeFrames?(frames) }
     }
     private func stream() async throws {
         let (bytes, response) = try await network.bytes(for: request("events/?peer=" + peer))
@@ -170,12 +198,13 @@ final class PlaygroundLiveSession: ObservableObject {
         if event == "expired" || event == "closed" { expire(); return }
         if event == "ping" { return }
         if event == "state" {
+            resetRuntime()
             let state = try JSONDecoder().decode(State.self, from: data)
             guard abs(state.expiresAt - link.expiresAt.timeIntervalSince1970 * 1000) < 1 else { throw PlaygroundFailure("The Playground lifetime does not match the link.") }
             let snapshot = try PlaygroundEncryption.open(state.snapshot, secret: link.key)
             let events = try state.events.map { Array(try PlaygroundEncryption.open($0.packet, secret: link.key, maximum: 196608)) }
             try absorb(codec.call(["type": "state", "snapshot": Array(snapshot), "events": events]))
-            for item in state.presence ?? [] { try receivePresence(item.packet) }
+            for item in state.presence ?? [] { receivePresence(item.packet) }
             sequence = state.sequence; connected = true
             updateStatus(link.isReadOnly ? "Connected · view only · encrypted" : "Connected · shared editor · encrypted")
             scheduleFlush(); schedulePresence()
@@ -185,11 +214,13 @@ final class PlaygroundLiveSession: ObservableObject {
             guard value.sequence == sequence + 1 else { throw PlaygroundFailure("Resynchronizing interview changes.") }
             let bytes = try PlaygroundEncryption.open(value.packet, secret: link.key, maximum: 196608)
             try absorb(codec.call(["type": "update", "bytes": Array(bytes)])); sequence = value.sequence; scheduleSnapshot()
-        } else if event == "presence" { try receivePresence(JSONDecoder().decode(Presence.self, from: data).packet) }
+        } else if event == "presence" { receivePresence(try JSONDecoder().decode(Presence.self, from: data).packet) }
     }
-    private func receivePresence(_ packet: PlaygroundEncryptedPacket) throws {
-        let bytes = try PlaygroundEncryption.open(packet, secret: link.key, maximum: 4000)
-        try absorb(codec.call(["type": "presence", "bytes": Array(bytes)]))
+    private func receivePresence(_ packet: PlaygroundEncryptedPacket) {
+        do {
+            let bytes = try PlaygroundEncryption.open(packet, secret: link.key, maximum: 4000)
+            try absorb(codec.call(["type": "presence", "bytes": Array(bytes)]))
+        } catch { /* Discard malformed transient presence without disconnecting the shared source. */ }
     }
     private func scheduleFlush() {
         guard flushTask == nil, connected, !stopped, !link.isReadOnly else { return }

@@ -9,7 +9,7 @@ capability changes until the browser/native/MCP matrix and signed delivery pass.
 
 Shared local-file/origin fixes are qualified in 26 native cases and shipped in signed
 TestFlight/App Review build 119 from `853ea3e`; they do not enable remote execution. The candidate
-wire codec now passes 13 Node tests and 38 phone/iPad Simulator tests, including
+wire codec now passes 22 Node tests and 42 phone/iPad Simulator tests, including
 a real WebCrypto signature verified in CryptoKit. The reproducible production
 Swift ↔ Node WebCrypto probe is `node scripts/test_playground_runtime_crypto.mjs`.
 [Qualification receipt](playground-mcp-runtime-qualification-2026-10-29.json).
@@ -19,8 +19,15 @@ excludes nonexecution origin metadata. NFC/case aliases, file-directory conflict
 and isolated UTF-16 surrogates are refused before native dictionary decoding; a
 malformed old-peer Yjs snapshot leaves the current source unchanged.
 Signatures, edit-capability HMAC, canonical scalar headers, payload byte limits,
-expiry and bounded nonce replay are implemented. Permission, transient runtime
-transport and isolated jobs remain unwired; bridge 0.1.1 still exposes eight
+expiry and bounded nonce replay are implemented. Bounded encrypted presence transport is implemented, including unchanged
+source snapshots and selections. The actual Node relay rejects view-mode
+tampering through an acknowledged encrypted no-op; malformed transient presence
+does not disconnect source, including on initial state. Native HTTP role-proof
+qualification remains pending. A pure TypeScript permission gate now checks an
+explicit local grant, controller key, grant ID, room/project/connection, exact
+source, owned job and foreground lease. Busy/unprepared/stale commands do not
+become deferred work. The local UI, native policy adapter, signed discovery and
+isolated job dispatch remain unwired; bridge 0.1.1 still exposes eight
 source/selection tools only. These candidate runtime additions are absent from signed 119.
 
 ## Required sequence

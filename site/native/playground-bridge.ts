@@ -2,7 +2,7 @@
 // it is never evaluated as JavaScript. Encryption and transport stay native.
 import * as Y from "yjs";
 import { documentFromY, updateYDocument } from "../lib/playground-collab";
-import { createPresence, localPresence, receivePresence, remoteSelections } from "../lib/playground-presence";
+import { createPresence, localPresence, receivePresence, remoteSelections, publishRuntimePresence, remoteRuntimePresence } from "../lib/playground-presence";
 import { validatePlaygroundDocument } from "../lib/playground-document";
 import { runtimeSource } from "../lib/playground-runtime-source";
 const doc = new Y.Doc(), awareness = createPresence(doc);
@@ -16,6 +16,7 @@ export function call(requestJSON: string): string {
     switch (request.type) {
       case "initialize": updateYDocument(doc, validatePlaygroundDocument(request.document)); break;
       case "document": break;
+      case "runtime-presence": publishRuntimePresence(awareness, request.envelope ?? null); break;
       case "runtime-source": {
         const source = runtimeSource(documentFromY(doc));
         return JSON.stringify({ runtimeSource: source.canonical, runtimePaths: source.paths });
@@ -59,6 +60,7 @@ export function call(requestJSON: string): string {
     }
     const updates = pending.splice(0);
     const result: Record<string, unknown> = { clientID: doc.clientID, selections: remoteSelections(doc, awareness), participants: awareness.getStates().size };
+    result.runtimeFrames = remoteRuntimePresence(awareness);
     result.localSelection = remoteSelections(doc, awareness, true).find(value => value.clientID === doc.clientID);
     if (doc.getMap("files").size) result.document = documentFromY(doc);
     if (request.type === "snapshot") result.snapshot = Array.from(Y.encodeStateAsUpdate(doc));

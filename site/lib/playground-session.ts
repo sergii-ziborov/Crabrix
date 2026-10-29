@@ -42,6 +42,28 @@ export class PlaygroundSession {
   onExpiry: () => void;
   awareness?: Awareness; presenceTimer?: ReturnType<typeof setTimeout>; heartbeat?: ReturnType<typeof setInterval>; presenceSending = false;
   private relayOrigin: string;
+  private runtimeConnection = 0;
+  private confirmedRuntimeBinding = "";
+  onRuntimeReset?: () => void;
+
+  private runtimeBinding() { return JSON.stringify([this.runtimeConnection, this.relayOrigin, this.link.id, this.link.key, this.link.access, this.link.expiresAt, this.link.mode]); }
+  private resetRuntime() { this.runtimeConnection++; this.confirmedRuntimeBinding = ""; this.onRuntimeReset?.(); }
+  get runtimeEditConfirmed() { return this.connected && !this.stopped && this.link.mode === "edit" && this.link.expiresAt > Date.now() && this.confirmedRuntimeBinding === this.runtimeBinding(); }
+  async confirmRuntimeEditAccess(): Promise<void> {
+    if (!this.connected || this.stopped || this.link.mode !== "edit" || this.link.expiresAt <= Date.now()) throw new Error("Runtime access requires a connected editable room.");
+    if (this.runtimeEditConfirmed) return;
+    const binding = this.runtimeBinding(), link = { ...this.link };
+    // Yjs's empty update changes no source. Only the relay's edit capability can
+    // obtain this acknowledgement; flipping a view URL's mode cannot prove it.
+    const packet = await encryptPlayground(link.key, new Uint8Array([0, 0]));
+    if (binding !== this.runtimeBinding() || !this.connected || this.stopped) throw new Error("Runtime connection changed before edit confirmation.");
+    const response = await fetch(this.relayOrigin + "/api/playground/rooms/" + link.id + "/", { method: "POST", headers: { Authorization: "Bearer " + link.access, "Content-Type": "application/json" }, credentials: "omit", cache: "no-store", signal: this.abort.signal,
+      body: JSON.stringify({ type: "update", peer: this.peer, messageID: newEncryptionSecret(), packet }) });
+    if (!response.ok) throw new Error("The relay did not confirm edit access. A view link cannot authorize runtime control.");
+    const result = await response.json();
+    if (!Number.isSafeInteger(result.sequence) || result.sequence < 1 || binding !== this.runtimeBinding() || !this.connected || this.stopped || this.link.expiresAt <= Date.now()) throw new Error("Runtime connection changed during edit confirmation.");
+    this.confirmedRuntimeBinding = binding;
+  }
 
   constructor(doc: Y.Doc, link: PlaygroundLink, onStatus: (status: string) => void, onExpiry: () => void, awareness?: Awareness, relayOrigin = "") {
     this.doc = doc; this.link = link; this.onStatus = onStatus; this.onExpiry = onExpiry; this.awareness = awareness; this.relayOrigin = relayOrigin;
@@ -85,6 +107,7 @@ export class PlaygroundSession {
         this.connected = false;
         this.onStatus("Reconnecting — your local changes are retained. " + (error instanceof Error ? error.message : ""));
       }
+      this.resetRuntime();
       this.connected = false;
       if (!this.stopped) await new Promise(resolve => setTimeout(resolve, 2000));
     }
@@ -111,7 +134,7 @@ export class PlaygroundSession {
           const data = JSON.parse(raw);
           if (type === "state") await this.receiveState(data as State);
           else if (type === "presence" && this.awareness) {
-            receivePresence(this.awareness, await decryptPlayground(this.link.key, data.packet, 4000), this);
+            await this.receiveParticipant(data.packet);
           } else if (type === "update") {
             await this.receive(data.packet, Number(data.sequence));
             this.scheduleSnapshot();
@@ -122,6 +145,7 @@ export class PlaygroundSession {
   }
 
   private async receiveState(state: State) {
+    this.resetRuntime();
     if (!Number.isSafeInteger(state.expiresAt) || state.expiresAt !== this.link.expiresAt) throw new Error("Playground lifetime does not match this link.");
     const bytes = await decryptPlayground(this.link.key, state.snapshot);
     const candidate = new Y.Doc();
@@ -138,11 +162,20 @@ export class PlaygroundSession {
       Y.applyUpdate(this.doc, Y.encodeStateAsUpdate(candidate), this);
       this.sequence = state.sequence;
     } finally { candidate.destroy(); }
-    if (this.awareness) for (const item of state.presence ?? []) receivePresence(this.awareness, await decryptPlayground(this.link.key, item.packet, 4000), this);
+    if (this.awareness) for (const item of state.presence ?? []) await this.receiveParticipant(item.packet);
     this.receivedState = true; this.connected = true;
     void this.sendPresence();
     this.onStatus(this.link.mode === "view" ? "Connected · view only · end-to-end encrypted" : "Connected · shared editor · end-to-end encrypted");
     await this.flush();
+  }
+
+  private async receiveParticipant(packet: EncryptedPacket) {
+    const awareness = this.awareness;
+    if (!awareness || this.stopped) return;
+    try {
+      const bytes = await decryptPlayground(this.link.key, packet, 4000);
+      if (!this.stopped && awareness === this.awareness) receivePresence(awareness, bytes, this);
+    } catch { /* An invalid transient peer packet must not disconnect source or revoke another controller's grant. */ }
   }
 
   private async receive(packet: EncryptedPacket, sequence: number) {
@@ -207,7 +240,7 @@ export class PlaygroundSession {
   private expire() { this.onStatus("This temporary Playground has expired."); this.onExpiry(); this.stop(); }
   stop() {
     if (this.stopped) return;
-    this.stopped = true; this.connected = false; this.abort.abort(); this.doc.off("update", this.update);
+    this.stopped = true; this.connected = false; this.resetRuntime(); this.abort.abort(); this.doc.off("update", this.update);
     this.awareness?.off("update", this.presenceUpdate);
     if (this.presenceTimer) clearTimeout(this.presenceTimer); if (this.heartbeat) clearInterval(this.heartbeat);
     if (this.flushTimer) clearTimeout(this.flushTimer); if (this.snapshotTimer) clearTimeout(this.snapshotTimer);

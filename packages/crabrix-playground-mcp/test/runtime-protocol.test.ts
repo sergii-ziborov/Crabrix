@@ -16,8 +16,11 @@ test("P-256 raw signatures and edit-capability MAC authenticate owned Unicode da
   assert.equal(Buffer.from(envelope.editProof!, "base64url").length, 32);
   const frame = await verifyRuntimeEnvelope(envelope, { room, target, sender: signer.fingerprint, editCapability: capability, requireEditProof: true, clock: () => now });
   assert.equal(frame.sender, signer.fingerprint);
+  assert.equal(frame.editAccessProved, true);
   assert.deepEqual(frame.payload, { text: "🦀 Привет", file: 0 });
   assert(Object.isFrozen(frame)); assert(Object.isFrozen(frame.header)); assert(Object.isFrozen(frame.payload));
+  const noProof = await signer.sign(fields, {}, { now });
+  assert.equal((await verifyRuntimeEnvelope(noProof, { room, clock: () => now })).editAccessProved, false);
   signer.destroy();
 });
 

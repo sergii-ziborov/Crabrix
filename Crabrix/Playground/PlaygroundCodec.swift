@@ -19,7 +19,9 @@ final class PlaygroundCodec {
         var error: String?
         var runtimeSource: String?
         var runtimePaths: [String]?
+        var runtimeFrames: [RuntimePresenceFrame]?
     }
+    struct RuntimePresenceFrame: Decodable, Equatable, Sendable { let clientID: UInt32; let envelope: String }
     private let context: JSContext
     init(resourceURL: URL? = nil) throws {
         guard let context = JSContext(), let url = resourceURL ?? Bundle.main.url(forResource: "PlaygroundCodec", withExtension: "js") else { throw PlaygroundFailure("The bundled collaboration codec is unavailable.") }

@@ -1,5 +1,6 @@
 import * as Y from "yjs";
 import { Awareness, applyAwarenessUpdate, encodeAwarenessUpdate } from "y-protocols/awareness";
+import { RUNTIME_LIMITS, type RuntimeEnvelope } from "./playground-runtime-protocol";
 
 export const participantColors = ["#2876bd", "#aa44b8", "#9f6812", "#187b53"];
 export function createPresence(doc: Y.Doc, name?: string): Awareness {
@@ -8,6 +9,31 @@ export function createPresence(doc: Y.Doc, name?: string): Awareness {
   return awareness;
 }
 export const localPresence = (awareness: Awareness) => encodeAwarenessUpdate(awareness, [awareness.clientID]);
+
+// This carries bounded opaque envelopes only. Receiving code must authenticate
+// and locally authorize them; a presence field itself is never executable.
+export function publishRuntimePresence(awareness: Awareness, envelope: RuntimeEnvelope | null) {
+  if (envelope !== null && new TextEncoder().encode(JSON.stringify(envelope)).length > RUNTIME_LIMITS.envelopeBytes) throw new Error("Runtime presence exceeds its message budget.");
+  const state = awareness.getLocalState();
+  if (!state) throw new Error("This participant is disconnected.");
+  const next = { ...state, runtime: envelope };
+  const proposed = new Map(awareness.getStates()); proposed.set(awareness.clientID, next);
+  // Reserve the maximum extra varuint bytes needed by the next awareness clock.
+  // Refuse the runtime message rather than removing or shortening a selection.
+  if (encodeAwarenessUpdate(awareness, [awareness.clientID], proposed).length > 3992) throw new Error("Runtime message and selection exceed the transient presence budget.");
+  awareness.setLocalState(next);
+}
+
+export type RuntimePresenceFrame = { clientID: number; envelope: string };
+export function remoteRuntimePresence(awareness: Awareness): RuntimePresenceFrame[] {
+  const result: RuntimePresenceFrame[] = [];
+  awareness.getStates().forEach((state, clientID) => {
+    if (clientID === awareness.clientID || !state.runtime || typeof state.runtime !== "object" || Array.isArray(state.runtime)) return;
+    const envelope = JSON.stringify(state.runtime);
+    if (new TextEncoder().encode(envelope).length <= RUNTIME_LIMITS.envelopeBytes) result.push({ clientID, envelope });
+  });
+  return result;
+}
 
 // Participant supplied names and colours are used in editor decorations. Validate
 // before handing the protocol update to CodeMirror or the native renderer.
@@ -19,12 +45,14 @@ export function receivePresence(awareness: Awareness, bytes: Uint8Array, origin:
     applyAwarenessUpdate(probe, bytes, origin);
     if (probe.getStates().size > 4) throw new Error("Invalid participant presence.");
     for (const [client, state] of probe.getStates()) {
+      if (!Number.isInteger(client) || client < 0 || client > 0xffffffff) throw new Error("Invalid participant identifier.");
       if (client === awareness.clientID) continue;
       if (!state.user || typeof state.user.name !== "string" || state.user.name.length > 40 || /[\u0000-\u001f]/.test(state.user.name) || !/^#[a-f0-9]{6}$/i.test(state.user.color) || state.user.colorLight !== undefined) throw new Error("Invalid participant identity.");
       if (state.cursor !== null && state.cursor !== undefined) {
         if (JSON.stringify(state.cursor).length > 1000 || !state.cursor.anchor || !state.cursor.head) throw new Error("Invalid participant selection.");
         Y.createRelativePositionFromJSON(state.cursor.anchor); Y.createRelativePositionFromJSON(state.cursor.head);
       }
+      if (state.runtime !== null && state.runtime !== undefined && new TextEncoder().encode(JSON.stringify(state.runtime)).length > RUNTIME_LIMITS.envelopeBytes) throw new Error("Oversized runtime presence.");
     }
     applyAwarenessUpdate(awareness, bytes, origin);
   } finally { probe.destroy(); scratch.destroy(); }

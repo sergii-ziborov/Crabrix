@@ -25,6 +25,7 @@ final class PlaygroundRuntimeProtocolTests: XCTestCase {
         XCTAssertEqual(String(data: frame.payload, encoding: .utf8), "{\"text\":\"WebCrypto → CryptoKit 🦀\"}")
         XCTAssertEqual(frame.header.operation, "check")
         XCTAssertEqual(frame.header.requestID, "signed-vector-0001")
+        XCTAssertTrue(frame.editAccessProved)
         XCTAssertEqual(frame.header.issued, now)
         var wrong = context; wrong.editCapability = PlaygroundEncryption.newSecret()
         XCTAssertThrowsError(try Wire.verify(vector, context: wrong, clock: { now }))
@@ -38,8 +39,48 @@ final class PlaygroundRuntimeProtocolTests: XCTestCase {
         XCTAssertEqual(Data(base64URL: try XCTUnwrap(object["editProof"] as? String))?.count, 32)
         let frame = try Wire.verify(data, context: context, clock: { now })
         XCTAssertEqual(frame.payload, payload); XCTAssertEqual(frame.header.sender, signer.fingerprint)
+        XCTAssertTrue(frame.editAccessProved)
+        let withoutProof = try signer.sign(fields, payload: payload, now: now)
+        XCTAssertFalse(try Wire.verify(withoutProof, context: .init(room: room, target: target), clock: { now }).editAccessProved)
         signer.destroy()
         XCTAssertThrowsError(try signed(signer))
+    }
+
+    func testSignedRuntimePresenceRetainsSelectionsAndDoesNotChangeSourceSnapshots() throws {
+        let source = PlaygroundDocument(name: "presence", entryFile: "main.rs", files: ["main.rs": "fn main() { println!(\"🦀\"); }"])
+        let first = try PlaygroundCodec(), second = try PlaygroundCodec()
+        _ = try first.initialize(source)
+        let snapshot = try XCTUnwrap(try first.call(["type": "snapshot"]).snapshot)
+        _ = try second.call(["type": "state", "snapshot": snapshot, "events": []])
+        _ = try first.call(["type": "selection", "file": "main.rs", "anchor": 22, "head": 24])
+        let signer = PlaygroundRuntimeSigner()
+        let envelope = try signed(signer)
+        let object = try JSONSerialization.jsonObject(with: envelope)
+        let outgoing = try XCTUnwrap(try first.call(["type": "runtime-presence", "envelope": object]).presence)
+        XCTAssertLessThanOrEqual(outgoing.count, 4_000)
+        let received = try second.call(["type": "presence", "bytes": outgoing])
+        let frame = try XCTUnwrap(received.runtimeFrames?.first)
+        XCTAssertEqual(try Wire.verify(Data(frame.envelope.utf8), context: context, clock: { now }).payload, payload)
+        XCTAssertTrue(received.selections?.contains(where: { $0.anchor == 22 && $0.head == 24 }) == true)
+        XCTAssertEqual(try first.call(["type": "snapshot"]).snapshot, snapshot)
+        XCTAssertEqual(try second.runtimeSourceIdentity(), try first.runtimeSourceIdentity())
+        let cleared = try XCTUnwrap(try first.call(["type": "runtime-presence", "envelope": NSNull()]).presence)
+        let after = try second.call(["type": "presence", "bytes": cleared])
+        XCTAssertEqual(after.runtimeFrames, [])
+        XCTAssertTrue(after.selections?.contains(where: { $0.anchor == 22 && $0.head == 24 }) == true)
+        signer.destroy()
+    }
+
+    func testOversizedRuntimePresenceCannotReplaceAnExistingSelectionOrSource() throws {
+        let codec = try PlaygroundCodec()
+        let source = PlaygroundDocument(name: "retained", entryFile: "main.rs", files: ["main.rs": "fn main() {}"])
+        _ = try codec.initialize(source)
+        _ = try codec.call(["type": "selection", "file": "main.rs", "anchor": 0, "head": 3])
+        XCTAssertThrowsError(try codec.call(["type": "runtime-presence", "envelope": ["oversized": String(repeating: "🦀", count: 1_000)]]))
+        let after = try codec.call(["type": "document"])
+        XCTAssertEqual(after.document, source)
+        XCTAssertEqual(after.localSelection?.anchor, 0); XCTAssertEqual(after.localSelection?.head, 3)
+        XCTAssertEqual(after.runtimeFrames, [])
     }
 
     func testWrongRoomTargetIdentityPayloadHeaderAndEditProofAreRefused() throws {

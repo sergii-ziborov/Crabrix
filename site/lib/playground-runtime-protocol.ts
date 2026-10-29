@@ -10,7 +10,7 @@ export type RuntimeKind = "capabilities" | "permission-request" | "command" | "r
 export type RuntimeHeader = readonly [typeof RUNTIME_PROTOCOL, RuntimeKind, string, string, string, string, RuntimeOperation, string, string, string, number, number, string];
 export type RuntimeEnvelope = Readonly<{ v: 1; key: string; header: RuntimeHeader; payload: string; signature: string; editProof?: string }>;
 export type RuntimeFields = { kind: RuntimeKind; room: string; target: string; requestID: string; operation: RuntimeOperation; revision?: string; job?: string };
-export type VerifiedRuntimeFrame = Readonly<{ verified: true; header: RuntimeHeader; sender: string; payload: unknown; canonicalHeader: string }>;
+export type VerifiedRuntimeFrame = Readonly<{ verified: true; editAccessProved: boolean; header: RuntimeHeader; sender: string; payload: unknown; canonicalHeader: string }>;
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder("utf-8", { fatal: true });
@@ -128,7 +128,7 @@ export async function verifyRuntimeEnvelope(input: unknown, context: {
   try { decoded = freezePayload(JSON.parse(decoder.decode(data))); }
   catch { throw new Error("Invalid runtime payload JSON."); }
   fresh(body, clock());
-  const frame = Object.freeze({ verified: true as const, header: body, sender: body[3], payload: decoded, canonicalHeader });
+  const frame = Object.freeze({ verified: true as const, editAccessProved: editProof !== undefined, header: body, sender: body[3], payload: decoded, canonicalHeader });
   verifiedFrames.add(frame);
   return frame;
 }

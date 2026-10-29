@@ -42,7 +42,8 @@ enum PlaygroundRuntimeProtocol {
     }
     struct VerifiedFrame: Sendable {
         let header: Header, payload: Data, canonicalHeader: Data
-        fileprivate init(header: Header, payload: Data, canonicalHeader: Data) { self.header = header; self.payload = payload; self.canonicalHeader = canonicalHeader }
+        let editAccessProved: Bool
+        fileprivate init(header: Header, payload: Data, canonicalHeader: Data, editAccessProved: Bool) { self.header = header; self.payload = payload; self.canonicalHeader = canonicalHeader; self.editAccessProved = editAccessProved }
     }
     struct VerificationContext {
         let room: String
@@ -73,7 +74,7 @@ enum PlaygroundRuntimeProtocol {
         }
         try validatePayload(payloadData)
         try header.fresh(at: clock())
-        return VerifiedFrame(header: header, payload: payloadData, canonicalHeader: canonical)
+        return VerifiedFrame(header: header, payload: payloadData, canonicalHeader: canonical, editAccessProved: value["editProof"] != nil)
     }
     static func milliseconds() -> Int64 { Int64(Date().timeIntervalSince1970 * 1_000) }
     fileprivate static func json(_ value: Any) throws -> Data { try JSONSerialization.data(withJSONObject: value, options: [.withoutEscapingSlashes, .fragmentsAllowed]) }
