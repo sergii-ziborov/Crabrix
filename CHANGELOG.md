@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.1.3 (119) — Shared source integrity, TestFlight
+
+- Remote room edits retain private local configuration and prepared text sources.
+  Shared deletions still apply; over-budget merges fail before replacing source.
+- Native GitHub/Gist/Rust Playground origin validation works in JavaScriptCore.
+- 26 fresh phone/iPad Simulator cases passed, including real CRDT changes, store
+  reopen and editable export. Retains qualified TypeScript/preflight/Rust tools.
+- Signed 119 is VALID / IN_BETA_TESTING, selected for App Review WAITING_FOR_REVIEW.
+  Public guide/capabilities are updated; MCP setup cards now keep equal height
+  on narrow phones too, with six candidate and six public checks.
+- The separate published MCP bridge remains 0.1.1. Future runtime authentication,
+  source identity and path-alias fixes are candidates; remote execution is not enabled.
+
 ## 1.1.3 (118) — offline TypeScript and project preflight, TestFlight
 
 - Original TypeScript 5.9.3 and 100 ES/DOM declaration files in a disposable local

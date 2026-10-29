@@ -4,6 +4,22 @@
 
 [Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support/) · [Privacy](https://crabrix.com/privacy/) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
+## Shared source integrity — TestFlight 1.1.3 (119)
+
+Incoming Shared edits preserve unshared local configuration and prepared source
+files. Room deletions still apply; an invalid combined file budget disconnects
+without replacing the current project. Native GitHub/Gist/Rust Playground origin
+metadata no longer depends on a browser URL global. The fresh phone/iPad Simulator
+matrix passed **26/26**, with store reopen and editable export covered.
+Signed **119** is **VALID / IN_BETA_TESTING**, selected for App Review
+(**WAITING_FOR_REVIEW**, manual publication). It retains TypeScript, preflight,
+Rust symbols, Git, Atlas, tests, formatting and Debug from 118. The public guide,
+capabilities and equal-height MCP setup cards are updated and checked at six
+viewport/theme combinations. [Delivery receipt](docs/app-store/release-1.1.3-build119.json).
+The published MCP bridge remains **0.1.1**, with eight source/selection tools.
+Its future signed runtime protocol has a separate candidate qualification;
+remote MCP Check/Run/Debug and permission UI are still unwired.
+
 ## Local Rust symbols — TestFlight 1.1.3 (116)
 
 An import-free rust-analyzer Wasm Worker provides actual definitions,
@@ -31,8 +47,8 @@ exact source/resources/entry/compiler identity. Known profile requirements are
 checked early; unknown execution stays unverified. Cargo feature changes have a
 diff preview and preserve the complete original manifest. The final phone/iPad
 Simulator matrix passed **184/184** with no failures or skips; original captures
-retain the editor geometry. Signed build **118** is **VALID / IN_BETA_TESTING** and selected for App Review
-(**WAITING_FOR_REVIEW**, manual publication). The public guide and capability
+retain the editor geometry. Signed build **118** is **VALID / IN_BETA_TESTING** and was selected for App Review
+before 119 replaced it. The public guide and capability
 record match this delivery. [Signed delivery receipt](docs/app-store/release-1.1.3-build118.json). [Profile, limits and qualification](docs/offline-typescript-2026-10-29.md).
 
 ## Native Git — TestFlight 1.1.3 (114)
@@ -45,7 +61,7 @@ execution stay on the device; the editor/Duo geometry is preserved.
 [Profile and qualification](docs/git-https-portability-2026-10-28.md),
 [delivery identity](docs/app-store/release-1.1.3-build114.json).
 Build 114 was previously selected for review; the current selection is build
-118, **WAITING_FOR_REVIEW**, with manual publication.
+119, **WAITING_FOR_REVIEW**, with manual publication.
 The website guide/capability record and offline source/license downloads are
 published and read back. Build 113 was superseded after these gates passed.
 
