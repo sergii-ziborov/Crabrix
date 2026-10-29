@@ -4,6 +4,13 @@
 
 [Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support/) · [Privacy](https://crabrix.com/privacy/) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
+## Blog — October 25 and 28 filled
+
+The blog now has 30 articles and a publication on every date from October 5
+through October 29. Two original guides cover Serde/JSON validation and
+Arc/Mutex/RwLock, each with over 2,000 prose words and three generated images.
+Eight complete desktop Rust programs passed. [Content, prompts and verification](docs/blog/backfill-2026-10-29/README.md).
+
 ## Interview Prep — 52 topics, content update 1.1.0
 
 Forty existing questions were reviewed and twelve focused Rust topics added:
@@ -171,9 +178,9 @@ The [free Learn site](https://crabrix.com/learn/) has expanded explanations
 and an infographic for all 742 lessons: 142 Rust lessons and 600 Algorithm
 Atlas steps. Atlas shares 40 five-pattern diagrams across all 600 steps; the
 70 previously unillustrated Rust lessons have individual code-to-rule diagrams.
-The [Blog](https://crabrix.com/blog/) has
+At the 23 October expansion, the [Blog](https://crabrix.com/blog/) reached
 25 in-depth articles with two generated illustrations each, including an
-infographic. Five additions authored on 23 October cover Cargo build scripts,
+infographic. Those five additions cover Cargo build scripts,
 memoization, Rust infrastructure, the announced Rust 1.100 Windows host-tool
 transition, and rustup 1.29.2. Their editorial dates occupy 11, 14, 21, 22 and
 23 October; source news dates are identified separately. Each contains

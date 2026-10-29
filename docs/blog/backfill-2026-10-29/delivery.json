@@ -1,0 +1,119 @@
+{
+  "recordedAtUTC": "2026-10-29T10:29:47.658457+00:00",
+  "sourceCommit": "f26792540a57bc82e98acda883eb4be5a320e8a5",
+  "publication": {
+    "sourceCommit": "f267925",
+    "image": "localhost/crabrix-web-site:blog-f267925",
+    "imageDigest": "93c77b47ba5307698bac7e3f57c0874a0be6d56781bd52b563e7caa3e42eae99",
+    "state": "running",
+    "health": "healthy",
+    "publishedAtUTC": "2026-10-29T10:27:56Z",
+    "context": {
+      "sourceCommit": "f267925",
+      "sourceTreeSHA256": "ede66085542663e441eacd1fdc6a90cb4d8c1e10ddc415b65f95fea798332405",
+      "allEntriesVerified": 2829,
+      "transferredBytes": 13295011,
+      "baseContextUnchanged": true,
+      "accountDataTouched": false
+    },
+    "accountMountPreserved": true,
+    "backupTaken": true,
+    "rollbackContainer": "crabrix-web-site-before-blog-20261029"
+  },
+  "content": {
+    "posts": [
+      {
+        "slug": "rust-arc-mutex-rwlock-shared-state",
+        "publicationDate": "2026-10-28",
+        "proseWords": 2078,
+        "images": 3,
+        "lessonAndArticleLinks": 15,
+        "codeBlocks": 4
+      },
+      {
+        "slug": "rust-serde-json-validation-boundaries",
+        "publicationDate": "2026-10-25",
+        "proseWords": 2070,
+        "images": 3,
+        "lessonAndArticleLinks": 13,
+        "codeBlocks": 4
+      }
+    ],
+    "allBlogPosts": 30,
+    "coverageStart": "2026-10-05",
+    "coverageThrough": "2026-10-29",
+    "missingDates": [],
+    "existingInterfaceChanged": false
+  },
+  "verification": {
+    "desktopPrograms": 8,
+    "websiteTestsPassed": 35,
+    "typecheckPassed": true,
+    "productionBuildPassed": true,
+    "localBrowserCases": 8,
+    "remoteCandidateBrowserCases": 8,
+    "publicBrowser": {
+      "passed": true,
+      "cases": [
+        {
+          "slug": "rust-arc-mutex-rwlock-shared-state",
+          "width": 390,
+          "theme": "light",
+          "errors": []
+        },
+        {
+          "slug": "rust-serde-json-validation-boundaries",
+          "width": 390,
+          "theme": "light",
+          "errors": []
+        },
+        {
+          "slug": "rust-arc-mutex-rwlock-shared-state",
+          "width": 390,
+          "theme": "dark",
+          "errors": []
+        },
+        {
+          "slug": "rust-serde-json-validation-boundaries",
+          "width": 390,
+          "theme": "dark",
+          "errors": []
+        },
+        {
+          "slug": "rust-arc-mutex-rwlock-shared-state",
+          "width": 820,
+          "theme": "dark",
+          "errors": []
+        },
+        {
+          "slug": "rust-serde-json-validation-boundaries",
+          "width": 820,
+          "theme": "dark",
+          "errors": []
+        },
+        {
+          "slug": "rust-arc-mutex-rwlock-shared-state",
+          "width": 1440,
+          "theme": "dark",
+          "errors": []
+        },
+        {
+          "slug": "rust-serde-json-validation-boundaries",
+          "width": 1440,
+          "theme": "dark",
+          "errors": []
+        }
+      ],
+      "internalRoutesChecked": 26,
+      "blogCards": 30,
+      "sitemap": true
+    }
+  },
+  "appBinaryChanged": false,
+  "npmChanged": false,
+  "imageGeneration": "built-in image_gen; six originals; image-prompts.json",
+  "publicURLs": [
+    "https://crabrix.com/blog/rust-serde-json-validation-boundaries/",
+    "https://crabrix.com/blog/rust-arc-mutex-rwlock-shared-state/"
+  ]
+}

@@ -1,3 +1,12 @@
+## Blog backfill — delivered 29 October 2026
+
+The blog has 30 articles, including the requested October 25 Serde/JSON guide
+(2,070 prose words) and October 28 Arc/Mutex/RwLock guide (2,078 words). Each has
+three original generated images, one conceptual infographic, highlighted code,
+primary sources and contextual Academy/article links. Eight complete desktop
+programs passed; the existing page layout, access rules and runtime remain.
+[Prompts and qualification](../docs/blog/backfill-2026-10-29/README.md).
+
 ## Current Interview update — 29 October 2026
 
 The authored snapshot now has 754 lessons/steps: 154 Rust lessons and 600 Atlas
