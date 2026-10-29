@@ -14,4 +14,3 @@ struct PlaygroundRuntimeHostReply: Decodable, Sendable {
     let effects: [Effect]?
     let error: String?
 }
-

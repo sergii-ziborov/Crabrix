@@ -7,10 +7,10 @@ PROJECT WORKSPACE
 Files, syntax highlighting, search, Code, Problems, Output and Terminal. Check finds compiler errors; Build compiles without running main; Run executes locally in a bounded WebAssembly sandbox. Read output and build stages. iPad has a sidebar; Duo adapts to its fold.
 
 LOCAL RUST SYMBOLS
-Find definitions and scoped references, inspect types and signatures, and complete methods from their actual type. Review required imports and replacements together. Preview semantic renames before Apply and restore a complete change with Undo. Analysis uses bundled standard-library text and prepared dependency sources with Stop and stale-result guards. 
+Find definitions and scoped references, inspect types and signatures, and complete methods from their actual type. Review required imports and replacements together. Preview semantic renames before Apply and restore a complete change with Undo. Analysis uses bundled standard-library text and prepared dependency sources with Stop and stale-result guards.
 
 NATIVE GIT
-Record commits, inspect diffs/history, preview Restore and switch clean branches. Clone GitHub over HTTPS, fetch, pull clean fast-forwards and explicitly push committed history. Private access uses device-only repository Keychain. Complete .crabrixrepo copies preserve commit IDs, branches and worktree bytes, including binary files. Tokens and package caches stay outside exports. 
+Record commits, inspect diffs/history, preview Restore and switch clean branches. Clone GitHub over HTTPS, fetch, pull clean fast-forwards and explicitly push committed history. Private access uses device-only repository Keychain. Complete .crabrixrepo copies preserve commit IDs, branches and worktree bytes, including binary files. Tokens and package caches stay outside exports.
 
 RUST TOOLS ON DEVICE
 Prepare up to 2,048 checksummed Cargo packages for offline builds. Standard-library-only build scripts run as bounded WASI guests. The target is wasm32-wasip1; native linking, host subprocesses, separate build-dependency graphs and external procedural macros remain unsupported. Files preflight separates exact-source Check/Build/Run/Debug evidence. Review Cargo feature diffs; the original manifest is retained.
