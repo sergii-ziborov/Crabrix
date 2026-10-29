@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "qualifiedAtUTC": "2026-10-29T00:48:34.027000+00:00",
+  "baseCommit": "3be13de80170f24dccaf3e3d72bae44f19ed5ad6",
+  "state": "unreleased COMPAT-01 foundation; not included in signed build 116",
+  "sourceSHA256": {
+    "Crabrix/Projects/CrabrixProject.swift": "5382882901a21fd077b9aaade3b3e5de4e540d1955fc7a30d9c64195f6027e4f",
+    "Crabrix/Features/Compiler/CompilerViewModel.swift": "68590f570f356abcec65104d9d27fbf897463f3fa6c66c0300df26b33bb3afec",
+    "CrabrixTests/ProjectPreflightEvidenceTests.swift": "8f37d007ae3198e7b5b3d711c8447902b4b00d6485a1f838a0e94ee35215bf3c",
+    "Crabrix.xcodeproj/project.pbxproj": "9b1bacaf9cf6914cdd350bd0fba3704ecf1bb482ec61d1440cf4bea9fe1d4aac"
+  },
+  "tests": {
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "evidence": "build/semantic-ide-20261028/preflight-evidence-pad.xcresult",
+    "scope": [
+      "metadata Check does not prove Build/Run",
+      "ordinary Run and source Debug remain separate",
+      "legacy missing discriminator is unverified",
+      "source/resource/compiler changes invalidate proof",
+      "actual local VM Debug, Check, Run and saved record round-trip"
+    ]
+  },
+  "remaining": [
+    "consolidated preflight UI",
+    "exact browser compiler profile identity",
+    "full TypeScript checker and prepared declaration types"
+  ]
+}

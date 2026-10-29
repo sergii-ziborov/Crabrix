@@ -183,6 +183,7 @@
 		8DF2028D53ED7094662A0AB2 /* ProgressAndTrainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA05660FAC54CECF075853F /* ProgressAndTrainTests.swift */; };
 		8F689304E1B9905A53F5FEAF /* AppToolchainRelease.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E89D65D056C2A468A0AE9BD /* AppToolchainRelease.swift */; };
 		9028F3BB8FEDE2FBFF3DD80D /* swift-atomics-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = CFA00659D0D6FAD5318CE39C /* swift-atomics-LICENSE.txt */; };
+		90594131FDA111E219A90DA1 /* ProjectPreflightEvidenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5C4401F3E6BD7322DD00970 /* ProjectPreflightEvidenceTests.swift */; };
 		907271D59A799311162F4CF6 /* AlgorithmCourseCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1067DEB86E13480FF37A47CB /* AlgorithmCourseCatalogTests.swift */; };
 		908A35378CEB913B2DFCCFC4 /* RustSemanticModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A289599D719A3F99C7C6EA4 /* RustSemanticModels.swift */; };
 		911F1639F32E6E9D74821F06 /* RustQuestionBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D50F7CBEFD3E06F6F531774 /* RustQuestionBank.swift */; };
@@ -600,6 +601,7 @@
 		D376BDE5EA96F1A57F8E37A5 /* CourseDeliveryGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseDeliveryGateTests.swift; sourceTree = "<group>"; };
 		D4479B42763852BA1B452D60 /* CourseModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseModels.swift; sourceTree = "<group>"; };
 		D5A2D94257A41AF39A8D7B7A /* PlaygroundRelayConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundRelayConfiguration.swift; sourceTree = "<group>"; };
+		D5C4401F3E6BD7322DD00970 /* ProjectPreflightEvidenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPreflightEvidenceTests.swift; sourceTree = "<group>"; };
 		D6DDAE274BAAA1B1AE274F71 /* catalog.v1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = catalog.v1.json; sourceTree = "<group>"; };
 		D6F4F8745EED70B20DA5D125 /* LessonNavigationFooterVisibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonNavigationFooterVisibilityTests.swift; sourceTree = "<group>"; };
 		D750FF719EB5B0AC11A7ECBF /* CargoManifestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoManifestTests.swift; sourceTree = "<group>"; };
@@ -1005,6 +1007,7 @@
 				3EA05660FAC54CECF075853F /* ProgressAndTrainTests.swift */,
 				95560270A1A9BA1DCE96A9AB /* ProjectAuthoringTests.swift */,
 				1CB34A35CD75A3A08E600A35 /* ProjectImportTests.swift */,
+				D5C4401F3E6BD7322DD00970 /* ProjectPreflightEvidenceTests.swift */,
 				44ABFA97B5DA7FD2FADA63C6 /* ProjectTerminalSessionTests.swift */,
 				7531DAE2F4A321871F1FDA9E /* RustCanvasOutputTests.swift */,
 				4775CE41B31CD63B5B25459E /* RustCompletionTests.swift */,
@@ -1659,6 +1662,7 @@
 				8DF2028D53ED7094662A0AB2 /* ProgressAndTrainTests.swift in Sources */,
 				4A293E482B338DF5756C828C /* ProjectAuthoringTests.swift in Sources */,
 				32196C3370B0C09B1AE046F8 /* ProjectImportTests.swift in Sources */,
+				90594131FDA111E219A90DA1 /* ProjectPreflightEvidenceTests.swift in Sources */,
 				D244136DFB4BDBC64690F600 /* ProjectTerminalSessionTests.swift in Sources */,
 				4568291A91A96D3A0A0BCB3E /* RustCanvasOutputTests.swift in Sources */,
 				3E77536EC5C27544F072DB4C /* RustCompletionTests.swift in Sources */,

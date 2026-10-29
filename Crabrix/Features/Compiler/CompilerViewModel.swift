@@ -1202,7 +1202,7 @@ final class CompilerViewModel: ObservableObject {
                 }
             }
             if !plan.isEmpty { cargoStage = .ready }
-            finish(value, revision: revision, recordsLearningEvidence: mode != .testing)
+            finish(value, revision: revision, recordsLearningEvidence: mode != .testing, isDebugExecution: debugging)
             // A build is the only source of verified compatibility, so refresh
             // the package list with whatever the compiler just learned.
             if !plan.isEmpty, let manifestSource {
@@ -2603,7 +2603,7 @@ final class CompilerViewModel: ObservableObject {
         return report.rendered
     }
 
-    private func finish(_ value: CompilationResult, revision: WorkspaceRevision, recordsLearningEvidence: Bool = true) {
+    private func finish(_ value: CompilationResult, revision: WorkspaceRevision, recordsLearningEvidence: Bool = true, isDebugExecution: Bool = false) {
         guard isCurrent(revision) else { return }
         debugSession = nil; debugSessionID = nil; debugActive = false; debugPause = nil
         appendBuildStage(value.succeeded ? "Finished successfully" : "Stopped · see Problems for details")
@@ -2615,7 +2615,7 @@ final class CompilerViewModel: ObservableObject {
         // User tests and formatter tools must not complete Academy lessons,
         // mint repair rewards or replace the last ordinary Build/Run record.
         guard recordsLearningEvidence else { return }
-        lastBuild = ProjectBuildRecord(result: value, sourceTreeHash: revision.sourceTreeHash, toolchainID: revision.toolchainID, resourceTreeHash: revision.resourceTreeHash)
+        lastBuild = ProjectBuildRecord(result: value, sourceTreeHash: revision.sourceTreeHash, toolchainID: revision.toolchainID, resourceTreeHash: revision.resourceTreeHash, isDebugExecution: isDebugExecution)
 
         let errorDiagnostic = value.diagnostics.first(where: { $0.level == "error" })
         activeLessonObservedDiagnosticCodes.formUnion(value.diagnostics.compactMap(\.code))

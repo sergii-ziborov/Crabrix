@@ -391,6 +391,10 @@ struct CrabrixProject: Codable, Equatable, Sendable {
     }
 }
 
+enum ProjectVerifiedOperation: String, CaseIterable, Sendable {
+    case check, build, run, debug
+}
+
 struct ProjectBuildRecord: Codable, Equatable, Sendable {
     let succeeded: Bool
     let phase: CompilationResult.Phase
@@ -399,8 +403,11 @@ struct ProjectBuildRecord: Codable, Equatable, Sendable {
     let sourceTreeHash: String?
     let toolchainID: String?
     let resourceTreeHash: String?
+    /// Older records did not distinguish ordinary execution from source Debug.
+    /// Nil deliberately retains that ambiguity during migration.
+    let isDebugExecution: Bool?
 
-    init(result: CompilationResult, finishedAt: Date = Date(), sourceTreeHash: String? = nil, toolchainID: String? = nil, resourceTreeHash: String? = nil) {
+    init(result: CompilationResult, finishedAt: Date = Date(), sourceTreeHash: String? = nil, toolchainID: String? = nil, resourceTreeHash: String? = nil, isDebugExecution: Bool? = nil) {
         succeeded = result.succeeded
         phase = result.phase
         let parts = result.duration.components
@@ -411,6 +418,27 @@ struct ProjectBuildRecord: Codable, Equatable, Sendable {
         self.sourceTreeHash = sourceTreeHash
         self.toolchainID = toolchainID
         self.resourceTreeHash = resourceTreeHash
+        self.isDebugExecution = isDebugExecution
+    }
+
+    /// Historical evidence for identical source/resources and compiler profile.
+    /// It never authorizes editing or an operation against a stale generation.
+    func verifies(_ operation: ProjectVerifiedOperation, revision: WorkspaceRevision) -> Bool {
+        guard succeeded, let sourceTreeHash, sourceTreeHash == revision.sourceTreeHash,
+              let toolchainID, toolchainID == revision.toolchainID,
+              resourceTreeHash == revision.resourceTreeHash else { return false }
+        switch phase {
+        case .check:
+            return operation == .check && isDebugExecution != true
+        case .compile:
+            return (operation == .check || operation == .build) && isDebugExecution != true
+        case .run:
+            if isDebugExecution == true { return operation == .debug }
+            guard isDebugExecution == false else { return false }
+            return operation != .debug
+        case .setup, .test, .format:
+            return false
+        }
     }
 }
 
