@@ -51,5 +51,133 @@
     "Actual native and browser screenshots",
     "Expiry, source limits and security boundaries",
     "Absolute API, support, article and license links"
-  ]
+  ],
+  "presentationImages": {
+    "assets/agents-workspace.webp": {
+      "bytes": 190582,
+      "sha256": "dc2084bcf898c3b315ab8d8ac7a482ce906731bd0889bb772341cbd3435e65df",
+      "width": 1536,
+      "height": 1024
+    },
+    "assets/crabrix.png": {
+      "bytes": 17443,
+      "sha256": "90fc0f674ceb75816841b99f5dc6673da87e2902da09a1fe9a7756e573b09ec7",
+      "width": 128,
+      "height": 128
+    },
+    "assets/local-execution-boundaries.webp": {
+      "bytes": 147146,
+      "sha256": "2196a6c6f7ddc6d055ec3dd8fcc70abe61fbc2d53ecba31a2cfb69d8b11a5ec1",
+      "width": 1536,
+      "height": 1024
+    },
+    "assets/mcp-ipad-local-debug.png": {
+      "bytes": 401274,
+      "sha256": "b831c7fa0436cc93dbc5fa1b3e727461b90b4b1f34fce76e04d00af6701d8c53",
+      "width": 2064,
+      "height": 2752
+    },
+    "assets/mcp-iphone-selection.png": {
+      "bytes": 310268,
+      "sha256": "35cad43511df72d149346f7c36708d02a41a2f7ca696172fa2fb84bf09f1c7b8",
+      "width": 1206,
+      "height": 2622
+    },
+    "assets/mcp-two-agents-shared-output.png": {
+      "bytes": 85835,
+      "sha256": "e5375da08b888a1a430ef8dd9f98a1ad777fc7d37d77ade52c306a93b612965d",
+      "width": 1280,
+      "height": 720
+    },
+    "assets/playground-shared-browser.png": {
+      "bytes": 78907,
+      "sha256": "8142d9a5725379f2aac3a3b106992bce5b0a8fe6fea237fbb30ccd4ca1a594b0",
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "freshBrowserCapture": {
+    "source": "Actual browser joined a disposable two-file Rust room created by the published 0.3.3 JS SDK; live selection was displayed.",
+    "codeExecutedForThisCapture": false,
+    "roomEndedByCreator": true,
+    "privateLinkIncluded": false
+  },
+  "docsRsHTTP200": true,
+  "npmLatest": "0.3.3",
+  "npmReadmeURL": "https://www.npmjs.com/package/crabrix/v/0.3.3",
+  "cratesReadmeURL": "https://crates.io/crates/crabrix",
+  "githubReadmeURL": "https://github.com/sergii-ziborov/crabrix-sdk",
+  "npmDefaultPageCache": {
+    "observedVersion": "0.3.2",
+    "registryLatest": "0.3.3",
+    "documentHTTP200": true,
+    "cacheControl": "public, max-age=14400",
+    "ageSecondsAtObservation": 1119,
+    "bypassLocalCacheStillStale": true,
+    "newVersionReadmeVerified": true,
+    "note": "The unversioned npm page had a stale CDN document; the explicit 0.3.3 page rendered the new README and all seven images. No additional version was published to work around the cache."
+  },
+  "website": {
+    "sourceCommit": "7d6c8c2f223cf42fe5554ac3297b846f916531ea",
+    "image": "localhost/crabrix-web-site:readme-7d6c8c2",
+    "imageDigest": "37ab55d42b7c4c77470a0d31095c568b778e8e44f1f676e6bac2d64309dc7300",
+    "health": "healthy",
+    "publishedAtUTC": "2026-10-29T18:46:11Z",
+    "context": {
+      "sourceCommit": "7d6c8c2f223cf42fe5554ac3297b846f916531ea",
+      "sourceTreeSHA256": "ec0d860782a90708e044442cd668c1b665e2630d63767f4993ea56fb201bba46",
+      "allEntriesVerified": 2895,
+      "transferredBytes": 548721,
+      "baseContextUnchanged": true,
+      "accountDataTouched": false
+    },
+    "candidateAndProductionCases": 8,
+    "qa": {
+      "passed": true,
+      "cases": [
+        {
+          "width": 320,
+          "theme": "light"
+        },
+        {
+          "width": 320,
+          "theme": "dark"
+        },
+        {
+          "width": 390,
+          "theme": "light"
+        },
+        {
+          "width": 390,
+          "theme": "dark"
+        },
+        {
+          "width": 820,
+          "theme": "light"
+        },
+        {
+          "width": 820,
+          "theme": "dark"
+        },
+        {
+          "width": 1440,
+          "theme": "light"
+        },
+        {
+          "width": 1440,
+          "theme": "dark"
+        }
+      ],
+      "identicalNpmArchive": true,
+      "licenseDownloads": true,
+      "guideInstallVersion": "0.3.3",
+      "sitemapURLs": 809,
+      "appSelectionUnchanged": true
+    },
+    "accountBackupAcknowledged": true,
+    "accountsMountPreserved": true,
+    "rollbackContainer": "crabrix-web-site-before-readme-20261029",
+    "nativeAppChanged": false
+  },
+  "completedAtUTC": "2026-10-29T18:49:58.721082+00:00"
 }
