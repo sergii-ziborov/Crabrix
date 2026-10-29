@@ -68,4 +68,65 @@ final class PlaygroundModelTests: XCTestCase {
         XCTAssertThrowsError(try PlaygroundDocument(name: "no", entryFile: "../main.rs", files: ["../main.rs": "fn main(){}"] ).validated())
         XCTAssertThrowsError(try PlaygroundDocument(name: "no", entryFile: "main.rs", files: ["main.rs": String(repeating: "🦀", count: 17000)] ).validated())
     }
+
+    func testSharedEditAndDeletionRetainLocalConfigurationPreparedPackagesAndUnicode() throws {
+        let privateFiles = [".cargo/config.toml": "[alias]\nc = 'check'\n", "vendor/parser/src/lib.rs": "pub const LOCAL: &str = \"private 🦀\";",
+                            "node_modules/types/index.d.ts": "export type Local = string;", ".github/workflows/test.yml": "name: local"]
+        var local = privateFiles
+        local["main.rs"] = "fn main() {}"; local["old.rs"] = "old shared source"
+        let shared = PlaygroundDocument(name: "updated", entryFile: "main.rs", files: ["main.rs": "fn main() { println!(\"new 🦀\"); }"])
+        let merged = try PlaygroundLocalFiles.merging(shared, into: local)
+        for (path, text) in privateFiles { XCTAssertEqual(merged[path], text) }
+        XCTAssertEqual(merged["main.rs"], shared.files["main.rs"])
+        XCTAssertNil(merged["old.rs"], "An actual deletion in the shared tree still applies")
+        XCTAssertEqual(PlaygroundLocalFiles.sharedFiles(in: merged), shared.files)
+        XCTAssertEqual(local["old.rs"], "old shared source", "Constructing the replacement cannot mutate the old snapshot")
+    }
+
+    func testSharedMergeKeepsEditionAndDoesNotMistakeSimilarRootNamesForPrivateFiles() throws {
+        let shared = PlaygroundDocument(name: "edition", entryFile: "src/main.rs", files: ["src/main.rs": "fn main() {}"], edition: "2021")
+        let merged = try PlaygroundLocalFiles.merging(shared, into: [".cargo/config.toml": "[alias]", "vendor-notes.txt": "old shared note", "src/main.rs": "old"])
+        XCTAssertEqual(merged[".cargo/config.toml"], "[alias]")
+        XCTAssertNil(merged["vendor-notes.txt"])
+        XCTAssertTrue(merged["Cargo.toml"]?.contains("edition = \"2021\"") == true)
+    }
+
+    func testOverBudgetSharedMergeLeavesAllExistingLocalFilesAvailable() throws {
+        var local = Dictionary(uniqueKeysWithValues: (0..<2047).map { ("vendor/local/file\($0).txt", "local \($0)") })
+        local["main.rs"] = "fn main() {}"
+        let before = local
+        let shared = PlaygroundDocument(name: "new", entryFile: "main.rs", files: ["main.rs": "fn main() { println!(\"new\"); }", "extra.rs": "pub const N: u8 = 1;"])
+        try ProjectFilePolicy.validate(local)
+        XCTAssertThrowsError(try PlaygroundLocalFiles.merging(shared, into: local))
+        XCTAssertEqual(local, before)
+    }
+
+    func testRealCodecRemoteEditRetainsPrivateFilesAfterStoreReopenAndEditableExport() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        var project = CrabrixProject(name: "shared-local", files: ["main.rs": "fn main() {}", ".cargo/config.toml": "[alias]\nc = 'check'\n",
+            "vendor/parser/src/lib.rs": "pub const LOCAL: u8 = 7;", "node_modules/types/index.d.ts": "export type Local = string;"], entryFile: "main.rs", provenance: nil)
+        let before = project.files
+        let store = ProjectStore(rootURL: root)
+        _ = try await store.save(project: project, lastBuild: nil)
+        let local = try PlaygroundCodec(), remote = try PlaygroundCodec()
+        _ = try local.initialize(PlaygroundDocument(name: project.name, entryFile: project.entryFile, files: PlaygroundLocalFiles.sharedFiles(in: before)))
+        let snapshot = try XCTUnwrap(try local.call(["type": "snapshot"]).snapshot)
+        _ = try remote.call(["type": "state", "snapshot": snapshot, "events": []])
+        let delta = try XCTUnwrap(try remote.call(["type": "file", "path": "main.rs", "text": "fn main() { println!(\"received 🦀\"); }"]).update)
+        let received = try XCTUnwrap(try local.call(["type": "update", "bytes": delta]).document)
+        XCTAssertEqual(Set(received.files.keys), ["main.rs"], "Private source must never enter the shared codec")
+        project.files = try PlaygroundLocalFiles.merging(received, into: before)
+        _ = try await store.save(project: project, lastBuild: nil)
+        let reopened = try await ProjectStore(rootURL: root).project(id: project.id)
+        XCTAssertEqual(reopened?.project, project)
+        let package = root.appending(path: "copy.crabrixproject")
+        try CrabrixProjectDocument(project: project).packageWrapper().write(to: package, options: .atomic, originalContentsURL: nil)
+        let copy = try LocalProjectLoader.load(from: package)
+        XCTAssertEqual(copy.files, project.files)
+        XCTAssertEqual(copy.files[".cargo/config.toml"], before[".cargo/config.toml"])
+        XCTAssertEqual(copy.files["vendor/parser/src/lib.rs"], before["vendor/parser/src/lib.rs"])
+        XCTAssertEqual(copy.files["node_modules/types/index.d.ts"], before["node_modules/types/index.d.ts"])
+        XCTAssertEqual(copy.files["main.rs"], received.files["main.rs"])
+    }
 }

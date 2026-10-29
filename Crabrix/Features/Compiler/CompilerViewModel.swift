@@ -473,8 +473,7 @@ final class CompilerViewModel: ObservableObject {
         do {
             try ProjectFilePolicy.validate(proposal.after, entryFile: entryFile)
             if playgroundSession != nil {
-                var shared = try playgroundDocument(); shared.files = proposal.after
-                _ = try shared.validated()
+                _ = try playgroundDocument(files: proposal.after)
             }
             applyFormattedFiles(proposal.after, applyToEditor: applyToEditor)
             semanticUndo = FormatUndo(projectID: projectID, files: proposal.before, generation: workspaceGeneration)
@@ -488,8 +487,7 @@ final class CompilerViewModel: ObservableObject {
         do {
             try ProjectFilePolicy.validate(undo.files, entryFile: entryFile)
             if playgroundSession != nil {
-                var shared = try playgroundDocument(); shared.files = undo.files
-                _ = try shared.validated()
+                _ = try playgroundDocument(files: undo.files)
             }
             applyFormattedFiles(undo.files, applyToEditor: nil)
             semanticUndo = nil
@@ -547,12 +545,11 @@ final class CompilerViewModel: ObservableObject {
         else { await importGitHub(rawURL) }
     }
 
-    private func playgroundDocument() throws -> PlaygroundDocument {
+    private func playgroundDocument(files proposedFiles: [String: String]? = nil) throws -> PlaygroundDocument {
         let project = currentProject()
         // Packages and generated outputs are never uploaded. Unsupported source
         // types fail explicitly instead of silently sharing an incomplete project.
-        let ignored: Set<String> = ["target", "node_modules", ".git", ".github", ".cargo", "vendor"]
-        var files = project.files.filter { !ignored.contains($0.key.components(separatedBy: "/").first ?? "") }
+        var files = PlaygroundLocalFiles.sharedFiles(in: proposedFiles ?? project.files)
         let shared = playgroundSession?.document
         if let shared, shared.files["Cargo.toml"] == nil,
            let generated = shared.nativeFiles["Cargo.toml"], files["Cargo.toml"] == generated {
@@ -603,7 +600,14 @@ final class CompilerViewModel: ObservableObject {
                 projectTransfer = .ready("Decrypted Playground · saved a local source copy. Run when ready.")
             } else {
                 var existing = fileContents; existing[selectedFile] = source
-                let incoming = value.nativeFiles
+                let incoming: [String: String]
+                do { incoming = try PlaygroundLocalFiles.merging(value, into: existing) }
+                catch {
+                    leavePlayground()
+                    playgroundStatus = "Disconnected · existing local files retained"
+                    projectTransfer = .failed("The shared update could not fit this local project: \(error.localizedDescription) Existing local files are unchanged.")
+                    return
+                }
                 guard existing != incoming || sharedNameChanged || entryFile != value.entryFile else { return }
                 if debugActive { cancelBuild() }
                 let oldSelection = selectedFile
@@ -879,8 +883,7 @@ final class CompilerViewModel: ObservableObject {
                 guard !playgroundIsReadOnly else { throw RustFormatter.Failure.rejected("the shared source became read-only") }
                 try ProjectFilePolicy.validate(proposed, entryFile: snapshot.entryFile)
                 if playgroundSession != nil {
-                    var shared = try playgroundDocument(); shared.files = proposed
-                    _ = try shared.validated()
+                    _ = try playgroundDocument(files: proposed)
                 }
                 let changed = paths.filter { Data(proposed[$0]!.utf8) != Data(snapshot.files[$0]!.utf8) }
                 if !request.checkOnly, !changed.isEmpty {
@@ -913,8 +916,7 @@ final class CompilerViewModel: ObservableObject {
         do {
             try ProjectFilePolicy.validate(undo.files, entryFile: entryFile)
             if playgroundSession != nil {
-                var shared = try playgroundDocument(); shared.files = undo.files
-                _ = try shared.validated()
+                _ = try playgroundDocument(files: undo.files)
             }
             applyFormattedFiles(undo.files, applyToEditor: nil)
             formatUndo = nil
@@ -2088,7 +2090,7 @@ final class CompilerViewModel: ObservableObject {
         do {
             try ProjectFilePolicy.validate(proposal.after, entryFile: entryFile)
             if playgroundSession != nil {
-                var shared = try playgroundDocument(); shared.files = proposal.after; _ = try shared.validated()
+                _ = try playgroundDocument(files: proposal.after)
             }
             applyFormattedFiles(proposal.after, applyToEditor: nil)
             cargoFeatureProposal = nil
@@ -3134,7 +3136,7 @@ extension CompilerViewModel {
                   currentProject().files[preview.path] == preview.original else { throw GitRepositoryFailure("Newer source was kept; reopen the preview before restoring.") }
             var files = currentProject().files; files[preview.path] = preview.replacement
             try ProjectFilePolicy.validate(files)
-            if playgroundSession != nil { var document = try playgroundDocument(); document.files = files; _ = try document.validated() }
+            if playgroundSession != nil { _ = try playgroundDocument(files: files) }
             gitLocksWorkspace = false
             let applied = replaceProjectFilesFromTerminal(files, selecting: preview.path)
             gitLocksWorkspace = true

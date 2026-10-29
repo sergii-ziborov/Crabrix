@@ -50,6 +50,30 @@ struct PlaygroundDocument: Codable, Equatable, Sendable {
         return self
     }
 }
+
+/// Private local configuration/prepared sources are outside the shared tree.
+/// A remote root-file deletion must not delete those local files, and retaining
+/// them must not turn them into room content or an execution permission.
+enum PlaygroundLocalFiles {
+    private static let privateRoots: Set<String> = ["target", "node_modules", ".git", ".github", ".cargo", "vendor"]
+
+    private static func isPrivate(_ path: String) -> Bool {
+        privateRoots.contains(path.components(separatedBy: "/").first ?? "")
+    }
+
+    static func sharedFiles(in files: [String: String]) -> [String: String] {
+        files.filter { !isPrivate($0.key) }
+    }
+
+    static func merging(_ document: PlaygroundDocument, into local: [String: String]) throws -> [String: String] {
+        var result = local.filter { isPrivate($0.key) }
+        for (path, text) in try document.validated().nativeFiles { result[path] = text }
+        // Shared and local budgets differ. Refuse the whole incoming merge
+        // before changing editor/storage rather than dropping private files.
+        try ProjectFilePolicy.validate(result)
+        return result
+    }
+}
 struct PlaygroundFailure: LocalizedError, Sendable {
     let message: String
     init(_ message: String) { self.message = message }
