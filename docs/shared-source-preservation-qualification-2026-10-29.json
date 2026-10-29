@@ -1,0 +1,74 @@
+{
+  "verifiedAtUTC": "2026-10-29T03:08:35.258264+00:00",
+  "sourceCommit": "853ea3e932d11f3b2eee0bfeddc5378e6dcc7564",
+  "totalTests": 26,
+  "failed": 0,
+  "skipped": 0,
+  "runs": [
+    {
+      "device": "pad",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "resultBundle": "build/mcp-runtime-20261029/shared-preservation-pad-v3.xcresult",
+      "devices": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "E10A54FD-290D-41ED-A48A-04F796F520B4",
+            "deviceName": "Crabrix Learn Layout iPad 13 20261026",
+            "modelName": "iPad Pro 13-inch (M5)",
+            "osBuildNumber": "23F77",
+            "osVersion": "26.5",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 13,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ]
+    },
+    {
+      "device": "phone",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "resultBundle": "build/mcp-runtime-20261029/shared-preservation-phone-v3.xcresult",
+      "devices": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "E15299AF-56F1-459D-A70B-392C139805A4",
+            "deviceName": "Crabrix Offline Compiler 20261024",
+            "modelName": "iPhone 17 Pro",
+            "osBuildNumber": "23F77",
+            "osVersion": "26.5",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 13,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ]
+    }
+  ],
+  "scope": [
+    "Unshared configuration/prepared sources retained across actual CRDT source changes",
+    "Shared deletions still applied; local combined budget fails atomically",
+    "Store reopen and editable-package export retain private files and Unicode",
+    "Canonical GitHub/Gist/Rust Playground origin metadata works in native JavaScriptCore without browser URL",
+    "Credential-bearing, wrong-host and non-HTTPS origins refused"
+  ],
+  "notIncludedInSigned118": true,
+  "physicalDeviceTimingClaimed": false
+}

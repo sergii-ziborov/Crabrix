@@ -55,6 +55,7 @@
 		25BCB8C64DECFAE94BD6E999 /* ProjectsHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6408E7D74302DB95B47776D4 /* ProjectsHomeView.swift */; };
 		26138CBF6B814EFC7A25482B /* GitHubRepositoryReferenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72C0A9DB161BABC0D5AC50DA /* GitHubRepositoryReferenceTests.swift */; };
 		28454FB656318E0D5B9E3C3F /* CourseCatalogClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = C621B6A608B74B2DCB8B6A0F /* CourseCatalogClient.swift */; };
+		29761F9954C534BC77785512 /* PlaygroundRuntimeProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1FBC1B0C3523B22A157BB9E /* PlaygroundRuntimeProtocol.swift */; };
 		2A129C11FCE30742F1CD2CE4 /* AlgorithmCourseData.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE8D71E8F886A79DC5EF3FD /* AlgorithmCourseData.swift */; };
 		2AEE951350A08279CB646E51 /* WABT-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2F90B2D7CF47286F181B33B6 /* WABT-LICENSE.txt */; };
 		2B4BE9C0F4102CCB8142F774 /* swift-system-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = E4B798EE784275F9C194D9B5 /* swift-system-LICENSE.txt */; };
@@ -111,6 +112,7 @@
 		54D2D6A6D36DEBE5E48021BF /* Rust-LICENSE-MIT.txt in Resources */ = {isa = PBXBuildFile; fileRef = F4ACC16AB86032A8DCE347FD /* Rust-LICENSE-MIT.txt */; };
 		55A6CF7CA323391F932ECC55 /* RustSamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 253B1AC7EA395E9AF1BC934A /* RustSamples.swift */; };
 		55D3BBEA6DB23C07BA939D8A /* lezer-common-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = BA65AFEB199694D19CE89F6E /* lezer-common-LICENSE.txt */; };
+		577C802D1B1E21C523492CBA /* PlaygroundRuntimeProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 440F8A69955722EBA7560482 /* PlaygroundRuntimeProtocolTests.swift */; };
 		578D603F83FBB591421BD232 /* RustSemanticInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = F96839B2FBCD8104652668DC /* RustSemanticInspector.swift */; };
 		57F8DDBE4EA1018D31596DDD /* CargoPackagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43BC9814A5A0BBC245A4BFB6 /* CargoPackagesView.swift */; };
 		58E2A5D18ADA34C72BE80AEF /* TopicMasteryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C8353143ECA2D2A68833FC7 /* TopicMasteryTests.swift */; };
@@ -431,6 +433,7 @@
 		42FDF389242383BD6EFFA464 /* PackageTransferProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageTransferProgress.swift; sourceTree = "<group>"; };
 		43399378DEFA3EFDB3368AF9 /* CourseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseRepository.swift; sourceTree = "<group>"; };
 		43BC9814A5A0BBC245A4BFB6 /* CargoPackagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoPackagesView.swift; sourceTree = "<group>"; };
+		440F8A69955722EBA7560482 /* PlaygroundRuntimeProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundRuntimeProtocolTests.swift; sourceTree = "<group>"; };
 		4416BEF4A5157F2F6D4E2B2F /* BuildWorkflowControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildWorkflowControls.swift; sourceTree = "<group>"; };
 		44ABFA97B5DA7FD2FADA63C6 /* ProjectTerminalSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectTerminalSessionTests.swift; sourceTree = "<group>"; };
 		4574D10D2917B923B4BB6F0E /* RustDebuggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustDebuggerTests.swift; sourceTree = "<group>"; };
@@ -613,6 +616,7 @@
 		D11A16D2052B9EB171D59562 /* BrowserTypeScriptChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserTypeScriptChecker.swift; sourceTree = "<group>"; };
 		D17C0F44F9A525F94B586EE7 /* GitHubProjectImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubProjectImporter.swift; sourceTree = "<group>"; };
 		D1A766BDDD55FB6BEBD30B38 /* AppearanceRenderingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceRenderingTests.swift; sourceTree = "<group>"; };
+		D1FBC1B0C3523B22A157BB9E /* PlaygroundRuntimeProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundRuntimeProtocol.swift; sourceTree = "<group>"; };
 		D36DAB1C755D61A62E455241 /* PlaygroundCodec.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = PlaygroundCodec.js; sourceTree = "<group>"; };
 		D376BDE5EA96F1A57F8E37A5 /* CourseDeliveryGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseDeliveryGateTests.swift; sourceTree = "<group>"; };
 		D4479B42763852BA1B452D60 /* CourseModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseModels.swift; sourceTree = "<group>"; };
@@ -902,6 +906,7 @@
 				7FB7C46C669C95EE0D5F7ECB /* PlaygroundEncryption.swift */,
 				C2F841226BB842F0217630B9 /* PlaygroundLiveSession.swift */,
 				D5A2D94257A41AF39A8D7B7A /* PlaygroundRelayConfiguration.swift */,
+				D1FBC1B0C3523B22A157BB9E /* PlaygroundRuntimeProtocol.swift */,
 				163AA64CC0EA67D11087E31E /* PlaygroundSelectionOverlay.swift */,
 				116F8F388455DADF02F5D747 /* PlaygroundSharingSheet.swift */,
 			);
@@ -1023,6 +1028,7 @@
 				C47D79BBDE68DFCC732EF6AC /* LocalAvatarStoreTests.swift */,
 				EDF6D10E22EFF60DA5095D8D /* NativeCompilerProxyTests.swift */,
 				51231AC0432B98FB181FE8DC /* OfflineWebPreviewTests.swift */,
+				440F8A69955722EBA7560482 /* PlaygroundRuntimeProtocolTests.swift */,
 				CB7A1067675E929228E42967 /* PlaygroundTests.swift */,
 				E15AF611D0815ED4D2805F0C /* ProblemReportTests.swift */,
 				3EA05660FAC54CECF075853F /* ProgressAndTrainTests.swift */,
@@ -1574,6 +1580,7 @@
 				B925F63CB40C7D523E7BA3BD /* PlaygroundLink.swift in Sources */,
 				E425110B541EC98A38282829 /* PlaygroundLiveSession.swift in Sources */,
 				161F065843C9BB96E2399159 /* PlaygroundRelayConfiguration.swift in Sources */,
+				29761F9954C534BC77785512 /* PlaygroundRuntimeProtocol.swift in Sources */,
 				756F6E56F2DA0EE0E4C7FEA1 /* PlaygroundSelectionOverlay.swift in Sources */,
 				AB930E18C65188A476D1F428 /* PlaygroundSharingSheet.swift in Sources */,
 				FCCA5F66ED8D7F43C8828B7B /* PracticeSheet.swift in Sources */,
@@ -1688,6 +1695,7 @@
 				75C7785DC26F26DAE60C59E2 /* LocalAvatarStoreTests.swift in Sources */,
 				1FFBD28A95885CB218122462 /* NativeCompilerProxyTests.swift in Sources */,
 				2F5529FCB51DED5E6645E076 /* OfflineWebPreviewTests.swift in Sources */,
+				577C802D1B1E21C523492CBA /* PlaygroundRuntimeProtocolTests.swift in Sources */,
 				68B41234EFEB6DB604098FA5 /* PlaygroundTests.swift in Sources */,
 				D70ECFBCDF8636B011990335 /* ProblemReportTests.swift in Sources */,
 				8DF2028D53ED7094662A0AB2 /* ProgressAndTrainTests.swift in Sources */,

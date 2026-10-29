@@ -1,0 +1,56 @@
+{
+  "verifiedAtUTC": "2026-10-29T03:20:10.639458+00:00",
+  "baseSourceCommit": "853ea3e932d11f3b2eee0bfeddc5378e6dcc7564",
+  "candidateOnly": true,
+  "remoteExecutionEnabled": false,
+  "publishedBridgeVersion": "0.1.1",
+  "signed119ContainsRuntimeProtocol": false,
+  "files": {
+    "Crabrix/Playground/PlaygroundRuntimeProtocol.swift": "d69534b475f351f1fb86b0b783663de73ab65f8ed4d08348855639e30b1c2703",
+    "CrabrixTests/PlaygroundRuntimeProtocolTests.swift": "7436b31ad4c0c74e247426998d0e726e0c7b51f2058d642b57cb8a922f997713",
+    "site/lib/playground-runtime-protocol.ts": "fa4b231d4fbf64982e3dfe0bab65b595bcaddf94228ce43d732e3af957e911a3",
+    "packages/crabrix-playground-mcp/test/runtime-protocol.test.ts": "5880e206ba58d3c749878a901c7a084ed386ede8ffa93de185d55dacc5237a0b",
+    "scripts/test_playground_runtime_crypto.mjs": "35cb37f2df80ee925880caa9c517fb454591453b8a7a58f65165519dd89b380c"
+  },
+  "nativeSimulator": {
+    "passed": 34,
+    "failed": 0,
+    "skipped": 0,
+    "runs": [
+      {
+        "device": "phone",
+        "passed": 17,
+        "failed": 0,
+        "skipped": 0,
+        "resultBundle": "build/mcp-runtime-20261029/runtime-phone.xcresult",
+        "devices": null
+      },
+      {
+        "device": "pad",
+        "passed": 17,
+        "failed": 0,
+        "skipped": 0,
+        "resultBundle": "build/mcp-runtime-20261029/runtime-pad.xcresult",
+        "devices": null
+      }
+    ]
+  },
+  "node": {
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "log": "build/mcp-runtime-20261029/mcp-foundation-tests-v3.log"
+  },
+  "crossRuntime": {
+    "actualProductionSwiftCryptoKitToWebCrypto": true,
+    "actualWebCryptoToProductionSwiftCryptoKit": true,
+    "command": "node scripts/test_playground_runtime_crypto.mjs",
+    "scope": "macOS CryptoKit plus native Simulator verification of actual WebCrypto vector; browser transport/UI matrix pending"
+  },
+  "notYetImplemented": [
+    "foreground/controller-specific local permission UI",
+    "isolated shared-source-only execution jobs",
+    "capability/diagnostics/runtime MCP tools and transport",
+    "actual SDK\u2194browser\u2194two-native runtime matrix"
+  ]
+}
