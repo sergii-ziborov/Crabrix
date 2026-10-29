@@ -1,0 +1,8 @@
+{
+  "date": "2026-10-29",
+  "slug": "crabrix-mcp-two-agents-local-rust-workflows",
+  "proseWords": 2559,
+  "generatedImages": 3,
+  "actualScreenshots": 1,
+  "sourceExamples": "Reviewed against the actual two-agent Rust source; full exercise executed 13 assertions in the browser."
+}

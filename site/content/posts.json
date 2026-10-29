@@ -1,10 +1,252 @@
 [
   {
+    "slug": "crabrix-mcp-two-agents-local-rust-workflows",
+    "title": "Crabrix MCP in practice: two agents, local Rust and shared review",
+    "date": "2026-10-29",
+    "summary": "A real two-agent Crabrix MCP workflow for Rust development, interviews and teaching: live edits, local Run/Debug, permission boundaries and practical review habits.",
+    "relatedSlugs": [
+      "crabrix-sdk-javascript-rust-go-agent-handoff",
+      "rust-coding-interviews-shared-playground-agents",
+      "rust-serde-json-validation-boundaries"
+    ],
+    "sections": [
+      {
+        "heading": "A small shared program is a useful unit of work",
+        "paragraphs": [
+          "A development conversation often begins with a question that is much smaller than a repository: why does this parser reject a value, where did ownership move, or what should happen at an integer boundary? Sending screenshots makes the code difficult to inspect. Pasting a succession of complete files makes revisions ambiguous. A temporary editor gives the discussion one concrete program that people and authorized agents can actually change and run.",
+          "Crabrix MCP connects an assistant to that shared editor. It can create a temporary Playground, read its current source, propose an exact-revision update and highlight the part it means. A person can join in a browser without logging in; Crabrix on iPhone or iPad is an optional companion. The JavaScript package also works as a library, with typed Rust and Go bindings for integrations that do not need an assistant host.",
+          "This makes a useful surface for a minimal bug reproduction, a review exercise, an interview discussion or a guided lesson. It does not create repository history, replace your normal build environment or make a saved account project. Give the room one understandable purpose, keep a permanent copy in your own workflow, and use the shared editor to make the reasoning visible."
+        ],
+        "image": {
+          "src": "/images/blog/mcp-real-agents/cover.png",
+          "alt": "Orange Crabrix crab between two cooperating coding agents and a person at one small shared workspace",
+          "caption": "Conceptual illustration of implementation, independent review and human oversight. The test below used two independent coding-agent contexts and actual MCP stdio sessions.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Open the public Playground",
+            "url": "/playground/"
+          },
+          {
+            "title": "SDK and MCP installation",
+            "url": "/playground/mcp/"
+          }
+        ]
+      },
+      {
+        "heading": "What we checked with two agents and two browser clients",
+        "paragraphs": [
+          "For this walkthrough, one coding agent implemented a Rust reading validator. A second agent independently reviewed it and added thirteen assertions. Both used the official MCP client over separate long-lived stdio sessions. Two browser tabs joined the same room, bringing the participant count to four. These were independent browser clients on the same computer, not a claim of testing two physical phones or every assistant application.",
+          "The implementation agent changed one source module. The reviewer first attempted a replacement using an older revision; MCP refused it and a fresh snapshot confirmed that nothing had been overwritten. After rereading, the reviewer added its checks. A browser edit then travelled back to both agents. Each participant could observe the same file contents, while named text selections explained which statement another participant was discussing.",
+          "Execution was a separate part of the test. We prepared the compiler in one browser, approved one agent on that exact client, and inspected completed Build, Run and Debug jobs. The other agent could not control that Debug session. The second browser received reported output without preparing its own compiler. Finally, revoking permission prevented another Run, and the disposable room was explicitly ended after saving the evidence."
+        ]
+      },
+      {
+        "heading": "Start with an explicit Rust contract",
+        "paragraphs": [
+          "The task accepted a label and a slice of text readings. Each reading was trimmed and parsed as an `i32`. Successful values had to retain their input order. Blank text, malformed numbers and values outside the integer range had to produce one-based input positions in a rejected list. The label had to become an owned `String`, including when the caller supplied non-ASCII text or dropped its original `String` immediately afterwards.",
+          "That contract is small enough to inspect but still reveals useful engineering decisions. A rejected position is not the same thing as a failed numeric value. Trimming is not an invitation to silently repair malformed digits. An owned report must not borrow a label that disappears after the call. Writing those requirements before asking an agent for code gives the reviewer something stronger than a vague instruction to make the program better.",
+          "The implementation below uses the standard library and a separate source module. It is suitable for the shared execution profile, which currently accepts manifest-free Rust and local modules. Keep Cargo projects, external dependencies, build scripts and platform-specific integrations in the ordinary project workflow appropriate to their target; adding an MCP connection does not remove those compatibility boundaries."
+        ],
+        "links": [
+          {
+            "title": "Rust parsing lesson",
+            "url": "/learn/basics/parsing/"
+          },
+          {
+            "title": "Recoverable errors",
+            "url": "/learn/basics/recoverable-errors/"
+          },
+          {
+            "title": "Structs and owned data",
+            "url": "/learn/basics/structs/"
+          }
+        ],
+        "code": "\n#[derive(Debug, PartialEq)]\npub struct Report {\n    pub label: String,\n    pub accepted: Vec<i32>,\n    pub rejected: Vec<usize>,\n}\n\npub fn analyze(label: &str, inputs: &[&str]) -> Report {\n    let mut report = Report {\n        label: label.to_owned(),\n        accepted: Vec::new(),\n        rejected: Vec::new(),\n    };\n\n    for (index, input) in inputs.iter().enumerate() {\n        match input.trim().parse::<i32>() {\n            Ok(value) => report.accepted.push(value),\n            Err(_) => report.rejected.push(index + 1),\n        }\n    }\n\n    report\n}\n\n"
+      },
+      {
+        "heading": "Give the reviewer different work from the implementer",
+        "paragraphs": [
+          "A useful reviewer should not simply ask the implementation agent whether its own code is correct. In this check, the second agent chose fixtures for positive and negative values, an explicit plus sign, zero, blank fields, malformed input and both overflow directions. It also tested the exact `i32` minimum and maximum, an empty input slice and Unicode whitespace around a valid number. Those cases exercised the stated contract rather than reproducing the function line by line.",
+          "The ownership check created a temporary `String` containing a multilingual label, called `analyze` through a borrow, and inspected the returned label after that `String` left scope. This is a practical way to discuss what an owned return value means. It also demonstrates why tests should describe caller-visible behavior. A test coupled to an internal iterator or a particular temporary variable would make a harmless refactor harder without strengthening the contract.",
+          "For development, make one agent responsible for a proposal and another responsible for challenging it. For teaching, let the learner predict which fixture will fail before revealing the reviewer’s code. During an interview, agree in advance whether an agent may generate an implementation, suggest edge cases or merely explain diagnostics. The same editor can support each arrangement; the participants still choose the rules."
+        ],
+        "code": "mod readings;\n\nfn main() {\n    let report = readings::analyze(\"sensor 🦀\", &[\" 42 \", \"bad\", \"-7\", \"2147483648\"]);\n    assert_eq!(report.label, \"sensor 🦀\");\n    assert_eq!(report.accepted, vec![42, -7]);\n    assert_eq!(report.rejected, vec![2, 4]);\n    println!(\"{:?}\", report);\n}\n",
+        "links": [
+          {
+            "title": "Strings and UTF-8",
+            "url": "/learn/basics/strings/"
+          },
+          {
+            "title": "Option and Result",
+            "url": "/learn/basics/option-result/"
+          }
+        ]
+      },
+      {
+        "heading": "Read, propose, reconcile: the collaboration loop",
+        "paragraphs": [
+          "Before changing a file, read it and keep the returned project revision. Submit the intended changes with that exact `expectedRevision`. If another participant has changed the project in the meantime, a conflict is a request to reconsider the proposal. Read the new source, preserve the other participant’s work and prepare a revised change. Blindly retrying an old complete-file replacement would defeat the purpose of collaborating.",
+          "Crabrix combines live editor synchronization with conditional agent updates. Human typing can flow through the collaborative document, while a bulk MCP proposal still has a clear precondition. In our test, the reviewer’s stale attempt was refused before it could replace `main.rs`. That is a more useful result than a reassuring message that a command was sent. The follow-up snapshot demonstrated that the rejected change had not landed.",
+          "If a network response is lost, distinguish uncertainty from a confirmed failure. The SDK can deduplicate an identical relayed update, but an integration should still reconcile the current document before inventing a new request. Keep the review focused: one coherent change, one explanation of the behavior it affects and a visible selection that helps the other participant find it. A shared room is easiest to reason about when its changes stay small."
+        ],
+        "sources": [
+          {
+            "title": "Yjs collaborative editor model",
+            "url": "https://docs.yjs.dev/getting-started/a-collaborative-editor"
+          }
+        ],
+        "links": [
+          {
+            "title": "Exact-revision SDK examples",
+            "url": "/blog/crabrix-sdk-javascript-rust-go-agent-handoff/"
+          }
+        ]
+      },
+      {
+        "heading": "Selections are part of the explanation",
+        "paragraphs": [
+          "An agent saying here is frustrating when the other participant cannot tell which occurrence it means. MCP selection tools make that reference concrete. After applying a change, select the function name, assertion or branch under discussion. Other editors can show the participant’s name and highlight. This is useful in remote reviews and especially helpful when a learner is following a discussion on a smaller screen.",
+          "The selection coordinates are UTF-16 code units, not UTF-8 bytes or a count of visible symbols. The crab emoji in our browser comment occupied two code units. Selecting both succeeded; selecting only half of its surrogate pair was refused. Integrations should compute positions from the text they just read, not from an unrelated rendered excerpt, and use that snapshot’s exact revision. A cursor aimed at an older document is an unreliable explanation.",
+          "Presence is also distinct from saved source. A participant’s cursor is a temporary signal about what it is doing, not a durable review record or verified identity. The name is a display label. For permission decisions, compare the complete controller and device fingerprints shown by the runtime tools and the chosen browser. Do not treat a familiar-looking participant name as proof that it is the assistant or person you intended."
+        ],
+        "sources": [
+          {
+            "title": "Yjs awareness and cursor presence",
+            "url": "https://docs.yjs.dev/getting-started/adding-awareness"
+          }
+        ]
+      },
+      {
+        "heading": "Source access and execution permission are separate",
+        "paragraphs": [
+          "Opening an editable room link gives its holder access to the shared source and the ability to propose changes. It does not authorize execution on somebody else’s browser or device. To use MCP Run or Debug, discover the available clients, choose one target and request the operations you actually need. On that browser, open Share Playground, compare the keys and explicitly allow the selected operations. Permission starts off and lasts at most ten minutes.",
+          "The browser must prepare its verified compiler itself. MCP does not silently initiate a toolchain download. First preparation currently transfers about 44.7 MiB and may take time on a slow connection; browser caching can make later preparation cheaper, but storage eviction or private browsing can require another transfer. The source is compiled in the local browser worker. The server relays the encrypted room and does not become a Rust compilation service.",
+          "In our test, a Run before approval failed. After approval, only the chosen agent and client had the matching grant. The second agent’s attempts to read, Step, Continue or Stop that owned Debug job were refused. After permission was revoked in the browser, another start was denied. Those are specific observed boundaries, not a promise that every future integration will handle untrusted code or user consent correctly."
+        ],
+        "image": {
+          "src": "/images/blog/mcp-real-agents/boundaries.png",
+          "alt": "Infographic separating editable source access, explicit human approval and execution on one selected browser with shared results",
+          "caption": "Conceptual permission diagram. Browser icons are illustrative, not a claim of cross-browser certification. The live check used two independent browser tabs; only one prepared and executed the program.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Execution permission walkthrough",
+            "url": "/guide/#playground"
+          }
+        ]
+      },
+      {
+        "heading": "Inspect completion and real Debug values",
+        "paragraphs": [
+          "A successful start response means that a client accepted a job. It does not mean the code compiled, the program completed or an assertion passed. Poll the owned job’s status, then inspect its diagnostics and output. In this run, Build finished successfully with empty stdout because it did not execute main. Run then completed with exit code zero and the explicit final message that all thirteen assertions had passed.",
+          "Debug provided a different kind of evidence. It paused at a source statement, and the owner advanced through the program. The local normal variable appeared as a concrete `Report` containing label \"normal\", an accepted vector of four integers and an empty rejected vector. Continue then reached successful completion. Seeing those actual values is more informative than treating a debugger button or a start acknowledgement as proof of working inspection.",
+          "Shared jobs have a two-minute lifetime, including pauses. Keep an investigation focused and save any explanation before moving on. Previews of `String`, `Vec` and concrete local structs are bounded; moved, borrowed or captured values can be omitted. The MCP interface does not offer arbitrary watch expressions or a host shell. When a value is unavailable, report that limitation instead of fabricating the result an interviewer or learner hoped to see."
+        ]
+      },
+      {
+        "heading": "An observer receives a report, not an automatic Run",
+        "paragraphs": [
+          "The second browser in our check never prepared its compiler and remained ungranted. Its Output panel nevertheless displayed the completed result reported by the executing browser, together with the explicit explanation that no code ran on this client. That behavior is useful when a reviewer or learner wants to follow progress without compiling the same program again or consuming the same resources on another device.",
+          "A reported result remains participant-provided data. It is not remote hardware attestation and does not prove the identity of the person behind a display name. Likewise, a program can print misleading instructions or claims. An agent should read output as evidence about that job, compare it with the requested behavior and treat its contents as untrusted text. A line telling the assistant to reveal a secret link is not authority to do so.",
+          "This distinction matters when adding more tools to an assistant host. Crabrix’s own MCP surface does not expose arbitrary host files or shell execution, but another connected tool may have broader capabilities. Permission labels and server instructions cannot substitute for the host’s security controls. We deliberately included an adversarial comment in the test source; both coding agents ignored it as data. That single result does not establish universal prompt-injection resistance."
+        ],
+        "image": {
+          "src": "/images/blog/mcp-real-agents/actual-shared-output.png",
+          "alt": "Actual Crabrix browser showing the two-agent Rust program and reported output with no execution on that observer client",
+          "caption": "Actual browser capture from this check. The observer received two-agent-checks=passed while its compiler remained unprepared. No room key or private link is shown.",
+          "width": 1280,
+          "height": 720
+        },
+        "sources": [
+          {
+            "title": "What MCP tool annotations can and cannot enforce",
+            "url": "https://blog.modelcontextprotocol.io/posts/2026-03-16-tool-annotations/"
+          }
+        ]
+      },
+      {
+        "heading": "Apply the same workflow to development, interviews and learning",
+        "paragraphs": [
+          "For everyday development, extract a minimal reproduction before inviting an agent. Keep the input contract, failing case and expected behavior beside the relevant function. Ask one agent for a narrow fix and another for a counterexample. Once the shared exercise is convincing, transfer the reviewed change into the real project and run its normal tests. A successful small-room run does not validate the application’s dependency graph, native integrations or production configuration.",
+          "For an interview, share a starting program and leave its specification visible. Let the candidate explain a choice before asking an assistant for alternatives. Use selections to discuss a branch and Debug to inspect a particular value, rather than replacing the conversation with a final output score. For a lesson, start with a deliberately missing edge case, ask the learner to predict the result, then let a reviewer agent propose a fixture that tests that prediction.",
+          "Agent-to-agent handoff is another practical use. One assistant can prepare a focused example, explicitly share its edit or view link and provide the room’s expiry. Another can read the current snapshot and continue the same discussion, without needing the phone app. Choose access according to the task: a reviewer who only needs to read does not need an editable link. Preserve important conclusions outside the temporary room before its deadline."
+        ],
+        "image": {
+          "src": "/images/blog/mcp-real-agents/uses.png",
+          "alt": "Crabrix crab carrying a temporary source capsule between development, interview and learning workspaces",
+          "caption": "Conceptual illustration of three useful settings. The same small-room workflow supports different human goals; it does not replace a repository or decide how an interview should be evaluated.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "A detailed shared interview workshop",
+            "url": "/blog/rust-coding-interviews-shared-playground-agents/"
+          },
+          {
+            "title": "Explore the Rust Academy",
+            "url": "/learn/"
+          }
+        ]
+      },
+      {
+        "heading": "Treat the complete link as a source-access capability",
+        "paragraphs": [
+          "The decryption key is carried in the link fragment. The relay stores temporary encrypted source in memory, while participating clients decrypt locally. That architecture keeps compilation off the backend, but it does not make the full link harmless. Anyone who receives the complete authorized link can use its access until the room becomes unavailable. A participant can also save a copy, and expiry cannot recall copies that already left the room.",
+          "The defaults are deliberately small: one hour, up to twenty-four hours, 4 participants, 16 text files, 64 KiB per file and 128 KiB of source overall. A server restart can end a room earlier than its displayed deadline. No package archives, images or permanent account project are part of this source-room profile. Use explicit download or Save to device when you need a durable copy, and keep repository history in your normal version-control system.",
+          "Only share source you intend every room participant and the chosen MCP host/model to receive. The assistant host gets plaintext when it reads a file, so its own provider, logging and retention policies still matter. Remove credentials and private fixtures before creating a reproduction. Show access mode and expiry beside a share action, avoid printing complete links into routine logs, and end a disposable room when its work is finished."
+        ]
+      },
+      {
+        "heading": "A small startup bug, and a useful release discipline",
+        "paragraphs": [
+          "The live collaboration flow worked, but the surrounding review found a real startup defect. In version 0.3.0, a participant label equal to `--help` or `--version` was mistaken for a command-line option. The launcher printed ordinary text and exited instead of completing the MCP handshake. Most normal names hid the problem. New regression tests reproduced it before the parser was changed to distinguish an option’s value from a standalone help or version request.",
+          "The corrected 0.3.1 client successfully rejoined the existing room using the literal name `--help`, read both files and made a visible revision-checked edit. The original client and the browser received it. Builds now also synchronize the Rust and Go embedded bridges from the exact JavaScript executable and check their byte identity. That prevents a future npm fix from silently leaving the language bindings on an older shared core.",
+          "Final package verification found a separate interoperability problem: mixing ESM and CommonJS imports loaded the bundled Yjs engine twice and created different Crabrix constructors. Strict TypeScript consumers also saw incompatible private class identities. Version 0.3.2 shares one implementation and one declaration identity across those entry points, including the programmatic MCP factory. New tests check constructor equality, cross-mode assignment and a clean warning channel, in addition to ordinary separate-format imports.",
+          "The practical starting point is to install one MCP launcher, open a small room and agree what each participant may do. Let edits, selections, completed tests and inspectable values carry the discussion. Keep execution permission local and explicit, keep permanent work somewhere durable, and describe the limits honestly. That is how a temporary Playground becomes useful for real development and learning instead of being another place to paste an unreviewable answer."
+        ],
+        "codeLanguage": "shell",
+        "code": "npm install -g crabrix@0.3.2\nclaude mcp add --transport stdio crabrix -- crabrix\n\n# Alternative Rust launcher (Node.js 22+ also required)\ncargo install crabrix --version 0.3.2 --locked\n",
+        "sources": [
+          {
+            "title": "Public Crabrix SDK and qualification notes",
+            "url": "https://github.com/sergii-ziborov/crabrix-sdk"
+          },
+          {
+            "title": "Crabrix on npm",
+            "url": "https://www.npmjs.com/package/crabrix"
+          },
+          {
+            "title": "Crabrix Rust crate",
+            "url": "https://crates.io/crates/crabrix"
+          }
+        ],
+        "links": [
+          {
+            "title": "Complete setup and security boundaries",
+            "url": "/playground/mcp/"
+          },
+          {
+            "title": "Crabrix user guide",
+            "url": "/guide/#agent-sdk"
+          }
+        ]
+      }
+    ],
+    "readingMinutes": 12
+  },
+  {
     "slug": "crabrix-sdk-javascript-rust-go-agent-handoff",
     "title": "Crabrix SDK: share a Rust Playground from JavaScript, Rust and Go",
     "date": "2026-10-29",
     "summary": "Integrate temporary Rust workspaces into agents with the crabrix npm library, Rust and Go bindings, exact revisions and permission-gated local Run/Debug.",
     "relatedSlugs": [
+      "crabrix-mcp-two-agents-local-rust-workflows",
       "rust-coding-interviews-shared-playground-agents",
       "rust-serde-json-validation-boundaries",
       "rust-enums-state-machines",
@@ -233,6 +475,7 @@
     "date": "2026-10-29",
     "summary": "Run a practical Rust interview in a temporary encrypted Playground: clear tasks, live agent handoff, ownership questions and browser-local Debug.",
     "relatedSlugs": [
+      "crabrix-mcp-two-agents-local-rust-workflows",
       "crabrix-sdk-javascript-rust-go-agent-handoff",
       "rust-strings-utf8-safe-parsing",
       "ownership-in-a-real-program",
@@ -426,7 +669,8 @@
         ]
       }
     ],
-    "readingMinutes": 10
+    "readingMinutes": 10,
+    "modifiedDate": "2026-10-29"
   },
   {
     "slug": "rust-maintainer-funding-support-code-you-depend-on",

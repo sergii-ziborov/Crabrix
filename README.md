@@ -7,14 +7,19 @@
 ## Standalone SDK — crabrix on npm, Rust and Go bindings
 
 The public [crabrix-sdk project](https://github.com/sergii-ziborov/crabrix-sdk)
-is independent of the phone app. [npm crabrix 0.3.0](https://www.npmjs.com/package/crabrix)
-provides a JS/TypeScript library and fourteen-tool MCP server. The Go module is
-tagged and installed through public Go tooling. Rust source is tested and its
-crate dry-run passes; crates.io publication is pending a publishing credential.
+is independent of the phone app. [npm crabrix 0.3.2](https://www.npmjs.com/package/crabrix)
+provides a JS/TypeScript library and fourteen-tool MCP server. The
+[Rust crate](https://crates.io/crates/crabrix) and tagged Go module are published
+at 0.3.2; all three CLI versions were installed from their public distribution
+and checked. The patch fixes option-like participant names and synchronizes
+Rust/Go embedded bridge bytes with the npm executable.
 All variants use a common local Node.js 22+ core, with explicit client-local
-Run/Debug permission. Four-way JS/Rust/Go/browser collaboration and browser-local
-runtime checks passed, alongside Linux/macOS/Windows CI. SDK code is MIT; app,
-Academy and brand terms remain separate. [Profile and evidence](docs/crabrix-sdk-2026-10-29.md).
+Run/Debug permission. Two independent coding agents and two browser clients
+passed real shared-edit, selection, stale-revision, 13-assertion Run, structured
+Debug, foreign-job refusal and revocation checks. Linux/macOS/Windows CI passed.
+SDK code is MIT; app, Academy and brand terms remain separate.
+[Live audit and evidence](docs/mcp-live-audit-2026-10-29.md) ·
+[Practical two-agent article](https://crabrix.com/blog/crabrix-mcp-two-agents-local-rust-workflows/).
 
 ## SEO — published 29 October
 
@@ -170,7 +175,7 @@ The current screenshot set includes ten iPhone and six iPad frames from manual X
 
 The previous reliability delivery **1.1.3 (111)** was superseded by qualified build 113 for App Review. [Build 111 evidence](docs/app-store/release-1.1.3-build111.json) records its source, signature and qualification separately.
 
-The live website has canonical and social metadata for all **808 public pages**, with structured data for the product, courses, lessons and articles. The [HTML sitemap](https://crabrix.com/sitemap/) and [XML sitemap](https://crabrix.com/sitemap.xml) include all 754 lessons and 32 blog articles. The blog uses three linked archive pages, with 12 articles per page and a self-canonical URL for each archive. The [27 October Rust performance guide](https://crabrix.com/blog/rust-performance-measure-before-optimizing/) has 2,012 paragraph words, three original ImageGen images (two infographics), eight semantic tests passing in both development and Release profiles, and saved native measurement CSVs. [Publication evidence for that guide](docs/site-release-2026-10-27-article.json) records the article, media, sitemap and account-access checks; [the preceding cancellation guide](docs/site-release-2026-10-26-article.json) and [brand/navigation evidence](docs/site-release-2026-10-25-brand-navigation.json) record the previous updates. [SEO and App Store presentation](docs/seo-2026-10-16.md) documents account access checks, relevant search keywords and two custom product pages.
+The live website has canonical and social metadata for all **809 public pages**, with structured data for the product, courses, lessons and articles. The [HTML sitemap](https://crabrix.com/sitemap/) and [XML sitemap](https://crabrix.com/sitemap.xml) include all 754 lessons and 33 blog articles. The blog uses three linked archive pages, with 12 articles per page and a self-canonical URL for each archive. The [27 October Rust performance guide](https://crabrix.com/blog/rust-performance-measure-before-optimizing/) has 2,012 paragraph words, three original ImageGen images (two infographics), eight semantic tests passing in both development and Release profiles, and saved native measurement CSVs. [Publication evidence for that guide](docs/site-release-2026-10-27-article.json) records the article, media, sitemap and account-access checks; [the preceding cancellation guide](docs/site-release-2026-10-26-article.json) and [brand/navigation evidence](docs/site-release-2026-10-25-brand-navigation.json) record the previous updates. [SEO and App Store presentation](docs/seo-2026-10-16.md) documents account access checks, relevant search keywords and two custom product pages.
 
 The historical [21 October delivery check](docs/releases/delivery-check-2026-10-21.json)
 records the earlier TestFlight 1.1.1 (68) delivery. That app archive has since

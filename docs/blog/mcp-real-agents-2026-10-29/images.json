@@ -1,0 +1,55 @@
+{
+  "tool": "built-in ImageGen for three illustrations; CUA screenshot for actual-shared-output",
+  "images": [
+    {
+      "name": "cover",
+      "source": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-c1ba940f-9115-4464-a522-eb46d564f9f8.png",
+      "path": "site/public/images/blog/mcp-real-agents/cover.png",
+      "width": 1536,
+      "height": 1024,
+      "generated": true,
+      "sha256": "6009c8c0d68c63e5ea99a77f01187e36a47cee53c872eae61e2d785426c4bcf6"
+    },
+    {
+      "name": "boundaries",
+      "source": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-80bbd534-c630-4430-9976-ce77706100d1.png",
+      "path": "site/public/images/blog/mcp-real-agents/boundaries.png",
+      "width": 1536,
+      "height": 1024,
+      "generated": true,
+      "sha256": "187ae35fd7b6439eeb9a7e5b066f56586ee6fabc9ec1b6cf0a94cf08e48b79d7"
+    },
+    {
+      "name": "uses",
+      "source": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-d0763fe7-b849-412d-8be8-0554db64a066.png",
+      "path": "site/public/images/blog/mcp-real-agents/uses.png",
+      "width": 1536,
+      "height": 1024,
+      "generated": true,
+      "sha256": "03ca84bf67f590907cece1f58a05b84c576195ee32a0a67330851b57fc8ec215"
+    },
+    {
+      "name": "actual-shared-output",
+      "source": "build/mcp-live-audit-20261029/observer-output.png",
+      "path": "site/public/images/blog/mcp-real-agents/actual-shared-output.png",
+      "width": 1280,
+      "height": 720,
+      "generated": false,
+      "sha256": "e5375da08b888a1a430ef8dd9f98a1ad777fc7d37d77ade52c306a93b612965d"
+    }
+  ],
+  "prompts": [
+    {
+      "key": "cover",
+      "prompt": "Use case: stylized-concept. Asset type: 1536x1024 landscape editorial cover for the Crabrix technical blog. Primary request: beautifully show two cooperating AI coding agents and a human sharing a tiny temporary Rust workspace. A friendly small saturated ORANGE Crabrix crab mascot with two large glossy eyes and raised claws sits between two elegant graphite agent modules and one laptop. One module proposes mint code tiles, the other reviews amber test tiles; both converge on the same small workspace. Style: premium handcrafted 3D editorial illustration, restrained detail, tactile charcoal ceramics, navy glass and copper, crisp silhouette, soft warm studio lighting. Crabrix palette: deep navy #0b0f14, coral orange #ff6b4a, mint #4fd1a5, blue #6ab7ff. The laptop has abstract code bars, no fake app UI. Composition: balanced wide scene with generous negative space at the top, crab clearly recognizable and central, subtle network paths only between participants. No provider logos, no Rust gear logo, no giant cloud compiler, no padlock guarantee badge, no text, no watermark. High-end informative illustration, not a screenshot."
+    },
+    {
+      "key": "boundaries",
+      "prompt": "Use case: infographic-diagram. Asset type: polished 1536x1024 landscape Crabrix blog infographic. Primary request: accurately explain the separate permissions for shared source and local execution in an agent Playground. Deep navy background, subtle graphite panels, coral orange Crabrix crab with big eyes and raised claws at bottom left, mint/cyan technical connectors, warm amber human approval symbol. Main horizontal row has THREE equal readable panels with exactly these headings: \"EDIT LINK\", \"HUMAN APPROVAL\", \"LOCAL RUN / DEBUG\". Under them use short exact captions: \"Shared source\", \"One chosen client\", \"Results shared\". Show source access as a key opening an editor, a human hand choosing one browser, and a small chip running inside that browser. A second browser receives an output card through a separate mint arrow; it must NOT have an execution chip or start arrow. Lower distinct relay panel exactly labeled \"RELAY: TEMPORARY CIPHERTEXT\" with caption \"Default 1h / Max 24h\" and encrypted tiny blocks, no source code visible. Clear hierarchy, precise arrows, accessible contrast, ample whitespace. Title exact: \"SHARE SOURCE. CHOOSE WHERE CODE RUNS.\" Friendly premium editorial vector-like 3D hybrid, beautiful and legible, no other text, no watermarks, no unqualified safety seal, no cloud execution."
+    },
+    {
+      "key": "uses",
+      "prompt": "Use case: illustration-story. Asset type: 1536x1024 landscape editorial illustration for a Crabrix MCP article about practical uses. Show three visually distinct but connected small stations in one coherent premium isometric tabletop world: left a development workbench with a reproducible tiny bug example and two review cards; middle an interview table with two people calmly discussing a short program; right a learning desk with one student, a magnifying glass and stepped code tiles. One friendly ORANGE Crabrix crab mascot with big eyes and raised claws accompanies the shared source capsule between the stations. Small warm timer nearby communicates temporary use. Deep charcoal/navy background with coral orange, mint, cyan and amber accents, soft studio lighting, beautifully tactile physical models, thoughtful human scale, crisp minimal shapes, generous negative space. No scores/rankings, no surveillance or identity verification symbols, no famous product logos, no text, no fake screenshot. The visual should suggest collaborative review and learning, not agents taking over a computer."
+    }
+  ]
+}

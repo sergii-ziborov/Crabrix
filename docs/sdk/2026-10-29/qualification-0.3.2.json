@@ -1,0 +1,41 @@
+{
+  "version": "0.3.2",
+  "date": "2026-10-29",
+  "jsTests": 27,
+  "rustUnitTests": 4,
+  "rustDoctests": 1,
+  "goRaceTests": 4,
+  "typedClippyAndVet": true,
+  "liveAIActors": [
+    "Implementation agent",
+    "Independent review agent"
+  ],
+  "transport": "Official MCP client via stdio; two independent coding-agent contexts",
+  "liveParticipants": 4,
+  "browserClients": 2,
+  "physicalDevicesTested": false,
+  "sharedSourceEditsBothDirections": true,
+  "staleReplacementRefused": true,
+  "wholeEmojiSelection": true,
+  "halfSurrogateSelectionRefused": true,
+  "rustAssertionsPassed": 13,
+  "buildStdoutEmpty": true,
+  "runSucceeded": true,
+  "debugStructStringVecPreview": "Report { label: \"normal\" (6 bytes), accepted: [len=4] [42, -17, 3, 0], rejected: [len=0] [] }",
+  "foreignDebugStatusStepContinueStopRefused": true,
+  "observerCompilerReady": false,
+  "observerReceivedSharedOutputWithoutExecution": true,
+  "revokeBlockedNewStart": true,
+  "flagLikeNameReconnectedAndEditedLiveRoom": true,
+  "sourceCommentPromptInjectionIgnored": true,
+  "roomEnded": true,
+  "limitations": "Disposable std/local-module Rust test; no physical-device benchmark or provider GUI certification; source/comments/output remain untrusted.",
+  "mixedESMCommonJSAndMCPImportsShareImplementation": true,
+  "mixedTypeScriptClassIdentity": true,
+  "duplicateYjsImportWarningRemoved": true,
+  "liveClientVersions": [
+    "0.3.0 original owner",
+    "0.3.1 fixed reviewer"
+  ],
+  "liveFlowScope": "Local Build/Run/Debug and foreign-job/refusal checks used the 0.3.0 owner; the fixed 0.3.1 reviewer rejoined and edited the same room. 0.3.2 changes public JS package/declaration identity, with isolated published-consumer checks. Runtime permission code is unchanged."
+}

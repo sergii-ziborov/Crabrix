@@ -1,0 +1,41 @@
+{
+  "version": "0.3.2",
+  "checkedAt": "2026-10-29T18:17:09.689Z",
+  "registries": [
+    {
+      "name": "npm",
+      "version": "0.3.2",
+      "archiveURL": "https://registry.npmjs.org/crabrix/-/crabrix-0.3.2.tgz",
+      "bytes": 477300,
+      "sha256": "10da90dafe7f5291e4469d3f8e1f602000aff2262889441913a3cb0af064b8cf",
+      "exactLocalBytes": true
+    },
+    {
+      "name": "crates.io",
+      "version": "0.3.2",
+      "archiveURL": "https://crates.io/api/v1/crates/crabrix/0.3.2/download",
+      "bytes": 248633,
+      "sha256": "e21c2c65881995c1e41465a8ef845218756ed582b86aaa8b1dd65fa3509146b4",
+      "exactLocalBytes": true
+    }
+  ],
+  "sourceCommit": "f467c1597ae637a2b8833e3451e34fd2c7d6c024",
+  "ci": "https://github.com/sergii-ziborov/crabrix-sdk/actions/runs/40927955913",
+  "ciPlatforms": [
+    "Linux",
+    "macOS",
+    "Windows"
+  ],
+  "githubRelease": "https://github.com/sergii-ziborov/crabrix-sdk/releases/tag/v0.3.2",
+  "goTag": "go/crabrix/v0.3.2",
+  "freshNpmInstall": true,
+  "freshCargoInstall": true,
+  "freshGoInstall": true,
+  "installedCLIVersions": [
+    "0.3.2",
+    "0.3.2",
+    "0.3.2"
+  ],
+  "actualMCPHandshakeAllThreeInstalledLaunchers": true,
+  "publishedMixedModuleRuntimeAndStrictTypeScriptPassed": true
+}
