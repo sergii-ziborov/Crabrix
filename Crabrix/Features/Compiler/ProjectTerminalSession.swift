@@ -139,9 +139,10 @@ final class ProjectTerminalSession: ObservableObject {
                 "  git clone <HTTPS URL>   New GitHub project with real history\n" +
                 "  git remote add origin URL  Connect this local repository\n" +
                 "  git fetch|pull --ff-only|push  Explicit HTTPS operations\n" +
-                "  npm install|ci          Prepare browser imports for offline use\n" +
+                "  npm install|ci          Prepare browser source and declared types\n" +
                 "  npm run dev|preview     Build and open the local web preview\n" +
-                "  npm run build|check     Build browser JS/TS/JSX locally\n" +
+                "  npm run build           Bundle browser JS/TS/JSX locally\n" +
+                "  npm run check|typecheck Check local TypeScript and browser bundle\n" +
                 "  npm --prefix web …      Target a nested browser project\n" +
                 "  history                 Recall recent commands\n" +
                 "  env · date · uname      Sandbox information\n" +
