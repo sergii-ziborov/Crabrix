@@ -1,0 +1,177 @@
+{
+  "checkedAtUTC": "2026-10-29T11:58:13.634Z",
+  "passed": true,
+  "normalPublicDNSAndTLSValidation": true,
+  "certificate": "X509v3 Subject Alternative Name: \n    DNS:crabrix.com, DNS:www.crabrix.com\nnotBefore=Oct 29 10:58:46 2026 GMT\nnotAfter=Jan 27 10:58:45 2027 GMT",
+  "cases": [
+    {
+      "input": "http://www.crabrix.com/",
+      "status": 308,
+      "location": "https://crabrix.com/",
+      "expectedLocation": "https://crabrix.com/",
+      "finalURL": "https://crabrix.com/",
+      "finalStatus": 200,
+      "canonical": [
+        "https://crabrix.com/"
+      ]
+    },
+    {
+      "input": "http://www.crabrix.com/terms",
+      "status": 308,
+      "location": "https://crabrix.com/terms",
+      "expectedLocation": "https://crabrix.com/terms",
+      "finalURL": "https://crabrix.com/terms/",
+      "finalStatus": 200,
+      "canonical": [
+        "https://crabrix.com/terms/"
+      ]
+    },
+    {
+      "input": "http://www.crabrix.com/blog/?ref=www&source=seo",
+      "status": 308,
+      "location": "https://crabrix.com/blog/?ref=www&source=seo",
+      "expectedLocation": "https://crabrix.com/blog/?ref=www&source=seo",
+      "finalURL": "https://crabrix.com/blog/?ref=www&source=seo",
+      "finalStatus": 200,
+      "canonical": [
+        "https://crabrix.com/blog/"
+      ]
+    },
+    {
+      "input": "http://www.crabrix.com/guide/#web",
+      "status": 308,
+      "location": "https://crabrix.com/guide/",
+      "expectedLocation": "https://crabrix.com/guide/",
+      "finalURL": "https://crabrix.com/guide/",
+      "finalStatus": 200,
+      "canonical": [
+        "https://crabrix.com/guide/"
+      ]
+    },
+    {
+      "input": "http://www.crabrix.com/learn/algorithms/algorithm.permutations.recognize/",
+      "status": 308,
+      "location": "https://crabrix.com/learn/algorithms/algorithm.permutations.recognize/",
+      "expectedLocation": "https://crabrix.com/learn/algorithms/algorithm.permutations.recognize/",
+      "finalURL": "https://crabrix.com/learn/algorithms/algorithm.permutations.recognize",
+      "finalStatus": 200,
+      "canonical": [
+        "https://crabrix.com/learn/algorithms/algorithm.permutations.recognize"
+      ]
+    },
+    {
+      "input": "http://www.crabrix.com/seo-www-nonexistent-20261029/",
+      "status": 308,
+      "location": "https://crabrix.com/seo-www-nonexistent-20261029/",
+      "expectedLocation": "https://crabrix.com/seo-www-nonexistent-20261029/",
+      "finalURL": "https://crabrix.com/seo-www-nonexistent-20261029/",
+      "finalStatus": 404,
+      "canonical": []
+    },
+    {
+      "input": "https://www.crabrix.com/",
+      "status": 308,
+      "location": "https://crabrix.com/",
+      "expectedLocation": "https://crabrix.com/",
+      "finalURL": "https://crabrix.com/",
+      "finalStatus": 200,
+      "canonical": [
+        "https://crabrix.com/"
+      ]
+    },
+    {
+      "input": "https://www.crabrix.com/terms",
+      "status": 308,
+      "location": "https://crabrix.com/terms",
+      "expectedLocation": "https://crabrix.com/terms",
+      "finalURL": "https://crabrix.com/terms/",
+      "finalStatus": 200,
+      "canonical": [
+        "https://crabrix.com/terms/"
+      ]
+    },
+    {
+      "input": "https://www.crabrix.com/blog/?ref=www&source=seo",
+      "status": 308,
+      "location": "https://crabrix.com/blog/?ref=www&source=seo",
+      "expectedLocation": "https://crabrix.com/blog/?ref=www&source=seo",
+      "finalURL": "https://crabrix.com/blog/?ref=www&source=seo",
+      "finalStatus": 200,
+      "canonical": [
+        "https://crabrix.com/blog/"
+      ]
+    },
+    {
+      "input": "https://www.crabrix.com/guide/#web",
+      "status": 308,
+      "location": "https://crabrix.com/guide/",
+      "expectedLocation": "https://crabrix.com/guide/",
+      "finalURL": "https://crabrix.com/guide/",
+      "finalStatus": 200,
+      "canonical": [
+        "https://crabrix.com/guide/"
+      ]
+    },
+    {
+      "input": "https://www.crabrix.com/learn/algorithms/algorithm.permutations.recognize/",
+      "status": 308,
+      "location": "https://crabrix.com/learn/algorithms/algorithm.permutations.recognize/",
+      "expectedLocation": "https://crabrix.com/learn/algorithms/algorithm.permutations.recognize/",
+      "finalURL": "https://crabrix.com/learn/algorithms/algorithm.permutations.recognize",
+      "finalStatus": 200,
+      "canonical": [
+        "https://crabrix.com/learn/algorithms/algorithm.permutations.recognize"
+      ]
+    },
+    {
+      "input": "https://www.crabrix.com/seo-www-nonexistent-20261029/",
+      "status": 308,
+      "location": "https://crabrix.com/seo-www-nonexistent-20261029/",
+      "expectedLocation": "https://crabrix.com/seo-www-nonexistent-20261029/",
+      "finalURL": "https://crabrix.com/seo-www-nonexistent-20261029/",
+      "finalStatus": 404,
+      "canonical": []
+    }
+  ],
+  "dns": {
+    "type": "CNAME",
+    "name": "www.crabrix.com",
+    "target": "crabrix.com",
+    "proxy": "DNS only",
+    "authoritativeNS": "augustus.ns.cloudflare.com",
+    "recursiveResolversVerified": [
+      "1.1.1.1",
+      "8.8.8.8"
+    ],
+    "resolvedIPv4": "116.203.99.11",
+    "apexRecordChanged": false,
+    "existingCloudflarePauseChanged": false
+  },
+  "nginx": {
+    "configuration": "site/hetzner/crabrix.com.nginx",
+    "sha256": "5e62a18d934523d5a6d11ac516e1b5a5a08532ac239e25857f26425834fe80e8",
+    "syntaxTestPassed": true,
+    "reloaded": true,
+    "apexProxyAndRelayLocationsPreserved": true,
+    "wwwHTTPSAccessLog": "off",
+    "certificateRenewalTimer": "active / enabled",
+    "backupDirectory": "/srv/apps/crabrix-site/releases/20261029-www",
+    "webImageUnchanged": "localhost/crabrix-web-site:seo-d401c4d"
+  },
+  "browserFragmentReadback": {
+    "input": "https://www.crabrix.com/guide/#web",
+    "observedURL": "https://crabrix.com/guide/#web",
+    "browser": "Codex in-app browser",
+    "TLSWarnings": false
+  },
+  "evidence": {
+    "dnsScreenshot": "build/seo-audit-20261029/www/cloudflare-www-saved.png",
+    "publicReadback": "build/seo-audit-20261029/www/public-readback.json"
+  },
+  "searchConsoleDuplicateValidation": {
+    "status": "Started",
+    "startDate": "2026-10-29",
+    "evidence": "build/seo-audit-20261029/www/google-www-validation-started.png"
+  },
+  "recordedAtUTC": "2026-10-29T12:01:05.617548+00:00"
+}

@@ -94,7 +94,7 @@
     "sitemapStatus": "Успешно",
     "discoveredPages": 804,
     "robotsValidation": "Started, 29 October 2026",
-    "pending": "www DNS requires Cloudflare sign-in; Google recrawl and index decisions remain asynchronous"
+    "pending": "Google revalidation, recrawl and index decisions remain asynchronous"
   },
   "unchangedRelease": {
     "appVersion": "1.1.3",
@@ -102,5 +102,6 @@
     "appStoreSelectionChanged": false,
     "npmPackageChanged": false
   },
-  "evidenceDirectory": "build/seo-audit-20261029/"
+  "evidenceDirectory": "build/seo-audit-20261029/",
+  "wwwFollowUp": "www-delivery.json"
 }

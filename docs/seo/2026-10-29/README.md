@@ -61,11 +61,23 @@ returns 200 and its slash variant redirects to the same canonical. Sitemap XML
 does not need to appear as a search result. No new content or indexing guarantee
 was invented to explain Google's historical classification.
 
-The apex domain is the published canonical host. The unused `www` hostname has
-no DNS result in this audit. Google retains its HTTPS home page as one historical
-duplicate and two HTTP URLs in the crawled/not-indexed examples. Cloudflare's
-dashboard requires a separate sign-in; the user was asked to complete it before
-any DNS or certificate change. The canonical apex remains available.
+The apex domain is the published canonical host. The initial audit found no DNS
+answer for `www`; Google retained its HTTPS home page as one historical duplicate
+and two HTTP URLs in the crawled/not-indexed examples. After the user signed into
+Cloudflare, a single DNS-only CNAME `www → crabrix.com` was added. Both public
+resolvers (Google and Cloudflare) and an authoritative nameserver returned it.
+The apex record and existing Cloudflare paused state were retained.
+
+On Hetzner, the existing webroot certificate was expanded to cover both hosts;
+renewal remains active. Nginx now permanently redirects HTTP and HTTPS www links
+to the fixed apex with their paths and queries. Twelve public checks passed with
+ordinary DNS and TLS verification, including expected 404s. A real browser kept
+`#web` when following the www Guide URL. The HTTPS www block does not proxy source
+or log shared-room URLs; the existing apex proxy/relay blocks remain. Nginx's
+syntax check passed before reload, and the prior configuration is retained for
+rollback. No web container rebuild was needed. [DNS/TLS delivery](www-delivery.json).
+Google accepted the separate www duplicate validation request and displays
+**Started, 29 October 2026**; completion is still pending.
 
 The production release is `localhost/crabrix-web-site:seo-d401c4d`, digest
 `cbbb7eaad45310c7324bc9a62539d9fc45410b5fe240d368e6f66b83227f522e`.

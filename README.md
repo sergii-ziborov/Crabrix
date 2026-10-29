@@ -12,6 +12,9 @@ browser checks. Course descriptions, article modification dates, structured
 course links, authentication noindex handling and legacy redirects were updated.
 Google started revalidating the robots.txt report on 29 October. Discovery and
 validation are distinct from completed indexing. [Audit and delivery](docs/seo/2026-10-29/README.md).
+The www hostname now resolves to Hetzner and redirects permanently to the apex
+over HTTP/HTTPS, with a certificate covering both hosts. All twelve public
+redirect checks passed; Google started revalidating its historical www duplicate.
 
 ## Blog — October 25 and 28 filled
 

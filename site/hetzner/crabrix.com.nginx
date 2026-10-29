@@ -1,5 +1,5 @@
 # Public reverse proxy for the independent Crabrix site on loopback port 3212.
-# Enable the HTTPS server only after a certificate for crabrix.com exists.
+# Enable both HTTPS servers only after the certificate covers crabrix.com and www.crabrix.com.
 map $uri $crabrix_referrer_policy {
     default strict-origin-when-cross-origin;
     ~^/playground/room/ no-referrer;
@@ -9,7 +9,7 @@ map $uri $crabrix_referrer_policy {
 server {
     listen 80;
     listen [::]:80;
-    server_name crabrix.com;
+    server_name crabrix.com www.crabrix.com;
     access_log /var/log/crabrix/access.log;
     error_log /var/log/crabrix/error.log;
 
@@ -22,6 +22,26 @@ server {
     location / {
         return 308 https://crabrix.com$request_uri;
     }
+}
+
+# Historical www links have one canonical destination, including path and query.
+# Do not proxy this host into the application or log private shared-room URLs.
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name www.crabrix.com;
+    access_log off;
+    error_log /var/log/crabrix/error.log;
+
+    ssl_certificate /etc/letsencrypt/live/crabrix.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/crabrix.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    add_header X-Content-Type-Options nosniff always;
+    add_header Referrer-Policy no-referrer always;
+
+    return 308 https://crabrix.com$request_uri;
 }
 
 server {

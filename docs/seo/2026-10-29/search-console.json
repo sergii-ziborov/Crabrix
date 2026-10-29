@@ -41,7 +41,13 @@
   "duplicateWithoutUserCanonical": {
     "affectedURLs": 1,
     "example": "https://www.crabrix.com/",
-    "currentState": "www has no DNS answer; Cloudflare requires a separate sign-in requested from the user"
+    "currentState": "Fixed: DNS-only www CNAME to apex, valid certificate for both hosts, HTTP/HTTPS 308 redirects on Hetzner; 12 public checks passed",
+    "delivery": "www-delivery.json",
+    "validation": {
+      "status": "Started",
+      "startDate": "2026-10-29",
+      "evidence": "build/seo-audit-20261029/www/google-www-validation-started.png"
+    }
   },
   "crawledNotIndexed": {
     "affectedURLs": 5,
