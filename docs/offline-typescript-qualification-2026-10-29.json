@@ -219,7 +219,7 @@
     }
   ],
   "releaseReceipt": "docs/app-store/release-1.1.3-build118.json",
-  "delivery": "Cloud 117 stopped before compilation on a stale canonical website-notice copy. Canonical notice generation and full bootstrap now pass; Cloud 118 is the next delivery.",
+  "delivery": "Signed 1.1.3 (118) VALID / IN_BETA_TESTING, selected for App Review WAITING_FOR_REVIEW; website guide published.",
   "postQualificationNonRuntimeChanges": [
     "scripts/bootstrap.sh",
     "scripts/sync_legal_documents.py",

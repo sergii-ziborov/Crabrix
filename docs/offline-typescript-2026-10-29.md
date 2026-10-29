@@ -1,8 +1,11 @@
 # Offline TypeScript and source-bound preflight — 29 October 2026
 
-This qualification follows signed TestFlight 1.1.3 (116). A source qualification
-alone does not imply delivery. The signed release receipt records the exact
-later build and public availability separately.
+Signed **1.1.3 (118)** from `a187a4c9394ecaf2f17798008fd0d44f8edf1ddb`
+is **VALID / IN_BETA_TESTING** and selected for App Review, **WAITING_FOR_REVIEW**,
+with manual publication. [Delivery receipt](app-store/release-1.1.3-build118.json).
+The public guide, exact original phone/iPad captures, original notices and
+capability record are published. App Store 1.1.2 (103) remains separate until
+Apple approves and the new version is released.
 
 ## Actual TypeScript diagnostics
 

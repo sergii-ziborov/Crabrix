@@ -17,7 +17,7 @@ regressions. Signed build **116** is **VALID / IN_BETA_TESTING**; App Review
 selection is tracked in the [delivery receipt](docs/app-store/release-1.1.3-build116.json).
 [Profile](docs/semantic-ide-2026-10-29.md) · [qualification](docs/semantic-ide-qualification-2026-10-29.json).
 
-## Offline TypeScript and project preflight — qualified for build 118
+## Offline TypeScript and project preflight — TestFlight 1.1.3 (118)
 
 The original bundled TypeScript **5.9.3** checker uses 100 ES/DOM libraries and
 prepared dependency declarations in a disposable local WebKit Worker. Check and
@@ -31,9 +31,9 @@ exact source/resources/entry/compiler identity. Known profile requirements are
 checked early; unknown execution stays unverified. Cargo feature changes have a
 diff preview and preserve the complete original manifest. The final phone/iPad
 Simulator matrix passed **184/184** with no failures or skips; original captures
-retain the editor geometry. These changes are not in signed build 116. Build
-118 is in Xcode Cloud; TestFlight/App Review delivery requires its separate signed
-verification. [Profile, limits and qualification](docs/offline-typescript-2026-10-29.md).
+retain the editor geometry. Signed build **118** is **VALID / IN_BETA_TESTING** and selected for App Review
+(**WAITING_FOR_REVIEW**, manual publication). The public guide and capability
+record match this delivery. [Signed delivery receipt](docs/app-store/release-1.1.3-build118.json). [Profile, limits and qualification](docs/offline-typescript-2026-10-29.md).
 
 ## Native Git — TestFlight 1.1.3 (114)
 
@@ -45,7 +45,7 @@ execution stay on the device; the editor/Duo geometry is preserved.
 [Profile and qualification](docs/git-https-portability-2026-10-28.md),
 [delivery identity](docs/app-store/release-1.1.3-build114.json).
 Build 114 was previously selected for review; the current selection is build
-116, **WAITING_FOR_REVIEW**, with manual publication.
+118, **WAITING_FOR_REVIEW**, with manual publication.
 The website guide/capability record and offline source/license downloads are
 published and read back. Build 113 was superseded after these gates passed.
 

@@ -1,0 +1,402 @@
+{
+  "version": "1.1.3",
+  "buildNumber": "118",
+  "buildID": "424339e7-6e48-4c7a-8091-d8dddb0fac29",
+  "appSourceCommit": "a187a4c9394ecaf2f17798008fd0d44f8edf1ddb",
+  "cloudBuildRunID": "66602f95-b711-4ee1-9ace-f3ced84b21d8",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "versionID": "4c60d52b-ca5b-4bbd-a206-799d4e4cd12c",
+  "versionState": "WAITING_FOR_REVIEW",
+  "reviewID": "8d78ea54-1625-4561-ac6e-88c4709d2071",
+  "reviewState": "WAITING_FOR_REVIEW",
+  "releaseType": "MANUAL",
+  "selectedBuild": "118",
+  "screenshots": [
+    {
+      "displayType": "APP_IPHONE_DUO",
+      "count": 2,
+      "complete": 2,
+      "firstFile": "v111-iphone-duo-qa-01-laptop-code.png"
+    },
+    {
+      "displayType": "APP_IPAD_PRO_3GEN_129",
+      "count": 7,
+      "complete": 7,
+      "firstFile": "v111-ipad-13-01-build.png"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "count": 10,
+      "complete": 10,
+      "firstFile": "v111-iphone-6.9-01-build.png"
+    }
+  ],
+  "storeMetadataReadback": "exact match",
+  "verifiedAtUTC": "2026-10-29T02:35:53.767073+00:00",
+  "signedArtifact": {
+    "typeScriptBundleMatchesSource": true,
+    "browserBuilderMatchesSource": true,
+    "typeScriptQualified": true,
+    "verifiedAtUTC": "2026-10-29T02:32:52.729888+00:00",
+    "build": "118",
+    "version": "1.1.3",
+    "appSourceCommit": "a187a4c9394ecaf2f17798008fd0d44f8edf1ddb",
+    "ipaSHA256": "b1e5009e9a92cd713088b08f07e7f0df634c61520135a58cc352f072314615bf",
+    "codesignDeepStrict": true,
+    "applicationIdentifier": "XMS5ZC28UJ.com.sergiiziborov.Crabrix",
+    "associatedDomains": [
+      "applinks:crabrix.com"
+    ],
+    "getTaskAllow": false,
+    "appGroups": [
+      "group.com.sergiiziborov.Crabrix"
+    ],
+    "appStoreDistributionProfile": true,
+    "declaredEntitlementsUnchangedFrom115": true,
+    "checkedPinnedResourceFiles": [
+      "RustTools/RustfmtNoticeIndex.json",
+      "RustTools/RustfmtVendorNotices.zip",
+      "RustTools/manifest.json",
+      "RustTools/notices-manifest.json",
+      "RustTools/reactor-source.rs",
+      "RustTools/rust_fmt.wasm",
+      "GitCore/CrabrixGitCoreSource.zip",
+      "GitCore/GitCoreNoticeIndex.json",
+      "GitCore/GitCoreNotices.zip",
+      "SemanticCore/SemanticNoticeIndex.json",
+      "SemanticCore/SemanticVendorNotices.zip",
+      "SemanticCore/build-receipt.json",
+      "SemanticCore/engine.wasm",
+      "SemanticCore/host.js",
+      "SemanticCore/index.html",
+      "SemanticCore/manifest.json",
+      "SemanticCore/stdlib.json",
+      "SemanticCore/worker.js",
+      "TypeScriptCore/LICENSE.txt",
+      "TypeScriptCore/ThirdPartyNoticeText.txt",
+      "TypeScriptCore/TypeScriptNoticeIndex.json",
+      "TypeScriptCore/TypeScriptNotices.zip",
+      "TypeScriptCore/compiler.js",
+      "TypeScriptCore/host.js",
+      "TypeScriptCore/index.html",
+      "TypeScriptCore/library.json",
+      "TypeScriptCore/manifest.json",
+      "TypeScriptCore/worker.js"
+    ],
+    "debugCompilerMatchesSource": true,
+    "offlineLegalMatchesSource": true,
+    "rustfmtBundleMatchesSource": true,
+    "gitCoreBundleMatchesSource": true,
+    "semanticBundleMatchesSource": true,
+    "semanticQualificationFlag": true,
+    "semanticActionsInSignedBinary": true,
+    "atlasCatalogMatchesSource": true,
+    "activeAcademyCatalogMatchesSource": true
+  },
+  "qualification": {
+    "native": "89/89 on each phone/iPad Simulator",
+    "nativeUI": "Three complete flows per device: TypeScript diagnostic/help/source return; preflight open/close; Rust completion/import Apply/Undo with four dock tabs retained.",
+    "totalFinalTests": 184,
+    "failed": 0,
+    "skipped": 0,
+    "qualificationSource": "3c084dbe0892f073224688053e6fa520517018a2",
+    "physicalDeviceTiming": "not claimed",
+    "evidence": "docs/offline-typescript-qualification-2026-10-29.json"
+  },
+  "websiteSourceCommit": "e96c0def067b8b20e31dffd694c3d5bd8cd919a9",
+  "websiteImage": "cb67e6d45abf69700a007e490e3181da114631c038aeea89f9fd6071e5ff4144",
+  "websitePublishedAtUTC": "2026-10-29T02:33:43Z",
+  "websiteSourceTreeSHA256": "d91743482ad0651ed392948632b5a20b9ebef210290787f72c15bc282831a7e7",
+  "websiteContextVerification": {
+    "sourceCommit": "e96c0de",
+    "sourceTreeSHA256": "d91743482ad0651ed392948632b5a20b9ebef210290787f72c15bc282831a7e7",
+    "allEntriesVerified": 2787,
+    "transferredBytes": 1265436,
+    "baseContextUnchanged": true,
+    "accountDataTouched": false
+  },
+  "websiteAccountsPreserved": true,
+  "websiteBackupTaken": true,
+  "websiteResponsiveQA": [
+    {
+      "section": "typescript",
+      "at": "2026-10-29T02:34:52.921Z",
+      "base": "https://crabrix.com",
+      "rows": [
+        {
+          "width": 390,
+          "height": 844,
+          "theme": "dark",
+          "geometry": [
+            {
+              "naturalWidth": 1206,
+              "naturalHeight": 2622,
+              "width": 221.84375,
+              "height": 480
+            },
+            {
+              "naturalWidth": 2064,
+              "naturalHeight": 2752,
+              "width": 358,
+              "height": 480
+            }
+          ],
+          "scroll": 390,
+          "errors": []
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "theme": "light",
+          "geometry": [
+            {
+              "naturalWidth": 1206,
+              "naturalHeight": 2622,
+              "width": 221.84375,
+              "height": 480
+            },
+            {
+              "naturalWidth": 2064,
+              "naturalHeight": 2752,
+              "width": 358,
+              "height": 480
+            }
+          ],
+          "scroll": 390,
+          "errors": []
+        },
+        {
+          "width": 720,
+          "height": 1000,
+          "theme": "dark",
+          "geometry": [
+            {
+              "naturalWidth": 1206,
+              "naturalHeight": 2622,
+              "width": 221.84375,
+              "height": 480
+            },
+            {
+              "naturalWidth": 2064,
+              "naturalHeight": 2752,
+              "width": 332,
+              "height": 480
+            }
+          ],
+          "scroll": 720,
+          "errors": []
+        },
+        {
+          "width": 820,
+          "height": 1180,
+          "theme": "dark",
+          "geometry": [
+            {
+              "naturalWidth": 1206,
+              "naturalHeight": 2622,
+              "width": 221.84375,
+              "height": 480
+            },
+            {
+              "naturalWidth": 2064,
+              "naturalHeight": 2752,
+              "width": 360.5,
+              "height": 480
+            }
+          ],
+          "scroll": 820,
+          "errors": []
+        },
+        {
+          "width": 1024,
+          "height": 1000,
+          "theme": "dark",
+          "geometry": [
+            {
+              "naturalWidth": 1206,
+              "naturalHeight": 2622,
+              "width": 221.84375,
+              "height": 480
+            },
+            {
+              "naturalWidth": 2064,
+              "naturalHeight": 2752,
+              "width": 360.5,
+              "height": 480
+            }
+          ],
+          "scroll": 1024,
+          "errors": []
+        },
+        {
+          "width": 1440,
+          "height": 1000,
+          "theme": "dark",
+          "geometry": [
+            {
+              "naturalWidth": 1206,
+              "naturalHeight": 2622,
+              "width": 221.84375,
+              "height": 480
+            },
+            {
+              "naturalWidth": 2064,
+              "naturalHeight": 2752,
+              "width": 360.5,
+              "height": 480
+            }
+          ],
+          "scroll": 1440,
+          "errors": []
+        }
+      ],
+      "originalImageOpened": true
+    },
+    {
+      "section": "preflight",
+      "at": "2026-10-29T02:35:16.500Z",
+      "base": "https://crabrix.com",
+      "rows": [
+        {
+          "width": 390,
+          "height": 844,
+          "theme": "dark",
+          "geometry": [
+            {
+              "naturalWidth": 1206,
+              "naturalHeight": 2622,
+              "width": 221.84375,
+              "height": 480
+            },
+            {
+              "naturalWidth": 2064,
+              "naturalHeight": 2752,
+              "width": 358,
+              "height": 480
+            }
+          ],
+          "scroll": 390,
+          "errors": []
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "theme": "light",
+          "geometry": [
+            {
+              "naturalWidth": 1206,
+              "naturalHeight": 2622,
+              "width": 221.84375,
+              "height": 480
+            },
+            {
+              "naturalWidth": 2064,
+              "naturalHeight": 2752,
+              "width": 358,
+              "height": 480
+            }
+          ],
+          "scroll": 390,
+          "errors": []
+        },
+        {
+          "width": 720,
+          "height": 1000,
+          "theme": "dark",
+          "geometry": [
+            {
+              "naturalWidth": 1206,
+              "naturalHeight": 2622,
+              "width": 221.84375,
+              "height": 480
+            },
+            {
+              "naturalWidth": 2064,
+              "naturalHeight": 2752,
+              "width": 332,
+              "height": 480
+            }
+          ],
+          "scroll": 720,
+          "errors": []
+        },
+        {
+          "width": 820,
+          "height": 1180,
+          "theme": "dark",
+          "geometry": [
+            {
+              "naturalWidth": 1206,
+              "naturalHeight": 2622,
+              "width": 221.84375,
+              "height": 480
+            },
+            {
+              "naturalWidth": 2064,
+              "naturalHeight": 2752,
+              "width": 360.5,
+              "height": 480
+            }
+          ],
+          "scroll": 820,
+          "errors": []
+        },
+        {
+          "width": 1024,
+          "height": 1000,
+          "theme": "dark",
+          "geometry": [
+            {
+              "naturalWidth": 1206,
+              "naturalHeight": 2622,
+              "width": 221.84375,
+              "height": 480
+            },
+            {
+              "naturalWidth": 2064,
+              "naturalHeight": 2752,
+              "width": 360.5,
+              "height": 480
+            }
+          ],
+          "scroll": 1024,
+          "errors": []
+        },
+        {
+          "width": 1440,
+          "height": 1000,
+          "theme": "dark",
+          "geometry": [
+            {
+              "naturalWidth": 1206,
+              "naturalHeight": 2622,
+              "width": 221.84375,
+              "height": 480
+            },
+            {
+              "naturalWidth": 2064,
+              "naturalHeight": 2752,
+              "width": 360.5,
+              "height": 480
+            }
+          ],
+          "scroll": 1440,
+          "errors": []
+        }
+      ],
+      "originalImageOpened": true
+    }
+  ],
+  "deliveryStage": "TestFlight available; selected for App Review; public guide published",
+  "reviewSelection": {
+    "selectedBuild": "118",
+    "state": "WAITING_FOR_REVIEW",
+    "replacedBuild": "116",
+    "submissionPending": false
+  },
+  "priorFailedCloudBuild": {
+    "number": "117",
+    "cause": "Stale canonical website copy of the updated third-party notice summary; stopped before app compilation. Fixed canonical export and bootstrap passed before 118."
+  }
+}

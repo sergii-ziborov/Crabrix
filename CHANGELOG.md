@@ -1,6 +1,6 @@
 # Changelog
 
-## Qualified for 1.1.3 (118) — offline TypeScript and project preflight
+## 1.1.3 (118) — offline TypeScript and project preflight, TestFlight
 
 - Original TypeScript 5.9.3 and 100 ES/DOM declaration files in a disposable local
   WebKit Worker. Real assignment/argument/property errors, local modules, TSX and
@@ -15,7 +15,9 @@
   AI explanation; source changes/backgrounding/Stop discard stale checker work.
 - 184 final phone/iPad Simulator checks passed without failures/skips, including
   keyboard and existing semantic import/Apply/Undo/Debug routes. No physical-device
-  timing or hard JS heap-cap claim. Signed delivery is tracked separately.
+  timing or hard JS heap-cap claim. Signed 118 is VALID / IN_BETA_TESTING and
+  selected for App Review, WAITING_FOR_REVIEW. The public guide, original captures,
+  notices and capability record are published; the release receipt records delivery.
 
 ## 1.1.3 (116) — local Rust semantic tools, TestFlight
 
