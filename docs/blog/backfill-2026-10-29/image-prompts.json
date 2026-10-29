@@ -1,0 +1,29 @@
+{
+  "mode": "built-in image_gen",
+  "images": [
+    {
+      "name": "rust-serde-json-editorial",
+      "prompt": "Use case: illustration-story. Asset: premium editorial blog cover for Crabrix, landscape 1536x1024. Topic: Rust Serde and JSON, turning raw input into trustworthy domain data. A charming orange Rust crab engineer at a luminous graphite workbench guides translucent cyan JSON-like tokens through three elegant glass gates into a precise orange-and-mint typed structure. Sophisticated isometric 3D editorial illustration, tactile dark navy materials, cinematic soft lighting, crisp composition, warm coral crab, cyan and mint accents, subtle amber. Crab stays clearly recognizable. No fake app UI, no code, no small text, no logos, no watermark. Beautiful technical magazine illustration with generous margins, excellent on both light and dark website backgrounds."
+    },
+    {
+      "name": "rust-serde-json-infographic",
+      "prompt": "Use case: infographic-diagram. Asset: polished landscape educational infographic 1536x1024 for Crabrix Rust blog. Dark graphite/navy canvas, coral orange, mint, cyan, disciplined grid, generous whitespace, large legible typography. Title exactly \"JSON TO TRUSTED DATA\". Four sequential numbered panels, connected left to right: \"1  LIMIT BYTES\" with a measured input gate; \"2  DECODE SHAPE\" with typed object blocks; \"3  VALIDATE RULES\" with a checklist; \"4  USE DOMAIN DATA\" with a solid shield and structured records. Under all panels one crisp footer exactly \"Parsing success is not business validation\". Small friendly orange Rust crab near the validation panel. Accurate conceptual educational diagram; all four stages equally sized. No extra text, no tiny text, no fake statistics, no watermark."
+    },
+    {
+      "name": "rust-serde-json-workshop",
+      "prompt": "Use case: illustration-story. Asset: landscape 1536x1024 premium technical editorial illustration for Crabrix. An orange Rust crab engineer inspects a collection of elegant glass JSON specimen boxes at a dark navy lab bench. Four conceptual test cases represented visually: a neat valid object with mint check, a missing puzzle-piece field, an oversized stack beyond an amber boundary, a mismatched numeric token blocked by coral gate. No readable text or code. Crisp sophisticated tactile 3D and vector-like geometry, precise visual hierarchy, coral crab, cyan/mint/amber accents, believable soft studio light, generous margins, beautiful modern magazine artwork. No watermark, no third-party logo."
+    },
+    {
+      "name": "rust-shared-state-editorial",
+      "prompt": "Use case: illustration-story. Asset: landscape 1536x1024 high-end Crabrix Rust article cover about Arc, Mutex and safe shared state. A friendly orange Rust crab stands at a dark graphite circular control desk with one central translucent mint data core. Several cyan paths converge on a single elegant amber access gate; exactly one path glows through the gate, the others queue calmly. The composition conveys shared ownership and controlled exclusive mutation, no claim that Arc alone locks data. Premium isometric 3D editorial style, crisp geometric forms, subtle tactile navy textures, cinematic soft light, orange coral, mint, cyan, amber. No text, no code, no branding or watermarks, generous visual breathing room."
+    },
+    {
+      "name": "rust-shared-state-infographic",
+      "prompt": "Use case: infographic-diagram. Asset: landscape educational infographic 1536x1024 in Crabrix style. Dark navy graphite background, precise balanced three-column grid, coral orange and cyan/mint accents. Title exactly \"SHARED STATE: CHOOSE THE CONTRACT\". Three equal illustrated panels. Left heading \"Arc<T>\", subtitle \"Shared ownership\", several handles pointing to one immutable object. Middle heading \"Mutex<T>\", subtitle \"One guard at a time\", one orange key accessing a data vault. Right heading \"RwLock<T>\", subtitle \"Many readers OR one writer\", several cyan read beams on one row and one amber writer beam on a separate alternative row. Footer exactly \"Lock scope and invariants still matter\". Small charming orange Rust crab at bottom left. Large crisp legible typography, restrained explanatory diagram, no fake code, no benchmark claims, no extra labels, no watermark."
+    },
+    {
+      "name": "rust-shared-state-workshop",
+      "prompt": "Use case: illustration-story. Asset: landscape 1536x1024 premium Crabrix Rust editorial illustration about short critical sections and snapshot-compute-commit. Friendly orange Rust crab worker at a dark navy workshop moving a compact mint snapshot from a small glass locked data cabinet to a spacious separate computation table; an amber version token accompanies the snapshot, a cyan return path passes a version-check gate before returning to the cabinet. Elegant three-stage spatial narrative without text, no code. Sophisticated isometric forms, tactile graphite surfaces, soft cinematic light, coral crab, mint data, cyan paths and restrained amber validation. No logo or watermark, clean generous margins."
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "path": "site/public/blog/rust-shared-state-editorial.png",
+    "sha256": "3a9167adc2c217d3ec0ec1adeaddd5a23ef7dd474c72a4b77e16902bae4f5514",
+    "bytes": 2318564
+  },
+  {
+    "path": "site/public/blog/rust-shared-state-infographic.png",
+    "sha256": "2b1ee25bd7dd44d7f9c03bf71bf12a1fca153fafa53771b003c960cd3f7dfa35",
+    "bytes": 1620521
+  },
+  {
+    "path": "site/public/blog/rust-shared-state-workshop.png",
+    "sha256": "aca9f5f04db860d98c767a7f1e74c61eda7e5befd049f0fcefd5214a0a80ec70",
+    "bytes": 2221460
+  },
+  {
+    "path": "site/public/blog/rust-serde-json-editorial.png",
+    "sha256": "965ebd3bf4edb56e8e5d60946805db95c5f475af867a9b20488f2f9db57c8e3e",
+    "bytes": 2282957
+  },
+  {
+    "path": "site/public/blog/rust-serde-json-infographic.png",
+    "sha256": "fb43fcec12e9e69509ce46ed35aae4a2d9ef20a8c90279e0c9e53bc09d9a2571",
+    "bytes": 1478286
+  },
+  {
+    "path": "site/public/blog/rust-serde-json-workshop.png",
+    "sha256": "74f064f7d6af51825c48c7bdb4c8c3712d4838c2d19c7725572ab5702136b093",
+    "bytes": 2021206
+  }
+]

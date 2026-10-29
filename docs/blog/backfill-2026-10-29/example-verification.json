@@ -1,0 +1,80 @@
+{
+  "platform": "desktop macOS",
+  "compiler": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "physicalDeviceBenchmark": false,
+  "backendExecution": false,
+  "cases": [
+    {
+      "slug": "rust-arc-mutex-rwlock-shared-state",
+      "heading": "Protect the whole invariant with one short critical section",
+      "codeSHA256": "00a40b7d7a3c2998b0f1e9ff923e8c15f76b410cd07de8a69d4fdaa365a01607",
+      "exitCode": 0,
+      "stdout": "one consistent insertion\n",
+      "stderr": "",
+      "timeoutSeconds": 15
+    },
+    {
+      "slug": "rust-arc-mutex-rwlock-shared-state",
+      "heading": "Snapshot, compute, then check before committing",
+      "codeSHA256": "f7e2a12a7fad508369390379c5c0456703a74271a50eb4264b3a793b4ea610f9",
+      "exitCode": 0,
+      "stdout": "stale proposal rejected\n",
+      "stderr": "",
+      "timeoutSeconds": 15
+    },
+    {
+      "slug": "rust-arc-mutex-rwlock-shared-state",
+      "heading": "Use Send and Sync as compiler-checked boundaries",
+      "codeSHA256": "2fba15c8c2b5eb64596dca28e65449bd0e5f78e9356c81d9ba6a4df2d01b77bf",
+      "exitCode": 0,
+      "stdout": "ownership and trait bounds checked\n",
+      "stderr": "",
+      "timeoutSeconds": 15
+    },
+    {
+      "slug": "rust-arc-mutex-rwlock-shared-state",
+      "heading": "Exercise the recovery policy with a deliberate panic",
+      "codeSHA256": "190d55f33491b2f31f98d298f354fc1ce8e0334bb56ac5eec1ca95a2aba2f7d0",
+      "exitCode": 0,
+      "stdout": "derived state repaired before reuse\n",
+      "stderr": "\nthread 'main' (191000309) panicked at src/bin/case_11.rs:17:9:\ninjected interruption before updating count\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+      "timeoutSeconds": 15
+    },
+    {
+      "slug": "rust-serde-json-validation-boundaries",
+      "heading": "Decode a transport type, then construct a domain value",
+      "codeSHA256": "8229b51f21d1a1d394b8f69f6194cf6fa65952c22a2de385fe26a6c8d29bf09f",
+      "exitCode": 0,
+      "stdout": "validated 2 tasks\n",
+      "stderr": "",
+      "timeoutSeconds": 15
+    },
+    {
+      "slug": "rust-serde-json-validation-boundaries",
+      "heading": "Missing, null and empty are three different product states",
+      "codeSHA256": "601a251a9ed57670ea10923b17e1dfa03c0db24347c6257418c5654da5601859",
+      "exitCode": 0,
+      "stdout": "all presence cases checked\n",
+      "stderr": "",
+      "timeoutSeconds": 15
+    },
+    {
+      "slug": "rust-serde-json-validation-boundaries",
+      "heading": "Represent operations with tagged enums",
+      "codeSHA256": "974493bfa084946bd9574c402b334c46714f08d0be38f651caec46393ec18080",
+      "exitCode": 0,
+      "stdout": "{\"kind\":\"rename\",\"data\":{\"title\":\"Crab lab\"}}\n",
+      "stderr": "",
+      "timeoutSeconds": 15
+    },
+    {
+      "slug": "rust-serde-json-validation-boundaries",
+      "heading": "Streaming is a framing decision as well as a parser feature",
+      "codeSHA256": "fc6aa97642859aadccb3085f2bfc77424f8cfa73df1a580582439ed4ab68c4a5",
+      "exitCode": 0,
+      "stdout": "read 2 records\n",
+      "stderr": "",
+      "timeoutSeconds": 15
+    }
+  ]
+}

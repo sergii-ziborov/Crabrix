@@ -248,6 +248,289 @@
     "readingMinutes": 11
   },
   {
+    "slug": "rust-arc-mutex-rwlock-shared-state",
+    "title": "Rust Arc, Mutex and RwLock: shared state without surprises",
+    "date": "2026-10-28",
+    "summary": "Choose Arc, Mutex or RwLock with clear ownership and lock boundaries. Learn deadlock prevention, poisoning, async guards and practical Rust concurrency tests.",
+    "relatedSlugs": [
+      "ownership-in-a-real-program",
+      "rust-async-cancellation-safe-timeouts",
+      "rust-memoization-cache-contracts",
+      "rust-performance-measure-before-optimizing"
+    ],
+    "sections": [
+      {
+        "heading": "Name the invariant before choosing a wrapper",
+        "paragraphs": [
+          "Shared state becomes difficult when several operations must agree about one fact. A document registry might track a map of open documents and a total byte count. Updating the map without the count breaks its budget, even if each individual field is accessed safely. Rust prevents many data races, but it does not automatically define the transaction your product requires. Begin by writing the relationship that must remain true.",
+          "For this guide, imagine a background indexer that reads project settings while another operation updates them. Some values can be immutable snapshots. A small mutable registry needs a consistent update. Slow analysis should not monopolize the registry lock. Those three observations lead to different tools and a clear test plan. The complete programs use the desktop standard library; the final sections explain async choices and the more limited offline execution profile on iPhone."
+        ],
+        "image": {
+          "src": "/blog/rust-shared-state-editorial.png",
+          "alt": "Orange Crabrix crabs approach a shared data core through one controlled amber access gate.",
+          "caption": "Shared ownership and permission to mutate are different responsibilities; choose both deliberately.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Arc shares ownership; it does not lock your data",
+        "paragraphs": [
+          "Arc keeps an allocation alive while strong owners remain. Cloning an Arc creates another shared owner; it does not deep-clone the underlying configuration. This makes an immutable settings snapshot convenient to distribute among workers. The configuration can be large while the ownership operation remains conceptually separate from copying its fields. That is a useful model, not a promise about an exact instruction count or universal speed advantage.",
+          "Thread safety still depends on the contained type. Arc<T> is Send and Sync when T satisfies the required Send and Sync bounds. Wrapping RefCell in Arc does not turn runtime borrow checking into cross-thread synchronization. If you need a private mutable value, keep ordinary ownership; if you need shared immutable data, Arc may be enough. Reach for a lock only when mutation and sharing must coexist, and document which component owns the right to replace a snapshot."
+        ],
+        "sources": [
+          {
+            "title": "Arc ownership and thread safety",
+            "url": "https://doc.rust-lang.org/std/sync/struct.Arc.html"
+          }
+        ],
+        "links": [
+          {
+            "title": "Box, Rc and Arc interview question",
+            "url": "/learn/interview/q-box-rc-arc/"
+          },
+          {
+            "title": "Ownership in a real program",
+            "url": "/blog/ownership-in-a-real-program/"
+          }
+        ]
+      },
+      {
+        "heading": "Protect the whole invariant with one short critical section",
+        "paragraphs": [
+          "The registry below keeps a set of document identifiers and a matching count inside one mutex. Two workers attempt the same insertion. Exactly one insertion changes both fields, and the final assertion checks their relationship. The lock protects an operation over the complete Registry, not a collection of unrelated reads. Holding separate locks for the set and count would require a more complicated protocol to preserve the same promise.",
+          "The braces make the guard's lifetime visible. Once the block ends, the mutex unlocks through the guard's destructor. No file access, network operation or expensive indexing belongs inside that insertion block. The expect calls are explicit test-harness policies: an unexpected panic or poisoned lock fails this demonstration. A service or editor should choose a recover-or-stop policy suitable for its state instead of copying those expects without thinking."
+        ],
+        "code": "use std::collections::HashSet;\nuse std::sync::{Arc, Mutex};\nuse std::thread;\n\n#[derive(Default)]\nstruct Registry {\n    documents: HashSet<String>,\n    count: usize,\n}\n\nfn main() {\n    let registry = Arc::new(Mutex::new(Registry::default()));\n    let mut workers = Vec::new();\n    for _ in 0..2 {\n        let registry = Arc::clone(&registry);\n        workers.push(thread::spawn(move || {\n            {\n                let mut state = registry.lock().expect(\"healthy registry\");\n                if state.documents.insert(\"main.rs\".to_owned()) {\n                    state.count += 1;\n                }\n                assert_eq!(state.count, state.documents.len());\n            } // unlock before other work\n        }));\n    }\n    for worker in workers {\n        worker.join().expect(\"worker completed\");\n    }\n    let state = registry.lock().expect(\"healthy final registry\");\n    assert_eq!(state.count, 1);\n    assert_eq!(state.documents.len(), 1);\n    println!(\"one consistent insertion\");\n}",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Mutex guards and locking",
+            "url": "https://doc.rust-lang.org/std/sync/struct.Mutex.html"
+          }
+        ],
+        "links": [
+          {
+            "title": "Shared state lesson",
+            "url": "/learn/concurrency/shared-state/"
+          }
+        ]
+      },
+      {
+        "heading": "Use RwLock for a measured access pattern",
+        "paragraphs": [
+          "An RwLock allows multiple read guards or one exclusive write guard. That can fit a frequently read settings table whose updates are occasional and short. It does not imply that every read-heavy application becomes faster. Scheduling policy and the implementation can affect waiting, and the standard lock does not promise one universal reader/writer priority. Measure contention and tail latency with representative readers and writers before adopting a more complex design.",
+          "Do not retain a read guard while trying to acquire a write guard on the same lock. That is not an automatic upgrade operation. Release the read guard, compute a proposal if appropriate, then acquire the write guard and recheck the assumptions that mattered. A version field can make that recheck explicit. If another writer changed the value between those steps, decide whether to recompute, merge or reject; blindly writing the stale result defeats the point of protecting the data."
+        ],
+        "sources": [
+          {
+            "title": "RwLock access and platform scheduling policy",
+            "url": "https://doc.rust-lang.org/std/sync/struct.RwLock.html"
+          }
+        ]
+      },
+      {
+        "heading": "Read the three contracts separately",
+        "paragraphs": [
+          "The diagram separates lifetime ownership, exclusive access and reader/writer access. Real designs often compose them, such as Arc<Mutex<Registry>> or Arc<RwLock<Settings>>. Each layer answers a different question. Adding all three wrappers because concurrency feels dangerous does not create a stronger specification. It creates more places where a guard, a clone or an unexpected reference can outlive the operation you intended.",
+          "During review, ask who may retain the value, which operation needs mutation, and how long that permission lasts. Then ask what callers observe if the operation fails halfway through. These questions expose incomplete designs earlier than debating lock throughput. A lock that perfectly serializes updates can still serialize the wrong updates, and a data-race-free cache can still return an obsolete result after its configuration changes."
+        ],
+        "image": {
+          "src": "/blog/rust-shared-state-infographic.png",
+          "alt": "Crabrix infographic compares Arc shared ownership, Mutex exclusive guards and RwLock readers or writer.",
+          "caption": "The three wrappers describe different contracts; none supplies your application invariant automatically.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Cache keys and invalidation contracts",
+            "url": "/blog/rust-memoization-cache-contracts/"
+          },
+          {
+            "title": "Send and Sync",
+            "url": "/learn/concurrency/send-sync/"
+          }
+        ]
+      },
+      {
+        "heading": "Snapshot, compute, then check before committing",
+        "paragraphs": [
+          "Move slow computation outside the lock by taking a small owned snapshot first. The next program records a version with that snapshot, prepares a proposal without a guard, and commits only if the version is unchanged. Its test deliberately introduces an intervening edit and verifies rejection. This is a simple optimistic protocol, not a complete collaborative-edit algorithm or a guarantee that every conflict can be merged.",
+          "The version itself is part of the invariant. Every meaningful write must update it through the same policy; otherwise a writer can change data without invalidating a stale proposal. The example uses checked increment and refuses a write when the counter is exhausted. Long-lived systems may need another identity strategy, but silently wrapping the counter would weaken the equality check. Keep the payload and version together under the same lock."
+        ],
+        "code": "use std::sync::RwLock;\n\nstruct Settings {\n    version: u64,\n    title: String,\n}\n\nfn commit(state: &RwLock<Settings>, expected: u64, title: String) -> bool {\n    let mut current = state.write().expect(\"healthy settings\");\n    if current.version != expected {\n        return false;\n    }\n    let Some(next) = current.version.checked_add(1) else {\n        return false;\n    };\n    current.title = title;\n    current.version = next;\n    true\n}\n\nfn main() {\n    let state = RwLock::new(Settings {\n        version: 0,\n        title: \"crab\".into(),\n    });\n    let (version, title) = {\n        let current = state.read().expect(\"healthy snapshot\");\n        (current.version, current.title.clone())\n    };\n    let proposal = title.to_uppercase(); // no guard is held\n    assert!(commit(&state, version, \"new edit\".into()));\n    assert!(!commit(&state, version, proposal));\n    assert_eq!(state.read().unwrap().title, \"new edit\");\n    println!(\"stale proposal rejected\");\n}",
+        "codeLanguage": "rust",
+        "image": {
+          "src": "/blog/rust-shared-state-workshop.png",
+          "alt": "Crabrix crabs carry a versioned snapshot to a separate workbench and check it before returning.",
+          "caption": "Keep expensive work outside the critical section, then validate the snapshot version before committing.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Checked arithmetic and conversions",
+            "url": "/blog/rust-checked-arithmetic-conversions/"
+          }
+        ]
+      },
+      {
+        "heading": "Prevent deadlock with a global acquisition policy",
+        "paragraphs": [
+          "Two individually reasonable operations can deadlock when each holds a lock the other needs. Moving a document between two registries is a classic example: one path locks source then destination while another path chooses the reverse order. Specify one ordering based on stable registry identity and use it everywhere. Also handle the same-registry case before attempting to acquire the same non-reentrant lock twice.",
+          "Hidden calls matter too. A callback, formatter, destructor or logging hook may reenter code that needs your lock. Prefer extracting the small facts needed for a message and formatting after the guard is gone. Avoid calling arbitrary user code under an internal lock. If nested locking is unavoidable, document the acquisition order beside the operations and add a bounded regression test. Rust's borrow checker does not prove that competing threads will always make progress."
+        ],
+        "links": [
+          {
+            "title": "Deadlock avoidance",
+            "url": "/learn/concurrency/deadlock-avoidance/"
+          }
+        ]
+      },
+      {
+        "heading": "Poisoning is a signal to review the invariant",
+        "paragraphs": [
+          "A standard mutex can become poisoned when a thread panics while holding its guard. Acquiring it then returns an error containing access to the guard. This warns that the protected operation may have stopped between related updates. It is not a database rollback, a complete panic detector or a memory-safety boundary you can build unsafe assumptions around. Recovery must be based on what the data means.",
+          "For the registry example, a recovery routine might rebuild the stored count from the authoritative document set, validate the rest of the state, and only then deliberately clear poison. For an externally visible financial operation, rebuilding an in-memory count may be nowhere near sufficient. Decide whether to recover, replace the state, fail the operation or terminate the component. Tests should exercise the selected policy instead of treating unwrap as the policy by accident."
+        ],
+        "sources": [
+          {
+            "title": "Mutex poisoning and its limitations",
+            "url": "https://doc.rust-lang.org/std/sync/struct.Mutex.html#poisoning"
+          }
+        ],
+        "links": [
+          {
+            "title": "Mutex poisoning lesson",
+            "url": "/learn/concurrency/mutex-poisoning/"
+          }
+        ]
+      },
+      {
+        "heading": "Async changes waiting, not the business invariant",
+        "paragraphs": [
+          "An async mutex lets a task wait without occupying an executor thread while the lock is unavailable. A standard mutex may still be appropriate for a short, uncontended critical section that never crosses await. Choosing an async wrapper does not justify slow work under a guard. It can still serialize every request behind one task, and an async program can still deadlock through circular waits.",
+          "Prefer a synchronous helper that completes the protected update before the caller awaits unrelated work. A standard guard held across await can also make a future fail Send requirements for spawning, depending on the guard and executor contract. An async guard that is permitted across await solves that type boundary, not your cancellation policy. If cancellation can interrupt a multi-stage update, define the visible intermediate state or commit only after the awaited work succeeds."
+        ],
+        "sources": [
+          {
+            "title": "Tokio guidance on shared state",
+            "url": "https://tokio.rs/tokio/tutorial/shared-state"
+          }
+        ],
+        "links": [
+          {
+            "title": "Lock scope across await",
+            "url": "/learn/interview/q-async-locks/"
+          },
+          {
+            "title": "Cancellation without lost work",
+            "url": "/blog/rust-async-cancellation-safe-timeouts/"
+          }
+        ]
+      },
+      {
+        "heading": "Use Send and Sync as compiler-checked boundaries",
+        "paragraphs": [
+          "Send concerns transferring ownership between threads. Sync means that a shared reference can be transferred safely. These are related but different properties, and neither means the value performs its own background work. Small compile-time assertions make an intended boundary executable: require a type to satisfy the traits where your worker or shared container actually needs them. This turns a future refactor into a useful compiler diagnostic.",
+          "The next complete program checks the intended registry wrapper without spawning a thread. Add a non-Send field in a scratch copy and inspect the resulting error. Do not fix a failing bound with an unsafe implementation merely because a wrapper looks similar to a thread-safe type. The implementation must uphold the real ownership and aliasing contract for every operation. Most application code should select suitable fields and established primitives instead."
+        ],
+        "code": "use std::sync::{Arc, Mutex};\n\nstruct Registry {\n    names: Vec<String>,\n}\nfn assert_send_sync<T: Send + Sync>() {}\n\nfn main() {\n    assert_send_sync::<Arc<Mutex<Registry>>>();\n    let state = Arc::new(Mutex::new(Registry {\n        names: vec![\"main.rs\".into()],\n    }));\n    let another_owner = Arc::clone(&state);\n    assert!(Arc::ptr_eq(&state, &another_owner));\n    assert_eq!(another_owner.lock().unwrap().names.len(), 1);\n    println!(\"ownership and trait bounds checked\");\n}",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Send boundary",
+            "url": "https://doc.rust-lang.org/std/marker/trait.Send.html"
+          },
+          {
+            "title": "Sync definition",
+            "url": "https://doc.rust-lang.org/std/marker/trait.Sync.html"
+          }
+        ]
+      },
+      {
+        "heading": "A scoped borrow can remove the need for shared ownership",
+        "paragraphs": [
+          "Not every worker requires an Arc. If desktop threads are guaranteed to finish before a surrounding scope returns, scoped threads can borrow data from that scope. This can be a simpler contract for a fixed batch of independent calculations over immutable input. The scope joins unfinished scoped threads before returning, which ties their access to an explicit lifetime instead of requiring a globally retained owner.",
+          "That does not remove synchronization requirements for shared mutation, and it does not add OS-thread support to a target without it. It changes the ownership shape of a desktop batch. Before introducing reference counting, ask whether the worker really outlives the caller or whether the API merely made that relationship difficult to see. Likewise, a single-thread event loop may use ordinary owned state without cross-thread locks at all."
+        ],
+        "sources": [
+          {
+            "title": "Scoped thread lifetimes",
+            "url": "https://doc.rust-lang.org/std/thread/fn.scope.html"
+          }
+        ]
+      },
+      {
+        "heading": "Exercise the recovery policy with a deliberate panic",
+        "paragraphs": [
+          "The program below poisons a mutex inside catch_unwind, repairs a derived count from authoritative data, and clears poison only after restoring that invariant. It is a small recovery test, not an instruction to catch every panic in production. It assumes an unwind panic strategy; a panic-abort build cannot run this recovery path. The default panic hook may still print the deliberately triggered panic even though the program catches it and finishes successfully.",
+          "The important assertion comes after repair: later users acquire healthy state with a correct count. Merely extracting the poisoned guard and continuing would hide the broken value. Real recovery may require checking more fields, rebuilding an index, discarding an incomplete transaction or refusing access entirely. Keep the test aligned with the actual invariant, and include a case where repair itself is impossible instead of reporting every poisoned state as successfully recovered."
+        ],
+        "code": "use std::panic::catch_unwind;\nuse std::sync::Mutex;\n\nstruct Index {\n    items: Vec<String>,\n    count: usize,\n}\n\nfn main() {\n    let index = Mutex::new(Index {\n        items: Vec::new(),\n        count: 0,\n    });\n    let failed = catch_unwind(|| {\n        let mut state = index.lock().unwrap();\n        state.items.push(\"main.rs\".into());\n        panic!(\"injected interruption before updating count\");\n    });\n    assert!(failed.is_err());\n    assert!(index.is_poisoned());\n    {\n        let mut state = match index.lock() {\n            Ok(_) => panic!(\"fixture must be poisoned\"),\n            Err(error) => error.into_inner(),\n        };\n        state.count = state.items.len();\n        index.clear_poison();\n    }\n    let state = index.lock().expect(\"repaired index\");\n    assert_eq!(state.count, 1);\n    assert_eq!(state.count, state.items.len());\n    println!(\"derived state repaired before reuse\");\n}",
+        "codeLanguage": "rust"
+      },
+      {
+        "heading": "Measure waiting separately from useful work",
+        "paragraphs": [
+          "A lock optimization needs a question more precise than whether one benchmark got faster. Record time spent waiting, time spent holding the guard and end-to-end request latency. A short average critical section can still have rare expensive paths that dominate responsiveness. Test a mix of readers, writers and duplicate work similar to the application rather than only uncontended acquisitions in a tight loop.",
+          "Use those observations to choose the next change. A long hold suggests moving computation or allocation out of the critical section. Frequent contention may suggest batching or a different ownership boundary. High memory use after snapshotting may mean the cloned payload is too large. Verify that the optimized version still rejects stale commits and preserves the same invariant; a faster result obtained by dropping that check is a different contract."
+        ]
+      },
+      {
+        "heading": "Prefer a single owner when the protocol gets complicated",
+        "paragraphs": [
+          "If every mutation needs several locks and a page of ordering rules, consider one owner processing commands. Message passing can centralize validation and make the transaction boundary explicit. It also creates a queueing problem: messages consume memory, senders can outrun the owner, and callers need a response, cancellation and shutdown policy. A bounded queue supplies backpressure only when the sender actually respects its result or waiting behavior.",
+          "Atoms are another focused tool, not a universal replacement. A standalone metrics counter may tolerate relaxed ordering because no surrounding payload is being published through it. A ready flag controlling access to other memory needs a deliberate ordering argument. Likewise, sharding a map can reduce contention but makes cross-shard invariants harder. Compare designs using the actual operation, contention distribution and memory budget instead of choosing whichever primitive sounds most advanced."
+        ],
+        "sources": [
+          {
+            "title": "Bounded standard channels",
+            "url": "https://doc.rust-lang.org/std/sync/mpsc/fn.sync_channel.html"
+          },
+          {
+            "title": "Atomic memory ordering",
+            "url": "https://doc.rust-lang.org/std/sync/atomic/enum.Ordering.html"
+          }
+        ],
+        "links": [
+          {
+            "title": "Channels versus mutex interview",
+            "url": "/learn/interview/q-channels-vs-mutex/"
+          },
+          {
+            "title": "Measure before optimizing",
+            "url": "/blog/rust-performance-measure-before-optimizing/"
+          }
+        ]
+      },
+      {
+        "heading": "Test behavior, and state where the example can run",
+        "paragraphs": [
+          "The first program exercises real desktop OS threads; run it with rustc or a normal Cargo binary. Repeat runs are useful smoke tests, but they do not enumerate every schedule. Check invariant preservation, duplicate operations, stale proposals, poison recovery and shutdown under a bounded deadline. A hang must fail the harness rather than leave a test running forever. Specialized schedule exploration can complement tests when a concurrent algorithm warrants it.",
+          "Crabrix targets a local WASI profile that does not provide general OS-thread spawning or listening servers. Therefore the desktop-thread program is not advertised as an iPhone concurrency benchmark. The snapshot and trait-bound examples separate logic from spawning, but still require target support for the primitives they use. Inspect the exact local profile. The design habit travels further than any wrapper: keep ownership explicit, protect complete invariants, minimize guard lifetime, and make stale or interrupted work produce a deliberate outcome."
+        ],
+        "links": [
+          {
+            "title": "Local execution limits",
+            "url": "/guide/#limits"
+          },
+          {
+            "title": "Concurrency and async course",
+            "url": "/learn/concurrency/"
+          },
+          {
+            "title": "Testing useful boundaries",
+            "url": "/blog/testing-rust-boundaries-fixtures-doctests/"
+          }
+        ]
+      }
+    ],
+    "readingMinutes": 11
+  },
+  {
     "slug": "rust-performance-measure-before-optimizing",
     "title": "Rust performance: measure before you optimize",
     "date": "2026-10-27",
@@ -450,6 +733,12 @@
           {
             "title": "Crabrix workflow and execution limits",
             "url": "https://crabrix.com/guide/"
+          }
+        ],
+        "links": [
+          {
+            "title": "Rust Arc, Mutex and RwLock: shared state without surprises",
+            "url": "/blog/rust-arc-mutex-rwlock-shared-state/"
           }
         ]
       }
@@ -673,6 +962,285 @@
           {
             "title": "Continue with Rust ownership lessons",
             "url": "https://crabrix.com/learn/ownership/"
+          }
+        ]
+      }
+    ],
+    "readingMinutes": 11
+  },
+  {
+    "slug": "rust-serde-json-validation-boundaries",
+    "title": "Rust Serde and JSON: build a trustworthy data boundary",
+    "date": "2026-10-25",
+    "summary": "Parse JSON with Serde, validate domain rules, handle missing fields and null, and test evolving Rust APIs with bounded inputs and useful diagnostics.",
+    "relatedSlugs": [
+      "result-errors-that-help",
+      "rust-enums-state-machines",
+      "testing-rust-boundaries-fixtures-doctests",
+      "rust-strings-utf8-safe-parsing"
+    ],
+    "sections": [
+      {
+        "heading": "Start with the boundary, not the JSON string",
+        "paragraphs": [
+          "A JSON document can be perfectly valid and still describe an impossible operation. A project import might contain an empty name, twenty million tasks, a negative revision, or a deadline that precedes its creation. Deserialization answers whether bytes fit a representation. Your application must separately decide whether the represented request is allowed. Treating these as different questions makes Rust APIs easier to change and substantially easier to test.",
+          "This guide builds a small task-import boundary: bounded text enters, Serde decodes a transport structure, validation produces a domain value, and only then does application work begin. The same design fits configuration files, HTTP request bodies, browser messages and saved documents. Nothing here needs a running web server. The examples use explicit dependency versions and ordinary local Cargo; their purpose is to make data contracts visible rather than hide every failure behind a generic parsing message."
+        ],
+        "image": {
+          "src": "/blog/rust-serde-json-editorial.png",
+          "alt": "An orange Crabrix crab guides JSON tokens through gates into structured domain data.",
+          "caption": "The useful boundary has several gates: a successful JSON parse is only one of them.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Use a reproducible, deliberately small setup",
+        "paragraphs": [
+          "Create a normal binary package and put the following dependencies in Cargo.toml. The derive feature generates trait implementations for your own types; serde_json supplies the JSON format. These pinned versions are the versions used for this article, not a claim that every project should freeze them forever. Keep the generated Cargo.lock with an application and review dependency updates through the same tests as source changes.",
+          "Each Rust block below is a complete, independent main program for this manifest. Replace src/main.rs with one block at a time and run cargo run; do not concatenate their repeated types and main functions. The examples deliberately keep transport concerns small enough to inspect. A production endpoint also needs authentication, authorization and request-level resource limits, but none of those should be confused with whether a string can become a Rust structure."
+        ],
+        "code": "[package]\nname = \"json-boundary-lab\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[dependencies]\nserde = { version = \"=1.0.228\", features = [\"derive\"] }\nserde_json = \"=1.0.145\"",
+        "codeLanguage": "toml",
+        "sources": [
+          {
+            "title": "Serde derive setup",
+            "url": "https://serde.rs/derive.html"
+          }
+        ],
+        "links": [
+          {
+            "title": "Dependency kinds",
+            "url": "/learn/projects/dependency-kinds/"
+          },
+          {
+            "title": "Lockfile reproducibility",
+            "url": "/learn/projects/lockfile-reproducibility/"
+          }
+        ]
+      },
+      {
+        "heading": "Decode a transport type, then construct a domain value",
+        "paragraphs": [
+          "The first program separates ImportRequest from TaskBatch. The request describes a required title and a list of external task strings. The validated type owns only accepted values. Conversion checks the title after trimming, counts tasks, and rejects empty task names before returning anything. Because validation builds a new vector, failure cannot leave a half-imported project behind. That small transactional property is often more valuable than a clever attribute.",
+          "The byte check happens before deserialization and measures UTF-8 bytes, not the number of displayed characters. It bounds this already-buffered input; it does not retroactively prevent a network layer from buffering an enormous request. Apply the corresponding limit while receiving or reading data too. The explicit limits here are example product decisions. Pick real limits from your storage, responsiveness and abuse budgets, then keep boundary cases in tests."
+        ],
+        "code": "use serde::Deserialize;\n\n#[derive(Deserialize)]\n#[serde(deny_unknown_fields)]\nstruct ImportRequest {\n    title: String,\n    tasks: Vec<String>,\n}\n\n#[derive(Debug, PartialEq)]\nstruct TaskBatch {\n    title: String,\n    tasks: Vec<String>,\n}\n\nfn decode(input: &str) -> Result<TaskBatch, String> {\n    if input.len() > 16_384 {\n        return Err(\"input exceeds 16 KiB\".into());\n    }\n    let wire: ImportRequest = serde_json::from_str(input)\n        .map_err(|e| format!(\"JSON at {}:{}: {e}\", e.line(), e.column()))?;\n    let title = wire.title.trim().to_owned();\n    if title.is_empty() || title.chars().count() > 80 {\n        return Err(\"title must contain 1..=80 Unicode scalar values\".into());\n    }\n    if wire.tasks.len() > 100 {\n        return Err(\"at most 100 tasks are accepted\".into());\n    }\n    let mut tasks = Vec::with_capacity(wire.tasks.len());\n    for (index, task) in wire.tasks.into_iter().enumerate() {\n        let task = task.trim().to_owned();\n        if task.is_empty() {\n            return Err(format!(\"tasks[{index}] is empty\"));\n        }\n        tasks.push(task);\n    }\n    Ok(TaskBatch { title, tasks })\n}\n\nfn main() {\n    let good = r#\"{\"title\":\" Rust lab \",\"tasks\":[\"read\",\"test\"]}\"#;\n    let batch = decode(good).expect(\"valid fixture\");\n    assert_eq!(batch.title, \"Rust lab\");\n    assert_eq!(batch.tasks, [\"read\", \"test\"]);\n    assert!(decode(r#\"{\"title\":\" \",\"tasks\":[]}\"#).is_err());\n    assert!(decode(r#\"{\"title\":\"lab\",\"tasks\":[\"\"]}\"#).is_err());\n    assert!(decode(r#\"{\"title\":\"lab\",\"tasks\":[],\"typo\":1}\"#).is_err());\n    assert!(decode(&\" \".repeat(16_385)).is_err());\n    println!(\"validated {} tasks\", batch.tasks.len());\n}",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Typed JSON decoding",
+            "url": "https://docs.rs/serde_json/1.0.145/serde_json/fn.from_str.html"
+          }
+        ]
+      },
+      {
+        "heading": "Choose an unknown-field policy on purpose",
+        "paragraphs": [
+          "An ignored field can be harmless forward compatibility or a dangerous typo. A user editing a small configuration may expect retrys to fail rather than quietly leave retries at its default. A client consuming a public API may instead need to tolerate a new descriptive field introduced by the server. Strictness is therefore a boundary decision, not a universal definition of good JSON. The task-import example deliberately chooses a strict request contract.",
+          "Serde ignores unknown JSON fields by default for ordinary derived structures; deny_unknown_fields asks it to reject them. Avoid combining that policy with flatten: the documented combination is unsupported. If you need an extension map, design the accepted namespace and size budget explicitly. Do not silently add a catch-all map merely to make a failing fixture pass. Write down which producer changes must remain compatible and which require a versioned migration."
+        ],
+        "sources": [
+          {
+            "title": "Container attributes and unknown fields",
+            "url": "https://serde.rs/container-attrs.html"
+          },
+          {
+            "title": "Flatten and field attributes",
+            "url": "https://serde.rs/field-attrs.html"
+          }
+        ]
+      },
+      {
+        "heading": "Missing, null and empty are three different product states",
+        "paragraphs": [
+          "For an Option field in an ordinary derived struct, both a missing key and an explicit JSON null normally deserialize to None. An empty string is still Some containing an empty string. That behavior is convenient for optional profile text, but it loses information needed by many patch endpoints: omitted may mean leave unchanged, while null may mean clear the value. Decide those semantics before selecting the field type.",
+          "The following small inspection program makes the distinction without pretending a nested Option automatically solves it. Value::get returns no entry for an absent key and a present Null for explicit null. The example also rejects a number instead of manufacturing a default string. For a larger patch schema, use a deliberately designed presence type or a well-tested custom deserializer, and keep the public wire examples beside its tests."
+        ],
+        "code": "use serde_json::{Value, json};\n\nfn describe(value: &Value) -> Result<&'static str, &'static str> {\n    if !value.is_object() {\n        return Err(\"patch must be an object\");\n    }\n    match value.get(\"nickname\") {\n        None => Ok(\"unchanged\"),\n        Some(Value::Null) => Ok(\"clear\"),\n        Some(Value::String(s)) if s.is_empty() => Ok(\"empty string\"),\n        Some(Value::String(_)) => Ok(\"replace\"),\n        Some(_) => Err(\"nickname must be a string or null\"),\n    }\n}\n\nfn main() {\n    assert!(describe(&json!(7)).is_err());\n    assert_eq!(describe(&json!({})), Ok(\"unchanged\"));\n    assert_eq!(describe(&json!({\"nickname\":null})), Ok(\"clear\"));\n    assert_eq!(describe(&json!({\"nickname\":\"\"})), Ok(\"empty string\"));\n    assert_eq!(describe(&json!({\"nickname\":\"crab\"})), Ok(\"replace\"));\n    assert!(describe(&json!({\"nickname\":7})).is_err());\n    println!(\"all presence cases checked\");\n}",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Value access and JSON variants",
+            "url": "https://docs.rs/serde_json/1.0.145/serde_json/enum.Value.html"
+          }
+        ]
+      },
+      {
+        "heading": "Make the processing stages visible",
+        "paragraphs": [
+          "Imagine an import report with four distinct results: too large, malformed representation, invalid business request, and accepted batch. A user can act on each one differently. Retrying an oversized file without editing it is pointless. Fixing a missing bracket will not repair an empty project title. Keeping these outcomes separate also makes support logs useful without recording the entire document.",
+          "The diagram is a conceptual pipeline rather than a promise about compiler internals or allocation counts. In your own code, a typed error enum can carry a category and a safe field path while preserving the original parser error as a source. The example uses String to keep the complete program compact. If callers need to branch on categories, replace those strings with variants before the boundary becomes a public library API."
+        ],
+        "image": {
+          "src": "/blog/rust-serde-json-infographic.png",
+          "alt": "Crabrix infographic showing byte limits, shape decoding, rule validation and trusted domain data.",
+          "caption": "Limit bytes, decode shape, validate domain rules, then perform work; each stage has its own failure meaning.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Error design",
+            "url": "/learn/projects/errors/"
+          },
+          {
+            "title": "Useful Result boundaries",
+            "url": "/blog/result-errors-that-help/"
+          }
+        ]
+      },
+      {
+        "heading": "Represent operations with tagged enums",
+        "paragraphs": [
+          "A request with a kind string and five unrelated optional fields invites impossible combinations. A tagged enum lets the representation express which fields belong to each operation. In the example, rename carries a title while archive carries no data. Callers handle the decoded operation with an exhaustive match. There is no branch that accidentally archives because a string comparison used the wrong capitalization.",
+          "Tagged representation is still a protocol choice. The default external representation, an internal tag, and an adjacent tag produce different JSON shapes. Here an adjacent kind/content pair keeps the payload boundary obvious. Renaming variants changes the wire contract unless you provide a deliberate compatibility path. Keep old request fixtures when evolving an API, and verify the actual serialized shape rather than assuming a Rust rename is a private refactor."
+        ],
+        "code": "use serde::{Deserialize, Serialize};\n\n#[derive(Debug, PartialEq, Serialize, Deserialize)]\n#[serde(tag = \"kind\", content = \"data\", rename_all = \"snake_case\")]\nenum Command {\n    Rename { title: String },\n    Archive,\n}\n\nfn main() -> Result<(), Box<dyn std::error::Error>> {\n    let input = r#\"{\"kind\":\"rename\",\"data\":{\"title\":\"Crab lab\"}}\"#;\n    let command: Command = serde_json::from_str(input)?;\n    match &command {\n        Command::Rename { title } => assert_eq!(title, \"Crab lab\"),\n        Command::Archive => panic!(\"wrong fixture variant\"),\n    }\n    let encoded = serde_json::to_string(&command)?;\n    assert_eq!(serde_json::from_str::<Command>(&encoded)?, command);\n    assert!(serde_json::from_str::<Command>(r#\"{\"kind\":\"remove\"}\"#).is_err());\n    println!(\"{encoded}\");\n    Ok(())\n}",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Serde enum representations",
+            "url": "https://serde.rs/enum-representations.html"
+          }
+        ],
+        "links": [
+          {
+            "title": "Enums and state machines",
+            "url": "/blog/rust-enums-state-machines/"
+          }
+        ]
+      },
+      {
+        "heading": "Borrow only when the input lifetime really fits",
+        "paragraphs": [
+          "Borrowed strings can avoid copying some fields when deserializing from retained text. They also make the output depend on that text remaining alive. A structure borrowing from a temporary response buffer cannot simply be returned after the buffer is destroyed. This is a useful ownership constraint, not a compiler inconvenience to bypass with unsafe code or leaked memory.",
+          "JSON escaping adds another wrinkle: a string containing escapes may need decoded storage rather than a direct slice of the original bytes. Do not advertise every borrowed representation as universally zero-copy. Start with owned String fields when records must survive independently, enter a cache, or cross a task boundary. Optimize a measured hot boundary later, with fixtures containing escaped characters and non-ASCII text, and include retained input memory in the comparison."
+        ],
+        "sources": [
+          {
+            "title": "Deserializer lifetimes and borrowing",
+            "url": "https://serde.rs/lifetimes.html"
+          }
+        ],
+        "links": [
+          {
+            "title": "Owned or borrowed data",
+            "url": "/learn/ownership/owned-or-borrowed/"
+          },
+          {
+            "title": "UTF-8 parsing boundaries",
+            "url": "/blog/rust-strings-utf8-safe-parsing/"
+          }
+        ]
+      },
+      {
+        "heading": "Streaming is a framing decision as well as a parser feature",
+        "paragraphs": [
+          "A stream of separate JSON objects is different from one JSON array containing many objects. StreamDeserializer can iterate successive top-level values; it does not automatically turn every large array into an element-by-element application protocol. Decide whether your format is a single document, newline-delimited records, or another framed sequence before choosing a reader. Producers and consumers must agree where a record ends.",
+          "The program below parses two separate objects and validates their shape. It still holds the small input string in memory, so it demonstrates record iteration rather than a bounded network transport. A real import needs limits on individual records, total records and processing work. A malformed record also needs an explicit stop-or-skip policy; skipping arbitrary bytes until another brace appears is not reliable JSON recovery."
+        ],
+        "code": "use serde::Deserialize;\n\n#[derive(Deserialize)]\nstruct Record {\n    id: u64,\n}\n\nfn main() -> Result<(), Box<dyn std::error::Error>> {\n    let input = r#\"{\"id\":1}\n{\"id\":2}\n\"#;\n    let records = serde_json::Deserializer::from_str(input).into_iter::<Record>();\n    let mut ids = Vec::new();\n    for record in records {\n        ids.push(record?.id);\n    }\n    assert_eq!(ids, [1, 2]);\n    println!(\"read {} records\", ids.len());\n    Ok(())\n}",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Successive JSON values",
+            "url": "https://docs.rs/serde_json/1.0.145/serde_json/struct.StreamDeserializer.html"
+          }
+        ]
+      },
+      {
+        "heading": "Treat diagnostics and resource limits as part of the API",
+        "paragraphs": [
+          "The JSON error type exposes categories and line/column positions. Those help distinguish malformed syntax, unexpected data and incomplete input, but a line number is not a complete business-field path. Preserve the diagnostic for developers while giving users a precise, stable explanation where possible. Never promise that every failure can be retried: a truncated transport, a permanent schema mismatch and an authorization refusal require different responses.",
+          "A byte ceiling does not bound every cost. Nested structures, output collections, repeated validation and large numeric values can impose additional work. Keep the parser's normal recursion protection; disabling it requires a separately justified strategy. Avoid logging raw credentials or complete imported documents just because decoding failed. Record safe context such as format version, a generated request identifier and the rejected rule, with payload access reserved for an explicit debugging workflow."
+        ],
+        "sources": [
+          {
+            "title": "JSON error categories and positions",
+            "url": "https://docs.rs/serde_json/1.0.145/serde_json/struct.Error.html"
+          },
+          {
+            "title": "Deserializer recursion controls",
+            "url": "https://docs.rs/serde_json/1.0.145/serde_json/struct.Deserializer.html"
+          }
+        ]
+      },
+      {
+        "heading": "Give numbers a range and a unit",
+        "paragraphs": [
+          "Decoding a JSON number into u64 checks one representation boundary. It does not establish that the value is a sensible timeout, an affordable allocation or a valid monetary amount. A timeout of zero and a timeout of fifty years may both fit the integer type. Convert transport values into domain types that carry the accepted range and make the unit visible in names such as timeout_ms. Validate before converting into platform-sized allocation counts.",
+          "Large identifiers also cross language boundaries. A JavaScript consumer cannot represent every u64 integer exactly as an ordinary Number. If the protocol must preserve such identifiers, agree on a string representation and validate its format explicitly on both sides. Avoid routing exact money through floating-point arithmetic just because JSON supports numbers. State the currency and integer minor-unit policy, or choose a documented decimal representation. Round-trip tests should include the largest accepted value and one beyond it."
+        ],
+        "links": [
+          {
+            "title": "Numeric safety and conversions",
+            "url": "/blog/rust-checked-arithmetic-conversions/"
+          }
+        ]
+      },
+      {
+        "heading": "Defaults and aliases are compatibility promises",
+        "paragraphs": [
+          "A default changes what an absent field means. Adding default to a required permission or safety limit can accidentally turn a rejected old request into an accepted new one. Pick the missing-field behavior as a product decision, then encode it. For a harmless display preference, a default may be appropriate; for the identity of the object being edited, requiring an explicit value is often clearer. Do not use defaults simply to silence a failing import.",
+          "An alias can accept an old field spelling while serialization emits the new spelling. Keep fixtures for each supported spelling and a conflict case containing both names. This is especially useful when a saved-document format outlives the application version that first wrote it. Treat aliases and defaults as documented migration behavior, with a retirement policy where needed, rather than accumulating a permanent collection of unexplained exceptions in the struct definition."
+        ],
+        "sources": [
+          {
+            "title": "Field defaults, aliases and renaming",
+            "url": "https://serde.rs/field-attrs.html"
+          }
+        ]
+      },
+      {
+        "heading": "Keep schema migration separate from application effects",
+        "paragraphs": [
+          "When a format changes substantially, give its envelope an explicit version and migrate old representations into the current domain model. Test the old input, the migrated value and the rejection of unsupported future versions. Migration should not quietly reinterpret a string identifier as a numeric array index or discard a field that still affects behavior. If information is intentionally dropped, explain that choice and preserve the original document when recovery matters.",
+          "For the task-import lab, a useful extension is a version-two task object containing text and completed status. Write a fixture for the original string array, convert every old item into a pending task, and compare the resulting domain batch with an equivalent version-two fixture. Keep that conversion pure. Saving or importing the migrated batch should remain a separate step so a failed later validation cannot overwrite the only usable copy."
+        ]
+      },
+      {
+        "heading": "Test compatibility in both directions",
+        "paragraphs": [
+          "A round trip proves that your current serializer and deserializer agree on one value. It does not prove that old saved documents still load or that an older client understands new output. Add golden input fixtures for supported historical versions, then assert the validated meaning. Test required-field removal, field aliases, unknown variants, wrong scalar types, missing versus null, whitespace-only titles and the exact size boundary.",
+          "Also test that rejection happens before effects. In the import example, the useful assertion is that an invalid third task creates no first or second task. Keep decoding and validation pure so that this is easy to establish. If persistence is separate, make the accepted TaskBatch the input to one deliberate operation. This keeps malformed external data from becoming partially committed application state and makes later retry behavior much easier to reason about."
+        ],
+        "image": {
+          "src": "/blog/rust-serde-json-workshop.png",
+          "alt": "A Crabrix crab examines valid, missing-field, oversized and mismatched JSON test specimens.",
+          "caption": "A useful fixture set includes rejection cases and historical compatibility, not only successful round trips.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Testing boundaries and fixtures",
+            "url": "/blog/testing-rust-boundaries-fixtures-doctests/"
+          },
+          {
+            "title": "Executable documentation",
+            "url": "/learn/projects/doc-examples/"
+          }
+        ]
+      },
+      {
+        "heading": "Run the lab with an honest platform contract",
+        "paragraphs": [
+          "These examples are local data transformations. On desktop Rust, run them with the manifest above and keep the assertions. In Crabrix, dependency preparation and procedural-macro support depend on the app's qualified compiler profile: Serde derive is a procedural macro, so a successful standard-library example does not establish that this dependency graph will build there. Inspect the actual compatibility report rather than substituting a claim based on the crate name.",
+          "The portable lesson is the boundary design. You can practice domain validation with a manually constructed transport structure even when a particular derive graph is unavailable. When you add a new accepted field, specify its meaning, default and migration behavior, add a failing fixture first, and rerun the complete import path. That routine gives a JSON API a clear contract as it grows, without requiring a server, a framework or an opaque validation layer to explain its behavior."
+        ],
+        "links": [
+          {
+            "title": "Crabrix local execution guide",
+            "url": "/guide/#limits"
+          },
+          {
+            "title": "Structs",
+            "url": "/learn/basics/structs/"
+          },
+          {
+            "title": "Option and Result",
+            "url": "/learn/basics/option-result/"
           }
         ]
       }
@@ -3502,6 +4070,12 @@
         "paragraphs": [
           "Copy the parser into a small project, add the display function, and call it with each fixture. Predict the result before running it. Then change the accepted range and update the contract tests. Add a rule that the quantity must be even, with its own named error. Decide where that check belongs in the sequence and which error an out-of-range odd number should receive. Your answer should follow a documented rule rather than accidental branch order.",
           "Finish by explaining one failure end to end: the original input, the validation step that rejected it, the error value returned, the layer that handled it, and the message the person received. Then explain one successful path with the same precision. When both stories are clear, you have designed more than a parser that compiles. You have a reusable boundary whose outcomes the next part of the programme can trust, test and communicate."
+        ],
+        "links": [
+          {
+            "title": "Rust Serde and JSON: build a trustworthy data boundary",
+            "url": "/blog/rust-serde-json-validation-boundaries/"
+          }
         ]
       }
     ]

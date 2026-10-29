@@ -1,0 +1,25 @@
+{
+  "posts": [
+    {
+      "slug": "rust-arc-mutex-rwlock-shared-state",
+      "publicationDate": "2026-10-28",
+      "proseWords": 2078,
+      "images": 3,
+      "lessonAndArticleLinks": 15,
+      "codeBlocks": 4
+    },
+    {
+      "slug": "rust-serde-json-validation-boundaries",
+      "publicationDate": "2026-10-25",
+      "proseWords": 2070,
+      "images": 3,
+      "lessonAndArticleLinks": 13,
+      "codeBlocks": 4
+    }
+  ],
+  "allBlogPosts": 30,
+  "coverageStart": "2026-10-05",
+  "coverageThrough": "2026-10-29",
+  "missingDates": [],
+  "existingInterfaceChanged": false
+}
