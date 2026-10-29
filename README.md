@@ -4,7 +4,7 @@
 
 [Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support/) · [Privacy](https://crabrix.com/privacy/) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
-## MCP 0.2 — local execution qualified, distribution pending
+## MCP 0.2 — local execution, TestFlight 1.1.3 (120)
 
 The new bridge has twelve tools, including signed discovery and explicitly
 permitted local Check/Build/Run/Debug, paged diagnostics/locals and owned Stop.
@@ -19,8 +19,11 @@ shared-room flow, including ordinary user Run. Both native UI tests passed;
 isolated inputs, cancellation and offline Tokio/async. Physical-device timing
 and a live LLM-provider session are not claimed. [Profile](docs/playground-mcp-local-runtime-2026-10-29.md)
 · [Qualification](docs/playground-mcp-local-runtime-qualification-2026-10-29.json).
-Signed 119 remains the selected review build until the new signed delivery is
-verified; npm/site/TestFlight/review receipts will identify the actual rollout.
+The registry-installed **0.2.0** bridge and production website passed the full
+room again with native phone/iPad UI, actual local compilers and passive output.
+Signed **120** is **VALID / IN_BETA_TESTING** and selected for App Review
+(**WAITING_FOR_REVIEW**, manual publication). Store metadata was read back, with
+all 19 screenshots retained. [Delivery receipt](docs/app-store/release-1.1.3-build120.json).
 
 ## Shared source integrity — TestFlight 1.1.3 (119)
 
@@ -29,8 +32,8 @@ files. Room deletions still apply; an invalid combined file budget disconnects
 without replacing the current project. Native GitHub/Gist/Rust Playground origin
 metadata no longer depends on a browser URL global. The fresh phone/iPad Simulator
 matrix passed **26/26**, with store reopen and editable export covered.
-Signed **119** is **VALID / IN_BETA_TESTING**, selected for App Review
-(**WAITING_FOR_REVIEW**, manual publication). It retains TypeScript, preflight,
+Signed **119** reached **VALID / IN_BETA_TESTING** and was selected for review
+before build 120 superseded it. It retains TypeScript, preflight,
 Rust symbols, Git, Atlas, tests, formatting and Debug from 118. The public guide,
 capabilities and equal-height MCP setup cards are updated and checked at six
 viewport/theme combinations. [Delivery receipt](docs/app-store/release-1.1.3-build119.json).
@@ -77,8 +80,8 @@ participate in local compilation, Debug and cache identity. Compilation and
 execution stay on the device; the editor/Duo geometry is preserved.
 [Profile and qualification](docs/git-https-portability-2026-10-28.md),
 [delivery identity](docs/app-store/release-1.1.3-build114.json).
-Build 114 was previously selected for review; the current selection is build
-119, **WAITING_FOR_REVIEW**, with manual publication.
+Build 114 was previously selected for review; build 120 now supersedes it,
+with manual publication. The latest delivery receipt above records review status.
 The website guide/capability record and offline source/license downloads are
 published and read back. Build 113 was superseded after these gates passed.
 

@@ -1,9 +1,10 @@
 # Client-local MCP execution — implementation contract
 
-This is the next, **unreleased** MCP phase after published bridge 0.1.1 and signed
-app 1.1.3 (119). Existing eight source/selection tools remain compatible. Neither
-the edit URL nor a participant name supplies execution permission. No published
-capability changes until the browser/native/MCP matrix and signed delivery pass.
+This contract is delivered in published MCP 0.2.0, the production website and
+TestFlight 1.1.3 (120), selected for App Review (WAITING_FOR_REVIEW).
+[Signed/public delivery](app-store/release-1.1.3-build120.json) records the exact
+source and registry archive. Existing eight source/selection tools remain
+compatible. Neither an edit URL nor a participant name supplies execution permission.
 
 ## Current qualification
 
@@ -13,7 +14,8 @@ and [receipt](playground-mcp-local-runtime-qualification-2026-10-29.json) distin
 qualification from signed/public distribution. The original 25-case wire/policy
 receipt remains a historical milestone. New checks include 36 Node cases, 36
 native cases per Simulator, real offline Tokio/async, SDK-to-browser execution
-and a production-browser plus two-native-app room. Code/Unicode selections,
+and a production-browser plus two-native-app room. The same matrix then passed
+against the public site with the registry-installed bridge and both native UI flows. Code/Unicode selections,
 Build-without-main, actual Run, Debug locals/Step/breakpoints/Stop, ordinary user
 Run and passive result delivery are exercised. The original four dock tabs remain.
 

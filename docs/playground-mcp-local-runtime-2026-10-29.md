@@ -1,8 +1,11 @@
 # MCP 0.2 — explicit client-local execution
 
-The 0.2 implementation is qualified locally; distribution is recorded separately
-in the App Store, npm and website delivery receipts. Signed 119 does not contain
-these additions. The published 1.1.2 editor remains source/selection compatible.
+MCP 0.2.0 is published on npm and the website. Signed 1.1.3 (120) is
+VALID / IN_BETA_TESTING and selected for App Review, WAITING_FOR_REVIEW, with
+manual publication. The production website and registry-installed bridge passed
+the same room with actual iPhone/iPad Simulator apps. See the
+[delivery receipt](app-store/release-1.1.3-build120.json). Signed 119 did not
+contain these additions; the published 1.1.2 editor remains source/selection compatible.
 
 The official MCP SDK, a production browser build and two actual Simulator apps
 exercised live edits and Unicode selections, local Check/Build/Run/Debug dispatch,

@@ -1,0 +1,185 @@
+{
+  "version": "1.1.3",
+  "buildNumber": "120",
+  "buildID": "40a42b1f-3abc-4108-ae17-697db2b9f613",
+  "appSourceCommit": "b842d20c8e46b7346e24c5d51a0c3eb843527c4e",
+  "cloudBuildRunID": "8a965a1b-10d2-496f-b94e-b853cb8103bd",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "versionID": "4c60d52b-ca5b-4bbd-a206-799d4e4cd12c",
+  "versionState": "WAITING_FOR_REVIEW",
+  "reviewID": "427c91c5-039d-41ac-91af-625a0c60162b",
+  "reviewState": "WAITING_FOR_REVIEW",
+  "releaseType": "MANUAL",
+  "selectedBuild": "120",
+  "screenshots": [
+    {
+      "displayType": "APP_IPHONE_DUO",
+      "count": 2,
+      "complete": 2,
+      "firstFile": "v111-iphone-duo-qa-01-laptop-code.png"
+    },
+    {
+      "displayType": "APP_IPAD_PRO_3GEN_129",
+      "count": 7,
+      "complete": 7,
+      "firstFile": "v111-ipad-13-01-build.png"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "count": 10,
+      "complete": 10,
+      "firstFile": "v111-iphone-6.9-01-build.png"
+    }
+  ],
+  "storeMetadataReadback": "exact match",
+  "verifiedAtUTC": "2026-10-29T07:48:47.939363+00:00",
+  "signedArtifact": {
+    "sharedCodecMatchesSource": true,
+    "nativeSourceOriginValidatorInBinary": true,
+    "typeScriptBundleMatchesSource": true,
+    "browserBuilderMatchesSource": true,
+    "typeScriptQualified": true,
+    "verifiedAtUTC": "2026-10-29T07:32:47.940054+00:00",
+    "build": "120",
+    "version": "1.1.3",
+    "appSourceCommit": "b842d20c8e46b7346e24c5d51a0c3eb843527c4e",
+    "ipaSHA256": "0140480d54c326ee967487db74e430d6aad29e3caf4fa90beeac1a3915a9ea6a",
+    "codesignDeepStrict": true,
+    "applicationIdentifier": "XMS5ZC28UJ.com.sergiiziborov.Crabrix",
+    "associatedDomains": [
+      "applinks:crabrix.com"
+    ],
+    "getTaskAllow": false,
+    "appGroups": [
+      "group.com.sergiiziborov.Crabrix"
+    ],
+    "appStoreDistributionProfile": true,
+    "declaredEntitlementsUnchangedFrom115": true,
+    "checkedPinnedResourceFiles": [
+      "RustTools/RustfmtNoticeIndex.json",
+      "RustTools/RustfmtVendorNotices.zip",
+      "RustTools/manifest.json",
+      "RustTools/notices-manifest.json",
+      "RustTools/reactor-source.rs",
+      "RustTools/rust_fmt.wasm",
+      "GitCore/CrabrixGitCoreSource.zip",
+      "GitCore/GitCoreNoticeIndex.json",
+      "GitCore/GitCoreNotices.zip",
+      "SemanticCore/SemanticNoticeIndex.json",
+      "SemanticCore/SemanticVendorNotices.zip",
+      "SemanticCore/build-receipt.json",
+      "SemanticCore/engine.wasm",
+      "SemanticCore/host.js",
+      "SemanticCore/index.html",
+      "SemanticCore/manifest.json",
+      "SemanticCore/stdlib.json",
+      "SemanticCore/worker.js",
+      "TypeScriptCore/LICENSE.txt",
+      "TypeScriptCore/ThirdPartyNoticeText.txt",
+      "TypeScriptCore/TypeScriptNoticeIndex.json",
+      "TypeScriptCore/TypeScriptNotices.zip",
+      "TypeScriptCore/compiler.js",
+      "TypeScriptCore/host.js",
+      "TypeScriptCore/index.html",
+      "TypeScriptCore/library.json",
+      "TypeScriptCore/manifest.json",
+      "TypeScriptCore/worker.js"
+    ],
+    "debugCompilerMatchesSource": true,
+    "offlineLegalMatchesSource": true,
+    "rustfmtBundleMatchesSource": true,
+    "gitCoreBundleMatchesSource": true,
+    "semanticBundleMatchesSource": true,
+    "semanticQualificationFlag": true,
+    "semanticActionsInSignedBinary": true,
+    "atlasCatalogMatchesSource": true,
+    "activeAcademyCatalogMatchesSource": true
+  },
+  "website": {
+    "sourceCommit": "88e3b12",
+    "image": "8aff3d76f93f5d1b8431468684b73a13858d1be3705e81dcc1406e2aeb89191f",
+    "publishedAtUTC": "2026-10-29T07:41:37Z",
+    "context": {
+      "sourceCommit": "88e3b12",
+      "sourceTreeSHA256": "71970e41d95910cc30ad4b5d34e8be64135c5e9c527731401b9345363bd6a4f9",
+      "allEntriesVerified": 2799,
+      "transferredBytes": 8365414,
+      "baseContextUnchanged": true,
+      "accountDataTouched": false
+    },
+    "backupTaken": true,
+    "previousImage": "localhost/crabrix-web-site:shared119-be97ada",
+    "rollbackContainer": "crabrix-web-site-before-mcp120-20261029",
+    "mountsPreserved": true,
+    "containerState": "running",
+    "health": "healthy"
+  },
+  "npm": {
+    "version": "0.2.0",
+    "published": true,
+    "registryTarballSHA256": "ce724f2d1b150010affc49c025afdf1c0a7e39be86d2abeb0c4d24dc6dcb887d",
+    "identicalToWebsiteArchive": true,
+    "freshRegistryInstall": true,
+    "officialSDKStdio12Tools": true,
+    "unconnectedExecutionRefused": true
+  },
+  "publicCollaboration": {
+    "passed": true,
+    "clients": [
+      "registry-installed MCP 0.2.0 via official SDK",
+      "production Chromium",
+      "native iPhone Simulator",
+      "native iPad Simulator"
+    ],
+    "resultSummary": {
+      "phone": {
+        "buildMainUntouched": true,
+        "runStdout": true,
+        "passiveOutputWithoutOtherExecution": true,
+        "debugLocals": true,
+        "step": true,
+        "breakpoints": true,
+        "stop": true
+      },
+      "pad": {
+        "buildMainUntouched": true,
+        "runStdout": true,
+        "passiveOutputWithoutOtherExecution": true,
+        "debugLocals": true,
+        "step": true,
+        "breakpoints": true,
+        "stop": true
+      },
+      "browser": {
+        "buildMainUntouched": true,
+        "runStdout": true,
+        "passiveOutputWithoutOtherExecution": true,
+        "debugLocals": true,
+        "step": true,
+        "breakpoints": true,
+        "stop": true
+      },
+      "ordinary-phone": {
+        "actualLocalRun": true,
+        "passiveOutput": true,
+        "noOtherCompilerStart": true
+      },
+      "ordinary-browser": {
+        "actualLocalRun": true,
+        "passiveOutput": true,
+        "noOtherCompilerStart": true
+      }
+    },
+    "nativeUIFlowsPassed": 2
+  },
+  "siteResponsiveThemeCases": 6,
+  "publicationArticle": "docs/rust-maintainer-funding-publication-2026-10-29.json",
+  "nativeFunctionalChecks": {
+    "phone": 36,
+    "pad": 36
+  },
+  "nodeChecks": 36,
+  "physicalDeviceBenchmarkClaim": false,
+  "liveLLMProviderSessionTested": false
+}

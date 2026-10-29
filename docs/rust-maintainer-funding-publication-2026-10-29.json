@@ -1,0 +1,55 @@
+{
+  "published": true,
+  "publishedAtUTC": "2026-10-29T07:41:37Z",
+  "articleURL": "https://crabrix.com/blog/rust-maintainer-funding-support-code-you-depend-on/",
+  "publicationDate": "2026-10-29",
+  "newsEventDate": "2026-10-26",
+  "words": 2082,
+  "generatedImages": 3,
+  "infographics": 1,
+  "internalLinksVerified": 15,
+  "responsiveThemeCases": 6,
+  "canonicalAndBlogPostingVerified": true,
+  "sitemapWithImagesVerified": true,
+  "rustExampleTestsPassed": 2,
+  "sourceCommit": "88e3b12",
+  "imageManifest": "docs/rust-maintainer-funding-images-2026-10-29.json",
+  "primarySources": [
+    {
+      "title": "Rust Funding team: How to fund Rust contributors",
+      "url": "https://blog.rust-lang.org/2026/10/26/how-to-fund-rust-contributors/"
+    },
+    {
+      "title": "Rust Project Goals: funding opportunities",
+      "url": "https://goals.rust-lang.org/2026/funding.html"
+    },
+    {
+      "title": "Cargo Book: cargo tree",
+      "url": "https://doc.rust-lang.org/cargo/commands/cargo-tree.html"
+    },
+    {
+      "title": "Rust Forge: starting to contribute",
+      "url": "https://forge.rust-lang.org/how-to-start-contributing.html"
+    },
+    {
+      "title": "Cargo Book: cargo test",
+      "url": "https://doc.rust-lang.org/cargo/commands/cargo-test.html"
+    },
+    {
+      "title": "Cargo: Maintainer in Residence announcement",
+      "url": "https://blog.rust-lang.org/2026/09/22/announcing-a-maintainer-in-residence-scott-schafer-for-the-cargo-team/"
+    },
+    {
+      "title": "Rust Foundation Maintainers Fund announcement",
+      "url": "https://blog.rust-lang.org/2026/06/02/launching-the-rust-foundation-maintainers-fund/"
+    },
+    {
+      "title": "Rust Foundation on GitHub Sponsors",
+      "url": "https://github.com/sponsors/rustfoundation"
+    },
+    {
+      "title": "RustNL Maintainers Team",
+      "url": "https://rustnl.org/maintainers/"
+    }
+  ]
+}

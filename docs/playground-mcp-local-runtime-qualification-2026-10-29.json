@@ -2,7 +2,7 @@
   "verifiedAtUTC": "2026-10-29T07:03:48.733560+00:00",
   "baseSourceCommit": "a5958926c6001bd7ef64925dc24b3b210b4ddf39",
   "qualified": true,
-  "candidateOnly": true,
+  "candidateOnly": false,
   "bridgeVersion": "0.2.0",
   "nodeTests": 36,
   "nativeTests": {
@@ -104,5 +104,9 @@
       "passiveOutput": true,
       "noOtherCompilerStart": true
     }
-  }
+  },
+  "appSourceCommit": "b842d20c8e46b7346e24c5d51a0c3eb843527c4e",
+  "deliveryReceipt": "docs/app-store/release-1.1.3-build120.json",
+  "publicProductionMatrix": true,
+  "registryInstallVerified": true
 }

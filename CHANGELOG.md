@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.1.3 (120) — explicit local MCP execution, TestFlight
+
+- MCP 0.2.0 adds signed discovery, default-off permission for selected operations,
+  local Check/Build/Run/Debug, paged diagnostics/locals, Step/Continue and owned Stop.
+  Shared execution accepts standard-library Rust and local modules only; private
+  project inputs/packages are excluded. Normal offline Cargo and web modes remain.
+- Other participants receive reported output only. Their compiler stays idle;
+  reports cannot certify local builds or award learning progress. Grants expire
+  and revoke on background/disconnect; source changes stop stale jobs.
+- 36 Node and 36 native cases on each device type passed. The registry-installed
+  bridge, production website and two Simulator apps passed code, Unicode selections,
+  links, Build/Run/Debug and passive output. Both native UI flows retained four tabs.
+- Signed 120 is VALID / IN_BETA_TESTING and selected for App Review,
+  WAITING_FOR_REVIEW, with manual publication. All 19 store screenshots retained.
+  npm, download archive, guide, capability record and site are published.
+- Today's original Rust maintainer funding guide has 2082 words, three generated
+  illustrations including an infographic, and verified lesson/article links.
+
 ## 1.1.3 (119) — Shared source integrity, TestFlight
 
 - Remote room edits retain private local configuration and prepared text sources.
@@ -10,8 +28,8 @@
 - Signed 119 is VALID / IN_BETA_TESTING, selected for App Review WAITING_FOR_REVIEW.
   Public guide/capabilities are updated; MCP setup cards now keep equal height
   on narrow phones too, with six candidate and six public checks.
-- The separate published MCP bridge remains 0.1.1. Future runtime authentication,
-  source identity and path-alias fixes are candidates; remote execution is not enabled.
+- At build 119 delivery the separate published bridge was 0.1.1; runtime controls
+  were not yet enabled. Build 120 above records their later qualification and delivery.
 
 ## 1.1.3 (118) — offline TypeScript and project preflight, TestFlight
 
