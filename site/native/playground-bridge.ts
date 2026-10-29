@@ -4,6 +4,7 @@ import * as Y from "yjs";
 import { documentFromY, updateYDocument } from "../lib/playground-collab";
 import { createPresence, localPresence, receivePresence, remoteSelections } from "../lib/playground-presence";
 import { validatePlaygroundDocument } from "../lib/playground-document";
+import { runtimeSource } from "../lib/playground-runtime-source";
 const doc = new Y.Doc(), awareness = createPresence(doc);
 const remote = {}, pending: Uint8Array[] = [];
 let presenceDirty = true;
@@ -15,6 +16,10 @@ export function call(requestJSON: string): string {
     switch (request.type) {
       case "initialize": updateYDocument(doc, validatePlaygroundDocument(request.document)); break;
       case "document": break;
+      case "runtime-source": {
+        const source = runtimeSource(documentFromY(doc));
+        return JSON.stringify({ runtimeSource: source.canonical, runtimePaths: source.paths });
+      }
       case "replace": updateYDocument(doc, validatePlaygroundDocument(request.document)); break;
       case "file": {
         const value = documentFromY(doc); value.files[request.path] = request.text;

@@ -13,6 +13,19 @@ const encoder = new TextEncoder();
 const forbidden = new Set(["node_modules", "target", ".git", ".github", ".cargo", "vendor"]);
 const allowed = /(?:\.rs|\.toml|\.lock|\.md|\.txt)$|^(?:LICENSE|NOTICE)$/i;
 
+function wellFormed(value: string): boolean {
+  // Swift strings cannot represent isolated UTF-16 surrogates. Refuse them
+  // before encoding/merging, rather than replacing source bytes on one client.
+  for (let i = 0; i < value.length; i++) {
+    const unit = value.charCodeAt(i);
+    if (unit >= 0xd800 && unit <= 0xdbff) {
+      const next = value.charCodeAt(++i);
+      if (!(next >= 0xdc00 && next <= 0xdfff)) return false;
+    } else if (unit >= 0xdc00 && unit <= 0xdfff) return false;
+  }
+  return true;
+}
+
 function sourceOriginURL(value: string): string {
   // The fixed native codec uses JavaScriptCore, which has no browser URL API.
   // Its only fallback is a bounded Foundation validator for these source links;
@@ -35,21 +48,32 @@ export function sourceBytes(files: Record<string, string>): number {
 export function validatePlaygroundDocument(input: unknown): PlaygroundDocument {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("Invalid source project.");
   const value = input as Record<string, unknown>;
-  if (value.schemaVersion !== 1 || typeof value.name !== "string" || !value.name.trim() || value.name.length > 80 || /[\u0000-\u001f\u007f]/.test(value.name) ||
+  if (value.schemaVersion !== 1 || typeof value.name !== "string" || !value.name.trim() || value.name.length > 80 || !wellFormed(value.name) || /[\u0000-\u001f\u007f]/.test(value.name) ||
       !["2021", "2024"].includes(String(value.edition)) || typeof value.entryFile !== "string" ||
       !value.files || typeof value.files !== "object" || Array.isArray(value.files)) throw new Error("Invalid source project fields.");
   const entries = Object.entries(value.files);
   if (entries.length < 1 || entries.length > PLAYGROUND_LIMITS.files) throw new Error("A Playground supports 1–16 source files.");
   const files: Record<string, string> = Object.create(null);
+  const canonicalPaths = new Set<string>(), directories = new Map<string, string>();
+  const canonical = (path: string) => path.normalize("NFC").toLowerCase();
   let size = 0;
   for (const [path, text] of entries) {
     const parts = path.split("/");
-    if (path.length > 180 || path.startsWith("/") || path.includes("\\") || path.includes(":") || parts.some(part => !part || part === "." || part === ".." || forbidden.has(part) || part === "__proto__" || part === "constructor" || part === "prototype") ||
+    if (path.length > 180 || !wellFormed(path) || path.startsWith("/") || path.includes("\\") || path.includes(":") || parts.length > 32 || parts[0].toLowerCase() === ".crabrix" || parts.some(part => !part || encoder.encode(part).length > 255 || part === "." || part === ".." || forbidden.has(part) || part.toLowerCase() === ".git" || part === "__proto__" || part === "constructor" || part === "prototype") ||
         !allowed.test(path) || /[\u0000-\u001f\u007f]/.test(path)) throw new Error(`Unsupported source path: ${path.slice(0, 80)}`);
-    if (typeof text !== "string" || /\u0000/.test(text) || encoder.encode(text).byteLength > PLAYGROUND_LIMITS.fileBytes) throw new Error("Each text file must be at most 64 KiB; binary/media files are not accepted.");
+    const key = canonical(path);
+    if (canonicalPaths.has(key)) throw new Error("Source paths collide on a native filesystem. No source was changed.");
+    canonicalPaths.add(key);
+    for (let depth = 1; depth < parts.length; depth++) {
+      const parent = parts.slice(0, depth).join("/"), key = canonical(parent), previous = directories.get(key);
+      if (previous !== undefined && previous.normalize("NFC") !== parent.normalize("NFC")) throw new Error("Source directory spellings conflict. No source was changed.");
+      directories.set(key, parent);
+    }
+    if (typeof text !== "string" || !wellFormed(text) || /\u0000/.test(text) || encoder.encode(text).byteLength > PLAYGROUND_LIMITS.fileBytes) throw new Error("Each file must contain well-formed UTF-8 text up to 64 KiB; binary/media files are not accepted.");
     size += encoder.encode(text).byteLength;
     files[path] = text;
   }
+  for (const key of directories.keys()) if (canonicalPaths.has(key)) throw new Error("A source file conflicts with a directory. No source was changed.");
   if (size > PLAYGROUND_LIMITS.sourceBytes) throw new Error("The source project exceeds 128 KiB.");
   if (!(value.entryFile in files) || !value.entryFile.endsWith(".rs")) throw new Error("Choose a Rust source entry file.");
   let origin: PlaygroundDocument["origin"];

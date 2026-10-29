@@ -1,6 +1,6 @@
 {
-  "verifiedAtUTC": "2026-10-29T03:20:10.639458+00:00",
-  "baseSourceCommit": "853ea3e932d11f3b2eee0bfeddc5378e6dcc7564",
+  "verifiedAtUTC": "2026-10-29T03:32:53.395669+00:00",
+  "baseSourceCommit": "be97adaae1ccce34e4b4a0e6fff1f2911f33b014",
   "candidateOnly": true,
   "remoteExecutionEnabled": false,
   "publishedBridgeVersion": "0.1.1",
@@ -10,36 +10,43 @@
     "CrabrixTests/PlaygroundRuntimeProtocolTests.swift": "7436b31ad4c0c74e247426998d0e726e0c7b51f2058d642b57cb8a922f997713",
     "site/lib/playground-runtime-protocol.ts": "fa4b231d4fbf64982e3dfe0bab65b595bcaddf94228ce43d732e3af957e911a3",
     "packages/crabrix-playground-mcp/test/runtime-protocol.test.ts": "5880e206ba58d3c749878a901c7a084ed386ede8ffa93de185d55dacc5237a0b",
-    "scripts/test_playground_runtime_crypto.mjs": "35cb37f2df80ee925880caa9c517fb454591453b8a7a58f65165519dd89b380c"
+    "scripts/test_playground_runtime_crypto.mjs": "35cb37f2df80ee925880caa9c517fb454591453b8a7a58f65165519dd89b380c",
+    "site/lib/playground-runtime-source.ts": "6640ec539d3e96040e86ca11e2f32e605ebf0492f1135fab1cf7932ebe9a4d9d",
+    "site/lib/playground-document.ts": "5871f40f15a05576ddc05a093b1de52c0ae0e4a54f04cb4111f586659f795db0",
+    "site/native/playground-bridge.ts": "4ce0ad1363b4354882484d22809f7d5d5641812bcf315638aec61b40337bba8e",
+    "Crabrix/Playground/PlaygroundCodec.swift": "d080fc1a9e02be4132d5db02ef1c1a9751328b7d7e5d679322efee0d2161dc48",
+    "Crabrix/Resources/PlaygroundCodec.js": "30a8d0680b63e9d811cf4dd981dedc337eeeb975bb0854bd3fde50efd46eeb8c",
+    "CrabrixTests/PlaygroundTests.swift": "46b653f75bb4544e9d17040be8c36f6738355a6ec6c0d4030621e582a2935222",
+    "packages/crabrix-playground-mcp/test/runtime-source.test.ts": "37693960039061e724621b5f45144924ef830db8b8ddaf4ee85afed8a6ceb201"
   },
   "nativeSimulator": {
-    "passed": 34,
+    "passed": 38,
     "failed": 0,
     "skipped": 0,
     "runs": [
       {
         "device": "phone",
-        "passed": 17,
+        "passed": 19,
         "failed": 0,
         "skipped": 0,
-        "resultBundle": "build/mcp-runtime-20261029/runtime-phone.xcresult",
+        "resultBundle": "build/mcp-runtime-20261029/runtime-source-phone.xcresult",
         "devices": null
       },
       {
         "device": "pad",
-        "passed": 17,
+        "passed": 19,
         "failed": 0,
         "skipped": 0,
-        "resultBundle": "build/mcp-runtime-20261029/runtime-pad.xcresult",
+        "resultBundle": "build/mcp-runtime-20261029/runtime-source-pad.xcresult",
         "devices": null
       }
     ]
   },
   "node": {
-    "passed": 11,
+    "passed": 13,
     "failed": 0,
     "skipped": 0,
-    "log": "build/mcp-runtime-20261029/mcp-foundation-tests-v3.log"
+    "log": "build/mcp-runtime-20261029/mcp-foundation-source-tests.log"
   },
   "crossRuntime": {
     "actualProductionSwiftCryptoKitToWebCrypto": true,
@@ -52,5 +59,24 @@
     "isolated shared-source-only execution jobs",
     "capability/diagnostics/runtime MCP tools and transport",
     "actual SDK\u2194browser\u2194two-native runtime matrix"
-  ]
+  ],
+  "executionSourceIdentity": {
+    "schema": "crabrix-runtime-source-v1",
+    "pathOrder": "UTF-16 lexicographic; independent of locale and insertion order",
+    "includes": [
+      "name",
+      "entry",
+      "edition",
+      "exact paths and source text"
+    ],
+    "excludes": [
+      "origin metadata",
+      "relay sequence",
+      "private local source"
+    ],
+    "goldenRevision": "0a3a4a5c64c673aefb8d57b02513be67805bfeeba485747813ca2580a4ea6e3e",
+    "actualNativeJavaScriptCoreMatchesWebCrypto": true,
+    "ambiguousNFCAndCasePathsRefusedBeforeNativeDictionaryDecode": true,
+    "malformedPeerYjsSnapshotLeavesCurrentSourceUnchanged": true
+  }
 }

@@ -1,6 +1,7 @@
 import Foundation
 import JavaScriptCore
 import Security
+import CryptoKit
 
 /// Runs the fixed, bundled Yjs codec. No user code, network or filesystem APIs
 /// are exposed to this JavaScriptCore context.
@@ -16,6 +17,8 @@ final class PlaygroundCodec {
         var localSelection: PlaygroundRemoteSelection?
         var participants: Int?
         var error: String?
+        var runtimeSource: String?
+        var runtimePaths: [String]?
     }
     private let context: JSContext
     init(resourceURL: URL? = nil) throws {
@@ -57,5 +60,13 @@ final class PlaygroundCodec {
     }
     func initialize(_ document: PlaygroundDocument) throws -> Result { try call(["type": "initialize", "document": object(document)]) }
     func replace(_ document: PlaygroundDocument) throws -> Result { try call(["type": "replace", "document": object(document)]) }
+    struct RuntimeSourceIdentity: Sendable, Equatable { let revision: String; let paths: [String] }
+    func runtimeSourceIdentity() throws -> RuntimeSourceIdentity {
+        let result = try call(["type": "runtime-source"])
+        guard let source = result.runtimeSource, source.utf8.count <= 1_048_576,
+              let paths = result.runtimePaths, (1...16).contains(paths.count) else { throw PlaygroundFailure("The shared execution source identity is unavailable.") }
+        let revision = SHA256.hash(data: Data(source.utf8)).map { String(format: "%02x", $0) }.joined()
+        return RuntimeSourceIdentity(revision: revision, paths: paths)
+    }
     private func object(_ document: PlaygroundDocument) throws -> Any { try JSONSerialization.jsonObject(with: JSONEncoder().encode(document.validated())) }
 }

@@ -3,6 +3,35 @@ import XCTest
 
 @MainActor
 final class PlaygroundModelTests: XCTestCase {
+    func testRuntimeSourceIdentityMatchesActualWebCryptoAndExcludesOriginMetadata() throws {
+        var document = PlaygroundDocument(name: "Unicode 🦀", entryFile: "main.rs", files: ["🦀.rs": "pub const N: u8 = 1;\n", "main.rs": "fn main() { println!(\"🦀\"); }\n", "é.rs": "// café\n"])
+        let codec = try PlaygroundCodec(); _ = try codec.initialize(document)
+        let original = try codec.runtimeSourceIdentity()
+        XCTAssertEqual(original.revision, "0a3a4a5c64c673aefb8d57b02513be67805bfeeba485747813ca2580a4ea6e3e")
+        XCTAssertEqual(original.paths, ["main.rs", "é.rs", "🦀.rs"])
+        document.origin = .init(url: "https://github.com/example/source", commit: String(repeating: "a", count: 40))
+        _ = try codec.replace(document)
+        XCTAssertEqual(try codec.runtimeSourceIdentity(), original)
+        document.edition = "2021"; _ = try codec.replace(document)
+        XCTAssertNotEqual(try codec.runtimeSourceIdentity().revision, original.revision)
+        document.edition = "2024"; document.files["é.rs"] = "// cafe\u{301}\n"; _ = try codec.replace(document)
+        XCTAssertNotEqual(try codec.runtimeSourceIdentity().revision, original.revision, "Preserve exact source bytes rather than normalizing program text")
+    }
+
+    func testCollidingRemoteUnicodePathsAreRefusedBeforeSwiftDictionaryDecodeWithoutChangingSource() throws {
+        let codec = try PlaygroundCodec()
+        let source = PlaygroundDocument(name: "preserved", entryFile: "main.rs", files: ["main.rs": "fn main() {}", "é.rs": "original"])
+        _ = try codec.initialize(source)
+        let original = try codec.runtimeSourceIdentity()
+        XCTAssertThrowsError(try codec.call(["type": "file", "path": "e\u{301}.rs", "text": "ambiguous path"]))
+        XCTAssertEqual(try codec.call(["type": "document"]).document, source)
+        // Real Yjs snapshot from an old/malformed peer: contains both NFC and
+        // decomposed filenames, which Swift Dictionary otherwise collapses.
+        let snapshot = try XCTUnwrap(Data(base64Encoded: "AQyAvcmRDwAoAQRtZXRhDXNjaGVtYVZlcnNpb24BfQEoAQRtZXRhBG5hbWUBdwxVbmljb2RlIPCfpoAoAQRtZXRhCWVudHJ5RmlsZQF3B21haW4ucnMoAQRtZXRhB2VkaXRpb24BdwQyMDI0JwEFZmlsZXMH8J+mgC5ycwIEAIC9yZEPBBVwdWIgY29uc3QgTjogdTggPSAxOwonAQVmaWxlcwdtYWluLnJzAgQAgL3JkQ8aIGZuIG1haW4oKSB7IHByaW50bG4hKCLwn6aAIik7IH0KJwEFZmlsZXMFw6kucnMCBACAvcmRDzkJLy8gY2Fmw6kKJwEFZmlsZXMGZcyBLnJzAgQAgL3JkQ9CIG1hbGZvcm1lZCBhbGlhcyBmcm9tIGFuIG9sZCBwZWVyAA=="))
+        XCTAssertThrowsError(try codec.call(["type": "state", "snapshot": Array(snapshot), "events": []]))
+        XCTAssertEqual(try codec.call(["type": "document"]).document, source)
+        XCTAssertEqual(try codec.runtimeSourceIdentity(), original)
+    }
     func testNearbyParticipantBadgesStayInsideCanvasWithoutCoveringEachOther() throws {
         for width in [CGFloat(240), 402, 1024] {
             let bounds = CGRect(x: 0, y: 0, width: width, height: 200)

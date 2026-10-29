@@ -9,10 +9,15 @@ capability changes until the browser/native/MCP matrix and signed delivery pass.
 
 Shared local-file/origin fixes are qualified in 26 native cases and queued as
 build 119 from `853ea3e`; they do not enable remote execution. The candidate
-wire codec now passes 11 Node tests and 34 phone/iPad Simulator tests, including
+wire codec now passes 13 Node tests and 38 phone/iPad Simulator tests, including
 a real WebCrypto signature verified in CryptoKit. The reproducible production
 Swift ↔ Node WebCrypto probe is `node scripts/test_playground_runtime_crypto.mjs`.
 [Qualification receipt](playground-mcp-runtime-qualification-2026-10-29.json).
+A shared canonical source serialization now matches in native JavaScriptCore and
+WebCrypto, including exact Unicode bytes and source/entry/edition changes. It
+excludes nonexecution origin metadata. NFC/case aliases, file-directory conflicts
+and isolated UTF-16 surrogates are refused before native dictionary decoding; a
+malformed old-peer Yjs snapshot leaves the current source unchanged.
 Signatures, edit-capability HMAC, canonical scalar headers, payload byte limits,
 expiry and bounded nonce replay are implemented. Permission, transient runtime
 transport and isolated jobs remain unwired; bridge 0.1.1 still exposes eight
