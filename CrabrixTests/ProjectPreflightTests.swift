@@ -83,4 +83,8 @@ final class ProjectPreflightTests: XCTestCase {
         XCTAssertEqual(report.operations.first { $0.kind == .debug }?.state, .blocked)
         XCTAssertNotEqual(ProjectExecutionProfile.browserIdentity, "unavailable")
     }
+    func testFeatureSuggestionNeverReplacesAnExplicitCustomFeatureSelection() {
+        let snapshot = input(["main.rs": "fn main(){}", "Cargo.toml": manifest + "[dependencies]\nsyn={version='2',features=['full']}\n"])
+        XCTAssertThrowsError(try CargoFeatureProposal(project: snapshot.project, revision: snapshot.revision))
+    }
 }

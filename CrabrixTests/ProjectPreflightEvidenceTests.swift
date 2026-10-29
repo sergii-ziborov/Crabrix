@@ -54,9 +54,9 @@ final class ProjectPreflightCompilerEvidenceTests: XCTestCase {
         let model = CompilerViewModel(projectLibrary: library)
         model.createProject(name: "feature-preview", template: .hello)
         var files = model.exportProject().files
-        files["Cargo.toml"] = "# original comment 🦀\n[package]\nname='feature-preview'\nversion='0.1.0'\nedition='2024'\n[dependencies]\nsyn = { version = '2', features = ['full'] }\n"
+        files["Cargo.toml"] = "# original comment 🦀\n[package]\nname='feature-preview'\nversion='0.1.0'\nedition='2024'\n[dependencies]\nsyn = '2' # keep trailing comment\n"
         XCTAssertTrue(model.replaceProjectFilesFromTerminal(files))
-        XCTAssertTrue(model.useSynParserFeatures())
+        XCTAssertTrue(model.useSynParserFeatures(), String(describing: model.projectTransfer))
         let stale = try XCTUnwrap(model.cargoFeatureProposal)
         XCTAssertEqual(model.exportProject().files, files, "Opening a preview must not change a file")
         XCTAssertFalse(stale.removed.isEmpty); XCTAssertFalse(stale.inserted.isEmpty)
