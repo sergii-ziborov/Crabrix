@@ -24,6 +24,14 @@ final class BrowserTypeScriptUITests: XCTestCase {
         XCTAssertGreaterThanOrEqual(error.frame.minX,0); XCTAssertLessThanOrEqual(error.frame.maxX,screen.maxX+1)
         let capture=XCTAttachment(screenshot:XCUIScreen.main.screenshot()); capture.name="typescript-diagnostic";capture.lifetime = .keepAlways;add(capture)
         XCTAssertTrue(app.buttons["Run project"].isEnabled,"Optional AI advice must not lock independent browser Run")
+        let advisor=app.buttons.matching(NSPredicate(format:"label CONTAINS %@","Tap to analyze this diagnostic on device")).firstMatch
+        XCTAssertTrue(advisor.exists,app.debugDescription);advisor.tap()
+        XCTAssertTrue(app.staticTexts["On-device web diagnostic advisor"].waitForExistence(timeout:15),app.debugDescription)
+        XCTAssertFalse(app.staticTexts["On-device Rust diagnostic advisor"].exists)
+        XCTAssertFalse(app.buttons["Reinforce with micro-practice"].exists)
+        let help=XCTAttachment(screenshot:XCUIScreen.main.screenshot());help.name="typescript-help";help.lifetime = .keepAlways;add(help)
+        app.buttons["Close compiler help"].tap()
+        XCTAssertTrue(error.waitForExistence(timeout:15))
         error.tap()
         XCTAssertTrue(editor.waitForExistence(timeout:15));XCTAssertEqual(editor.value as? String,original)
         for identifier in ["build-dock-code","build-dock-problems","build-dock-output","build-dock-terminal"]{XCTAssertTrue(app.buttons[identifier].exists,identifier)}

@@ -106,6 +106,7 @@ struct RuntimeInspector: View {
 
 struct DiagnosticInspector: View {
     let diagnostic: RustDiagnostic
+    var browserDiagnostic = false
     let canRepair: Bool
     let practiceCompleted: Bool
     let adviceState: RustDiagnosticAdviceState
@@ -123,7 +124,7 @@ struct DiagnosticInspector: View {
         VStack(alignment: .leading, spacing: 18) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("BORROW CHECKER DECODER")
+                    Text(browserDiagnostic ? "WEB DIAGNOSTIC DECODER" : "BORROW CHECKER DECODER")
                         .font(.system(size: 9, weight: .bold, design: .monospaced))
                         .foregroundStyle(CrabrixTheme.coral)
                     Text(explanation.title)
@@ -153,7 +154,7 @@ struct DiagnosticInspector: View {
                     .clipShape(Circle())
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Rule").font(.caption.weight(.bold))
-                    Text(explanation.rule)
+                    Text(browserDiagnostic ? "TypeScript Check and the Web Preview console report different stages. Use the diagnostic's file and position." : explanation.rule)
                         .font(.caption)
                         .foregroundStyle(CrabrixTheme.muted)
                 }
@@ -206,7 +207,7 @@ struct DiagnosticInspector: View {
                 .crabrixPanel(cornerRadius: 10)
             }
 
-            Button(action: onPractice) {
+            if !browserDiagnostic { Button(action: onPractice) {
                 HStack {
                     Image(systemName: practiceCompleted ? "checkmark.circle.fill" : "bolt.fill")
                         .foregroundStyle(practiceCompleted ? CrabrixTheme.mint : CrabrixTheme.amber)
@@ -229,6 +230,7 @@ struct DiagnosticInspector: View {
                 }
             }
             .buttonStyle(.plain)
+            }
         }
     }
 
@@ -241,7 +243,7 @@ struct DiagnosticInspector: View {
                     Text("APPLE INTELLIGENCE")
                         .font(.system(size: 9, weight: .bold, design: .monospaced))
                         .foregroundStyle(CrabrixTheme.blue)
-                    Text("On-device Rust diagnostic advisor")
+                    Text(browserDiagnostic ? "On-device web diagnostic advisor" : "On-device Rust diagnostic advisor")
                         .font(.subheadline.weight(.semibold))
                 }
                 Spacer()
@@ -249,11 +251,13 @@ struct DiagnosticInspector: View {
 
             switch adviceState {
             case .idle:
-                Text("Ask Apple’s on-device model to explain this rustc error and propose the smallest source edit.")
+                Text(browserDiagnostic
+                    ? "Ask Apple’s on-device model to explain this diagnostic. Web advice is explanation-only; Check runs the actual local TypeScript checker and browser bundler."
+                    : "Ask Apple’s on-device model to explain this rustc error and propose the smallest source edit.")
                     .font(.caption)
                     .foregroundStyle(CrabrixTheme.muted)
                 Button(action: onRequestAdvice) {
-                    Label("Find a possible fix", systemImage: "sparkles")
+                    Label(browserDiagnostic ? "Explain this diagnostic" : "Find a possible fix", systemImage: "sparkles")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
@@ -310,7 +314,7 @@ struct DiagnosticInspector: View {
                 switch advice.verification {
                 case .explanationOnly:
                     Label(
-                        "Apple Intelligence explained the issue but did not return a safe edit.",
+                        browserDiagnostic ? "Explanation only. Use local Check to verify a source change." : "Apple Intelligence explained the issue but did not return a safe edit.",
                         systemImage: "info.circle.fill"
                     )
                     .font(.caption)

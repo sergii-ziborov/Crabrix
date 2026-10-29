@@ -377,6 +377,7 @@ struct ContentView: View {
                     if let diagnostic = model.primaryDiagnostic {
                         DiagnosticInspector(
                             diagnostic: diagnostic,
+                            browserDiagnostic: model.isBrowserProject || model.lastBuild?.executionKind == .browser,
                             canRepair: BorrowRepair.apply(to: model.source, diagnostic: diagnostic) != nil,
                             practiceCompleted: model.practiceCompleted,
                             adviceState: model.diagnosticAdviceState,
