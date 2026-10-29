@@ -17,14 +17,23 @@ regressions. Signed build **116** is **VALID / IN_BETA_TESTING**; App Review
 selection is tracked in the [delivery receipt](docs/app-store/release-1.1.3-build116.json).
 [Profile](docs/semantic-ide-2026-10-29.md) · [qualification](docs/semantic-ide-qualification-2026-10-29.json).
 
-## Project preflight — unreleased follow-up
+## Offline TypeScript and project preflight — qualified for build 118
 
-The Files report separates Check, linked Build, ordinary Run and Debug for the
-exact source/resources/compiler identity. Known profile requirements are checked
-before compiler work; unknown execution stays unverified. Cargo feature changes
-have a diff preview and preserve the complete original manifest. The phone/iPad
-Simulator matrix passed **62/62** with no skips. These changes are **not in signed
-build 116**. [Scope, limits and remaining work](docs/project-preflight-2026-10-29.md).
+The original bundled TypeScript **5.9.3** checker uses 100 ES/DOM libraries and
+prepared dependency declarations in a disposable local WebKit Worker. Check and
+`npm run check` / `npm run typecheck` report actual types and source positions;
+Run independently transpiles/bundles. Explicit npm preparation retains declared
+`@types`, their dependency declarations and original licenses. Check/Run never
+fetch missing packages or types and do not execute arbitrary npm scripts.
+
+Files preflight separates Check, linked Build, ordinary Run and Debug for the
+exact source/resources/entry/compiler identity. Known profile requirements are
+checked early; unknown execution stays unverified. Cargo feature changes have a
+diff preview and preserve the complete original manifest. The final phone/iPad
+Simulator matrix passed **184/184** with no failures or skips; original captures
+retain the editor geometry. These changes are not in signed build 116. Build
+118 is in Xcode Cloud; TestFlight/App Review delivery requires its separate signed
+verification. [Profile, limits and qualification](docs/offline-typescript-2026-10-29.md).
 
 ## Native Git — TestFlight 1.1.3 (114)
 
@@ -244,7 +253,7 @@ continue to govern their material.
 
 ## Local web lab and transparent package preparation
 
-Create **Web Page** to edit local HTML, CSS and JavaScript, or **Rust Web Generator** to produce those files from Rust. Run opens a bounded immutable asset snapshot in an offline WebKit preview; external network resources are blocked. Browser errors appear in the web console and Problems. Build 101 adds local JavaScript/TypeScript syntax and JSX/TSX transformation, ESM/CommonJS bundling, browser npm imports, JSON and regular CSS imports. TypeScript is transpiled without type checking. WebKit has a separate process and lifetime from the WASI guest; WASI memory and time limits are not JavaScript limits.
+Create **Web Page** to edit local HTML, CSS and JavaScript, or **Rust Web Generator** to produce those files from Rust. Run opens a bounded immutable asset snapshot in an offline WebKit preview; external network resources are blocked. Browser errors appear in the web console and Problems. Build 101 adds local JavaScript/TypeScript syntax and JSX/TSX transformation, ESM/CommonJS bundling, browser npm imports, JSON and regular CSS imports. Earlier browser releases transpile TypeScript. Qualified build 118 adds a separate real TypeScript Check with prepared package declarations; ordinary Run remains independent. WebKit has a separate process and lifetime from the WASI guest; WASI memory and time limits are not JavaScript limits.
 
 Browser projects with an HTML entry use this path automatically through **Run/Check**. In Terminal, **npm install** explicitly prepares the imported browser graph; **npm ci** uses matching npm lockfile v2/v3 entries and integrity hashes. **npm run dev**, **npm start** and **npm run start** build and open the preview; **npm run build/check** build without opening it. These commands map to Crabrix operations rather than executing package scripts. For a nested web app in a Rust project, `cd web` before the npm command. Rust-generated module-based sites pass through the same offline browser bundler.
 

@@ -46,6 +46,17 @@ export default function LicensesPage() {
           <p>These archives are copied byte for byte from the signed release and also ship inside the app under Settings → About Crabrix → Open-source licenses → Compiler and sysroot dependency notices. Website, native app, and GitHub copies are checked by the same release script.</p>
         </section>
         <section>
+          <h2>Local TypeScript checker</h2>
+          <p>Native TestFlight 1.1.3 (118) bundles the original TypeScript 5.9.3 compiler and 100 ES/DOM declaration files. Compiler/library bytes are unmodified. The fixed local Worker wrapper is AI-assisted and does not execute project JavaScript or download types during Check.</p>
+          <ul>
+            <li><a href="/licenses/TypeScript-LICENSE.txt">Original TypeScript license</a></li>
+            <li><a href="/licenses/TypeScript-ThirdPartyNoticeText.txt">Original third-party notices</a></li>
+            <li><a href="/licenses/TypeScriptNotices.zip">Offline notice archive</a></li>
+            <li><a href="/licenses/TypeScriptManifest.json">Pinned compiler, library and notice hashes</a></li>
+          </ul>
+          <p>These exact notices also ship in the app’s offline license catalog. Explicitly prepared npm package sources retain their own original licenses in the editable project.</p>
+        </section>
+        <section>
           <h2>Local Rust formatter</h2>
           <p>TestFlight 1.1.3 (113) bundles real rustfmt 1.10.0-nightly, separate from the project compiler. Original notices and unmodified MPL option-ext source are available here and in that app build for offline export.</p>
           <ul>

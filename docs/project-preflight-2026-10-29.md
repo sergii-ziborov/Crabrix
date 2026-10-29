@@ -22,8 +22,10 @@ subprocesses, OS threads or GPU access.
 Recorded evidence binds source/resources and the combined bundled Rust/browser
 compiler identity. Metadata Check is distinct from linked Build; source Debug
 does not stand in for ordinary Run. Constructing a browser preview does not
-prove successful JavaScript execution. The current browser Check is still
-syntax/transpilation/bundling, with no TypeScript type-check claim.
+prove successful JavaScript execution. In this first qualification browser Check was still syntax/bundling. The later
+[TypeScript qualification](offline-typescript-2026-10-29.md) adds the real checker
+and source/entry/operation context; that later receipt supersedes this limitation
+for its qualified native browser profile.
 
 A recorded compiler failure now has its own status instead of becoming a
 permanent unsupported-platform verdict. Its original reason is retained and a

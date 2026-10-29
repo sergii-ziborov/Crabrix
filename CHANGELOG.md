@@ -1,17 +1,21 @@
 # Changelog
 
-## Unreleased — project preflight and reviewed Cargo features
+## Qualified for 1.1.3 (118) — offline TypeScript and project preflight
 
-- Read-only Files report with exact source/profile/graph identities and separate
-  Check, Build, Run and Debug status; known manifest/profile gates run before
-  expensive compiler work. Browser preview construction does not imply runtime
-  success or TypeScript type checking.
-- Previous compiler failures remain distinct from known unsupported-platform
-  requirements. Retrying a failed compiler attempt is possible.
-- Cargo feature suggestions show a diff, retain the full original manifest in
-  the editable project and refuse stale/ABA previews or explicit custom profiles.
-- 62/62 phone/iPad Simulator cases passed with no skips. This follow-up is not
-  included in signed App Review build 116; see the source-bound preflight receipt.
+- Original TypeScript 5.9.3 and 100 ES/DOM declaration files in a disposable local
+  WebKit Worker. Real assignment/argument/property errors, local modules, TSX and
+  supported browser tsconfig. Exact Problems navigation; independent Run/Build.
+- Explicit npm install/ci retains declared @types, original dependency declarations,
+  their normal dependency closure and licenses. Check/Run never download types.
+  No Node/Bun process, arbitrary scripts, compiler plugins or backend execution.
+- Source/entry/resource/compiler-bound Files preflight; separate Check/Build/Run/
+  Debug evidence, early known-profile gates and retryable compiler failures.
+  Cargo feature diff, unchanged-revision guard and full original-manifest backup.
+- Browser-specific package controls, diagnostic help and explicit optional web
+  AI explanation; source changes/backgrounding/Stop discard stale checker work.
+- 184 final phone/iPad Simulator checks passed without failures/skips, including
+  keyboard and existing semantic import/Apply/Undo/Debug routes. No physical-device
+  timing or hard JS heap-cap claim. Signed delivery is tracked separately.
 
 ## 1.1.3 (116) — local Rust semantic tools, TestFlight
 

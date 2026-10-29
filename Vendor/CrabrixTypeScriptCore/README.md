@@ -1,4 +1,4 @@
-# Local TypeScript checker candidate
+# Local TypeScript checker
 
 This wrapper uses the original **TypeScript 5.9.3** npm compiler and all 100
 standard declaration entry files. The archive is fixed by SHA-512 in `stage.py`
@@ -15,8 +15,10 @@ python3 scripts/verify_typescript_core.py
 
 `stage.py` never invokes npm install hooks or executes project code. It packages
 the complete upstream license/third-party notices into the offline app catalog.
-The checked-in candidate manifest blocks Release builds until qualification is
-complete. Do not remove that gate to work around a failed test.
+Fresh staging produces a candidate manifest that blocks Release builds until
+qualification is complete. The checked-in runtime passed the 184-case native/UI
+phone/iPad Simulator gate and is qualified for release. Do not remove a candidate
+gate to work around a failed test. See docs/offline-typescript-2026-10-29.md.
 
 `host.js` starts a disposable Worker from the pinned compiler and `worker.js`.
 Project files arrive as JSON data. The real Compiler API creates a Program and
@@ -40,9 +42,10 @@ Project-reference/build state, compiler plugins, `noCheck`, external standard
 library replacement and non-browser module resolution are refused explicitly.
 Ordinary Run/Build keep their independent transpilation/bundling behavior.
 
-Initial real Chromium Worker cases passed before native integration. Native
-qualification is recorded separately; this README does not claim an App Store
-or TestFlight delivery or physical-device performance.
+Real Chromium Worker probes preceded native integration. Native qualification
+and exact source/resource identities are recorded separately; delivery status is
+in docs/app-store/release-1.1.3-build118.json. No physical-device performance is
+claimed by this profile.
 
 Primary API reference:
 https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API
