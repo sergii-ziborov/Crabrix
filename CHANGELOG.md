@@ -1,6 +1,6 @@
 # Changelog
 
-## Qualified candidate — local Rust semantic tools
+## 1.1.3 (116) — local Rust semantic tools, TestFlight
 
 - Bundled import-free rust-analyzer Worker, pinned standard-library source and
   prepared dependencies; definitions, scoped references, type/signature lookup,
@@ -10,7 +10,8 @@
 - 68 final phone/iPad Simulator cases passed without failures or skips, including
   the full completion/import/apply/Undo UI route and keyboard/Tokio Debug regressions.
   Original captures and source/artifact identities accompany the qualification.
-- Not included in build 115; signed delivery is tracked independently.
+- Signed build 116 is VALID / IN_BETA_TESTING; review selection and public
+  delivery are tracked in its release receipt.
 
 ## 1.1.3 (115) — offline Atlas and clearer Shared participants
 

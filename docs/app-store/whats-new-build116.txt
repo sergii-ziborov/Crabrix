@@ -1,0 +1,7 @@
+Rust symbols, understood locally: find definitions and scoped references, inspect types and call signatures, and complete methods from their actual Rust type.
+
+Review completion replacements and required imports together. Preview semantic renames before applying, then restore the complete change with Undo. Analysis uses bundled standard-library text and prepared dependency source on your device, with Stop and protection against stale results.
+
+Includes offline Algorithm Atlas playback, native Git and complete repository copies, selected-entry unit tests, rustfmt, source Debug and the Rust + Web workspace. Existing phone, tablet and Duo editor layouts remain.
+
+Share encrypted one-hour Playgrounds with another app, the browser or the optional desktop MCP bridge. Received source never executes automatically. No app login or backend compiler is required.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "verifiedAt": "2026-10-28",
+  "verifiedAt": "2026-10-29",
   "release": {
     "publishedApp": {
       "version": "1.1.2",
@@ -9,9 +9,9 @@
     },
     "testFlightApp": {
       "version": "1.1.3",
-      "build": "115",
-      "sourceCommit": "adbc23ee49fefa50ecb09695ed9dffdaceb1146a",
-      "evidence": "docs/app-store/release-1.1.3-build115.json"
+      "build": "116",
+      "sourceCommit": "0af2491a006ebb57f9aa85e2dde07bf65569e90c",
+      "evidence": "docs/app-store/release-1.1.3-build116.json"
     }
   },
   "capabilities": [
@@ -52,7 +52,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (115)",
+          "version": "1.1.3 (116)",
           "profile": "Source checkpoints; bounded String/Vec/concrete-struct previews; active async polls. No DWARF or arbitrary watch expressions."
         },
         {
@@ -70,7 +70,7 @@
           "surface": "ios",
           "state": "testflight",
           "profile": "Selected executable or rlib entry; distinct from Check and Run. Terminal cargo build does not invoke main; bounded supported build scripts remain compile-time work.",
-          "version": "1.1.3 (115)"
+          "version": "1.1.3 (116)"
         }
       ]
     },
@@ -135,7 +135,7 @@
           "surface": "ios",
           "state": "testflight",
           "profile": "20 optional signed sections; 400 source-bound recordings for 600 Atlas steps. Offline native replay, exact data inspection and personal editable copies with real local Run/Debug. Recordings do not execute changed code.",
-          "version": "1.1.3 (115)"
+          "version": "1.1.3 (116)"
         }
       ]
     },
@@ -159,7 +159,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (115)",
+          "version": "1.1.3 (116)",
           "profile": "Format-3 file inventory; supported hidden files; visible save outcomes, retry and raw recovery/source exports. Full Git history and opaque resources use the separate .crabrixrepo format."
         }
       ],
@@ -176,7 +176,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (115)",
+          "version": "1.1.3 (116)",
           "profile": "Real bundled libtest, isolated single-threaded WASM guests, discovery/filter/Stop and source-bound results. Ignored tests skipped; should_panic unsupported in panic-abort profile. No integration targets, dev-dependencies or doctests."
         }
       ]
@@ -188,7 +188,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (115)",
+          "version": "1.1.3 (116)",
           "profile": "Pinned real rustfmt WASI, file/project/check mode, edition/root scalar config subset, atomic revision-checked replacement and Undo. No user Rust execution or network."
         }
       ],
@@ -205,7 +205,7 @@
           "surface": "ios",
           "state": "testflight",
           "profile": "libgit2 1.9.7; status/diff/selected commits/history/restore/branches; GitHub HTTPS clone/fetch, clean fast-forward pull and explicit non-force push; private access in device-only Keychain. No SSH/LFS/submodules/rebase or arbitrary hooks.",
-          "version": "1.1.3 (115)"
+          "version": "1.1.3 (116)"
         }
       ],
       "evidence": "docs/git-https-portability-2026-10-28.md"
@@ -218,7 +218,7 @@
           "surface": "ios",
           "state": "testflight",
           "profile": ".crabrixrepo: actual commit IDs, refs, worktree bytes and modes; new local identity on import; validated inventory/objects/config. Package caches and credentials excluded. Opaque resources participate in local build/Debug cache identity.",
-          "version": "1.1.3 (115)"
+          "version": "1.1.3 (116)"
         }
       ],
       "limits": {
@@ -227,7 +227,27 @@
         "opaqueFileBytes": 8388608,
         "archiveBytes": 234881024
       }
+    },
+    {
+      "id": "rust.semantic-tools",
+      "name": "Local Rust symbols and reviewed edits",
+      "surfaces": [
+        {
+          "surface": "ios",
+          "state": "testflight",
+          "version": "1.1.3 (116)",
+          "profile": "Bundled import-free rust-analyzer Worker; definitions, scoped project references, types/signatures, actual-type completion, import previews and semantic rename. Prepared source graph; exact revision/ABA guards, full-tree Undo and Stop. No external proc macros or generated-source analysis; no backend."
+        }
+      ],
+      "limits": {
+        "dependencyCrates": 252,
+        "rustSourceFiles": 2048,
+        "sourceFileBytes": 1048576,
+        "projectDependencySourceBytes": 8388608,
+        "wasmMemoryBytes": 268435456
+      },
+      "evidence": "docs/semantic-ide-qualification-2026-10-29.json"
     }
   ],
-  "verifiedAtUTC": "2026-10-28T21:56:09.206825+00:00"
+  "verifiedAtUTC": "2026-10-29T00:29:21.133110+00:00"
 }

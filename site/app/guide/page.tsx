@@ -52,7 +52,7 @@ export default function GuidePage() {
       <h1>From your first Rust file to an offline project.</h1>
       <p className="lede">Create, edit, check and run Rust on your device. This guide shows where each part of Crabrix lives, how to prepare dependencies before going offline, and how to tell a code error from a platform requirement.</p>
       <p>Compilation and program execution take place on the device. Crabrix does not upload your project to a remote compiler. Downloading a public repository, a new crate or a course update needs a connection; using material already prepared on the device does not require an app account.</p>
-      <p><strong>Version note:</strong> the offline web lab is published in Crabrix 1.1.2. TestFlight 1.1.3 (115) adds offline Atlas playback and clearer Shared participant labels. It includes native Git, full repository copies, local unit tests, rustfmt, saving/recovery, compile-only Build and source Debug. Compiler experiments are identified separately on the <Link href="/technology/">Technology page</Link>; a benchmark of a candidate compiler does not mean that compiler is already installed in your App Store build. Check your app version in Settings before following a newly added workflow.</p>
+      <p><strong>Version note:</strong> the offline web lab is published in Crabrix 1.1.2. TestFlight 1.1.3 (116) adds local Rust definitions, references, types, completion/import previews and semantic rename with Undo. It includes offline Atlas playback, clearer Shared participant labels, native Git, full repository copies, local unit tests, rustfmt, saving/recovery, compile-only Build and source Debug. Compiler experiments are identified separately on the <Link href="/technology/">Technology page</Link>; a benchmark of a candidate compiler does not mean that compiler is already installed in your App Store build. Check your app version in Settings before following a newly added workflow.</p>
       <nav className="article-toc" aria-label="Guide contents"><strong>In this guide</strong><ol>{contents.map(([id, label]) => <li key={id}><a href={`#${id}`}>{label}</a></li>)}</ol></nav>
     </div>
     <article className="article-content guide-content">
@@ -111,7 +111,7 @@ export default function GuidePage() {
         <Screenshot name="iphone-build" alt="iPhone Rust editor showing a borrow-checking exercise and Code Problems Output Terminal tabs" caption="The editor shows source; Problems explains errors; Output shows what a completed program printed. This capture is a deliberate borrowing exercise, not a successful-build claim." />
       </section>
       <section id="rust-tools"><h2>Local unit tests and Rust formatting</h2>
-        <p>Available in native TestFlight 1.1.3 (113). Open project settings for <strong>Unit tests · selected Rust entry</strong>, <strong>Format current Rust file</strong> and <strong>Format project Rust files</strong>. These actions use bundled local tools. User tests are separate from Academy validators and do not award lesson progress.</p>
+        <p>Available since native TestFlight 1.1.3 (113). Open project settings for <strong>Unit tests · selected Rust entry</strong>, <strong>Format current Rust file</strong> and <strong>Format project Rust files</strong>. These actions use bundled local tools. User tests are separate from Academy validators and do not award lesson progress.</p>
         <SyntaxCode language="rust" code={'#[test]\nfn adds() {\n    assert_eq!(2 + 2, 4);\n}\n\n#[test]\nfn fails() {\n    assert_eq!(1, 2);\n}\n\nfn main() {\n    println!("ordinary Run");\n}'} />
         <p>Run <code>cargo test</code> in Terminal. Real libtest discovers the tests and runs each selected case in an isolated, single-threaded WASM guest. A failed assertion can abort that case; later cases still run. Output lists results and lets you open the available test declaration. Stop interrupts a hanging guest. Editing source invalidates the old report.</p>
         <ul>
@@ -129,7 +129,7 @@ export default function GuidePage() {
         </div>
       </section>
       <section id="rust-symbols"><h2>Understand and change Rust symbols locally</h2>
-        <p><strong>Qualification candidate:</strong> these native tools are being prepared for the next TestFlight update; they are not included in build 115. The browser Playground keeps its separate compiler and Debug profile.</p>
+        <p><strong>Available in native TestFlight 1.1.3 (116).</strong> The browser Playground keeps its separate compiler and Debug profile.</p>
         <p>Place the cursor on a Rust name, open project settings and choose <strong>Rust symbols</strong>. The native text-selection menu offers the same operations. Analysis runs on your device and uses the bundled standard-library source plus your already prepared Cargo source graph. Opening this panel does not download packages or run your program.</p>
         <ol>
           <li><strong>Find a definition</strong> to open its owned project file at the relevant position. Definitions from the standard library or prepared packages open as read-only excerpts.</li>

@@ -1,0 +1,76 @@
+{
+  "version": "1.1.3",
+  "buildNumber": "116",
+  "buildID": "731d1373-15fa-49e9-91f3-c9bcc723dc60",
+  "appSourceCommit": "0af2491a006ebb57f9aa85e2dde07bf65569e90c",
+  "cloudBuildRunID": "4670e297-5fb6-46c9-975b-7866daffc099",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "signedArtifact": {
+    "verifiedAtUTC": "2026-10-29T00:26:08.999159+00:00",
+    "build": "116",
+    "version": "1.1.3",
+    "appSourceCommit": "0af2491a006ebb57f9aa85e2dde07bf65569e90c",
+    "ipaSHA256": "d90451face93b20464ed4a5da6cbe54a2b373b71593376860b0b9e6add2554cb",
+    "codesignDeepStrict": true,
+    "applicationIdentifier": "XMS5ZC28UJ.com.sergiiziborov.Crabrix",
+    "associatedDomains": [
+      "applinks:crabrix.com"
+    ],
+    "getTaskAllow": false,
+    "appGroups": [
+      "group.com.sergiiziborov.Crabrix"
+    ],
+    "appStoreDistributionProfile": true,
+    "declaredEntitlementsUnchangedFrom115": true,
+    "checkedPinnedResourceFiles": [
+      "RustTools/RustfmtNoticeIndex.json",
+      "RustTools/RustfmtVendorNotices.zip",
+      "RustTools/manifest.json",
+      "RustTools/notices-manifest.json",
+      "RustTools/reactor-source.rs",
+      "RustTools/rust_fmt.wasm",
+      "GitCore/CrabrixGitCoreSource.zip",
+      "GitCore/GitCoreNoticeIndex.json",
+      "GitCore/GitCoreNotices.zip",
+      "SemanticCore/SemanticNoticeIndex.json",
+      "SemanticCore/SemanticVendorNotices.zip",
+      "SemanticCore/build-receipt.json",
+      "SemanticCore/engine.wasm",
+      "SemanticCore/host.js",
+      "SemanticCore/index.html",
+      "SemanticCore/manifest.json",
+      "SemanticCore/stdlib.json",
+      "SemanticCore/worker.js"
+    ],
+    "debugCompilerMatchesSource": true,
+    "offlineLegalMatchesSource": true,
+    "rustfmtBundleMatchesSource": true,
+    "gitCoreBundleMatchesSource": true,
+    "semanticBundleMatchesSource": true,
+    "semanticQualificationFlag": true,
+    "semanticActionsInSignedBinary": true,
+    "atlasCatalogMatchesSource": true,
+    "activeAcademyCatalogMatchesSource": true
+  },
+  "qualification": {
+    "native": "33/33 on each iPhone and iPad Simulator",
+    "nativeUI": "completion/import preview + Apply + exact Undo and existing four dock tabs; Amber Circuit phone, Cyberpunk tablet",
+    "totalFinalTests": 68,
+    "failed": 0,
+    "skipped": 0,
+    "physicalDeviceTiming": "not claimed",
+    "evidence": "docs/semantic-ide-qualification-2026-10-29.json"
+  },
+  "verifiedAtUTC": "2026-10-29T00:30:03.905551+00:00",
+  "versionID": "4c60d52b-ca5b-4bbd-a206-799d4e4cd12c",
+  "reviewSelection": {
+    "selectedBuild": "115",
+    "state": "WAITING_FOR_REVIEW",
+    "nextBuild": "116",
+    "submissionPending": true
+  },
+  "releaseType": "MANUAL",
+  "deliveryStage": "TestFlight available; preparing public guide and App Review selection",
+  "betaInstructionsReadback": "exact match"
+}

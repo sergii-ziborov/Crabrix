@@ -1,7 +1,9 @@
-# Local Rust symbols — qualified native candidate
+# Local Rust symbols — TestFlight 1.1.3 (116)
 
-This is **unreleased source work**, not part of 1.1.3 (115) selected for review.
-The full roadmap remains in [the audit](roadmap/audit-2026-10-29.md).
+This qualified profile is available in signed **TestFlight 1.1.3 (116)**,
+VALID / IN_BETA_TESTING. Review selection and publication are tracked in the
+[delivery receipt](app-store/release-1.1.3-build116.json). The full roadmap
+remains in [the audit](roadmap/audit-2026-10-29.md).
 
 The candidate embeds rust-analyzer from the exact public Rust compiler source
 revision `abc48c0b8aba37d3f3862a9d5c76eb4e78f90e88`. Two documented compatibility
@@ -80,4 +82,5 @@ Raw xcresults and logs live under `build/semantic-ide-20261028/`. This is a
 Simulator qualification, not a physical-device performance measurement or a new
 Duo layout qualification. The manifest's qualification flag changed after these
 gates; engine, Worker and library bytes remain identical. Signed TestFlight
-delivery is tracked separately from this source qualification.
+delivery uses source `0af2491a006ebb57f9aa85e2dde07bf65569e90c`; only qualification
+metadata/docs changed after the final native source gate.
