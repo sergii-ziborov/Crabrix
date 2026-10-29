@@ -5,6 +5,7 @@ import { documentFromY, updateYDocument } from "../lib/playground-collab";
 import { createPresence, localPresence, receivePresence, remoteSelections, publishRuntimePresence, remoteRuntimePresence } from "../lib/playground-presence";
 import { validatePlaygroundDocument } from "../lib/playground-document";
 import { runtimeSource } from "../lib/playground-runtime-source";
+export { callRuntime } from "./playground-runtime-policy";
 const doc = new Y.Doc(), awareness = createPresence(doc);
 const remote = {}, pending: Uint8Array[] = [];
 let presenceDirty = true;

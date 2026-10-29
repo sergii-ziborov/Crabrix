@@ -153,6 +153,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         resourceFiles: [String: Data] = [:],
         edition: String = "2024",
         plan: CargoBuildPlan = .empty,
+        cancellation: CompilerInvocationCancellation? = nil,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
         onStage: (@Sendable (String) -> Void)? = nil
     ) async -> CompilationResult {
@@ -163,7 +164,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             supportingFiles: supportingFiles, resourceFiles: resourceFiles,
             edition: edition,
             plan: plan,
-            onDependencyProgress: onDependencyProgress,
+            cancellation: cancellation, onDependencyProgress: onDependencyProgress,
             onStage: onStage
         )
     }
@@ -175,6 +176,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         resourceFiles: [String: Data] = [:],
         edition: String = "2024",
         plan: CargoBuildPlan = .empty,
+        cancellation: CompilerInvocationCancellation? = nil,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
         onStage: (@Sendable (String) -> Void)? = nil
     ) async -> CompilationResult {
@@ -185,7 +187,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             supportingFiles: supportingFiles, resourceFiles: resourceFiles,
             edition: edition,
             plan: plan,
-            onDependencyProgress: onDependencyProgress,
+            cancellation: cancellation, onDependencyProgress: onDependencyProgress,
             onStage: onStage
         )
     }
@@ -195,11 +197,12 @@ final class WasmRustCompiler: @unchecked Sendable {
         source: String, sourcePath: String = "main.rs", supportingFiles: [String: String] = [:],
         resourceFiles: [String: Data] = [:],
         edition: String = "2024", plan: CargoBuildPlan = .empty,
+        cancellation: CompilerInvocationCancellation? = nil,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
         onStage: (@Sendable (String) -> Void)? = nil
     ) async -> CompilationResult {
         await perform(action: .build, source: source, sourcePath: sourcePath, supportingFiles: supportingFiles, resourceFiles: resourceFiles,
-                      edition: edition, plan: plan, onDependencyProgress: onDependencyProgress, onStage: onStage)
+                      edition: edition, plan: plan, cancellation: cancellation, onDependencyProgress: onDependencyProgress, onStage: onStage)
     }
 
     /// The standard libtest harness for one selected entry. Dev-dependencies,
@@ -208,6 +211,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         resourceFiles: [String: Data] = [:],
                   edition: String = "2024", plan: CargoBuildPlan = .empty,
                   invocation: RustUnitTestInvocation,
+                  cancellation: CompilerInvocationCancellation? = nil,
                   onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
                   onStage: (@Sendable (String) -> Void)? = nil) async -> CompilationResult {
         if case let .single(name) = invocation,
@@ -232,21 +236,22 @@ final class WasmRustCompiler: @unchecked Sendable {
         }
         return await perform(action: .test(invocation), source: source, sourcePath: sourcePath,
             supportingFiles: supportingFiles, resourceFiles: resourceFiles, edition: edition, plan: plan,
-            onDependencyProgress: onDependencyProgress, onStage: onStage)
+            cancellation: cancellation, onDependencyProgress: onDependencyProgress, onStage: onStage)
     }
 
     func debug(
         source: String, sourcePath: String = "main.rs", supportingFiles: [String: String] = [:],
         resourceFiles: [String: Data] = [:],
         edition: String = "2024", plan: CargoBuildPlan = .empty, session: RustDebugSession,
+        cancellation: CompilerInvocationCancellation? = nil,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
         onStage: (@Sendable (String) -> Void)? = nil
     ) async -> CompilationResult {
         await withCheckedContinuation { continuation in
             queue.async(qos: .userInitiated, flags: .enforceQoS) { [self] in
-                let checked = execute(action: .check, source: source, sourcePath: sourcePath, supportingFiles: supportingFiles, resourceFiles: resourceFiles, edition: edition, plan: plan, onDependencyProgress: onDependencyProgress, onStage: onStage)
+                let checked = execute(action: .check, source: source, sourcePath: sourcePath, supportingFiles: supportingFiles, resourceFiles: resourceFiles, edition: edition, plan: plan, cancellation: cancellation, onDependencyProgress: onDependencyProgress, onStage: onStage)
                 guard checked.succeeded else { continuation.resume(returning: checked); return }
-                guard !session.isStopped else { continuation.resume(returning: .failure(phase: .setup, detail: "Debug stopped before execution.")); return }
+                guard !session.isStopped, cancellation?.isCancelled != true else { continuation.resume(returning: .failure(phase: .setup, detail: "Debug stopped before execution.")); return }
                 do {
                     onStage?("Preparing separate local Debug snapshot")
                     var files = supportingFiles; files[sourcePath] = source
@@ -254,7 +259,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                     session.prepare(instrumented)
                     files.merge(instrumented.files) { _, debug in debug }
                     let main = files.removeValue(forKey: sourcePath)!
-                    continuation.resume(returning: execute(action: .run, source: main, sourcePath: sourcePath, supportingFiles: files, resourceFiles: resourceFiles, edition: edition, plan: plan, onDependencyProgress: onDependencyProgress, onStage: onStage, debugSession: session))
+                    continuation.resume(returning: execute(action: .run, source: main, sourcePath: sourcePath, supportingFiles: files, resourceFiles: resourceFiles, edition: edition, plan: plan, cancellation: cancellation, onDependencyProgress: onDependencyProgress, onStage: onStage, debugSession: session))
                 } catch { continuation.resume(returning: .failure(phase: .setup, detail: error.localizedDescription)) }
             }
         }
@@ -306,6 +311,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         resourceFiles: [String: Data],
         edition: String,
         plan: CargoBuildPlan,
+        cancellation: CompilerInvocationCancellation? = nil,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?,
         onStage: (@Sendable (String) -> Void)?
     ) async -> CompilationResult {
@@ -321,6 +327,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                         supportingFiles: supportingFiles, resourceFiles: resourceFiles,
                         edition: edition,
                         plan: plan,
+                        cancellation: cancellation,
                         onDependencyProgress: onDependencyProgress,
                         onStage: onStage
                     )
@@ -339,23 +346,31 @@ final class WasmRustCompiler: @unchecked Sendable {
         resourceFiles: [String: Data],
         edition: String,
         plan: CargoBuildPlan,
+        cancellation: CompilerInvocationCancellation? = nil,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?,
         onStage: (@Sendable (String) -> Void)?,
         debugSession: RustDebugSession? = nil
     ) -> CompilationResult {
         let started = clock.now
         let interrupter = WasmInterrupter()
+        cancellation?.attach(interrupter)
         interrupterLock.lock()
         activeInterrupter = interrupter
         interrupterLock.unlock()
         debugSession?.attach(interrupter)
         defer {
             debugSession?.attach(nil)
+            cancellation?.detach(interrupter)
             interrupterLock.lock()
             activeInterrupter = nil
             interrupterLock.unlock()
         }
 
+        // A caller may stop while this invocation is still queued. Do not
+        // even prepare the bundled sysroot for an already cancelled job.
+        if let reason = interrupter.stopReason {
+            return cancelledResult(phase: .setup, started: started, cancellation: .init(reason: reason))
+        }
         onStage?("Preparing bundled compiler")
         guard let toolchain else {
             return .failure(phase: .setup, detail: "Bundled Rust toolchain is missing.")

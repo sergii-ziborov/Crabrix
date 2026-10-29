@@ -29,6 +29,9 @@ test("runtime envelopes preserve Unicode selections and never enter source snaps
     assert.deepEqual(frame.payload, { name: "MCP", permissions: "off" });
     assert(remoteSelections(other, b).some(s => s.anchor === offset && s.head === offset + 2));
     assert.deepEqual(Y.encodeStateAsUpdate(doc), before); assert.equal(await runtimeSourceRevision(documentFromY(doc)), revision);
+    publishRuntimePresence(a, envelope); receivePresence(b, localPresence(a), "retry");
+    const retry = remoteRuntimePresence(b)[0];
+    assert.equal(retry.envelope, frames[0].envelope); assert(retry.clock > frames[0].clock, "Retransmission must remain observable so a lost acknowledgement can be resent without re-execution");
     publishRuntimePresence(a, null); receivePresence(b, localPresence(a), "test"); assert.deepEqual(remoteRuntimePresence(b), []);
     assert(remoteSelections(other, b).some(s => s.anchor === offset && s.head === offset + 2));
   } finally { signer.destroy(); a.destroy(); b.destroy(); doc.destroy(); other.destroy(); }
@@ -50,6 +53,32 @@ test("presence budget failure leaves the existing selection and runtime envelope
     assert.throws(() => publishRuntimePresence(awareness, envelope), /selection.*budget/);
     assert.strictEqual(awareness.getLocalState(), large); assert.deepEqual(awareness.getLocalState()!.cursor, cursor);
   } finally { signer.destroy(); awareness.destroy(); doc.destroy(); }
+});
+
+test("a forged local awareness ID cannot overwrite this client's cursor or runtime identity", () => {
+  const doc = yDocument(newPlaygroundDocument()), local = createPresence(doc, "Real host"), attackerDoc = new Y.Doc();
+  attackerDoc.clientID = doc.clientID;
+  const attacker = createPresence(attackerDoc, "Attacker");
+  try {
+    const text = doc.getMap<Y.Text>("files").get("main.rs")!;
+    local.setLocalStateField("cursor", { anchor: Y.createRelativePositionFromTypeIndex(text, 0), head: Y.createRelativePositionFromTypeIndex(text, 3) });
+    const before = local.getLocalState(), serialized = JSON.stringify(before);
+    attacker.setLocalState({ user: { name: "spoofed\u0000", color: "invalid" }, cursor: { anchor: null, head: null }, runtime: { forged: true } });
+    attacker.meta.get(doc.clientID)!.clock = 1_000_000;
+    assert.doesNotThrow(() => receivePresence(local, localPresence(attacker), "untrusted peer"));
+    assert.strictEqual(local.getLocalState(), before); assert.equal(JSON.stringify(local.getLocalState()), serialized);
+    assert(remoteSelections(doc, local, true).some(s => s.anchor === 0 && s.head === 3));
+  } finally { local.destroy(); attacker.destroy(); doc.destroy(); attackerDoc.destroy(); }
+});
+
+test("an invalid Unicode peer name is refused before it can poison native result decoding", () => {
+  const doc = yDocument(newPlaygroundDocument()), local = createPresence(doc, "Real host"), attackerDoc = new Y.Doc(), attacker = createPresence(attackerDoc, "Attacker");
+  try {
+    const before = structuredClone([...local.getStates()]);
+    attacker.setLocalState({ user: { name: "bad\ud800", color: "#2876bd" }, cursor: null });
+    assert.throws(() => receivePresence(local, localPresence(attacker), "untrusted peer"), /identity/);
+    assert.deepEqual([...local.getStates()], before);
+  } finally { local.destroy(); attacker.destroy(); doc.destroy(); attackerDoc.destroy(); }
 });
 
 test("actual relay edit acknowledgement rejects a mode-tampered viewer and carries only encrypted presence", async () => {

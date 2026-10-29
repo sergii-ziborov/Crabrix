@@ -21,12 +21,30 @@ import Foundation
                     session = try PlaygroundLiveSession(link: link, origin: origin, codecURL: codec)
                 } else if type == "edit" { session?.edit(file: command["file"] as! String, text: command["text"] as! String); continue }
                 else if type == "selection" { session?.select(file: command["file"] as! String, range: NSRange(location: command["anchor"] as! Int, length: command["length"] as! Int)); continue }
+                else if type == "confirm-runtime" {
+                    guard let session else { throw PlaygroundFailure("Join a room first.") }
+                    try await session.confirmRuntimeEditAccess()
+                    emit(["event": "runtime-role", "confirmed": session.runtimeEditConfirmed]); continue
+                }
+                else if type == "runtime-source" {
+                    guard let session else { throw PlaygroundFailure("Join a room first.") }
+                    let identity = try session.runtimeSourceIdentity()
+                    emit(["event": "runtime-source", "revision": identity.revision, "paths": identity.paths]); continue
+                }
+                else if type == "runtime-presence" {
+                    guard let session else { throw PlaygroundFailure("Join a room first.") }
+                    try session.publishRuntimePresence(try JSONSerialization.data(withJSONObject: command["envelope"]!))
+                    emit(["event": "runtime-published"]); continue
+                }
                 else if type == "stop" { session?.stop(); emit(["event": "stopped"]); continue }
                 else if type == "exit" { session?.stop(); return }
                 if let session {
                     session.onDocument = { document in emit(["event": "document", "document": try! JSONSerialization.jsonObject(with: JSONEncoder().encode(document))]) }
                     session.onSelections = { selections in emit(["event": "selections", "selections": try! JSONSerialization.jsonObject(with: JSONEncoder().encode(selections))]) }
                     session.onStatus = { status in emit(["event": "status", "status": status]) }
+                    session.onRuntimeFrames = { frames in
+                        emit(["event": "runtime-frames", "frames": frames.map { ["clientID": $0.clientID, "clock": $0.clock, "envelope": $0.envelope] as [String: Any] }])
+                    }
                     let link = session.link
                     emit(["event": "ready", "link": ["id": link.id, "key": link.key, "access": link.access, "expiresAt": link.expiresAt.timeIntervalSince1970 * 1000, "mode": link.isReadOnly ? "view" : "edit"]])
                     session.start()

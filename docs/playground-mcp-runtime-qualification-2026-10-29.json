@@ -1,70 +1,77 @@
 {
-  "verifiedAtUTC": "2026-10-29T03:55:56.264094+00:00",
-  "baseSourceCommit": "410bdc2",
+  "verifiedAtUTC": "2026-10-29T04:54:20.631414+00:00",
+  "baseSourceCommit": "6f6d62d",
   "candidateOnly": true,
   "remoteExecutionEnabled": false,
   "publishedBridgeVersion": "0.1.1",
   "signed119ContainsRuntimeProtocol": false,
   "files": {
     "Crabrix/Playground/PlaygroundRuntimeProtocol.swift": "10ae8f51cffa2c4116b8b6aef56121a80f09a1d847501c7d48ce1d1a44676c48",
-    "CrabrixTests/PlaygroundRuntimeProtocolTests.swift": "fb8077c1f21eeb7349812da5dfd5e31489e968ed1e30a898a4b882a268c19a52",
-    "site/lib/playground-runtime-protocol.ts": "8a9a224bf5a7515752481602ae544b083f6d8c90818b0d0749321a23a942de7f",
-    "packages/crabrix-playground-mcp/test/runtime-protocol.test.ts": "309cbacbcdc4de4ee00591c797d89b4faa202d6be6df726600c39e445825b6f4",
+    "CrabrixTests/PlaygroundRuntimeProtocolTests.swift": "2cc069876689e1a39e25262061bf44383cc765aa4dc5795a2663e7d9459eef1d",
+    "site/lib/playground-runtime-protocol.ts": "767e699228eb91797fdaf4f093c5d6b23169c8ea044e02daf0e397d66eef4958",
+    "packages/crabrix-playground-mcp/test/runtime-protocol.test.ts": "70984b2885ab080af207cc6afdd43a41bb5a925bcd46a95295183eafaff3440c",
     "scripts/test_playground_runtime_crypto.mjs": "35cb37f2df80ee925880caa9c517fb454591453b8a7a58f65165519dd89b380c",
     "site/lib/playground-runtime-source.ts": "6640ec539d3e96040e86ca11e2f32e605ebf0492f1135fab1cf7932ebe9a4d9d",
-    "site/lib/playground-document.ts": "5871f40f15a05576ddc05a093b1de52c0ae0e4a54f04cb4111f586659f795db0",
-    "site/native/playground-bridge.ts": "4cf5053a832e886412e1e7a8e9cdd1ba7a1e84b9fe2f71095198428c63f9952b",
-    "Crabrix/Playground/PlaygroundCodec.swift": "0f4710e44da2dbbd2ec51874093c1f6f0a0b49dd5b4b880f61c9db68deb5dba8",
-    "Crabrix/Resources/PlaygroundCodec.js": "90becff0e5e3b3fad68410d1d83a9761b60a627c8945843e2be67c858ed28fcd",
+    "site/lib/playground-document.ts": "c843b98e4d68645001bea22e58a0e8d9ea18694282d0f21dfdd320919f27a133",
+    "site/native/playground-bridge.ts": "d227758710375ae964c904441d5ca4827e77f85ef6f2d294cebb8bc272654bbd",
+    "Crabrix/Playground/PlaygroundCodec.swift": "a179eeac6f90cd4645dc377f00173bd1d5360bd5445582ae5d6a4854fad875ac",
+    "Crabrix/Resources/PlaygroundCodec.js": "131e04e707ce448fe3c7c1011d3bddbb16faf14ae1eccafbaaec7746ef3b04cc",
     "CrabrixTests/PlaygroundTests.swift": "46b653f75bb4544e9d17040be8c36f6738355a6ec6c0d4030621e582a2935222",
     "packages/crabrix-playground-mcp/test/runtime-source.test.ts": "37693960039061e724621b5f45144924ef830db8b8ddaf4ee85afed8a6ceb201",
-    "site/lib/playground-presence.ts": "e3a09a7b41097d4ccc73baaf116809dd662856c457a7c364717369648a3963d9",
+    "site/lib/playground-presence.ts": "69d2aaa2ed1bd5dcd0edc50827c29553cbf40da75b6a6505547af734128bdd36",
     "site/lib/playground-session.ts": "4469f66626dfd3e9aa7042031e972fa641cd3e944f613949ac889c3bf69ab77b",
     "site/lib/playground-runtime-authority.ts": "1e118f97ca7d9345773fb58a8d62eb4a6338d4611dee9bd3dd23a80479cee9ef",
     "Crabrix/Playground/PlaygroundLiveSession.swift": "b2776771b30ada2d08b595d1d8aa54f1fabfaae833366bbdd7dbf962d1887b59",
-    "packages/crabrix-playground-mcp/test/runtime-presence.test.ts": "de63555f28def38c8c72610fe56781fb75b19afb7deac5e54f48cb3d041ff090",
-    "packages/crabrix-playground-mcp/test/runtime-authority.test.ts": "641cbdfde2f75017902747f12c3bec1c0ecc2ad9ced9e454f69d0acf58aecc2a"
+    "packages/crabrix-playground-mcp/test/runtime-presence.test.ts": "067f4547b0bc9da50845e1fb110085fbf84e006c7cf83b90616d276e61f204a2",
+    "packages/crabrix-playground-mcp/test/runtime-authority.test.ts": "641cbdfde2f75017902747f12c3bec1c0ecc2ad9ced9e454f69d0acf58aecc2a",
+    "Crabrix/Playground/PlaygroundRuntimeCryptography.swift": "9ac1749c6a4e19bcddbd2e5e64b1f617af93adae951f6b1534258287c30206ac",
+    "Crabrix/Playground/PlaygroundRuntimePolicy.swift": "016668eaf0d5e7396bc99e4bd51b349ff27e55a1040004574fa338c2184d6417",
+    "site/native/playground-runtime-policy.ts": "cacd69cda77ef115cac0086c6c0466f56c60c7f8a1d9b954f6b67a65c7d5a827",
+    "scripts/build_playground_bridge.mjs": "1d5803f35cd815f32f2844f15699d340ab31ec70816bc7f6e001cb263b899c0b",
+    "scripts/probes/playground/build-native-peer.sh": "439926755a1238b67d95e73c2c3fa3224c1e4e10e4a6609af37c154907fd99e7",
+    "scripts/probes/playground/native-probe.swift": "f4d3f9688d3b46118f9dd060ce3a62ad9375d057baac217e5b6f7968a773dac6",
+    "scripts/probes/playground/runtime-relay.ts": "9fc60522ceb4d16399057221cf727d668a8fa1ed7019547d85fe40e5ed0e3cb5",
+    "scripts/test_playground_native_runtime.mjs": "49cf9c2ef1787e45c85c4b50fff294a95f686aad114e6c861b025dc14cfd67fe",
+    "packages/crabrix-playground-mcp/test/native-runtime-probe.ts": "56bc54cb76cd54e04d088de86934ee0235aee29a3b2d837ea37286dfc03dd0be"
   },
   "nativeSimulator": {
-    "passed": 42,
+    "passed": 25,
     "failed": 0,
     "skipped": 0,
+    "scope": "Frozen native policy/crypto/presence and model fixture on iPad, before the isolated compiler input addition. This is not qualification of the new compiler jobs or UI.",
     "runs": [
       {
-        "device": "phone",
-        "passed": 21,
-        "failed": 0,
-        "skipped": 0,
-        "resultBundle": "build/mcp-runtime-20261029/runtime-presence-phone.xcresult",
-        "devices": null
-      },
-      {
         "device": "pad",
-        "passed": 21,
+        "passed": 25,
         "failed": 0,
         "skipped": 0,
-        "resultBundle": "build/mcp-runtime-20261029/runtime-presence-pad.xcresult",
-        "devices": null
+        "resultBundle": "build/mcp-runtime-20261029/runtime-native-policy-frozen-pad.xcresult"
       }
     ]
   },
   "node": {
-    "passed": 22,
+    "passed": 25,
     "failed": 0,
     "skipped": 0,
-    "log": "build/mcp-runtime-20261029/mcp-authority-tests.log"
+    "log": "build/mcp-runtime-20261029/mcp-native-policy-node-tests-frozen.log"
   },
   "crossRuntime": {
     "actualProductionSwiftCryptoKitToWebCrypto": true,
     "actualWebCryptoToProductionSwiftCryptoKit": true,
     "command": "node scripts/test_playground_runtime_crypto.mjs",
-    "scope": "macOS CryptoKit plus native Simulator verification of actual WebCrypto vector; browser transport/UI matrix pending"
+    "scope": "macOS CryptoKit plus native Simulator verification of actual WebCrypto vector; browser transport/UI matrix pending",
+    "actualJavaScriptCorePolicyWithProductionCryptoKitCallbacks": true,
+    "policyProbeLog": "build/mcp-runtime-20261029/runtime-policy-probe-frozen.log",
+    "actualNativeURLSessionAndTwoProcessesPlusNode": true,
+    "nativeHTTPProbeLog": "build/mcp-runtime-20261029/native-runtime-reproducible-probe-final.log",
+    "reproduceNativeHTTP": "node scripts/test_playground_native_runtime.mjs",
+    "refusalRequiresExactAuthorizationFailure": true
   },
   "notYetImplemented": [
-    "signed capability/controller wire integration and explicit local permission UI",
-    "native policy adapter and isolated shared-source-only execution jobs",
+    "signed discovery/controller integration and explicit local permission UI",
+    "bounded isolated job lifecycle, signed result pages and existing Output/debugger presentation",
     "capability/diagnostics/runtime MCP tools",
-    "actual SDK\u2194browser\u2194two-native runtime matrix"
+    "actual SDK↔browser↔two-native runtime execution matrix"
   ],
   "executionSourceIdentity": {
     "schema": "crabrix-runtime-source-v1",
@@ -93,10 +100,13 @@
     "actualNodeRelayRejectsViewModeTampering": true,
     "actualNodeRelayRoleConfirmationChangesNoSource": true,
     "actualNodeRelayMalformedPresenceCannotDisconnectSourceOrRevokeRoleConfirmation": true,
-    "nativeLiveSessionRoleConfirmation": "compiled but actual HTTP native matrix still pending"
+    "nativeLiveSessionRoleConfirmation": "Actual macOS native URLSession acknowledges edit-only no-op and refuses view-mode tampering; iOS transport test compiled, Simulator execution pending.",
+    "ownPresenceIDCannotOverwriteLocalCursorOrRuntimeIdentity": true,
+    "malformedUnicodePeerNamesCannotPoisonNativeDecode": true,
+    "retransmissionsExposeClockForIdempotentAcknowledgement": true
   },
   "authority": {
-    "scope": "Pure TypeScript policy candidate; no UI or execution adapter wired",
+    "scope": "Pure TypeScript authority plus fixed JavaScriptCore adapter with production CryptoKit verification. Local permission UI and job dispatch remain unwired.",
     "explicitLocalGrantRequired": true,
     "editProofAndConfirmedOwnRoleRequired": true,
     "controllerKeyRoomProjectConnectionGrantIDBound": true,
@@ -106,6 +116,34 @@
     "sameRequestCannotExecuteTwiceOrChangeOperation": true,
     "ordinaryJobsCannotBeStopped": true,
     "debugRequiresMatchingPausedOwnedJob": true,
-    "nativePolicyIntegration": "pending"
+    "nativePolicyIntegration": "Actual JavaScriptCore policy request/signature/MAC/local allow passes in macOS probe and iPad Simulator; no remote compiler operation is exposed."
+  },
+  "isolatedCompilerCandidate": {
+    "compiled": true,
+    "profile": "shared-std-v1",
+    "actualIOSExecutionQualified": false,
+    "scope": "Immutable validated room files; std/local modules only; explicit Cargo requirement refusal; resourceFiles empty; plan empty; generated preview excluded from shared result; separate invocation cancellation through check/build/run/test/debug. Ordinary project API defaults retained.",
+    "pendingTests": [
+      "CompilerInvocationCancellationTests",
+      "PlaygroundRuntimeInputTests",
+      "PlaygroundRuntimeTransportTests"
+    ],
+    "buildLog": "build/mcp-runtime-20261029/runtime-isolation-build-checked-refusal.log",
+    "simulatorIssue": "Old phone and iPad stalled before test-host launch. A fresh owned iPhone stalled in iOS MobileSafari migration; that attempt was interrupted before any tests ran. Zero-test/aborted runs are not passes.",
+    "compiledCandidateFiles": {
+      "Crabrix/Compiler/WasmRustCompiler.swift": "e722e16faebe7926ef72c02f8298f154726f0c0e8e4e2ef4742d89c2efffc874",
+      "Crabrix/Compiler/CompilerInvocationCancellation.swift": "97e388d389c751471bc1ed1ed71692b9c6eac3abe760582a1f438d9a0c897d78",
+      "Crabrix/Playground/PlaygroundRuntimeInput.swift": "b743c41c679083a3faa62e80241a1abcf5bc84ffbcc67aad53da38a970d4188f",
+      "Crabrix/Projects/ProjectFilePolicy.swift": "c631d39ecea9407777ae404249f05e5c21268520b9c1d6695662b885f1b5cf15",
+      "CrabrixTests/CompilerInvocationCancellationTests.swift": "206e07bdecef76b01d25971d16bfc983d066831d22f3ea907949d83c534ba030",
+      "CrabrixTests/PlaygroundRuntimeInputTests.swift": "684544d697b819c936203bee519b31c3c658f53d4dbe5b1ee0e7238aeb0578b8",
+      "CrabrixTests/PlaygroundRuntimeTransportTests.swift": "4936fef9dccbefafec6acb3bfc40434d8ddfb14822c4dd84bd1fa664e516985f"
+    },
+    "pendingResultBundles": [
+      "build/mcp-runtime-20261029/runtime-isolation-pad.xcresult",
+      "build/mcp-runtime-20261029/runtime-isolation-fresh-phone.xcresult"
+    ],
+    "freshSimulator": "6EA56415-0392-491B-AD25-9A2BD0DC8596",
+    "freshScratchSimulatorDeletedAfterAttempt": true
   }
 }

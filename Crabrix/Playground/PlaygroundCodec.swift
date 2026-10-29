@@ -8,6 +8,7 @@ import CryptoKit
 @MainActor
 final class PlaygroundCodec {
     struct Result: Decodable {
+        var clientID: UInt32?
         var document: PlaygroundDocument?
         var snapshot: [UInt8]?
         var update: [UInt8]?
@@ -21,7 +22,7 @@ final class PlaygroundCodec {
         var runtimePaths: [String]?
         var runtimeFrames: [RuntimePresenceFrame]?
     }
-    struct RuntimePresenceFrame: Decodable, Equatable, Sendable { let clientID: UInt32; let envelope: String }
+    struct RuntimePresenceFrame: Decodable, Equatable, Sendable { let clientID: UInt32; let clock: UInt64; let envelope: String }
     private let context: JSContext
     init(resourceURL: URL? = nil) throws {
         guard let context = JSContext(), let url = resourceURL ?? Bundle.main.url(forResource: "PlaygroundCodec", withExtension: "js") else { throw PlaygroundFailure("The bundled collaboration codec is unavailable.") }
@@ -46,6 +47,8 @@ final class PlaygroundCodec {
             return normalized
         }
         context.setObject(sourceOrigin, forKeyedSubscript: "__crabrixSourceOrigin" as NSString)
+        let cryptography: @convention(block) (String) -> String = { PlaygroundRuntimeCryptography.call($0) }
+        context.setObject(cryptography, forKeyedSubscript: "__crabrixRuntimeCrypto" as NSString)
         context.evaluateScript(try String(contentsOf: url, encoding: .utf8))
         guard context.exception == nil else { throw PlaygroundFailure("Could not initialize the bundled collaboration codec.") }
     }
@@ -69,6 +72,45 @@ final class PlaygroundCodec {
               let paths = result.runtimePaths, (1...16).contains(paths.count) else { throw PlaygroundFailure("The shared execution source identity is unavailable.") }
         let revision = SHA256.hash(data: Data(source.utf8)).map { String(format: "%02x", $0) }.joined()
         return RuntimeSourceIdentity(revision: revision, paths: paths)
+    }
+    func runtimePolicy(action: String, local: PlaygroundRuntimePolicyContext, envelope: Data? = nil,
+                       controller: String? = nil, requestID: String? = nil, operations: [String]? = nil,
+                       lifetimeMilliseconds: Int = 600_000) async throws -> PlaygroundRuntimePolicyReply {
+        var request: [String: Any] = ["action": action, "context": try JSONSerialization.jsonObject(with: JSONEncoder().encode(local))]
+        if let envelope {
+            guard envelope.count <= PlaygroundRuntimeProtocol.envelopeBytes, let text = String(data: envelope, encoding: .utf8) else { throw PlaygroundFailure("Invalid runtime envelope.") }
+            request["envelope"] = text
+        }
+        if let controller { request["controller"] = controller }
+        if let requestID { request["requestID"] = requestID }
+        if let operations { request["operations"] = operations; request["lifetimeMs"] = lifetimeMilliseconds }
+        let json = try JSONSerialization.data(withJSONObject: request)
+        guard json.count <= 16_384, let argument = String(data: json, encoding: .utf8),
+              let function = context.objectForKeyedSubscript("CrabrixPlaygroundCodec")?.objectForKeyedSubscript("callRuntime") else { throw PlaygroundFailure("The local runtime policy is unavailable.") }
+        let state = PlaygroundRuntimePolicyCall()
+        let reply = try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                state.attach(continuation)
+                if Task.isCancelled { state.finish(.failure(CancellationError())); return }
+                let completion: @convention(block) (String) -> Void = { value in
+                    do {
+                        guard value.utf8.count <= 16_384 else { throw PlaygroundFailure("Oversized local runtime policy result.") }
+                        state.finish(.success(try JSONDecoder().decode(PlaygroundRuntimePolicyReply.self, from: Data(value.utf8))))
+                    } catch { state.finish(.failure(error)) }
+                }
+                state.timeout = Task { @MainActor in
+                    do { try await Task.sleep(for: .seconds(3)) } catch { return }
+                    state.finish(.failure(PlaygroundFailure("Local runtime authorization timed out.")))
+                }
+                context.exception = nil
+                let callback = JSValue(object: completion, in: context)!
+                if function.call(withArguments: [argument, callback]) == nil || context.exception != nil {
+                    state.finish(.failure(PlaygroundFailure("The local runtime policy could not authenticate this request.")))
+                }
+            }
+        } onCancel: { Task { @MainActor in state.finish(.failure(CancellationError())) } }
+        try Task.checkCancellation()
+        return reply
     }
     private func object(_ document: PlaygroundDocument) throws -> Any { try JSONSerialization.jsonObject(with: JSONEncoder().encode(document.validated())) }
 }

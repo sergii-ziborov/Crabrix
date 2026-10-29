@@ -102,6 +102,14 @@ test("oversized payloads and closed or in-flight destroyed signers fail explicit
   await assert.rejects(signer.sign(fields, {}, { now }), /closed/);
 });
 
+test("payload strings and keys must have portable Unicode before signing", async () => {
+  const signer = await createRuntimeSigner();
+  try {
+    await assert.rejects(signer.sign(fields, { name: "bad\ud800" }, { now }), /payload Unicode/);
+    await assert.rejects(signer.sign(fields, { ["bad\udfff"]: true }, { now }), /payload Unicode/);
+  } finally { signer.destroy(); }
+});
+
 test("flooding cannot evict an unexpired nonce and re-enable an earlier request", async () => {
   const signer = await createRuntimeSigner(), replay = new RuntimeReplayWindow();
   const frames = [];

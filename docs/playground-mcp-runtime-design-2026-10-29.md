@@ -1,7 +1,7 @@
 # Client-local MCP execution — implementation contract
 
 This is the next, **unreleased** MCP phase after published bridge 0.1.1 and signed
-app 1.1.3 (118). Existing eight source/selection tools remain compatible. Neither
+app 1.1.3 (119). Existing eight source/selection tools remain compatible. Neither
 the edit URL nor a participant name supplies execution permission. No published
 capability changes until the browser/native/MCP matrix and signed delivery pass.
 
@@ -9,7 +9,7 @@ capability changes until the browser/native/MCP matrix and signed delivery pass.
 
 Shared local-file/origin fixes are qualified in 26 native cases and shipped in signed
 TestFlight/App Review build 119 from `853ea3e`; they do not enable remote execution. The candidate
-wire codec now passes 22 Node tests and 42 phone/iPad Simulator tests, including
+wire codec now passes 25 Node tests and the updated 25-case iPad Simulator policy/model series, including
 a real WebCrypto signature verified in CryptoKit. The reproducible production
 Swift ↔ Node WebCrypto probe is `node scripts/test_playground_runtime_crypto.mjs`.
 [Qualification receipt](playground-mcp-runtime-qualification-2026-10-29.json).
@@ -26,9 +26,22 @@ does not disconnect source, including on initial state. Native HTTP role-proof
 qualification remains pending. A pure TypeScript permission gate now checks an
 explicit local grant, controller key, grant ID, room/project/connection, exact
 source, owned job and foreground lease. Busy/unprepared/stale commands do not
-become deferred work. The local UI, native policy adapter, signed discovery and
-isolated job dispatch remain unwired; bridge 0.1.1 still exposes eight
+become deferred work. The fixed JavaScriptCore native policy adapter now verifies through production
+CryptoKit, including a real asynchronous local allow request. Actual native
+URLSession role proof and signed presence/Unicode selection pass in a two-native-
+process plus Node probe on macOS. The local UI, signed discovery and isolated
+job dispatch remain unwired; bridge 0.1.1 still exposes eight
 source/selection tools only. These candidate runtime additions are absent from signed 119.
+
+The candidate immutable `PlaygroundRuntimeInput` and per-invocation cancellation
+compile for iOS. The selected-entry `shared-std-v1` profile attaches only validated
+room text, an empty resource set and an empty dependency plan. Unsupported Cargo
+requirements are refused before compilation. A late Stop owns one invocation,
+including Debug phases, and cannot follow the compiler's global active pointer.
+Compiler/transport Simulator regression tests are compiled but not yet counted
+as passes: Simulator startup stalled before their test host ran. No release or
+execution capability is claimed for this candidate. The existing local Rust/Web
+UI and normal project build API are unchanged.
 
 ## Required sequence
 

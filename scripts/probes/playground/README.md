@@ -67,3 +67,21 @@ The coordinator drives two real Simulator apps and Chromium through the producti
 `CRABRIX_LOCAL_TOOLCHAIN_MIRROR=1` supplies only the two large compiler assets from `site/public`, after comparing their SHA-256 with the pinned manifest. The page, encrypted relay, source/presence transport and app clients still use production HTTPS. Compilation and execution still happen in the browser Worker. This option does not test the initial public download; test that separately when the toolchain or serving rules change.
 
 The results qualify Simulator UI and app URL handlers. They do not prove Safari's external Universal Link policy on a physical device. Check the site's AASA, Apple's cached AASA and the signed release entitlements separately, and verify physical-device handoff when a device is available.
+
+## Candidate native runtime transport (2026-10-29)
+
+Run `node scripts/test_playground_native_runtime.mjs` from the repository. It
+builds the actual native codec/transport with CryptoKit, starts an owned
+loopback-only relay on port 3398, and runs two native observers plus a Node
+client. It checks acknowledged edit-role proof, refused view-mode tampering,
+the common source revision, signed transient presence and a Unicode selection.
+The fixture stores encrypted room data in RAM only and is stopped afterwards;
+no keys, room URLs or source are printed. An occupied port is a failure, never a
+reason to stop another server.
+
+This is a macOS native transport probe, not an iOS UI/remote-execution claim.
+The separate `PlaygroundRuntimeTransportTests` and `PlaygroundRuntimeInputTests`
+run in the iOS Simulator with `CRABRIX_RUN_SHARED_RUNTIME_GATE=1`; keep the
+loopback fixture running for that test session. The compiler gate exercises
+compile-only Build, actual Run, late cancellation isolation and missing private
+inputs. Published MCP 0.1.1 remains the eight source/selection tools.

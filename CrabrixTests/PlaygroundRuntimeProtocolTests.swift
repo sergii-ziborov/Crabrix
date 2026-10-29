@@ -19,6 +19,77 @@ final class PlaygroundRuntimeProtocolTests: XCTestCase {
         return try JSONSerialization.data(withJSONObject: value)
     }
 
+    func testCommonPermissionPolicyActuallyVerifiesThroughNativeCryptoKitAndRequiresLocalAllow() async throws {
+        let codec = try PlaygroundCodec(), controller = PlaygroundRuntimeSigner(), host = PlaygroundRuntimeSigner()
+        defer { controller.destroy(); host.destroy() }
+        let source = PlaygroundDocument(name: "policy", entryFile: "main.rs", files: ["main.rs": "fn main() { println!(\"local 🦀\"); }"])
+        _ = try codec.initialize(source)
+        let before = try codec.call(["type": "snapshot"]).snapshot
+        let revision = try codec.runtimeSourceIdentity().revision
+        var local = PlaygroundRuntimePolicyContext(room: room, target: host.fingerprint, scope: "native-project-connection-1", revision: revision, editCapability: capability,
+            expires: Wire.milliseconds() + 3_600_000, foreground: true, connected: true, editConfirmed: true, ready: true, busy: false)
+        let initialized = try await codec.runtimePolicy(action: "initialize", local: local)
+        XCTAssertNil(initialized.error); XCTAssertNil(initialized.grant)
+        let requestID = "native-permission-001"
+        let request = try controller.sign(.init(kind: "permission-request", room: room, target: host.fingerprint, requestID: requestID, operation: "grant", revision: revision),
+            payload: Data("{\"name\":\"Claude · MCP\",\"operations\":[\"check\",\"run\"]}".utf8), editCapability: capability)
+        let pending = try await codec.runtimePolicy(action: "request", local: local, envelope: request)
+        XCTAssertNil(pending.error); XCTAssertNil(pending.grant)
+        XCTAssertEqual(pending.requests.first?.controller, controller.fingerprint)
+        XCTAssertEqual(pending.verified?.sender, controller.fingerprint)
+        let allowed = try await codec.runtimePolicy(action: "allow", local: local, controller: controller.fingerprint, requestID: requestID, operations: ["check"], lifetimeMilliseconds: 60_000)
+        XCTAssertNil(allowed.error)
+        let grant = try XCTUnwrap(allowed.grant)
+        XCTAssertEqual(grant.operations, ["check"])
+        let payload = try JSONSerialization.data(withJSONObject: ["grant": grant.id])
+        let check = try controller.sign(.init(kind: "command", room: room, target: host.fingerprint, requestID: "native-check-00001", operation: "check", revision: revision), payload: payload, editCapability: capability)
+        let first = try await codec.runtimePolicy(action: "admit", local: local, envelope: check)
+        XCTAssertNil(first.error); XCTAssertEqual(first.admission?.kind, "new")
+        let duplicate = try await codec.runtimePolicy(action: "admit", local: local, envelope: check)
+        XCTAssertEqual(duplicate.admission?.kind, "duplicate")
+        let run = try controller.sign(.init(kind: "command", room: room, target: host.fingerprint, requestID: "native-run-000001", operation: "run", revision: revision), payload: payload, editCapability: capability)
+        let denied = try await codec.runtimePolicy(action: "admit", local: local, envelope: run)
+        XCTAssertEqual(denied.admission?.kind, "denied")
+        let noProof = try controller.sign(.init(kind: "command", room: room, target: host.fingerprint, requestID: "native-noproof-001", operation: "check", revision: revision), payload: payload)
+        let invalid = try await codec.runtimePolicy(action: "admit", local: local, envelope: noProof)
+        XCTAssertNotNil(invalid.error); XCTAssertNil(invalid.verified); XCTAssertEqual(invalid.grant?.id, grant.id)
+        local.foreground = false
+        let background = try await codec.runtimePolicy(action: "status", local: local)
+        XCTAssertNil(background.grant); XCTAssertEqual(background.revoked.map(\.grant), [grant.id])
+        XCTAssertEqual(try codec.call(["type": "document"]).document, source)
+        XCTAssertEqual(try codec.call(["type": "snapshot"]).snapshot, before, "Permission policy must never mutate or execute source")
+    }
+
+    func testNativeCryptographicServicesAreBoundedVerificationOnly() throws {
+        let digest = PlaygroundRuntimeCryptography.call("{\"op\":\"digest\",\"data\":[97,98,99]}")
+        let value = try JSONSerialization.jsonObject(with: Data(digest.utf8)) as! [String: Any]
+        let bytes = try XCTUnwrap(value["bytes"] as? [UInt8])
+        XCTAssertEqual(bytes.map { String(format: "%02x", $0) }.joined(), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
+        for invalid in ["{\"op\":\"execute\",\"data\":[]}", "{\"op\":\"digest\",\"data\":[true]}", "{\"op\":\"digest\",\"data\":[256]}", String(repeating: " ", count: 16_385)] {
+            XCTAssertTrue(PlaygroundRuntimeCryptography.call(invalid).contains("error"))
+        }
+        let oversized = try JSONSerialization.data(withJSONObject: ["op": "digest", "data": [UInt8](repeating: 1, count: 2_049)])
+        XCTAssertTrue(PlaygroundRuntimeCryptography.call(String(decoding: oversized, as: UTF8.self)).contains("error"))
+    }
+
+    func testClaimedLocalPresenceIDCannotCorruptTheEditorCursorOrLoseItsNextSourceChange() throws {
+        let codec = try PlaygroundCodec(), other = try PlaygroundCodec()
+        let initialized = try codec.initialize(.init(name: "protected", entryFile: "main.rs", files: ["main.rs": "fn main() {}"]))
+        let client = try XCTUnwrap(initialized.clientID)
+        let snapshot = try XCTUnwrap(try codec.call(["type": "snapshot"]).snapshot)
+        _ = try other.call(["type": "state", "snapshot": snapshot, "events": []])
+        _ = try codec.call(["type": "selection", "file": "main.rs", "anchor": 0, "head": 3])
+        let malicious = try JSONSerialization.data(withJSONObject: ["user": ["name": "spoofed\0", "color": "invalid"], "cursor": ["anchor": NSNull(), "head": NSNull()], "runtime": ["forged": true]])
+        var packet: [UInt8] = []
+        func varuint(_ value: UInt64) { var n = value; while n >= 128 { packet.append(UInt8(n & 127) | 128); n >>= 7 }; packet.append(UInt8(n)) }
+        varuint(1); varuint(UInt64(client)); varuint(1_000_000); varuint(UInt64(malicious.count)); packet.append(contentsOf: malicious)
+        let received = try codec.call(["type": "presence", "bytes": packet])
+        XCTAssertEqual(received.localSelection?.anchor, 0); XCTAssertEqual(received.localSelection?.head, 3)
+        let changed = try codec.call(["type": "file", "path": "main.rs", "text": "fn main() { println!(\"retained\"); }"])
+        let update = try XCTUnwrap(changed.update)
+        XCTAssertEqual(try other.call(["type": "update", "bytes": update]).document?.files["main.rs"], "fn main() { println!(\"retained\"); }")
+    }
+
     func testActualWebCryptoVectorVerifiesInNativeCryptoKit() throws {
         let vector = Data(webCryptoVector.utf8)
         let frame = try Wire.verify(vector, context: context, clock: { now })
@@ -64,11 +135,27 @@ final class PlaygroundRuntimeProtocolTests: XCTestCase {
         XCTAssertTrue(received.selections?.contains(where: { $0.anchor == 22 && $0.head == 24 }) == true)
         XCTAssertEqual(try first.call(["type": "snapshot"]).snapshot, snapshot)
         XCTAssertEqual(try second.runtimeSourceIdentity(), try first.runtimeSourceIdentity())
+        let repeated = try XCTUnwrap(try first.call(["type": "runtime-presence", "envelope": object]).presence)
+        let retransmitted = try XCTUnwrap(try second.call(["type": "presence", "bytes": repeated]).runtimeFrames?.first)
+        XCTAssertEqual(retransmitted.envelope, frame.envelope); XCTAssertGreaterThan(retransmitted.clock, frame.clock)
         let cleared = try XCTUnwrap(try first.call(["type": "runtime-presence", "envelope": NSNull()]).presence)
         let after = try second.call(["type": "presence", "bytes": cleared])
         XCTAssertEqual(after.runtimeFrames, [])
         XCTAssertTrue(after.selections?.contains(where: { $0.anchor == 22 && $0.head == 24 }) == true)
         signer.destroy()
+    }
+
+    func testMalformedPeerUnicodeCannotPoisonSubsequentNativeDocumentDecoding() throws {
+        let codec = try PlaygroundCodec()
+        let source = PlaygroundDocument(name: "Unicode host", entryFile: "main.rs", files: ["main.rs": "fn main() {}"])
+        let initialized = try codec.initialize(source), client = try XCTUnwrap(initialized.clientID)
+        let malformed = Data(##"{"user":{"name":"bad\ud800","color":"#2876bd"},"cursor":null}"##.utf8)
+        var packet: [UInt8] = []
+        func varuint(_ value: UInt64) { var n = value; while n >= 128 { packet.append(UInt8(n & 127) | 128); n >>= 7 }; packet.append(UInt8(n)) }
+        varuint(1); varuint(UInt64(client ^ 1)); varuint(1_000_000); varuint(UInt64(malformed.count)); packet.append(contentsOf: malformed)
+        XCTAssertThrowsError(try codec.call(["type": "presence", "bytes": packet]))
+        XCTAssertEqual(try codec.call(["type": "document"]).document, source)
+        XCTAssertEqual(try codec.call(["type": "file", "path": "main.rs", "text": "fn main() { println!(\"safe\"); }"]).document?.files["main.rs"], "fn main() { println!(\"safe\"); }")
     }
 
     func testOversizedRuntimePresenceCannotReplaceAnExistingSelectionOrSource() throws {

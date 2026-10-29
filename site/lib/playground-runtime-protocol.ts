@@ -1,6 +1,7 @@
 // Unreleased protocol foundation. Authentication here never grants execution.
 // A client-local permission/job governor must still authorize every operation.
 import { base64url, unbase64url } from "./playground-crypto";
+import { isWellFormedUTF16 } from "./playground-document";
 
 export const RUNTIME_PROTOCOL = "crabrix-runtime-v1";
 export const RUNTIME_LIMITS = Object.freeze({ envelopeBytes: 2400, payloadBytes: 768, lifetimeMs: 15000, clockSkewMs: 5000, replayEntries: 512 });
@@ -21,7 +22,9 @@ const signatureAlgorithm = { name: "ECDSA", hash: "SHA-256" };
 const verifiedFrames = new WeakSet<object>();
 
 function freezePayload(value: unknown): unknown {
+  if (typeof value === "string" && !isWellFormedUTF16(value)) throw new Error("Invalid runtime payload Unicode.");
   if (value !== null && typeof value === "object") {
+    if (Object.keys(value).some(key => !isWellFormedUTF16(key))) throw new Error("Invalid runtime payload Unicode.");
     Object.values(value).forEach(freezePayload);
     Object.freeze(value);
   }
@@ -85,6 +88,7 @@ export async function createRuntimeSigner() {
       if (payloadJSON === undefined) throw new Error("Invalid runtime payload.");
       const data = encoder.encode(payloadJSON);
       if (data.length > RUNTIME_LIMITS.payloadBytes) throw new Error("Runtime payload exceeds its page budget.");
+      freezePayload(JSON.parse(payloadJSON));
       const now = options.now ?? Date.now(), lifetime = options.lifetimeMs ?? RUNTIME_LIMITS.lifetimeMs;
       const body = header([RUNTIME_PROTOCOL, fields.kind, fields.room, fingerprint, fields.target, fields.requestID, fields.operation,
         fields.revision ?? "", fields.job ?? "", base64url(crypto.getRandomValues(new Uint8Array(32))), now, now + lifetime, await digest(data)]);

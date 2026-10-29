@@ -13,7 +13,7 @@ const encoder = new TextEncoder();
 const forbidden = new Set(["node_modules", "target", ".git", ".github", ".cargo", "vendor"]);
 const allowed = /(?:\.rs|\.toml|\.lock|\.md|\.txt)$|^(?:LICENSE|NOTICE)$/i;
 
-function wellFormed(value: string): boolean {
+export function isWellFormedUTF16(value: string): boolean {
   // Swift strings cannot represent isolated UTF-16 surrogates. Refuse them
   // before encoding/merging, rather than replacing source bytes on one client.
   for (let i = 0; i < value.length; i++) {
@@ -48,7 +48,7 @@ export function sourceBytes(files: Record<string, string>): number {
 export function validatePlaygroundDocument(input: unknown): PlaygroundDocument {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("Invalid source project.");
   const value = input as Record<string, unknown>;
-  if (value.schemaVersion !== 1 || typeof value.name !== "string" || !value.name.trim() || value.name.length > 80 || !wellFormed(value.name) || /[\u0000-\u001f\u007f]/.test(value.name) ||
+  if (value.schemaVersion !== 1 || typeof value.name !== "string" || !value.name.trim() || value.name.length > 80 || !isWellFormedUTF16(value.name) || /[\u0000-\u001f\u007f]/.test(value.name) ||
       !["2021", "2024"].includes(String(value.edition)) || typeof value.entryFile !== "string" ||
       !value.files || typeof value.files !== "object" || Array.isArray(value.files)) throw new Error("Invalid source project fields.");
   const entries = Object.entries(value.files);
@@ -59,7 +59,7 @@ export function validatePlaygroundDocument(input: unknown): PlaygroundDocument {
   let size = 0;
   for (const [path, text] of entries) {
     const parts = path.split("/");
-    if (path.length > 180 || !wellFormed(path) || path.startsWith("/") || path.includes("\\") || path.includes(":") || parts.length > 32 || parts[0].toLowerCase() === ".crabrix" || parts.some(part => !part || encoder.encode(part).length > 255 || part === "." || part === ".." || forbidden.has(part) || part.toLowerCase() === ".git" || part === "__proto__" || part === "constructor" || part === "prototype") ||
+    if (path.length > 180 || !isWellFormedUTF16(path) || path.startsWith("/") || path.includes("\\") || path.includes(":") || parts.length > 32 || parts[0].toLowerCase() === ".crabrix" || parts.some(part => !part || encoder.encode(part).length > 255 || part === "." || part === ".." || forbidden.has(part) || part.toLowerCase() === ".git" || part === "__proto__" || part === "constructor" || part === "prototype") ||
         !allowed.test(path) || /[\u0000-\u001f\u007f]/.test(path)) throw new Error(`Unsupported source path: ${path.slice(0, 80)}`);
     const key = canonical(path);
     if (canonicalPaths.has(key)) throw new Error("Source paths collide on a native filesystem. No source was changed.");
@@ -69,7 +69,7 @@ export function validatePlaygroundDocument(input: unknown): PlaygroundDocument {
       if (previous !== undefined && previous.normalize("NFC") !== parent.normalize("NFC")) throw new Error("Source directory spellings conflict. No source was changed.");
       directories.set(key, parent);
     }
-    if (typeof text !== "string" || !wellFormed(text) || /\u0000/.test(text) || encoder.encode(text).byteLength > PLAYGROUND_LIMITS.fileBytes) throw new Error("Each file must contain well-formed UTF-8 text up to 64 KiB; binary/media files are not accepted.");
+    if (typeof text !== "string" || !isWellFormedUTF16(text) || /\u0000/.test(text) || encoder.encode(text).byteLength > PLAYGROUND_LIMITS.fileBytes) throw new Error("Each file must contain well-formed UTF-8 text up to 64 KiB; binary/media files are not accepted.");
     size += encoder.encode(text).byteLength;
     files[path] = text;
   }
