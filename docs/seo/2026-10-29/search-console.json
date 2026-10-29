@@ -9,7 +9,7 @@
   "lastReadDate": "2026-10-29",
   "sitemapRows": 1,
   "evidence": "build/seo-audit-20261029/search-console-sitemap.png",
-  "indexingStatus": "Blocked by robots.txt report inspected",
+  "indexingStatus": "Overview and all four exclusion categories inspected",
   "blockedByRobots": {
     "affectedURLs": 476,
     "reportLastUpdated": "2026-10-23",
@@ -19,6 +19,40 @@
       "/register/?next=/learn/..."
     ],
     "interpretation": "Samples are authentication return URLs, not blocked lesson content. The entire 476-row list was not exported.",
-    "plannedFix": "crawlable public auth pages with noindex; nofollow and no prefetch on lesson login/register return links"
+    "publishedFix": "crawlable public auth pages with noindex; nofollow and no prefetch on lesson login/register return links",
+    "validation": {
+      "status": "Started",
+      "startDate": "2026-10-29",
+      "evidence": "build/seo-audit-20261029/search-console-validation-started.png"
+    }
+  },
+  "indexingOverview": {
+    "reportLastUpdated": "2026-10-23",
+    "indexedURLs": 918,
+    "excludedURLs": 606,
+    "scope": "All processed URL variants, distinct from the submitted sitemap"
+  },
+  "redirects": {
+    "affectedURLs": 124,
+    "sampleRowsInspected": 10,
+    "publicReadback": "All ten return 308 to HTTP 200 canonical pages",
+    "evidence": "build/seo-audit-20261029/gsc-redirect-sample-readback.json"
+  },
+  "duplicateWithoutUserCanonical": {
+    "affectedURLs": 1,
+    "example": "https://www.crabrix.com/",
+    "currentState": "www has no DNS answer; Cloudflare requires a separate sign-in requested from the user"
+  },
+  "crawledNotIndexed": {
+    "affectedURLs": 5,
+    "allExamplesInspected": true,
+    "examples": [
+      "https://crabrix.com/learn/algorithms/algorithm.permutations.recognize",
+      "https://crabrix.com/learn/algorithms/algorithm.permutations.recognize/",
+      "https://crabrix.com/sitemap.xml",
+      "http://www.crabrix.com/terms",
+      "http://www.crabrix.com/"
+    ],
+    "currentLessonReadback": "HTTP 200; slash variant redirects to canonical; indexing remains Google-controlled"
   }
 }

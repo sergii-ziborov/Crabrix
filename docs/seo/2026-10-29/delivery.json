@@ -1,0 +1,106 @@
+{
+  "recordedAtUTC": "2026-10-29T11:20:32.069963+00:00",
+  "sourceCommit": "d401c4dd3279a838a10583e86efd25bfa61fee86",
+  "deployment": {
+    "observedAtUTC": "2026-10-29T11:18:47.872227+00:00",
+    "publishedAtUTC": "2026-10-29T11:11:51Z",
+    "image": "localhost/crabrix-web-site:seo-d401c4d",
+    "digest": "cbbb7eaad45310c7324bc9a62539d9fc45410b5fe240d368e6f66b83227f522e",
+    "state": "running",
+    "health": "healthy",
+    "persistentAccountMountPreserved": true,
+    "accountBackupTaken": true,
+    "rollbackContainerPreserved": true
+  },
+  "contextVerification": {
+    "sourceCommit": "d401c4d",
+    "sourceTreeSHA256": "b187ae8924d3bef8498264ffb17cf6db4fd9c928f12586109a4f2372d828aac2",
+    "allEntriesVerified": 2831,
+    "transferredBytes": 581182,
+    "baseContextUnchanged": true,
+    "accountDataTouched": false
+  },
+  "qualification": {
+    "typeScript": true,
+    "siteTestsPassed": 35,
+    "productionBuild": true,
+    "candidateBrowserCasesPassed": 24,
+    "publicBrowserCasesPassed": 24,
+    "publicQAComplete": true,
+    "privateAndServiceNoindexChecks": [
+      {
+        "path": "/login/",
+        "status": 200,
+        "xrobots": "noindex, nofollow, noarchive"
+      },
+      {
+        "path": "/register/",
+        "status": 200,
+        "xrobots": "noindex, nofollow, noarchive"
+      },
+      {
+        "path": "/recover/",
+        "status": 200,
+        "xrobots": "noindex, nofollow, noarchive"
+      },
+      {
+        "path": "/account/",
+        "status": 200,
+        "xrobots": "noindex, nofollow, noarchive"
+      },
+      {
+        "path": "/healthz/",
+        "status": 200,
+        "xrobots": "noindex, nofollow, noarchive"
+      },
+      {
+        "path": "/api/capabilities/",
+        "status": 200,
+        "xrobots": "noindex, nofollow, noarchive"
+      },
+      {
+        "path": "/api/playground/rooms/",
+        "status": 405,
+        "xrobots": "noindex, nofollow, noarchive"
+      },
+      {
+        "path": "/playground/room/seo-audit-nonexistent/",
+        "status": 200,
+        "xrobots": "noindex, nofollow, noarchive"
+      }
+    ],
+    "missingPagesHTTP404": true,
+    "indexHTMLRedirect": true,
+    "articleDateParity": true,
+    "courseList": true
+  },
+  "canonicalCrawl": {
+    "checkedAtUTC": "2026-10-29T11:17:27.988078+00:00",
+    "sitemap": {
+      "status": 200,
+      "contentType": "application/xml",
+      "urlCount": 804,
+      "uniqueURLs": 804
+    },
+    "checkedURLs": 804,
+    "httpStatuses": {
+      "200": 804
+    },
+    "issues": [],
+    "duplicateTitles": {},
+    "duplicateDescriptions": {}
+  },
+  "searchConsole": {
+    "sitemapStatus": "Успешно",
+    "discoveredPages": 804,
+    "robotsValidation": "Started, 29 October 2026",
+    "pending": "www DNS requires Cloudflare sign-in; Google recrawl and index decisions remain asynchronous"
+  },
+  "unchangedRelease": {
+    "appVersion": "1.1.3",
+    "build": 120,
+    "appStoreSelectionChanged": false,
+    "npmPackageChanged": false
+  },
+  "evidenceDirectory": "build/seo-audit-20261029/"
+}

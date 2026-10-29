@@ -47,11 +47,35 @@ immediate work. The inspected robots-blocked report lists 476 URLs (reported upd
 all ten visible samples are login/register return URLs. This is not evidence
 that 476 lessons are blocked. Lesson login/register return links now use nofollow
 and disable speculative prefetch. The full excluded-URL list was not exported,
-and other Google statuses are not inferred from this category.
+and other Google statuses are not inferred from this category. After deployment,
+Google accepted the validation request and displays **Started, 29 October 2026**.
+The requested revalidation has not completed.
+
+The indexing overview was last updated on 23 October: 918 indexed and 606
+excluded URLs across four categories. These are all processed URL variants,
+not the newly submitted sitemap's counts. Ten samples from the 124 redirecting
+URLs were read back: all redirect permanently to a working canonical page.
+The five crawled/not-indexed examples comprise two variants of the permutations
+lesson, the XML sitemap itself, and two old HTTP www URLs. The lesson currently
+returns 200 and its slash variant redirects to the same canonical. Sitemap XML
+does not need to appear as a search result. No new content or indexing guarantee
+was invented to explain Google's historical classification.
 
 The apex domain is the published canonical host. The unused `www` hostname has
-no DNS result in this audit; it is not linked in the checked corpus and was not
-added or configured through an unrelated DNS account.
+no DNS result in this audit. Google retains its HTTPS home page as one historical
+duplicate and two HTTP URLs in the crawled/not-indexed examples. Cloudflare's
+dashboard requires a separate sign-in; the user was asked to complete it before
+any DNS or certificate change. The canonical apex remains available.
+
+The production release is `localhost/crabrix-web-site:seo-d401c4d`, digest
+`cbbb7eaad45310c7324bc9a62539d9fc45410b5fe240d368e6f66b83227f522e`.
+It was published at 11:11:51 UTC and is healthy. The account volume is preserved,
+the account backup completed, and the preceding container remains available for
+rollback. All 804 canonical URLs returned 200 after publication, with unique
+titles/descriptions, matching canonicals, valid JSON-LD and no broken local
+fragments. The public 24-case responsive/theme matrix and eight private/service
+noindex checks passed. TypeScript, all 35 site tests and the production build
+passed before deployment. [Delivery receipt](delivery.json).
 
 Primary guidance checked:
 
