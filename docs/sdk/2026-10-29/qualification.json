@@ -1,0 +1,46 @@
+{
+  "version": "0.3.0",
+  "jsTests": 22,
+  "typescript": true,
+  "strictESMAndCommonJSConsumerDeclarations": true,
+  "rustUnitTests": 3,
+  "rustDoctests": 1,
+  "rustClippy": "passed with warnings denied",
+  "goRaceTests": 3,
+  "crossLanguage": {
+    "passed": true,
+    "participants": 4,
+    "languages": [
+      "JavaScript",
+      "Rust",
+      "Go"
+    ],
+    "web": true,
+    "sourceEdits": true,
+    "unicode": true,
+    "selections": true,
+    "staleRevisionRejected": true,
+    "errors": []
+  },
+  "browserRuntime": {
+    "passed": true,
+    "localCompiler": true,
+    "noPlaintextSourcePosts": true,
+    "buildMainUntouched": true,
+    "runStdout": true,
+    "debugLocals": true,
+    "stop": true,
+    "errors": []
+  },
+  "npm": "Published and registry-installed; archive SHA256 and SHA512 verified",
+  "cratesIO": "Package dry-run passed; publication awaits maintainer credential",
+  "go": "v0.3.0 module tag resolves; executable installed from public module and reported 0.3.0",
+  "sdkRepository": "https://github.com/sergii-ziborov/crabrix-sdk",
+  "sourceCommit": "9dfe36930e6b65b845ba2c24f643b77bb2831af4",
+  "githubRelease": "https://github.com/sergii-ziborov/crabrix-sdk/releases/tag/v0.3.0",
+  "ciPlatforms": [
+    "Linux",
+    "macOS",
+    "Windows"
+  ]
+}

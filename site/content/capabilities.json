@@ -152,14 +152,14 @@
     },
     {
       "id": "mcp.shared-projects",
-      "name": "Playground MCP bridge",
+      "name": "Standalone Crabrix SDK and MCP",
       "surfaces": [
         {
           "surface": "mcp",
           "state": "published",
-          "version": "0.2.0",
-          "profile": "Published npm/downloadable stdio bridge: encrypted temporary source, conditional edits, UTF-16 selections, creator closure and optional permission-gated execution on one client. Twelve tools; no backend compiler or host shell.",
-          "evidence": "docs/playground-mcp-local-runtime-qualification-2026-10-29.json"
+          "version": "0.3.0",
+          "profile": "Published crabrix npm library and stdio MCP server: ESM/CommonJS/TypeScript, encrypted temporary source, full snapshot, edit/view handoff, conditional edits, UTF-16 selections, creator closure and explicitly permitted local execution. Fourteen tools. Public Rust/Go bindings embed the same local Node.js 22+ core; crates.io publication is tracked separately. No backend compiler or host shell.",
+          "evidence": "docs/crabrix-sdk-2026-10-29.md"
         }
       ]
     },

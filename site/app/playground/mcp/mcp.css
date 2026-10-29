@@ -26,7 +26,7 @@
 .mcp-section { padding-top:62px; scroll-margin-top:90px; }
 .mcp-section h2 { max-width:24ch; margin-bottom:24px; }
 .mcp-feature-grid { display:grid; grid-auto-rows:1fr; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
-.mcp-feature { border:1px solid var(--border); background:var(--panel); border-radius:18px; padding:24px; }
+.mcp-feature { min-width:0; border:1px solid var(--border); background:var(--panel); border-radius:18px; padding:24px; }
 .mcp-feature>span { display:grid; place-items:center; width:44px; height:44px; margin-bottom:22px; color:var(--coral); font:24px ui-monospace,monospace; background:#ff6b4a14; border-radius:12px; }
 .mcp-feature:nth-child(2)>span { color:var(--blue); background:#6ab7ff14; }.mcp-feature:nth-child(3)>span { color:var(--mint); background:#4fd1a514; }
 .mcp-feature p,.mcp-split p { color:var(--muted); font-size:15px; }.mcp-feature p { margin-bottom:0; }

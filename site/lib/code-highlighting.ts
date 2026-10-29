@@ -1,4 +1,4 @@
-export type CodeLanguage = "rust" | "toml" | "sql" | "json" | "html" | "typescript" | "shell";
+export type CodeLanguage = "rust" | "toml" | "sql" | "json" | "html" | "typescript" | "shell" | "go";
 export type CodeToken = { value: string; kind?: string };
 
 const rustKeywords = new Set("as async await break const continue crate dyn else enum extern false fn for if impl in let loop match mod move mut pub ref return self Self static struct super trait true type unsafe use where while".split(" "));
@@ -13,13 +13,15 @@ export function codeLanguage(code: string): CodeLanguage {
 }
 
 function tokensFor(code: string, language: CodeLanguage): CodeToken[] {
-  if (["json", "html", "typescript", "shell"].includes(language)) {
-    const expression = language === "shell"
+  if (["json", "html", "typescript", "shell", "go"].includes(language)) {
+    const expression = language === "go"
+      ? /\/\/[^\n]*|\/\*[\s\S]*?\*\/|`[^`]*`|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]\w*\b/g
+      : language === "shell"
       ? /#[^\n]*|"(?:\\.|[^"\\])*"|'[^']*'|--?[A-Za-z][\w-]*|\b(?:git|cargo|rustfmt|npm)\b/g
       : language === "html"
       ? /<!--[\s\S]*?-->|<\/?[A-Za-z][\w:-]*|[A-Za-z_:][\w:.-]*(?=\s*=)|"(?:\\.|[^"\\])*"|'[^']*'/g
       : /\/\/[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][\w$]*\b/g;
-    const keywords = new Set("import from export default const let var function return if else new async await throw class extends true false null undefined type interface as typeof".split(" "));
+    const keywords = new Set((language === "go" ? "break default func interface select case defer go map struct chan else goto package switch const fallthrough if range type continue for import return var true false nil" : "import from export default const let var function return if else new async await throw class extends true false null undefined type interface as typeof").split(" "));
     const result: CodeToken[] = []; let cursor = 0;
     for (const match of code.matchAll(expression)) {
       if (match.index > cursor) result.push({ value: code.slice(cursor, match.index) });

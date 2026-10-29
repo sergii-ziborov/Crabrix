@@ -1,5 +1,429 @@
 [
   {
+    "slug": "crabrix-sdk-javascript-rust-go-agent-handoff",
+    "title": "Crabrix SDK: share a Rust Playground from JavaScript, Rust and Go",
+    "date": "2026-10-29",
+    "summary": "Integrate temporary Rust workspaces into agents with the crabrix npm library, Rust and Go bindings, exact revisions and permission-gated local Run/Debug.",
+    "relatedSlugs": [
+      "rust-coding-interviews-shared-playground-agents",
+      "rust-serde-json-validation-boundaries",
+      "rust-enums-state-machines",
+      "rust-arc-mutex-rwlock-shared-state"
+    ],
+    "sections": [
+      {
+        "heading": "A shared work surface is smaller than a repository",
+        "paragraphs": [
+          "An agent often needs somewhere to show a small Rust example, ask for review and preserve another participant’s edits. Creating an entire repository can be unnecessary for that conversation. A temporary work surface has a different contract: a few source files, a clear deadline, live selections and a link that another participant can open immediately. Durable history and access management still belong in the project’s ordinary version-control system.",
+          "The standalone `crabrix` package provides that work surface as both a JavaScript/TypeScript library and an MCP server. It can create an encrypted temporary Playground, inspect its source, make a revision-checked change and hand the room to another agent. Nobody needs the iPhone app to use this workflow. The web editor can display the same source, and the app remains an optional companion when its native project tools are useful.",
+          "The distinction matters when designing an integration. Do not present a successful room creation as a repository push, a saved account project or a permanent published application. Present it as a temporary Playground with an expiry. A good agent interface can show the room’s name, deadline and access mode next to its explicit share action, while keeping the complete secret capability out of routine logs."
+        ],
+        "image": {
+          "src": "/images/blog/crabrix-sdk/sdk-cover.png",
+          "alt": "Crabrix crab connecting JavaScript, Rust and Go cards to one temporary workspace",
+          "caption": "Conceptual SDK illustration. Rust and Go bindings use the common local JavaScript protocol core; they are not independent Rust compilers.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "SDK and MCP setup",
+            "url": "/playground/mcp/"
+          },
+          {
+            "title": "Try a browser Playground",
+            "url": "/playground/"
+          }
+        ]
+      },
+      {
+        "heading": "Use one protocol core across three language APIs",
+        "paragraphs": [
+          "The JavaScript implementation supplies the shared protocol core. The Rust and Go libraries embed that same local bridge and communicate with it over bounded stdio. All three require Node.js 22 or newer. This is an intentional implementation boundary: the Rust and Go packages provide language-appropriate APIs and process ownership, rather than pretending to offer separately implemented cryptographic stacks or native on-host Rust compilation.",
+          "The bindings do not need a global npm installation because the bridge is included with them. Their local process handles room encryption, collaborative document updates, selections and signed runtime messages. It does not expose a shell tool or an API for reading arbitrary host files. A language binding can therefore share the same edit and permission rules without inventing its own interpretation of a room capability.",
+          "For maintainers, a common core also makes evidence easier to compare. The embedded bridge bytes can be checked against the release manifest, and the same browser can participate in a room opened by any binding. That does not eliminate bugs in process management or language APIs, so those transports still need their own tests. In this release, the public browser and JavaScript, Rust and Go clients were checked together rather than relying only on disconnected unit tests."
+        ],
+        "image": {
+          "src": "/images/blog/crabrix-sdk/sdk-architecture.png",
+          "alt": "Three SDKs using a local Node protocol core, encrypted relay and explicitly permitted browser or app execution",
+          "caption": "All SDK variants require Node.js 22+. The relay stores temporary ciphertext and never compiles or executes Rust.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "MCP stdio transport",
+            "url": "https://modelcontextprotocol.io/specification/2025-11-25/basic/transports"
+          }
+        ]
+      },
+      {
+        "heading": "Integrate directly into a JavaScript agent",
+        "paragraphs": [
+          "Install `crabrix` when you want to call a library from your own program. ESM, CommonJS and TypeScript declarations are included. The npm release is bundled without runtime npm dependencies or installation hooks. That describes the SDK distribution; it does not mean live collaboration works without a network connection, and it does not include an AI model subscription, provider credential or browser compiler download.",
+          "Create one client per room and give it a useful participant name. The name is visible to collaborators and is a label, not identity verification. A structured source snapshot contains validated text and a revision; status exposes file paths, byte counts, expiry, participants and selections without returning a secret link. Requesting a share link is a separate, explicit operation, which keeps access out of routine status polling.",
+          "The following example makes a small source change and obtains an intended handoff. The surrounding application must decide where to deliver the secret link. It deliberately does not log it. Closing the client leaves other participants and the room available until their existing deadline; if the creator wants to close the room for everyone, it must invoke the separate end-room operation before disconnecting."
+        ],
+        "codeLanguage": "typescript",
+        "code": "import { Crabrix } from \"crabrix\";\n\nconst agent = new Crabrix({ name: \"Review agent\" });\ntry {\n  await agent.create({\n    name: \"Small Rust example\",\n    lifetimeMinutes: 60,\n    files: { \"main.rs\": 'fn main() { println!(\"hello\"); }\n' },\n  });\n  const file = await agent.read(\"main.rs\");\n  await agent.apply({\n    expectedRevision: file.revision,\n    changes: [{\n      path: file.path,\n      text: file.text.replace(\"hello\", \"hello from an agent\"),\n    }],\n  });\n  const handoff = await agent.share(\"edit\");\n  // Deliver handoff.link only to an intended participant.\n  // Display handoff.expiresAt next to your explicit share action.\n} finally {\n  agent.close();\n}",
+        "sources": [
+          {
+            "title": "Crabrix npm package",
+            "url": "https://www.npmjs.com/package/crabrix"
+          },
+          {
+            "title": "Public SDK source",
+            "url": "https://github.com/sergii-ziborov/crabrix-sdk"
+          }
+        ]
+      },
+      {
+        "heading": "Use the Rust binding with explicit process ownership",
+        "paragraphs": [
+          "The Rust binding exposes a client that owns its local bridge process. Its typed options cover room creation, file changes, selections and handoff results. Source fields and capability links are not placed in process arguments. Normal debug formatting of a handoff redacts its link, although an application can still expose the field deliberately when the user requests sharing. Callers should keep that distinction in their own logging and telemetry.",
+          "The Rust package source is available in the public SDK repository. Check the repository’s release status for registry availability; until a crate is published, a local path dependency or installation from the checked-out crate is the accurate route. The existence of working Rust source is not the same as a successful crates.io publication. Node.js remains a prerequisite whichever installation route you choose.",
+          "The code below shows the library’s shape. A successful start of the bridge only establishes a local protocol connection. Creating a room performs the separate encrypted sharing operation. For an existing room, use its authorized complete link instead. Dropping the client releases its own bridge; ending a room for all participants is an explicit creator action. Do not silently reconstruct a client and replay a possibly committed edit after a timeout."
+        ],
+        "code": "use crabrix::{ApplyOptions, Change, Client, CreateOptions};\n\nfn main() -> Result<(), Box<dyn std::error::Error>> {\n    let mut client = Client::new()?;\n    client.create(&CreateOptions::new(\"Rust agent example\"))?;\n    let file = client.read(\"main.rs\")?;\n    client.apply(&ApplyOptions {\n        expected_revision: file.revision,\n        changes: vec![Change {\n            path: file.path,\n            text: Some(file.text + \"// reviewed in Rust\n\"),\n        }],\n        entry_file: None,\n        name: None,\n    })?;\n    let handoff = client.share(\"edit\")?;\n    assert_eq!(handoff.mode, \"edit\");\n    Ok(())\n}",
+        "sources": [
+          {
+            "title": "Rust SDK source and install status",
+            "url": "https://github.com/sergii-ziborov/crabrix-sdk/tree/main/crates/crabrix"
+          },
+          {
+            "title": "Cargo publishing process",
+            "url": "https://doc.rust-lang.org/cargo/reference/publishing.html"
+          }
+        ]
+      },
+      {
+        "heading": "Use the Go binding with a meaningful context",
+        "paragraphs": [
+          "The Go module provides corresponding creation, source, edit, selection and runtime methods. Use a context that represents the integration’s lifetime, then close the client when the room interaction is finished. A canceled request should not become an excuse for blindly repeating a write. The transport reports cancellation and ambiguous outcomes so the caller can reconcile the actual room state before deciding what to do next.",
+          "The source module lives under the public SDK repository’s Go path. A tagged module version identifies immutable source for Go tooling; it is not a separate centrally reserved package name. The installed executable can be named `crabrix`, while imports use the complete module path. Node.js 22 or newer is still required because this binding embeds the shared JavaScript bridge rather than a different room implementation.",
+          "When integrating into a long-running agent, distinguish its normal request context from a process-wide shutdown. Avoid passing a context that is already canceled, and give each operation a bounded lifetime. The SDK caps transport frames and queues; your application should also avoid creating a new room for every token or launching an unbounded number of clients. One deliberate shared workspace is usually more useful than many anonymous temporary connections."
+        ],
+        "codeLanguage": "go",
+        "code": "package main\n\nimport (\n    \"context\"\n    \"github.com/sergii-ziborov/crabrix-sdk/go/crabrix\"\n)\n\nfunc main() {\n    ctx := context.Background()\n    client, err := crabrix.New(ctx, crabrix.Options{})\n    if err != nil { panic(err) }\n    defer client.Close()\n    _, err = client.Create(ctx, crabrix.CreateOptions{Name: \"Go agent example\"})\n    if err != nil { panic(err) }\n    file, err := client.Read(ctx, \"main.rs\")\n    if err != nil { panic(err) }\n    updated := file.Text + \"// reviewed in Go\n\"\n    _, err = client.Apply(ctx, crabrix.ApplyOptions{\n        ExpectedRevision: file.Revision,\n        Changes: []crabrix.Change{{Path: file.Path, Text: &updated}},\n    })\n    if err != nil { panic(err) }\n}",
+        "sources": [
+          {
+            "title": "Go SDK source",
+            "url": "https://github.com/sergii-ziborov/crabrix-sdk/tree/main/go/crabrix"
+          },
+          {
+            "title": "Publishing Go modules",
+            "url": "https://go.dev/doc/modules/publishing"
+          }
+        ]
+      },
+      {
+        "heading": "Treat handoff as an access decision",
+        "paragraphs": [
+          "A handoff includes a link, its access mode, expiry and current revision. That is enough for another authorized agent to join the same work surface without an application-specific account. It is also enough to grant the link’s permitted source access, so keep it out of public issues, generated code comments and routine diagnostics. Passing a link between agents is an explicit action, not an incidental side effect of asking for status.",
+          "The creator retains a separate view capability and can request a view handoff. A participant that merely joined with an edit link does not possess that separate capability, so it cannot manufacture a weaker link by changing a display field. Similarly, a view participant cannot escalate to editing. These details matter when one agent is allowed to review but another is expected to make the requested change.",
+          "A useful handoff message describes the task, the last inspected revision, the deadline and what was actually verified. The link itself can travel through the recipient’s authorized private channel. Avoid implying that a revision is permanent repository history: another participant may edit the room immediately afterward. The receiving agent should read current status and relevant source before proposing its own change."
+        ],
+        "links": [
+          {
+            "title": "Shared interview workflow",
+            "url": "/blog/rust-coding-interviews-shared-playground-agents/"
+          },
+          {
+            "title": "Sharing guide",
+            "url": "/guide/#playground"
+          }
+        ]
+      },
+      {
+        "heading": "Reject stale replacements and reconcile uncertain outcomes",
+        "paragraphs": [
+          "The source revision is a content identity, while the relay’s sequence identifies the update order. A conditional edit checks its expected base before committing encrypted change data. This protects against replacing a human’s or another agent’s intervening work. It does not mean concurrent participants are unable to edit; it means an agent’s proposed replacement must be reconsidered when its basis is no longer current.",
+          "Read the relevant files, build one bounded proposal and apply it with the returned revision. When a conflict occurs, inspect the newer source. Sometimes the correct response is to merge the requested change; sometimes another participant has already made it unnecessary. Do not create a loop that fetches a new revision and resends the exact old replacement unchanged. That would turn a useful guard into a decorative extra request.",
+          "A lost HTTP acknowledgement is different from a known rejection. The shared core uses a stable message identifier and ciphertext for a safe retry of the same conditional commit. If the final outcome remains uncertain, it asks the caller to read state before deciding on a new action. The language transports likewise avoid claiming success from a disconnected response stream. This is a practical reliability contract, not a promise that networks never fail."
+        ],
+        "image": {
+          "src": "/images/blog/crabrix-sdk/sdk-revision-guard.png",
+          "alt": "Revision-checked edit flow with accepted and conflicting branches",
+          "caption": "A stale proposal is rejected. The agent must read and reconcile the newer source before preparing another edit.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Explicit state machines in Rust",
+            "url": "/blog/rust-enums-state-machines/"
+          }
+        ]
+      },
+      {
+        "heading": "Keep execution authority separate from source access",
+        "paragraphs": [
+          "A room edit link does not grant permission to execute code on someone else’s client. An agent first discovers signed runtime capabilities, selects a target fingerprint and requests particular operations. A human compares the full controller and client keys in Share and allows the selected operations on that specific browser or app. The grant is short lived and can be revoked; a participant name alone is not identity verification.",
+          "Use the runtime source revision returned by discovery when starting an allowed operation. The start result identifies an owned job, not a successful program. Poll that job’s actual state, then inspect its diagnostics or paged output. Build does not execute `main`. Debug exposes bounded real locals, stepping and owned Stop; it does not evaluate arbitrary host expressions. Shared jobs have their own deadline, including pauses, and a source change stops stale work.",
+          "Other participants may receive a reported output preview, but receiving that preview never starts their compiler or debugger. It is display data, not trusted evidence about their own full project or learning progress. The browser or app that executes retains the full owned result within its limits. The relay carries encrypted messages only. It has no Rust execution backend, shell interface or access to a participant’s private local project inputs."
+        ],
+        "links": [
+          {
+            "title": "Local runtime and debugger guide",
+            "url": "/guide/#debugger"
+          },
+          {
+            "title": "Platform and execution boundaries",
+            "url": "/technology/"
+          }
+        ]
+      },
+      {
+        "heading": "Design cleanup and expiry into your integration",
+        "paragraphs": [
+          "Room source is capped at 16 supported text files, 64 KiB per file and 128 KiB in total. Package archives, images, compiler caches, credentials and private configuration are outside the shared document. Keep larger project machinery in its original environment and extract a small reproducible source example when that is what collaborators need. A small workspace with an honest boundary is easier to inspect than a partially imported project presented as complete.",
+          "The default room lifetime is one hour, with a maximum of 24 hours. The relay holds bounded ciphertext in process memory, without a permanent account project, database source record or backup. A restart can end a room before its advertised expiry. Your integration should display the deadline and offer a clear path to an ordinary local source copy. Rejoining is not a keepalive mechanism for extending the original lifetime.",
+          "Close clients and unused tabs when they are no longer participants. Keep creator-only room closure separate from a single participant leaving. If a user presses Stop, do not quietly choose another runtime and start the same program again. Cancellation and loss of permission are meaningful state changes. An agent that explains them clearly is more dependable than one that hides them behind an unlimited retry policy."
+        ],
+        "links": [
+          {
+            "title": "Project recovery and export",
+            "url": "/guide/#saving"
+          },
+          {
+            "title": "Typed data boundaries",
+            "url": "/blog/rust-serde-json-validation-boundaries/"
+          }
+        ]
+      },
+      {
+        "heading": "Pin real releases and inspect the evidence",
+        "paragraphs": [
+          "Use a pinned package version in a reproducible MCP configuration, and use normal semantic versioning when updating the SDK in an application. The public repository contains the JavaScript source, Rust and Go bindings, license notices and qualification records. The brand images and real app screenshots make the project recognizable, but they are not evidence that a specific code path ran. Look for the actual test and release results.",
+          "The release was checked with an official MCP client, an actual browser compiler and a four-participant room containing JavaScript, Rust, Go and the browser. Source edits, Unicode, named selections and stale-revision rejection were observed. Build, Run, structured Debug locals, stepping and Stop were checked separately in the browser. The language bindings also have their own transport tests. These checks describe those exact profiles; they do not claim that every arbitrary Rust repository can run in the web Playground.",
+          "For durable work, take the reviewed source back to your own repository and normal review process. Crabrix provides a small shared place to explain, edit, test and hand off that source. It does not replace Git hosting, a production runtime or an organization’s access system. Keeping that purpose clear makes the SDK useful to ordinary agents as well as people using the Crabrix app, and leaves a straightforward path for improving it through public, testable releases."
+        ],
+        "sources": [
+          {
+            "title": "SDK source and qualification records",
+            "url": "https://github.com/sergii-ziborov/crabrix-sdk"
+          },
+          {
+            "title": "npm release",
+            "url": "https://www.npmjs.com/package/crabrix"
+          }
+        ],
+        "links": [
+          {
+            "title": "All Rust courses",
+            "url": "/learn/"
+          },
+          {
+            "title": "Full Crabrix guide",
+            "url": "/guide/"
+          }
+        ]
+      }
+    ],
+    "readingMinutes": 10
+  },
+  {
+    "slug": "rust-coding-interviews-shared-playground-agents",
+    "title": "Rust coding interviews: a shared Playground for people and agents",
+    "date": "2026-10-29",
+    "summary": "Run a practical Rust interview in a temporary encrypted Playground: clear tasks, live agent handoff, ownership questions and browser-local Debug.",
+    "relatedSlugs": [
+      "crabrix-sdk-javascript-rust-go-agent-handoff",
+      "rust-strings-utf8-safe-parsing",
+      "ownership-in-a-real-program",
+      "testing-rust-boundaries-fixtures-doctests"
+    ],
+    "sections": [
+      {
+        "heading": "Start with a question worth discussing",
+        "paragraphs": [
+          "A useful Rust interview needs a problem small enough to understand and rich enough to expose reasoning. Asking someone to type a familiar algorithm as quickly as possible mostly measures rehearsal. A better session makes the contract visible, allows the candidate to question ambiguous requirements, and follows one implementation through examples, compiler feedback and a small change. The shared editor should support that conversation without becoming another system everyone must learn first.",
+          "Crabrix now offers a standalone SDK and MCP server under the npm name `crabrix`. An interviewer, a candidate and an explicitly invited agent can work in one temporary Rust Playground. The phone app is optional: participants can open the same link in a browser. Code and named selections are shared, while compilation happens only in the browser or app that starts it. That separation makes it possible to discuss the same source without silently starting programs on everyone’s computer.",
+          "Before sending a link, agree on the role of AI. Perhaps an agent may suggest edge cases but not implement the answer; perhaps this is an exercise in reviewing agent code. State that rule in the task itself. A productive interview then evaluates whether the person can explain a decision, reject an unsuitable suggestion and verify the final behavior. The presence of an assistant does not remove the need to establish who is responsible for the answer."
+        ],
+        "image": {
+          "src": "/images/blog/crabrix-sdk/interview-cover.png",
+          "alt": "Orange Crabrix crab connecting a human interview and two agent workspaces",
+          "caption": "Conceptual illustration of a temporary coding interview; device screens are illustrative, not app captures.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Open the web Playground",
+            "url": "/playground/"
+          },
+          {
+            "title": "Interview Prep course",
+            "url": "/learn/interview/"
+          }
+        ]
+      },
+      {
+        "heading": "Create one room with an intentional lifetime",
+        "paragraphs": [
+          "Use a room lifetime that matches the session. The default is one hour, and the maximum is 24 hours. Expiry is fixed when the room is created; reconnecting does not renew it. The editor displays its remaining lifetime. For a short interview, creating a room just before the call gives a clearer deadline than preparing one the previous evening and discovering that it expires during the discussion.",
+          "A room supports four connected participants. Count the assistant’s MCP bridge or SDK process as a participant, just as you count a browser or native app. For example, an interviewer’s browser, the candidate’s browser and two agents already fill the room. Do not open the same room in several unnecessary tabs and then interpret a participant-limit error as a compiler problem. Close unused connections when the working arrangement changes.",
+          "Share the complete capability link only with intended participants. Everything after `#` is part of the link, including the decryption key and access information. An edit link permits source changes; a separate view link permits reading. A view participant cannot turn its link into an edit capability merely by changing a label. Treat these links as access, rather than publishing one in a permanent public issue or pasting it into source that someone might later commit."
+        ],
+        "image": {
+          "src": "/images/blog/crabrix-sdk/interview-lifecycle.png",
+          "alt": "Four stages: create for one hour, share edit or view, approve one local client, save before expiry",
+          "caption": "An agent needs explicit permission on one client for Run/Debug. Ordinary manual Run is the participant’s own action.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Sharing and expiry guide",
+            "url": "/guide/#playground"
+          },
+          {
+            "title": "MCP setup",
+            "url": "/playground/mcp/"
+          }
+        ]
+      },
+      {
+        "heading": "Use a concrete ownership and Unicode exercise",
+        "paragraphs": [
+          "Here is a compact task: inspect a list of labels, ignore blank labels after trimming, count accepted labels, keep the first longest label, and report the original one-based line numbers of rejected inputs. Define “longest” as the number of Unicode scalar values. That definition is deliberately different from UTF-8 byte length and from the number of user-perceived grapheme clusters. A candidate who asks about this distinction is clarifying the problem, not avoiding it.",
+          "The complete program below fits the browser’s standard-library profile and needs no external crates. It borrows the input slices, owns the selected output string and stores rejected line numbers in a vector. Notice that it creates an owned string only when a new longest label is found. The input is available for the entire call; returning a separate owned result avoids requiring the caller to keep that borrowed input alive merely to retain the summary.",
+          "The sample includes two crab characters, whose UTF-8 byte count exceeds the byte count of several short ASCII labels. Nevertheless, they contain only two scalar values. With the stated contract, the first four-character label wins the tie. Run this version before changing the task. Its assertions establish a small reproducible baseline that everyone in the room can inspect and discuss."
+        ],
+        "code": "#[derive(Debug)]\nstruct Summary {\n    accepted: usize,\n    longest: String,\n    rejected_lines: Vec<usize>,\n}\n\nfn summarize(lines: &[&str]) -> Summary {\n    let mut result = Summary {\n        accepted: 0,\n        longest: String::new(),\n        rejected_lines: Vec::new(),\n    };\n    let mut longest_len = 0;\n    for (index, line) in lines.iter().enumerate() {\n        let label = line.trim();\n        if label.is_empty() {\n            result.rejected_lines.push(index + 1);\n            continue;\n        }\n        result.accepted += 1;\n        let length = label.chars().count();\n        if length > longest_len {\n            result.longest = label.to_owned();\n            longest_len = length;\n        }\n    }\n    result\n}\n\nfn main() {\n    let result = summarize(&[\" crab \", \"\", \"   \", \"🦀🦀\", \"rust\"]);\n    assert_eq!(result.accepted, 3);\n    assert_eq!(result.longest, \"crab\");\n    assert_eq!(result.rejected_lines, vec![2, 3]);\n    let empty = summarize(&[]);\n    assert_eq!(empty.accepted, 0);\n    assert!(empty.longest.is_empty());\n    assert!(empty.rejected_lines.is_empty());\n    println!(\"interview summary: {result:?}\");\n}",
+        "sources": [
+          {
+            "title": "Rust Book: ownership",
+            "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html"
+          },
+          {
+            "title": "Rust str documentation",
+            "url": "https://doc.rust-lang.org/std/primitive.str.html"
+          }
+        ],
+        "links": [
+          {
+            "title": "Rust strings and UTF-8",
+            "url": "/blog/rust-strings-utf8-safe-parsing/"
+          }
+        ]
+      },
+      {
+        "heading": "Write the contract before judging the implementation",
+        "paragraphs": [
+          "Ask what an empty input should produce, whether whitespace-only labels count as rejected, and how ties should be resolved. These are small questions with visible consequences. If one person expects the last longest label and another expects the first, a failing assertion may simply expose an unspecified requirement. Writing down the expected answer before editing prevents the interview from turning into a guessing game about the interviewer’s private intent.",
+          "Separate examples into categories: ordinary labels, blank input, a single accepted item, tied lengths and multibyte text. Explain why each category matters. Adding ten nearly identical ASCII strings creates less evidence than one carefully chosen crab example. The program uses one-based rejected line numbers because that is what the task asks for; array indices remain zero-based internally. That boundary is an excellent place to ask for a deliberate off-by-one check.",
+          "Discuss cost using the actual representation. The implementation walks the input text to trim and count scalar values, and retains only the current longest string plus rejected positions. A useful analysis identifies work in terms of total input text and retained output, rather than declaring the function “fast” because it contains one visible loop. If the requirements change to grapheme clusters, say that the current standard-library-only exercise does not implement that new definition."
+        ],
+        "links": [
+          {
+            "title": "Testing useful boundaries",
+            "url": "/blog/testing-rust-boundaries-fixtures-doctests/"
+          }
+        ]
+      },
+      {
+        "heading": "Make agent edits proposals against the current source",
+        "paragraphs": [
+          "The SDK and MCP tools read a current revision along with the source. An agent should prepare its change from that revision and submit it as the expected base. If another participant changes the project first, the conditional edit is rejected. The assistant must read again and reconsider its proposal. Retrying the same replacement against a newly read revision without inspecting the intervening edit would defeat the point of the conflict guard.",
+          "This is particularly useful when the candidate is explaining a line while an agent prepares tests. Ask the assistant to highlight its proposed area and make one bounded change. Named selections let the other participants see what is being discussed, including Unicode text. Selection offsets use UTF-16 coordinates; they are not UTF-8 byte indices. The SDK refuses an offset that splits a surrogate pair, which matters for the crab characters used in this exercise.",
+          "A practical instruction is: read the task and entry source, propose one additional boundary case, apply only that case against the exact revision, then select it and explain the expected outcome. Do not ask the agent to “fix everything” while a human is halfway through a different edit. Smaller, intentional changes are easier to review and make it clearer whether the candidate understands the final program."
+        ],
+        "links": [
+          {
+            "title": "Standalone SDK integration",
+            "url": "/blog/crabrix-sdk-javascript-rust-go-agent-handoff/"
+          }
+        ]
+      },
+      {
+        "heading": "Use Run and Debug as evidence, not decoration",
+        "paragraphs": [
+          "A successful Check establishes that the selected source passed compiler analysis. Build compiles without executing `main`. Run produces execution output. These are different results, and an interview should not collapse them into one green success label. Ask the candidate what evidence a given action actually provides. An assertion failing during Run is useful information even when the source was perfectly well typed.",
+          "The extended MCP flow can ask a connected browser or app to execute selected operations. A human must explicitly allow those operations on that one client, after comparing the controller and client fingerprints. The browser user first prepares its verified compiler through Check. Merely joining the room, receiving an edit or opening a handoff link cannot start a compiler on another participant’s device. Keep the browser tab foreground while using its execution grant.",
+          "For Debug, inspect the real `Summary` value after the loop has processed a few items. String and Vec previews, concrete local structures, source stepping and owned Stop make this an exercise in prediction: what changes on the blank line, and what stays unchanged on a shorter label? Values are bounded previews from the executing Rust program. They are not arbitrary watch expressions or a replacement for understanding ownership."
+        ],
+        "links": [
+          {
+            "title": "Local Debug guide",
+            "url": "/guide/#debugger"
+          }
+        ]
+      },
+      {
+        "heading": "Ask ownership questions that follow from the code",
+        "paragraphs": [
+          "Why does the function accept `&[&str]` rather than take a vector of owned strings? Which value owns each accepted label, and when is that owner needed? Why is `to_owned` used at the point where the longest output changes? A good answer relates the function’s input and output lifetimes to the caller’s needs. Naming ownership vocabulary without explaining the particular values in this program is much weaker evidence.",
+          "Then change one requirement. Suppose the result must retain every accepted label, not only the longest. Would the output own strings or borrow slices, and how would that affect the function signature? Either design can be reasonable under a clear caller contract. Ask the candidate to describe the tradeoff before coding it. This makes lifetimes and allocation decisions concrete rather than treating them as a puzzle about compiler syntax.",
+          "Another useful variation is to return a borrowed longest label while still owning the rejected line numbers. Ask what information a lifetime annotation would communicate and what it would not do. It does not keep an already destroyed input alive or turn a temporary string into permanent storage. A short explanation connected to this specific task is more revealing than a memorized slogan about the borrow checker."
+        ],
+        "image": {
+          "src": "/images/blog/crabrix-sdk/interview-ownership.png",
+          "alt": "Crabrix crab using a translucent lens over owned blocks beside a handoff tray",
+          "caption": "Conceptual ownership illustration. The lens represents observation; this is not a literal Rust memory layout.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Ownership Mastery course",
+            "url": "/learn/ownership/"
+          },
+          {
+            "title": "Ownership in a real program",
+            "url": "/blog/ownership-in-a-real-program/"
+          }
+        ]
+      },
+      {
+        "heading": "Keep async questions within the execution profile",
+        "paragraphs": [
+          "Not every Rust interview needs Tokio. A small synchronous task can reveal careful API design, text handling and error reasoning without spending the meeting preparing a dependency graph. The web Playground and shared MCP execution currently accept standard-library Rust and local source modules. They do not resolve arbitrary Cargo dependencies, run host procedural macros or turn a shared source room into a general server environment.",
+          "If the role requires async Rust, use the task to discuss cancellation, ownership across suspension and lock scope, then choose the appropriate environment for a separate executable exercise. The native Crabrix app has its own supported offline Cargo and current-thread Tokio profiles. That is a different project mode from the small shared execution snapshot. Do not infer that a browser can execute any Tokio repository merely because all the source is written in Rust.",
+          "Make the boundary part of the evaluation: ask the candidate what a test proves and which assumptions remain untested. Handling a request inside a router is different from opening a TCP listener. A successful program on one target is different from a guarantee about native threads or operating-system services. These distinctions are useful engineering judgment, and a reliable interview environment should help explain them rather than hiding them behind a vague Run button."
+        ],
+        "links": [
+          {
+            "title": "Concurrency and Async course",
+            "url": "/learn/concurrency/"
+          },
+          {
+            "title": "Cancellation and timeouts",
+            "url": "/blog/rust-async-cancellation-safe-timeouts/"
+          }
+        ]
+      },
+      {
+        "heading": "Review explanations, not just the final stdout",
+        "paragraphs": [
+          "A final output line is only one part of the assessment. Ask the candidate to predict the state before running, identify the input that would disprove a claim, and explain a chosen representation. If an assistant wrote part of the function, have the candidate describe that part without asking the assistant again. This distinguishes productive collaboration from unexamined acceptance of generated code.",
+          "Keep a short review checklist tied to the task: stated Unicode unit, stable tie rule, correct blank-line handling, deliberate one-based reporting, ownership of the output, and meaningful boundary cases. The checklist should support consistent assessment, not become a secret scoring rubric that changes after the candidate has committed to an approach. It is reasonable to accept a different implementation when it satisfies the same contract and the candidate can justify it.",
+          "When a failure occurs, preserve its context. Was it a compiler diagnostic, a runtime assertion, an expired room, a full participant list or an execution permission that was never granted? Those causes require different next actions. A candidate who reads the actual stage and asks the right question is demonstrating more useful skill than someone who repeatedly restarts the same operation and hopes the status changes."
+        ]
+      },
+      {
+        "heading": "Finish with a durable copy and a short handoff",
+        "paragraphs": [
+          "Before the room expires, save a source ZIP or a local Crabrix project. A temporary room is not repository hosting, an account project or a durable backup. Its relay stores bounded ciphertext in process memory, and a restart can end the room earlier than the chosen deadline. Keeping an independent copy is part of closing the exercise, especially when the final source includes notes that participants want to revisit.",
+          "If another agent will review the result later, explicitly request a handoff link while the room is still live. Include its expiry and the current revision in the surrounding explanation, but do not put the capability in the source itself. An ordinary joined edit participant is not the room owner; creator-only closure is retained. An agent leaving the room releases its own connection without automatically removing the candidate’s or interviewer’s access.",
+          "End the session with a brief account of what was verified and what was only discussed. For this example, that might mean the standard-library program ran with the stated assertions, the candidate explained its allocation boundary, and a borrowed-output variant was considered but not implemented. That is a useful result someone else can understand. The shared editor has done its job when it makes the reasoning and evidence easier to inspect."
+        ],
+        "links": [
+          {
+            "title": "Save and recover projects",
+            "url": "/guide/#saving"
+          },
+          {
+            "title": "Browse Rust lessons",
+            "url": "/learn/"
+          }
+        ]
+      }
+    ],
+    "readingMinutes": 10
+  },
+  {
     "slug": "rust-maintainer-funding-support-code-you-depend-on",
     "title": "Rust maintainer funding: support the code you depend on",
     "date": "2026-10-29",

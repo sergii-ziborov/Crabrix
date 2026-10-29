@@ -1,9 +1,12 @@
 {
-  "version": "0.2.0",
-  "url": "/downloads/crabrix-playground-mcp-0.2.0.tgz",
-  "bytes": 243090,
-  "sizeLabel": "237 KiB",
-  "sha256": "ce724f2d1b150010affc49c025afdf1c0a7e39be86d2abeb0c4d24dc6dcb887d",
-  "noticesURL": "/downloads/crabrix-playground-mcp-0.2.0-NOTICES.txt",
-  "licenseURL": "/downloads/crabrix-playground-mcp-0.2.0-LICENSE.txt"
+  "version": "0.3.0",
+  "packageName": "crabrix",
+  "url": "/downloads/crabrix-0.3.0.tgz",
+  "bytes": 609577,
+  "sizeLabel": "595 KiB",
+  "sha256": "bd8bb4cbbd963f8168be675d6c9886ea242b02b24089579110553359adb830b7",
+  "noticesURL": "/downloads/crabrix-0.3.0-NOTICES.txt",
+  "licenseURL": "/downloads/crabrix-0.3.0-LICENSE.txt",
+  "assetsLicenseURL": "/downloads/crabrix-0.3.0-ASSETS-LICENSE.txt",
+  "repository": "https://github.com/sergii-ziborov/crabrix-sdk"
 }

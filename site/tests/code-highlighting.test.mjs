@@ -32,3 +32,12 @@ test('browser examples retain every character while highlighting JSON, HTML and 
     assert.ok(tokens.some(t => t.kind === (language === 'html' ? 'type' : 'keyword')));
   }
 });
+
+test('Go SDK examples preserve raw backslashes, rune strings and comments exactly', () => {
+  const source = 'package main\n// crab 🦀\nfunc main() { s := `raw\\`; r := \'🦀\'; defer close(s); _ = r }';
+  const tokens = codeTokens(source, 'go');
+  assert.equal(tokens.map(t => t.value).join(''), source);
+  assert.ok(tokens.some(t => t.value === 'func' && t.kind === 'keyword'));
+  assert.ok(tokens.some(t => t.value === 'defer' && t.kind === 'keyword'));
+  assert.ok(tokens.some(t => t.value === '`raw\\`' && t.kind === 'string'));
+});

@@ -1,3 +1,9 @@
+> The standalone successor is [`crabrix`](https://www.npmjs.com/package/crabrix):
+> a JavaScript/TypeScript library and MCP server, with Rust/Go bindings in the
+> [public SDK repository](https://github.com/sergii-ziborov/crabrix-sdk).
+> This directory and the published 0.2.0 archive retain their historical license
+> and behavior. See the new SDK for current installation and MIT source terms.
+
 # 🦀 Crabrix Playground MCP
 
 Connect Claude Code, Claude Desktop or another local MCP host to a temporary

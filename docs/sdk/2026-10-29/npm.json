@@ -1,0 +1,15 @@
+{
+  "observedAtUTC": "2026-10-29T15:36:13.557Z",
+  "name": "crabrix",
+  "version": "0.3.0",
+  "registryURL": "https://www.npmjs.com/package/crabrix",
+  "tarball": "https://registry.npmjs.org/crabrix/-/crabrix-0.3.0.tgz",
+  "bytes": 609577,
+  "sha256": "bd8bb4cbbd963f8168be675d6c9886ea242b02b24089579110553359adb830b7",
+  "integrity": "sha512-w1D/mda692kN6uXkBhzomnhTnVHuJ7mBZDtDOwYg32GppoZEyR5gKJ8vdqSGiqYcpEKulB3piWG7xlOVB1FKoA==",
+  "maintainers": [
+    "sergii-ziborov"
+  ],
+  "registryInstalledCLI": "0.3.0",
+  "strictESMCommonJSConsumer": true
+}

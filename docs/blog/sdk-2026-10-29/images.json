@@ -1,0 +1,83 @@
+{
+  "tool": "Built-in image_gen",
+  "images": [
+    {
+      "key": 1,
+      "path": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-616dfdfe-c695-4de5-899f-fd619b1cf925.png",
+      "prompt": "Use case: illustration-story. Asset type: landscape cover illustration for Crabrix technical blog, 1536x1024 composition. Primary request: premium editorial illustration about a temporary Rust coding interview shared between a human and two AI agents, with a friendly recognizable orange Crabrix crab mascot at the center. Scene: dark graphite desk and navy background, one laptop screen with abstract Rust code lines, tablet and phone connected by delicate mint/cyan light paths, small amber clock indicating a temporary session. Sophisticated clean 3D editorial style with restrained orange coral, mint and blue from Crabrix. Clear readable visual hierarchy, generous breathing room, polished lighting, no corporate stock-photo style. No fake screenshots, no brand marks from other companies, no readable code, no long text. The crab must be friendly, orange, front-facing with raised claws, retain the spirit of Crabrix. This is a conceptual illustration, not a product UI capture.",
+      "final": "/images/blog/crabrix-sdk/interview-cover.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 150846,
+      "sha256": "c50af4e4b0c688a0024177cdf4b0ed0c78446186f7af3c5465d8519d3753b549",
+      "webp": "/images/blog/crabrix-sdk/interview-cover.webp",
+      "originalSHA256": "9873a86809ffe98c93257079934ad58f9398ea719287b0fe2d59d106f8c6e52c",
+      "cardBytes": 31198
+    },
+    {
+      "key": 2,
+      "path": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-5c1fbec4-e9ba-40ff-9754-0f702bbebe7f.png",
+      "prompt": "Use case: infographic-diagram. Asset type: polished wide 1536x1024 infographic for a Crabrix Rust interview article. Explain a temporary shared coding interview in four numbered cards with very legible short English labels: '1 Create: 1 hour', '2 Share: edit or view', '3 Approve: one local client', '4 Save before expiry'. Under each show an elegant simple pictogram: orange friendly crab with clock; two people/agent exchanging a capability link; one highlighted laptop with play triangle while other tablet is idle; local source document saved on device. Footer exact text 'Up to 24 hours · 4 participants · Source stays encrypted in transit'. Dark graphite/navy panels, coral orange crab, mint cyan connecting lines, warm readable cream typography. Clear semantic hierarchy, large type, generous spacing. Illustrative infographic, no app screenshots, no claim of identity verification, no cloud compilation, no code execution on the server, no other logos.",
+      "final": "/images/blog/crabrix-sdk/interview-lifecycle.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 129154,
+      "sha256": "ed97b395b65693ea0980e3f8e1f21bef3e9d7a1d530c01665161ff5671e06ee8",
+      "webp": "/images/blog/crabrix-sdk/interview-lifecycle.webp",
+      "originalSHA256": "ae6e27bc33b80299f0dc2d99a2c166ad68f2058514222f5c394a94dba7a6978a",
+      "cardBytes": 33024
+    },
+    {
+      "key": 3,
+      "path": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-7d700530-2323-40e6-ade2-235b8b77b65f.png",
+      "prompt": "Use case: scientific-educational. Asset type: premium landscape 1536x1024 conceptual illustration for a Rust coding interview guide. Primary request: orange Crabrix crab as a thoughtful tutor beside a beautiful physical visualization of ownership: one wooden token tray owning three luminous text blocks, a thin cyan observation lens borrowing a view without removing the blocks, and an amber handoff arrow toward a second tray. Show a laptop and tablet in the background as quiet silhouettes. Warm coral orange, mint, blue against dark graphite, tactile clean 3D editorial rendering, elegant spacious composition. No long text, no readable code, no corporate/other product logos, no fake app screenshot. The friendly orange crab must be visible, front-facing raised claws. This illustrates ownership and discussing reasoning during an interview, not a claim of runtime behavior.",
+      "final": "/images/blog/crabrix-sdk/interview-ownership.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 187192,
+      "sha256": "454fcad046e4d907bb6eee5581b1d2a089a5520d6a4bf1ec6c585d57426d00b0",
+      "webp": "/images/blog/crabrix-sdk/interview-ownership.webp",
+      "originalSHA256": "2c8febc36420a5915cfeec1f44202ecc0129ad1b5dbfa89b838ff56ae9d2060c",
+      "cardBytes": 33976
+    },
+    {
+      "key": 4,
+      "path": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-8492eb5b-695c-44c7-af59-cbbdcb1d4181.png",
+      "prompt": "Use case: illustration-story. Asset type: polished 1536x1024 cover for a Crabrix SDK integration article. A cheerful orange Crabrix crab at a small hub connects three clean code cards labeled exactly 'JavaScript', 'Rust', 'Go' to one shared laptop and optional tablet through an encrypted temporary relay represented by a small translucent memory container. Emphasize one shared workspace, not repository hosting: temporary amber clock, small text-source sheets, no Git branch graph. All device screens use abstract code lines. Premium contemporary editorial 3D style, dark navy graphite background, orange coral, mint and cyan accents, generous visual hierarchy. No third-party logos, no fake screenshots, no long paragraphs, no cloud execution. Distinct composition from an interview scene.",
+      "final": "/images/blog/crabrix-sdk/sdk-cover.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 130112,
+      "sha256": "9a4ddb608c0116f2b5f81d181b12127fa85124bc4056fc7f36322fd7ec92b9ed",
+      "webp": "/images/blog/crabrix-sdk/sdk-cover.webp",
+      "originalSHA256": "caec7430a1693902057ffdf9035f1bb786b551f6ecc91e2f91bc2c7a1bdaaead",
+      "cardBytes": 29822
+    },
+    {
+      "key": 5,
+      "path": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-ada42e7d-50f7-4488-bfe5-3678c1c9529c.png",
+      "prompt": "Use case: infographic-diagram. Asset type: technically accurate 1536x1024 Crabrix SDK architecture infographic. Very legible English labels. Top row three equal cards: 'JavaScript SDK', 'Rust SDK', 'Go SDK'. Three arrows converge on a local box labeled 'Node.js 22+ · protocol core', with the orange Crabrix crab beside it. This box connects by a cyan line labeled 'Encrypted messages' to a middle memory-only cylinder labeled 'Temporary ciphertext relay'. From the relay connect to a browser panel and an optional phone panel. Browser label 'Browser · Run locally'; phone label 'Crabrix app · optional'. An orange approval key at the execution clients with caption 'Explicit permission for agent Run / Debug'. Bottom exact text 'The relay never compiles or executes Rust'. Make clear that Rust and Go bindings use the common local JS core and require Node, not independent native compilers. Elegant graphite navy background, cream readable type, restrained coral and mint accents, ample whitespace, professional information design. No other brands or invented performance numbers.",
+      "final": "/images/blog/crabrix-sdk/sdk-architecture.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 108864,
+      "sha256": "cb202275aa4eefce04520366e2ced622e13c705c1a36c28f2d671c31886fa2a9",
+      "webp": "/images/blog/crabrix-sdk/sdk-architecture.webp",
+      "originalSHA256": "202d94869ee7ce656f7dd83ec20a879aa0fbf85b0a6c1b094e9925e0f678404f",
+      "cardBytes": 25944
+    },
+    {
+      "key": 6,
+      "path": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-2605baf4-1343-4b04-ad8c-7c09dda15074.png",
+      "prompt": "Use case: infographic-diagram. Asset type: wide 1536x1024 editorial infographic for reliable agent edits in Crabrix. Show an orange friendly crab holding a source document, and a clear three-stage horizontal sequence labeled 'Read revision', 'Prepare change', 'Compare and apply'. At the final gate split into two paths: mint accepted path labeled 'Same revision: apply'; coral paused path labeled 'Conflict: read again'. Include a second small agent editing a document in parallel so the conflict reason is intuitive. Footer short label 'No blind overwrite'. Beautiful professional dark graphite/navy panels, coral orange Crabrix crab, cyan/mint links, high-contrast cream large labels, generous spacing. Conceptual illustrative diagram, no actual hashes or secret links, no claim that editing executes source, no other product logos or mock screenshots.",
+      "final": "/images/blog/crabrix-sdk/sdk-revision-guard.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 118024,
+      "sha256": "f77078a1b5988062bd5721edc7bd242f77976e38f25a17da983b2cc01b5105c0",
+      "webp": "/images/blog/crabrix-sdk/sdk-revision-guard.webp",
+      "originalSHA256": "0c2aeafc21a2628f11d183020a8a81e448dc2d3fabc1f26c04882d177619930b",
+      "cardBytes": 29902
+    }
+  ]
+}
