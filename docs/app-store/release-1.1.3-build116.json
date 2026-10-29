@@ -62,15 +62,182 @@
     "physicalDeviceTiming": "not claimed",
     "evidence": "docs/semantic-ide-qualification-2026-10-29.json"
   },
-  "verifiedAtUTC": "2026-10-29T00:30:03.905551+00:00",
+  "verifiedAtUTC": "2026-10-29T00:56:28.377354+00:00",
   "versionID": "4c60d52b-ca5b-4bbd-a206-799d4e4cd12c",
   "reviewSelection": {
-    "selectedBuild": "115",
+    "selectedBuild": "116",
     "state": "WAITING_FOR_REVIEW",
-    "nextBuild": "116",
-    "submissionPending": true
+    "submissionPending": false,
+    "replacedBuild": "115"
   },
   "releaseType": "MANUAL",
-  "deliveryStage": "TestFlight available; preparing public guide and App Review selection",
-  "betaInstructionsReadback": "exact match"
+  "deliveryStage": "TestFlight available; selected for App Review; public guide published",
+  "betaInstructionsReadback": "exact match",
+  "versionState": "WAITING_FOR_REVIEW",
+  "reviewID": "3843e9dd-6396-4568-80a2-5ec0c5bdd82b",
+  "reviewState": "WAITING_FOR_REVIEW",
+  "selectedBuild": "116",
+  "screenshots": [
+    {
+      "displayType": "APP_IPHONE_DUO",
+      "count": 2,
+      "complete": 2,
+      "firstFile": "v111-iphone-duo-qa-01-laptop-code.png"
+    },
+    {
+      "displayType": "APP_IPAD_PRO_3GEN_129",
+      "count": 7,
+      "complete": 7,
+      "firstFile": "v111-ipad-13-01-build.png"
+    },
+    {
+      "displayType": "APP_IPHONE_67",
+      "count": 10,
+      "complete": 10,
+      "firstFile": "v111-iphone-6.9-01-build.png"
+    }
+  ],
+  "storeMetadataReadback": "exact match",
+  "websiteSourceCommit": "3be13de80170f24dccaf3e3d72bae44f19ed5ad6",
+  "websiteImage": "b1259c042ac48ae22dc5d18adfc145abd6d359757a4401ba92a08b304c822d94",
+  "websitePublishedAtUTC": "2026-10-29T00:47:26Z",
+  "websiteSourceTreeSHA256": "0eeb520f6dd2e3bcd11e60b70df5a4cbefbcf80c9c4d22591cc1529a2eafe6c7",
+  "websiteResponsiveQA": [
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "geometry": [
+        {
+          "naturalWidth": 1206,
+          "naturalHeight": 2622,
+          "width": 221.84375,
+          "height": 480
+        },
+        {
+          "naturalWidth": 2064,
+          "naturalHeight": 2752,
+          "width": 358,
+          "height": 480
+        }
+      ],
+      "scroll": 390,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "geometry": [
+        {
+          "naturalWidth": 1206,
+          "naturalHeight": 2622,
+          "width": 221.84375,
+          "height": 480
+        },
+        {
+          "naturalWidth": 2064,
+          "naturalHeight": 2752,
+          "width": 358,
+          "height": 480
+        }
+      ],
+      "scroll": 390,
+      "errors": []
+    },
+    {
+      "width": 720,
+      "height": 1000,
+      "theme": "dark",
+      "geometry": [
+        {
+          "naturalWidth": 1206,
+          "naturalHeight": 2622,
+          "width": 221.84375,
+          "height": 480
+        },
+        {
+          "naturalWidth": 2064,
+          "naturalHeight": 2752,
+          "width": 332,
+          "height": 480
+        }
+      ],
+      "scroll": 720,
+      "errors": []
+    },
+    {
+      "width": 820,
+      "height": 1180,
+      "theme": "dark",
+      "geometry": [
+        {
+          "naturalWidth": 1206,
+          "naturalHeight": 2622,
+          "width": 221.84375,
+          "height": 480
+        },
+        {
+          "naturalWidth": 2064,
+          "naturalHeight": 2752,
+          "width": 360.5,
+          "height": 480
+        }
+      ],
+      "scroll": 820,
+      "errors": []
+    },
+    {
+      "width": 1024,
+      "height": 1000,
+      "theme": "dark",
+      "geometry": [
+        {
+          "naturalWidth": 1206,
+          "naturalHeight": 2622,
+          "width": 221.84375,
+          "height": 480
+        },
+        {
+          "naturalWidth": 2064,
+          "naturalHeight": 2752,
+          "width": 360.5,
+          "height": 480
+        }
+      ],
+      "scroll": 1024,
+      "errors": []
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "theme": "dark",
+      "geometry": [
+        {
+          "naturalWidth": 1206,
+          "naturalHeight": 2622,
+          "width": 221.84375,
+          "height": 480
+        },
+        {
+          "naturalWidth": 2064,
+          "naturalHeight": 2752,
+          "width": 360.5,
+          "height": 480
+        }
+      ],
+      "scroll": 1440,
+      "errors": []
+    }
+  ],
+  "websiteContextVerification": {
+    "sourceCommit": "3be13de",
+    "sourceTreeSHA256": "0eeb520f6dd2e3bcd11e60b70df5a4cbefbcf80c9c4d22591cc1529a2eafe6c7",
+    "allEntriesVerified": 2779,
+    "transferredBytes": 463116,
+    "baseContextUnchanged": true,
+    "accountDataTouched": false,
+    "symlinkModePolicy": "portable-0777"
+  },
+  "websiteAccountsPreserved": true
 }

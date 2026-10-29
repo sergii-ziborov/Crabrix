@@ -5,10 +5,10 @@
 поставок. Наличие кода не означает завершённую квалификацию или публикацию.
 
 **Сверка 29 октября:** [все 27 исходных ID, MCP и оставшиеся критерии](audit-2026-10-29.md).
-Выбранная для App Review сборка — **1.1.3 (115)**. Номера 111/113/114 ниже
-обозначают исторические первые поставки; их функциональность включена в 115.
+Выбранная для App Review сборка — **1.1.3 (116)**, WAITING_FOR_REVIEW. Номера
+111/113/114/115 ниже обозначают исторические первые поставки; их функции включены в 116.
 Семантический редактор прошёл 68 Simulator-проверок и поставлен в подписанной
-TestFlight 116; выбор для ревью следует после обновления сайта. TS checker,
+TestFlight 116, выбран для App Review, сайт и гайд опубликованы. TS checker,
 расширенный MCP и языковые прототипы остаются открытыми.
 
 ## Этап 1 — поставлен в TestFlight, ожидает App Review
@@ -47,7 +47,7 @@ backup не удаляется из-за неудачного decode; возвр
 | 2 | RUST-01, RUST-02 | Реализован кандидат: real libtest, file/project rustfmt, терминал, версии, Undo и Stop. 35 native проверок и по два UI-сценария на phone/iPad прошли; финальный повтор девяти кейсов после изоляции ошибочных запросов тоже прошёл. 1.1.3 (113) — VALID / IN_BETA_TESTING / WAITING_FOR_REVIEW; гайд и notices опубликованы на сайте. [Профиль](../rust-tools-2026-10-28.md) |
 | 3A | GIT-01 | Кандидат квалифицирован: долговечное отдельное хранилище, status/diff/selected commit/history/restore/branches, терминал и Changes UI. Три macOS service-теста, десять native-кейсов и по два UI-сценария на phone/iPad прошли. Не входит в build 113. [Профиль и доказательства](../local-git-2026-10-28.md) |
 | 3B | GIT-02, PORT-01 | Кандидат квалифицирован: HTTPS/private Git, Keychain, clean fast-forward, полный `.crabrixrepo` и бинарные ресурсы compiler/Debug. 9 реальных core-тестов, 18 native-кейсов на phone и iPad, по 4 UI-сценария прошли. Поставлено: подписанная 1.1.3 (114) — VALID / IN_BETA_TESTING / WAITING_FOR_REVIEW; сайт, гайд и notices опубликованы. [Профиль](../git-https-portability-2026-10-28.md) |
-| 4 | LEARN-02, LEARN-01, IDE-01 | LEARN поставлен в 115: 20 подписанных разделов, 400 записей / 600 уроков; личная копия использует настоящий Run/Debug. IDE поставлен в подписанной TestFlight 116: 68/68 phone/iPad native + UI, scopes, types, signatures, completion/import/rename, Undo, revision/Stop и keyboard/Debug regressions. [Semantic profile](../semantic-ide-2026-10-29.md), [поставка 116](../app-store/release-1.1.3-build116.json). 115 пока остаётся выбранной для ревью до публикации обновлённого гайда. |
+| 4 | LEARN-02, LEARN-01, IDE-01 | LEARN поставлен в 115: 20 подписанных разделов, 400 записей / 600 уроков; личная копия использует настоящий Run/Debug. IDE поставлен в подписанной TestFlight 116 и выбран для App Review: 68/68 phone/iPad native + UI, scopes, types, signatures, completion/import/rename, Undo, revision/Stop и keyboard/Debug regressions; сайт и гайд опубликованы. [Semantic profile](../semantic-ide-2026-10-29.md), [поставка 116](../app-store/release-1.1.3-build116.json). |
 | 5 | COMPAT-01, WEB-02 | Project preflight, настоящий TS checker и типы зависимостей; не выдавать transpilation за typecheck |
 | Отдельно | COMPAT-02 | Продолжить существующие compiler/proc-macro candidates; без устройства не заявлять физические benchmarks или Published |
 | 6 | LANG-01 → LANG-02; LANG-03 отдельно; LANG-04 условно | Ограниченный C→Wasm prototype, затем Systems Lab и выбранный ABI; отдельный C++ профиль LANG-04 только по результатам C и конкретным задачам |
