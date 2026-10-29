@@ -20,10 +20,13 @@ same JavaScript core and **require Node.js 22+**, without a global npm install.
 They do not claim independent native cryptography or native Rust execution.
 The Go module tag `go/crabrix/v0.3.0` resolves through public Go tooling; the
 executable installed from that version reports 0.3.0. The Rust crate builds,
-passes tests/doctests/clippy, and passed cargo publication dry-run. **crates.io
-publication is pending**: no Cargo credential is configured, and the requested
-`~/Documents/crates_token` has not been supplied. The name is not claimed as
-reserved on crates.io. The site documents the usable source installation.
+passes tests/doctests/clippy, and is published as
+[`crabrix` 0.3.0 on crates.io](https://crates.io/crates/crabrix). The public registry
+archive matches the prepared crate byte for byte (SHA-256 in the
+[publication receipt](sdk/2026-10-29/crates.json)). The CLI installed from the
+registry reports 0.3.0; a fresh registry-dependent Rust application initialized
+its real embedded stdio transport successfully. The site now documents
+`cargo add crabrix@0.3.0` and the optional Cargo-installed MCP executable.
 
 SDK source and documentation use MIT, selected after the user's request for a
 public integrable SDK and discussion of that license. Artwork/screenshots have
@@ -68,7 +71,7 @@ themes, app screenshots and access guards are retained. SDK code, source links
 and license metadata use the existing server-rendered components.
 
 Two original practical articles are dated 29 October: a shared Rust interview
-workshop (2100 prose words) and SDK integration (2047 prose words), each with
+workshop (2100 prose words) and SDK integration (2051 prose words), each with
 three original generated illustrations. Both include an infographic and the
 orange crab, internal course/article links and primary technical sources.
 [Article/media record](blog/sdk-2026-10-29/articles.json) · [Prompts and assets](blog/sdk-2026-10-29/images.json).
@@ -82,3 +85,12 @@ browser cases passed. Updated pages have one H1/canonical, working images and
 links, matching article word counts/JSON-LD and no page overflow. MCP setup and
 SDK cards retain equal widths/heights. The sitemap now contains 806 canonical
 URLs, including both articles. Published to the existing Hetzner site at 2026-10-29T15:54:29Z with the previous container retained for rollback and a fresh account backup. The account mount and selected app build were preserved. All 806 sitemap pages passed the public metadata crawl; another 71 linked targets resolved without errors. No duplicate titles/descriptions, broken internal fragments, missing image alt text or invalid JSON-LD were found. All 30 responsive/theme cases also passed against production. [Deployment receipt](sdk/2026-10-29/site-deployment.json).
+
+## Registry and archive follow-up
+
+The crates.io release is now confirmed and the blog has three linked archive
+pages with 12 articles per page. The sitemap grows from the initial 806 URLs
+to 808, retaining every article and lesson. All 38 site tests and 32 local
+responsive/theme cases passed, including no-JavaScript pagination and real
+404/308 responses. See [pagination and SEO details](blog-pagination-2026-10-29.md)
+and [crates.io proof](sdk/2026-10-29/crates.json).

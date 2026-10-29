@@ -33,7 +33,7 @@
     "errors": []
   },
   "npm": "Published and registry-installed; archive SHA256 and SHA512 verified",
-  "cratesIO": "Package dry-run passed; publication awaits maintainer credential",
+  "cratesIO": "Published crabrix 0.3.0; public registry archive matches prepared package byte for byte; CLI installation and fresh Rust library consumer passed",
   "go": "v0.3.0 module tag resolves; executable installed from public module and reported 0.3.0",
   "sdkRepository": "https://github.com/sergii-ziborov/crabrix-sdk",
   "sourceCommit": "9dfe36930e6b65b845ba2c24f643b77bb2831af4",
@@ -43,8 +43,8 @@
     "macOS",
     "Windows"
   ],
-  "latestDocumentationCommit": "12c95ce6f83d4d3890cf1f6ca0463090d70f2b44",
-  "latestCI": "https://github.com/sergii-ziborov/crabrix-sdk/actions/runs/40904907204",
+  "latestDocumentationCommit": "69f67579814f27a97300a8929b220e4d55ec9f3c",
+  "latestCI": "https://github.com/sergii-ziborov/crabrix-sdk/actions/runs/40917822323",
   "latestCIConclusion": "success",
-  "finalCargoPublishDryRun": "Passed: 11 files, 241.7 KiB compressed; upload intentionally aborted by --dry-run"
+  "finalCargoPublishDryRun": "Passed with packaged Rust reviewer example; actual upload and registry readback also confirmed"
 }

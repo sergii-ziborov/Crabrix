@@ -1,0 +1,24 @@
+{
+  "name": "crabrix",
+  "version": "0.3.0",
+  "publishedAt": "2026-10-29T17:01:15.438423Z",
+  "registry": "https://crates.io/crates/crabrix",
+  "documentation": "https://docs.rs/crabrix/0.3.0/crabrix/",
+  "homepage": "https://crabrix.com/playground/mcp/",
+  "repository": "https://github.com/sergii-ziborov/crabrix-sdk",
+  "owners": [
+    "sergii-ziborov"
+  ],
+  "sha256": "83d1b520897e22cd366b674b27d02e9f7ddf30eccccb9656ccc95d411b3e15a6",
+  "bytes": 248528,
+  "archiveMatchesPreparedPackage": true,
+  "yanked": false,
+  "sourceCommit": "d61ae6224e56d1e8b0bec57113f40917824ea920",
+  "requires": "Node.js 22+",
+  "cliRegistryInstallation": "cargo install crabrix --version 0.3.0 --locked: passed; executable reports 0.3.0",
+  "libraryRegistryConsumer": "Fresh Rust application depending on crates.io crabrix =0.3.0 initialized the embedded MCP transport and exited successfully",
+  "docsRS": {
+    "status": 200,
+    "clientAPIVisible": true
+  }
+}

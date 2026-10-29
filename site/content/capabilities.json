@@ -158,7 +158,7 @@
           "surface": "mcp",
           "state": "published",
           "version": "0.3.0",
-          "profile": "Published crabrix npm library and stdio MCP server: ESM/CommonJS/TypeScript, encrypted temporary source, full snapshot, edit/view handoff, conditional edits, UTF-16 selections, creator closure and explicitly permitted local execution. Fourteen tools. Public Rust/Go bindings embed the same local Node.js 22+ core; crates.io publication is tracked separately. No backend compiler or host shell.",
+          "profile": "Published crabrix npm library and stdio MCP server: ESM/CommonJS/TypeScript, encrypted temporary source, full snapshot, edit/view handoff, conditional edits, UTF-16 selections, creator closure and explicitly permitted local execution. Fourteen tools. The crabrix Rust crate is published on crates.io at 0.3.0; the tagged Go module and Rust binding embed the same local Node.js 22+ core. No backend compiler or host shell.",
           "evidence": "docs/crabrix-sdk-2026-10-29.md"
         }
       ]

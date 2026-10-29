@@ -81,18 +81,22 @@
         "heading": "Use the Rust binding with explicit process ownership",
         "paragraphs": [
           "The Rust binding exposes a client that owns its local bridge process. Its typed options cover room creation, file changes, selections and handoff results. Source fields and capability links are not placed in process arguments. Normal debug formatting of a handoff redacts its link, although an application can still expose the field deliberately when the user requests sharing. Callers should keep that distinction in their own logging and telemetry.",
-          "The Rust package source is available in the public SDK repository. Check the repository’s release status for registry availability; until a crate is published, a local path dependency or installation from the checked-out crate is the accurate route. The existence of working Rust source is not the same as a successful crates.io publication. Node.js remains a prerequisite whichever installation route you choose.",
+          "The Rust library is published as `crabrix` version 0.3.0 on crates.io. Add it to a project with `cargo add crabrix@0.3.0`, or install the optional MCP executable with `cargo install crabrix --version 0.3.0 --locked`. The registry archive checksum matches the prepared release, and a fresh registry installation reports the expected version. Node.js 22 or newer remains a prerequisite because the crate embeds the common JavaScript protocol core.",
           "The code below shows the library’s shape. A successful start of the bridge only establishes a local protocol connection. Creating a room performs the separate encrypted sharing operation. For an existing room, use its authorized complete link instead. Dropping the client releases its own bridge; ending a room for all participants is an explicit creator action. Do not silently reconstruct a client and replay a possibly committed edit after a timeout."
         ],
         "code": "use crabrix::{ApplyOptions, Change, Client, CreateOptions};\n\nfn main() -> Result<(), Box<dyn std::error::Error>> {\n    let mut client = Client::new()?;\n    client.create(&CreateOptions::new(\"Rust agent example\"))?;\n    let file = client.read(\"main.rs\")?;\n    client.apply(&ApplyOptions {\n        expected_revision: file.revision,\n        changes: vec![Change {\n            path: file.path,\n            text: Some(file.text + \"// reviewed in Rust\n\"),\n        }],\n        entry_file: None,\n        name: None,\n    })?;\n    let handoff = client.share(\"edit\")?;\n    assert_eq!(handoff.mode, \"edit\");\n    Ok(())\n}",
         "sources": [
           {
-            "title": "Rust SDK source and install status",
-            "url": "https://github.com/sergii-ziborov/crabrix-sdk/tree/main/crates/crabrix"
+            "title": "Crabrix Rust package on crates.io",
+            "url": "https://crates.io/crates/crabrix"
           },
           {
             "title": "Cargo publishing process",
             "url": "https://doc.rust-lang.org/cargo/reference/publishing.html"
+          },
+          {
+            "title": "Crabrix Rust API documentation",
+            "url": "https://docs.rs/crabrix/0.3.0/crabrix/"
           }
         ]
       },
@@ -220,7 +224,8 @@
         ]
       }
     ],
-    "readingMinutes": 10
+    "readingMinutes": 10,
+    "modifiedDate": "2026-10-29"
   },
   {
     "slug": "rust-coding-interviews-shared-playground-agents",

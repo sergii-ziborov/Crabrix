@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { courseSnapshot } from "@/lib/courses";
 import { pageUrl } from "@/lib/seo";
 import { posts } from "@/lib/posts";
+import { BLOG_PAGE_SIZE, blogPagePath } from "@/lib/blog-pagination";
 import { lessonModifiedDates, courseModifiedDates } from "@/lib/lesson-seo";
 
 export const dynamic = "force-static";
@@ -21,7 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   };
   return [...paths.map((path) => ({ url: pageUrl(path),
     ...(pageModifiedDates[path] ? { lastModified: pageModifiedDates[path] } : {}),
-  })), ...courseEntries,
+  })), ...Array.from({ length: Math.max(0, Math.ceil(posts.length / BLOG_PAGE_SIZE) - 1) }, (_, index) => ({ url: pageUrl(blogPagePath(index + 2)) })), ...courseEntries,
     ...posts.map((post) => ({ url: pageUrl(`blog/${post.slug}`), lastModified: post.modifiedDate ?? post.date,
       images: post.sections.flatMap((section) => section.image ? [new URL(section.image.src, pageUrl("/")).href] : []),
     })),
