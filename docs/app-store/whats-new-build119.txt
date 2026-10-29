@@ -1,0 +1,9 @@
+Shared editor reliability: incoming edits preserve local configuration and prepared package files. Invalid combined source budgets stop the update without replacing your project. GitHub, Gist and Rust Playground origin links now work in the native collaboration codec.
+
+TypeScript, checked locally: real type diagnostics for TS/TSX, local modules, browser ES/DOM libraries and prepared package declarations. Open a Problems item to return to its source. npm run check and npm run typecheck use the same offline checker; Run remains independent.
+
+Explicit npm preparation retains declared @types packages and their dependency declarations. Check and Run never download missing types. No Node/Bun server, arbitrary scripts or compiler backend.
+
+Files preflight separates Check, Build, Run and Debug for the exact source, entry and compiler profile. Review Cargo feature suggestions before applying; retain the original manifest.
+
+Includes local Rust definitions/completion/rename with Undo, offline Atlas playback, native Git, unit tests, rustfmt and source Debug. Existing phone, tablet and Duo editor layouts remain.
