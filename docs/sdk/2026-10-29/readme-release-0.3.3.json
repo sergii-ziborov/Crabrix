@@ -1,0 +1,55 @@
+{
+  "version": "0.3.3",
+  "checkedAt": "2026-10-29T18:35:52.321Z",
+  "registries": [
+    {
+      "name": "npm",
+      "version": "0.3.3",
+      "archiveURL": "https://registry.npmjs.org/crabrix/-/crabrix-0.3.3.tgz",
+      "bytes": 477914,
+      "sha256": "e1558d7d722d65cf03234f2163dd17900db6ea6286f66dbca0ab3155acdc81ec",
+      "exactLocalBytes": true
+    },
+    {
+      "name": "crates.io",
+      "version": "0.3.3",
+      "archiveURL": "https://crates.io/api/v1/crates/crabrix/0.3.3/download",
+      "bytes": 251519,
+      "sha256": "a19a18c0df4db0da8ea757b22a13cd2efc2a7e7a6946aaeab6b90a6ec9ddfd0c",
+      "exactLocalBytes": true
+    }
+  ],
+  "sourceCommit": "7b7b2407262132b80d87a9711ab70e4981d1fd28",
+  "ci": "https://github.com/sergii-ziborov/crabrix-sdk/actions/runs/40931593926",
+  "ciPlatforms": [
+    "Linux",
+    "macOS",
+    "Windows"
+  ],
+  "githubRelease": "https://github.com/sergii-ziborov/crabrix-sdk/releases/tag/v0.3.3",
+  "goTag": "go/crabrix/v0.3.3",
+  "runtimeBehaviorChanged": false,
+  "jsTests": 27,
+  "rustTests": 4,
+  "rustDoctests": 1,
+  "rustReadmeExampleChecked": true,
+  "goRaceAndVet": true,
+  "freshNpmCargoGoInstalls": true,
+  "installedMCPHandshakes": true,
+  "mixedTypeScriptConsumer": true,
+  "registryImagesVerified": {
+    "npm": 7,
+    "crates.io": 7,
+    "GitHub": 7
+  },
+  "nativeScreenshotDisplayHeight": 360,
+  "readmeFeatures": [
+    "Crabrix logo and original illustrations",
+    "Development, interviews, teaching and agent handoff",
+    "Typed Rust library and MCP configuration examples",
+    "Local execution permission infographic",
+    "Actual native and browser screenshots",
+    "Expiry, source limits and security boundaries",
+    "Absolute API, support, article and license links"
+  ]
+}

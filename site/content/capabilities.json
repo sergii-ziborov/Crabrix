@@ -157,8 +157,8 @@
         {
           "surface": "mcp",
           "state": "published",
-          "version": "0.3.2",
-          "profile": "Published crabrix npm library and stdio MCP server: ESM/CommonJS/TypeScript, encrypted temporary source, full snapshot, edit/view handoff, conditional edits, UTF-16 selections, creator closure and explicitly permitted local execution. Fourteen tools. The crabrix Rust crate is published on crates.io at 0.3.2; the tagged Go module and Rust binding embed the same local Node.js 22+ core. No backend compiler or host shell. Fixes option-like participant labels; qualified two-agent edits, selection, local Build/Run/Debug, foreign-job refusal and shared output without observer execution. ESM/CommonJS and programmatic MCP exports share one JS implementation and primary class/declaration identity.",
+          "version": "0.3.3",
+          "profile": "Published crabrix npm library and stdio MCP server: ESM/CommonJS/TypeScript, encrypted temporary source, full snapshot, edit/view handoff, conditional edits, UTF-16 selections, creator closure and explicitly permitted local execution. Fourteen tools. The crabrix Rust crate is published on crates.io at 0.3.3; the tagged Go module and Rust binding embed the same local Node.js 22+ core. No backend compiler or host shell. Fixes option-like participant labels; qualified two-agent edits, selection, local Build/Run/Debug, foreign-job refusal and shared output without observer execution. ESM/CommonJS and programmatic MCP exports share one JS implementation and primary class/declaration identity. Documentation release: expanded registry READMEs, Crabrix illustrations, actual editor captures and a checked Rust library example; runtime behavior unchanged.",
           "evidence": "docs/mcp-live-audit-2026-10-29.md"
         }
       ]

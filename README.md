@@ -7,10 +7,10 @@
 ## Standalone SDK — crabrix on npm, Rust and Go bindings
 
 The public [crabrix-sdk project](https://github.com/sergii-ziborov/crabrix-sdk)
-is independent of the phone app. [npm crabrix 0.3.2](https://www.npmjs.com/package/crabrix)
+is independent of the phone app. [npm crabrix 0.3.3](https://www.npmjs.com/package/crabrix)
 provides a JS/TypeScript library and fourteen-tool MCP server. The
 [Rust crate](https://crates.io/crates/crabrix) and tagged Go module are published
-at 0.3.2; all three CLI versions were installed from their public distribution
+at 0.3.3; all three CLI versions were installed from their public distribution
 and checked. The patch fixes option-like participant names and synchronizes
 Rust/Go embedded bridge bytes with the npm executable.
 All variants use a common local Node.js 22+ core, with explicit client-local
