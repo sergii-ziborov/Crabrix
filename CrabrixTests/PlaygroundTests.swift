@@ -31,6 +31,23 @@ final class PlaygroundModelTests: XCTestCase {
         XCTAssertEqual(try other.call(["type": "state", "snapshot": Array(restored), "events": []]).document, source)
         XCTAssertThrowsError(try PlaygroundEncryption.open(packet, secret: PlaygroundEncryption.newSecret()))
     }
+
+    func testNativeCodecKeepsSourceOriginsWithoutBrowserGlobalsAndRejectsCredentials() throws {
+        for url in ["https://github.com/octocat/Hello-World", "https://gist.github.com/example/0123456789abcdef", "https://play.rust-lang.org/?version=stable&edition=2024"] {
+            let source = PlaygroundDocument(name: "origin", entryFile: "main.rs", files: ["main.rs": "fn main() {}"], origin: .init(url: url))
+            let first = try PlaygroundCodec()
+            XCTAssertEqual(try first.initialize(source).document?.origin, source.origin)
+            let snapshot = try XCTUnwrap(try first.call(["type": "snapshot"]).snapshot)
+            let second = try PlaygroundCodec()
+            XCTAssertEqual(try second.call(["type": "state", "snapshot": snapshot, "events": []]).document?.origin, source.origin)
+        }
+        let codec = try PlaygroundCodec()
+        let invalid: [String: Any] = ["schemaVersion": 1, "name": "invalid", "entryFile": "main.rs", "edition": "2024", "files": ["main.rs": "fn main() {}"]]
+        for origin in ["https://user:password@github.com/repository", "https://evil.example/repository", "http://github.com/repository"] {
+            var document = invalid; document["origin"] = ["url": origin]
+            XCTAssertThrowsError(try codec.call(["type": "initialize", "document": document]))
+        }
+    }
     func testConcurrentEditsAndSelectionsUseStableTextPositions() throws {
         let first = try PlaygroundCodec(), second = try PlaygroundCodec()
         _ = try first.initialize(PlaygroundDocument(name: "merge", entryFile: "main.rs", files: ["main.rs": "hello 🦀 world"]))

@@ -13,6 +13,21 @@ const encoder = new TextEncoder();
 const forbidden = new Set(["node_modules", "target", ".git", ".github", ".cargo", "vendor"]);
 const allowed = /(?:\.rs|\.toml|\.lock|\.md|\.txt)$|^(?:LICENSE|NOTICE)$/i;
 
+function sourceOriginURL(value: string): string {
+  // The fixed native codec uses JavaScriptCore, which has no browser URL API.
+  // Its only fallback is a bounded Foundation validator for these source links;
+  // no URL fetching, filesystem access or project evaluation is exposed.
+  if (typeof URL === "function") {
+    const url = new URL(value);
+    if (url.protocol !== "https:" || !["github.com", "gist.github.com", "play.rust-lang.org"].includes(url.hostname) || url.username || url.password) throw new Error("Invalid source origin.");
+    return url.toString();
+  }
+  const validate = (globalThis as unknown as { __crabrixSourceOrigin?: (value: string) => string | null }).__crabrixSourceOrigin;
+  const normalized = validate?.(value);
+  if (typeof normalized !== "string" || normalized.length >= 1000) throw new Error("Invalid source origin.");
+  return normalized;
+}
+
 export function sourceBytes(files: Record<string, string>): number {
   return Object.values(files).reduce((sum, text) => sum + encoder.encode(text).byteLength, 0);
 }
@@ -41,9 +56,7 @@ export function validatePlaygroundDocument(input: unknown): PlaygroundDocument {
   if (value.origin && typeof value.origin === "object" && !Array.isArray(value.origin)) {
     const candidate = value.origin as Record<string, unknown>;
     if (typeof candidate.url === "string" && candidate.url.length < 1000) {
-      const url = new URL(candidate.url);
-      if (url.protocol !== "https:" || !["github.com", "gist.github.com", "play.rust-lang.org"].includes(url.hostname) || url.username || url.password) throw new Error("Invalid source origin.");
-      origin = { url: url.toString() };
+      origin = { url: sourceOriginURL(candidate.url) };
       if (typeof candidate.commit === "string" && /^[a-f0-9]{40}$/.test(candidate.commit)) origin.commit = candidate.commit;
     }
   }

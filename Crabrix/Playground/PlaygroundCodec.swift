@@ -29,6 +29,18 @@ final class PlaygroundCodec {
             return status == errSecSuccess ? result : []
         }
         context.setObject(random, forKeyedSubscript: "__crabrixRandom" as NSString)
+        let sourceOrigin: @convention(block) (String) -> String? = { value in
+            guard value.utf16.count < 1000, value.utf8.count < 4000,
+                  var parts = URLComponents(string: value), parts.scheme?.lowercased() == "https",
+                  let host = parts.host?.lowercased(), ["github.com", "gist.github.com", "play.rust-lang.org"].contains(host),
+                  parts.user == nil, parts.password == nil else { return nil }
+            parts.scheme = "https"; parts.host = host
+            if parts.port == 443 { parts.port = nil }
+            if parts.percentEncodedPath.isEmpty { parts.path = "/" }
+            guard let normalized = parts.url?.standardized.absoluteString, normalized.utf16.count < 1000 else { return nil }
+            return normalized
+        }
+        context.setObject(sourceOrigin, forKeyedSubscript: "__crabrixSourceOrigin" as NSString)
         context.evaluateScript(try String(contentsOf: url, encoding: .utf8))
         guard context.exception == nil else { throw PlaygroundFailure("Could not initialize the bundled collaboration codec.") }
     }
