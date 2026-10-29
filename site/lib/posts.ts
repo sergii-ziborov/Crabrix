@@ -22,6 +22,7 @@ export type Post = {
     codeLanguage?: string;
     image?: PostImage;
     sources?: { title: string; url: string }[];
+    links?: { title: string; url: string }[];
   }[];
 };
 

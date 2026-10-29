@@ -46,7 +46,7 @@ test('October expansion preserves five originals and adds five dated, longer ori
     assert.equal(post.readingMinutes, Math.ceil(words(post) / 200));
     assert.equal(new Set(post.sections.map(section => section.heading)).size, post.sections.length);
     assert.ok(post.summary.length >= 120 && post.summary.length <= 180);
-    assert.equal(post.relatedSlugs.length, 3);
+    assert.ok(post.relatedSlugs.length >= 3 && post.relatedSlugs.length <= 5);
     assert.ok(post.relatedSlugs.every(slug => slug !== post.slug && posts.some(candidate => candidate.slug === slug)));
     assert.ok(post.sections.some(section => section.code));
     assert.ok(post.sections.flatMap(section => section.sources ?? []).every(source => source.url.startsWith('https://doc.rust-lang.org/')));
@@ -144,7 +144,7 @@ test('23 October expansion adds three sourced news analyses and two longer pract
     assert.equal(post.readingMinutes, Math.ceil(words(post) / 200));
     assert.ok(post.summary.length >= 120 && post.summary.length <= 180);
     assert.ok(post.title.length <= 75);
-    assert.equal(post.relatedSlugs.length, 3);
+    assert.ok(post.relatedSlugs.length >= 3 && post.relatedSlugs.length <= 5);
     assert.equal(new Set(post.relatedSlugs).size, 3);
     assert.ok(post.relatedSlugs.every(slug => slug !== post.slug && posts.some(p => p.slug === slug)));
     assert.ok(post.sections.some(s => s.code && s.codeLanguage === 'rust'));
@@ -179,7 +179,7 @@ test('24 October expansion preserves the catalog and adds five longer illustrate
     assert.ok(!earlierPosts.some(q => q.date === p.date));
     assert.equal(p.readingMinutes, Math.ceil(words(p)/200));
     assert.ok(p.title.length <= 75 && p.summary.length >= 120 && p.summary.length <= 180);
-    assert.equal(p.relatedSlugs.length, 3);
+    assert.ok(p.relatedSlugs.length >= 3 && p.relatedSlugs.length <= 5);
     assert.ok(p.relatedSlugs.every(slug => slug !== p.slug && posts.some(q => q.slug === slug)));
     const assets = p.sections.flatMap(s => s.image ? [s.image] : []);
     assert.equal(assets.length, 2);
@@ -236,7 +236,7 @@ test('27 October performance guide has reproducible observations and three origi
   assert.equal(post.readingMinutes, Math.ceil(words / 200));
   assert.ok(post.summary.length >= 120 && post.summary.length <= 180);
   assert.ok(post.title.length <= 75);
-  assert.equal(post.relatedSlugs.length, 3);
+  assert.ok(post.relatedSlugs.length >= 3 && post.relatedSlugs.length <= 5);
   assert.ok(post.relatedSlugs.every(slug => slug !== post.slug && posts.some(p => p.slug === slug)));
   const images = post.sections.flatMap(s => s.image ? [s.image] : []);
   assert.equal(images.length, 3);

@@ -1,0 +1,31 @@
+{
+  "mode": "built-in image_gen; new generation; opaque background",
+  "assets": [
+    {
+      "asset": "site/public/blog/rust-maintainer-funding-editorial.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-28859732-1c66-4148-92ed-775c59207cab.png",
+      "sha256": "fce27e0bc4ff685d42ef3d566f42cab8550e44f9a4b89be950d256eca7a11e5c",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "asset": "site/public/blog/rust-maintainer-funding-infographic.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-31a1f7ab-08d4-46dd-8350-393426e315c2.png",
+      "sha256": "1f0bcb872b0572ae6cf7179ed911378ba08152dfe5a4adbcd6a12288ab5b0436",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "asset": "site/public/blog/rust-maintainer-funding-workshop.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-cf0b7f84-015b-488b-b3c0-bf894579e0d1.png",
+      "sha256": "0894ce465b46cdf1d231df08c29dbde36c2bebd7581df6305f0c4e9e72dc7f42",
+      "width": 1536,
+      "height": 1024
+    }
+  ],
+  "prompts": [
+    "Landscape 1536x1024 premium tactile 3D editorial: navy workshop, friendly orange-coral Crabrix crab with raised black eyes supports a bridge of jade-glass modular blocks; brass articulated lamps and blank review cards. Craft and maintenance rather than money. No text, logos, numbers or watermark.",
+    "Landscape 1536x1024 infographic, dark navy, cream typography, brass connectors, jade and coral. Title: What Rust maintenance needs. Four equal cards: SUPPORT / Funding or paid contribution time; MAINTAINER TIME / Triage, design and mentoring; REVIEWS + TESTS / Small, reproducible changes; RELIABLE RELEASES / Evidence, not promises. Return arrow: Clear bug reports improve the next cycle. Friendly orange crab at bottom left. Conceptual workflow, no statistics, dates, currency or logos.",
+    "Landscape 1536x1024 premium tactile 3D editorial, same orange crab, navy and brass and jade workshop. Crab reduces tangled blank paper strips to one neat cream test card; magnifier, notebook, laptop with abstract unreadable code. No words, legible code, logos or watermark."
+  ]
+}

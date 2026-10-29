@@ -1,5 +1,253 @@
 [
   {
+    "slug": "rust-maintainer-funding-support-code-you-depend-on",
+    "title": "Rust maintainer funding: support the code you depend on",
+    "date": "2026-10-29",
+    "summary": "Rust’s October funding news, explained with a practical workflow for dependency mapping, reproducible bug reports, focused tests and useful contributions.",
+    "relatedSlugs": [
+      "rust-dependency-graphs-deterministic-plans",
+      "testing-rust-boundaries-fixtures-doctests",
+      "rust-infrastructure-q3-2026-registry-resilience"
+    ],
+    "sections": [
+      {
+        "heading": "The October news, and the practical question it raises",
+        "paragraphs": [
+          "On 26 October 2026, the Rust Funding team published guidance on supporting contributors. It describes three routes: general maintenance through the Rust Foundation Maintainers Fund or RustNL Maintainers Team, specific Rust Project Goals seeking funding, and individual contributors through their own sponsorship channels. Companies can also make paid employee time available for contributions. This article was published on 29 October; the announcement itself is three days earlier.",
+          "For a developer, the useful question is what to do next. Your application depends on more than the functions you import. Someone investigates confusing diagnostics, reviews a dependency update, checks whether a regression is real, and keeps a test useful as the surrounding implementation changes. Those tasks rarely appear in an application's feature list. You still notice when they stop happening.",
+          "Here is a practical approach: identify one dependency or tool you rely on, understand one maintenance bottleneck, and choose a contribution that reduces it. That contribution might be funding, a focused regression test, a documentation correction, or a well prepared report. The following workflow is our engineering advice, with official references where the underlying tools or programmes matter."
+        ],
+        "image": {
+          "src": "/blog/rust-maintainer-funding-editorial.png",
+          "alt": "Orange Crabrix crabs maintaining a bridge of glass blocks in a warm workshop",
+          "caption": "Maintenance connects the pieces that our Rust programs depend on.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "Rust Funding team: How to fund Rust contributors",
+            "url": "https://blog.rust-lang.org/2026/10/26/how-to-fund-rust-contributors/"
+          }
+        ]
+      },
+      {
+        "heading": "Separate general maintenance from a specific outcome",
+        "paragraphs": [
+          "Start by writing down what you want to support. “Our team relies on Rust” and “we need this particular compiler improvement” describe different decisions. General maintenance leaves room for maintainers to prioritise work across a project. A specific goal needs a narrower conversation about ownership, milestones, review capacity, and what happens after an initial implementation.",
+          "The Rust Project Goals funding page distinguishes goals seeking funding, partially funded goals, and funded goals. Its entries provide contacts for individual initiatives. Read the current entry rather than assuming that a familiar feature name still needs the same kind of help. Funding status can change after this article is published.",
+          "Treat money, implementation, review, and release readiness as separate states in your own notes. A funded proposal is not evidence that an API is available in stable Rust. Before using a feature, check the relevant release documentation and your actual supported toolchain. Likewise, sponsoring an individual should not be interpreted as buying control over a project's roadmap. Agree on expectations through the channel that the recipient actually offers."
+        ],
+        "image": {
+          "src": "/blog/rust-maintainer-funding-infographic.png",
+          "alt": "Rust maintenance infographic connecting support, maintainer time, reviews and tests, and reliable releases",
+          "caption": "A conceptual maintenance cycle, not a statistical chart or a promise about delivery dates.",
+          "width": 1536,
+          "height": 1024
+        },
+        "sources": [
+          {
+            "title": "Rust Project Goals: funding opportunities",
+            "url": "https://goals.rust-lang.org/2026/funding.html"
+          }
+        ]
+      },
+      {
+        "heading": "Map the dependencies behind one real workflow",
+        "paragraphs": [
+          "Pick a workflow that matters to your users: importing a project, parsing a configuration file, generating a page, or compiling an example. List the direct crates involved and identify which tools sit beneath them. Keep the list small enough that a colleague can read it in a few minutes. The purpose is to understand a dependency relationship, not to produce a ranking of every open source project you have ever used.",
+          "On a desktop Cargo installation, `cargo tree` helps inspect the resolved dependency graph. An inverted tree can show why a particular package is present, while the feature view helps explain which feature edges selected additional functionality. Replace the package placeholder in the commands below with a real package name from your project.",
+          "Add one sentence beside each important component: what breaks for your users if it stops working? This makes the next action concrete. A parser with an unresolved compatibility problem may need a reproducer. A crate whose documentation leaves newcomers guessing may need a minimal example. Neither conclusion follows from download counts alone.",
+          "Include tooling in that inventory. A build failure can originate in the compiler, a package resolver, generated code, or a platform assumption rather than the crate whose name appears last in an error. Trace the step that failed before deciding where to report it. If the problem reproduces only with a particular target, keep that target in the example and explain why it matters. A dependency map becomes useful when it guides an investigation, rather than merely decorating a dashboard."
+        ],
+        "code": "cargo tree\ncargo tree -i PACKAGE_NAME\ncargo tree -e features",
+        "codeLanguage": "shell",
+        "sources": [
+          {
+            "title": "Cargo Book: cargo tree",
+            "url": "https://doc.rust-lang.org/cargo/commands/cargo-tree.html"
+          }
+        ],
+        "links": [
+          {
+            "title": "Understand dependency kinds",
+            "url": "/learn/projects/dependency-kinds/"
+          },
+          {
+            "title": "Inspect deterministic dependency plans",
+            "url": "/blog/rust-dependency-graphs-deterministic-plans/"
+          }
+        ]
+      },
+      {
+        "heading": "Look for friction you can describe precisely",
+        "paragraphs": [
+          "An issue count by itself tells you little about what a project needs. Instead, notice the friction you have personally encountered. Perhaps an error message lacks the failing filename. Perhaps an example assumes a feature flag that its manifest never enables. Perhaps a test fails only when input contains non-ASCII text. Each observation gives you a starting point that can be checked.",
+          "Write a short problem statement before proposing a solution. Include what you attempted, what happened, and what you expected. If you cannot distinguish those three things yet, investigate further. A clear question is often more useful than an elaborate patch built on a mistaken assumption.",
+          "Search for an existing report and read the project's contribution guidance. Rust Forge recommends starting with small changes and discussing substantial work with the relevant team first. Follow the guide for the actual repository you are changing: the compiler, Cargo, and a third-party crate can have different processes. Understanding that process is part of making your work easy to review."
+        ],
+        "sources": [
+          {
+            "title": "Rust Forge: starting to contribute",
+            "url": "https://forge.rust-lang.org/how-to-start-contributing.html"
+          }
+        ]
+      },
+      {
+        "heading": "Make the smallest example that still explains the problem",
+        "paragraphs": [
+          "Suppose your own application accepts a batch size from a text field. You want surrounding whitespace to be accepted, but negative numbers and values outside the range of `u32` to fail. The following code is an intentionally small example of that contract. It does not demonstrate a discovered Rust or Cargo defect.",
+          "The important step is choosing observable behaviour. The happy path says more than “parsing works”: it says that trimming is part of our application's input policy. The rejection test names two different boundaries. A reviewer can now discuss that policy without reading a screen controller, a database adapter, or a deployment configuration.",
+          "If this were a real bug report, remove everything that does not affect the failure. Keep the relevant manifest and feature configuration when dependencies matter. Include an exact input and expected result. If reducing the project makes the failure disappear, that is useful information: restore one difference at a time. A reproducer is a tool for discovering the necessary conditions, not just a smaller attachment."
+        ],
+        "code": "use std::num::ParseIntError;\n\nfn parse_batch_size(raw: &str) -> Result<u32, ParseIntError> {\n    raw.trim().parse()\n}\n\n#[cfg(test)]\nmod tests {\n    use super::parse_batch_size;\n\n    #[test]\n    fn accepts_surrounding_whitespace() {\n        assert_eq!(parse_batch_size(\" 64\\n\"), Ok(64));\n    }\n\n    #[test]\n    fn rejects_negative_and_overflowing_values() {\n        for input in [\"-1\", \"4294967296\"] {\n            assert!(parse_batch_size(input).is_err(), \"input: {input}\");\n        }\n    }\n}\n\nfn main() {\n    println!(\"{:?}\", parse_batch_size(\" 64\\n\"));\n}",
+        "image": {
+          "src": "/blog/rust-maintainer-funding-workshop.png",
+          "alt": "Orange Crabrix crab reducing a tangled problem to a small reproducible test case",
+          "caption": "A small, clear reproducer gives a maintainer something concrete to investigate.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Work with Option and Result",
+            "url": "/learn/basics/option-result/"
+          },
+          {
+            "title": "Design useful error context",
+            "url": "/learn/projects/error-context/"
+          }
+        ]
+      },
+      {
+        "heading": "Turn that contract into a repeatable check",
+        "paragraphs": [
+          "On a desktop with Cargo, place the example in a small binary crate and run `cargo test`. To investigate one test, use its name as a filter. If output is relevant to the failure, `-- --nocapture` passes the output option to the test harness. Save the command you actually used, not a larger command copied from another issue.",
+          "A regression test should fail for the reason you are trying to fix. Temporarily restore the previous behaviour to check that the new test catches it. Otherwise, a passing test may simply exercise an unrelated path. Keep assertions about behaviour separate from incidental formatting unless formatting is itself the contract.",
+          "The commands here describe desktop Cargo; they do not imply that every Cargo subcommand or external dependency runs in the browser or in the limited MCP execution profile. A small standard-library example can be explored locally in Crabrix, while a repository-specific test suite may require a supported desktop environment. Record where a result came from. That distinction makes a shared example more useful and avoids turning an unverified assumption into a claim of compatibility."
+        ],
+        "code": "cargo test\ncargo test accepts_surrounding_whitespace\ncargo test -- --nocapture",
+        "codeLanguage": "shell",
+        "sources": [
+          {
+            "title": "Cargo Book: cargo test",
+            "url": "https://doc.rust-lang.org/cargo/commands/cargo-test.html"
+          }
+        ],
+        "links": [
+          {
+            "title": "Choose the right Rust test",
+            "url": "/learn/projects/testing/"
+          },
+          {
+            "title": "Test at integration boundaries",
+            "url": "/learn/projects/integration-tests/"
+          },
+          {
+            "title": "Build better fixtures and doctests",
+            "url": "/blog/testing-rust-boundaries-fixtures-doctests/"
+          }
+        ]
+      },
+      {
+        "heading": "Capture context without attaching your whole environment",
+        "paragraphs": [
+          "A useful report needs enough context to distinguish an application mistake from a dependency or toolchain issue. For desktop compiler investigations, record `rustc -Vv`, the relevant target, the exact build command, and the feature selection that triggers the problem. Include whether the failure happens in a fresh checkout. Where a lockfile matters, explain which resolved dependency set you used.",
+          "Do not paste an entire environment dump. It can expose tokens, local paths, or unrelated business information while making the report harder to read. Prepare a separate reproducer directory, inspect the files you intend to share, and replace private inputs with synthetic data that preserves the failure.",
+          "If the issue involves performance, separate an initial build from a repeated build. Describe the machine and test conditions, and repeat the measurement before reporting a confident improvement. “It felt faster” is a useful observation for your notebook, but a weak basis for an upstream performance claim. The same habit applies to our own compiler work: a simulator measurement and an iPhone measurement answer different questions."
+        ],
+        "links": [
+          {
+            "title": "Understand lockfiles and reproducibility",
+            "url": "/learn/projects/lockfile-reproducibility/"
+          },
+          {
+            "title": "Measure Rust performance carefully",
+            "url": "/blog/rust-performance-measure-before-optimizing/"
+          }
+        ]
+      },
+      {
+        "heading": "Review capacity is a dependency too",
+        "paragraphs": [
+          "A finished patch is only one stage of a change. Someone must understand its motivation, check the behaviour it replaces, think about unsupported cases, and decide whether it fits the project. You can reduce that work by keeping the diff focused and explaining the test that demonstrates the result. Avoid mixing a bug fix with unrelated renaming or a new abstraction unless they are necessary to make the fix understandable.",
+          "This is also why maintenance announcements deserve attention. The Cargo team's September announcement introduced Scott Schafer as a full-time Maintainer in Residence, with work spanning maintenance and the project's existing backlog. The Foundation's June Maintainers Fund announcement describes support for tasks including review, mentoring, and triage. These are concrete examples of work that sits around a feature implementation.",
+          "For your own contribution, ask what would make review easier. Can you split an independent documentation correction out of a larger change? Can you explain why a seemingly simpler fix fails? Can you write the missing boundary test? Answering those questions gives reviewers something useful even before a patch is accepted."
+        ],
+        "sources": [
+          {
+            "title": "Cargo: Maintainer in Residence announcement",
+            "url": "https://blog.rust-lang.org/2026/09/22/announcing-a-maintainer-in-residence-scott-schafer-for-the-cargo-team/"
+          },
+          {
+            "title": "Rust Foundation Maintainers Fund announcement",
+            "url": "https://blog.rust-lang.org/2026/06/02/launching-the-rust-foundation-maintainers-fund/"
+          }
+        ]
+      },
+      {
+        "heading": "Documentation can remove the next support request",
+        "paragraphs": [
+          "After a fix, ask whether the next developer could avoid the same confusion. A short example can show the intended configuration, the returned error, or the difference between two similar APIs. Put assumptions next to the code that depends on them. If the example needs an optional feature, name it before the reader copies the snippet.",
+          "In your own crate, consider making important documentation examples executable. That gives a future change a chance to expose stale code. Choose examples that communicate one idea clearly; a large demonstration application can obscure the rule that a learner needs to understand. Keep the prose and the assertion aligned so that the test checks what the explanation promises.",
+          "A documentation contribution is especially useful when it records something you had to discover experimentally. Write down the missing step while the confusion is fresh, then check it from a clean starting point. Ask another person to follow the instructions if possible. Their first question often reveals an assumption that has become invisible to you.",
+          "For a tutorial, distinguish a deliberately failing example from a complete working program. Tell the reader what the compiler is expected to reject and which change makes it valid. Check that a nearby explanation still matches the actual snippet after editing. This is a simple review task that a newcomer can contribute confidently: compare the stated behaviour, the example, and the observed result, then report a precise mismatch with enough context for someone else to reproduce it."
+        ],
+        "links": [
+          {
+            "title": "Write executable documentation",
+            "url": "/learn/projects/doc-examples/"
+          },
+          {
+            "title": "Select portable Cargo features",
+            "url": "/blog/cargo-features-portable-dependencies/"
+          }
+        ]
+      },
+      {
+        "heading": "Give a team a small, owned maintenance routine",
+        "paragraphs": [
+          "For a team using Rust professionally, make the next action small enough to schedule. Choose one dependency, one owner, and one outcome for the next iteration. An outcome might be a verified upstream report, a reviewed documentation patch, or a conversation about a funding programme. Avoid an open-ended instruction to “help open source”; it leaves the difficult prioritisation work to whoever happens to have spare time.",
+          "Keep a short record of what changed: the issue link, the reproducer revision, the test result, and any follow-up requested by the maintainer. Do not measure success only by merged pull requests. A report closed because the behaviour was intentional can still improve your own design and documentation. A careful reproduction that rules out a suspected regression can save a team from making the wrong change.",
+          "For funding, use the project's official current channels and the recipient's stated process. Revisit the decision periodically as your dependencies and needs change. The engineering purpose is sustained attention to something you depend on, with realistic expectations about what your contribution can achieve."
+        ],
+        "sources": [
+          {
+            "title": "Rust Foundation on GitHub Sponsors",
+            "url": "https://github.com/sponsors/rustfoundation"
+          },
+          {
+            "title": "RustNL Maintainers Team",
+            "url": "https://rustnl.org/maintainers/"
+          }
+        ]
+      },
+      {
+        "heading": "Try the workflow with a Crabrix Playground",
+        "paragraphs": [
+          "Choose a small example from a lesson or from your own learning project. State its intended behaviour, reduce the input to the interesting boundary, and run it locally. If you need help understanding a value, use the local debugger for the supported example. Preserve the original source and compare the result after each change rather than editing several assumptions at once.",
+          "A temporary Crabrix Playground link is useful for discussing source with another person. Its expiry should be part of the handover: tell your collaborator when the room ends, and save a local copy if the example matters beyond that time. Shared output reports what another client observed; it is not proof that the same code has run on your device. Run your own check when that distinction matters.",
+          "The useful result is a small package of evidence: a clear question, readable source, a known input, and an observed outcome. That habit helps with learning, interviews, and upstream contributions alike. Pick one dependency this week and leave its next maintainer with a little less uncertainty to resolve."
+        ],
+        "links": [
+          {
+            "title": "Open the local Rust Playground",
+            "url": "/playground/"
+          },
+          {
+            "title": "Read the sharing and local execution guide",
+            "url": "/guide/#playground"
+          },
+          {
+            "title": "Learn about local MCP controls",
+            "url": "/playground/mcp/"
+          }
+        ]
+      }
+    ],
+    "readingMinutes": 11
+  },
+  {
     "slug": "rust-performance-measure-before-optimizing",
     "title": "Rust performance: measure before you optimize",
     "date": "2026-10-27",
@@ -2214,6 +2462,7 @@
       }
     ],
     "relatedSlugs": [
+      "rust-maintainer-funding-support-code-you-depend-on",
       "rust-enums-state-machines",
       "cargo-features-portable-dependencies",
       "result-errors-that-help"
@@ -3442,6 +3691,7 @@
     "date": "2026-10-08",
     "summary": "Implement a deterministic topological planner in Rust, reject missing dependencies, and report a real cycle witness without blaming every blocked package.",
     "relatedSlugs": [
+      "rust-maintainer-funding-support-code-you-depend-on",
       "cargo-build-scripts-generated-code",
       "rust-hashmap-entry-stable-reports",
       "rust-memoization-cache-contracts"

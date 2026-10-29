@@ -64,6 +64,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             <figcaption>{section.image.caption}</figcaption>
           </figure>}
           {section.sources && <p className="article-sources">Sources: {section.sources.map((source, index) => <span key={source.url}>{index > 0 && " · "}<a href={source.url}>{source.title}</a></span>)}</p>}
+          {section.links && <p className="article-sources">Explore in Crabrix: {section.links.map((link, index) => <span key={link.url}>{index > 0 && " · "}<Link href={link.url}>{link.title}</Link></span>)}</p>}
         </section>)}
         <p><Link href="/learn">Explore the free Crabrix lessons →</Link></p>
         {related.length > 0 && <aside className="article-related" aria-label="Related Rust guides">

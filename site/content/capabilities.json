@@ -9,9 +9,9 @@
     },
     "testFlightApp": {
       "version": "1.1.3",
-      "build": "119",
-      "sourceCommit": "853ea3e932d11f3b2eee0bfeddc5378e6dcc7564",
-      "evidence": "docs/app-store/release-1.1.3-build119.json"
+      "build": "120",
+      "sourceCommit": "b842d20c8e46b7346e24c5d51a0c3eb843527c4e",
+      "evidence": "docs/app-store/release-1.1.3-build120.json"
     }
   },
   "capabilities": [
@@ -52,7 +52,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (119)",
+          "version": "1.1.3 (120)",
           "profile": "Source checkpoints; bounded String/Vec/concrete-struct previews; active async polls. No DWARF or arbitrary watch expressions."
         },
         {
@@ -70,7 +70,7 @@
           "surface": "ios",
           "state": "testflight",
           "profile": "Selected executable or rlib entry; distinct from Check and Run. Terminal cargo build does not invoke main; bounded supported build scripts remain compile-time work.",
-          "version": "1.1.3 (119)"
+          "version": "1.1.3 (120)"
         }
       ]
     },
@@ -94,7 +94,7 @@
           "surface": "ios",
           "state": "testflight",
           "profile": "Original bundled TypeScript 5.9.3 and 100 ES/DOM declarations in a disposable read-only WebKit Worker. Actual TS/TSX/MTS/CTS diagnostics; supported browser tsconfig and prepared original dependency types. Explicit type preparation; Check/Run never download. Run bundles independently. No project JS, Node/Bun, plugins or scripts execute during Check; no backend.",
-          "version": "1.1.3 (119)"
+          "version": "1.1.3 (120)"
         }
       ],
       "limits": {
@@ -146,7 +146,7 @@
           "surface": "ios",
           "state": "testflight",
           "profile": "20 optional signed sections; 400 source-bound recordings for 600 Atlas steps. Offline native replay, exact data inspection and personal editable copies with real local Run/Debug. Recordings do not execute changed code.",
-          "version": "1.1.3 (119)"
+          "version": "1.1.3 (120)"
         }
       ]
     },
@@ -170,7 +170,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (119)",
+          "version": "1.1.3 (120)",
           "profile": "Format-3 file inventory; supported hidden files; visible save outcomes, retry and raw recovery/source exports. Full Git history and opaque resources use the separate .crabrixrepo format."
         }
       ],
@@ -187,7 +187,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (119)",
+          "version": "1.1.3 (120)",
           "profile": "Real bundled libtest, isolated single-threaded WASM guests, discovery/filter/Stop and source-bound results. Ignored tests skipped; should_panic unsupported in panic-abort profile. No integration targets, dev-dependencies or doctests."
         }
       ]
@@ -199,7 +199,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (119)",
+          "version": "1.1.3 (120)",
           "profile": "Pinned real rustfmt WASI, file/project/check mode, edition/root scalar config subset, atomic revision-checked replacement and Undo. No user Rust execution or network."
         }
       ],
@@ -216,7 +216,7 @@
           "surface": "ios",
           "state": "testflight",
           "profile": "libgit2 1.9.7; status/diff/selected commits/history/restore/branches; GitHub HTTPS clone/fetch, clean fast-forward pull and explicit non-force push; private access in device-only Keychain. No SSH/LFS/submodules/rebase or arbitrary hooks.",
-          "version": "1.1.3 (119)"
+          "version": "1.1.3 (120)"
         }
       ],
       "evidence": "docs/git-https-portability-2026-10-28.md"
@@ -229,7 +229,7 @@
           "surface": "ios",
           "state": "testflight",
           "profile": ".crabrixrepo: actual commit IDs, refs, worktree bytes and modes; new local identity on import; validated inventory/objects/config. Package caches and credentials excluded. Opaque resources participate in local build/Debug cache identity.",
-          "version": "1.1.3 (119)"
+          "version": "1.1.3 (120)"
         }
       ],
       "limits": {
@@ -246,7 +246,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (119)",
+          "version": "1.1.3 (120)",
           "profile": "Bundled import-free rust-analyzer Worker; definitions, scoped project references, types/signatures, actual-type completion, import previews and semantic rename. Prepared source graph; exact revision/ABA guards, full-tree Undo and Stop. No external proc macros or generated-source analysis; no backend."
         }
       ],
@@ -266,7 +266,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (119)",
+          "version": "1.1.3 (120)",
           "profile": "Read-only entry/target/edition/current exact Cargo graph, features and fingerprints. Distinct source/resource/compiler-bound Check/Build/Run/Debug evidence; unknown results stay unverified. Known manifest/profile gates before compilation; retryable compiler failures. Cargo feature diff and durable original-manifest backup; no implicit downloads."
         }
       ],
@@ -279,7 +279,7 @@
         {
           "surface": "ios",
           "state": "testflight",
-          "version": "1.1.3 (119)",
+          "version": "1.1.3 (120)",
           "profile": "Shared edits/deletions apply to room files while retaining unshared .cargo, vendor, node_modules, .github, target and Git text roots. Combined file-budget failure disconnects without replacing local source. Native codec validates GitHub, Gist and Rust Playground origin metadata without browser globals."
         }
       ],
@@ -296,8 +296,8 @@
         },
         {
           "surface": "ios",
-          "state": "candidate",
-          "version": "1.1.3 (120 candidate)",
+          "state": "testflight",
+          "version": "1.1.3 (120)",
           "profile": "Isolated shared text; no private files/resources/packages, host environment/stdin or implicit downloads. Own results do not certify the saved full project or award lesson progress; passive reports cannot execute."
         }
       ],
@@ -311,5 +311,5 @@
       "evidence": "docs/playground-mcp-local-runtime-qualification-2026-10-29.json"
     }
   ],
-  "verifiedAtUTC": "2026-10-29T02:17:10.236534+00:00"
+  "verifiedAtUTC": "2026-10-29T07:35:13.740916+00:00"
 }
