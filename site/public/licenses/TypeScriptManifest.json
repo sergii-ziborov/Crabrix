@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "version": "5.9.3",
+  "candidateOnly": false,
+  "archiveSHA256": "10e108c9cf7d5f2879053dff18515fb405abf2ccef63eaaf017d9c571687a1d3",
+  "standardLibraries": 100,
+  "files": {
+    "compiler.js": {
+      "bytes": 9112572,
+      "sha256": "3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675"
+    },
+    "host.js": {
+      "bytes": 1836,
+      "sha256": "5c70cc81ea2a52ef83ae84204e71ffacd0b566964efba61e09dd81ae6eaf2a32"
+    },
+    "index.html": {
+      "bytes": 147,
+      "sha256": "8256e9c14d5d6375c1ba5443c90918883fd3a16c817224b0ac1dfa07d5a75b10"
+    },
+    "library.json": {
+      "bytes": 3217969,
+      "sha256": "8843742bf056985266c3eeef11b3f3d8afff3dd3464c39e44fc442113a523351"
+    },
+    "worker.js": {
+      "bytes": 7777,
+      "sha256": "22148b2345f1f57e9eb16394ebd910c2fd369133dea03122a264002583dcd046"
+    }
+  },
+  "notices": {
+    "LICENSE.txt": {
+      "bytes": 9197,
+      "sha256": "a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47"
+    },
+    "ThirdPartyNoticeText.txt": {
+      "bytes": 37824,
+      "sha256": "1af3c68039c57e539422da82a4faada506ce6d0ea6f90e0b699d02dbcdb7a90c"
+    },
+    "TypeScriptNoticeIndex.json": {
+      "bytes": 311,
+      "sha256": "ee29df1928788f6ead2962249f480e481730a290ae6603d644b5165fe36b48d9"
+    },
+    "TypeScriptNotices.zip": {
+      "bytes": 15076,
+      "sha256": "fa6f17d5cb0230b3768b259cd5490460125a6098ab8dbc7f0a12dd36b631b3d4"
+    }
+  }
+}

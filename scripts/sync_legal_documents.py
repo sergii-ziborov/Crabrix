@@ -113,6 +113,20 @@ def outputs():
         entry = next(e for e in entries if e["id"] == identity)
         if "version" in pin["state"] and pin["state"]["version"] not in entry["name"]:
             raise ValueError(f"License catalog does not match resolved version: {identity}")
+    typescript = ROOT / "Crabrix/Resources/TypeScriptCore"
+    typescript_manifest = json.loads((typescript / "manifest.json").read_text())
+    entries.insert(0, {"id": "typescript-checker", "name": "TypeScript 5.9.3 · local type checker",
+                       "summary": "Microsoft and contributors · original Apache-2.0 license and third-party notices",
+                       "documents": ["TypeScript-LICENSE", "TypeScript-ThirdPartyNoticeText"]})
+    for original, exported in [("LICENSE.txt", "TypeScript-LICENSE.txt"),
+                               ("ThirdPartyNoticeText.txt", "TypeScript-ThirdPartyNoticeText.txt"),
+                               ("TypeScriptNotices.zip", "TypeScriptNotices.zip")]:
+        data = (typescript / original).read_bytes()
+        expected = typescript_manifest["notices"][original]
+        if len(data) != expected["bytes"] or hashlib.sha256(data).hexdigest() != expected["sha256"]:
+            raise ValueError(f"Pinned TypeScript notice changed: {original}")
+        generated[ROOT / "site/public/licenses" / exported] = data
+    generated[ROOT / "site/public/licenses/TypeScriptManifest.json"] = (typescript / "manifest.json").read_text()
     generated[ROOT / "site/content/license-index.json"] = json.dumps(entries, indent=2) + "\n"
     formatter = ROOT / "Crabrix/Resources/RustTools"
     formatter_manifest = json.loads((formatter / "manifest.json").read_text())

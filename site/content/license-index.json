@@ -1,5 +1,14 @@
 [
   {
+    "id": "typescript-checker",
+    "name": "TypeScript 5.9.3 \u00b7 local type checker",
+    "summary": "Microsoft and contributors \u00b7 original Apache-2.0 license and third-party notices",
+    "documents": [
+      "TypeScript-LICENSE",
+      "TypeScript-ThirdPartyNoticeText"
+    ]
+  },
+  {
     "id": "libgit2",
     "name": "libgit2 1.9.7 \u00b7 local Git",
     "summary": "libgit2 contributors \u00b7 GPLv2 with upstream linking exception; complete source and dependency notices below",
