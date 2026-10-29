@@ -18,3 +18,7 @@ never compiles or executes source.
 Canonical/social metadata, BlogPosting word counts, responsive image delivery,
 related articles, course links and sitemap entries use existing site machinery.
 Publication date for both guides is the actual delivery date, not a backfill.
+
+Both articles and all image variants are published on https://crabrix.com/; the
+806-URL sitemap includes their canonical URLs. Production browser checks passed
+at phone, tablet and desktop widths in light/dark appearances.

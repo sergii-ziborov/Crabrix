@@ -1,0 +1,30 @@
+{
+  "site": "https://crabrix.com",
+  "publishedAt": "2026-10-29T15:54:29Z",
+  "sourceCommit": "776c9b2ddfbffb092b769076f430bc134cf94cbb",
+  "image": "localhost/crabrix-web-site:sdk-776c9b2",
+  "imageDigest": "018a89f04f844c279450d7891c7d5c5e109b55fa1c1d8f694389525d0cd54cc2",
+  "sourceTreeSHA256": "c63c6d774f80df406801d3537a8b715fd0858c0686227b73e397493cb5c2a0fc",
+  "health": "healthy",
+  "rollbackContainer": "crabrix-web-site-before-sdk-20261029",
+  "accountBackup": "Created using existing seven-day retention process before replacement",
+  "accountMountPreserved": true,
+  "candidateBrowserCases": 30,
+  "productionBrowserCases": 30,
+  "sitemapURLs": 806,
+  "sitemapPagesPassed": 806,
+  "extraLinkedTargets": 71,
+  "brokenInternalLinks": 0,
+  "brokenFragments": 0,
+  "duplicateTitles": 0,
+  "duplicateDescriptions": 0,
+  "invalidJSONLD": 0,
+  "responsiveImages": true,
+  "npmArchiveSHA256": "bd8bb4cbbd963f8168be675d6c9886ea242b02b24089579110553359adb830b7",
+  "appSelectionUnchanged": {
+    "version": "1.1.3",
+    "build": "120",
+    "sourceCommit": "b842d20c8e46b7346e24c5d51a0c3eb843527c4e"
+  },
+  "cratesIO": "Pending maintainer credential; no successful registry publication claimed"
+}

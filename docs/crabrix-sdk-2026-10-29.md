@@ -81,4 +81,4 @@ Site TypeScript, all 36 site tests, production build and 30 responsive/theme
 browser cases passed. Updated pages have one H1/canonical, working images and
 links, matching article word counts/JSON-LD and no page overflow. MCP setup and
 SDK cards retain equal widths/heights. The sitemap now contains 806 canonical
-URLs, including both articles. Final production deployment is recorded separately.
+URLs, including both articles. Published to the existing Hetzner site at 2026-10-29T15:54:29Z with the previous container retained for rollback and a fresh account backup. The account mount and selected app build were preserved. All 806 sitemap pages passed the public metadata crawl; another 71 linked targets resolved without errors. No duplicate titles/descriptions, broken internal fragments, missing image alt text or invalid JSON-LD were found. All 30 responsive/theme cases also passed against production. [Deployment receipt](sdk/2026-10-29/site-deployment.json).

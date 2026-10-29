@@ -42,5 +42,9 @@
     "Linux",
     "macOS",
     "Windows"
-  ]
+  ],
+  "latestDocumentationCommit": "12c95ce6f83d4d3890cf1f6ca0463090d70f2b44",
+  "latestCI": "https://github.com/sergii-ziborov/crabrix-sdk/actions/runs/40904907204",
+  "latestCIConclusion": "success",
+  "finalCargoPublishDryRun": "Passed: 11 files, 241.7 KiB compressed; upload intentionally aborted by --dry-run"
 }
