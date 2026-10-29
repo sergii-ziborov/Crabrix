@@ -500,7 +500,7 @@ private struct ProblemsDockContent: View {
     private var advisorButtonDetail: String {
         switch adviceState {
         case .idle:
-            "Tap to analyze this rustc error on device"
+            "Tap to analyze this diagnostic on device"
         case .generating:
             "Generating a minimal source edit"
         case .verifying:

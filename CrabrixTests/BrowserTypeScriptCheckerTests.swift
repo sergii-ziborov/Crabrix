@@ -155,6 +155,22 @@ final class BrowserTypeScriptCheckerTests: XCTestCase {
         model.check();try await wait(model)
         XCTAssertTrue(model.result?.succeeded == true,model.result?.detail ?? "No recovered Check")
     }
+    func testUnsupportedCheckerConfigurationAlsoKeepsIndependentRunAvailable() async throws {
+        let root=FileManager.default.temporaryDirectory.appending(path:UUID().uuidString)
+        defer{try? FileManager.default.removeItem(at:root)}
+        let model=CompilerViewModel(projectLibrary:ProjectLibrary(storageURL:root.appending(path:"recent.json")))
+        model.createProject(name:"unsupported-types",template:.hello)
+        XCTAssertTrue(model.replaceProjectFilesFromTerminal([
+            "index.html":"<script type='module' src='main.ts'></script>","main.ts":"const n:number=42;document.title=String(n);",
+            "tsconfig.json":"{\"references\":[{\"path\":\"./other\"}]}"
+        ],selecting:"index.html"))
+        model.check();try await wait(model)
+        XCTAssertTrue(model.result?.detail.contains("project references") == true,model.result?.detail ?? "Missing config refusal")
+        XCTAssertFalse(model.diagnosticAdviceState.isWorking)
+        XCTAssertTrue(model.canStartBuild)
+        model.run();try await wait(model)
+        XCTAssertTrue(model.result?.succeeded == true,model.result?.detail ?? "Run did not recover")
+    }
     private func wait(_ model: CompilerViewModel) async throws {
         let start=ContinuousClock.now
         while model.isBusy || model.isCompilerDraining {

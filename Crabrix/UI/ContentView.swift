@@ -530,6 +530,7 @@ struct ContentView: View {
                 model.loadRunnableSample(projectName: "typescript-lab")
                 _ = model.replaceProjectFilesFromTerminal([
                     "index.html": "<!doctype html><body><script type='module' src='./main.ts'></script></body>",
+                    "package.json": "{\"name\":\"typescript-lab\",\"scripts\":{\"check\":\"tsc --noEmit\"}}",
                     "main.ts": "const score: string = 42;\ndocument.body.textContent = String(score);\n"
                 ], selecting: "index.html")
                 model.selectFile("main.ts")
@@ -802,6 +803,7 @@ struct ContentView: View {
         VStack(spacing: 0) {
             EditorToolbar(
                 projectName: model.projectName,
+                browserProject: model.isBrowserProject,
                 saveState: model.saveState,
                 onSaveStatus: { isSaveStatusPresented = true },
                 activity: model.activity,
@@ -1059,6 +1061,8 @@ struct ContentView: View {
                                 manifest: model.cargoManifest,
                                 report: model.compatibilityReport,
                                 onPreflight: { isPreflightPresented = true },
+                                browserProject: model.isBrowserProject,
+                                browserManifestPath: model.browserManifestPath,
                                 provenance: model.provenance,
                                 cargoStage: model.cargoStage,
                                 cargoWorkspace: model.cargoWorkspace,
@@ -1079,7 +1083,7 @@ struct ContentView: View {
                                     projectItemParentPath = path
                                     projectItemCreation = .moduleFolder
                                 },
-                                onResolvePackages: model.refreshCargoWorkspace,
+                                onResolvePackages: model.isBrowserProject ? model.downloadDependenciesForOffline : model.refreshCargoWorkspace,
                                 onPinPackages: model.pinDependenciesForOffline,
                                 onAddPackage: { isCargoCatalogPresented = true },
                                 onManagePackageStorage: { isPackageStoragePresented = true },
@@ -1188,6 +1192,8 @@ struct ContentView: View {
                             manifest: model.cargoManifest,
                             report: model.compatibilityReport,
                             onPreflight: { isPreflightPresented = true },
+                            browserProject: model.isBrowserProject,
+                            browserManifestPath: model.browserManifestPath,
                             provenance: model.provenance,
                             cargoStage: model.cargoStage,
                             cargoWorkspace: model.cargoWorkspace,
@@ -1208,7 +1214,7 @@ struct ContentView: View {
                                 projectItemParentPath = path
                                 projectItemCreation = .moduleFolder
                             },
-                            onResolvePackages: model.refreshCargoWorkspace,
+                            onResolvePackages: model.isBrowserProject ? model.downloadDependenciesForOffline : model.refreshCargoWorkspace,
                             onPinPackages: model.pinDependenciesForOffline,
                             onAddPackage: { isCargoCatalogPresented = true },
                             onManagePackageStorage: { isPackageStoragePresented = true },
@@ -1842,6 +1848,8 @@ private struct ProjectSidebar: View {
     let manifest: CargoManifest?
     let report: ProjectCompatibilityReport
     let onPreflight: () -> Void
+    let browserProject: Bool
+    let browserManifestPath: String?
     let provenance: CrabrixProject.Provenance?
     let cargoStage: CargoPreparationStage
     let cargoWorkspace: CargoWorkspaceSnapshot
@@ -1938,7 +1946,24 @@ private struct ProjectSidebar: View {
                     }
 
                     Divider().overlay(CrabrixTheme.border).padding(.vertical, 8)
-                    CargoPackagesPanel(
+                    if browserProject {
+                        VStack(alignment: .leading, spacing: 9) {
+                            Text("BROWSER PACKAGES").font(.system(size: 9, weight: .bold, design: .monospaced)).foregroundStyle(CrabrixTheme.muted)
+                            if let path = browserManifestPath {
+                                Button { onSelect(path) } label: {
+                                    Label("Open package.json", systemImage: "shippingbox").font(.caption).foregroundStyle(CrabrixTheme.blue)
+                                }.buttonStyle(.plain)
+                                Button(action: onResolvePackages) {
+                                    Label("Prepare source and types", systemImage: "arrow.down.circle").font(.caption.weight(.semibold))
+                                }.buttonStyle(.bordered).tint(CrabrixTheme.blue).disabled(isBusy)
+                                Text("npm install/ci prepares editable browser imports and declared @types. Check and Run then use local files.")
+                                    .font(.caption2).foregroundStyle(CrabrixTheme.muted)
+                            } else {
+                                Text("Local HTML, CSS and JavaScript/TypeScript. Add package.json to prepare browser npm dependencies.")
+                                    .font(.caption2).foregroundStyle(CrabrixTheme.muted)
+                            }
+                        }
+                    } else { CargoPackagesPanel(
                         stage: cargoStage,
                         workspace: cargoWorkspace,
                         manifest: manifest,
@@ -1953,7 +1978,7 @@ private struct ProjectSidebar: View {
                         onVendor: onVendor,
                         onOpenVendor: onOpenVendor,
                         onResetVendor: onResetVendor
-                    )
+                    ) }
 
                     Divider().overlay(CrabrixTheme.border).padding(.vertical, 6)
                     Text("COMPATIBILITY")
@@ -1971,7 +1996,7 @@ private struct ProjectSidebar: View {
                         report.status == .ready && cargoWorkspace.blockingPackages.isEmpty
                             ? CrabrixTheme.mint : CrabrixTheme.amber
                     )
-                    Text("\(report.rustFiles) Rust files · \(report.dependencies) dependencies")
+                    Text(browserProject ? "\(files.count) local browser files" : "\(report.rustFiles) Rust files · \(report.dependencies) dependencies")
                         .font(.caption2.monospaced())
                         .foregroundStyle(CrabrixTheme.muted)
                     Button(action: onPreflight) {
@@ -2055,10 +2080,11 @@ private struct GitHubImportSheet: View {
 /// The editor's code icon and accessibility label identify the environment.
 struct ProgrammingEnvironmentBar: View {
     let projectName: String
+    var browserProject = false
     var saveState: CompilerViewModel.SaveState? = nil
     var onSaveStatus: () -> Void = { }
     private var toolchainDetail: String {
-        "rustc \(CargoToolchain.semanticVersionLabel) · \(RustTargetSpec.wasm32WasiP1.triple)"
+        browserProject ? "Browser · local" : "rustc \(CargoToolchain.semanticVersionLabel) · \(RustTargetSpec.wasm32WasiP1.triple)"
     }
 
     var body: some View {
@@ -2093,7 +2119,7 @@ struct ProgrammingEnvironmentBar: View {
         .background(CrabrixTheme.panel)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(
-            "\(projectName). Rust programming environment. Bundled \(toolchainDetail)."
+            browserProject ? "\(projectName). Local browser programming environment." : "\(projectName). Rust programming environment. Bundled \(toolchainDetail)."
         )
         .accessibilityIdentifier("editor-project-name")
     }
@@ -2109,6 +2135,7 @@ struct ProgrammingEnvironmentBar: View {
 
 private struct EditorToolbar: View {
     let projectName: String
+    var browserProject = false
     var saveState: CompilerViewModel.SaveState? = nil
     var onSaveStatus: () -> Void = { }
     let activity: CompilerViewModel.Activity
@@ -2143,7 +2170,7 @@ private struct EditorToolbar: View {
     var body: some View {
         VStack(spacing: 0) {
             if showsEnvironmentBar {
-                ProgrammingEnvironmentBar(projectName: projectName, saveState: saveState, onSaveStatus: onSaveStatus)
+                ProgrammingEnvironmentBar(projectName: projectName, browserProject: browserProject, saveState: saveState, onSaveStatus: onSaveStatus)
                 Divider().overlay(CrabrixTheme.border)
             }
 

@@ -17,6 +17,9 @@ final class BrowserTypeScriptUITests: XCTestCase {
         let error = app.buttons.matching(NSPredicate(format:"label CONTAINS %@", "TS2322")).firstMatch
         XCTAssertTrue(error.waitForExistence(timeout: 40), app.debugDescription)
         XCTAssertTrue(error.label.contains("main.ts:1:"),error.label)
+        XCTAssertFalse(app.staticTexts["Tap to analyze this rustc error on device"].exists)
+        XCTAssertFalse(app.staticTexts["This project has no Cargo.toml."].exists)
+        XCTAssertTrue(app.staticTexts["Browser · local"].exists)
         let screen=app.frame
         XCTAssertGreaterThanOrEqual(error.frame.minX,0); XCTAssertLessThanOrEqual(error.frame.maxX,screen.maxX+1)
         let capture=XCTAttachment(screenshot:XCUIScreen.main.screenshot()); capture.name="typescript-diagnostic";capture.lifetime = .keepAlways;add(capture)

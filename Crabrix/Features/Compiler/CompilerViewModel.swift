@@ -405,6 +405,12 @@ final class CompilerViewModel: ObservableObject {
     }
 
     var isProjectOperationInProgress: Bool { projectTransfer.isWorking || gitLocksWorkspace }
+    var isBrowserProject: Bool { BrowserProjectConfiguration.isBrowserEntry(entryFile) }
+    var browserManifestPath: String? {
+        guard isBrowserProject else { return nil }
+        let path = BrowserProjectConfiguration.manifestPath(files: fileContents, entry: entryFile)
+        return fileContents[path] == nil ? nil : path
+    }
 
     var workspaceRevision: WorkspaceRevision {
         WorkspaceRevision.capture(
@@ -2701,10 +2707,9 @@ final class CompilerViewModel: ObservableObject {
             let diagnosticsSetting = userDefaults.object(
                 forKey: Self.appleIntelligenceDiagnosticsKey
             ) as? Bool ?? true
-            // TypeScript already has precise local diagnostics. Keep optional
-            // web advice explicit so a new Check error does not start an AI
-            // request that temporarily disables the independent Run action.
-            if diagnosticsSetting, diagnostic.code?.hasPrefix("TS") != true { requestAppleIntelligenceAdvice() }
+            // Web/type diagnostics keep independent Run immediately usable.
+            // Optional web advice remains an explicit, explanation-only action.
+            if diagnosticsSetting, executionKind == .rust { requestAppleIntelligenceAdvice() }
         } else if value.succeeded, let evidence = unresolvedDiagnosticEvidence {
             completedStages.insert(.repair)
             // Check proves the original compiler error is gone. Rating waits
