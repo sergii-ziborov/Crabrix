@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { lessonPreview, lessonWordCount } from '../lib/lesson-preview.ts';
 const snapshot = JSON.parse(readFileSync(new URL('../content/courses.json', import.meta.url)));
-test('all 742 previews withhold exercises and keep code markup balanced', () => {
+test('all 754 previews withhold exercises and keep code markup balanced', () => {
   let count = 0;
   for (const course of snapshot.courses) for (const unit of course.units) for (const lesson of unit.lessons) {
     const preview = lessonPreview(lesson, course.id === 'basics');
@@ -15,5 +15,5 @@ test('all 742 previews withhold exercises and keep code markup balanced', () => 
     assert.equal((preview.paragraphs.join(' ').match(/`/g) || []).length % 2, 0, lesson.id);
     count++;
   }
-  assert.equal(count, 742);
+  assert.equal(count, 754);
 });

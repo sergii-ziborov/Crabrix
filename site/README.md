@@ -1,3 +1,12 @@
+## Current Interview update — 29 October 2026
+
+The authored snapshot now has 754 lessons/steps: 154 Rust lessons and 600 Atlas
+steps. Interview Prep has 52 topics, including twelve focused Rust contracts.
+Existing IDs and answer indices are retained. The source revision is pinned in
+`content/courses.json`; native content delivery and app-code qualification are
+recorded separately in the app repository. The historical reviews below retain
+the counts and versions that were true for those deliveries.
+
 # Crabrix website
 
 The Next.js 16 website uses a shared header, footer and responsive spacing for

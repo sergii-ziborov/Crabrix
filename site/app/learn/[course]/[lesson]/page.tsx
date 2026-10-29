@@ -61,7 +61,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
       <article className="lesson-content">
         <section className="lesson-reading"><h2>Start with the idea</h2>{preview.paragraphs.map((paragraph, index) => <p key={index}>{prose(paragraph)}</p>)}</section>
         <section className="lesson-access lesson-full"><p className="eyebrow">Keep learning, for free</p><h2>The rest of this lesson is waiting for you.</h2>
-          <p>Create a free account to read the complete explanation, see the infographic, explore the code, and try the exercises. All 742 lessons and algorithm steps are included.</p>
+          <p>Create a free account to read the complete explanation, see the infographic, explore the code, and try the exercises. All 754 lessons and algorithm steps are included.</p>
           <div className="access-actions"><Link className="btn" href={`/register/?next=${next}`}>Create free account →</Link><Link href={`/login/?next=${next}`}>Already learning? Sign in</Link></div>
           <p className="auth-note">No payment details. Your account opens the complete Academy.</p>
           {course.id === "algorithms" && <p><Link href="/learn/algorithms/#visualization">Try an interactive algorithm walkthrough →</Link></p>}

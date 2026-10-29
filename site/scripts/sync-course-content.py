@@ -57,7 +57,7 @@ def main() -> None:
     courses.sort(key=lambda course: course["order"])
     counts = {course["id"]: sum(len(unit["lessons"]) for unit in course["units"])
               for course in courses}
-    if sum(counts.values()) != 742 or counts["algorithms"] != 600:
+    if counts["algorithms"] != 600 or any(count <= 0 for count in counts.values()):
         raise ValueError(f"unexpected lesson counts: {counts}")
     commit = subprocess.check_output(("git", "-C", str(source), "rev-parse", "HEAD"), text=True).strip()
     payload = {

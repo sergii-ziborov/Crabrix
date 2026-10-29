@@ -3,12 +3,12 @@ import { pageMetadata } from "@/lib/seo";
 import { courseSnapshot } from "@/lib/courses";
 import { posts } from "@/lib/posts";
 
-export const metadata = pageMetadata({ title: "Sitemap: All Rust Lessons and Articles", description: "Find every Crabrix course, all 742 Rust and algorithm lessons, and practical Rust blog guides. Public lesson previews; complete Academy free with an account.", path: "/sitemap/" });
+export const metadata = pageMetadata({ title: "Sitemap: All Rust Lessons and Articles", description: "Find every Crabrix course, all 754 Rust and algorithm lessons, and practical Rust blog guides. Public lesson previews; complete Academy free with an account.", path: "/sitemap/" });
 
 export default function SitemapPage() {
   return <div className="site-shell">
     <div className="page-intro"><p className="eyebrow">Explore Crabrix</p><h1>Every lesson and Rust guide.</h1>
-      <p className="lede">Browse 742 lesson previews, seven courses and {posts.length} practical articles. A free account opens complete Academy lessons.</p>
+      <p className="lede">Browse 754 lesson previews, seven courses and {posts.length} practical articles. A free account opens complete Academy lessons.</p>
       <p><a href="/sitemap.xml">XML sitemap for search engines</a></p>
     </div>
     <section className="unit-panel"><h2><Link href="/guide/">Crabrix user guide</Link></h2><p>Screenshot walkthroughs for projects, offline packages, Check and Run, the terminal, device layouts and compiler boundaries.</p></section>

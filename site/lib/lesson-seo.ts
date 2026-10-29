@@ -78,3 +78,9 @@ export function lessonDescription(lesson: Lesson): string {
   const summary = searchDescription(lesson.writing?.summary || lesson.concept);
   return searchDescription(`${lesson.title}: ${summary}${summary.length < 60 ? " Study the Rust pattern, then try the exercise." : ""}`);
 }
+
+// Interview 1.1.0: recorded editorial changes, not build timestamps.
+for (const id of ["q-ownership", "q-borrowing", "q-lifetimes", "q-option-result", "q-send-sync", "q-box-rc-arc", "q-dyn-generics", "q-unsafe", "q-atomics", "q-deadlock", "q-channels-vs-mutex", "q-async-vs-threads", "q-blocking-async", "q-cancellation", "q-stack-heap", "q-virtual-memory", "q-syscalls", "q-tcp-udp", "q-http-versions", "q-tls", "q-backpressure", "q-acid", "q-indexes", "q-cap", "q-idempotency", "q-caching", "q-complexity", "q-hashmap", "q-testing-strategy", "q-api-design", "q-perf-profiling", "q-ffi-abi", "q-two-sum-rust", "q-lru-design", "q-parser-design", "q-debugging-session", "q-tradeoff-communication", "q-requirements", "q-code-review", "q-postmortem", "q-interior-mutability", "q-copy-clone-cow", "q-utf8-boundaries", "q-iterator-ownership", "q-closure-traits", "q-pin-future", "q-future-send", "q-async-locks", "q-async-traits", "q-error-boundaries", "q-trait-coherence", "q-integer-boundaries"]) {
+  lessonModifiedDates[`interview/${id}`] = "2026-10-29";
+}
+courseModifiedDates.interview = "2026-10-29";
