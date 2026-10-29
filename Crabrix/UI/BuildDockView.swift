@@ -71,6 +71,7 @@ struct BuildDockView<CodeContent: View>: View {
     let contribution: CodeContribution?
     let onOpenDiagnostic: (RustDiagnostic) -> Void
     let diagnosticAdviceState: RustDiagnosticAdviceState
+    let browserDiagnostic: Bool
     let onOpenDiagnosticAdvisor: () -> Void
     let onContinueLearning: () -> Void
     let keyboardBridge: RustEditorKeyboardBridge
@@ -109,6 +110,7 @@ struct BuildDockView<CodeContent: View>: View {
         contribution: CodeContribution?,
         onOpenDiagnostic: @escaping (RustDiagnostic) -> Void,
         diagnosticAdviceState: RustDiagnosticAdviceState,
+        browserDiagnostic: Bool = false,
         onOpenDiagnosticAdvisor: @escaping () -> Void,
         onContinueLearning: @escaping () -> Void,
         keyboardBridge: RustEditorKeyboardBridge,
@@ -146,6 +148,7 @@ struct BuildDockView<CodeContent: View>: View {
         self.contribution = contribution
         self.onOpenDiagnostic = onOpenDiagnostic
         self.diagnosticAdviceState = diagnosticAdviceState
+        self.browserDiagnostic = browserDiagnostic
         self.onOpenDiagnosticAdvisor = onOpenDiagnosticAdvisor
         self.onContinueLearning = onContinueLearning
         self.keyboardBridge = keyboardBridge
@@ -290,6 +293,7 @@ struct BuildDockView<CodeContent: View>: View {
             case .problems:
                 ProblemsDockContent(
                     result: result,
+                    browserDiagnostic: browserDiagnostic,
                     adviceState: diagnosticAdviceState,
                     onOpenDiagnostic: onOpenDiagnostic,
                     onOpenDiagnosticAdvisor: onOpenDiagnosticAdvisor
@@ -387,6 +391,7 @@ private struct RustKeyboardShortcutRow: View {
 
 private struct ProblemsDockContent: View {
     let result: CompilationResult?
+    let browserDiagnostic: Bool
     let adviceState: RustDiagnosticAdviceState
     let onOpenDiagnostic: (RustDiagnostic) -> Void
     let onOpenDiagnosticAdvisor: () -> Void
@@ -485,7 +490,7 @@ private struct ProblemsDockContent: View {
     private var advisorButtonTitle: String {
         switch adviceState {
         case .idle:
-            "Fix with Apple Intelligence"
+            browserDiagnostic ? "Explain with Apple Intelligence" : "Fix with Apple Intelligence"
         case .generating:
             "Apple Intelligence is analyzing…"
         case .verifying:
@@ -502,7 +507,7 @@ private struct ProblemsDockContent: View {
         case .idle:
             "Tap to analyze this diagnostic on device"
         case .generating:
-            "Generating a minimal source edit"
+            browserDiagnostic ? "Explaining this web diagnostic" : "Generating a minimal source edit"
         case .verifying:
             "Checking the edit with the bundled rustc"
         case let .ready(advice):

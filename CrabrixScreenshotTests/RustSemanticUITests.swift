@@ -20,6 +20,8 @@ final class BrowserTypeScriptUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts["Tap to analyze this rustc error on device"].exists)
         XCTAssertFalse(app.staticTexts["This project has no Cargo.toml."].exists)
         XCTAssertTrue(app.staticTexts["Browser · local"].exists)
+        XCTAssertTrue(app.staticTexts["Explain with Apple Intelligence"].exists)
+        XCTAssertFalse(app.staticTexts["Fix with Apple Intelligence"].exists)
         let screen=app.frame
         XCTAssertGreaterThanOrEqual(error.frame.minX,0); XCTAssertLessThanOrEqual(error.frame.maxX,screen.maxX+1)
         let capture=XCTAttachment(screenshot:XCUIScreen.main.screenshot()); capture.name="typescript-diagnostic";capture.lifetime = .keepAlways;add(capture)

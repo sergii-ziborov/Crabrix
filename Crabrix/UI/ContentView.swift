@@ -855,6 +855,7 @@ struct ContentView: View {
                 contribution: lastContribution,
                 onOpenDiagnostic: openDiagnostic,
                 diagnosticAdviceState: model.diagnosticAdviceState,
+                browserDiagnostic: model.isBrowserProject || model.lastBuild?.executionKind == .browser,
                 onOpenDiagnosticAdvisor: presentDiagnosticAdvisor,
                 onContinueLearning: continueLearning,
                 keyboardBridge: editorKeyboard,
@@ -975,6 +976,7 @@ struct ContentView: View {
                     Spacer()
                     DiagnosticAdvisorQuickButton(
                         diagnostic: diagnostic,
+                        browserDiagnostic: model.isBrowserProject || model.lastBuild?.executionKind == .browser,
                         state: model.diagnosticAdviceState,
                         usesAppleIntelligence: diagnosticAdviceUsesAppleIntelligence,
                         action: presentDiagnosticAdvisor
@@ -2282,6 +2284,7 @@ private struct CompactDrawerHeader: View {
 
 private struct DiagnosticAdvisorQuickButton: View {
     let diagnostic: RustDiagnostic
+    let browserDiagnostic: Bool
     let state: RustDiagnosticAdviceState
     /// False when Apple Intelligence is switched off in Settings or the device
     /// is not eligible. The button still opens the advisor — Crabrix explains
@@ -2338,7 +2341,7 @@ private struct DiagnosticAdvisorQuickButton: View {
         }
         switch state {
         case .idle:
-            return "Fix " + (diagnostic.code ?? "error") + " with Apple Intelligence"
+            return (browserDiagnostic ? "Explain " : "Fix ") + (diagnostic.code ?? "error") + " with Apple Intelligence"
         case .generating:
             return "Apple Intelligence is analyzing…"
         case .verifying:
@@ -2356,7 +2359,7 @@ private struct DiagnosticAdvisorQuickButton: View {
         }
         switch state {
         case .idle:
-            return "Tap to analyze this rustc error"
+            return browserDiagnostic ? "Tap to analyze this web diagnostic" : "Tap to analyze this rustc error"
         case .generating, .verifying:
             return "Tap to view progress"
         case let .ready(advice):
