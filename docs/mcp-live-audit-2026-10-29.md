@@ -58,3 +58,12 @@ GitHub release. Registry archives match the locally qualified bytes. Fresh
 public installs of all three launchers completed actual MCP handshakes; a fresh
 npm consumer passed mixed runtime and strict cross-mode TypeScript checks.
 Linux/macOS/Windows CI passed. [Publication receipt](sdk/2026-10-29/publication-0.3.2.json).
+
+The article, guide and SDK downloads are live. All 809 sitemap pages returned
+HTTP 200 with self-canonical/social URLs. The production check found no duplicate
+titles/descriptions, invalid JSON-LD, missing alt attributes or broken internal
+fragments; 71 additional linked targets passed. All 40 responsive cases passed
+on the local build, isolated Hetzner candidate and production. Account backup
+completed; the live account mount and native App Review build 120 were preserved.
+The previous site container remains available for rollback.
+[Deployment and verification receipt](mcp-live-audit-2026-10-29.json).
