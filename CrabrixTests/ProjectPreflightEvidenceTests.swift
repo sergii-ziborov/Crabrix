@@ -47,6 +47,54 @@ final class ProjectPreflightEvidenceTests: XCTestCase {
 
 @MainActor
 final class ProjectPreflightCompilerEvidenceTests: XCTestCase {
+    func testFeaturePreviewKeepsOriginalAndRejectsStaleGenerationIncludingABA() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let library = ProjectLibrary(storageURL: root.appending(path: "recent.json"))
+        let model = CompilerViewModel(projectLibrary: library)
+        model.createProject(name: "feature-preview", template: .hello)
+        var files = model.exportProject().files
+        files["Cargo.toml"] = "# original comment 🦀\n[package]\nname='feature-preview'\nversion='0.1.0'\nedition='2024'\n[dependencies]\nsyn = { version = '2', features = ['full'] }\n"
+        XCTAssertTrue(model.replaceProjectFilesFromTerminal(files))
+        XCTAssertTrue(model.useSynParserFeatures())
+        let stale = try XCTUnwrap(model.cargoFeatureProposal)
+        XCTAssertEqual(model.exportProject().files, files, "Opening a preview must not change a file")
+        XCTAssertFalse(stale.removed.isEmpty); XCTAssertFalse(stale.inserted.isEmpty)
+        let original = model.source
+        model.source += "\n// intervening edit"
+        model.source = original
+        XCTAssertEqual(model.exportProject().files, files)
+        XCTAssertFalse(model.applyCargoFeatureProposal(stale), "An ABA edit must invalidate the preview")
+        XCTAssertEqual(model.exportProject().files, files)
+        XCTAssertTrue(model.useSynParserFeatures())
+        let exact = try XCTUnwrap(model.cargoFeatureProposal)
+        XCTAssertTrue(model.applyCargoFeatureProposal(exact))
+        XCTAssertEqual(model.exportProject().files[exact.backupPath], files["Cargo.toml"])
+        XCTAssertNotEqual(model.exportProject().files["Cargo.toml"], files["Cargo.toml"])
+        XCTAssertFalse(model.cargoStage.isWorking, "Apply must not prepare or download packages")
+        await model.retryProjectSave()
+        let reopened = try await library.items().first { $0.id == model.projectID }
+        XCTAssertEqual(reopened?.project.files[exact.backupPath], files["Cargo.toml"])
+    }
+
+    func testUnsupportedCargoTargetStopsBeforeCompilerAndPreservesFiles() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let model = CompilerViewModel(projectLibrary: ProjectLibrary(storageURL: root.appending(path: "recent.json")))
+        model.createProject(name: "preflight-block", template: .hello)
+        var files = model.exportProject().files
+        files[".cargo/config.toml"] = "[build]\ntarget='x86_64-unknown-linux-gnu'\n"
+        XCTAssertTrue(model.replaceProjectFilesFromTerminal(files))
+        model.build()
+        try await wait(model)
+        XCTAssertFalse(model.result?.succeeded == true)
+        XCTAssertEqual(model.result?.phase, .setup)
+        XCTAssertTrue(model.result?.detail.contains("build.target") == true, model.result?.detail ?? "no failure")
+        XCTAssertFalse(model.buildEvents.contains { $0.label.contains("Building project") || $0.label.contains("Running program") })
+        XCTAssertEqual(model.exportProject().files, files)
+        XCTAssertFalse(model.lastBuild?.verifies(.build, revision: model.workspaceRevision) == true)
+    }
+
     func testActualModelKeepsDebugCheckAndOrdinaryRunEvidenceDistinct() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }

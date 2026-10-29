@@ -489,6 +489,7 @@ final class ProjectTerminalSession: ObservableObject {
         case .checkVerified: "[check-verified]"
         case .expected: "[ready]"
         case .review: "[review]"
+        case .buildFailed: "[build-failed]"
         case .unsupported: "[unsupported]"
         }
     }

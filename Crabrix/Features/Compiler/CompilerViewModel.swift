@@ -273,6 +273,7 @@ final class CompilerViewModel: ObservableObject {
         if buildEvents.count > 200 { buildEvents.removeFirst(buildEvents.count - 200) }
     }
     @Published private(set) var cargoWorkspace: CargoWorkspaceSnapshot = .empty
+    @Published var cargoFeatureProposal: CargoFeatureProposal?
     @Published private(set) var cargoStorage: CrateStorageUsage = CrateStorageUsage()
     @Published private(set) var diagnosticAdviceState: RustDiagnosticAdviceState = .idle
     @Published private(set) var lessonEvidenceMessage: String?
@@ -407,7 +408,7 @@ final class CompilerViewModel: ObservableObject {
         WorkspaceRevision.capture(
             project: currentProject(),
             generation: workspaceGeneration,
-            toolchainID: WasmRustCompiler.executionIdentity,
+            toolchainID: ProjectExecutionProfile.identity,
             resourceTreeHash: projectResourceDigest
         )
     }
@@ -421,6 +422,17 @@ final class CompilerViewModel: ObservableObject {
     }
 
     var semanticGeneration: UInt64 { workspaceGeneration }
+
+    var preflightRefreshKey: String {
+        "\(projectID):\(workspaceGeneration):\(lastBuild?.finishedAt.timeIntervalSince1970 ?? 0):\(cargoStage.label)"
+    }
+
+    func preflightInput(browserDirectory: String? = nil) -> ProjectPreflight.Input {
+        let project = currentProject(), revision = workspaceRevision
+        return .init(project: project, revision: revision, workspace: cargoWorkspace,
+                     graphIsCurrent: resolvedWorkspaceRevision == revision && resolvedManifestSource == project.files["Cargo.toml"],
+                     lastBuild: lastBuild, browserDirectory: browserDirectory)
+    }
 
     func semanticContext() throws -> RustSemanticContext {
         guard !isBusy, !isCompilerDraining, !isProjectOperationInProgress, !cargoStage.isWorking else {
@@ -958,11 +970,24 @@ final class CompilerViewModel: ObservableObject {
             : project.supporting["Cargo.lock"]
         let rootEdition = rootEdition(from: manifestSource)
         let compilationID = UUID()
+        let inspectionInput = preflightInput(browserDirectory: browserDirectory)
         activeCompilationID = compilationID
         compilationTask = Task { [weak self] in
             guard let self else { return }
             guard !Task.isCancelled, activeCompilationID == compilationID, isCurrent(preparationRevision) else {
                 discardCompilationIfActive(compilationID); return
+            }
+            if mode != .testing {
+                appendBuildStage("Inspecting the current local execution profile")
+                let inspection = await Task.detached(priority: .userInitiated) { ProjectPreflight.inspect(inspectionInput) }.value
+                guard !Task.isCancelled, activeCompilationID == compilationID, isCurrent(preparationRevision) else {
+                    discardCompilationIfActive(compilationID); return
+                }
+                let operation: ProjectVerifiedOperation = debugging ? .debug : mode == .checking ? .check : mode == .building ? .build : .run
+                if let reason = inspection.blockingReason(for: operation) {
+                    finish(.failure(phase: .setup, detail: reason), revision: preparationRevision, isDebugExecution: debugging)
+                    return
+                }
             }
             let resourceFiles: [String: Data]
             do {
@@ -2006,34 +2031,33 @@ final class CompilerViewModel: ObservableObject {
 
     @discardableResult
     func useSynParserFeatures() -> Bool {
-        guard !isBusy, !isProjectOperationInProgress,
-              let manifest = cargoManifestSource else { return false }
+        guard !isBusy, !isCompilerDraining, !isProjectOperationInProgress, !playgroundIsReadOnly else { return false }
         do {
-            let updated = try CargoManifestEditor.usingSynParserFeatures(manifest)
-            guard updated != manifest else {
-                projectTransfer = .failed("Open Cargo.toml to edit this custom syn dependency.")
-                return false
-            }
-            resetDiagnosticAdvice()
-            fileContents[selectedFile] = source
-            fileContents["Cargo.toml"] = updated
-            if selectedFile == "Cargo.toml" {
-                source = updated
-            } else {
-                workspaceDidChange()
-            }
-            result = nil
-            lastBuild = nil
-            compatibilityReport = ProjectCompatibilityReport.scan(currentProject())
-            projectTransfer = .ready("syn now uses parser features supported by the local compiler.")
-            let project = currentProject()
-            Task { await remember(project, lastBuild: nil) }
-            refreshCargoWorkspace()
+            cargoFeatureProposal = try CargoFeatureProposal(project: currentProject(), revision: workspaceRevision)
             return true
         } catch {
-            projectTransfer = .failed("Could not update Cargo.toml: \(error.localizedDescription)")
+            projectTransfer = .failed(error.localizedDescription)
             return false
         }
+    }
+
+    @discardableResult
+    func applyCargoFeatureProposal(_ proposal: CargoFeatureProposal) -> Bool {
+        guard !isBusy, !isCompilerDraining, !isProjectOperationInProgress, !playgroundIsReadOnly,
+              isCurrent(proposal.revision), currentProject().files == proposal.before else {
+            projectTransfer = .failed("Project changed. Reopen the feature preview before applying it."); return false
+        }
+        do {
+            try ProjectFilePolicy.validate(proposal.after, entryFile: entryFile)
+            if playgroundSession != nil {
+                var shared = try playgroundDocument(); shared.files = proposal.after; _ = try shared.validated()
+            }
+            applyFormattedFiles(proposal.after, applyToEditor: nil)
+            cargoFeatureProposal = nil
+            projectTransfer = .ready("Feature profile updated. Original Cargo.toml kept at \(proposal.backupPath). Prepare dependencies explicitly to refresh this graph.")
+            let project = currentProject(); Task { await remember(project, lastBuild: nil) }
+            return true
+        } catch { projectTransfer = .failed(error.localizedDescription); return false }
     }
 
     @discardableResult
@@ -2166,7 +2190,7 @@ final class CompilerViewModel: ObservableObject {
         selectedFile = entryFile
         source = files[entryFile] ?? ""
         self.provenance = provenance
-        self.lastBuild = lastBuild?.sourceTreeHash == workspaceRevision.sourceTreeHash && lastBuild?.toolchainID == WasmRustCompiler.executionIdentity && lastBuild?.resourceTreeHash == projectResourceDigest ? lastBuild : nil
+        self.lastBuild = lastBuild?.sourceTreeHash == workspaceRevision.sourceTreeHash && lastBuild?.toolchainID == ProjectExecutionProfile.identity && lastBuild?.resourceTreeHash == projectResourceDigest ? lastBuild : nil
         compatibilityReport = ProjectCompatibilityReport.scan(
             CrabrixProject(
                 id: id,

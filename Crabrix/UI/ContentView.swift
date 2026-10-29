@@ -93,6 +93,7 @@ struct ContentView: View {
     @State private var pendingNewProjectImport: ProjectImportSource?
     @State private var isProjectActionsPresented = false
     @State private var isGitPresented = false
+    @State private var isPreflightPresented = false
     @State private var isDebuggerInspectorPresented = false
     @State private var semanticInvocation: RustSemanticInvocation?
     @State private var pendingSemanticInvocation: RustSemanticInvocation?
@@ -360,6 +361,15 @@ struct ContentView: View {
             GitWorkspaceView(model: model)
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $isPreflightPresented) {
+            ProjectPreflightSheet(model: model)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(item: $model.cargoFeatureProposal) { proposal in
+            CargoFeaturePreviewSheet(model: model, proposal: proposal)
+                .presentationDetents([.large]).presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $isDiagnosticHelpPresented) {
             NavigationStack {
@@ -1038,6 +1048,7 @@ struct ContentView: View {
                                 selectedFile: model.selectedFile,
                                 manifest: model.cargoManifest,
                                 report: model.compatibilityReport,
+                                onPreflight: { isPreflightPresented = true },
                                 provenance: model.provenance,
                                 cargoStage: model.cargoStage,
                                 cargoWorkspace: model.cargoWorkspace,
@@ -1166,6 +1177,7 @@ struct ContentView: View {
                             selectedFile: model.selectedFile,
                             manifest: model.cargoManifest,
                             report: model.compatibilityReport,
+                            onPreflight: { isPreflightPresented = true },
                             provenance: model.provenance,
                             cargoStage: model.cargoStage,
                             cargoWorkspace: model.cargoWorkspace,
@@ -1819,6 +1831,7 @@ private struct ProjectSidebar: View {
     let selectedFile: String
     let manifest: CargoManifest?
     let report: ProjectCompatibilityReport
+    let onPreflight: () -> Void
     let provenance: CrabrixProject.Provenance?
     let cargoStage: CargoPreparationStage
     let cargoWorkspace: CargoWorkspaceSnapshot
@@ -1951,6 +1964,13 @@ private struct ProjectSidebar: View {
                     Text("\(report.rustFiles) Rust files · \(report.dependencies) dependencies")
                         .font(.caption2.monospaced())
                         .foregroundStyle(CrabrixTheme.muted)
+                    Button(action: onPreflight) {
+                        Label("Inspect Check, Build, Run and Debug", systemImage: "list.bullet.clipboard")
+                            .font(.caption).foregroundStyle(CrabrixTheme.blue)
+                            .frame(maxWidth: .infinity, alignment: .leading).padding(.vertical, 8)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain).accessibilityIdentifier("project-preflight")
                     if let provenance, provenance.source == .github {
                         Label(
                             "\(provenance.owner ?? "")/\(provenance.repository ?? "") @ \(provenance.reference ?? "HEAD")",

@@ -67,13 +67,13 @@ struct CargoPackagesPanel: View {
                     Button {
                         _ = onUseSynParserFeatures()
                     } label: {
-                        Label("Fix syn for local build", systemImage: "wrench.adjustable")
+                        Label("Review syn feature profile", systemImage: "wrench.adjustable")
                             .font(.caption.weight(.semibold))
                     }
                     .buttonStyle(.bordered)
                     .tint(CrabrixTheme.amber)
                     .disabled(isBusy || stage.isWorking)
-                    Text("Updates Cargo.toml to omit the host-only proc-macro feature. Your project files stay editable.")
+                    Text("Preview the Cargo.toml diff first. Applying it keeps the complete original manifest in your project; dependency preparation remains a separate action.")
                         .font(.caption2)
                         .foregroundStyle(CrabrixTheme.muted)
                 }
@@ -322,7 +322,7 @@ extension CrateCompatibility {
         case .verified: CrabrixTheme.mint
         case .checkVerified: CrabrixTheme.blue
         case .expected: CrabrixTheme.blue
-        case .review: CrabrixTheme.amber
+        case .review, .buildFailed: CrabrixTheme.amber
         case .unsupported: CrabrixTheme.coral
         }
     }
@@ -332,7 +332,7 @@ extension CrateCompatibility {
         case .verified: "checkmark.seal.fill"
         case .checkVerified: "checkmark.circle.fill"
         case .expected: "circle.dashed"
-        case .review: "exclamationmark.triangle.fill"
+        case .review, .buildFailed: "exclamationmark.triangle.fill"
         case .unsupported: "xmark.octagon.fill"
         }
     }

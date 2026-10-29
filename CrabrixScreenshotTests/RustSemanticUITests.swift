@@ -2,6 +2,47 @@ import XCTest
 import UIKit
 
 @MainActor
+final class ProjectPreflightUITests: XCTestCase {
+    func testReportOpensFromFilesAndReturnsToTheUnchangedEditor() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["--crabrix-auto-semantic-fixture", "-crabrix.appearance", UIDevice.current.userInterfaceIdiom == .pad ? "cyberpunkNeon" : "cyberpunk"]
+        app.launch()
+        let editor = app.textViews["Source code editor"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 60))
+        let original = editor.value as? String
+        if app.buttons["Show files"].exists { app.buttons["Show files"].tap() }
+        let button = app.buttons["project-preflight"]
+        for _ in 0..<8 where !button.isHittable { app.scrollViews.firstMatch.swipeUp() }
+        XCTAssertTrue(button.isHittable, app.debugDescription); button.tap()
+        let check = app.descendants(matching: .any)["preflight-check"]
+        XCTAssertTrue(check.waitForExistence(timeout: 20), app.debugDescription)
+        XCTAssertTrue(check.label.contains("Unverified"), check.label)
+        let scroll = app.scrollViews.firstMatch
+        let debug = app.descendants(matching: .any)["preflight-debug"]
+        for _ in 0..<8 where !debug.isHittable { scroll.swipeUp() }
+        XCTAssertTrue(debug.exists, app.debugDescription)
+        let screen = app.frame
+        for identifier in ["preflight-check", "preflight-build", "preflight-run", "preflight-debug"] {
+            let row = app.descendants(matching: .any)[identifier]
+            XCTAssertTrue(row.exists, identifier)
+            XCTAssertGreaterThanOrEqual(row.frame.minX, 0)
+            XCTAssertLessThanOrEqual(row.frame.maxX, screen.maxX + 1)
+        }
+        let capture = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        capture.name = "project-preflight"; capture.lifetime = .keepAlways; add(capture)
+        app.buttons["Close project preflight"].tap()
+        if app.buttons["Hide files"].exists { app.buttons["Hide files"].tap() }
+        if app.buttons["Close Project files"].exists { app.buttons["Close Project files"].tap() }
+        XCTAssertTrue(editor.waitForExistence(timeout: 15))
+        XCTAssertEqual(editor.value as? String, original)
+        for identifier in ["build-dock-code", "build-dock-problems", "build-dock-output", "build-dock-terminal"] {
+            XCTAssertTrue(app.buttons[identifier].exists, identifier)
+        }
+    }
+}
+
+@MainActor
 final class RustSemanticUITests: XCTestCase {
     func testActualCompletionImportPreviewAndEditorGeometry() throws {
         continueAfterFailure = false

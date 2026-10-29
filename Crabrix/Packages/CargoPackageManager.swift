@@ -13,6 +13,9 @@ enum CrateCompatibility: Sendable, Equatable, Comparable {
     case expected
     /// Builds, but something about it may need review, e.g. a build script.
     case review(String)
+    /// A failed compiler attempt is evidence of a failure, not proof that the
+    /// package inherently requires an unsupported platform. Retrying is allowed.
+    case buildFailed(String)
     /// Cannot build locally at all.
     case unsupported(String)
 
@@ -21,7 +24,7 @@ enum CrateCompatibility: Sendable, Equatable, Comparable {
         case .verified: 0
         case .checkVerified: 1
         case .expected: 2
-        case .review: 3
+        case .review, .buildFailed: 3
         case .unsupported: 4
         }
     }
@@ -34,7 +37,7 @@ enum CrateCompatibility: Sendable, Equatable, Comparable {
     var detail: String? {
         switch self {
         case .verified, .checkVerified, .expected: nil
-        case let .review(reason), let .unsupported(reason): reason
+        case let .review(reason), let .buildFailed(reason), let .unsupported(reason): reason
         }
     }
 
@@ -44,12 +47,21 @@ enum CrateCompatibility: Sendable, Equatable, Comparable {
         case .checkVerified: "Check verified"
         case .expected: "Expected compatible"
         case .review: "Needs review"
+        case .buildFailed: "Previous build failed"
         case .unsupported: "Unsupported"
         }
     }
 
     static func < (lhs: CrateCompatibility, rhs: CrateCompatibility) -> Bool {
         lhs.rank < rhs.rank
+    }
+
+    static func recorded(_ outcome: CrateBuildOutcome) -> Self {
+        switch outcome {
+        case .checked: .checkVerified
+        case .built: .verified
+        case let .failed(reason): .buildFailed(reason)
+        }
     }
 }
 
@@ -118,7 +130,9 @@ struct CargoWorkspaceSnapshot: Sendable, Equatable {
     var isEmpty: Bool { packages.isEmpty && unresolvedDependencies.isEmpty }
     var blockingPackages: [CratePackageStatus] { packages.filter(\.compatibility.isBlocking) }
     var reviewPackages: [CratePackageStatus] {
-        packages.filter { if case .review = $0.compatibility { return true } else { return false } }
+        packages.filter {
+            switch $0.compatibility { case .review, .buildFailed: true; default: false }
+        }
     }
     var linkVerifiedCount: Int { packages.filter { $0.compatibility == .verified }.count }
     var checkVerifiedCount: Int { packages.filter { $0.compatibility == .checkVerified }.count }
@@ -562,12 +576,7 @@ actor CargoPackageManager {
         }
         guard let unit else { return .unsupported("has no library target to link") }
         // A real build result always outranks static inspection.
-        switch ledger.outcome(forFingerprint: unit.fingerprint) {
-        case .checked: return .checkVerified
-        case .built: return .verified
-        case let .failed(reason): return .unsupported(reason)
-        case nil: break
-        }
+        if let outcome = ledger.outcome(forFingerprint: unit.fingerprint) { return .recorded(outcome) }
         if let evidence = artifactEvidence(for: unit) { return evidence }
         if let buildScript = crate.manifest.buildScriptPath {
             if !unit.buildScriptDependencies.isEmpty {

@@ -391,7 +391,7 @@ struct CrabrixProject: Codable, Equatable, Sendable {
     }
 }
 
-enum ProjectVerifiedOperation: String, CaseIterable, Sendable {
+enum ProjectVerifiedOperation: String, CaseIterable, Hashable, Sendable {
     case check, build, run, debug
 }
 
