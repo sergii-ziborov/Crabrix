@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased — project preflight and reviewed Cargo features
+
+- Read-only Files report with exact source/profile/graph identities and separate
+  Check, Build, Run and Debug status; known manifest/profile gates run before
+  expensive compiler work. Browser preview construction does not imply runtime
+  success or TypeScript type checking.
+- Previous compiler failures remain distinct from known unsupported-platform
+  requirements. Retrying a failed compiler attempt is possible.
+- Cargo feature suggestions show a diff, retain the full original manifest in
+  the editable project and refuse stale/ABA previews or explicit custom profiles.
+- 62/62 phone/iPad Simulator cases passed with no skips. This follow-up is not
+  included in signed App Review build 116; see the source-bound preflight receipt.
+
 ## 1.1.3 (116) — local Rust semantic tools, TestFlight
 
 - Bundled import-free rust-analyzer Worker, pinned standard-library source and

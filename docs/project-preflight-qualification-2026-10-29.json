@@ -1,0 +1,149 @@
+{
+  "sourceCommit": "9733ff82381ee3794636415d3a1bc45f43ff5ecd",
+  "physicalDeviceTimingClaimed": false,
+  "notIncludedInSigned116": true,
+  "runs": [
+    {
+      "name": "pad-native-v2",
+      "exitCode": 0,
+      "tests": 30,
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0,
+      "result": "Passed",
+      "devices": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "E10A54FD-290D-41ED-A48A-04F796F520B4",
+            "deviceName": "Crabrix Learn Layout iPad 13 20261026",
+            "modelName": "iPad Pro 13-inch (M5)",
+            "osBuildNumber": "23F77",
+            "osVersion": "26.5",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 30,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "resultBundle": "build/project-preflight-20261029/pad-native-v2.xcresult"
+    },
+    {
+      "name": "pad-ui-v2",
+      "exitCode": 0,
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "result": "Passed",
+      "devices": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "E10A54FD-290D-41ED-A48A-04F796F520B4",
+            "deviceName": "Crabrix Learn Layout iPad 13 20261026",
+            "modelName": "iPad Pro 13-inch (M5)",
+            "osBuildNumber": "23F77",
+            "osVersion": "26.5",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 1,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "resultBundle": "build/project-preflight-20261029/pad-ui-v2.xcresult"
+    },
+    {
+      "name": "phone-native-v2",
+      "exitCode": 0,
+      "tests": 30,
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0,
+      "result": "Passed",
+      "devices": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "E15299AF-56F1-459D-A70B-392C139805A4",
+            "deviceName": "Crabrix Offline Compiler 20261024",
+            "modelName": "iPhone 17 Pro",
+            "osBuildNumber": "23F77",
+            "osVersion": "26.5",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 30,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "resultBundle": "build/project-preflight-20261029/phone-native-v2.xcresult"
+    },
+    {
+      "name": "phone-ui-v2",
+      "exitCode": 0,
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "result": "Passed",
+      "devices": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "E15299AF-56F1-459D-A70B-392C139805A4",
+            "deviceName": "Crabrix Offline Compiler 20261024",
+            "modelName": "iPhone 17 Pro",
+            "osBuildNumber": "23F77",
+            "osVersion": "26.5",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 1,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "resultBundle": "build/project-preflight-20261029/phone-ui-v2.xcresult"
+    }
+  ],
+  "atUTC": "2026-10-29T01:16:15.647058+00:00",
+  "sourceSHA256": {
+    "Crabrix/Projects/ProjectPreflight.swift": "c8c845a11b998dd6afee53104eff170b786f7cb53971bf1655462578f39342d5",
+    "Crabrix/UI/ProjectPreflightSheet.swift": "7b1bedcce7fb41af9787af3381fe5c095f9c1e5691e90e34100758e56b38913b",
+    "Crabrix/Features/Compiler/CompilerViewModel.swift": "6f14023f09e28bafc6b0b5d0be84d280f233081a1e680169a7ebcc30a4ea9b41",
+    "Crabrix/Packages/CargoPackageManager.swift": "d043641bfed8447e5934e65ab3058fce2ad78ded40b615bdcdceb26095fb9a69",
+    "CrabrixTests/ProjectPreflightTests.swift": "b0f22a042e6debc770be3c334996a9ebe18f1e2e1b06de92c824f5864698ca66",
+    "CrabrixTests/ProjectPreflightEvidenceTests.swift": "77148c24a1878ac22a53ff7cd59d5bf34df96ebabceae6b2f51c19253de11c35",
+    "CrabrixScreenshotTests/RustSemanticUITests.swift": "d4df6d61f28e8cbf13db9e75097917ebe1969e03641b6055d3eaa04360a680f5"
+  },
+  "status": "Simulator-qualified, unreleased; not in App Review build 116",
+  "inspectionDoesNotCompileOrDownload": true,
+  "remaining": [
+    "Full TypeScript checker integration and preparation of dependency declaration closure",
+    "Structured failure requirements beyond known manifest/profile gates",
+    "Physical-device memory/timing measurements when a device is available",
+    "Signed release and public guide update after the next feature gates"
+  ]
+}

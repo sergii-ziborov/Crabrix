@@ -17,6 +17,15 @@ regressions. Signed build **116** is **VALID / IN_BETA_TESTING**; App Review
 selection is tracked in the [delivery receipt](docs/app-store/release-1.1.3-build116.json).
 [Profile](docs/semantic-ide-2026-10-29.md) · [qualification](docs/semantic-ide-qualification-2026-10-29.json).
 
+## Project preflight — unreleased follow-up
+
+The Files report separates Check, linked Build, ordinary Run and Debug for the
+exact source/resources/compiler identity. Known profile requirements are checked
+before compiler work; unknown execution stays unverified. Cargo feature changes
+have a diff preview and preserve the complete original manifest. The phone/iPad
+Simulator matrix passed **62/62** with no skips. These changes are **not in signed
+build 116**. [Scope, limits and remaining work](docs/project-preflight-2026-10-29.md).
+
 ## Native Git — TestFlight 1.1.3 (114)
 
 Build **114** is **VALID / IN_BETA_TESTING**, from signed source `c213fbf`.
@@ -26,7 +35,8 @@ participate in local compilation, Debug and cache identity. Compilation and
 execution stay on the device; the editor/Duo geometry is preserved.
 [Profile and qualification](docs/git-https-portability-2026-10-28.md),
 [delivery identity](docs/app-store/release-1.1.3-build114.json).
-Build 114 is selected for **WAITING_FOR_REVIEW** with manual publication.
+Build 114 was previously selected for review; the current selection is build
+116, **WAITING_FOR_REVIEW**, with manual publication.
 The website guide/capability record and offline source/license downloads are
 published and read back. Build 113 was superseded after these gates passed.
 
