@@ -4,6 +4,24 @@
 
 [Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support/) · [Privacy](https://crabrix.com/privacy/) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
+## MCP 0.2 — local execution qualified, distribution pending
+
+The new bridge has twelve tools, including signed discovery and explicitly
+permitted local Check/Build/Run/Debug, paged diagnostics/locals and owned Stop.
+The relay never executes Rust. The initial execution profile is manifest-free
+standard-library Rust and local modules; normal offline Cargo/Tokio and web
+projects remain separate. Another participant's Run only adds a reported Output
+preview, without starting your compiler or updating your build/learning evidence.
+
+A production browser build plus iPhone/iPad Simulator apps passed the complete
+shared-room flow, including ordinary user Run. Both native UI tests passed;
+36 Node and 36 native checks per device type cover policy, real CryptoKit,
+isolated inputs, cancellation and offline Tokio/async. Physical-device timing
+and a live LLM-provider session are not claimed. [Profile](docs/playground-mcp-local-runtime-2026-10-29.md)
+· [Qualification](docs/playground-mcp-local-runtime-qualification-2026-10-29.json).
+Signed 119 remains the selected review build until the new signed delivery is
+verified; npm/site/TestFlight/review receipts will identify the actual rollout.
+
 ## Shared source integrity — TestFlight 1.1.3 (119)
 
 Incoming Shared edits preserve unshared local configuration and prepared source
@@ -16,9 +34,8 @@ Signed **119** is **VALID / IN_BETA_TESTING**, selected for App Review
 Rust symbols, Git, Atlas, tests, formatting and Debug from 118. The public guide,
 capabilities and equal-height MCP setup cards are updated and checked at six
 viewport/theme combinations. [Delivery receipt](docs/app-store/release-1.1.3-build119.json).
-The published MCP bridge remains **0.1.1**, with eight source/selection tools.
-Its future signed runtime protocol has a separate candidate qualification;
-remote MCP Check/Run/Debug and permission UI are still unwired.
+At build 119 delivery the published bridge was **0.1.1**, with eight
+source/selection tools. It did not contain the new local execution profile above.
 
 ## Local Rust symbols — TestFlight 1.1.3 (116)
 

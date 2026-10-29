@@ -103,7 +103,7 @@ export async function createRuntimeSigner() {
 }
 
 export async function verifyRuntimeEnvelope(input: unknown, context: {
-  room: string; target?: string; sender?: string; editCapability?: string; requireEditProof?: boolean; clock?: () => number;
+  room: string; target?: string; sender?: string; editCapability?: string; requireEditProof?: boolean; readOnly?: boolean; clock?: () => number;
 }): Promise<VerifiedRuntimeFrame> {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("Invalid runtime envelope.");
   const value = input as Record<string, unknown>;
@@ -125,14 +125,16 @@ export async function verifyRuntimeEnvelope(input: unknown, context: {
   const canonicalHeader = JSON.stringify(body);
   const publicKey = await crypto.subtle.importKey("raw", rawKey, curve, false, ["verify"]);
   if (!await crypto.subtle.verify(signatureAlgorithm, publicKey, rawSignature, encoder.encode(canonicalHeader))) throw new Error("Invalid runtime signature.");
-  if (requireEditProof || editProof !== undefined) {
+  if (context.readOnly && requireEditProof) throw new Error("Read-only verification cannot authorize execution.");
+  if (context.readOnly && editProof !== undefined) bytes(editProof, 32, 32);
+  if (!context.readOnly && (requireEditProof || editProof !== undefined)) {
     if (!editCapability || !editProof || !await crypto.subtle.verify("HMAC", await editKey(editCapability, ["verify"]), bytes(editProof, 32, 32), proofInput(canonicalHeader, envelope.signature))) throw new Error("Runtime edit access was not proved.");
   }
   let decoded: unknown;
   try { decoded = freezePayload(JSON.parse(decoder.decode(data))); }
   catch { throw new Error("Invalid runtime payload JSON."); }
   fresh(body, clock());
-  const frame = Object.freeze({ verified: true as const, editAccessProved: editProof !== undefined, header: body, sender: body[3], payload: decoded, canonicalHeader });
+  const frame = Object.freeze({ verified: true as const, editAccessProved: !context.readOnly && editProof !== undefined, header: body, sender: body[3], payload: decoded, canonicalHeader });
   verifiedFrames.add(frame);
   return frame;
 }

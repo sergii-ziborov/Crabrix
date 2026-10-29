@@ -240,3 +240,7 @@ body:has(.pg-workspace) .site-account { border-color:var(--pg-nav-line); backgro
   .pg-workspace[data-pg-layout] .pg-output { grid-column:2; grid-row:2 / 4; border-left:1px solid var(--pg-border); }
   .pg-toolchain { display:none; }
 }
+
+.pg-runtime-permissions { min-width:0; }
+.pg-runtime-key { overflow-wrap:anywhere; font-size:.8rem; }
+.pg-runtime-request { display:grid; gap:.65rem; padding-block:1rem; border-top:1px solid var(--pg-border); }

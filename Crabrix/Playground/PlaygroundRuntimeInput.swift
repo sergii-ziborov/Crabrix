@@ -19,7 +19,7 @@ struct PlaygroundRuntimeInput: Sendable {
             throw PlaygroundFailure("The shared source could not be validated.")
         }
         let files = room.files
-        guard !files.keys.contains(where: { ($0 as NSString).lastPathComponent == "build.rs" || $0 != "Cargo.toml" && $0.hasSuffix("/Cargo.toml") }) else {
+        guard !files.keys.contains(where: { ($0 as NSString).lastPathComponent.lowercased() == "build.rs" || $0 != "Cargo.toml" && ($0 as NSString).lastPathComponent.lowercased() == "cargo.toml" }) else {
             throw PlaygroundFailure("Shared execution supports the standard library and local modules. Build scripts and nested Cargo packages need an ordinary local project run.")
         }
         if let text = files["Cargo.toml"] {

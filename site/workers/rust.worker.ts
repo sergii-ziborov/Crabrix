@@ -1,4 +1,5 @@
 /// <reference lib="webworker" />
+import { runtimeSourceRevision } from '../lib/playground-runtime-source';
 import { WASI, File, Directory, OpenFile, PreopenDirectory, ConsoleStdout } from "@bjorn3/browser_wasi_shim";
 import { gunzipSync, unzipSync } from "fflate";
 import manifest from "../lib/playground-toolchain.json";
@@ -125,6 +126,7 @@ worker.onmessage = async ({ data }) => {
     if (data.type === "initialize") { await initialize(); worker.postMessage({ type: "ready" }); return; }
     if (!compiler || !sysroot) throw new Error("Load the local Rust toolchain first.");
     const source = validatePlaygroundDocument(data.document);
+    const sourceRevision=await runtimeSourceRevision(source);
     const isDebug = data.type === "debug";
     if (isDebug && (!(data.control instanceof SharedArrayBuffer) || data.control.byteLength !== (8192 + 5) * 4)) throw new Error("Debug requires an isolated browser context with shared control memory.");
     if (typeof data.stdin !== "string" || encoder.encode(data.stdin).length > 32 * 1024) throw new Error("stdin must be at most 32 KiB.");
@@ -138,7 +140,7 @@ worker.onmessage = async ({ data }) => {
     let debugging: DebugHost | undefined;
     if (isDebug) {
       const checked = await invoke(compiler, [...args.slice(0, -2), "--emit", "metadata", "-o", "/work/debug-check.rmeta"], "", mounts, true);
-      if (checked.exitCode !== 0) { worker.postMessage({ type: "result", compilation: checked, compileMs: performance.now() - started, durationMs: performance.now() - started }); return; }
+      if (checked.exitCode !== 0) { worker.postMessage({ type: "result", sourceRevision, compilation: checked, compileMs: performance.now() - started, durationMs: performance.now() - started }); return; }
       const plan = instrumentRust(source.files, source.entryFile);
       for (const [path, text] of Object.entries(plan.files)) insert(work, path, new File(encoder.encode(text)));
       const control = new Int32Array(data.control);
@@ -158,7 +160,7 @@ worker.onmessage = async ({ data }) => {
     }
     const compilation = await invoke(compiler, args, "", mounts, true, undefined, isDebug);
     const compileMs = performance.now() - started;
-    if (compilation.exitCode !== 0 || check) { worker.postMessage({ type: "result", compilation, compileMs, durationMs: compileMs }); return; }
+    if (compilation.exitCode !== 0 || check || data.type === "build") { worker.postMessage({ type: "result", sourceRevision, compilation, compileMs, durationMs: compileMs }); return; }
     const output = work.get("program.wasm");
     if (!(output instanceof File)) throw new Error("The compiler did not emit a runnable program.");
     const bounded = limitProgramMemory(output.data);
@@ -166,6 +168,6 @@ worker.onmessage = async ({ data }) => {
     worker.postMessage({ type: "executing" });
     if (debugging) debugging.resumedAt = performance.now();
     const execution = await invoke(await WebAssembly.compile(bounded), [source.name], data.stdin, [], false, debugging);
-    worker.postMessage({ type: "result", compilation, execution, compileMs, durationMs: performance.now() - started });
+    worker.postMessage({ type: "result", sourceRevision, compilation, execution, compileMs, durationMs: performance.now() - started });
   } catch (error) { worker.postMessage({ type: "error", error: error instanceof Error ? error.message : String(error) }); }
 };

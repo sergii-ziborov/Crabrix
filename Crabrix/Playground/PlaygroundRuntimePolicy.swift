@@ -22,18 +22,20 @@ struct PlaygroundRuntimePolicyReply: Decodable, Sendable {
 }
 
 @MainActor
-final class PlaygroundRuntimePolicyCall {
-    private var continuation: CheckedContinuation<PlaygroundRuntimePolicyReply, any Error>?
-    private var result: Swift.Result<PlaygroundRuntimePolicyReply, any Error>?
+final class PlaygroundRuntimeCall<Value: Sendable> {
+    private var continuation: CheckedContinuation<Value, any Error>?
+    private var result: Swift.Result<Value, any Error>?
     var timeout: Task<Void, Never>?
-    func attach(_ continuation: CheckedContinuation<PlaygroundRuntimePolicyReply, any Error>) {
+    func attach(_ continuation: CheckedContinuation<Value, any Error>) {
         if let result { continuation.resume(with: result) }
         else { self.continuation = continuation }
     }
-    func finish(_ result: Swift.Result<PlaygroundRuntimePolicyReply, any Error>) {
+    func finish(_ result: Swift.Result<Value, any Error>) {
         guard self.result == nil else { return }
         self.result = result; timeout?.cancel(); timeout = nil
         continuation?.resume(with: result); continuation = nil
     }
     deinit { timeout?.cancel() }
 }
+
+typealias PlaygroundRuntimePolicyCall = PlaygroundRuntimeCall<PlaygroundRuntimePolicyReply>

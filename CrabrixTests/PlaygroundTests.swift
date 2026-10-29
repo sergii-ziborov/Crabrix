@@ -3,6 +3,21 @@ import XCTest
 
 @MainActor
 final class PlaygroundModelTests: XCTestCase {
+    func testSharedRuntimeResultCannotBecomeLocalBuildOrLearningEvidence() {
+        let name = "crabrix.tests.shared-evidence.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: name)!
+        defer { defaults.removePersistentDomain(forName: name) }
+        let model = CompilerViewModel(userDefaults: defaults)
+        let before = model.exportProject().files
+        model.receiveSharedRuntimeResult(.init(succeeded: true, phase: .run, exitCode: 0, diagnostics: [], stdout: "shared", stderr: "", duration: .zero, detail: "Locally executed"))
+        XCTAssertEqual(model.result?.stdout, "shared")
+        XCTAssertTrue(model.result?.isSharedSourceExecution == true)
+        XCTAssertFalse(model.earnsProgressForCurrentRun)
+        XCTAssertNil(model.lastBuild)
+        XCTAssertEqual(model.exportProject().files, before)
+        XCTAssertFalse(model.canContinueFromLessonResult)
+    }
+
     func testRuntimeSourceIdentityMatchesActualWebCryptoAndExcludesOriginMetadata() throws {
         var document = PlaygroundDocument(name: "Unicode 🦀", entryFile: "main.rs", files: ["🦀.rs": "pub const N: u8 = 1;\n", "main.rs": "fn main() { println!(\"🦀\"); }\n", "é.rs": "// café\n"])
         let codec = try PlaygroundCodec(); _ = try codec.initialize(document)

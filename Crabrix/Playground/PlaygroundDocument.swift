@@ -37,7 +37,7 @@ struct PlaygroundDocument: Codable, Equatable, Sendable {
         for (path, text) in files {
             let suffix = URL(fileURLWithPath: path).pathExtension.lowercased()
             guard path.utf16.count <= 180, !path.hasPrefix("/"), !path.contains("\\"), !path.contains(":"),
-                  !path.components(separatedBy: "/").contains(where: { forbidden.contains($0) }),
+                  !path.components(separatedBy: "/").contains(where: { forbidden.contains($0.lowercased()) }),
                   !path.unicodeScalars.contains(where: { $0.value < 32 || $0.value == 127 }),
                   ["rs", "toml", "lock", "md", "txt"].contains(suffix) || ["LICENSE", "NOTICE"].contains(path.uppercased()),
                   !text.contains("\0"), text.utf8.count <= 65536 else { throw PlaygroundFailure("Playgrounds accept source text only, at most 64 KiB per file. Packages, generated files and images are excluded.") }
@@ -58,7 +58,7 @@ enum PlaygroundLocalFiles {
     private static let privateRoots: Set<String> = ["target", "node_modules", ".git", ".github", ".cargo", "vendor"]
 
     private static func isPrivate(_ path: String) -> Bool {
-        privateRoots.contains(path.components(separatedBy: "/").first ?? "")
+        privateRoots.contains((path.components(separatedBy: "/").first ?? "").lowercased())
     }
 
     static func sharedFiles(in files: [String: String]) -> [String: String] {

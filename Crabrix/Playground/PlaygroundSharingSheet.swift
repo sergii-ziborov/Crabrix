@@ -17,6 +17,7 @@ struct PlaygroundSharingSheet: View {
                         .foregroundStyle(CrabrixTheme.muted)
                     if let session = model.playgroundSession {
                         PlaygroundSessionDetails(session: session, onLeave: model.leavePlayground)
+                        if let runtime = model.playgroundRuntime { PlaygroundRuntimePermissions(runtime: runtime) }
                     } else {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Link lifetime").font(.subheadline.weight(.semibold))
@@ -51,6 +52,38 @@ struct PlaygroundSharingSheet: View {
             .background(CrabrixTheme.background).foregroundStyle(CrabrixTheme.primary)
             .navigationTitle("Share Playground").navigationBarTitleDisplayMode(.inline)
             .toolbar { CrabrixModalCloseAction(label: "Close Playground sharing", isDisabled: creating) { dismiss() } }
+        }
+    }
+}
+private struct PlaygroundRuntimePermissions: View {
+    @ObservedObject var runtime: PlaygroundRuntimeHost
+    private func groupedKey(_ value: String) -> String { stride(from: 0, to: value.count, by: 8).map { String(value.dropFirst($0).prefix(8)) }.joined(separator: " ") }
+    @State private var operations: Set<String> = ["check", "build", "run", "debug"]
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Divider()
+            Label("MCP · Run on this device", systemImage: "desktopcomputer.and.arrow.down").font(.headline)
+            Text("Off until you allow a controller below. Only shared standard-library Rust and local modules run here. Cargo manifests, private files, packages and native libraries require ordinary local Run. Participants can read reported shared output. Jobs stop after two minutes, including pauses.").font(.caption).foregroundStyle(CrabrixTheme.muted)
+            Text("Device key: \(groupedKey(runtime.fingerprint))").font(.caption2.monospaced()).textSelection(.enabled)
+            if let grant = runtime.grant {
+                Text("Allowed: \(grant.name) · \(grant.operations.joined(separator: ", "))").font(.subheadline)
+                Text(Date(timeIntervalSince1970: Double(grant.expires) / 1000), format: .dateTime).font(.caption)
+                Button("Revoke execution permission", role: .destructive) { runtime.revoke() }.buttonStyle(.bordered)
+            }
+            ForEach(runtime.requests, id: \.controller) { request in
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(request.name).font(.headline)
+                    Text(groupedKey(request.controller)).font(.caption2.monospaced()).textSelection(.enabled)
+                    ForEach(request.operations, id: \.self) { operation in
+                        Toggle(operation.capitalized, isOn: Binding(get: { operations.contains(operation) }, set: { if $0 { operations.insert(operation) } else { operations.remove(operation) } }))
+                    }
+                    Button("Allow selected operations · 10 min") { runtime.allow(request, operations: request.operations.filter { operations.contains($0) }) }
+                        .buttonStyle(.borderedProminent).tint(CrabrixTheme.blue).disabled(operations.intersection(request.operations).isEmpty)
+                }
+            }
+            Text(runtime.notice).font(.caption).foregroundStyle(CrabrixTheme.muted)
+            ForEach(runtime.jobs, id: \.id) { job in Text("Shared \(job.operation) · \(job.state) · \(job.stage)").font(.caption) }
+            if runtime.working { Button("Stop Shared job") { runtime.stopOwned() }.buttonStyle(.bordered) }
         }
     }
 }

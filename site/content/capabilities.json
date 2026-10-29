@@ -157,9 +157,9 @@
         {
           "surface": "mcp",
           "state": "published",
-          "version": "0.1.1",
-          "profile": "npm and downloadable local stdio bridge: encrypted Shared rooms, source reads, relay-enforced conditional edits, named UTF-16 selections, creator-only early closure and one-hour default creation. Tested MCP + browser + two Simulator apps. No shell or remote execution.",
-          "evidence": "docs/playground-mcp-npm-2026-10-29.md"
+          "version": "0.2.0",
+          "profile": "Published npm/downloadable stdio bridge: encrypted temporary source, conditional edits, UTF-16 selections, creator closure and optional permission-gated execution on one client. Twelve tools; no backend compiler or host shell.",
+          "evidence": "docs/playground-mcp-local-runtime-qualification-2026-10-29.json"
         }
       ]
     },
@@ -284,6 +284,31 @@
         }
       ],
       "evidence": "docs/shared-source-preservation-qualification-2026-10-29.json"
+    },
+    {
+      "id": "mcp.client-local-execution",
+      "name": "Explicit MCP execution and passive shared output",
+      "surfaces": [
+        {
+          "surface": "browser",
+          "state": "published",
+          "profile": "Default-off local permission, signed target/source/grant/job binding, actual Check/Build/Run/Debug/Step/Stop; std/local modules only, prepared compiler required. Other participants only receive reported output."
+        },
+        {
+          "surface": "ios",
+          "state": "candidate",
+          "version": "1.1.3 (120 candidate)",
+          "profile": "Isolated shared text; no private files/resources/packages, host environment/stdin or implicit downloads. Own results do not certify the saved full project or award lesson progress; passive reports cannot execute."
+        }
+      ],
+      "limits": {
+        "grantSeconds": 600,
+        "jobWallSeconds": 120,
+        "ownedStreamBytes": 65536,
+        "presencePayloadBytes": 768,
+        "breakpoints": 16
+      },
+      "evidence": "docs/playground-mcp-local-runtime-qualification-2026-10-29.json"
     }
   ],
   "verifiedAtUTC": "2026-10-29T02:17:10.236534+00:00"

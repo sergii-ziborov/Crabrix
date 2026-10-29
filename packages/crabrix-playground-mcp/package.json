@@ -1,6 +1,6 @@
 {
   "name": "crabrix-playground-mcp",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Connect Claude and other MCP clients to an encrypted Crabrix Playground. Edit together; run locally on your phone.",
   "type": "module",
   "bin": {

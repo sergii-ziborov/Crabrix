@@ -30,6 +30,8 @@ final class CompilerInvocationCancellationTests: XCTestCase {
         let compiler = WasmRustCompiler(), token = CompilerInvocationCancellation()
         token.cancel()
         let result = await compiler.check(source: "fn main() {}", cancellation: token)
+        for _ in 0..<100 where compiler.hasPendingInvocations { try? await Task.sleep(for: .milliseconds(1)) }
+        XCTAssertFalse(compiler.hasPendingInvocations, "A cancelled invocation must release its compiler-queue reservation")
         XCTAssertFalse(result.succeeded)
         XCTAssertTrue(result.detail.localizedCaseInsensitiveContains("stopped"), result.detail)
     }

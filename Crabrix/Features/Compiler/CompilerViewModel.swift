@@ -260,7 +260,7 @@ final class CompilerViewModel: ObservableObject {
         if debugBreakpoints.contains(value) { debugBreakpoints.remove(value) } else { debugBreakpoints.insert(value) }
         debugSession?.updateBreakpoints(debugBreakpoints)
     }
-    func resumeDebug(_ command: RustDebugSession.Command) { debugPause = nil; debugSession?.resume(command) }
+    func resumeDebug(_ command: RustDebugSession.Command) { debugPause = nil; if playgroundRuntime?.working == true { playgroundRuntime?.resumeLocal(command) } else { debugSession?.resume(command) } }
     func pauseDebug() { debugSession?.requestPause() }
     func debug() {
         guard compilerProjectSnapshot(from: projectSnapshot()).entryPath.hasSuffix(".rs") else { result = .failure(phase: .setup, detail: "Debug is available for Rust source projects. Browser projects use normal Run and their Web Preview console."); return }
@@ -295,6 +295,7 @@ final class CompilerViewModel: ObservableObject {
     private var activeLessonInitialSourceTreeHash: String?
     private var activeLessonObservedDiagnosticCodes: Set<String> = []
     @Published private(set) var playgroundSession: PlaygroundLiveSession?
+    @Published private(set) var playgroundRuntime: PlaygroundRuntimeHost?
     @Published private(set) var playgroundStatus = ""
     @Published private(set) var playgroundLocalSelection: PlaygroundRemoteSelection?
     @Published private(set) var playgroundSelections: [PlaygroundRemoteSelection] = []
@@ -381,8 +382,8 @@ final class CompilerViewModel: ObservableObject {
         }
     }
 
-    var isBusy: Bool { activity != .idle }
-    var earnsProgressForCurrentRun: Bool { !activeLessonIsReview }
+    var isBusy: Bool { activity != .idle || playgroundRuntime?.working == true }
+    var earnsProgressForCurrentRun: Bool { !activeLessonIsReview && result?.isSharedSourceExecution != true }
     var canContinueFromLessonResult: Bool {
         guard let activeLessonID else { return false }
         return completedLessonIDs.contains(activeLessonID)
@@ -583,6 +584,7 @@ final class CompilerViewModel: ObservableObject {
     }
 
     private func attachPlayground(_ connection: PlaygroundLiveSession, needsInitialProject: Bool) {
+        playgroundRuntime?.stop(); playgroundRuntime = nil
         playgroundSession?.stop()
         playgroundSession = connection
         playgroundStatus = connection.status
@@ -634,9 +636,34 @@ final class CompilerViewModel: ObservableObject {
                 if value.contains("expired") || value.hasPrefix("Reconnecting") { projectTransfer = .failed(value) }
             }
         }
+        let runtime = PlaygroundRuntimeHost(session: connection, compiler: compiler, localState: { [weak self] in
+            guard let self else { return ("detached", false, true) }
+            return (projectID.uuidString, toolchain.isReady, compiler.hasPendingInvocations || activity != .idle || gitIsWorking || isProjectOperationInProgress || isCompilerDraining || diagnosticAdviceState.isWorking)
+        }, onResult: { [weak self, weak connection] value in
+            guard let self, playgroundSession === connection else { return }
+            receiveSharedRuntimeResult(value)
+        })
+        runtime.onDebug = { [weak self, weak connection] session, sites, pause in
+            guard let self, playgroundSession === connection else { return }
+            debugSession = session; debugActive = session != nil; debugPause = pause
+            if let sites { debugSites = sites }
+        }
+        runtime.onStage = { [weak self, weak connection] label in
+            guard let self, playgroundSession === connection else { return }
+            if label.hasPrefix("Shared ") { buildEvents = []; result = nil; unitTestReport = nil }
+            appendBuildStage(label)
+        }
+        runtime.onChange = { [weak self] in self?.objectWillChange.send() }
+        playgroundRuntime = runtime
+    }
+
+    func receiveSharedRuntimeResult(_ value: CompilationResult) {
+        result = CompilationResult(succeeded: value.succeeded, phase: value.phase, exitCode: value.exitCode, diagnostics: value.diagnostics,
+            stdout: value.stdout, stderr: value.stderr, duration: value.duration, detail: value.detail + "\nShared source only · local execution · no saved-project build evidence", isSharedSourceExecution: true)
     }
 
     func leavePlayground() {
+        playgroundRuntime?.stop(); playgroundRuntime = nil
         playgroundSession?.stop(); playgroundSession = nil; playgroundSelections = []; playgroundLocalSelection = nil; playgroundStatus = ""
     }
 
@@ -958,6 +985,7 @@ final class CompilerViewModel: ObservableObject {
         resetDiagnosticAdvice()
         let preparationRevision = workspaceRevision
         activity = mode
+        playgroundRuntime?.clearSharedOutput()
         result = nil
         unitTestReport = nil
         buildEvents = []
@@ -1262,6 +1290,10 @@ final class CompilerViewModel: ObservableObject {
             }
             if !plan.isEmpty { cargoStage = .ready }
             finish(value, revision: revision, recordsLearningEvidence: mode != .testing, isDebugExecution: debugging)
+            if mode == .running, plan.isEmpty, resourceFiles.isEmpty {
+                var sharedFiles = compilerProject.supporting; sharedFiles[compilerProject.entryPath] = compilerProject.main
+                playgroundRuntime?.reportLocalResult(value, entry: compilerProject.entryPath, files: sharedFiles, edition: rootEdition)
+            }
             // A build is the only source of verified compatibility, so refresh
             // the package list with whatever the compiler just learned.
             if !plan.isEmpty, let manifestSource {
@@ -1670,6 +1702,7 @@ final class CompilerViewModel: ObservableObject {
     }
 
     func cancelBuild() {
+        if playgroundRuntime?.working == true { playgroundRuntime?.stopOwned(); return }
         guard isBusy, activeCompilationID != nil else { return }
         debugSession?.stop(); debugSession = nil; debugSessionID = nil; debugActive = false; debugPause = nil
         // Interrupt the guest itself; the task cancellation below only detaches

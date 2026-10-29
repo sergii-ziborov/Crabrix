@@ -1,9 +1,9 @@
 {
-  "version": "0.1.1",
-  "url": "/downloads/crabrix-playground-mcp-0.1.1.tgz",
-  "bytes": 235149,
-  "sizeLabel": "230 KiB",
-  "sha256": "883ec089d808fa91ec26fffab18b7ba4232d95e3d74fc3d88e99a38c009b4d5b",
-  "noticesURL": "/downloads/crabrix-playground-mcp-0.1.1-NOTICES.txt",
-  "licenseURL": "/downloads/crabrix-playground-mcp-0.1.1-LICENSE.txt"
+  "version": "0.2.0",
+  "url": "/downloads/crabrix-playground-mcp-0.2.0.tgz",
+  "bytes": 243090,
+  "sizeLabel": "237 KiB",
+  "sha256": "ce724f2d1b150010affc49c025afdf1c0a7e39be86d2abeb0c4d24dc6dcb887d",
+  "noticesURL": "/downloads/crabrix-playground-mcp-0.2.0-NOTICES.txt",
+  "licenseURL": "/downloads/crabrix-playground-mcp-0.2.0-LICENSE.txt"
 }

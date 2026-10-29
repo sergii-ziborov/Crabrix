@@ -33,7 +33,10 @@ await mkdir(path.join(root, "dist"), { recursive: true });
 await writeFile(path.join(root, "ThirdPartyNotices.txt"), notices.join("\n"));
 await writeFile(path.join(root, "dist/components.json"), JSON.stringify([...packages].map(([name, { info }]) => ({ name, license: info.license })), null, 2) + "\n");
 const sources = {};
-for (const file of ["src/cli.ts", "src/server.ts", "src/room.ts", "package.json", "LICENSE", "../../site/lib/playground-collab.ts", "../../site/lib/playground-presence.ts", "../../site/lib/playground-document.ts", "../../site/lib/playground-crypto.ts", "../../site/lib/playground-session.ts"]) {
-  sources[file.startsWith("../../") ? file.slice(6) : "packages/crabrix-playground-mcp/" + file] = createHash("sha256").update(await readFile(path.resolve(root, file))).digest("hex");
+const repository = path.resolve(root, "../..");
+for (const input of new Set([...Object.keys(result.metafile.inputs).filter(file => !file.includes("node_modules")), "package.json", "LICENSE", "README.md"])) {
+  const file = path.resolve(root, input), relative = path.relative(repository, file);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) throw new Error("Bundled source is outside the repository.");
+  sources[relative.split(path.sep).join("/")] = createHash("sha256").update(await readFile(file)).digest("hex");
 }
 await writeFile(path.join(root, "dist/source-manifest.json"), JSON.stringify({ version: JSON.parse(await readFile(path.join(root, "package.json"), "utf8")).version, sourceSHA256: sources }, null, 2) + "\n");

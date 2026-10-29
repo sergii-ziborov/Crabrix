@@ -19,6 +19,25 @@ final class PlaygroundRuntimeProtocolTests: XCTestCase {
         return try JSONSerialization.data(withJSONObject: value)
     }
 
+    func testNativeHostDisplaysSignedPeerOutputWithoutAnyExecutionEffectOrGrant() async throws {
+        let codec = try PlaygroundCodec(), peer = PlaygroundRuntimeSigner(), host = PlaygroundRuntimeSigner()
+        defer { peer.destroy(); host.destroy() }
+        let document = PlaygroundDocument(name: "passive", entryFile: "main.rs", files: ["main.rs":"fn main() {}"])
+        _ = try codec.initialize(document)
+        let revision = try codec.runtimeSourceIdentity().revision
+        var local: [String:Any] = ["room":room,"target":host.fingerprint,"scope":"native-passive","revision":revision,"editCapability":String(repeating:"V",count:43),"expires":Wire.milliseconds()+3600000,"foreground":true,"connected":true,"editConfirmed":false,"ready":false,"busy":false,"name":"Native viewer","debug":true,"profileReady":true,"paths":["main.rs"],"lines":[1]]
+        _ = try await codec.runtimeHostCall(["action":"initialize","context":local])
+        let payload: [String:Any] = ["role":"host","name":"Other iPad","profile":"shared-std-v1","output":["id":"peer-output-12345678","stdout":"hello 🦀","stderr":"","truncated":false,"succeeded":true,"exitCode":0]]
+        let envelope = try peer.sign(.init(kind:"capabilities",room:room,target:"",requestID:"passive-output-123456",operation:"discover",revision:revision),payload:JSONSerialization.data(withJSONObject:payload),editCapability:capability)
+        let reply = try await codec.runtimeHostCall(["action":"frame","context":local,"envelope":String(decoding:envelope,as:UTF8.self)])
+        XCTAssertEqual(reply.sharedOutput?.stdout,"hello 🦀")
+        XCTAssertTrue(reply.effects?.isEmpty == true); XCTAssertTrue(reply.jobs?.isEmpty == true); XCTAssertNil(reply.grant)
+        local["busy"] = true
+        let busy = try await codec.runtimeHostCall(["action":"tick","context":local])
+        XCTAssertNil(busy.sharedOutput); XCTAssertTrue(busy.effects?.isEmpty == true)
+        XCTAssertEqual(try codec.call(["type":"document"]).document,document)
+    }
+
     func testCommonPermissionPolicyActuallyVerifiesThroughNativeCryptoKitAndRequiresLocalAllow() async throws {
         let codec = try PlaygroundCodec(), controller = PlaygroundRuntimeSigner(), host = PlaygroundRuntimeSigner()
         defer { controller.destroy(); host.destroy() }

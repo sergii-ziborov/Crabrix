@@ -46,6 +46,7 @@ struct BuildDockView<CodeContent: View>: View {
 
     let project: CrabrixProject
     let result: CompilationResult?
+    var sharedOutput: PlaygroundRuntimeHostReply.SharedOutput? = nil
     var unitTestReport: RustUnitTestReport? = nil
     let activity: CompilerViewModel.Activity
     let buildEvents: [BuildStageEvent]
@@ -87,6 +88,7 @@ struct BuildDockView<CodeContent: View>: View {
         terminal: ProjectTerminalSession,
         project: CrabrixProject,
         result: CompilationResult?,
+        sharedOutput: PlaygroundRuntimeHostReply.SharedOutput? = nil,
         unitTestReport: RustUnitTestReport? = nil,
         activity: CompilerViewModel.Activity,
         buildEvents: [BuildStageEvent] = [],
@@ -125,6 +127,7 @@ struct BuildDockView<CodeContent: View>: View {
         self.terminal = terminal
         self.project = project
         self.result = result
+        self.sharedOutput = sharedOutput
         self.unitTestReport = unitTestReport
         self.activity = activity
         self.buildEvents = buildEvents
@@ -331,6 +334,7 @@ struct BuildDockView<CodeContent: View>: View {
 
     private var outputContent: some View {
         OutputDockContent(
+            sharedOutput: sharedOutput,
             result: result,
             unitTestReport: unitTestReport,
             onOpenDiagnostic: onOpenDiagnostic,
@@ -519,6 +523,7 @@ private struct ProblemsDockContent: View {
 }
 
 private struct OutputDockContent: View {
+    var sharedOutput: PlaygroundRuntimeHostReply.SharedOutput? = nil
     @State private var isHintExpanded = false
     let result: CompilationResult?
     let unitTestReport: RustUnitTestReport?
@@ -595,6 +600,15 @@ private struct OutputDockContent: View {
         GeometryReader { available in
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
+                    if let sharedOutput, activity == .idle {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Shared output from \(sharedOutput.name)").font(.headline)
+                            Text("Reported by that participant · no code ran on this device").font(.caption).foregroundStyle(CrabrixTheme.muted)
+                            if sharedOutput.truncated { Text("Preview truncated. Full output stays on the executing client.").font(.caption).foregroundStyle(CrabrixTheme.muted) }
+                            Text(sharedOutput.stdout.isEmpty ? "(No stdout)" : sharedOutput.stdout).font(.caption.monospaced()).textSelection(.enabled)
+                            if !sharedOutput.stderr.isEmpty { Text(sharedOutput.stderr).font(.caption.monospaced()).foregroundStyle(CrabrixTheme.coral).textSelection(.enabled) }
+                        }.frame(maxWidth: .infinity, alignment: .leading).padding(12).background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 12)).accessibilityIdentifier("shared-runtime-output")
+                    }
                     if let snapshot = result?.webPreview {
                         OfflineWebPreviewPanel(snapshot: snapshot, height: min(640, available.size.height - 110),
                             onError: { onWebError(snapshot.id, $0) })
@@ -620,11 +634,11 @@ private struct OutputDockContent: View {
                         .padding(12)
                         .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 12))
                     }
-                    if !hasProgramOutput {
+                    if !hasProgramOutput && sharedOutput == nil {
                         Spacer(minLength: 16)
                     }
 
-                    if !hasProgramOutput {
+                    if !hasProgramOutput && sharedOutput == nil {
                         emptyOutputCard
                     }
 
@@ -700,7 +714,7 @@ private struct OutputDockContent: View {
 
                     hintPanel
 
-                    if !hasProgramOutput {
+                    if !hasProgramOutput && sharedOutput == nil {
                         Spacer(minLength: 16)
                     }
                 }

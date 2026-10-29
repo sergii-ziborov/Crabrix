@@ -85,6 +85,10 @@ final class WasmRustCompiler: @unchecked Sendable {
     private var checkCacheOrder: [String] = []
     private let interrupterLock = NSLock()
     private var activeInterrupter: WasmInterrupter?
+    private var pendingInvocations = 0
+    var hasPendingInvocations: Bool { interrupterLock.lock(); defer { interrupterLock.unlock() }; return pendingInvocations > 0 }
+    private func beginInvocation() { interrupterLock.lock(); pendingInvocations += 1; interrupterLock.unlock() }
+    private func endInvocation() { interrupterLock.lock(); pendingInvocations -= 1; interrupterLock.unlock() }
     private var memoryWarningObserver: NSObjectProtocol?
 
     init(bundle: Bundle = .main, ledger: CrateCompatibilityLedger = .shared,
@@ -247,8 +251,10 @@ final class WasmRustCompiler: @unchecked Sendable {
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
         onStage: (@Sendable (String) -> Void)? = nil
     ) async -> CompilationResult {
-        await withCheckedContinuation { continuation in
+        beginInvocation()
+        return await withCheckedContinuation { continuation in
             queue.async(qos: .userInitiated, flags: .enforceQoS) { [self] in
+                defer { endInvocation() }
                 let checked = execute(action: .check, source: source, sourcePath: sourcePath, supportingFiles: supportingFiles, resourceFiles: resourceFiles, edition: edition, plan: plan, cancellation: cancellation, onDependencyProgress: onDependencyProgress, onStage: onStage)
                 guard checked.succeeded else { continuation.resume(returning: checked); return }
                 guard !session.isStopped, cancellation?.isCancelled != true else { continuation.resume(returning: .failure(phase: .setup, detail: "Debug stopped before execution.")); return }
@@ -315,9 +321,11 @@ final class WasmRustCompiler: @unchecked Sendable {
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?,
         onStage: (@Sendable (String) -> Void)?
     ) async -> CompilationResult {
-        await withCheckedContinuation { continuation in
+        beginInvocation()
+        return await withCheckedContinuation { continuation in
             queue.async(qos: action == .check ? .utility : .userInitiated,
                         flags: .enforceQoS) { [self] in
+                defer { endInvocation() }
                 assert(!Thread.isMainThread, "Bundled rustc must never execute on the UI thread")
                 continuation.resume(
                     returning: execute(

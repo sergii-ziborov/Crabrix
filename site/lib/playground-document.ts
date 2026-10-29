@@ -59,7 +59,7 @@ export function validatePlaygroundDocument(input: unknown): PlaygroundDocument {
   let size = 0;
   for (const [path, text] of entries) {
     const parts = path.split("/");
-    if (path.length > 180 || !isWellFormedUTF16(path) || path.startsWith("/") || path.includes("\\") || path.includes(":") || parts.length > 32 || parts[0].toLowerCase() === ".crabrix" || parts.some(part => !part || encoder.encode(part).length > 255 || part === "." || part === ".." || forbidden.has(part) || part.toLowerCase() === ".git" || part === "__proto__" || part === "constructor" || part === "prototype") ||
+    if (path.length > 180 || !isWellFormedUTF16(path) || path.startsWith("/") || path.includes("\\") || path.includes(":") || parts.length > 32 || parts[0].toLowerCase() === ".crabrix" || parts.some(part => !part || encoder.encode(part).length > 255 || part === "." || part === ".." || forbidden.has(part.toLowerCase()) || part.toLowerCase() === ".git" || part === "__proto__" || part === "constructor" || part === "prototype") ||
         !allowed.test(path) || /[\u0000-\u001f\u007f]/.test(path)) throw new Error(`Unsupported source path: ${path.slice(0, 80)}`);
     const key = canonical(path);
     if (canonicalPaths.has(key)) throw new Error("Source paths collide on a native filesystem. No source was changed.");

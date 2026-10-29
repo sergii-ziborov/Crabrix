@@ -18,6 +18,8 @@ struct CompilationResult: Sendable {
     let stderr: String
     let duration: Duration
     let detail: String
+    /// Isolated shared source is not saved-project or learning evidence.
+    var isSharedSourceExecution = false
     var webPreview: WebPreviewSnapshot? = nil
 
     var wasStopped: Bool {

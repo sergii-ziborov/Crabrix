@@ -10,6 +10,7 @@ xcrun swiftc -O -parse-as-library \
   Crabrix/Playground/PlaygroundCodec.swift \
   Crabrix/Playground/PlaygroundRuntimeCryptography.swift \
   Crabrix/Playground/PlaygroundRuntimePolicy.swift \
+  Crabrix/Playground/PlaygroundRuntimeHostTypes.swift \
   Crabrix/Playground/PlaygroundRuntimeProtocol.swift \
   Crabrix/Playground/PlaygroundEncryption.swift \
   Crabrix/Playground/PlaygroundLiveSession.swift \

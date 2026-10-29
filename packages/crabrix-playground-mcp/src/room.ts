@@ -1,3 +1,6 @@
+import { runtimeSource, runtimeSourceRevision } from "../../../site/lib/playground-runtime-source";
+import { RuntimeController } from "../../../site/lib/playground-runtime-controller";
+import type { RuntimeOperation } from "../../../site/lib/playground-runtime-protocol";
 import { createHash } from "node:crypto";
 import { createPresence, remoteSelections } from "../../../site/lib/playground-presence";
 import { Y, documentFromY, updateYDocument, yDocument } from "../../../site/lib/playground-collab";
@@ -26,6 +29,7 @@ export function authorizedLink(input: string, origin = ORIGIN): PlaygroundLink {
 
 export class PlaygroundRoom {
   private session?: PlaygroundSession;
+  private runtime?: RuntimeController;
   private doc?: Y.Doc;
   private awareness?: ReturnType<typeof createPresence>;
   private owner?: { id: string; access: string };
@@ -68,6 +72,7 @@ export class PlaygroundRoom {
         const position = Y.relativePositionToJSON(Y.createRelativePositionFromTypeIndex(entry, 0));
         awareness.setLocalStateField("cursor", { anchor: position, head: position });
       }
+      this.runtime = await RuntimeController.create(session, awareness, () => documentFromY(doc));
       return await this.status();
     } catch (error) { this.disconnect(); throw error; }
   }
@@ -166,7 +171,14 @@ export class PlaygroundRoom {
     });
   }
 
+  async runtimeClients() { if (!this.runtime || !this.doc) throw new Error("Connect to a Playground first."); const source=documentFromY(this.doc); return {...this.runtime.status(),source:{revision:await runtimeSourceRevision(source),paths:runtimeSource(source).paths}}; }
+  async runtimeRequest(target: string, operations: string[]) { if (!this.runtime) throw new Error("Connect to a Playground first."); return this.runtime.request(target,operations); }
+  async runtimeCommand(target: string, operation: RuntimeOperation, sourceRevision: string, job = "", arguments_: Record<string, unknown> = {}) {
+    if (!this.runtime) throw new Error("Connect to a Playground first."); return this.runtime.command(target,operation,sourceRevision,job,arguments_);
+  }
+
   disconnect() {
+    this.runtime?.close(); this.runtime = undefined;
     this.session?.stop(); this.awareness?.destroy(); this.doc?.destroy();
     this.session = undefined; this.awareness = undefined; this.doc = undefined; this.owner = undefined; this.connection = "Disconnected";
     return { connected: false, note: "This MCP participant disconnected. Other participants and the room are unchanged." };

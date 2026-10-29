@@ -1,0 +1,7 @@
+Work together with Crabrix Playground MCP 0.2.0. Ask your MCP assistant to edit Rust and point to code on your phone, tablet or browser. Allow Check, Build, Run and Debug on one chosen client from Share Playground. Permission starts off and can be revoked at any time.
+
+Run stays local. Another participant's Run only sends a reported output preview to your Output panel; it never starts your compiler. Shared execution uses the exact shared standard-library Rust and local modules, with no private project files, implicit package downloads or server execution. Normal offline Cargo and Rust + Web projects retain their existing features.
+
+Inspect actual diagnostics and String, Vec and local structure values, step, change breakpoints and stop the owned Debug job through MCP. Build compiles without running main. Source changes and expired permissions stop stale work.
+
+Includes Shared local-file preservation, on-device TypeScript checks, exact-source preflight, Rust symbols, native Git, unit tests, rustfmt and offline Atlas. Existing phone, iPad and Duo editor layouts remain.

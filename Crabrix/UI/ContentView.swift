@@ -198,7 +198,7 @@ struct ContentView: View {
                     projectName: model.projectName,
                     fileCount: model.fileNames.count,
                     lastBuild: model.lastBuild,
-                    activity: model.activity,
+                    activity: model.playgroundRuntime?.working == true ? .running : model.activity,
                     isCompilerDraining: model.isCompilerDraining,
                     projectCount: model.allProjects.count,
                 onOpenCurrentProject: openCodeWorkspace,
@@ -599,6 +599,7 @@ struct ContentView: View {
             }
         }
         .onChange(of: scenePhase) { _, phase in
+            model.playgroundRuntime?.setForeground(phase == .active)
             if phase != .active { model.stopTypeScriptForBackground() }
             guard phase == .active, !appLock.isLocked else { return }
             Task { await model.consumePendingSharedImport() }
@@ -807,7 +808,7 @@ struct ContentView: View {
                 browserProject: model.isBrowserProject,
                 saveState: model.saveState,
                 onSaveStatus: { isSaveStatusPresented = true },
-                activity: model.activity,
+                activity: model.playgroundRuntime?.working == true ? .running : model.activity,
                 cargoStage: model.cargoStage,
                 debugPaused: model.debugPause != nil,
                 files: model.fileNames,
@@ -832,8 +833,9 @@ struct ContentView: View {
                 terminal: terminal,
                 project: model.exportProject(),
                 result: model.result,
+                sharedOutput: model.playgroundRuntime?.sharedOutput,
                 unitTestReport: model.unitTestReport,
-                activity: model.activity,
+                activity: model.playgroundRuntime?.working == true ? .running : model.activity,
                 buildEvents: model.buildEvents,
                 onShowPackageProgress: { model.isPackageProgressPresented = true },
                 onWebError: model.recordWebPreviewFailure,
@@ -1032,7 +1034,7 @@ struct ContentView: View {
                     projectName: model.projectName,
                     searchQuery: $editorSearchQuery,
                     transfer: model.projectTransfer,
-                    activity: model.activity,
+                    activity: model.playgroundRuntime?.working == true ? .running : model.activity,
                     canRun: model.canStartBuild && !model.isProjectOperationInProgress,
                     onCheck: model.check,
                     onRun: model.run,
@@ -1429,6 +1431,7 @@ struct ContentView: View {
 
     /// Turns a finished build into rating, once per result.
     private func recordBuildProgress(_ result: CompilationResult) {
+        if result.isSharedSourceExecution { lastContribution = nil; return }
         guard result.succeeded, result.phase == .run else { return }
         // A completed lesson is review-only. The editor does not add its typing
         // to the ledger, and this run earns no additional rating.

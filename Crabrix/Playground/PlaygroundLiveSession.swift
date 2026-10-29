@@ -19,6 +19,10 @@ final class PlaygroundLiveSession: ObservableObject {
     var onStatus: ((String) -> Void)?
     var onRuntimeFrames: (([PlaygroundCodec.RuntimePresenceFrame]) -> Void)?
     var onRuntimeReset: (() -> Void)?
+    var onRuntimeSourceChanged: (() -> Void)?
+    var runtimeConnected: Bool { connected && !stopped && !expired }
+    var runtimeEpoch: UInt64 { runtimeConnection }
+    func runtimeHostCall(_ request: [String: Any]) async throws -> PlaygroundRuntimeHostReply { try await codec.runtimeHostCall(request) }
     private let codec: PlaygroundCodec
     private let origin: URL
     private let network: URLSession
@@ -141,7 +145,11 @@ final class PlaygroundLiveSession: ObservableObject {
     func closeRoom() async throws {
         guard let owner else { throw PlaygroundFailure("Only the creator can end this room early.") }
         var request = request(); request.httpMethod = "DELETE"; request.setValue("Bearer " + owner, forHTTPHeaderField: "Authorization")
-        let (data, response) = try await network.data(for: request); try Self.check(response, data: data)
+        // A closed SSE stream invalidates network; keep DELETE's own
+        // acknowledgement alive until its response has been read.
+        let closing = URLSession(configuration: .ephemeral)
+        defer { closing.finishTasksAndInvalidate() }
+        let (data, response) = try await closing.data(for: request); try Self.check(response, data: data)
         expire()
     }
     private func expire() { expired = true; stop() }
@@ -169,7 +177,7 @@ final class PlaygroundLiveSession: ObservableObject {
         return (data, code)
     }
     private func absorb(_ value: PlaygroundCodec.Result) throws {
-        if let next = value.document, document != next { document = next; onDocument?(next) }
+        if let next = value.document, document != next { document = next; onRuntimeSourceChanged?(); onDocument?(next) }
         if let next = value.selections, selections != next { selections = next; onSelections?(next) }
         if let selection = value.localSelection { onLocalSelection?(selection) }
         if let count = value.participants { participants = count }

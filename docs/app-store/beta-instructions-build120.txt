@@ -1,0 +1,10 @@
+Build 120: qualify optional MCP local execution and retain the existing offline editor.
+
+1. Create/join a one-hour Playground. Open the same link in the website and another Crabrix app. Edit code both ways and select Unicode text; no edit should run code automatically.
+2. Install crabrix-playground-mcp@0.2.0 on a computer and connect the room. Discover runtime clients. In Share on ONE selected device, compare fingerprints, choose operations and explicitly Allow. An edit link alone is insufficient.
+3. Check/Build/Run manifest-free Rust with local modules. Inspect actual status, stdout/stderr and diagnostics. Build must not run main. Start acknowledgement is not success. No compiler/package download starts through MCP.
+4. Debug String, Vec and a concrete struct. Inspect locals, step, set a shared-source breakpoint, Continue and Stop. A late Stop cannot stop a later ordinary Run. Shared jobs expire after two minutes including pauses; grant max ten minutes.
+5. Run on ONE participant. Others show reported output only; no local compilation, lesson completion, verified-build record or debugger takeover. Test phone ↔ tablet ↔ browser. Large previews explicitly truncate; full owned streams remain on the executing client.
+6. Revoke, background, disconnect, expire or change source during a job. Stale/other-device commands must not queue execution. View-only links can see output but cannot control execution.
+7. Repeat ordinary Cargo/Tokio/async Debug, Rust + Web generators, npm browser preparation, offline TypeScript, Git, tests/rustfmt, Atlas and saving/recovery. Private configuration/resources remain outside shared execution. No new physical-iPhone timing claim.
+8. Check phone/iPad/Duo layouts, original four dock tabs, terminal/editor keyboard transitions and modal controls. No app login required.

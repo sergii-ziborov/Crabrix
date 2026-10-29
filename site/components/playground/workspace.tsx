@@ -10,6 +10,8 @@ import { newPlaygroundDocument, sourceBytes, validatePlaygroundDocument, type Pl
 import { createPlayground, parsePlaygroundLink, playgroundLink, PlaygroundSession, type PlaygroundLink, type CreatedPlayground } from "@/lib/playground-session";
 import { PlaygroundCodeEditor, type EditorPreferences } from "./code-editor";
 import { useRustCompiler } from "./use-rust-compiler";
+import { useRuntimeHost } from "./use-runtime-host";
+import { RuntimePermissions } from "./runtime-permissions";
 import { importPublicSource } from "@/lib/playground-import";
 import toolchain from "@/lib/playground-toolchain.json";
 
@@ -37,6 +39,8 @@ export default function PlaygroundWorkspace() {
   const [filePane, setFilePane] = useState(false), [importText, setImportText] = useState("");
   const disposal = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const compiler = useRustCompiler();
+  const [liveSession,setLiveSession] = useState<PlaygroundSession|null>(null);
+  const runtime = useRuntimeHost(liveSession,awareness,()=>documentFromY(doc),compiler);
   const [breakpoints, setBreakpoints] = useState<Record<string, number[]>>({});
   const debugStatus = useRef({ active: false, stop: compiler.stop }); debugStatus.current = { active: compiler.debugging, stop: compiler.stop };
   const toggleBreakpoint = useCallback((file: string, line: number) => setBreakpoints(previous => ({ ...previous, [file]: previous[file]?.includes(line) ? previous[file].filter(value => value !== line) : [...(previous[file] ?? []), line].sort((a, b) => a - b) })), []);
@@ -65,7 +69,7 @@ export default function PlaygroundWorkspace() {
       if (initial) {
         setLink(initial); setExpiresAt(initial.expiresAt); setConnection("Decrypting the temporary Playground…");
         const connection = new PlaygroundSession(doc, initial, setConnection, () => setExpired(true), awareness);
-        session.current = connection; void connection.start();
+        session.current = connection; setLiveSession(connection); void connection.start();
       } else {
         updateYDocument(doc, newPlaygroundDocument(), "initial");
         setExpiresAt(createdAt.current + 3600_000);
@@ -105,7 +109,7 @@ export default function PlaygroundWorkspace() {
       const result = await createPlayground(doc, lifetime);
       setCreated(result); setLink(result); setExpiresAt(result.expiresAt);
       const connection = new PlaygroundSession(doc, result, setConnection, () => setExpired(true), awareness);
-      session.current = connection; void connection.start();
+      session.current = connection; setLiveSession(connection); void connection.start();
       history.replaceState(null, "", playgroundLink(result));
       return result;
     } finally { setSharing(false); }
@@ -186,7 +190,7 @@ export default function PlaygroundWorkspace() {
         <div className="pg-dock-tabs" role="tablist" aria-label="Build panels">{[["output", "Output"], ["problems", `Problems ${diagnostics.filter(item => item.level === "error").length}`], ["debug", "Debug"], ["stdin", "Input"], ["details", "Session"]].map(([key, label]) => <button key={key} role="tab" aria-selected={dock === key} className={dock === key ? "pg-tab pg-tab-active" : "pg-tab"} onClick={() => setDock(key)}>{label}</button>)}</div>
         <section className="pg-output" aria-live="polite">
           {dock === "debug" ? <>{!compiler.debugPause ? <div className="pg-stage">{compiler.stage}</div> : null}<DebugPanel key={compiler.debugPause?.runningMs ?? "running"} paused={compiler.debugPause} active={compiler.debugging} command={compiler.command} pause={compiler.pauseDebug} breakpoints={breakpoints} remove={toggleBreakpoint} /></> : null}
-          {dock === "output" ? <><div className="pg-stage">{compiler.stage}</div>{output ? <><pre>{output.stdout || "(No stdout)"}</pre>{output.stderr || output.trap ? <pre className="pg-error-text">{output.stderr}{output.trap}</pre> : null}<p className="pg-build-time">Exit {output.exitCode} · {(compiler.result!.durationMs / 1000).toFixed(2)}s total · compiled locally</p></> : <p>{compiler.ready ? "Use Run to execute the current Rust source." : `First Run downloads the verified Rust toolchain (${transferMiB} MiB). It is cached on this device when browser storage allows. Source is never sent for compilation.`}</p>}</> : null}
+          {dock === "output" ? <>{runtime.status?.sharedOutput && compiler.activity==='idle' ? <article aria-label="Shared output"><strong>Shared output from {runtime.status.sharedOutput.name}</strong><p>Reported by that participant · no code ran on this client{runtime.status.sharedOutput.truncated ? ' · preview truncated; full output stays on the executing client' : ''}</p><pre>{runtime.status.sharedOutput.stdout || '(No stdout)'}</pre>{runtime.status.sharedOutput.stderr ? <pre className="pg-error-text">{runtime.status.sharedOutput.stderr}</pre> : null}</article> : null}<div className="pg-stage">{compiler.stage}</div>{output ? <><pre>{output.stdout || "(No stdout)"}</pre>{output.stderr || output.trap ? <pre className="pg-error-text">{output.stderr}{output.trap}</pre> : null}<p className="pg-build-time">Exit {output.exitCode} · {(compiler.result!.durationMs / 1000).toFixed(2)}s total · compiled locally</p></> : <p>{compiler.ready ? "Use Run to execute the current Rust source." : `First Run downloads the verified Rust toolchain (${transferMiB} MiB). It is cached on this device when browser storage allows. Source is never sent for compilation.`}</p>}</> : null}
           {dock === "problems" ? diagnostics.length ? diagnostics.map((item, index) => <article className="pg-diagnostic" key={index}><strong>{item.level}{item.code?.code ? ` · ${item.code.code}` : ""}: {item.message}</strong>{item.spans?.filter((span: { is_primary: boolean }) => span.is_primary).map((span: { file_name: string; line_start: number; column_start: number }, i: number) => <button key={i} className="pg-diagnostic-location" onClick={() => setSelected(span.file_name.replace(/^\/work\//, ""))}>{span.file_name}:{span.line_start}:{span.column_start}</button>)}<pre>{item.rendered}</pre></article>) : <p>{compiler.result?.compilation.exitCode === 0 ? "Rust accepted the current build snapshot." : compiler.result?.compilation.stderr || compiler.result?.compilation.trap || "Compiler diagnostics appear here after Check or Run."}</p> : null}
           {dock === "stdin" ? <label className="pg-stdin"><span>Standard input · supplied to the next Run · maximum 32 KiB</span><textarea value={stdin} onChange={event => { if (new TextEncoder().encode(event.target.value).length <= 32768) setStdin(event.target.value); }} spellCheck={false} placeholder="Input for the program…" /></label> : null}
           {dock === "details" ? <><h2>Temporary by design</h2><p>{lifetimeLabel}. Copy/download source before the session ends. A saved native Crabrix project remains available on your device.</p><p>Shared rooms use AES-256-GCM. The key is in the link fragment. The relay keeps encrypted data in memory until expiry; server restart can end a session earlier.</p><p>The compiler runs standard-library Rust, including multiple local modules. Cargo dependencies, native libraries and server networking are not supplied by this browser path.</p><p>Debug builds insert local checkpoints into source functions, including async bodies. Stepping, active poll stacks and bounded String, Vec and concrete local struct previews run on this device. Normal Run is unchanged. Macro expansions, const bodies and dependency internals are not stepped. Browser Debug uses std/local modules; Cargo/Tokio is available only through the app’s supported offline dependencies.</p><p><a href="/guide/#playground" target="_blank" rel="noreferrer">Playground guide</a> · <a href="/licenses/PlaygroundThirdPartyNotices.txt" target="_blank" rel="noreferrer">Editor and runtime licenses</a></p></> : null}
@@ -206,6 +210,7 @@ export default function PlaygroundWorkspace() {
           <button className="pg-button" onClick={() => void openInApp()}>Open / save a local copy in Crabrix</button>
           {created ? <button className="pg-button" onClick={async () => { if (!confirm("End this temporary room for every participant? Saved device copies remain.")) return; try { const response = await fetch(`/api/playground/rooms/${created.id}/`, { method: "DELETE", headers: { Authorization: "Bearer " + created.owner }, credentials: "omit" }); if (!response.ok) throw new Error("Could not end this room."); session.current?.stop(); setExpired(true); } catch (error) { setNotice(String(error)); } }}>End room for everyone</button> : null}
         </>}
+        {link ? <RuntimePermissions runtime={runtime} /> : null}
         <div className="pg-share-download"><span>Keep a permanent copy on this device</span><button className="pg-button" onClick={save}>Download source ZIP ↓</button></div>
         <div className="pg-share-summary"><strong>Bring Claude into this editor</strong><p>The Crabrix MCP bridge joins your temporary room as a named participant. Give its MCP host/model the complete link only when you want it to read or edit your source.</p><a className="pg-button" href="/playground/mcp/" target="_blank" rel="noreferrer">Set up Claude · Download MCP ↗</a></div>
       </div> : null}

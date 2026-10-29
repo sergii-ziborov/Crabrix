@@ -267,6 +267,11 @@ targets:
       - path: CrabrixScreenshotTests
       - path: Crabrix/Playground/PlaygroundDocument.swift
       - path: Crabrix/Playground/PlaygroundCodec.swift
+      - path: Crabrix/Playground/PlaygroundRuntimeCryptography.swift
+      - path: Crabrix/Playground/PlaygroundRuntimeProtocol.swift
+      - path: Crabrix/Playground/PlaygroundRuntimePolicy.swift
+      - path: Crabrix/Playground/PlaygroundRuntimeHostTypes.swift
+      - path: Crabrix/Projects/ProjectFilePolicy.swift
       - path: Crabrix/Playground/PlaygroundEncryption.swift
       - path: Crabrix/Playground/PlaygroundLiveSession.swift
       - path: Crabrix/Playground/PlaygroundRelayConfiguration.swift
@@ -281,6 +286,29 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
 
 schemes:
+  CrabrixRuntimeGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+        CrabrixScreenshotTests: [test]
+    test:
+      config: CompilerCandidate
+      gatherCoverageData: false
+      environmentVariables:
+        CRABRIX_RUN_SHARED_RUNTIME_GATE: "1"
+      targets:
+        - name: CrabrixScreenshotTests
+          selectedTests:
+            - PlaygroundRuntimeUITests
+        - name: CrabrixTests
+          selectedTests:
+            - PlaygroundModelTests
+            - PlaygroundRuntimeProtocolTests
+            - CompilerInvocationCancellationTests
+            - PlaygroundRuntimeInputTests
+            - PlaygroundRuntimeTransportTests
+            - RustDebuggerTests/testActualTokioAsyncPollStacksAndLocalsOffline
   CrabrixBuildWorkspaceGate:
     build:
       targets:

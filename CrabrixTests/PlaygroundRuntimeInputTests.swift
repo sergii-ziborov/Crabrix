@@ -73,7 +73,7 @@ final class PlaygroundRuntimeInputTests: XCTestCase {
     }
 
     func testPrivateInputsPathAliasesAndBuildScriptsAreRefusedBeforeCompilation() throws {
-        for path in [".cargo/config.toml", "vendor/private.rs", "target/private.rs", ".git/config.txt", "node_modules/private.txt", "build.rs", "nested/Cargo.toml"] {
+        for path in [".cargo/config.toml", "vendor/private.rs", "target/private.rs", ".git/config.txt", "node_modules/private.txt", "build.rs", "nested/Cargo.toml", ".CARGO/private.toml", "TARGET/private.rs", "Vendor/private.rs", "BUILD.RS", "CARGO.TOML", "nested/CARGO.TOML"] {
             XCTAssertThrowsError(try PlaygroundRuntimeInput(document: .init(name: "sample", entryFile: "main.rs", files: ["main.rs": "fn main(){}", path: "private"])), path)
         }
         XCTAssertThrowsError(try PlaygroundRuntimeInput(document: .init(name: "sample", entryFile: "main.rs", files: ["main.rs": "fn main(){}", "Main.rs": "fn main(){}"])))

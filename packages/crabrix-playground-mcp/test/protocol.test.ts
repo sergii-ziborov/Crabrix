@@ -17,7 +17,7 @@ test("official MCP client discovers and invokes the isolated bundled stdio execu
   try {
     await client.connect(transport);
     const tools = await client.listTools();
-    assert.deepEqual(tools.tools.map(t => t.name).sort(), ["crabrix_connect", "crabrix_create", "crabrix_status", "crabrix_read_file", "crabrix_apply_changes", "crabrix_select", "crabrix_disconnect", "crabrix_end_room"].sort());
+    assert.deepEqual(tools.tools.map(t => t.name).sort(), ["crabrix_connect", "crabrix_create", "crabrix_status", "crabrix_read_file", "crabrix_apply_changes", "crabrix_select", "crabrix_disconnect", "crabrix_end_room", "crabrix_runtime_clients", "crabrix_runtime_request", "crabrix_runtime_start", "crabrix_runtime_job"].sort());
     assert.equal(tools.tools.find(t => t.name === "crabrix_read_file")?.annotations?.readOnlyHint, true);
     const status = await client.callTool({ name: "crabrix_status", arguments: {} });
     assert.equal((status.structuredContent as any).connected, false);

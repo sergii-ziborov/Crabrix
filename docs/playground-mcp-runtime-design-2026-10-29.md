@@ -7,41 +7,23 @@ capability changes until the browser/native/MCP matrix and signed delivery pass.
 
 ## Current qualification
 
-Shared local-file/origin fixes are qualified in 26 native cases and shipped in signed
-TestFlight/App Review build 119 from `853ea3e`; they do not enable remote execution. The candidate
-wire codec now passes 25 Node tests and the updated 25-case iPad Simulator policy/model series, including
-a real WebCrypto signature verified in CryptoKit. The reproducible production
-Swift ↔ Node WebCrypto probe is `node scripts/test_playground_runtime_crypto.mjs`.
-[Qualification receipt](playground-mcp-runtime-qualification-2026-10-29.json).
-A shared canonical source serialization now matches in native JavaScriptCore and
-WebCrypto, including exact Unicode bytes and source/entry/edition changes. It
-excludes nonexecution origin metadata. NFC/case aliases, file-directory conflicts
-and isolated UTF-16 surrogates are refused before native dictionary decoding; a
-malformed old-peer Yjs snapshot leaves the current source unchanged.
-Signatures, edit-capability HMAC, canonical scalar headers, payload byte limits,
-expiry and bounded nonce replay are implemented. Bounded encrypted presence transport is implemented, including unchanged
-source snapshots and selections. The actual Node relay rejects view-mode
-tampering through an acknowledged encrypted no-op; malformed transient presence
-does not disconnect source, including on initial state. Native HTTP role-proof
-qualification remains pending. A pure TypeScript permission gate now checks an
-explicit local grant, controller key, grant ID, room/project/connection, exact
-source, owned job and foreground lease. Busy/unprepared/stale commands do not
-become deferred work. The fixed JavaScriptCore native policy adapter now verifies through production
-CryptoKit, including a real asynchronous local allow request. Actual native
-URLSession role proof and signed presence/Unicode selection pass in a two-native-
-process plus Node probe on macOS. The local UI, signed discovery and isolated
-job dispatch remain unwired; bridge 0.1.1 still exposes eight
-source/selection tools only. These candidate runtime additions are absent from signed 119.
+The complete 0.2 client governor, native/browser permission UI and four runtime
+tools are wired and qualified. [Current profile](playground-mcp-local-runtime-2026-10-29.md)
+and [receipt](playground-mcp-local-runtime-qualification-2026-10-29.json) distinguish
+qualification from signed/public distribution. The original 25-case wire/policy
+receipt remains a historical milestone. New checks include 36 Node cases, 36
+native cases per Simulator, real offline Tokio/async, SDK-to-browser execution
+and a production-browser plus two-native-app room. Code/Unicode selections,
+Build-without-main, actual Run, Debug locals/Step/breakpoints/Stop, ordinary user
+Run and passive result delivery are exercised. The original four dock tabs remain.
 
-The candidate immutable `PlaygroundRuntimeInput` and per-invocation cancellation
-compile for iOS. The selected-entry `shared-std-v1` profile attaches only validated
-room text, an empty resource set and an empty dependency plan. Unsupported Cargo
-requirements are refused before compilation. A late Stop owns one invocation,
-including Debug phases, and cannot follow the compiler's global active pointer.
-Compiler/transport Simulator regression tests are compiled but not yet counted
-as passes: Simulator startup stalled before their test host ran. No release or
-execution capability is claimed for this candidate. The existing local Rust/Web
-UI and normal project build API are unchanged.
+Only a selected, explicitly permitted client executes. A foreign ordinary Run
+merely supplies a separate, bounded reported-output preview. It cannot invoke a
+compiler, manipulate another debugger or become local build/learning evidence.
+Private project inputs, resources/packages, arbitrary evaluation and implicit
+acquisition remain outside the shared executor. Local stage events cannot
+unpause a paused debugger. Stop uses an invocation-specific cancellation token.
+Immutable 0.1.1 and signed 119 do not gain these runtime tools retroactively.
 
 ## Required sequence
 

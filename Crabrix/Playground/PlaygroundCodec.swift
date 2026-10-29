@@ -84,18 +84,24 @@ final class PlaygroundCodec {
         if let controller { request["controller"] = controller }
         if let requestID { request["requestID"] = requestID }
         if let operations { request["operations"] = operations; request["lifetimeMs"] = lifetimeMilliseconds }
+        return try await runtimeCallback(request, method: "callRuntime", limit: 16_384, as: PlaygroundRuntimePolicyReply.self)
+    }
+    func runtimeHostCall(_ request: [String: Any]) async throws -> PlaygroundRuntimeHostReply {
+        try await runtimeCallback(request, method: "callHost", limit: 1_500_000, as: PlaygroundRuntimeHostReply.self)
+    }
+    private func runtimeCallback<Value: Decodable & Sendable>(_ request: [String: Any], method: String, limit: Int, as: Value.Type) async throws -> Value {
         let json = try JSONSerialization.data(withJSONObject: request)
-        guard json.count <= 16_384, let argument = String(data: json, encoding: .utf8),
-              let function = context.objectForKeyedSubscript("CrabrixPlaygroundCodec")?.objectForKeyedSubscript("callRuntime") else { throw PlaygroundFailure("The local runtime policy is unavailable.") }
-        let state = PlaygroundRuntimePolicyCall()
+        guard json.count <= limit, let argument = String(data: json, encoding: .utf8),
+              let function = context.objectForKeyedSubscript("CrabrixPlaygroundCodec")?.objectForKeyedSubscript(method) else { throw PlaygroundFailure("The local runtime policy is unavailable.") }
+        let state = PlaygroundRuntimeCall<Value>()
         let reply = try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { continuation in
                 state.attach(continuation)
                 if Task.isCancelled { state.finish(.failure(CancellationError())); return }
                 let completion: @convention(block) (String) -> Void = { value in
                     do {
-                        guard value.utf8.count <= 16_384 else { throw PlaygroundFailure("Oversized local runtime policy result.") }
-                        state.finish(.success(try JSONDecoder().decode(PlaygroundRuntimePolicyReply.self, from: Data(value.utf8))))
+                        guard value.utf8.count <= limit else { throw PlaygroundFailure("Oversized local runtime policy result.") }
+                        state.finish(.success(try JSONDecoder().decode(Value.self, from: Data(value.utf8))))
                     } catch { state.finish(.failure(error)) }
                 }
                 state.timeout = Task { @MainActor in
