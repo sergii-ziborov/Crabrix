@@ -70,6 +70,7 @@ final class ProjectPreflightUITests: XCTestCase {
         }
         let capture = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         capture.name = "project-preflight"; capture.lifetime = .keepAlways; add(capture)
+        XCTAssertTrue(app.buttons["Close project preflight"].isHittable)
         app.buttons["Close project preflight"].tap()
         if app.buttons["Hide files"].exists { app.buttons["Hide files"].tap() }
         if app.buttons["Close Project files"].exists { app.buttons["Close Project files"].tap() }
