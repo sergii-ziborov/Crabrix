@@ -1,0 +1,185 @@
+{
+  "checkedAtUTC": "2026-10-29T10:46:08.369574+00:00",
+  "sitemap": {
+    "status": 200,
+    "contentType": "application/xml",
+    "urlCount": 804,
+    "uniqueURLs": 804
+  },
+  "pages": 804,
+  "allSitemapPagesHTTP200": true,
+  "allCanonicalURLsMatch": true,
+  "uniqueTitles": true,
+  "uniqueDescriptions": true,
+  "missingImageAlt": [],
+  "invalidJSONLD": [],
+  "brokenFragments": [],
+  "linkedTargetsOutsideSitemap": 75,
+  "brokenExtraTargets": [],
+  "unnecessaryContentRedirects": [
+    {
+      "url": "https://crabrix.com/blog/real-rust-on-iphone",
+      "target": "/blog/real-rust-on-iphone/",
+      "sourceCount": 1
+    },
+    {
+      "url": "https://crabrix.com/learn",
+      "target": "/learn/",
+      "sourceCount": 1
+    },
+    {
+      "url": "https://crabrix.com/blog/from-lesson-to-project",
+      "target": "/blog/from-lesson-to-project/",
+      "sourceCount": 1
+    },
+    {
+      "url": "https://crabrix.com/privacy",
+      "target": "/privacy/",
+      "sourceCount": 1
+    },
+    {
+      "url": "https://crabrix.com/about",
+      "target": "/about/",
+      "sourceCount": 1
+    }
+  ],
+  "servedRobotsTXT": "User-Agent: *\nAllow: /\nDisallow: /account/\nDisallow: /login/\nDisallow: /register/\nDisallow: /recover/\nDisallow: /playground/room/\nDisallow: /api/playground/\n\nSitemap: https://crabrix.com/sitemap.xml\n",
+  "privatePagesAnd404": [
+    {
+      "path": "/login/",
+      "status": 200,
+      "url": "https://crabrix.com/login/",
+      "robots": [
+        {
+          "name": "robots",
+          "content": "noindex, nofollow"
+        }
+      ],
+      "canonical": [],
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/register/",
+      "status": 200,
+      "url": "https://crabrix.com/register/",
+      "robots": [
+        {
+          "name": "robots",
+          "content": "noindex, nofollow"
+        }
+      ],
+      "canonical": [],
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/recover/",
+      "status": 200,
+      "url": "https://crabrix.com/recover/",
+      "robots": [
+        {
+          "name": "robots",
+          "content": "noindex, nofollow"
+        }
+      ],
+      "canonical": [],
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/account/",
+      "status": 200,
+      "url": "https://crabrix.com/login/",
+      "robots": [
+        {
+          "name": "robots",
+          "content": "noindex, nofollow"
+        }
+      ],
+      "canonical": [],
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/healthz/",
+      "status": 200,
+      "url": "https://crabrix.com/healthz/",
+      "robots": [],
+      "canonical": [],
+      "contentType": "text/plain;charset=UTF-8"
+    },
+    {
+      "path": "/api/capabilities/",
+      "status": 200,
+      "url": "https://crabrix.com/api/capabilities/",
+      "robots": [],
+      "canonical": [],
+      "contentType": "application/json"
+    },
+    {
+      "path": "/seo-audit-nonexistent-20261029/",
+      "status": 404,
+      "url": "https://crabrix.com/seo-audit-nonexistent-20261029/",
+      "robots": [
+        {
+          "name": "robots",
+          "content": "noindex"
+        },
+        {
+          "name": "robots",
+          "content": "index, follow"
+        },
+        {
+          "name": "googlebot",
+          "content": "index, follow, max-image-preview:large"
+        }
+      ],
+      "canonical": [],
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/learn/no-such-course/",
+      "status": 404,
+      "url": "https://crabrix.com/learn/no-such-course/",
+      "robots": [
+        {
+          "name": "robots",
+          "content": "noindex"
+        },
+        {
+          "name": "robots",
+          "content": "index, follow"
+        },
+        {
+          "name": "googlebot",
+          "content": "index, follow, max-image-preview:large"
+        }
+      ],
+      "canonical": [],
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/blog/no-such-article/",
+      "status": 404,
+      "url": "https://crabrix.com/blog/no-such-article/",
+      "robots": [
+        {
+          "name": "robots",
+          "content": "noindex"
+        },
+        {
+          "name": "robots",
+          "content": "index, follow"
+        },
+        {
+          "name": "googlebot",
+          "content": "index, follow, max-image-preview:large"
+        }
+      ],
+      "canonical": [],
+      "contentType": "text/html; charset=utf-8"
+    }
+  ],
+  "searchConsole": {
+    "status": "requires Google passkey confirmation",
+    "sitemapSubmitted": false,
+    "indexingReportsRead": false
+  }
+}

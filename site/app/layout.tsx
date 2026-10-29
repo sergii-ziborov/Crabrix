@@ -10,7 +10,9 @@ export const metadata: Metadata = {
   description: "Learn Rust for free on the web, then compile and run it locally on iPhone and iPad with Crabrix.",
   applicationName: "Crabrix",
   authors: [{ name: "Serhii Ziborov", url: "https://crabrix.com/about/" }],
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large" } },
+  // Normal pages are indexable by default. Explicit global index directives
+  // would also be inherited by Next's automatically noindexed 404 responses.
+  robots: { googleBot: { "max-image-preview": "large" } },
   openGraph: { siteName: "Crabrix", type: "website", locale: "en_US" },
   icons: { icon: "/brand/crabrix-mark.png", apple: "/brand/crabrix-mark.png" },
 };

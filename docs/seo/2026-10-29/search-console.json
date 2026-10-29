@@ -1,0 +1,24 @@
+{
+  "observedAtUTC": "2026-10-29T10:58:22.767123+00:00",
+  "property": "sc-domain:crabrix.com",
+  "sitemap": "https://crabrix.com/sitemap.xml",
+  "status": "Успешно",
+  "discoveredPages": 804,
+  "discoveredVideos": 0,
+  "submittedDate": "2026-10-29",
+  "lastReadDate": "2026-10-29",
+  "sitemapRows": 1,
+  "evidence": "build/seo-audit-20261029/search-console-sitemap.png",
+  "indexingStatus": "Blocked by robots.txt report inspected",
+  "blockedByRobots": {
+    "affectedURLs": 476,
+    "reportLastUpdated": "2026-10-23",
+    "sampleRowsInspected": 10,
+    "samplePaths": [
+      "/login/?next=/learn/...",
+      "/register/?next=/learn/..."
+    ],
+    "interpretation": "Samples are authentication return URLs, not blocked lesson content. The entire 476-row list was not exported.",
+    "plannedFix": "crawlable public auth pages with noindex; nofollow and no prefetch on lesson login/register return links"
+  }
+}

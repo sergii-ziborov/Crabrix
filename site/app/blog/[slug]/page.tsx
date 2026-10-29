@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const post = postBySlug((await params).slug);
   const image = post?.sections.find((section) => section.image)?.image;
   return post ? pageMetadata({ title: post.title, description: post.summary,
-    path: `/blog/${post.slug}/`, image: image?.src, imageAlt: image?.alt, articleDate: post.date }) : {};
+    path: `/blog/${post.slug}/`, image: image?.src, imageAlt: image?.alt, articleDate: post.date, modifiedDate: post.modifiedDate }) : {};
 }
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -36,6 +36,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       <StructuredData data={{ "@context": "https://schema.org", "@graph": [
         { "@type": "BlogPosting", headline: post.title, description: post.summary,
           mainEntityOfPage: pageUrl(`/blog/${post.slug}/`), datePublished: post.date,
+          ...(post.modifiedDate ? { dateModified: post.modifiedDate } : {}),
           author: { "@type": "Person", name: "Serhii Ziborov", url: pageUrl("/about/") },
           publisher: { "@type": "Organization", name: "Crabrix", url: pageUrl("/") },
           image: post.sections.flatMap((section) => section.image ? [new URL(section.image.src, pageUrl("/")).href] : []),
@@ -48,7 +49,9 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         <p className="eyebrow">Crabrix blog</p>
         <h1>{post.title}</h1>
         <p className="lede">{post.summary}</p>
-        <p className="article-date"><time dateTime={post.date}>{post.date}</time> · {post.readingMinutes} min read</p>
+        <p className="article-date"><time dateTime={post.date}>{post.date}</time> · {post.readingMinutes} min read
+          {post.modifiedDate && post.modifiedDate !== post.date ? <> · Updated <time dateTime={post.modifiedDate}>{post.modifiedDate}</time></> : null}
+        </p>
         <nav className="article-toc" aria-label="Article contents">
           <strong>In this article</strong>
           <ol>{post.sections.map((section) => <li key={section.heading}><a href={`#${sectionId(section.heading)}`}>{section.heading}</a></li>)}</ol>

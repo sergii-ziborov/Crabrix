@@ -12,6 +12,7 @@ export type Post = {
   slug: string;
   title: string;
   date: string;
+  modifiedDate?: string;
   readingMinutes: number;
   summary: string;
   relatedSlugs?: string[];

@@ -1,4 +1,5 @@
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadata, pageUrl } from "@/lib/seo";
+import { StructuredData } from "@/components/structured-data";
 import Link from "next/link";
 import { courseSnapshot, courseLessons } from "@/lib/courses";
 import { CourseIcon } from "@/components/course-icon";
@@ -9,6 +10,12 @@ export default function LearnPage() {
   const snapshot = courseSnapshot();
   return (
     <div className="site-shell">
+      <StructuredData data={{ "@context": "https://schema.org", "@type": "ItemList",
+        name: "Crabrix Rust courses", numberOfItems: snapshot.courses.length,
+        itemListElement: snapshot.courses.map((course, index) => ({ "@type": "ListItem",
+          position: index + 1, url: pageUrl(`/learn/${course.id}/`),
+        })),
+      }} />
       <div className="page-intro">
         <p className="eyebrow">The Crabrix Academy · free on the web</p>
         <h1>Learn Rust, one real idea at a time.</h1>

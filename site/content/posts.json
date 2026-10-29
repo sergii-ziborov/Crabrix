@@ -528,7 +528,8 @@
         ]
       }
     ],
-    "readingMinutes": 11
+    "readingMinutes": 11,
+    "modifiedDate": "2026-10-29"
   },
   {
     "slug": "rust-performance-measure-before-optimizing",
@@ -743,7 +744,8 @@
         ]
       }
     ],
-    "readingMinutes": 11
+    "readingMinutes": 11,
+    "modifiedDate": "2026-10-29"
   },
   {
     "slug": "rust-async-cancellation-safe-timeouts",
@@ -1245,7 +1247,8 @@
         ]
       }
     ],
-    "readingMinutes": 11
+    "readingMinutes": 11,
+    "modifiedDate": "2026-10-29"
   },
   {
     "slug": "crabrix-offline-rust-web-preview",
@@ -4078,7 +4081,8 @@
           }
         ]
       }
-    ]
+    ],
+    "modifiedDate": "2026-10-29"
   },
   {
     "slug": "real-rust-on-iphone",

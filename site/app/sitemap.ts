@@ -16,13 +16,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }))),
   ]);
   const pageModifiedDates: Record<string, string> = {
-    "playground/mcp": "2026-10-29",
+    "playground/mcp": "2026-10-29", learn: "2026-10-29",
     playground: "2026-10-29", guide: "2026-10-29", blog: "2026-10-29", technology: "2026-10-27", privacy: "2026-10-27", licenses: "2026-10-27",
   };
   return [...paths.map((path) => ({ url: pageUrl(path),
     ...(pageModifiedDates[path] ? { lastModified: pageModifiedDates[path] } : {}),
   })), ...courseEntries,
-    ...posts.map((post) => ({ url: pageUrl(`blog/${post.slug}`), lastModified: post.date,
+    ...posts.map((post) => ({ url: pageUrl(`blog/${post.slug}`), lastModified: post.modifiedDate ?? post.date,
       images: post.sections.flatMap((section) => section.image ? [new URL(section.image.src, pageUrl("/")).href] : []),
     })),
   ];
