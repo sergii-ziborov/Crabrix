@@ -15,6 +15,7 @@ const contents = [
   ["first-project", "Your first project"], ["files", "Files and imports"], ["saving", "Saving and recovery"],
   ["packages", "Packages and offline preparation"], ["build", "Check, Run and build stages"],
   ["rust-tools", "Local unit tests and rustfmt"],
+  ["rust-symbols", "Rust definitions, completion and rename"],
   ["git", "Git history, GitHub and full repository copies"],
   ["web", "Local HTML, CSS and JavaScript"],
   ["terminal", "The project terminal"], ["learn", "Lessons and examples"],
@@ -41,7 +42,7 @@ export default function GuidePage() {
     <StructuredData data={{ "@context": "https://schema.org", "@graph": [
       { "@type": "TechArticle", headline: "Crabrix user guide", description: metadata.description,
         mainEntityOfPage: pageUrl("/guide/"), inLanguage: "en", isAccessibleForFree: true,
-        dateModified: "2026-10-28",
+        dateModified: "2026-10-29",
         author: { "@type": "Person", name: "Serhii Ziborov", url: pageUrl("/about/") },
         image: [pageUrl("/screenshots/duo-laptop.png"), pageUrl("/screenshots/iphone-build.png")],
       }, breadcrumbs([{ name: "Crabrix", path: "/" }, { name: "User guide", path: "/guide/" }]),
@@ -126,6 +127,24 @@ export default function GuidePage() {
           <Screenshot name="iphone-rustfmt-113" alt="Crabrix formats Rust tests while keeping a Unicode crab comment and existing editor tabs" caption="Real rustfmt output in the native editor; the original file can be restored with Undo." width={1206} height={2622} />
           <Screenshot name="iphone-unit-tests-113" alt="Crabrix local unit-test results show a passed test and a failed assertion separately" caption="Real libtest results: passing and failing cases remain separate, with expandable details." width={1206} height={2622} />
         </div>
+      </section>
+      <section id="rust-symbols"><h2>Understand and change Rust symbols locally</h2>
+        <p><strong>Qualification candidate:</strong> these native tools are being prepared for the next TestFlight update; they are not included in build 115. The browser Playground keeps its separate compiler and Debug profile.</p>
+        <p>Place the cursor on a Rust name, open project settings and choose <strong>Rust symbols</strong>. The native text-selection menu offers the same operations. Analysis runs on your device and uses the bundled standard-library source plus your already prepared Cargo source graph. Opening this panel does not download packages or run your program.</p>
+        <ol>
+          <li><strong>Find a definition</strong> to open its owned project file at the relevant position. Definitions from the standard library or prepared packages open as read-only excerpts.</li>
+          <li><strong>Find references</strong> to inspect uses within the owned project. Same-spelled variables in different scopes remain separate symbols.</li>
+          <li><strong>Inspect type and documentation</strong> or <strong>call signature</strong> at the cursor. Missing information is reported explicitly; compiler Check remains the authority on whether the program compiles.</li>
+          <li><strong>Complete this symbol</strong> after a receiver or a partially typed name. Results follow the actual type. Select a result to review its replacement and any required imports together.</li>
+          <li><strong>Rename</strong> a linked symbol, enter its new name, and review every exact edit before applying. Conflicting names and changes requiring filesystem operations are outside this rename profile.</li>
+        </ol>
+        <p><strong>Apply reviewed changes</strong> requires the same unchanged project snapshot and editing permission. Editing source, changing projects or receiving a newer Shared revision invalidates older analysis. Project settings offers <strong>Undo symbol changes</strong> to restore all affected files while that resulting revision is still current. Save an editable project package when you need a durable checkpoint.</p>
+        <div className="guide-screenshots guide-atlas-screenshots">
+          <Screenshot name="iphone-rust-symbols" alt="Crabrix on iPhone previews the actual Widget completion and its required Rust import" caption="Review the import and replacement together before applying; the source stays unchanged until Apply." width={1206} height={2622} />
+          <Screenshot name="ipad-rust-symbols" alt="Crabrix local Rust symbols in a bounded iPad sheet using the Cyberpunk theme" caption="iPad uses the same operations in a bounded sheet. The editor and its existing tabs remain in place." width={2064} height={2752} />
+        </div>
+        <p><strong>Analysis boundaries:</strong> up to 252 prepared dependency crates plus the selected root, 2,048 Rust source files, 1 MiB per file and 8 MiB of owned/dependency source. The fixed standard library has its own bundled source. Analysis uses the installed WASI target, edition and prepared features. External procedural macros, build-script-generated source graphs, symlinks and virtual-workspace package selection receive an unavailable explanation; compiler operations retain their separate profiles.</p>
+        <p>Use <strong>Stop</strong> to release analysis, then reopen Rust symbols when ready. Closing the panel, backgrounding the app or changing its source also releases that analysis session. A failed analysis leaves the editable project available for ordinary Check and Run.</p>
       </section>
       <section id="web"><h2>5. Build a local web page</h2>
         <p>Choose <strong>Web Page</strong> for an HTML entry with <code>styles.css</code> and <code>app.js</code>, or <strong>Rust Web Generator</strong> to write those assets from a Rust program into <code>/sandbox</code>. Run opens the successful output as an offline WebKit preview. Check parses, transpiles and bundles module-based browser code without opening the page. It does not execute the browser app or type-check TypeScript.</p>

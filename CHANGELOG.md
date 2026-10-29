@@ -1,6 +1,18 @@
 # Changelog
 
-## In progress — native Atlas replay and Playground MCP
+## Qualified candidate — local Rust semantic tools
+
+- Bundled import-free rust-analyzer Worker, pinned standard-library source and
+  prepared dependencies; definitions, scoped references, type/signature lookup,
+  receiver-aware completion, import previews and semantic rename.
+- Exact revision/ABA guards, full-tree Undo, bounded local dependency reads and
+  Stop; unsupported generated-source/proc-macro analysis stays explicit.
+- 68 final phone/iPad Simulator cases passed without failures or skips, including
+  the full completion/import/apply/Undo UI route and keyboard/Tokio Debug regressions.
+  Original captures and source/artifact identities accompany the qualification.
+- Not included in build 115; signed delivery is tracked independently.
+
+## 1.1.3 (115) — offline Atlas and clearer Shared participants
 
 - Optional signed offline Atlas sections, 400 recordings for 600 lesson steps,
   exact values and source hashes. Native stepping, personal copy and return to
@@ -10,7 +22,16 @@
   relative selections, expiry, explicit creator-only closure and original notices.
   MCP, Chromium and two actual Simulator editors passed the same collaborative
   flow; all three local compilers/debuggers were exercised. Website/download
-  publication is recorded separately. These changes are not part of build 114.
+  publication is recorded separately. The exact-source signed build 115 reached
+  TestFlight and App Review; its receipt records the selected build and metadata.
+
+## Playground MCP 0.1.1 — npm and website
+
+- Published `crabrix-playground-mcp@0.1.1`; registry and website archives match.
+  A clean install and the installed official-SDK/production-room/browser-local
+  flow passed. Equal-size setup cards and pinned installation instructions were
+  verified on mobile/tablet/desktop. Runtime commands remain the eight existing
+  room/document tools; client-local execution permissions are a later phase.
 
 ## 1.1.3 (114) — native Git, TestFlight and App Review
 

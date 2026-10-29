@@ -4,6 +4,18 @@
 
 [Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support/) · [Privacy](https://crabrix.com/privacy/) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
+## Local Rust symbols — qualified candidate
+
+An import-free rust-analyzer Wasm Worker provides actual definitions,
+project references, types/signatures, receiver-aware completion, import previews
+and scoped rename. Reviewed edits require the unchanged workspace revision and
+support whole-tree Undo. Analysis uses bundled standard-library text and
+already prepared dependency sources, with explicit bounds and Stop; it does
+not execute project code or use a backend. The final phone/iPad Simulator matrix
+passed 68 tests with no failures or skips, including UI and keyboard/Debug
+regressions. This candidate is **not in build 115**; signed delivery is separate.
+[Profile](docs/semantic-ide-2026-10-29.md) · [qualification](docs/semantic-ide-qualification-2026-10-29.json).
+
 ## Native Git — TestFlight 1.1.3 (114)
 
 Build **114** is **VALID / IN_BETA_TESTING**, from signed source `c213fbf`.

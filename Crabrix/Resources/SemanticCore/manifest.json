@@ -37,5 +37,5 @@
       "sha256": "605aa5ea22b3c2a67a2200109a6f48a1f37dbbd0b151bff1ccf92d4421efd433"
     }
   },
-  "candidateOnly": true
+  "candidateOnly": false
 }

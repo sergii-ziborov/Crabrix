@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "qualifiedAtUTC": "2026-10-29T00:08:48.282350+00:00",
+  "appSourceCommit": "0d993eaa1301c1d403225ae1727c308f66348130",
+  "moduleSHA256": "c67132fb1ed7eced4617a6eb408c497e7c0706e6a24a55aec1c826019bdae9a5",
+  "scope": "native local semantic profile; Simulator qualification; not build 115",
+  "totalTests": 68,
+  "failedTests": 0,
+  "skippedTests": 0,
+  "runs": [
+    {
+      "case": "semantic-phone-ui-v6",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "devices": [
+        {
+          "modelName": "iPhone 17 Pro",
+          "osVersion": "26.5",
+          "osBuildNumber": "23F77",
+          "architecture": "arm64",
+          "platform": "iOS Simulator"
+        }
+      ],
+      "evidence": "build/semantic-ide-20261028/semantic-phone-ui-v6.xcresult"
+    },
+    {
+      "case": "semantic-phone-native-v2",
+      "passed": 33,
+      "failed": 0,
+      "skipped": 0,
+      "devices": [
+        {
+          "modelName": "iPhone 17 Pro",
+          "osVersion": "26.5",
+          "osBuildNumber": "23F77",
+          "architecture": "arm64",
+          "platform": "iOS Simulator"
+        }
+      ],
+      "evidence": "build/semantic-ide-20261028/semantic-phone-native-v2.xcresult"
+    },
+    {
+      "case": "semantic-pad-native-final",
+      "passed": 33,
+      "failed": 0,
+      "skipped": 0,
+      "devices": [
+        {
+          "modelName": "iPad Pro 13-inch (M5)",
+          "osVersion": "26.5",
+          "osBuildNumber": "23F77",
+          "architecture": "arm64",
+          "platform": "iOS Simulator"
+        }
+      ],
+      "evidence": "build/semantic-ide-20261028/semantic-pad-native-final.xcresult"
+    },
+    {
+      "case": "semantic-pad-ui-final",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "devices": [
+        {
+          "modelName": "iPad Pro 13-inch (M5)",
+          "osVersion": "26.5",
+          "osBuildNumber": "23F77",
+          "architecture": "arm64",
+          "platform": "iOS Simulator"
+        }
+      ],
+      "evidence": "build/semantic-ide-20261028/semantic-pad-ui-final.xcresult"
+    }
+  ],
+  "verifiedOperations": [
+    "definitions across files",
+    "scoped project references",
+    "types and signatures",
+    "String/Vec/custom type completion",
+    "prepared dependency declarations",
+    "read-only library navigation",
+    "completion import preview and apply",
+    "semantic rename",
+    "full-tree undo",
+    "UTF-8/UTF-16 boundaries",
+    "stale revision and ABA rejection",
+    "Stop and recovery",
+    "bounded dependency acquisition from local storage",
+    "unchanged keyboard and editor dock",
+    "actual local Tokio/async and resource-generator Debug",
+    "offline license inventory"
+  ],
+  "runtime": {
+    "noHostImports": true,
+    "memoryMaximumMiB": 256,
+    "rustSourceFiles": 1011,
+    "noticeGroups": 194,
+    "rustSourceCommit": "abc48c0b8aba37d3f3862a9d5c76eb4e78f90e88",
+    "networkForAnalysis": false,
+    "backendExecution": false,
+    "physicalDeviceTimingClaimed": false
+  },
+  "screenshots": [
+    {
+      "path": "site/public/screenshots/iphone-rust-symbols.png",
+      "sha256": "c7067071e1eb638a9b8fdb3a43209a73b5fd2fdd72ae2275829100b4a3e60dba",
+      "unalteredSimulatorCapture": true
+    },
+    {
+      "path": "site/public/screenshots/ipad-rust-symbols.png",
+      "sha256": "7ff1d27671196240b391c25bb7982bbeb276420a84e629d2a13dfeef77647e68",
+      "unalteredSimulatorCapture": true
+    }
+  ],
+  "manifestQualificationChange": "Only candidateOnly changed after tests; executable/runtime assets remain identical."
+}
