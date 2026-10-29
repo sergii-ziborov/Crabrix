@@ -1,0 +1,50 @@
+[
+  {
+    "id": "q-interior-mutability",
+    "source": "use std::cell::RefCell;\nfn main() {\n    let value = RefCell::new(7);\n    let reader = value.borrow();\n    assert!(value.try_borrow_mut().is_err());\n    assert_eq!(*reader, 7);\n    drop(reader);\n    *value.borrow_mut() = 9;\n    assert_eq!(*value.borrow(), 9);\n}"
+  },
+  {
+    "id": "q-copy-clone-cow",
+    "source": "use std::borrow::Cow;\nfn main() {\n    let source = String::from(\"crab\");\n    let mut label: Cow<'_, str> = Cow::Borrowed(source.as_str());\n    assert!(matches!(label, Cow::Borrowed(_)));\n    label.to_mut().push('!');\n    assert!(matches!(label, Cow::Owned(_)));\n    assert_eq!(source, \"crab\");\n    assert_eq!(label, \"crab!\");\n}"
+  },
+  {
+    "id": "q-utf8-boundaries",
+    "source": "fn main() {\n    let text = \"é🦀\";\n    assert_eq!(text.len(), 6);\n    assert_eq!(text.chars().count(), 2);\n    assert_eq!(text.encode_utf16().count(), 3);\n    assert_eq!(text.get(0..2), Some(\"é\"));\n    assert_eq!(text.get(1..2), None);\n    assert_eq!(\"e\\u{301}\".chars().count(), 2);\n}"
+  },
+  {
+    "id": "q-iterator-ownership",
+    "source": "fn main() {\n    let words = vec![String::from(\"crab\"), String::from(\"rust\")];\n    let lengths: Vec<_> = words.iter().map(String::len).collect();\n    assert_eq!(lengths, [4, 4]);\n    assert_eq!(words.len(), 2);\n    let owned: Vec<String> = words.into_iter().collect();\n    assert_eq!(owned[0], \"crab\");\n}"
+  },
+  {
+    "id": "q-closure-traits",
+    "source": "fn twice(mut callback: impl FnMut()) {\n    callback();\n    callback();\n}\nfn main() {\n    let mut count = 0;\n    { twice(|| count += 1); }\n    assert_eq!(count, 2);\n    let text = String::from(\"crab\");\n    let read = move || text.len();\n    assert_eq!(read(), 4);\n    assert_eq!(read(), 4);\n}"
+  },
+  {
+    "id": "q-pin-future",
+    "source": "use std::future::Future;\nuse std::task::{Context, Poll, Waker};\nfn main() {\n    let first = Box::pin(async { 7u32 });\n    let address = first.as_ref().get_ref() as *const _;\n    let mut second = first;\n    assert_eq!(second.as_ref().get_ref() as *const _, address);\n    let mut cx = Context::from_waker(Waker::noop());\n    assert_eq!(second.as_mut().poll(&mut cx), Poll::Ready(7));\n}"
+  },
+  {
+    "id": "q-future-send",
+    "source": "use std::rc::Rc;\nfn require_send<T: Send>(_: T) {}\nfn main() {\n    let future = async {\n        { let local = Rc::new(7); assert_eq!(*local, 7); }\n        std::future::ready(()).await;\n    };\n    require_send(future);\n}"
+  },
+  {
+    "id": "q-async-locks",
+    "source": "use std::sync::Mutex;\nfn require_send<T: Send>(_: T) {}\nfn main() {\n    let value = Mutex::new(0);\n    let future = async {\n        { let mut guard = value.lock().unwrap(); *guard += 1; }\n        std::future::ready(()).await;\n    };\n    require_send(future);\n}"
+  },
+  {
+    "id": "q-async-traits",
+    "source": "use std::future::Future;\nuse std::pin::Pin;\nuse std::task::{Context, Poll, Waker};\ntrait Source {\n    fn value(&self) -> Pin<Box<dyn Future<Output = u32> + Send + '_>>;\n}\nstruct Fixed(u32);\nimpl Source for Fixed {\n    fn value(&self) -> Pin<Box<dyn Future<Output = u32> + Send + '_>> {\n        Box::pin(async move { self.0 })\n    }\n}\nfn main() {\n    let fixed = Fixed(7);\n    let source: &dyn Source = &fixed;\n    let mut future = source.value();\n    let mut cx = Context::from_waker(Waker::noop());\n    assert_eq!(future.as_mut().poll(&mut cx), Poll::Ready(7));\n}"
+  },
+  {
+    "id": "q-error-boundaries",
+    "source": "use std::num::ParseIntError;\nfn optional_port(raw: Option<&str>) -> Result<Option<u16>, ParseIntError> {\n    raw.map(str::parse::<u16>).transpose()\n}\nfn main() {\n    assert_eq!(optional_port(None), Ok(None));\n    assert_eq!(optional_port(Some(\"8080\")), Ok(Some(8080)));\n    assert!(optional_port(Some(\"not-a-port\")).is_err());\n}"
+  },
+  {
+    "id": "q-trait-coherence",
+    "source": "use std::fmt;\nstruct Bytes(Vec<u8>);\nimpl fmt::Display for Bytes {\n    fn fmt(&self, out: &mut fmt::Formatter<'_>) -> fmt::Result {\n        write!(out, \"{} bytes\", self.0.len())\n    }\n}\nfn main() {\n    assert_eq!(Bytes(vec![1, 2, 3]).to_string(), \"3 bytes\");\n}"
+  },
+  {
+    "id": "q-integer-boundaries",
+    "source": "fn main() {\n    assert_eq!(u32::MAX.checked_add(1), None);\n    assert_eq!(u32::MAX.saturating_add(1), u32::MAX);\n    assert!(u8::try_from(300u16).is_err());\n    let difference = i64::from(i32::MAX) - i64::from(i32::MIN);\n    assert_eq!(difference, 4_294_967_295);\n}"
+  }
+]

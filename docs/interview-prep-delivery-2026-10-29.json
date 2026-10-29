@@ -1,0 +1,125 @@
+{
+  "recordedAtUTC": "2026-10-29T09:40:20.945089+00:00",
+  "content": {
+    "appReviewBuildUnchanged": "1.1.3 (120)",
+    "courseVersion": "1.1.0",
+    "catalogSequence": 16,
+    "courseSourceCommit": "0e42224f6b322b45c86b7c150dd8d32f4542bf6d",
+    "archiveSHA256": "637289902e2036e67d717c9631275e2063bb3fe5f713b2da0b978c85c64210b4",
+    "archiveBytes": 20703960,
+    "currentLessons": 52,
+    "newLessons": 12,
+    "existingAnswerPositionsPreserved": 40,
+    "desktopChecks": 48,
+    "successfulPrograms": 42,
+    "expectedCompileDiagnostics": 6,
+    "courseTests": 20,
+    "publicationPendingNativeGate": false,
+    "nativeGatePassed": true,
+    "nativeDevices": [
+      "iPhone Simulator",
+      "iPad Simulator"
+    ],
+    "nativeWorkedExamplesPerDevice": 12,
+    "nativeSignedInstallerAnd52ImageDecodePerDevice": true,
+    "oldCourseSessionPreserved": true,
+    "nativeUIGeometryPassed": true,
+    "physicalDeviceBenchmarkClaim": false,
+    "qualifiedAtUTC": "2026-10-29T09:24:11.178044+00:00",
+    "nativeFunctionalTestsPerDevice": 39,
+    "nativeUIFlowsPerDevice": 1,
+    "publishedAtUTC": "2026-10-29T09:27:40.370857+00:00",
+    "releaseURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/tag/interview-2026-10-29",
+    "publicAssetsByteIdentical": true,
+    "catalogPublicSequence": 16
+  },
+  "courseDeliveryCommit": "d4e247e",
+  "website": {
+    "sourceCommit": "2773873",
+    "image": "b7c53e40b8c9da32e549388ef0274ff14b3c9a16f003998ee7370d9301d2b769",
+    "publishedAtUTC": "2026-10-29T09:31:37Z",
+    "context": {
+      "sourceCommit": "2773873",
+      "sourceTreeSHA256": "1487b06210df05def9fb6db2ba2c127ae378c85cd417042aeff5a7b5464e20b8",
+      "allEntriesVerified": 2811,
+      "transferredBytes": 5339155,
+      "baseContextUnchanged": true,
+      "accountDataTouched": false
+    },
+    "backupTaken": true,
+    "rollbackContainer": "crabrix-web-site-before-interview-20261029",
+    "mountsPreserved": true,
+    "status": "running",
+    "health": "healthy"
+  },
+  "publicWebsiteQA": {
+    "passed": true,
+    "cases": [
+      {
+        "width": 390,
+        "theme": "dark",
+        "errors": []
+      },
+      {
+        "width": 390,
+        "theme": "light",
+        "errors": []
+      },
+      {
+        "width": 720,
+        "theme": "dark",
+        "errors": []
+      },
+      {
+        "width": 820,
+        "theme": "dark",
+        "errors": []
+      },
+      {
+        "width": 1024,
+        "theme": "dark",
+        "errors": []
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "errors": []
+      }
+    ],
+    "interviewRoutes": 52,
+    "totalLessons": 754,
+    "sourceCommit": "0e42224f6b322b45c86b7c150dd8d32f4542bf6d",
+    "sitemap": true
+  },
+  "websiteUnitTests": 35,
+  "websiteTypecheckPassed": true,
+  "websiteProductionBuildPassed": true,
+  "appReviewReadback": {
+    "version": "1.1.3",
+    "build": "120",
+    "state": "WAITING_FOR_REVIEW"
+  },
+  "appReviewBuildSourceCommit": "b842d20c8e46b7346e24c5d51a0c3eb843527c4e",
+  "reviewSelectionChanged": false,
+  "newAppCode": {
+    "status": "qualified candidate for a later binary",
+    "includedInSigned120": false,
+    "profile": "compatibility-reasons-2026-10-29.md",
+    "sourceSHA256": {
+      "Crabrix/Packages/LocalExecutionReason.swift": "fff6e8a06d2ce5e8e29f42aec99efcbb8636deed99ff440ae79be2038a50184c",
+      "Crabrix/Packages/CargoPackageManager.swift": "fe86945bfcdb48418f36e8ed8098c873e01c321b4804e25be10982db3f52791f",
+      "Crabrix/Projects/ProjectPreflight.swift": "54f5c133ee7803b5c454bbcfe62b8e9a3ac357a1311f8a0f6102bfb6c446522f",
+      "Crabrix/UI/ProjectPreflightSheet.swift": "789f42cbe056833be83bd55fba099ffb02b6801cf4e0f09033c2c69c85f715fb",
+      "Crabrix/Features/Compiler/ProjectTerminalSession.swift": "42d4b44bf67637db3d2cbaec377a60a9805e5b065cb9ffdc56f8080141b002df",
+      "CrabrixTests/LocalExecutionReasonTests.swift": "a54bdbe941993427c815136c34a823508d2aa0b1aa9ed5d4297362df7f1328bf",
+      "CrabrixTests/InterviewCourseUpdateTests.swift": "15e17facdf056cbb11a2a729c4cf695a031427c68da5d1de29a5fa7416b1b68a"
+    }
+  },
+  "remainingScope": [
+    "runtime allocation/timeout/trap causality",
+    "compiler/procedural-macro candidate qualification",
+    "physical-device performance",
+    "C/ABI prototypes and conditional C++ profile"
+  ],
+  "evidenceDirectory": "build/interview-20261029/"
+}

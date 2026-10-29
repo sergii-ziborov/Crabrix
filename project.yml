@@ -237,7 +237,11 @@ targets:
         excludes:
           - CompilerCandidate
           - Fixtures/AtlasReplay
+          - Fixtures/InterviewRevision
       - path: CrabrixTests/Fixtures/AtlasReplay
+        type: folder
+        buildPhase: resources
+      - path: CrabrixTests/Fixtures/InterviewRevision
         type: folder
         buildPhase: resources
       - path: CrabrixTests/CompilerCandidate
@@ -286,6 +290,28 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
 
 schemes:
+  CrabrixInterviewGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+        CrabrixScreenshotTests: [test]
+    test:
+      config: CompilerCandidate
+      gatherCoverageData: false
+      targets:
+        - name: CrabrixTests
+          selectedTests:
+            - LocalExecutionReasonTests
+            - InterviewCourseUpdateTests
+            - ProjectPreflightTests
+            - ProjectPreflightEvidenceTests
+            - ProjectPreflightCompilerEvidenceTests
+            - ProjectTerminalSessionTests
+            - CrateCompatibilityLedgerTests
+        - name: CrabrixScreenshotTests
+          selectedTests:
+            - ProjectPreflightUITests
   CrabrixRuntimeGate:
     build:
       targets:

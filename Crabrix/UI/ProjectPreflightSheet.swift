@@ -41,6 +41,12 @@ struct ProjectPreflightSheet: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(issue.origin.rawValue).font(.caption.weight(.bold)).foregroundStyle(issue.blocked.isEmpty ? CrabrixTheme.blue : CrabrixTheme.amber)
                                 Text(issue.detail).font(.callout).textSelection(.enabled)
+                                Text(issue.code.rawValue + (issue.subject.map { " · " + $0 } ?? ""))
+                                    .font(.caption.monospaced()).foregroundStyle(CrabrixTheme.muted)
+                                    .textSelection(.enabled)
+                                if let nextStep = issue.nextStep {
+                                    Text(nextStep).font(.caption).foregroundStyle(CrabrixTheme.muted)
+                                }
                             }
                         }
                         if !report.dependencies.isEmpty {

@@ -1,0 +1,165 @@
+{
+  "sourceCommit": "97564ab44b4d9b53824f59354bc1d6bc7fa7e4f0",
+  "lessons": {
+    "q-acid": {
+      "correctAnswer": 1,
+      "sha256": "4c0533c4f5f07f48d4c6969b0eb30dbb3f6a0a5b3623e3e793f0b3b9ca2e0df3"
+    },
+    "q-api-design": {
+      "correctAnswer": 1,
+      "sha256": "329dd8410bdbead39502621c8726ec2776f6122657ccceedb02a92baf7e8557c"
+    },
+    "q-async-vs-threads": {
+      "correctAnswer": 1,
+      "sha256": "bb60549ff510ecb2fcb52068d17b98240b0e6812aeca8ec58a2c047c49b6a144"
+    },
+    "q-atomics": {
+      "correctAnswer": 1,
+      "sha256": "fd0749721c2bea66c37b88a49a2092d55ddaf43ee838be289840a8eeb29606f0"
+    },
+    "q-backpressure": {
+      "correctAnswer": 1,
+      "sha256": "6c12e8839fe094c3bc9b93f09cf0aad6e7ece35c7d8a958cc72e4a0ed4495579"
+    },
+    "q-blocking-async": {
+      "correctAnswer": 1,
+      "sha256": "cda79c9cce2ed7cbde62d04b7b31e38da6b127c70301d16d2498924d02463003"
+    },
+    "q-borrowing": {
+      "correctAnswer": 1,
+      "sha256": "ecd831ac2ea366ff86a9693f469dc25dcc1709937374e6b1e46b47754cd5b62a"
+    },
+    "q-box-rc-arc": {
+      "correctAnswer": 1,
+      "sha256": "ecea2e957d2ec8cfe92d13280a1c8da00c1b8754a22cf42be8ae46a7f874868c"
+    },
+    "q-caching": {
+      "correctAnswer": 1,
+      "sha256": "4e899ac9a8917de48bc19deb66036bd54053614088038040be324b4ef3f96af1"
+    },
+    "q-cancellation": {
+      "correctAnswer": 1,
+      "sha256": "eaf72707b3e93720a8f783e2f6f723b26039c8cf2781a645f3662fc0091dfdaa"
+    },
+    "q-cap": {
+      "correctAnswer": 1,
+      "sha256": "5a210b79479cfeb1ebc88dfcda3d7737aa5ecd84c391e9f9361c6107e55bad5c"
+    },
+    "q-channels-vs-mutex": {
+      "correctAnswer": 1,
+      "sha256": "69671d46f87c342b8e010a79cd465c26d8386a673d8da92cb4a893a47e5db3db"
+    },
+    "q-code-review": {
+      "correctAnswer": 0,
+      "sha256": "86d93a6352fb235b85c645c7c0e10ff839e29bce6eb49f3d464ae8fe30d704e6"
+    },
+    "q-complexity": {
+      "correctAnswer": 1,
+      "sha256": "ed0e401b9b42c494cb68d51f1a63e68c414e19f5568cf3a2d34affb070335eff"
+    },
+    "q-deadlock": {
+      "correctAnswer": 0,
+      "sha256": "71aec1b9fc2c9d1e29a13a15284cfffc325713c645b8be1d122df127abe14a9e"
+    },
+    "q-debugging-session": {
+      "correctAnswer": 0,
+      "sha256": "782f7dbeb1a5529d6ae978a49e82bb441fe3dd1879867f7f5d6d26f83c617d38"
+    },
+    "q-dyn-generics": {
+      "correctAnswer": 1,
+      "sha256": "4171c188794199e09dabd77ae7dffff56683b7266d1af1e88db8ed6b1c2153e4"
+    },
+    "q-ffi-abi": {
+      "correctAnswer": 1,
+      "sha256": "1c3c9f2aec50db6dd0bc22ec0df157203dbfacf38f82657618e6cd5f99d84a96"
+    },
+    "q-hashmap": {
+      "correctAnswer": 1,
+      "sha256": "e3e9c4dc33d295e51255efbe03a3abdf79310fbddb8e72a4a1f0a2ace739c17c"
+    },
+    "q-http-versions": {
+      "correctAnswer": 1,
+      "sha256": "cb0f969fe864c5d961c6ef4ac45d188b6374005e0acb9323c051384bbd428d46"
+    },
+    "q-idempotency": {
+      "correctAnswer": 1,
+      "sha256": "118a38bdeaad6e45a7e1f8faba286cde3152a1f2a6e166e01aa1d2dfeef09a2d"
+    },
+    "q-indexes": {
+      "correctAnswer": 1,
+      "sha256": "4b16226005283f1a699db3ddb6b1bfc7bbddd87b15e2b9a81125fb9efe7249e8"
+    },
+    "q-lifetimes": {
+      "correctAnswer": 1,
+      "sha256": "6429e0a35d697750b33f9e2aa950aeb75fdc655a1d598f72e41c79fe276df5b4"
+    },
+    "q-lru-design": {
+      "correctAnswer": 0,
+      "sha256": "00261783f65f3bf01c9664755624a79254d5ff0549feff249bff009bed9a80ec"
+    },
+    "q-option-result": {
+      "correctAnswer": 1,
+      "sha256": "4c7bf9878488814c8ac799d9cec9344701cae8009c13b12421713ce878d7c819"
+    },
+    "q-ownership": {
+      "correctAnswer": 1,
+      "sha256": "f8175a5b3568501db485fb370a4b021fa1f194fafea004b18f63931e6e48c5a5"
+    },
+    "q-parser-design": {
+      "correctAnswer": 0,
+      "sha256": "511d9b6992fe48e053d197ab1a4d91290396c0fb60d0a3ff61422009d8e9fd47"
+    },
+    "q-perf-profiling": {
+      "correctAnswer": 1,
+      "sha256": "0a28e49f91f52e898cbc3382a0f73b83a6b9e1c541e07cd5f92e108ad33237a9"
+    },
+    "q-postmortem": {
+      "correctAnswer": 0,
+      "sha256": "3424480bd75b0c57c818c7a34a954f01b346068c1e604ecab4317f4fc5a95480"
+    },
+    "q-requirements": {
+      "correctAnswer": 0,
+      "sha256": "42c7b6b01a3836fe6e15ef2f4107d6932350c589e1668132d915a5b67786973c"
+    },
+    "q-send-sync": {
+      "correctAnswer": 0,
+      "sha256": "2d7017561c653af1c8277127c235e73ff2dccacfa52473324ef62fe4c47bae2d"
+    },
+    "q-stack-heap": {
+      "correctAnswer": 1,
+      "sha256": "fbd7351fa9daa794e625dd5786b43c635370b3e9da41d6e7bd2f66ebaf794109"
+    },
+    "q-syscalls": {
+      "correctAnswer": 1,
+      "sha256": "dbe3cd62b48940aa2ef751ec4cf7f6623b82051e3693ef21397dbca2b4d6041e"
+    },
+    "q-tcp-udp": {
+      "correctAnswer": 1,
+      "sha256": "3089cf90e163cb5e1a247f854dc5a0cf3b568916a4d83347adb87226a54cd824"
+    },
+    "q-testing-strategy": {
+      "correctAnswer": 1,
+      "sha256": "1e3da032cf60401aef0ab1725bf36a85c93591a878deaaf28ee74eb48e6aa926"
+    },
+    "q-tls": {
+      "correctAnswer": 1,
+      "sha256": "7ae362f56451bf6a1da9c611bbd68c0c9d228c8270f9ca73acdbad694eedc134"
+    },
+    "q-tradeoff-communication": {
+      "correctAnswer": 0,
+      "sha256": "d0364c9ada8cdb32a9ef02443fe712fbd3f871766627cdcfcd722568fd9a6642"
+    },
+    "q-two-sum-rust": {
+      "correctAnswer": 0,
+      "sha256": "6b9dee35be539d70177e5a20632e539b2c6273aa6cd48e0f47ece75cefd7530d"
+    },
+    "q-unsafe": {
+      "correctAnswer": 1,
+      "sha256": "50adb5f2bb2c6c9df456f5414a6f0e43eb2099424dfe36bde995b6cc493a876e"
+    },
+    "q-virtual-memory": {
+      "correctAnswer": 1,
+      "sha256": "7c0dd424a4fb1cb73e3d0d4224661d9efdb0d17abdb90b1ba5df8d387f709164"
+    }
+  }
+}

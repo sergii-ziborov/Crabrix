@@ -12,12 +12,12 @@ enum CrateCompatibility: Sendable, Equatable, Comparable {
     /// Pure Rust with nothing Crabrix cannot handle. Not yet proven.
     case expected
     /// Builds, but something about it may need review, e.g. a build script.
-    case review(String)
+    case review(String, code: LocalExecutionReason = .profileInformation)
     /// A failed compiler attempt is evidence of a failure, not proof that the
     /// package inherently requires an unsupported platform. Retrying is allowed.
     case buildFailed(String)
     /// Cannot build locally at all.
-    case unsupported(String)
+    case unsupported(String, code: LocalExecutionReason = .unspecifiedRequirement)
 
     var rank: Int {
         switch self {
@@ -37,7 +37,17 @@ enum CrateCompatibility: Sendable, Equatable, Comparable {
     var detail: String? {
         switch self {
         case .verified, .checkVerified, .expected: nil
-        case let .review(reason), let .buildFailed(reason), let .unsupported(reason): reason
+        case let .review(reason, _), let .buildFailed(reason): reason
+        case let .unsupported(reason, _): reason
+        }
+    }
+
+    var reasonCode: LocalExecutionReason? {
+        switch self {
+        case let .unsupported(_, code): code
+        case .buildFailed: .previousCompilerFailure
+        case let .review(_, code): code
+        case .verified, .checkVerified, .expected: nil
         }
     }
 
@@ -548,7 +558,7 @@ actor CargoPackageManager {
         unit: CargoBuildUnit?
     ) -> CrateCompatibility {
         if let links = package.links, !links.isEmpty {
-            return .unsupported("links the native library \"\(links)\"")
+            return .unsupported("declares native-link metadata \"\(links)\"", code: .nativeLinkMetadata)
         }
         guard let crate else { return .expected }
         if let issue = CrateSourceBrowser.sourceAccessIssue(
@@ -556,25 +566,25 @@ actor CargoPackageManager {
         ) {
             return .unsupported(
                 "source cannot remain completely viewable and editable: "
-                    + (issue.errorDescription ?? "source access limit exceeded")
+                    + (issue.errorDescription ?? "source access limit exceeded"), code: .sourceAccess
             )
         }
         if crate.manifest.isProcMacro && !supportsProceduralMacros {
-            return .unsupported("procedural macros need a host compiler Crabrix does not bundle")
+            return .unsupported("procedural macros need a host compiler Crabrix does not bundle", code: .proceduralMacroHost)
         }
         if ["syn", "quote", "proc-macro2"].contains(package.id.name),
            package.features.contains("proc-macro"), !supportsProceduralMacros {
             return .unsupported(
                 "the proc-macro feature needs Rust's host-only proc_macro library, "
-                    + "which is not in the bundled WASI sysroot; use the parser-only Cargo features"
+                    + "which is not in the bundled WASI sysroot; use the parser-only Cargo features", code: .proceduralMacroFeature
             )
         }
         if crate.manifest.requiresUnsupportedCrateType && !(supportsProceduralMacros && crate.manifest.isProcMacro) {
             return .unsupported(
-                "builds only as \(crate.manifest.library.crateTypes.joined(separator: ", "))"
+                "builds only as \(crate.manifest.library.crateTypes.joined(separator: ", "))", code: .unsupportedLibraryTarget
             )
         }
-        guard let unit else { return .unsupported("has no library target to link") }
+        guard let unit else { return .unsupported("has no library target to link", code: .missingLibraryTarget) }
         // A real build result always outranks static inspection.
         if let outcome = ledger.outcome(forFingerprint: unit.fingerprint) { return .recorded(outcome) }
         if let evidence = artifactEvidence(for: unit) { return evidence }
@@ -582,10 +592,10 @@ actor CargoPackageManager {
             if !unit.buildScriptDependencies.isEmpty {
                 return .unsupported(
                     "\(buildScript) needs a separate build-dependency graph: "
-                        + unit.buildScriptDependencies.joined(separator: ", ")
+                        + unit.buildScriptDependencies.joined(separator: ", "), code: .buildDependencyGraph
                 )
             }
-            return .review("runs \(buildScript) locally in the offline WASI sandbox; not yet verified")
+            return .review("runs \(buildScript) locally in the offline WASI sandbox; not yet verified", code: .buildScriptReview)
         }
         return .expected
     }

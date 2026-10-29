@@ -1,5 +1,21 @@
 # Changelog
 
+## 29 October — Interview content update and next app candidate
+
+- Published production-signed Interview Prep 1.1.0 in catalog sequence 16: all
+  forty existing topics revised, twelve focused Rust topics added. Existing IDs,
+  order and correct-answer positions remain stable. Website lessons, images,
+  sitemap and SEO reflect 52 interview topics and 754 Academy lessons/steps.
+- Both phone/iPad Simulators passed 39 native checks plus one UI flow, including
+  signed update/tamper checks, image decoding and actual offline execution of all
+  twelve new worked programs. Course tooling passed 20 tests; website passed 35
+  tests, type checking, production build and six public viewport/theme checks.
+- The next app-code candidate supplies stable compatibility reason codes, exact
+  subjects and manual next steps in the existing preflight sheet and cargo tree.
+  Runtime allocation/timeout/trap causality remains open. This candidate is not
+  part of signed build 120, which continues waiting for App Review unchanged.
+- [Delivery and scope](docs/interview-prep-2026-10-29.md).
+
 ## 1.1.3 (120) — explicit local MCP execution, TestFlight
 
 - MCP 0.2.0 adds signed discovery, default-off permission for selected operations,

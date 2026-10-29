@@ -1,0 +1,30 @@
+{
+  "appReviewBuildUnchanged": "1.1.3 (120)",
+  "courseVersion": "1.1.0",
+  "catalogSequence": 16,
+  "courseSourceCommit": "0e42224f6b322b45c86b7c150dd8d32f4542bf6d",
+  "archiveSHA256": "637289902e2036e67d717c9631275e2063bb3fe5f713b2da0b978c85c64210b4",
+  "archiveBytes": 20703960,
+  "currentLessons": 52,
+  "newLessons": 12,
+  "existingAnswerPositionsPreserved": 40,
+  "desktopChecks": 48,
+  "successfulPrograms": 42,
+  "expectedCompileDiagnostics": 6,
+  "courseTests": 20,
+  "publicationPendingNativeGate": false,
+  "nativeGatePassed": true,
+  "nativeDevices": [
+    "iPhone Simulator",
+    "iPad Simulator"
+  ],
+  "nativeWorkedExamplesPerDevice": 12,
+  "nativeSignedInstallerAnd52ImageDecodePerDevice": true,
+  "oldCourseSessionPreserved": true,
+  "nativeUIGeometryPassed": true,
+  "physicalDeviceBenchmarkClaim": false,
+  "qualifiedAtUTC": "2026-10-29T09:24:11.178044+00:00",
+  "nativeFunctionalTestsPerDevice": 39,
+  "nativeUIFlowsPerDevice": 1,
+  "deliveryReceipt": "interview-prep-delivery-2026-10-29.json"
+}

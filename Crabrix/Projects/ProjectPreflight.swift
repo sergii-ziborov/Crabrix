@@ -29,7 +29,10 @@ struct ProjectPreflight: Sendable {
         let origin: Origin
         let detail: String
         let blocked: Set<ProjectVerifiedOperation>
-        var id: String { origin.rawValue + ":" + detail }
+        let code: LocalExecutionReason
+        let subject: String?
+        var nextStep: String? { code.nextStep }
+        var id: String { code.rawValue + ":" + (subject ?? "") + ":" + origin.rawValue + ":" + detail }
     }
     struct Operation: Identifiable, Sendable {
         let kind: ProjectVerifiedOperation
@@ -79,12 +82,13 @@ struct ProjectPreflight: Sendable {
             directory: BrowserTypeScriptProfile.directory(files: project.files, entry: browserEntry))
         let all = Set(ProjectVerifiedOperation.allCases)
         var issues: [Issue] = []
-        func issue(_ origin: Origin, _ detail: String, blocks: Set<ProjectVerifiedOperation> = []) {
-            issues.append(.init(origin: origin, detail: detail, blocked: blocks))
+        func issue(_ origin: Origin, _ detail: String, blocks: Set<ProjectVerifiedOperation> = [],
+                   code: LocalExecutionReason = .profileInformation, subject: String? = nil) {
+            issues.append(.init(origin: origin, detail: detail, blocked: blocks, code: code, subject: subject))
         }
         var filesAccepted = true
         do { try ProjectFilePolicy.validate(project.files, entryFile: project.entryFile) }
-        catch { filesAccepted = false; issue(.files, error.localizedDescription, blocks: all) }
+        catch { filesAccepted = false; issue(.files, error.localizedDescription, blocks: all, code: .invalidFiles, subject: fileFailurePath(error)) }
         var edition: String?
         var features: [String]?
         var graph = "No Cargo manifest; standalone Rust source."
@@ -92,36 +96,36 @@ struct ProjectPreflight: Sendable {
         if browser {
             graph = "Only already prepared browser modules are used by Check, Build and Run. npm install / ci is a separate, explicit preparation step."
             if ProjectExecutionProfile.browserIdentity == "unavailable" {
-                issue(.browser, "The bundled browser compiler is unavailable.", blocks: all)
+                issue(.browser, "The bundled browser compiler is unavailable.", blocks: all, code: .toolchainUnavailable)
             }
             issue(.browser, typedBrowser
                 ? "Check uses bundled TypeScript \(BrowserTypeScriptProfile.version), standard libraries and prepared declarations, followed by browser bundling. Missing types require explicit preparation. Run and Build transpile/bundle separately; opening a Web Preview does not prove successful JavaScript execution."
                 : "Check parses and bundles browser modules. This project has no TypeScript checking input. A Web Preview opening is not evidence of successful JavaScript execution.")
-            issue(.profile, "Rust Debug is unavailable for a browser entry. Use Run and the Web Preview console.", blocks: [.debug])
+            issue(.profile, "Rust Debug is unavailable for a browser entry. Use Run and the Web Preview console.", blocks: [.debug], code: .browserDebugger, subject: browserEntry)
         } else if let text = project.files["Cargo.toml"] {
             do {
                 let manifest = try CratePackageManifest.parse(text).detectingImplicitBuildScript(fileExists: project.files["build.rs"] != nil)
                 edition = manifest.edition
                 if manifest.isVirtualWorkspace {
-                    issue(.manifest, "Select a package member before building this virtual workspace.", blocks: all)
+                    issue(.manifest, "Select a package member before building this virtual workspace.", blocks: all, code: .virtualWorkspace, subject: "Cargo.toml")
                 }
                 if let required = manifest.rustVersion {
                     if let version = SemanticVersion(required), version <= CargoToolchain.semanticVersion { }
-                    else { issue(.manifest, "This package requires Rust \(required); bundled rustc is \(CargoToolchain.semanticVersionLabel).", blocks: all) }
+                    else { issue(.manifest, "This package requires Rust \(required); bundled rustc is \(CargoToolchain.semanticVersionLabel).", blocks: all, code: .minimumRustVersion, subject: "Cargo.toml") }
                 }
                 let library = project.entryFile == manifest.library.path || project.entryFile == "lib.rs" || project.entryFile.hasSuffix("/lib.rs")
                 if library {
-                    issue(.profile, "This entry is a library. Check and rlib Build are separate from running a binary entry.", blocks: [.run, .debug])
+                    issue(.profile, "This entry is a library. Check and rlib Build are separate from running a binary entry.", blocks: [.run, .debug], code: .libraryEntry, subject: project.entryFile)
                     if manifest.library.isProcMacro || manifest.library.crateTypes.contains(where: { !["lib", "rlib"].contains($0) }) {
-                        issue(.manifest, "Compile-only Build supports an rlib entry; this manifest requests a different library target. It will not be substituted.", blocks: [.build])
+                        issue(.manifest, "Compile-only Build supports an rlib entry; this manifest requests a different library target. It will not be substituted.", blocks: [.build], code: .unsupportedLibraryTarget, subject: "Cargo.toml")
                     }
                 }
                 if let script = manifest.buildScriptPath {
                     let dependencies = manifest.dependencies.filter { $0.kind == .build && $0.applies(to: .wasm32WasiP1) }.map(\.alias).sorted()
                     if !dependencies.isEmpty {
-                        issue(.manifest, "\(script) needs a separate build-dependency host graph: \(dependencies.joined(separator: ", ")). This profile cannot supply it.", blocks: all)
+                        issue(.manifest, "\(script) needs a separate build-dependency host graph: \(dependencies.joined(separator: ", ")). This profile cannot supply it.", blocks: all, code: .buildDependencyGraph, subject: script)
                     } else {
-                        issue(.profile, "\(script) runs in the local std-only WASI profile. Host subprocesses and native linking are unavailable; script execution is still unverified.")
+                        issue(.profile, "\(script) runs in the local std-only WASI profile. Host subprocesses and native linking are unavailable; script execution is still unverified.", code: .buildScriptReview, subject: script)
                     }
                 }
                 if input.graphIsCurrent {
@@ -133,21 +137,21 @@ struct ProjectPreflight: Sendable {
                             status: package.compatibility.label, sourcePrepared: package.isDownloaded))
                         if let detail = package.compatibility.detail {
                             if case .buildFailed = package.compatibility {
-                                issue(.evidence, "\(package.package): previous compiler attempt failed: \(detail). This is not a proven platform restriction; retrying is allowed.")
+                                issue(.evidence, "\(package.package): previous compiler attempt failed: \(detail). This is not a proven platform restriction; retrying is allowed.", code: .previousCompilerFailure, subject: package.package.description)
                             } else {
-                                issue(.graph, "\(package.package): \(detail)", blocks: package.compatibility.isBlocking ? all : [])
+                                issue(.graph, "\(package.package): \(detail)", blocks: package.compatibility.isBlocking ? all : [], code: package.compatibility.reasonCode ?? .profileInformation, subject: package.package.description)
                             }
                         }
                     }
-                    for reason in input.workspace.unresolvedDependencies { issue(.graph, reason, blocks: all) }
+                    for reason in input.workspace.unresolvedDependencies { issue(.graph, reason, blocks: all, code: .unresolvedDependency) }
                     for warning in input.workspace.warnings { issue(.graph, warning) }
                 } else if !manifest.dependencies.isEmpty || !manifest.features.isEmpty {
                     graph = "Current features and dependency fingerprints are not prepared. No package compatibility is inferred from an older graph."
-                    issue(.graph, "Prepare the current Cargo inputs to inspect exact resolved versions and features. This report never downloads packages.")
+                    issue(.graph, "Prepare the current Cargo inputs to inspect exact resolved versions and features. This report never downloads packages.", code: .unpreparedGraph, subject: "Cargo.toml")
                 } else {
                     features = []; graph = "No dependencies or feature declarations."
                 }
-            } catch { issue(.manifest, error.localizedDescription, blocks: all) }
+            } catch { issue(.manifest, error.localizedDescription, blocks: all, code: .invalidManifest, subject: "Cargo.toml") }
         } else { edition = "2024"; features = [] }
         if !browser {
             for path in [".cargo/config", ".cargo/config.toml"] {
@@ -164,11 +168,11 @@ struct ProjectPreflight: Sendable {
                         for key in ["runner", "linker", "rustflags", "rustdocflags"] where settings[key] != nil { overrides.append("target.\(target).\(key)") }
                     }
                     if !overrides.isEmpty {
-                        issue(.profile, "\(path) requests configuration outside the fixed WASI invocation: \(overrides.sorted().joined(separator: ", ")). Review and explicitly adapt it in a copy; these settings will not be silently ignored.", blocks: all)
+                        issue(.profile, "\(path) requests configuration outside the fixed WASI invocation: \(overrides.sorted().joined(separator: ", ")). Review and explicitly adapt it in a copy; these settings will not be silently ignored.", blocks: all, code: .cargoConfiguration, subject: path)
                     } else if !document.isEmpty {
                         issue(.profile, "\(path) was inspected. Cargo aliases and host settings do not change this app's fixed compiler invocation.")
                     }
-                } catch { issue(.profile, "\(path): \(error.localizedDescription)", blocks: all) }
+                } catch { issue(.profile, "\(path): \(error.localizedDescription)", blocks: all, code: .invalidManifest, subject: path) }
             }
             issue(.profile, "Target is wasm32-wasip1 with local WASI execution. Native C/C++ libraries, GPU/CUDA, host subprocesses, OS threads and listening TCP servers are not provided. A crate name alone never establishes compatibility.")
         }
@@ -198,6 +202,14 @@ struct ProjectPreflight: Sendable {
                     entry: project.entryFile, edition: edition, features: features, graphSummary: graph,
                     dependencies: dependencies, operations: operations, issues: issues, filesAccepted: filesAccepted)
     }
+    private static func fileFailurePath(_ error: Error) -> String? {
+        guard let failure = error as? ProjectFilePolicy.Failure else { return nil }
+        return switch failure {
+        case let .unsafePath(path), let .fileTooLarge(path), let .unreadable(path), let .snapshotMismatch(path): path
+        case .tooManyFiles, .projectTooLarge, .metadataTooLarge: nil
+        }
+    }
+
 }
 
 struct CargoFeatureProposal: Identifiable, Sendable {

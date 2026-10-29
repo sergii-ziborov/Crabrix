@@ -4,6 +4,20 @@
 
 [Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support/) · [Privacy](https://crabrix.com/privacy/) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
+## Interview Prep — 52 topics, content update 1.1.0
+
+Forty existing questions were reviewed and twelve focused Rust topics added:
+values/text/iterators, closures, Pin/Future/Send, lock scope, async traits, typed
+errors, coherence and numeric boundaries. Existing IDs and answer positions are
+preserved. The production-signed update is discoverable in Learn; the current
+web Academy has 754 lessons/steps (154 Rust + 600 Atlas). It does not replace
+app build 120 on review. Both Simulators loaded 52 questions and images and ran
+all twelve new examples with the bundled offline compiler. [Qualification](docs/interview-prep-qualification-2026-10-29.json).
+
+The next app-code candidate also adds stable compatibility-reason codes, exact
+subjects and manual next steps in preflight and cargo tree. It passed native/UI
+gates and is **not in signed 120**. [Profile](docs/compatibility-reasons-2026-10-29.md).
+
 ## MCP 0.2 — local execution, TestFlight 1.1.3 (120)
 
 The new bridge has twelve tools, including signed discovery and explicitly

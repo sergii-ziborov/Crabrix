@@ -494,8 +494,8 @@ final class ProjectTerminalSession: ObservableObject {
         case .checkVerified: "[check-verified]"
         case .expected: "[ready]"
         case .review: "[review]"
-        case .buildFailed: "[build-failed]"
-        case .unsupported: "[unsupported]"
+        case .buildFailed: "[build-failed:previous-compiler-failure]"
+        case .unsupported: "[unsupported:\(package.compatibility.reasonCode?.rawValue ?? "unspecified-requirement")]"
         }
     }
 
