@@ -1,0 +1,53 @@
+{
+  "site": "https://crabrix.com",
+  "publishedAt": "2026-10-29T17:13:25Z",
+  "sourceCommit": "13eedb7b9c456bea37cc586982649f077634350e",
+  "image": "localhost/crabrix-web-site:blog-pages-13eedb7",
+  "imageDigest": "7690753e98226075a1e8229c0d6d7558fd39a7ed32789db0a572e2e97106b1da",
+  "sourceTreeSHA256": "5a8fda974fa2c981d8dd5dd5b2c786628df3dd6529bde09f05e64d0208840708",
+  "health": "healthy",
+  "rollbackContainer": "crabrix-web-site-before-blog-pages-20261029",
+  "accountBackup": "Existing account snapshot process completed before replacement; seven-day retention",
+  "accountMountPreserved": true,
+  "tests": 38,
+  "localBrowserCases": 32,
+  "candidateBrowserCases": 32,
+  "productionBrowserCases": 32,
+  "articleCount": 32,
+  "articlesPerPage": 12,
+  "archivePages": [
+    "https://crabrix.com/blog/",
+    "https://crabrix.com/blog/page/2/",
+    "https://crabrix.com/blog/page/3/"
+  ],
+  "noJavaScriptNavigation": true,
+  "directReloadAndHistory": true,
+  "firstPageAlias308": true,
+  "invalidPages404": [
+    "0",
+    "4",
+    "01",
+    "-1",
+    "2.0",
+    "hello",
+    "9007199254740992"
+  ],
+  "sitemapURLs": 808,
+  "publicPagesPassed": 808,
+  "extraLinkedTargets": 71,
+  "brokenInternalLinks": 0,
+  "brokenFragments": 0,
+  "duplicateTitles": 0,
+  "duplicateDescriptions": 0,
+  "invalidJSONLD": 0,
+  "selectedNativeBuild": "120",
+  "selectedNativeSourceCommit": "b842d20c8e46b7346e24c5d51a0c3eb843527c4e",
+  "cratesIO": {
+    "name": "crabrix",
+    "version": "0.3.0",
+    "url": "https://crates.io/crates/crabrix",
+    "archiveSHA256": "83d1b520897e22cd366b674b27d02e9f7ddf30eccccb9656ccc95d411b3e15a6",
+    "registryCLIAndLibraryPassed": true,
+    "docsRSStatus": 200
+  }
+}

@@ -39,5 +39,9 @@ A JavaScript-disabled browser navigated forward/back, reloaded a direct URL and
 used browser history successfully. Seven invalid page IDs returned 404; the
 first-page alias returned 308. The native capability selection remains build 120.
 
-Production deployment and final public checks are recorded in the companion
-`blog-pagination-2026-10-29.json` after activation of the verified candidate.
+Published at 2026-10-29T17:13:25Z on the existing Hetzner site. All 32 production
+browser cases passed, all 808 sitemap pages returned 200 with correct canonical
+metadata, and 71 further linked targets resolved without errors. No duplicate
+titles/descriptions, broken internal fragments or invalid JSON-LD were found.
+Accounts retain the same persistent mount and were backed up before replacement.
+The prior container is retained for rollback. [Deployment receipt](blog-pagination-2026-10-29.json).
