@@ -1,0 +1,12 @@
+Crabrix 1.1.4 (122)
+
+The existing Rust keyboard shortcut strip now starts with =, +, { and }. Common punctuation such as :, ?, quotes and commas is available alongside the original Rust shortcuts. The standard editor and the Duo shortcut row share the same ordered list. Toolbar height, key sizes and the Duo layout are unchanged; extra symbols use the existing horizontal scroll.
+
+Please check on iPhone, iPad and iPhone Duo:
+1. Open a Rust file with the keyboard visible. Insert =, +, braces, :, ?, quotes and commas at the cursor and over a selection. Scroll to the remaining symbols and insert multi-character shortcuts such as ::, ->, => and &mut.
+2. Ensure the fixed assistant and keyboard-dismiss controls stay visible while scrolling. Close and reopen the keyboard, rotate the device and switch between Code and Terminal; Code, Problems, Output and Terminal should remain accessible.
+3. On Duo, check portrait and laptop posture. The existing compact row should keep its height and sit with the editor tabs and keyboard without a new row, gap or overlap.
+
+This binary also includes the previously qualified structured local-compatibility reasons and current signed Interview Prep catalog. Shared Playground, local Run/Debug and account data are not changed by the keyboard update.
+
+Please report device, iOS version and reproduction steps with any issue.

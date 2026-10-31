@@ -42,7 +42,7 @@ Crabrix compiles and runs code you write or import, including third-party packag
 
 ## Optional Game Center
 
-The app does not automatically publish your projects or detailed learning progress. Temporary source links are created only when you choose sharing. Rating, ranks and achievements are earned locally. If you enable Game Center in Profile, your numeric rating and achievement ladder progress are also submitted to Apple's service as 37 ladder achievements plus ten earlier individual milestones. You can disable future submissions without losing local progress; scores Apple already holds may remain there. The iOS app operates no account or leaderboard server of its own; website Academy accounts are separate. See the [privacy policy](https://crabrix.com/privacy).
+The app does not automatically publish your projects or detailed learning progress. Temporary source links are created only when you choose sharing. Rating, ranks and achievements are earned locally. If you enable Game Center in Profile, your numeric rating and achievement ladder progress are also submitted to Apple's service as 37 ladder achievements plus ten earlier individual milestones. You can disable future submissions without losing local progress; scores Apple already holds may remain there. The iOS app operates no account or leaderboard server of its own; website Academy accounts are separate. See the [privacy policy](https://crabrix.com/privacy/).
 
 ## Public course materials
 
@@ -54,7 +54,7 @@ Crabrix is proprietary software. The compiler, standard library, and several lib
 
 ## What is not promised
 
-Crabrix compiles Rust on a phone. That is a hard thing to do and the limits are described plainly on the [About](https://crabrix.com/about) page: some crates cannot build on device, and first builds are slower than on a laptop. The app is provided as is, without a warranty that it will suit a particular purpose or that any specific crate will compile. To the extent the law allows, liability is limited to the amount you paid for the app.
+Crabrix compiles Rust on a phone. That is a hard thing to do and the limits are described plainly on the [About](https://crabrix.com/about/) page: some crates cannot build on device, and first builds are slower than on a laptop. The app is provided as is, without a warranty that it will suit a particular purpose or that any specific crate will compile. To the extent the law allows, liability is limited to the amount you paid for the app.
 
 This is not a disclaimer meant to wave problems away. If something is broken, write to me and I will fix it or tell you honestly that I cannot.
 

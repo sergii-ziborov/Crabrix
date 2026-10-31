@@ -99,11 +99,11 @@
       },
       {
         "kind": "p",
-        "text": "Crabrix contains a full Rust course — 142 lessons across six language courses, from `fn main` through ownership, traits, and async to macros, unsafe, and FFI, plus interview preparation that reaches past the language into memory, networking, databases, and distributed systems. A separate Algorithm Atlas adds 200 reusable patterns across 20 independent solution methods. Each method has its own path, and every pattern is taught through a mental model, recognition guide, and local Rust challenge."
+        "text": "Crabrix contains a full Rust course — 154 lessons across six language courses, from `fn main` through ownership, traits, and async to macros, unsafe, and FFI, plus interview preparation that reaches past the language into memory, networking, databases, and distributed systems. A separate Algorithm Atlas adds 200 reusable patterns across 20 independent solution methods. Each method has its own path, and every pattern is taught through a mental model, recognition guide, and local Rust challenge."
       },
       {
         "kind": "p",
-        "text": "All 742 lessons and steps have expanded written guidance, inline code markup, a syntax-highlighted example, and an infographic with a caption and alt text. Crabrix includes compiler-backed labs across the Rust curriculum, and every Algorithm Atlas pattern ends in a local Rust challenge the bundled compiler has to accept. Three drills — Quick Practice, Term Train, and Code Recall — are generated from that same curriculum and scheduled with SM-2 spaced repetition, so what you are weakest at comes back soonest."
+        "text": "All 754 lessons and steps have expanded written guidance, inline code markup, a syntax-highlighted example, and an infographic with a caption and alt text. Crabrix includes compiler-backed labs across the Rust curriculum, and every Algorithm Atlas pattern ends in a local Rust challenge the bundled compiler has to accept. Three drills — Quick Practice, Term Train, and Code Recall — are generated from that same curriculum and scheduled with SM-2 spaced repetition, so what you are weakest at comes back soonest."
       },
       {
         "kind": "p",
@@ -543,7 +543,7 @@
       },
       {
         "kind": "p",
-        "text": "The app does not automatically publish your projects or detailed learning progress. Temporary source links are created only when you choose sharing. Rating, ranks and achievements are earned locally. If you enable Game Center in Profile, your numeric rating and achievement ladder progress are also submitted to Apple's service as 37 ladder achievements plus ten earlier individual milestones. You can disable future submissions without losing local progress; scores Apple already holds may remain there. The iOS app operates no account or leaderboard server of its own; website Academy accounts are separate. See the [privacy policy](https://crabrix.com/privacy)."
+        "text": "The app does not automatically publish your projects or detailed learning progress. Temporary source links are created only when you choose sharing. Rating, ranks and achievements are earned locally. If you enable Game Center in Profile, your numeric rating and achievement ladder progress are also submitted to Apple's service as 37 ladder achievements plus ten earlier individual milestones. You can disable future submissions without losing local progress; scores Apple already holds may remain there. The iOS app operates no account or leaderboard server of its own; website Academy accounts are separate. See the [privacy policy](https://crabrix.com/privacy/)."
       },
       {
         "kind": "h2",
@@ -567,7 +567,7 @@
       },
       {
         "kind": "p",
-        "text": "Crabrix compiles Rust on a phone. That is a hard thing to do and the limits are described plainly on the [About](https://crabrix.com/about) page: some crates cannot build on device, and first builds are slower than on a laptop. The app is provided as is, without a warranty that it will suit a particular purpose or that any specific crate will compile. To the extent the law allows, liability is limited to the amount you paid for the app."
+        "text": "Crabrix compiles Rust on a phone. That is a hard thing to do and the limits are described plainly on the [About](https://crabrix.com/about/) page: some crates cannot build on device, and first builds are slower than on a laptop. The app is provided as is, without a warranty that it will suit a particular purpose or that any specific crate will compile. To the extent the law allows, liability is limited to the amount you paid for the app."
       },
       {
         "kind": "p",
