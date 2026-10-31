@@ -1,0 +1,256 @@
+{
+  "date": "2026-10-31",
+  "baselineCommit": "f1c65f7b42ed447fe7d4b0022167f0582b2dbe58",
+  "change": "Only keyboard shortcut data and ordering; standard and Duo rows share one list. No layout, button, focus, fold or insertion-handler changes.",
+  "symbols": [
+    "=",
+    "+",
+    "{",
+    "}",
+    "(",
+    ")",
+    ";",
+    ",",
+    ":",
+    "?",
+    "\"",
+    "::",
+    ".",
+    "[",
+    "]",
+    "->",
+    "=>",
+    "&",
+    "&mut ",
+    "!",
+    "_",
+    "|",
+    "<",
+    ">",
+    "'",
+    "-",
+    "*",
+    "/",
+    "%",
+    "#",
+    "..",
+    "..=",
+    "\\"
+  ],
+  "previousSymbolsRetained": true,
+  "duplicates": false,
+  "sourceSHA256": {
+    "Crabrix/Editor/SyntaxCodeEditor.swift": "98da0cd5255161d973f6e4c536a11ab02f75f4ed66113b3828e8cf81fd39193d",
+    "Crabrix/UI/BuildDockView.swift": "205fc6eacff27e2523b220d6eac35395096fa2ca677319281d4d317e22acd331"
+  },
+  "nativeComponentProbe": {
+    "cases": [
+      {
+        "baselineDuoHeight": 28,
+        "controlsPinnedWhileScrolling": true,
+        "duoHeight": 28,
+        "fixedControlsUnchanged": true,
+        "frontFourVisibleWithoutScrolling": false,
+        "frontTwoVisibleWithoutScrolling": true,
+        "lastSymbolReachable": true,
+        "literalCallbacksPassed": true,
+        "passed": true,
+        "systemHeight": 46,
+        "width": 320
+      },
+      {
+        "baselineDuoHeight": 28,
+        "controlsPinnedWhileScrolling": true,
+        "duoHeight": 28,
+        "fixedControlsUnchanged": true,
+        "frontFourVisibleWithoutScrolling": false,
+        "frontTwoVisibleWithoutScrolling": true,
+        "lastSymbolReachable": true,
+        "literalCallbacksPassed": true,
+        "passed": true,
+        "systemHeight": 46,
+        "width": 375
+      },
+      {
+        "baselineDuoHeight": 28,
+        "controlsPinnedWhileScrolling": true,
+        "duoHeight": 28,
+        "fixedControlsUnchanged": true,
+        "frontFourVisibleWithoutScrolling": true,
+        "frontTwoVisibleWithoutScrolling": true,
+        "lastSymbolReachable": true,
+        "literalCallbacksPassed": true,
+        "passed": true,
+        "systemHeight": 46,
+        "width": 393
+      },
+      {
+        "baselineDuoHeight": 28,
+        "controlsPinnedWhileScrolling": true,
+        "duoHeight": 28,
+        "fixedControlsUnchanged": true,
+        "frontFourVisibleWithoutScrolling": true,
+        "frontTwoVisibleWithoutScrolling": true,
+        "lastSymbolReachable": true,
+        "literalCallbacksPassed": true,
+        "passed": true,
+        "systemHeight": 46,
+        "width": 430
+      },
+      {
+        "baselineDuoHeight": 28,
+        "controlsPinnedWhileScrolling": true,
+        "duoHeight": 28,
+        "fixedControlsUnchanged": true,
+        "frontFourVisibleWithoutScrolling": true,
+        "frontTwoVisibleWithoutScrolling": true,
+        "lastSymbolReachable": true,
+        "literalCallbacksPassed": true,
+        "passed": true,
+        "systemHeight": 46,
+        "width": 600
+      },
+      {
+        "baselineDuoHeight": 28,
+        "controlsPinnedWhileScrolling": true,
+        "duoHeight": 28,
+        "fixedControlsUnchanged": true,
+        "frontFourVisibleWithoutScrolling": true,
+        "frontTwoVisibleWithoutScrolling": true,
+        "lastSymbolReachable": true,
+        "literalCallbacksPassed": true,
+        "passed": true,
+        "systemHeight": 46,
+        "width": 768
+      },
+      {
+        "baselineDuoHeight": 28,
+        "controlsPinnedWhileScrolling": true,
+        "duoHeight": 28,
+        "fixedControlsUnchanged": true,
+        "frontFourVisibleWithoutScrolling": true,
+        "frontTwoVisibleWithoutScrolling": true,
+        "lastSymbolReachable": true,
+        "literalCallbacksPassed": true,
+        "passed": true,
+        "systemHeight": 46,
+        "width": 1024
+      }
+    ],
+    "method": "Exact production keyboard components and theme extracted from the working tree, compared against HEAD in an isolated UIKit/SwiftUI Simulator probe; no compiler or fold-container replacement.",
+    "passed": true,
+    "scope": "Component geometry and UIKit callbacks only, not a whole-app Duo posture regression. Equals/plus must be immediately visible at every width. Curly braces must also be fully visible from 393 pt; narrower widths retain ordinary horizontal scrolling instead of smaller keys."
+  },
+  "probeSimulator": "iPhone Duo, iOS 27.1 (24A94232)",
+  "compiler": "Xcode 27.1 SDK / Swift 6",
+  "parsePassed": true,
+  "wholeAppRegressionRun": false,
+  "physicalDuoTested": false,
+  "appStoreOrTestFlightChanged": false,
+  "orderingEvidence": {
+    "scope": "Unique exampleCode/practiceCode snippets in the local Academy; approximate token inventory after comments/strings are removed. User-requested = and + stay first.",
+    "uniqueSnippets": 868,
+    "common": [
+      [
+        "(",
+        9453
+      ],
+      [
+        ")",
+        9453
+      ],
+      [
+        ";",
+        5080
+      ],
+      [
+        ",",
+        4871
+      ],
+      [
+        ".",
+        4616
+      ],
+      [
+        "=",
+        4213
+      ],
+      [
+        "{",
+        3445
+      ],
+      [
+        "}",
+        3443
+      ],
+      [
+        "[",
+        2917
+      ],
+      [
+        "]",
+        2917
+      ],
+      [
+        "&",
+        2418
+      ],
+      [
+        ":",
+        2057
+      ],
+      [
+        "!",
+        1556
+      ],
+      [
+        "<",
+        1488
+      ],
+      [
+        "::",
+        1447
+      ],
+      [
+        ">",
+        1373
+      ],
+      [
+        "->",
+        927
+      ],
+      [
+        "|",
+        903
+      ],
+      [
+        "+",
+        809
+      ],
+      [
+        "-",
+        510
+      ],
+      [
+        "*",
+        276
+      ],
+      [
+        "..",
+        246
+      ],
+      [
+        "=>",
+        125
+      ],
+      [
+        "/",
+        97
+      ]
+    ]
+  },
+  "references": [
+    "https://doc.rust-lang.org/reference/tokens.html",
+    "https://doc.rust-lang.org/reference/expressions/operator-expr.html"
+  ]
+}

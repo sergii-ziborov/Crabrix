@@ -1,6 +1,16 @@
 import SwiftUI
 import UIKit
 
+/// One ordered strip for both the system keyboard and Duo's inline shortcuts.
+/// Keep everyday punctuation first; the existing horizontal scroll handles overflow.
+enum RustKeyboardSymbols {
+    static let shortcuts = [
+        "=", "+", "{", "}", "(", ")", ";", ",", ":", "?", "\"",
+        "::", ".", "[", "]", "->", "=>", "&", "&mut ",
+        "!", "_", "|", "<", ">", "'", "-", "*", "/", "%", "#", "..", "..=", "\\",
+    ]
+}
+
 @MainActor
 final class RustEditorKeyboardBridge: ObservableObject {
     var insert: ((String) -> Void)?
@@ -1237,7 +1247,7 @@ private final class BreakpointAccessibilityElement: UIAccessibilityElement {
 }
 
 fileprivate final class RustKeyboardAccessoryView: UIView {
-    private let symbols = ["::", "->", "=>", "&", "&mut ", "|", "_", "!", "<", ">", "{", "}", "[", "]", "(", ")", ";"]
+    private let symbols = RustKeyboardSymbols.shortcuts
     private let completeButton: UIButton
 
     init(

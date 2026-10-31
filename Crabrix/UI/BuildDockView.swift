@@ -357,7 +357,7 @@ private struct RustKeyboardShortcutRow: View {
     let usesAppleIntelligence: Bool
     let onComplete: () -> Void
 
-    private let symbols = ["::", "->", "=>", "&", "&mut ", "|", "_", "!", "<", ">", "{", "}", "[", "]", "(", ")", ";"]
+    private let symbols = RustKeyboardSymbols.shortcuts
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
