@@ -1,3 +1,17 @@
+> TestFlight delivery verified through App Store Connect — 31 October 2026:
+> **1.1.4 (122)** is **VALID**, **APP_STORE_ELIGIBLE**, and **IN_BETA_TESTING**
+> in the existing Internal QA group. The manual Duo SDK workflow completed
+> Build and Archive successfully from `bf361a3` using Xcode/SDK 27.1.
+> The ordered Rust symbol strip includes `=`, `+`, braces and missing punctuation;
+> ordinary and Duo component dimensions are unchanged. Seven component widths
+> were qualified separately; no fresh whole-app UI or physical-Duo regression is claimed.
+> The signed export passed deep strict signature, version, SDK and distribution-profile checks.
+> Build 121 stopped at the retained legal-copy consistency gate before upload;
+> the synchronized source passed all resource gates in build 122.
+> The approved **1.1.3 (120)** selection remains **PENDING_DEVELOPER_RELEASE**.
+> This delivery adds no App Review submission and does not release 1.1.3.
+> [Apple and signed-artifact readback](release-1.1.4-build122.json).
+
 > Delivery verified through App Store Connect — 27 October 2026: **1.1.2 (101)**
 > is VALID and IN_BETA_TESTING in TestFlight **Internal QA**. App Store version
 > and submission are **WAITING_FOR_REVIEW**, selecting **101**. Release stays

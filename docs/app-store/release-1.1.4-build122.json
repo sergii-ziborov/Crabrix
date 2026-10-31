@@ -1,0 +1,76 @@
+{
+  "atUTC": "2026-10-31T08:58:51.598929+00:00",
+  "version": "1.1.4",
+  "buildNumber": "122",
+  "buildID": "436cf8c4-008b-42d5-9f0d-f07048f2995b",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "buildAudienceType": "APP_STORE_ELIGIBLE",
+  "cloudBuildRunID": "01075539-d834-4d82-938d-5787739b8e6e",
+  "appSourceCommit": "bf361a3d31ab4408dd159fc87c650371b616d0f4",
+  "testFlightGroup": {
+    "id": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "name": "Internal QA"
+  },
+  "testNotesExactMatch": true,
+  "approvedVersionPreserved": {
+    "version": "1.1.3",
+    "selectedBuild": "120",
+    "state": "PENDING_DEVELOPER_RELEASE"
+  },
+  "newAppReviewSubmission": false,
+  "signedArtifact": {
+    "version": "1.1.4",
+    "build": "122",
+    "sdk": "iphoneos27.1",
+    "xcodeBuild": "27A9275",
+    "exportZIPBytes": 89047316,
+    "exportZIPSHA256": "6c78dba844c6f00c8af1e7b9f068ee500806f522dfb983cbec11085291143e38",
+    "ipaSHA256": "786fe3f1009219be9821d704e9fa0420f21583375e0b09a5301ebf311cab73a7",
+    "codesignDeepStrict": true,
+    "getTaskAllow": false,
+    "appStoreDistributionProfile": true,
+    "applicationIdentifier": "XMS5ZC28UJ.com.sergiiziborov.Crabrix",
+    "associatedDomains": [
+      "applinks:crabrix.com"
+    ],
+    "appGroups": [
+      "group.com.sergiiziborov.Crabrix"
+    ]
+  },
+  "archiveEnvironment": {
+    "logsSHA256": "8924566d127b96a1612f874eb5574e3a6e6e258d06535d8bccffcd2bf6ba4cec",
+    "DuoCompilationFlagPresent": true,
+    "iphoneOS27_1Present": true,
+    "archiveSucceeded": true,
+    "SyncedLegalGatePassed": true
+  },
+  "signedOfflineReferenceMatchesSource": true,
+  "keyboardChange": {
+    "sourceCommit": "ca711cd842893dac8fe097c1dbc668772983a08b",
+    "qualification": "docs/keyboard-symbols-2026-10-31.json",
+    "componentWidthsPassed": [
+      320,
+      375,
+      393,
+      430,
+      600,
+      768,
+      1024
+    ],
+    "ordinaryToolbarHeight": 46,
+    "duoRowHeight": 28,
+    "layoutOrFocusChanges": false,
+    "wholeAppFreshUIRegressionRun": false,
+    "physicalDuoTested": false
+  },
+  "testNotesFile": "docs/app-store/testflight-what-to-test-1.1.4-build122.txt",
+  "previousAttempt": {
+    "buildNumber": "121",
+    "cloudBuildRunID": "5e5cdaf1-51ef-4a0e-b37d-d4b20bc5d428",
+    "state": "FAILED",
+    "uploaded": false,
+    "reason": "ci_post_clone legal-copy consistency gate detected outdated exported About counts and canonical links; regenerated from existing canonical website source, retained gate, verified all bundled resource gates and reran as build122."
+  },
+  "websiteDeployedInThisTask": false
+}
