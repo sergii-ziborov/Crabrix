@@ -1,5 +1,15 @@
 # Crabrix website deployment
 
+## Academy audit — 1 November 2026
+
+The live service uses `localhost/crabrix-web-site:audit-8c2a117`, pinning course source
+`529645a`. A consistent account backup preceded cutover; the previous service is
+retained as `crabrix-web-site-before-audit-20261101`. Sixty site tests, TypeScript and
+the production build passed. On the Linux candidate the Playground API, browser and
+native collaboration matrix, shared debugger and the account lifecycle passed. All
+762 lesson, course and hub pages then returned 200 on public HTTPS, and the Playground
+API probe passed against production.
+
 ## Academy corrections — 27 October 2026
 
 The live service uses `localhost/crabrix-web-site:academy-corrections-20261027`,

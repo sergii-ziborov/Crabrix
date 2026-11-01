@@ -1,5 +1,20 @@
 # Changelog
 
+## 1 November — Audit fixes, Academy catalog 17 and 1.1.4 candidate
+
+- All 754 lessons reviewed against real rustc and Cargo runs. False claims, truncated
+  rules, generic misconceptions, stale diagrams and markup corrected across seven
+  courses. Atlas gained 117 adversarial cases; 94 known wrong solutions now fail.
+- App: per-lesson answer order, Academy per-course isolation, lab resume, stricter and
+  fairer lesson evidence, project import as a copy, safer autosave and ZIP limits,
+  Cargo-compatible SemVer partials, native Playground room compaction. Duo layout,
+  editor geometry and the keyboard strip are unchanged.
+- Website (Hetzner image `audit-8c2a117`): return paths for Atlas lessons, lockout and
+  relay abuse limits, IPv6 /64 client keys, preview bounds. The privacy policy now
+  discloses the keyed room-creator hash kept for a room's lifetime.
+- Not changed by design: undo for the keyboard strip, the Duo keyboard button and
+  strip typing share. The Playground end-to-end format still lacks sequence binding.
+
 ## 29 October — Interview content update and next app candidate
 
 - Published production-signed Interview Prep 1.1.0 in catalog sequence 16: all

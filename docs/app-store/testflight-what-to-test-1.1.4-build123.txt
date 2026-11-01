@@ -1,0 +1,14 @@
+Crabrix 1.1.4 — lessons and reliability
+
+This build follows a review of all 754 lessons and of the app's learning and project code. Corrected lesson content arrives through Learn as an update for all seven courses.
+
+Please check on iPhone, iPad and iPhone Duo:
+1. Learn: choose Update all, open lessons in several courses and answer their Quick Check. Answer order differs between lessons and stays the same when you reopen one. Completed lessons reopen as answered, with existing progress intact.
+2. Algorithm challenges: solve one, then try a solution that only handles the visible example; the stricter checks should reject it. Debug println! lines must not fail a correct solution.
+3. Labs: start a lesson lab, write partial code, close the project and reopen it from My Projects. Your code stays, the lab still checks your work, and closing returns you to Projects.
+4. Projects: export a project, keep editing it, then import the old export. It opens as a new copy and the edited project is unchanged.
+5. Shared Playground: create a room, edit from a second device or the website, leave and rejoin. View-only guests cannot edit from the symbol row.
+
+The Duo layout and keyboard symbol row are unchanged; please confirm that on a physical Duo if you have one.
+
+Please report device, iOS version and reproduction steps with any issue.
