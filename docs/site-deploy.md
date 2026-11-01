@@ -1,5 +1,14 @@
 # Crabrix website deployment
 
+## MCP 0.3.4 and relay room limit — 1 November 2026
+
+The live service uses `localhost/crabrix-web-site:mcp034-c75f95a`; the previous service is
+retained as `crabrix-web-site-before-mcp034-20261101`, after a consistent account backup.
+A room is capped at 1.9 MB so its state fits the 2,000,000 character message that
+shipped clients accept: the earlier 4 MiB limit from `audit-8c2a117` could produce a room
+that the website and native clients could not open. A full production room now opens in
+the browser, and MCP 0.3.4 drains it. The page offers the Claude Code plugin and 0.3.4 download.
+
 ## Academy audit — 1 November 2026
 
 The live service uses `localhost/crabrix-web-site:audit-8c2a117`, pinning course source
