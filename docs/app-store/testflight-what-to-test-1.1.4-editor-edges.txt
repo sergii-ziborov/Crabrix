@@ -1,0 +1,11 @@
+Test the code screen in every orientation.
+
+iPhone portrait: code runs to the bottom of the screen and scrolls behind the Code/Problems/Output/Terminal tabs and the Projects/Learn/Settings bar. The last line can still scroll clear of them.
+
+iPhone landscape: panels and code reach the screen edges with no empty bands. The Code/Problems/Output/Terminal tabs now sit in the row with Files and the file name. Line numbers stay clear of the camera on either rotation.
+
+iPad: the code screen uses one header row, as on Duo: back to Projects, project name, search, project menu, Check and Run. The system tabs return after going back. Code runs to the bottom edge.
+
+Editor: put the cursor after a closing brace and press Return, on a file with a line wider than the screen. The code must not jump sideways.
+
+Duo: check the laptop and book poses. They should look as before. This build could not exercise them on the simulator, so please report anything different.

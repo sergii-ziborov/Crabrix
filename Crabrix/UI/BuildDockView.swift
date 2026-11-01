@@ -39,6 +39,88 @@ enum BuildDockTab: String, CaseIterable, Identifiable {
     }
 }
 
+/// How much of the editor sits behind floating controls or the camera, so the
+/// code can reach the screen edge and still scroll fully into the clear.
+struct CodeEditorChrome: Equatable {
+    var bottom: CGFloat = 0
+    var leading: CGFloat = 0
+    var trailing: CGFloat = 0
+}
+
+private struct CodeEditorChromeKey: EnvironmentKey {
+    static let defaultValue = CodeEditorChrome()
+}
+
+extension EnvironmentValues {
+    var codeEditorChrome: CodeEditorChrome {
+        get { self[CodeEditorChromeKey.self] }
+        set { self[CodeEditorChromeKey.self] = newValue }
+    }
+}
+
+private struct FloatingDockBackground: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(.regular, in: Capsule())
+        } else {
+            content.background(.ultraThinMaterial, in: Capsule())
+        }
+    }
+}
+
+/// Code, Problems, Output and Terminal, wherever the layout places them.
+struct BuildDockTabsRow: View {
+    @Binding var selectedTab: BuildDockTab
+    let problemCount: Int
+    let keyboardBridge: RustEditorKeyboardBridge
+    var height: CGFloat = 34
+    /// Duo's docked row marks the active tab with a top stripe. Floating tabs
+    /// use a capsule, like the selected item of the tab bar beneath them.
+    var capsuleSelection = true
+
+    var body: some View {
+        let activeTab = selectedTab
+        ForEach(BuildDockTab.allCases) { tab in
+            Button {
+                tab.select($selectedTab, editorKeyboard: keyboardBridge)
+            } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: tab.systemImage)
+                    Text(tab.title)
+                    if tab == .problems {
+                        Text("\(problemCount)")
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(CrabrixTheme.raised, in: Capsule())
+                    }
+                }
+                .padding(.horizontal, capsuleSelection ? 10 : 8)
+                .frame(height: height)
+                .foregroundStyle(activeTab == tab ? tab.tint : CrabrixTheme.muted)
+                .background {
+                    if capsuleSelection {
+                        Capsule().fill(activeTab == tab ? tab.tint.opacity(0.16) : Color.clear)
+                    } else {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(activeTab == tab ? tab.tint.opacity(0.12) : Color.clear)
+                    }
+                }
+                .overlay(alignment: .top) {
+                    if activeTab == tab && !capsuleSelection {
+                        Capsule().fill(tab.tint).frame(height: 2)
+                    }
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("build-dock-\(tab.rawValue)")
+            .accessibilityLabel("Show \(tab.title.lowercased())")
+            .accessibilityAddTraits(activeTab == tab ? .isSelected : [])
+        }
+    }
+}
+
 struct BuildDockView<CodeContent: View>: View {
     @Binding var selectedTab: BuildDockTab
     @ObservedObject var terminal: ProjectTerminalSession
@@ -79,9 +161,18 @@ struct BuildDockView<CodeContent: View>: View {
     let duoHingePresent: Bool
     let hingePartiallyOpen: Bool
     let hingeGlobalY: CGFloat
+    /// Code runs to the screen edge behind the floating tabs, except while a
+    /// debugger bar needs the space above them.
+    let codeRunsUnderTabs: Bool
+    /// In phone landscape the tabs live in the editor toolbar, where they take
+    /// no height from the code.
+    let tabsInToolbar: Bool
     let assistantUsesAppleIntelligence: Bool
     let onRequestCompletion: () -> Void
     let codeContent: CodeContent
+    @State private var cameraOnLeadingEdge = UIDevice.current.orientation == .landscapeLeft
+
+    private static var floatingTabsHeight: CGFloat { 48 }
 
     init(
         selectedTab: Binding<BuildDockTab>,
@@ -119,6 +210,8 @@ struct BuildDockView<CodeContent: View>: View {
         duoHingePresent: Bool,
         hingePartiallyOpen: Bool,
         hingeGlobalY: CGFloat,
+        codeRunsUnderTabs: Bool = true,
+        tabsInToolbar: Bool = false,
         assistantUsesAppleIntelligence: Bool,
         onRequestCompletion: @escaping () -> Void,
         @ViewBuilder codeContent: () -> CodeContent
@@ -158,6 +251,8 @@ struct BuildDockView<CodeContent: View>: View {
         self.duoHingePresent = duoHingePresent
         self.hingePartiallyOpen = hingePartiallyOpen
         self.hingeGlobalY = hingeGlobalY
+        self.codeRunsUnderTabs = codeRunsUnderTabs
+        self.tabsInToolbar = tabsInToolbar
         self.assistantUsesAppleIntelligence = assistantUsesAppleIntelligence
         self.onRequestCompletion = onRequestCompletion
         self.codeContent = codeContent()
@@ -196,10 +291,12 @@ struct BuildDockView<CodeContent: View>: View {
                     } else {
                         content
                     }
-                } else {
+                } else if duoHingePresent {
                     content
                     Divider().overlay(CrabrixTheme.border)
                     header(tabletop: false, wide: geometry.size.width >= 500)
+                } else {
+                    floatingDock(in: geometry)
                 }
             }
             .background(CrabrixTheme.editor)
@@ -212,44 +309,55 @@ struct BuildDockView<CodeContent: View>: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func header(tabletop: Bool, wide: Bool) -> some View {
-        let activeTab = selectedTab
-        let tabs = BuildDockTab.allCases
-        return HStack(spacing: 4) {
-            ForEach(tabs) { tab in
-                Button {
-                    tab.select($selectedTab, editorKeyboard: keyboardBridge)
-                } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: tab.systemImage)
-                        Text(tab.title)
-                        if tab == .problems {
-                            Text("\(result?.problemDiagnostics.count ?? 0)")
-                                .padding(.horizontal, 5)
-                                .padding(.vertical, 1)
-                                .background(CrabrixTheme.raised, in: Capsule())
-                        }
-                    }
-                    .padding(.horizontal, 8)
-                    .frame(height: tabletop ? 30 : 34)
-                    .foregroundStyle(activeTab == tab ? tab.tint : CrabrixTheme.muted)
-                    .background(
-                        activeTab == tab ? tab.tint.opacity(0.12) : Color.clear,
-                        in: RoundedRectangle(cornerRadius: 8)
-                    )
-                    .overlay(alignment: .top) {
-                        if activeTab == tab {
-                            Capsule().fill(tab.tint).frame(height: 2)
-                        }
-                    }
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("build-dock-\(tab.rawValue)")
-                .accessibilityLabel("Show \(tab.title.lowercased())")
-                .accessibilityAddTraits(activeTab == tab ? .isSelected : [])
+    /// The tabs float over the code, which keeps going to the screen edge behind
+    /// them and behind the tab bar. The tabs stay in the safe area, so they sit
+    /// above the tab bar and rise with the keyboard.
+    private func floatingDock(in geometry: GeometryProxy) -> some View {
+        let wide = geometry.size.width >= 500
+        let underTabs = selectedTab == .code && codeRunsUnderTabs
+        let camera = geometry.safeAreaInsets.leading
+        let tabsHeight = tabsInToolbar ? 0 : Self.floatingTabsHeight
+        return ZStack(alignment: wide ? .bottomLeading : .bottom) {
+            GeometryReader { full in
+                let clearance = tabsHeight + max(0, full.frame(in: .global).maxY - geometry.frame(in: .global).maxY)
+                content
+                    // Lists and the terminal keep their panels to the screen edge
+                    // and lay their content out above the floating controls.
+                    .safeAreaPadding(.bottom, underTabs ? 0 : clearance)
+                    .environment(\.codeEditorChrome, CodeEditorChrome(
+                        bottom: underTabs ? clearance : 0,
+                        // Line numbers clear the camera housing, and only on its side.
+                        leading: cameraOnLeadingEdge ? max(0, camera - 14) : 0,
+                        trailing: cameraOnLeadingEdge ? 0 : camera
+                    ))
             }
+            .ignoresSafeArea(.container, edges: selectedTab == .code ? [.bottom, .horizontal] : .bottom)
 
-            Spacer()
+            if !tabsInToolbar {
+                header(tabletop: false, wide: wide, floating: true)
+                    .modifier(FloatingDockBackground())
+                    .padding(.horizontal, wide ? 12 : 0)
+                    .padding(.bottom, 3)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+            let orientation = UIDevice.current.orientation
+            if orientation.isLandscape { cameraOnLeadingEdge = orientation == .landscapeLeft }
+        }
+    }
+
+    private func header(tabletop: Bool, wide: Bool, floating: Bool = false) -> some View {
+        let activeTab = selectedTab
+        return HStack(spacing: 4) {
+            BuildDockTabsRow(
+                selectedTab: $selectedTab,
+                problemCount: result?.problemDiagnostics.count ?? 0,
+                keyboardBridge: keyboardBridge,
+                height: tabletop ? 30 : 34,
+                capsuleSelection: floating
+            )
+
+            if !floating { Spacer() }
 
             // The tab-row dismissal control is only needed beside Duo's hinge.
             if (duoHingePresent || tabletop) && (activeTab == .code || activeTab == .terminal) {
@@ -271,8 +379,8 @@ struct BuildDockView<CodeContent: View>: View {
             }
         }
         .font(.system(size: 9, weight: .semibold, design: .monospaced))
-        .padding(.horizontal, 9)
-        .frame(height: tabletop ? 34 : 38)
+        .padding(.horizontal, floating ? 5 : 9)
+        .frame(height: tabletop ? 34 : floating ? 44 : 38)
     }
 
     private var dockKeyboardIsFocused: Bool {

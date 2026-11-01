@@ -70,8 +70,41 @@ private struct PersistentTabBar: ViewModifier {
     }
 }
 
+/// Code shows through behind the floating tab bar on the system's glass.
+private struct TabBarOverCode: ViewModifier {
+    let enabled: Bool
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *), enabled {
+            content.toolbarBackground(.hidden, for: .tabBar)
+        } else {
+            content
+        }
+    }
+}
+
+/// Keeps the floating controls and cards above the tabs the code runs under.
+private struct CodeEditorChromePadding: ViewModifier {
+    @Environment(\.codeEditorChrome) private var chrome
+
+    func body(content: Content) -> some View {
+        content.padding(.bottom, chrome.bottom).padding(.leading, chrome.leading)
+    }
+}
+
+/// Keeps line numbers clear of the camera housing in landscape.
+private struct CodeEditorLeadingPadding: ViewModifier {
+    @Environment(\.codeEditorChrome) private var chrome
+
+    func body(content: Content) -> some View {
+        content.padding(.leading, chrome.leading)
+    }
+}
+
 struct ContentView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var model = CompilerViewModel()
     @StateObject private var completion = RustCompletionController()
@@ -172,8 +205,15 @@ struct ContentView: View {
             ) != nil
                 || tabletopTabsGlobalY != nil
             tabContent(tabletop: tabletop, hingeGlobalY: hingeGlobalY)
-                .toolbar(tabletop && isWorkspaceOpen ? .hidden : .visible, for: .tabBar)
+                .toolbar((tabletop && isWorkspaceOpen) || tabletWorkspaceHidesTabs ? .hidden : .visible, for: .tabBar)
         }
+    }
+
+    /// iPad's workspace uses Duo's one-row header: back to Projects, the project
+    /// name and its actions, without the system tabs above it.
+    private var tabletWorkspaceHidesTabs: Bool {
+        isWorkspaceOpen && selectedDestination == .projects
+            && horizontalSizeClass == .regular && UIDevice.current.userInterfaceIdiom == .pad
     }
 
     private func tabNavigation(tabletop: Bool, hingeGlobalY: CGFloat) -> some View {
@@ -181,7 +221,8 @@ struct ContentView: View {
             Group {
                 if isWorkspaceOpen {
                     buildWorkspace(hingeGlobalY: hingeGlobalY)
-                        .toolbar(tabletop ? .hidden : .visible, for: .tabBar)
+                        .toolbar(tabletop || tabletWorkspaceHidesTabs ? .hidden : .visible, for: .tabBar)
+                        .modifier(TabBarOverCode(enabled: !duoHingePresent))
                         .ignoresSafeArea(tabletop ? .container : [], edges: .top)
                         .ignoresSafeArea(
                             tabletop && (selectedBuildDockTab == .problems || selectedBuildDockTab == .output)
@@ -282,7 +323,7 @@ struct ContentView: View {
         }
         .tabViewStyle(.tabBarOnly)
         .modifier(PersistentTabBar())
-        .toolbar(tabletop && isWorkspaceOpen ? .hidden : .visible, for: .tabBar)
+        .toolbar((tabletop && isWorkspaceOpen) || tabletWorkspaceHidesTabs ? .hidden : .visible, for: .tabBar)
         .toolbarBackground(CrabrixTheme.panel, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .id(appearanceRaw)
@@ -825,7 +866,8 @@ struct ContentView: View {
     }
 
     private func editorPane(fixedSidebar: Bool, hingeGlobalY: CGFloat) -> some View {
-        VStack(spacing: 0) {
+        let tabsInToolbar = verticalSizeClass == .compact && !duoHingePresent
+        return VStack(spacing: 0) {
             EditorToolbar(
                 projectName: model.projectName,
                 browserProject: model.isBrowserProject,
@@ -839,6 +881,11 @@ struct ContentView: View {
                 isProjectSidebarCollapsed: fixedSidebar ? false : !isCompactProjectDrawerPresented,
                 showsProjectSidebarToggle: !fixedSidebar,
                 showsEnvironmentBar: tabletopTabsGlobalY == nil,
+                dockTabs: tabsInToolbar ? BuildDockTabsRow(
+                    selectedTab: $selectedBuildDockTab,
+                    problemCount: model.result?.problemDiagnostics.count ?? 0,
+                    keyboardBridge: editorKeyboard
+                ) : nil,
                 onSelectFile: selectEditorFile,
                 onToggleProjectSidebar: {
                     if fixedSidebar {
@@ -887,6 +934,8 @@ struct ContentView: View {
                 duoHingePresent: duoHingePresent,
                 hingePartiallyOpen: duoPartiallyOpen,
                 hingeGlobalY: hingeGlobalY,
+                codeRunsUnderTabs: !model.debugActive,
+                tabsInToolbar: tabsInToolbar,
                 assistantUsesAppleIntelligence: editorCompletionUsesAppleIntelligence,
                 onRequestCompletion: requestEditorAssistant
             ) {
@@ -993,6 +1042,7 @@ struct ContentView: View {
                     }
                 }
             )
+            .modifier(CodeEditorLeadingPadding())
 
             if let diagnostic = model.primaryDiagnostic,
                completion.suggestion == nil,
@@ -1008,6 +1058,7 @@ struct ContentView: View {
                     )
                 }
                 .padding(16)
+                .modifier(CodeEditorChromePadding())
                 .frame(maxWidth: .infinity, alignment: .trailing)
             } else if let suggestion = completion.suggestion {
                 VStack {
@@ -1019,6 +1070,7 @@ struct ContentView: View {
                     )
                 }
                 .padding(16)
+                .modifier(CodeEditorChromePadding())
                 .frame(maxWidth: .infinity, alignment: .trailing)
             } else if let message = completion.message {
                 VStack {
@@ -1026,6 +1078,7 @@ struct ContentView: View {
                     CompletionMessageCard(message: message, onDismiss: completion.dismiss)
                 }
                 .padding(16)
+                .modifier(CodeEditorChromePadding())
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
@@ -1052,7 +1105,7 @@ struct ContentView: View {
                     isPhone: UIDevice.current.userInterfaceIdiom == .phone,
                     regularTablet: horizontalSizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone,
                     dense: compactDuoHeader,
-                    showsTopNavigation: compactDuoHeader,
+                    showsTopNavigation: compactDuoHeader || tabletWorkspaceHidesTabs,
                     headerWidth: workspace.size.width,
                     projectName: model.projectName,
                     searchQuery: $editorSearchQuery,
@@ -1136,6 +1189,7 @@ struct ContentView: View {
                                 maximumWidth: 360,
                                 canCollapse: false
                             )
+                            .ignoresSafeArea(.container, edges: duoHingePresent ? [] : .bottom)
                         }
 
                         editorPane(fixedSidebar: true, hingeGlobalY: hingeGlobalY)
@@ -1201,6 +1255,7 @@ struct ContentView: View {
                                 isCompactProjectDrawerPresented = false
                             }
                         }
+                        .ignoresSafeArea(.container, edges: duoHingePresent ? [] : .horizontal)
                         .transition(.opacity)
                         .zIndex(1)
                 }
@@ -1267,7 +1322,8 @@ struct ContentView: View {
                 }
 
             }
-            .clipped()
+            // Duo clips to its panes. Elsewhere the panels reach the screen edges.
+            .clipShape(Rectangle().inset(by: duoHingePresent ? 0 : -1000))
             .contentShape(Rectangle())
             .simultaneousGesture(compactDrawerGesture(width: geometry.size.width))
         }
@@ -1641,7 +1697,7 @@ private struct AppHeader: View {
         }
         .padding(.horizontal, isPhone ? 14 : 18)
         // The status glyphs share the header row in laptop posture.
-        .padding(.trailing, showsTopNavigation ? 112 : 0)
+        .padding(.trailing, dense ? 112 : 0)
         .frame(height: dense ? 44 : 58)
         .background(CrabrixTheme.background)
     }
@@ -2176,6 +2232,7 @@ private struct EditorToolbar: View {
     /// iPad keeps the files panel on screen, so it offers no button to hide it.
     var showsProjectSidebarToggle = true
     var showsEnvironmentBar = true
+    var dockTabs: BuildDockTabsRow? = nil
     let onSelectFile: (String) -> Void
     let onToggleProjectSidebar: () -> Void
 
@@ -2236,6 +2293,11 @@ private struct EditorToolbar: View {
                 }
                 .disabled(activity != .idle)
                 Spacer()
+                if let dockTabs {
+                    HStack(spacing: 4) { dockTabs }
+                        .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                        .padding(.trailing, 8)
+                }
             }
 
             Divider().overlay(CrabrixTheme.border)

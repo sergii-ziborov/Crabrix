@@ -133,6 +133,49 @@ final class ReleaseScreenshotTests: XCTestCase {
         }
     }
 
+    /// The code reaches the screen edges behind the floating controls, and every
+    /// control stays reachable in both orientations.
+    func testWorkspaceEdgesInEveryOrientation() throws {
+        continueAfterFailure = false
+        for (orientation, name) in [(UIDeviceOrientation.portrait, "portrait"), (.landscapeLeft, "landscape-left"), (.landscapeRight, "landscape-right")] {
+            XCUIDevice.shared.orientation = orientation
+            launch(["--crabrix-auto-borrow"])
+            let editor = app.textViews["Source code editor"]
+            XCTAssertTrue(editor.waitForExistence(timeout: 10))
+            editor.tap()
+            editor.typeText(String(repeating: "let value = compute_something();\n", count: 45))
+            let typing = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+            typing.name = "edges-\(name)-keyboard"
+            typing.lifetime = .keepAlways
+            add(typing)
+            let hide = app.buttons["Hide keyboard"].firstMatch
+            if hide.exists && hide.isHittable { hide.tap() } else { app.buttons["build-dock-output"].tap(); app.buttons["build-dock-code"].tap() }
+            Thread.sleep(forTimeInterval: 1)
+            let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+            attachment.name = "edges-\(name)"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+            XCTAssertTrue(app.buttons["Run project"].isHittable)
+            XCTAssertTrue(app.buttons["build-dock-problems"].isHittable)
+            for tab in ["output", "terminal", "problems"] {
+                app.buttons["build-dock-\(tab)"].tap()
+                Thread.sleep(forTimeInterval: 1)
+                let tabAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+                tabAttachment.name = "edges-\(name)-\(tab)"
+                tabAttachment.lifetime = .keepAlways
+                add(tabAttachment)
+            }
+            // iPad's workspace goes back to Projects before showing the tabs.
+            let back = app.buttons["Back to Projects"]
+            if back.exists { back.tap() }
+            let tabBarLearn = app.tabBars.buttons["Learn"]
+            let learn = tabBarLearn.exists ? tabBarLearn : app.buttons["Learn"].firstMatch
+            XCTAssertTrue(learn.exists, app.debugDescription)
+            learn.tap()
+            XCTAssertTrue(app.staticTexts["My courses"].waitForExistence(timeout: 5), "the system tabs must still take touches")
+        }
+    }
+
     func testReleaseScreenshotsAndLegalReaders() throws {
         continueAfterFailure = false
         XCUIDevice.shared.orientation = .portrait

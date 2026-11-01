@@ -305,9 +305,9 @@ final class EditorScrollingTests: XCTestCase {
     }
 
     /// A file long enough to scroll and wide enough to need sideways scrolling.
-    private func makeEditor(lines: Int = 400) throws -> (CodeEditorCanvas, UIWindow) {
+    private func makeEditor(lines: Int = 400, source: String? = nil) throws -> (CodeEditorCanvas, UIWindow) {
         let box = Box()
-        box.text = (0..<lines)
+        box.text = source ?? (0..<lines)
             .map { "    let value_\($0) = compute_something_with_a_long_name(\($0), \"argument\");" }
             .joined(separator: "\n")
 
@@ -420,6 +420,60 @@ final class EditorScrollingTests: XCTestCase {
             canvas.scrollOffset.y, 900, accuracy: 120,
             "editing where the reader is looking must not move them somewhere else"
         )
+    }
+
+    /// The caret lands on a new line at column zero, so nothing should scroll
+    /// sideways, however far past the screen another line reaches.
+    func testEnterAfterTheFinalClosingBraceDoesNotScrollSideways() throws {
+        let source = """
+        fn main() {
+            let mut items = vec!["crab", "rust", "a long enough line to pass the right edge"];
+            items.push("compiler");
+        }
+        """
+        let (canvas, window) = try makeEditor(source: source)
+        defer { window.isHidden = true }
+        let textView = canvas.textView
+        textView.becomeFirstResponder()
+        canvas.layoutIfNeeded()
+        let end = (textView.text as NSString).length
+        textView.selectedRange = NSRange(location: end, length: 0)
+        canvas.layoutIfNeeded()
+        XCTAssertEqual(canvas.scrollOffset.x, 0, accuracy: 0.5)
+        XCTAssertGreaterThan(textView.frame.width, canvas.bounds.width, "the fixture must scroll sideways")
+
+        _ = textView.delegate?.textView?(textView, shouldChangeTextIn: NSRange(location: end, length: 0), replacementText: "\n")
+        canvas.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        canvas.layoutIfNeeded()
+
+        XCTAssertTrue(textView.text.hasSuffix("}\n"))
+        XCTAssertEqual(canvas.scrollOffset.x, 0, accuracy: 0.5, "caret \(textView.caretRect(for: textView.selectedTextRange!.end))")
+    }
+
+    func testEnterAfterAnIndentedClosingBraceDoesNotScrollSideways() throws {
+        let source = """
+        fn main() {
+            if true {
+                println!("a long enough line to pass the right edge of a small phone screen");
+            }
+        """
+        let (canvas, window) = try makeEditor(source: source)
+        defer { window.isHidden = true }
+        let textView = canvas.textView
+        textView.becomeFirstResponder()
+        canvas.layoutIfNeeded()
+        let end = (textView.text as NSString).length
+        textView.selectedRange = NSRange(location: end, length: 0)
+        canvas.layoutIfNeeded()
+        XCTAssertGreaterThan(textView.frame.width, canvas.bounds.width, "the fixture must scroll sideways")
+
+        _ = textView.delegate?.textView?(textView, shouldChangeTextIn: NSRange(location: end, length: 0), replacementText: "\n")
+        canvas.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        canvas.layoutIfNeeded()
+
+        XCTAssertEqual(canvas.scrollOffset.x, 0, accuracy: 0.5)
     }
 
     func testTypingPastTheRightEdgeFollowsTheCaret() throws {

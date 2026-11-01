@@ -126,10 +126,10 @@ final class TerminalKeyboardTests: XCTestCase {
                     attachment.lifetime = .keepAlways
                     self.add(attachment)
                 }
-                // 8 points below the native field, a divider and the complete
-                // 38-point dock header must remain above the keyboard.
+                // 8 points below the native field and the complete 48-point
+                // floating dock tabs must remain above the keyboard.
                 XCTAssertGreaterThanOrEqual(spaceForTabs, 45, "Dock tabs are covered after Code → Terminal")
-                XCTAssertLessThan(spaceForTabs, 55, "Dock tabs moved away from the keyboard")
+                XCTAssertLessThan(spaceForTabs, 60, "Dock tabs moved away from the keyboard")
                 field.keyboardController?.dismiss()
                 try await self.waitUntil { !field.isFirstResponder }
                 try await Task.sleep(for: .milliseconds(400))

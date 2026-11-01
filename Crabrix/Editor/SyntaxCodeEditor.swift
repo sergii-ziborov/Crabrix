@@ -139,6 +139,7 @@ struct EditorNavigationTarget: Equatable {
 
 struct SyntaxCodeEditor: UIViewRepresentable {
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.codeEditorChrome) private var chrome
     @AppStorage("crabrix.editorFontSize") private var editorFontSize = 14.0
     @AppStorage("crabrix.appearance") private var appearanceRaw = CrabrixAppearance.system.rawValue
     @Binding var text: String
@@ -302,6 +303,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
             coordinator?.cursorOffset(projectID: projectID, file: file)
         }
         textView.isEditable = isEditable
+        canvas.setChromeInsets(bottom: chrome.bottom, trailing: chrome.trailing)
         canvas.backgroundColor = UIColor(CrabrixTheme.editor)
         // applyHighlighting owns foreground attributes; textColor here erases token colours.
         textView.tintColor = UIColor(CrabrixTheme.blue)
@@ -704,9 +706,20 @@ struct SyntaxCodeEditor: UIViewRepresentable {
 /// wrapped or clipped at the right edge — laid out, sometimes even scrollable,
 /// and never drawn. Making the text view as wide as the widest line and
 /// scrolling it from outside is what puts the whole line on screen.
+/// UIKit reveals a text view's caret in the scroll view around it during text
+/// layout, before a brand new line has a usable position. Its answer then is the
+/// far end of the widest line, so the code jumps sideways after Return.
+private final class EditorScrollView: UIScrollView {
+    var correctedReveal: ((CGRect) -> CGRect)?
+
+    override func scrollRectToVisible(_ rect: CGRect, animated: Bool) {
+        super.scrollRectToVisible(correctedReveal?(rect) ?? rect, animated: animated)
+    }
+}
+
 final class CodeEditorCanvas: UIView, UIGestureRecognizerDelegate {
     let textView: RustSourceTextView
-    private let scrollView = UIScrollView()
+    private let scrollView = EditorScrollView()
     fileprivate var keyboardBar: RustKeyboardAccessoryView?
     private let keyboardPresentationAccessory = KeyboardPresentationAccessoryView()
     private var tabletopCodeTabActive: Bool?
@@ -785,6 +798,12 @@ final class CodeEditorCanvas: UIView, UIGestureRecognizerDelegate {
         scrollView.keyboardDismissMode = .interactive
         scrollView.contentInsetAdjustmentBehavior = .never
         scrollView.delegate = self
+        scrollView.correctedReveal = { [weak self] rect in
+            guard let textView = self?.textView,
+                  let caret = textView.selectedTextRange?.end,
+                  let indentX = textView.indentCaretX(at: caret) else { return rect }
+            return CGRect(x: indentX, y: rect.minY, width: min(rect.width, 2), height: rect.height)
+        }
 
         textView.isScrollEnabled = false
         textView.onLayoutChanged = { [weak self] in self?.setNeedsSizeUpdate() }
@@ -860,6 +879,18 @@ final class CodeEditorCanvas: UIView, UIGestureRecognizerDelegate {
         setNeedsLayout()
     }
 
+    /// The code runs to the screen edge behind floating controls, and these
+    /// let the end of the file scroll clear of them.
+    func setChromeInsets(bottom: CGFloat, trailing: CGFloat) {
+        let insets = UIEdgeInsets(top: 0, left: 0, bottom: bottom, right: trailing)
+        guard scrollView.contentInset != insets else { return }
+        scrollView.contentInset = insets
+        scrollView.verticalScrollIndicatorInsets.bottom = bottom
+        scrollView.horizontalScrollIndicatorInsets.bottom = bottom
+        let restored = clamped(scrollView.contentOffset)
+        if scrollView.contentOffset != restored { scrollView.contentOffset = restored }
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         if scrollView.frame != bounds { scrollView.frame = bounds }
@@ -896,8 +927,8 @@ final class CodeEditorCanvas: UIView, UIGestureRecognizerDelegate {
 
     private func clamped(_ offset: CGPoint) -> CGPoint {
         CGPoint(
-            x: min(max(0, offset.x), max(0, scrollView.contentSize.width - bounds.width)),
-            y: min(max(0, offset.y), max(0, scrollView.contentSize.height - bounds.height))
+            x: min(max(0, offset.x), max(0, scrollView.contentSize.width + scrollView.contentInset.right - bounds.width)),
+            y: min(max(0, offset.y), max(0, scrollView.contentSize.height + scrollView.contentInset.bottom - bounds.height))
         )
     }
 
@@ -934,8 +965,12 @@ final class CodeEditorCanvas: UIView, UIGestureRecognizerDelegate {
     /// itself if it were the one scrolling.
     func scrollCaretToVisible() {
         guard let selection = textView.selectedTextRange else { return }
+        // A line made by this keystroke has no layout yet, and UIKit answers
+        // with the far end of the file's widest line until it does.
+        textView.layoutManager.ensureLayout(for: textView.textContainer)
         var caret = textView.caretRect(for: selection.end)
         guard caret.isFinite else { return }
+        if let indentX = textView.indentCaretX(at: selection.end) { caret.origin.x = indentX }
         caret = caret.insetBy(dx: -(Self.gutterWidth + 24), dy: -12)
         scrollView.scrollRectToVisible(caret, animated: false)
     }
@@ -958,6 +993,18 @@ extension CodeEditorCanvas: UIScrollViewDelegate {
 final class RustSourceTextView: UITextView {
     var editorInputAccessoryView: UIView? {
         didSet { inputAccessoryView = editorInputAccessoryView }
+    }
+
+    /// Where a caret preceded only by indentation sits, measured from the start
+    /// of its line, or nil when text comes before it.
+    fileprivate func indentCaretX(at position: UITextPosition) -> CGFloat? {
+        let source = text as NSString
+        let offset = self.offset(from: beginningOfDocument, to: position)
+        guard offset <= source.length else { return nil }
+        let lineStart = source.lineRange(for: NSRange(location: offset, length: 0)).location
+        let indent = source.substring(with: NSRange(location: lineStart, length: offset - lineStart))
+        guard indent.allSatisfy({ $0 == " " || $0 == "\t" }), let font else { return nil }
+        return textContainerInset.left + (indent as NSString).size(withAttributes: [.font: font]).width
     }
 
     @discardableResult override func becomeFirstResponder() -> Bool {
