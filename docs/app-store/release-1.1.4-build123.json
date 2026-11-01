@@ -1,0 +1,77 @@
+{
+  "atUTC": "2026-11-01T06:13:32.671Z",
+  "version": "1.1.4",
+  "buildNumber": "123",
+  "buildID": "7045e53e-54b2-447a-b980-5d257103c091",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "buildAudienceType": "APP_STORE_ELIGIBLE",
+  "cloudBuildRunID": "8ad43d43-9a72-42ff-ae11-bc8b443db75e",
+  "appSourceCommit": "a67519a3a7c448efc2f178175b3f177eda9fe8e2",
+  "testFlightGroup": {
+    "id": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "name": "Internal QA"
+  },
+  "appStoreVersionID": "53ba50c2-87ad-4f36-a717-36d99c5b2f52",
+  "reviewSubmissionID": "f12f43e5-8002-43d4-b479-5c67f0b2a7f7",
+  "appStoreState": "WAITING_FOR_REVIEW",
+  "releaseType": "MANUAL",
+  "screenshotsRetained": 19,
+  "testNotesFile": "docs/app-store/testflight-what-to-test-1.1.4-build123.txt",
+  "academyCatalogSequence": 17,
+  "atlasReplayCatalogSequence": 2,
+  "simulatorSchemesPassed": {
+    "Crabrix": {
+      "total": 740,
+      "passed": 686,
+      "failed": 0,
+      "skipped": 54
+    },
+    "CrabrixAtlasGate": {
+      "total": 41,
+      "passed": 40,
+      "failed": 0,
+      "skipped": 1
+    },
+    "CrabrixCourseDeliveryGate": {
+      "total": 4,
+      "passed": 4
+    },
+    "CrabrixInteractionGate": {
+      "total": 11,
+      "passed": 11
+    },
+    "CrabrixBuildWorkspaceGate": {
+      "total": 2,
+      "passed": 2
+    },
+    "CrabrixPlaygroundGate": {
+      "total": 1,
+      "passed": 1
+    },
+    "CrabrixBrowserPlaygroundGate": {
+      "total": 2,
+      "passed": 2
+    },
+    "CrabrixInterviewGate": {
+      "total": 40,
+      "passed": 40
+    },
+    "realRustcTests": {
+      "total": 3,
+      "passed": 3
+    }
+  },
+  "duoPixelComparison": {
+    "baseline": "8f55527",
+    "frames": 12,
+    "identical": 8,
+    "clockOnly": 4
+  },
+  "physicalDeviceTested": false,
+  "gatesRunBeforeSecondFixRound": [
+    "CrabrixPlaygroundGate",
+    "CrabrixBrowserPlaygroundGate",
+    "CrabrixInterviewGate"
+  ]
+}

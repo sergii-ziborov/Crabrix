@@ -1,3 +1,10 @@
+> App Review submitted through App Store Connect — 1 November 2026: **1.1.4 (123)**
+> is **WAITING_FOR_REVIEW** with **MANUAL** release, and VALID / IN_BETA_TESTING in
+> Internal QA. It was built by Xcode Cloud from `a67519a`. All 19 Store screenshots are
+> retained and the description now states 754 lessons. Duo captures match the previous
+> commit except the Simulator clock; no physical device run is claimed.
+> [Receipt](release-1.1.4-build123.json).
+
 > TestFlight delivery verified through App Store Connect — 31 October 2026:
 > **1.1.4 (122)** is **VALID**, **APP_STORE_ELIGIBLE**, and **IN_BETA_TESTING**
 > in the existing Internal QA group. The manual Duo SDK workflow completed
