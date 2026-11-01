@@ -40,6 +40,10 @@ def main():
     parser.add_argument("--key-file", type=Path, required=True)
     parser.add_argument("--key-id", required=True)
     parser.add_argument("--base-url", required=True)
+    parser.add_argument("--content-version", required=True,
+                        help="Section pack version; published versions are immutable")
+    parser.add_argument("--sequence", type=int, required=True,
+                        help="Must exceed the previously published replay catalog")
     args = parser.parse_args()
     assert args.base_url.startswith(
         "https://github.com/sergii-ziborov/crabrix-courses/releases/download/")
@@ -54,7 +58,7 @@ def main():
     for unit in course["units"]:
         method = unit["algorithmMethod"]["id"]
         assert re.fullmatch(r"[a-z0-9-]+", method)
-        pack_id, version = "atlas-" + method, "1.0.0"
+        pack_id, version = "atlas-" + method, args.content_version
         files, lessons = {}, {}
         for lesson in unit["lessons"]:
             trace_key = manifest["lessons"][lesson["id"]]
@@ -110,7 +114,7 @@ def main():
                        "recordings": len(files) - 2, "archiveBytes": len(archive_data)})
     assert len(entries) == 20 and sum(c["lessons"] for c in counts) == 600
     assert sum(c["recordings"] for c in counts) == 400
-    catalog = {"schemaVersion": 1, "sequence": 1,
+    catalog = {"schemaVersion": 1, "sequence": args.sequence,
                "releaseNotes": "400 verified source-bound Atlas recordings in 20 optional offline sections.",
                "courses": entries}
     catalog_data = signed(catalog, b"Crabrix.CourseCatalog.v1\n", key, args.key_id)

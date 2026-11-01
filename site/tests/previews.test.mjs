@@ -17,3 +17,31 @@ test('all 754 previews withhold exercises and keep code markup balanced', () => 
   }
   assert.equal(count, 754);
 });
+
+const lessons = snapshot.courses.flatMap(course => course.units.flatMap(unit => unit.lessons.map(lesson => ({ lesson, basics: course.id === 'basics' }))));
+const count = text => text.trim().split(/\s+/).filter(Boolean).length;
+
+test('no preview shows the whole explanation, including lessons whose budget is mostly code', () => {
+  for (const { lesson, basics } of lessons) {
+    const explanation = lesson.writing?.explanation || lesson.algorithm?.idea || '';
+    const shown = lessonPreview(lesson, basics).paragraphs.join(' ');
+    assert.ok(count(shown) <= count(explanation) * .6, `${lesson.id}: ${count(shown)} of ${count(explanation)}`);
+  }
+  for (const id of ['algorithm.lazy-segment-tree.challenge', 'algorithm.heavy-light.challenge']) assert.ok(lessons.some(({ lesson }) => lesson.id === id), id);
+});
+
+test('previews end on a real sentence, never on a macro name in a code span', () => {
+  for (const { lesson, basics } of lessons) {
+    const shown = lessonPreview(lesson, basics).paragraphs.join(' ').trim();
+    assert.ok(!/!`$/.test(shown), `${lesson.id}: ${shown.slice(-40)}`);
+    assert.match(shown, /[.!?]$/, lesson.id);
+  }
+  const lesson = { title: 'T', concept: 'C', writing: { summary: 'S', explanation: 'Alpha beta gamma delta epsilon with `dbg!` here now. Then `dbg!` one two three four five six seven eight.', exampleCode: Array(200).fill('code').join(' ') } };
+  assert.deepEqual(lessonPreview(lesson).paragraphs, ['Alpha beta gamma delta epsilon with `dbg!` here now.']);
+});
+
+test('figure captions render inline code through prose()', () => {
+  const page = readFileSync(new URL('../app/learn/[course]/[lesson]/page.tsx', import.meta.url), 'utf8');
+  assert.equal(page.match(/<figcaption>\{prose\(lesson\.illustration\.caption\)\}<\/figcaption>/g)?.length, 2);
+  assert.ok(!page.includes('<figcaption>{lesson.illustration.caption}'));
+});

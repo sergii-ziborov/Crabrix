@@ -1,5 +1,6 @@
 import type { AtlasValue } from "@/lib/algorithm-trace-types";
 import { valueText } from "@/lib/algorithm-trace-types";
+import { edgeTarget, isAdjacencyList, linkedTree, type TreeNode } from "@/lib/algorithm-state-model";
 import { useId } from "react";
 
 type StateProps = { value: AtlasValue; previous?: AtlasValue; name: string; pointers?: [string, number][]; category: string; edge?: { collection: string; from: string; to: string } };
@@ -44,8 +45,7 @@ function Graph({ value, pointers = [], state, edge, name }: StateProps & { value
   const nodes = Array.from({ length: n }, (_, i) => ({ x: 220 + 155 * Math.cos(-Math.PI / 2 + 2 * Math.PI * i / n), y: 175 + 135 * Math.sin(-Math.PI / 2 + 2 * Math.PI * i / n) }));
   const edges: { from: number; to: number; weight?: string }[] = [];
   value.items.forEach((row, from) => { if (row.kind === "list") row.items.forEach(item => {
-    const target = item.kind === "list" ? item.items[0] : item;
-    const to = target?.kind === "scalar" ? Number(target.text) : NaN;
+    const to = edgeTarget(item);
     if (Number.isInteger(to) && to >= 0 && to < n) edges.push({ from, to, weight: item.kind === "list" && item.items[1] ? valueText(item.items[1]) : undefined });
   }); });
   const vertex = (key: string | undefined) => key && state?.[key]?.kind === "scalar" ? Number(state[key].text) : undefined;
@@ -63,21 +63,6 @@ function Graph({ value, pointers = [], state, edge, name }: StateProps & { value
       {distance?.kind === "list" && distance.items[i] && <text className="atlas-distance" x={point.x} y={point.y + 40}>{valueText(distance.items[i]) === "9223372036854775807" ? "∞" : valueText(distance.items[i])}</text>}
     </g>)}
   </svg><details><summary>Directed edges{edges.some(e => e.weight) ? " and weights" : ""}</summary><ul>{edges.map((e, i) => <li key={i}>{e.from} → {e.to}{e.weight ? ` · weight ${e.weight}` : ""}</li>)}</ul></details></div>;
-}
-
-type TreeNode = { label: string; children: { edge: string; node: TreeNode }[] };
-function treeNode(value: AtlasValue, depth = 0): TreeNode | undefined {
-  if (depth > 12) return;
-  if (value.kind === "named" && value.name === "Some" && value.value.kind === "list") return treeNode(value.value.items[0], depth + 1);
-  if (value.kind !== "named" || value.value.kind !== "map") return;
-  const fields = Object.fromEntries(value.value.entries.map(([k, v]) => [valueText(k), v]));
-  if (!("left" in fields || "right" in fields || "next" in fields)) return;
-  const result: TreeNode = { label: valueText(fields.key ?? fields.value ?? fields.val ?? { kind: "scalar", text: value.name }), children: [] };
-  for (const edge of ["left", "right", "next"]) {
-    const child = fields[edge] && treeNode(fields[edge], depth + 1);
-    if (child) result.children.push({ edge, node: child });
-  }
-  return result;
 }
 
 function Tree({ root }: { root: TreeNode }) {
@@ -99,11 +84,11 @@ function Tree({ root }: { root: TreeNode }) {
 
 export function AlgorithmState(props: StateProps & { state?: Record<string, AtlasValue> }) {
   const { value } = props;
-  const tree = treeNode(value);
+  const tree = linkedTree(value);
   if (tree) return <Tree root={tree} />;
   if (value.kind === "list") {
     const matrix = value.items.length > 0 && value.items.every(row => row.kind === "list" && !row.tuple);
-    if (matrix && /^(graph|g|adj|adjacency)$/.test(props.name) && value.items.length <= 24) return <Graph {...props} value={value} />;
+    if (matrix && /^(graph|g|adj|adjacency)$/.test(props.name) && value.items.length <= 24 && isAdjacencyList(value)) return <Graph {...props} value={value} />;
     if (matrix) return <Matrix {...props} value={value} />;
     return <Cells {...props} value={value} />;
   }

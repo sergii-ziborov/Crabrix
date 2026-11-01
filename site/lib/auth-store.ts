@@ -11,6 +11,10 @@ let database: DatabaseSync | undefined;
 let activeHashes = 0;
 const digest = (text: string) => createHash("sha256").update(text).digest("hex");
 
+// A credential the server actually checked and rejected. Malformed forms and a
+// busy hasher are not guesses, so they never reach the attempt counters.
+export class CredentialFailure extends Error {}
+
 function db() {
   if (database) return database;
   const path = process.env.AUTH_DB_PATH || join(process.cwd(), "auth-data", "accounts.sqlite");
@@ -75,12 +79,58 @@ function newSession(userId: number) {
   return { token, expiresAt };
 }
 
-export function consumeLimit(key: string, maximum = 12, windowMs = 15 * 60 * 1000) {
-  const sql = db(), now = Date.now(), hashed = digest(key);
-  sql.prepare("DELETE FROM rate_limits WHERE expires_at < ?").run(now);
-  sql.prepare("INSERT INTO rate_limits VALUES (?, 1, ?) ON CONFLICT(key) DO UPDATE SET count=count+1").run(hashed, now + windowMs);
-  const row = sql.prepare("SELECT count FROM rate_limits WHERE key=?").get(hashed) as { count: number };
-  if (row.count > maximum) throw new Error("Too many attempts. Please try again in 15 minutes.");
+const LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const TOO_MANY_ATTEMPTS = "Too many attempts. Please try again in 15 minutes.";
+
+export function limitCount(key: string): number {
+  const sql = db();
+  sql.prepare("DELETE FROM rate_limits WHERE expires_at < ?").run(Date.now());
+  const row = sql.prepare("SELECT count FROM rate_limits WHERE key=?").get(digest(key)) as { count: number } | undefined;
+  return row?.count ?? 0;
+}
+
+function chargeLimit(key: string, windowMs = LIMIT_WINDOW_MS) {
+  db().prepare("INSERT INTO rate_limits VALUES (?, 1, ?) ON CONFLICT(key) DO UPDATE SET count=count+1").run(digest(key), Date.now() + windowMs);
+}
+
+export function consumeLimit(key: string, maximum = 12, windowMs = LIMIT_WINDOW_MS) {
+  chargeLimit(key, windowMs);
+  if (limitCount(key) > maximum) throw new Error(TOO_MANY_ATTEMPTS);
+}
+
+export type AttemptKind = "register" | "login" | "recover" | "password" | "delete";
+type AttemptRule = { key: string; maximum: number; charge: "failure" | "success" | "both"; resetOnSuccess?: boolean };
+// One address gets ipFailures failures in total and userAtIpFailures per username,
+// so reaching userFailures for someone else's account takes at least 13 addresses.
+export const ATTEMPT_LIMITS = Object.freeze({ ipFailures: 20, userAtIpFailures: 8, userFailures: 100, ipSuccesses: 60, registerIp: 6, registerGlobal: 50 });
+
+function attemptRules(kind: AttemptKind, identity: string, ip: string): AttemptRule[] {
+  if (kind === "register") return [
+    { key: `ip:register:${ip}`, maximum: ATTEMPT_LIMITS.registerIp, charge: "both" },
+    { key: "register:global", maximum: ATTEMPT_LIMITS.registerGlobal, charge: "success" },
+  ];
+  return [
+    { key: `ip:${kind}:${ip}`, maximum: ATTEMPT_LIMITS.ipFailures, charge: "failure" },
+    { key: `user-ip:${kind}:${identity}:${ip}`, maximum: ATTEMPT_LIMITS.userAtIpFailures, charge: "failure", resetOnSuccess: true },
+    { key: `user:${kind}:${identity}`, maximum: ATTEMPT_LIMITS.userFailures, charge: "failure" },
+    { key: `ok:${kind}:${ip}`, maximum: ATTEMPT_LIMITS.ipSuccesses, charge: "success" },
+  ];
+}
+
+export async function withAttemptLimits<T>(kind: AttemptKind, identityInput: string, ip: string, attempt: () => Promise<T>): Promise<T> {
+  const rules = attemptRules(kind, identityInput.trim().toLowerCase(), ip);
+  if (rules.some(rule => limitCount(rule.key) >= rule.maximum)) throw new Error(TOO_MANY_ATTEMPTS);
+  let result: T;
+  try { result = await attempt(); }
+  catch (error) {
+    if (error instanceof CredentialFailure) for (const rule of rules) if (rule.charge !== "success") chargeLimit(rule.key);
+    throw error;
+  }
+  for (const rule of rules) {
+    if (rule.charge !== "failure") chargeLimit(rule.key);
+    if (rule.resetOnSuccess) db().prepare("DELETE FROM rate_limits WHERE key=?").run(digest(rule.key));
+  }
+  return result;
 }
 
 export async function registerAccount(usernameInput: string, password: string) {
@@ -92,7 +142,7 @@ export async function registerAccount(usernameInput: string, password: string) {
     userId = Number(db().prepare("INSERT INTO users (username,password_hash,recovery_hash,created_at,terms_version) VALUES (?,?,?,?,?)")
       .run(username, passwordHash, code.hash, Date.now(), TERMS_VERSION).lastInsertRowid);
   } catch (error) {
-    if (String(error).includes("UNIQUE")) throw new Error("That username is unavailable. Please choose another.");
+    if (String(error).includes("UNIQUE")) throw new CredentialFailure("That username is unavailable. Please choose another.");
     throw error;
   }
   return { ...newSession(userId), recoveryCode: code.code };
@@ -105,7 +155,7 @@ export async function loginAccount(usernameInput: string, password: string) {
   // Unknown users still incur the expensive password operation.
   const dummy = `scrypt-v1$${"0".repeat(32)}$${"0".repeat(128)}`;
   const valid = await matchesPassword(password, user?.password_hash || dummy);
-  if (!user || !valid) throw new Error("The username or password is incorrect.");
+  if (!user || !valid) throw new CredentialFailure("The username or password is incorrect.");
   return newSession(user.id);
 }
 
@@ -126,7 +176,7 @@ export async function recoverAccount(usernameInput: string, codeInput: string, p
   validatePassword(password);
   const code = codeInput.replaceAll("-", "").trim().toLowerCase();
   const user = db().prepare("SELECT * FROM users WHERE username=?").get(username) as UserRow | undefined;
-  if (!/^[a-f0-9]{40}$/.test(code) || !user || !timingSafeEqual(Buffer.from(digest(code)), Buffer.from(user.recovery_hash))) throw new Error("The username or recovery code is incorrect.");
+  if (!/^[a-f0-9]{40}$/.test(code) || !user || !timingSafeEqual(Buffer.from(digest(code)), Buffer.from(user.recovery_hash))) throw new CredentialFailure("The username or recovery code is incorrect.");
   const passwordHash = await hashPassword(password), next = recovery(), sql = db();
   sql.exec("BEGIN IMMEDIATE");
   try {
@@ -141,7 +191,7 @@ export async function recoverAccount(usernameInput: string, codeInput: string, p
 export async function changeAccountPassword(userId: number, current: string, nextPassword: string) {
   validatePassword(current); validatePassword(nextPassword);
   const user = db().prepare("SELECT * FROM users WHERE id=?").get(userId) as UserRow | undefined;
-  if (!user || !await matchesPassword(current, user.password_hash)) throw new Error("The current password is incorrect.");
+  if (!user || !await matchesPassword(current, user.password_hash)) throw new CredentialFailure("The current password is incorrect.");
   const hash = await hashPassword(nextPassword), code = recovery(), sql = db();
   sql.exec("BEGIN IMMEDIATE");
   try {
@@ -156,7 +206,7 @@ export async function changeAccountPassword(userId: number, current: string, nex
 export async function deleteAccount(userId: number, password: string) {
   validatePassword(password);
   const user = db().prepare("SELECT * FROM users WHERE id=?").get(userId) as UserRow | undefined;
-  if (!user || !await matchesPassword(password, user.password_hash)) throw new Error("The password is incorrect.");
+  if (!user || !await matchesPassword(password, user.password_hash)) throw new CredentialFailure("The password is incorrect.");
   const sql = db();
   sql.exec("BEGIN IMMEDIATE");
   try {

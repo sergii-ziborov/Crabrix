@@ -4,6 +4,7 @@ import { localPresence, receivePresence } from "./playground-presence";
 import { base64url, decryptPlayground, encryptPlayground, newEncryptionSecret } from "./playground-crypto";
 import { documentFromY } from "./playground-collab";
 import type { EncryptedPacket } from "./playground-rooms";
+import { isTransientSnapshotStatus } from "./playground-client";
 
 export type PlaygroundLink = { id: string; key: string; access: string; expiresAt: number; mode: "edit" | "view" };
 export type CreatedPlayground = PlaygroundLink & { owner: string; view: string };
@@ -36,7 +37,7 @@ export class PlaygroundSession {
   doc: Y.Doc; link: PlaygroundLink;
   peer = base64url(crypto.getRandomValues(new Uint8Array(16)));
   abort = new AbortController(); sequence = 0; pending: Uint8Array[] = [];
-  sending = false; stopped = false; connected = false; receivedState = false;
+  sending = false; stopped = false; connected = false; receivedState = false; snapshotOverdue = false;
   flushTimer?: ReturnType<typeof setTimeout>; snapshotTimer?: ReturnType<typeof setTimeout>;
   onStatus: (status: string) => void;
   onExpiry: () => void;
@@ -163,7 +164,7 @@ export class PlaygroundSession {
       this.sequence = state.sequence;
     } finally { candidate.destroy(); }
     if (this.awareness) for (const item of state.presence ?? []) await this.receiveParticipant(item.packet);
-    this.receivedState = true; this.connected = true;
+    this.receivedState = true; this.connected = true; this.snapshotOverdue = false;
     void this.sendPresence();
     this.onStatus(this.link.mode === "view" ? "Connected · view only · end-to-end encrypted" : "Connected · shared editor · end-to-end encrypted");
     await this.flush();
@@ -204,6 +205,8 @@ export class PlaygroundSession {
         body: JSON.stringify({ type: "update", peer: this.peer, messageID, packet }) });
       if (response.status === 410) { this.expire(); return; }
       const result = await response.json();
+      // A full room only drains through a snapshot, which normally waits for pending edits.
+      if (response.status === 409) { this.snapshotOverdue = true; this.scheduleSnapshot(); }
       if (!response.ok) throw new Error(result.error ?? "Changes were not relayed.");
       this.scheduleSnapshot();
     } catch (error) {
@@ -226,14 +229,17 @@ export class PlaygroundSession {
   }
 
   private async snapshot() {
-    if (!this.connected || this.pending.length || this.stopped) return;
+    if (!this.connected || (this.pending.length && !this.snapshotOverdue) || this.stopped) return;
     try {
+      // A forced snapshot may include local edits that no relay has accepted yet.
+      documentFromY(this.doc);
       const sequence = this.sequence;
       const packet = await encryptPlayground(this.link.key, Y.encodeStateAsUpdate(this.doc));
       const response = await fetch(this.endpoint(), { method: "POST", credentials: "omit", cache: "no-store", headers: this.headers(), signal: this.abort.signal,
         body: JSON.stringify({ type: "snapshot", sequence, packet }) });
-      if (response.status === 409) this.scheduleSnapshot();
-      else if (!response.ok) this.onStatus("Snapshot limit reached. Download a local copy to keep this project.");
+      if (response.ok) this.snapshotOverdue = false;
+      else if (isTransientSnapshotStatus(response.status)) this.scheduleSnapshot();
+      else if (response.status !== 410) this.onStatus("Snapshot limit reached. Download a local copy to keep this project.");
     } catch { /* Source remains in the editor; stream reconnection reports connectivity. */ }
   }
 

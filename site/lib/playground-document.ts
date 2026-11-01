@@ -26,6 +26,17 @@ export function isWellFormedUTF16(value: string): boolean {
   return true;
 }
 
+const validProjectName = (name: string) => !!name.trim() && name.length <= 80 && isWellFormedUTF16(name) && !/[\u0000-\u001f\u007f]/.test(name);
+
+// Typing keeps its spaces in the input; the trimmed name is stored when editing ends.
+// Returns null when there is nothing to store, and throws when the name cannot be stored.
+export function committedProjectName(draft: string, current: string): string | null {
+  const name = draft.trim();
+  if (!name || name === current) return null;
+  if (!validProjectName(name)) throw new Error("Use a project name of up to 80 characters without control characters.");
+  return name;
+}
+
 function sourceOriginURL(value: string): string {
   // The fixed native codec uses JavaScriptCore, which has no browser URL API.
   // Its only fallback is a bounded Foundation validator for these source links;
@@ -48,7 +59,7 @@ export function sourceBytes(files: Record<string, string>): number {
 export function validatePlaygroundDocument(input: unknown): PlaygroundDocument {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("Invalid source project.");
   const value = input as Record<string, unknown>;
-  if (value.schemaVersion !== 1 || typeof value.name !== "string" || !value.name.trim() || value.name.length > 80 || !isWellFormedUTF16(value.name) || /[\u0000-\u001f\u007f]/.test(value.name) ||
+  if (value.schemaVersion !== 1 || typeof value.name !== "string" || !validProjectName(value.name) ||
       !["2021", "2024"].includes(String(value.edition)) || typeof value.entryFile !== "string" ||
       !value.files || typeof value.files !== "object" || Array.isArray(value.files)) throw new Error("Invalid source project fields.");
   const entries = Object.entries(value.files);

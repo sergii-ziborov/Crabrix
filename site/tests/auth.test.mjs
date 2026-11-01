@@ -53,3 +53,57 @@ test('logout, expiry and persistent rate limits', async () => {
   assert.ok(!JSON.stringify(sql.prepare('SELECT * FROM rate_limits').all()).includes('test-key'));
   sql.close();
 });
+
+const wrong = 'not the right password at all';
+const rejected = () => { throw new auth.CredentialFailure('The username or password is incorrect.'); };
+
+test('a stranger on one address cannot lock the owner out, and is stopped without hashing', async () => {
+  const password = 'the owners long safe password';
+  await auth.registerAccount('owner_qa', password);
+  const attempt = ip => auth.withAttemptLimits('login', 'Owner_QA ', ip, () => auth.loginAccount('owner_qa', wrong));
+  for (let i = 0; i < auth.ATTEMPT_LIMITS.userAtIpFailures; i++) await assert.rejects(attempt('203.0.113.1'), /incorrect/);
+  await assert.rejects(attempt('203.0.113.1'), /Too many/);
+  assert.ok(await auth.withAttemptLimits('login', 'owner_qa', '198.51.100.7', () => auth.loginAccount('owner_qa', password)));
+});
+
+test('the per-username ceiling needs many addresses, and one address cannot reach it', async () => {
+  const fail = (user, ip) => auth.withAttemptLimits('login', user, ip, rejected);
+  const needed = Math.ceil(auth.ATTEMPT_LIMITS.userFailures / auth.ATTEMPT_LIMITS.userAtIpFailures);
+  assert.ok(needed >= 13);
+  for (let host = 0; host < needed - 1; host++) for (let i = 0; i < auth.ATTEMPT_LIMITS.userAtIpFailures; i++) await assert.rejects(fail('ceiling_qa', `192.0.2.${host}`), /incorrect/);
+  assert.equal(await auth.withAttemptLimits('login', 'ceiling_qa', '192.0.2.200', async () => 'still allowed'), 'still allowed');
+  for (let i = 0; i < auth.ATTEMPT_LIMITS.userAtIpFailures; i++) await assert.rejects(fail('ceiling_qa', '192.0.2.201'), /incorrect|Too many/);
+  await assert.rejects(fail('ceiling_qa', '192.0.2.202'), /Too many/);
+  for (let i = 0; i < auth.ATTEMPT_LIMITS.ipFailures + 5; i++) await assert.rejects(fail(`spread_${i}`, '192.0.2.250'), /incorrect|Too many/);
+  assert.equal(auth.limitCount('ip:login:192.0.2.250'), auth.ATTEMPT_LIMITS.ipFailures);
+});
+
+test('malformed forms and busy rejections are not failures, and success clears the address counter', async () => {
+  const password = 'another long safe password';
+  await auth.registerAccount('busy_qa', password);
+  for (let i = 0; i < 30; i++) await assert.rejects(auth.withAttemptLimits('login', 'busy_qa', '198.51.100.20', () => auth.loginAccount('busy_qa', 'short')), /Use a password/);
+  assert.equal(auth.limitCount('user-ip:login:busy_qa:198.51.100.20'), 0);
+  const results = await Promise.allSettled(Array.from({ length: 3 }, () => auth.withAttemptLimits('login', 'busy_qa', '198.51.100.21', () => auth.loginAccount('busy_qa', wrong))));
+  assert.equal(results.filter(result => /busy/.test(result.reason?.message)).length, 1);
+  assert.equal(auth.limitCount('user-ip:login:busy_qa:198.51.100.21'), 2);
+  assert.equal(auth.limitCount('ip:login:198.51.100.21'), 2);
+  await auth.withAttemptLimits('login', 'busy_qa', '198.51.100.21', () => auth.loginAccount('busy_qa', password));
+  assert.equal(auth.limitCount('user-ip:login:busy_qa:198.51.100.21'), 0);
+  assert.equal(auth.limitCount('user:login:busy_qa'), 2);
+});
+
+test('invalid registrations do not spend global sign-ups, and taken names cost only the address', async () => {
+  const global = () => auth.limitCount('register:global');
+  const password = 'a registration long password';
+  const before = global();
+  for (let host = 0; host < 12; host++) for (let i = 0; i < 8; i++) await assert.rejects(auth.withAttemptLimits('register', '', `198.51.100.${100 + host}`, () => auth.registerAccount('1 invalid name', password)), /Use 3/);
+  assert.equal(global(), before);
+  assert.equal(auth.limitCount('ip:register:198.51.100.100'), 0);
+  await auth.withAttemptLimits('register', '', '198.51.100.30', () => auth.registerAccount('signup_qa', password));
+  assert.equal(global(), before + 1);
+  await assert.rejects(auth.withAttemptLimits('register', '', '198.51.100.31', () => auth.registerAccount('signup_qa', password)), /unavailable/);
+  assert.equal(global(), before + 1);
+  assert.equal(auth.limitCount('ip:register:198.51.100.31'), 1);
+  for (let i = 1; i < auth.ATTEMPT_LIMITS.registerIp; i++) await assert.rejects(auth.withAttemptLimits('register', '', '198.51.100.31', rejected), /incorrect/);
+  await assert.rejects(auth.withAttemptLimits('register', '', '198.51.100.31', rejected), /Too many/);
+});

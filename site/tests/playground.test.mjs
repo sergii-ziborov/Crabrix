@@ -1,7 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { PlaygroundRooms, validatePacket, ROOM_LIMITS } from "../lib/playground-rooms.ts";
-import { validatePlaygroundDocument, newPlaygroundDocument } from "../lib/playground-document.ts";
+import { committedProjectName, validatePlaygroundDocument, newPlaygroundDocument } from "../lib/playground-document.ts";
+import { forgetOwnerCapabilities, isTransientSnapshotStatus, rememberOwnerCapabilities, restoreOwnerCapabilities } from "../lib/playground-client.ts";
 import { limitedJSON, guardPlaygroundOrigin } from "../lib/playground-api.ts";
 
 const packet = () => ({ iv: Buffer.alloc(12, 7).toString("base64url"), data: Buffer.alloc(32, 8).toString("base64url") });
@@ -115,4 +116,124 @@ test("stalled upload bodies release their reader at an absolute deadline", async
   const request = new Request("https://crabrix.com/api/playground/rooms/", { method: "POST", headers: { "Content-Type": "application/json" }, body, duplex: "half" });
   await assert.rejects(limitedJSON(request, 400000, 10), /timed out/);
   assert.equal(cancelled, true);
+});
+
+test("one address has a bounded number of live rooms; closing or expiry frees them", () => {
+  let time = 1000;
+  const rooms = new PlaygroundRooms(() => time), held = [];
+  for (let i = 0; i < ROOM_LIMITS.roomsPerIP; i++) held.push(rooms.create(packet(), i === 0 ? 60 : 3600, "203.0.113.1"));
+  assert.throws(() => rooms.create(packet(), 3600, "203.0.113.1"), error => error.status === 429);
+  assert.ok(rooms.create(packet(), 3600, "198.51.100.1"));
+  rooms.close(held[1].id, held[1].owner);
+  rooms.create(packet(), 3600, "203.0.113.1");
+  assert.throws(() => rooms.create(packet(), 3600, "203.0.113.1"), error => error.status === 429);
+  time += 60_000;
+  assert.ok(rooms.create(packet(), 3600, "203.0.113.1"));
+});
+
+test("one room cannot spend the resident budget that other rooms need", () => {
+  const rooms = new PlaygroundRooms(), attacker = rooms.create(packet(), 3600), victim = rooms.create(packet(), 3600);
+  const large = () => ({ iv: packet().iv, data: Buffer.alloc(ROOM_LIMITS.updateBytes, 1).toString("base64url") });
+  rooms.subscribe(attacker.id, attacker.edit, "attacker_peer_001", () => {});
+  rooms.subscribe(victim.id, victim.edit, "victim_peer_00001", () => {});
+  let accepted = 0;
+  assert.throws(() => { for (;;) rooms.append(attacker.id, attacker.edit, "attacker_peer_001", `attacker_message_${accepted++}`, large()); }, error => error.status === 409 && /fresh encrypted snapshot/.test(error.message));
+  assert.ok(accepted > 1);
+  assert.ok(rooms.residentBytes() <= ROOM_LIMITS.roomBytes + 256);
+  assert.equal(rooms.append(victim.id, victim.edit, "victim_peer_00001", "victim_message_0001", packet()).sequence, 1);
+  rooms.compact(attacker.id, attacker.edit, rooms.state(attacker.id, attacker.edit).sequence, packet());
+  assert.ok(rooms.append(attacker.id, attacker.edit, "attacker_peer_001", "attacker_after_compact", large()));
+});
+
+test("unverified capabilities allocate no rate buckets and cannot block other clients", () => {
+  const rooms = new PlaygroundRooms(), room = rooms.create(packet(), 3600);
+  const before = rooms.buckets.size;
+  for (let i = 0; i < 200; i++) assert.throws(() => rooms.read(room.id, `${String(i).padStart(3, "0")}${"A".repeat(40)}`), /authorized/);
+  assert.throws(() => rooms.read("x".repeat(24), "A".repeat(43)), /expired/);
+  assert.equal(rooms.buckets.size, before);
+  assert.throws(() => rooms.compact(room.id, room.view, 0, packet()), /authorized/);
+  assert.equal(rooms.buckets.size, before);
+  for (let i = 0; i < 120; i++) assert.equal(rooms.read(room.id, room.view).id, room.id);
+  assert.throws(() => rooms.read(room.id, room.view), error => error.status === 429);
+});
+
+test("one address cannot hold more than its share of relay memory", () => {
+  const rooms = new PlaygroundRooms();
+  const large = () => ({ iv: packet().iv, data: Buffer.alloc(ROOM_LIMITS.updateBytes, 1).toString("base64url") });
+  const held = [];
+  for (let i = 0; i < ROOM_LIMITS.roomsPerIP; i++) {
+    const room = rooms.create(packet(), 3600, "203.0.113.2");
+    rooms.subscribe(room.id, room.edit, "creator_peer_00001", () => {});
+    held.push(room);
+  }
+  let refused = false, message = 0;
+  for (const room of held) {
+    try { for (;;) rooms.append(room.id, room.edit, "creator_peer_00001", `creator_message_${message++}`, large()); }
+    catch (error) { assert.equal(error.status, 409); refused = rooms.creatorBytes(held[0] && rooms.rooms.get(room.id).creator) + 256 * 1024 >= ROOM_LIMITS.creatorBytes; if (refused) break; }
+  }
+  assert.ok(refused);
+  assert.ok(rooms.residentBytes() <= ROOM_LIMITS.creatorBytes + 256 * 1024);
+  const other = rooms.create(packet(), 3600, "198.51.100.2");
+  rooms.subscribe(other.id, other.edit, "other_peer_000001", () => {});
+  assert.equal(rooms.append(other.id, other.edit, "other_peer_000001", "other_message_0001", large()).sequence, 1);
+});
+
+test("rotating addresses can exhaust room creation only, never edits", () => {
+  const rooms = new PlaygroundRooms();
+  const room = rooms.create(packet(), 3600, "203.0.113.3");
+  rooms.subscribe(room.id, room.edit, "steady_peer_00001", () => {});
+  for (let i = 0; i < 10_000; i++) rooms.admitCreate(`10.${i >> 16}.${(i >> 8) & 255}.${i & 255}`);
+  assert.throws(() => rooms.admitCreate("198.51.100.3"), error => error.status === 503);
+  assert.equal(rooms.append(room.id, room.edit, "steady_peer_00001", "steady_message_01", packet()).sequence, 1);
+});
+
+test("rejected create requests do not spend the global create quota", () => {
+  const rooms = new PlaygroundRooms();
+  let refused = 0;
+  for (let i = 0; i < 300; i++) { try { rooms.admitCreate("203.0.113.9"); } catch (error) { assert.equal(error.status, 429); refused++; } }
+  assert.equal(refused, 288);
+  for (let i = 0; i < ROOM_LIMITS.roomsPerIP; i++) rooms.create(packet(), 3600, "203.0.113.9");
+  for (let i = 0; i < 150; i++) assert.throws(() => rooms.create(packet(), 3600, "203.0.113.9"), /maximum number of live/);
+  rooms.admitCreate("198.51.100.9");
+  assert.ok(rooms.create(packet(), 3600, "198.51.100.9"));
+  assert.equal(rooms.rooms.size, ROOM_LIMITS.roomsPerIP + 1);
+});
+
+test("three active editors stay under the snapshot limit, and a transient refusal is not a data warning", () => {
+  const rooms = new PlaygroundRooms(), room = rooms.create(packet(), 3600);
+  // Each client publishes at most once per 5 seconds.
+  for (let i = 0; i < ROOM_LIMITS.peers * 12; i++) rooms.compact(room.id, room.edit, 0, packet());
+  assert.ok(ROOM_LIMITS.snapshotsPerMinute >= ROOM_LIMITS.peers * 12);
+  for (const status of [409, 429, 503]) assert.equal(isTransientSnapshotStatus(status), true);
+  for (const status of [400, 403, 413, 500]) assert.equal(isTransientSnapshotStatus(status), false);
+});
+
+test("project names keep spaces while typing and are trimmed and validated when committed", () => {
+  assert.equal(committedProjectName("my project ", "hello"), "my project");
+  assert.equal(committedProjectName("   ", "hello"), null);
+  assert.equal(committedProjectName(" hello ", "hello"), null);
+  assert.throws(() => committedProjectName("a\tb", "hello"), /control/);
+  assert.throws(() => committedProjectName("x".repeat(81), "hello"), /80/);
+  assert.equal(validatePlaygroundDocument({ ...newPlaygroundDocument(), name: " my project " }).name, "my project");
+});
+
+test("owner capabilities survive a reload in tab storage and only for an edit link", () => {
+  const values = new Map(), store = { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key) }, storage = () => store;
+  const token = c => c.repeat(43);
+  const link = { id: "r".repeat(24), key: token("k"), access: token("e"), expiresAt: 9e12, mode: "edit" };
+  assert.equal(restoreOwnerCapabilities(link, storage), null);
+  rememberOwnerCapabilities({ ...link, owner: token("o"), view: token("v") }, storage);
+  const stored = [...values.values()].join();
+  assert.ok(!stored.includes(link.key) && !stored.includes(link.access));
+  const restored = restoreOwnerCapabilities(link, storage);
+  assert.deepEqual([restored.owner, restored.view, restored.id, restored.access], [token("o"), token("v"), link.id, link.access]);
+  assert.equal(restoreOwnerCapabilities({ ...link, mode: "view" }, storage), null);
+  assert.equal(restoreOwnerCapabilities({ ...link, id: "s".repeat(24) }, storage), null);
+  values.set([...values.keys()][0], JSON.stringify({ owner: "short", view: token("v") }));
+  assert.equal(restoreOwnerCapabilities(link, storage), null);
+  forgetOwnerCapabilities(link.id, storage);
+  assert.equal(values.size, 0);
+  const broken = () => { throw new Error("storage blocked"); };
+  assert.equal(restoreOwnerCapabilities(link, broken), null);
+  assert.doesNotThrow(() => rememberOwnerCapabilities({ ...link, owner: token("o"), view: token("v") }, broken));
 });

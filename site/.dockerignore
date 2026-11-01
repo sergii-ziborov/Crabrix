@@ -8,3 +8,5 @@ screenshots
 auth-data
 .env*
 tests
+# The build script gates on this one test.
+!tests/algorithm-traces.test.mjs

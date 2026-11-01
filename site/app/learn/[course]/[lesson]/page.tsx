@@ -100,7 +100,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
         {algorithmTrace && <AlgorithmVisualizer key={algorithmTrace.key} trace={algorithmTrace} />}
         {!isBasics && lesson.illustration && <figure className="lesson-infographic">
           <img src={`/learn-media/${course.id}/${lesson.illustration.path.slice(6)}`} alt={lesson.illustration.alt} loading="lazy" />
-          <figcaption>{lesson.illustration.caption}</figcaption>
+          <figcaption>{prose(lesson.illustration.caption)}</figcaption>
         </figure>}
         {isBasics && explanationParagraphs.length > 0 && <section className="lesson-reading"><h2>Start with the idea</h2>
           <p>{prose(explanationParagraphs[0])}</p>
@@ -108,7 +108,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
         {isBasics && exampleSection}
         {isBasics && lesson.illustration && <figure className="lesson-infographic">
           <img src={`/learn-media/${course.id}/${lesson.illustration.path.slice(6)}`} alt={lesson.illustration.alt} loading="lazy" />
-          <figcaption>{lesson.illustration.caption}</figcaption>
+          <figcaption>{prose(lesson.illustration.caption)}</figcaption>
         </figure>}
         {isBasics && explanationParagraphs.length > 1 && <section className="lesson-reading"><h2>Work through it</h2>
           {explanationParagraphs.slice(1).map((paragraph, paragraphIndex) => <p key={paragraphIndex}>{prose(paragraph)}</p>)}

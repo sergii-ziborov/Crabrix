@@ -1,6 +1,6 @@
 # Privacy Policy
 
-Updated: 2026-10-28 · [Website copy](https://crabrix.com/privacy/)
+Updated: 2026-11-01 · [Website copy](https://crabrix.com/privacy/)
 
 The app keeps your code on your device. Website Academy accounts use a username, password and private recovery code. This page explains both.
 
@@ -42,7 +42,7 @@ Playground is a public feature without login. Unshared editor source stays in br
 
 Creating or joining a shared Playground sends encrypted source snapshots, edits, participant names, cursors and selections to Crabrix over HTTPS. Clients use AES-256-GCM and keep the encryption key in the link fragment after #; the key is not included in HTTP requests to the relay. Anyone who has the complete edit link can decrypt, edit, run and copy the source; a view-only link permits reading, running and copying. Do not share secrets or private credentials.
 
-The relay keeps bounded ciphertext only in process memory for the chosen lifetime, up to 24 hours from creation. Opening a link never renews it. Expired rooms are removed automatically; no source is written to an account, database, application log or source backup. A process restart can remove a room earlier. Connection addresses and ordinary HTTP metadata may appear in infrastructure access logs, but link fragments and decrypted source do not. Temporary hashed request counters protect the service against abuse.
+The relay keeps bounded ciphertext only in process memory for the chosen lifetime, up to 24 hours from creation. Opening a link never renews it. Expired rooms are removed automatically; no source is written to an account, database, application log or source backup. A process restart can remove a room earlier. To limit how many live rooms one address can hold, the relay also keeps a keyed hash of the creating IP address in memory for that room's lifetime. The key is never written to disk, and the hash is removed with the room. Connection addresses and ordinary HTTP metadata may appear in infrastructure access logs, but link fragments and decrypted source do not. Temporary hashed request counters protect the service against abuse.
 
 There is no public room directory or account project library. Downloading or opening a room in Crabrix creates a separate local source copy, which remains on your device after link expiry and may follow your device backup settings. Other participants can also keep copies; expiry cannot recall those copies. Stop sharing or use the creator's End room action to remove relay access early. Live collaboration needs a connection; local compilation and a saved native project work without the relay.
 

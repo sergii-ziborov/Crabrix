@@ -6,8 +6,9 @@ import * as Y from "yjs";
 import { createPresence } from "@/lib/playground-presence";
 import { zipSync, strToU8 } from "fflate";
 import { documentFromY, updateYDocument } from "@/lib/playground-collab";
-import { newPlaygroundDocument, sourceBytes, validatePlaygroundDocument, type PlaygroundDocument } from "@/lib/playground-document";
+import { committedProjectName, newPlaygroundDocument, sourceBytes, validatePlaygroundDocument, type PlaygroundDocument } from "@/lib/playground-document";
 import { createPlayground, parsePlaygroundLink, playgroundLink, PlaygroundSession, type PlaygroundLink, type CreatedPlayground } from "@/lib/playground-session";
+import { forgetOwnerCapabilities, rememberOwnerCapabilities, restoreOwnerCapabilities } from "@/lib/playground-client";
 import { PlaygroundCodeEditor, type EditorPreferences } from "./code-editor";
 import { useRustCompiler } from "./use-rust-compiler";
 import { useRuntimeHost } from "./use-runtime-host";
@@ -36,7 +37,7 @@ export default function PlaygroundWorkspace() {
   const [expiresAt, setExpiresAt] = useState<number | null>(null), [now, setNow] = useState<number | null>(null), createdAt = useRef(0);
   const [lifetime, setLifetime] = useState(3600), [expired, setExpired] = useState(false), [sharing, setSharing] = useState(false);
   const [notice, setNotice] = useState(""), [stdin, setStdin] = useState(""), [dock, setDock] = useState("output");
-  const [filePane, setFilePane] = useState(false), [importText, setImportText] = useState("");
+  const [filePane, setFilePane] = useState(false), [importText, setImportText] = useState(""), [nameDraft, setNameDraft] = useState<string | null>(null);
   const disposal = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const compiler = useRustCompiler();
   const [liveSession,setLiveSession] = useState<PlaygroundSession|null>(null);
@@ -67,7 +68,7 @@ export default function PlaygroundWorkspace() {
     try {
       const initial = parsePlaygroundLink(new URL(location.href));
       if (initial) {
-        setLink(initial); setExpiresAt(initial.expiresAt); setConnection("Decrypting the temporary Playground…");
+        setLink(initial); setCreated(restoreOwnerCapabilities(initial)); setExpiresAt(initial.expiresAt); setConnection("Decrypting the temporary Playground…");
         const connection = new PlaygroundSession(doc, initial, setConnection, () => setExpired(true), awareness);
         session.current = connection; setLiveSession(connection); void connection.start();
       } else {
@@ -96,6 +97,7 @@ export default function PlaygroundWorkspace() {
       setExpired(true); session.current?.stop(); compiler.stop();
     }
   }, [now, expiresAt, expired, compiler.stop]);
+  useEffect(() => { if (expired && link) forgetOwnerCapabilities(link.id); }, [expired, link]);
   useEffect(() => {
     if (modal && !dialog.current?.open) dialog.current?.showModal();
     if (!modal && dialog.current?.open) dialog.current.close();
@@ -107,7 +109,7 @@ export default function PlaygroundWorkspace() {
     setSharing(true); setNotice("");
     try {
       const result = await createPlayground(doc, lifetime);
-      setCreated(result); setLink(result); setExpiresAt(result.expiresAt);
+      setCreated(result); setLink(result); setExpiresAt(result.expiresAt); rememberOwnerCapabilities(result);
       const connection = new PlaygroundSession(doc, result, setConnection, () => setExpired(true), awareness);
       session.current = connection; setLiveSession(connection); void connection.start();
       history.replaceState(null, "", playgroundLink(result));
@@ -156,6 +158,13 @@ export default function PlaygroundWorkspace() {
     try { const value = JSON.parse(line); return value.$message_type === "diagnostic" ? [value] : []; } catch { return []; }
   });
   const isBusy = compiler.activity !== "idle", readOnly = expired || link?.mode === "view" || compiler.debugging;
+  const commitName = () => {
+    if (nameDraft === null) return;
+    setNameDraft(null);
+    if (!source || readOnly) return;
+    try { const name = committedProjectName(nameDraft, source.name); if (name) doc.getMap("meta").set("name", name); }
+    catch (error) { setNotice(error instanceof Error ? error.message : String(error)); }
+  };
   const secondsLeft = now !== null && expiresAt !== null ? Math.max(0, Math.ceil((expiresAt - now) / 1000)) : null;
   const lifetimeLabel = secondsLeft === null ? "Preparing session…" : expired ? "Session expired" : `Expires in ${Math.floor(secondsLeft / 3600)}h ${Math.floor(secondsLeft % 3600 / 60)}m ${secondsLeft % 60}s`;
   const output = compiler.result?.execution;
@@ -178,7 +187,7 @@ export default function PlaygroundWorkspace() {
     <div className="pg-main-layout">
       <aside className={`pg-files ${filePane ? "pg-files-visible" : ""}`}>
         <div className="pg-sidebar-heading"><strong>PROJECT FILES</strong><button className="pg-icon-button" aria-label="Add source file" onClick={addFile} disabled={readOnly}>＋</button></div>
-        <label className="pg-project-name"><span>Project name</span><input value={source?.name ?? ""} maxLength={80} disabled={!source || readOnly} onChange={event => { const name = event.target.value; if (name.trim()) doc.getMap("meta").set("name", name); }} /></label>
+        <label className="pg-project-name"><span>Project name</span><input value={nameDraft ?? source?.name ?? ""} maxLength={80} disabled={!source || readOnly} onChange={event => setNameDraft(event.target.value)} onBlur={commitName} onKeyDown={event => { if (event.key === "Enter") event.currentTarget.blur(); }} /></label>
         <div className="pg-file-list">{Object.keys(source?.files ?? {}).sort().map(path => <button key={path} className={path === selected ? "pg-file pg-file-active" : "pg-file"} onClick={() => { setSelected(path); setFilePane(false); }}><span aria-hidden="true">{path.endsWith(".rs") ? "🦀" : path.endsWith(".toml") ? "▣" : "≡"}</span><span>{path}</span></button>)}</div>
         {source && selected !== source.entryFile ? <div className="pg-file-tools"><button onClick={() => { if (!readOnly && selected.endsWith(".rs")) doc.getMap("meta").set("entryFile", selected); }} disabled={readOnly || !selected.endsWith(".rs")}>Set as entry</button><button onClick={removeFile} disabled={readOnly}>Remove file</button></div> : null}
         <div className="pg-sidebar-bottom"><button className="pg-button" onClick={() => setModal("import")} disabled={readOnly}>Import source</button><button className="pg-button" onClick={() => void openInApp()} disabled={!source || sharing || expired}>Open in Crabrix ↗</button><a href="https://apps.apple.com/app/id6809502653">Get Crabrix for iPhone / iPad</a><p>Source only · 16 files · 128 KiB total. No account or permanent website storage.</p></div>

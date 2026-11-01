@@ -8,9 +8,7 @@ export async function GET(request: Request, context: Context) {
   try {
     guardPlaygroundOrigin(request);
     const { id } = await context.params;
-    const capability = bearer(request);
-    playgroundRooms.limit("read:" + id + ":" + capability, 120);
-    return Response.json(playgroundRooms.state(id, capability), { headers: privateHeaders });
+    return Response.json(playgroundRooms.read(id, bearer(request)), { headers: privateHeaders });
   } catch (error) { return playgroundFailure(error); }
 }
 
@@ -27,7 +25,6 @@ export async function POST(request: Request, context: Context) {
     if (body.type === "snapshot") {
       const snapshot = validatePacket(body.packet, ROOM_LIMITS.snapshotBytes);
       if (!Number.isSafeInteger(body.sequence)) throw new PlaygroundError("Invalid snapshot sequence.");
-      playgroundRooms.limit("snapshot:" + id + ":" + capability, 30);
       return Response.json(playgroundRooms.compact(id, capability, Number(body.sequence), snapshot), { headers: privateHeaders });
     }
     if (body.type === "update" && typeof body.peer === "string" && typeof body.messageID === "string") {

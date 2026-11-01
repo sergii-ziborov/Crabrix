@@ -13,7 +13,4 @@ export async function saveSession(token: string) {
 export async function clearSessionCookie() {
   (await cookies()).set(sessionCookie, "", { httpOnly: true, secure: secureSession, sameSite: "lax", path: "/", maxAge: 0 });
 }
-export function safeReturnPath(value: string) {
-  if (!/^\/learn\/(?:[a-z0-9_-]+\/)*[a-z0-9_-]*\/?$/.test(value)) return "/learn/";
-  return value.split("?")[0].split("#")[0];
-}
+export { safeReturnPath } from "./return-path";

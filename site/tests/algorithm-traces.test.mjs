@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { valueText } from '../lib/algorithm-trace-types.ts';
+import { isAdjacencyList, linkedTree } from '../lib/algorithm-state-model.ts';
 
 const root = new URL('../content/algorithm-traces/', import.meta.url);
 const manifest = JSON.parse(readFileSync(new URL('manifest.json', root)));
@@ -58,4 +59,38 @@ test('demo is separate from the gated lesson, and closure algorithms expose thei
   const membership = read(manifest.lessons['algorithm.hash-membership.model']);
   assert.ok(membership.frames.some(f => f.stack.at(-1)[0].startsWith('closure') && f.locals.some(([name, ref]) => name === 'seen' && membership.values[ref].data.kind === 'set' && membership.values[ref].data.items.length >= 2)), 'closures expose their changing captured set too');
   assert.equal(valueText({ kind: 'scalar', text: '18446744073709551615' }), '18446744073709551615');
+});
+
+const framesOf = (lesson, name) => { const trace = read(manifest.lessons[lesson]); return trace.frames.flatMap(frame => frame.locals.filter(([local]) => local === name).map(([, ref]) => trace.values[ref].data)); };
+
+test('only real adjacency lists draw as graphs', () => {
+  const list = items => ({ kind: 'list', items });
+  const dinic = framesOf('algorithm.dinic-max-flow.model', 'g').filter(value => value.kind === 'list');
+  const grid = framesOf('algorithm.word-grid-search.model', 'g').filter(value => value.kind === 'list');
+  assert.ok(dinic.length && grid.length);
+  assert.ok(dinic.every(value => !isAdjacencyList(value)));
+  assert.ok(grid.every(value => !isAdjacencyList(value)));
+  const dijkstra = framesOf('algorithm.dijkstra.model', 'graph').filter(value => value.kind === 'list');
+  assert.ok(dijkstra.length && dijkstra.every(isAdjacencyList));
+  assert.equal(isAdjacencyList(list([list([]), list([])])), true);
+  assert.equal(isAdjacencyList(list([list([{ kind: 'scalar', text: '2' }]), list([])])), false);
+});
+
+test('linked structures are drawn to their full length', () => {
+  const lengths = framesOf('algorithm.reverse-k-group.model', 'head').map(value => { let n = 0; for (let node = linkedTree(value); node; node = node.children[0]?.node) n++; return n; });
+  assert.equal(Math.max(...lengths), 7);
+  const scalar = text => ({ kind: 'scalar', text });
+  const none = { kind: 'named', name: 'None', value: { kind: 'list', items: [] } };
+  let tail = none;
+  for (let i = 40; i > 0; i--) tail = { kind: 'named', name: 'Some', value: { kind: 'list', items: [{ kind: 'named', name: 'Box', value: { kind: 'map', entries: [[scalar('val'), scalar(String(i))], [scalar('next'), tail]] } }] } };
+  let n = 0;
+  for (let node = linkedTree(tail); node; node = node.children[0]?.node) n++;
+  assert.equal(n, 40);
+});
+
+test('the source image keeps the one test its build script gates on', () => {
+  const ignore = readFileSync(new URL('../.dockerignore', import.meta.url), 'utf8').split('\n');
+  const build = JSON.parse(readFileSync(new URL('../package.json', import.meta.url))).scripts.build;
+  assert.ok(build.includes('tests/algorithm-traces.test.mjs'));
+  assert.ok(ignore.indexOf('!tests/algorithm-traces.test.mjs') > ignore.indexOf('tests'));
 });

@@ -170,7 +170,7 @@
   {
     "id": "privacy",
     "title": "Privacy Policy",
-    "updated": "2026-10-28",
+    "updated": "2026-11-01",
     "sourceURL": "https://crabrix.com/privacy/",
     "blocks": [
       {
@@ -255,7 +255,7 @@
       },
       {
         "kind": "p",
-        "text": "The relay keeps bounded ciphertext only in process memory for the chosen lifetime, up to 24 hours from creation. Opening a link never renews it. Expired rooms are removed automatically; no source is written to an account, database, application log or source backup. A process restart can remove a room earlier. Connection addresses and ordinary HTTP metadata may appear in infrastructure access logs, but link fragments and decrypted source do not. Temporary hashed request counters protect the service against abuse."
+        "text": "The relay keeps bounded ciphertext only in process memory for the chosen lifetime, up to 24 hours from creation. Opening a link never renews it. Expired rooms are removed automatically; no source is written to an account, database, application log or source backup. A process restart can remove a room earlier. To limit how many live rooms one address can hold, the relay also keeps a keyed hash of the creating IP address in memory for that room's lifetime. The key is never written to disk, and the hash is removed with the room. Connection addresses and ordinary HTTP metadata may appear in infrastructure access logs, but link fragments and decrypted source do not. Temporary hashed request counters protect the service against abuse."
       },
       {
         "kind": "p",
