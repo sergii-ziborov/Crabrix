@@ -4,6 +4,19 @@
 
 [Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support/) · [Privacy](https://crabrix.com/privacy/) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
+## Crabrix 1.1.4 — reviewed Academy and sturdier projects
+
+All 754 lessons were reviewed against real rustc and Cargo runs, then corrected and
+published in signed catalog 17 (Basics, Algorithms, Ownership, Projects and Systems
+1.0.7, Concurrency 1.0.6, Interview 1.1.1). Atlas gained 117 adversarial cases that
+reject 94 known wrong solutions, and 14 programs now really implement their pattern.
+The app adds per-lesson answer order, resumable labs, stricter and fairer lesson
+evidence, per-course Academy isolation, projects that import as copies, safer autosave
+and ZIP limits, and Cargo-compatible version matching. Duo captures were compared pixel
+by pixel with the previous commit: only the Simulator clock differs. The website
+(`audit-8c2a117` on Hetzner) adds Atlas return paths and fairer lockout and relay limits.
+[Changelog](CHANGELOG.md) · [Website delivery](docs/site-deploy.md).
+
 ## Standalone SDK — crabrix on npm, Rust and Go bindings
 
 The public [crabrix-sdk project](https://github.com/sergii-ziborov/crabrix-sdk)
