@@ -18,12 +18,17 @@ actor CourseCatalogClient {
     private let keyring: CourseKeyring
     private let session: URLSession
     private let trustedHosts: Set<String>
+    /// The catalog this app shipped with. Nothing older may replace it, including
+    /// on a first refresh, when there is no saved state to compare against.
+    private let bundled: CourseCatalogPayload?
 
     init(stateURL: URL, keyring: CourseKeyring,
-         trustedHosts: Set<String> = ["raw.githubusercontent.com"]) {
+         trustedHosts: Set<String> = ["raw.githubusercontent.com"],
+         bundled: CourseCatalogPayload? = nil) {
         self.stateURL = stateURL
         self.keyring = keyring
         self.trustedHosts = trustedHosts
+        self.bundled = bundled
         let configuration = URLSessionConfiguration.ephemeral
         configuration.timeoutIntervalForRequest = 20
         configuration.timeoutIntervalForResource = 40
@@ -57,6 +62,25 @@ actor CourseCatalogClient {
         let (bytes, response) = try await session.data(for: request)
         guard let http = response as? HTTPURLResponse, http.statusCode == 200,
               bytes.count <= 1_000_000 else { throw CoursePackError.invalidCatalog }
+        return try accept(bytes)
+    }
+
+    /// The freshest of a saved and a bundled catalog. After an app update the
+    /// bundle can be ahead of whatever was last downloaded.
+    static func newest(saved: CourseCatalogPayload?, bundled: CourseCatalogPayload?) -> CourseCatalogPayload? {
+        guard let saved else { return bundled }
+        guard let bundled else { return saved }
+        return bundled.sequence > saved.sequence ? bundled : saved
+    }
+
+    func accept(_ bytes: Data) throws -> CourseCatalogPayload {
+        // A correctly signed catalog older than the app's own is the server lagging
+        // behind a new build, which happens after every release. The learner is up
+        // to date, so this is not an error and it changes no saved state.
+        let verified = try CoursePackVerifier.catalog(bytes: bytes, keyring: keyring, lastAcceptedSequence: 0)
+        if let bundled, verified.sequence < bundled.sequence {
+            return Self.newest(saved: try? current(), bundled: bundled) ?? bundled
+        }
         let old = try readState()
         if let old,
            let acceptedBytes = Data(base64Encoded: old.envelopeBase64),

@@ -135,7 +135,9 @@ struct TermMatchTrainView: View {
                 RatingSummaryCard(store: progress)
 
                 if allPairs.isEmpty {
-                    Text(academy.errorMessage ?? "Preparing terms from installed courses…")
+                    Text(academy.errorMessage ?? (academy.repository == nil
+                        ? "Preparing terms from installed courses…"
+                        : "Download a Rust course to train its terms. Algorithm Atlas has no term pairs."))
                         .font(.caption)
                         .foregroundStyle(CrabrixTheme.muted)
                 }
@@ -517,7 +519,9 @@ struct TermMatchTrainView: View {
     }
 
     private func select(_ id: String, side: Side) {
-        guard resolvingPair == nil, !isFinished else { return }
+        // While a wrong pair shows, both cards are still selected. Accepting a tap
+        // now would count another mistake, and the delayed clear could erase it.
+        guard resolvingPair == nil, wrongPair.isEmpty, !isFinished else { return }
         wrongPair = []
         withAnimation(.easeOut(duration: 0.16)) {
             if side == .description { selectedDescription = id } else { selectedTerm = id }

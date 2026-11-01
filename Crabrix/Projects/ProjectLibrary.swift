@@ -221,6 +221,12 @@ actor ProjectStore {
         return try loadProject(from: url)
     }
 
+    /// True for any stored project, including one that can no longer be read.
+    func containsProject(id: UUID) -> Bool {
+        Self.transactionLock.lock(); defer { Self.transactionLock.unlock() }
+        return fileManager.fileExists(atPath: directory(for: id).path)
+    }
+
     func allProjects() throws -> [ProjectLibraryItem] {
         Self.transactionLock.lock(); defer { Self.transactionLock.unlock() }
         try prepareStorage()
@@ -767,6 +773,11 @@ actor ProjectLibrary {
     func readFailures() async -> [ProjectReadFailure] { await store.readFailures }
     func recoveryArchive(projectID: UUID) async throws -> URL { try await store.recoveryArchive(projectID: projectID) }
 
+    func containsProject(id: UUID) async -> Bool {
+        try? await ensureLegacyMigration()
+        return await store.containsProject(id: id)
+    }
+
     func project(id: UUID) async throws -> ProjectLibraryItem? {
         try await ensureLegacyMigration()
         guard var item = try await store.project(id: id) else { return nil }
@@ -818,7 +829,9 @@ actor ProjectLibrary {
         let entries = try await recent.entries()
         var result: [ProjectLibraryItem] = []
         for entry in entries {
-            guard var item = try await store.project(id: entry.projectID) else { continue }
+            // An unreadable project is reported through `readFailures` with its
+            // rescue export. It must not fail every other project's save and load.
+            guard var item = try? await store.project(id: entry.projectID) else { continue }
             item.lastOpenedAt = entry.lastOpenedAt
             do { item.resourceTreeHash = try await GitRepositoryStore(root: gitStorageURL).resourceIdentity(item.id) }
             catch { item.lastBuild = nil }

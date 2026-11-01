@@ -24,7 +24,8 @@ private struct CourseInstallJournal: Codable {
 }
 
 /// Serializes installation and atomically changes only the active-version index.
-/// Old versions remain on disk, so a pinned lesson session can keep using them.
+/// A pinned lesson session holds its decoded content in memory. Replaced versions
+/// stay on disk only until `removeReplacedVersions`.
 actor CourseInstaller {
     /// Callers construct separate installer actors for downloads and bootstrap.
     /// Their index and journal still belong to the same on-disk transaction.
@@ -95,6 +96,30 @@ actor CourseInstaller {
         }
     }
 
+    /// Reclaims every version tree the index no longer points at. Run after an
+    /// update is active: the OS never purges this directory. An open session only
+    /// loses its lesson image, which the lesson screen already treats as optional.
+    func removeReplacedVersions() throws {
+        try Self.coordinationLock.withLock {
+            try recover()
+            let index = try readIndex()
+            let directories = { [fileManager] (url: URL) -> [URL] in
+                ((try? fileManager.contentsOfDirectory(
+                    at: url, includingPropertiesForKeys: [.isDirectoryKey], options: [.skipsHiddenFiles]
+                )) ?? []).filter { (try? $0.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true }
+            }
+            for course in directories(root) {
+                for language in directories(course) {
+                    let key = "\(course.lastPathComponent)|\(language.lastPathComponent)"
+                    for version in directories(language)
+                    where index.active[key]?.contentVersion != version.lastPathComponent {
+                        try? fileManager.removeItem(at: version)
+                    }
+                }
+            }
+        }
+    }
+
     func install(descriptorBytes: Data, downloadedArchive: URL, keyring: CourseKeyring) throws
         -> InstalledCourseRecord {
         try Self.coordinationLock.withLock {
@@ -135,9 +160,6 @@ actor CourseInstaller {
             }
             return current
         }
-        guard !fileManager.fileExists(atPath: target.path) else {
-            throw CoursePackError.immutableVersionConflict
-        }
         let source = try downloadedArchive.resourceValues(
             forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey]
         )
@@ -152,7 +174,8 @@ actor CourseInstaller {
             throw CoursePackError.archiveDigestMismatch
         }
 
-        let staging = root.appending(path: ".staging/\(UUID().uuidString)", directoryHint: .isDirectory)
+        let stagingPath = ".staging/\(UUID().uuidString)"
+        let staging = root.appending(path: stagingPath, directoryHint: .isDirectory)
         let payloadRoot = staging.appending(path: "payload", directoryHint: .isDirectory)
         let cacheArchive = staging.appending(path: archiveName)
         try fileManager.createDirectory(at: payloadRoot, withIntermediateDirectories: true)
@@ -171,14 +194,26 @@ actor CourseInstaller {
             try extract(verified, to: payloadRoot)
             try Task.checkCancellation()
 
+            // Relative, because the app container's path changes across updates
+            // and restores and a leftover journal has to stay meaningful.
             let journal = CourseInstallJournal(
-                key: key, targetPath: target.path, stagingPath: staging.path,
+                key: key, targetPath: "\(courseID)/\(language)/\(version)", stagingPath: stagingPath,
                 archiveSHA256: descriptor.archiveSHA256
             )
             try writeJournal(journal)
             try fileManager.createDirectory(at: target.deletingLastPathComponent(),
                                             withIntermediateDirectories: true)
+            // The active version returned above, and recovery has run, so a tree
+            // here is an orphan: a kill between the index write and the removal
+            // in `uninstall`, or a version this course has since replaced.
+            if fileManager.fileExists(atPath: target.path) {
+                try fileManager.removeItem(at: target)
+            }
             try fileManager.moveItem(at: payloadRoot, to: target)
+            // Replay sections share this installer but are not lesson packs.
+            if !descriptor.requiredCapabilities.contains("atlas-replay-v1") {
+                try InstalledCourseRepository.validate(root: root, record: record, keyring: keyring)
+            }
             var updated = old
             updated.active[key] = record
             try writeIndex(updated)
@@ -304,6 +339,10 @@ actor CourseInstaller {
 
     /// A journal is local state, but corruption must never let recovery remove
     /// another course's active tree or follow a substituted directory symlink.
+    ///
+    /// Only the trailing components are read, so both are always rooted here:
+    /// journals written by older builds hold absolute paths in a container that
+    /// may have since moved.
     private func validatedJournalPaths(_ journal: CourseInstallJournal) throws -> (URL, URL) {
         let parts = journal.key.split(separator: "|", omittingEmptySubsequences: false)
         guard parts.count == 2,
@@ -313,20 +352,17 @@ actor CourseInstaller {
               journal.archiveSHA256.allSatisfy({ "0123456789abcdef".contains($0) })
         else { throw CoursePackError.unsafeArchive("install journal") }
 
-        let target = URL(fileURLWithPath: journal.targetPath)
-        let targetParts = target.pathComponents
-        guard let version = targetParts.last.flatMap({ try? component($0) }),
-              target.standardizedFileURL.path == root.appending(
-                path: "\(course)/\(language)/\(version)"
-              ).standardizedFileURL.path
+        let targetParts = journal.targetPath.split(separator: "/").suffix(3).map(String.init)
+        guard targetParts.count == 3, targetParts[0] == course, targetParts[1] == language,
+              let version = try? component(targetParts[2])
         else { throw CoursePackError.unsafeArchive("install journal") }
+        let target = root.appending(path: "\(course)/\(language)/\(version)")
 
-        let staging = URL(fileURLWithPath: journal.stagingPath)
-        guard let identifier = UUID(uuidString: staging.lastPathComponent),
-              staging.standardizedFileURL.path == root.appending(
-                path: ".staging/\(identifier.uuidString)"
-              ).standardizedFileURL.path
+        let stagingParts = journal.stagingPath.split(separator: "/").suffix(2).map(String.init)
+        guard stagingParts.count == 2, stagingParts[0] == ".staging",
+              let identifier = UUID(uuidString: stagingParts[1])
         else { throw CoursePackError.unsafeArchive("install journal") }
+        let staging = root.appending(path: ".staging/\(identifier.uuidString)")
 
         let canonicalRoot = root.resolvingSymlinksInPath().standardizedFileURL
         guard target.resolvingSymlinksInPath().standardizedFileURL.path == canonicalRoot.appending(

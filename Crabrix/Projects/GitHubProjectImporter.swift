@@ -4,6 +4,7 @@ import ZIPFoundation
 actor GitHubProjectImporter {
     enum ImportError: LocalizedError {
         case invalidResponse
+        case temporarilyUnavailable(Int)
         case downloadTooLarge
         case archiveTooLarge
         case unsafeArchivePath(String)
@@ -13,6 +14,8 @@ actor GitHubProjectImporter {
             switch self {
             case .invalidResponse:
                 "GitHub did not return a repository archive. Check the URL or repository visibility."
+            case let .temporarilyUnavailable(status):
+                "GitHub is busy or rate limiting requests (HTTP \(status)). Try again shortly."
             case .downloadTooLarge:
                 "The GitHub snapshot exceeds the 40 MB download limit."
             case .archiveTooLarge:
@@ -28,6 +31,30 @@ actor GitHubProjectImporter {
     private let maximumDownloadBytes: Int64 = 40_000_000
     private let maximumArchiveBytes: UInt64 = 100_000_000
     private let maximumArchiveEntries = 4_000
+    private let session: URLSession
+
+    init(session: URLSession = .shared) {
+        self.session = session
+    }
+
+    /// A failure a later attempt could fix, as opposed to a link that will never import.
+    static func isTransient(_ error: Error) -> Bool {
+        if case ImportError.temporarilyUnavailable = error { return true }
+        return error is URLError
+    }
+
+    /// GitHub answers rate limiting with 429, or with 403 and one of these headers.
+    /// A plain 403 means the repository cannot be read, like a 404.
+    private static func failure(for response: HTTPURLResponse) -> ImportError? {
+        switch response.statusCode {
+        case 200..<300: return nil
+        case 408, 429, 500..<600: return .temporarilyUnavailable(response.statusCode)
+        case 403 where response.value(forHTTPHeaderField: "Retry-After") != nil
+            || response.value(forHTTPHeaderField: "X-RateLimit-Remaining") == "0":
+            return .temporarilyUnavailable(response.statusCode)
+        default: return .invalidResponse
+        }
+    }
 
     func importProject(from rawURL: String) async throws -> CrabrixProject {
         let reference = try GitHubRepositoryReference.parse(rawURL)
@@ -36,12 +63,9 @@ actor GitHubProjectImporter {
             cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
             timeoutInterval: 60
         )
-        let (downloadedURL, response) = try await URLSession.shared.download(for: request)
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200..<300).contains(httpResponse.statusCode)
-        else {
-            throw ImportError.invalidResponse
-        }
+        let (downloadedURL, response) = try await session.download(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else { throw ImportError.invalidResponse }
+        if let failure = Self.failure(for: httpResponse) { throw failure }
         if response.expectedContentLength > maximumDownloadBytes {
             throw ImportError.downloadTooLarge
         }
@@ -59,7 +83,9 @@ actor GitHubProjectImporter {
         guard Int64(archiveSize) <= maximumDownloadBytes else { throw ImportError.downloadTooLarge }
         try validateArchive(at: archiveURL)
         try fileManager.createDirectory(at: extractionURL, withIntermediateDirectories: true)
-        try fileManager.unzipItem(at: archiveURL, to: extractionURL)
+        try CrabrixProjectArchive.expand(archiveURL, to: extractionURL, maximumBytes: maximumArchiveBytes) {
+            ImportError.archiveTooLarge
+        }
 
         let provenance = CrabrixProject.Provenance(
             source: .github,

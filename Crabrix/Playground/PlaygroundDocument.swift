@@ -76,7 +76,9 @@ enum PlaygroundLocalFiles {
 }
 struct PlaygroundFailure: LocalizedError, Sendable {
     let message: String
-    init(_ message: String) { self.message = message }
+    /// The relay's HTTP status, when the failure came from a relay response.
+    let status: Int?
+    init(_ message: String, status: Int? = nil) { self.message = message; self.status = status }
     var errorDescription: String? { message }
 }
 struct PlaygroundRemoteSelection: Codable, Equatable, Sendable, Identifiable {

@@ -242,7 +242,10 @@ struct LearningHubView: View {
         guard let courses = academy.repository?.courses,
               let step = RustLessonProgression.nextStep(
                 after: lesson.id, completedLessonIDs: completed, courses: courses
-              ), step.lessonID != lesson.id else {
+              ), step.lessonID != lesson.id,
+              // A lesson opened out of order, as from Weak Topics, must not lead
+              // straight into a lesson the course map still shows as locked.
+              RustLessonProgression.isOpen(step, completedLessonIDs: completed, courses: courses) else {
             returnToCourse(containing: lesson)
             return
         }
@@ -275,7 +278,13 @@ private struct CourseLibraryView: View {
     }
 
     private var examplesEntry: CourseCatalogPayload.Entry? {
-        academy.availableDownloads.first { $0.courseID == "examples" }
+        academy.availableDownloads.first { entry in
+            entry.courseID == "examples" && !unavailableIDs.contains(entry.courseID)
+        }
+    }
+
+    private var unavailableIDs: Set<String> {
+        Set(academy.unavailableCourses.map(\.courseID))
     }
 
     private var newerExamplesEntry: CourseCatalogPayload.Entry? {
@@ -283,7 +292,7 @@ private struct CourseLibraryView: View {
     }
 
     private var available: [CourseCatalogPayload.Entry] {
-        academy.availableDownloads.filter { $0.courseID != "examples" }
+        academy.availableDownloads.filter { $0.courseID != "examples" && !unavailableIDs.contains($0.courseID) }
             .sorted { Self.order($0.courseID) < Self.order($1.courseID) }
     }
 
@@ -299,6 +308,8 @@ private struct CourseLibraryView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 if !updates.isEmpty { updateSummary }
+
+                if !academy.unavailableCourses.isEmpty { unavailableSection }
 
                 if !installed.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
@@ -344,7 +355,7 @@ private struct CourseLibraryView: View {
                 } else if academy.repository == nil {
                     ProgressView("Preparing Academy")
                 } else if available.isEmpty && installed.isEmpty && examplesEntry == nil
-                            && !examplesInstalled {
+                            && !examplesInstalled && academy.unavailableCourses.isEmpty {
                     ContentUnavailableView("Course list unavailable", systemImage: "wifi.slash")
                     Button("Retry") { Task { await academy.checkForUpdates() } }
                 }
@@ -422,6 +433,53 @@ private struct CourseLibraryView: View {
             Button("Cancel", role: .cancel) { pendingRemoval = nil }
         } message: {
             Text("Saved projects and learning progress will stay on this device.")
+        }
+    }
+
+    private var unavailableSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Needs attention").font(.title2.bold())
+            ForEach(academy.unavailableCourses) { course in
+                let preview = Self.preview(course.courseID)
+                let entry = academy.latestEntry(for: course.courseID, language: course.language)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 12) {
+                        courseIcon(course.courseID, fallback: preview.icon, tint: CrabrixTheme.amber)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(preview.title).font(.headline)
+                            Text("This download could not be opened. Your progress and projects are safe.")
+                                .font(.caption)
+                                .foregroundStyle(CrabrixTheme.muted)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Text(course.reason)
+                                .font(.caption2)
+                                .foregroundStyle(CrabrixTheme.muted)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    HStack(spacing: 8) {
+                        if let entry {
+                            Button("Download again") { pendingDownload = entry }
+                                .buttonStyle(.bordered)
+                                .tint(CrabrixTheme.coral)
+                                .accessibilityLabel("Download \(preview.title) again")
+                        }
+                        Button("Remove download", role: .destructive) {
+                            requestRemoval(course.courseID, title: preview.title)
+                        }
+                        .buttonStyle(.bordered)
+                        .accessibilityLabel("Remove \(preview.title) download")
+                    }
+                    .font(.caption.bold())
+                    if let entry, let transfer = academy.transfers[course.id] {
+                        transferView(transfer, entry: entry)
+                    }
+                }
+                .padding(14)
+                .crabrixPanel(cornerRadius: 14)
+                .accessibilityIdentifier("learn-unavailable-\(course.courseID)")
+            }
         }
     }
 

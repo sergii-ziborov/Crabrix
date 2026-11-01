@@ -188,7 +188,9 @@ final class ProjectAuthoringTests: XCTestCase {
             with: "syn = \"3.0.6\""
         )
 
+        // The change is a reviewed proposal, which only applying writes to the project.
         XCTAssertTrue(model.useSynParserFeatures())
+        XCTAssertTrue(model.applyCargoFeatureProposal(try XCTUnwrap(model.cargoFeatureProposal)))
 
         let manifest = try CratePackageManifest.parse(
             XCTUnwrap(model.exportProject().files["Cargo.toml"])
@@ -400,6 +402,11 @@ final class CargoTemplateTests: XCTestCase {
                 userDefaults: UserDefaults(suiteName: "crabrix.tests.\(UUID().uuidString)")!
             )
             model.createProject(name: "t-\(template.rawValue)", template: template)
+            // A web page is HTML, CSS and JavaScript, and deliberately has no manifest.
+            if template == .webPage {
+                XCTAssertNil(model.cargoManifestSource)
+                continue
+            }
             let manifestSource = try XCTUnwrap(
                 model.cargoManifestSource,
                 "\(template.rawValue) has no Cargo.toml"

@@ -36,6 +36,9 @@ final class PlaygroundLiveSession: ObservableObject {
     private var heartbeatTask: Task<Void, Never>?
     private var snapshotTask: Task<Void, Never>?
     private var pending: [(id: String, bytes: Data)] = []
+    /// The relay refused an update until the room is compacted, so a snapshot may not
+    /// wait for pending edits: those are what cannot be delivered.
+    private var snapshotOverdue = false
     private var presence: Data?
     private var runtimeFrames: [PlaygroundCodec.RuntimePresenceFrame] = []
     private var runtimeConnection: UInt64 = 0
@@ -165,7 +168,7 @@ final class PlaygroundLiveSession: ObservableObject {
         guard (200...299).contains(response.statusCode) else {
             struct Failure: Decodable { let error: String }
             let message = (try? JSONDecoder().decode(Failure.self, from: data))?.error ?? "Playground connection failed (\(response.statusCode))."
-            throw PlaygroundFailure(message)
+            throw PlaygroundFailure(message, status: response.statusCode)
         }
     }
     private func post(_ body: [String: Any]) async throws -> (Data, Int) {
@@ -248,6 +251,7 @@ final class PlaygroundLiveSession: ObservableObject {
                     pending.removeFirst(); scheduleSnapshot()
                 } catch {
                     if stopped || Task.isCancelled { break }
+                    if (error as? PlaygroundFailure)?.status == 409 { snapshotOverdue = true; scheduleSnapshot() }
                     updateStatus("Local changes pending. " + error.localizedDescription)
                     try? await Task.sleep(for: .seconds(2))
                 }
@@ -275,12 +279,13 @@ final class PlaygroundLiveSession: ObservableObject {
             try? await Task.sleep(for: .seconds(5))
             guard let self, !stopped, !Task.isCancelled else { return }
             snapshotTask = nil
-            guard connected, pending.isEmpty else { return }
+            guard connected, pending.isEmpty || snapshotOverdue else { return }
             do {
                 let currentSequence = sequence
                 let bytes = try codec.call(["type": "snapshot"]).snapshot ?? []
                 let packet = try PlaygroundEncryption.seal(Data(bytes), secret: link.key)
                 _ = try await post(["type": "snapshot", "sequence": currentSequence, "packet": ["iv": packet.iv, "data": packet.data]])
+                snapshotOverdue = false
             } catch { if !stopped { scheduleSnapshot() } }
         }
     }

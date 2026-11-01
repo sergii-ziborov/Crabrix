@@ -57,8 +57,20 @@ final class CourseBootstrapTests: XCTestCase {
         XCTAssertTrue(installed.courses.isEmpty)
         let activeCatalog = try bootstrap.bundledCatalog()
         XCTAssertEqual(activeCatalog.courses.count, 8)
-        XCTAssertEqual(activeCatalog.sequence, 15)
-        XCTAssertEqual(activeCatalog.courses.first { $0.courseID == "algorithms" }?.contentVersion, "1.0.6")
+        // Read straight from the file so this does not need an edit per release.
+        let activeCatalogBytes = try Data(contentsOf: XCTUnwrap(
+            Bundle.main.url(forResource: "ActiveCourseCatalog", withExtension: nil)
+        ).appending(path: "catalog.v1.json"))
+        let signedPayload = try CoursePackVerifier.signedPayload(
+            activeCatalogBytes, domain: CoursePackVerifier.catalogDomain, keyring: bootstrap.keyring()
+        ).0
+        let signedSequence = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: signedPayload) as? [String: Any]
+        )["sequence"] as? Int
+        XCTAssertEqual(activeCatalog.sequence, signedSequence)
+        // Ahead of the pinned migration archive, whichever release this is.
+        let activeAlgorithms = try XCTUnwrap(activeCatalog.courses.first { $0.courseID == "algorithms" })
+        XCTAssertGreaterThan(try XCTUnwrap(SemanticVersion(activeAlgorithms.contentVersion)), try XCTUnwrap(SemanticVersion("1.0.1")))
         XCTAssertEqual(
             activeCatalog.courses.first { $0.courseID == "examples" }?.requiredCapabilities,
             ["coursepack-v1", "examples-gallery-v1"]
@@ -84,6 +96,68 @@ final class CourseBootstrapTests: XCTestCase {
         XCTAssertEqual(selected.courses.map(\.id), ["basics"])
         let selectedAfterRelaunch = try await bootstrap.activateBundledBaseline(for: .newLearner)
         XCTAssertEqual(selectedAfterRelaunch.courses.map(\.id), ["basics"])
+    }
+
+    func testCatalogOlderThanTheBundledOneIsUpToDateAndNeverReplacesIt() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let bootstrap = try CourseBootstrap(bundle: .main, root: root, appVersion: SemanticVersion("1.1"))
+        let keyring = try bootstrap.keyring()
+        let bundled = try bootstrap.bundledCatalog()
+        let packs = try XCTUnwrap(Bundle.main.url(forResource: "MigrationCoursePacks", withExtension: nil))
+        let older = try Data(contentsOf: packs.appending(path: "catalog.v1.json"))
+        let active = try Data(contentsOf: XCTUnwrap(
+            Bundle.main.url(forResource: "ActiveCourseCatalog", withExtension: nil)
+        ).appending(path: "catalog.v1.json"))
+        let stateURL = root.appending(path: "state.json")
+        let client = CourseCatalogClient(stateURL: stateURL, keyring: keyring, bundled: bundled)
+        let oldCatalog = try CoursePackVerifier.catalog(bytes: older, keyring: keyring, lastAcceptedSequence: 0)
+        XCTAssertLessThan(oldCatalog.sequence, bundled.sequence)
+
+        // First launch: the server lags the app, which is up to date, not an error,
+        // and the old catalog is not saved as the accepted one.
+        let lagging = try await client.accept(older)
+        XCTAssertEqual(lagging.sequence, bundled.sequence)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: stateURL.path))
+
+        // The same catalog the app shipped with is not a rollback.
+        let accepted = try await client.accept(active)
+        XCTAssertEqual(accepted.sequence, bundled.sequence)
+        let accepted2 = try await client.accept(active)
+        XCTAssertEqual(accepted2.sequence, bundled.sequence)
+        let savedAfterRefresh = try await client.current()
+        XCTAssertEqual(savedAfterRefresh?.sequence, bundled.sequence)
+
+        // A signed catalog older than one already accepted is still refused.
+        let lowerFloor = CourseCatalogClient(stateURL: stateURL, keyring: keyring, bundled: oldCatalog)
+        do {
+            _ = try await lowerFloor.accept(older)
+            XCTFail("A catalog older than the accepted one replaced it")
+        } catch CoursePackError.rollback {}
+
+        // After an app update: saved state older than the new bundle, and the server
+        // still serving exactly that saved catalog. Every check used to fail here.
+        let updatedRoot = root.appending(path: "updated")
+        let savedOlder = updatedRoot.appending(path: "state.json")
+        let beforeUpdate = CourseCatalogClient(stateURL: savedOlder, keyring: keyring, bundled: oldCatalog)
+        _ = try await beforeUpdate.accept(older)
+        let afterUpdate = CourseCatalogClient(stateURL: savedOlder, keyring: keyring, bundled: bundled)
+        let sameBytes = try await afterUpdate.accept(older)
+        XCTAssertEqual(sameBytes.sequence, bundled.sequence)
+        let stillSaved = try await afterUpdate.current()
+        XCTAssertEqual(stillSaved?.sequence, oldCatalog.sequence)
+        XCTAssertEqual(CourseCatalogClient.newest(saved: stillSaved, bundled: bundled)?.sequence, bundled.sequence)
+        // And the next catalog is accepted over that older saved state.
+        let advanced = try await afterUpdate.accept(active)
+        XCTAssertEqual(advanced.sequence, bundled.sequence)
+        let savedAdvanced = try await afterUpdate.current()
+        XCTAssertEqual(savedAdvanced?.sequence, bundled.sequence)
+
+        XCTAssertLessThan(oldCatalog.sequence, bundled.sequence)
+        XCTAssertEqual(CourseCatalogClient.newest(saved: oldCatalog, bundled: bundled)?.sequence, bundled.sequence)
+        XCTAssertEqual(CourseCatalogClient.newest(saved: bundled, bundled: oldCatalog)?.sequence, bundled.sequence)
+        XCTAssertEqual(CourseCatalogClient.newest(saved: nil, bundled: bundled)?.sequence, bundled.sequence)
+        XCTAssertEqual(CourseCatalogClient.newest(saved: oldCatalog, bundled: nil)?.sequence, oldCatalog.sequence)
     }
 
     func testBundledBaselineInstallsOfflineAndRelaunchKeepsIdentity() async throws {

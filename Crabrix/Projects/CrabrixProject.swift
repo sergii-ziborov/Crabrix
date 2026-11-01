@@ -60,6 +60,10 @@ struct CrabrixProject: Codable, Equatable, Sendable {
             let lessonID: String
             let templateHash: String
             var recording: Recording? = nil
+
+            /// A lab the learner started from a lesson. Replay copies and examples
+            /// carry the same origin but can never earn lesson evidence.
+            var isLessonLab: Bool { recording == nil && !lessonID.hasPrefix("example/") }
         }
 
         let source: Source
@@ -69,6 +73,17 @@ struct CrabrixProject: Codable, Equatable, Sendable {
         let commit: String?
         let importedAt: Date
         var course: CourseOrigin? = nil
+
+        /// For anything arriving from outside this device's library. A package can
+        /// hold someone else's finished solution, and running it must not earn the
+        /// lesson here. The files are untouched, so a learner re-importing their own
+        /// lab keeps all their work and only restarts the lesson link.
+        var withoutLessonBinding: Provenance {
+            guard course?.isLessonLab == true else { return self }
+            var copy = self
+            copy.course = nil
+            return copy
+        }
 
         static func files() -> Provenance {
             Provenance(
@@ -160,6 +175,20 @@ struct CrabrixProject: Codable, Equatable, Sendable {
 
     /// Projects exported before durable identity existed remain readable. A
     /// missing id is assigned once and is persisted on the next save.
+    func withoutLessonBinding() -> CrabrixProject {
+        var copy = self
+        copy.provenance = provenance?.withoutLessonBinding
+        return copy
+    }
+
+    func copyWithNewIdentity() -> CrabrixProject {
+        CrabrixProject(
+            id: UUID(), name: name, files: files, entryFile: entryFile, provenance: provenance,
+            projectDescription: projectDescription, tags: tags, folder: folder, kind: kind,
+            isFavorite: isFavorite
+        )
+    }
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
@@ -384,7 +413,7 @@ struct ProjectLibraryItem: Codable, Equatable, Identifiable, Sendable {
     var currentBuild: ProjectBuildRecord? {
         guard let lastBuild, let sourceTreeHash, sourceTreeHash == lastBuild.sourceTreeHash,
               lastBuild.resourceTreeHash == resourceTreeHash,
-              lastBuild.toolchainID == WasmRustCompiler.executionIdentity else { return nil }
+              lastBuild.toolchainID == ProjectExecutionProfile.identity else { return nil }
         return lastBuild
     }
 

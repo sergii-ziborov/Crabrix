@@ -25,13 +25,16 @@ enum SharedImportQueue {
         return reference
     }
 
-    static func dequeue() -> String? {
-        guard let defaults = UserDefaults(suiteName: appGroupIdentifier) else { return nil }
+    /// The oldest link, left in place until `remove` confirms it was handled.
+    static func peek() -> String? {
+        UserDefaults(suiteName: appGroupIdentifier)?.stringArray(forKey: storageKey)?.first
+    }
+
+    static func remove(_ rawURL: String) {
+        guard let defaults = UserDefaults(suiteName: appGroupIdentifier) else { return }
         var values = defaults.stringArray(forKey: storageKey) ?? []
-        guard !values.isEmpty else { return nil }
-        let value = values.removeFirst()
+        values.removeAll { $0 == rawURL }
         defaults.set(values, forKey: storageKey)
-        return value
     }
 
     enum SharedLink {

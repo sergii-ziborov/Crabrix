@@ -195,11 +195,17 @@ struct VersionRequirement: Hashable, Sendable, CustomStringConvertible {
         }
 
         if take(">=") { return SemanticVersion(padding: body).map { .greaterOrEqual($0) } }
-        if take("<=") { return SemanticVersion(padding: body).map { .lessOrEqual($0) } }
+        if take("<=") {
+            return bounded(body, complete: { .lessOrEqual($0) }, partial: { _, next in .less(next) })
+        }
         if take("!=") { return nil } // Cargo does not support this; refuse the requirement.
-        if take(">") { return SemanticVersion(padding: body).map { .greater($0) } }
+        if take(">") {
+            return bounded(body, complete: { .greater($0) }, partial: { _, next in .greaterOrEqual(next) })
+        }
         if take("<") { return SemanticVersion(padding: body).map { .less($0) } }
-        if take("=") { return SemanticVersion(padding: body).map { .exact($0) } }
+        if take("=") {
+            return bounded(body, complete: { .exact($0) }, partial: { .range(lower: $0, upper: $1) })
+        }
         if take("~") { return tilde(body).map { Comparator.range(lower: $0.0, upper: $0.1) } }
         let hasExplicitCaret = take("^")
 
@@ -214,6 +220,25 @@ struct VersionRequirement: Hashable, Sendable, CustomStringConvertible {
             return .some(.range(lower: bounds.0, upper: bounds.1))
         }
         return caret(body).map { Comparator.range(lower: $0.0, upper: $0.1) }
+    }
+
+    /// A partial operand names a whole span of versions rather than one point,
+    /// so `=`, `>` and `<=` have to compare against that span. The semver crate
+    /// defines `=1.2` as `>=1.2.0, <1.3.0`, `>1.2` as `>=1.3.0`, and `<=1.2` as
+    /// `<1.3.0` (and likewise for `1`). Only `>=` and `<` may zero-fill.
+    private static func bounded(
+        _ body: String,
+        complete: (SemanticVersion) -> Comparator,
+        partial: (SemanticVersion, SemanticVersion) -> Comparator
+    ) -> Comparator?? {
+        guard let version = SemanticVersion(padding: body) else { return nil }
+        guard let parts = numericParts(body), parts.patch == nil, parts.prerelease.isEmpty else {
+            return complete(version)
+        }
+        let next = parts.minor.map {
+            SemanticVersion(major: parts.major, minor: $0 + 1, patch: 0)
+        } ?? SemanticVersion(major: parts.major + 1, minor: 0, patch: 0)
+        return partial(version, next)
     }
 
     /// Cargo wildcards constrain exactly the component where the wildcard is
@@ -325,8 +350,9 @@ struct VersionRequirement: Hashable, Sendable, CustomStringConvertible {
 }
 
 private extension SemanticVersion {
-    /// Parses a possibly partial version such as `1` or `1.2` for comparators
-    /// like `>=1.2`, where Cargo treats the missing components as zero.
+    /// Parses a possibly partial version such as `1` or `1.2`, zero-filling the
+    /// missing components. That is Cargo's meaning for `>=` and `<` only; see
+    /// `VersionRequirement.bounded` for the other comparison operators.
     init?(padding text: String) {
         guard let parsed = SemanticVersion(text) else { return nil }
         self = parsed

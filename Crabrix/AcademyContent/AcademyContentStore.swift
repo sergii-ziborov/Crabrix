@@ -44,6 +44,20 @@ final class AcademyContentStore: ObservableObject {
         latestCompatible.filter { installedVersions[$0.key] == nil }.map(\.value)
     }
 
+    /// Changes whenever the active courses do, for views that wait on one of them.
+    var installedCourseIdentity: [String] {
+        installedVersions.map { "\($0.key)=\($0.value)" }.sorted()
+    }
+
+    /// Installed courses that could not be opened, to remove or download again.
+    var unavailableCourses: [InstalledCourseRepository.UnavailableCourse] {
+        repository?.unavailable ?? []
+    }
+
+    func latestEntry(for courseID: String, language: String) -> CourseCatalogPayload.Entry? {
+        latestCompatible[courseID + "|" + language]
+    }
+
     func updateEntry(for courseID: String, language: String = "en") -> CourseCatalogPayload.Entry? {
         availableUpdates.first { $0.courseID == courseID && $0.language == language }
     }
@@ -91,7 +105,9 @@ final class AcademyContentStore: ObservableObject {
                     stateURL: bootstrap.root.appending(path: "catalog-state.json"),
                     keyring: keyring
                 )
-                catalog = (try? await client.current()) ?? (try? bootstrap.bundledCatalog())
+                catalog = CourseCatalogClient.newest(
+                    saved: try? await client.current(), bundled: try? bootstrap.bundledCatalog()
+                )
             }
             errorMessage = nil
         } catch {
@@ -107,7 +123,8 @@ final class AcademyContentStore: ObservableObject {
             let bootstrap = try CourseBootstrap()
             let client = CourseCatalogClient(
                 stateURL: bootstrap.root.appending(path: "catalog-state.json"),
-                keyring: try bootstrap.keyring()
+                keyring: try bootstrap.keyring(),
+                bundled: try? bootstrap.bundledCatalog()
             )
             catalog = try await client.refresh()
             catalogError = nil
@@ -128,6 +145,8 @@ final class AcademyContentStore: ObservableObject {
         bulkUpdateTask = Task { [weak self] in
             guard let self else { return }
             for entry in entries {
+                // Removed while an earlier course downloaded: not an update any more.
+                guard installedVersions[entry.courseID + "|" + entry.language] != nil else { continue }
                 if let task = startDownload(entry) { await task.value }
             }
             updatingAll = false
@@ -157,12 +176,21 @@ final class AcademyContentStore: ObservableObject {
                 }
                 transfers[key] = .verifying
                 let installer = try CourseInstaller(root: bootstrap.root, appVersion: bootstrap.appVersion)
+                // Installing an already-active version changes nothing, so a damaged
+                // course has to leave the index before its fresh copy can replace it.
+                if unavailableCourses.contains(where: { $0.id == key }) {
+                    try await installer.uninstall(courseID: entry.courseID, language: entry.language)
+                }
                 _ = try await installer.install(
                     descriptorBytes: descriptor, downloadedArchive: archive,
                     keyring: bootstrap.keyring()
                 )
                 repository = try await bootstrap.loadInstalled()
                 transfers[key] = .installed
+                try? await installer.removeReplacedVersions()
+                let installedDigests = repository?.loaded.values.map(\.archiveSHA256) ?? []
+                await manager.removeDownloads(keeping: Set(latestCompatible.values.map(\.archiveSHA256))
+                    .subtracting(installedDigests))
             } catch {
                 transfers[key] = .failed(Task.isCancelled
                     ? "Download paused. Tap Resume to continue."

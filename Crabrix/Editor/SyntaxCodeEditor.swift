@@ -489,6 +489,7 @@ struct SyntaxCodeEditor: UIViewRepresentable {
         }
 
         func insert(_ symbol: String) {
+            guard parent.isEditable else { return }
             guard let textView else { return }
             let source = textView.text ?? ""
             let range = textView.selectedRange

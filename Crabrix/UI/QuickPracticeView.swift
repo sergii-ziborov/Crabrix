@@ -134,6 +134,9 @@ struct QuickPracticeView: View {
 
 private struct MatchPractice: View {
     @State private var selection: String?
+    /// Feedback is instant and the choice can still change, so only the first
+    /// pick can honestly count as solved on the first check.
+    @State private var firstSelection: String?
     private let answers = [
         "Copies every value automatically",
         "Allows many writers at once",
@@ -150,7 +153,10 @@ private struct MatchPractice: View {
         ) {
             VStack(spacing: 9) {
                 ForEach(answers, id: \.self) { answer in
-                    Button { selection = answer } label: {
+                    Button {
+                        if firstSelection == nil { firstSelection = answer }
+                        selection = answer
+                    } label: {
                         HStack {
                             Image(systemName: selection == answer ? "checkmark.circle.fill" : "circle")
                                 .foregroundStyle(selection == answer ? CrabrixTheme.blue : CrabrixTheme.muted)
@@ -170,7 +176,7 @@ private struct MatchPractice: View {
                 correctText: "Exactly — lifetimes connect reference validity.",
                 wrongText: "Think about references and how long they remain valid."
             )
-            Button("Continue") { onNext(selection == answers[2]) }
+            Button("Continue") { onNext(firstSelection == answers[2]) }
                 .buttonStyle(.borderedProminent)
                 .foregroundStyle(CrabrixTheme.onAccent)
                 .tint(CrabrixTheme.coral)
@@ -194,6 +200,8 @@ private struct ArrangeCodePractice: View {
     ]
     @State private var checked = false
     @State private var correct = false
+    /// Checking is unlimited, but only the first result reports as solved.
+    @State private var firstCheckCorrect: Bool?
     let onNext: (Bool) -> Void
 
     @ScaledMetric(relativeTo: .body) private var codeFontSize = 13
@@ -251,10 +259,11 @@ private struct ArrangeCodePractice: View {
     private var checkButton: some View {
         Button(checked && correct ? "Finish" : "Check order") {
             if checked && correct {
-                onNext(true)
+                onNext(firstCheckCorrect == true)
             } else {
                 correct = lines.map(\.id) == [0, 1, 2, 3]
                 checked = true
+                if firstCheckCorrect == nil { firstCheckCorrect = correct }
             }
         }
         .buttonStyle(.borderedProminent)
@@ -335,7 +344,7 @@ private struct PracticeCard<Content: View>: View {
                 Text(eyebrow)
                     .font(.caption.monospaced().bold())
                     .foregroundStyle(CrabrixTheme.coral)
-                Text(title)
+                lessonFormattedText(title, plainColor: CrabrixTheme.primary)
                     .font(.system(size: 27, weight: .bold, design: .rounded))
                 Text(detail)
                     .foregroundStyle(CrabrixTheme.muted)
@@ -354,12 +363,14 @@ private struct PracticeFeedback: View {
 
     var body: some View {
         if isVisible {
-            Label(
-                isCorrect ? correctText : wrongText,
-                systemImage: isCorrect ? "checkmark.circle.fill" : "lightbulb.fill"
-            )
+            let tint = isCorrect ? CrabrixTheme.mint : CrabrixTheme.amber
+            Label {
+                lessonFormattedText(isCorrect ? correctText : wrongText, plainColor: tint)
+            } icon: {
+                Image(systemName: isCorrect ? "checkmark.circle.fill" : "lightbulb.fill")
+            }
             .font(.caption)
-            .foregroundStyle(isCorrect ? CrabrixTheme.mint : CrabrixTheme.amber)
+            .foregroundStyle(tint)
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background((isCorrect ? CrabrixTheme.mint : CrabrixTheme.amber).opacity(0.1))
@@ -385,7 +396,7 @@ private struct LessonQuestionPractice: View {
             HighlightedCodeBlock(code: question.code, fontSize: 13)
 
             VStack(spacing: 9) {
-                ForEach(question.answers.indices, id: \.self) { index in
+                ForEach(LessonAnswerOrder.displayOrder(lessonID: question.topic, count: question.answers.count), id: \.self) { index in
                     Button {
                         guard !checked else { return }
                         selection = index
@@ -395,7 +406,7 @@ private struct LessonQuestionPractice: View {
                                   ? "largecircle.fill.circle" : "circle")
                                 .foregroundStyle(selection == index
                                                  ? CrabrixTheme.blue : CrabrixTheme.muted)
-                            Text(question.answers[index])
+                            lessonFormattedText(question.answers[index], plainColor: CrabrixTheme.primary)
                                 .font(.subheadline)
                                 .multilineTextAlignment(.leading)
                                 .fixedSize(horizontal: false, vertical: true)

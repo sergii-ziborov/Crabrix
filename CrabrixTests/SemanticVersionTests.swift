@@ -85,6 +85,58 @@ final class SemanticVersionTests: XCTestCase {
         XCTAssertFalse(matches("0.2.*", "0.3.0"))
     }
 
+    /// The operator table from the semver crate's `VersionReq` documentation.
+    func testPartialComparatorsMatchCargoOperatorTable() {
+        func matches(_ requirement: String, _ candidate: String) -> Bool {
+            VersionRequirement(requirement)?.isSatisfied(by: version(candidate)) ?? false
+        }
+
+        // =I.J is >=I.J.0, <I.(J+1).0 and =I is >=I.0.0, <(I+1).0.0
+        XCTAssertTrue(matches("=1.2", "1.2.0"))
+        XCTAssertTrue(matches("=1.2", "1.2.5"))
+        XCTAssertFalse(matches("=1.2", "1.3.0"))
+        XCTAssertFalse(matches("=1.2", "1.1.9"))
+        XCTAssertTrue(matches("=1", "1.0.0"))
+        XCTAssertTrue(matches("=1", "1.2.5"))
+        XCTAssertFalse(matches("=1", "2.0.0"))
+        XCTAssertFalse(matches("=1", "0.9.9"))
+
+        // >I.J is >=I.(J+1).0 and >I is >=(I+1).0.0
+        XCTAssertFalse(matches(">1.2", "1.2.5"))
+        XCTAssertFalse(matches(">1.2", "1.2.0"))
+        XCTAssertTrue(matches(">1.2", "1.3.0"))
+        XCTAssertFalse(matches(">1", "1.9.9"))
+        XCTAssertTrue(matches(">1", "2.0.0"))
+
+        // <=I.J is <I.(J+1).0 and <=I is <(I+1).0.0
+        XCTAssertTrue(matches("<=1.2", "1.2.5"))
+        XCTAssertTrue(matches("<=1.2", "1.1.0"))
+        XCTAssertFalse(matches("<=1.2", "1.3.0"))
+        XCTAssertTrue(matches("<=1", "1.2.5"))
+        XCTAssertFalse(matches("<=1", "2.0.0"))
+
+        // >= and < zero-fill.
+        XCTAssertTrue(matches(">=1.2", "1.2.0"))
+        XCTAssertFalse(matches(">=1.2", "1.1.9"))
+        XCTAssertFalse(matches("<1.2", "1.2.0"))
+        XCTAssertTrue(matches("<1.2", "1.1.9"))
+        XCTAssertFalse(matches("<1", "1.0.0"))
+
+        // Complete versions keep their point meaning.
+        XCTAssertTrue(matches("=1.2.3", "1.2.3"))
+        XCTAssertFalse(matches("=1.2.3", "1.2.4"))
+        XCTAssertTrue(matches(">1.2.3", "1.2.4"))
+        XCTAssertFalse(matches(">1.2.3", "1.2.3"))
+        XCTAssertTrue(matches("<=1.2.3", "1.2.3"))
+        XCTAssertFalse(matches("<=1.2.3", "1.2.4"))
+
+        // A prerelease still needs an explicit opt-in at the same core version.
+        XCTAssertFalse(matches("=1.2", "1.2.5-beta.1"))
+        XCTAssertFalse(matches("<=1.2", "1.3.0-alpha"))
+        XCTAssertTrue(matches("=1.2.3-beta.1", "1.2.3-beta.1"))
+        XCTAssertFalse(matches("=1.2.3-beta.1", "1.2.3-beta.2"))
+    }
+
     func testMalformedOrOperatorPrefixedWildcardsAreRejected() {
         XCTAssertNil(VersionRequirement("1.*.3"))
         XCTAssertNil(VersionRequirement("*.1"))

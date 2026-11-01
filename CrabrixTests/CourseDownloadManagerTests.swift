@@ -93,6 +93,21 @@ private final class CourseDownloadURLProtocol: URLProtocol {
 }
 
 final class CourseDownloadManagerTests: XCTestCase {
+    func testStaleDownloadsAreRemovedAndListedOnesKept() async throws {
+        let cache = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: cache) }
+        let manager = try CourseDownloadManager(cacheRoot: cache)
+        let stale = String(repeating: "a", count: 64)
+        let kept = String(repeating: "b", count: 64)
+        let names = ["\(stale).zip", "\(stale).partial", "\(stale).transfer.json", "\(kept).zip", "\(kept).partial", "notes.txt"]
+        for name in names { try Data("x".utf8).write(to: cache.appending(path: name)) }
+
+        await manager.removeDownloads(keeping: [kept])
+
+        let remaining = try FileManager.default.contentsOfDirectory(atPath: cache.path)
+        XCTAssertEqual(Set(remaining), ["\(kept).zip", "\(kept).partial", "notes.txt"])
+    }
+
     private func fixture(_ name: String) throws -> URL {
         let packs = try XCTUnwrap(Bundle.main.url(
             forResource: "MigrationCoursePacks", withExtension: nil

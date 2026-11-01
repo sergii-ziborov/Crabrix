@@ -45,7 +45,14 @@ enum LocalProjectLoader {
         ".gitignore", ".rustfmt.toml", "LICENSE", "Makefile",
     ]
 
-    static func load(from projectURL: URL, provenance: CrabrixProject.Provenance? = nil) throws -> CrabrixProject {
+    /// `fallbackName` names a project whose files sit directly in `projectURL`,
+    /// for callers whose folder is an implementation detail such as a temporary
+    /// extraction directory.
+    static func load(
+        from projectURL: URL,
+        provenance: CrabrixProject.Provenance? = nil,
+        fallbackName: String? = nil
+    ) throws -> CrabrixProject {
         let accessGranted = projectURL.startAccessingSecurityScopedResource()
         defer {
             if accessGranted { projectURL.stopAccessingSecurityScopedResource() }
@@ -70,9 +77,11 @@ enum LocalProjectLoader {
         let name = storedMetadata.flatMap { $0.name.isEmpty ? nil : $0.name }
             ?? manifest?.name
             ?? provenance?.repository
-            ?? rootURL.deletingPathExtension().lastPathComponent
-            .replacingOccurrences(of: "-main", with: "")
-            .replacingOccurrences(of: "-master", with: "")
+            ?? folderDisplayName(
+                rootURL.standardizedFileURL.path == projectURL.standardizedFileURL.path
+                    ? fallbackName ?? rootURL.deletingPathExtension().lastPathComponent
+                    : rootURL.deletingPathExtension().lastPathComponent
+            )
         let entryFile = storedMetadata.flatMap { files[$0.entryFile] == nil ? nil : $0.entryFile }
             ?? preferredEntryFile(in: files)
         // A package deliberately storing nil provenance is still authoritative;
@@ -91,6 +100,25 @@ enum LocalProjectLoader {
             kind: storedMetadata?.kind ?? .general,
             isFavorite: storedMetadata?.isFavorite ?? false
         )
+    }
+
+    /// GitHub names archive folders `<repo>-<branch>`. Only that trailing branch
+    /// is removed, so `my-mainframe` keeps its name.
+    static func folderDisplayName(_ folder: String) -> String {
+        for suffix in ["-main", "-master"] where folder.count > suffix.count && folder.hasSuffix(suffix) {
+            return String(folder.dropLast(suffix.count))
+        }
+        return folder
+    }
+
+    /// `target` is Cargo's output folder only beside a manifest, or at the root
+    /// of the import. Anywhere else, like `src/target/`, it is ordinary source.
+    private static func isIgnoredDirectory(_ url: URL, root: URL) -> Bool {
+        guard ignoredDirectories.contains(url.lastPathComponent) else { return false }
+        guard url.lastPathComponent == "target" else { return true }
+        let parent = url.deletingLastPathComponent()
+        return parent.standardizedFileURL.path == root.standardizedFileURL.path
+            || FileManager.default.fileExists(atPath: parent.appending(path: "Cargo.toml").path)
     }
 
     private static func discoverCargoRoot(in importedURL: URL) throws -> URL {
@@ -154,7 +182,7 @@ enum LocalProjectLoader {
             }
             let isPreparedSource = url.lastPathComponent == "node_modules"
                 && hasPreparedBrowserSources(in: url.deletingLastPathComponent(), root: rootURL)
-            if values.isDirectory == true, ignoredDirectories.contains(url.lastPathComponent), !isPreparedSource, !preservingPackage {
+            if values.isDirectory == true, isIgnoredDirectory(url, root: rootURL), !isPreparedSource, !preservingPackage {
                 enumerator.skipDescendants()
                 continue
             }

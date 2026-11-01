@@ -33,7 +33,7 @@ struct WorkspaceRevision: Hashable, Sendable {
         )
     }
 
-    private static func sourceTreeHash(_ files: [String: String]) -> String {
+    static func sourceTreeHash(_ files: [String: String]) -> String {
         var hasher = SHA256()
         for path in files.keys.sorted() {
             absorb(path, into: &hasher)

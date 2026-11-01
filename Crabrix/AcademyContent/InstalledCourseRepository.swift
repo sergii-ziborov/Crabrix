@@ -4,26 +4,54 @@ import ImageIO
 
 /// Loads only activated, previously verified CoursePack directories.
 struct InstalledCourseRepository: CourseRepository {
+    /// An installed course that could not be opened. It stays in the index until
+    /// the learner removes or replaces it, and the other courses are unaffected.
+    struct UnavailableCourse: Identifiable, Equatable, Sendable {
+        let courseID: String
+        let language: String
+        let contentVersion: String
+        let reason: String
+        var id: String { courseID + "|" + language }
+    }
+
     let courses: [RustCourse]
     let loaded: [String: LoadedCourse]
+    let unavailable: [UnavailableCourse]
 
+    /// Isolates failure per course: a pack this version cannot decode, or one
+    /// damaged on disk, must not take down the rest of the Academy.
     init(root: URL, records: [InstalledCourseRecord], keyring: CourseKeyring) throws {
         var collected: [String: LoadedCourse] = [:]
+        var failed: [UnavailableCourse] = []
         var lessonIDs = Set<String>()
         for record in records {
-            let course = try Self.load(root: root, record: record, keyring: keyring)
-            guard collected[course.course.id] == nil else {
-                throw CoursePackError.manifestMismatch("duplicate course ID")
-            }
-            for lesson in course.course.units.flatMap(\.lessons) {
-                guard lessonIDs.insert(lesson.id).inserted else {
-                    throw CoursePackError.manifestMismatch("duplicate lesson \(lesson.id)")
+            do {
+                let course = try Self.load(root: root, record: record, keyring: keyring)
+                guard collected[course.course.id] == nil else {
+                    throw CoursePackError.manifestMismatch("duplicate course ID")
                 }
+                let ids = course.course.units.flatMap(\.lessons).map(\.id)
+                if let duplicate = ids.first(where: lessonIDs.contains) {
+                    throw CoursePackError.manifestMismatch("duplicate lesson \(duplicate)")
+                }
+                lessonIDs.formUnion(ids)
+                collected[course.course.id] = course
+            } catch {
+                failed.append(UnavailableCourse(
+                    courseID: record.courseID, language: record.language,
+                    contentVersion: record.contentVersion, reason: error.localizedDescription
+                ))
             }
-            collected[course.course.id] = course
         }
         loaded = collected
+        unavailable = failed
         courses = collected.values.sorted { $0.order < $1.order }.map(\.course)
+    }
+
+    /// Fully decodes one version without activating it, so an update this app
+    /// cannot read is refused while the working version is still in place.
+    static func validate(root: URL, record: InstalledCourseRecord, keyring: CourseKeyring) throws {
+        _ = try load(root: root, record: record, keyring: keyring)
     }
 
     func writing(for lessonID: String) -> RustLessonWriting? {

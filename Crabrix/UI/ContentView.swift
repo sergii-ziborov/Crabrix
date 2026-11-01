@@ -601,6 +601,7 @@ struct ContentView: View {
         .onChange(of: scenePhase) { _, phase in
             model.playgroundRuntime?.setForeground(phase == .active)
             if phase != .active { model.stopTypeScriptForBackground() }
+            if phase == .background { model.flushPendingAutosave() }
             guard phase == .active, !appLock.isLocked else { return }
             Task { await model.consumePendingSharedImport() }
         }
@@ -611,6 +612,15 @@ struct ContentView: View {
             selectedTab: $selectedBuildDockTab, navigationTarget: $editorNavigationTarget, keyboard: editorKeyboard))
         .modifier(RustSemanticPresentation(model: model, invocation: $semanticInvocation,
             selectedTab: $selectedBuildDockTab, navigation: $editorNavigationTarget, keyboard: editorKeyboard))
+        .onChange(of: model.resumableLessonID) { _, lessonID in
+            guard let lessonID else { return }
+            Task { await resumeLesson(lessonID) }
+        }
+        .onChange(of: academy.installedCourseIdentity) { _, _ in
+            // The lab's course may only just have been downloaded.
+            guard let lessonID = model.resumableLessonID else { return }
+            Task { await resumeLesson(lessonID) }
+        }
         .onChange(of: model.projectID) { _, _ in
             terminal.attach(to: model.exportProject())
             selectedBuildDockTab = ProcessInfo.processInfo.arguments.contains("--crabrix-auto-terminal")
@@ -738,7 +748,7 @@ struct ContentView: View {
     private func closeBuildWorkspace() {
         if model.debugActive { model.cancelBuild() }
         isWorkspaceOpen = false
-        if let lessonID = model.activeLessonID,
+        if let lessonID = model.activeLessonID, !model.activeLessonWasResumed,
            let course = academy.repository?.course(containing: lessonID) {
             selectedDestination = .learn
             learningPath = [.course(course.id), .lesson(lessonID)]
@@ -799,6 +809,19 @@ struct ContentView: View {
         } }
         model.beginLesson(lesson.id, isReview: isReview, content: content)
         openCodeWorkspace()
+    }
+
+    /// A lab reopened from My Projects keeps the learner's files. Only its link
+    /// to the lesson comes back, so the harness and evidence work again.
+    private func resumeLesson(_ lessonID: String) async {
+        await academy.prepare()
+        guard model.resumableLessonID == lessonID,
+              let repository = academy.repository,
+              let lesson = repository.lesson(id: lessonID),
+              let session = CourseSession(lessonID: lessonID, repository: repository),
+              let content = CourseLessonExecution(lesson: lesson, session: session)
+        else { return }
+        model.resumeLesson(content: content, starterFiles: repository.starterProject(for: lessonID)?.files)
     }
 
     private func editorPane(fixedSidebar: Bool, hingeGlobalY: CGFloat) -> some View {

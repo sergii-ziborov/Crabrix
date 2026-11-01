@@ -220,8 +220,48 @@ enum CrabrixProjectArchive {
             .appending(path: "CrabrixArchiveImport-\(UUID().uuidString)", directoryHint: .isDirectory)
         defer { try? fileManager.removeItem(at: workURL) }
         try fileManager.createDirectory(at: workURL, withIntermediateDirectories: true)
-        try fileManager.unzipItem(at: archiveURL, to: workURL)
-        return try LocalProjectLoader.load(from: workURL, provenance: .files())
+        try expand(archiveURL, to: workURL, maximumBytes: maximumArchiveBytes) { ArchiveError.archiveTooLarge }
+        return try LocalProjectLoader.load(
+            from: workURL, provenance: .files(),
+            fallbackName: archiveURL.deletingPathExtension().lastPathComponent
+        )
+    }
+
+    /// The sizes in a ZIP's directory are claims made by whoever built it, and
+    /// inflating a stream is bounded only by its compressed length. So the bytes
+    /// are counted as they arrive, and an entry stops at the size it declared.
+    static func expand(
+        _ archiveURL: URL, to destination: URL, maximumBytes: UInt64,
+        tooLarge: @escaping () -> Error
+    ) throws {
+        let fileManager = FileManager.default
+        let archive = try Archive(url: archiveURL, accessMode: .read)
+        let root = destination.standardizedFileURL.path + "/"
+        var total: UInt64 = 0
+        for entry in archive where entry.type != .symlink {
+            let output = destination.appending(path: entry.path).standardizedFileURL
+            guard output.path.hasPrefix(root) else { throw ArchiveError.unsafePath(entry.path) }
+            if entry.type == .directory {
+                try fileManager.createDirectory(at: output, withIntermediateDirectories: true)
+                continue
+            }
+            try fileManager.createDirectory(at: output.deletingLastPathComponent(), withIntermediateDirectories: true)
+            guard fileManager.createFile(atPath: output.path, contents: nil) else {
+                throw ArchiveError.unsafePath(entry.path)
+            }
+            let handle = try FileHandle(forWritingTo: output)
+            defer { try? handle.close() }
+            var written: UInt64 = 0
+            let checksum = try archive.extract(entry, bufferSize: 64 * 1024) { chunk in
+                written += UInt64(chunk.count)
+                total += UInt64(chunk.count)
+                guard written <= entry.uncompressedSize, total <= maximumBytes else { throw tooLarge() }
+                try handle.write(contentsOf: chunk)
+            }
+            guard written == entry.uncompressedSize, checksum == entry.checksum else {
+                throw ArchiveError.unsafePath(entry.path)
+            }
+        }
     }
 
     static func removeTemporaryArchive(at archiveURL: URL) {

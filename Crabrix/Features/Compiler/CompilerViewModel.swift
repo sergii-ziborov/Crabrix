@@ -294,6 +294,20 @@ final class CompilerViewModel: ObservableObject {
     private var unresolvedDiagnosticEvidence: (signature: String, beforeHash: String)?
     private var activeLessonInitialSourceTreeHash: String?
     private var activeLessonObservedDiagnosticCodes: Set<String> = []
+    /// The code "Apply to main.rs" produced in this lesson, as a fingerprint.
+    /// Running exactly that proves the app can make the repair, not that the
+    /// learner can. Stored per project, so reopening the lab does not forget it.
+    private(set) var activeLessonAutomaticRepairFingerprint: String?
+    /// True for a lab reattached from My Projects rather than opened from its
+    /// lesson, so closing it returns to where the learner came from.
+    @Published private(set) var activeLessonWasResumed = false
+    /// When each lesson was last reset. A lab started before that belongs to the
+    /// progress the learner chose to discard, so it stays an ordinary project.
+    private var lessonResetDates: [String: Double] = [:]
+    /// One token per opened lab, not per Run. The program cache is keyed by source
+    /// and has no eviction, so a new token on every Run would rebuild unchanged code
+    /// and leave another artifact behind each time. The learner never sees it either way.
+    private var activeLessonHarnessNonce = LessonHarnessNonce.make()
     @Published private(set) var playgroundSession: PlaygroundLiveSession?
     @Published private(set) var playgroundRuntime: PlaygroundRuntimeHost?
     @Published private(set) var playgroundStatus = ""
@@ -308,6 +322,9 @@ final class CompilerViewModel: ObservableObject {
     private var diagnosticAdviceTask: Task<Void, Never>?
     private var diagnosticAdviceRevision: WorkspaceRevision?
     private var autosaveTask: Task<Void, Never>?
+    /// Set by `importGitHub` before it reports a failure, so the shared queue can
+    /// tell a link worth retrying from one that will never import.
+    private var lastGitHubImportFailureWasTransient = true
     private var autosaveRequestID: UUID?
     private var saveQueue: Task<Void, Never>?
     private var latestProjectSnapshots: [UUID: CrabrixProject] = [:]
@@ -336,6 +353,8 @@ final class CompilerViewModel: ObservableObject {
     private static let completedLessonsKey = "crabrix.learn.completedLessonIDs"
     private static let lessonAnswersKey = "crabrix.learn.lessonAnswerIndices"
     private static let lessonEvidenceKey = "crabrix.learn.attemptEvidence.v1"
+    private static let automaticRepairsKey = "crabrix.learn.automaticRepairs.v1"
+    private static let lessonResetDatesKey = "crabrix.learn.lessonResetDates.v1"
     private static let appleIntelligenceDiagnosticsKey = "crabrix.appleIntelligenceDiagnostics"
 
     init(
@@ -361,6 +380,7 @@ final class CompilerViewModel: ObservableObject {
         completedLessonIDs = Set(userDefaults.stringArray(forKey: Self.completedLessonsKey) ?? [])
         lessonAnswerIndices = (userDefaults.dictionary(forKey: Self.lessonAnswersKey) ?? [:])
             .compactMapValues { ($0 as? NSNumber)?.intValue }
+        lessonResetDates = userDefaults.dictionary(forKey: Self.lessonResetDatesKey) as? [String: Double] ?? [:]
         lessonAttemptEvidence = userDefaults.data(forKey: Self.lessonEvidenceKey)
             .flatMap { try? JSONDecoder().decode([LessonAttemptEvidence].self, from: $0) }
             ?? []
@@ -510,8 +530,9 @@ final class CompilerViewModel: ObservableObject {
                     try LocalProjectLoader.load(from: url, provenance: .files())
                 }
             }.value
+            let imported = await importedCopy(of: project)
             guard isCurrent(revision) else { return }
-            loadProject(project)
+            loadProject(imported)
             projectTransfer = .ready("Opened \(project.files.count) files from Files.")
         } catch {
             guard isCurrent(revision) else { return }
@@ -527,7 +548,8 @@ final class CompilerViewModel: ObservableObject {
             .map { "\($0.owner)/\($0.repository)" } ?? "repository"
         projectTransfer = .importingGitHub(label)
         do {
-            let project = try await githubImporter.importProject(from: rawURL)
+            let imported = try await githubImporter.importProject(from: rawURL)
+            let project = await importedCopy(of: imported)
             guard isCurrent(revision) else { return false }
             loadProject(project)
             projectTransfer = .ready("Imported \(project.files.count) files from GitHub.")
@@ -535,15 +557,41 @@ final class CompilerViewModel: ObservableObject {
         } catch {
             guard isCurrent(revision) else { return false }
             projectTransfer = .failed(error.localizedDescription)
+            lastGitHubImportFailureWasTransient = GitHubProjectImporter.isTransient(error)
             return false
         }
     }
 
+    /// A package carries the project ID it was exported with. Opening an old
+    /// export must never replace the project that has since moved on, so an ID
+    /// already in use gets a separate copy instead.
+    private func importedCopy(of project: CrabrixProject) async -> CrabrixProject {
+        let unbound = project.withoutLessonBinding()
+        let isTaken = await projectLibrary.containsProject(id: project.id)
+        return isTaken || project.id == projectID ? unbound.copyWithNewIdentity() : unbound
+    }
+
     func consumePendingSharedImport() async {
         guard !isProjectOperationInProgress else { return }
-        guard let rawURL = SharedImportQueue.dequeue() else { return }
-        if let link = try? PlaygroundLink.parse(rawURL) { await openPlayground(link) }
-        else { await importGitHub(rawURL) }
+        guard let rawURL = SharedImportQueue.peek() else { return }
+        await consumeSharedImport(rawURL)
+    }
+
+    /// The queue keeps a link until it has been handled. Only a failure that a
+    /// later attempt could fix, such as being offline, leaves it there. A link
+    /// GitHub rejects would otherwise block the queue with the same error forever.
+    func consumeSharedImport(
+        _ rawURL: String,
+        remove: (String) -> Void = SharedImportQueue.remove
+    ) async {
+        if let link = try? PlaygroundLink.parse(rawURL) {
+            await openPlayground(link)
+            remove(rawURL)
+            return
+        }
+        lastGitHubImportFailureWasTransient = true
+        let imported = await importGitHub(rawURL)
+        if imported || !lastGitHubImportFailureWasTransient { remove(rawURL) }
     }
 
     private func playgroundDocument(files proposedFiles: [String: String]? = nil) throws -> PlaygroundDocument {
@@ -665,6 +713,17 @@ final class CompilerViewModel: ObservableObject {
     func leavePlayground() {
         playgroundRuntime?.stop(); playgroundRuntime = nil
         playgroundSession?.stop(); playgroundSession = nil; playgroundSelections = []; playgroundLocalSelection = nil; playgroundStatus = ""
+        clearSharedDebugState()
+    }
+
+    /// The room owns a debugger with no local compilation behind it. Its final
+    /// callback is dropped once the session is gone, so leaving has to clear this
+    /// or the editor stays read-only and the next Run reuses a stale session.
+    /// A debugger this device started itself belongs to `cancelBuild`.
+    func clearSharedDebugState() {
+        guard debugActive || debugSession != nil, activeCompilationID == nil else { return }
+        debugSession?.stop(); debugSession = nil; debugSessionID = nil
+        debugActive = false; debugPause = nil; debugSites = []
     }
 
     func sharePlaygroundSelection(file: String, range: NSRange) {
@@ -812,6 +871,7 @@ final class CompilerViewModel: ObservableObject {
         latestProjectSnapshots.removeValue(forKey: projectID)
         do {
             try await projectLibrary.delete(projectID: projectID)
+            recordAutomaticRepair(nil, projectID: projectID)
             await reloadProjectLists()
             if projectID == self.projectID {
                 loadProject(
@@ -1002,7 +1062,7 @@ final class CompilerViewModel: ObservableObject {
         }
         var projectFiles = project.supporting
         projectFiles[project.entryPath] = project.main
-        let compilerProject = mode == .testing ? project : compilerProjectSnapshot(from: project)
+        let (compilerProject, harnessRun) = lessonCompilation(of: project, mode: mode)
         let manifestSource = manifestSource(in: project)
         let lockfileSource = project.entryPath == "Cargo.lock"
             ? project.main
@@ -1167,7 +1227,7 @@ final class CompilerViewModel: ObservableObject {
                         projectFiles: projectFiles, resourceFiles: resourceFiles,
                         revision: revision
                     )
-                    guard activeCompilationID == compilationID, isCurrent(revision) else {
+                    guard !Task.isCancelled, activeCompilationID == compilationID, isCurrent(revision) else {
                         discardCompilationIfActive(compilationID)
                         return
                     }
@@ -1184,7 +1244,10 @@ final class CompilerViewModel: ObservableObject {
                     }
                     plan = snapshot.plan
                 } catch {
-                    guard activeCompilationID == compilationID, isCurrent(revision) else {
+                    // Stop keeps the active identity until the worker drains, so
+                    // only the cancellation says this is not a resolution failure.
+                    guard !Task.isCancelled, !(error is CancellationError),
+                          activeCompilationID == compilationID, isCurrent(revision) else {
                         discardCompilationIfActive(compilationID)
                         return
                     }
@@ -1289,7 +1352,13 @@ final class CompilerViewModel: ObservableObject {
                 }
             }
             if !plan.isEmpty { cargoStage = .ready }
-            finish(value, revision: revision, recordsLearningEvidence: mode != .testing, isDebugExecution: debugging)
+            var harnessCompleted: Bool?
+            if let harnessRun, value.phase == .run {
+                let revealed = LessonHarnessNonce.reveal(stdout: value.stdout, run: harnessRun)
+                value = value.replacingStdout(revealed.stdout)
+                harnessCompleted = revealed.completed
+            }
+            finish(value, revision: revision, recordsLearningEvidence: mode != .testing, isDebugExecution: debugging, harnessCompleted: harnessCompleted)
             if mode == .running, plan.isEmpty, resourceFiles.isEmpty {
                 var sharedFiles = compilerProject.supporting; sharedFiles[compilerProject.entryPath] = compilerProject.main
                 playgroundRuntime?.reportLocalResult(value, entry: compilerProject.entryPath, files: sharedFiles, edition: rootEdition)
@@ -1328,6 +1397,22 @@ final class CompilerViewModel: ObservableObject {
     /// Algorithm learners edit only `solution.rs`. Inputs and expected values
     /// are inserted as an app-private main module for this compilation, so the
     /// editable project cannot pass by copying a literal from its own harness.
+    private func lessonCompilation(
+        of project: (entryPath: String, main: String, supporting: [String: String]),
+        mode: Activity
+    ) -> (project: (entryPath: String, main: String, supporting: [String: String]), harness: LessonHarnessNonce.Run?) {
+        guard mode != .testing else { return (project, nil) }
+        var snapshot = compilerProjectSnapshot(from: project)
+        guard mode == .running, activeLessonID != nil, let challenge = activeLessonContent?.challenge,
+              let instrumented = LessonHarnessNonce.instrument(
+                  verificationSource: challenge.verificationSource,
+                  expectedOutput: challenge.expectedOutput,
+                  nonce: activeLessonHarnessNonce
+              ) else { return (snapshot, nil) }
+        snapshot.main = instrumented.source
+        return (snapshot, instrumented.run)
+    }
+
     private func compilerProjectSnapshot(
         from project: (entryPath: String, main: String, supporting: [String: String])
     ) -> (entryPath: String, main: String, supporting: [String: String]) {
@@ -1795,9 +1880,54 @@ final class CompilerViewModel: ObservableObject {
         activeLessonIsReview = isReview
         activeLessonInitialSourceTreeHash = workspaceRevision.sourceTreeHash
         activeLessonObservedDiagnosticCodes = []
+        activeLessonAutomaticRepairFingerprint = nil
+        activeLessonWasResumed = false
+        activeLessonHarnessNonce = LessonHarnessNonce.make()
         lessonEvidenceMessage = isReview
             ? "Review mode — evidence may be rerun, but rewards stay unchanged."
             : nil
+    }
+
+    /// The lesson this open project was started from, if it is a lab that can
+    /// still earn evidence. Replay copies and example projects never could.
+    var resumableLessonID: String? {
+        guard activeLessonID == nil, let provenance, let origin = provenance.course, origin.isLessonLab
+        else { return nil }
+        if let reset = lessonResetDates[origin.lessonID],
+           provenance.importedAt.timeIntervalSince1970 <= reset { return nil }
+        return origin.lessonID
+    }
+
+    /// Reattaches a lab project reopened from My Projects or after a relaunch.
+    /// The learner's files stay as they are; "unchanged" is measured against the
+    /// lesson's starter, so work they already did counts on the next Run.
+    func resumeLesson(content: CourseLessonExecution, starterFiles: [String: String]?) {
+        guard resumableLessonID == content.lesson.id else { return }
+        let id = content.lesson.id
+        beginLesson(id, isReview: completedLessonIDs.contains(id), content: content)
+        let starter = starterFiles ?? content.challenge.map { [entryFile: $0.source] }
+        activeLessonInitialSourceTreeHash = starter.map(WorkspaceRevision.sourceTreeHash)
+        activeLessonWasResumed = true
+        if let applied = storedAutomaticRepairs[projectID.uuidString] {
+            if applied == LessonSourceText.fingerprint(in: currentProject().files) {
+                activeLessonAutomaticRepairFingerprint = applied
+            } else {
+                recordAutomaticRepair(nil)
+            }
+        }
+    }
+
+    private var storedAutomaticRepairs: [String: String] {
+        userDefaults.dictionary(forKey: Self.automaticRepairsKey) as? [String: String] ?? [:]
+    }
+
+    private func recordAutomaticRepair(_ fingerprint: String?, projectID: UUID? = nil) {
+        if (projectID ?? self.projectID) == self.projectID {
+            activeLessonAutomaticRepairFingerprint = fingerprint
+        }
+        var stored = storedAutomaticRepairs
+        stored[(projectID ?? self.projectID).uuidString] = fingerprint
+        userDefaults.set(stored, forKey: Self.automaticRepairsKey)
     }
 
     func completeLesson(_ id: String) {
@@ -1813,10 +1943,14 @@ final class CompilerViewModel: ObservableObject {
         lessonAnswerIndices = lessonAnswerIndices.filter { !lessonIDs.contains($0.key) }
         persistCompletedLessons()
         userDefaults.set(lessonAnswerIndices, forKey: Self.lessonAnswersKey)
+        let now = Date().timeIntervalSince1970
+        for id in lessonIDs { lessonResetDates[id] = now }
+        userDefaults.set(lessonResetDates, forKey: Self.lessonResetDatesKey)
         if let activeLessonID, lessonIDs.contains(activeLessonID) {
             self.activeLessonID = nil
             activeLessonContent = nil
             activeLessonIsReview = false
+            activeLessonWasResumed = false
             lessonEvidenceMessage = nil
         }
     }
@@ -2241,7 +2375,7 @@ final class CompilerViewModel: ObservableObject {
         if !isApplyingPlayground { leavePlayground() }
         if isBusy { cancelBuild() }
         resetDiagnosticAdvice()
-        autosaveTask?.cancel()
+        flushPendingAutosave()
         suppressAutosave = true
         projectID = id
         projectResourceDigest = resourceTreeHash
@@ -2291,6 +2425,8 @@ final class CompilerViewModel: ObservableObject {
         activeLessonIsReview = false
         activeLessonInitialSourceTreeHash = nil
         activeLessonObservedDiagnosticCodes = []
+        activeLessonAutomaticRepairFingerprint = nil
+        activeLessonWasResumed = false
         lessonEvidenceMessage = nil
         resetCargoWorkspace()
         suppressAutosave = false
@@ -2346,6 +2482,12 @@ final class CompilerViewModel: ObservableObject {
         resetDiagnosticAdvice()
         source = repaired
         result = nil
+        // Also before a reopened lab rebinds, or the app's fix could earn it later.
+        var repairsLesson = resumableLessonID != nil
+        if case .repair = activeLessonContent?.evidence { repairsLesson = true }
+        if repairsLesson {
+            recordAutomaticRepair(LessonSourceText.fingerprint(in: currentProject().files))
+        }
     }
 
     func recordWebPreviewFailure(snapshotID: String, failure: WebPreviewFailure) {
@@ -2703,7 +2845,7 @@ final class CompilerViewModel: ObservableObject {
         return report.rendered
     }
 
-    private func finish(_ value: CompilationResult, revision: WorkspaceRevision, recordsLearningEvidence: Bool = true, isDebugExecution: Bool = false, browserTypeCheckVersion: String? = nil, executionKind: ProjectExecutionKind = .rust, compilerEntryFile: String? = nil) {
+    private func finish(_ value: CompilationResult, revision: WorkspaceRevision, recordsLearningEvidence: Bool = true, isDebugExecution: Bool = false, browserTypeCheckVersion: String? = nil, executionKind: ProjectExecutionKind = .rust, compilerEntryFile: String? = nil, harnessCompleted: Bool? = nil) {
         guard isCurrent(revision) else { return }
         typeScriptCheckPending = false
         debugSession = nil; debugSessionID = nil; debugActive = false; debugPause = nil
@@ -2768,7 +2910,9 @@ final class CompilerViewModel: ObservableObject {
                 project: currentProject(),
                 initialSourceTreeHash: activeLessonInitialSourceTreeHash,
                 currentSourceTreeHash: revision.sourceTreeHash,
-                observedDiagnosticCodes: activeLessonObservedDiagnosticCodes
+                observedDiagnosticCodes: activeLessonObservedDiagnosticCodes,
+                automaticRepairFingerprint: activeLessonAutomaticRepairFingerprint,
+                harnessCompleted: harnessCompleted
             )
             lessonEvidenceMessage = validation.detail
             appendLessonAttemptEvidence(
@@ -2863,8 +3007,9 @@ final class CompilerViewModel: ObservableObject {
         do {
             recentProjects = try await projectLibrary.items()
             allProjects = try await projectLibrary.allItems()
-            projectReadFailures = await projectLibrary.readFailures()
         } catch { projectTransfer = .failed("Cannot read the saved project library: " + error.localizedDescription) }
+        // Set even after a failure above: this is what offers the rescue export.
+        projectReadFailures = await projectLibrary.readFailures()
     }
 
     private func isCurrentSource(_ revision: WorkspaceRevision) -> Bool {
@@ -2891,6 +3036,12 @@ final class CompilerViewModel: ObservableObject {
 
     private func workspaceDidChange() {
         guard !suppressAutosave else { return }
+        // Undoing Apply moves away from the app's fix, so whatever fixes it next,
+        // even the identical line move, is the learner's own.
+        if let applied = activeLessonAutomaticRepairFingerprint,
+           applied != LessonSourceText.fingerprint(in: currentProject().files) {
+            recordAutomaticRepair(nil)
+        }
         semanticUndo = nil
         if debugActive || typeScriptCheckPending { cancelBuild() }
         if !isApplyingPlayground, let connection = playgroundSession {
@@ -2917,6 +3068,18 @@ final class CompilerViewModel: ObservableObject {
     /// Source edits are persisted after a short quiet period. The durable
     /// ProjectStore writes an atomic snapshot, so editing does not depend on a
     /// later Build or explicit export to survive relaunch.
+    /// Saves edits still waiting out the quiet period. Called before the project
+    /// is replaced and when the scene leaves the foreground; the save itself
+    /// touches nothing but storage and the save status, so focus is unaffected.
+    func flushPendingAutosave() {
+        guard let pending = autosaveTask else { return }
+        pending.cancel()
+        autosaveTask = nil
+        let project = currentProject()
+        let build = lastBuild
+        Task { await remember(project, lastBuild: build) }
+    }
+
     private func scheduleAutosave() {
         guard !suppressAutosave else { return }
         autosaveTask?.cancel()
@@ -3340,7 +3503,7 @@ extension CompilerViewModel {
                 try ProjectFilePolicy.verify(metadata.fileDigests, files: files)
                 let entry = files[metadata.entryFile] == nil ? LocalProjectLoader.preferredEntryFile(in: files) : metadata.entryFile
                 let project = CrabrixProject(id: id, name: metadata.name, files: files, entryFile: entry,
-                    provenance: metadata.provenance, projectDescription: metadata.projectDescription ?? "",
+                    provenance: metadata.provenance?.withoutLessonBinding, projectDescription: metadata.projectDescription ?? "",
                     tags: metadata.tags ?? [], folder: metadata.folder, kind: metadata.kind ?? .general, isFavorite: metadata.isFavorite ?? false)
                 let saved = try await projectLibrary.update(project: project, lastBuild: nil)
                 persisted = true

@@ -859,6 +859,144 @@ final class BundledCompilerGateTests: XCTestCase {
     }
 
     @MainActor
+    private func lessonContent(
+        _ lessonID: String
+    ) async throws -> (content: CourseLessonExecution, session: CourseSession, repository: InstalledCourseRepository) {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        let repository = try await CourseBootstrap(
+            bundle: .main, root: root, appVersion: SemanticVersion("1.1")
+        ).activateBundledBaseline()
+        let session = try XCTUnwrap(CourseSession(lessonID: lessonID, repository: repository))
+        let lesson = try XCTUnwrap(repository.lesson(id: lessonID))
+        return (try XCTUnwrap(CourseLessonExecution(lesson: lesson, session: session)), session, repository)
+    }
+
+    /// The first pattern's real answer, from `testAlgorithmSolutionRunsOnlyThroughThePrivateHarness`.
+    private static let firstPatternBody = """
+        let values: Vec<i32> = input
+            .trim()
+            .trim_matches(['[', ']'])
+            .split(',')
+            .map(|part| part.trim().parse().unwrap())
+            .collect();
+        values.iter().position(|value| *value < 0)
+            .map(|index| index.to_string())
+            .unwrap_or_else(|| (-1).to_string())
+    """
+
+    @MainActor
+    func testChallengeEvidenceThroughTheRealHarness() async throws {
+        try Self.requireCompilerGate()
+        let pattern = try XCTUnwrap(AlgorithmCourseCatalog.patterns.first)
+        let lessonID = pattern.lessonID(.challenge)
+        let (content, session, repository) = try await lessonContent(lessonID)
+        let template = try XCTUnwrap(repository.starterProject(for: lessonID))
+        let verdict = try XCTUnwrap(content.challenge).expectedOutput
+        let model = makeRegressionModel()
+
+        // Printing the verdict and exiting before the harness compared anything.
+        model.loadCourseStarter(template, session: session)
+        model.beginLesson(lessonID, content: content)
+        model.source = """
+        pub fn solve(input: &str) -> String {
+            let _ = input;
+            println!("\(verdict.trimmingCharacters(in: .newlines))");
+            std::process::exit(0)
+        }
+        """
+        model.run()
+        try await waitForBuild(model)
+        XCTAssertTrue(model.result?.succeeded == true, model.result?.detail ?? "No result")
+        XCTAssertEqual(model.result?.stdout, verdict)
+        XCTAssertFalse(model.completedLessonIDs.contains(lessonID))
+        XCTAssertTrue(model.lessonEvidenceMessage?.contains("harness") == true, model.lessonEvidenceMessage ?? "No message")
+
+        // A correct solution with a stray debug line, renamed parameter and a
+        // restricted visibility. The visible output carries no token.
+        model.source = """
+        // todo!("implement this later") is only a comment now.
+        pub(crate) fn solve(s: &str) -> String {
+            let input = s;
+            println!("debugging {input:?}");
+        \(Self.firstPatternBody)
+        }
+        """
+        model.run()
+        try await waitForBuild(model)
+        XCTAssertTrue(model.result?.succeeded == true, model.result?.detail ?? "No result")
+        XCTAssertTrue(model.result?.stdout.hasSuffix("\n" + verdict) == true, model.result?.stdout ?? "")
+        XCTAssertTrue(model.completedLessonIDs.contains(lessonID), model.lessonEvidenceMessage ?? "No message")
+    }
+
+    @MainActor
+    func testReopenedLabRunsTheHarnessAndEarnsEvidence() async throws {
+        try Self.requireCompilerGate()
+        let pattern = try XCTUnwrap(AlgorithmCourseCatalog.patterns.first)
+        let lessonID = pattern.lessonID(.challenge)
+        let (content, session, repository) = try await lessonContent(lessonID)
+        let template = try XCTUnwrap(repository.starterProject(for: lessonID))
+        let model = makeRegressionModel()
+        model.loadCourseStarter(template, session: session)
+        model.beginLesson(lessonID, content: content)
+        let labID = model.projectID
+        model.source = "pub fn solve(input: &str) -> String {\n\(Self.firstPatternBody)\n}\n"
+        let work = model.source
+        await model.retryProjectSave()
+
+        model.loadRunnableSample(projectName: "elsewhere")
+        let reopened = await model.openRecentProject(id: labID)
+        XCTAssertTrue(reopened)
+        XCTAssertEqual(model.resumableLessonID, lessonID)
+        model.resumeLesson(content: content, starterFiles: template.files)
+        XCTAssertEqual(model.source, work)
+
+        // Without the binding this file has no main and cannot even compile.
+        model.run()
+        try await waitForBuild(model)
+        XCTAssertTrue(model.result?.succeeded == true, model.result?.detail ?? "No result")
+        XCTAssertTrue(model.completedLessonIDs.contains(lessonID), model.lessonEvidenceMessage ?? "No message")
+    }
+
+    @MainActor
+    func testAppliedRepairNeedsLearnerEvidenceButAnEarlyFixDoesNot() async throws {
+        try Self.requireCompilerGate()
+        let (content, _, _) = try await lessonContent("borrowing")
+        let model = makeRegressionModel()
+        model.loadBorrowDiagnosticSample()
+        model.beginLesson("borrowing", content: content)
+        let starter = model.source
+        model.run()
+        try await waitForBuild(model)
+        XCTAssertEqual(model.primaryDiagnostic?.code, "E0502")
+
+        model.applyRepair()
+        let applied = model.source
+        XCTAssertNotEqual(applied, starter)
+        model.run()
+        try await waitForBuild(model)
+        XCTAssertTrue(model.result?.succeeded == true, model.result?.detail ?? "No result")
+        XCTAssertFalse(model.completedLessonIDs.contains("borrowing"))
+        XCTAssertTrue(model.lessonEvidenceMessage?.contains("Apply to main.rs") == true, model.lessonEvidenceMessage ?? "No message")
+
+        // Undo without running, then the same line move by hand.
+        model.source = starter
+        model.source = applied
+        model.run()
+        try await waitForBuild(model)
+        XCTAssertTrue(model.completedLessonIDs.contains("borrowing"), model.lessonEvidenceMessage ?? "No message")
+
+        // A repair made before the program was ever run is just as valid.
+        let early = makeRegressionModel()
+        early.loadBorrowDiagnosticSample()
+        early.beginLesson("borrowing", content: content)
+        early.source = applied
+        early.run()
+        try await waitForBuild(early)
+        XCTAssertTrue(early.completedLessonIDs.contains("borrowing"), early.lessonEvidenceMessage ?? "No message")
+    }
+
+    @MainActor
     func testSuccessfulLessonRunClearsPreviousErrorWithoutCompletingLesson() async throws {
         try Self.requireCompilerGate()
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)

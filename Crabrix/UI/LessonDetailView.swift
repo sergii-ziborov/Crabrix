@@ -1,6 +1,32 @@
 import SwiftUI
 
-private func lessonFormattedText(
+/// In prose, a `*` touching a value on both sides is multiplication. Left for
+/// Markdown, `O(rows*cols) time, O(rows*cols) space` loses both signs and
+/// italicises everything between them. `**bold**` and `*emphasis*` still parse,
+/// because their markers have a space or a line boundary on one side.
+enum LessonProseFormatting {
+    static func escapingMultiplicationSigns(_ prose: String) -> String {
+        guard prose.contains("*") else { return prose }
+        let characters = Array(prose)
+        var result = ""
+        result.reserveCapacity(prose.count)
+        for (index, character) in characters.enumerated() {
+            if character == "*", index > 0, index + 1 < characters.count,
+               isOperand(characters[index - 1], closing: true),
+               isOperand(characters[index + 1], closing: false) {
+                result.append("\\")
+            }
+            result.append(character)
+        }
+        return result
+    }
+
+    private static func isOperand(_ character: Character, closing: Bool) -> Bool {
+        character.isLetter || character.isNumber || character == (closing ? ")" : "(")
+    }
+}
+
+func lessonFormattedText(
     _ paragraph: String,
     plainColor: Color = CrabrixTheme.muted
 ) -> Text {
@@ -12,7 +38,7 @@ private func lessonFormattedText(
         let (index, part) = element
         if index.isMultiple(of: 2) {
             let prose = (try? AttributedString(
-                markdown: String(part),
+                markdown: LessonProseFormatting.escapingMultiplicationSigns(String(part)),
                 options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
             )) ?? AttributedString(String(part))
             return result + Text(prose).foregroundColor(plainColor)
@@ -114,12 +140,13 @@ struct LessonDetailView: View {
         self.onComplete = onComplete
         self.onShowAchievements = onShowAchievements
         self.onAnswer = onAnswer
-        // Older installations did not persist the chosen answer. A completed
-        // lesson still opens as answered, using its known correct choice.
-        let correct = writing.correctAnswer
-        let restored = savedAnswer ?? (isCompleted ? correct : nil)
-        _selectedAnswer = State(initialValue: restored == correct ? correct : nil)
-        _lastWrongAnswer = State(initialValue: restored == correct ? nil : restored)
+        // Older installations did not persist the chosen answer, and a pack can
+        // move the correct one. A completed lesson opens as answered regardless.
+        let restored = LessonAnswerRestoration.state(
+            savedAnswer: savedAnswer, isCompleted: isCompleted, correctAnswer: writing.correctAnswer
+        )
+        _selectedAnswer = State(initialValue: restored.selected)
+        _lastWrongAnswer = State(initialValue: restored.lastWrong)
     }
 
     var body: some View {
@@ -362,8 +389,11 @@ struct LessonDetailView: View {
                 formattedParagraph(practice.question, plainColor: CrabrixTheme.primary)
                     .font(.title3.bold())
 
-                ForEach(Array(practice.answers.enumerated()), id: \.offset) { index, answer in
-                    answerButton(answer, at: index)
+                ForEach(
+                    Array(LessonAnswerOrder.displayOrder(lessonID: lesson.id, count: practice.answers.count).enumerated()),
+                    id: \.element
+                ) { position, index in
+                    answerButton(practice.answers[index], at: index, displayPosition: position)
                 }
 
                 if !isQuickCheckAnswered {
@@ -410,8 +440,7 @@ struct LessonDetailView: View {
                         .fixedSize(horizontal: false, vertical: true)
                     if wrongAttempts > 1, let index = firstWrongChoice {
                         Divider().overlay(CrabrixTheme.border)
-                        Text("“\(practice.answers[index])” is the assumption to drop.")
-                            .foregroundStyle(CrabrixTheme.muted)
+                        formattedParagraph("“\(practice.answers[index])” is the assumption to drop.")
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -428,7 +457,7 @@ struct LessonDetailView: View {
                     systemImage: "exclamationmark.bubble.fill",
                     tint: CrabrixTheme.amber
                 ) {
-                    Text("“\(practice.answers[trap])”")
+                    formattedParagraph("“\(practice.answers[trap])”", plainColor: CrabrixTheme.primary)
                         .font(.headline)
                         .strikethrough(color: CrabrixTheme.coral)
                         .fixedSize(horizontal: false, vertical: true)
@@ -469,7 +498,9 @@ struct LessonDetailView: View {
                     .font(.headline)
                     .fixedSize(horizontal: false, vertical: true)
                 Label(
-                    "Predict first. Compiler or observable behaviour is the evidence; a guess is not.",
+                    isLive
+                        ? "Predict first. Compiler or observable behaviour is the evidence; a guess is not."
+                        : "Predict first, then try it in a project of your own. The app does not check this challenge.",
                     systemImage: "checkmark.seal.fill"
                 )
                 .font(.subheadline)
@@ -501,7 +532,7 @@ struct LessonDetailView: View {
         }
     }
 
-    private func answerButton(_ answer: String, at index: Int) -> some View {
+    private func answerButton(_ answer: String, at index: Int, displayPosition: Int) -> some View {
         let isSelected = selectedAnswer == index || lastWrongAnswer == index
         return Button {
             guard !isCompleted, selectedAnswer == nil else { return }
@@ -522,7 +553,7 @@ struct LessonDetailView: View {
             answerScrollVersion += 1
         } label: {
             HStack(spacing: 12) {
-                Text(String(UnicodeScalar(65 + index)!))
+                Text(String(UnicodeScalar(65 + displayPosition)!))
                     .font(.caption.monospaced().bold())
                     .foregroundStyle(isSelected ? CrabrixTheme.onAccent : CrabrixTheme.muted)
                     .frame(width: 28, height: 28)
@@ -715,9 +746,8 @@ private struct LessonPageHeading: View {
                     .foregroundStyle(tint)
                 Text(title)
                     .font(.system(size: 30, weight: .heavy, design: .rounded))
-                Text(subtitle)
+                lessonFormattedText(subtitle)
                     .font(.subheadline)
-                    .foregroundStyle(CrabrixTheme.muted)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 0)
@@ -811,7 +841,9 @@ private extension RustLesson {
             summary: writing.summary,
             explanation: writing.explanation,
             example: RustLessonExample(caption: writing.exampleCaption, code: writing.exampleCode),
-            objectives: [concept, "Read the relevant compiler evidence", "Make one intentional code change"],
+            objectives: hasCompilerLab
+                ? [concept, "Read the relevant compiler evidence", "Make one intentional code change"]
+                : [concept, "Read the example and predict what it does", "Answer the quick check"],
             task: writing.task,
             success: writing.success,
             systemImage: lessonIcon,

@@ -87,6 +87,20 @@ actor CourseDownloadManager {
         return (descriptor, archiveURL)
     }
 
+    /// Downloads are named by archive digest. Removes every one, finished or
+    /// partial, whose digest is not listed. Resumable work is still listed.
+    func removeDownloads(keeping digests: Set<String>) {
+        let files = (try? FileManager.default.contentsOfDirectory(
+            at: cacheRoot, includingPropertiesForKeys: nil
+        )) ?? []
+        for file in files {
+            let digest = file.lastPathComponent.split(separator: ".").first.map(String.init) ?? ""
+            if Self.isDigest(digest), !digests.contains(digest) {
+                try? FileManager.default.removeItem(at: file)
+            }
+        }
+    }
+
     private static func requireTrusted(_ url: URL) throws {
         guard url.scheme == "https", let host = url.host?.lowercased(), hosts.contains(host),
               url.user == nil, url.password == nil else { throw CoursePackError.invalidCatalog }

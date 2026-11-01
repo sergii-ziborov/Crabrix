@@ -22,6 +22,16 @@ struct CompilationResult: Sendable {
     var isSharedSourceExecution = false
     var webPreview: WebPreviewSnapshot? = nil
 
+    func replacingStdout(_ value: String) -> CompilationResult {
+        var copy = CompilationResult(
+            succeeded: succeeded, phase: phase, exitCode: exitCode, diagnostics: diagnostics,
+            stdout: value, stderr: stderr, duration: duration, detail: detail
+        )
+        copy.isSharedSourceExecution = isSharedSourceExecution
+        copy.webPreview = webPreview
+        return copy
+    }
+
     var wasStopped: Bool {
         !succeeded && detail.hasPrefix("Build stopped.")
     }

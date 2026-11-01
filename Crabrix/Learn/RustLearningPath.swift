@@ -37,6 +37,16 @@ enum LessonOutputMatcher: Codable, Equatable, Sendable {
         }
     }
 
+    /// An algorithm harness prints its verdict last, so a leftover debug
+    /// `println!` before it must not fail a correct solution. Everything except
+    /// `exact` already allows surrounding output.
+    func matchesFinalLines(_ output: String) -> Bool {
+        guard case let .exact(expected) = self else { return matches(output) }
+        let verdict = expected.trimmingCharacters(in: .newlines)
+        let trimmed = output.trimmingCharacters(in: .newlines)
+        return trimmed == verdict || trimmed.hasSuffix("\n" + verdict)
+    }
+
     /// What the lesson is actually waiting for, in one line.
     ///
     /// The failure used to say only that stdout "does not yet prove the
@@ -141,6 +151,190 @@ struct LessonEvidenceValidation: Equatable, Sendable {
     let detail: String
 }
 
+/// Source text as the compiler sees it, for the checks that look at what a
+/// learner wrote. Comments are not code: they can neither supply a required
+/// fragment nor trip a forbidden one.
+enum LessonSourceText {
+    /// Removes `//` and nested `/* */` comments, leaving string, raw string and
+    /// character literals untouched. Every delimiter is ASCII, so scanning UTF-8
+    /// bytes cannot split a multi-byte character.
+    static func strippingComments(_ source: String) -> String {
+        let bytes = Array(source.utf8)
+        var output: [UInt8] = []
+        output.reserveCapacity(bytes.count)
+        var index = 0
+
+        func isIdentifier(_ byte: UInt8) -> Bool {
+            byte == 0x5F || (byte >= 0x30 && byte <= 0x39)
+                || (byte >= 0x41 && byte <= 0x5A) || (byte >= 0x61 && byte <= 0x7A) || byte >= 0x80
+        }
+        func copy(until end: Int) {
+            let stop = min(end, bytes.count)
+            output.append(contentsOf: bytes[index..<stop])
+            index = stop
+        }
+        /// A literal prefix only counts when it starts a token: `r` in `bar"` does not.
+        func startsToken(at position: Int) -> Bool {
+            position == 0 || !isIdentifier(bytes[position - 1])
+        }
+
+        while index < bytes.count {
+            let byte = bytes[index]
+            let next = index + 1 < bytes.count ? bytes[index + 1] : 0
+            switch byte {
+            case 0x2F where next == 0x2F: // line comment
+                while index < bytes.count, bytes[index] != 0x0A { index += 1 }
+            case 0x2F where next == 0x2A: // block comment, which Rust nests
+                var depth = 1
+                index += 2
+                while index < bytes.count, depth > 0 {
+                    let current = bytes[index]
+                    let following = index + 1 < bytes.count ? bytes[index + 1] : 0
+                    if current == 0x2F, following == 0x2A { depth += 1; index += 2 }
+                    else if current == 0x2A, following == 0x2F { depth -= 1; index += 2 }
+                    else { index += 1 }
+                }
+                output.append(0x20)
+            case 0x22: // string
+                var end = index + 1
+                while end < bytes.count, bytes[end] != 0x22 {
+                    end += bytes[end] == 0x5C ? 2 : 1
+                }
+                copy(until: end + 1)
+            case 0x27: // character literal or lifetime
+                if next == 0x5C {
+                    var end = index + 2
+                    if end < bytes.count { end += 1 }
+                    while end < bytes.count, bytes[end] != 0x27, bytes[end] != 0x0A { end += 1 }
+                    copy(until: end + 1)
+                } else if let close = (2...5).first(where: {
+                    index + $0 < bytes.count && bytes[index + $0] == 0x27
+                }), close == 2 || next >= 0x80 {
+                    copy(until: index + close + 1)
+                } else {
+                    copy(until: index + 1)
+                }
+            case 0x72 where startsToken(at: index)
+                || (index > 0 && (bytes[index - 1] == 0x62 || bytes[index - 1] == 0x63)
+                    && startsToken(at: index - 1)): // r"", r#""#, br"", cr""
+                var open = index + 1
+                while open < bytes.count, bytes[open] == 0x23 { open += 1 }
+                guard open < bytes.count, bytes[open] == 0x22 else {
+                    copy(until: index + 1)
+                    continue
+                }
+                let hashes = open - index - 1
+                var end = open + 1
+                while end < bytes.count {
+                    if bytes[end] == 0x22,
+                       (0..<hashes).allSatisfy({ end + 1 + $0 < bytes.count && bytes[end + 1 + $0] == 0x23 }) {
+                        break
+                    }
+                    end += 1
+                }
+                copy(until: end + 1 + hashes)
+            default:
+                output.append(byte)
+                index += 1
+            }
+        }
+        return String(decoding: output, as: UTF8.self)
+    }
+
+    /// The `.rs` sources as compact code: comments, whitespace, reference
+    /// lifetimes and `pub(...)` restrictions removed. None of those change what a
+    /// validated signature means, and the harness has already compiled against it.
+    static func normalizedCode(in files: [String: String]) -> String {
+        files.keys.filter { $0.hasSuffix(".rs") }.sorted().compactMap { files[$0] }
+            .map(normalized).joined(separator: "\n")
+    }
+
+    /// Identifies a program without keeping its source, for evidence that outlives
+    /// the session. Comments and spacing do not change it.
+    static func fingerprint(in files: [String: String]) -> String {
+        WorkspaceRevision.contentHash(normalizedCode(in: files))
+    }
+
+    static func contains(_ fragment: String, in code: String) -> Bool {
+        let compact = compacted(fragment)
+        guard !compact.isEmpty else { return true }
+        // `input: &str` requires a `&str` binding. Its name is the learner's choice.
+        if let colon = compact.firstIndex(of: ":"),
+           compact[..<colon].allSatisfy({ $0 == "_" || $0.isLetter || $0.isNumber }),
+           colon != compact.startIndex,
+           !compact[compact.index(after: colon)...].hasPrefix(":") {
+            let binding = compact[colon...]
+            var searchStart = code.startIndex
+            while let found = code.range(of: binding, range: searchStart..<code.endIndex) {
+                if found.lowerBound > code.startIndex {
+                    let before = code[code.index(before: found.lowerBound)]
+                    if before == "_" || before.isLetter || before.isNumber { return true }
+                }
+                searchStart = found.upperBound
+            }
+            return false
+        }
+        return code.contains(compact)
+    }
+
+    private static func normalized(_ source: String) -> String {
+        compacted(
+            strippingComments(source)
+                .replacingOccurrences(
+                    of: #"&'[A-Za-z_][A-Za-z0-9_]*\s+"#, with: "&", options: .regularExpression
+                )
+                .replacingOccurrences(
+                    of: #"\bpub\s*\(\s*(crate|self|super|in\s[^)]*)\s*\)"#, with: "pub ",
+                    options: .regularExpression
+                )
+        )
+    }
+
+    private static func compacted(_ text: String) -> String {
+        String(text.unicodeScalars.filter { !CharacterSet.whitespacesAndNewlines.contains($0) }
+            .map(Character.init))
+    }
+}
+
+/// A challenge harness proves it ran to the end only by printing its verdict,
+/// and a learner can print that same text and exit before the harness compares
+/// a single case. The packs are signed and cannot change, so the app appends a
+/// private token to the verdict in the copy it compiles. The token never reaches
+/// the learner's project, and the visible output is restored afterwards.
+enum LessonHarnessNonce {
+    struct Run: Equatable, Sendable {
+        let nonce: String
+        let verdict: String
+    }
+
+    static func instrument(
+        verificationSource: String, expectedOutput: String, nonce: String
+    ) -> (source: String, run: Run)? {
+        let verdict = expectedOutput.trimmingCharacters(in: .newlines)
+        guard !verdict.isEmpty,
+              !verdict.contains(where: { "\n\"\\{}".contains($0) }) else { return nil }
+        let literal = "println!(\"\(verdict)\");"
+        guard verificationSource.components(separatedBy: literal).count == 2 else { return nil }
+        return (
+            verificationSource.replacingOccurrences(
+                of: literal, with: "println!(\"\(verdict) \(nonce)\");"
+            ),
+            Run(nonce: nonce, verdict: verdict)
+        )
+    }
+
+    /// Returns the output the learner should see, and whether the harness itself
+    /// printed the last thing in it.
+    static func reveal(stdout: String, run: Run) -> (stdout: String, completed: Bool) {
+        let completed = stdout.hasSuffix("\(run.verdict) \(run.nonce)\n")
+        return (stdout.replacingOccurrences(of: " \(run.nonce)", with: ""), completed)
+    }
+
+    static func make() -> String {
+        UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased()
+    }
+}
+
 enum LessonEvidenceValidator {
     static func validateCompilerAttempt(
         evidence: LessonEvidence,
@@ -148,7 +342,9 @@ enum LessonEvidenceValidator {
         project: CrabrixProject,
         initialSourceTreeHash: String?,
         currentSourceTreeHash: String,
-        observedDiagnosticCodes: Set<String>
+        observedDiagnosticCodes: Set<String>,
+        automaticRepairFingerprint: String? = nil,
+        harnessCompleted: Bool? = nil
     ) -> LessonEvidenceValidation {
         guard result.succeeded, result.phase == .run else {
             return LessonEvidenceValidation(
@@ -185,7 +381,10 @@ enum LessonEvidenceValidator {
             )
 
         case let .repair(code, output, requiredFragments):
-            guard observedDiagnosticCodes.contains(code) else {
+            // The starter is what produces this diagnostic, so a changed tree
+            // that compiles has repaired it even if it was never run broken.
+            guard observedDiagnosticCodes.contains(code)
+                    || initialSourceTreeHash != currentSourceTreeHash else {
                 return LessonEvidenceValidation(
                     passed: false,
                     detail: "Reproduce \(code) first, then repair that exact diagnostic."
@@ -197,9 +396,16 @@ enum LessonEvidenceValidator {
                     detail: "\(code) is still present."
                 )
             }
-            let allSource = project.files.keys.sorted().compactMap { project.files[$0] }
-                .joined(separator: "\n")
-            let missingFragments = requiredFragments.filter { !allSource.contains($0) }
+            if let automaticRepairFingerprint,
+               automaticRepairFingerprint == LessonSourceText.fingerprint(in: project.files) {
+                return LessonEvidenceValidation(
+                    passed: false,
+                    detail: "Apply to main.rs made this fix for you, so it does not count as your evidence. "
+                        + "Undo it and repair \(code) yourself, or restart the lab, then run again."
+                )
+            }
+            let source = LessonSourceText.normalizedCode(in: project.files)
+            let missingFragments = requiredFragments.filter { !LessonSourceText.contains($0, in: source) }
             guard missingFragments.isEmpty else {
                 return LessonEvidenceValidation(
                     passed: false,
@@ -225,23 +431,29 @@ enum LessonEvidenceValidator {
                     detail: "The starter algorithm is unchanged. Implement solve(), then run it again."
                 )
             }
-            let allSource = project.files.keys.sorted().compactMap { project.files[$0] }
-                .joined(separator: "\n")
-            let missingFragments = requiredFragments.filter { !allSource.contains($0) }
+            let code = LessonSourceText.normalizedCode(in: project.files)
+            let missingFragments = requiredFragments.filter { !LessonSourceText.contains($0, in: code) }
             guard missingFragments.isEmpty else {
                 return LessonEvidenceValidation(
                     passed: false,
                     detail: "Keep the supplied solve() function and visible verification harness."
                 )
             }
-            let remainingPlaceholders = forbiddenFragments.filter { allSource.contains($0) }
+            let remainingPlaceholders = forbiddenFragments.filter { LessonSourceText.contains($0, in: code) }
             guard remainingPlaceholders.isEmpty else {
                 return LessonEvidenceValidation(
                     passed: false,
                     detail: "Replace the starter todo! placeholder with your algorithm."
                 )
             }
-            guard output.matches(result.stdout) else {
+            if harnessCompleted == false {
+                return LessonEvidenceValidation(
+                    passed: false,
+                    detail: "The program stopped before the verification harness finished. "
+                        + "Return a value from solve() instead of exiting the process."
+                )
+            }
+            guard harnessCompleted == true || output.matchesFinalLines(result.stdout) else {
                 return LessonEvidenceValidation(
                     passed: false,
                     detail: "The program ran, but the visible algorithm case did not pass yet."

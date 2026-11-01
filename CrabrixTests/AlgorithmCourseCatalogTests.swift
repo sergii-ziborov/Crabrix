@@ -266,6 +266,118 @@ final class AlgorithmCourseCatalogTests: XCTestCase {
         )
         XCTAssertTrue(accepted.passed, accepted.detail)
     }
+
+    private func attempt(
+        solution: String, stdout: String? = nil, harnessCompleted: Bool? = nil
+    ) throws -> LessonEvidenceValidation {
+        let pattern = try XCTUnwrap(patterns.first)
+        let lesson = try XCTUnwrap(RustCourseCatalog.lesson(id: pattern.lessonID(.challenge)))
+        let challenge = try XCTUnwrap(AlgorithmCourseCatalog.challenge(for: lesson.id))
+        return LessonEvidenceValidator.validateCompilerAttempt(
+            evidence: .algorithmChallenge(
+                expectedOutput: .exact(challenge.expectedOutput),
+                requiredSourceFragments: ["pub fn solve", "input: &str", "-> String"],
+                forbiddenSourceFragments: ["todo!(\"implement"]
+            ),
+            result: CompilationResult(
+                succeeded: true, phase: .run, exitCode: 0, diagnostics: [],
+                stdout: stdout ?? challenge.expectedOutput, stderr: "",
+                duration: .milliseconds(1), detail: "fixture"
+            ),
+            project: CrabrixProject(name: challenge.projectName, files: ["solution.rs": solution],
+                                    entryFile: "solution.rs", provenance: nil),
+            initialSourceTreeHash: "before",
+            currentSourceTreeHash: "after",
+            observedDiagnosticCodes: [],
+            harnessCompleted: harnessCompleted
+        )
+    }
+
+    func testChallengeSignatureMayVaryInEveryWayThatStillCompiles() throws {
+        for signature in [
+            "pub fn solve(input: &str) -> String",
+            "pub fn solve(s: &str) -> String",
+            "pub fn solve(input:&str)->String",
+            "pub(crate) fn solve(input: &str) -> String",
+            "pub ( crate ) fn solve(_input: &str) -> String",
+            "pub(super) fn solve(mut text: &str) -> String",
+            "pub fn solve<'a>(line: &'a str) -> String",
+            "pub fn solve(\n    input: &str,\n) -> String",
+        ] {
+            let result = try attempt(solution: signature + " { input_to_answer() }")
+            XCTAssertTrue(result.passed, "\(signature): \(result.detail)")
+        }
+    }
+
+    func testChallengeFragmentsIgnoreComments() throws {
+        let solved = "pub fn solve(input: &str) -> String { input.to_string() }"
+
+        // A commented-out placeholder no longer reads as unfinished work.
+        XCTAssertTrue(try attempt(solution: "// todo!(\"implement x\")\n" + solved).passed)
+        XCTAssertTrue(try attempt(solution: "/* todo!(\"implement x\") */\n" + solved).passed)
+        // A live placeholder still fails, however it is spaced.
+        let live = "pub fn solve(input: &str) -> String { todo!( \"implement x\" ) }"
+        XCTAssertFalse(try attempt(solution: live).passed)
+        // A signature only in a comment cannot stand in for the real one.
+        XCTAssertFalse(try attempt(solution: "// pub fn solve(input: &str) -> String\nfn other() {}").passed)
+        // Non-Rust files are not source at all.
+        let withReadme = LessonSourceText.normalizedCode(in: ["README.md": "pub fn solve", "solution.rs": "fn x() {}"])
+        XCTAssertFalse(LessonSourceText.contains("pub fn solve", in: withReadme))
+    }
+
+    func testDebugOutputBeforeTheVerdictDoesNotFailAChallenge() throws {
+        let solved = "pub fn solve(input: &str) -> String { input.to_string() }"
+        let lessonID = try XCTUnwrap(patterns.first).lessonID(.challenge)
+        let challenge = try XCTUnwrap(AlgorithmCourseCatalog.challenge(for: lessonID))
+
+        XCTAssertTrue(try attempt(solution: solved, stdout: "debug line\n" + challenge.expectedOutput).passed)
+        XCTAssertFalse(try attempt(solution: solved, stdout: challenge.expectedOutput + "after\n").passed)
+        XCTAssertFalse(try attempt(solution: solved, stdout: "nothing useful\n").passed)
+        XCTAssertFalse(try attempt(solution: solved, stdout: "x" + challenge.expectedOutput).passed)
+    }
+
+    func testChallengeCannotPassByPrintingTheVerdictAndExiting() throws {
+        let cheat = "pub fn solve(input: &str) -> String { println!(\"PASS\"); std::process::exit(0) }"
+        let lessonID = try XCTUnwrap(patterns.first).lessonID(.challenge)
+        let challenge = try XCTUnwrap(AlgorithmCourseCatalog.challenge(for: lessonID))
+        let instrumented = try XCTUnwrap(LessonHarnessNonce.instrument(
+            verificationSource: challenge.verificationSource,
+            expectedOutput: challenge.expectedOutput, nonce: "n0nce"
+        ))
+        XCTAssertTrue(instrumented.source.contains(" n0nce\");"))
+
+        // What the app sees when the learner's own print reached stdout.
+        let early = LessonHarnessNonce.reveal(stdout: challenge.expectedOutput, run: instrumented.run)
+        XCTAssertFalse(early.completed)
+        let rejected = try attempt(solution: cheat, stdout: early.stdout, harnessCompleted: early.completed)
+        XCTAssertFalse(rejected.passed)
+        XCTAssertTrue(rejected.detail.contains("harness"), rejected.detail)
+
+        // What the app sees when the harness printed it, with debug output first.
+        let printed = "trace\n" + instrumented.run.verdict + " n0nce\n"
+        let finished = LessonHarnessNonce.reveal(stdout: printed, run: instrumented.run)
+        XCTAssertTrue(finished.completed)
+        XCTAssertEqual(finished.stdout, "trace\n" + challenge.expectedOutput)
+        XCTAssertTrue(try attempt(
+            solution: "pub fn solve(input: &str) -> String { input.to_string() }",
+            stdout: finished.stdout, harnessCompleted: finished.completed
+        ).passed)
+    }
+
+    func testEveryChallengeHarnessCanCarryANonceWithoutAPackChange() throws {
+        XCTAssertFalse(patterns.isEmpty)
+        for pattern in patterns {
+            let challenge = try XCTUnwrap(AlgorithmCourseCatalog.challenge(for: pattern.lessonID(.challenge)))
+            XCTAssertNotNil(
+                LessonHarnessNonce.instrument(
+                    verificationSource: challenge.verificationSource,
+                    expectedOutput: challenge.expectedOutput,
+                    nonce: "n0nce"
+                ),
+                pattern.id
+            )
+        }
+    }
 }
 
 @MainActor
