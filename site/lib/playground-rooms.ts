@@ -26,7 +26,9 @@ const roomBytes = (room: Room) => packetBytes(room.snapshot) + room.events.reduc
 // Each client publishes at most one snapshot every 5 seconds, so snapshotsPerMinute
 // leaves room for all four participants. roomsPerIP allows a shared office or carrier
 // address; creatorBytes keeps it from holding more than 12 of the 32 MiB resident bytes.
-export const ROOM_LIMITS = Object.freeze({ rooms: 64, roomsPerIP: 16, peers: 4, snapshotBytes: 256 * 1024, updateBytes: 192 * 1024, presenceBytes: 4096, events: 256, roomBytes: 4 * 1024 * 1024, creatorBytes: 12 * 1024 * 1024, residentBytes: 32 * 1024 * 1024, snapshotsPerMinute: 60 });
+// roomBytes keeps the joined state inside the 2,000,000 character message that the
+// website and shipped native clients accept; a larger room could not be opened.
+export const ROOM_LIMITS = Object.freeze({ rooms: 64, roomsPerIP: 16, peers: 4, snapshotBytes: 256 * 1024, updateBytes: 192 * 1024, presenceBytes: 4096, events: 256, roomBytes: 1_900_000, creatorBytes: 12 * 1024 * 1024, residentBytes: 32 * 1024 * 1024, snapshotsPerMinute: 60 });
 
 export function validatePacket(input: unknown, maximumBytes: number): EncryptedPacket {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw new PlaygroundError("Invalid encrypted packet.");

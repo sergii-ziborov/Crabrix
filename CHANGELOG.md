@@ -12,6 +12,9 @@
 - Website (Hetzner image `audit-8c2a117`): return paths for Atlas lessons, lockout and
   relay abuse limits, IPv6 /64 client keys, preview bounds. The privacy policy now
   discloses the keyed room-creator hash kept for a room's lifetime.
+- Crabrix SDK/MCP 0.3.4 is on npm, crates.io and the Go module tag, and installs as a
+  Claude Code plugin. All 14 tools passed against the production relay. The relay now
+  keeps a room under the 2,000,000 character message that shipped clients accept.
 - Not changed by design: undo for the keyboard strip, the Duo keyboard button and
   strip typing share. The Playground end-to-end format still lacks sequence binding.
 

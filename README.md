@@ -20,12 +20,13 @@ by pixel with the previous commit: only the Simulator clock differs. The website
 ## Standalone SDK — crabrix on npm, Rust and Go bindings
 
 The public [crabrix-sdk project](https://github.com/sergii-ziborov/crabrix-sdk)
-is independent of the phone app. [npm crabrix 0.3.3](https://www.npmjs.com/package/crabrix)
-provides a JS/TypeScript library and fourteen-tool MCP server. The
+is independent of the phone app. [npm crabrix 0.3.4](https://www.npmjs.com/package/crabrix)
+provides a JS/TypeScript library and fourteen-tool MCP server, also packaged as a
+Claude Code plugin (`/plugin marketplace add sergii-ziborov/crabrix-sdk`, then
+`/plugin install crabrix@crabrix`). The
 [Rust crate](https://crates.io/crates/crabrix) and tagged Go module are published
-at 0.3.3; all three CLI versions were installed from their public distribution
-and checked. The patch fixes option-like participant names and synchronizes
-Rust/Go embedded bridge bytes with the npm executable.
+at 0.3.4. The patch drains full rooms with a fresh snapshot, updates bundled zod and
+refreshes all screenshots; all 14 tools passed against the production relay.
 All variants use a common local Node.js 22+ core, with explicit client-local
 Run/Debug permission. Two independent coding agents and two browser clients
 passed real shared-edit, selection, stale-revision, 13-assertion Run, structured

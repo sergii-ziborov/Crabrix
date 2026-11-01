@@ -178,6 +178,17 @@ test("one address cannot hold more than its share of relay memory", () => {
   assert.equal(rooms.append(other.id, other.edit, "other_peer_000001", "other_message_0001", large()).sequence, 1);
 });
 
+test("a full room still fits the message size that shipped clients accept", () => {
+  const rooms = new PlaygroundRooms();
+  const room = rooms.create(packet(), 3600, "203.0.113.4");
+  rooms.subscribe(room.id, room.edit, "full_room_peer_01", () => {});
+  const large = { iv: packet().iv, data: Buffer.alloc(ROOM_LIMITS.updateBytes, 1).toString("base64url") };
+  let message = 0;
+  assert.throws(() => { for (;;) rooms.append(room.id, room.edit, "full_room_peer_01", `full_room_message_${message++}`, large); }, error => error.status === 409);
+  for (let i = 0; i < ROOM_LIMITS.events; i++) { try { rooms.append(room.id, room.edit, "full_room_peer_01", `small_message_${String(i).padStart(4, "0")}`, packet()); } catch { break; } }
+  assert.ok(`data: ${JSON.stringify(rooms.read(room.id, room.edit))}`.length < 2_000_000);
+});
+
 test("rotating addresses can exhaust room creation only, never edits", () => {
   const rooms = new PlaygroundRooms();
   const room = rooms.create(packet(), 3600, "203.0.113.3");

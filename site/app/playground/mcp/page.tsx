@@ -5,7 +5,7 @@ import { SyntaxCode } from "@/components/SyntaxCode";
 import download from "@/lib/mcp-download.json";
 import "./mcp.css";
 
-export const metadata = pageMetadata({ title: "Crabrix SDK & MCP for JavaScript, Rust and Go", description: "Share temporary Rust Playgrounds between agents and people. Use the crabrix JavaScript library, Rust or Go bindings, MCP and browser-local Run/Debug. No app required.", path: "/playground/mcp/" });
+export const metadata = pageMetadata({ title: "Crabrix SDK & MCP for JavaScript, Rust and Go", description: "Share temporary Rust Playgrounds between agents and people with the Crabrix Claude Code plugin or SDK. Use the crabrix JavaScript library, Rust or Go bindings, MCP and browser-local Run/Debug. No app required.", path: "/playground/mcp/" });
 
 export default function PlaygroundMCPPage() {
   return <div className="site-shell mcp-page">
@@ -43,7 +43,7 @@ export default function PlaygroundMCPPage() {
       <ol className="mcp-steps">
         <li><div className="mcp-step-heading"><span>01</span><h3>Install the official bridge</h3></div><p>Install <strong>Node.js 22 or newer</strong>, then install the pinned release from npm. A Crabrix account is not required.</p>
           <SyntaxCode language="shell" code={`npm install -g crabrix@${download.version}`} /><p className="mcp-small"><a href="https://www.npmjs.com/package/crabrix" target="_blank" rel="noreferrer">View the package on npm ↗</a>. Prefer a manual setup? <a href={download.url} download>Download the identical archive</a>, extract it and use <code>node /absolute/path/package/dist/cli.mjs</code> as your MCP command.</p></li>
-        <li><div className="mcp-step-heading"><span>02</span><h3>Add it to Claude Code</h3></div><SyntaxCode language="shell" code={`claude mcp add --transport stdio crabrix -- npx -y crabrix@${download.version}`} />
+        <li><div className="mcp-step-heading"><span>02</span><h3>Add it to Claude Code</h3></div><p>Install the plugin, which adds the MCP server and a handoff skill:</p><SyntaxCode language="shell" code={`/plugin marketplace add sergii-ziborov/crabrix-sdk\n/plugin install crabrix@crabrix`} /><p>Or add only the MCP server:</p><SyntaxCode language="shell" code={`claude mcp add --transport stdio crabrix -- npx -y crabrix@${download.version}`} />
           <p>Open Claude Code and check <code>/mcp</code>. For a desktop MCP client, add the equivalent entry to its MCP configuration and restart it:</p>
           <SyntaxCode language="json" code={`{\n  "mcpServers": {\n    "crabrix": {\n      "command": "npx",\n      "args": ["-y", "crabrix@${download.version}"]\n    }\n  }\n}`} /><p className="mcp-small">This desktop configuration downloads the pinned version on first use. Use the full path to <code>npx</code> if your desktop app cannot find it. <a href="https://code.claude.com/docs/en/mcp" target="_blank" rel="noreferrer">Claude’s MCP setup guide ↗</a></p></li>
         <li><div className="mcp-step-heading"><span>03</span><h3>Share from Crabrix or the web</h3></div><p>Ask your connected agent to create a Crabrix Playground and return its temporary link, or open the <Link href="/playground/">web Playground</Link> and choose <strong>Share</strong>. Copy the entire link, including everything after <code>#</code>.</p><p>Give that link to Claude only when you want to grant its MCP host and model access to this room’s source. View-only links allow reading; editable links allow source changes.</p></li>
