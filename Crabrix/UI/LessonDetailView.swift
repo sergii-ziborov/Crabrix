@@ -66,6 +66,7 @@ enum LessonNavigationFooterVisibility {
 }
 
 struct LessonDetailView: View {
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @EnvironmentObject private var progress: CrabrixProgressStore
     let lesson: RustLesson
     let writing: RustLessonWriting
@@ -219,7 +220,53 @@ struct LessonDetailView: View {
         }
     }
 
+    @ViewBuilder
     private var progressHeader: some View {
+        if verticalSizeClass == .compact {
+            compactProgressHeader
+        } else {
+            regularProgressHeader
+        }
+    }
+
+    /// Landscape phones have little height, so the header takes a single row
+    /// and leaves the rest to the lesson.
+    private var compactProgressHeader: some View {
+        HStack(spacing: 12) {
+            Text("STEP \(page + 1) OF 3")
+                .font(.caption2.monospaced().bold())
+                .foregroundStyle(brief.tint)
+            progressBars
+            Label("\(lesson.minutes) MIN", systemImage: "clock.fill")
+                .font(.caption2.monospaced())
+                .foregroundStyle(CrabrixTheme.muted)
+            Button(action: onShowAchievements) {
+                Label("\(CrabrixPointsFormatter.string(progress.state.totalPoints))", systemImage: "star.fill")
+                    .font(.caption2.weight(.semibold))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(CrabrixTheme.background.opacity(0.8), in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Rating \(progress.state.totalPoints), \(progress.earnedAchievements.count) achievements. Open profile")
+        }
+        .padding(.vertical, 6)
+        .crabrixPageContent(maximumWidth: CrabrixPageLayout.readingMaximumWidth)
+        .background(CrabrixTheme.panel.opacity(0.96))
+    }
+
+    private var progressBars: some View {
+        HStack(spacing: 7) {
+            ForEach(0..<3, id: \.self) { index in
+                Capsule()
+                    .fill(index <= page ? brief.tint : CrabrixTheme.border)
+                    .frame(height: 5)
+                    .animation(.easeInOut(duration: 0.2), value: page)
+            }
+        }
+    }
+
+    private var regularProgressHeader: some View {
         VStack(spacing: 10) {
             HStack {
                 Text("LESSON · STEP \(page + 1) OF 3")
@@ -252,15 +299,7 @@ struct LessonDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityLabel("Rating \(progress.state.totalPoints), \(progress.earnedAchievements.count) achievements. Open profile")
 
-            HStack(spacing: 7) {
-                ForEach(0..<3, id: \.self) { index in
-                    Capsule()
-                        .fill(index <= page ? brief.tint : CrabrixTheme.border)
-                        .frame(height: 5)
-                        .animation(.easeInOut(duration: 0.2), value: page)
-                }
-            }
-
+            progressBars
         }
         .padding(.top, 14)
         .padding(.bottom, 12)
@@ -633,6 +672,7 @@ struct LessonDetailView: View {
         index: Int,
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
+        GeometryReader { container in
         ScrollViewReader { reader in
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
@@ -648,8 +688,9 @@ struct LessonDetailView: View {
                 .frame(maxWidth: .infinity)
                 // Pinned to the container: a child that refuses to compress used
                 // to widen its own page, so the three steps of one lesson ended up
-                // with three different text widths.
-                .containerRelativeFrame(.horizontal)
+                // with three different text widths. Measured here because
+                // containerRelativeFrame kept the old width across a rotation.
+                .frame(width: container.size.width)
             }
             .accessibilityIdentifier("lesson-reading-\(index)")
             .onChange(of: answerScrollVersion) { _, _ in
@@ -676,6 +717,7 @@ struct LessonDetailView: View {
                     footerVisibility[index] = shouldShow
                 }
             }
+        }
         }
     }
 }

@@ -176,6 +176,46 @@ final class ReleaseScreenshotTests: XCTestCase {
         }
     }
 
+    /// A lesson opened in one orientation takes the full reading width of the
+    /// other after turning the device, in both directions.
+    func testLessonAndWorkspaceFollowARotation() throws {
+        continueAfterFailure = false
+        for (first, second, name) in [
+            (UIDeviceOrientation.portrait, UIDeviceOrientation.landscapeLeft, "portrait-to-landscape"),
+            (.landscapeLeft, .portrait, "landscape-to-portrait")
+        ] {
+            XCUIDevice.shared.orientation = first
+            launch(["-CrabrixTab", "learn", "-CrabrixLearn", "basics"])
+            let start = app.buttons["Start course"]
+            XCTAssertTrue(start.waitForExistence(timeout: 30))
+            start.tap()
+            let reading = app.scrollViews["lesson-reading-0"]
+            XCTAssertTrue(reading.waitForExistence(timeout: 10))
+            XCUIDevice.shared.orientation = second
+            Thread.sleep(forTimeInterval: 2)
+            let lesson = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+            lesson.name = "edges-rotate-\(name)-lesson"
+            lesson.lifetime = .keepAlways
+            add(lesson)
+            let card = app.staticTexts["Why this matters"]
+            XCTAssertTrue(card.exists)
+            let width = reading.frame.width
+            let expectedLeft = reading.frame.minX + (width - min(width, 760)) / 2 + 22
+            XCTAssertEqual(card.frame.minX, expectedLeft, accuracy: 90, "The page must reflow to the new width (\(name), \(reading.frame))")
+
+            XCUIDevice.shared.orientation = first
+            launch(["--crabrix-auto-borrow"])
+            XCUIDevice.shared.orientation = second
+            Thread.sleep(forTimeInterval: 2)
+            let workspace = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+            workspace.name = "edges-rotate-\(name)-workspace"
+            workspace.lifetime = .keepAlways
+            add(workspace)
+            XCTAssertTrue(app.buttons["Run project"].isHittable)
+            XCTAssertTrue(app.buttons["build-dock-problems"].isHittable)
+        }
+    }
+
     func testReleaseScreenshotsAndLegalReaders() throws {
         continueAfterFailure = false
         XCUIDevice.shared.orientation = .portrait

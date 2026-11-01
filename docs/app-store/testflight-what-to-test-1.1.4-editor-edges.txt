@@ -8,4 +8,10 @@ iPad: the code screen uses one header row, as on Duo: back to Projects, project 
 
 Editor: put the cursor after a closing brace and press Return, on a file with a line wider than the screen. The code must not jump sideways.
 
+Rotation: open a lesson in one orientation, then turn the device, both ways. The lesson must take the full width of the new orientation. On a phone in landscape its header takes a single row.
+
+Scroll bars: in a long file the vertical bar runs the full height of the editor, and the horizontal bar stays at the bottom edge instead of crossing the code.
+
+Output: the empty state has no inner frame.
+
 Duo: check the laptop and book poses. They should look as before. This build could not exercise them on the simulator, so please report anything different.

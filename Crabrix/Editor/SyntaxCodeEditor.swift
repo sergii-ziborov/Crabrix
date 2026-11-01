@@ -727,6 +727,8 @@ final class CodeEditorCanvas: UIView, UIGestureRecognizerDelegate {
 
     /// Width reserved for line numbers, matching `textContainerInset.left`.
     static let gutterWidth: CGFloat = 44
+    /// Keeps the scroll bars out of the screen's rounded corners.
+    static let indicatorEdgeClearance: CGFloat = 24
 
     var lineNumberColor = UIColor.secondaryLabel {
         didSet { gutterView.lineNumberColor = lineNumberColor }
@@ -868,6 +870,10 @@ final class CodeEditorCanvas: UIView, UIGestureRecognizerDelegate {
         }
     }
 
+    var verticalIndicatorBottomInset: CGFloat { scrollView.verticalScrollIndicatorInsets.bottom }
+    var horizontalIndicatorBottomInset: CGFloat { scrollView.horizontalScrollIndicatorInsets.bottom }
+    var maximumVerticalOffset: CGFloat { clamped(CGPoint(x: 0, y: CGFloat.greatestFiniteMagnitude)).y }
+
     /// Where the file is scrolled to, in content coordinates.
     var scrollOffset: CGPoint {
         get { scrollView.contentOffset }
@@ -885,10 +891,12 @@ final class CodeEditorCanvas: UIView, UIGestureRecognizerDelegate {
         let insets = UIEdgeInsets(top: 0, left: 0, bottom: bottom, right: trailing)
         guard scrollView.contentInset != insets else { return }
         scrollView.contentInset = insets
-        scrollView.verticalScrollIndicatorInsets.bottom = bottom
-        scrollView.horizontalScrollIndicatorInsets.bottom = bottom
-        let restored = clamped(scrollView.contentOffset)
-        if scrollView.contentOffset != restored { scrollView.contentOffset = restored }
+        // The bars keep the full height of the editor and stay at its bottom
+        // edge: only the code has to scroll clear of the controls.
+        let indicatorBottom = min(bottom, Self.indicatorEdgeClearance)
+        scrollView.verticalScrollIndicatorInsets.bottom = indicatorBottom
+        scrollView.horizontalScrollIndicatorInsets.bottom = indicatorBottom
+        setNeedsSizeUpdate()
     }
 
     override func layoutSubviews() {
@@ -914,9 +922,15 @@ final class CodeEditorCanvas: UIView, UIGestureRecognizerDelegate {
         if textView.frame.size != size {
             textView.frame = CGRect(origin: .zero, size: size)
         }
-        if scrollView.contentSize != size {
+        // A file that fits above the floating controls has nothing to scroll,
+        // though the text view still fills the editor to take taps.
+        let scrollable = CGSize(
+            width: size.width,
+            height: size.height > bounds.height ? size.height : max(0, bounds.height - scrollView.contentInset.bottom)
+        )
+        if scrollView.contentSize != scrollable {
             let previous = scrollView.contentOffset
-            scrollView.contentSize = size
+            scrollView.contentSize = scrollable
             // Shrinking the content clamps the offset, and the reader did not
             // ask to be moved.
             let restored = clamped(previous)

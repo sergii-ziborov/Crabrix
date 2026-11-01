@@ -860,11 +860,6 @@ private struct OutputDockContent: View {
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 20)
         .padding(.vertical, 24)
-        .background(CrabrixTheme.panel.opacity(0.6), in: RoundedRectangle(cornerRadius: 14))
-        .overlay {
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(CrabrixTheme.border.opacity(0.7))
-        }
     }
 
     @ViewBuilder

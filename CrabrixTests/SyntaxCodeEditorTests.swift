@@ -451,6 +451,30 @@ final class EditorScrollingTests: XCTestCase {
         XCTAssertEqual(canvas.scrollOffset.x, 0, accuracy: 0.5, "caret \(textView.caretRect(for: textView.selectedTextRange!.end))")
     }
 
+    func testFloatingControlsMoveTheCodeButNotTheScrollBars() throws {
+        let (canvas, window) = try makeEditor()
+        defer { window.isHidden = true }
+        let full = canvas.maximumVerticalOffset
+
+        canvas.setChromeInsets(bottom: 131, trailing: 0)
+        canvas.layoutIfNeeded()
+
+        XCTAssertEqual(canvas.maximumVerticalOffset, full + 131, accuracy: 0.5, "the last line scrolls clear of the controls")
+        XCTAssertEqual(canvas.verticalIndicatorBottomInset, CodeEditorCanvas.indicatorEdgeClearance)
+        XCTAssertEqual(canvas.horizontalIndicatorBottomInset, CodeEditorCanvas.indicatorEdgeClearance)
+    }
+
+    func testAFileThatFitsAboveTheControlsHasNothingToScroll() throws {
+        let (canvas, window) = try makeEditor(lines: 3)
+        defer { window.isHidden = true }
+
+        canvas.setChromeInsets(bottom: 131, trailing: 0)
+        canvas.layoutIfNeeded()
+
+        XCTAssertEqual(canvas.maximumVerticalOffset, 0, accuracy: 0.5)
+        XCTAssertGreaterThanOrEqual(canvas.textView.frame.height, canvas.bounds.height, "the whole editor still takes taps")
+    }
+
     func testEnterAfterAnIndentedClosingBraceDoesNotScrollSideways() throws {
         let source = """
         fn main() {
