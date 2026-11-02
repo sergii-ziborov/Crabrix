@@ -65,12 +65,16 @@ ops       Y.Map   operationId -> { hash, at }
 
 ```ts
 type ProjectState = {
+  name; edition; origin?;                        // неверные значения заменяются на "playground" и 2024
   files: { id; path; requestedPath; text }[];   // path всегда уникален и допустим
-  recovery: { id; path; conflict: boolean; orphan: boolean; bytes }[];
+  recovery: { id; path; text; bytes; conflict: boolean; orphan: boolean }[];
   entryId: string | null; entryFallback: boolean;
-  blocked: ("files" | "file-bytes" | "source-bytes" | "no-entry" | "no-files")[];
+  blocked: ("no-files" | "no-entry" | "files" | "file-bytes" | "source-bytes" | "text")[];
+  records: number;                               // все записи entries, для лимита 64
 };
 ```
+
+Строка восстановления это удалённый файл с непустым текстом. Отметку `purged` ставит очистка, чтобы клиенты сбросили Undo этого файла, проекция на неё не смотрит. Причина `text` блокирует запуск, если в файл попал NUL или недопустимый UTF-16.
 
 `documentFromY(doc)` остаётся строгим: читает `readProject`, проверяет `validatePlaygroundDocument` и бросает ошибку, если `blocked` не пуст. Его используют только запуск и API с исполняемым результатом. Экспорт читает `readProject`, поэтому работает и в заблокированной комнате, и после её истечения. В ZIP попадают живые файлы и, если есть, строки восстановления в отдельной папке `crabrix-recovery/`. «Copy to local» в заблокированной комнате недоступна, вместо неё предлагается экспорт.
 
@@ -190,7 +194,7 @@ type ProjectState = {
 
 Каждый шаг выпускается отдельно и ничего не обещает публично до шага 7.
 
-1. **Codec и тесты.** `readProject`, операции, планировщик. Подключения к интерфейсу нет.
+1. **Codec и тесты.** `readProject`, операции, планировщик. Подключения к интерфейсу нет. Выполнен: `site/lib/playground-codec-v2.ts` и `site/tests/playground-codec-v2.test.mjs`, включая адаптеры `crabrix_apply_changes` и `replace` приложения.
 2. **Релей.** Поле `codec`, проверка входа, лимит снимка для v2. Регрессия v1.
 3. **Web-клиент.** Сессия и присутствие читают обе версии. Комнату v2 можно создать только за внутренним флагом.
 4. **Web-интерфейс.** Дерево, диалоги, панель восстановления, реестр по ключу. Импорт как план операций.
@@ -240,7 +244,7 @@ type ProjectState = {
 
 - `site/lib/playground-collab.ts`: выбор версии и защита `updateYDocument`.
 - `site/lib/playground-document.ts`: проверка одного пути отдельной функцией.
-- `site/lib/playground-file-ops.ts`: планирование операций.
+- `site/lib/playground-file-ops.ts`: дерево и диалоги по ключу файла. Планирование операций живёт в `playground-codec-v2.ts`.
 - `site/lib/playground-session.ts`, `playground-presence.ts`, `playground-import-plan.ts`, `playground-drafts.ts`.
 - `site/lib/playground-rooms.ts`, `site/lib/playground-api.ts`, `site/lib/playground-crypto.ts`, `site/app/api/playground/rooms/route.ts`, `rooms/[id]/route.ts`, `rooms/[id]/events/route.ts`.
 - `site/components/playground/workspace.tsx`, `code-editor.tsx`, `file-tree.tsx`, `file-dialog.tsx`, `import-dialog.tsx`.

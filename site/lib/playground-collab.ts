@@ -11,7 +11,7 @@ export function documentFromY(doc: Y.Doc): PlaygroundDocument {
   return validatePlaygroundDocument({ schemaVersion: metadata.get("schemaVersion"), name: metadata.get("name"), entryFile: metadata.get("entryFile"), edition: metadata.get("edition"), origin: metadata.get("origin"), files });
 }
 
-function replaceText(text: Y.Text, next: string) {
+export function replaceText(text: Y.Text, next: string) {
   const previous = text.toString();
   let prefix = 0;
   while (prefix < previous.length && prefix < next.length && previous[prefix] === next[prefix]) prefix++;
@@ -29,6 +29,9 @@ function replaceText(text: Y.Text, next: string) {
 
 export function updateYDocument(doc: Y.Doc, input: PlaygroundDocument, origin: unknown = "source") {
   const source = validatePlaygroundDocument(input);
+  // Format v2 keeps text under stable file IDs. Writing paths here would bypass
+  // its operations, so a v2 document is only changed through playground-codec-v2.
+  if (doc.share.has("entries") || doc.getMap("meta").get("schemaVersion") === 2) throw new Error("This Playground uses stable file IDs; change it with file operations.");
   doc.transact(() => {
     const metadata = doc.getMap("meta"), files = doc.getMap<Y.Text>("files");
     for (const [key, value] of Object.entries(source)) if (key !== "files" && JSON.stringify(metadata.get(key)) !== JSON.stringify(value)) metadata.set(key, value);

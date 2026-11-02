@@ -26,7 +26,17 @@ export function isWellFormedUTF16(value: string): boolean {
   return true;
 }
 
-const validProjectName = (name: string) => !!name.trim() && name.length <= 80 && isWellFormedUTF16(name) && !/[\u0000-\u001f\u007f]/.test(name);
+export const validProjectName = (name: string) => !!name.trim() && name.length <= 80 && isWellFormedUTF16(name) && !/[\u0000-\u001f\u007f]/.test(name);
+
+/** One path on its own; collisions between paths are checked by the whole document. */
+export function isValidSourcePath(path: string): boolean {
+  const parts = path.split("/");
+  return !(path.length > 180 || !isWellFormedUTF16(path) || path.startsWith("/") || path.includes("\\") || path.includes(":") || parts.length > 32 || parts[0].toLowerCase() === ".crabrix" || parts.some(part => !part || encoder.encode(part).length > 255 || part === "." || part === ".." || forbidden.has(part.toLowerCase()) || part.toLowerCase() === ".git" || part === "__proto__" || part === "constructor" || part === "prototype") ||
+      !allowed.test(path) || /[\u0000-\u001f\u007f]/.test(path));
+}
+
+/** Text the compiler and every client can hold, apart from the size limits. */
+export const isValidSourceText = (text: string) => isWellFormedUTF16(text) && !/\u0000/.test(text);
 
 // Typing keeps its spaces in the input; the trimmed name is stored when editing ends.
 // Returns null when there is nothing to store, and throws when the name cannot be stored.
@@ -52,6 +62,16 @@ function sourceOriginURL(value: string): string {
   return normalized;
 }
 
+/** Ignores a missing or malformed origin, and throws for a link outside the allowed hosts. */
+export function sourceOrigin(value: unknown): PlaygroundDocument["origin"] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const candidate = value as Record<string, unknown>;
+  if (typeof candidate.url !== "string" || candidate.url.length >= 1000) return undefined;
+  const origin: NonNullable<PlaygroundDocument["origin"]> = { url: sourceOriginURL(candidate.url) };
+  if (typeof candidate.commit === "string" && /^[a-f0-9]{40}$/.test(candidate.commit)) origin.commit = candidate.commit;
+  return origin;
+}
+
 export function sourceBytes(files: Record<string, string>): number {
   return Object.values(files).reduce((sum, text) => sum + encoder.encode(text).byteLength, 0);
 }
@@ -70,8 +90,7 @@ export function validatePlaygroundDocument(input: unknown): PlaygroundDocument {
   let size = 0;
   for (const [path, text] of entries) {
     const parts = path.split("/");
-    if (path.length > 180 || !isWellFormedUTF16(path) || path.startsWith("/") || path.includes("\\") || path.includes(":") || parts.length > 32 || parts[0].toLowerCase() === ".crabrix" || parts.some(part => !part || encoder.encode(part).length > 255 || part === "." || part === ".." || forbidden.has(part.toLowerCase()) || part.toLowerCase() === ".git" || part === "__proto__" || part === "constructor" || part === "prototype") ||
-        !allowed.test(path) || /[\u0000-\u001f\u007f]/.test(path)) throw new Error(`Unsupported source path: ${path.slice(0, 80)}`);
+    if (!isValidSourcePath(path)) throw new Error(`Unsupported source path: ${path.slice(0, 80)}`);
     const key = canonical(path);
     if (canonicalPaths.has(key)) throw new Error("Source paths collide on a native filesystem. No source was changed.");
     canonicalPaths.add(key);
@@ -80,21 +99,14 @@ export function validatePlaygroundDocument(input: unknown): PlaygroundDocument {
       if (previous !== undefined && previous.normalize("NFC") !== parent.normalize("NFC")) throw new Error("Source directory spellings conflict. No source was changed.");
       directories.set(key, parent);
     }
-    if (typeof text !== "string" || !isWellFormedUTF16(text) || /\u0000/.test(text) || encoder.encode(text).byteLength > PLAYGROUND_LIMITS.fileBytes) throw new Error("Each file must contain well-formed UTF-8 text up to 64 KiB; binary/media files are not accepted.");
+    if (typeof text !== "string" || !isValidSourceText(text) || encoder.encode(text).byteLength > PLAYGROUND_LIMITS.fileBytes) throw new Error("Each file must contain well-formed UTF-8 text up to 64 KiB; binary/media files are not accepted.");
     size += encoder.encode(text).byteLength;
     files[path] = text;
   }
   for (const key of directories.keys()) if (canonicalPaths.has(key)) throw new Error("A source file conflicts with a directory. No source was changed.");
   if (size > PLAYGROUND_LIMITS.sourceBytes) throw new Error("The source project exceeds 128 KiB.");
   if (!(value.entryFile in files) || !value.entryFile.endsWith(".rs")) throw new Error("Choose a Rust source entry file.");
-  let origin: PlaygroundDocument["origin"];
-  if (value.origin && typeof value.origin === "object" && !Array.isArray(value.origin)) {
-    const candidate = value.origin as Record<string, unknown>;
-    if (typeof candidate.url === "string" && candidate.url.length < 1000) {
-      origin = { url: sourceOriginURL(candidate.url) };
-      if (typeof candidate.commit === "string" && /^[a-f0-9]{40}$/.test(candidate.commit)) origin.commit = candidate.commit;
-    }
-  }
+  const origin = sourceOrigin(value.origin);
   return { schemaVersion: 1, name: value.name.trim(), entryFile: value.entryFile, files, edition: value.edition as PlaygroundDocument["edition"], ...(origin ? { origin } : {}) };
 }
 
