@@ -556,3 +556,10 @@ mount was preserved and backed up consistently. The previous image/container
 Only this task's regenerated expanded image-build staging copies were removed
 after publication; runtime/rollback images, deployment receipts and all accounts
 remain. [Publication receipt](site-release-2026-10-27-browser-packages.json).
+
+## Playground workspace and Crabrix MCP 0.3.5 — 2 November 2026
+
+The public image is `localhost/crabrix-web-site:playground-c02379a`. The candidate
+passed the 17 browser scenarios in `scripts/probes/playground/workspace.cjs` on
+loopback 3213 before cutover. The accounts backup ran first, and the previous
+container `crabrix-web-site-before-playground-20261102` is kept for rollback.
