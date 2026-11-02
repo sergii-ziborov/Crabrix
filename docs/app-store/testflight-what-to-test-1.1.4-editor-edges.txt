@@ -10,7 +10,7 @@ Editor: put the cursor after a closing brace and press Return, on a file with a 
 
 Rotation: open a lesson in one orientation, then turn the device, both ways. The lesson must take the full width of the new orientation. On a phone in landscape its header takes a single row.
 
-Scroll bars: in a long file the vertical bar runs the full height of the editor, and the horizontal bar stays at the bottom edge instead of crossing the code.
+Scroll bars: in a long file the vertical bar runs the full height of the editor, and the horizontal bar sits just above the Code/Problems/Output/Terminal tabs instead of hiding behind them.
 
 Output: the empty state has no inner frame.
 

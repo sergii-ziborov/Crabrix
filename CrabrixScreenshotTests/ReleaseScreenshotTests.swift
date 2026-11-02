@@ -178,6 +178,26 @@ final class ReleaseScreenshotTests: XCTestCase {
 
     /// A lesson opened in one orientation takes the full reading width of the
     /// other after turning the device, in both directions.
+    func testHorizontalScrollBarClearsTheTabs() throws {
+        continueAfterFailure = false
+        XCUIDevice.shared.orientation = .portrait
+        launch(["--crabrix-auto-borrow"])
+        let editor = app.textViews["Source code editor"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 10))
+        editor.tap()
+        editor.typeText(String(repeating: "let value = compute_something_with_a_rather_long_name(first_argument, second_argument);\n", count: 30))
+        let hide = app.buttons["Hide keyboard"].firstMatch
+        if hide.exists && hide.isHittable { hide.tap() } else { app.buttons["build-dock-output"].tap(); app.buttons["build-dock-code"].tap() }
+        Thread.sleep(forTimeInterval: 1)
+        let scroller = app.windows.firstMatch
+        scroller.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.4))
+            .press(forDuration: 0.05, thenDragTo: scroller.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.4)))
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "edges-scrollbar"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
     func testLessonAndWorkspaceFollowARotation() throws {
         continueAfterFailure = false
         for (first, second, name) in [

@@ -799,6 +799,9 @@ final class CodeEditorCanvas: UIView, UIGestureRecognizerDelegate {
         scrollView.showsHorizontalScrollIndicator = true
         scrollView.keyboardDismissMode = .interactive
         scrollView.contentInsetAdjustmentBehavior = .never
+        // The tab bar's safe area would otherwise lift the bars past the
+        // insets set in `setChromeInsets`.
+        scrollView.automaticallyAdjustsScrollIndicatorInsets = false
         scrollView.delegate = self
         scrollView.correctedReveal = { [weak self] rect in
             guard let textView = self?.textView,
@@ -891,11 +894,12 @@ final class CodeEditorCanvas: UIView, UIGestureRecognizerDelegate {
         let insets = UIEdgeInsets(top: 0, left: 0, bottom: bottom, right: trailing)
         guard scrollView.contentInset != insets else { return }
         scrollView.contentInset = insets
-        // The bars keep the full height of the editor and stay at its bottom
-        // edge: only the code has to scroll clear of the controls.
-        let indicatorBottom = min(bottom, Self.indicatorEdgeClearance)
-        scrollView.verticalScrollIndicatorInsets.bottom = indicatorBottom
-        scrollView.horizontalScrollIndicatorInsets.bottom = indicatorBottom
+        // The vertical bar keeps the full height of the editor, while the
+        // horizontal one sits just above the controls so they never hide it.
+        scrollView.verticalScrollIndicatorInsets.bottom = min(bottom, Self.indicatorEdgeClearance)
+        scrollView.horizontalScrollIndicatorInsets.bottom = bottom
+        scrollView.verticalScrollIndicatorInsets.right = trailing
+        scrollView.horizontalScrollIndicatorInsets.right = trailing
         setNeedsSizeUpdate()
     }
 

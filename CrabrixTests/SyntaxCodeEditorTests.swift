@@ -451,7 +451,7 @@ final class EditorScrollingTests: XCTestCase {
         XCTAssertEqual(canvas.scrollOffset.x, 0, accuracy: 0.5, "caret \(textView.caretRect(for: textView.selectedTextRange!.end))")
     }
 
-    func testFloatingControlsMoveTheCodeButNotTheScrollBars() throws {
+    func testFloatingControlsLeaveTheVerticalBarFullHeightAndLiftTheHorizontalOne() throws {
         let (canvas, window) = try makeEditor()
         defer { window.isHidden = true }
         let full = canvas.maximumVerticalOffset
@@ -461,7 +461,7 @@ final class EditorScrollingTests: XCTestCase {
 
         XCTAssertEqual(canvas.maximumVerticalOffset, full + 131, accuracy: 0.5, "the last line scrolls clear of the controls")
         XCTAssertEqual(canvas.verticalIndicatorBottomInset, CodeEditorCanvas.indicatorEdgeClearance)
-        XCTAssertEqual(canvas.horizontalIndicatorBottomInset, CodeEditorCanvas.indicatorEdgeClearance)
+        XCTAssertEqual(canvas.horizontalIndicatorBottomInset, 131, "the horizontal bar stays above the controls")
     }
 
     func testAFileThatFitsAboveTheControlsHasNothingToScroll() throws {
