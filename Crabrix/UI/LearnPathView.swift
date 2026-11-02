@@ -100,11 +100,12 @@ struct LearnPathView: View {
         .foregroundStyle(CrabrixTheme.primary)
         .navigationTitle(courseTitle)
         .navigationBarTitleDisplayMode(.inline)
-        .confirmationDialog(
+        .alert(
             "Reset progress in \(courseTitle)?",
             isPresented: $isResetConfirmationPresented
         ) {
             Button("Reset course progress", role: .destructive, action: onResetProgress)
+            Button("Cancel", role: .cancel) {}
         } message: {
             Text("Lessons and answers restart. Projects and earned rewards stay.")
         }

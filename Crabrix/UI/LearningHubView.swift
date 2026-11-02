@@ -390,12 +390,14 @@ private struct CourseLibraryView: View {
                 }
             }
         }
-        .confirmationDialog(
+        // Alerts, because a confirmation dialog points an arrow at the last
+        // touch here, which is often not the course being asked about.
+        .alert(
             pendingIsUpdate ? "Update lessons?" : "Download course?",
             isPresented: Binding(
                 get: { pendingDownload != nil },
                 set: { if !$0 { pendingDownload = nil } }
-            ), titleVisibility: .visible
+            )
         ) {
             if let entry = pendingDownload {
                 Button("\(pendingIsUpdate ? "Update" : "Download") \(ByteCountFormatter.string(fromByteCount: Int64(entry.archiveBytes), countStyle: .file))") {
@@ -409,20 +411,19 @@ private struct CourseLibraryView: View {
                  ? "The new lessons will replace the installed version after verification. Your progress and projects stay on this device."
                  : "The selected material will be available offline after verification.")
         }
-        .confirmationDialog("Update all courses?", isPresented: $confirmUpdateAll,
-                            titleVisibility: .visible) {
+        .alert("Update all courses?", isPresented: $confirmUpdateAll) {
             Button("Update \(updates.count) courses") { academy.updateAll() }
             Button("Cancel", role: .cancel) { confirmUpdateAll = false }
         } message: {
             let bytes = updates.reduce(Int64(0)) { $0 + Int64($1.archiveBytes) }
             Text("Downloads \(ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)). Saved progress and projects stay on this device.")
         }
-        .confirmationDialog(
+        .alert(
             "Remove \(pendingRemoval?.title ?? "download")?",
             isPresented: Binding(
                 get: { pendingRemoval != nil },
                 set: { if !$0 { pendingRemoval = nil } }
-            ), titleVisibility: .visible
+            )
         ) {
             if let removal = pendingRemoval {
                 Button("Remove downloaded material", role: .destructive) {

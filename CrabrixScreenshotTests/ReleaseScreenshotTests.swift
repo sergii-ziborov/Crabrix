@@ -178,6 +178,27 @@ final class ReleaseScreenshotTests: XCTestCase {
 
     /// A lesson opened in one orientation takes the full reading width of the
     /// other after turning the device, in both directions.
+    func testCourseDownloadAsksInACentredAlert() throws {
+        continueAfterFailure = false
+        XCUIDevice.shared.orientation = .portrait
+        launch(["--crabrix-auto-borrow"])
+        let tabBarLearn = app.tabBars.buttons["Learn"]
+        let back = app.buttons["Back to Projects"]
+        if back.exists { back.tap() }
+        (tabBarLearn.exists ? tabBarLearn : app.buttons["Learn"].firstMatch).tap()
+        let download = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Download'")).firstMatch
+        XCTAssertTrue(download.waitForExistence(timeout: 15), app.debugDescription)
+        download.tap()
+        let alert = app.alerts["Download course?"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 5), app.debugDescription)
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "edges-course-alert"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+        alert.buttons["Cancel"].tap()
+        XCTAssertFalse(alert.waitForExistence(timeout: 1))
+    }
+
     func testHorizontalScrollBarClearsTheTabs() throws {
         continueAfterFailure = false
         XCUIDevice.shared.orientation = .portrait
