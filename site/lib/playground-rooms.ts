@@ -7,6 +7,9 @@ export type PresenceEvent = { kind: "presence"; peer: string; packet: EncryptedP
 type Capability = "edit" | "view" | "owner";
 type Room = {
   id: string; createdAt: number; expiresAt: number; sequence: number;
+  // Changes with every append and every snapshot replacement. A snapshot leaves
+  // `sequence` alone, so only this proves a conditional write saw the latest state.
+  generation: number;
   tokens: Record<Capability, Buffer>; snapshot: EncryptedPacket; snapshotSequence: number;
   events: RoomEvent[]; presence: Map<string, { packet: EncryptedPacket; at: number }>; listeners: Map<string, (event: RoomEvent | PresenceEvent | "expired" | "closed") => void>;
   recentMessages: Map<string, number>; creator?: string;
@@ -96,7 +99,7 @@ export class PlaygroundRooms {
     const id = randomBytes(18).toString("base64url");
     const owner = token(), edit = token(), view = token();
     const createdAt = this.now(), expiresAt = createdAt + lifetimeSeconds * 1000;
-    this.rooms.set(id, { id, createdAt, expiresAt, sequence: 0, tokens: { owner: hash(owner), edit: hash(edit), view: hash(view) }, snapshot,
+    this.rooms.set(id, { id, createdAt, expiresAt, sequence: 0, generation: 0, tokens: { owner: hash(owner), edit: hash(edit), view: hash(view) }, snapshot,
       snapshotSequence: 0, events: [], presence: new Map(), listeners: new Map(), recentMessages: new Map(), creator });
     return { id, createdAt, expiresAt, owner, edit, view };
   }
@@ -121,8 +124,8 @@ export class PlaygroundRooms {
 
   state(id: string, supplied: string) {
     const room = this.access(id, supplied);
-    return { id, createdAt: room.createdAt, expiresAt: room.expiresAt, sequence: room.sequence,
-      protocol: { conditionalUpdates: 1 },
+    return { id, createdAt: room.createdAt, expiresAt: room.expiresAt, sequence: room.sequence, generation: room.generation,
+      protocol: { conditionalUpdates: 1, stateGeneration: 1 },
       snapshotSequence: room.snapshotSequence, snapshot: room.snapshot, events: room.events, presence: Array.from(room.presence, ([peer, value]) => ({ peer, packet: value.packet })) };
   }
 
@@ -135,22 +138,24 @@ export class PlaygroundRooms {
     return () => { room.listeners.delete(peer); room.presence.delete(peer); };
   }
 
-  append(id: string, supplied: string, peer: string, messageID: string, packet: EncryptedPacket, expectedSequence?: number) {
+  append(id: string, supplied: string, peer: string, messageID: string, packet: EncryptedPacket, expectedSequence?: number, expectedGeneration?: number) {
     const room = this.access(id, supplied, true);
     packet = validatePacket(packet, ROOM_LIMITS.updateBytes);
     if (!room.listeners.has(peer) || !/^[A-Za-z0-9_-]{16,64}$/.test(messageID)) throw new PlaygroundError("Join the interview before sending changes.", 409);
     this.limit(`updates:${id}:${peer}`, 180);
     const previous = room.recentMessages.get(messageID);
-    if (previous !== undefined) return { sequence: previous };
-    if (expectedSequence !== undefined && (!Number.isSafeInteger(expectedSequence) || expectedSequence < 0 || expectedSequence !== room.sequence)) {
+    if (previous !== undefined) return { sequence: previous, generation: room.generation };
+    if ((expectedSequence !== undefined && (!Number.isSafeInteger(expectedSequence) || expectedSequence < 0 || expectedSequence !== room.sequence)) ||
+        (expectedGeneration !== undefined && (!Number.isSafeInteger(expectedGeneration) || expectedGeneration < 0 || expectedGeneration !== room.generation))) {
       throw new PlaygroundError("The shared project changed. Read its latest revision before applying changes.", 409);
     }
     if (room.events.length >= ROOM_LIMITS.events || roomBytes(room) + packetBytes(packet) > ROOM_LIMITS.roomBytes || (room.creator && this.creatorBytes(room.creator) + packetBytes(packet) > ROOM_LIMITS.creatorBytes) || this.residentBytes() + packetBytes(packet) > ROOM_LIMITS.residentBytes) throw new PlaygroundError("Waiting for a fresh encrypted snapshot; retry your update.", 409);
     const event = { sequence: ++room.sequence, peer, packet };
+    room.generation++;
     room.events.push(event); room.recentMessages.set(messageID, event.sequence);
     if (room.recentMessages.size > 512) room.recentMessages.delete(room.recentMessages.keys().next().value!);
     for (const notify of room.listeners.values()) { try { notify(event); } catch {} }
-    return { sequence: event.sequence };
+    return { sequence: event.sequence, generation: room.generation };
   }
 
   publishPresence(id: string, supplied: string, peer: string, packet: EncryptedPacket) {
@@ -162,15 +167,15 @@ export class PlaygroundRooms {
     for (const notify of room.listeners.values()) { try { notify({ kind: "presence", peer, packet }); } catch {} }
   }
 
-  compact(id: string, supplied: string, sequence: number, snapshot: EncryptedPacket) {
+  compact(id: string, supplied: string, sequence: number, snapshot: EncryptedPacket, expectedGeneration?: number) {
     const room = this.access(id, supplied, true);
     snapshot = validatePacket(snapshot, ROOM_LIMITS.snapshotBytes);
     this.limit("snapshot:" + id, ROOM_LIMITS.snapshotsPerMinute);
-    if (sequence !== room.sequence) throw new PlaygroundError("Receive the latest changes before publishing a snapshot.", 409);
+    if (sequence !== room.sequence || (expectedGeneration !== undefined && expectedGeneration !== room.generation)) throw new PlaygroundError("Receive the latest changes before publishing a snapshot.", 409);
     const delta = packetBytes(snapshot) - roomBytes(room);
     if (this.residentBytes() + delta > ROOM_LIMITS.residentBytes) throw new PlaygroundError("Temporary room memory is full.", 503);
-    room.snapshot = snapshot; room.snapshotSequence = sequence; room.events = [];
-    return { sequence };
+    room.snapshot = snapshot; room.snapshotSequence = sequence; room.events = []; room.generation++;
+    return { sequence, generation: room.generation };
   }
 
   close(id: string, supplied: string) {

@@ -3,6 +3,12 @@
 > [public SDK repository](https://github.com/sergii-ziborov/crabrix-sdk).
 > This directory and the published 0.2.0 archive retain their historical license
 > and behavior. See the new SDK for current installation and MIT source terms.
+>
+> **Moving over:** remove your `crabrix-playground` server and add one `crabrix`
+> server, or install the Claude Code plugin `crabrix@crabrix`, which registers it
+> for you. Do not keep both: each joins a room as its own participant, and a global
+> install of either package owns the `crabrix-mcp` command. Room links and
+> `crabrix_*` tools keep working. The commands below are historical.
 
 # 🦀 Crabrix Playground MCP
 

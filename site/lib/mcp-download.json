@@ -8,5 +8,13 @@
   "noticesURL": "/downloads/crabrix-0.3.4-NOTICES.txt",
   "licenseURL": "/downloads/crabrix-0.3.4-LICENSE.txt",
   "assetsLicenseURL": "/downloads/crabrix-0.3.4-ASSETS-LICENSE.txt",
-  "repository": "https://github.com/sergii-ziborov/crabrix-sdk"
+  "repository": "https://github.com/sergii-ziborov/crabrix-sdk",
+  "rust": {
+    "crate": "crabrix",
+    "version": "0.3.3"
+  },
+  "go": {
+    "module": "github.com/sergii-ziborov/crabrix-sdk/go/crabrix",
+    "version": "v0.3.3"
+  }
 }

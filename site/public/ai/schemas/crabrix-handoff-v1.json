@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://crabrix.com/ai/schemas/crabrix-handoff-v1.json",
+  "title": "Crabrix room handoff",
+  "description": "Contains a secret capability link. Share it only with intended agents or people.",
+  "type": "object",
+  "required": ["schema", "linkType", "link", "expiresAt", "mode", "execution"],
+  "properties": {
+    "schema": { "const": "crabrix-handoff-v1" },
+    "linkType": { "type": "string" },
+    "link": { "type": "string", "format": "uri" },
+    "expiresAt": { "type": "string", "format": "date-time" },
+    "revision": { "type": "string" },
+    "mode": { "enum": ["edit", "view"] },
+    "execution": { "type": "string" },
+    "warning": { "type": "string" }
+  }
+}

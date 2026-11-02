@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: "/index.html", destination: "/", permanent: true },
+      { source: "/playground/mcp", destination: "/ai/", permanent: true },
       ...["about", "technology", "support", "privacy", "terms"].map((route) => ({ source: `/${route}.html`, destination: `/${route}/`, permanent: true })),
     ];
   },

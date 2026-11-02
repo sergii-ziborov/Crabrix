@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://crabrix.com/ai/schemas/crabrix-ai-bootstrap-v1.json",
+  "title": "Crabrix AI bootstrap descriptor",
+  "type": "object",
+  "required": ["schema", "product", "integrationFamily", "docsUrl", "distribution", "mcp", "handoffSchemas", "document", "runtimeProfiles", "execution"],
+  "properties": {
+    "schema": { "const": "crabrix-ai-bootstrap-v1" },
+    "schemaUrl": { "type": "string", "format": "uri" },
+    "product": { "const": "Crabrix" },
+    "integrationFamily": { "const": "crabrix" },
+    "docsUrl": { "type": "string", "format": "uri" },
+    "distribution": {
+      "type": "object",
+      "required": ["npm", "claudePlugin"],
+      "properties": {
+        "npm": { "type": "object", "required": ["name", "version"], "properties": { "name": { "type": "string" }, "version": { "type": "string" } } },
+        "claudePlugin": { "type": "string" },
+        "rust": { "type": "object", "required": ["crate", "version"], "properties": { "crate": { "type": "string" }, "version": { "type": "string" } } },
+        "go": { "type": "object", "required": ["module", "version"], "properties": { "module": { "type": "string" }, "version": { "type": "string" } } }
+      }
+    },
+    "mcp": {
+      "type": "object",
+      "required": ["serverName", "transports", "config"],
+      "properties": {
+        "serverName": { "const": "crabrix" },
+        "transports": { "type": "array", "items": { "enum": ["stdio"] } },
+        "config": { "type": "object", "required": ["command", "args"], "properties": { "command": { "type": "string" }, "args": { "type": "array", "items": { "type": "string" } } } },
+        "minimumNode": { "type": "string" }
+      }
+    },
+    "handoffSchemas": { "type": "array", "items": { "type": "string" } },
+    "document": { "type": "object", "required": ["schemaVersion", "limits"] },
+    "runtimeProfiles": { "type": "array", "items": { "type": "string" } },
+    "execution": { "type": "object", "required": ["automatic", "requiresTargetGrant"], "properties": { "automatic": { "const": false }, "requiresTargetGrant": { "const": true } } },
+    "workflow": { "type": "array", "items": { "type": "string" } }
+  }
+}

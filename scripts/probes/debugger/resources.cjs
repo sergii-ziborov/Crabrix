@@ -15,10 +15,11 @@ const source = 'fn main() {\n let label=include_str!("message.txt");\n let bytes
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     const errors = []; page.on('pageerror', e => errors.push(e.message));
     await page.goto(origin + '/playground/'); await page.waitForSelector('.cm-content');
-    page.once('dialog', d => d.accept('message.txt'));
     await page.getByRole('button', { name: 'Add source file', exact: true }).click();
+    await page.locator('.pg-file-form').getByLabel('Path').fill('message.txt');
+    await page.locator('.pg-file-form').getByRole('button', { name: 'New file' }).click();
     await page.locator('.cm-content').fill(resource);
-    await page.locator('.pg-file').filter({ hasText: 'main.rs' }).click();
+    await page.getByRole('treeitem', { name: /main\.rs/ }).locator('.pg-tree-open').click();
     await page.locator('.cm-content').fill(source);
     await page.getByRole('button', { name: 'Debug Rust', exact: true }).click();
     await page.getByRole('button', { name: '▶ Continue', exact: true }).waitFor({ timeout: 300000 });

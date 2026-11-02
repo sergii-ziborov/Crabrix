@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { currentViewer } from "@/lib/auth";
 import { SiteNavigation } from "@/components/site-navigation";
+import { ThemeSelect } from "@/components/theme-provider";
 
 export async function SiteHeader() {
   const viewer = await currentViewer();
@@ -12,7 +13,10 @@ export async function SiteHeader() {
           <span>Crabrix</span>
         </Link>
         <SiteNavigation />
-        <Link className="site-account" href={viewer ? "/account/" : "/login/"}>{viewer ? "Account" : "Sign in"}</Link>
+        <div className="site-header-tools">
+          <ThemeSelect />
+          <Link className="site-account" href={viewer ? "/account/" : "/login/"}>{viewer ? "Account" : "Sign in"}</Link>
+        </div>
       </div>
     </header>
   );

@@ -25,12 +25,14 @@ export async function POST(request: Request, context: Context) {
     if (body.type === "snapshot") {
       const snapshot = validatePacket(body.packet, ROOM_LIMITS.snapshotBytes);
       if (!Number.isSafeInteger(body.sequence)) throw new PlaygroundError("Invalid snapshot sequence.");
-      return Response.json(playgroundRooms.compact(id, capability, Number(body.sequence), snapshot), { headers: privateHeaders });
+      if (body.expectedGeneration !== undefined && (!Number.isSafeInteger(body.expectedGeneration) || Number(body.expectedGeneration) < 0)) throw new PlaygroundError("Invalid expected revision.");
+      return Response.json(playgroundRooms.compact(id, capability, Number(body.sequence), snapshot, body.expectedGeneration as number | undefined), { headers: privateHeaders });
     }
     if (body.type === "update" && typeof body.peer === "string" && typeof body.messageID === "string") {
       const packet = validatePacket(body.packet, ROOM_LIMITS.updateBytes);
       if (body.expectedSequence !== undefined && (!Number.isSafeInteger(body.expectedSequence) || Number(body.expectedSequence) < 0)) throw new PlaygroundError("Invalid expected revision.");
-      return Response.json(playgroundRooms.append(id, capability, body.peer, body.messageID, packet, body.expectedSequence as number | undefined), { headers: privateHeaders });
+      if (body.expectedGeneration !== undefined && (!Number.isSafeInteger(body.expectedGeneration) || Number(body.expectedGeneration) < 0)) throw new PlaygroundError("Invalid expected revision.");
+      return Response.json(playgroundRooms.append(id, capability, body.peer, body.messageID, packet, body.expectedSequence as number | undefined, body.expectedGeneration as number | undefined), { headers: privateHeaders });
     }
     throw new PlaygroundError("Unsupported relay message.");
   } catch (error) { return playgroundFailure(error); }
