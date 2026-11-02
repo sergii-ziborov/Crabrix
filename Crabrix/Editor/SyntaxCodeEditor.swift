@@ -806,8 +806,8 @@ final class CodeEditorCanvas: UIView, UIGestureRecognizerDelegate {
         scrollView.correctedReveal = { [weak self] rect in
             guard let textView = self?.textView,
                   let caret = textView.selectedTextRange?.end,
-                  let indentX = textView.indentCaretX(at: caret) else { return rect }
-            return CGRect(x: indentX, y: rect.minY, width: min(rect.width, 2), height: rect.height)
+                  let caretX = textView.measuredCaretX(at: caret) else { return rect }
+            return CGRect(x: caretX, y: rect.minY, width: min(rect.width, 2), height: rect.height)
         }
 
         textView.isScrollEnabled = false
@@ -988,7 +988,7 @@ final class CodeEditorCanvas: UIView, UIGestureRecognizerDelegate {
         textView.layoutManager.ensureLayout(for: textView.textContainer)
         var caret = textView.caretRect(for: selection.end)
         guard caret.isFinite else { return }
-        if let indentX = textView.indentCaretX(at: selection.end) { caret.origin.x = indentX }
+        if let caretX = textView.measuredCaretX(at: selection.end) { caret.origin.x = caretX }
         caret = caret.insetBy(dx: -(Self.gutterWidth + 24), dy: -12)
         scrollView.scrollRectToVisible(caret, animated: false)
     }
@@ -1013,16 +1013,16 @@ final class RustSourceTextView: UITextView {
         didSet { inputAccessoryView = editorInputAccessoryView }
     }
 
-    /// Where a caret preceded only by indentation sits, measured from the start
-    /// of its line, or nil when text comes before it.
-    fileprivate func indentCaretX(at position: UITextPosition) -> CGFloat? {
+    /// Where the caret sits, measured from the text before it on its line.
+    /// Around an edit on the last lines, UIKit answers with the far end of the
+    /// file's widest line instead.
+    fileprivate func measuredCaretX(at position: UITextPosition) -> CGFloat? {
         let source = text as NSString
         let offset = self.offset(from: beginningOfDocument, to: position)
-        guard offset <= source.length else { return nil }
+        guard offset <= source.length, let font else { return nil }
         let lineStart = source.lineRange(for: NSRange(location: offset, length: 0)).location
-        let indent = source.substring(with: NSRange(location: lineStart, length: offset - lineStart))
-        guard indent.allSatisfy({ $0 == " " || $0 == "\t" }), let font else { return nil }
-        return textContainerInset.left + (indent as NSString).size(withAttributes: [.font: font]).width
+        let before = source.substring(with: NSRange(location: lineStart, length: offset - lineStart))
+        return textContainerInset.left + (before as NSString).size(withAttributes: [.font: font]).width
     }
 
     @discardableResult override func becomeFirstResponder() -> Bool {
@@ -1134,6 +1134,11 @@ final class RustSourceTextView: UITextView {
             let line = self.lineNumber(at: characterIndex, starts: lineStarts)
             guard seen.insert(line).inserted else { return }
             lines.append(GutterView.Line(number: line, y: rect.minY + self.textContainerInset.top))
+        }
+        // The empty line after a final newline has no glyphs, so it is laid out apart.
+        let extra = layoutManager.extraLineFragmentRect
+        if !extra.isEmpty, extra.intersects(inContainer) {
+            lines.append(GutterView.Line(number: (source as NSString).components(separatedBy: "\n").count, y: extra.minY + textContainerInset.top))
         }
         return lines
     }

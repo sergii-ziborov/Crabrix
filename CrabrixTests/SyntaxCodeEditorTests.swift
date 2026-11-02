@@ -475,6 +475,63 @@ final class EditorScrollingTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(canvas.textView.frame.height, canvas.bounds.height, "the whole editor still takes taps")
     }
 
+    func testDeletingTheLastNewlineDoesNotScrollSideways() throws {
+        let source = """
+        fn main() {
+            println!("a long enough line to pass the right edge of a small phone screen");
+        }
+
+        """
+        let (canvas, window) = try makeEditor(source: source)
+        defer { window.isHidden = true }
+        let textView = canvas.textView
+        textView.becomeFirstResponder()
+        canvas.layoutIfNeeded()
+        textView.selectedRange = NSRange(location: (textView.text as NSString).length, length: 0)
+        canvas.layoutIfNeeded()
+        XCTAssertGreaterThan(textView.frame.width, canvas.bounds.width, "the fixture must scroll sideways")
+
+        textView.deleteBackward()
+        canvas.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        canvas.layoutIfNeeded()
+
+        XCTAssertTrue(textView.text.hasSuffix("}"))
+        XCTAssertEqual(canvas.scrollOffset.x, 0, accuracy: 0.5)
+    }
+
+    func testDeletingACharacterOnTheLastLineDoesNotScrollSideways() throws {
+        let source = """
+        fn main() {
+            println!("a long enough line to pass the right edge of a small phone screen");
+        }}
+        """
+        let (canvas, window) = try makeEditor(source: source)
+        defer { window.isHidden = true }
+        let textView = canvas.textView
+        textView.becomeFirstResponder()
+        canvas.layoutIfNeeded()
+        textView.selectedRange = NSRange(location: (textView.text as NSString).length, length: 0)
+        canvas.layoutIfNeeded()
+
+        textView.deleteBackward()
+        canvas.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        canvas.layoutIfNeeded()
+
+        XCTAssertEqual(canvas.scrollOffset.x, 0, accuracy: 0.5)
+    }
+
+    func testTheEmptyLastLineHasANumber() throws {
+        let (canvas, window) = try makeEditor(source: "fn main() {\n}\n")
+        defer { window.isHidden = true }
+        canvas.layoutIfNeeded()
+        let textView = try XCTUnwrap(canvas.textView as? RustSourceTextView)
+        let lines = textView.lineNumbers(in: canvas.bounds)
+        XCTAssertEqual(lines.map(\.number), [1, 2, 3])
+        XCTAssertGreaterThan(lines[2].y, lines[1].y)
+    }
+
     func testEnterAfterAnIndentedClosingBraceDoesNotScrollSideways() throws {
         let source = """
         fn main() {

@@ -295,6 +295,31 @@ async function scenario(name, work) {
     await context.close();
   });
 
+  await scenario('an expired room keeps its text and Copy to local carries on, with a leave warning', async () => {
+    const { context, page } = await fresh();
+    await page.clock.install();
+    await open(page);
+    await page.locator('.cm-content').click(); await page.keyboard.type('// written-before-expiry\n');
+    await button(page, 'Share Playground').click();
+    await page.getByRole('button', { name: /Create share link/ }).click();
+    await page.getByRole('button', { name: 'Copy Playground link' }).waitFor();
+    await button(page, 'Close').click();
+    await page.getByText('Connected').waitFor({ timeout: 15000 });
+    await page.clock.fastForward(2 * 3600 * 1000);
+    await page.getByText('Room expired').waitFor();
+    assert.match(await editorText(page), /written-before-expiry/);
+    assert.equal(await button(page, 'Run').count() ? await page.getByRole('button', { name: '▶ Run' }).isDisabled() : true, true);
+    await page.locator('.site-nav').getByRole('link', { name: 'Guide' }).click();
+    await page.getByRole('heading', { name: 'Leave this page?' }).waitFor();
+    await button(page, 'Stay').click();
+    await button(page, 'Copy to local').click();
+    await page.getByText('no time limit').waitFor();
+    assert.equal(page.url(), origin + '/playground/');
+    assert.equal(await page.locator('.cm-content').getAttribute('contenteditable'), 'true');
+    assert.match(await editorText(page), /written-before-expiry/);
+    await context.close();
+  });
+
   await scenario('AI-01 Connect AI gives one setup per client and a handoff with a task', async () => {
     const { context, page } = await fresh(); await open(page);
     await button(page, 'Connect AI').click();
