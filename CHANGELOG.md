@@ -1,5 +1,19 @@
 # Changelog
 
+## 2 November — Code screen edges, Playground workspace and Crabrix MCP 0.3.5
+
+- App 1.1.4: code runs to the screen edges, under floating tabs that move to the top
+  row in landscape; iPad uses one header row; lessons reflow on rotation; Return and
+  Delete near the end of a file no longer scroll sideways; the horizontal scroll bar
+  sits above the tabs; the empty last line has a number.
+- Website: imports are reviewed before they change anything and can add part of a
+  project; a local draft has no room timer; Copy to local detaches from a room; a
+  keyboard file tree with in-page dialogs; Undo lasts across files; one theme for the
+  whole site; `/ai/` replaces `/playground/mcp/`, with a public `bootstrap.json`.
+- Relay: conditional writes also check a state generation, so a replaced snapshot
+  refuses an edit prepared before it. Older clients keep working unchanged.
+- Crabrix MCP 0.3.5: see the SDK changelog.
+
 ## 1 November — Audit fixes, Academy catalog 17 and 1.1.4 candidate
 
 - All 754 lessons reviewed against real rustc and Cargo runs. False claims, truncated

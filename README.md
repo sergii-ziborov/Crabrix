@@ -371,7 +371,7 @@ Five additional articles occupy October 5, 6, 7, 8 and 24: [local progress and o
 
 ## Temporary Playground — public guest editor
 
-The [Playground MCP bridge](https://crabrix.com/playground/mcp/) connects Claude
+The [Crabrix MCP bridge](https://crabrix.com/ai/) connects Claude
 Code/Desktop or another local MCP host as a named participant. The **0.1.0**
 download supports source reads, relay-enforced revision checks, edits and relative
 selections. MCP + Chromium + two actual Simulator apps passed a joint flow with
