@@ -169,7 +169,11 @@ final class AcademyContentStore: ObservableObject {
             do {
                 let bootstrap = try CourseBootstrap()
                 let manager = try CourseDownloadManager()
+                let throttle = DownloadProgressThrottle()
                 let (descriptor, archive) = try await manager.download(entry) { [weak self] received, total in
+                    // Every published change redraws each view observing this store,
+                    // the app's root included. One step per percent keeps the UI responsive.
+                    guard throttle.admits(received, total) else { return }
                     Task { @MainActor [weak self] in
                         self?.transfers[key] = .downloading(received, total)
                     }
@@ -220,6 +224,21 @@ final class AcademyContentStore: ObservableObject {
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+}
+
+/// Passes the first report and then one report per whole-percent step.
+final class DownloadProgressThrottle: @unchecked Sendable {
+    private let lock = NSLock()
+    private var lastStep = -1
+
+    func admits(_ received: Int, _ total: Int) -> Bool {
+        let step = total > 0 ? min(100, received * 100 / total) : 0
+        return lock.withLock {
+            guard step > lastStep else { return false }
+            lastStep = step
+            return true
         }
     }
 }

@@ -261,3 +261,14 @@ final class CourseDownloadManagerTests: XCTestCase {
         SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
     }
 }
+
+final class DownloadProgressThrottleTests: XCTestCase {
+    func testPassesOneReportPerWholePercent() {
+        let throttle = DownloadProgressThrottle(), total = 50 * 1024 * 1024
+        let chunks = stride(from: 64 * 1024, through: total, by: 64 * 1024)
+        let passed = chunks.filter { throttle.admits($0, total) }
+        XCTAssertEqual(passed.count, 101, "0% through 100%")
+        XCTAssertEqual(passed.last, total)
+        XCTAssertFalse(throttle.admits(total, total))
+    }
+}
