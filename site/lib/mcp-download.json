@@ -1,20 +1,20 @@
 {
-  "version": "0.3.5",
+  "version": "0.4.0",
   "packageName": "crabrix",
-  "url": "/downloads/crabrix-0.3.5.tgz",
-  "bytes": 502372,
-  "sizeLabel": "491 KiB",
-  "sha256": "87986bd3e062f12636a8c119792befdba17bd4f00c243a7f9afa0d57b443f983",
-  "noticesURL": "/downloads/crabrix-0.3.5-NOTICES.txt",
-  "licenseURL": "/downloads/crabrix-0.3.5-LICENSE.txt",
-  "assetsLicenseURL": "/downloads/crabrix-0.3.5-ASSETS-LICENSE.txt",
+  "url": "/downloads/crabrix-0.4.0.tgz",
+  "bytes": 534576,
+  "sizeLabel": "522 KiB",
+  "sha256": "ff61262bfdcf158d00ff187fe05252069c294b107900434907d1955be63e533f",
+  "noticesURL": "/downloads/crabrix-0.4.0-NOTICES.txt",
+  "licenseURL": "/downloads/crabrix-0.4.0-LICENSE.txt",
+  "assetsLicenseURL": "/downloads/crabrix-0.4.0-ASSETS-LICENSE.txt",
   "repository": "https://github.com/sergii-ziborov/crabrix-sdk",
   "rust": {
     "crate": "crabrix",
-    "version": "0.3.5"
+    "version": "0.4.0"
   },
   "go": {
     "module": "github.com/sergii-ziborov/crabrix-sdk/go/crabrix",
-    "version": "v0.3.5"
+    "version": "v0.4.0"
   }
 }
