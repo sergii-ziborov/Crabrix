@@ -63,7 +63,9 @@ server {
     # must be disabled so code and selections arrive immediately.
     location ^~ /api/playground/ {
         access_log off;
-        client_max_body_size 400k;
+        # A v2 room's 512 KiB snapshot is 720,000 JSON characters; the relay
+        # enforces each room's own limit, 400,000 for a v1 room.
+        client_max_body_size 720k;
         client_body_timeout 10s;
         proxy_pass http://127.0.0.1:3212;
         proxy_http_version 1.1;

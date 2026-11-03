@@ -1,5 +1,18 @@
 # Crabrix website deployment
 
+## Playground R2 relay and web client — 3 November 2026
+
+The live service uses `localhost/crabrix-web-site:r2-af7e765`; the previous service is
+retained as `crabrix-web-site-before-r2-20261103`, after a consistent account backup.
+Rooms now record their document format. A format v2 room (stable file IDs) answers 426
+to a client that does not declare `codecs=1,2`, before any rate limit or participant
+slot, and accepts a 512 KiB snapshot. The web client reads both formats; creating a v2
+room is still behind the internal flag `localStorage["crabrix.playground.format"] = "2"`.
+nginx now allows 720k request bodies on `/api/playground/` (was 400k; the old file is kept
+as `crabrix.com.before-r2-20261103`), because the v2 snapshot request is 720,000
+characters. Two web sessions, a rename during typing, recovery, the 426 refusal, a
+300 KiB v2 snapshot and the v1 path passed against the candidate and again on production.
+
 ## MCP 0.3.4 and relay room limit — 1 November 2026
 
 The live service uses `localhost/crabrix-web-site:mcp034-c75f95a`; the previous service is
