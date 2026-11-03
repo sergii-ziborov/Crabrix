@@ -208,6 +208,15 @@ final class PlaygroundLiveSession: ObservableObject {
         if let bytes = value.presence { presence = Data(bytes) }
         if let frames = value.runtimeFrames, frames != runtimeFrames { runtimeFrames = frames; onRuntimeFrames?(frames) }
     }
+    /// Shown above the editor while a format v2 room cannot run, so a read-only editor explains itself.
+    var blockedNotice: String? {
+        guard !blocked.isEmpty else { return nil }
+        let reasons = ["no-files": "it has no files", "no-entry": "no Rust file can be its entry", "files": "it has more than 16 files",
+                       "file-bytes": "a file is larger than 64 KiB", "source-bytes": "it is larger than 128 KiB", "text": "a file has characters the compiler cannot read"]
+        let reason = blocked.compactMap { reasons[$0] }.first ?? "it is outside the Playground limits"
+        let recovery = recoveryCount > 0 ? " \(recoveryCount) deleted file\(recoveryCount == 1 ? " is" : "s are") in Recovery there." : ""
+        return "Read only: the shared project cannot run because \(reason). Fix it in the browser; your copy here is unchanged.\(recovery)"
+    }
     /// The status line while connected: the access mode, then what a v2 room asks of this app.
     private var connectedStatus: String {
         var text = formatMismatch ? "Connected · read only: unexpected document format · encrypted" : link.isReadOnly ? "Connected · view only · encrypted" : "Connected · shared editor · encrypted"

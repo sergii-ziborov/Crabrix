@@ -1,5 +1,19 @@
 # Changelog
 
+## 3 November — Playground files keep stable IDs (R2), Crabrix 1.1.5 candidate
+
+- Relay: each room records its document format. A room with stable file IDs refuses a
+  client that does not read that format with a clear "update Crabrix" message, before
+  any rate limit or participant slot, and allows a 512 KiB snapshot. Rooms in the
+  existing format and released apps, SDKs and browser tabs keep working unchanged.
+- Website: a new room format, still behind an internal flag, lets everyone in a room
+  rename, move or delete files while others type: an edit made during a rename stays
+  in the same file, and a deleted file's text waits in a Recovery list until someone
+  clears it. A project that cannot run stays editable and exportable.
+- App 1.1.5: joins those rooms, follows another participant's rename, shows how many
+  deleted files can be restored in the browser, and turns read only while a shared
+  project cannot run. Course downloads no longer freeze the screen.
+
 ## 2 November — Code screen edges, Playground workspace and Crabrix MCP 0.3.5
 
 - App 1.1.4: code runs to the screen edges, under floating tabs that move to the top

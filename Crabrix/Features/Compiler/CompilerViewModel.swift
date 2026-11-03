@@ -679,9 +679,13 @@ final class CompilerViewModel: ObservableObject {
             playgroundSelections = values
         }
         connection.onLocalSelection = { [weak self] value in self?.playgroundLocalSelection = value }
+        var showsBlockedNotice = false
         connection.onStatus = { [weak self, weak connection] value in
-            guard let self, playgroundSession === connection else { return }
+            guard let self, let connection, playgroundSession === connection else { return }
             playgroundStatus = value
+            // A format v2 room that cannot run is read only here; the existing strip says why.
+            if let notice = connection.blockedNotice { projectTransfer = .failed(notice); showsBlockedNotice = true }
+            else if showsBlockedNotice { showsBlockedNotice = false; if case .failed = projectTransfer { projectTransfer = .idle } }
             if case .openingFiles = projectTransfer, !value.hasPrefix("Connected") {
                 // A failing join remains recoverable; the existing project is intact.
                 if value.contains("expired") || value.hasPrefix("Reconnecting") { projectTransfer = .failed(value) }
