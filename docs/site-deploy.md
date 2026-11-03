@@ -1,5 +1,21 @@
 # Crabrix website deployment
 
+## Agent links and remote MCP — 4 November 2026
+
+The live service uses `localhost/crabrix-web-site:agents-138c1e6`; the previous service is
+retained as `crabrix-web-site-before-agents-20261104`, after a consistent account backup.
+Share links stay for people. Connect AI gives a separate agent link with the same access
+and expiry, with setup for Claude, Codex, Cursor (Add to Cursor), Grok and other clients.
+The Playground file panel now follows the app sidebar. A new container,
+`crabrix-mcp-remote-1` (`localhost/crabrix-mcp-remote:0.5.0-138c1e6`, built from the
+unpublished SDK 0.5.0 tarball `89a1c6d3…`), serves `/mcp/` on 127.0.0.1:3214 and joins
+rooms through https://crabrix.com. nginx proxies `/mcp/` without access or error logs;
+the old file is kept as `crabrix.com.before-agents-20261104`. The privacy policy states
+that the server decrypts a room while an agent uses its link as a remote MCP server.
+On production an MCP client connected through an agent link, read the room, wrote a file
+that appeared in the browser, and the test room was then ended. The download on `/ai/`
+stays 0.4.0, so the local-MCP use of agent links is hidden until 0.5.0 is published.
+
 ## Crabrix MCP 0.4.0 download — 3 November 2026
 
 The live service uses `localhost/crabrix-web-site:mcp040-a21e083`; the previous service is
