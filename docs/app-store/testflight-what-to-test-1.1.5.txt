@@ -1,0 +1,13 @@
+Crabrix 1.1.5 joins shared Playgrounds that keep stable file IDs. Everything from 1.1.4 is included.
+
+Shared rooms in the new format: on the website, one participant can rename, move or delete a file while another is typing in it. Open such a room with Open in Crabrix. When someone renames the file you have open, it stays open under its new name and your typing goes into it.
+
+Deleted files: if someone deletes a file you are editing, your text is kept in the room's Recovery list on the website. The status line here says how many deleted files can be restored in the browser.
+
+Read only: if a shared project cannot run (for example, no Rust file is left), this app shows it read only and says to fix it in the browser. Nothing you typed before is lost.
+
+Rooms from older apps and the website keep working as before.
+
+Learn: downloading or updating a course no longer freezes the screen; progress updates once per percent.
+
+Duo and iPad: the layouts did not change. Please check the code screen and a shared Playground on Duo (laptop and book poses) and on iPad, and report anything different.

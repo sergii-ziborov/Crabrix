@@ -69,11 +69,62 @@ final class PlaygroundModelTests: XCTestCase {
         let source = try PlaygroundDocument(name: "Unicode", entryFile: "main.rs", files: ["main.rs": "fn main() { println!(\"🦀 Привет\"); }"]).validated()
         let codec = try PlaygroundCodec(); _ = try codec.initialize(source)
         let snapshot = try XCTUnwrap(try codec.call(["type": "snapshot"]).snapshot)
-        let packet = try PlaygroundEncryption.seal(Data(snapshot), secret: link.key)
+        let packet = try PlaygroundEncryption.seal(PlaygroundCodec.bytes(snapshot), secret: link.key)
         let restored = try PlaygroundEncryption.open(packet, secret: link.key)
         let other = try PlaygroundCodec()
         XCTAssertEqual(try other.call(["type": "state", "snapshot": Array(restored), "events": []]).document, source)
         XCTAssertThrowsError(try PlaygroundEncryption.open(packet, secret: PlaygroundEncryption.newSecret()))
+    }
+
+    /// A format v2 room as the website publishes it (stable file IDs, see docs/playground-r2-design.md).
+    private static let stableFileRoom = "AQr33pqkDAAoAQRtZXRhDXNjaGVtYVZlcnNpb24BfQIoAQRtZXRhBG5hbWUBdwZzaGFyZWQoAQRtZXRhB2VkaXRpb24BdwQyMDI0JwEHZW50cmllcxZBSW9VbmlpeVBNWlEybVR1ZUFLTUZnASgA996apAwDBHBhdGgBdwdtYWluLnJzBAEYdDpBSW9VbmlpeVBNWlEybVR1ZUFLTUZnKW1vZCBoZWxwZXI7CmZuIG1haW4oKSB7IGhlbHBlcjo6cnVuKCk7IH0KKAEEbWV0YQtlbnRyeUZpbGVJZAF3FkFJb1VuaWl5UE1aUTJtVHVlQUtNRmcnAQdlbnRyaWVzFlVOcGs3bmdDakJhZ0tyUS15RkxjWmcBKAD33pqkDC8EcGF0aAF3CWhlbHBlci5ycwQBGHQ6VU5wazduZ0NqQmFnS3JRLXlGTGNaZxBwdWIgZm4gcnVuKCkge30KAA=="
+    /// A v2 room after another participant deleted its only Rust file: it cannot run.
+    private static let blockedRoom = "AQy6r/XVDgAoAQRtZXRhDXNjaGVtYVZlcnNpb24BfQIoAQRtZXRhBG5hbWUBdwdibG9ja2VkKAEEbWV0YQdlZGl0aW9uAXcEMjAyNCcBB2VudHJpZXMWT3NSTzJHTHNkZ0NLRko0b3NqekdVQQEoALqv9dUOAwRwYXRoAXcHbWFpbi5ycwQBGHQ6T3NSTzJHTHNkZ0NLRko0b3NqekdVQQ1mbiBtYWluKCkge30KKAEEbWV0YQtlbnRyeUZpbGVJZAF3Fk9zUk8yR0xzZGdDS0ZKNG9zanpHVUEnAQdlbnRyaWVzFmloU2VLTEk4eGxEYVpPNTRBb3dXb0EBKAC6r/XVDhMEcGF0aAF3CG5vdGVzLm1kBAEYdDppaFNlS0xJOHhsRGFaTzU0QW93V29BCCMgbm90ZXMKKAC6r/XVDgMHZGVsZXRlZAF4KAC6r/XVDgMGZGlnZXN0AXcQMzU1NDYzZDJkYjhjOWI3ZgA="
+
+    func testFormatV2RoomFollowsRenamesAndKeepsAnEditMadeDuringTheRename() throws {
+        let source = PlaygroundDocument(name: "shared", entryFile: "main.rs", files: ["main.rs": "mod helper;\nfn main() { helper::run(); }\n", "helper.rs": "pub fn run() {}\n"])
+        let first = try PlaygroundCodec(), second = try PlaygroundCodec()
+        let joined: [String: Any] = ["type": "state", "snapshot": Self.stableFileRoom, "events": [String](), "codec": 2]
+        XCTAssertEqual(try first.call(joined).document, source)
+        XCTAssertEqual(try second.call(joined).document, source)
+        // The app sends whole projects. A path that disappears while a new one with the
+        // same text appears is a rename of the same file, not a delete and a create.
+        var renamed = source; renamed.files = ["main.rs": source.files["main.rs"]!, "util/helper.rs": source.files["helper.rs"]!]
+        let rename = try XCTUnwrap(try first.replace(renamed).update)
+        let edit = try XCTUnwrap(try second.call(["type": "file", "path": "helper.rs", "text": "pub fn run() { println!(\"B\"); }\n"]).update)
+        let a = try first.call(["type": "update", "bytes": edit]), b = try second.call(["type": "update", "bytes": rename])
+        XCTAssertEqual(a.document, b.document)
+        XCTAssertEqual(b.document?.files["util/helper.rs"], "pub fn run() { println!(\"B\"); }\n")
+        XCTAssertNil(b.document?.files["helper.rs"])
+        XCTAssertEqual(b.renamed, ["helper.rs": "util/helper.rs"])
+        // A delete keeps the text; a late edit to the deleted file waits in recovery.
+        var deleted = renamed; deleted.files.removeValue(forKey: "util/helper.rs")
+        let removal = try XCTUnwrap(try first.replace(deleted).update)
+        let late = try XCTUnwrap(try second.call(["type": "file", "path": "util/helper.rs", "text": "late\n"]).update)
+        let c = try first.call(["type": "update", "bytes": late]), d = try second.call(["type": "update", "bytes": removal])
+        XCTAssertEqual(c.document, d.document)
+        XCTAssertEqual(c.recovery, 1)
+        XCTAssertEqual(d.recovery, 1)
+        // Snapshots cross the bridge as base64 and restore the same project.
+        let snapshot = try PlaygroundCodec.bytes(try first.call(["type": "snapshot"]).snapshot)
+        let third = try PlaygroundCodec()
+        XCTAssertEqual(try third.call(["type": "state", "snapshot": snapshot.base64EncodedString(), "events": [String](), "codec": 2]).document, c.document)
+    }
+
+    func testBlockedFormatV2RoomSendsNoDocumentAndCannotRun() throws {
+        let codec = try PlaygroundCodec()
+        let joined = try codec.call(["type": "state", "snapshot": Self.blockedRoom, "events": [String](), "codec": 2])
+        XCTAssertNil(joined.document, "A blocked project must not reach PlaygroundDocument.validated()")
+        XCTAssertEqual(joined.blocked, ["no-entry"])
+        XCTAssertEqual(joined.recovery, 1)
+        XCTAssertThrowsError(try codec.runtimeSourceIdentity())
+        // A v2 room whose document is the older format opens read only.
+        let older = try PlaygroundCodec(); _ = try older.initialize(PlaygroundDocument(name: "v1", entryFile: "main.rs", files: ["main.rs": "fn main() {}"]))
+        let v1 = try XCTUnwrap(try older.call(["type": "snapshot"]).snapshot)
+        let mismatch = try PlaygroundCodec()
+        XCTAssertEqual(try mismatch.call(["type": "state", "snapshot": v1, "events": [String](), "codec": 2]).formatMismatch, true)
+        XCTAssertThrowsError(try mismatch.replace(PlaygroundDocument(name: "v1", entryFile: "main.rs", files: ["main.rs": "fn main() { changed(); }"])))
+        XCTAssertThrowsError(try codec.call(["type": "state", "snapshot": Self.blockedRoom, "events": [String](), "codec": 3]))
     }
 
     func testNativeCodecKeepsSourceOriginsWithoutBrowserGlobalsAndRejectsCredentials() throws {

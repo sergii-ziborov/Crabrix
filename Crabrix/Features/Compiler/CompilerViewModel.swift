@@ -314,7 +314,8 @@ final class CompilerViewModel: ObservableObject {
     @Published private(set) var playgroundLocalSelection: PlaygroundRemoteSelection?
     @Published private(set) var playgroundSelections: [PlaygroundRemoteSelection] = []
     private var isApplyingPlayground = false
-    var playgroundIsReadOnly: Bool { playgroundSession.map { $0.link.isReadOnly || $0.expired } ?? false }
+    /// A view link, an ended room, or a format v2 room that cannot run until it is fixed in the browser.
+    var playgroundIsReadOnly: Bool { playgroundSession.map { !$0.isEditable } ?? false }
     private var fileContents = ["main.rs": RustSamples.runnable]
     private var entryFile = "main.rs"
     private var compilationTask: Task<Void, Never>?
@@ -664,7 +665,9 @@ final class CompilerViewModel: ObservableObject {
                 suppressAutosave = true
                 fileContents = incoming; fileNames = incoming.keys.sorted(by: projectFileOrder)
                 if sharedNameChanged { projectName = value.name }; entryFile = value.entryFile
-                selectedFile = incoming[oldSelection] == nil ? value.entryFile : oldSelection
+                // Another participant's rename keeps the same file open in a format v2 room.
+                let renamed = connection.renamedPaths[oldSelection].flatMap { incoming[$0] == nil ? nil : $0 }
+                selectedFile = incoming[oldSelection] == nil ? (renamed ?? value.entryFile) : oldSelection
                 source = incoming[selectedFile] ?? ""
                 suppressAutosave = false
                 workspaceGeneration &+= 1

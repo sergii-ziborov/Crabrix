@@ -2,6 +2,7 @@ import * as Y from "yjs";
 import { Awareness, applyAwarenessUpdate, encodeAwarenessUpdate } from "y-protocols/awareness";
 import { RUNTIME_LIMITS, type RuntimeEnvelope } from "./playground-runtime-protocol";
 import { isWellFormedUTF16 } from "./playground-document";
+import { readProject } from "./playground-codec-v2";
 
 export const participantColors = ["#2876bd", "#aa44b8", "#9f6812", "#187b53"];
 export function createPresence(doc: Y.Doc, name?: string): Awareness {
@@ -68,6 +69,29 @@ export function receivePresence(awareness: Awareness, bytes: Uint8Array, origin:
 }
 
 export type RemoteSelection = { clientID: number; name: string; color: string; file: string; anchor: number; head: number };
+
+/**
+ * Format v2: a cursor resolves only inside a live file's `t:<id>` text and reports
+ * that file's shown path. Every text is fetched with getText before any position is
+ * resolved, because Yjs replaces a root's instance when getText first types it.
+ */
+export function remoteSelectionsV2(doc: Y.Doc, awareness: Awareness, includeLocal = false): RemoteSelection[] {
+  const paths = new Map<string, string>(), texts = new Map<unknown, string>(), result: RemoteSelection[] = [];
+  for (const file of readProject(doc).files) paths.set("t:" + file.id, file.path);
+  for (const [name, path] of paths) if (doc.share.has(name)) texts.set(doc.getText(name), path);
+  awareness.getStates().forEach((state, clientID) => {
+    if ((!includeLocal && clientID === awareness.clientID) || !state.cursor) return;
+    try {
+      // An unknown root name would otherwise be created by resolving it.
+      for (const position of [state.cursor.anchor, state.cursor.head]) if (position?.type || (position?.tname != null && !paths.has(position.tname))) return;
+      const anchor = Y.createAbsolutePositionFromRelativePosition(Y.createRelativePositionFromJSON(state.cursor.anchor), doc);
+      const head = Y.createAbsolutePositionFromRelativePosition(Y.createRelativePositionFromJSON(state.cursor.head), doc);
+      if (!anchor || !head || anchor.type !== head.type || !texts.has(anchor.type)) return;
+      result.push({ clientID, name: state.user.name, color: state.user.color, file: texts.get(anchor.type)!, anchor: anchor.index, head: head.index });
+    } catch { /* A position from an update this client has not received yet resolves later. */ }
+  });
+  return result;
+}
 export function remoteSelections(doc: Y.Doc, awareness: Awareness, includeLocal = false): RemoteSelection[] {
   const files = doc.getMap<Y.Text>("files"), result: RemoteSelection[] = [];
   awareness.getStates().forEach((state, clientID) => {

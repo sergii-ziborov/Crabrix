@@ -10,10 +10,19 @@ final class PlaygroundCodec {
     struct Result: Decodable {
         var clientID: UInt32?
         var document: PlaygroundDocument?
-        var snapshot: [UInt8]?
-        var update: [UInt8]?
-        var merged: [UInt8]?
+        /// Base64: a byte array of a 512 KiB snapshot would not fit the bridge message.
+        var snapshot: String?
+        var update: String?
+        var merged: String?
         var presence: [UInt8]?
+        /// Format v2: why the shared project cannot run. No `document` is sent then,
+        /// and the app keeps its copy read only.
+        var blocked: [String]?
+        /// Format v2: deleted files whose text another participant can restore in the browser.
+        var recovery: Int?
+        /// Format v2: another participant renamed these paths, old path to new path.
+        var renamed: [String: String]?
+        var formatMismatch: Bool?
         var selections: [PlaygroundRemoteSelection]?
         var localSelection: PlaygroundRemoteSelection?
         var participants: Int?
@@ -64,6 +73,11 @@ final class PlaygroundCodec {
         return value
     }
     func initialize(_ document: PlaygroundDocument) throws -> Result { try call(["type": "initialize", "document": object(document)]) }
+    static func bytes(_ base64: String?) throws -> Data {
+        guard let base64 else { return Data() }
+        guard let data = Data(base64Encoded: base64) else { throw PlaygroundFailure("The local collaboration codec returned invalid bytes.") }
+        return data
+    }
     func replace(_ document: PlaygroundDocument) throws -> Result { try call(["type": "replace", "document": object(document)]) }
     struct RuntimeSourceIdentity: Sendable, Equatable { let revision: String; let paths: [String] }
     func runtimeSourceIdentity() throws -> RuntimeSourceIdentity {

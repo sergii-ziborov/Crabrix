@@ -85,3 +85,15 @@ run in the iOS Simulator with `CRABRIX_RUN_SHARED_RUNTIME_GATE=1`; keep the
 loopback fixture running for that test session. The compiler gate exercises
 compile-only Build, actual Run, late cancellation isolation and missing private
 inputs. Published MCP 0.1.1 remains the eight source/selection tools.
+
+## Stable file IDs in the native codec (format v2, 2026-11-03)
+
+After `node scripts/build_playground_bridge.mjs`, run
+`node --experimental-strip-types scripts/probes/playground/native-codec-v2.mjs`.
+It loads the built `PlaygroundCodec.js` in contexts without browser globals and
+checks, across several app clients: a whole-project `replace` that renames a file
+keeps another client's concurrent edit in the same file and reports the rename; a
+delete keeps a late edit in recovery; remote cursors resolve to shown paths; a
+blocked project returns no `document`; a fragmented room above 256 KiB crosses the
+bridge as base64 inside the 2,000,000 character message; v1 still accepts byte
+arrays and base64; a v2 room holding a v1 document opens read only.

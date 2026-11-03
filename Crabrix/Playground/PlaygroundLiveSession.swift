@@ -10,6 +10,16 @@ final class PlaygroundLiveSession: ObservableObject {
     @Published private(set) var selections: [PlaygroundRemoteSelection] = []
     @Published private(set) var participants = 1
     @Published private(set) var expired = false
+    /// Format v2 rooms: why the shared project cannot run, and how many deleted files
+    /// another participant can restore in the browser. A blocked room is read only here.
+    @Published private(set) var blocked: [String] = []
+    @Published private(set) var recoveryCount = 0
+    @Published private(set) var formatMismatch = false
+    /// The last remote rename, old path to new path, so the same file stays open.
+    private(set) var renamedPaths: [String: String] = [:]
+    var isEditable: Bool { !link.isReadOnly && !expired && blocked.isEmpty && !formatMismatch }
+    /// Formats this app reads, declared to the relay on every request.
+    static let codecs = "1,2"
     let link: PlaygroundLink
     private(set) var owner: String?
     private(set) var viewAccess: String?
@@ -78,11 +88,12 @@ final class PlaygroundLiveSession: ObservableObject {
         guard (60...86400).contains(lifetimeSeconds) else { throw PlaygroundFailure("Choose a lifetime up to 24 hours.") }
         let codec = try PlaygroundCodec(resourceURL: codecURL)
         _ = try codec.initialize(document)
-        let snapshot = try codec.call(["type": "snapshot"]).snapshot ?? []
+        let snapshot = try PlaygroundCodec.bytes(codec.call(["type": "snapshot"]).snapshot)
         let key = PlaygroundEncryption.newSecret()
-        let packet = try PlaygroundEncryption.seal(Data(snapshot), secret: key)
+        let packet = try PlaygroundEncryption.seal(snapshot, secret: key)
         var request = URLRequest(url: origin.appendingPathComponent("api/playground/rooms/"))
         request.httpMethod = "POST"; request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(codecs, forHTTPHeaderField: "X-Crabrix-Codecs")
         request.httpBody = try JSONSerialization.data(withJSONObject: ["snapshot": ["iv": packet.iv, "data": packet.data], "lifetimeSeconds": lifetimeSeconds])
         let (data, response) = try await URLSession.shared.data(for: request)
         try check(response, data: data)
@@ -91,7 +102,7 @@ final class PlaygroundLiveSession: ObservableObject {
         let link = PlaygroundLink(id: value.id, key: key, access: value.edit, expiresAt: Date(timeIntervalSince1970: value.expiresAt / 1000), isReadOnly: false)
         let session = try PlaygroundLiveSession(link: link, origin: origin, codecURL: codecURL)
         // Preserve the exact CRDT IDs from the encrypted initial snapshot.
-        try session.absorb(session.codec.call(["type": "state", "snapshot": snapshot, "events": []]))
+        try session.absorb(session.codec.call(["type": "state", "snapshot": snapshot.base64EncodedString(), "events": [String]()]))
         session.owner = value.owner; session.viewAccess = value.view
         return session
     }
@@ -120,12 +131,12 @@ final class PlaygroundLiveSession: ObservableObject {
     }
 
     func edit(file: String, text: String) {
-        guard !link.isReadOnly, !expired, !stopped else { return }
+        guard isEditable, !stopped else { return }
         do { try absorb(codec.call(["type": "file", "path": file, "text": text])); scheduleFlush() }
         catch { updateStatus(error.localizedDescription) }
     }
     func replace(_ source: PlaygroundDocument) throws {
-        guard !link.isReadOnly, !expired, !stopped else { throw PlaygroundFailure("This Playground is read only or expired.") }
+        guard isEditable, !stopped else { throw PlaygroundFailure(blocked.isEmpty ? "This Playground is read only or expired." : "This shared project is read only here until it can run again. Fix it in the browser.") }
         try absorb(codec.replace(source)); scheduleFlush()
     }
     func select(file: String, range: NSRange) {
@@ -161,6 +172,7 @@ final class PlaygroundLiveSession: ObservableObject {
         var request = URLRequest(url: URL(string: "/api/playground/rooms/\(link.id)/" + suffix, relativeTo: origin)!.absoluteURL)
         request.setValue("Bearer " + link.access, forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(Self.codecs, forHTTPHeaderField: "X-Crabrix-Codecs")
         return request
     }
     private static func check(_ response: URLResponse, data: Data) throws {
@@ -180,18 +192,40 @@ final class PlaygroundLiveSession: ObservableObject {
         return (data, code)
     }
     private func absorb(_ value: PlaygroundCodec.Result) throws {
+        if let mismatch = value.formatMismatch { formatMismatch = mismatch }
+        let nextBlocked = value.document == nil ? (value.blocked ?? blocked) : []
+        let nextRecovery = value.recovery ?? recoveryCount
+        if nextBlocked != blocked || nextRecovery != recoveryCount {
+            blocked = nextBlocked; recoveryCount = nextRecovery
+            if connected { updateStatus(connectedStatus) }
+        }
+        renamedPaths = value.renamed ?? [:]
         if let next = value.document, document != next { document = next; onRuntimeSourceChanged?(); onDocument?(next) }
         if let next = value.selections, selections != next { selections = next; onSelections?(next) }
         if let selection = value.localSelection { onLocalSelection?(selection) }
         if let count = value.participants { participants = count }
-        if let update = value.update, update.count > 2 { pending.append((PlaygroundEncryption.newSecret(), Data(update))) }
+        if let update = try? PlaygroundCodec.bytes(value.update), update.count > 2 { pending.append((PlaygroundEncryption.newSecret(), update)) }
         if let bytes = value.presence { presence = Data(bytes) }
         if let frames = value.runtimeFrames, frames != runtimeFrames { runtimeFrames = frames; onRuntimeFrames?(frames) }
     }
+    /// The status line while connected: the access mode, then what a v2 room asks of this app.
+    private var connectedStatus: String {
+        var text = formatMismatch ? "Connected · read only: unexpected document format · encrypted" : link.isReadOnly ? "Connected · view only · encrypted" : "Connected · shared editor · encrypted"
+        if !blocked.isEmpty { text += " · read only until the project can run again; fix it in the browser" }
+        if recoveryCount > 0 { text += " · \(recoveryCount) deleted file\(recoveryCount == 1 ? "" : "s") can be restored in the browser" }
+        return text
+    }
     private func stream() async throws {
-        let (bytes, response) = try await network.bytes(for: request("events/?peer=" + peer))
-        if (response as? HTTPURLResponse)?.statusCode == 410 { expire(); return }
-        guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw PlaygroundFailure("The interview connection is unavailable.") }
+        let (bytes, response) = try await network.bytes(for: request("events/?peer=" + peer + "&codecs=" + Self.codecs))
+        let code = (response as? HTTPURLResponse)?.statusCode ?? 0
+        if code == 410 { expire(); return }
+        guard code == 200 else {
+            // The relay explains a refusal, such as a room in a newer format (426).
+            var body = Data()
+            for try await byte in bytes { body.append(byte); if body.count > 4096 { break } }
+            struct Failure: Decodable { let error: String }
+            throw PlaygroundFailure((try? JSONDecoder().decode(Failure.self, from: body))?.error ?? "The interview connection is unavailable.", status: code)
+        }
         var event = "", payload = ""
         for try await line in bytes.lines {
             if stopped || Task.isCancelled { return }
@@ -202,7 +236,7 @@ final class PlaygroundLiveSession: ObservableObject {
             else if line.hasPrefix("data: ") { payload = String(line.dropFirst(6)); try receive(event: event, data: Data(payload.utf8)) }
         }
     }
-    private struct State: Decodable { let expiresAt: Double; let sequence: Int; let snapshot: PlaygroundEncryptedPacket; let events: [Update]; let presence: [Presence]? }
+    private struct State: Decodable { let codec: Int?; let expiresAt: Double; let sequence: Int; let snapshot: PlaygroundEncryptedPacket; let events: [Update]; let presence: [Presence]? }
     private struct Update: Decodable { let sequence: Int; let packet: PlaygroundEncryptedPacket }
     private struct Presence: Decodable { let packet: PlaygroundEncryptedPacket }
     private func receive(event: String, data: Data) throws {
@@ -212,19 +246,21 @@ final class PlaygroundLiveSession: ObservableObject {
             resetRuntime()
             let state = try JSONDecoder().decode(State.self, from: data)
             guard abs(state.expiresAt - link.expiresAt.timeIntervalSince1970 * 1000) < 1 else { throw PlaygroundFailure("The Playground lifetime does not match the link.") }
-            let snapshot = try PlaygroundEncryption.open(state.snapshot, secret: link.key)
-            let events = try state.events.map { Array(try PlaygroundEncryption.open($0.packet, secret: link.key, maximum: 196608)) }
-            try absorb(codec.call(["type": "state", "snapshot": Array(snapshot), "events": events]))
+            let format = state.codec ?? 1
+            guard format == 1 || format == 2 else { throw PlaygroundFailure("This Playground uses a newer format. Update Crabrix to open it.") }
+            let snapshot = try PlaygroundEncryption.open(state.snapshot, secret: link.key, maximum: format == 2 ? 524288 : 262144)
+            let events = try state.events.map { try PlaygroundEncryption.open($0.packet, secret: link.key, maximum: 196608).base64EncodedString() }
+            try absorb(codec.call(["type": "state", "snapshot": snapshot.base64EncodedString(), "events": events, "codec": format]))
             for item in state.presence ?? [] { receivePresence(item.packet) }
             sequence = state.sequence; connected = true
-            updateStatus(link.isReadOnly ? "Connected · view only · encrypted" : "Connected · shared editor · encrypted")
+            updateStatus(connectedStatus)
             scheduleFlush(); schedulePresence()
         } else if event == "update" {
             let value = try JSONDecoder().decode(Update.self, from: data)
             if value.sequence <= sequence { return }
             guard value.sequence == sequence + 1 else { throw PlaygroundFailure("Resynchronizing interview changes.") }
             let bytes = try PlaygroundEncryption.open(value.packet, secret: link.key, maximum: 196608)
-            try absorb(codec.call(["type": "update", "bytes": Array(bytes)])); sequence = value.sequence; scheduleSnapshot()
+            try absorb(codec.call(["type": "update", "bytes": bytes.base64EncodedString()])); sequence = value.sequence; scheduleSnapshot()
         } else if event == "presence" { receivePresence(try JSONDecoder().decode(Presence.self, from: data).packet) }
     }
     private func receivePresence(_ packet: PlaygroundEncryptedPacket) {
@@ -241,8 +277,8 @@ final class PlaygroundLiveSession: ObservableObject {
             while connected, !stopped, !Task.isCancelled, !pending.isEmpty {
                 do {
                     if pending.count > 1 {
-                        let bytes = try codec.call(["type": "merge", "updates": pending.map { Array($0.bytes) }]).merged ?? []
-                        pending = [(PlaygroundEncryption.newSecret(), Data(bytes))]
+                        let bytes = try PlaygroundCodec.bytes(codec.call(["type": "merge", "updates": pending.map { $0.bytes.base64EncodedString() }]).merged)
+                        pending = [(PlaygroundEncryption.newSecret(), bytes)]
                     }
                     guard let item = pending.first else { break }
                     guard item.bytes.count <= 196592 else { throw PlaygroundFailure("Live change exceeds the room limit. Save a local copy.") }
@@ -282,8 +318,8 @@ final class PlaygroundLiveSession: ObservableObject {
             guard connected, pending.isEmpty || snapshotOverdue else { return }
             do {
                 let currentSequence = sequence
-                let bytes = try codec.call(["type": "snapshot"]).snapshot ?? []
-                let packet = try PlaygroundEncryption.seal(Data(bytes), secret: link.key)
+                let bytes = try PlaygroundCodec.bytes(codec.call(["type": "snapshot"]).snapshot)
+                let packet = try PlaygroundEncryption.seal(bytes, secret: link.key)
                 _ = try await post(["type": "snapshot", "sequence": currentSequence, "packet": ["iv": packet.iv, "data": packet.data]])
                 snapshotOverdue = false
             } catch { if !stopped { scheduleSnapshot() } }
