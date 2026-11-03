@@ -1,6 +1,6 @@
 # Changelog
 
-## 3 November — Playground files keep stable IDs (R2), Crabrix 1.1.5 candidate
+## 3 November — Playground files keep stable IDs (R2), Crabrix 1.1.5 and MCP 0.4.0
 
 - Relay: each room records its document format. A room with stable file IDs refuses a
   client that does not read that format with a clear "update Crabrix" message, before
@@ -12,7 +12,11 @@
   clears it. A project that cannot run stays editable and exportable.
 - App 1.1.5: joins those rooms, follows another participant's rename, shows how many
   deleted files can be restored in the browser, and turns read only while a shared
-  project cannot run. Course downloads no longer freeze the screen.
+  project cannot run. Course downloads no longer freeze the screen. Build 127 is in
+  internal TestFlight.
+- Crabrix MCP 0.4.0 (npm, crates.io, Go): an agent can plan renames, moves and deletes
+  and apply them only if the room has not changed since, and a retried call does not
+  apply twice. New rooms still use the existing format. The website offers 0.4.0.
 
 ## 2 November — Code screen edges, Playground workspace and Crabrix MCP 0.3.5
 

@@ -1,5 +1,14 @@
 # Crabrix website deployment
 
+## Crabrix MCP 0.4.0 download — 3 November 2026
+
+The live service uses `localhost/crabrix-web-site:mcp040-a21e083`; the previous service is
+retained as `crabrix-web-site-before-mcp040-20261103`, after a consistent account backup.
+The `/ai/` page, `/ai/bootstrap.json` and the Connect AI dialog now offer `crabrix@0.4.0`,
+the version on npm, crates.io and the Go proxy. The public `/downloads/crabrix-0.4.0.tgz`
+has the same SHA-256 as the npm tarball (`ff61262b…`). After cutover the published package
+created, planned, applied and ended format 1 and format 2 rooms against production.
+
 ## Playground R2 relay and web client — 3 November 2026
 
 The live service uses `localhost/crabrix-web-site:r2-af7e765`; the previous service is
