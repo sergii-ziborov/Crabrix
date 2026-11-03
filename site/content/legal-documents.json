@@ -179,7 +179,7 @@
       },
       {
         "kind": "p",
-        "text": "LAST UPDATED 27 OCTOBER 2026"
+        "text": "LAST UPDATED 4 NOVEMBER 2026"
       },
       {
         "kind": "p",
@@ -191,7 +191,7 @@
       },
       {
         "kind": "p",
-        "text": "Crabrix is made by Serhii Ziborov, an independent developer. There is no company, no investor. Hosting providers receive ordinary requests for the public assets described below. Optional Playground sharing sends encrypted source to the relay; its decryption key stays with participants. Learning progress is not sent to the relay. Contact: [write to support](https://crabrix.com/support/)."
+        "text": "Crabrix is made by Serhii Ziborov, an independent developer. There is no company, no investor. Hosting providers receive ordinary requests for the public assets described below. Optional Playground sharing sends encrypted source to the relay; its decryption key stays with participants, except in one optional website feature described below. Learning progress is not sent to the relay. Contact: [write to support](https://crabrix.com/support/)."
       },
       {
         "kind": "h2",
@@ -247,7 +247,7 @@
       },
       {
         "kind": "p",
-        "text": "Connect AI gives a separate agent link for a room, with the same access and the same expiry as the person link it came from. If an agent adds that link as a remote MCP server, Crabrix's server receives the room key in the link, decrypts the room's source in process memory to answer that agent, and sends the agent's edits to the room as a named participant. It does not log the link, write keys or source to accounts or files, or compile or execute source. That session ends when the agent disconnects, after 30 minutes without requests, or when the room expires or ends. If the agent uses Crabrix MCP installed on its own computer, the link is used there as described above and Crabrix's server does not receive the key."
+        "text": "Website only: if you choose to give an AI agent a room's agent link as a remote MCP server, Crabrix's server decrypts that room's source in memory while the agent is connected, without logging or storing it. You are asked before the link is shown. This feature is optional, and the Crabrix app does not use it."
       },
       {
         "kind": "p",

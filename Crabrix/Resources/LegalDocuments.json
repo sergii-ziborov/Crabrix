@@ -170,7 +170,7 @@
   {
     "id": "privacy",
     "title": "Privacy Policy",
-    "updated": "2026-11-01",
+    "updated": "2026-11-04",
     "sourceURL": "https://crabrix.com/privacy/",
     "blocks": [
       {
@@ -179,7 +179,7 @@
       },
       {
         "kind": "p",
-        "text": "LAST UPDATED 27 OCTOBER 2026"
+        "text": "LAST UPDATED 4 NOVEMBER 2026"
       },
       {
         "kind": "p",
@@ -191,7 +191,7 @@
       },
       {
         "kind": "p",
-        "text": "Crabrix is made by Serhii Ziborov, an independent developer. There is no company, no investor. Hosting providers receive ordinary requests for the public assets described below. Optional Playground sharing sends encrypted source to the relay; its decryption key stays with participants. Learning progress is not sent to the relay. Contact: [write to support](https://crabrix.com/support/)."
+        "text": "Crabrix is made by Serhii Ziborov, an independent developer. There is no company, no investor. Hosting providers receive ordinary requests for the public assets described below. Optional Playground sharing sends encrypted source to the relay; its decryption key stays with participants, except in one optional website feature described below. Learning progress is not sent to the relay. Contact: [write to support](https://crabrix.com/support/)."
       },
       {
         "kind": "h2",
@@ -244,6 +244,10 @@
       {
         "kind": "p",
         "text": "The optional downloadable Crabrix Playground MCP bridge lets a local MCP host, such as Claude Code or Claude Desktop, join a room you authorize. The bridge decrypts source on that computer and can return source and selections to its host/model or send source edits as a named participant. Giving an AI host the complete link grants access to that room's decrypted source; the host and AI provider apply their own data and retention policies. The bridge keeps room keys and source in process memory, without writing them to Crabrix accounts, files or telemetry. Disconnect releases that process's room state, but cannot delete another host/provider's conversation history. The relay continues to receive encrypted packets; MCP adds no backend compilation or execution."
+      },
+      {
+        "kind": "p",
+        "text": "Website only: if you choose to give an AI agent a room's agent link as a remote MCP server, Crabrix's server decrypts that room's source in memory while the agent is connected, without logging or storing it. You are asked before the link is shown. This feature is optional, and the Crabrix app does not use it."
       },
       {
         "kind": "p",

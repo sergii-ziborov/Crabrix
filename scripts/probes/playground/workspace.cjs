@@ -336,6 +336,9 @@ async function scenario(name, work) {
     await page.getByLabel('Task (optional)').fill('Split the sort.');
     assert.equal(page.url(), origin + '/playground/', 'no room exists until asked');
     await page.getByRole('button', { name: /Create room and copy message for the agent/ }).click();
+    await page.getByRole('heading', { name: 'Your agent works through crabrix.com' }).waitFor();
+    assert.equal(page.url(), origin + '/playground/', 'no room or agent link before the warning is accepted');
+    await page.locator('dialog.pg-consent').getByRole('button', { name: 'Continue' }).click();
     await page.getByText('Copied. The agent link contains').waitFor();
     const text = await page.evaluate(() => navigator.clipboard.readText());
     assert.match(text, /^Split the sort\./);

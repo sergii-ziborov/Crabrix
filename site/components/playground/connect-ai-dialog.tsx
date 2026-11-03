@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Awareness } from "y-protocols/awareness";
 import type { CreatedPlayground, PlaygroundLink } from "@/lib/playground-session";
 import { agentLink, fetchAgentAccess } from "@/lib/playground-agent";
@@ -9,6 +9,9 @@ import download from "@/lib/mcp-download.json";
 const AGENT_LINK_PLACEHOLDER = "<agent link>";
 const SERVER = "crabrix-room";
 const LIFETIMES: [number, string][] = [[3600, "1 hour"], [14400, "4 hours"], [43200, "12 hours"], [86400, "24 hours"]];
+/** Asked once per tab before an agent link is shown, because the remote MCP path lets the server decrypt the room. */
+const CONSENT_KEY = "crabrix.playground.agentServerConsent";
+const loadConsent = () => { try { return sessionStorage.getItem(CONSENT_KEY) === "1"; } catch { return false; } };
 /** crabrix_connect takes agent links from 0.5.0; before that only the remote MCP works with them. */
 const LOCAL_TAKES_AGENT_LINKS = Number(download.version.split(".")[0]) > 0 || Number(download.version.split(".")[1]) >= 5;
 
@@ -101,6 +104,7 @@ export function ConnectAIDialog({ link, created, awareness, sharing, share, life
   const [name, setName] = useState<AgentName>("claude"), [mode, setMode] = useState<"edit" | "view">(link?.mode === "view" ? "view" : "edit"), [task, setTask] = useState("");
   const [status, setStatus] = useState(""), [names, setNames] = useState(() => participantNames(awareness));
   const [agent, setAgent] = useState<Agent | null>(null);
+  const [consented, setConsented] = useState(loadConsent), consentDialog = useRef<HTMLDialogElement>(null), pending = useRef<(() => void) | null>(null);
   useEffect(() => {
     const update = () => setNames(participantNames(awareness));
     awareness.on("change", update); update();
@@ -108,7 +112,7 @@ export function ConnectAIDialog({ link, created, awareness, sharing, share, life
   }, [awareness]);
   const guide: Guide = guides[name];
   const canView = !link || link.mode === "view" || !!created;
-  const current = link && agent?.key === `${link.id}:${mode}` ? agent : null;
+  const current = consented && link && agent?.key === `${link.id}:${mode}` ? agent : null;
   const url = current?.url ?? AGENT_LINK_PLACEHOLDER;
 
   const resolve = async (room: PlaygroundLink): Promise<Agent | null> => {
@@ -122,13 +126,28 @@ export function ConnectAIDialog({ link, created, awareness, sharing, share, life
     return next;
   };
 
-  // Shows the real link in the setup once a room exists.
+  // Shows the real link in the setup once a room exists and the warning was accepted.
   useEffect(() => {
-    if (!link || agent?.key === `${link.id}:${mode}` || !personAccess(link, created, mode)) return;
+    if (!consented || !link || agent?.key === `${link.id}:${mode}` || !personAccess(link, created, mode)) return;
     let live = true;
     fetchAgentAccess(link.id, personAccess(link, created, mode)!).then(result => { if (live) setAgent({ key: `${link.id}:${mode}`, url: agentLink(link, result.access, location.origin), mode: result.mode, expiresAt: result.expiresAt }); }, error => { if (live) setStatus(error instanceof Error ? error.message : String(error)); });
     return () => { live = false; };
-  }, [link, created, mode, agent?.key]);
+  }, [consented, link, created, mode, agent?.key]);
+
+  /** Runs an action that hands out the agent link, after the server warning has been accepted. */
+  const ask = (action: () => void) => {
+    if (consented) { action(); return; }
+    pending.current = action;
+    consentDialog.current?.showModal();
+  };
+  const accept = () => {
+    const action = pending.current;
+    pending.current = null;
+    setConsented(true);
+    try { sessionStorage.setItem(CONSENT_KEY, "1"); } catch { /* The warning comes back next time. */ }
+    consentDialog.current?.close();
+    action?.();
+  };
 
   /** Creates the room when there is none yet, so every copy carries a working link. */
   const withAgent = async (use: (next: Agent) => Promise<void> | void) => {
@@ -154,8 +173,8 @@ export function ConnectAIDialog({ link, created, awareness, sharing, share, life
         <Segmented label="Access" value={mode} onChange={setMode} options={[["edit", "Edit", link?.mode === "view"], ["view", "View only", !canView]]} />
         {!link ? <Segmented label="Room lifetime" value={lifetime} onChange={setLifetime} options={LIFETIMES.map(([seconds, text]) => [seconds, text])} /> : null}
       </div>
-      {current ? <div className="pg-copy-field"><input readOnly aria-label={`Agent link, ${current.mode === "edit" ? "edit" : "view only"}`} value={current.url} onFocus={event => event.target.select()} /><button type="button" className="pg-button" onClick={() => void copy(next => next.url, next => `Agent link copied. ${linkWarning(next)}`)}>Copy</button></div>
-        : <button type="button" className="pg-button pg-primary" disabled={sharing} onClick={() => void withAgent(() => setStatus("The room is ready. Its agent link is filled into the setup below."))}>{creating ?? (link ? "Get agent link" : "Create room and get agent link")}</button>}
+      {current ? <div className="pg-copy-field"><input readOnly aria-label={`Agent link, ${current.mode === "edit" ? "edit" : "view only"}`} value={current.url} onFocus={event => event.target.select()} /><button type="button" className="pg-button" onClick={() => ask(() => void copy(next => next.url, next => `Agent link copied. ${linkWarning(next)}`))}>Copy</button></div>
+        : <button type="button" className="pg-button pg-primary" disabled={sharing} onClick={() => ask(() => void withAgent(() => setStatus("The room is ready. Its agent link is filled into the setup below.")))}>{creating ?? (link ? "Get agent link" : "Create room and get agent link")}</button>}
       <p className="pg-field-note">{link ? `Expires with the room, ${new Date(link.expiresAt).toLocaleString()}.` : "No room exists until you ask for a link. People and agents then share its lifetime."}</p>
     </section>
 
@@ -165,9 +184,9 @@ export function ConnectAIDialog({ link, created, awareness, sharing, share, life
         {guide.ways.length > 1 ? <h4>{way.title}</h4> : null}
         <ol className="pg-connect-steps-list">{way.steps.map((step, index) => <li key={index}><div>
           <span>{step.text}</span>
-          {step.install ? <button type="button" className="pg-button pg-primary pg-install-button" disabled={sharing} onClick={() => void withAgent(next => { location.href = cursorInstall(next.url); setStatus("Cursor asks you to confirm the new MCP server."); })}>{creating ?? "Add to Cursor"}</button> : null}
+          {step.install ? <button type="button" className="pg-button pg-primary pg-install-button" disabled={sharing} onClick={() => ask(() => void withAgent(next => { location.href = cursorInstall(next.url); setStatus("Cursor asks you to confirm the new MCP server."); }))}>{creating ?? "Add to Cursor"}</button> : null}
           {step.codeLabel ? <span>{step.codeLabel}</span> : null}
-          {step.code ? <div className="pg-code-copy"><pre><code>{step.code(url)}</code></pre><button type="button" className="pg-button" disabled={sharing} onClick={() => void copy(next => step.code!(next.url), () => "Copied with this room's agent link.")}>Copy</button></div> : null}
+          {step.code ? <div className="pg-code-copy"><pre><code>{step.code(url)}</code></pre><button type="button" className="pg-button" disabled={sharing} onClick={() => ask(() => void copy(next => step.code!(next.url), () => "Copied with this room's agent link."))}>Copy</button></div> : null}
         </div></li>)}</ol>
       </div>)}
       {guide.note ? <p className="pg-field-note">{guide.note}</p> : null}
@@ -178,7 +197,7 @@ export function ConnectAIDialog({ link, created, awareness, sharing, share, life
     <section className="pg-connect-section" aria-labelledby="pg-agent-task-heading">
       <h3 id="pg-agent-task-heading"><span className="pg-step-number">3</span>Give it the task</h3>
       <label>Task (optional)<textarea value={task} rows={2} onChange={event => setTask(event.target.value)} placeholder="Split the sort into its own module and explain the change." /></label>
-      <button type="button" className="pg-button pg-primary" disabled={sharing} onClick={() => void copy(next => aiHandoffText(task, next.url, next.mode, next.expiresAt, location.origin), next => `Copied. ${linkWarning(next)} Paste it into the agent's chat.`)}>{creating ?? (link ? "Copy message for the agent" : "Create room and copy message for the agent")}</button>
+      <button type="button" className="pg-button pg-primary" disabled={sharing} onClick={() => ask(() => void copy(next => aiHandoffText(task, next.url, next.mode, next.expiresAt, location.origin), next => `Copied. ${linkWarning(next)} Paste it into the agent's chat.`))}>{creating ?? (link ? "Copy message for the agent" : "Create room and copy message for the agent")}</button>
       {status ? <p className="pg-field-note" role="status">{status}</p> : null}
     </section>
 
@@ -187,5 +206,13 @@ export function ConnectAIDialog({ link, created, awareness, sharing, share, life
       {link ? <p className="pg-field-note">Names are chosen by each participant and do not prove which AI provider is connected. To remove access for everyone, end the room in Share.</p> : null}
     </fieldset>
     {children}
+    <dialog ref={consentDialog} className="pg-dialog pg-consent" aria-labelledby="pg-consent-title" onCancel={event => event.stopPropagation()} onClose={() => { pending.current = null; }}>
+      <div className="pg-dialog-heading"><h2 id="pg-consent-title">Your agent works through crabrix.com</h2></div>
+      <div className="pg-dialog-body">
+        <p>An agent without Crabrix MCP on its own computer connects through the Crabrix server. While it is connected, the server decrypts this project&rsquo;s code in memory to pass it to the agent.</p>
+        <p>The project is not made public. Only the server, your agent with its AI provider, and the people in this room see it. Nothing is logged or stored, and the link stops working when the room ends.{LOCAL_TAKES_AGENT_LINKS ? " With Crabrix MCP installed, the agent decrypts on its own computer and the server never sees the key." : ""}</p>
+        <div className="pg-dialog-actions"><button type="button" className="pg-button" onClick={() => consentDialog.current?.close()}>Cancel</button><button type="button" className="pg-button pg-primary" autoFocus onClick={accept}>Continue</button></div>
+      </div>
+    </dialog>
   </div>;
 }

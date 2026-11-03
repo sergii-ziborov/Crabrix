@@ -330,3 +330,4 @@ body:has(.pg-workspace) .site-account { border-color:var(--pg-nav-line); backgro
 .pg-recovery small { color: var(--pg-muted); font-size: 11px; }
 .pg-recovery-actions { display: flex; flex-wrap: wrap; gap: 4px 10px; }
 .pg-recovery-actions .pg-link-button { font-size: 11px; }
+.pg-consent { width: min(460px, calc(100vw - 30px)); }
