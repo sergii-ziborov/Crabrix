@@ -28,14 +28,18 @@ function loadExpanded(key: string): Set<string> {
 }
 
 type Props = {
-  paths: string[]; selected: string; entryFile?: string; readOnly: boolean; shared: boolean;
+  paths: string[]; selected: string; entryFile?: string; readOnly: boolean;
+  /** A shared format v1 room, where rename, move and delete need a local copy. */
+  shared: boolean;
+  /** Paths shown under a conflict name because another file holds the path they asked for. */
+  conflicts?: ReadonlySet<string>;
   /** Keeps a room's open folders apart from every other room's. */
   storageKey: string;
   onOpen: (path: string) => void;
   onAction: (action: TreeAction, node: TreeNode) => void;
 };
 
-export function FileTree({ paths, selected, entryFile, readOnly, shared, storageKey, onOpen, onAction }: Props) {
+export function FileTree({ paths, selected, entryFile, readOnly, shared, conflicts, storageKey, onOpen, onAction }: Props) {
   const [expanded, setExpanded] = useState(() => loadExpanded(storageKey));
   const [query, setQuery] = useState(""), [focused, setFocused] = useState(selected), [menu, setMenu] = useState<string | null>(null);
   const container = useRef<HTMLDivElement>(null), restoreFocus = useRef(false);
@@ -107,6 +111,7 @@ export function FileTree({ paths, selected, entryFile, readOnly, shared, storage
             <FileIcon kind={node.kind === "folder" ? open ? "folder-open" : "folder" : fileIconKind(node.path)} />
             <span className="pg-tree-name">{node.name}</span>
             {node.path === entryFile ? <span className="pg-entry-badge">Entry</span> : null}
+            {conflicts?.has(node.path) ? <span className="pg-entry-badge pg-conflict-badge" title="Another file has the path this file asked for. Rename one of them.">Conflict</span> : null}
           </button>
           <button type="button" tabIndex={node.path === active ? 0 : -1} className="pg-tree-menu-button" aria-label={`Actions for ${node.path}`} aria-haspopup="menu" aria-expanded={menu === node.path} onClick={() => setMenu(menu === node.path ? null : node.path)} onKeyDown={event => { if (event.key === "Escape") { event.stopPropagation(); setMenu(null); } }}>⋯</button>
           {menu === node.path ? <div className="pg-tree-menu" role="menu" onKeyDown={event => { event.stopPropagation(); if (event.key === "Escape") { setMenu(null); moveTo(node.path); } }}>

@@ -60,7 +60,9 @@ export function PlaygroundCodeEditor({ fileState, readOnly, preferences, onLimit
       configuration.current.of(options(preferences, readOnly)),
       debugConfiguration.current.of(debugOptions(breakpoints, currentLine)),
       EditorState.transactionFilter.of(transaction => {
-        if (!transaction.annotation(ySyncAnnotation) && transaction.docChanged && new TextEncoder().encode(transaction.newDoc.toString()).length > maximumRef.current) {
+        // An edit that shortens the file is always allowed, so an oversized file can be fixed.
+        const size = (doc: typeof transaction.newDoc) => new TextEncoder().encode(doc.toString()).length;
+        if (!transaction.annotation(ySyncAnnotation) && transaction.docChanged && size(transaction.newDoc) > maximumRef.current && size(transaction.newDoc) > size(transaction.startState.doc)) {
           queueMicrotask(() => onLimitRef.current()); return [];
         }
         return transaction;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { insideFolder, planFileOperation, type FileOperation, type FilePlan } from "@/lib/playground-file-ops";
+import { insideFolder, type FileOperation } from "@/lib/playground-file-ops";
 import type { PlaygroundDocument } from "@/lib/playground-document";
 import type { TreeAction } from "./file-tree";
 
@@ -12,7 +12,10 @@ export const fileDialogTitle = (request: FileRequest) => titles[request.action];
 
 const suggestedCopy = (path: string) => { const dot = path.lastIndexOf("."); return dot > path.lastIndexOf("/") + 1 ? `${path.slice(0, dot)}-copy${path.slice(dot)}` : `${path}-copy`; };
 
-export function FileDialog({ request, source, onSubmit, onCancel }: { request: FileRequest; source: PlaygroundDocument; onSubmit: (operation: FileOperation, plan: FilePlan) => void; onCancel: () => void }) {
+/** `check` plans the operation against the live project and throws the problem to show. */
+export type FileCheck = (operation: FileOperation) => { movesRustSource: boolean };
+
+export function FileDialog({ request, source, check, recoverable = false, onSubmit, onCancel }: { request: FileRequest; source: PlaygroundDocument; check: FileCheck; recoverable?: boolean; onSubmit: (operation: FileOperation) => void; onCancel: () => void }) {
   const initial = request.action === "new-file" ? (request.path ? `${request.path}/` : "") : request.action === "new-folder" ? "" : request.action === "duplicate" ? suggestedCopy(request.path) : request.path;
   const [path, setPath] = useState(initial), [fileName, setFileName] = useState("mod.rs"), [entry, setEntry] = useState("");
   const prefix = request.action === "new-folder" && request.path ? `${request.path}/` : "";
@@ -31,14 +34,14 @@ export function FileDialog({ request, source, onSubmit, onCancel }: { request: F
 
   const { plan, problem } = useMemo(() => {
     if (!operation) return { plan: null, problem: "Enter a folder name." };
-    try { return { plan: planFileOperation(source, operation), problem: "" }; }
+    try { return { plan: check(operation), problem: "" }; }
     catch (error) { return { plan: null, problem: error instanceof Error ? error.message : String(error) }; }
-  }, [operation, source]);
+  }, [operation, check]);
   const untouched = path === initial && (request.action === "new-file" || request.action === "new-folder" || request.action === "rename" || request.action === "move");
 
-  return <form className="pg-dialog-body pg-file-form" onSubmit={event => { event.preventDefault(); if (operation && plan) onSubmit(operation, plan); }}>
+  return <form className="pg-dialog-body pg-file-form" onSubmit={event => { event.preventDefault(); if (operation && plan) onSubmit(operation); }}>
     {request.action === "delete" ? <>
-      <p>{request.folder ? `Delete ${deleted.length} file${deleted.length === 1 ? "" : "s"} in ${request.path}?` : `Delete ${request.path}?`} Download a copy first if you may need {deleted.length === 1 ? "it" : "them"}.</p>
+      <p>{request.folder ? `Delete ${deleted.length} file${deleted.length === 1 ? "" : "s"} in ${request.path}?` : `Delete ${request.path}?`} {recoverable ? `${deleted.length === 1 ? "Its" : "Their"} text stays in Recovery until someone clears it.` : `Download a copy first if you may need ${deleted.length === 1 ? "it" : "them"}.`}</p>
       {request.folder ? <ul className="pg-import-list-plain">{deleted.map(item => <li key={item}>{item}</li>)}</ul> : null}
       {entryChoices.length ? <label>New entry file<select value={entry} autoFocus onChange={event => setEntry(event.target.value)}><option value="">Choose…</option>{entryChoices.map(item => <option key={item}>{item}</option>)}</select></label> : null}
     </> : <>

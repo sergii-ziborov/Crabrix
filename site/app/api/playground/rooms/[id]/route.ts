@@ -1,5 +1,5 @@
-import { playgroundRooms, ROOM_LIMITS, validatePacket, PlaygroundError } from "@/lib/playground-rooms";
-import { bearer, guardPlaygroundOrigin, limitedJSON, playgroundFailure, privateHeaders } from "@/lib/playground-api";
+import { playgroundRooms, requestLimit, snapshotLimit, ROOM_LIMITS, validatePacket, PlaygroundError } from "@/lib/playground-rooms";
+import { bearer, declaredCodecs, guardPlaygroundOrigin, limitedJSON, playgroundFailure, privateHeaders } from "@/lib/playground-api";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 type Context = { params: Promise<{ id: string }> };
@@ -7,8 +7,9 @@ type Context = { params: Promise<{ id: string }> };
 export async function GET(request: Request, context: Context) {
   try {
     guardPlaygroundOrigin(request);
-    const { id } = await context.params;
-    return Response.json(playgroundRooms.read(id, bearer(request)), { headers: privateHeaders });
+    const { id } = await context.params, capability = bearer(request);
+    playgroundRooms.admit(id, capability, declaredCodecs(request));
+    return Response.json(playgroundRooms.read(id, capability), { headers: privateHeaders });
   } catch (error) { return playgroundFailure(error); }
 }
 
@@ -16,14 +17,15 @@ export async function POST(request: Request, context: Context) {
   try {
     guardPlaygroundOrigin(request);
     const { id } = await context.params, capability = bearer(request);
-    playgroundRooms.access(id, capability);
-    const body = await limitedJSON(request);
+    // The body limit follows the verified room's format, so only a v2 room can send a larger snapshot.
+    const codec = playgroundRooms.admit(id, capability, declaredCodecs(request));
+    const body = await limitedJSON(request, requestLimit(codec));
     if (body.type === "presence" && typeof body.peer === "string") {
       playgroundRooms.publishPresence(id, capability, body.peer, validatePacket(body.packet, ROOM_LIMITS.presenceBytes));
       return new Response(null, { status: 204, headers: privateHeaders });
     }
     if (body.type === "snapshot") {
-      const snapshot = validatePacket(body.packet, ROOM_LIMITS.snapshotBytes);
+      const snapshot = validatePacket(body.packet, snapshotLimit(codec));
       if (!Number.isSafeInteger(body.sequence)) throw new PlaygroundError("Invalid snapshot sequence.");
       if (body.expectedGeneration !== undefined && (!Number.isSafeInteger(body.expectedGeneration) || Number(body.expectedGeneration) < 0)) throw new PlaygroundError("Invalid expected revision.");
       return Response.json(playgroundRooms.compact(id, capability, Number(body.sequence), snapshot, body.expectedGeneration as number | undefined), { headers: privateHeaders });

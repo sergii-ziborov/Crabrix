@@ -8,6 +8,15 @@ export function bearer(request: Request): string {
   return value.slice(7);
 }
 
+// Clients list the document formats they read, as `codecs=1,2` on the event
+// stream and the X-Crabrix-Codecs header elsewhere. Released clients send
+// neither and read only format 1.
+export function declaredCodecs(request: Request): number[] {
+  const value = request.headers.get("x-crabrix-codecs") ?? new URL(request.url).searchParams.get("codecs") ?? "";
+  if (!/^[1-9][0-9]?(,[1-9][0-9]?){0,7}$/.test(value)) return [1];
+  return value.split(",").map(Number);
+}
+
 export function guardPlaygroundOrigin(request: Request) {
   const origin = request.headers.get("origin");
   const expected = process.env.SITE_ORIGIN ?? new URL(request.url).origin;

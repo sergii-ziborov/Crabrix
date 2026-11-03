@@ -1,5 +1,5 @@
 import { playgroundRooms } from "@/lib/playground-rooms";
-import { bearer, guardPlaygroundOrigin, playgroundFailure, privateHeaders } from "@/lib/playground-api";
+import { bearer, declaredCodecs, guardPlaygroundOrigin, playgroundFailure, privateHeaders } from "@/lib/playground-api";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -10,7 +10,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     guardPlaygroundOrigin(request);
     const { id } = await context.params, capability = bearer(request);
     const peer = new URL(request.url).searchParams.get("peer") ?? "";
-    playgroundRooms.access(id, capability);
+    playgroundRooms.admit(id, capability, declaredCodecs(request));
     playgroundRooms.limit("stream:" + id + ":" + capability, 30);
     const encoder = new TextEncoder();
     let controller: ReadableStreamDefaultController<Uint8Array>;

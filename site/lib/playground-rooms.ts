@@ -5,8 +5,11 @@ export type EncryptedPacket = { iv: string; data: string };
 export type RoomEvent = { sequence: number; peer: string; packet: EncryptedPacket };
 export type PresenceEvent = { kind: "presence"; peer: string; packet: EncryptedPacket };
 type Capability = "edit" | "view" | "owner";
+// The document format inside the ciphertext. The relay cannot read it, so the
+// room records it at creation and only admits clients that declared they read it.
+export type RoomCodec = 1 | 2;
 type Room = {
-  id: string; createdAt: number; expiresAt: number; sequence: number;
+  id: string; codec: RoomCodec; createdAt: number; expiresAt: number; sequence: number;
   // Changes with every append and every snapshot replacement. A snapshot leaves
   // `sequence` alone, so only this proves a conditional write saw the latest state.
   generation: number;
@@ -31,7 +34,17 @@ const roomBytes = (room: Room) => packetBytes(room.snapshot) + room.events.reduc
 // address; creatorBytes keeps it from holding more than 12 of the 32 MiB resident bytes.
 // roomBytes keeps the joined state inside the 2,000,000 character message that the
 // website and shipped native clients accept; a larger room could not be opened.
-export const ROOM_LIMITS = Object.freeze({ rooms: 64, roomsPerIP: 16, peers: 4, snapshotBytes: 256 * 1024, updateBytes: 192 * 1024, presenceBytes: 4096, events: 256, roomBytes: 1_900_000, creatorBytes: 12 * 1024 * 1024, residentBytes: 32 * 1024 * 1024, snapshotsPerMinute: 60 });
+// A v2 room keeps deleted text for recovery, so its snapshot may be twice as large.
+// requestCharacters is the JSON body a relay request of that codec may carry.
+export const ROOM_LIMITS = Object.freeze({ rooms: 64, roomsPerIP: 16, peers: 4, snapshotBytes: 256 * 1024, snapshotBytesV2: 512 * 1024, updateBytes: 192 * 1024, presenceBytes: 4096, events: 256, roomBytes: 1_900_000, creatorBytes: 12 * 1024 * 1024, residentBytes: 32 * 1024 * 1024, snapshotsPerMinute: 60, requestCharacters: 400_000, requestCharactersV2: 720_000 });
+export const snapshotLimit = (codec: RoomCodec) => codec === 2 ? ROOM_LIMITS.snapshotBytesV2 : ROOM_LIMITS.snapshotBytes;
+export const requestLimit = (codec: RoomCodec) => codec === 2 ? ROOM_LIMITS.requestCharactersV2 : ROOM_LIMITS.requestCharacters;
+
+export function roomCodec(value: unknown): RoomCodec {
+  if (value === undefined || value === 1) return 1;
+  if (value === 2) return 2;
+  throw new PlaygroundError("Unsupported Playground format.");
+}
 
 export function validatePacket(input: unknown, maximumBytes: number): EncryptedPacket {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw new PlaygroundError("Invalid encrypted packet.");
@@ -88,9 +101,10 @@ export class PlaygroundRooms {
     this.limit("create:ip:" + ip, 12, this.createBuckets);
   }
 
-  create(snapshot: EncryptedPacket, lifetimeSeconds: number, ip?: string) {
+  create(snapshot: EncryptedPacket, lifetimeSeconds: number, ip?: string, codec: RoomCodec = 1) {
     this.prune();
-    snapshot = validatePacket(snapshot, ROOM_LIMITS.snapshotBytes);
+    codec = roomCodec(codec);
+    snapshot = validatePacket(snapshot, snapshotLimit(codec));
     if (!Number.isInteger(lifetimeSeconds) || lifetimeSeconds < 60 || lifetimeSeconds > 86_400) throw new PlaygroundError("Lifetime must be between one minute and 24 hours.");
     const creator = ip === undefined ? undefined : creatorID(ip);
     if (creator && (Array.from(this.rooms.values()).filter(room => room.creator === creator).length >= ROOM_LIMITS.roomsPerIP || this.creatorBytes(creator) + packetBytes(snapshot) > ROOM_LIMITS.creatorBytes)) throw new PlaygroundError("This network already has the maximum number of live temporary rooms. End one or wait for it to expire.", 429);
@@ -99,9 +113,17 @@ export class PlaygroundRooms {
     const id = randomBytes(18).toString("base64url");
     const owner = token(), edit = token(), view = token();
     const createdAt = this.now(), expiresAt = createdAt + lifetimeSeconds * 1000;
-    this.rooms.set(id, { id, createdAt, expiresAt, sequence: 0, generation: 0, tokens: { owner: hash(owner), edit: hash(edit), view: hash(view) }, snapshot,
+    this.rooms.set(id, { id, codec, createdAt, expiresAt, sequence: 0, generation: 0, tokens: { owner: hash(owner), edit: hash(edit), view: hash(view) }, snapshot,
       snapshotSequence: 0, events: [], presence: new Map(), listeners: new Map(), recentMessages: new Map(), creator });
-    return { id, createdAt, expiresAt, owner, edit, view };
+    return { id, codec, createdAt, expiresAt, owner, edit, view };
+  }
+
+  // Runs right after the capability check and before any rate limit, participant
+  // slot or ciphertext, so a client that cannot read this format is told why.
+  admit(id: string, supplied: string, codecs: readonly number[]): RoomCodec {
+    const room = this.access(id, supplied);
+    if (!codecs.includes(room.codec)) throw new PlaygroundError("This Playground uses a newer format. Update Crabrix to open it.", 426);
+    return room.codec;
   }
 
   access(id: string, supplied: string, write = false, owner = false): Room {
@@ -124,7 +146,7 @@ export class PlaygroundRooms {
 
   state(id: string, supplied: string) {
     const room = this.access(id, supplied);
-    return { id, createdAt: room.createdAt, expiresAt: room.expiresAt, sequence: room.sequence, generation: room.generation,
+    return { id, codec: room.codec, createdAt: room.createdAt, expiresAt: room.expiresAt, sequence: room.sequence, generation: room.generation,
       protocol: { conditionalUpdates: 1, stateGeneration: 1 },
       snapshotSequence: room.snapshotSequence, snapshot: room.snapshot, events: room.events, presence: Array.from(room.presence, ([peer, value]) => ({ peer, packet: value.packet })) };
   }
@@ -169,7 +191,7 @@ export class PlaygroundRooms {
 
   compact(id: string, supplied: string, sequence: number, snapshot: EncryptedPacket, expectedGeneration?: number) {
     const room = this.access(id, supplied, true);
-    snapshot = validatePacket(snapshot, ROOM_LIMITS.snapshotBytes);
+    snapshot = validatePacket(snapshot, snapshotLimit(room.codec));
     this.limit("snapshot:" + id, ROOM_LIMITS.snapshotsPerMinute);
     if (sequence !== room.sequence || (expectedGeneration !== undefined && expectedGeneration !== room.generation)) throw new PlaygroundError("Receive the latest changes before publishing a snapshot.", 409);
     const delta = packetBytes(snapshot) - roomBytes(room);

@@ -275,3 +275,16 @@ body:has(.pg-workspace) .site-account { border-color:var(--pg-nav-line); backgro
 .pg-import-list-plain { display: grid; gap: 5px; max-height: 180px; margin: 6px 0 0; padding: 0; overflow: auto; color: var(--pg-muted); font-size: 12px; list-style: none; overflow-wrap: anywhere; }
 .pg-draft-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; }
 .pg-connect-steps { margin: 0; padding: 10px 12px; overflow: auto; color: var(--pg-text); background: var(--pg-editor); border: 1px solid var(--pg-border); border-radius: 8px; font-size: 11px; }
+.pg-conflict-badge { margin-left: 4px; color: var(--pg-accent); }
+.pg-entry-badge + .pg-conflict-badge { margin-left: 4px; }
+.pg-tree-name + .pg-conflict-badge { margin-left: auto; }
+.pg-blocked { border-bottom-color: var(--pg-accent); }
+.pg-recovery { display: grid; gap: 8px; }
+.pg-recovery .pg-field-note { margin: 0 8px; }
+.pg-recovery-count { padding: 0 6px; border: 1px solid var(--pg-border); border-radius: 5px; color: var(--pg-text); }
+.pg-recovery ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.pg-recovery li { display: grid; gap: 2px; padding: 6px 8px; border: 1px solid var(--pg-border); border-radius: 6px; background: var(--pg-raised); min-width: 0; }
+.pg-recovery-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 12px ui-monospace, monospace; color: var(--pg-text); }
+.pg-recovery small { color: var(--pg-muted); font-size: 11px; }
+.pg-recovery-actions { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.pg-recovery-actions .pg-link-button { font-size: 11px; }

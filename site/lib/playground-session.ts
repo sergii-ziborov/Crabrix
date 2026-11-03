@@ -3,12 +3,13 @@ import type { Awareness } from "y-protocols/awareness";
 import { localPresence, receivePresence } from "./playground-presence";
 import { base64url, decryptPlayground, encryptPlayground, newEncryptionSecret } from "./playground-crypto";
 import { documentFromY } from "./playground-collab";
+import { schemaVersionOf } from "./playground-codec-v2";
 import type { EncryptedPacket } from "./playground-rooms";
 import { isTransientSnapshotStatus } from "./playground-client";
 
 export type PlaygroundLink = { id: string; key: string; access: string; expiresAt: number; mode: "edit" | "view" };
 export type CreatedPlayground = PlaygroundLink & { owner: string; view: string };
-type State = { expiresAt: number; sequence: number; snapshotSequence: number; snapshot: EncryptedPacket; events: { sequence: number; packet: EncryptedPacket }[]; presence?: { packet: EncryptedPacket }[] };
+type State = { codec?: number; expiresAt: number; sequence: number; snapshotSequence: number; snapshot: EncryptedPacket; events: { sequence: number; packet: EncryptedPacket }[]; presence?: { packet: EncryptedPacket }[] };
 
 export function parsePlaygroundLink(url: URL): PlaygroundLink | null {
   const match = url.pathname.match(/^\/playground\/room\/([A-Za-z0-9_-]{24})\/?$/);
@@ -24,10 +25,22 @@ export function playgroundLink(link: PlaygroundLink, origin = location.origin): 
   return `${origin}/playground/room/${link.id}/#${fragment}`;
 }
 
-export async function createPlayground(doc: Y.Doc, lifetimeSeconds: number): Promise<CreatedPlayground> {
-  documentFromY(doc);
-  const key = newEncryptionSecret(), snapshot = await encryptPlayground(key, Y.encodeStateAsUpdate(doc));
-  const response = await fetch("/api/playground/rooms/", { method: "POST", credentials: "omit", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ snapshot, lifetimeSeconds }) });
+// Formats this client reads, declared to the relay on every request.
+export const CLIENT_CODECS = "1,2";
+
+/** The update a snapshot carries. A copy drops text that only Undo histories still hold. */
+export function compactUpdate(doc: Y.Doc): Uint8Array {
+  const copy = new Y.Doc();
+  try { Y.applyUpdate(copy, Y.encodeStateAsUpdate(doc)); return Y.encodeStateAsUpdate(copy); }
+  finally { copy.destroy(); }
+}
+
+/** A v2 document must come from `createProjectDoc`; v1 is validated here. */
+export async function createPlayground(doc: Y.Doc, lifetimeSeconds: number, codec: 1 | 2 = 1): Promise<CreatedPlayground> {
+  if (codec === 1) documentFromY(doc);
+  else if (schemaVersionOf(doc) !== 2) throw new Error("This document is not in the stable file ID format.");
+  const key = newEncryptionSecret(), snapshot = await encryptPlayground(key, codec === 2 ? compactUpdate(doc) : Y.encodeStateAsUpdate(doc));
+  const response = await fetch("/api/playground/rooms/", { method: "POST", credentials: "omit", cache: "no-store", headers: { "Content-Type": "application/json", "X-Crabrix-Codecs": CLIENT_CODECS }, body: JSON.stringify({ snapshot, lifetimeSeconds, ...(codec === 2 ? { codec } : {}) }) });
   const result = await response.json();
   if (!response.ok) throw new Error(result.error ?? "Could not create the temporary Playground.");
   return { id: result.id, key, access: result.edit, owner: result.owner, view: result.view, expiresAt: result.expiresAt, mode: "edit" };
@@ -38,6 +51,10 @@ export class PlaygroundSession {
   peer = base64url(crypto.getRandomValues(new Uint8Array(16)));
   abort = new AbortController(); sequence = 0; pending: Uint8Array[] = [];
   sending = false; stopped = false; connected = false; receivedState = false; snapshotOverdue = false;
+  /** The room's format from the relay, known before its first state is applied. */
+  codec: 1 | 2 | null = null;
+  /** A v2 room whose document is not v2 opens for reading and export only. */
+  formatMismatch = false;
   flushTimer?: ReturnType<typeof setTimeout>; snapshotTimer?: ReturnType<typeof setTimeout>;
   onStatus: (status: string) => void;
   onExpiry: () => void;
@@ -58,7 +75,7 @@ export class PlaygroundSession {
     // obtain this acknowledgement; flipping a view URL's mode cannot prove it.
     const packet = await encryptPlayground(link.key, new Uint8Array([0, 0]));
     if (binding !== this.runtimeBinding() || !this.connected || this.stopped) throw new Error("Runtime connection changed before edit confirmation.");
-    const response = await fetch(this.relayOrigin + "/api/playground/rooms/" + link.id + "/", { method: "POST", headers: { Authorization: "Bearer " + link.access, "Content-Type": "application/json" }, credentials: "omit", cache: "no-store", signal: this.abort.signal,
+    const response = await fetch(this.relayOrigin + "/api/playground/rooms/" + link.id + "/", { method: "POST", headers: { Authorization: "Bearer " + link.access, "Content-Type": "application/json", "X-Crabrix-Codecs": CLIENT_CODECS }, credentials: "omit", cache: "no-store", signal: this.abort.signal,
       body: JSON.stringify({ type: "update", peer: this.peer, messageID: newEncryptionSecret(), packet }) });
     if (!response.ok) throw new Error("The relay did not confirm edit access. A view link cannot authorize runtime control.");
     const result = await response.json();
@@ -70,10 +87,12 @@ export class PlaygroundSession {
     this.doc = doc; this.link = link; this.onStatus = onStatus; this.onExpiry = onExpiry; this.awareness = awareness; this.relayOrigin = relayOrigin;
   }
 
-  private headers() { return { Authorization: "Bearer " + this.link.access, "Content-Type": "application/json" }; }
+  private headers() { return { Authorization: "Bearer " + this.link.access, "Content-Type": "application/json", "X-Crabrix-Codecs": CLIENT_CODECS }; }
+  /** Read-only: a view link, or a v2 room whose document has another format. */
+  get canWrite() { return this.link.mode !== "view" && !this.formatMismatch; }
   private endpoint() { return this.relayOrigin + "/api/playground/rooms/" + this.link.id + "/"; }
   private update = (bytes: Uint8Array, origin: unknown) => {
-    if (origin === this || this.link.mode === "view" || this.stopped) return;
+    if (origin === this || !this.canWrite || this.stopped) return;
     this.pending.push(bytes);
     if (this.flushTimer) clearTimeout(this.flushTimer);
     this.flushTimer = setTimeout(() => { void this.flush(); }, 200);
@@ -116,7 +135,7 @@ export class PlaygroundSession {
   }
 
   private async stream() {
-    const response = await fetch(this.endpoint() + "events/?peer=" + this.peer, { headers: this.headers(), signal: this.abort.signal, credentials: "omit", cache: "no-store" });
+    const response = await fetch(this.endpoint() + "events/?peer=" + this.peer + "&codecs=" + CLIENT_CODECS, { headers: this.headers(), signal: this.abort.signal, credentials: "omit", cache: "no-store" });
     if (response.status === 410) { this.expire(); return; }
     if (!response.ok || !response.body) { const error = await response.json(); throw new Error(error.error ?? "Interview connection unavailable."); }
     const reader = response.body.getReader(), decoder = new TextDecoder(); let buffer = "";
@@ -148,15 +167,22 @@ export class PlaygroundSession {
   private async receiveState(state: State) {
     this.resetRuntime();
     if (!Number.isSafeInteger(state.expiresAt) || state.expiresAt !== this.link.expiresAt) throw new Error("Playground lifetime does not match this link.");
-    const bytes = await decryptPlayground(this.link.key, state.snapshot);
+    const codec = state.codec === undefined ? 1 : state.codec;
+    if (codec !== 1 && codec !== 2) throw new Error("This Playground uses a newer format. Update Crabrix to open it.");
+    if (this.codec !== null && this.codec !== codec) throw new Error("The room's format changed. Reload the page.");
+    const bytes = await decryptPlayground(this.link.key, state.snapshot, codec === 2 ? 512 * 1024 : 256 * 1024);
     const candidate = new Y.Doc();
     try {
       Y.applyUpdate(candidate, bytes);
       for (const event of state.events) Y.applyUpdate(candidate, await decryptPlayground(this.link.key, event.packet, 192 * 1024));
-      documentFromY(candidate);
+      // v1 refuses an invalid project as before. v2 reads any state, so its content is
+      // never refused: the format alone is checked, once, when joining.
+      if (codec === 1) documentFromY(candidate);
+      else this.formatMismatch = schemaVersionOf(candidate) !== 2;
+      this.codec = codec;
       // Capture edits made during initial creation or a disconnected interval.
       // A late join starts with an empty Doc, so this is the empty update there.
-      if (this.link.mode !== "view") {
+      if (this.canWrite) {
         const localDelta = Y.encodeStateAsUpdate(this.doc, Y.encodeStateVector(candidate));
         if (localDelta.length > 2) this.pending.push(localDelta);
       }
@@ -166,7 +192,7 @@ export class PlaygroundSession {
     if (this.awareness) for (const item of state.presence ?? []) await this.receiveParticipant(item.packet);
     this.receivedState = true; this.connected = true; this.snapshotOverdue = false;
     void this.sendPresence();
-    this.onStatus(this.link.mode === "view" ? "Connected · view only · end-to-end encrypted" : "Connected · shared editor · end-to-end encrypted");
+    this.onStatus(this.formatMismatch ? "Connected · read only: this room's document has an unexpected format · end-to-end encrypted" : this.link.mode === "view" ? "Connected · view only · end-to-end encrypted" : "Connected · shared editor · end-to-end encrypted");
     await this.flush();
   }
 
@@ -183,6 +209,7 @@ export class PlaygroundSession {
     if (!Number.isSafeInteger(sequence) || sequence <= this.sequence) return;
     if (sequence !== this.sequence + 1) throw new Error("Resynchronizing a missing interview update.");
     const bytes = await decryptPlayground(this.link.key, packet, 192 * 1024);
+    if (this.codec === 2) { Y.applyUpdate(this.doc, bytes, this); this.sequence = sequence; return; }
     const candidate = new Y.Doc();
     try {
       Y.applyUpdate(candidate, Y.encodeStateAsUpdate(this.doc)); Y.applyUpdate(candidate, bytes);
@@ -198,7 +225,7 @@ export class PlaygroundSession {
     const changes = this.pending.splice(0), messageID = base64url(crypto.getRandomValues(new Uint8Array(16)));
     const bytes = Y.mergeUpdates(changes);
     try {
-      documentFromY(this.doc);
+      if (this.codec !== 2) documentFromY(this.doc);
       if (bytes.length > 192 * 1024 - 16) throw new Error("This edit is too large for a live update. Download the project before starting a new session.");
       const packet = await encryptPlayground(this.link.key, bytes);
       const response = await fetch(this.endpoint(), { method: "POST", headers: this.headers(), credentials: "omit", cache: "no-store", signal: this.abort.signal,
@@ -221,7 +248,7 @@ export class PlaygroundSession {
   }
 
   private scheduleSnapshot() {
-    if (this.link.mode === "view" || this.snapshotTimer || this.stopped) return;
+    if (!this.canWrite || this.snapshotTimer || this.stopped) return;
     this.snapshotTimer = setTimeout(() => {
       this.snapshotTimer = undefined;
       void this.snapshot();
@@ -232,9 +259,9 @@ export class PlaygroundSession {
     if (!this.connected || (this.pending.length && !this.snapshotOverdue) || this.stopped) return;
     try {
       // A forced snapshot may include local edits that no relay has accepted yet.
-      documentFromY(this.doc);
+      if (this.codec !== 2) documentFromY(this.doc);
       const sequence = this.sequence;
-      const packet = await encryptPlayground(this.link.key, Y.encodeStateAsUpdate(this.doc));
+      const packet = await encryptPlayground(this.link.key, this.codec === 2 ? compactUpdate(this.doc) : Y.encodeStateAsUpdate(this.doc));
       const response = await fetch(this.endpoint(), { method: "POST", credentials: "omit", cache: "no-store", headers: this.headers(), signal: this.abort.signal,
         body: JSON.stringify({ type: "snapshot", sequence, packet }) });
       if (response.ok) this.snapshotOverdue = false;
