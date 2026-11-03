@@ -23,3 +23,16 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+  mcp:
+    build:
+      context: .
+      dockerfile: hetzner/mcp/Dockerfile
+    image: localhost/crabrix-mcp-remote:${CRABRIX_MCP_TAG:?Set a release tag}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${CRABRIX_MCP_PORT:-3214}:8090"
+    mem_limit: 512m
+    cpus: 0.5
+    pids_limit: 128
+    security_opt:
+      - no-new-privileges:true

@@ -5,21 +5,36 @@ import { ancestors, buildFileTree, fileIconKind, flattenTree, matchingPaths, typ
 
 export type TreeAction = "new-file" | "new-folder" | "rename" | "move" | "duplicate" | "delete" | "copy-path" | "set-entry";
 
-const glyphs: Record<FileIconKind | "folder" | "folder-open", React.ReactNode> = {
-  folder: <path d="M2 4.5h4l1.5 1.5H14v7H2z" />,
-  "folder-open": <path d="M2 13V4.5h4L7.5 6H13v1.5M2 13l1.6-5.5H15L13.4 13z" />,
-  rust: <><circle cx="8" cy="8" r="5.5" /><path d="M5.5 11V5.5h3a1.5 1.5 0 0 1 0 3h-3m3 0 2 2.5" /></>,
-  config: <><circle cx="8" cy="8" r="2" /><path d="M8 2v2m0 8v2M2 8h2m8 0h2M3.8 3.8l1.4 1.4m5.6 5.6 1.4 1.4m0-8.4-1.4 1.4m-5.6 5.6-1.4 1.4" /></>,
-  lock: <><rect x="3.5" y="7" width="9" height="6.5" rx="1" /><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" /></>,
-  markdown: <><rect x="1.5" y="3.5" width="13" height="9" rx="1" /><path d="M4 10V6l2 2 2-2v4m3-4v4m-1.5-1.5L11 10l1.5-1.5" /></>,
-  text: <path d="M4 2h5.5L12 4.5V14H4zM6 7h4M6 9.5h4M6 12h2.5" />,
-  license: <><path d="M4 2h8v8.5H4z" /><path d="M6 5h4M6 7.5h4M6.5 10.5V14L8 13l1.5 1v-3.5" /></>,
-  notice: <><circle cx="8" cy="8" r="5.5" /><path d="M8 7.5V11M8 5v.5" /></>,
-  generic: <path d="M4 2h5.5L12 4.5V14H4z" />,
+// The same symbols and tints as the app's project tree (ProjectFileIcon.swift).
+const cut = "var(--pg-panel)";
+const glyphs: Record<FileIconKind | "entry" | "folder" | "folder-open", React.ReactNode> = {
+  folder: <path d="M1.8 4.2h4.3l1.5 1.6h6.6v7.4H1.8z" />,
+  "folder-open": <path d="M1.8 4.2h4.3l1.5 1.6h6.6v7.4H1.8z" fill="currentColor" />,
+  entry: <><rect x="1.8" y="1.8" width="12.4" height="12.4" rx="3" fill="currentColor" stroke="none" /><path d="M6.4 5v6L11 8z" fill={cut} stroke="none" /></>,
+  rust: <path d="M5.3 4.5 1.8 8l3.5 3.5m5.4-7L14.2 8l-3.5 3.5M9.3 3 6.7 13" />,
+  config: <><path d="M2 4h12M2 8h12M2 12h12" /><circle cx="10.5" cy="4" r="1.7" fill={cut} /><circle cx="5" cy="8" r="1.7" fill={cut} /><circle cx="9" cy="12" r="1.7" fill={cut} /></>,
+  lock: <><rect x="3" y="7" width="10" height="7" rx="1.5" fill="currentColor" stroke="none" /><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.4 0V7" /></>,
+  markdown: <><path d="M3.5 1.5h6l3 3v10h-9z" fill="currentColor" stroke="none" /><path d="M5.5 8h5m-5 2.5h5M5.5 13h3" stroke={cut} /></>,
+  text: <path d="M3.5 1.5h6l3 3v10h-9zM5.5 8h5m-5 2.5h5M5.5 13h3" />,
+  license: <><path d="m8 1.3 1.7 1.3 2.1-.2.6 2 1.8 1.1-.7 2 .7 2-1.8 1.1-.6 2-2.1-.2L8 14.7l-1.7-1.3-2.1.2-.6-2-1.8-1.1.7-2-.7-2 1.8-1.1.6-2 2.1.2z" fill="currentColor" stroke="none" /><path d="m5.6 8 1.6 1.6 3.2-3.2" stroke={cut} /></>,
+  notice: <><circle cx="8" cy="8" r="5.8" /><path d="M8 7.3v3.9M8 4.8v.2" /></>,
+  generic: <path d="M3.5 1.5h6l3 3v10h-9z" />,
 };
 
 export function FileIcon({ kind }: { kind: keyof typeof glyphs }) {
-  return <svg className="pg-file-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{glyphs[kind]}</svg>;
+  return <svg className="pg-file-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{glyphs[kind]}</svg>;
+}
+
+const sidebarGlyphs = {
+  project: <><path d="M8 1.5 14 4.6v6.8L8 14.5 2 11.4V4.6z" fill="currentColor" stroke="none" /><path d="M2.3 4.8 8 7.7l5.7-2.9M8 7.7v6.6" stroke={cut} /></>,
+  more: <><circle cx="8" cy="8" r="6.3" /><path d="M5.2 8h.1m2.6 0h.1m2.6 0h.1" strokeWidth="2" /></>,
+  add: <><circle cx="8" cy="8" r="6.8" fill="currentColor" stroke="none" /><path d="M8 4.8v6.4M4.8 8h6.4" stroke={cut} strokeWidth="1.6" /></>,
+  search: <><circle cx="7" cy="7" r="4.3" /><path d="m10.3 10.3 3.4 3.4" /></>,
+};
+
+/** Project-level symbols from the app sidebar: the package, actions and new file. */
+export function SidebarIcon({ name }: { name: keyof typeof sidebarGlyphs }) {
+  return <svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{sidebarGlyphs[name]}</svg>;
 }
 
 function loadExpanded(key: string): Set<string> {
@@ -35,11 +50,14 @@ type Props = {
   conflicts?: ReadonlySet<string>;
   /** Keeps a room's open folders apart from every other room's. */
   storageKey: string;
+  /** The find field shows only while the sidebar's search button is on, as in the app. */
+  searching: boolean;
+  onCloseSearch: () => void;
   onOpen: (path: string) => void;
   onAction: (action: TreeAction, node: TreeNode) => void;
 };
 
-export function FileTree({ paths, selected, entryFile, readOnly, shared, conflicts, storageKey, onOpen, onAction }: Props) {
+export function FileTree({ paths, selected, entryFile, readOnly, shared, conflicts, storageKey, searching, onCloseSearch, onOpen, onAction }: Props) {
   const [expanded, setExpanded] = useState(() => loadExpanded(storageKey));
   const [query, setQuery] = useState(""), [focused, setFocused] = useState(selected), [menu, setMenu] = useState<string | null>(null);
   const container = useRef<HTMLDivElement>(null), restoreFocus = useRef(false);
@@ -49,6 +67,7 @@ export function FileTree({ paths, selected, entryFile, readOnly, shared, conflic
   // Opening a file from anywhere, such as a compiler message, reveals its folder.
   useEffect(() => { setFocused(selected); setExpanded(previous => { const missing = ancestors(selected).filter(item => !previous.has(item)); return missing.length ? new Set([...previous, ...missing]) : previous; }); }, [selected]);
 
+  useEffect(() => { if (!searching) setQuery(""); }, [searching]);
   const matches = useMemo(() => query.trim() ? matchingPaths(paths, query) : null, [paths, query]);
   const shownTree = useMemo(() => matches ? buildFileTree(matches) : tree, [matches, tree]);
   const shownExpanded = useMemo(() => matches ? new Set(matches.flatMap(ancestors)) : expanded, [matches, expanded]);
@@ -99,18 +118,19 @@ export function FileTree({ paths, selected, entryFile, readOnly, shared, conflic
   };
 
   return <div className="pg-tree-wrap" ref={container}>
-    <label className="pg-tree-search"><span className="visually-hidden">Find a file by name or path</span>
-      <input type="search" value={query} placeholder="Find file" onChange={event => setQuery(event.target.value)} onKeyDown={event => { if (event.key === "Escape") { event.stopPropagation(); setQuery(""); } if (event.key === "ArrowDown") { event.preventDefault(); moveTo(rows[0]?.node.path); } }} />
-    </label>
+    {searching ? <label className="pg-tree-search"><span className="visually-hidden">Find a file by name or path</span>
+      <input type="search" autoFocus value={query} placeholder="Find file" onChange={event => setQuery(event.target.value)} onKeyDown={event => { if (event.key === "Escape") { event.stopPropagation(); onCloseSearch(); } if (event.key === "ArrowDown") { event.preventDefault(); moveTo(rows[0]?.node.path); } }} />
+    </label> : null}
     <div className="pg-file-list" role="tree" aria-label="Project files">
       {rows.map(({ node, depth, parent }, index) => {
         const open = node.kind === "folder" && shownExpanded.has(node.path), isSelected = node.kind === "file" && node.path === selected;
-        return <div key={node.path} className={`pg-tree-row${isSelected ? " pg-file-active" : ""}`} role="treeitem" aria-level={depth + 1} aria-selected={isSelected} aria-expanded={node.kind === "folder" ? open : undefined} tabIndex={node.path === active ? 0 : -1} title={node.path} style={{ "--pg-depth": depth } as React.CSSProperties}
+        const kind = node.kind === "folder" ? open ? "folder-open" : "folder" : node.path === entryFile ? "entry" : fileIconKind(node.path);
+        return <div key={node.path} className={`pg-tree-row pg-kind-${kind}${isSelected ? " pg-file-active" : ""}`} role="treeitem" aria-level={depth + 1} aria-selected={isSelected} aria-expanded={node.kind === "folder" ? open : undefined} tabIndex={node.path === active ? 0 : -1} title={node.path} style={{ "--pg-depth": depth } as React.CSSProperties}
           onFocus={event => { if (event.target === event.currentTarget) setFocused(node.path); }} onKeyDown={event => { if (event.target === event.currentTarget) keyDown(event, node, index, parent); }}>
           <button type="button" tabIndex={-1} className="pg-tree-open" onClick={() => { setFocused(node.path); if (node.kind === "file") onOpen(node.path); else if (!matches) setOpen(node.path, !open); }}>
-            <FileIcon kind={node.kind === "folder" ? open ? "folder-open" : "folder" : fileIconKind(node.path)} />
+            <FileIcon kind={kind} />
             <span className="pg-tree-name">{node.name}</span>
-            {node.path === entryFile ? <span className="pg-entry-badge">Entry</span> : null}
+            {node.path === entryFile ? <span className="visually-hidden">, entry file</span> : null}
             {conflicts?.has(node.path) ? <span className="pg-entry-badge pg-conflict-badge" title="Another file has the path this file asked for. Rename one of them.">Conflict</span> : null}
           </button>
           <button type="button" tabIndex={node.path === active ? 0 : -1} className="pg-tree-menu-button" aria-label={`Actions for ${node.path}`} aria-haspopup="menu" aria-expanded={menu === node.path} onClick={() => setMenu(menu === node.path ? null : node.path)} onKeyDown={event => { if (event.key === "Escape") { event.stopPropagation(); setMenu(null); } }}>⋯</button>

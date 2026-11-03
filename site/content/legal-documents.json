@@ -170,7 +170,7 @@
   {
     "id": "privacy",
     "title": "Privacy Policy",
-    "updated": "2026-11-01",
+    "updated": "2026-11-03",
     "sourceURL": "https://crabrix.com/privacy/",
     "blocks": [
       {
@@ -244,6 +244,10 @@
       {
         "kind": "p",
         "text": "The optional downloadable Crabrix Playground MCP bridge lets a local MCP host, such as Claude Code or Claude Desktop, join a room you authorize. The bridge decrypts source on that computer and can return source and selections to its host/model or send source edits as a named participant. Giving an AI host the complete link grants access to that room's decrypted source; the host and AI provider apply their own data and retention policies. The bridge keeps room keys and source in process memory, without writing them to Crabrix accounts, files or telemetry. Disconnect releases that process's room state, but cannot delete another host/provider's conversation history. The relay continues to receive encrypted packets; MCP adds no backend compilation or execution."
+      },
+      {
+        "kind": "p",
+        "text": "Connect AI gives a separate agent link for a room, with the same access and the same expiry as the person link it came from. If an agent adds that link as a remote MCP server, Crabrix's server receives the room key in the link, decrypts the room's source in process memory to answer that agent, and sends the agent's edits to the room as a named participant. It does not log the link, write keys or source to accounts or files, or compile or execute source. That session ends when the agent disconnects, after 30 minutes without requests, or when the room expires or ends. If the agent uses Crabrix MCP installed on its own computer, the link is used there as described above and Crabrix's server does not receive the key."
       },
       {
         "kind": "p",

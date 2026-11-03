@@ -182,6 +182,7 @@ async function scenario(name, work) {
     await page.locator('.pg-file-form').getByLabel('Path').fill('docs/README.md');
     await page.locator('.pg-file-form').getByRole('button', { name: 'Rename' }).click();
     await page.waitForFunction(() => document.querySelector('.pg-file-bar strong')?.textContent === 'docs/README.md');
+    await button(page, 'Find file').click();
     await page.getByPlaceholder('Find file').fill('lexer');
     assert.deepEqual(await fileList(page), ['src', 'parser', 'lexer.rs']);
     await page.getByPlaceholder('Find file').press('Escape');
@@ -320,22 +321,31 @@ async function scenario(name, work) {
     await context.close();
   });
 
-  await scenario('AI-01 Connect AI gives one setup per client and a handoff with a task', async () => {
+  await scenario('AI-01 Connect AI gives one setup per agent and an agent link with a task', async () => {
     const { context, page } = await fresh(); await open(page);
     await button(page, 'Connect AI').click();
-    await page.getByText('/plugin install crabrix@crabrix').waitFor();
-    await page.getByLabel('Your AI client').selectOption('remote');
-    await page.getByText('Crabrix has no remote MCP endpoint yet').waitFor();
-    await page.getByLabel('Your AI client').selectOption('stdio');
+    await page.getByText('claude mcp add --transport http crabrix-room').waitFor();
+    await page.getByText('Add custom connector').waitFor();
+    await page.getByText('which decrypts this room').waitFor();
+    await page.getByRole('tab', { name: 'Codex' }).click();
+    await page.getByText('codex mcp add crabrix-room --url').waitFor();
+    await page.getByRole('tab', { name: 'Cursor' }).click();
+    await button(page, 'Add to Cursor').waitFor();
+    await page.getByRole('tab', { name: 'Grok' }).click();
+    await page.getByText('New connector → Custom').waitFor();
     await page.getByLabel('Task (optional)').fill('Split the sort.');
     assert.equal(page.url(), origin + '/playground/', 'no room exists until asked');
-    await page.getByRole('button', { name: /Create room and copy for AI/ }).click();
-    await page.getByText('Copied. It contains').waitFor();
+    await page.getByRole('button', { name: /Create room and copy message for the agent/ }).click();
+    await page.getByText('Copied. The agent link contains').waitFor();
     const text = await page.evaluate(() => navigator.clipboard.readText());
     assert.match(text, /^Split the sort\./);
     assert.match(text, /"schema": "crabrix-handoff-v1"/);
-    assert.match(text, /\/playground\/room\//);
+    assert.match(text, /\/mcp\/[A-Za-z0-9_-]{24}\//);
+    assert.doesNotMatch(text, /\/playground\/room\//, 'the agent gets an agent link, not a person link');
+    assert.match(text, /crabrix_connect/);
     assert.match(text, /\/ai\//);
+    await page.getByRole('tab', { name: 'Codex' }).click();
+    assert.match(await page.locator('.pg-code-copy code').first().innerText(), /^codex mcp add crabrix-room --url https?:\/\/[^ ]+\/mcp\/[A-Za-z0-9_-]{24}\//, 'the setup carries the real agent link');
     await context.close();
   });
 

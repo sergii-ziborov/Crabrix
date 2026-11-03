@@ -4,7 +4,9 @@ import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypt
 export type EncryptedPacket = { iv: string; data: string };
 export type RoomEvent = { sequence: number; peer: string; packet: EncryptedPacket };
 export type PresenceEvent = { kind: "presence"; peer: string; packet: EncryptedPacket };
-type Capability = "edit" | "view" | "owner";
+// Agents get their own capabilities, so people and MCP agents hold different links.
+// An agent capability reaches the same room until the same expiry but cannot mint links.
+type Capability = "edit" | "view" | "owner" | "agentEdit" | "agentView";
 // The document format inside the ciphertext. The relay cannot read it, so the
 // room records it at creation and only admits clients that declared they read it.
 export type RoomCodec = 1 | 2;
@@ -16,6 +18,8 @@ type Room = {
   tokens: Record<Capability, Buffer>; snapshot: EncryptedPacket; snapshotSequence: number;
   events: RoomEvent[]; presence: Map<string, { packet: EncryptedPacket; at: number }>; listeners: Map<string, (event: RoomEvent | PresenceEvent | "expired" | "closed") => void>;
   recentMessages: Map<string, number>; creator?: string;
+  // Derives the agent capabilities, so any person in the room can hand one to an agent.
+  agentSecret: Buffer;
 };
 export class PlaygroundError extends Error {
   status: number;
@@ -27,6 +31,7 @@ const hash = (value: string) => createHash("sha256").update(value).digest();
 const creatorKey = randomBytes(32);
 const creatorID = (ip: string) => createHmac("sha256", creatorKey).update(ip).digest("hex");
 const token = () => randomBytes(32).toString("base64url");
+const agentToken = (secret: Buffer, mode: "edit" | "view") => createHmac("sha256", secret).update("crabrix-agent-" + mode).digest("base64url");
 const packetBytes = (packet: EncryptedPacket) => packet.data.length + packet.iv.length;
 const roomBytes = (room: Room) => packetBytes(room.snapshot) + room.events.reduce((n, event) => n + packetBytes(event.packet), 0);
 // Each client publishes at most one snapshot every 5 seconds, so snapshotsPerMinute
@@ -111,10 +116,11 @@ export class PlaygroundRooms {
     if (this.rooms.size >= ROOM_LIMITS.rooms || this.residentBytes() + packetBytes(snapshot) > ROOM_LIMITS.residentBytes) throw new PlaygroundError("Temporary rooms are at capacity. Please retry later.", 503);
     this.limit("create:global", 120);
     const id = randomBytes(18).toString("base64url");
-    const owner = token(), edit = token(), view = token();
+    const owner = token(), edit = token(), view = token(), agentSecret = randomBytes(32);
     const createdAt = this.now(), expiresAt = createdAt + lifetimeSeconds * 1000;
-    this.rooms.set(id, { id, codec, createdAt, expiresAt, sequence: 0, generation: 0, tokens: { owner: hash(owner), edit: hash(edit), view: hash(view) }, snapshot,
-      snapshotSequence: 0, events: [], presence: new Map(), listeners: new Map(), recentMessages: new Map(), creator });
+    this.rooms.set(id, { id, codec, createdAt, expiresAt, sequence: 0, generation: 0, snapshot,
+      tokens: { owner: hash(owner), edit: hash(edit), view: hash(view), agentEdit: hash(agentToken(agentSecret, "edit")), agentView: hash(agentToken(agentSecret, "view")) },
+      snapshotSequence: 0, events: [], presence: new Map(), listeners: new Map(), recentMessages: new Map(), creator, agentSecret });
     return { id, codec, createdAt, expiresAt, owner, edit, view };
   }
 
@@ -127,14 +133,25 @@ export class PlaygroundRooms {
   }
 
   access(id: string, supplied: string, write = false, owner = false): Room {
+    return this.capability(id, supplied, owner ? ["owner"] : write ? ["edit", "owner", "agentEdit"] : ["view", "edit", "owner", "agentEdit", "agentView"]).room;
+  }
+
+  capability(id: string, supplied: string, allowed: readonly Capability[]): { room: Room; kind: Capability } {
     this.prune();
     if (!/^[A-Za-z0-9_-]{24}$/.test(id) || !/^[A-Za-z0-9_-]{43}$/.test(supplied)) throw new PlaygroundError("This temporary Playground is unavailable or expired.", 410);
     const room = this.rooms.get(id);
     if (!room) throw new PlaygroundError("This temporary Playground is unavailable or expired.", 410);
-    const digest = hash(supplied);
-    const capabilities: Capability[] = owner ? ["owner"] : write ? ["edit", "owner"] : ["view", "edit", "owner"];
-    if (!capabilities.some(kind => timingSafeEqual(digest, room.tokens[kind]))) throw new PlaygroundError("This Playground link is not authorized.", 403);
-    return room;
+    const digest = hash(supplied), kind = allowed.find(kind => timingSafeEqual(digest, room.tokens[kind]));
+    if (!kind) throw new PlaygroundError("This Playground link is not authorized.", 403);
+    return { room, kind };
+  }
+
+  // A person's link yields the agent link of the same access. It expires with the room.
+  agent(id: string, supplied: string) {
+    const { room, kind } = this.capability(id, supplied, ["view", "edit", "owner"]);
+    this.limit("agent:" + id, 60);
+    const mode = kind === "view" ? "view" as const : "edit" as const;
+    return { access: agentToken(room.agentSecret, mode), mode, expiresAt: room.expiresAt };
   }
 
   // The capability is verified first, so junk tokens cannot allocate rate buckets.
@@ -145,8 +162,8 @@ export class PlaygroundRooms {
   }
 
   state(id: string, supplied: string) {
-    const room = this.access(id, supplied);
-    return { id, codec: room.codec, createdAt: room.createdAt, expiresAt: room.expiresAt, sequence: room.sequence, generation: room.generation,
+    const { room, kind } = this.capability(id, supplied, ["view", "edit", "owner", "agentEdit", "agentView"]);
+    return { id, codec: room.codec, mode: kind === "view" || kind === "agentView" ? "view" : "edit", createdAt: room.createdAt, expiresAt: room.expiresAt, sequence: room.sequence, generation: room.generation,
       protocol: { conditionalUpdates: 1, stateGeneration: 1 },
       snapshotSequence: room.snapshotSequence, snapshot: room.snapshot, events: room.events, presence: Array.from(room.presence, ([peer, value]) => ({ peer, packet: value.packet })) };
   }

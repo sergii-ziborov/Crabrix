@@ -47,6 +47,31 @@ test("view links cannot change or close a room; other-room capabilities fail", (
   assert.throws(() => rooms.state(first.id, first.edit), /expired/);
 });
 
+test("agent links share the room and its expiry but cannot mint links or exceed their access", () => {
+  let time = 1000;
+  const rooms = new PlaygroundRooms(() => time), room = rooms.create(packet(), 3600), other = rooms.create(packet(), 3600);
+  const edit = rooms.agent(room.id, room.edit), view = rooms.agent(room.id, room.view);
+  assert.deepEqual(rooms.agent(room.id, room.owner), edit);
+  assert.equal(edit.mode, "edit"); assert.equal(view.mode, "view");
+  assert.equal(edit.expiresAt, 3601000); assert.equal(view.expiresAt, 3601000);
+  assert.notEqual(edit.access, room.edit); assert.notEqual(view.access, room.view); assert.notEqual(edit.access, view.access);
+  assert.notEqual(rooms.agent(other.id, other.edit).access, edit.access);
+  assert.equal(rooms.state(room.id, edit.access).mode, "edit");
+  assert.equal(rooms.state(room.id, view.access).mode, "view");
+  assert.equal(rooms.state(room.id, room.view).mode, "view");
+  assert.equal(rooms.state(room.id, room.owner).mode, "edit");
+  rooms.subscribe(room.id, edit.access, "agent_peer_000001", () => {});
+  assert.equal(rooms.append(room.id, edit.access, "agent_peer_000001", "agent_message_01", packet()).sequence, 1);
+  rooms.subscribe(room.id, view.access, "agent_peer_000002", () => {});
+  assert.throws(() => rooms.append(room.id, view.access, "agent_peer_000002", "agent_message_02", packet()), /authorized/);
+  assert.throws(() => rooms.agent(room.id, edit.access), /authorized/);
+  assert.throws(() => rooms.agent(room.id, view.access), /authorized/);
+  assert.throws(() => rooms.close(room.id, edit.access), /authorized/);
+  assert.throws(() => rooms.state(other.id, edit.access), /authorized/);
+  time = 3601000;
+  assert.throws(() => rooms.state(room.id, edit.access), /expired/);
+});
+
 test("interview participants, update idempotency and snapshot compaction protect current state", () => {
   const rooms = new PlaygroundRooms();
   const room = rooms.create(packet(), 3600), received = [];
