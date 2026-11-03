@@ -1,5 +1,16 @@
 # Crabrix website deployment
 
+## Agent link warning — 4 November 2026
+
+The live service uses `localhost/crabrix-web-site:agentwarn-0f4bf44`; the previous service is
+retained as `crabrix-web-site-before-agentwarn-20261104`, after a consistent account backup.
+The remote MCP container and nginx are unchanged. Connect AI shows a modal before any agent
+link is created, shown or copied (once per tab): without Crabrix MCP the agent works through
+the Crabrix server, which decrypts the project in memory while it is connected; the project
+is not made public. The privacy policy keeps one narrow line: an optional website feature the
+Crabrix app does not use. Both legal copies were regenerated from `site/privacy.html`.
+On production the modal opened before any room existed, and Escape closed only the warning.
+
 ## Agent links and remote MCP — 4 November 2026
 
 The live service uses `localhost/crabrix-web-site:agents-138c1e6`; the previous service is
