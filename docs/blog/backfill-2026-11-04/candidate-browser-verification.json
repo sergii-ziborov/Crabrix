@@ -1,0 +1,416 @@
+{
+  "base": "http://127.0.0.1:3295",
+  "atUTC": "2026-11-04T18:41:02.039Z",
+  "cases": [
+    {
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "width": 390,
+      "theme": "light",
+      "wordCount": 2430,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "width": 390,
+      "theme": "dark",
+      "wordCount": 2430,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "width": 390,
+      "theme": "system",
+      "wordCount": 2430,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "width": 390,
+      "theme": "amber",
+      "wordCount": 2430,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "width": 390,
+      "theme": "cyberpunk",
+      "wordCount": 2430,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "width": 820,
+      "theme": "light",
+      "wordCount": 2430,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "width": 820,
+      "theme": "dark",
+      "wordCount": 2430,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "width": 820,
+      "theme": "system",
+      "wordCount": 2430,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "width": 820,
+      "theme": "amber",
+      "wordCount": 2430,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "width": 820,
+      "theme": "cyberpunk",
+      "wordCount": 2430,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "width": 1440,
+      "theme": "light",
+      "wordCount": 2430,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "width": 1440,
+      "theme": "dark",
+      "wordCount": 2430,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "width": 1440,
+      "theme": "system",
+      "wordCount": 2430,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "width": 1440,
+      "theme": "amber",
+      "wordCount": 2430,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "width": 1440,
+      "theme": "cyberpunk",
+      "wordCount": 2430,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rustup-1-29-3-upgrade-recovery",
+      "width": 390,
+      "theme": "light",
+      "wordCount": 2034,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rustup-1-29-3-upgrade-recovery",
+      "width": 390,
+      "theme": "dark",
+      "wordCount": 2034,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rustup-1-29-3-upgrade-recovery",
+      "width": 820,
+      "theme": "light",
+      "wordCount": 2034,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rustup-1-29-3-upgrade-recovery",
+      "width": 820,
+      "theme": "dark",
+      "wordCount": 2034,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rustup-1-29-3-upgrade-recovery",
+      "width": 1440,
+      "theme": "light",
+      "wordCount": 2034,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rustup-1-29-3-upgrade-recovery",
+      "width": 1440,
+      "theme": "dark",
+      "wordCount": 2034,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-debugging-visualizers-string-vec-reproductions",
+      "width": 390,
+      "theme": "light",
+      "wordCount": 2072,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-debugging-visualizers-string-vec-reproductions",
+      "width": 390,
+      "theme": "dark",
+      "wordCount": 2072,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-debugging-visualizers-string-vec-reproductions",
+      "width": 820,
+      "theme": "light",
+      "wordCount": 2072,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-debugging-visualizers-string-vec-reproductions",
+      "width": 820,
+      "theme": "dark",
+      "wordCount": 2072,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-debugging-visualizers-string-vec-reproductions",
+      "width": 1440,
+      "theme": "light",
+      "wordCount": 2072,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-debugging-visualizers-string-vec-reproductions",
+      "width": 1440,
+      "theme": "dark",
+      "wordCount": 2072,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-1-99-1-patch-regression-testing",
+      "width": 390,
+      "theme": "light",
+      "wordCount": 2028,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-1-99-1-patch-regression-testing",
+      "width": 390,
+      "theme": "dark",
+      "wordCount": 2028,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-1-99-1-patch-regression-testing",
+      "width": 820,
+      "theme": "light",
+      "wordCount": 2028,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-1-99-1-patch-regression-testing",
+      "width": 820,
+      "theme": "dark",
+      "wordCount": 2028,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-1-99-1-patch-regression-testing",
+      "width": 1440,
+      "theme": "light",
+      "wordCount": 2028,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-1-99-1-patch-regression-testing",
+      "width": 1440,
+      "theme": "dark",
+      "wordCount": 2028,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-gpu-linker-groups-build-boundaries",
+      "width": 390,
+      "theme": "light",
+      "wordCount": 2092,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-gpu-linker-groups-build-boundaries",
+      "width": 390,
+      "theme": "dark",
+      "wordCount": 2092,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-gpu-linker-groups-build-boundaries",
+      "width": 820,
+      "theme": "light",
+      "wordCount": 2092,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-gpu-linker-groups-build-boundaries",
+      "width": 820,
+      "theme": "dark",
+      "wordCount": 2092,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-gpu-linker-groups-build-boundaries",
+      "width": 1440,
+      "theme": "light",
+      "wordCount": 2092,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-gpu-linker-groups-build-boundaries",
+      "width": 1440,
+      "theme": "dark",
+      "wordCount": 2092,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-variadic-generics-survey-practical-tuples",
+      "width": 390,
+      "theme": "light",
+      "wordCount": 2090,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-variadic-generics-survey-practical-tuples",
+      "width": 390,
+      "theme": "dark",
+      "wordCount": 2090,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-variadic-generics-survey-practical-tuples",
+      "width": 820,
+      "theme": "light",
+      "wordCount": 2090,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-variadic-generics-survey-practical-tuples",
+      "width": 820,
+      "theme": "dark",
+      "wordCount": 2090,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-variadic-generics-survey-practical-tuples",
+      "width": 1440,
+      "theme": "light",
+      "wordCount": 2090,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "slug": "rust-variadic-generics-survey-practical-tuples",
+      "width": 1440,
+      "theme": "dark",
+      "wordCount": 2090,
+      "images": 3,
+      "overflow": false,
+      "pageErrors": []
+    }
+  ],
+  "archivePages": 4,
+  "reachableArticles": 39,
+  "errors": [],
+  "sourceCommit": "102fed19cbcef9bec15f1dbe38adf0f2a0fb8025",
+  "followUp": "Final source 18d3b76 passed 76 candidate HTTP checks and the complete 45-case public browser matrix."
+}

@@ -1,0 +1,547 @@
+{
+  "base": "http://127.0.0.1:3213",
+  "atUTC": "2026-11-04T18:41:54.180Z",
+  "passed": true,
+  "checks": [
+    {
+      "path": "/healthz/",
+      "status": 200,
+      "bytes": 3,
+      "contentType": "text/plain;charset=UTF-8",
+      "sha256": "dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22"
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "bytes": 105204,
+      "contentType": "application/xml",
+      "sha256": "ad519fa6ec857c3f4e87779b4776d7946eb54bbe0b156207869e0baaa2b3f162"
+    },
+    {
+      "path": "/sitemap/",
+      "status": 200,
+      "bytes": 273426,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "8610c5809a144f8c35efbfff6b97d0c143223271af8a201ed1820f7af3a6600d"
+    },
+    {
+      "path": "/robots.txt",
+      "status": 200,
+      "bytes": 140,
+      "contentType": "text/plain",
+      "sha256": "8d343bfc8a9f7adbbef08da44effeaf40b09cfc34d892489e2919f7f63ed84f6"
+    },
+    {
+      "path": "/blog/crabrix-ai-agents-local-mcp-remote-workflows/",
+      "status": 200,
+      "bytes": 103905,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "f770155ffdc89a5f42c7ad67ca0ef714c62c1f0592e994a2521b0d422212d85e"
+    },
+    {
+      "path": "/images/blog/november-2026/agents/cover.png",
+      "status": 200,
+      "bytes": 1934974,
+      "contentType": "image/png",
+      "sha256": "c14515d402c90b5995643c6a6bc3bfff61147bbd81e84c39b7ed93d0b83ed05a"
+    },
+    {
+      "path": "/images/blog/november-2026/agents/cover.webp",
+      "status": 200,
+      "bytes": 132124,
+      "contentType": "image/webp",
+      "sha256": "e8c4b5fbaafdd0e63d3c8bc661353cfce63594631166977d2c2c710bc1b19945"
+    },
+    {
+      "path": "/images/blog/november-2026/agents/cover-640.webp",
+      "status": 200,
+      "bytes": 37084,
+      "contentType": "image/webp",
+      "sha256": "d11c77d6ea0fe6f917041b37aaf1101d9a325b7f72baf808f84b20e13e3dea18"
+    },
+    {
+      "path": "/images/blog/november-2026/agents/infographic.png",
+      "status": 200,
+      "bytes": 1832137,
+      "contentType": "image/png",
+      "sha256": "8142f4c7f7a02dfb7b493e8135f3761be95525fe38af8b004927c5b518e7e4b5"
+    },
+    {
+      "path": "/images/blog/november-2026/agents/infographic.webp",
+      "status": 200,
+      "bytes": 141412,
+      "contentType": "image/webp",
+      "sha256": "e9372e685bf16ee86a4d26b56c1c01f4b8a9e78801540ded737a78c9e1744728"
+    },
+    {
+      "path": "/images/blog/november-2026/agents/infographic-640.webp",
+      "status": 200,
+      "bytes": 46024,
+      "contentType": "image/webp",
+      "sha256": "34db0149511c26756b97a994b659a7d9a2506fbb42faddfb9d967fe387302f3f"
+    },
+    {
+      "path": "/images/blog/november-2026/agents/workshop.png",
+      "status": 200,
+      "bytes": 2199547,
+      "contentType": "image/png",
+      "sha256": "7cbd541e369d8d8321eac1fe6bffd2b3a17332aae8888a77cc20739b910d6dbb"
+    },
+    {
+      "path": "/images/blog/november-2026/agents/workshop.webp",
+      "status": 200,
+      "bytes": 194754,
+      "contentType": "image/webp",
+      "sha256": "3770b6af2a73538644e7008801972babdbad371c49aa02c91735c18c2b47eede"
+    },
+    {
+      "path": "/images/blog/november-2026/agents/workshop-640.webp",
+      "status": 200,
+      "bytes": 48528,
+      "contentType": "image/webp",
+      "sha256": "aad044a8a9454383dd70da377d99db9949a83524d3170f3473a3f3fe8275edb9"
+    },
+    {
+      "path": "/blog/rustup-1-29-3-upgrade-recovery/",
+      "status": 200,
+      "bytes": 84294,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "adbb153f56ed12e99f4e621e84efa27a064862715b6ab15a540330f57f8122f6"
+    },
+    {
+      "path": "/images/blog/november-2026/rustup/cover.png",
+      "status": 200,
+      "bytes": 2547529,
+      "contentType": "image/png",
+      "sha256": "9638634a93d29912314c6be6eb824c69ce241d8b2246cc3c5445751a196ff599"
+    },
+    {
+      "path": "/images/blog/november-2026/rustup/cover.webp",
+      "status": 200,
+      "bytes": 303984,
+      "contentType": "image/webp",
+      "sha256": "5bf9e42b237e933aadcbca74ae8710acb56c5f67ae5db1393518459d8517d125"
+    },
+    {
+      "path": "/images/blog/november-2026/rustup/cover-640.webp",
+      "status": 200,
+      "bytes": 66324,
+      "contentType": "image/webp",
+      "sha256": "b0866b30f835da14029e86f5ad88e1af4da363230585e953aef0bef4f7d1bf94"
+    },
+    {
+      "path": "/images/blog/november-2026/rustup/infographic.png",
+      "status": 200,
+      "bytes": 1970701,
+      "contentType": "image/png",
+      "sha256": "84bd724f47c7f32bcab6fabff2cceb8029f6570b2131f4ee86d546518fca6a01"
+    },
+    {
+      "path": "/images/blog/november-2026/rustup/infographic.webp",
+      "status": 200,
+      "bytes": 159644,
+      "contentType": "image/webp",
+      "sha256": "1d5d09835e70a4d51fad0930efd8abe71158ad004999a3a3b017ce586348354a"
+    },
+    {
+      "path": "/images/blog/november-2026/rustup/infographic-640.webp",
+      "status": 200,
+      "bytes": 47976,
+      "contentType": "image/webp",
+      "sha256": "53064a05da2d8148e10d03fed1e172440f38feee5828974efeb32c8dab19d397"
+    },
+    {
+      "path": "/images/blog/november-2026/rustup/workshop.png",
+      "status": 200,
+      "bytes": 2471664,
+      "contentType": "image/png",
+      "sha256": "31702544026aeb3f4336a584f1ed086768d38225c98e50ebd00fd8a2a83ab761"
+    },
+    {
+      "path": "/images/blog/november-2026/rustup/workshop.webp",
+      "status": 200,
+      "bytes": 258938,
+      "contentType": "image/webp",
+      "sha256": "8e19537c0bf7b9ff9e8915d255481f1fbc683a8820ced0c393f3e796b8470429"
+    },
+    {
+      "path": "/images/blog/november-2026/rustup/workshop-640.webp",
+      "status": 200,
+      "bytes": 54940,
+      "contentType": "image/webp",
+      "sha256": "250a777ec7df3ede45aec95ecf3f2cc9942e4f16f3d52267a7c551a319de5c79"
+    },
+    {
+      "path": "/blog/rust-debugging-visualizers-string-vec-reproductions/",
+      "status": 200,
+      "bytes": 88486,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "8dc62183ae9def6adf3af47be5816af92f1ef1747d7160c7b44d834ea8d89c16"
+    },
+    {
+      "path": "/images/blog/november-2026/debugging/cover.png",
+      "status": 200,
+      "bytes": 2267182,
+      "contentType": "image/png",
+      "sha256": "84e64de5ec14a7ca03ea15ef34013264163ca3b6eae7eb6543b9461302435fb9"
+    },
+    {
+      "path": "/images/blog/november-2026/debugging/cover.webp",
+      "status": 200,
+      "bytes": 166280,
+      "contentType": "image/webp",
+      "sha256": "a2cc6961afd781d76d7b362a05e99e429e7b77765509934bb587fcb239d6c583"
+    },
+    {
+      "path": "/images/blog/november-2026/debugging/cover-640.webp",
+      "status": 200,
+      "bytes": 37176,
+      "contentType": "image/webp",
+      "sha256": "c80c800adf7410ecced981b10901af8d24be53b4ab0baaa88b1e9bc4b0b690ca"
+    },
+    {
+      "path": "/images/blog/november-2026/debugging/infographic.png",
+      "status": 200,
+      "bytes": 1848584,
+      "contentType": "image/png",
+      "sha256": "805a6035f8c932248c558a5e636979df18edbc9de722ccbfcb282e8813024dce"
+    },
+    {
+      "path": "/images/blog/november-2026/debugging/infographic.webp",
+      "status": 200,
+      "bytes": 135180,
+      "contentType": "image/webp",
+      "sha256": "97f33fd9b7793acd66b19ff663460c76e420520e6c80540cd17f7d1a3a138e4d"
+    },
+    {
+      "path": "/images/blog/november-2026/debugging/infographic-640.webp",
+      "status": 200,
+      "bytes": 43390,
+      "contentType": "image/webp",
+      "sha256": "4df44f12b46da48951b8060855ca1f03939061c5ea3212bde7c6b76320f31e54"
+    },
+    {
+      "path": "/images/blog/november-2026/debugging/workshop.png",
+      "status": 200,
+      "bytes": 2292738,
+      "contentType": "image/png",
+      "sha256": "7cc0910c7adda98c68625d661dccd09b50e30a0a571cf446ada42aedce15c402"
+    },
+    {
+      "path": "/images/blog/november-2026/debugging/workshop.webp",
+      "status": 200,
+      "bytes": 228410,
+      "contentType": "image/webp",
+      "sha256": "b7f51999df21b2d02747f81492c71e68187cc95d446315eb3c70243769fb7eac"
+    },
+    {
+      "path": "/images/blog/november-2026/debugging/workshop-640.webp",
+      "status": 200,
+      "bytes": 52858,
+      "contentType": "image/webp",
+      "sha256": "d87cf1c8e80750e734516d9fbc01406bacbe74cb9fbfc138571dcf7c222ed77e"
+    },
+    {
+      "path": "/blog/rust-1-99-1-patch-regression-testing/",
+      "status": 200,
+      "bytes": 85164,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "d7211e5b6a01beecb0034de1fbe3465f44ec02865d3645261a28555e4e01dff2"
+    },
+    {
+      "path": "/images/blog/november-2026/patch/cover.png",
+      "status": 200,
+      "bytes": 2484342,
+      "contentType": "image/png",
+      "sha256": "cb80fcdc15768a409e6e286938aac577f785a7f118c08940ed5606ca5e966d86"
+    },
+    {
+      "path": "/images/blog/november-2026/patch/cover.webp",
+      "status": 200,
+      "bytes": 260670,
+      "contentType": "image/webp",
+      "sha256": "ec5e0032bcb6184631c094cdd364ffffc7100ccada80c6ab7098ffcc91f5c007"
+    },
+    {
+      "path": "/images/blog/november-2026/patch/cover-640.webp",
+      "status": 200,
+      "bytes": 56600,
+      "contentType": "image/webp",
+      "sha256": "855744de0ff7e9f8f56f9192f7342f5851b9e1fc715600bb1d704d15b4d15151"
+    },
+    {
+      "path": "/images/blog/november-2026/patch/infographic.png",
+      "status": 200,
+      "bytes": 2044083,
+      "contentType": "image/png",
+      "sha256": "7a4bb69c9279f5039ad50d8f2a472fb1a27ed249eea13b3c025196ac8a59fc9a"
+    },
+    {
+      "path": "/images/blog/november-2026/patch/infographic.webp",
+      "status": 200,
+      "bytes": 155160,
+      "contentType": "image/webp",
+      "sha256": "c5e22ae28d64f90c677af313e07191e2f9c6da9cf07f01e05065b75e53a7de49"
+    },
+    {
+      "path": "/images/blog/november-2026/patch/infographic-640.webp",
+      "status": 200,
+      "bytes": 45464,
+      "contentType": "image/webp",
+      "sha256": "bd13a8bb1f1a527d2fc6cc7f60088a3bcf0b59f5dd909c1670b3200e5956db12"
+    },
+    {
+      "path": "/images/blog/november-2026/patch/workshop.png",
+      "status": 200,
+      "bytes": 1945045,
+      "contentType": "image/png",
+      "sha256": "b8e39132a106bfdbfa831e8ce8306961465b3ddde8b29f44c0c7996ebb2bcc7b"
+    },
+    {
+      "path": "/images/blog/november-2026/patch/workshop.webp",
+      "status": 200,
+      "bytes": 147930,
+      "contentType": "image/webp",
+      "sha256": "0ee612016e1a5bb7a572d0c65a6760bd8004b3d5e63089fd75d0a8d971d8a282"
+    },
+    {
+      "path": "/images/blog/november-2026/patch/workshop-640.webp",
+      "status": 200,
+      "bytes": 43418,
+      "contentType": "image/webp",
+      "sha256": "41b3c04d9a688f1d0f194f4d1281e86c57fa9f1660421e19e89717f5c56b46eb"
+    },
+    {
+      "path": "/blog/rust-gpu-linker-groups-build-boundaries/",
+      "status": 200,
+      "bytes": 87426,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "822b95e13b0c6f7fa8a0f12c549a5da3388188839e2fa056adff7c1dbdebff34"
+    },
+    {
+      "path": "/images/blog/november-2026/gpu-linker/cover.png",
+      "status": 200,
+      "bytes": 2260876,
+      "contentType": "image/png",
+      "sha256": "9e8f6f4f31fc0a3f6018b8a131104c5d9d3ad78ae03189282a654050d559aa6a"
+    },
+    {
+      "path": "/images/blog/november-2026/gpu-linker/cover.webp",
+      "status": 200,
+      "bytes": 206450,
+      "contentType": "image/webp",
+      "sha256": "43f04a1aaea870e6d334c38840fae03a7ea5a012ba4263cee88ec3c914c937e1"
+    },
+    {
+      "path": "/images/blog/november-2026/gpu-linker/cover-640.webp",
+      "status": 200,
+      "bytes": 52160,
+      "contentType": "image/webp",
+      "sha256": "fc1ae346f88fec35ce6defbce61bd74aaa5204df875d021aee0f43ec6b781649"
+    },
+    {
+      "path": "/images/blog/november-2026/gpu-linker/infographic.png",
+      "status": 200,
+      "bytes": 2105848,
+      "contentType": "image/png",
+      "sha256": "d05f461359c68e60c692315fbb0da0a87d281687f6ece8d91333919f3c3ecda2"
+    },
+    {
+      "path": "/images/blog/november-2026/gpu-linker/infographic.webp",
+      "status": 200,
+      "bytes": 164542,
+      "contentType": "image/webp",
+      "sha256": "6b3a293c0cfa1bf61e588d80317dee8824fb1c0cbb88086227ea844b011681d3"
+    },
+    {
+      "path": "/images/blog/november-2026/gpu-linker/infographic-640.webp",
+      "status": 200,
+      "bytes": 45882,
+      "contentType": "image/webp",
+      "sha256": "8729f8e8bac09ec6a9827a1a3022a903f569dc321becf38517d40b3244a08ca2"
+    },
+    {
+      "path": "/images/blog/november-2026/gpu-linker/workshop.png",
+      "status": 200,
+      "bytes": 2176124,
+      "contentType": "image/png",
+      "sha256": "851be3c0159fbf88c88bbf96bd0f8928743e002ef2affb1ccffe08ba24a93bda"
+    },
+    {
+      "path": "/images/blog/november-2026/gpu-linker/workshop.webp",
+      "status": 200,
+      "bytes": 195510,
+      "contentType": "image/webp",
+      "sha256": "4dd0b5e2de1ce08bc8e7cff408c101db449a222e409cd4fa0496897d7a100168"
+    },
+    {
+      "path": "/images/blog/november-2026/gpu-linker/workshop-640.webp",
+      "status": 200,
+      "bytes": 47892,
+      "contentType": "image/webp",
+      "sha256": "dc16f019fd74eb989cfbb2c5473a79e1c0d70ec9661594d5b0a39a31901bff40"
+    },
+    {
+      "path": "/blog/rust-variadic-generics-survey-practical-tuples/",
+      "status": 200,
+      "bytes": 92734,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "512471beda680a5b50faf397e3cc5d9d45224d9886b938a1ba0845759058f50e"
+    },
+    {
+      "path": "/images/blog/november-2026/variadics/cover.png",
+      "status": 200,
+      "bytes": 2117911,
+      "contentType": "image/png",
+      "sha256": "281cca6208e1996ca4a58f3cd1e9004b67e4ef2af0a7650f61ef118001a5b320"
+    },
+    {
+      "path": "/images/blog/november-2026/variadics/cover.webp",
+      "status": 200,
+      "bytes": 185510,
+      "contentType": "image/webp",
+      "sha256": "67cc8b4940412260e43d8e4926bdc6f1ad058f66e963b4a04cdb41667256417f"
+    },
+    {
+      "path": "/images/blog/november-2026/variadics/cover-640.webp",
+      "status": 200,
+      "bytes": 42114,
+      "contentType": "image/webp",
+      "sha256": "b9f1c709ceb6beff9c93c17a96cd1c428b3e0fcc8b1f312dbf0004503a8aec88"
+    },
+    {
+      "path": "/images/blog/november-2026/variadics/infographic.png",
+      "status": 200,
+      "bytes": 1979161,
+      "contentType": "image/png",
+      "sha256": "20d99b65b2d61ede96dba91f27be77dc9468e1f0a054a4450c194ab1c74618a6"
+    },
+    {
+      "path": "/images/blog/november-2026/variadics/infographic.webp",
+      "status": 200,
+      "bytes": 157398,
+      "contentType": "image/webp",
+      "sha256": "2a4e994d72149ff22e79d45f11ba982a66e7527ec84e762896d326147abf2bf9"
+    },
+    {
+      "path": "/images/blog/november-2026/variadics/infographic-640.webp",
+      "status": 200,
+      "bytes": 43816,
+      "contentType": "image/webp",
+      "sha256": "017bcd773481ee3cc2a684233d4ef0ab08036721fbcde9f2d62b576efacb0cfc"
+    },
+    {
+      "path": "/images/blog/november-2026/variadics/workshop.png",
+      "status": 200,
+      "bytes": 2239510,
+      "contentType": "image/png",
+      "sha256": "1062e642f53358d7597dc0ccf22cd038d0e53023852e9db8793eced6fc91233f"
+    },
+    {
+      "path": "/images/blog/november-2026/variadics/workshop.webp",
+      "status": 200,
+      "bytes": 239234,
+      "contentType": "image/webp",
+      "sha256": "a6b3c45ada5971bd063a7ee4986bd95407b6ac44fdc3cba9bfbf80fc0b916b57"
+    },
+    {
+      "path": "/images/blog/november-2026/variadics/workshop-640.webp",
+      "status": 200,
+      "bytes": 58148,
+      "contentType": "image/webp",
+      "sha256": "bef009a1d3ca165331233d0c70e92077613b130d8978c45259ed1bc10b804b51"
+    },
+    {
+      "path": "/blog/",
+      "status": 200,
+      "bytes": 47375,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "66857397fcbe90139647cc19f6413267757d22cfdd3a40cacd3a87cfc74f5861"
+    },
+    {
+      "path": "/blog/page/2/",
+      "status": 200,
+      "bytes": 47463,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "e62fb75d8566ad1cdfce2de127e819e77be8190709f053c077a547999d778f0b"
+    },
+    {
+      "path": "/blog/page/3/",
+      "status": 200,
+      "bytes": 46682,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "c6010fade457c0bd02c11fbd00203f3f97eb55a198cf009da3568628608179c2"
+    },
+    {
+      "path": "/blog/page/4/",
+      "status": 200,
+      "bytes": 26540,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "65f2f8a18b2eeffe116c26d83fd31aeb06ad821cabdf3f93567e57a8cebd2cb9"
+    },
+    {
+      "path": "/ai/",
+      "status": 200,
+      "bytes": 72500,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "461ff239941446ca862c0953f7b0ea5ea0fb0e86eba5e0bb072cb7d8a2d6e8dd"
+    },
+    {
+      "path": "/guide/",
+      "status": 200,
+      "bytes": 224055,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "d05e4da7dadeec709b8b2b33a42b9f2ba7dbddd35b80a753dd9ac7c36becc2c7"
+    },
+    {
+      "path": "/playground/",
+      "status": 200,
+      "bytes": 15417,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "fe272db2be6bc8faacbc3956bdf17ff7a36148f37fa75276450984218433459f"
+    },
+    {
+      "path": "/learn/basics/hello-rust/",
+      "status": 200,
+      "bytes": 26031,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "4b2ed2e7eb6f4c5437bab852c603049235eced7b55dab727e5b56bedd254f051"
+    },
+    {
+      "path": "/learn-media/basics/hello-rust.png",
+      "status": 401,
+      "bytes": 29,
+      "contentType": "text/plain;charset=UTF-8",
+      "sha256": "4c88b55a52eab8bde3d44df188fa36145ccd58afe3dd8a73aef7e9d5ef8e6739"
+    },
+    {
+      "path": "/api/capabilities/",
+      "status": 200,
+      "bytes": 10046,
+      "contentType": "application/json",
+      "sha256": "22d2f55cc1335b012a7005a76c74b5f420d9dbe000b039b8a29abeac51c8d179"
+    },
+    {
+      "path": "/ai/bootstrap.json",
+      "status": 200,
+      "bytes": 1688,
+      "contentType": "application/json",
+      "sha256": "a97559d95db18e08c353dedb357d09b12db03db7983ffb2571e753efc38934a5"
+    },
+    {
+      "path": "/downloads/crabrix-0.5.0.tgz",
+      "status": 200,
+      "bytes": 547911,
+      "contentType": "application/octet-stream",
+      "sha256": "d0f577b59d90bf74ee5bbd32abf76bc0e9f2ac83a167947e148f3620929b75eb"
+    }
+  ],
+  "retries": [],
+  "articles": 6,
+  "assets": 54,
+  "lessonGuestGate": true,
+  "lessonMediaDenied": true,
+  "capabilitiesUnchanged": true,
+  "sdkTarballUnchanged": true,
+  "sitemapURLs": 816
+}

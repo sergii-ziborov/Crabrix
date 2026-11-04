@@ -1,5 +1,31 @@
 # Crabrix website deployment
 
+## Six blog dates and the AI agent study — 4 November 2026
+
+The live site uses `localhost/crabrix-web-site:blog-18d3b76`, built from source
+`18d3b764118bfd797db6c4422e16b63ff07b3c08` (image `87e5794c…`). Six editorial slots,
+30 October through 4 November, now have 2,028–2,430 prose words and three original
+ImageGen images each. All six declare their actual publication date, 4 November,
+in OpenGraph and BlogPosting metadata. Previous 33 post objects are unchanged.
+The archive contains 39 articles over four pages; the XML sitemap has 816 URLs.
+
+117 site tests, TypeScript and the production build passed. Five desktop Rust
+programs and the article's JavaScript example were exercised. Public HTTPS read-back
+passed 76 checks, including the six articles, 54 exact image hashes, metadata,
+SDK download, capabilities and guest lesson gating. All 45 public browser cases
+passed at phone, tablet and desktop widths; no page overflow or page errors occurred.
+The MCP study used local stdio and direct HTTP protocol clients plus a browser;
+manual local Run/Debug worked, stale edits and an unapproved Run were refused.
+A fresh published-SDK create/read/apply/share round trip passed after cutover.
+
+A consistent account backup preceded switching. The account mount, resource limits
+and remote MCP container are unchanged; the old website is retained as
+`crabrix-web-site-before-blog-20261104` for rollback. DNS, nginx, app binaries and
+package registries were not changed by this publication.
+
+[Publication evidence, article links and scope](blog/backfill-2026-11-04/delivery-receipt.json),
+[browser proof](blog/backfill-2026-11-04/published-blog.png).
+
 ## Crabrix MCP 0.5.0 and the agent guide — 4 November 2026
 
 The live service uses `localhost/crabrix-web-site:sdk050-d411197` and the remote MCP

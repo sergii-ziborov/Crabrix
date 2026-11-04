@@ -1,0 +1,114 @@
+{
+  "sourceCommit": "18d3b764118bfd797db6c4422e16b63ff07b3c08",
+  "atUTC": "2026-11-04T18:42:11Z",
+  "image": "localhost/crabrix-web-site:blog-18d3b76",
+  "imageID": "87e5794c8565af0f45348c1d260730eb18321efc3e25a85a984565c91a48ecc7",
+  "health": "healthy",
+  "rollbackContainer": "crabrix-web-site-before-blog-20261104",
+  "accountBackup": "Account backup saved; seven-day retention applied.",
+  "accountMountUnchanged": true,
+  "resourceLimitsUnchanged": true,
+  "remoteMCPContainerUnchanged": true,
+  "remoteMCPImage": "localhost/crabrix-mcp-remote:0.5.0-d411197",
+  "remoteMCPContainerID": "4624eca64194378d90d0503ef0ed7704ae7dee503a72f4e4a83c1fdcfcae85a0",
+  "nativeAppChanged": false,
+  "DNSChanged": false,
+  "nginxChanged": false,
+  "origin": "https://crabrix.com",
+  "sourceTreeSHA256": "c86c5542ada5331722f392dd29517d9b5292db1d8a81c10bc176b43a2e33b379",
+  "contextEntriesVerified": 3002,
+  "baseBuildContextUnchanged": true,
+  "previous33PostObjectsUnchanged": true,
+  "articles": [
+    {
+      "editorialDate": "2026-11-04",
+      "publishedDate": "2026-11-04",
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "title": "Crabrix and AI agents: local MCP, direct connections and real Rust work",
+      "proseWords": 2430,
+      "images": 3,
+      "url": "https://crabrix.com/blog/crabrix-ai-agents-local-mcp-remote-workflows/"
+    },
+    {
+      "editorialDate": "2026-11-03",
+      "publishedDate": "2026-11-04",
+      "slug": "rustup-1-29-3-upgrade-recovery",
+      "title": "rustup 1.29.3: recover toolchains without losing the evidence",
+      "proseWords": 2034,
+      "images": 3,
+      "url": "https://crabrix.com/blog/rustup-1-29-3-upgrade-recovery/"
+    },
+    {
+      "editorialDate": "2026-11-02",
+      "publishedDate": "2026-11-04",
+      "slug": "rust-debugging-visualizers-string-vec-reproductions",
+      "title": "Rust debugging news: make String, Vec and structs visible",
+      "proseWords": 2072,
+      "images": 3,
+      "url": "https://crabrix.com/blog/rust-debugging-visualizers-string-vec-reproductions/"
+    },
+    {
+      "editorialDate": "2026-11-01",
+      "publishedDate": "2026-11-04",
+      "slug": "rust-1-99-1-patch-regression-testing",
+      "title": "Rust 1.99.1: make patch upgrades prove themselves",
+      "proseWords": 2028,
+      "images": 3,
+      "url": "https://crabrix.com/blog/rust-1-99-1-patch-regression-testing/"
+    },
+    {
+      "editorialDate": "2026-10-31",
+      "publishedDate": "2026-11-04",
+      "slug": "rust-gpu-linker-groups-build-boundaries",
+      "title": "Rust GPU and linker news: understand your build boundaries",
+      "proseWords": 2092,
+      "images": 3,
+      "url": "https://crabrix.com/blog/rust-gpu-linker-groups-build-boundaries/"
+    },
+    {
+      "editorialDate": "2026-10-30",
+      "publishedDate": "2026-11-04",
+      "slug": "rust-variadic-generics-survey-practical-tuples",
+      "title": "Variadic generics: what Rust users want, and what works today",
+      "proseWords": 2090,
+      "images": 3,
+      "url": "https://crabrix.com/blog/rust-variadic-generics-survey-practical-tuples/"
+    }
+  ],
+  "checks": {
+    "siteTests": 117,
+    "typeScript": "passed",
+    "productionBuild": "passed",
+    "rustExamplePrograms": 5,
+    "javascriptPublishedSDKRoundTrip": "passed",
+    "postCutoverSDKRoundTrip": {
+      "create": true,
+      "read": true,
+      "apply": true,
+      "share": true
+    },
+    "candidateHTTP": 76,
+    "productionHTTP": 76,
+    "productionHTTPRetries": [],
+    "publicBrowserCases": 45,
+    "browserPageErrors": [],
+    "blogArchivePages": 4,
+    "reachableArticles": 39,
+    "canonicalSitemapURLs": 816,
+    "newImageGenOriginals": 18,
+    "newAssetRepresentationsVerifiedBySHA256": 54,
+    "lessonGuestGate": "retained",
+    "lessonMediaGuestResponse": 401
+  },
+  "liveBrowserScreenshot": "published-blog.png",
+  "actualPublicationDate": "2026-11-04",
+  "editorialDateRange": [
+    "2026-10-30",
+    "2026-11-04"
+  ],
+  "notes": [
+    "Editorial dates fill the requested slots; all six BlogPosting and OpenGraph publication dates are 4 November 2026.",
+    "No new Apple, npm, crates.io or remote MCP release was part of this blog publication.",
+    "The published-package agent study used protocol clients and a browser, not physical phones or provider-specific chat GUIs."
+  ]
+}
