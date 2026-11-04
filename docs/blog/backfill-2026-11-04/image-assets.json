@@ -1,0 +1,240 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+    {
+      "id": 0,
+      "group": "variadics",
+      "kind": "cover",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/variadics/cover.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-767586d1-e28e-415e-a002-4010f2f827f7.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2117911,
+      "sha256": "281cca6208e1996ca4a58f3cd1e9004b67e4ef2af0a7650f61ef118001a5b320"
+    },
+    {
+      "id": 1,
+      "group": "variadics",
+      "kind": "infographic",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/variadics/infographic.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-cbbd4619-d56a-4782-aa01-81efa6118c80.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 1979161,
+      "sha256": "20d99b65b2d61ede96dba91f27be77dc9468e1f0a054a4450c194ab1c74618a6"
+    },
+    {
+      "id": 2,
+      "group": "variadics",
+      "kind": "workshop",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/variadics/workshop.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-c104690c-09ba-4b5c-b61b-83152f39a926.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2239510,
+      "sha256": "1062e642f53358d7597dc0ccf22cd038d0e53023852e9db8793eced6fc91233f"
+    },
+    {
+      "id": 3,
+      "group": "gpu-linker",
+      "kind": "cover",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/gpu-linker/cover.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-e9e448f4-ae81-4d50-86ea-163623ddc95c.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2260876,
+      "sha256": "9e8f6f4f31fc0a3f6018b8a131104c5d9d3ad78ae03189282a654050d559aa6a"
+    },
+    {
+      "id": 4,
+      "group": "gpu-linker",
+      "kind": "infographic",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/gpu-linker/infographic.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-82b560b5-4138-4945-9d10-837cf1631f3e.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2105848,
+      "sha256": "d05f461359c68e60c692315fbb0da0a87d281687f6ece8d91333919f3c3ecda2"
+    },
+    {
+      "id": 5,
+      "group": "gpu-linker",
+      "kind": "workshop",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/gpu-linker/workshop.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-7c0571da-b89e-4f1d-8609-464200539a57.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2176124,
+      "sha256": "851be3c0159fbf88c88bbf96bd0f8928743e002ef2affb1ccffe08ba24a93bda"
+    },
+    {
+      "id": 6,
+      "group": "patch",
+      "kind": "cover",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/patch/cover.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-e52aeb68-926a-4329-8faa-cd521c578986.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2484342,
+      "sha256": "cb80fcdc15768a409e6e286938aac577f785a7f118c08940ed5606ca5e966d86"
+    },
+    {
+      "id": 7,
+      "group": "patch",
+      "kind": "infographic",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/patch/infographic.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-8690469d-4425-4095-aedd-2ef5282d6744.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2044083,
+      "sha256": "7a4bb69c9279f5039ad50d8f2a472fb1a27ed249eea13b3c025196ac8a59fc9a"
+    },
+    {
+      "id": 8,
+      "group": "patch",
+      "kind": "workshop",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/patch/workshop.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-ec8d9d1e-fbe9-484c-b1e7-9288db8f676c.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 1945045,
+      "sha256": "b8e39132a106bfdbfa831e8ce8306961465b3ddde8b29f44c0c7996ebb2bcc7b"
+    },
+    {
+      "id": 9,
+      "group": "debugging",
+      "kind": "cover",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/debugging/cover.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-0d0c6f48-a5ac-419f-ad4f-38d8323b7f71.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2267182,
+      "sha256": "84e64de5ec14a7ca03ea15ef34013264163ca3b6eae7eb6543b9461302435fb9"
+    },
+    {
+      "id": 10,
+      "group": "debugging",
+      "kind": "infographic",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/debugging/infographic.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-c4195984-f0f4-4913-845a-554c55c8e8cb.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 1848584,
+      "sha256": "805a6035f8c932248c558a5e636979df18edbc9de722ccbfcb282e8813024dce"
+    },
+    {
+      "id": 11,
+      "group": "debugging",
+      "kind": "workshop",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/debugging/workshop.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-f5a5ddb0-8dc4-4c77-afe2-5c1ae927c407.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2292738,
+      "sha256": "7cc0910c7adda98c68625d661dccd09b50e30a0a571cf446ada42aedce15c402"
+    },
+    {
+      "id": 12,
+      "group": "rustup",
+      "kind": "cover",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/rustup/cover.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-771443bd-9ad8-45ad-818e-9d28e08d93df.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2547529,
+      "sha256": "9638634a93d29912314c6be6eb824c69ce241d8b2246cc3c5445751a196ff599"
+    },
+    {
+      "id": 13,
+      "group": "rustup",
+      "kind": "infographic",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/rustup/infographic.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-90cbc5ec-359d-4a8b-82da-bb71353c7150.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 1970701,
+      "sha256": "84bd724f47c7f32bcab6fabff2cceb8029f6570b2131f4ee86d546518fca6a01"
+    },
+    {
+      "id": 14,
+      "group": "rustup",
+      "kind": "workshop",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/rustup/workshop.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-60c104bb-a83a-40c8-be1a-f2ba24753bdf.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2471664,
+      "sha256": "31702544026aeb3f4336a584f1ed086768d38225c98e50ebd00fd8a2a83ab761"
+    },
+    {
+      "id": 15,
+      "group": "agents",
+      "kind": "cover",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/agents/cover.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-0af06a3e-2daf-4b92-8bf7-a31065414e95.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 1934974,
+      "sha256": "c14515d402c90b5995643c6a6bc3bfff61147bbd81e84c39b7ed93d0b83ed05a"
+    },
+    {
+      "id": 16,
+      "group": "agents",
+      "kind": "infographic",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/agents/infographic.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-0150553d-ced6-4607-bd7c-20cd5ff32da6.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 1832137,
+      "sha256": "8142f4c7f7a02dfb7b493e8135f3761be95525fe38af8b004927c5b518e7e4b5"
+    },
+    {
+      "id": 17,
+      "group": "agents",
+      "kind": "workshop",
+      "path": "/Users/serhiirihgt/dev/crabrix-poc/site/public/images/blog/november-2026/agents/workshop.png",
+      "original": "/Users/serhiirihgt/.codex/generated_images/01a0f1ab-f0ee-7e93-8a6a-dca11fb0855f/exec-735dd441-44ec-4227-8217-26d883413853.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2199547,
+      "sha256": "7cbd541e369d8d8321eac1fe6bffd2b3a17332aae8888a77cc20739b910d6dbb"
+    }
+  ],
+  "failed": []
+}

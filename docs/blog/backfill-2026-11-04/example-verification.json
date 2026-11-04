@@ -1,0 +1,53 @@
+{
+  "compiler": "rustc 1.99.0 (b940084d7 2026-09-28)\nbinary: rustc\ncommit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4\ncommit-date: 2026-09-28\nhost: aarch64-apple-darwin\nrelease: 1.99.0\nLLVM version: 23.1.1\n",
+  "date": "2026-11-04",
+  "programs": [
+    {
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "section": "A complete Rust exercise for the room",
+      "kind": "desktop Rust assertions",
+      "sourceSHA256": "eae139782669854c6a78e9d9355a6c060065e488cc4c3a22e129a382537c4b29",
+      "exit": 0,
+      "stdout": "Report { label: \"lab 🦀\", accepted: [4, -2], rejected: [3, 4] }\nagent lab: all checks passed\n",
+      "stderr": ""
+    },
+    {
+      "slug": "rust-debugging-visualizers-string-vec-reproductions",
+      "section": "Write down logical expectations before pausing",
+      "kind": "desktop Rust assertions",
+      "sourceSHA256": "71510ef8782420f488d268da6d173c53a7bb1f683dbfca219be9c406a380b7c8",
+      "exit": 0,
+      "stdout": "Batch { name: \"lab 🦀\", readings: [4, -2, 9], negative_count: 1 }\ndebug fixture: all checks passed\n",
+      "stderr": ""
+    },
+    {
+      "slug": "rust-1-99-1-patch-regression-testing",
+      "section": "Keep the Rust side small and inspectable",
+      "kind": "macOS C/Rust static-library ABI smoke; no x86_64 regression reproduction claimed",
+      "sourceSHA256": "7eb9e512c4dfa5ed53b13551508d434394645139e8693062a5d037cfb73bec09",
+      "exit": 0,
+      "stdout": "C/Rust ABI smoke: all checks passed\n",
+      "stderr": ""
+    },
+    {
+      "slug": "rust-gpu-linker-groups-build-boundaries",
+      "section": "Keep a CPU reference for a parallel calculation",
+      "kind": "desktop Rust assertions",
+      "sourceSHA256": "ca3a143f4daa99e4bc40b06cd119910940c6efbd3ad6888a0dd498e8bba5582d",
+      "exit": 0,
+      "stdout": "CPU reference: all checks passed\n",
+      "stderr": ""
+    },
+    {
+      "slug": "rust-variadic-generics-survey-practical-tuples",
+      "section": "A bounded adapter you can compile today",
+      "kind": "desktop Rust assertions",
+      "sourceSHA256": "b07ae558ce42365cd78088bcd5f8995be4f11a2d93e21f035e6fe39b31886e75",
+      "exit": 0,
+      "stdout": "tuple labels: all checks passed\n",
+      "stderr": ""
+    }
+  ],
+  "passed": 5,
+  "scope": "Desktop fixture behavior only. Not a GPU backend, UEFI execution, x86_64 ABI regression or physical iPhone qualification."
+}

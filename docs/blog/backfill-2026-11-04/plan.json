@@ -1,0 +1,39 @@
+{
+  "checkedThrough": "2026-11-04",
+  "editorialDates": [
+    {
+      "date": "2026-10-30",
+      "slug": "rust-variadic-generics-survey-practical-tuples",
+      "title": "Variadic generics: what Rust users want, and what works today"
+    },
+    {
+      "date": "2026-10-31",
+      "slug": "rust-gpu-linker-groups-build-boundaries",
+      "title": "Rust GPU and linker news: understand your build boundaries"
+    },
+    {
+      "date": "2026-11-01",
+      "slug": "rust-1-99-1-patch-regression-testing",
+      "title": "Rust 1.99.1: make patch upgrades prove themselves"
+    },
+    {
+      "date": "2026-11-02",
+      "slug": "rust-debugging-visualizers-string-vec-reproductions",
+      "title": "Rust debugging news: make String, Vec and structs visible"
+    },
+    {
+      "date": "2026-11-03",
+      "slug": "rustup-1-29-3-upgrade-recovery",
+      "title": "rustup 1.29.3: recover toolchains without losing the evidence"
+    },
+    {
+      "date": "2026-11-04",
+      "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+      "title": "Crabrix and AI agents: local MCP, direct connections and real Rust work"
+    }
+  ],
+  "actualPublicationDate": "2026-11-04",
+  "previousPostCount": 33,
+  "minimumProseWordsPerPost": 2000,
+  "originalImageGenImagesPerPost": 3
+}

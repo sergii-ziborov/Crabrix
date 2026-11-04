@@ -1,0 +1,157 @@
+[
+  {
+    "url": "https://blog.rust-lang.org/2026/09/07/rust-debugging-survey-2026-results/",
+    "status": 200,
+    "finalURL": "https://blog.rust-lang.org/2026/09/07/rust-debugging-survey-2026-results/"
+  },
+  {
+    "url": "https://blog.rust-lang.org/2026/10/15/Rust-1.99.1/",
+    "status": 200,
+    "finalURL": "https://blog.rust-lang.org/2026/10/15/Rust-1.99.1/"
+  },
+  {
+    "url": "https://blog.rust-lang.org/2026/11/03/Rustup-1.29.3/",
+    "status": 200,
+    "finalURL": "https://blog.rust-lang.org/2026/11/03/Rustup-1.29.3/"
+  },
+  {
+    "url": "https://blog.rust-lang.org/inside-rust/2026/10/20/gpu-target-notification-group/",
+    "status": 200,
+    "finalURL": "https://blog.rust-lang.org/inside-rust/2026/10/20/gpu-target-notification-group/"
+  },
+  {
+    "url": "https://blog.rust-lang.org/inside-rust/2026/10/27/variadic-generics-micro-survey-results/",
+    "status": 200,
+    "finalURL": "https://blog.rust-lang.org/inside-rust/2026/10/27/variadic-generics-micro-survey-results/"
+  },
+  {
+    "url": "https://blog.rust-lang.org/inside-rust/2026/11/02/maintainer-spotlight-anthony-bolden-walnut356/",
+    "status": 200,
+    "finalURL": "https://blog.rust-lang.org/inside-rust/2026/11/02/maintainer-spotlight-anthony-bolden-walnut356/"
+  },
+  {
+    "url": "https://doc.rust-lang.org/book/ch06-01-defining-an-enum.html",
+    "status": 200,
+    "finalURL": "https://doc.rust-lang.org/book/ch06-01-defining-an-enum.html"
+  },
+  {
+    "url": "https://doc.rust-lang.org/book/ch10-01-syntax.html",
+    "status": 200,
+    "finalURL": "https://doc.rust-lang.org/book/ch10-01-syntax.html"
+  },
+  {
+    "url": "https://doc.rust-lang.org/cargo/commands/cargo-test.html",
+    "status": 200,
+    "finalURL": "https://doc.rust-lang.org/cargo/commands/cargo-test.html"
+  },
+  {
+    "url": "https://doc.rust-lang.org/cargo/reference/config.html",
+    "status": 200,
+    "finalURL": "https://doc.rust-lang.org/cargo/reference/config.html"
+  },
+  {
+    "url": "https://doc.rust-lang.org/cargo/reference/profiles.html",
+    "status": 200,
+    "finalURL": "https://doc.rust-lang.org/cargo/reference/profiles.html"
+  },
+  {
+    "url": "https://doc.rust-lang.org/reference/attributes/debugger.html",
+    "status": 200,
+    "finalURL": "https://doc.rust-lang.org/reference/attributes/debugger.html"
+  },
+  {
+    "url": "https://doc.rust-lang.org/reference/items/functions.html",
+    "status": 200,
+    "finalURL": "https://doc.rust-lang.org/reference/items/functions.html"
+  },
+  {
+    "url": "https://doc.rust-lang.org/reference/macros-by-example.html",
+    "status": 200,
+    "finalURL": "https://doc.rust-lang.org/reference/macros-by-example.html"
+  },
+  {
+    "url": "https://doc.rust-lang.org/reference/types/array.html",
+    "status": 200,
+    "finalURL": "https://doc.rust-lang.org/reference/types/array.html"
+  },
+  {
+    "url": "https://doc.rust-lang.org/reference/types/tuple.html",
+    "status": 200,
+    "finalURL": "https://doc.rust-lang.org/reference/types/tuple.html"
+  },
+  {
+    "url": "https://doc.rust-lang.org/rustc/codegen-options/index.html",
+    "status": 200,
+    "finalURL": "https://doc.rust-lang.org/rustc/codegen-options/index.html"
+  },
+  {
+    "url": "https://doc.rust-lang.org/rustc/platform-support.html",
+    "status": 200,
+    "finalURL": "https://doc.rust-lang.org/rustc/platform-support.html"
+  },
+  {
+    "url": "https://github.com/rust-lang/compiler-team/issues/964",
+    "status": 200,
+    "finalURL": "https://github.com/rust-lang/compiler-team/issues/964"
+  },
+  {
+    "url": "https://github.com/rust-lang/rust/issues/163614",
+    "status": 200,
+    "finalURL": "https://github.com/rust-lang/rust/issues/163614"
+  },
+  {
+    "url": "https://github.com/rust-lang/rust/issues/163911",
+    "status": 200,
+    "finalURL": "https://github.com/rust-lang/rust/issues/163911"
+  },
+  {
+    "url": "https://github.com/rust-lang/rust/issues/163947",
+    "status": 200,
+    "finalURL": "https://github.com/rust-lang/rust/issues/163947"
+  },
+  {
+    "url": "https://github.com/rust-lang/rustup/pull/5162",
+    "status": 200,
+    "finalURL": "https://github.com/rust-lang/rustup/pull/5162"
+  },
+  {
+    "url": "https://github.com/rust-lang/rustup/pull/5167",
+    "status": 200,
+    "finalURL": "https://github.com/rust-lang/rustup/pull/5167"
+  },
+  {
+    "url": "https://github.com/sergii-ziborov/crabrix-sdk",
+    "status": 200,
+    "finalURL": "https://github.com/sergii-ziborov/crabrix-sdk"
+  },
+  {
+    "url": "https://github.com/sergii-ziborov/crabrix-sdk/blob/main/docs/qualification-0.5.0.json",
+    "status": 200,
+    "finalURL": "https://github.com/sergii-ziborov/crabrix-sdk/blob/main/docs/qualification-0.5.0.json"
+  },
+  {
+    "url": "https://rust-lang.github.io/rustup/concepts/toolchains.html",
+    "status": 200,
+    "finalURL": "https://rust-lang.github.io/rustup/concepts/toolchains.html"
+  },
+  {
+    "url": "https://rust-lang.github.io/rustup/cross-compilation.html",
+    "status": 200,
+    "finalURL": "https://rust-lang.github.io/rustup/cross-compilation.html"
+  },
+  {
+    "url": "https://rust-lang.github.io/rustup/installation/other.html",
+    "status": 200,
+    "finalURL": "https://rust-lang.github.io/rustup/installation/other.html"
+  },
+  {
+    "url": "https://rust-lang.github.io/rustup/overrides.html",
+    "status": 200,
+    "finalURL": "https://rust-lang.github.io/rustup/overrides.html"
+  },
+  {
+    "url": "https://github.com/sergii-ziborov/crabrix-sdk/releases/tag/v0.5.0",
+    "status": 200,
+    "finalURL": "https://github.com/sergii-ziborov/crabrix-sdk/releases/tag/v0.5.0"
+  }
+]

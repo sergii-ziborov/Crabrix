@@ -1,0 +1,181 @@
+{
+  "slug": "rust-variadic-generics-survey-practical-tuples",
+  "title": "Variadic generics: what Rust users want, and what works today",
+  "date": "2026-10-30",
+  "publishedDate": "2026-11-04",
+  "modifiedDate": "2026-11-04",
+  "summary": "Read Rust’s variadic-generics survey with a practical stable-Rust guide to tuples, enums, bounded macro adapters, ownership and useful API tests.",
+  "relatedSlugs": [
+    "rust-traits-generics-dynamic-dispatch",
+    "rust-enums-state-machines",
+    "rust-performance-measure-before-optimizing"
+  ],
+  "sections": [
+    {
+      "heading": "What the survey actually tells us",
+      "paragraphs": [
+        "The Rust project published its Variadic Generics Micro Survey results on 27 October 2026. The report collects concrete requests around heterogeneous tuples, parser composition, queries and other APIs whose argument types vary. It also records concerns about complexity. That makes the announcement useful even if you never write a language proposal: it exposes places where library users repeatedly pay for missing abstraction. The survey concerns a hypothetical feature, and its example syntax is pseudocode, not a new stable Rust facility. Treat it as design research rather than an upgrade instruction.",
+        "This article fills our 30 October editorial slot and was researched and published on 4 November. Our practical question is smaller than designing variadic Rust: how should you build an understandable API today when callers bring different numbers of differently typed values? We will use an original reporting example, compare several representations, and write a bounded tuple adapter. Every runnable example uses ordinary stable Rust. The illustrations explain design choices; none presents generated survey statistics or a promise about the language roadmap."
+      ],
+      "sources": [
+        {
+          "title": "Official survey results, 27 October",
+          "url": "https://blog.rust-lang.org/inside-rust/2026/10/27/variadic-generics-micro-survey-results/"
+        }
+      ],
+      "image": {
+        "src": "/images/blog/november-2026/variadics/cover.png",
+        "alt": "Crabrix crab arranging heterogeneous tuple fields beside a row of uniform array elements",
+        "caption": "Original ImageGen conceptual illustration: crabrix crab arranging heterogeneous tuple fields beside a row of uniform array elements.",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    {
+      "heading": "First decide what may vary",
+      "paragraphs": [
+        "Imagine a diagnostics screen that displays a retry count, a label and an enabled flag. There are several independent questions hiding in that sentence. Can the number of fields change while the program runs? Can every field have a different concrete Rust type? Is the list of possible field kinds closed? Must the caller preserve the original types for later operations, or does the screen only need printable text? Answering these questions often removes the apparent need for a sophisticated type-level feature.",
+        "A vector of strings is a reasonable display boundary when formatting has already happened. A vector of a small enum works when each item belongs to a known set of domain cases. A named struct works when the fields have durable business meanings. A tuple works when position and heterogeneous types are genuinely part of the interface. None is a universal replacement for the others. In a settings editor, names matter more than tuple elegance; in a parser combinator, preserving the individual output types may be the entire point. Start from the operation the consumer must perform, then choose the representation that keeps its invariants visible."
+      ],
+      "sources": [
+        {
+          "title": "Tuple types",
+          "url": "https://doc.rust-lang.org/reference/types/tuple.html"
+        },
+        {
+          "title": "Array types",
+          "url": "https://doc.rust-lang.org/reference/types/array.html"
+        }
+      ]
+    },
+    {
+      "heading": "A generic parameter does not mean any list of types",
+      "paragraphs": [
+        "A signature with one type parameter describes one type chosen by the caller for that invocation. A slice of that type can contain many elements, but those elements still share the chosen element type. When a caller needs a number, borrowed text and a Boolean together, silently converting everything into text changes the contract. It may be acceptable for rendering; it is a poor fit for a calculation that needs to preserve numeric behavior or distinguish a missing field from the word missing.",
+        "Make the trade explicit in a tiny caller example before writing the abstraction. One useful exercise is to sketch three call sites: a fixed dashboard, a user-defined list of filters, and a composition of differently typed parsers. The dashboard probably wants a struct. The filters may want an enum collection. The parser composition may justify tuple adapters. Keeping those examples beside the implementation prevents the abstraction from growing around an imagined universal caller. It also gives a future reviewer something observable to protect when another arity or field kind is requested."
+      ],
+      "sources": [
+        {
+          "title": "Generic data types",
+          "url": "https://doc.rust-lang.org/book/ch10-01-syntax.html"
+        }
+      ]
+    },
+    {
+      "heading": "Give the operation a small semantic contract",
+      "paragraphs": [
+        "Our example needs to render a collection of labels into one ordered list of strings. The interesting contract is about output, not clever syntax: each value contributes exactly one label, order is preserved, input values remain borrowed, and the result owns its text. We deliberately choose a formatting boundary. After formatting, the consumer no longer needs the original numeric or Boolean type. This keeps the example useful for an interview, a lesson or a small review exercise without inventing a production schema.",
+        "A trait called Label gives each supported input a narrow responsibility. Another trait describes a tuple that can append all of its labels. The output is a Vec<String>, so ownership is easy to explain: callers may drop their original label after the function returns, and the report remains valid. That ownership decision is more important than the macro. If your actual application must preserve field names, formatting errors or localization context, put those requirements in the contract first. Do not let a convenient tuple interface erase information that later layers need."
+      ],
+      "links": [
+        {
+          "title": "Traits and generic bounds",
+          "url": "/learn/ownership/traits/"
+        },
+        {
+          "title": "Owned strings",
+          "url": "/learn/basics/strings/"
+        }
+      ],
+      "image": {
+        "src": "/images/blog/november-2026/variadics/infographic.png",
+        "alt": "Conceptual comparison of a homogeneous array or vector, a heterogeneous tuple and an enum with known cases",
+        "caption": "Original ImageGen infographic: conceptual comparison of a homogeneous array or vector, a heterogeneous tuple and an enum with known cases.",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    {
+      "heading": "A bounded adapter you can compile today",
+      "paragraphs": [
+        "The following complete program implements exactly two tuple arities. The macro repeats straightforward implementations; it does not discover tuple members or introduce a new language feature. Supporting two and three fields is a deliberate example boundary. A real library should document its supported arities and add another only when a real caller needs it. The one-field tuple deserves a separate fixture because its trailing comma is easy for users to miss when reading examples quickly.",
+        "Notice that each tuple field is borrowed while its label is created. The tuple itself is never consumed by the labels method. That makes the call easy to integrate into a screen that needs the values again afterwards. The resulting strings are owned, and the assertions establish output order and the formatting rule for the Boolean. You can remove the macro and handwrite one implementation to understand the generated structure. That is a good learning step before adding another layer of expansion or exposing the adapter as part of a public crate."
+      ],
+      "code": "trait Label {\n    fn label(&self) -> String;\n}\nimpl Label for u32 {\n    fn label(&self) -> String {\n        self.to_string()\n    }\n}\nimpl Label for &str {\n    fn label(&self) -> String {\n        (*self).to_owned()\n    }\n}\nimpl Label for bool {\n    fn label(&self) -> String {\n        if *self { \"enabled\" } else { \"disabled\" }.to_owned()\n    }\n}\ntrait Labels {\n    fn labels(&self) -> Vec<String>;\n}\nmacro_rules! impl_labels {\n    ($($T:ident : $i:tt),+) => {\n        impl<$($T: Label),+> Labels for ($($T,)+) {\n            fn labels(&self) -> Vec<String> {\n                vec![$(self.$i.label()),+]\n            }\n        }\n    };\n}\nimpl_labels!(A: 0, B: 1);\nimpl_labels!(A: 0, B: 1, C: 2);\nfn main() {\n    let values = (3_u32, \"network\", true);\n    assert_eq!(values.labels(), [\"3\", \"network\", \"enabled\"]);\n    assert_eq!((0_u32, false).labels(), [\"0\", \"disabled\"]);\n    assert_eq!(values.0, 3);\n    println!(\"tuple labels: all checks passed\");\n}\n",
+      "sources": [
+        {
+          "title": "Macro matching and repetition",
+          "url": "https://doc.rust-lang.org/reference/macros-by-example.html"
+        }
+      ]
+    },
+    {
+      "heading": "Test the supported boundary and the rejected boundary",
+      "paragraphs": [
+        "A positive test should show more than one happy caller. Try both supported arities, an empty string, Unicode text, zero and both Boolean values. Preserve a caller-owned String, borrow its str view for the tuple, then drop the original only after the owned output has been produced. These cases make the ownership and formatting choices visible. They also keep an implementer from replacing a borrowed operation with an unexpectedly consuming interface while still satisfying the first demonstration.",
+        "Unsupported inputs deserve an intentional diagnostic check in a library project. A tuple containing a type without Label should fail at the trait boundary. A four-field tuple should fail because the adapter does not promise that arity. Keep such compile-fail fixtures distinct from runtime tests, and compare the relevant diagnostic category rather than freezing the entire compiler message across toolchains. If the error points into pages of macro expansion instead of explaining what the caller must implement, the API may need a simpler public wrapper or a clearer example before it needs more generic machinery."
+      ]
+    },
+    {
+      "heading": "Know when an enum is the clearer answer",
+      "paragraphs": [
+        "Suppose the next requirement is a user-editable list of telemetry fields. Entries can be added and removed at runtime, and each entry must retain whether it represents a count, label or flag. A fixed tuple is now doing the wrong job. An enum with Count, Text and Enabled variants expresses the closed set of cases while a vector provides runtime length. A match can format the values without downcasting, and a new variant creates an explicit review point in the consumer.",
+        "This design also handles persistence more naturally. Give each field a stable identifier and a descriptive name rather than using its position as identity. Reordering the UI should not make yesterday's saved field mean something different. A tuple adapter remains useful for short internal composition, but it should not accidentally become the data model for an evolving external document. Draw the boundary between ergonomic function calls and durable stored state. That boundary often matters more than whether the implementation uses a macro, a handwritten impl or a future language facility."
+      ],
+      "sources": [
+        {
+          "title": "Defining enums",
+          "url": "https://doc.rust-lang.org/book/ch06-01-defining-an-enum.html"
+        }
+      ]
+    },
+    {
+      "heading": "Measure the costs you actually introduced",
+      "paragraphs": [
+        "There are several possible costs in this example, and they should not be collapsed into a claim that generics are fast or macros are slow. Each label creates an owned string, the output vector allocates storage, and formatting numbers performs real work. In a small diagnostics panel those costs may be irrelevant. In a hot telemetry path they may dominate. Start by measuring the ordinary implementation under a realistic workload before redesigning the type-level interface to remove an imagined bottleneck.",
+        "Compilation and maintenance are separate costs. Generating many tuple implementations increases the code a maintainer must understand, document and test. Downstream instantiations can increase build work, but the amount depends on the actual project and toolchain. Keep a representative caller benchmark and a separate clean-build observation if those costs matter to your library. Record the environment and raw results. An attractive abstraction is not evidence of a speed improvement, and an ecosystem survey is not a benchmark for your application. In Crabrix, keep experiments small enough that the local compiler result remains easy to connect to the source you changed."
+      ],
+      "links": [
+        {
+          "title": "Measure before optimizing",
+          "url": "/blog/rust-performance-measure-before-optimizing/"
+        }
+      ]
+    },
+    {
+      "heading": "Read language research as a library designer",
+      "paragraphs": [
+        "The most useful question to take back to a language proposal is not whether one can imagine a beautiful syntax. Bring a small example of the repeated work your users perform. Explain which types must remain distinct, what information must survive the operation, why a vector or enum does not solve the same problem, and where the current workaround becomes difficult to maintain. An example with a real caller and an observable failure is easier to evaluate than a large framework built solely to demonstrate a desired feature.",
+        "Keep current behavior and proposed behavior in separate files or clearly marked prose. Readers should never copy a speculative snippet into stable Rust and assume their toolchain is broken when it fails. If you publish a workaround, state the supported compiler and arities, explain the diagnostics, and show the ordinary alternative beside it. This is our editorial recommendation drawn from the reporting exercise, not a claim that the survey selected a final design or a stabilization date. Useful feedback can support experimentation while remaining honest about the cost of another feature for people still learning the language."
+      ],
+      "image": {
+        "src": "/images/blog/november-2026/variadics/workshop.png",
+        "alt": "Crabrix crab producing a bounded tuple adapter from a macro stencil",
+        "caption": "Original ImageGen conceptual illustration: crabrix crab producing a bounded tuple adapter from a macro stencil.",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    {
+      "heading": "Design the next request before adding the next arity",
+      "paragraphs": [
+        "Consider what should happen when a caller asks for a four-field tuple containing a timestamp. There are at least two changes hidden in that request: one more arity and one more formatting policy. Add them independently. First test a four-field tuple using only already supported Label types; then decide how a timestamp should be represented and whether formatting it can fail. This avoids attributing a type-specific policy bug to the tuple machinery. It also gives reviewers two small decisions rather than one expansion that changes every generated implementation at once.",
+        "Now imagine a caller asking for labels in a different language. A method with no context argument has already chosen a constraint: formatting cannot depend on an explicit locale supplied by the caller. You can introduce a formatting context, return a semantic value for a later renderer, or keep the trait limited to internal diagnostics. Each choice changes the meaning of the interface. Adding more macro invocations does not address it. Write the new caller first and identify which earlier assumption it invalidates before reaching for additional generic parameters.",
+        "Error handling creates another revealing test. If rendering one field fails, should the whole report fail, should the result contain a per-field error, or should a placeholder appear? Our simple example is intentionally infallible for its supported types. A production adapter might need Result<Vec<String>, Error> or a vector of individually labelled outcomes. Preserve the relationship between the failed field and its diagnostic. A positional error without the relevant field identity can become ambiguous as callers evolve, especially if the output is later reordered for display.",
+        "Finally, test whether the abstraction is earning its public surface. If only two internal call sites use it and both are clearer as named structs, keep the ordinary code. If many meaningful callers need heterogeneous composition and the bounded adapter improves their diagnostics, document that evidence. This is a practical way to participate in language-design discussions without waiting for the language to change: make the current workaround's benefits and failure modes concrete enough that another developer can evaluate them independently."
+      ]
+    },
+    {
+      "heading": "Turn the design into a focused Crabrix lesson",
+      "paragraphs": [
+        "Open the complete program in a temporary Playground and predict the output before running it. Change the Boolean rule, add a Unicode label, and compare a two-field tuple with a three-field tuple. Ask a study partner to highlight where borrowing ends and where ownership begins. A shared selection is useful here because the discussion can point to the exact self field or to the returned vector instead of relying on a screenshot of a different revision.",
+        "For a deeper exercise, replace the tuple input with an enum-based collection and preserve the same displayed output. Then change the requirement so the report retains numeric values rather than strings. Explain why the original Labels trait is no longer enough. Save the finished source in your own project before the temporary room expires. The learning outcome is a defensible representation choice, a small tested implementation and a clear statement of its limits. Those skills remain useful whether or not a future Rust release eventually provides variadic generics."
+      ],
+      "links": [
+        {
+          "title": "Open Playground",
+          "url": "/playground/"
+        },
+        {
+          "title": "Macros course",
+          "url": "/learn/systems/"
+        },
+        {
+          "title": "Pattern matching guide",
+          "url": "/blog/rust-pattern-matching-without-panics/"
+        }
+      ]
+    }
+  ],
+  "readingMinutes": 11
+}

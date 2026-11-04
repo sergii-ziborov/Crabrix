@@ -1,0 +1,193 @@
+{
+  "slug": "rust-1-99-1-patch-regression-testing",
+  "title": "Rust 1.99.1: make patch upgrades prove themselves",
+  "date": "2026-11-01",
+  "publishedDate": "2026-11-04",
+  "modifiedDate": "2026-11-04",
+  "summary": "Understand Rust 1.99.1’s linker and FFI fixes, build a C/Rust smoke test and qualify compiler upgrades with explicit target-specific evidence.",
+  "relatedSlugs": [
+    "rust-1-99-upgrade",
+    "rust-gpu-linker-groups-build-boundaries",
+    "testing-rust-boundaries-fixtures-doctests"
+  ],
+  "sections": [
+    {
+      "heading": "The patch fixes boundaries, not just compilation",
+      "paragraphs": [
+        "Rust 1.99.1 was announced on 15 October 2026 as a regression-fixing point release. Its three reported fixes concern a missing wcslen symbol, an x86_64 Boolean return through FFI, and rust-lld finding libLLVM on macOS when the toolchain compiler is invoked directly. This is a useful reminder that a compiler upgrade can affect linking and cross-language behavior even when the application's Rust source is unchanged. A green editor diagnostic is only one checkpoint in that chain.",
+        "This guide fills our 1 November editorial slot and was researched and published on 4 November. We separate the official release facts from an original upgrade workflow and a small C/Rust smoke test. The example checks its own declared interface; it is not a reproducer for all three historical regressions. Our recorded host is Apple Silicon with Rust 1.99.0, so we do not claim to have reproduced or qualified the reported x86_64 failure. The workflow explains where target-specific evidence is still required."
+      ],
+      "sources": [
+        {
+          "title": "Rust 1.99.1 release announcement",
+          "url": "https://blog.rust-lang.org/2026/10/15/Rust-1.99.1/"
+        }
+      ],
+      "image": {
+        "src": "/images/blog/november-2026/patch/cover.png",
+        "alt": "Crabrix crab repairing Rust 1.99.1 compiler boundaries: a missing symbol, Boolean return and library path",
+        "caption": "Original ImageGen conceptual illustration: crabrix crab repairing Rust 1.99.1 compiler boundaries: a missing symbol, Boolean return and library path.",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    {
+      "heading": "Keep the manager, compiler and application changes apart",
+      "paragraphs": [
+        "An upgrade is easier to assess when you can say exactly what changed. The toolchain manager chooses and installs compiler distributions. The compiler distribution supplies tools and target libraries. Your application has its own manifest, dependency lockfile, edition and build configuration. Changing all of these in one maintenance commit creates unnecessary uncertainty. When a failure appears, you want a short list of possible causes rather than a broad story that everything was updated together.",
+        "For a patch comparison, preserve your source and lockfile first, record the baseline compiler identity, and run the baseline commands. Install or select the candidate explicitly without changing the machine's default for unrelated projects. Repeat the same commands under the candidate. If a dependency update is required for a separate reason, make it a separate step with its own evidence. This is a workflow recommendation, not a guarantee that every project will build unchanged. It makes a failure easier to attribute and gives a teammate a practical route back to the last known result."
+      ],
+      "sources": [
+        {
+          "title": "Versioned toolchain selection",
+          "url": "https://rust-lang.github.io/rustup/concepts/toolchains.html"
+        }
+      ],
+      "links": [
+        {
+          "title": "Earlier Rust 1.99 upgrade guide",
+          "url": "/blog/rust-1-99-upgrade/"
+        }
+      ]
+    },
+    {
+      "heading": "Why a missing wcslen can surprise Rust code",
+      "paragraphs": [
+        "The reported wcslen regression matters because the final program can need a symbol that the application author never wrote explicitly. The issue describes an optimization introducing a call to that function in circumstances where a provider was unavailable; the patch adds a compiler-builtins fallback. For affected UEFI targets, even precompiled standard-library code could bring in the problematic call. That is a linking and target-runtime problem, not evidence that a developer misspelled a normal Rust function.",
+        "The practical response is to preserve the failing target and optimization settings while reducing the source. A host-only development build that happens not to introduce the call cannot certify the affected configuration. Keep the last unresolved-symbol diagnostic, the producing artifact and the exact target command. If the candidate patch repairs the build, still test the resulting artifact in the environment that will use it. A firmware image that links successfully has reached a necessary milestone; its startup behavior and integration are separate milestones that belong in the qualification note."
+      ],
+      "sources": [
+        {
+          "title": "Missing wcslen regression report",
+          "url": "https://github.com/rust-lang/rust/issues/163614"
+        }
+      ]
+    },
+    {
+      "heading": "An FFI Boolean needs a real foreign caller",
+      "paragraphs": [
+        "The x86_64 report concerns the ABI for a Rust function returning bool to foreign code. The release restores the required zero extension of the return value. A test that calls the same Rust function from ordinary Rust may miss the boundary that matters. The consumer's declaration, calling convention and target are part of the contract. When reviewing an FFI fix, put the foreign caller in the test fixture rather than treating it as an external detail that someone else will eventually check.",
+        "For our teaching fixture, the input is a fixed-width unsigned integer and the result answers whether it is even. We keep the function total for every input and avoid allocation, panics, callbacks and string ownership. These omissions are useful because they isolate the Boolean interface. A larger production API must specify those other behaviors separately. Do not generalize a two-language smoke test into certification for every ABI or architecture. It is a starting point for an explicit matrix of the actual compilers, callers and targets your application ships."
+      ],
+      "sources": [
+        {
+          "title": "Reported x86_64 FFI Boolean miscompilation",
+          "url": "https://github.com/rust-lang/rust/issues/163911"
+        },
+        {
+          "title": "Foreign-call ABI qualifier",
+          "url": "https://doc.rust-lang.org/reference/items/functions.html#extern-function-qualifier"
+        }
+      ],
+      "image": {
+        "src": "/images/blog/november-2026/patch/infographic.png",
+        "alt": "Patch-upgrade evidence separated into build, test and deployment checks",
+        "caption": "Original ImageGen infographic: patch-upgrade evidence separated into build, test and deployment checks.",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    {
+      "heading": "Keep the Rust side small and inspectable",
+      "paragraphs": [
+        "Save this source as even.rs. The exported function name is deliberately specific to the fixture to reduce accidental symbol collisions when the test is extended. The unsafe attribute makes the externally visible symbol decision explicit; the body itself needs no unsafe operation. Compiling a static library gives our C caller a concrete artifact to link, which is more meaningful than showing an isolated declaration in a documentation snippet.",
+        "Before introducing C, review the Rust operation on its own: zero is even, adjacent values alternate, and the largest u32 value is odd. These expectations are independent of optimization or ABI details. Keeping the function this small makes it possible to compare generated artifacts later if a target-specific discrepancy appears. It also prevents the test from becoming entangled with application initialization or a package download. The example is a desktop integration fixture, not source that the shared browser execution profile promises to build with a C toolchain."
+      ],
+      "code": "#[unsafe(no_mangle)]\npub extern \"C\" fn crabrix_is_even(value: u32) -> bool {\n    value % 2 == 0\n}\n",
+      "links": [
+        {
+          "title": "FFI and systems lessons",
+          "url": "/learn/systems/"
+        }
+      ]
+    },
+    {
+      "heading": "Test the consumer as it is actually compiled",
+      "paragraphs": [
+        "Save the following as caller.c. The foreign declaration uses a fixed-width integer and C's Boolean type. It checks both result values and includes the numeric boundary case. The volatile input prevents the caller from replacing the whole demonstration with compile-time knowledge about one constant. There is no fabricated assembly transcript: the useful evidence is the actual compiler command and the observed process exit status on the recorded host.",
+        "A production qualification may need several caller compilers, debug and optimized modes, and more than one architecture. Add those dimensions because the interface actually ships there, not merely to make a table look impressive. Keep a failure visible as a nonzero process exit, and preserve the compiler output when the caller cannot link. If a fixture only runs when assertions are enabled, ensure your test command does not define a macro that removes them. An apparently successful executable that performed no checks is not useful evidence for a patch upgrade."
+      ],
+      "code": "#include <assert.h>\n#include <stdbool.h>\n#include <stdint.h>\n#include <stdio.h>\nextern bool crabrix_is_even(uint32_t value);\nint main(void) {\n    volatile uint32_t values[] = {0, 1, 2, UINT32_MAX};\n    assert(crabrix_is_even(values[0]) == true);\n    assert(crabrix_is_even(values[1]) == false);\n    assert(crabrix_is_even(values[2]) == true);\n    assert(crabrix_is_even(values[3]) == false);\n    puts(\"C/Rust ABI smoke: all checks passed\");\n    return 0;\n}\n",
+      "codeLanguage": "c"
+    },
+    {
+      "heading": "Build the fixture without hiding the environment",
+      "paragraphs": [
+        "On our macOS host, the commands below create an optimized Rust static library, link the C caller and run it. They are intentionally short enough to preserve in a report. The successful result demonstrates that this fixture builds and its four checks run on that host with the recorded tools. It does not establish that the same host exhibited the original x86_64 regression or that a firmware target has been tested. Keep that scope next to the result rather than burying it in a release note.",
+        "For another operating system, use its documented native linker requirements and preserve the adapted command. Do not copy a macOS invocation into a Linux or Windows build and interpret every difference as a compiler regression. When comparing two Rust toolchains, produce separate library outputs and executables so the second run cannot accidentally reuse the first artifact. Record their hashes if the comparison will be reviewed later. That simple discipline is often more valuable than a long list of commands whose outputs all share one ambiguous filename."
+      ],
+      "code": "rustc --edition=2024 --crate-type staticlib -C opt-level=2 even.rs -o libeven.a\ncc -std=c11 -O2 caller.c libeven.a -o ffi-smoke\n./ffi-smoke\n",
+      "codeLanguage": "shell"
+    },
+    {
+      "heading": "The direct compiler path is a different launch route",
+      "paragraphs": [
+        "The macOS rust-lld issue concerns a toolchain compiler invoked without the rustup proxy and a missing library search path for libLLVM.dylib. The patch adds an rpath to the linker. This matters for build integrations that locate the real compiler binary and execute it directly rather than using the ordinary proxy command. The two routes may look equivalent from the application source, yet exercise different process and library-loading behavior.",
+        "If your build system uses the direct route, test that route explicitly. Preserve how the compiler path is discovered, the linker selection and any relevant loader diagnostics. A successful cargo command through the proxy is useful baseline evidence but does not exercise every wrapper integration. Conversely, do not change global dynamic-library settings merely to make a reduced example appear green. Such a workaround can mask the behavior you are trying to compare. Keep it as a separately labelled experiment if you need it for diagnosis."
+      ],
+      "sources": [
+        {
+          "title": "macOS rust-lld loading regression",
+          "url": "https://github.com/rust-lang/rust/issues/163947"
+        }
+      ]
+    },
+    {
+      "heading": "Turn the release note into a small qualification matrix",
+      "paragraphs": [
+        "A good matrix names the boundary and the environment, not just a compiler version. For this patch, useful rows include the real target link, the actual foreign caller, and a direct-toolchain compiler launch if your build system uses one. Each row should state its input, command, expected result and observed result. Mark an unavailable target as untested. A portable unit test cannot silently stand in for a platform that was not present during the check.",
+        "Keep ordinary application tests in the matrix as well. A focused regression check is valuable, but it does not replace the behavior your users rely on. Run the product's normal tests with its locked dependency graph and relevant features, then exercise the packaged artifact where practical. Save the raw logs and the exact source revision. When someone asks whether the patch is safe for your project, these records support a bounded answer: which behaviors were checked, on which environments, and which remaining risks require another machine or an integration owner."
+      ],
+      "sources": [
+        {
+          "title": "Cargo test commands",
+          "url": "https://doc.rust-lang.org/cargo/commands/cargo-test.html"
+        }
+      ],
+      "image": {
+        "src": "/images/blog/november-2026/patch/workshop.png",
+        "alt": "Equal baseline and candidate test benches receiving the same fixtures",
+        "caption": "Original ImageGen conceptual illustration: equal baseline and candidate test benches receiving the same fixtures.",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    {
+      "heading": "Use a release gate that can explain a refusal",
+      "paragraphs": [
+        "A gate is useful when it refuses the right problem and leaves enough context to fix it. Missing target libraries, an unavailable native linker, a failed test and a process that never started are different outcomes. Preserve those distinctions in your build report. A generic red badge may be adequate for a dashboard summary, but the underlying evidence should identify the command and stage. That makes a refusal actionable instead of encouraging repeated blind rebuilds.",
+        "In a small team, the gate can be a script that runs a handful of explicit checks and saves their outputs. In a larger workflow, the same principle applies to CI jobs and artifact promotion. Keep the baseline available until the candidate has passed the checks required for its actual deployment. If the patch fixes a known problem but another target remains unavailable, document that limitation and decide deliberately how it affects release scope. Avoid turning an incomplete matrix into a broad claim of universal compatibility."
+      ]
+    },
+    {
+      "heading": "Make rollback a comparison, not a deletion ritual",
+      "paragraphs": [
+        "Keep the baseline toolchain and its artifacts available while qualifying a patch. A rollback should be an explicit selection of the previous compiler and configuration, followed by the same checks, rather than deleting directories until the problem disappears. Use separate output locations for baseline and candidate fixtures. If your product package embeds generated files or another language's library, identify which compiler produced each input. An executable can otherwise combine a new Rust library with an old generated wrapper and make the comparison difficult to interpret.",
+        "When a candidate fails, save the failing artifact and log before trying a change. The first failure may be the clearest evidence you have. Record whether the failure happened during compilation, final linking, process startup or a behavioral assertion. Then change one relevant condition. For the FFI smoke fixture, that might be the Rust optimization level or the target architecture, while leaving the C declaration and input values intact. A successful second run becomes informative because the difference between the runs is known.",
+        "A team can make the result reviewable with a short maintenance record: source revision, lockfile identity, compiler identities, target, commands, fixture outputs and the decision. Include the checks that were unavailable. This is not paperwork for its own sake; it is the information the next on-call developer needs when an apparently unrelated deployment behaves differently. The patch may be exactly the right repair, but the maintenance record should explain why your project adopted it rather than relying on the reassuring shape of a version number."
+      ]
+    },
+    {
+      "heading": "What belongs in a shared Crabrix discussion",
+      "paragraphs": [
+        "The portable Rust part of a failure can often be reduced to a temporary Playground. Share the smallest source example, highlight the suspicious expression and let a reviewer challenge its assumptions. The desktop C caller, native linker invocation and target loader remain separate artifacts with separate requirements. That distinction lets a person on a phone participate usefully without pretending their browser compiled a foreign integration that it never saw.",
+        "For an interview or lesson, ask the learner to explain why a Rust-only test cannot fully validate this FFI boundary, then let them design the missing consumer check. For a real maintenance task, use the room to refine the reproducer and save the final files in the repository that owns the product. The practical outcome of the 1.99.1 news is not simply a newer version string. It is a stronger habit: every important boundary gets evidence from the environment that actually crosses it."
+      ],
+      "links": [
+        {
+          "title": "Shared Playground",
+          "url": "/playground/"
+        },
+        {
+          "title": "Useful Rust tests",
+          "url": "/blog/testing-rust-boundaries-fixtures-doctests/"
+        },
+        {
+          "title": "Rust GPU and linker build boundaries",
+          "url": "/blog/rust-gpu-linker-groups-build-boundaries/"
+        }
+      ]
+    }
+  ],
+  "readingMinutes": 11
+}

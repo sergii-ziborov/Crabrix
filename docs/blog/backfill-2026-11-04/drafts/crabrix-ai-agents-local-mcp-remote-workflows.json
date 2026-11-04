@@ -1,0 +1,213 @@
+{
+  "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
+  "title": "Crabrix and AI agents: local MCP, direct connections and real Rust work",
+  "date": "2026-11-04",
+  "publishedDate": "2026-11-04",
+  "modifiedDate": "2026-11-04",
+  "summary": "Connect AI agents to Crabrix through local or remote MCP, compare plaintext boundaries, edit a shared Rust exercise and keep Run/Debug under local permission.",
+  "relatedSlugs": [
+    "crabrix-mcp-two-agents-local-rust-workflows",
+    "rust-debugging-visualizers-string-vec-reproductions",
+    "rust-coding-interviews-shared-playground-agents"
+  ],
+  "sections": [
+    {
+      "heading": "A shared program is a useful unit of AI work",
+      "paragraphs": [
+        "A conversation with an AI assistant often needs a smaller workspace than a whole repository. You want to demonstrate a parsing bug, review an ownership decision, prepare an interview exercise or let a learner change one function. Pasting successive files into chat makes the current revision unclear. A temporary Crabrix Playground gives people and authorized agents one concrete source document, named selections and an expiry. It can be opened in a browser without an account; the native app is an optional local companion.",
+        "For this 4 November 2026 guide, we inspected Crabrix 0.5.0 and exercised its published package against the live service. We compared a local stdio MCP connection with a direct Streamable HTTP MCP connection to the same disposable room. This is a protocol and product workflow study, not a certification of every Claude, Cursor, Grok or other provider interface. The article explains how to choose a connection route, give an agent a bounded task, review the actual source and keep execution under a person's local control."
+      ],
+      "sources": [
+        {
+          "title": "Crabrix SDK and current release",
+          "url": "https://github.com/sergii-ziborov/crabrix-sdk"
+        },
+        {
+          "title": "Version 0.5.0 qualification",
+          "url": "https://github.com/sergii-ziborov/crabrix-sdk/blob/main/docs/qualification-0.5.0.json"
+        }
+      ],
+      "links": [
+        {
+          "title": "Connect AI setup",
+          "url": "/ai/"
+        },
+        {
+          "title": "Open Playground",
+          "url": "/playground/"
+        }
+      ],
+      "image": {
+        "src": "/images/blog/november-2026/agents/cover.png",
+        "alt": "Crabrix crab connecting local and remote AI routes to one shared workspace",
+        "caption": "Original ImageGen conceptual illustration: crabrix crab connecting local and remote AI routes to one shared workspace.",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    {
+      "heading": "Choose the route before sharing the key",
+      "paragraphs": [
+        "There are two materially different connection routes. With Crabrix MCP running on your own computer, it decrypts the shared room locally and communicates with the encrypted relay. With a website-generated agent link used directly as a remote MCP server URL, Crabrix's remote MCP service decrypts that room in server memory while the agent is connected. The website presents that trade-off before showing the direct agent link. Both routes support a temporary shared workspace, but they are not equivalent promises about where plaintext exists.",
+        "Choose the local route when you want the room key to remain off the Crabrix server. Choose the remote route only when its stated processing boundary is acceptable for the source you intend to share. In either route, the AI provider can receive source that its tools read, so local decryption does not make an external model blind to the project. Use a small reproduction rather than credentials or an entire private application. Treat the complete room and agent links as capabilities: possession grants the access described by the link until the room ends or expires."
+      ]
+    },
+    {
+      "heading": "People links and agent links serve different clients",
+      "paragraphs": [
+        "Share Playground gives a person a link that opens the live editor in the browser or the supported Crabrix app. Connect AI gives an agent a dedicated connection link. The native app's local agent link keeps the key after the URL fragment marker and is intended for Crabrix MCP on the agent's computer. It is not a remote MCP endpoint. The website can also provide the remote form, whose URL carries the information required by the server to join and decrypt the room.",
+        "Do not move a key from one link form into another as a casual workaround. Let the product generate the intended link and preserve its access mode and expiry. A view-only link cannot become an edit capability, and an agent that joined through its own link cannot manufacture the other room links. Give each recipient the narrowest useful access. If the task is only to explain a bug, begin with view access; if it requires a patch, edit access still does not authorize running code on somebody else's device."
+      ],
+      "links": [
+        {
+          "title": "Playground sharing guide",
+          "url": "/guide/#playground"
+        }
+      ]
+    },
+    {
+      "heading": "Install a local MCP connection once",
+      "paragraphs": [
+        "For a client that supports local stdio MCP, the configuration below starts the published Crabrix 0.5.0 bridge through npx. Node.js 22 or newer is required. The explicit version makes this walkthrough reproducible; when adopting a newer package, read its release notes and update the pin deliberately. The package is also a JavaScript/TypeScript library, so an integration does not need to imitate a chat application to create or inspect a room.",
+        "Add the configuration through the MCP host's supported setup, restart or reload its tool connection as that host requires, and verify that Crabrix tools are listed. Do not interpret a successful package installation as a successful room connection. The agent still needs the authorized link and must read the room's actual status. A useful first prompt asks it to report the project name, expiry and current revision without changing source. That confirms which temporary workspace it joined before you give it an implementation task."
+      ],
+      "code": "{\n  \"mcpServers\": {\n    \"crabrix\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"crabrix@0.5.0\"]\n    }\n  }\n}\n",
+      "codeLanguage": "json",
+      "sources": [
+        {
+          "title": "Published package and setup",
+          "url": "https://github.com/sergii-ziborov/crabrix-sdk/releases/tag/v0.5.0"
+        }
+      ],
+      "image": {
+        "src": "/images/blog/november-2026/agents/infographic.png",
+        "alt": "Local MCP keeps the key on the computer; remote MCP decrypts on the server while connected; execution needs approval on a local client",
+        "caption": "Original ImageGen infographic: local MCP keeps the key on the computer; remote MCP decrypts on the server while connected; execution needs approval on a local client.",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    {
+      "heading": "Connect directly when your agent supports remote MCP",
+      "paragraphs": [
+        "On the website, open Connect AI and read the disclosure before creating or copying a remote agent link. In a client supporting Streamable HTTP MCP, add that link as the server URL using the client's current connector settings. No local Crabrix bridge is required for this route. The room already determines the source and access; a remote connection is scoped to that workspace rather than being a general shell on the Crabrix server.",
+        "Client interfaces and plan requirements vary, so use the per-agent instructions on the Connect AI page rather than assuming a screenshot from another service matches your current account. In our live check, an official MCP protocol client connected directly to the production agent endpoint and read and changed the same source seen by the local bridge. That establishes transport interoperability for the tested path. It does not claim that we signed into every named AI product or tested a particular paid subscription. If the client cannot add custom remote servers, use the supported local route instead."
+      ],
+      "links": [
+        {
+          "title": "Current connection instructions",
+          "url": "/ai/"
+        }
+      ]
+    },
+    {
+      "heading": "Start with a contract an independent reviewer can challenge",
+      "paragraphs": [
+        "Our exercise accepts a label and text readings. It trims each reading, parses valid i32 values in order and records one-based positions for rejected input. The result owns its label and its vectors. Overflow is rejected rather than wrapped. These rules create concrete questions for both an implementation agent and a reviewer: what counts as blank input, does a plus sign work, what happens at the integer limits, and can the original label disappear after the result is returned?",
+        "Give the agent the contract before asking for code. Ask for a small standard-library implementation and assertions that exercise the stated boundaries. Keep the shared execution profile in mind: it supports manifest-free Rust and local modules, not an arbitrary Cargo dependency installation or a server shell. A task that needs Tokio, a native database or a platform SDK belongs in the corresponding qualified local project workflow. The temporary room can still hold a useful reduced source example without pretending that every surrounding production dependency is available there."
+      ]
+    },
+    {
+      "heading": "A complete Rust exercise for the room",
+      "paragraphs": [
+        "The program below is intentionally small enough to read in one shared editor. Its assertions establish accepted values, rejected positions and owned Unicode text. A reviewer can extend it with empty input, both integer boundaries, malformed signs and borrowed caller-owned labels. The output is useful for discussion because a concrete Report contains a String and two Vec values; a supported local Debug session can inspect those logical fields at a meaningful breakpoint.",
+        "Ask the agent to explain a proposed change in terms of the contract rather than in terms of how many lines it edited. If it changes the meaning of rejected positions, introduces a dependency or silently drops malformed input, the reviewer should be able to point to the violated rule. Keeping the example compact makes that review possible on a phone as well as a desktop. Save a finished copy when you want to retain it; the room itself remains temporary, even if the program is useful enough to become a real project later."
+      ],
+      "code": "#[derive(Debug, PartialEq)]\nstruct Report {\n    label: String,\n    accepted: Vec<i32>,\n    rejected: Vec<usize>,\n}\nfn analyze(label: &str, inputs: &[&str]) -> Report {\n    let mut report = Report {\n        label: label.to_owned(),\n        accepted: Vec::new(),\n        rejected: Vec::new(),\n    };\n    for (index, input) in inputs.iter().enumerate() {\n        match input.trim().parse::<i32>() {\n            Ok(n) => report.accepted.push(n),\n            Err(_) => report.rejected.push(index + 1),\n        }\n    }\n    report\n}\nfn main() {\n    let report = analyze(\"lab 🦀\", &[\"4\", \" -2 \", \"bad\", \"2147483648\"]);\n    assert_eq!(report.accepted, [4, -2]);\n    assert_eq!(report.rejected, [3, 4]);\n    assert_eq!(report.label, \"lab 🦀\");\n    println!(\"{report:?}\");\n    println!(\"agent lab: all checks passed\");\n}\n",
+      "links": [
+        {
+          "title": "Recoverable errors",
+          "url": "/learn/basics/recoverable-errors/"
+        },
+        {
+          "title": "Owned data and structs",
+          "url": "/learn/basics/structs/"
+        }
+      ]
+    },
+    {
+      "heading": "Make revisions part of the instruction",
+      "paragraphs": [
+        "An agent should read the current source and apply a change against the exact revision it observed. If another participant edits meanwhile, the stale update must be refused rather than overwriting that work. In our live local-and-remote check, the remote client deliberately attempted an edit based on an older revision. It received REVISION_CONFLICT, and a fresh read confirmed that the existing source remained intact. The correct recovery was to read again and prepare a new change, not to resend the old replacement with a new revision number attached.",
+        "This is optimistic concurrency control with a human consequence: somebody else's edit remains visible while the agent reconsiders its patch. Ask the agent to read back the result after applying it and highlight the changed statement. Selections use UTF-16 offsets, so integrations must respect Unicode boundaries rather than treating a byte offset as a character position. A named selection is evidence about which text the participant means; it is not proof that the selected code is correct or that the participant actually ran the program."
+      ]
+    },
+    {
+      "heading": "Execution permission is a separate decision",
+      "paragraphs": [
+        "A room edit capability allows source collaboration. It does not allow an agent to start a compiler on every connected browser or phone. The agent discovers available runtime clients and asks for the specific operations it needs. A person approves on one intended device or browser, comparing the displayed identities rather than trusting a friendly name alone. Grants are temporary and can be revoked. Keep the requested operations narrow: a code review may need no execution at all, while a focused check may need only Check or Build.",
+        "Build, Run and Debug have different observable outcomes. Build does not execute main. Run should produce an owned job whose status and output the agent inspects. Debug should produce a real paused session before the agent reports locals or stepping. A start acknowledgement is not a passing test. Source changes, disconnects, expiry and a person's Stop affect what work remains authorized. If permission is absent or revoked, the agent should ask the person to run locally or explain the limitation; it should not switch to another device silently."
+      ],
+      "image": {
+        "src": "/images/blog/november-2026/agents/workshop.png",
+        "alt": "Development, coding-interview and teaching uses for one temporary Crabrix workspace",
+        "caption": "Original ImageGen conceptual illustration: development, coding-interview and teaching uses for one temporary Crabrix workspace.",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    {
+      "heading": "Shared output does not mean shared execution",
+      "paragraphs": [
+        "When one participant runs code locally, another participant can receive a reported output preview. That makes discussion easier: everyone can inspect the same claimed result without starting a second compiler. The receiving browser or phone remains idle unless its own user starts work or separately approves an eligible agent operation. This distinction is important for an interview, a classroom and ordinary development, because seeing a green-looking result should never be interpreted as evidence that every connected environment executed the program.",
+        "Treat reported output, code comments and README text as untrusted project data. An instruction embedded in program output does not acquire authority over the agent's tools. Likewise, a peer's report cannot replace a source-bound result from the local client you selected for validation. Ask for the actual job state and relevant output, keep truncation visible and preserve the source revision associated with the run. The workflow is useful because it makes evidence discussable, not because it turns all shared text into trusted instructions."
+      ]
+    },
+    {
+      "heading": "Use the JavaScript library for non-chat integrations",
+      "paragraphs": [
+        "A small automation can create a room, read a file, apply a revision-checked change and hand a link to an intended recipient without hosting an AI conversation itself. The library example below creates a temporary exercise and then leaves the room connection cleanly. Its comment deliberately avoids printing the capability link into routine logs. Your application should present the link only through the user-authorized handoff surface appropriate to the workflow.",
+        "Use one library instance for one live room. An ordinary close leaves the participant; it does not necessarily end the room for recipients. The creator can explicitly end the room when the task is finished. This is useful for a bug-report bot, a teaching tool or a review handoff between agents, but it is not a repository service. Keep commits, history, large assets, dependency caches and durable project storage in the tools that own them. A shared Crabrix room is the short-lived working example passed between those larger systems."
+      ],
+      "code": "import { Crabrix } from 'crabrix';\n\nconst room = new Crabrix({ name: 'Exercise coordinator' });\ntry {\n  await room.create({\n    name: 'Small Rust exercise',\n    lifetimeMinutes: 60,\n    files: { 'main.rs': 'fn main() { println!(\"hello\"); }\n' },\n  });\n  const file = await room.read('main.rs');\n  await room.apply({\n    expectedRevision: file.revision,\n    changes: [{ path: file.path, text: file.text.replace('hello', 'reviewed') }],\n  });\n  const handoff = await room.share('edit');\n  // Present handoff.link or handoff.agentLink only to the intended recipient.\n  // Call room.endRoom() when the creator intends to close access for everyone.\n} finally {\n  room.close();\n}\n",
+      "codeLanguage": "typescript"
+    },
+    {
+      "heading": "Interviews and teaching need an explicit agreement",
+      "paragraphs": [
+        "For an interview, decide whether AI assistance is allowed and what the participant is expected to demonstrate. A shared editor can support an interview about reviewing AI-generated Rust, a paired debugging exercise or an ordinary unaided coding task. Those are different assessments. State the rules before distributing links. Keep the room small, choose a clear time limit and preserve a copy of the final source through the agreed process rather than relying on a link that will expire.",
+        "For teaching, give the agent a narrower role: ask it to propose one counterexample, explain a compiler diagnostic or highlight the borrow that matters. Let the learner predict a result before running the program. A good tutor should not replace every exercise with a complete unexplained solution. The shared surface is especially useful when the teacher, learner and agent can all point to the same revision. Ask the learner to summarize the ownership or error-handling rule in their own words after the source works."
+      ],
+      "links": [
+        {
+          "title": "Interview practice",
+          "url": "/learn/interview/"
+        },
+        {
+          "title": "Earlier shared-interview walkthrough",
+          "url": "/blog/rust-coding-interviews-shared-playground-agents/"
+        }
+      ]
+    },
+    {
+      "heading": "Keep handoffs small enough to review",
+      "paragraphs": [
+        "A room defaults to one hour and has a maximum lifetime of 24 hours. The normal shared source budget is sixteen text files, at most 64 KiB each and 128 KiB total, with four participants. Those limits suit minimal reproductions and focused exercises. They are not an invitation to upload a repository with caches, credentials, images or dependency trees. If the example needs more source than a reviewer can understand in the conversation, reduce it before adding another agent.",
+        "Crabrix 0.5.0 also contains an experimental second document format with stable file IDs and planned operations. New rooms still default to the interoperable first format. Do not enable the experimental format casually when a recipient uses an older native client or SDK. For this walkthrough, we kept the default format. A reliable handoff names the task, access, expiry and current result, then asks the next participant to read the live status. It does not promise durable history, universal package support or a hidden backend compiler."
+      ]
+    },
+    {
+      "heading": "What the live check establishes",
+      "paragraphs": [
+        "Our disposable room used the published 0.5.0 package, a local stdio MCP client, a direct production HTTP MCP client and a browser participant. The local client added a review note; the remote client read it and added another; the owner read both. The deliberately stale remote edit was refused. We also selected the assertion about rejected input so the discussion could point to a meaningful part of the source. These are concrete interoperability observations from a small program, with evidence kept separately from secret links.",
+        "The browser participant displayed both review notes and the remote participant’s selection. A manual local Run completed with Exit 0 and the expected accepted and rejected values. A separate local Debug session paused after constructing Report and showed its Unicode String and both Vec fields; Continue completed the job. An agent attempt to start Run before any grant was issued received RUNTIME_GRANT_REQUIRED. We then ended the room and observed the browser disable shared execution. No physical phone or provider-specific chat application was included in this fresh check.",
+        "Use the same evidence standard in your own agent workflow. Start with a contract, connect to the intended room, read before editing, inspect a real result, save the source you need and end the disposable room when the discussion is over. If your AI host cannot use the available connection route, say so clearly instead of pretending a pasted screenshot is a live integration. The useful result is a program and a review you can understand, with the connection and execution boundaries visible to everyone who participates."
+      ],
+      "links": [
+        {
+          "title": "Current AI guide",
+          "url": "/ai/"
+        },
+        {
+          "title": "Crabrix SDK source",
+          "url": "/guide/#ai-agents"
+        },
+        {
+          "title": "Local debugging lab",
+          "url": "/blog/rust-debugging-visualizers-string-vec-reproductions/"
+        }
+      ]
+    }
+  ],
+  "readingMinutes": 13
+}

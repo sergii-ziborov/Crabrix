@@ -1,0 +1,204 @@
+{
+  "slug": "rustup-1-29-3-upgrade-recovery",
+  "title": "rustup 1.29.3: recover toolchains without losing the evidence",
+  "date": "2026-11-03",
+  "publishedDate": "2026-11-04",
+  "modifiedDate": "2026-11-04",
+  "summary": "Understand rustup 1.29.3’s CPU and Solaris fixes, distinguish manager and compiler versions, and recover an installation with clear, reproducible checks.",
+  "relatedSlugs": [
+    "rustup-1-29-2-certificate-update",
+    "rust-1-99-1-patch-regression-testing",
+    "rust-gpu-linker-groups-build-boundaries"
+  ],
+  "sections": [
+    {
+      "heading": "What changed in rustup 1.29.3",
+      "paragraphs": [
+        "The Rustup Team announced rustup 1.29.3 on 3 November 2026. The patch fixes an Illegal instruction error on certain x86_64 CPUs without SSE4.1 and a lock not supported error on Solaris. The announcement also gives a manual recovery route for users whose existing rustup cannot complete self-update. These are manager-level maintenance fixes. They should not be confused with a new Rust edition, an application dependency update or a promise that every compilation target now runs on the current machine.",
+        "This guide fills our 3 November editorial slot and was researched and published on 4 November. We combine the official release notes with an original diagnosis and recovery workflow. The commands are examples to review for your own installation; producing this article did not update the development computer's manager or switch its default compiler. The important outcome is being able to say which executable failed, how it was selected, what changed during recovery and which application checks passed afterwards."
+      ],
+      "sources": [
+        {
+          "title": "rustup 1.29.3 announcement",
+          "url": "https://blog.rust-lang.org/2026/11/03/Rustup-1.29.3/"
+        }
+      ],
+      "image": {
+        "src": "/images/blog/november-2026/rustup/cover.png",
+        "alt": "Crabrix crab maintaining a rustup 1.29.3 toolchain switch",
+        "caption": "Original ImageGen conceptual illustration: crabrix crab maintaining a rustup 1.29.3 toolchain switch.",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    {
+      "heading": "Three version numbers answer three different questions",
+      "paragraphs": [
+        "The manager version identifies the rustup executable. A toolchain identifies a compiler distribution, including rustc and Cargo. Target libraries supply another part of the build environment for the output you want. These pieces are connected but answer different questions. When someone says Rust stopped working after an update, begin by asking which command stopped working. A manager crash before a compiler starts is a different investigation from a Rust source diagnostic or a linker failure.",
+        "Write the identities into a small maintenance note. Include the path resolved for rustup, rustc and cargo, the active toolchain in the affected project, and the requested build target. Keep the note narrow enough to share without exposing a complete environment dump. The manager can be repaired while a project remains pinned to its previous compiler. A project can also change its compiler while the manager version stays the same. Understanding that separation prevents unnecessary source changes when the broken component is the tool that launches or installs the compiler."
+      ],
+      "sources": [
+        {
+          "title": "Toolchain identities",
+          "url": "https://rust-lang.github.io/rustup/concepts/toolchains.html"
+        }
+      ]
+    },
+    {
+      "heading": "Capture the selection before changing it",
+      "paragraphs": [
+        "Begin with commands that describe the current state. The block below asks for versions, the active selection, known toolchains and configured directory overrides. Run it in the project directory where the problem appears, because selection can depend on location. Preserve both successful output and failures. If rustup itself cannot run, that fact is useful evidence; do not repeatedly invoke an update command and assume the lack of progress means the application's source is at fault.",
+        "There can be more than one installation on a machine. A package-manager installation, a user-local installation and an editor's configured executable may not resolve to the same path. Use your operating system's normal command-location tool to inspect the route that fails. Then compare the editor or CI configuration with that route. Avoid changing global PATH entries as an exploratory first move. A temporary command scoped to one shell or one project gives you a clearer experiment and is easier to undo when you discover the real source of the mismatch."
+      ],
+      "code": "rustup --version\nrustc -Vv\ncargo -V\nrustup show active-toolchain\nrustup toolchain list\nrustup override list\n",
+      "codeLanguage": "shell",
+      "sources": [
+        {
+          "title": "rustup overrides",
+          "url": "https://rust-lang.github.io/rustup/overrides.html"
+        }
+      ]
+    },
+    {
+      "heading": "An instruction-set failure belongs to the running executable",
+      "paragraphs": [
+        "The release's x86_64 fix is a useful reminder that the architecture name alone does not describe every CPU capability a binary may require. If the rustup process fails with an instruction error before launching rustc, first investigate that manager binary and the machine or virtual CPU executing it. Editing a crate's target features changes a different artifact. It is unlikely to repair a manager that never reaches the point of compiling the crate.",
+        "Record whether the failure occurs on bare hardware, inside a virtual machine or inside another managed environment. Preserve the exact manager version and the diagnostic before recovery. A virtual CPU configuration may matter to a reproduction even when the host machine is newer. Keep conclusions limited to the evidence: an instruction error does not automatically identify one precise missing CPU feature in every unrelated program. The 1.29.3 announcement names the regression it fixes; your report should establish that you are observing that route rather than borrowing the release note as a universal diagnosis."
+      ],
+      "sources": [
+        {
+          "title": "rustup CPU-compatibility fix",
+          "url": "https://github.com/rust-lang/rustup/pull/5162"
+        }
+      ],
+      "image": {
+        "src": "/images/blog/november-2026/rustup/infographic.png",
+        "alt": "Manager, compiler toolchain and destination target libraries shown as separate identities",
+        "caption": "Original ImageGen infographic: manager, compiler toolchain and destination target libraries shown as separate identities.",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    {
+      "heading": "A lock error needs an environment check",
+      "paragraphs": [
+        "The Solaris fix concerns a reported locking operation that the previous manager could not use in that environment. A lock failure is not the same as a package download failing or a project containing an invalid Rust type. Preserve the operation and platform details that accompany the error. If the machine uses a special filesystem, container or shared home directory, mention that context in a reduced report when it is relevant to reproducing the behavior.",
+        "Do not respond to a lock problem by deleting arbitrary files from a toolchain directory. A process may still be using them, and removing state can destroy the evidence that explains the failure. First close other toolchain operations and establish which installation owns the affected files. Follow the appropriate maintainer guidance for that installation method. A recovery workflow should minimize changes, record what it changed and verify the result. Treat an unexplained successful retry as an observation, not as proof that every future concurrent update is safe."
+      ],
+      "sources": [
+        {
+          "title": "Solaris locking fix",
+          "url": "https://github.com/rust-lang/rustup/pull/5167"
+        }
+      ]
+    },
+    {
+      "heading": "Use the ordinary update path when it works",
+      "paragraphs": [
+        "For a rustup-managed installation whose manager can still operate, the announcement documents self-update as the direct way to update the manager. It advises stopping programs that may be using rustup first. That is a practical reason to close an editor or another build process before maintenance, not an instruction to rewrite the project's source or lockfile. Keep the update output and check the manager version afterwards rather than assuming that an accepted command changed the executable you actually use.",
+        "Some installations are managed through a separate operating-system package manager, where update ownership can differ. The rustup book explains that those packages are maintained by their package maintainers. Follow that route's instructions instead of forcing two tools to manage the same executable. Once the manager is healthy, confirm the selected project toolchain again. If your goal was only manager recovery, avoid silently advancing every project's compiler at the same time. A narrowly scoped maintenance action is easier to validate and less disruptive to unrelated work."
+      ],
+      "code": "# For a rustup-managed installation, after closing other rustup users:\nrustup self update\nrustup --version\nrustup show active-toolchain\n",
+      "codeLanguage": "shell",
+      "sources": [
+        {
+          "title": "Alternative installation ownership",
+          "url": "https://rust-lang.github.io/rustup/installation/other.html"
+        }
+      ]
+    },
+    {
+      "heading": "Manual recovery is a specific fallback, not a random download",
+      "paragraphs": [
+        "If the affected manager cannot update itself, the 1.29.3 announcement describes downloading the matching official rustup-init binary, ensuring no rustup processes are running and replacing the existing rustup executable with that binary renamed appropriately. Read the current official steps for your platform rather than adapting a command from an unrelated architecture. Preserve a recoverable copy of the original executable and the recorded installation path so you can explain what changed if the replacement does not behave as expected.",
+        "Keep the trust boundary intact while recovering. Obtain the artifact through the official installation documentation and verify that it matches the intended platform. Do not disable TLS validation or an operating-system security control merely because a forum post suggests it will make the download work. If a package manager owns the installation, consult that maintainer's recovery procedure. After replacement, start with an identity check and a small toolchain query before launching a large update. These checks give you a clean point at which to confirm that the manager itself is functioning again."
+      ],
+      "sources": [
+        {
+          "title": "Official rustup installation methods",
+          "url": "https://rust-lang.github.io/rustup/installation/other.html#manual-installation"
+        }
+      ]
+    },
+    {
+      "heading": "A fixed manager does not install every cross-build prerequisite",
+      "paragraphs": [
+        "Once rustup works again, a cross-compilation failure may still be a separate, valid problem. Adding a Rust target installs target libraries, but the overall build may also need a native SDK, linker or system library. Keep those requirements in the project's build note. Otherwise a manager repair can appear incomplete simply because the next command finally advanced far enough to reveal an unrelated missing tool.",
+        "Work through the stages deliberately. Confirm the intended compiler launches, confirm the target libraries are available for that toolchain, compile the reduced project, then link and run in the required destination environment. Record a failure at the stage where it occurred. A host test that passes after recovery is useful, but it does not certify an untested target. This is particularly relevant when a team develops on laptops and deploys to firmware, mobile devices or a server image with different runtime dependencies."
+      ],
+      "sources": [
+        {
+          "title": "Cross-compilation requirements",
+          "url": "https://rust-lang.github.io/rustup/cross-compilation.html"
+        }
+      ],
+      "links": [
+        {
+          "title": "GPU and linker build boundaries",
+          "url": "/blog/rust-gpu-linker-groups-build-boundaries/"
+        }
+      ]
+    },
+    {
+      "heading": "Check application behavior with a small sentinel",
+      "paragraphs": [
+        "A maintenance sentinel is a tiny program or test that tells you whether the selected compiler and runtime can perform a known operation. Choose a behavior that matters to the project and has an unambiguous expected result. For a parser service, that might be a valid record, malformed input and an integer boundary. For a small library, it might be a deterministic function with assertions. Keep the sentinel independent of large dependency downloads where possible so a registry outage cannot masquerade as a manager failure.",
+        "The sentinel is the beginning of validation, not the end. After it passes, run the project's normal locked tests and relevant build targets. Preserve the previous compiler identity and the candidate identity beside those outputs. If the application fails only under one compiler, reduce that comparison separately from the rustup recovery issue. This prevents a maintenance thread from becoming a confused mixture of manager installation, language semantics, dependencies and target packaging, each of which may need a different owner to investigate."
+      ],
+      "links": [
+        {
+          "title": "Rust test fixtures and boundaries",
+          "url": "/blog/testing-rust-boundaries-fixtures-doctests/"
+        },
+        {
+          "title": "Rust 1.99.1 patch qualification",
+          "url": "/blog/rust-1-99-1-patch-regression-testing/"
+        }
+      ],
+      "image": {
+        "src": "/images/blog/november-2026/rustup/workshop.png",
+        "alt": "Crabrix crab recovering one tool while preserving the surrounding workspace",
+        "caption": "Original ImageGen conceptual illustration: crabrix crab recovering one tool while preserving the surrounding workspace.",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    {
+      "heading": "Make CI failures reproducible outside CI",
+      "paragraphs": [
+        "A CI image can hide a surprising amount of state: preinstalled toolchains, wrapper commands, a cached home directory and a runner-specific CPU configuration. Pin the parts that matter to the job and print a concise identity record before the expensive build. Preserve the exact command and error when an update fails. This gives the next investigator a chance to reproduce the problem without copying the entire runner or guessing which version the stable channel resolved to at the time.",
+        "Avoid changing the cache policy, compiler version, target and manager in the same speculative retry. A clean run is a useful comparison when cache state is a plausible cause, but deleting all caches should not become a substitute for understanding a repeatable failure. Save the failed job's logs and compare one controlled variable. If recovery requires a new runner image, qualify that image with the same application checks before promoting it. The maintenance result should identify what now works and what evidence supports that conclusion."
+      ]
+    },
+    {
+      "heading": "Keep a small recovery record your future self can use",
+      "paragraphs": [
+        "A practical recovery record starts before the repair. Write down the command that failed, its working directory, the resolved executable path and the visible error. Record the intended project compiler separately from the manager. If the manager cannot print its version, retain the version from the installation record or the earlier successful log and label its source. Do not replace an unknown value with a guess merely to make the report look complete. Unknown information can guide the next safe check.",
+        "After the repair, repeat the identity query and the smallest command that previously failed. Then run the maintenance sentinel and the project's normal checks. Keep the before and after records together. A manager version changing successfully is evidence about the manager; the project's tests are evidence about the selected application environment. If the compiler selection changed unexpectedly, resolve that difference before describing the recovery as complete. A successful build under a different compiler may be useful, but it answers a different question.",
+        "For a shared development machine, leave a brief note explaining the installation owner and the recovery route used. This helps prevent a coworker from applying a package-manager repair to a user-local installation or vice versa. Preserve only the relevant configuration and remove credentials from logs before sharing. The result should be understandable days later without access to your shell history. That is the difference between a one-time lucky recovery and a repeatable maintenance procedure that another person can review and use."
+      ]
+    },
+    {
+      "heading": "What this means for Crabrix users",
+      "paragraphs": [
+        "The desktop rustup manager and Crabrix's bundled local Rust toolchain are different distribution paths. Updating rustup on a laptop does not replace the compiler inside the iPhone app or the browser's verified compiler assets. When reporting a Crabrix issue, use the compiler and toolchain identities shown by that environment. When reporting a desktop issue, include the desktop manager, compiler, host and target. Keeping those identities separate prevents a real bug report from being sent down the wrong maintenance path.",
+        "A temporary Playground remains useful for the portable source portion of a problem. You can share the failing parser or arithmetic example, compare expected results and let a reviewer inspect the exact revision. Keep desktop installation logs and platform-specific recovery commands in their appropriate environment, with secrets removed. Save the final reproduction in your permanent project workflow. The practical value of the rustup 1.29.3 news is a more reliable route back to work, supported by a diagnosis that names the component that actually failed."
+      ],
+      "links": [
+        {
+          "title": "Crabrix technology",
+          "url": "/technology/"
+        },
+        {
+          "title": "Public Playground",
+          "url": "/playground/"
+        },
+        {
+          "title": "Earlier certificate-maintenance guide",
+          "url": "/blog/rustup-1-29-2-certificate-update/"
+        }
+      ]
+    }
+  ],
+  "readingMinutes": 11
+}

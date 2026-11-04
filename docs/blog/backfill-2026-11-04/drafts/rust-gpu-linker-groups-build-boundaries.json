@@ -1,0 +1,179 @@
+{
+  "slug": "rust-gpu-linker-groups-build-boundaries",
+  "title": "Rust GPU and linker news: understand your build boundaries",
+  "date": "2026-10-31",
+  "publishedDate": "2026-11-04",
+  "modifiedDate": "2026-11-04",
+  "summary": "Understand Rust’s GPU notification group and linker working area with a tested CPU reference, reproducible build reports and clear host, target and runtime boundaries.",
+  "relatedSlugs": [
+    "rust-1-99-1-patch-regression-testing",
+    "rust-performance-measure-before-optimizing",
+    "rust-1-100-i686-windows-host-tools"
+  ],
+  "sections": [
+    {
+      "heading": "Two compiler groups, two different responsibilities",
+      "paragraphs": [
+        "On 20 October 2026, the Rust compiler team announced a GPU target notification group and a Linker working area. The first brings together people who can help diagnose GPU-related problems; the second provides expertise around linking and work such as exploring alternative linkers. A notification group supports maintenance, while a working area pursues improvements in its domain. Those are useful organizational changes. They do not, by themselves, ship a universal GPU backend, choose a new default linker for every platform or make an existing application portable.",
+        "This guide fills our 31 October editorial slot and was researched and published on 4 November. We use that announcement to answer a practical question: when a Rust build fails outside ordinary source checking, how do you identify the layer that needs attention? Our examples and triage process are original teaching material. We make no GPU performance measurement here. The goal is a reproducible build boundary that helps you work with compiler maintainers and decide which parts of a project belong in a local Crabrix experiment."
+      ],
+      "sources": [
+        {
+          "title": "Compiler-team announcement",
+          "url": "https://blog.rust-lang.org/inside-rust/2026/10/20/gpu-target-notification-group/"
+        },
+        {
+          "title": "Linker working-area proposal",
+          "url": "https://github.com/rust-lang/compiler-team/issues/964"
+        }
+      ],
+      "image": {
+        "src": "/images/blog/november-2026/gpu-linker/cover.png",
+        "alt": "Crabrix crab beside separate desktop compilation and GPU device paths",
+        "caption": "Original ImageGen conceptual illustration: crabrix crab beside separate desktop compilation and GPU device paths.",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    {
+      "heading": "Draw the build before changing the build",
+      "paragraphs": [
+        "Start with four boxes: source, compilation, linking and execution. A syntax error belongs near the first boundary. A type error is discovered while the compiler reasons about the program. An unresolved external symbol appears while the final artifact is assembled. A device initialization failure may happen only after the executable starts. These categories lead to different experiments. Changing the arithmetic in a function is unlikely to explain why a linker cannot locate a system library; installing a linker will not repair an ownership error.",
+        "Write the command that moves between each pair of boxes. If a wrapper script hides the actual compiler invocation, preserve the wrapper and capture a verbose build log. If the program loads another artifact at runtime, draw that edge too. A GPU application may compile host code, produce device code, package it and then load it through a driver. Treat each artifact as an input with its own provenance. This small drawing prevents a common debugging failure: repeatedly rebuilding the whole application while changing several unrelated settings, then losing track of which change affected the result."
+      ]
+    },
+    {
+      "heading": "The host and the destination are separate facts",
+      "paragraphs": [
+        "Your build host is the machine executing the compiler and supporting tools. The target describes the environment for the output. Installing a Rust standard library for a target gives the compiler an important input, but it does not manufacture an external SDK, linker, loader or device driver. The rustup cross-compilation documentation states this distinction directly. Keep a short inventory of the additional tools your target requires and where each one comes from before describing a failed cross build as a Rust source problem.",
+        "A useful inventory is deliberately mundane: compiler version and host, requested target, selected linker, SDK version if relevant, external libraries and the machine or runner that will execute the result. Record how each was selected, including project configuration or environment overrides. Two coworkers can run what looks like the same Cargo command while resolving different tools. The difference may be outside the repository. Ask for this inventory early in a bug report; it is usually more useful than a screenshot showing only the last line of a failed build."
+      ],
+      "sources": [
+        {
+          "title": "Cross-compilation requirements",
+          "url": "https://rust-lang.github.io/rustup/cross-compilation.html"
+        },
+        {
+          "title": "Rust platform-support tiers",
+          "url": "https://doc.rust-lang.org/rustc/platform-support.html"
+        }
+      ]
+    },
+    {
+      "heading": "Keep a CPU reference for a parallel calculation",
+      "paragraphs": [
+        "Before experimenting with a device backend, write a small reference calculation whose input and output rules are explicit. The example below squares signed integer inputs and adds the results using checked arithmetic in a wider accumulator. It is intentionally ordinary CPU Rust. It gives us a trustworthy place to discuss empty input, negative numbers, accumulation overflow and expected output. A reference like this is valuable even when the eventual implementation will use a completely different execution environment.",
+        "The widening is intentional but not magical. A single squared i32 value fits in i64, while a sufficiently long sum may not. Returning None preserves that failure instead of silently wrapping. The largest-value test documents the accumulator boundary with only a few elements. When comparing a device implementation, decide whether it must match these exact integer semantics or a different documented contract. For floating point, comparisons also need a stated tolerance and a policy for non-finite values. Choose that policy before looking at a result, so a mismatch cannot be dismissed merely because parallel execution was involved."
+      ],
+      "code": "fn square_sum(values: &[i32]) -> Option<i64> {\n    values.iter().try_fold(0_i64, |sum, &value| {\n        let wide = i64::from(value);\n        sum.checked_add(wide.checked_mul(wide)?)\n    })\n}\nfn main() {\n    assert_eq!(square_sum(&[]), Some(0));\n    assert_eq!(square_sum(&[-3, 0, 4]), Some(25));\n    assert_eq!(square_sum(&[i32::MIN]), Some(4_611_686_018_427_387_904));\n    assert_eq!(square_sum(&[i32::MIN, i32::MIN]), None);\n    println!(\"CPU reference: all checks passed\");\n}\n",
+      "links": [
+        {
+          "title": "Checked arithmetic guide",
+          "url": "/blog/rust-checked-arithmetic-conversions/"
+        }
+      ],
+      "image": {
+        "src": "/images/blog/november-2026/gpu-linker/infographic.png",
+        "alt": "Source, compile, link and run stages, with host and target requirements identified",
+        "caption": "Original ImageGen infographic: source, compile, link and run stages, with host and target requirements identified.",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    {
+      "heading": "A linker error needs a symbol story",
+      "paragraphs": [
+        "When a linker reports an unresolved symbol, preserve the exact spelling and identify who should provide it. Is it a function from another Rust crate, an external C library, compiler support code or a platform runtime? Then identify which artifact is supposed to carry that provider and whether the selected target can use it. This is a dependency question at the binary boundary. A source-level import and a linked implementation are related, but they are not the same piece of evidence.",
+        "Reduce the program until the missing symbol remains with as few moving parts as possible. A small reproducer might need two files rather than one: one declaration and one provider, or a build script plus a tiny source file. Keep both if both are required. Removing the provider and showing that the program no longer links proves only that the provider was needed. A good reduction preserves the unexpected failure while making the expected successful configuration clear. State what you expected to happen and name the exact command that demonstrates the difference."
+      ]
+    },
+    {
+      "heading": "Try alternative linkers as controlled experiments",
+      "paragraphs": [
+        "The existence of a linker working area makes it easier to find the right people for a linker-specific question. It is not a reason to replace your production linker casually. Keep the current configuration as a baseline, select one candidate explicitly for a separate build, and preserve the actual invocation. Make sure both builds use the same compiler, target, dependency graph and profile. Otherwise a successful candidate build may be explained by several changes at once, and the result will be difficult to reproduce.",
+        "Cargo provides target-specific configuration, including a linker selection. Put experimental settings in a clearly scoped place rather than exporting a machine-wide flag and forgetting it. Test the final executable, its external library loading and any packaging assumptions. If you are measuring link time, separate clean and incremental cases and save raw observations. A faster linker invocation that creates an unusable artifact is not a successful migration. Our recommendation is to keep the experiment small enough that you can restore the baseline configuration without having to reconstruct your entire development environment."
+      ],
+      "sources": [
+        {
+          "title": "Cargo target configuration",
+          "url": "https://doc.rust-lang.org/cargo/reference/config.html"
+        },
+        {
+          "title": "rustc code-generation options",
+          "url": "https://doc.rust-lang.org/rustc/codegen-options/index.html"
+        }
+      ]
+    },
+    {
+      "heading": "GPU support is a stack of agreements",
+      "paragraphs": [
+        "A successful GPU workflow needs more than a language frontend accepting the source. The generated device program must match the execution model and interfaces of its destination. The host side must allocate and transfer the right buffers, request the right operation and interpret its result. A bug in any layer can look like a compiler problem when the only visible symptom is wrong output. Keep input layout, launch dimensions, synchronization and output validation as separate hypotheses while narrowing the failure.",
+        "For a first reduction, replace a complex application workload with a deterministic input small enough to inspect manually. Use the CPU reference to establish an expected result, then increase the workload only after the small case agrees. Preserve the device and driver information alongside the compiler information. Do not claim that a CPU-only or browser-only run validates the device backend. It validates the reference calculation. That distinction makes the experiment more useful, because another contributor can reproduce the portable part immediately and see exactly which remaining step requires specialized hardware."
+      ]
+    },
+    {
+      "heading": "A build report should preserve configuration, not secrets",
+      "paragraphs": [
+        "A useful report includes enough context to recreate the tool choices without dumping a developer's whole environment. Copy the relevant target configuration and invocation, not every environment variable on the machine. Replace private paths with a consistent example path if the exact spelling is irrelevant. Remove tokens, credentials, proprietary source and unrelated project data. Then run the reduced report yourself from the documented starting point; a report that relies on your shell history is not yet self-contained.",
+        "Keep errors as text and retain the first meaningful diagnostic, not only the final wrapper failure. If a command calls another tool, preserve the nested error that explains the cause. Attach the smallest required source files and the exact compiler version. For hardware issues, say which checks you could and could not run. A maintainer with a different device can still review the host-side reduction or reason about a symbol problem, but they should not have to infer what you meant by works on my machine."
+      ]
+    },
+    {
+      "heading": "Separate correctness from a performance claim",
+      "paragraphs": [
+        "A parallel implementation that returns the right answer has passed one important test. It has not yet demonstrated that transferring the data, launching the work and retrieving the result are worthwhile for your workload. A tiny calculation may spend most of its time outside the kernel. A large calculation may have different bottlenecks, including memory movement or contention. Keep an end-to-end measurement separate from a measurement of the inner operation so readers can understand which question each number answers.",
+        "For build tools, the same discipline applies to clean compilation, dependency preparation and final linking. Measure the stage you are changing and also observe the whole developer workflow that matters to your team. Repeat runs under comparable conditions, keep raw results and describe uncertainty. This article does not supply invented GPU speedups or linker rankings. The news is an invitation to better targeted work; the practical result is an experiment whose correctness and performance claims have explicit, inspectable boundaries."
+      ],
+      "links": [
+        {
+          "title": "Rust benchmark workflow",
+          "url": "/blog/rust-performance-measure-before-optimizing/"
+        }
+      ],
+      "image": {
+        "src": "/images/blog/november-2026/gpu-linker/workshop.png",
+        "alt": "Crabrix crab investigating compiler identity, unresolved symbols and target hardware",
+        "caption": "Original ImageGen conceptual illustration: crabrix crab investigating compiler identity, unresolved symbols and target hardware.",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    {
+      "heading": "Use the right collaboration surface for each layer",
+      "paragraphs": [
+        "A temporary Crabrix Playground is a useful place to share the portable reference, discuss a type or arithmetic bug, and let another person highlight the operation they believe is wrong. The shared execution profile supports small standard-library Rust programs and local modules. A GPU driver, desktop linker, native SDK or external host library is a different environment. Keep those requirements in a target-qualified desktop project and share their diagnostic evidence separately.",
+        "This division helps rather than weakens the review. One participant can validate the reference behavior in the browser while another checks the target-specific build on suitable hardware. Put a short note beside the source identifying which part each participant actually tested. The result of another participant's local Run can be shared as output, but it does not mean every connected device executed the same workload. Save the source and reports in your permanent project workflow before the room expires; use the temporary room to make the reasoning concrete."
+      ],
+      "links": [
+        {
+          "title": "Public Playground",
+          "url": "/playground/"
+        },
+        {
+          "title": "Local execution and agent guide",
+          "url": "/ai/"
+        },
+        {
+          "title": "Cargo and real projects",
+          "url": "/learn/projects/"
+        }
+      ]
+    },
+    {
+      "heading": "Use a handoff note with one answerable question",
+      "paragraphs": [
+        "A useful linker handoff can fit in a few sentences: this source revision builds with compiler A and fails with compiler B for target T, under the same dependency lock and linker configuration; the missing symbol is S, and artifact L is expected to provide it. Attach the two commands and the relevant diagnostics. That gives another engineer an answerable question. A message saying the GPU build is broken mixes several possible boundaries before anyone has enough information to choose a first experiment.",
+        "For a device computation, the question should be equally concrete: this input produces the reference output on the CPU, while the device result differs at these indices under this launch configuration. Preserve the data shape and the comparison rule. If the computation is nondeterministic, explain which properties should remain invariant and what observations violate them. Keep the original failing input even if a smaller input later reproduces the same issue; it may reveal another condition that the first reduction accidentally removed.",
+        "Review the note from the recipient's perspective. Can they run the portable reference without your hardware? Can they identify which artifact requires the special environment? Can they tell whether a reported success means compile, link or execute? If one answer is missing, add it before scheduling a broad architecture discussion. Good handoffs reduce the amount of privileged environment access needed to make progress. They also let a specialist contribute to one precise boundary without taking responsibility for the whole application."
+      ]
+    },
+    {
+      "heading": "A useful contribution starts with one preserved failure",
+      "paragraphs": [
+        "The compiler announcement names places where expertise can gather. You do not have to begin by proposing a new backend or taking responsibility for an entire linker. A precise reproducer, a target-specific test, a clearer explanation of a diagnostic or a report about a confirmed regression can make specialized work easier to maintain. Choose one behavior and describe its boundaries well enough that another person can tell whether a change fixed it.",
+        "For an exercise, take the reference calculation and write a short qualification note: inputs, expected outputs, checked overflow behavior, compiler identity and execution environment. Next write the note that a hypothetical device implementation would still need: buffer contract, driver identity, launch configuration and comparison rule. The gap between the two notes is your work plan. Keeping that gap explicit is a useful engineering habit wherever Rust crosses from language semantics into a platform, a linker, an accelerator or an embedded device."
+      ]
+    }
+  ],
+  "readingMinutes": 12
+}

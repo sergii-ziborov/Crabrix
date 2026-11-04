@@ -1,0 +1,114 @@
+{
+  "mode": "built-in image_gen",
+  "reference": "site/public/brand/crabrix-mark.png",
+  "jobs": [
+    {
+      "id": 0,
+      "group": "variadics",
+      "kind": "cover",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. An orange Crabrix crab at a workbench arranging a heterogeneous tuple of three distinct objects: an integer tile, a text tile, and a Boolean tile. A row of same-shaped array tiles in the background contrasts with the heterogeneous tuple. A few clean brackets imply generic types. No text or numerical claims."
+    },
+    {
+      "id": 1,
+      "group": "variadics",
+      "kind": "infographic",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. Use case: infographic-diagram. Three equal-width vertical panels with a small orange crab in the footer. Exact text only: title 'CHOOSING A COLLECTION'; panel one 'ARRAY / VEC', subtitle 'One element type'; panel two 'TUPLE', subtitle 'Different element types'; panel three 'ENUM', subtitle 'A known set of cases'. Visualize repeated equal shapes, three distinct grouped shapes, and three alternatives inside one outlined container respectively. This is a conceptual design guide, not a survey chart. All typography large, generous margins."
+    },
+    {
+      "id": 2,
+      "group": "variadics",
+      "kind": "workshop",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. An orange Crabrix crab measuring three bounded tuple slots on a drafting table, with a small macro stencil carefully producing repeatable adapters. Clear difference between handwritten API design and mechanical code expansion. A blank future blueprint remains folded aside, conveying that proposed language features are not yet deployed. No text."
+    },
+    {
+      "id": 3,
+      "group": "gpu-linker",
+      "kind": "cover",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. An orange Crabrix crab in a compact compiler workshop. One clear path assembles object blocks into a desktop executable; a separate raised path leads to a GPU chip with many tiny parallel lanes. Keep the two paths visibly separate, with a human-readable source tile at their common starting point. No performance charts, no vendor marks, no text."
+    },
+    {
+      "id": 4,
+      "group": "gpu-linker",
+      "kind": "infographic",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. Use case: infographic-diagram. Wide educational diagram with four equal nodes connected left to right and an orange Crabrix crab below. Exact title 'KNOW YOUR BUILD STAGE'. Exact node labels: 'SOURCE', 'COMPILE', 'LINK', 'RUN'. Under the last three nodes exact subtitles: 'Types and code', 'Resolve symbols', 'Observe behavior'. An extra thin bracket below the three stages reads 'Host and target matter'. No benchmark numbers. Large typography, consistent card dimensions."
+    },
+    {
+      "id": 5,
+      "group": "gpu-linker",
+      "kind": "workshop",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. An orange Crabrix crab investigating a reproducible build failure using three separate evidence trays: compiler version card, linker symbol puzzle, and target-device silhouette. A magnifier identifies one mismatched puzzle edge. Analytical and calm; a GPU and laptop remain separate in background. No text, no fake UI."
+    },
+    {
+      "id": 6,
+      "group": "patch",
+      "kind": "cover",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. An orange Crabrix crab precisely repairing a small compiler gear assembly, with a clean prominent floating label '1.99.1'. Three subtle evidence objects surround it: a missing symbol puzzle, Boolean zero-and-one switch, and a library path bridge. This is a patch maintenance illustration, no speed claims, no logos besides the crab."
+    },
+    {
+      "id": 7,
+      "group": "patch",
+      "kind": "infographic",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. Use case: infographic-diagram. Exact title 'A PATCH UPGRADE NEEDS EVIDENCE'. Three equal horizontal rows: 'BUILD' with subtitle 'Compile and link'; 'TEST' with subtitle 'Check behavior'; 'DEPLOY' with subtitle 'Verify the real target'. Left edge shows an orange Crabrix crab carrying a small clipboard. Right edge has empty outlined checkboxes, not prefilled success results. Avoid fake benchmark numbers. High contrast and generous padding."
+    },
+    {
+      "id": 8,
+      "group": "patch",
+      "kind": "workshop",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. An orange Crabrix crab maintaining two adjacent, equally sized test benches labeled exactly 'BASELINE' and 'CANDIDATE'. Identical small input fixtures enter each bench, matching output tokens emerge, and one boundary case is inspected under a magnifier. Show a controlled comparison with no invented timings. Navy, orange, cyan palette."
+    },
+    {
+      "id": 9,
+      "group": "debugging",
+      "kind": "cover",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. An orange Crabrix crab using a magnifying glass to inspect three logical Rust values: a neat text ribbon, an ordered vector of small cubes, and a structure with clearly separated fields. A subtle source-line marker glows nearby. Emphasize readable logical values rather than raw memory addresses. No text, no debugger UI imitation, no promises of platform support."
+    },
+    {
+      "id": 10,
+      "group": "debugging",
+      "kind": "infographic",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. Use case: infographic-diagram. Four evenly sized connected stages. Exact title 'WHY A VALUE LOOKS WRONG'. Exact stage labels: 'SOURCE', 'DEBUG INFO', 'VISUALIZER', 'VALUE'. Small subtitle below whole diagram: 'Check each layer separately'. An orange Crabrix crab stands beside the chain with a magnifier. Use clear arrows and a tiny warning marker between stages two and three, no automatic success badge. Large high-contrast type."
+    },
+    {
+      "id": 11,
+      "group": "debugging",
+      "kind": "workshop",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. An orange Crabrix crab in a quiet debugging workshop, comparing a small Rust program with its saved source fixture and an organized tray of String, Vec and struct shapes. A local breakpoint lamp is paused, not running. A separate little browser pane is an abstract outline, not a realistic product screenshot. No text, no raw addresses, no fabricated telemetry."
+    },
+    {
+      "id": 12,
+      "group": "rustup",
+      "kind": "cover",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. An orange Crabrix crab tending a toolchain railway switch. A compact manager box is labeled exactly 'rustup 1.29.3'; two separate train carriages represent the Rust compiler and target standard library. A carefully repaired rail indicates maintenance and recovery. Warm orange and cyan on navy, premium editorial illustration. No vendor or OS logos."
+    },
+    {
+      "id": 13,
+      "group": "rustup",
+      "kind": "infographic",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. Use case: infographic-diagram. Three equally sized stacked cards, connected by thin lines. Exact title 'THREE DIFFERENT VERSIONS'. Card labels and subtitles: 'MANAGER' / 'rustup'; 'TOOLCHAIN' / 'rustc and Cargo'; 'TARGET' / 'Libraries for the destination'. An orange Crabrix crab points to the manager card. No arrows claiming that all versions change together, no version numbers beyond the title design. Large typography, spacious."
+    },
+    {
+      "id": 14,
+      "group": "rustup",
+      "kind": "workshop",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. An orange Crabrix crab at a recovery desk with a sealed backup box, an official download envelope, and a small checklist board with no legible text. A broken tool is replaced one piece at a time while the rest of the workspace stays intact. Show careful diagnosis and preservation, not panic or security shields. No fake UI or malware imagery."
+    },
+    {
+      "id": 15,
+      "group": "agents",
+      "kind": "cover",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. An orange Crabrix crab at the center of a shared small Rust workspace. On the left, a laptop with a local AI assistant and a tiny key resting inside the laptop outline. On the right, a second route goes via a small relay to a remote AI assistant, with a visible consent gate. Below, a phone and browser observe shared code. Make the two routes clear but balanced. No text, no fake product screenshots, no claim that remote mode hides the key from the server."
+    },
+    {
+      "id": 16,
+      "group": "agents",
+      "kind": "infographic",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. Use case: infographic-diagram. Exact title 'CHOOSE HOW YOUR AGENT CONNECTS'. Two equal-width cards. Left exact text: 'LOCAL MCP', 'Key stays on your computer'. Right exact text: 'REMOTE MCP', 'Server decrypts while connected'. A separate full-width bottom card reads 'RUN / DEBUG', then 'Only on a device you approve'. Orange Crabrix crab in the middle, cyan local route and amber remote route. No unqualified secure badge, no tiny text. Readable typography and generous equal padding."
+    },
+    {
+      "id": 17,
+      "group": "agents",
+      "kind": "workshop",
+      "prompt": "Use case: illustration-story. Asset type: original editorial illustration for the Crabrix Rust blog. Landscape 1536x1024. Premium, crisp 3D cut-paper and softly lit enamel style, dark navy background, orange crab mascot matching the attached Crabrix mark, cyan and warm amber accents. Restrained composition, readable silhouettes, polished educational magazine quality. Preserve the orange crab with two raised claws and six walking legs; no unrelated mascot, no corporate logos, no watermark. A triptych of three equally sized editorial scenes united by an orange Crabrix crab: a developer reducing a bug to a small shared Rust example, two people discussing a coding interview, and a teacher and student examining ownership blocks. The crab guides the same temporary workspace between scenes. No human faces in detail, no brand logos, no fake app UI, no text. Attractive and practical, dark navy with orange and cyan."
+    }
+  ]
+}
