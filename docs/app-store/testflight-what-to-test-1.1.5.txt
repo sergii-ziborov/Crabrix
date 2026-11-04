@@ -8,6 +8,8 @@ Read only: if a shared project cannot run (for example, no Rust file is left), t
 
 Rooms from older apps and the website keep working as before.
 
+AI agents: in a shared room, open Share and choose Connect AI agent. People keep the Share links; the agent gets its own link with the same access and expiry. The key stays after # in that link, so it works only with Crabrix MCP 0.5.0 on the agent's computer (Claude Code, Codex or Cursor; the screen shows how to add it). Paste the link into the agent's chat and check that it joins the room and edits. Permission to run code on this device is now on that screen too.
+
 Learn: downloading or updating a course no longer freezes the screen; progress updates once per percent.
 
 Duo and iPad: the layouts did not change. Please check the code screen and a shared Playground on Duo (laptop and book poses) and on iPad, and report anything different.
