@@ -1,0 +1,108 @@
+{
+  "passed": true,
+  "output": "Local execution finished.\n42\n\n\nExit 0 · 1.15s total · compiled locally",
+  "debug": "CALL STACK\nmain\nmain.rs:4\nLOCALS\nName\tType\tValue\ndigits\talloc::string::String\t\"42\" (2 bytes)\n\nString, Vec and concrete local structs have bounded previews. Borrowed, moved or captured values may be omitted. Async frames show active polls; const bodies and macro expansions are not stepped internally.",
+  "errors": [],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/playground/"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/brand/crabrix-mark.png"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/learn/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/blog/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/guide/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/technology/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/about/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/support/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/login/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/ai/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/sitemap/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/licenses/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/learn/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/blog/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/guide/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/technology/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/rust-lang/crates.io-index/master/it/oa/itoa"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/about/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/support/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/login/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://static.crates.io/crates/itoa/itoa-1.0.15.crate"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/playground-runtime/rustc.wasm.gz"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/playground-runtime/sysroot.zip"
+    }
+  ]
+}

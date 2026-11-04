@@ -85,5 +85,19 @@ now returns keyboard focus from file/project menus to their triggers.
 [layout matrix](browser-cargo-2026-11-05/local-layout.json),
 [tree controls and real drag/drop](browser-cargo-2026-11-05/local-tree.json).
 
-Publication and live shared-room results are recorded separately in the delivery
-receipt after the actual candidate and public checks.
+Published from `0fb35d321e263c42892c2fd010b937f4bab4d9e8` to the existing Hetzner
+service. Thirteen candidate HTTP checks and an actual candidate Cargo Run passed.
+The public site then passed 13 HTTP checks, 15 layout cases, 12 shared/negative
+cases and nine tree/control cases. The five-crate Run, an offline repeat and real
+String Debug stepping/Continue passed on production as well. In the regular in-app
+browser, a separate Cargo example printed 42 and exited 0. The original user tab
+was not reloaded.
+
+A consistent account backup preceded cutover. Account mounts/resource limits and
+the remote MCP container are unchanged. The candidate was removed and the local
+preview/tunnel stopped; the previous site remains available for rollback.
+
+[Publication receipt](site-browser-cargo-release-2026-11-05.json),
+[public shared checks](browser-cargo-2026-11-05/public-shared.json),
+[Run and offline output](browser-cargo-2026-11-05/public-run-offline.json),
+[Debug locals/output](browser-cargo-2026-11-05/public-debug.json).

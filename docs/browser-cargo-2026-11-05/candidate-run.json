@@ -1,0 +1,107 @@
+{
+  "passed": true,
+  "output": "Local execution finished.\ncrate=playground value=12345\n\n\nExit 0 · 0.58s total · compiled locally",
+  "errors": [],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/playground/"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/brand/crabrix-mark.png"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/learn/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/blog/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/guide/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/technology/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/about/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/support/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/login/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/ai/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/sitemap/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/licenses/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/learn/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/blog/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/guide/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/technology/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/about/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/support/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/login/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/rust-lang/crates.io-index/master/it/oa/itoa"
+    },
+    {
+      "method": "GET",
+      "url": "https://static.crates.io/crates/itoa/itoa-1.0.15.crate"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/playground-runtime/rustc.wasm.gz"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3295/playground-runtime/sysroot.zip"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "sourceCommit": "0fb35d321e263c42892c2fd010b937f4bab4d9e8",
+  "atUTC": "2026-11-04T22:18:28Z",
+  "image": "localhost/crabrix-web-site:cargo-0fb35d3",
+  "imageID": "dfa90d9294346355fd4bdd19fb03845a1025610e030c7c2bf11b85f4ecf3093f",
+  "health": "healthy",
+  "rollbackContainer": "crabrix-web-site-before-cargo-20261105",
+  "accountBackup": "Account backup saved; seven-day retention applied.",
+  "accountMountUnchanged": true,
+  "resourceLimitsUnchanged": true,
+  "remoteMCPContainerUnchanged": true,
+  "remoteMCPImage": "localhost/crabrix-mcp-remote:0.5.0-d411197",
+  "remoteMCPContainerID": "4624eca64194378d90d0503ef0ed7704ae7dee503a72f4e4a83c1fdcfcae85a0",
+  "nativeAppChanged": false,
+  "DNSChanged": false,
+  "nginxChanged": false,
+  "verificationCompletedAtUTC": "2026-11-04T22:23:54.196733+00:00",
+  "publicURL": "https://crabrix.com/playground/",
+  "guideURL": "https://crabrix.com/guide/#browser-cargo",
+  "siteTests": {
+    "passed": 135,
+    "failed": 0
+  },
+  "typescriptPassed": true,
+  "productionBuildPassed": true,
+  "publicHTTPChecks": 13,
+  "publicLayoutCases": 15,
+  "publicSharedNegativeCases": 12,
+  "publicTreeCases": 9,
+  "compiledCrates": [
+    "itoa 1.0.15",
+    "base64 0.22.1",
+    "hex 0.4.3",
+    "itertools 0.14.0",
+    "either 1.19.0"
+  ],
+  "openEditorOfflineRunPassed": true,
+  "rootStringDebugStepContinuePassed": true,
+  "CUABrowserRun": {
+    "stdout": "42",
+    "exitCode": 0,
+    "seconds": 1.07
+  },
+  "candidateRemoved": true,
+  "localPreviewAndTunnelStopped": true,
+  "userExistingPlaygroundTabReloaded": false,
+  "screenshotSHA256": "3ea18f104ad2f421378f3578f2d8b963a32a3941a560c66b725d2a02d0e388a1",
+  "limitations": [
+    "Bounded registry-library graph; not full Cargo",
+    "No build.rs, host procedural macros, native linking, Git/path/workspace or target-specific dependency tables",
+    "One selected version per crate",
+    "Legacy shared-format-1 destructive moves require a local copy",
+    "MCP execution remains manifest-free shared-std-v1; no Cargo grant widening"
+  ]
+}

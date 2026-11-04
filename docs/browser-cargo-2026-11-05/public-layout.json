@@ -1,0 +1,351 @@
+{
+  "base": "https://crabrix.com",
+  "passed": true,
+  "cases": [
+    {
+      "width": 390,
+      "theme": "system",
+      "touch": true,
+      "overflow": false,
+      "sidebar": 260,
+      "buttons": [
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        }
+      ],
+      "formOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "touch": true,
+      "overflow": false,
+      "sidebar": 260,
+      "buttons": [
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        }
+      ],
+      "formOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "touch": true,
+      "overflow": false,
+      "sidebar": 260,
+      "buttons": [
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        }
+      ],
+      "formOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "theme": "amber",
+      "touch": true,
+      "overflow": false,
+      "sidebar": 260,
+      "buttons": [
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        }
+      ],
+      "formOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "theme": "cyberpunk",
+      "touch": true,
+      "overflow": false,
+      "sidebar": 260,
+      "buttons": [
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        }
+      ],
+      "formOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 820,
+      "theme": "system",
+      "touch": true,
+      "overflow": false,
+      "sidebar": 190,
+      "buttons": [
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        }
+      ],
+      "formOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 820,
+      "theme": "light",
+      "touch": true,
+      "overflow": false,
+      "sidebar": 190,
+      "buttons": [
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        }
+      ],
+      "formOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 820,
+      "theme": "dark",
+      "touch": true,
+      "overflow": false,
+      "sidebar": 190,
+      "buttons": [
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        }
+      ],
+      "formOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 820,
+      "theme": "amber",
+      "touch": true,
+      "overflow": false,
+      "sidebar": 190,
+      "buttons": [
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        }
+      ],
+      "formOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 820,
+      "theme": "cyberpunk",
+      "touch": true,
+      "overflow": false,
+      "sidebar": 190,
+      "buttons": [
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        },
+        {
+          "w": 40,
+          "h": 40
+        }
+      ],
+      "formOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 1440,
+      "theme": "system",
+      "touch": false,
+      "overflow": false,
+      "sidebar": 220,
+      "buttons": [
+        {
+          "w": 32,
+          "h": 32
+        },
+        {
+          "w": 32,
+          "h": 32
+        },
+        {
+          "w": 32,
+          "h": 32
+        }
+      ],
+      "formOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "touch": false,
+      "overflow": false,
+      "sidebar": 220,
+      "buttons": [
+        {
+          "w": 32,
+          "h": 32
+        },
+        {
+          "w": 32,
+          "h": 32
+        },
+        {
+          "w": 32,
+          "h": 32
+        }
+      ],
+      "formOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "touch": false,
+      "overflow": false,
+      "sidebar": 220,
+      "buttons": [
+        {
+          "w": 32,
+          "h": 32
+        },
+        {
+          "w": 32,
+          "h": 32
+        },
+        {
+          "w": 32,
+          "h": 32
+        }
+      ],
+      "formOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 1440,
+      "theme": "amber",
+      "touch": false,
+      "overflow": false,
+      "sidebar": 220,
+      "buttons": [
+        {
+          "w": 32,
+          "h": 32
+        },
+        {
+          "w": 32,
+          "h": 32
+        },
+        {
+          "w": 32,
+          "h": 32
+        }
+      ],
+      "formOverflow": false,
+      "errors": []
+    },
+    {
+      "width": 1440,
+      "theme": "cyberpunk",
+      "touch": false,
+      "overflow": false,
+      "sidebar": 220,
+      "buttons": [
+        {
+          "w": 32,
+          "h": 32
+        },
+        {
+          "w": 32,
+          "h": 32
+        },
+        {
+          "w": 32,
+          "h": 32
+        }
+      ],
+      "formOverflow": false,
+      "errors": []
+    }
+  ]
+}

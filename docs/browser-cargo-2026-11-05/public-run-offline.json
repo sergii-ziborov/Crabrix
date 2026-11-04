@@ -1,0 +1,140 @@
+{
+  "passed": true,
+  "output": "Local execution finished.\nvalue=12345 base64=Y3JhYg== joined=1:2:3\n\n\nExit 0 · 3.65s total · compiled locally",
+  "offlineOutput": "Local execution finished.\nvalue=12345 base64=Y3JhYg== joined=1:2:3\n\n\nExit 0 · 0.16s total · compiled locally",
+  "errors": [],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/playground/"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/brand/crabrix-mark.png"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/learn/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/blog/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/guide/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/technology/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/about/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/support/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/login/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/ai/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/sitemap/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/licenses/?_rsc=bBfioktlbBa8NZZN"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/learn/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/blog/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/guide/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/technology/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/about/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/support/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/login/?_rsc=ypX8skjwQcDDBGft"
+    },
+    {
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/rust-lang/crates.io-index/master/it/oa/itoa"
+    },
+    {
+      "method": "GET",
+      "url": "https://static.crates.io/crates/itoa/itoa-1.0.15.crate"
+    },
+    {
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/rust-lang/crates.io-index/master/ba/se/base64"
+    },
+    {
+      "method": "GET",
+      "url": "https://static.crates.io/crates/base64/base64-0.22.1.crate"
+    },
+    {
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/rust-lang/crates.io-index/master/3/h/hex"
+    },
+    {
+      "method": "GET",
+      "url": "https://static.crates.io/crates/hex/hex-0.4.3.crate"
+    },
+    {
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/rust-lang/crates.io-index/master/it/er/itertools"
+    },
+    {
+      "method": "GET",
+      "url": "https://static.crates.io/crates/itertools/itertools-0.14.0.crate"
+    },
+    {
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/rust-lang/crates.io-index/master/ei/th/either"
+    },
+    {
+      "method": "GET",
+      "url": "https://static.crates.io/crates/either/either-1.19.0.crate"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/playground-runtime/rustc.wasm.gz"
+    },
+    {
+      "method": "GET",
+      "url": "https://crabrix.com/playground-runtime/sysroot.zip"
+    }
+  ]
+}

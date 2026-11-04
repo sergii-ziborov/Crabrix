@@ -1,0 +1,19 @@
+{
+  "base": "https://crabrix.com",
+  "passed": true,
+  "checks": [
+    "format-2 room joins with Cargo source",
+    "Cargo.lock shared; peer neither downloads nor prepares nor starts a compiler",
+    "manual Cargo Run executes on owner only; peer remains passive",
+    "bidirectional source editing remains live",
+    "remote selection remains visible",
+    "stable-ID drag moves file and entry across both clients",
+    "peer explicitly prepares its own cache without running source",
+    "pending file dialog refuses peer path reuse without touching replacement",
+    "view-only client prepares private sources without edit or execution permission",
+    "serde build.rs is explicitly refused; no lockfile or code execution",
+    "cancel leaves source and lockfile unchanged",
+    "unprepared Run is refused and never downloads a crate"
+  ],
+  "errors": []
+}

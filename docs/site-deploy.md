@@ -1,5 +1,29 @@
 # Crabrix website deployment
 
+## Browser Cargo and source folders — 5 November 2026
+
+The live site uses `localhost/crabrix-web-site:cargo-0fb35d3`, from source
+`0fb35d321e263c42892c2fd010b937f4bab4d9e8` (image `dfa90d929434…`). The unchanged-width
+Playground sidebar exposes folder/file creation, safe drag/drop, reviewed external
+imports and a Packages panel. Supported registry libraries prepare explicitly and
+compile locally; Run/Debug never fetch missing crates. The guide, page metadata,
+sitemap dates and browser capability descriptions document the bounded profile.
+
+135 tests, TypeScript and the production build passed. Candidate HTTP and a real
+Cargo Run passed before cutover; production passed 13 HTTP checks, 15 layout cases,
+12 shared/negative cases and nine source-tree cases. Five crates, a repeat Run with
+the open editor offline and root String Debug stepping/Continue passed. A separate
+regular-browser Cargo Run printed 42. Peer preparation/Run never starts another
+participant's compiler; MCP's manifest-free grant was not broadened.
+
+A consistent account backup preceded cutover. Account mounts, limits and the remote
+MCP container are unchanged. The old site is retained as
+`crabrix-web-site-before-cargo-20261105`; the candidate and local preview/tunnel have
+been removed/stopped. No app binary, package registry, DNS or nginx change.
+
+[Release receipt](site-browser-cargo-release-2026-11-05.json),
+[scope, restrictions and qualification](browser-cargo-qualification-2026-11-05.md).
+
 ## User guide for Crabrix 1.1.5 — 4 November 2026
 
 The live site uses `localhost/crabrix-web-site:guide115-c7f2125` from source
