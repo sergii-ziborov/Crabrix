@@ -1,5 +1,19 @@
 # Crabrix website deployment
 
+## Crabrix MCP 0.5.0 and the agent guide — 4 November 2026
+
+The live service uses `localhost/crabrix-web-site:sdk050-d411197` and the remote MCP
+`localhost/crabrix-mcp-remote:0.5.0-d411197`, built from the published npm tarball
+(`d0f577b5…`). The previous containers are retained as
+`crabrix-web-site-before-sdk050-20261104` and `crabrix-mcp-remote-before-sdk050-20261104`,
+after a consistent account backup. The site offers `crabrix@0.5.0`; `/ai/` explains the
+encryption and both ways to connect Claude, Codex, Cursor, Grok and other clients, the guide
+walks through the editor, Playground encryption and connecting an agent, and Connect AI shows
+the local Crabrix MCP option again. The remote MCP refuses local agent links (key after `#`)
+with a clear message. On production, crabrix 0.5.0 from npm joined through both link forms
+over stdio, and a remote MCP client joined a room created in the web Playground after its
+warning; both test rooms were ended.
+
 ## Agent link warning — 4 November 2026
 
 The live service uses `localhost/crabrix-web-site:agentwarn-0f4bf44`; the previous service is
