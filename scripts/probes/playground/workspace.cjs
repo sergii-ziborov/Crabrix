@@ -292,6 +292,8 @@ async function scenario(name, work) {
     assert.equal(await button(viewer.page, 'Import').isDisabled(), true);
     await button(viewer.page, 'Copy to local').click();
     await viewer.page.getByText('no time limit').waitFor();
+    // The copy loads its source a moment after the bar changes; Import waits for it.
+    await viewer.page.waitForFunction(() => [...document.querySelectorAll('button')].some(node => node.textContent === 'Import' && !node.disabled), null, { timeout: 10000 }).catch(() => {});
     assert.equal(await button(viewer.page, 'Import').isDisabled(), false, 'a viewer can edit their own copy');
     await viewer.context.close();
     await context.close();
