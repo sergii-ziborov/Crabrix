@@ -1,5 +1,22 @@
 # Crabrix website deployment
 
+## User guide for Crabrix 1.1.5 — 4 November 2026
+
+The live site uses `localhost/crabrix-web-site:guide115-c7f2125` from source
+`c7f21255e409f480f30f3f3621ce8a07766b7dc2`. The guide documents 1.1.5 build 128
+and MCP 0.5.0, shared file identities/Recovery, native read-only reasons, the
+Connect AI permission path and local versus remote MCP decryption. Guide metadata
+and sitemap modification dates now agree. Existing styles and screenshots remain.
+
+117 tests, TypeScript and the production build passed, along with 15 local and
+15 public browser cases (three widths, all five themes) and 11 candidate/public
+HTTP checks. A consistent account backup preceded cutover. Account mounts,
+resource limits and the remote MCP container are unchanged. The prior website is
+retained as `crabrix-web-site-before-guide115-20261104` for rollback.
+
+[Publication receipt](site-guide-1.1.5-release-2026-11-04.json),
+[scope and source evidence](guide-1.1.5-2026-11-04.md).
+
 ## Six blog dates and the AI agent study — 4 November 2026
 
 The live site uses `localhost/crabrix-web-site:blog-18d3b76`, built from source

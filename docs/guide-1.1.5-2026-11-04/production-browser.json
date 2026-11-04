@@ -1,0 +1,142 @@
+{
+  "base": "https://crabrix.com",
+  "atUTC": "2026-11-04T21:09:30.592Z",
+  "passed": true,
+  "cases": [
+    {
+      "width": 390,
+      "theme": "system",
+      "canonical": "https://crabrix.com/guide/",
+      "modified": "2026-11-04",
+      "missingAnchors": [],
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "canonical": "https://crabrix.com/guide/",
+      "modified": "2026-11-04",
+      "missingAnchors": [],
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "canonical": "https://crabrix.com/guide/",
+      "modified": "2026-11-04",
+      "missingAnchors": [],
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "theme": "amber",
+      "canonical": "https://crabrix.com/guide/",
+      "modified": "2026-11-04",
+      "missingAnchors": [],
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "theme": "cyberpunk",
+      "canonical": "https://crabrix.com/guide/",
+      "modified": "2026-11-04",
+      "missingAnchors": [],
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 820,
+      "theme": "system",
+      "canonical": "https://crabrix.com/guide/",
+      "modified": "2026-11-04",
+      "missingAnchors": [],
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 820,
+      "theme": "light",
+      "canonical": "https://crabrix.com/guide/",
+      "modified": "2026-11-04",
+      "missingAnchors": [],
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 820,
+      "theme": "dark",
+      "canonical": "https://crabrix.com/guide/",
+      "modified": "2026-11-04",
+      "missingAnchors": [],
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 820,
+      "theme": "amber",
+      "canonical": "https://crabrix.com/guide/",
+      "modified": "2026-11-04",
+      "missingAnchors": [],
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 820,
+      "theme": "cyberpunk",
+      "canonical": "https://crabrix.com/guide/",
+      "modified": "2026-11-04",
+      "missingAnchors": [],
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "theme": "system",
+      "canonical": "https://crabrix.com/guide/",
+      "modified": "2026-11-04",
+      "missingAnchors": [],
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "canonical": "https://crabrix.com/guide/",
+      "modified": "2026-11-04",
+      "missingAnchors": [],
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "canonical": "https://crabrix.com/guide/",
+      "modified": "2026-11-04",
+      "missingAnchors": [],
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "theme": "amber",
+      "canonical": "https://crabrix.com/guide/",
+      "modified": "2026-11-04",
+      "missingAnchors": [],
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "theme": "cyberpunk",
+      "canonical": "https://crabrix.com/guide/",
+      "modified": "2026-11-04",
+      "missingAnchors": [],
+      "overflow": false,
+      "pageErrors": []
+    }
+  ]
+}

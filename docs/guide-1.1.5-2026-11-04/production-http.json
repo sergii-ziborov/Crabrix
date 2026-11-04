@@ -1,0 +1,79 @@
+{
+  "atUTC": "2026-11-04T21:09:14.726Z",
+  "base": "https://crabrix.com",
+  "passed": true,
+  "checks": [
+    {
+      "path": "/healthz/",
+      "status": 200,
+      "bytes": 3,
+      "sha256": "dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22"
+    },
+    {
+      "path": "/guide/",
+      "status": 200,
+      "bytes": 229929,
+      "sha256": "b298ee9c79a48a07a6e5229c5ebc057beec5414bb279ea47ec48d832d10aabe1"
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "bytes": 105204,
+      "sha256": "0c72e025f213e667903d6e71825dc47544022132c339e5eaa4392eab179e38c0"
+    },
+    {
+      "path": "/blog/",
+      "status": 200,
+      "bytes": 47375,
+      "sha256": "93d374e4156f58c0610226179a05f65ed002f0b2aba3531131588c431b69de46"
+    },
+    {
+      "path": "/blog/page/4/",
+      "status": 200,
+      "bytes": 26540,
+      "sha256": "8120f124d10b52993c4861f416b58966eca9932e392e5b54b725390ef7febc59"
+    },
+    {
+      "path": "/blog/crabrix-ai-agents-local-mcp-remote-workflows/",
+      "status": 200,
+      "bytes": 103905,
+      "sha256": "5b7b42716a5d76b79400e02c8f6e2904c83ec5a738d0a7be6b89bcae715295ee"
+    },
+    {
+      "path": "/ai/bootstrap.json",
+      "status": 200,
+      "bytes": 1688,
+      "sha256": "a97559d95db18e08c353dedb357d09b12db03db7983ffb2571e753efc38934a5"
+    },
+    {
+      "path": "/api/capabilities/",
+      "status": 200,
+      "bytes": 10046,
+      "sha256": "22d2f55cc1335b012a7005a76c74b5f420d9dbe000b039b8a29abeac51c8d179"
+    },
+    {
+      "path": "/downloads/crabrix-0.5.0.tgz",
+      "status": 200,
+      "bytes": 547911,
+      "sha256": "d0f577b59d90bf74ee5bbd32abf76bc0e9f2ac83a167947e148f3620929b75eb"
+    },
+    {
+      "path": "/learn/basics/hello-rust/",
+      "status": 200,
+      "bytes": 26031,
+      "sha256": "1980c87355ec8deda1fe1717748afe67c79b7810860a96d92b8da688edf7ac6a"
+    },
+    {
+      "path": "/learn-media/basics/hello-rust.png",
+      "status": 401,
+      "bytes": 29,
+      "sha256": "4c88b55a52eab8bde3d44df188fa36145ccd58afe3dd8a73aef7e9d5ef8e6739"
+    }
+  ],
+  "guideVersion": "1.1.5 build 128",
+  "sdkVersion": "0.5.0",
+  "metadataModified": "2026-11-04",
+  "sitemapModified": "2026-11-04",
+  "guestLessonGate": true,
+  "sdkArtifactUnchanged": true
+}
