@@ -1,0 +1,9 @@
+Version 1.1.5 (build 128). Publication is manual.
+
+New: Connect AI agent. Open any project in Projects, choose Share Playground and create a room, then open Share again and choose Connect AI agent. The screen gives a separate link for an AI coding agent (Edit or View only, expiring with the room) and shows how to add Crabrix MCP (a free tool, npm package "crabrix") to Claude Code, Codex or Cursor on a computer. The link is shared as plain text. Its encryption key stays after # and is used only by Crabrix MCP on that computer; no server receives the key or the source. Using the link needs a computer with one of those agents, so in review the screen itself can be checked: the link, Copy and the setup steps. Running shared code on this device is also on that screen: it is off until the user allows a specific controller selected operations for 10 minutes, and it can be revoked. The feature is optional and the app works without it.
+
+Shared Playgrounds: rooms created on crabrix.com/playground in the new format open with Open in Crabrix. A file renamed by another participant stays open under its new name; a project that cannot run opens read only with the reason shown.
+
+Learn: Download or Update of a course no longer blocks the screen.
+
+Rust compiles and runs locally in a bounded WebAssembly sandbox. Shared Playground rooms are end-to-end encrypted, temporary and need no login. Course downloads, package preparation and sharing need network access; the app otherwise works offline.

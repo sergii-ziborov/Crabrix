@@ -1,0 +1,6 @@
+Connect an AI agent to a shared Playground. In a shared room, open Share and choose Connect AI agent. The agent gets its own link with the same access and expiry as yours, and it works with Crabrix MCP on your computer in Claude Code, Codex or Cursor. The encryption key stays in the link and never goes to a server.
+
+• Shared Playgrounds from the website keep stable files: when someone renames a file you have open, it stays open under its new name and your typing goes into it.
+• If someone deletes a file you are editing, your text is kept in the room's Recovery list on the website.
+• A shared project that cannot run opens read only with a clear reason, and nothing you typed is lost.
+• Downloading or updating a course in Learn no longer freezes the screen.
