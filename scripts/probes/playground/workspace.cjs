@@ -186,7 +186,8 @@ async function scenario(name, work) {
     await page.getByPlaceholder('Find file').fill('lexer');
     assert.deepEqual(await fileList(page), ['src', 'parser', 'lexer.rs']);
     await page.getByPlaceholder('Find file').press('Escape');
-    assert.ok((await fileList(page)).includes('main.rs'));
+    await page.waitForFunction(() => [...document.querySelectorAll('[role=treeitem] .pg-tree-name')].some(node => node.textContent === 'main.rs'));
+    assert.equal(await page.getByPlaceholder('Find file').count(), 0, 'Escape closes the search');
     assert.deepEqual(page.errors, []); await context.close();
   });
 
@@ -356,7 +357,7 @@ async function scenario(name, work) {
     const { context, page } = await fresh();
     const docs = await page.goto(origin + '/ai/');
     assert.equal(docs.status(), 200);
-    await page.getByRole('heading', { name: 'Install it once for your client' }).waitFor();
+    await page.getByRole('heading', { name: 'Install Crabrix MCP on your computer' }).waitFor();
     await page.goto(origin + '/playground/mcp/');
     assert.equal(new URL(page.url()).pathname, '/ai/');
     const descriptor = await (await context.request.get(origin + '/ai/bootstrap.json')).json();

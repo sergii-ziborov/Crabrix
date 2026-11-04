@@ -30,6 +30,7 @@
         "minimumNode": { "type": "string" }
       }
     },
+    "agentLinks": { "type": "object", "description": "How agent links reach a room. A link with the key in the path also works as a remote MCP server URL, and Crabrix's server then decrypts the room for that agent; a link with the key in the fragment works only with Crabrix MCP.", "required": ["prefix", "remote", "local"], "properties": { "prefix": { "type": "string" }, "remote": { "type": "object", "required": ["keyIn", "from", "use", "serverDecrypts"], "properties": { "keyIn": { "enum": ["path", "fragment"] }, "from": { "type": "string" }, "use": { "type": "array", "items": { "type": "string" } }, "minimumVersion": { "type": "string" }, "serverDecrypts": { "type": "boolean" } } }, "local": { "type": "object", "required": ["keyIn", "from", "use", "serverDecrypts"], "properties": { "keyIn": { "enum": ["path", "fragment"] }, "from": { "type": "string" }, "use": { "type": "array", "items": { "type": "string" } }, "minimumVersion": { "type": "string" }, "serverDecrypts": { "type": "boolean" } } } } },
     "handoffSchemas": { "type": "array", "items": { "type": "string" } },
     "document": { "type": "object", "required": ["schemaVersion", "limits"] },
     "runtimeProfiles": { "type": "array", "items": { "type": "string" } },

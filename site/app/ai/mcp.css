@@ -51,3 +51,8 @@
 @media(max-width:680px) { .mcp-hero,.mcp-steps,.mcp-split,.mcp-feature-grid,.mcp-captures { grid-template-columns:1fr; }.mcp-hero { padding-top:36px; }.mcp-hero h1 { font-size:44px; }.mcp-hero .lede { font-size:17px; }.mcp-preview { padding:18px; }.mcp-facts { gap:12px; }.mcp-facts strong { font-size:17px; }.mcp-facts span { font-size:11px; }.mcp-section { padding-top:42px; }.mcp-download-panel { padding:24px; }.mcp-steps>li { padding:20px; } }
 
 .mcp-steps h4 { margin: 22px 0 6px; font-size: 16px; }
+.mcp-feature-grid.mcp-grid-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.mcp-client-list { display:grid; gap:8px; margin:14px 0; padding-left:18px; color:var(--muted); font-size:14px; }
+.mcp-client-list strong { color:var(--text); }
+.mcp-client-list code { overflow-wrap:anywhere; }
+@media (max-width: 760px) { .mcp-feature-grid.mcp-grid-2 { grid-template-columns:1fr; } }
