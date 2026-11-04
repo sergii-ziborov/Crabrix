@@ -1,16 +1,16 @@
 # Privacy Policy
 
-Updated: 2026-11-01 · [Website copy](https://crabrix.com/privacy/)
+Updated: 2026-11-04 · [Website copy](https://crabrix.com/privacy/)
 
 The app keeps your code on your device. Website Academy accounts use a username, password and private recovery code. This page explains both.
 
-LAST UPDATED 27 OCTOBER 2026
+LAST UPDATED 4 NOVEMBER 2026
 
 **The short version.** Crabrix has no required account or in-app analytics SDK. Your code, projects, answers, and course progress stay on your device unless you explicitly export source or create/join a temporary encrypted Playground. If you switch on Game Center in Profile, Crabrix sends your numeric rating and achievement ladder progress to Apple for its leaderboard and achievements. It is off by default; The app has no online profile or board of its own; website Academy accounts are separate. Other network requests are requested course downloads, package discovery and downloads, repository imports, and optional encrypted Playground collaboration. If you write to support — including through *Report a problem* — that email reaches a person, and this page says what happens to it.
 
 ## Who is responsible
 
-Crabrix is made by Serhii Ziborov, an independent developer. There is no company, no investor. Hosting providers receive ordinary requests for the public assets described below. Optional Playground sharing sends encrypted source to the relay; its decryption key stays with participants. Learning progress is not sent to the relay. Contact: [write to support](https://crabrix.com/support/).
+Crabrix is made by Serhii Ziborov, an independent developer. There is no company, no investor. Hosting providers receive ordinary requests for the public assets described below. Optional Playground sharing sends encrypted source to the relay; its decryption key stays with participants, except in one optional website feature described below. Learning progress is not sent to the relay. Contact: [write to support](https://crabrix.com/support/).
 
 ## What stays on your device
 
@@ -37,6 +37,8 @@ Deleting the app removes its local container. Copies in Files, iCloud Drive or a
 ### Temporary encrypted Playgrounds and interviews
 
 The optional downloadable Crabrix Playground MCP bridge lets a local MCP host, such as Claude Code or Claude Desktop, join a room you authorize. The bridge decrypts source on that computer and can return source and selections to its host/model or send source edits as a named participant. Giving an AI host the complete link grants access to that room's decrypted source; the host and AI provider apply their own data and retention policies. The bridge keeps room keys and source in process memory, without writing them to Crabrix accounts, files or telemetry. Disconnect releases that process's room state, but cannot delete another host/provider's conversation history. The relay continues to receive encrypted packets; MCP adds no backend compilation or execution.
+
+Website only: if you choose to give an AI agent a room's agent link as a remote MCP server, Crabrix's server decrypts that room's source in memory while the agent is connected, without logging or storing it. You are asked before the link is shown. This feature is optional, and the Crabrix app does not use it.
 
 Playground is a public feature without login. Unshared editor source stays in browser memory. Run and Check compile and execute on your device; there is no compilation service receiving your source. The browser downloads and may cache verified compiler assets separately from source. Only editor preferences are stored in browser local storage.
 
