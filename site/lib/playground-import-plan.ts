@@ -1,4 +1,5 @@
 import { PLAYGROUND_LIMITS, sourceBytes, validatePlaygroundDocument, type PlaygroundDocument } from "./playground-document.ts";
+import { readCargoRoot } from "./browser-cargo-manifest.ts";
 
 export type ImportKind = "github" | "gist" | "files" | "folder" | "zip" | "native-archive" | "json";
 export type Edition = PlaygroundDocument["edition"];
@@ -90,28 +91,13 @@ export function declaredCargoEdition(manifest: string | undefined): DeclaredEdit
   return { kind: "none" };
 }
 
-function hasDependencies(manifest: string): boolean {
-  let section = "";
-  for (const raw of manifest.split(/\r?\n/)) {
-    const line = raw.trim();
-    if (!line || line.startsWith("#")) continue;
-    const header = line.match(/^\[\[?\s*([^\]]+?)\s*\]\]?/);
-    if (header) {
-      section = header[1];
-      if (/^(?:.*\.)?(?:dependencies|build-dependencies)\.[^.]+$/.test(section)) return true;
-      continue;
-    }
-    if (/^(?:.*\.)?(?:dependencies|build-dependencies)$/.test(section) && line.includes("=")) return true;
-  }
-  return false;
-}
-
 export function projectReadiness(document: PlaygroundDocument): Readiness {
-  const manifest = Object.keys(document.files).find(path => path === "Cargo.toml" || path.endsWith("/Cargo.toml"));
-  const buildScript = Object.keys(document.files).some(path => path === "build.rs" || path.endsWith("/build.rs"));
-  if (manifest && (hasDependencies(document.files[manifest]) || buildScript)) return { kind: "other-build", message: "Editable here. Cargo dependencies or build scripts need a different build path; this runner does not fetch them." };
+  let cargo;
+  try { cargo = readCargoRoot(document); }
+  catch (error) { return { kind: "other-build", message: `Editable here. ${error instanceof Error ? error.message : String(error)}` }; }
   const entry = document.files[document.entryFile] ?? "";
   if (!/\bfn\s+main\s*\(/.test(entry)) return { kind: "other-build", message: `Editable here. ${document.entryFile} has no main function, so this runner cannot start it. Choose another entry file or use a different build path.` };
+  if (cargo?.dependencies.length) return { kind: "editable", message: "Cargo dependencies are declared. Use Packages → Prepare in this browser before Check, Run or Debug; unsupported build requirements are reported." };
   return { kind: "runner", message: "Fits the std and local-modules runner so far. Check or Run gives the real result." };
 }
 

@@ -104,9 +104,11 @@ test("T13 collisions and forbidden paths refuse the whole result", () => {
   assert.ok(buildImportPlan(project(), inspection([file("bubble_sort.rs/x.rs", "")]), choose(["bubble_sort.rs/x.rs"])).error, "a file cannot also be a directory");
 });
 
-test("T15 Cargo dependencies and library-only sources are not presented as runnable", () => {
+test("T15 Cargo declarations need explicit preparation and library-only sources are not presented as runnable", () => {
   const base = { schemaVersion: 1, name: "x", edition: "2024" };
-  assert.equal(projectReadiness({ ...base, entryFile: "src/main.rs", files: { "src/main.rs": "fn main() {}", "Cargo.toml": "[package]\nname='x'\n[dependencies]\nserde = '1'\n" } }).kind, "other-build");
+  const cargo = projectReadiness({ ...base, entryFile: "src/main.rs", files: { "src/main.rs": "fn main() {}", "Cargo.toml": "[package]\nname='x'\n[dependencies]\nserde = '1'\n" } });
+  assert.equal(cargo.kind, "editable");
+  assert.match(cargo.message, /Prepare/);
   assert.equal(projectReadiness({ ...base, entryFile: "src/lib.rs", files: { "src/lib.rs": "pub fn x() {}" } }).kind, "other-build");
   assert.equal(projectReadiness({ ...base, entryFile: "src/main.rs", files: { "src/main.rs": "fn main() {}", "Cargo.toml": "[package]\nname='x'\n[dependencies]\n" } }).kind, "runner");
 });

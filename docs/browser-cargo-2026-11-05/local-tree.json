@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "checks": [
+    "visible New folder creates source folder",
+    "real mouse drag moves main.rs into src",
+    "real mouse drag moves folder with descendants",
+    "external file drop opens review without changing source",
+    "review Apply imports into the dropped target folder",
+    "Escape restores file-menu trigger focus",
+    "Escape restores project-menu trigger focus",
+    "external file dropped on file imports into parent after Review"
+  ]
+}

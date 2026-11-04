@@ -1,0 +1,20 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {treeDropOperation,planFileOperation,remapBreakpoints,assertTreeDropSources} from '../lib/playground-file-ops.ts';
+import {inspectDroppedFiles} from '../lib/playground-drop.ts';
+import {newPlaygroundDocument} from '../lib/playground-document.ts';
+const file=(name,text='pub fn value() {}')=>({name,isFile:true,isDirectory:false,file(done){done(new File([text],name));}});
+const folder=(name,items)=>({name,isFile:false,isDirectory:true,createReader(){let first=true;return{readEntries(done){done(first?(first=false,items):[]);}};}});
+const transfer=entries=>({items:entries.map(entry=>({kind:'file',webkitGetAsEntry:()=>entry})),files:[]});
+test('dropping an entry file updates its entry and breakpoint path atomically',()=>{const source=newPlaygroundDocument();source.files['src/mod.rs']='';const op=treeDropOperation({kind:'file',name:'main.rs',path:'main.rs'},'src');const plan=planFileOperation(source,op);assert.equal(plan.document.entryFile,'src/main.rs');assert.equal(plan.document.files['src/main.rs'],source.files['main.rs']);assert.deepEqual(remapBreakpoints({'main.rs':[2]},plan),{'src/main.rs':[2]});assert.equal(source.entryFile,'main.rs');});
+test('folder moves preserve every nested file and refuse collisions without partial writes',()=>{const source=newPlaygroundDocument();source.files['src/a.rs']='A';source.files['src/nested/b.rs']='B';source.files['dst/src/a.rs']='old';const before=structuredClone(source);assert.throws(()=>planFileOperation(source,treeDropOperation({kind:'folder',path:'src',name:'src'},'dst')),/already exists/);assert.deepEqual(source,before);assert.throws(()=>treeDropOperation({kind:'folder',path:'src',name:'src'},'src/nested'));assert.throws(()=>treeDropOperation({kind:'file',path:'main.rs',name:'main.rs'},''));});
+test('external folders keep their hierarchy and pass source through the existing review inspection',async()=>{const inspection=await inspectDroppedFiles(transfer([folder('parser',[file('mod.rs'),folder('nested',[file('util.rs')])])]),new AbortController().signal);assert.deepEqual(inspection.candidates.map(c=>c.path),['parser/mod.rs','parser/nested/util.rs']);assert(inspection.candidates.every(c=>c.text));assert.equal(inspection.kind,'files');});
+test('external private trees are skipped without reading their files',async()=>{const hidden={name:'token.rs',isFile:true,file(){throw new Error('must not read private contents');}};const inspection=await inspectDroppedFiles(transfer([folder('project',[folder('.git',[hidden]),folder('node_modules',[hidden]),file('main.rs','fn main() {}')])]),new AbortController().signal);assert.deepEqual(inspection.candidates.map(c=>c.path),['project/main.rs']);});
+test('oversized dropped files are listed as excluded without reading their content',async()=>{let read=false;const entry={name:'large.rs',isFile:true,file(done){done({name:'large.rs',size:100000000,arrayBuffer(){read=true;throw new Error('must not allocate');}});}};const result=await inspectDroppedFiles(transfer([entry]),new AbortController().signal);assert.equal(read,false);assert.match(result.candidates[0].excluded,/64 KiB/);});
+test('canceled drops and excessive depth refuse before source changes',async()=>{const controller=new AbortController();controller.abort();await assert.rejects(inspectDroppedFiles(transfer([file('main.rs')]),controller.signal));let entry=file('mod.rs');for(let i=0;i<34;i++)entry=folder('deep',[entry]);await assert.rejects(inspectDroppedFiles(transfer([entry]),new AbortController().signal),/nested/);});
+
+test('a peer reusing a file or folder path cannot redirect an in-progress drop',()=>{
+ const file={kind:'file',path:'src/a.rs'};assert.doesNotThrow(()=>assertTreeDropSources(file,['original'],[{path:'src/a.rs',key:'original'}]));
+ assert.throws(()=>assertTreeDropSources(file,['original'],[{path:'other/a.rs',key:'original'},{path:'src/a.rs',key:'replacement'}]),/changed location/);
+ assert.throws(()=>assertTreeDropSources({kind:'folder',path:'src'},['a','b'],[{path:'src/a.rs',key:'a'},{path:'src/b.rs',key:'replacement'}]),/changed location/);
+});

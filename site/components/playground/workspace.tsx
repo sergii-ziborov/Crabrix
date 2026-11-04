@@ -16,8 +16,9 @@ import { createFileEditorState, PlaygroundCodeEditor, type EditorPreferences, ty
 import { useRustCompiler } from "./use-rust-compiler";
 import { useRuntimeHost } from "./use-runtime-host";
 import { RuntimePermissions } from "./runtime-permissions";
-import { documentRevision, type ImportPlan, type ImportReceipt } from "@/lib/playground-import-plan";
-import { isDestructiveInSharedRoom, planFileOperation, remapBreakpoints, type FileOperation, type TreeNode } from "@/lib/playground-file-ops";
+import { documentRevision, type ImportInspection, type ImportPlan, type ImportReceipt } from "@/lib/playground-import-plan";
+import { isDestructiveInSharedRoom, planFileOperation, remapBreakpoints, treeDropOperation, assertTreeDropSources, type FileOperation, type TreeNode } from "@/lib/playground-file-ops";
+import { inspectDroppedFiles } from "@/lib/playground-drop";
 import { deleteDraft, KEEP_DRAFTS_KEY, listDrafts, saveDraft, type StoredDraft } from "@/lib/playground-drafts";
 import { useThemePreference } from "@/components/theme-provider";
 import { themeOptions } from "@/lib/theme";
@@ -27,6 +28,9 @@ import { RecoveryPanel } from "./recovery-panel";
 import { ImportDialog } from "./import-dialog";
 import { ConnectAIDialog } from "./connect-ai-dialog";
 import toolchain from "@/lib/playground-toolchain.json";
+import { findCargoManifest, readCargoRoot } from "@/lib/browser-cargo-manifest";
+import { PackagesPanel } from "./packages-panel";
+import { useBrowserCargo } from "./use-browser-cargo";
 
 type Modal = "share" | "settings" | "import" | "connect" | "file" | "leave" | null;
 const defaultPreferences: EditorPreferences = { fontSize: 15, wrap: false, pairs: true, tabSize: 4 };
@@ -76,6 +80,8 @@ function Workspace({ seed, seedNotice, seedDraftId, seedUnsaved, seedModal, onOp
   const [filePane, setFilePane] = useState(false), [nameDraft, setNameDraft] = useState<string | null>(null);
   const [finding, setFinding] = useState(false), [projectMenu, setProjectMenu] = useState(false), projectName = useRef<HTMLInputElement>(null);
   const [fileRequest, setFileRequest] = useState<FileRequest | null>(null), [leaveTo, setLeaveTo] = useState<string | null>(null);
+  const [dropped, setDropped] = useState<{ inspection: Promise<ImportInspection>; targetFolder: string } | undefined>();
+  const dropAbort = useRef<AbortController | null>(null);
   const [receipts, setReceipts] = useState<ImportReceipt[]>([]), [resultRevision, setResultRevision] = useState<string | null>(null);
   const [keepDrafts, setKeepDrafts] = useState(false), [drafts, setDrafts] = useState<StoredDraft[]>([]), [draftStatus, setDraftStatus] = useState("");
   const editorStates = useRef(new Map<string, FileEditorState>()), [draftId] = useState(() => seedDraftId ?? newEncryptionSecret());
@@ -83,6 +89,10 @@ function Workspace({ seed, seedNotice, seedDraftId, seedUnsaved, seedModal, onOp
   const unsaved = useRef(!!seedUnsaved), guard = useRef({ link: false, expired: false });
   const disposal = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const compiler = useRustCompiler();
+  useEffect(() => {
+    if (modal !== "import") { dropAbort.current?.abort(); setDropped(undefined); }
+  }, [modal]);
+  useEffect(() => () => dropAbort.current?.abort(), []);
   const [liveSession,setLiveSession] = useState<PlaygroundSession|null>(null);
   // The room's format; a local draft stays format v1 until step 7 of the R2 rollout.
   const codecOf = useCallback((): ProjectCodec => session.current?.codec === 2 ? 2 : 1, []);
@@ -273,11 +283,20 @@ function Workspace({ seed, seedNotice, seedDraftId, seedUnsaved, seedModal, onOp
     }
     // Stable file IDs keep a rename, move or delete from losing another participant's edit.
     if (link && codecOf() === 1 && (action === "rename" || action === "move" || action === "delete")) { setNotice("Rename, move and delete need a local copy in a shared room, so nobody's unsent edit is lost. Use Copy to local."); return; }
-    setFileRequest({ action, folder: node.kind === "folder", path: node.path }); setModal("file");
+    const expectedKeys = codecOf() === 2 && action !== "new-file" && action !== "new-folder"
+      ? viewRef.current?.files.filter(file => node.kind === "file" ? file.path === node.path : file.path.startsWith(node.path + "/")).map(file => file.key) : undefined;
+    setFileRequest({ action, folder: node.kind === "folder", path: node.path, expectedKeys }); setModal("file");
   };
-  const checkFile = useCallback((operation: FileOperation) => codecOf() === 2 ? { movesRustSource: planOperations(doc, treeOperations(operation)).checkSuggested } : planFileOperation(documentFromY(doc), operation), [doc, codecOf]);
+  const guardFileRequest = () => {
+    if (fileRequest?.expectedKeys) assertTreeDropSources({ kind: fileRequest.folder ? "folder" : "file", path: fileRequest.path }, fileRequest.expectedKeys, viewRef.current?.files ?? []);
+  };
+  const checkFile = (operation: FileOperation) => {
+    guardFileRequest();
+    return codecOf() === 2 ? { movesRustSource: planOperations(doc, treeOperations(operation)).checkSuggested } : planFileOperation(documentFromY(doc), operation);
+  };
   const applyFilePlan = (operation: FileOperation) => {
     try {
+      guardFileRequest();
       if (codecOf() === 2) {
         const result = operate(treeOperations(operation));
         if (!result.alreadyApplied && result.plan.created.length) { setSelected(result.plan.created[0]); setFilePane(false); }
@@ -322,7 +341,8 @@ function Workspace({ seed, seedNotice, seedDraftId, seedUnsaved, seedModal, onOp
   };
   const run = (mode: "check" | "run" | "debug") => {
     if (!source || expired) return;
-    try { const value = validatePlaygroundDocument(runnableDocument(doc, codecOf())); compiler.start(mode, value, stdin); setResultRevision(documentRevision(value)); setDock(mode === "check" ? "problems" : mode === "debug" ? "debug" : "output"); }
+    if (cargo.preparing) { setNotice("Wait for package preparation or cancel it before compiling."); return; }
+    try { const value = validatePlaygroundDocument(runnableDocument(doc, codecOf())); readCargoRoot(value); compiler.start(mode, value, stdin); setResultRevision(documentRevision(value)); setDock(mode === "check" ? "problems" : mode === "debug" ? "debug" : "output"); }
     catch (error) { setNotice(String(error)); }
   };
   const current = view?.files.find(file => file.key === selected), selectedPath = current?.path ?? selected;
@@ -339,6 +359,14 @@ function Workspace({ seed, seedNotice, seedDraftId, seedUnsaved, seedModal, onOp
   });
   const blocked = !!view?.blocked.length;
   const isBusy = compiler.activity !== "idle", readOnly = expired || link?.mode === "view" || compiler.debugging || !!liveSession?.formatMismatch;
+  const cargo = useBrowserCargo(source, !!readOnly, () => readView(doc, codecOf()).document, (files, baseline) => {
+    if (guard.current.expired || link?.mode === "view" || debugStatus.current.active || session.current?.formatMismatch) throw new Error("This project is read only. Package changes were not applied.");
+    const value = readView(doc, codecOf()).document, manifest = findCargoManifest(baseline) ?? "Cargo.toml", lock = manifest.slice(0, -"Cargo.toml".length) + "Cargo.lock";
+    if (value.entryFile !== baseline.entryFile || value.files[manifest] !== baseline.files[manifest] || value.files[lock] !== baseline.files[lock]) throw new Error("The manifest or lockfile changed during preparation. Read the new version and prepare again; no source was replaced.");
+    const next = validatePlaygroundDocument({ ...value, files: { ...value.files, ...files } });
+    if (codecOf() === 2) { const state = readProject(doc), paths = Object.fromEntries(state.files.map(file => [file.path, file.id])), operations = operationsFromReplace(state, paths, next); if (operations.length) operate(operations, "cargo"); }
+    else updateYDocument(doc, next, "cargo");
+  });
   const commitName = () => {
     if (nameDraft === null) return;
     setNameDraft(null);
@@ -355,9 +383,9 @@ function Workspace({ seed, seedNotice, seedDraftId, seedUnsaved, seedModal, onOp
     <header className="pg-toolbar">
       <div className="pg-heading"><h1>Playground</h1><p>Guest · Rust runs on your device</p></div>
       <div className="pg-actions">
-        <button className="pg-button pg-check" onClick={() => run("check")} disabled={!source || isBusy || expired || blocked}>✓ Check</button>
-        <button className="pg-button" onClick={() => run("debug")} disabled={!source || isBusy || expired || blocked} aria-label="Debug Rust">◇ Debug</button>
-        {isBusy ? <button className="pg-button pg-primary" onClick={compiler.stop}>■ Stop</button> : <button className="pg-button pg-primary" onClick={() => run("run")} disabled={!source || expired || blocked}>▶ Run</button>}
+        <button className="pg-button pg-check" onClick={() => run("check")} disabled={!source || isBusy || cargo.preparing || expired || blocked}>✓ Check</button>
+        <button className="pg-button" onClick={() => run("debug")} disabled={!source || isBusy || cargo.preparing || expired || blocked} aria-label="Debug Rust">◇ Debug</button>
+        {isBusy ? <button className="pg-button pg-primary" onClick={compiler.stop}>■ Stop</button> : <button className="pg-button pg-primary" onClick={() => run("run")} disabled={!source || cargo.preparing || expired || blocked}>▶ Run</button>}
         <button className="pg-button" onClick={() => setModal("import")} disabled={!source || readOnly}>Import</button>
         <button className="pg-button" onClick={() => setModal("share")} disabled={!source || expired} aria-label="Share Playground">↗ Share<span className="pg-wide-label"> Playground</span></button>
         <button className="pg-button" onClick={() => setModal("connect")} disabled={!source || expired} aria-label="Connect AI">✦ Connect AI</button>
@@ -370,12 +398,15 @@ function Workspace({ seed, seedNotice, seedDraftId, seedUnsaved, seedModal, onOp
     {notice || compiler.error ? <div className="pg-notice" role="alert"><span>{notice || compiler.error}</span><button className="pg-icon-button" aria-label="Dismiss notice" onClick={() => { setNotice(""); compiler.clearError(); }}>×</button></div> : null}
     <div className="pg-main-layout">
       <aside className={`pg-files ${filePane ? "pg-files-visible" : ""}`}>
-        <div className="pg-sidebar-heading"><strong>PROJECT</strong><button type="button" className="pg-plain-icon" aria-label="Find file" title="Find file" aria-pressed={finding} onClick={() => setFinding(!finding)}><SidebarIcon name="search" /></button></div>
-        <div className="pg-project-row" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setProjectMenu(false); }} onKeyDown={event => { if (event.key === "Escape" && projectMenu) { event.stopPropagation(); setProjectMenu(false); } }}>
+        <div className="pg-sidebar-heading"><strong>PROJECT</strong><div className="pg-sidebar-tools">
+          <button type="button" className="pg-plain-icon pg-project-add" aria-label="Add source folder" title="New folder" disabled={!source || readOnly} onClick={() => { setFileRequest({ action: "new-folder", folder: true, path: "" }); setModal("file"); }}><SidebarIcon name="folder-add" /></button>
+          <button type="button" className="pg-plain-icon pg-project-add" aria-label="Add source file" title="New file" disabled={!source || readOnly} onClick={() => { setFileRequest({ action: "new-file", folder: false, path: "" }); setModal("file"); }}><SidebarIcon name="file-add" /></button>
+          <button type="button" className="pg-plain-icon" aria-label="Find file" title="Find file" aria-pressed={finding} onClick={() => setFinding(!finding)}><SidebarIcon name="search" /></button>
+        </div></div>
+        <div className="pg-project-row" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setProjectMenu(false); }} onKeyDown={event => { if (event.key === "Escape" && projectMenu) { event.stopPropagation(); event.preventDefault(); event.currentTarget.querySelector<HTMLButtonElement>(".pg-project-more")?.focus(); setProjectMenu(false); } }}>
           <span className="pg-project-icon"><SidebarIcon name="project" /></span>
           <input ref={projectName} className="pg-project-name" aria-label="Project name" title="Rename the project" value={nameDraft ?? source?.name ?? ""} maxLength={80} disabled={!source || readOnly} onChange={event => setNameDraft(event.target.value)} onBlur={commitName} onKeyDown={event => { if (event.key === "Enter") event.currentTarget.blur(); }} />
           <button type="button" className="pg-plain-icon pg-project-more" aria-label="Project actions" title="Project actions" aria-haspopup="menu" aria-expanded={projectMenu} onClick={() => setProjectMenu(!projectMenu)}><SidebarIcon name="more" /></button>
-          <button type="button" className="pg-plain-icon pg-project-add" aria-label="Add source file" title="New file" onClick={() => { setFileRequest({ action: "new-file", folder: false, path: "" }); setModal("file"); }} disabled={readOnly}><SidebarIcon name="add" /></button>
           {projectMenu ? <div className="pg-tree-menu pg-project-menu" role="menu">
             <button type="button" role="menuitem" autoFocus disabled={!source || readOnly} onClick={() => { setProjectMenu(false); projectName.current?.select(); }}>Rename project</button>
             <button type="button" role="menuitem" disabled={readOnly} onClick={() => { setProjectMenu(false); setFileRequest({ action: "new-folder", folder: true, path: "" }); setModal("file"); }}>New folder and file</button>
@@ -383,8 +414,16 @@ function Workspace({ seed, seedNotice, seedDraftId, seedUnsaved, seedModal, onOp
             <button type="button" role="menuitem" disabled={!source} onClick={() => { setProjectMenu(false); save(); }}>Save to device</button>
           </div> : null}
         </div>
-        <FileTree paths={view?.files.map(file => file.path) ?? []} selected={selectedPath} entryFile={source?.entryFile} readOnly={readOnly} shared={!!link && view?.codec !== 2} conflicts={new Set(view?.files.filter(file => file.conflict).map(file => file.path))} storageKey={`crabrix.playground.tree.${link?.id ?? draftId}`} searching={finding} onCloseSearch={() => setFinding(false)} onOpen={path => { setSelected(keyOfPath(path)); setFilePane(false); }} onAction={treeAction} />
+        <FileTree paths={view?.files.map(file => file.path) ?? []} selected={selectedPath} entryFile={source?.entryFile} readOnly={readOnly} shared={!!link && view?.codec !== 2} conflicts={new Set(view?.files.filter(file => file.conflict).map(file => file.path))} identities={Object.fromEntries(view?.files.map(file => [file.path, file.key]) ?? [])} storageKey={`crabrix.playground.tree.${link?.id ?? draftId}`} searching={finding} onCloseSearch={() => setFinding(false)} onOpen={path => { setSelected(keyOfPath(path)); setFilePane(false); }} onAction={treeAction}
+          onMove={(node, folder, keys) => { if (readOnly) return; try { assertTreeDropSources(node, keys, viewRef.current?.files ?? []); applyFilePlan(treeDropOperation(node, folder)); } catch (error) { setNotice(error instanceof Error ? error.message : String(error)); } }}
+          onExternalDrop={(transfer, targetFolder) => {
+            if (!source || readOnly) return;
+            dropAbort.current?.abort(); const controller = new AbortController(); dropAbort.current = controller;
+            const inspection = inspectDroppedFiles(transfer, controller.signal); void inspection.catch(() => {});
+            setDropped({ inspection, targetFolder }); setModal("import");
+          }} />
         {view?.codec === 2 ? <RecoveryPanel rows={view.recovery} readOnly={readOnly} onRestore={restoreRow} onClear={clearRow} onDownload={row => download(row.path.slice(row.path.lastIndexOf("/") + 1), strToU8(row.text), "text/plain")} /> : null}
+        <PackagesPanel packages={cargo.packages.map(row => compiler.stage.startsWith(`Building ${row.name} `) && isBusy ? { ...row, state: "building" as const } : row)} manifestPath={cargo.manifestPath} preparing={cargo.preparing} disabled={isBusy || expired || !source || blocked} readOnly={!!readOnly} error={cargo.error} progress={cargo.progress} onPrepare={() => void cargo.prepare()} onCancel={cargo.cancel} onAdd={cargo.add} onOpenManifest={() => { if (cargo.manifestPath) { setSelected(keyOfPath(cargo.manifestPath)); setFilePane(false); } }} />
         <div className="pg-sidebar-bottom"><button className="pg-button" onClick={() => void openInApp()} disabled={!source || sharing || expired}>Open in Crabrix ↗</button><a href="https://apps.apple.com/app/id6809502653">Get Crabrix for iPhone / iPad</a><p>Source only · 16 files · 128 KiB total. No account or website storage.</p></div>
       </aside>
       <div className="pg-editor-stack">
@@ -396,9 +435,9 @@ function Workspace({ seed, seedNotice, seedDraftId, seedUnsaved, seedModal, onOp
           {staleResult && (dock === "output" || dock === "problems") ? <p className="pg-stale-result" role="status">The source changed after this result. Check or Run again to test the current files.</p> : null}
           {dock === "debug" ? <>{!compiler.debugPause ? <div className="pg-stage">{compiler.stage}</div> : null}<DebugPanel key={compiler.debugPause?.runningMs ?? "running"} paused={compiler.debugPause} active={compiler.debugging} command={compiler.command} pause={compiler.pauseDebug} breakpoints={breakpoints} remove={toggleBreakpoint} /></> : null}
           {dock === "output" ? <>{runtime.status?.sharedOutput && compiler.activity==='idle' ? <article aria-label="Shared output"><strong>Shared output from {runtime.status.sharedOutput.name}</strong><p>Reported by that participant · no code ran on this client{runtime.status.sharedOutput.truncated ? ' · preview truncated; full output stays on the executing client' : ''}</p><pre>{runtime.status.sharedOutput.stdout || '(No stdout)'}</pre>{runtime.status.sharedOutput.stderr ? <pre className="pg-error-text">{runtime.status.sharedOutput.stderr}</pre> : null}</article> : null}<div className="pg-stage">{compiler.stage}</div>{output ? <><pre>{output.stdout || "(No stdout)"}</pre>{output.stderr || output.trap ? <pre className="pg-error-text">{output.stderr}{output.trap}</pre> : null}<p className="pg-build-time">Exit {output.exitCode} · {(compiler.result!.durationMs / 1000).toFixed(2)}s total · compiled locally</p></> : <p>{compiler.ready ? "Use Run to execute the current Rust source." : `First Run downloads the verified Rust toolchain (${transferMiB} MiB). It is cached on this device when browser storage allows. Source is never sent for compilation.`}</p>}</> : null}
-          {dock === "problems" ? diagnostics.length ? diagnostics.map((item, index) => <article className="pg-diagnostic" key={index}><strong>{item.level}{item.code?.code ? ` · ${item.code.code}` : ""}: {item.message}</strong>{item.spans?.filter((span: { is_primary: boolean }) => span.is_primary).map((span: { file_name: string; line_start: number; column_start: number }, i: number) => <button key={i} className="pg-diagnostic-location" onClick={() => setSelected(keyOfPath(span.file_name.replace(/^\/work\//, "")))}>{span.file_name}:{span.line_start}:{span.column_start}</button>)}<pre>{item.rendered}</pre></article>) : <p>{compiler.result?.compilation.exitCode === 0 ? "Rust accepted the current build snapshot." : compiler.result?.compilation.stderr || compiler.result?.compilation.trap || "Compiler diagnostics appear here after Check or Run."}</p> : null}
+          {dock === "problems" ? diagnostics.length ? diagnostics.map((item, index) => <article className="pg-diagnostic" key={index}><strong>{item.level}{item.code?.code ? ` · ${item.code.code}` : ""}: {item.message}</strong>{item.spans?.filter((span: { is_primary: boolean }) => span.is_primary).map((span: { file_name: string; line_start: number; column_start: number }, i: number) => view?.files.some(file => file.path === span.file_name.replace(/^\/work\//, "")) ? <button key={i} className="pg-diagnostic-location" onClick={() => setSelected(keyOfPath(span.file_name.replace(/^\/work\//, "")))}>{span.file_name}:{span.line_start}:{span.column_start}</button> : <code key={i} className="pg-dependency-location">{span.file_name}:{span.line_start}:{span.column_start}</code>)}<pre>{item.rendered}</pre></article>) : <p>{compiler.result?.compilation.exitCode === 0 ? "Rust accepted the current build snapshot." : compiler.result?.compilation.stderr || compiler.result?.compilation.trap || "Compiler diagnostics appear here after Check or Run."}</p> : null}
           {dock === "stdin" ? <label className="pg-stdin"><span>Standard input · supplied to the next Run · maximum 32 KiB</span><textarea value={stdin} onChange={event => { if (new TextEncoder().encode(event.target.value).length <= 32768) setStdin(event.target.value); }} spellCheck={false} placeholder="Input for the program…" /></label> : null}
-          {dock === "details" ? <><h2>{link ? "A temporary room" : "A local draft"}</h2><p>{lifetimeLabel}. {link ? "When the room ends, your text stays open here: use Copy to local or download it." : "A shared room gets its own lifetime when you create it. Until then this draft is on this device only."} A saved native Crabrix project remains available on your device.</p>{receipts.length ? <><h3>Imported in this visit</h3><ul>{receipts.map((receipt, index) => <li key={index}>{receipt.label}{receipt.ref ? ` · ${receipt.ref}` : ""}{receipt.commit ? ` · ${receipt.commit.slice(0, 12)}` : ""}{receipt.folder ? ` · ${receipt.folder}` : ""} · {Object.keys(receipt.paths).length} files</li>)}{receipts.length > 1 ? <li>This project has files from several sources.</li> : null}</ul></> : null}<p>Shared rooms use AES-256-GCM. The key is in the link fragment. The relay keeps encrypted data in memory until expiry; server restart can end a session earlier.</p><p>The compiler runs standard-library Rust, including multiple local modules. Cargo dependencies, native libraries and server networking are not supplied by this browser path.</p><p>Debug builds insert local checkpoints into source functions, including async bodies. Stepping, active poll stacks and bounded String, Vec and concrete local struct previews run on this device. Normal Run is unchanged. Macro expansions, const bodies and dependency internals are not stepped. Browser Debug uses std/local modules; Cargo/Tokio is available only through the app’s supported offline dependencies.</p><p><a href="/guide/#playground" target="_blank" rel="noreferrer">Playground guide</a> · <a href="/licenses/PlaygroundThirdPartyNotices.txt" target="_blank" rel="noreferrer">Editor and runtime licenses</a></p></> : null}
+          {dock === "details" ? <><h2>{link ? "A temporary room" : "A local draft"}</h2><p>{lifetimeLabel}. {link ? "When the room ends, your text stays open here: use Copy to local or download it." : "A shared room gets its own lifetime when you create it. Until then this draft is on this device only."} A saved native Crabrix project remains available on your device.</p>{receipts.length ? <><h3>Imported in this visit</h3><ul>{receipts.map((receipt, index) => <li key={index}>{receipt.label}{receipt.ref ? ` · ${receipt.ref}` : ""}{receipt.commit ? ` · ${receipt.commit.slice(0, 12)}` : ""}{receipt.folder ? ` · ${receipt.folder}` : ""} · {Object.keys(receipt.paths).length} files</li>)}{receipts.length > 1 ? <li>This project has files from several sources.</li> : null}</ul></> : null}<p>Shared rooms use AES-256-GCM. The key is in the link fragment. The relay keeps encrypted data in memory until expiry; server restart can end a session earlier.</p><p>The compiler runs standard-library Rust and local modules. Packages prepares a bounded registry-library Cargo graph on this device. Build scripts, host procedural macros, native libraries and server networking are outside that browser profile. Agent-controlled jobs keep their separate manifest-free profile.</p><p>Debug builds insert local checkpoints into source functions, including async bodies. Stepping, active poll stacks and bounded String, Vec and concrete local struct previews run on this device. Normal Run is unchanged. Macro expansions, const bodies and dependency internals are not stepped. Browser Debug can use prepared registry libraries, with dependency internals left uninstrumented. Tokio and other unsupported host/build requirements need the app’s separate supported Cargo profiles.</p><p><a href="/guide/#playground" target="_blank" rel="noreferrer">Playground guide</a> · <a href="/licenses/PlaygroundThirdPartyNotices.txt" target="_blank" rel="noreferrer">Editor and runtime licenses</a></p></> : null}
         </section>
       </div>
     </div>
@@ -420,7 +459,7 @@ function Workspace({ seed, seedNotice, seedDraftId, seedUnsaved, seedModal, onOp
         <div className="pg-share-summary"><strong>These links are for people</strong><p>An AI agent gets its own agent link and run permissions in Connect AI.</p><button className="pg-button" onClick={() => setModal("connect")}>Connect AI agent</button></div>
       </div> : null}
       {modal === "settings" ? <div className="pg-dialog-body"><h3>Appearance</h3><div className="pg-theme-grid">{themeOptions.map(([value, label]) => <button key={value} aria-pressed={theme === value} className={theme === value ? "pg-theme pg-selected" : "pg-theme"} onClick={() => setTheme(value)}>{label}<span>{theme === value ? "●" : "○"}</span></button>)}</div><h3>Editor</h3><label>Font size<input type="range" min={12} max={24} value={preferences.fontSize} onChange={event => setPreferences({ ...preferences, fontSize: Number(event.target.value) })} /></label><label>Tab width<select value={preferences.tabSize} onChange={event => setPreferences({ ...preferences, tabSize: Number(event.target.value) })}><option value={2}>2 spaces</option><option value={4}>4 spaces</option></select></label><label className="pg-checkbox"><input type="checkbox" checked={preferences.pairs} onChange={event => setPreferences({ ...preferences, pairs: event.target.checked })} />Pair brackets and quotes</label><label className="pg-checkbox"><input type="checkbox" checked={preferences.wrap} onChange={event => setPreferences({ ...preferences, wrap: event.target.checked })} />Wrap long lines</label><label>Panels<select value={layout} onChange={event => setLayout(event.target.value)}><option value="auto">Automatic</option><option value="vertical">Output below code</option><option value="horizontal">Output beside code</option></select></label><button className="pg-button" onClick={() => { setPreferences(defaultPreferences); setLayout("auto"); }}>Reset editor preferences</button><h3>Drafts on this device</h3><label className="pg-checkbox"><input type="checkbox" checked={keepDrafts} onChange={event => setDraftKeeping(event.target.checked)} />Keep drafts in this browser</label><p className="pg-field-note">Source only, with no room links or permissions. Without this, a draft lasts until you leave and Save to device is your copy.</p>{draftStatus ? <p className="pg-field-note" role="status">{draftStatus}</p> : null}{keepDrafts && drafts.length ? <ul className="pg-import-list-plain">{drafts.map(draft => <li key={draft.id} className="pg-draft-row"><span>{draft.name} · {new Date(draft.updatedAt).toLocaleString()}</span><span><button className="pg-link-button" disabled={draft.id === draftId} onClick={() => { setModal(null); onOpenLocal(draft.document, { notice: `Opened your draft ${draft.name}.`, draftId: draft.id, unsaved: false }); }}>Open</button> <button className="pg-link-button" onClick={() => void deleteDraft(draft.id).then(() => listDrafts()).then(setDrafts, () => setDraftStatus("Browser storage is unavailable."))}>Delete</button></span></li>)}</ul> : null}</div> : null}
-      {modal === "import" && source ? <ImportDialog current={() => readView(doc, codecOf()).document} shared={!!link && codecOf() === 1} onApply={applyImport} onCopyToLocal={() => { setModal(null); copyToLocal(); }} onClose={() => setModal(null)} /> : null}
+      {modal === "import" && source ? <ImportDialog dropped={dropped} current={() => readView(doc, codecOf()).document} shared={!!link && codecOf() === 1} onApply={applyImport} onCopyToLocal={() => { setModal(null); copyToLocal(); }} onClose={() => setModal(null)} /> : null}
       {modal === "connect" ? <ConnectAIDialog link={link} created={created} awareness={awareness} sharing={sharing} share={share} lifetime={lifetime} setLifetime={setLifetime}>{link ? <RuntimePermissions runtime={runtime} /> : null}</ConnectAIDialog> : null}
       {modal === "file" && fileRequest && source ? <FileDialog key={`${fileRequest.action}:${fileRequest.path}`} request={fileRequest} source={source} check={checkFile} recoverable={view?.codec === 2} onSubmit={applyFilePlan} onCancel={() => { setModal(null); setFileRequest(null); }} /> : null}
       {modal === "leave" ? <div className="pg-dialog-body"><p>{link ? "This room's source has not all reached the relay, or the room has ended. Leaving now can lose it." : "This draft is only in this page. Download it to keep a copy."}</p><div className="pg-dialog-actions"><button className="pg-button" onClick={() => setModal(null)}>Stay</button><button className="pg-button" onClick={() => { const target = leaveTo; unsaved.current = false; if (guard.current.link) guard.current = { link: false, expired: false }; if (target) location.assign(target); }}>Leave without saving</button><button className="pg-button pg-save" onClick={() => { const target = leaveTo; save(); guard.current = { link: false, expired: false }; if (target) location.assign(target); }}>Download and leave</button></div></div> : null}

@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "output": "Local execution finished.\n42\n\n\nExit 0 · 1.08s total · compiled locally",
+  "debug": "CALL STACK\nmain\nmain.rs:4\nLOCALS\nName\tType\tValue\ndigits\talloc::string::String\t\"42\" (2 bytes)\n\nString, Vec and concrete local structs have bounded previews. Borrowed, moved or captured values may be omitted. Async frames show active polls; const bodies and macro expansions are not stepped internally.",
+  "errors": [],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3294/playground/"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3294/brand/crabrix-mark.png"
+    },
+    {
+      "method": "GET",
+      "url": "https://raw.githubusercontent.com/rust-lang/crates.io-index/master/it/oa/itoa"
+    },
+    {
+      "method": "GET",
+      "url": "https://static.crates.io/crates/itoa/itoa-1.0.15.crate"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3294/playground-runtime/rustc.wasm.gz"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3294/playground-runtime/sysroot.zip"
+    }
+  ]
+}

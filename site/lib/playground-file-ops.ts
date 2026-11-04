@@ -69,6 +69,21 @@ export const isDestructiveInSharedRoom = (operation: FileOperation) => operation
 
 const clean = (path: string) => path.trim().replace(/^\/+|\/+$/g, "");
 
+/** A tree drop moves into a directory; it never replaces a file or guesses a name. */
+export function treeDropOperation(node: Pick<TreeNode, "kind" | "path" | "name">, targetFolder: string): FileOperation {
+  const to = targetFolder ? `${targetFolder}/${node.name}` : node.name;
+  if (node.path === to) throw new Error("This item is already in that folder.");
+  if (node.kind === "folder" && (targetFolder === node.path || insideFolder(targetFolder, node.path))) throw new Error("A folder cannot move inside itself.");
+  return { kind: node.kind === "folder" ? "rename-folder" : "rename", from: node.path, to };
+}
+
+/** A path can be reused during a live drag; move only the file identities grabbed. */
+export function assertTreeDropSources(node: Pick<TreeNode, "kind" | "path">, expectedKeys: readonly string[], files: Iterable<{ key: string; path: string }>): void {
+  const actual = Array.from(files).filter(file => node.kind === "file" ? file.path === node.path : insideFolder(file.path, node.path)).map(file => file.key).sort();
+  const expected = [...expectedKeys].sort();
+  if (!expected.length || expected.length !== actual.length || expected.some((key, index) => key !== actual[index])) throw new Error("These files changed location while this operation was pending. Nothing was changed; choose the current file and try again.");
+}
+
 /** Computes the complete document. Invalid results throw and change nothing. */
 export function planFileOperation(source: PlaygroundDocument, operation: FileOperation): FilePlan {
   const files: Record<string, string> = Object.create(null);

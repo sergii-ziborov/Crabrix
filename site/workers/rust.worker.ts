@@ -7,11 +7,14 @@ import { validatePlaygroundDocument } from "../lib/playground-document";
 import { limitProgramMemory } from "../lib/wasm-resource-limits";
 import { instrumentRust, debugImport } from "../lib/rust-debug-instrumentation";
 import { RustDebugSession } from "../lib/rust-debug-session";
+import { loadPreparedCargo, type PreparedCargo } from "../lib/browser-cargo";
+import { readCargoRoot } from "../lib/browser-cargo-manifest";
 
 const worker = self as unknown as DedicatedWorkerGlobalScope;
 const encoder = new TextEncoder();
 let compiler: WebAssembly.Module | undefined;
 let sysroot: Map<string, File | Directory> | undefined;
+let builtCargo: { identity: string; files: Map<string, File | Directory> } | undefined;
 type Asset = { url: string; sha256: string; bytes: number };
 
 function stage(label: string, downloadProgress = false) { worker.postMessage({ type: "stage", label, downloadProgress }); }
@@ -92,7 +95,7 @@ async function initialize() {
 }
 
 type DebugHost = { control: Int32Array; session: RustDebugSession; runningMs: number; resumedAt: number };
-async function invoke(module: WebAssembly.Module, args: string[], input: string, mounts: PreopenDirectory[], isCompiler = false, debugging?: DebugHost, compileDebug = false) {
+async function invoke(module: WebAssembly.Module, args: string[], input: string, mounts: PreopenDirectory[], isCompiler = false, debugging?: DebugHost, compileDebug = false, cargoEnv: string[] = []) {
   let stdout = "", stderr = "", capturedBytes = 0;
   const decoders = [new TextDecoder(), new TextDecoder()];
   const capture = (index: number) => new ConsoleStdout(bytes => {
@@ -101,7 +104,7 @@ async function invoke(module: WebAssembly.Module, args: string[], input: string,
     const text = decoders[index].decode(bytes, { stream: true });
     if (index === 0) stdout += text; else stderr += text;
   });
-  const wasi = new WASI(args, ["PWD=/work", "TMPDIR=/tmp", ...(isCompiler ? ["CLIF2WASM_OBJECT=1", ...(compileDebug ? [`CLIF2WASM_IMPORTS=${debugImport}`] : [])] : [])], [
+  const wasi = new WASI(args, ["PWD=/work", "TMPDIR=/tmp", ...cargoEnv, ...(isCompiler ? ["CLIF2WASM_OBJECT=1", ...(compileDebug ? [`CLIF2WASM_IMPORTS=${debugImport}`] : [])] : [])], [
     new OpenFile(new File(encoder.encode(input))), capture(0), capture(1), ...mounts,
   ]);
   const instance = await WebAssembly.instantiate(module, { wasi_snapshot_preview1: wasi.wasiImport, ...(debugging ? { env: {
@@ -120,6 +123,34 @@ async function invoke(module: WebAssembly.Module, args: string[], input: string,
   return { exitCode, stdout, stderr, ...(trap ? { trap } : {}) };
 }
 
+const crateOutput = (graph: PreparedCargo, name: string) => {
+  const node = graph.packages.find(item => item.name === name);
+  if (!node) throw new Error("Prepared dependency graph is incomplete.");
+  // Distinct registry packages can deliberately declare the same [lib] name.
+  return `/deps/lib${node.archive.libName}-${node.name}-${node.version}.rlib`;
+};
+const externs = (graph: PreparedCargo, edges: Record<string, string>) => Object.entries(edges).flatMap(([alias, name]) => ["--extern", `${alias.replaceAll("-", "_")}=${crateOutput(graph, name)}`]);
+
+async function compileDependencies(graph: PreparedCargo) {
+  if (builtCargo?.identity === graph.identity) return { files: builtCargo.files };
+  const files = new Map<string, File | Directory>(), crates = new Map<string, File | Directory>();
+  for (const node of graph.packages) for (const [path, bytes] of node.archive.files) insert(crates, `${node.name}-${node.version}/${path}`, new File(bytes, { readonly: true }));
+  const mounts = [new PreopenDirectory("/crates", crates), new PreopenDirectory("/deps", files), new PreopenDirectory("/sysroot", sysroot!), new PreopenDirectory("/tmp", new Map())];
+  let outputBytes = 0;
+  for (const node of graph.packages) {
+    stage(`Building ${node.name} ${node.version} locally`);
+    const args = ["rustc", `/crates/${node.name}-${node.version}/${node.archive.libPath}`, "--crate-type", "rlib", "--crate-name", node.archive.libName, "--edition", node.archive.edition, "--target", "wasm32-wasip1", "--sysroot", "/sysroot", "--error-format=json", "--cap-lints=allow", "-Copt-level=0", "-Cpanic=abort", "-Cdebuginfo=0", `-Cmetadata=crabrix_${graph.identity}_${node.name.replaceAll("-", "_")}`, "-L", "dependency=/deps", ...externs(graph, node.dependencies), ...node.features.flatMap(feature => ["--cfg", `feature="${feature}"`]), "-o", crateOutput(graph, node.name)];
+    const compilation = await invoke(compiler!, args, "", mounts, true, undefined, false, node.archive.env);
+    if (compilation.exitCode !== 0 || compilation.trap) return { files, compilation };
+    const output = files.get(crateOutput(graph, node.name).slice("/deps/".length));
+    if (!(output instanceof File)) throw new Error(`${node.name}: rustc did not produce a library.`);
+    outputBytes += output.data.byteLength;
+    if (outputBytes > 64 * 1024 * 1024) throw new Error("Compiled Cargo libraries exceed this browser's 64 MiB artifact budget.");
+  }
+  builtCargo = { identity: graph.identity, files };
+  return { files };
+}
+
 worker.onmessage = async ({ data }) => {
   const started = performance.now();
   try {
@@ -127,6 +158,9 @@ worker.onmessage = async ({ data }) => {
     if (!compiler || !sysroot) throw new Error("Load the local Rust toolchain first.");
     const source = validatePlaygroundDocument(data.document);
     const sourceRevision=await runtimeSourceRevision(source);
+    const cargo = readCargoRoot(source);
+    if (data.allowCargo === false && cargo) throw new Error("Agent-controlled execution stays in the manifest-free shared-std-v1 profile. Use ordinary local Run for Cargo.");
+    const prepared = cargo?.dependencies.length ? await loadPreparedCargo(source) : null;
     const isDebug = data.type === "debug";
     if (isDebug && (!(data.control instanceof SharedArrayBuffer) || data.control.byteLength !== (8192 + 5) * 4)) throw new Error("Debug requires an isolated browser context with shared control memory.");
     if (typeof data.stdin !== "string" || encoder.encode(data.stdin).length > 32 * 1024) throw new Error("stdin must be at most 32 KiB.");
@@ -134,12 +168,19 @@ worker.onmessage = async ({ data }) => {
     for (const [path, text] of Object.entries(source.files)) insert(work, path, new File(encoder.encode(text)));
     const check = data.type === "check";
     stage(check ? "Checking Rust source locally" : "Compiling and linking Rust locally");
-    const args = ["rustc", "/work/" + source.entryFile, "--crate-name", "playground", "--sysroot", "/sysroot", "--target", "wasm32-wasip1", "--edition", source.edition,
-      "--error-format=json", "-Copt-level=0", "-Cpanic=abort", "-Cdebuginfo=0", ...(check ? ["--emit", "metadata"] : []), "-o", "/work/" + (check ? "program.rmeta" : "program.wasm")];
+    const args = ["rustc", "/work/" + source.entryFile, "--crate-name", cargo?.name.replaceAll("-", "_") ?? "playground", "--sysroot", "/sysroot", "--target", "wasm32-wasip1", "--edition", cargo?.edition ?? source.edition,
+      "--error-format=json", "-Copt-level=0", "-Cpanic=abort", "-Cdebuginfo=0", ...(cargo ? [...cargo.enabled.flatMap(feature => ["--cfg", `feature="${feature}"`]), "--check-cfg=cfg(feature,values(any()))"] : []), ...(prepared ? ["-L", "dependency=/deps", ...externs(prepared, prepared.dependencies)] : []), ...(check ? ["--emit", "metadata"] : []), "-o", "/work/" + (check ? "program.rmeta" : "program.wasm")];
     const mounts = [new PreopenDirectory("/work", work), new PreopenDirectory("/sysroot", sysroot), new PreopenDirectory("/tmp", new Map())];
+    const cargoEnv = cargo ? [`CARGO_MANIFEST_DIR=/work/${cargo.prefix}`, `CARGO_PKG_NAME=${cargo.name}`, `CARGO_PKG_VERSION=${cargo.version}`, ...cargo.version.split(/[.+-]/).slice(0, 3).map((value, index) => `CARGO_PKG_VERSION_${["MAJOR", "MINOR", "PATCH"][index]}=${value}`), `CARGO_PKG_VERSION_PRE=${cargo.version.split("-")[1]?.split("+")[0] ?? ""}`] : [];
+    if (prepared) {
+      worker.postMessage({ type: "cargo-build" });
+      const built = await compileDependencies(prepared);
+      if (built.compilation) { const compileMs = performance.now() - started; worker.postMessage({ type: "result", sourceRevision, compilation: built.compilation, compileMs, durationMs: compileMs }); return; }
+      mounts.push(new PreopenDirectory("/deps", built.files));
+    }
     let debugging: DebugHost | undefined;
     if (isDebug) {
-      const checked = await invoke(compiler, [...args.slice(0, -2), "--emit", "metadata", "-o", "/work/debug-check.rmeta"], "", mounts, true);
+      const checked = await invoke(compiler, [...args.slice(0, -2), "--emit", "metadata", "-o", "/work/debug-check.rmeta"], "", mounts, true, undefined, false, cargoEnv);
       if (checked.exitCode !== 0) { worker.postMessage({ type: "result", sourceRevision, compilation: checked, compileMs: performance.now() - started, durationMs: performance.now() - started }); return; }
       const plan = instrumentRust(source.files, source.entryFile);
       for (const [path, text] of Object.entries(plan.files)) insert(work, path, new File(encoder.encode(text)));
@@ -158,7 +199,7 @@ worker.onmessage = async ({ data }) => {
         return command;
       });
     }
-    const compilation = await invoke(compiler, args, "", mounts, true, undefined, isDebug);
+    const compilation = await invoke(compiler, args, "", mounts, true, undefined, isDebug, cargoEnv);
     const compileMs = performance.now() - started;
     if (compilation.exitCode !== 0 || check || data.type === "build") { worker.postMessage({ type: "result", sourceRevision, compilation, compileMs, durationMs: compileMs }); return; }
     const output = work.get("program.wasm");

@@ -9,6 +9,7 @@ const kiB = (bytes: number) => `${(bytes / 1024).toFixed(1)} KiB`;
 const message = (error: unknown) => error instanceof Error ? error.message : String(error);
 
 type Props = {
+  dropped?: { inspection: Promise<ImportInspection>; targetFolder: string };
   /** Reads the live project, never a copy from an earlier render. */
   current: () => PlaygroundDocument;
   shared: boolean;
@@ -17,7 +18,7 @@ type Props = {
   onClose: () => void;
 };
 
-export function ImportDialog({ current, shared, onApply, onCopyToLocal, onClose }: Props) {
+export function ImportDialog({ current, shared, onApply, onCopyToLocal, onClose, dropped }: Props) {
   const [state, setStateRaw] = useState<ImportState>("idle"), [problem, setProblem] = useState("");
   const [url, setURL] = useState(""), [ref, setRef] = useState(""), [folder, setFolder] = useState(""), [json, setJSON] = useState("");
   const [inspection, setInspection] = useState<ImportInspection | null>(null);
@@ -55,6 +56,12 @@ export function ImportDialog({ current, shared, onApply, onCopyToLocal, onClose 
       return { path: file.webkitRelativePath || file.name, bytes: new Uint8Array(await file.arrayBuffer()) };
     })), kind, kind === "folder" ? "Local folder" : "Local files"));
   };
+
+  useEffect(() => {
+    if (!dropped) return;
+    setTarget(dropped.targetFolder);
+    void inspect(() => dropped.inspection);
+  }, [dropped]); // The drop is immutable; inspect reads current() before its review.
 
   const choices = useMemo(() => ({ selected, mode, targetFolder: target, conflicts, entryFile: entry || undefined, edition: edition || undefined }), [selected, mode, target, conflicts, entry, edition]);
   const plan = useMemo(() => inspection ? buildImportPlan(base, inspection, choices) : null, [inspection, base, choices]);

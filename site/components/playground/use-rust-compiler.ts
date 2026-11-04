@@ -62,7 +62,7 @@ export function useRustCompiler() {
     const perform = () => {
       setActivity(mode === "check" ? "checking" : "running");
       armTimeout(45_000, "Compilation stopped at the 45-second browser limit. Download the source to continue in Crabrix.");
-      current.current?.postMessage({ type: mode, document: source, stdin, ...(debugControl.current ? { control: debugControl.current.buffer } : {}) });
+      current.current?.postMessage({ type: mode, document: source, stdin, allowCargo: !shared, ...(debugControl.current ? { control: debugControl.current.buffer } : {}) });
     };
     if (!current.current) {
       setActivity("loading");
@@ -77,6 +77,7 @@ export function useRustCompiler() {
           if (data.downloadProgress === true && pending.current) armTimeout(180_000, "Toolchain download stopped making progress. Check the connection and retry; source was not uploaded.");
         }
         else if (data.type === "ready") { prepared.current = true; setReady(true); const action = pending.current; pending.current = undefined; action?.(); }
+        else if (data.type === "cargo-build") armTimeout(120_000, "Cargo compilation stopped at the two-minute browser limit. Source remains in the editor.");
         else if (data.type === "debug-plan") {
           const sites = data.sites as DebugSite[]; setDebugSites(sites);
           const control = debugControl.current;

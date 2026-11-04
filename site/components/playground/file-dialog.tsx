@@ -5,7 +5,7 @@ import { insideFolder, type FileOperation } from "@/lib/playground-file-ops";
 import type { PlaygroundDocument } from "@/lib/playground-document";
 import type { TreeAction } from "./file-tree";
 
-export type FileRequest = { action: Exclude<TreeAction, "copy-path" | "set-entry">; folder: boolean; path: string };
+export type FileRequest = { action: Exclude<TreeAction, "copy-path" | "set-entry">; folder: boolean; path: string; expectedKeys?: string[] };
 
 const titles = { "new-file": "New file", "new-folder": "New folder and file", rename: "Rename", move: "Move", duplicate: "Duplicate", delete: "Delete" } as const;
 export const fileDialogTitle = (request: FileRequest) => titles[request.action];

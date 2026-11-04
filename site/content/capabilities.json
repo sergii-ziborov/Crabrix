@@ -28,7 +28,9 @@
         {
           "surface": "browser",
           "state": "published",
-          "profile": "Browser Worker; std and local modules after toolchain acquisition. No backend compilation or execution."
+          "profile": "Browser Worker; std, local modules and explicitly prepared bounded crates.io library graphs. No backend compilation or execution; no build scripts, host procedural macros, native libraries or target-specific dependency tables.",
+          "verifiedAt": "2026-11-05",
+          "evidence": "docs/browser-cargo-qualification-2026-11-05.md"
         }
       ]
     },
@@ -58,7 +60,9 @@
         {
           "surface": "browser",
           "state": "published",
-          "profile": "Source checkpoints in an isolated Worker with SharedArrayBuffer; std and local modules."
+          "profile": "Source checkpoints in an isolated Worker with SharedArrayBuffer; std, local modules and prepared registry libraries. Dependency internals are not instrumented; MCP keeps its separate manifest-free profile.",
+          "verifiedAt": "2026-11-05",
+          "evidence": "docs/browser-cargo-qualification-2026-11-05.md"
         }
       ]
     },
@@ -309,6 +313,27 @@
         "breakpoints": 16
       },
       "evidence": "docs/playground-mcp-local-runtime-qualification-2026-10-29.json"
+    },
+    {
+      "id": "rust.browser-cargo",
+      "name": "Explicit browser Cargo library preparation",
+      "surfaces": [
+        {
+          "surface": "browser",
+          "state": "published",
+          "verifiedAt": "2026-11-05",
+          "profile": "Explicit source preparation; SHA-256 verified crate archives in this browser only, additive registry features and transitive libraries. Run and Check never download crates. One version per crate; unsupported build/native/proc-macro/workspace/git/path/target dependency requirements are refused. Independent of manifest-free MCP execution grants."
+        }
+      ],
+      "limits": {
+        "registryCrates": 16,
+        "compressedCrateBytes": 4194304,
+        "expandedCrateBytes": 8388608,
+        "totalSourceBytes": 33554432,
+        "compiledLibraryBytes": 67108864,
+        "cargoBuildDeadlineSeconds": 120
+      },
+      "evidence": "docs/browser-cargo-qualification-2026-11-05.md"
     }
   ],
   "verifiedAtUTC": "2026-10-29T07:35:13.740916+00:00"
