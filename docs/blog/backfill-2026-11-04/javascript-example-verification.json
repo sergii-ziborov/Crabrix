@@ -1,0 +1,11 @@
+{
+  "atUTC": "2026-11-04T18:39:00.422601+00:00",
+  "package": "crabrix@0.5.0",
+  "sourceSHA256": "744371b9ce3e8d9bf67f765b5bb125cbddd79e41887cf5834c5e4241c8357670",
+  "nodeSyntaxCheck": "passed",
+  "publishedLibraryCreateReadApplyShare": "passed",
+  "readBackAfterApply": "reviewed in main.rs",
+  "testRoomEnded": true,
+  "secretLinksLogged": false,
+  "scope": "Exact article JavaScript with import resolved to the published tarball; extra read-back and finally endRoom cleanup."
+}

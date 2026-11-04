@@ -50,3 +50,5 @@ with the delivery receipt. The site uses the existing Hetzner release process,
 consistent account backup and retained rollback image/container. The native app,
 selected App Review build, SDK packages, remote MCP service and DNS are outside
 this publication change.
+
+The JavaScript integration example also passed Node syntax checking and an actual create/read/apply/share round trip with the published `crabrix@0.5.0` tarball. An extra read-back assertion confirmed the patch, and the test creator ended its room in `finally`; no capability links were logged. See `javascript-example-verification.json`.
