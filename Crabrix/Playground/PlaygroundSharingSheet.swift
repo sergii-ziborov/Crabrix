@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct PlaygroundSharingSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -17,7 +18,10 @@ struct PlaygroundSharingSheet: View {
                         .foregroundStyle(CrabrixTheme.muted)
                     if let session = model.playgroundSession {
                         PlaygroundSessionDetails(session: session, onLeave: model.leavePlayground)
-                        if let runtime = model.playgroundRuntime { PlaygroundRuntimePermissions(runtime: runtime) }
+                        Divider()
+                        NavigationLink { PlaygroundAgentView(session: session, model: model) } label: {
+                            Label("Connect AI agent", systemImage: "sparkles").frame(maxWidth: .infinity)
+                        }.buttonStyle(.bordered).disabled(session.expired)
                     } else {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Link lifetime").font(.subheadline.weight(.semibold))
@@ -52,6 +56,76 @@ struct PlaygroundSharingSheet: View {
             .background(CrabrixTheme.background).foregroundStyle(CrabrixTheme.primary)
             .navigationTitle("Share Playground").navigationBarTitleDisplayMode(.inline)
             .toolbar { CrabrixModalCloseAction(label: "Close Playground sharing", isDisabled: creating) { dismiss() } }
+        }
+    }
+}
+/// AI agents only: a local agent link to this room and the on-device execution permission.
+/// The key sits after # in the link, so only Crabrix MCP on the agent's computer can use it.
+private struct PlaygroundAgentView: View {
+    /// How to add Crabrix MCP once, for the agents that run it on the user's computer.
+    static let agentSetups = [
+        ("Claude Code", "/plugin marketplace add sergii-ziborov/crabrix-sdk\n/plugin install crabrix@crabrix"),
+        ("Codex", "codex mcp add crabrix -- npx -y crabrix@0.5.0"),
+        ("Cursor", "~/.cursor/mcp.json → \"crabrix\": { \"command\": \"npx\", \"args\": [\"-y\", \"crabrix@0.5.0\"] }"),
+    ]
+    @ObservedObject var session: PlaygroundLiveSession
+    @ObservedObject var model: CompilerViewModel
+    @State private var readOnly: Bool
+    @State private var link: URL?
+    @State private var failure: String?
+    @State private var copied = false
+    init(session: PlaygroundLiveSession, model: CompilerViewModel) {
+        self.session = session; self.model = model
+        _readOnly = State(initialValue: !session.canShareAgentEdit)
+    }
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Label("Connect AI agent", systemImage: "sparkles").font(.title2.bold())
+                Text("Give this link to an AI agent with Crabrix MCP on its computer. Paste it into the agent’s chat: the agent joins the room as a participant, and the room’s key stays in the link and on that computer.")
+                    .foregroundStyle(CrabrixTheme.muted)
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Add Crabrix MCP once").font(.subheadline.weight(.semibold))
+                    ForEach(Self.agentSetups, id: \.0) { agent, setup in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(agent).font(.callout.weight(.semibold))
+                            Text(setup).font(.caption.monospaced()).foregroundStyle(CrabrixTheme.muted).textSelection(.enabled)
+                        }
+                    }
+                    Text("Needs Node.js 22 or newer. People use the links in Share instead.").font(.caption).foregroundStyle(CrabrixTheme.muted)
+                }
+                if session.canShareAgentEdit && session.canShareAgentView {
+                    Picker("Agent access", selection: $readOnly) { Text("Edit").tag(false); Text("View only").tag(true) }.pickerStyle(.segmented)
+                } else {
+                    Label(readOnly ? "View only" : "Edit", systemImage: readOnly ? "eye" : "pencil").font(.subheadline)
+                }
+                Text("Expires with the room at \(session.link.expiresAt.formatted(date: .abbreviated, time: .shortened))").font(.caption)
+                if let link {
+                    ShareLink(item: link.absoluteString) { Label("Share agent link", systemImage: "square.and.arrow.up").frame(maxWidth: .infinity) }
+                        .buttonStyle(.borderedProminent).tint(CrabrixTheme.blue).disabled(session.expired)
+                    Button {
+                        UIPasteboard.general.setItems([[UTType.plainText.identifier: link.absoluteString]], options: [.expirationDate: session.link.expiresAt])
+                        copied = true
+                    } label: { Label(copied ? "Copied" : "Copy agent link", systemImage: copied ? "checkmark" : "doc.on.doc").frame(maxWidth: .infinity) }
+                        .buttonStyle(.bordered).disabled(session.expired)
+                } else if failure == nil {
+                    ProgressView("Preparing agent link…").frame(maxWidth: .infinity)
+                }
+                if let failure { Text(failure).foregroundStyle(CrabrixTheme.coral) }
+                if let runtime = model.playgroundRuntime { PlaygroundRuntimePermissions(runtime: runtime) }
+            }
+            .padding(22).frame(maxWidth: 680).frame(maxWidth: .infinity)
+        }
+        .background(CrabrixTheme.background).foregroundStyle(CrabrixTheme.primary)
+        .navigationTitle("Connect AI agent").navigationBarTitleDisplayMode(.inline)
+        .task(id: readOnly) {
+            link = nil; failure = nil; copied = false
+            do {
+                let url = try await session.agentLink(readOnly: readOnly)
+                if !Task.isCancelled { link = url }
+            } catch {
+                if !Task.isCancelled { failure = error.localizedDescription }
+            }
         }
     }
 }

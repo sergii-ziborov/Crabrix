@@ -30,6 +30,12 @@ struct PlaygroundLink: Equatable, Sendable {
         parts.percentEncodedFragment = fragment.percentEncodedQuery
         return parts.url!
     }
+    /// A local agent link for Crabrix MCP on the agent's computer. The key stays after #,
+    /// which no HTTP client sends, so no server can use this link to read the room.
+    func agentURL(access: String) -> URL? {
+        guard Self.valid(access, count: 43) else { return nil }
+        return URL(string: "https://crabrix.com/mcp/\(id)/\(access)#key=\(key)")
+    }
     private static func valid(_ value: String, count: Int) -> Bool {
         value.count == count && value.utf8.allSatisfy { (65...90).contains($0) || (97...122).contains($0) || (48...57).contains($0) || $0 == 45 || $0 == 95 }
     }

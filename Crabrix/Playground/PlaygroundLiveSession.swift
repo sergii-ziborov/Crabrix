@@ -166,6 +166,24 @@ final class PlaygroundLiveSession: ObservableObject {
         let (data, response) = try await closing.data(for: request); try Self.check(response, data: data)
         expire()
     }
+    /// Whether this session can hand an agent edit or view access: a person link only yields its own mode or less.
+    var canShareAgentEdit: Bool { !link.isReadOnly }
+    var canShareAgentView: Bool { link.isReadOnly || viewAccess != nil }
+    /// Asks the relay for the agent capability that matches a person token. It shares the room's lifetime.
+    func agentLink(readOnly: Bool) async throws -> URL {
+        guard !expired, !stopped else { throw PlaygroundFailure("This Playground is disconnected.") }
+        guard let token = readOnly ? (link.isReadOnly ? link.access : viewAccess) : (link.isReadOnly ? nil : link.access) else {
+            throw PlaygroundFailure(readOnly ? "This session has no view-only access to share." : "A view-only session cannot share edit access.")
+        }
+        var request = request("agent/"); request.setValue("Bearer " + token, forHTTPHeaderField: "Authorization")
+        let (data, response) = try await network.data(for: request)
+        if (response as? HTTPURLResponse)?.statusCode == 410 { expire() }
+        try Self.check(response, data: data)
+        struct Agent: Decodable { let access: String; let mode: String }
+        let value = try JSONDecoder().decode(Agent.self, from: data)
+        guard value.mode == (readOnly ? "view" : "edit"), let url = link.agentURL(access: value.access) else { throw PlaygroundFailure("The relay returned an unexpected agent link.") }
+        return url
+    }
     private func expire() { expired = true; stop() }
     private func updateStatus(_ text: String) { status = text; onStatus?(text) }
     private func request(_ suffix: String = "") -> URLRequest {

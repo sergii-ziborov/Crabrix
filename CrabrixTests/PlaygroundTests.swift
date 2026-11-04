@@ -66,6 +66,11 @@ final class PlaygroundModelTests: XCTestCase {
         XCTAssertEqual(try PlaygroundLink.parse(link.url.absoluteString), link)
         XCTAssertNil(URLComponents(url: link.url, resolvingAgainstBaseURL: false)?.query)
         XCTAssertThrowsError(try PlaygroundLink.parse("https://evil.example/playground/room/" + link.id + "/#" + (link.url.fragment ?? "")))
+        // The app's agent link keeps the key after #, so no request ever carries it.
+        let agentAccess = PlaygroundEncryption.newSecret(), agent = try XCTUnwrap(link.agentURL(access: agentAccess))
+        XCTAssertEqual(agent.absoluteString, "https://crabrix.com/mcp/\(link.id)/\(agentAccess)#key=\(link.key)")
+        XCTAssertFalse(agent.path.contains(link.key)); XCTAssertNil(agent.query)
+        XCTAssertNil(link.agentURL(access: "short"))
         let source = try PlaygroundDocument(name: "Unicode", entryFile: "main.rs", files: ["main.rs": "fn main() { println!(\"🦀 Привет\"); }"]).validated()
         let codec = try PlaygroundCodec(); _ = try codec.initialize(source)
         let snapshot = try XCTUnwrap(try codec.call(["type": "snapshot"]).snapshot)
