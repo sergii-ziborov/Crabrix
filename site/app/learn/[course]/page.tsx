@@ -44,7 +44,7 @@ export default async function CoursePage({ params }: { params: Promise<{ course:
         <section className="unit-panel" aria-labelledby="choose-method">
           <h2 id="choose-method">Choose an algorithm from the problem's constraints</h2>
           <p>Start with the operations, input guarantees and size limits. The method guides below explain what each family preserves, where it fails, and what to watch for in Rust. Each pattern has three separate steps: build a mental model, decide when it applies, then solve a challenge. The guides and lesson previews are public; sign in for complete examples, exercises and walkthroughs.</p>
-          <nav className="method-index" aria-label="Algorithm methods">{course.units.map(unit => <Link prefetch={false} key={unit.id} href={`#${unit.id}`}>{unit.title}</Link>)}</nav>
+          <nav className="method-index" aria-label="Algorithm methods">{course.units.map(unit => <a key={unit.id} href={`#${unit.id}`}>{unit.title}</a>)}</nav>
         </section>
         <AlgorithmVisualizer trace={publicAlgorithmDemo()} demo />
         <p className="card-meta">Every pattern below includes a walkthrough of its actual Rust example: arrays, graphs, trees, call stacks and more. Sign in to explore all 200 patterns and their practice examples.</p>
