@@ -11,6 +11,7 @@ private final class CourseDownloadURLProtocol: URLProtocol {
     nonisolated(unsafe) private static var invalidRangeOnce: Set<String> = []
     nonisolated(unsafe) private static var ignoreRangeOnce: Set<String> = []
     nonisolated(unsafe) private static var rangeRequests: [String: [String]] = [:]
+    nonisolated(unsafe) private static var interruptedTransfers: [String: CourseDownloadURLProtocol] = [:]
 
     static func supply(_ data: Data, at url: URL) {
         lock.withLock { responses[url.absoluteString] = data }
@@ -22,6 +23,13 @@ private final class CourseDownloadURLProtocol: URLProtocol {
 
     static func interruptFirstTransfer(at url: URL) {
         lock.withLock { _ = interruptOnce.insert(url.absoluteString) }
+    }
+
+    static func failInterruptedTransfer(at url: URL) {
+        let transfer = lock.withLock { interruptedTransfers.removeValue(forKey: url.absoluteString) }
+        if let transfer {
+            transfer.client?.urlProtocol(transfer, didFailWithError: URLError(.networkConnectionLost))
+        }
     }
 
     static func ranges(for url: URL) -> [String] {
@@ -77,19 +85,24 @@ private final class CourseDownloadURLProtocol: URLProtocol {
         )!
         client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
         if interrupted, let payload {
+            Self.lock.withLock { Self.interruptedTransfers[url.absoluteString] = self }
             client?.urlProtocol(self, didLoad: payload.prefix(70_000))
-            // Give AsyncBytes time to deliver the first chunk before the mock
-            // connection fails; an immediate fail can discard buffered bytes.
-            DispatchQueue.global().asyncAfter(deadline: .now() + .milliseconds(200)) {
-                self.client?.urlProtocol(self, didFailWithError: URLError(.networkConnectionLost))
-            }
+            // The test interrupts after observing download progress, so it
+            // exercises a partial transfer independently of scheduler speed.
             return
         }
         if let payload { client?.urlProtocol(self, didLoad: payload) }
         client?.urlProtocolDidFinishLoading(self)
     }
 
-    override func stopLoading() {}
+    override func stopLoading() {
+        guard let url = request.url else { return }
+        Self.lock.withLock {
+            if Self.interruptedTransfers[url.absoluteString] === self {
+                Self.interruptedTransfers.removeValue(forKey: url.absoluteString)
+            }
+        }
+    }
 }
 
 final class CourseDownloadManagerTests: XCTestCase {
@@ -177,9 +190,12 @@ final class CourseDownloadManagerTests: XCTestCase {
         let entry = entry(descriptor: descriptor, archive: archive, root: UUID().uuidString)
         CourseDownloadURLProtocol.interruptFirstTransfer(at: entry.archiveURL)
         let firstManager = try CourseDownloadManager(cacheRoot: root, session: session())
+        let archiveURL = entry.archiveURL
 
         do {
-            _ = try await firstManager.download(entry)
+            _ = try await firstManager.download(entry) { bytes, _ in
+                if bytes > 0 { CourseDownloadURLProtocol.failInterruptedTransfer(at: archiveURL) }
+            }
             XCTFail("An interrupted transfer was accepted")
         } catch {
             let partial = root.appending(path: "\(entry.archiveSHA256).partial")
