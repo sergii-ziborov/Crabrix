@@ -1,0 +1,280 @@
+{
+  "date": "2026-11-05",
+  "sourceCourseCommit": "ea41d2efda845712a9228e1b7002e02cae87f613",
+  "courses": 7,
+  "units": 56,
+  "lessons": 771,
+  "newLessons": 17,
+  "newCompilerLabs": 31,
+  "preservedLessonIdentitiesAndAnswers": 754,
+  "courseTests": 28,
+  "websiteTests": 135,
+  "nativeTests": 18,
+  "finalSignedInstallTests": 1,
+  "referenceLabsPassed": 31,
+  "wrongUnchangedAndForgedSubmissionsRejected": 93,
+  "readingExamplesExecuted": 17,
+  "localAccessHTTP": {
+    "atUTC": "2026-11-05T08:52:18.094Z",
+    "base": "http://127.0.0.1:3296",
+    "passed": true,
+    "sitemapURLs": 833,
+    "checks": [
+      {
+        "path": "/learn/ownership/fromstr-domain-values/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      },
+      {
+        "path": "/learn/ownership/option-result-transpose/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      },
+      {
+        "path": "/learn/ownership/asref-borrowed-inputs/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      },
+      {
+        "path": "/learn/projects/buffered-line-input/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      },
+      {
+        "path": "/learn/projects/paths-and-boundaries/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      },
+      {
+        "path": "/learn/projects/sandbox-file-roundtrip/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      },
+      {
+        "path": "/learn/projects/validated-records/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      },
+      {
+        "path": "/learn/projects/serde-roundtrip-validation/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      },
+      {
+        "path": "/learn/projects/properties-and-oracles/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      },
+      {
+        "path": "/learn/projects/hostile-parser-inputs/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      },
+      {
+        "path": "/learn/projects/unicode-regression-tests/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      },
+      {
+        "path": "/learn/concurrency/joinset-task-ownership/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      },
+      {
+        "path": "/learn/concurrency/semaphore-backpressure/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      },
+      {
+        "path": "/learn/concurrency/graceful-shutdown-protocol/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      },
+      {
+        "path": "/learn/systems/wasm-host-boundaries/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      },
+      {
+        "path": "/learn/systems/wasm-linear-memory/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      },
+      {
+        "path": "/learn/systems/runtime-resource-budgets/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": true
+      }
+    ]
+  },
+  "browserMatrix": [
+    {
+      "width": 390,
+      "theme": "Light",
+      "clientWidth": 375,
+      "pageWidth": 375,
+      "headerWidth": 375,
+      "imagesLoaded": true
+    },
+    {
+      "width": 390,
+      "theme": "Dark",
+      "clientWidth": 375,
+      "pageWidth": 375,
+      "headerWidth": 375,
+      "imagesLoaded": true
+    },
+    {
+      "width": 390,
+      "theme": "Amber Circuit",
+      "clientWidth": 375,
+      "pageWidth": 375,
+      "headerWidth": 375,
+      "imagesLoaded": true
+    },
+    {
+      "width": 390,
+      "theme": "Cyberpunk",
+      "clientWidth": 375,
+      "pageWidth": 375,
+      "headerWidth": 375,
+      "imagesLoaded": true
+    },
+    {
+      "width": 768,
+      "theme": "Light",
+      "clientWidth": 753,
+      "pageWidth": 753,
+      "headerWidth": 753,
+      "imagesLoaded": true
+    },
+    {
+      "width": 768,
+      "theme": "Dark",
+      "clientWidth": 753,
+      "pageWidth": 753,
+      "headerWidth": 753,
+      "imagesLoaded": true
+    },
+    {
+      "width": 768,
+      "theme": "Amber Circuit",
+      "clientWidth": 753,
+      "pageWidth": 753,
+      "headerWidth": 753,
+      "imagesLoaded": true
+    },
+    {
+      "width": 768,
+      "theme": "Cyberpunk",
+      "clientWidth": 753,
+      "pageWidth": 753,
+      "headerWidth": 753,
+      "imagesLoaded": true
+    },
+    {
+      "width": 1024,
+      "theme": "Light",
+      "clientWidth": 1009,
+      "pageWidth": 1009,
+      "headerWidth": 1009,
+      "imagesLoaded": true
+    },
+    {
+      "width": 1024,
+      "theme": "Dark",
+      "clientWidth": 1009,
+      "pageWidth": 1009,
+      "headerWidth": 1009,
+      "imagesLoaded": true
+    },
+    {
+      "width": 1024,
+      "theme": "Amber Circuit",
+      "clientWidth": 1009,
+      "pageWidth": 1009,
+      "headerWidth": 1009,
+      "imagesLoaded": true
+    },
+    {
+      "width": 1024,
+      "theme": "Cyberpunk",
+      "clientWidth": 1009,
+      "pageWidth": 1009,
+      "headerWidth": 1009,
+      "imagesLoaded": true
+    },
+    {
+      "width": 1280,
+      "theme": "Light",
+      "clientWidth": 1265,
+      "pageWidth": 1265,
+      "headerWidth": 1265,
+      "imagesLoaded": true
+    },
+    {
+      "width": 1280,
+      "theme": "Dark",
+      "clientWidth": 1265,
+      "pageWidth": 1265,
+      "headerWidth": 1265,
+      "imagesLoaded": true
+    },
+    {
+      "width": 1280,
+      "theme": "Amber Circuit",
+      "clientWidth": 1265,
+      "pageWidth": 1265,
+      "headerWidth": 1265,
+      "imagesLoaded": true
+    },
+    {
+      "width": 1280,
+      "theme": "Cyberpunk",
+      "clientWidth": 1265,
+      "pageWidth": 1265,
+      "headerWidth": 1265,
+      "imagesLoaded": true
+    }
+  ],
+  "fixtureSHA256": "facc3259f7fb6df49f0974612571f134d58b30115f85a0f13790e736b62d27fe",
+  "limits": [
+    "Protected compiler lab completion is in the app; web lessons provide reading and practice instructions.",
+    "Serde and three Tokio examples declare a desktop Cargo profile.",
+    "Finite tests are evidence for the exercised contracts, not a formal proof."
+  ]
+}

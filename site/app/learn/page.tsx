@@ -4,7 +4,7 @@ import Link from "next/link";
 import { courseSnapshot, courseLessons } from "@/lib/courses";
 import { CourseIcon } from "@/components/course-icon";
 
-export const metadata = pageMetadata({"title": "Learn Rust Free: 754 Lessons and Algorithm Atlas Steps", "description": "Start Rust Basics, ownership, Cargo and algorithms with clear examples and infographics. Preview any lesson; a free account opens the complete Academy.", "path": "/learn/"});
+export const metadata = pageMetadata({"title": "Learn Rust Free: 771 Lessons and Algorithm Atlas Steps", "description": "Start Rust Basics, ownership, Cargo and algorithms with clear examples and infographics. Preview any lesson; a free account opens the complete Academy.", "path": "/learn/"});
 
 export default function LearnPage() {
   const snapshot = courseSnapshot();

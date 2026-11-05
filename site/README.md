@@ -9,7 +9,7 @@ programs passed; the existing page layout, access rules and runtime remain.
 
 ## Current Interview update — 29 October 2026
 
-The authored snapshot now has 754 lessons/steps: 154 Rust lessons and 600 Atlas
+The authored snapshot now has 771 lessons/steps: 171 Rust lessons and 600 Atlas
 steps. Interview Prep has 52 topics, including twelve focused Rust contracts.
 Existing IDs and answer indices are retained. The source revision is pinned in
 `content/courses.json`; native content delivery and app-code qualification are

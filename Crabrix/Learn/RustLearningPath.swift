@@ -428,7 +428,7 @@ enum LessonEvidenceValidator {
             guard initialSourceTreeHash != currentSourceTreeHash else {
                 return LessonEvidenceValidation(
                     passed: false,
-                    detail: "The starter algorithm is unchanged. Implement solve(), then run it again."
+                    detail: "The starter is unchanged. Implement the supplied function, then run it again."
                 )
             }
             let code = LessonSourceText.normalizedCode(in: project.files)
@@ -436,32 +436,32 @@ enum LessonEvidenceValidator {
             guard missingFragments.isEmpty else {
                 return LessonEvidenceValidation(
                     passed: false,
-                    detail: "Keep the supplied solve() function and visible verification harness."
+                    detail: "Keep the supplied public function required by this lab."
                 )
             }
             let remainingPlaceholders = forbiddenFragments.filter { LessonSourceText.contains($0, in: code) }
             guard remainingPlaceholders.isEmpty else {
                 return LessonEvidenceValidation(
                     passed: false,
-                    detail: "Replace the starter todo! placeholder with your algorithm."
+                    detail: "Replace the starter todo! placeholder with your solution."
                 )
             }
             if harnessCompleted == false {
                 return LessonEvidenceValidation(
                     passed: false,
                     detail: "The program stopped before the verification harness finished. "
-                        + "Return a value from solve() instead of exiting the process."
+                        + "Return from the supplied function instead of exiting the process."
                 )
             }
             guard harnessCompleted == true || output.matchesFinalLines(result.stdout) else {
                 return LessonEvidenceValidation(
                     passed: false,
-                    detail: "The program ran, but the visible algorithm case did not pass yet."
+                    detail: "The program ran, but the verification cases did not pass yet."
                 )
             }
             return LessonEvidenceValidation(
                 passed: true,
-                detail: "rustc accepted the solution and the visible algorithm case passed."
+                detail: "rustc accepted the solution and the verification harness completed."
             )
 
         case .reasoning:

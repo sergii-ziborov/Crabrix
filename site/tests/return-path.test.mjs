@@ -12,7 +12,7 @@ test('every lesson path survives sign-in, including dotted Atlas IDs', () => {
     assert.equal(safeReturnPath(path), path);
     count++;
   }
-  assert.equal(count, 754);
+  assert.equal(count, 771);
   assert.equal(safeReturnPath('/learn/'), '/learn/');
   assert.equal(safeReturnPath('/learn/algorithms'), '/learn/algorithms');
 });

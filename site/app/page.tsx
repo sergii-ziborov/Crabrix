@@ -3,7 +3,7 @@ import { StructuredData } from "@/components/structured-data";
 import { legacyMain } from "@/lib/legacy";
 import { ScreenshotGalleries } from "@/components/screenshot-galleries";
 
-export const metadata = pageMetadata({"title": "Rust Compiler for iPhone, iPad & Duo", "description": "Compile Rust locally on iPhone, iPad and iPhone Duo. Try the browser Playground, supported Cargo projects, 754 lessons and 46 code examples.", "path": "/", modifiedDate: "2026-11-05"});
+export const metadata = pageMetadata({"title": "Rust Compiler for iPhone, iPad & Duo", "description": "Compile Rust locally on iPhone, iPad and iPhone Duo. Try the browser Playground, supported Cargo projects, 771 lessons and 46 code examples.", "path": "/", modifiedDate: "2026-11-05"});
 
 export default function HomePage() {
   const [beforeGallery, afterGallery] = legacyMain("index").split("<!-- screenshot-galleries -->");
@@ -14,7 +14,7 @@ export default function HomePage() {
         applicationCategory: "DeveloperApplication", operatingSystem: "iOS 18 or later; iPadOS 18 or later",
         description: "A native Rust editor, local compiler and offline learning Academy for iPhone, iPad and iPhone Duo.",
         downloadUrl: "https://apps.apple.com/app/id6809502653", softwareHelp: "https://crabrix.com/support/",
-        featureList: ["Local Rust compilation", "Supported Cargo dependencies", "754 lessons and steps", "46 code examples"],
+        featureList: ["Local Rust compilation", "Supported Cargo dependencies", "771 lessons and steps", "46 code examples"],
       },
     ] }} />
     <div className="home-page legacy-page">

@@ -4,9 +4,9 @@ const courseDescriptions: Record<string, string> = {
   basics: "Learn Rust from variables and functions to ownership, structs, enums and Result. Read lesson previews; a free account opens explanations, code and exercises.",
   algorithms: "Explore 200 Rust algorithm patterns with step-by-step visualizations, real execution traces, code and exercises. Try the interactive demo without signing in.",
   ownership: "Understand Rust borrowing, lifetimes, traits, closures and iterators with compiler-guided examples. Preview the course; complete lessons are free with an account.",
-  projects: "Build Rust projects with Cargo, modules, tests, typed errors, features and smart pointers. Browse lesson previews and open the complete course with a free account.",
-  concurrency: "Learn Rust threads, channels, shared state, Send and Sync, futures and async cancellation. Preview the lessons; a free account opens examples and exercises.",
-  systems: "Study Rust macros, conditional compilation, unsafe boundaries, FFI and performance. Read public lesson previews; the complete course is free with an account.",
+  projects: "Build Rust projects with Cargo, files, data validation, Serde, typed errors and reliability tests. Browse lesson previews and open the complete course with a free account.",
+  concurrency: "Learn Rust threads, futures, JoinSet, backpressure and graceful async shutdown. Preview the lessons; a free account opens examples and exercises.",
+  systems: "Study Rust macros, unsafe boundaries, FFI, WASM, WASI and local runtime resource budgets. Read public lesson previews; the complete course is free with an account.",
   interview: "Prepare for Rust interviews with 52 topics on ownership, async, API design, systems and live coding. Browse previews; a free account opens worked examples.",
 };
 
@@ -80,6 +80,14 @@ export const courseModifiedDates: Record<string, string> = {
   basics: "2026-10-20", systems: "2026-10-27", interview: "2026-10-27",
   algorithms: "2026-10-28", ownership: "2026-10-27", projects: "2026-10-27", concurrency: "2026-10-27",
 };
+
+// Practical paths and typed compiler labs, published 5 November 2026.
+for (const path of ["basics/collections", "basics/control-flow", "basics/enums", "basics/functions", "basics/loops", "basics/operators", "basics/option-result", "basics/parsing", "basics/pattern-matching", "basics/ranges", "basics/strings", "basics/structs", "concurrency/async-runtime", "concurrency/graceful-shutdown-protocol", "concurrency/joinset-task-ownership", "concurrency/semaphore-backpressure", "ownership/asref-borrowed-inputs", "ownership/closures", "ownership/copy-clone", "ownership/fromstr-domain-values", "ownership/generics", "ownership/iterators", "ownership/option-result-transpose", "ownership/slices", "ownership/traits", "projects/buffered-line-input", "projects/dependencies", "projects/hostile-parser-inputs", "projects/paths-and-boundaries", "projects/properties-and-oracles", "projects/sandbox-file-roundtrip", "projects/serde-roundtrip-validation", "projects/unicode-regression-tests", "projects/validated-records", "systems/runtime-resource-budgets", "systems/wasm-host-boundaries", "systems/wasm-linear-memory"]) {
+  lessonModifiedDates[path] = "2026-11-05";
+}
+for (const course of ["basics", "ownership", "projects", "concurrency", "systems"]) {
+  courseModifiedDates[course] = "2026-11-05";
+}
 
 export function searchDescription(text: string): string {
   const plain = text.replace(/`/g, "").replace(/\s+/g, " ").trim();
