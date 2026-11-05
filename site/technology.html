@@ -215,7 +215,8 @@
   </div>
 
   <div class="wrap prose">
-    <h2>The toolchain</h2>
+    <p><strong>Documented native baseline: Crabrix 1.1.5. Website profiles checked 5 November 2026.</strong> Check Settings for your installed app version; the website, native app and MCP have separate release versions.</p>
+    <h2>The toolchain in the app</h2>
     <div class="table-scroll">
       <table class="plain">
         <tbody>
@@ -234,7 +235,7 @@
       The runtime and compiler have separate identities.
     </p>
 
-    <h2>Browser package builds</h2>
+    <h2>npm for the app’s local web previews</h2>
     <p>The browser package update bundles Babel standalone 8.0.9 and node-semver
       7.8.5 as trusted parsing and version-selection tools. Project JavaScript,
       TypeScript syntax and JSX are parsed on a serial background worker; project
@@ -249,7 +250,17 @@
       server runtimes are not bundled. See the <a href="/guide/#browser-packages">browser package walkthrough</a>
       for exact capabilities, lockfiles, budgets and the tested dashboard.</p>
 
-    <h2>What your program is allowed to do</h2>
+    <h2 id="web-playground">The web Playground</h2>
+    <p>The public <a href="/playground/">Rust Playground</a> compiles and executes in a browser Worker, without login or backend execution. Source folders, file operations, reviewed drag-and-drop imports, live editing, named selections and source export use the same Crabrix themes. The compiler and sysroot are acquired explicitly on the first local Check or Run, verified by SHA-256 and cached on this device.</p>
+    <p><strong>Browser Cargo is a separate, bounded library profile.</strong> Add declarations in Packages or Cargo.toml, then Prepare. The browser resolves normal crates.io library dependencies and additive features, verifies source archives and retains them locally. Run/Check/Debug never download missing crate sources. The root uses the editor’s selected edition; dependencies use their declared editions. Sixteen crates and one version per crate are supported; build scripts, host procedural macros, native linking, Git/path/workspace requirements and target-specific dependency tables are refused. See the <a href="/guide/#browser-cargo">Cargo walkthrough, tested versions and exact budgets</a>.</p>
+    <p>Browser programs have a 64 MiB memory maximum, 1 MiB captured-output limit and 30-second execution deadline. Standard-library compilation has a 45-second deadline; compiling a prepared dependency graph has a two-minute deadline. Source Debug uses checkpoints and bounded previews of String, Vec and concrete local structures; dependency internals are not instrumented. Repeating Run in an already loaded editor can work with verified cached sources while offline; loading the website itself still needs its page assets.</p>
+    <h2>Native project tools</h2>
+    <p>Crabrix 1.1.5 includes the local tools introduced in 1.1.3: selected-entry libtest, bundled rustfmt, Rust symbols and reviewed edits, and libgit2 Git history with explicit HTTPS clone/fetch/fast-forward pull/non-force push. The <a href="/guide/#rust-tools">tests and formatting guide</a>, <a href="/guide/#rust-symbols">Rust symbol guide</a> and <a href="/guide/#git">Git guide</a> describe their installed-version requirements and boundaries. These native tools are not implied by opening the web Playground.</p>
+    <h2>Shared rooms and AI agents</h2>
+    <p>No account is needed. The relay retains AES-256-GCM ciphertext in memory until the chosen expiry, one hour by default and at most 24 hours; a restart can end a room earlier. Up to four participants share text, cursors and selections. Packages and compiled artifacts are not transferred. <a href="/ai/">Crabrix MCP 0.5.0</a> and the website’s optional remote MCP connect an agent to a room. The local SDK keeps its key after # on the agent’s computer. The optional website remote MCP decrypts that room in server memory while connected, after an explicit warning. Neither service compiles or executes the project.</p>
+    <p>Execution permission starts off and is scoped to one selected device or browser, supported operations and at most ten minutes. The agent-controlled profile remains manifest-free standard-library Rust and local modules; it cannot download packages, attach private inputs or run a shell. A reported output preview never starts execution on an observer. Manual browser Cargo results remain local. <a href="/guide/#ai-agents">Read the connection and permission steps</a>.</p>
+
+    <h2>What the native Rust program is allowed to do</h2>
     <div class="table-scroll">
       <table class="plain">
         <tbody>
@@ -307,8 +318,8 @@
     <h2>What it cannot do</h2>
     <ul>
       <li>The local source debugger steps synchronous and async Rust statements and shows active poll frames, primitive values and bounded String, Vec and concrete local struct previews. Const bodies, macro expansions, dependency internals and arbitrary Rust memory inspection are not supported. See the <a href="/guide/#debugger">debugger guide</a>.</li>
-      <li>No <code>cargo test</code> harness yet.</li>
-      <li>No Git commit or push — import and export only.</li>
+      <li>Selected-entry unit tests use local libtest; integration targets, dev-dependency graphs and doctests are outside that profile. Ignored tests are skipped and should_panic is unsupported in panic-abort builds.</li>
+      <li>Native Git supports local commits and explicit non-force HTTPS push. SSH, LFS, submodules, rebase and arbitrary hooks are outside its profile.</li>
       <li>A first compile is interpreted WebAssembly, so it is slower than a laptop. Identical repeat runs come from a local artifact cache.</li>
     </ul>
 
@@ -317,8 +328,7 @@
       There is no required account, analytics SDK, advertising, or tracking.
       An off-by-default Game Center switch in Profile shares a numeric rating
       and achievement ladder progress with Apple; Crabrix runs no board server.
-      Other network requests include selected course downloads, package
-      downloads, and repository imports you ask for.
+      Other network requests include selected course downloads, package downloads, repository operations and temporary Playground sharing you ask for. Website accounts and optional remote MCP are separate website features; see the <a href="/privacy/">privacy policy</a>.
     </p>
 
     <h2>Compiler acceleration: measured candidates, 25 October 2026</h2>

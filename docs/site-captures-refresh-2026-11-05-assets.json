@@ -1,0 +1,183 @@
+{
+  "newCaptures": 22,
+  "atUTC": "2026-11-04T23:54:53.722319+00:00",
+  "assets": [
+    {
+      "name": "ipad-build",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 164973,
+      "sha256": "b44ef88cac9c12fd87e00677ea7e51b7e6d080e8edf1ed9ad55bc31787a56894",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "ipad-examples",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 1303008,
+      "sha256": "d33ab1aa008006e373b518373226108706c814516fbc0b0734d8976fdb73455e",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "ipad-learn",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 331521,
+      "sha256": "a2b9963bea874e156b2ba4f75fbb9ad259466bc206cd56d96c57ab804a165d42",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "ipad-lesson",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 848076,
+      "sha256": "e401807bb34cdaa6ad7eb2e9a37752e2b9dcf2b9382804f26818a07bea2a9fce",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "ipad-profile",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 276524,
+      "sha256": "6c3065f60ddb0b45d890e0948364b592acba9b68f06297d5f1eaa6d6b9eaef2e",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "ipad-projects",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 401701,
+      "sha256": "9582226ab7981ee2a949965ed9d6094261321ca9dc9524e3d6f138fa0bcead67",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "iphone-build",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 208514,
+      "sha256": "cc51b35b0951d2e964d936078074736156bf0faf995096cd61be00d231cc710d",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "iphone-course",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 936007,
+      "sha256": "be33b4c3e16a4dfb952d059ee74691e89ae7040b982eef152f7adc60aca15bd2",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "iphone-cyberpunk-settings",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 320542,
+      "sha256": "4079ea1615e41c9eb8a66d746f5382fd876da1d070d7e1cdcf342333644ed461",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "iphone-example-detail",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 930138,
+      "sha256": "1cd13b264323512abf5b83edd8145ce009f65cf570eb37cf32ebfbe5f0183598",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "iphone-examples",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 1224329,
+      "sha256": "047fd5827deab6f2fdb4fe0b6ec034fabfc869c9ed02932e8f1a3dd1ba2ecd21",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "iphone-learn",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 358675,
+      "sha256": "2290a9e79dda40711cea89349567210bb8032619ba4e9a36879c6919f2a59633",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "iphone-lesson",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 613935,
+      "sha256": "3ae6678b386a07ed26c20034655e0553d007223fdd73a42e54ac3686547684d6",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "iphone-my-courses",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 358675,
+      "sha256": "d9ecc96e7240cbbf6f00d7deea46689c8ee98dd5a9284634b3622c12d6655a3a",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "iphone-profile",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 346836,
+      "sha256": "77a69c5a24180a8e1edebb716bd0f072f6a453c5cf86811e3ebe601e4c1d1120",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "iphone-projects",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 583339,
+      "sha256": "5c4ec6215ef9292277983e7b530f80f701d9568ebd840076a5012bf71f999fe0",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "mcp-ipad-local-debug",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 461668,
+      "sha256": "8927644809b8603c6c68cd73a253d38dbb77d6522254d6d1da241d8574bffea4",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "mcp-iphone-selection",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 258546,
+      "sha256": "3e855816fbc7a0fe5e5c80f59fc734a5366c835175add924dc13669b99bc63ea",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "playground-cargo",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 122744,
+      "sha256": "cabd0308131246c9150e98ebae3b23102b59afee7c1d0c5b3f42c2457b7ebbfc",
+      "surface": "browser"
+    },
+    {
+      "name": "playground-debug-browser",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 158843,
+      "sha256": "3bd81f5318c195970e75b7ef37141eb6d606c6078835c2503b024c17f9ff7a17",
+      "surface": "browser"
+    },
+    {
+      "name": "playground-native-run",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 574727,
+      "sha256": "9ec3c0e64b0b5ee6fb3280d182464532d0fe34a3db2d335ff3e2c43b320ce631",
+      "surface": "Crabrix 1.1.5 source build / Simulator"
+    },
+    {
+      "name": "playground-shared-browser",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 124983,
+      "sha256": "01bf26699845891983fdaa822fb30455aa9ddee7fc8049ba8013e394e5469d3b",
+      "surface": "browser"
+    }
+  ],
+  "retainedDuo": "Earlier real captures retained; inner-screen Simulator access unavailable while Mac is locked."
+}

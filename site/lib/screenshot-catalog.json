@@ -1,0 +1,219 @@
+{
+  "ipad-build": {
+    "src": "/screenshots/2026-11-05/ipad-build.png",
+    "width": 2064,
+    "height": 2752,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "ipad-examples": {
+    "src": "/screenshots/2026-11-05/ipad-examples.png",
+    "width": 2064,
+    "height": 2752,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "ipad-learn": {
+    "src": "/screenshots/2026-11-05/ipad-learn.png",
+    "width": 2064,
+    "height": 2752,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "ipad-lesson": {
+    "src": "/screenshots/2026-11-05/ipad-lesson.png",
+    "width": 2064,
+    "height": 2752,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "ipad-profile": {
+    "src": "/screenshots/2026-11-05/ipad-profile.png",
+    "width": 2064,
+    "height": 2752,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "ipad-projects": {
+    "src": "/screenshots/2026-11-05/ipad-projects.png",
+    "width": 2064,
+    "height": 2752,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "iphone-build": {
+    "src": "/screenshots/2026-11-05/iphone-build.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "iphone-course": {
+    "src": "/screenshots/2026-11-05/iphone-course.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "iphone-cyberpunk-settings": {
+    "src": "/screenshots/2026-11-05/iphone-cyberpunk-settings.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "iphone-example-detail": {
+    "src": "/screenshots/2026-11-05/iphone-example-detail.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "iphone-examples": {
+    "src": "/screenshots/2026-11-05/iphone-examples.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "iphone-learn": {
+    "src": "/screenshots/2026-11-05/iphone-learn.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "iphone-lesson": {
+    "src": "/screenshots/2026-11-05/iphone-lesson.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "iphone-my-courses": {
+    "src": "/screenshots/2026-11-05/iphone-my-courses.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "iphone-profile": {
+    "src": "/screenshots/2026-11-05/iphone-profile.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "iphone-projects": {
+    "src": "/screenshots/2026-11-05/iphone-projects.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "mcp-ipad-local-debug": {
+    "src": "/screenshots/2026-11-05/mcp-ipad-local-debug.png",
+    "width": 2064,
+    "height": 2752,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "mcp-iphone-selection": {
+    "src": "/screenshots/2026-11-05/mcp-iphone-selection.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "playground-cargo": {
+    "src": "/screenshots/2026-11-05/playground-cargo.png",
+    "width": 1440,
+    "height": 1000,
+    "capturedAt": "2026-11-05",
+    "surface": "browser"
+  },
+  "playground-debug-browser": {
+    "src": "/screenshots/2026-11-05/playground-debug-browser.png",
+    "width": 1440,
+    "height": 1000,
+    "capturedAt": "2026-11-05",
+    "surface": "browser"
+  },
+  "playground-native-run": {
+    "src": "/screenshots/2026-11-05/playground-native-run.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "playground-shared-browser": {
+    "src": "/screenshots/2026-11-05/playground-shared-browser.png",
+    "width": 1440,
+    "height": 1000,
+    "capturedAt": "2026-11-05",
+    "surface": "browser"
+  },
+  "iphone-academy": {
+    "src": "/screenshots/2026-11-05/iphone-learn.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "iphone-library": {
+    "src": "/screenshots/2026-11-05/iphone-examples.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "iphone-settings": {
+    "src": "/screenshots/2026-11-05/iphone-cyberpunk-settings.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "ipad-my-courses": {
+    "src": "/screenshots/2026-11-05/ipad-learn.png",
+    "width": 2064,
+    "height": 2752,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "ipad-library": {
+    "src": "/screenshots/2026-11-05/ipad-examples.png",
+    "width": 2064,
+    "height": 2752,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "playground-native-selection": {
+    "src": "/screenshots/2026-11-05/mcp-iphone-selection.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "playground-debug-native": {
+    "src": "/screenshots/2026-11-05/mcp-ipad-local-debug.png",
+    "width": 2064,
+    "height": 2752,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 source build / Simulator"
+  },
+  "duo-laptop": {
+    "src": "/screenshots/duo-laptop.png",
+    "width": 2007,
+    "height": 2853,
+    "capturedAt": "earlier qualification capture",
+    "surface": "Duo Simulator / earlier qualification"
+  },
+  "duo-output": {
+    "src": "/screenshots/duo-output.png",
+    "width": 2007,
+    "height": 2853,
+    "capturedAt": "earlier qualification capture",
+    "surface": "Duo Simulator / earlier qualification"
+  }
+}

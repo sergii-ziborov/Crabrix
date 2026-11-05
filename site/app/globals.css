@@ -273,6 +273,7 @@ html[data-theme="light"] .contact-form select, html[data-theme="light"] .contact
 .guide-screenshots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
 .guide-screenshot { margin: 2rem auto; width: 100%; max-width: 32rem; }
 .guide-screenshot img { display: block; width: 100%; height: auto; max-height: 46rem; object-fit: contain; background: #0b1016; border: 1px solid var(--line, #283443); border-radius: 1.25rem; }
+.guide-screenshot-wide { max-width: 64rem; }
 .guide-screenshot figcaption { margin-top: .8rem; font-size: .88rem; line-height: 1.65; color: var(--muted, #aab8c8); }
 :is(.guide-atlas-screenshots, .guide-device-screenshots) .guide-screenshot a { display: flex; height: 30rem; align-items: center; justify-content: center; }
 :is(.guide-atlas-screenshots, .guide-device-screenshots) .guide-screenshot img { width: auto; max-width: 100%; height: 100%; object-fit: contain; }
@@ -346,3 +347,7 @@ html[data-theme="light"] .contact-form select, html[data-theme="light"] .contact
 .site-theme select { min-height: 34px; max-width: 128px; padding: 4px 8px; color: var(--muted); background: var(--panel); border: 1px solid var(--border); border-radius: 9px; font-size: 13px; }
 .site-theme select:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .site-header-tools { display: flex; align-items: center; gap: 10px; flex: none; }
+
+.home-playground-shot { margin:28px auto 0; max-width:1040px; }
+.home-playground-shot img { display:block; width:100%; height:auto; border:1px solid var(--border); border-radius:18px; }
+.home-playground-shot figcaption { margin-top:12px; color:var(--muted); font-size:.875rem; line-height:1.6; }

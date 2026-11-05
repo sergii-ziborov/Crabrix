@@ -180,7 +180,7 @@ code and stable lesson IDs are preserved.
   <img src="docs/screenshots/iphone-lesson.png" width="200" alt="Expanded borrowing lesson with highlighted Rust code and an infographic">
   <img src="docs/screenshots/iphone-examples.png" width="200" alt="Code Examples path with every example open">
   <img src="docs/screenshots/iphone-example-detail.png" width="200" alt="Example description, source preview and Open in Code">
-  <img src="docs/screenshots/iphone-cyberpunk-settings.png" width="200" alt="Earlier gold appearance, now called Amber Circuit, and optional Face ID protection">
+  <img src="docs/screenshots/iphone-cyberpunk-settings.png" width="200" alt="Cyberpunk appearance and optional device authentication">
 </p>
 
 The [iPad workspace](docs/screenshots/ipad-build.png) shows the file sidebar and in-file search above the editor. The current iPhone and iPad editor captures omit the keyboard-dismiss button from the Code/Terminal tab row; that control remains on [Duo](docs/screenshots/duo-laptop.png), where the code tabs and keyboard share the fold layout. [Duo Output](docs/screenshots/duo-output.png) shows the actual standard output of a completed multi-file run.

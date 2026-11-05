@@ -56,3 +56,8 @@
 .mcp-client-list strong { color:var(--text); }
 .mcp-client-list code { overflow-wrap:anywhere; }
 @media (max-width: 760px) { .mcp-feature-grid.mcp-grid-2 { grid-template-columns:1fr; } }
+
+.mcp-browser-capture { margin:24px auto 0; max-width:960px; }
+.mcp-browser-capture figure { margin:0; }
+.mcp-browser-capture img { display:block; width:100%; height:auto; border:1px solid var(--border); border-radius:16px; }
+.mcp-browser-capture figcaption { margin-top:14px; color:var(--muted); font-size:13px; line-height:1.6; }

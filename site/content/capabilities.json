@@ -12,7 +12,8 @@
       "build": "123",
       "sourceCommit": "a67519a3a7c448efc2f178175b3f177eda9fe8e2",
       "evidence": "docs/app-store/release-1.1.4-build123.json"
-    }
+    },
+    "scope": "Historical release records, not a live App Store availability feed. Native surface versions identify recorded qualification builds."
   },
   "capabilities": [
     {
@@ -161,9 +162,10 @@
         {
           "surface": "mcp",
           "state": "published",
-          "version": "0.3.3",
-          "profile": "Published crabrix npm library and stdio MCP server: ESM/CommonJS/TypeScript, encrypted temporary source, full snapshot, edit/view handoff, conditional edits, UTF-16 selections, creator closure and explicitly permitted local execution. Fourteen tools. The crabrix Rust crate is published on crates.io at 0.3.3; the tagged Go module and Rust binding embed the same local Node.js 22+ core. No backend compiler or host shell. Fixes option-like participant labels; qualified two-agent edits, selection, local Build/Run/Debug, foreign-job refusal and shared output without observer execution. ESM/CommonJS and programmatic MCP exports share one JS implementation and primary class/declaration identity. Documentation release: expanded registry READMEs, Crabrix illustrations, actual editor captures and a checked Rust library example; runtime behavior unchanged.",
-          "evidence": "docs/mcp-live-audit-2026-10-29.md"
+          "version": "0.5.0",
+          "profile": "Published crabrix npm library and local stdio MCP; Rust and Go bindings embed the same Node.js 22+ core. Temporary encrypted rooms, conditional source edits, UTF-16 selections, stable file operations and Recovery, edit/view handoff, agent links and doctor. Optional remote Streamable HTTP MCP decrypts the selected room in server memory while connected, after the website warning. Explicit client-local Check/Build/Run/Debug permission remains default-off and manifest-free; no backend compiler, shell or implicit package download.",
+          "evidence": "docs/site-captures-refresh-2026-11-05.md",
+          "verifiedAt": "2026-11-05"
         }
       ]
     },
@@ -336,5 +338,11 @@
       "evidence": "docs/browser-cargo-qualification-2026-11-05.md"
     }
   ],
-  "verifiedAtUTC": "2026-10-29T07:35:13.740916+00:00"
+  "verifiedAtUTC": "2026-10-29T07:35:13.740916+00:00",
+  "documentedNativeBaseline": {
+    "version": "1.1.5",
+    "build": "128",
+    "scope": "User guide baseline; not a live App Store availability claim",
+    "evidence": "docs/app-store/review-notes-build128.txt"
+  }
 }

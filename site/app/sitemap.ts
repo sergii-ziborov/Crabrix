@@ -17,8 +17,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }))),
   ]);
   const pageModifiedDates: Record<string, string> = {
-    ai: "2026-11-02", learn: "2026-10-29",
-    playground: "2026-11-05", guide: "2026-11-05", blog: "2026-11-04", technology: "2026-10-27", privacy: "2026-10-27", licenses: "2026-10-27",
+    "": "2026-11-05", about: "2026-11-05", ai: "2026-11-05", learn: "2026-10-29",
+    playground: "2026-11-05", guide: "2026-11-05", blog: "2026-11-04", technology: "2026-11-05", privacy: "2026-10-27", licenses: "2026-10-27",
   };
   return [...paths.map((path) => ({ url: pageUrl(path),
     ...(pageModifiedDates[path] ? { lastModified: pageModifiedDates[path] } : {}),
