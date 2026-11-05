@@ -1,5 +1,17 @@
 # Changelog
 
+## 5 November — Crabrix 1.1.6 submitted, local Academy projects and SEO
+
+- App 1.1.6 (129): TestFlight Internal QA and App Review, with manual publication.
+  Updated Academy catalog 20, curriculum counts and offline content license.
+- Five existing lessons include pinned local Serde/Tokio Cargo projects, qualified
+  in the app and browser. Course updates retain progress and opened projects.
+- Website: authenticated lesson-to-Playground links, related reading, accurate
+  modification dates, intrinsic image sizes and an audited 833-URL sitemap.
+- QA: interrupted-transfer simulation now waits for actual progress. The signed
+  simulator run reports 698 passed, 57 skipped and zero failures.
+- [Signed delivery and Apple readback](docs/app-store/release-1.1.6-build129.json).
+
 ## 3 November — Playground files keep stable IDs (R2), Crabrix 1.1.5 and MCP 0.4.0
 
 - Relay: each room records its document format. A room with stable file IDs refuses a

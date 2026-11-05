@@ -1,3 +1,13 @@
+> Delivery verified through App Store Connect — 5 November 2026: **1.1.6 (129)**
+> is **WAITING_FOR_REVIEW**, with **MANUAL** release. Build 129 is **VALID**,
+> **APP_STORE_ELIGIBLE** and **IN_BETA_TESTING** in **Internal QA**. The manual
+> Duo SDK Cloud build/archive succeeded from `c689fab`; the archive signature,
+> version, SDK 27.1, catalog sequence 20 and legal copies were verified. All 19
+> ordered screenshots are retained. The final simulator result has 755 checks:
+> 698 passed, 57 skipped and no failures. Test-only fixture qualification at
+> `f527aa3` leaves app build inputs unchanged. No physical-device pass is claimed.
+> [Delivery and Apple readback](release-1.1.6-build129.json).
+
 > App Review submitted through App Store Connect — 1 November 2026: **1.1.4 (123)**
 > is **WAITING_FOR_REVIEW** with **MANUAL** release, and VALID / IN_BETA_TESTING in
 > Internal QA. It was built by Xcode Cloud from `a67519a`. All 19 Store screenshots are

@@ -4,6 +4,17 @@
 
 [Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support/) · [Privacy](https://crabrix.com/privacy/) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
+## Crabrix 1.1.6 — TestFlight and App Review
+
+Build **129** is **VALID / IN_BETA_TESTING** in Internal QA and
+**WAITING_FOR_REVIEW**, with manual publication. The signed Cloud archive uses
+SDK 27.1 and Academy catalog 20. Five existing lessons now offer pinned local
+Serde/Tokio projects; About and the offline content license are synchronized.
+The editor and Duo layout code is unchanged. The final signed-simulator run
+reports 698 passed, 57 skipped and zero failed checks.
+[Delivery receipt](docs/app-store/release-1.1.6-build129.json) ·
+[Local lesson profiles and qualification](docs/local-cargo-lessons-2026-11-05.md).
+
 ## Crabrix 1.1.4 — reviewed Academy and sturdier projects
 
 All 754 lessons were reviewed against real rustc and Cargo runs, then corrected and

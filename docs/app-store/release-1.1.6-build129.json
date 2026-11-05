@@ -1,0 +1,88 @@
+{
+  "checkedAt": "2026-11-05T17:18:56.356Z",
+  "version": "1.1.6",
+  "buildNumber": "129",
+  "buildID": "b1bc3cf5-e3bc-4eff-a189-8be1ed029e53",
+  "appStoreVersionID": "37ddcc45-822d-44b4-8f06-f6ab810d87d2",
+  "reviewSubmissionID": "3b4e97eb-122c-4c49-8578-8b72bc61489b",
+  "appStoreState": "WAITING_FOR_REVIEW",
+  "reviewState": "WAITING_FOR_REVIEW",
+  "submittedDate": "2026-11-05T17:18:12.035Z",
+  "releaseType": "MANUAL",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "buildAudienceType": "APP_STORE_ELIGIBLE",
+  "listingReadbackMatches": true,
+  "reviewNotesReadbackMatches": true,
+  "appSourceCommit": "c689fabbff5efb5dd6cb470cf322ba2aa7a3652f",
+  "qualifiedTestSourceCommit": "f527aa3b55bff17868756ebcc4316aa9397bd27a",
+  "appInputsUnchangedInTestFixtureFix": true,
+  "cloudBuildRunID": "2d4ffafe-0b73-4be5-a954-4f49b9448bd9",
+  "cloudCompletionStatus": "SUCCEEDED",
+  "cloudActions": [
+    {
+      "type": "BUILD",
+      "state": "SUCCEEDED"
+    },
+    {
+      "type": "ARCHIVE",
+      "state": "SUCCEEDED"
+    }
+  ],
+  "testFlightGroup": {
+    "groupID": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "groupName": "Internal QA",
+    "buildID": "b1bc3cf5-e3bc-4eff-a189-8be1ed029e53",
+    "verified": true
+  },
+  "testNotesFile": "docs/app-store/testflight-what-to-test-1.1.6-build129.txt",
+  "reviewNotesFile": "docs/app-store/review-notes-build129.txt",
+  "screenshotsRetained": 19,
+  "orderedScreenshotBytesAndNamesMatchPreviousVersion": true,
+  "archiveVerification": {
+    "version": "1.1.6",
+    "build": "129",
+    "sdk": "iphoneos27.1",
+    "xcode": "2710",
+    "xcodeBuild": "27A9275",
+    "encryptionExempt": true,
+    "strictCloudArchiveSignatureVerified": true,
+    "archiveSHA256": "f2a3e945722fe53b1fc89465663d55344b206aa3fc0042b6486936c15ab7a803",
+    "activeCatalogSequence": 20,
+    "activeCatalogSHA256": "4c2b78dddbb8f7fc3e531d754ca801876e37aa89d3281e6b57f0453c0b639ace",
+    "bundledLegalCopiesMatch": true
+  },
+  "artifacts": [
+    {
+      "artifactID": "4e4e2a5a-6b95-4657-ba3f-c2a516cbbab9",
+      "fileName": "Crabrix Build 129 Archive for Crabrix on iOS.xcarchive.zip",
+      "fileType": "ARCHIVE",
+      "localFile": "cloud-129.xcarchive.zip",
+      "bytes": 98606880,
+      "sha256": "f2a3e945722fe53b1fc89465663d55344b206aa3fc0042b6486936c15ab7a803"
+    },
+    {
+      "artifactID": "f462302d-d5fd-4ac2-829e-89e40df1bbb9",
+      "fileName": "Crabrix Build 129 XCResult for Crabrix archive.xcresult.zip",
+      "fileType": "RESULT_BUNDLE",
+      "localFile": "cloud-129.xcresult.zip",
+      "bytes": 146868,
+      "sha256": "5dff1c97651d239ed99a6e8b4bfd29da42128aca31ddfe402ce60e44a394884a"
+    }
+  ],
+  "simulatorRegression": {
+    "result": "Passed",
+    "totalTestCount": 755,
+    "passedTests": 698,
+    "skippedTests": 57,
+    "failedTests": 0
+  },
+  "simulator": "iOS 27.1 Duo; signed test host",
+  "physicalDeviceTested": false,
+  "qualificationNotes": [
+    "Initial unsigned QA had no localhost:3393 server and no Keychain entitlement; both were corrected before the passing full run.",
+    "Interrupted-download mock now fails after observed partial progress rather than a scheduler-dependent 200 ms delay. This is test code only.",
+    "The actual iOS WebKit Run/Debug, device Keychain, native HTTPS clone/fetch and Tokio async debug gates pass.",
+    "57 opt-in or separate-profile cases remain skipped; they are not counted as passes."
+  ]
+}
