@@ -1,0 +1,142 @@
+[
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Auto",
+    "width": 390
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Light",
+    "width": 390
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Dark",
+    "width": 390
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Amber Circuit",
+    "width": 390
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Cyberpunk",
+    "width": 390
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Auto",
+    "width": 768
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Light",
+    "width": 768
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Dark",
+    "width": 768
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Amber Circuit",
+    "width": 768
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Cyberpunk",
+    "width": 768
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Auto",
+    "width": 1024
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Light",
+    "width": 1024
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Dark",
+    "width": 1024
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Amber Circuit",
+    "width": 1024
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Cyberpunk",
+    "width": 1024
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Auto",
+    "width": 1440
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Light",
+    "width": 1440
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Dark",
+    "width": 1440
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Amber Circuit",
+    "width": 1440
+  },
+  {
+    "guides": 20,
+    "links": 20,
+    "overflow": false,
+    "theme": "Cyberpunk",
+    "width": 1440
+  }
+]

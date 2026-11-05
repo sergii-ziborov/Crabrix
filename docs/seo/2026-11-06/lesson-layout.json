@@ -1,0 +1,114 @@
+[
+  {
+    "fullCodeBlocks": 2,
+    "overflow": false,
+    "steps": 3,
+    "theme": "Light",
+    "width": 390
+  },
+  {
+    "fullCodeBlocks": 2,
+    "overflow": false,
+    "steps": 3,
+    "theme": "Dark",
+    "width": 390
+  },
+  {
+    "fullCodeBlocks": 2,
+    "overflow": false,
+    "steps": 3,
+    "theme": "Amber Circuit",
+    "width": 390
+  },
+  {
+    "fullCodeBlocks": 2,
+    "overflow": false,
+    "steps": 3,
+    "theme": "Cyberpunk",
+    "width": 390
+  },
+  {
+    "fullCodeBlocks": 2,
+    "overflow": false,
+    "steps": 3,
+    "theme": "Light",
+    "width": 768
+  },
+  {
+    "fullCodeBlocks": 2,
+    "overflow": false,
+    "steps": 3,
+    "theme": "Dark",
+    "width": 768
+  },
+  {
+    "fullCodeBlocks": 2,
+    "overflow": false,
+    "steps": 3,
+    "theme": "Amber Circuit",
+    "width": 768
+  },
+  {
+    "fullCodeBlocks": 2,
+    "overflow": false,
+    "steps": 3,
+    "theme": "Cyberpunk",
+    "width": 768
+  },
+  {
+    "fullCodeBlocks": 2,
+    "overflow": false,
+    "steps": 3,
+    "theme": "Light",
+    "width": 1024
+  },
+  {
+    "fullCodeBlocks": 2,
+    "overflow": false,
+    "steps": 3,
+    "theme": "Dark",
+    "width": 1024
+  },
+  {
+    "fullCodeBlocks": 2,
+    "overflow": false,
+    "steps": 3,
+    "theme": "Amber Circuit",
+    "width": 1024
+  },
+  {
+    "fullCodeBlocks": 2,
+    "overflow": false,
+    "steps": 3,
+    "theme": "Cyberpunk",
+    "width": 1024
+  },
+  {
+    "fullCodeBlocks": 2,
+    "overflow": false,
+    "steps": 3,
+    "theme": "Light",
+    "width": 1440
+  },
+  {
+    "fullCodeBlocks": 2,
+    "overflow": false,
+    "steps": 3,
+    "theme": "Dark",
+    "width": 1440
+  },
+  {
+    "fullCodeBlocks": 2,
+    "overflow": false,
+    "steps": 3,
+    "theme": "Amber Circuit",
+    "width": 1440
+  },
+  {
+    "fullCodeBlocks": 2,
+    "overflow": false,
+    "steps": 3,
+    "theme": "Cyberpunk",
+    "width": 1440
+  }
+]

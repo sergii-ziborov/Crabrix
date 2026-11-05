@@ -1,0 +1,99 @@
+{
+  "sourceCommit": "c75df3b7a38ccf49494b7fb247753d93a524822e",
+  "changesCommit": "51d049b4f33173982521c33813ae00d9b527b929",
+  "deployedAt": "2026-11-05T22:23:01.223296989Z",
+  "nodeId": "fe8b3706-3da6-47f8-875c-ce86a0cb8114",
+  "targetId": "crabrix-web",
+  "servingImage": "0e23a563005f5172767a04fa24b03a5db753a7b01aa7db01739e4fe5ea690cb7",
+  "rollbackImage": "8e2dbd8f3cf791a015b05a2c7ea8f988bce537896ba5ac8792fe009f3a8ea4ad",
+  "sourceRevision": "sha256:b9785164c5943864e1ad56e1db2150195096212cb6e577420bf448decc11ecf8",
+  "registryManifest": "sha256:61882e53fe19f2820b16e9d546616945b4ab6eed9b2287c472a0f9a2454ecfa5",
+  "buildJob": {
+    "id": "crabrix-discovery-c75df3b-build-20261106",
+    "targetId": "crabrix-web",
+    "destination": "localhost:5001/hostwatch/helsinki/crabrix-web:current",
+    "digest": "sha256:1d59610c04d9da28078d7f8a0ddf1a5b13c3db2934d506339447b5babe33d2db",
+    "state": "succeeded",
+    "createdAt": "2026-11-05T22:18:22.579051372Z",
+    "finishedAt": "2026-11-05T22:21:05.097984157Z",
+    "action": "source_build",
+    "expectedRevision": "sha256:c7b91824d6118bfc9c25135bef0aee847660f367a18a869e6f2e0af57c9e1282",
+    "sourceBuild": {
+      "uploadId": "crabrix-discovery-fragments-c75df3b-20261106",
+      "mode": "partial"
+    },
+    "sourceRevision": "sha256:b9785164c5943864e1ad56e1db2150195096212cb6e577420bf448decc11ecf8",
+    "builtDigest": "sha256:0e23a563005f5172767a04fa24b03a5db753a7b01aa7db01739e4fe5ea690cb7"
+  },
+  "registryJob": {
+    "id": "crabrix-discovery-c75df3b-registry-20261106",
+    "targetId": "crabrix-web",
+    "destination": "localhost:5001/hostwatch/helsinki/crabrix-web:current",
+    "digest": "sha256:0e23a563005f5172767a04fa24b03a5db753a7b01aa7db01739e4fe5ea690cb7",
+    "state": "succeeded",
+    "createdAt": "2026-11-05T22:22:05.410916231Z",
+    "finishedAt": "2026-11-05T22:22:31.741292642Z",
+    "action": "update",
+    "expectedPublishedDigest": "sha256:391dc2b09dfdaaf31cee5b0a46bc16717056f0e15edc9764a10c587d3afd70bc",
+    "publishedDigest": "sha256:61882e53fe19f2820b16e9d546616945b4ab6eed9b2287c472a0f9a2454ecfa5"
+  },
+  "deploymentJob": {
+    "id": "crabrix-discovery-c75df3b-deploy-20261106",
+    "targetId": "crabrix-web",
+    "destination": "localhost:5001/hostwatch/helsinki/crabrix-web:current",
+    "digest": "sha256:0e23a563005f5172767a04fa24b03a5db753a7b01aa7db01739e4fe5ea690cb7",
+    "state": "succeeded",
+    "createdAt": "2026-11-05T22:22:59.234860163Z",
+    "finishedAt": "2026-11-05T22:23:01.223296989Z",
+    "action": "deploy_update",
+    "expectedRevision": "sha256:e0438ec1ef60db38f6d22102d428ad0247c7141a4308ae42cf248777451f3417"
+  },
+  "liveReadback": {
+    "targetId": "crabrix-web",
+    "container": "crabrix-web-site-1",
+    "exists": true,
+    "containerId": "68887d57233f20f257920de95cb6f1a03ed9e1f0ee020641c1877ecdb2541587",
+    "imageDigest": "sha256:0e23a563005f5172767a04fa24b03a5db753a7b01aa7db01739e4fe5ea690cb7",
+    "sourceDigest": "sha256:0e23a563005f5172767a04fa24b03a5db753a7b01aa7db01739e4fe5ea690cb7",
+    "running": true,
+    "revision": "sha256:3691663cfa1e9195259d30d0eed727582127e8d2f26e2713f5b67a6b9844a64c",
+    "actions": [
+      "update",
+      "replace",
+      "delete"
+    ]
+  },
+  "backup": "Consistent on-host account backup completed before cutover.",
+  "accountAndCacheMountsPreserved": true,
+  "siblingMcpRuntimePreserved": true,
+  "localTests": {
+    "passed": 151,
+    "failed": 0,
+    "typecheck": "passed",
+    "productionBuild": "passed"
+  },
+  "publishedHttp": {
+    "checkedAt": "2026-11-05T22:23:51.145Z",
+    "base": "https://crabrix.com",
+    "canonicalPages": 833,
+    "pagesChecked": 833,
+    "lessons": 771,
+    "algorithmSteps": 600,
+    "checkedInternalFragments": 1809,
+    "accessGatesPassed": true,
+    "htmlRscQueryIndexable": true,
+    "issues": []
+  },
+  "browserCourseCases": 20,
+  "browserFullLessonCases": 16,
+  "fullLessonAccountSessionSurvived": true,
+  "publicMethodGuides": 20,
+  "publicGuideWords": 2483,
+  "algorithmStagesWithDistinctPreviews": 600,
+  "originalModelRecognitionPairsWithIdenticalFirst80Words": 200,
+  "remainingPairsWithIdenticalFirst80Words": 0,
+  "retainedCanonicalURLs": 833,
+  "newInternalStageAndMethodLinks": 1800,
+  "noSearchRankingRecoveryClaimed": true,
+  "searchVisibilityCause": "Not conclusively established; technical fixes are not evidence of recovered ranking."
+}

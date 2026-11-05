@@ -6,10 +6,11 @@ Production runs on `2.29.175.213`, Hostwatch node
 `fe8b3706-3da6-47f8-875c-ce86a0cb8114`. Use `service_locations` to inspect
 current placement, then target `crabrix-web` or `crabrix-mcp` on that node.
 The current website was built through the configured Hostwatch source builder
-from `343aef5`, image
-`sha256:8e2dbd8f3cf791a015b05a2c7ea8f988bce537896ba5ac8792fe009f3a8ea4ad`.
-The migrated `practice-1758478` baseline, image `3a9398047dc7…`, remains
-available for rollback. [Current release and SEO readback](seo/2026-11-05/README.md).
+from `c75df3b`, image
+`sha256:0e23a563005f5172767a04fa24b03a5db753a7b01aa7db01739e4fe5ea690cb7`.
+The previous `343aef5` image `8e2dbd8f3cf7…` and migrated
+`practice-1758478` baseline `3a9398047dc7…` remain available for recovery.
+[Current release and SEO readback](seo/2026-11-06/README.md).
 Both production containers retain their names and loopback ports 3212/3214.
 Academy accounts, backups and deletion journals remain at
 `/srv/apps/crabrix-site/accounts`, owned by container UID 1000.

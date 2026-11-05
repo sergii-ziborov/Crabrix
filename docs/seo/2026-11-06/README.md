@@ -15,7 +15,7 @@ The full app course snapshot and signed packs are unchanged.
 Twenty original method guides add 2,483 public words about choosing a method,
 preconditions, counterexamples, representation and Rust pitfalls. A method index
 links to the existing unit anchors. Each of the 600 steps links to its two sibling
-stages and the corresponding method guide: 1,800 useful internal paths without
+stages and the corresponding method guide: 1,800 additional internal links without
 changing canonical URLs. Recorded modification dates agree between metadata and
 the sitemap. Reference reading points to Rust's own collection/slice documentation
 and MIT's original algorithm-design lecture notes.
@@ -48,7 +48,33 @@ introductions, internal fragments and full-lesson/media/starter access boundarie
 Run `npm run audit:seo -- https://crabrix.com /tmp/seo-receipt.json` from `site`.
 It also checks that an ordinary `_rsc` HTML URL is not accidentally noindexed.
 
-Release checks and the exact serving image are recorded in the final delivery
-receipt after the configured Hostwatch build, registry publication and deployment.
-The retained previous image is the rollback target. No app, npm, remote MCP,
-account schema, DNS or nginx modification belongs to this release.
+Publication and verification
+
+Hostwatch built the final `c75df3b` source with webpack, published its registry
+manifest, and verified the independent web deployment at 22:23 UTC on 5 November
+(6 November in the workspace timezone). The serving image is `0e23a563005f…`;
+the previous `8e2dbd8f3cf7…` image is retained for rollback. A consistent on-host
+account backup completed before cutover. The account/cache mounts and sibling MCP
+container identity remained identical. The existing account session still opens
+complete lessons. The temporary candidate and QA tunnel were removed afterwards.
+
+151 tests, TypeScript and production builds passed. The server candidate passed
+all 833 canonical pages, as did the subsequent public audit: 771 gated previews,
+600 stage-specific introductions and 1,809 internal fragment references, with no
+reported issue. Twenty published course layout cases cover four widths and all
+five themes; sixteen full-lesson cases cover the same widths and four explicit
+themes. No horizontal page overflow was observed. Repeated method-index clicks
+replace the URL fragment correctly, with headings visible below the sticky header.
+Navigation from a method into a lesson and between its stages works. The published
+course load made zero speculative RSC requests, and the browser reported no errors.
+All 19 linked CSS/JavaScript assets from eight representative published pages
+returned 200; the legacy favicon request now redirects to the existing PNG logo.
+These are technical checks, not a measured field Core Web Vitals or ranking gain.
+
+[HTTP audit](published.json), [release receipt](release.json),
+[course layouts](course-layout.json), [full-lesson layouts](lesson-layout.json),
+[prefetch observation](prefetch.json), [linked assets](assets.json),
+[published guide](published-method-guide.png).
+
+No app, npm, remote MCP, account schema, DNS or nginx modification belongs to this
+release. No search-traffic recovery or completed Google reprocessing is claimed.
