@@ -9,7 +9,7 @@
   "preservedLessonIdentitiesAndAnswers": 754,
   "courseTests": 28,
   "websiteTests": 135,
-  "nativeTests": 18,
+  "nativeTests": 19,
   "finalSignedInstallTests": 1,
   "referenceLabsPassed": 31,
   "wrongUnchangedAndForgedSubmissionsRejected": 93,
@@ -271,10 +271,215 @@
       "imagesLoaded": true
     }
   ],
-  "fixtureSHA256": "facc3259f7fb6df49f0974612571f134d58b30115f85a0f13790e736b62d27fe",
+  "fixtureSHA256": "7aead9e6fbfd37d82c3eb54c8820f2e1693f59c8b8ec9513fc548362af03d4cd",
   "limits": [
     "Protected compiler lab completion is in the app; web lessons provide reading and practice instructions.",
     "Serde and three Tokio examples declare a desktop Cargo profile.",
     "Finite tests are evidence for the exercised contracts, not a formal proof."
-  ]
+  ],
+  "publishedCourseAssets": {
+    "passed": true,
+    "sequence": 18,
+    "origin": "Hetzner deployment host",
+    "downloadMethod": "Verified every byte using 1 MiB HTTP ranges after whole-file gateway timeouts",
+    "atUTC": "2026-11-05T09:04:30Z",
+    "checks": [
+      {
+        "course": "basics",
+        "version": "1.0.8",
+        "bytes": 18026840,
+        "sha256": "a3a13c0a4d2c945df06d00f55a981c828bfb53db6bcefc9e5dc8f34125cbe67c"
+      },
+      {
+        "course": "concurrency",
+        "version": "1.0.7",
+        "bytes": 12642923,
+        "sha256": "a85935d8213d6219da30986bf9e7b73d9d5c3ed166ef988639e2584c47b8b22c"
+      },
+      {
+        "course": "ownership",
+        "version": "1.0.8",
+        "bytes": 20904772,
+        "sha256": "c6f813202a72b8ba43be1cf6db7f2d10024f80bd588d606ec93943de4e5a990a"
+      },
+      {
+        "course": "projects",
+        "version": "1.0.8",
+        "bytes": 14722973,
+        "sha256": "d7929fd4c03d0c882588e8a5cf69dc345723787eccdb70b849656d06bf523074"
+      },
+      {
+        "course": "systems",
+        "version": "1.0.8",
+        "bytes": 10458571,
+        "sha256": "f0515b1b7f6c15ae0b1de8c8029d8778cfff988521f5c76d05070401a7572ac7"
+      }
+    ]
+  },
+  "finalNativeFilesystemRegressionPassed": true,
+  "webReadingParityWithGradingPatch": 771,
+  "publishedGradingPatch": {
+    "passed": true,
+    "sequence": 19,
+    "origin": "Hetzner deployment host",
+    "downloadMethod": "Verified every byte using 1 MiB HTTP ranges after whole-file gateway timeouts",
+    "atUTC": "2026-11-05T09:26:59Z",
+    "checks": [
+      {
+        "course": "projects",
+        "version": "1.0.9",
+        "bytes": 14722880,
+        "sha256": "22ff6b678f320764fbdab201c51fd4a373273985e8610a1ed5528663fafb480d"
+      }
+    ]
+  },
+  "catalogSequence": 19,
+  "gradingCourseCommit": "427db8491e3897ea7647b0f394d113db4c0c734f",
+  "publicHTTP": {
+    "atUTC": "2026-11-05T09:09:40.028Z",
+    "base": "https://crabrix.com",
+    "passed": true,
+    "sitemapURLs": 833,
+    "checks": [
+      {
+        "path": "/learn/ownership/fromstr-domain-values/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      },
+      {
+        "path": "/learn/ownership/option-result-transpose/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      },
+      {
+        "path": "/learn/ownership/asref-borrowed-inputs/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      },
+      {
+        "path": "/learn/projects/buffered-line-input/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      },
+      {
+        "path": "/learn/projects/paths-and-boundaries/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      },
+      {
+        "path": "/learn/projects/sandbox-file-roundtrip/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      },
+      {
+        "path": "/learn/projects/validated-records/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      },
+      {
+        "path": "/learn/projects/serde-roundtrip-validation/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      },
+      {
+        "path": "/learn/projects/properties-and-oracles/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      },
+      {
+        "path": "/learn/projects/hostile-parser-inputs/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      },
+      {
+        "path": "/learn/projects/unicode-regression-tests/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      },
+      {
+        "path": "/learn/concurrency/joinset-task-ownership/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      },
+      {
+        "path": "/learn/concurrency/semaphore-backpressure/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      },
+      {
+        "path": "/learn/concurrency/graceful-shutdown-protocol/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      },
+      {
+        "path": "/learn/systems/wasm-host-boundaries/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      },
+      {
+        "path": "/learn/systems/wasm-linear-memory/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      },
+      {
+        "path": "/learn/systems/runtime-resource-budgets/",
+        "guest": 200,
+        "rscWithheld": true,
+        "privateMedia": 401,
+        "fullLesson": false
+      }
+    ]
+  },
+  "deployment": {
+    "sourceCommit": "175847861fdd4e484ebdf3d1c5fe683877f2c96b",
+    "atUTC": "2026-11-05T09:08:58Z",
+    "image": "localhost/crabrix-web-site:practice-1758478",
+    "imageID": "3a9398047dc7202facb58bb2c282d0a13287df2e287809bc8e4a24e552b1b53e",
+    "health": "healthy",
+    "rollbackContainer": "crabrix-web-site-before-practice-20261105",
+    "accountBackup": "Account backup saved; seven-day retention applied.",
+    "accountMountUnchanged": true,
+    "resourceLimitsUnchanged": true,
+    "remoteMCPContainerUnchanged": true,
+    "remoteMCPImage": "localhost/crabrix-mcp-remote:0.5.0-d411197",
+    "remoteMCPContainerID": "4624eca64194378d90d0503ef0ed7704ae7dee503a72f4e4a83c1fdcfcae85a0",
+    "nativeAppChanged": false,
+    "DNSChanged": false,
+    "nginxChanged": false,
+    "sourceTreeSHA256": "3f1acdb38db0285166caf5a609ce97286074b7a93f6388f0d1ed942768a01f8d"
+  },
+  "screenshotSHA256": "1c6694dd69598c88f6622df8ae6402ce92025e2f9c388dc8a3f6f78ef1ed3498",
+  "remoteMCPPreserved": true
 }

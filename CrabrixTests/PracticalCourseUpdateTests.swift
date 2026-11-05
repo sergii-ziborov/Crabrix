@@ -3,6 +3,20 @@ import XCTest
 @testable import Crabrix
 
 final class PracticalCourseUpdateTests: XCTestCase {
+    func testFilesystemLabRejectsReturningTextWithoutWritingAFile() async throws {
+        struct Fixture: Decodable { let negativeFileSource: String; let negativeFileHarness: String }
+        let root = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "CompilerCandidate", withExtension: nil))
+        let fixture = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: root.appending(path: "PracticeLabs.json")))
+        let harness = try XCTUnwrap(LessonHarnessNonce.instrument(
+            verificationSource: fixture.negativeFileHarness,
+            expectedOutput: "PASS sandbox-file-roundtrip\n", nonce: "negative-file-check"
+        ))
+        let result = await WasmRustCompiler().run(source: harness.source, supportingFiles: ["solution.rs": fixture.negativeFileSource])
+        XCTAssertEqual(result.phase, .run, result.detail)
+        XCTAssertFalse(result.succeeded, "Returning the input without the filesystem effect must fail")
+        XCTAssertFalse(LessonHarnessNonce.reveal(stdout: result.stdout, run: harness.run).completed)
+    }
+
     func testThirtyOneTypedLabsRunWithTheBundledLocalWasmCompiler() async throws {
         struct Fixture: Decodable { let count: Int; let source: String; let expected: String }
         let root = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "CompilerCandidate", withExtension: nil))
@@ -30,7 +44,7 @@ final class PracticalCourseUpdateTests: XCTestCase {
         let before = try InstalledCourseRepository(root: root, records: await installer.installed(), keyring: keys)
         let oldIDs = before.courses.flatMap(\.units).flatMap(\.lessons).map(\.id)
         let oldQuestion = before.writing(for: "functions")?.question
-        for (id, version) in [("basics", "1.0.8"), ("ownership", "1.0.8"), ("projects", "1.0.8"), ("concurrency", "1.0.7"), ("systems", "1.0.8")] {
+        for (id, version) in [("basics", "1.0.8"), ("ownership", "1.0.8"), ("projects", "1.0.9"), ("concurrency", "1.0.7"), ("systems", "1.0.8")] {
             _ = try await installer.install(descriptorBytes: Data(contentsOf: packs.appending(path: "\(id).descriptor.json")), downloadedArchive: packs.appending(path: "\(id)-\(version).zip"), keyring: keys)
         }
         let after = try InstalledCourseRepository(root: root, records: await installer.installed(), keyring: keys)
