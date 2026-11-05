@@ -1,0 +1,152 @@
+{
+  "date": "2026-11-05",
+  "compilerSHA256": "0286dc52064283ef78ba153a554d86ae742e6c8cd638aea8662e07d3529233fc",
+  "courseSourceCommit": "f4bdee3193f0228e2c3067cbda8cbf0427a4e850",
+  "networkAfterPrepare": "forbidden",
+  "checks": [
+    {
+      "lesson": "serde-roundtrip-validation",
+      "sourceSHA256": "787c6fc3b25cb47377e82805e7189d7742fd36d67b4439eacba06c7a73b68a86",
+      "packages": [
+        [
+          "serde_core",
+          "1.0.229",
+          [
+            "result",
+            "std"
+          ]
+        ],
+        [
+          "serde",
+          "1.0.229",
+          [
+            "default",
+            "std"
+          ]
+        ],
+        [
+          "itoa",
+          "1.0.18",
+          []
+        ],
+        [
+          "memchr",
+          "2.8.3",
+          [
+            "alloc",
+            "std"
+          ]
+        ],
+        [
+          "zmij",
+          "1.0.23",
+          []
+        ],
+        [
+          "serde_json",
+          "1.0.151",
+          [
+            "default",
+            "std"
+          ]
+        ]
+      ],
+      "runExit": 0,
+      "debugExit": 0,
+      "stdout": "Serde round-trip and validation: ok\n",
+      "debugPauses": 140
+    },
+    {
+      "lesson": "joinset-task-ownership",
+      "sourceSHA256": "6fda844fe097ca1786a0305a70e940817e6c9d2dc17051b37807f22f4990197b",
+      "packages": [
+        [
+          "pin-project-lite",
+          "0.2.17",
+          []
+        ],
+        [
+          "tokio",
+          "1.54.1",
+          [
+            "rt",
+            "sync"
+          ]
+        ]
+      ],
+      "runExit": 0,
+      "debugExit": 0,
+      "stdout": "joinset-task-ownership: ok\n",
+      "debugPauses": 31
+    },
+    {
+      "lesson": "semaphore-backpressure",
+      "sourceSHA256": "d0304d1e38ebde83aa6e8e21ee2cca27761f47b9b0882031cf997690b5738a25",
+      "packages": [
+        [
+          "pin-project-lite",
+          "0.2.17",
+          []
+        ],
+        [
+          "tokio",
+          "1.54.1",
+          [
+            "rt",
+            "sync"
+          ]
+        ]
+      ],
+      "runExit": 0,
+      "debugExit": 0,
+      "stdout": "semaphore-backpressure: ok\n",
+      "debugPauses": 60
+    },
+    {
+      "lesson": "graceful-shutdown-protocol",
+      "sourceSHA256": "dd56eae8fb3a7fb86bfaac49ba07a58f436ec40f107ecab15d0ba2ee45d710a6",
+      "packages": [
+        [
+          "pin-project-lite",
+          "0.2.17",
+          []
+        ],
+        [
+          "tokio",
+          "1.54.1",
+          [
+            "rt",
+            "sync"
+          ]
+        ]
+      ],
+      "runExit": 0,
+      "debugExit": 0,
+      "stdout": "graceful-shutdown-protocol: ok\n",
+      "debugPauses": 31
+    },
+    {
+      "lesson": "async-runtime",
+      "sourceSHA256": "bf3e61bfb676daa0b7b58e76b965d6481fcd29dc31cc8c489afa53fa4b99b543",
+      "packages": [
+        [
+          "pin-project-lite",
+          "0.2.17",
+          []
+        ],
+        [
+          "tokio",
+          "1.54.1",
+          [
+            "rt",
+            "sync"
+          ]
+        ]
+      ],
+      "runExit": 0,
+      "debugExit": 0,
+      "stdout": "42\n",
+      "debugPauses": 5
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+[
+  {
+    "label": "Light",
+    "runVisible": true,
+    "scrollWidth": 390,
+    "viewport": 390,
+    "width": 390
+  },
+  {
+    "label": "Dark",
+    "runVisible": true,
+    "scrollWidth": 390,
+    "viewport": 390,
+    "width": 390
+  },
+  {
+    "label": "Amber Circuit",
+    "runVisible": true,
+    "scrollWidth": 390,
+    "viewport": 390,
+    "width": 390
+  },
+  {
+    "label": "Cyberpunk",
+    "runVisible": true,
+    "scrollWidth": 390,
+    "viewport": 390,
+    "width": 390
+  },
+  {
+    "label": "Light",
+    "runVisible": true,
+    "scrollWidth": 768,
+    "viewport": 768,
+    "width": 768
+  },
+  {
+    "label": "Dark",
+    "runVisible": true,
+    "scrollWidth": 768,
+    "viewport": 768,
+    "width": 768
+  },
+  {
+    "label": "Amber Circuit",
+    "runVisible": true,
+    "scrollWidth": 768,
+    "viewport": 768,
+    "width": 768
+  },
+  {
+    "label": "Cyberpunk",
+    "runVisible": true,
+    "scrollWidth": 768,
+    "viewport": 768,
+    "width": 768
+  },
+  {
+    "label": "Light",
+    "runVisible": true,
+    "scrollWidth": 1024,
+    "viewport": 1024,
+    "width": 1024
+  },
+  {
+    "label": "Dark",
+    "runVisible": true,
+    "scrollWidth": 1024,
+    "viewport": 1024,
+    "width": 1024
+  },
+  {
+    "label": "Amber Circuit",
+    "runVisible": true,
+    "scrollWidth": 1024,
+    "viewport": 1024,
+    "width": 1024
+  },
+  {
+    "label": "Cyberpunk",
+    "runVisible": true,
+    "scrollWidth": 1024,
+    "viewport": 1024,
+    "width": 1024
+  },
+  {
+    "label": "Light",
+    "runVisible": true,
+    "scrollWidth": 1440,
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "label": "Dark",
+    "runVisible": true,
+    "scrollWidth": 1440,
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "label": "Amber Circuit",
+    "runVisible": true,
+    "scrollWidth": 1440,
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "label": "Cyberpunk",
+    "runVisible": true,
+    "scrollWidth": 1440,
+    "viewport": 1440,
+    "width": 1440
+  }
+]

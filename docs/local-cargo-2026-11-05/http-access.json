@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "guestProject": 307,
+  "signedInProject": 200,
+  "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+  "publicPlayground": 200,
+  "guestLessonMedia": 401,
+  "rawCorpus": 404
+}

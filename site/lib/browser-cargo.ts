@@ -4,6 +4,7 @@ import toolchain from './playground-toolchain.json' with { type: 'json' };
 import { validatePlaygroundDocument, type PlaygroundDocument } from './playground-document.ts';
 import { activeDependencies, cargoRange, crateName, dependencyTable, featureTable, manifestTable, readCargoRoot, type CargoDependency, type CargoRoot } from './browser-cargo-manifest.ts';
 import { CARGO_BUDGET, digest, readCrateArchive, type CrateArchive } from './browser-cargo-archive.ts';
+import { cargoTargetMatches } from './browser-cargo-target.ts';
 export type CargoPin = {
     name: string;
     version: string;
@@ -138,13 +139,28 @@ export function selectRegistryVersion(text: string, dep: CargoDependency, locked
     return { name: dep.name, version: item.vers as string, checksum: item.cksum as string };
 }
 function normalDependencies(archive: CrateArchive): CargoDependency[] {
-    for (const target of Object.values(object(archive.manifest.target)))
-        if (Object.keys(object(object(target).dependencies)).length)
-            throw new Error('This dependency has target-specific requirements outside the current browser Cargo profile.');
+    const dependencies = dependencyTable(archive.manifest.dependencies);
+    for (const [selector, table] of Object.entries(object(archive.manifest.target))) {
+        const target = object(table);
+        if (!cargoTargetMatches(selector)) continue;
+        if (Object.keys(object(target['build-dependencies'])).length)
+            throw new Error('Target-specific build dependencies need another Cargo profile.');
+        for (const dep of dependencyTable(target.dependencies)) {
+            const previous = dependencies.find(item => item.alias === dep.alias);
+            if (!previous) dependencies.push(dep);
+            else {
+                if (previous.name !== dep.name || previous.requirement !== dep.requirement)
+                    throw new Error('Overlapping target dependencies require compatible identical version declarations.');
+                previous.features = [...new Set([...previous.features, ...dep.features])];
+                previous.defaults ||= dep.defaults;
+                previous.optional &&= dep.optional;
+            }
+        }
+    }
     const pkg = object(archive.manifest.package);
     if (!msrvOK(pkg['rust-version']))
         throw new Error('This dependency requires a newer Rust compiler.');
-    return dependencyTable(archive.manifest.dependencies);
+    return dependencies;
 }
 /** One version per crate, additive features, normal registry edges; conflicts are refused, never guessed away. */
 export async function assembleCargoGraph(root: CargoRoot, resolve: (dep: CargoDependency) => Promise<{

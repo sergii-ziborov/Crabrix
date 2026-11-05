@@ -1,6 +1,7 @@
 import "server-only";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import type { PlaygroundDocument } from './playground-document';
 
 export type Lesson = {
   id: string;
@@ -9,6 +10,7 @@ export type Lesson = {
   minutes: number;
   order: number;
   exerciseKind: string;
+  playgroundProject?: PlaygroundDocument;
   illustration?: { path: string; alt: string; caption: string };
   writing?: {
     summary?: string;

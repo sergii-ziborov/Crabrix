@@ -9,6 +9,9 @@ import { instrumentRust, debugImport } from "../lib/rust-debug-instrumentation";
 import { RustDebugSession } from "../lib/rust-debug-session";
 import { loadPreparedCargo, type PreparedCargo } from "../lib/browser-cargo";
 import { readCargoRoot } from "../lib/browser-cargo-manifest";
+import { buildScriptDirectives } from "../lib/browser-cargo-build-script";
+import { boundBuildScript } from "../lib/browser-cargo-build-sandbox";
+import { cargoTargetEnvironment } from "../lib/browser-cargo-target";
 
 const worker = self as unknown as DedicatedWorkerGlobalScope;
 const encoder = new TextEncoder();
@@ -95,7 +98,7 @@ async function initialize() {
 }
 
 type DebugHost = { control: Int32Array; session: RustDebugSession; runningMs: number; resumedAt: number };
-async function invoke(module: WebAssembly.Module, args: string[], input: string, mounts: PreopenDirectory[], isCompiler = false, debugging?: DebugHost, compileDebug = false, cargoEnv: string[] = []) {
+async function invoke(module: WebAssembly.Module, args: string[], input: string, mounts: PreopenDirectory[], isCompiler = false, debugging?: DebugHost, compileDebug = false, cargoEnv: string[] = [], buildOutputs?: Map<string, File | Directory>[]) {
   let stdout = "", stderr = "", capturedBytes = 0;
   const decoders = [new TextDecoder(), new TextDecoder()];
   const capture = (index: number) => new ConsoleStdout(bytes => {
@@ -107,6 +110,7 @@ async function invoke(module: WebAssembly.Module, args: string[], input: string,
   const wasi = new WASI(args, ["PWD=/work", "TMPDIR=/tmp", ...cargoEnv, ...(isCompiler ? ["CLIF2WASM_OBJECT=1", ...(compileDebug ? [`CLIF2WASM_IMPORTS=${debugImport}`] : [])] : [])], [
     new OpenFile(new File(encoder.encode(input))), capture(0), capture(1), ...mounts,
   ]);
+  if (buildOutputs) boundBuildScript(wasi, [3, 5], buildOutputs);
   const instance = await WebAssembly.instantiate(module, { wasi_snapshot_preview1: wasi.wasiImport, ...(debugging ? { env: {
     [debugImport]: (kind: number, site: number, pointer: number, length: number) => {
       const memory = instance.exports.memory as WebAssembly.Memory;
@@ -136,16 +140,40 @@ async function compileDependencies(graph: PreparedCargo) {
   const files = new Map<string, File | Directory>(), crates = new Map<string, File | Directory>();
   for (const node of graph.packages) for (const [path, bytes] of node.archive.files) insert(crates, `${node.name}-${node.version}/${path}`, new File(bytes, { readonly: true }));
   const mounts = [new PreopenDirectory("/crates", crates), new PreopenDirectory("/deps", files), new PreopenDirectory("/sysroot", sysroot!), new PreopenDirectory("/tmp", new Map())];
-  let outputBytes = 0;
+  const artifactBytes = (entries: Map<string, File | Directory>): number => [...entries.values()].reduce((sum, entry) => sum + (entry instanceof Directory ? artifactBytes(entry.contents as Map<string, File | Directory>) : entry.data.length), 0);
   for (const node of graph.packages) {
     stage(`Building ${node.name} ${node.version} locally`);
-    const args = ["rustc", `/crates/${node.name}-${node.version}/${node.archive.libPath}`, "--crate-type", "rlib", "--crate-name", node.archive.libName, "--edition", node.archive.edition, "--target", "wasm32-wasip1", "--sysroot", "/sysroot", "--error-format=json", "--cap-lints=allow", "-Copt-level=0", "-Cpanic=abort", "-Cdebuginfo=0", `-Cmetadata=crabrix_${graph.identity}_${node.name.replaceAll("-", "_")}`, "-L", "dependency=/deps", ...externs(graph, node.dependencies), ...node.features.flatMap(feature => ["--cfg", `feature="${feature}"`]), "-o", crateOutput(graph, node.name)];
-    const compilation = await invoke(compiler!, args, "", mounts, true, undefined, false, node.archive.env);
+    const cfg = node.features.flatMap(feature => ["--cfg", `feature="${feature}"`]);
+    // RUSTC names the compiler for Cargo-compatible probes. WASI has no
+    // subprocess import: build scripts must handle an unavailable probe.
+    const environment = [...node.archive.env, ...cargoTargetEnvironment, 'RUSTC=rustc', 'HOST=wasm32-wasip1', 'TARGET=wasm32-wasip1', 'OPT_LEVEL=0', 'PROFILE=debug', 'DEBUG=true', 'NUM_JOBS=1'];
+    let build = { args: [] as string[], env: [] as string[] };
+    if (node.archive.buildScript) {
+      const scriptOutput = `/deps/build-${node.name}-${node.version}.wasm`;
+      const checked = await invoke(compiler!, ['rustc', `/crates/${node.name}-${node.version}/${node.archive.buildScript}`, '--crate-name', 'build_script_build', '--edition', node.archive.edition, '--target', 'wasm32-wasip1', '--sysroot', '/sysroot', '--error-format=json', '--cap-lints=allow', '-Copt-level=0', '-Cpanic=abort', ...cfg, '-o', scriptOutput], '', mounts, true, undefined, false, environment);
+      if (checked.exitCode !== 0 || checked.trap) return { files, compilation: checked };
+      const script = files.get(scriptOutput.slice('/deps/'.length));
+      if (!(script instanceof File) || script.data.length > 8 * 1024 * 1024) throw new Error('Build script artifact limit.');
+      const out = new Map<string, File | Directory>(), tmp = new Map<string, File | Directory>();
+      const source = crates.get(`${node.name}-${node.version}`);
+      if (!(source instanceof Directory)) throw new Error('Build script source missing.');
+      // No user's sources, other packages, compiler, host environment or sysroot
+      // are visible to build.rs. Only its own source and two bounded guest dirs.
+      const execution = await invoke(await WebAssembly.compile(limitProgramMemory(script.data)), ['build-script'], '', [new PreopenDirectory('/out', out), new PreopenDirectory(`/crates/${node.name}-${node.version}`, source.contents), new PreopenDirectory('/tmp', tmp)], false, undefined, false, [...environment, 'OUT_DIR=/out', ...node.features.map(feature => 'CARGO_FEATURE_' + feature.toUpperCase().replaceAll('-', '_') + '=1')], [out, tmp]);
+      files.delete(scriptOutput.slice('/deps/'.length));
+      if (execution.exitCode !== 0 || execution.trap) return { files, compilation: execution };
+      build = buildScriptDirectives(execution.stdout);
+      // OUT_DIR is specific to this package. It is mounted only for compilation.
+      const outPath = `out-${node.name}-${node.version}`;
+      files.set(outPath, new Directory(out));
+      environment.push(`OUT_DIR=/deps/${outPath}`);
+    }
+    const args = ["rustc", `/crates/${node.name}-${node.version}/${node.archive.libPath}`, "--crate-type", "rlib", "--crate-name", node.archive.libName, "--edition", node.archive.edition, "--target", "wasm32-wasip1", "--sysroot", "/sysroot", "--error-format=json", "--cap-lints=allow", "-Copt-level=0", "-Cpanic=abort", "-Cdebuginfo=0", `-Cmetadata=crabrix_${graph.identity}_${node.name.replaceAll("-", "_")}`, "-L", "dependency=/deps", ...externs(graph, node.dependencies), ...cfg, ...build.args, "-o", crateOutput(graph, node.name)];
+    const compilation = await invoke(compiler!, args, "", mounts, true, undefined, false, [...environment, ...build.env]);
     if (compilation.exitCode !== 0 || compilation.trap) return { files, compilation };
     const output = files.get(crateOutput(graph, node.name).slice("/deps/".length));
     if (!(output instanceof File)) throw new Error(`${node.name}: rustc did not produce a library.`);
-    outputBytes += output.data.byteLength;
-    if (outputBytes > 64 * 1024 * 1024) throw new Error("Compiled Cargo libraries exceed this browser's 64 MiB artifact budget.");
+    if (artifactBytes(files) > 64 * 1024 * 1024) throw new Error("Compiled Cargo libraries exceed this browser's 64 MiB artifact budget.");
   }
   builtCargo = { identity: graph.identity, files };
   return { files };

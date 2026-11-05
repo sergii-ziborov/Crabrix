@@ -15,7 +15,7 @@ from urllib.parse import urljoin
 
 ROOT = Path(__file__).resolve().parents[1]
 UPDATED = "2026-10-10"
-UPDATED_BY_SLUG = {"about": "2026-11-05", "privacy": "2026-11-04", "terms": "2026-10-27"}
+UPDATED_BY_SLUG = {"about": "2026-11-05", "privacy": "2026-11-04", "terms": "2026-10-27", "content-license": "2026-11-05"}
 
 
 class Node:
@@ -87,7 +87,7 @@ def outputs():
                           "sourceURL": f"https://crabrix.com/{slug}/", "blocks": exported})
     for slug, title, source in [("source-license", "Application source license", "LICENSE"),
                                 ("content-license", "Educational content rights", "CONTENT-LICENSE.md")]:
-        documents.append({"id": slug, "title": title, "updated": UPDATED,
+        documents.append({"id": slug, "title": title, "updated": UPDATED_BY_SLUG.get(slug, UPDATED),
                           "sourceURL": "https://crabrix.com/licenses/",
                           "blocks": [{"kind": "pre", "text": (ROOT / source).read_text().strip()}]})
     generated = {ROOT / "Crabrix/Resources/LegalDocuments.json": json.dumps(documents, indent=2, ensure_ascii=False) + "\n"}

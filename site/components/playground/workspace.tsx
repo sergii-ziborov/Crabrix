@@ -51,8 +51,8 @@ type LocalCopy = { key: number; seed?: PlaygroundDocument; notice?: string; draf
 const stableFileRooms = () => { try { return localStorage.getItem("crabrix.playground.format") === "2"; } catch { return false; } };
 
 /** Remounts with a fresh document, so a copy cannot keep any of a room's session state. */
-export default function PlaygroundWorkspace() {
-  const [instance, setInstance] = useState<LocalCopy>({ key: 0 });
+export default function PlaygroundWorkspace({ initialDocument, initialNotice }: { initialDocument?: PlaygroundDocument; initialNotice?: string } = {}) {
+  const [instance, setInstance] = useState<LocalCopy>(() => ({ key: 0, seed: initialDocument, notice: initialNotice, unsaved: !!initialDocument }));
   const openLocal = useCallback((seed: PlaygroundDocument, options: { notice: string; draftId?: string; unsaved: boolean }) => {
     // Removes the room's secret fragment, so a reload cannot rejoin the room.
     history.replaceState(null, "", "/playground/");

@@ -2,7 +2,8 @@
 // segment is non-empty, so the path can never become `//host` or leave /learn/.
 const segment = "[a-z0-9_-]+(?:\\.[a-z0-9_-]+)*";
 const learnPath = new RegExp(`^/learn/(?:${segment}/)*(?:${segment})?$`);
+const playgroundLessonPath = /^\/playground\/\?lesson=[a-z0-9-]+\/[a-z0-9-]+$/;
 
 export function safeReturnPath(value: string) {
-  return learnPath.test(value) ? value : "/learn/";
+  return learnPath.test(value) || playgroundLessonPath.test(value) ? value : "/learn/";
 }

@@ -81,6 +81,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
   const exampleSection = (writing?.exampleCode || writing?.practiceCode) && <section><h2>Read the code</h2>
     {writing?.exampleCode && <><SyntaxCode code={writing.exampleCode} />{writing.exampleCaption && <p>{prose(writing.exampleCaption)}</p>}</>}
     {writing?.practiceCode && writing.practiceCode !== writing.exampleCode && <><h3>Practice starter</h3><SyntaxCode code={writing.practiceCode} /></>}
+    {lesson.playgroundProject && <p><Link className="btn" href={`/playground/?lesson=${course.id}/${lesson.id}`} target="_blank" rel="nofollow noopener">Open local Cargo example in Playground ↗</Link></p>}
   </section>;
   return (
     <div className="site-shell lesson-page">

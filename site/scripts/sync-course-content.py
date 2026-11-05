@@ -36,6 +36,18 @@ def main() -> None:
             if any(lesson["parentID"] != unit_id for lesson in lessons):
                 raise ValueError(f"lesson parent mismatch in {course_id}/{unit_id}")
             for lesson in lessons:
+                project = folder / 'projects' / lesson['id']
+                # Only the explicitly qualified Cargo demonstrations launch in
+                # Playground. Grading harnesses/checks are never exported here.
+                if lesson['id'] in {'serde-roundtrip-validation', 'joinset-task-ownership',
+                                    'semaphore-backpressure', 'graceful-shutdown-protocol', 'async-runtime'}:
+                    metadata = read_json(project / 'project.json')
+                    names = ['Cargo.toml', 'Cargo.lock', 'src/main.rs']
+                    lesson['playgroundProject'] = {
+                        'schemaVersion': 1, 'name': metadata['name'],
+                        'entryFile': metadata['entryFile'], 'edition': '2024',
+                        'files': {name: (project / name).read_text(encoding='utf-8') for name in names},
+                    }
                 illustration = lesson.get("illustration")
                 if illustration is None:
                     continue

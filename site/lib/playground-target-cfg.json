@@ -1,0 +1,74 @@
+{
+  "compilerSHA256": "0286dc52064283ef78ba153a554d86ae742e6c8cd638aea8662e07d3529233fc",
+  "flags": [
+    "debug_assertions",
+    "emscripten_wasm_eh",
+    "overflow_checks",
+    "target_has_atomic",
+    "target_has_atomic_load_store",
+    "target_has_reliable_f128",
+    "target_has_reliable_f16",
+    "target_has_reliable_f16_math",
+    "target_thread_local",
+    "ub_checks"
+  ],
+  "values": {
+    "fmt_debug": [
+      "full"
+    ],
+    "panic": [
+      "abort"
+    ],
+    "relocation_model": [
+      "static"
+    ],
+    "target_abi": [
+      ""
+    ],
+    "target_arch": [
+      "wasm32"
+    ],
+    "target_endian": [
+      "little"
+    ],
+    "target_env": [
+      "p1"
+    ],
+    "target_family": [
+      "wasm"
+    ],
+    "target_feature": [
+      "crt-static"
+    ],
+    "target_has_atomic": [
+      "16",
+      "32",
+      "64",
+      "8",
+      "ptr"
+    ],
+    "target_has_atomic_equal_alignment": [
+      "16",
+      "32",
+      "64",
+      "8",
+      "ptr"
+    ],
+    "target_has_atomic_load_store": [
+      "16",
+      "32",
+      "64",
+      "8",
+      "ptr"
+    ],
+    "target_os": [
+      "wasi"
+    ],
+    "target_pointer_width": [
+      "32"
+    ],
+    "target_vendor": [
+      "unknown"
+    ]
+  }
+}

@@ -10,6 +10,7 @@ export type CrateArchive = {
     edition: string;
     env: string[];
     bytes: number;
+    buildScript?: string;
 };
 export const digest = async (bytes: Uint8Array) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new Uint8Array(bytes))), b => b.toString(16).padStart(2, '0')).join('');
 function pathOK(path: string) { return !!path && path.length <= 512 && !path.startsWith('/') && !path.includes('\\') && !path.includes(':') && !/[\x00-\x1f\x7f]/.test(path) && path.split('/').every(p => !!p && p !== '.' && p !== '..' && !['__proto__', 'constructor', 'prototype'].includes(p)); }
@@ -98,8 +99,11 @@ export function readCrateArchive(compressed: Uint8Array, name: string, version: 
     const table = manifestTable(decoder.decode(bytes)), pkg = table.package as Record<string, unknown> | undefined, lib = (table.lib ?? {}) as Record<string, unknown>;
     if (!pkg || pkg.name !== name || pkg.version !== version)
         throw new Error(`${name}: archive identity differs from the registry.`);
-    if (pkg.links !== undefined || pkg.build !== false && (pkg.build !== undefined || files.has('build.rs')) || table['build-dependencies'] && Object.keys(table['build-dependencies'] as object).length)
-        throw new Error(`${name}: build scripts or native build requirements need another Cargo profile.`);
+    if (pkg.links !== undefined || table['build-dependencies'] && Object.keys(table['build-dependencies'] as object).length)
+        throw new Error(`${name}: native links or build dependencies need another Cargo profile.`);
+    const buildScript = pkg.build === false ? undefined : typeof pkg.build === 'string' ? pkg.build : files.has('build.rs') ? 'build.rs' : undefined;
+    if (pkg.build !== undefined && typeof pkg.build !== 'boolean' && typeof pkg.build !== 'string' || buildScript !== undefined && (!pathOK(buildScript) || !files.has(buildScript)))
+        throw new Error(`${name}: invalid build script path.`);
     if (lib['proc-macro'] === true || Array.isArray(lib['crate-type']) && (lib['crate-type'] as unknown[]).some(v => v !== 'lib' && v !== 'rlib'))
         throw new Error(`${name}: host procedural macros and native crate types are not available in this browser.`);
     const libPath = typeof lib.path === 'string' ? lib.path : 'src/lib.rs', libName = typeof lib.name === 'string' ? lib.name : name.replaceAll('-', '_'), edition = String(pkg.edition ?? '2015');
@@ -115,5 +119,5 @@ export function readCrateArchive(compressed: Uint8Array, name: string, version: 
     }
     const [major, minor, patch] = version.split(/[.+-]/);
     env.push('CARGO_PKG_VERSION_MAJOR=' + major, 'CARGO_PKG_VERSION_MINOR=' + minor, 'CARGO_PKG_VERSION_PATCH=' + patch, 'CARGO_PKG_VERSION_PRE=' + (version.split('-')[1]?.split('+')[0] ?? ''));
-    return { files, manifest: table, libPath, libName, edition, env, bytes: total };
+    return { files, manifest: table, libPath, libName, edition, env, bytes: total, ...(buildScript ? { buildScript } : {}) };
 }
