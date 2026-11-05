@@ -28,7 +28,7 @@
     "siteTestsPassed": 135,
     "productionBuild": true,
     "typeScript": true,
-    "nativeDuoScreenshotTest": "passed; real software-keyboard tap and local Run in portrait/landscape",
+    "nativeDuoScreenshotTest": "passed; real software-keyboard tap and local Run; XCTest requested portrait/landscape orientations, with Device Hub controlling the physical posture",
     "themeAndWidthConfigurations": 15,
     "publicHTTP": 79,
     "publicRegressionHTTP": 13,
