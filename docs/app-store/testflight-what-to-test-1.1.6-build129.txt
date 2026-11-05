@@ -1,0 +1,10 @@
+Crabrix 1.1.6 (129): Academy catalog and content update.
+
+1. In Learn, refresh the course list and update Cargo & Real Projects and Concurrency & Async. Existing progress and previously opened lesson projects should remain intact.
+2. Open Serde: Decode, Validate, Encode. Open its supplied Cargo project, explicitly prepare packages, then Run and Debug. Check that the Unicode JSON round trip and rejection assertions finish successfully.
+3. Try the Tokio projects for JoinSet task ownership, Semaphore backpressure, graceful shutdown and the async runtime. Prepare packages explicitly on each device. These examples use the current-thread runtime with rt/sync; they do not promise sockets, OS signals or native multithread execution.
+4. After preparation, repeat a local Run with networking unavailable. Run/Debug must not fetch missing packages or send source to a compilation server.
+5. Check the Academy counts in About and open the content license in the offline legal reader.
+6. Confirm existing editor keyboard helpers, iPad layouts and Duo book/laptop poses are unchanged. There are no layout changes in this update; simulator evidence is not a physical-device pass.
+
+Shared Playground and Connect AI behavior remain as in 1.1.5. A peer editing or running code must not automatically start execution on this device.

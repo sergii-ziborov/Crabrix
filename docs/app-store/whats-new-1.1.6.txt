@@ -1,0 +1,8 @@
+An updated Crabrix Academy, with practical examples you can explore on your device.
+
+• The current course catalog includes a local Serde JSON validation project and Tokio examples for task ownership, backpressure and graceful shutdown. Prepare their pinned Cargo packages once, then Run and Debug locally.
+• Refreshed lesson explanations, exercises and compiler-checked practice projects, with your existing course progress preserved.
+• Academy information in the app now matches the current curriculum.
+• Updated content licensing information is available in the offline legal reader.
+
+Your Rust programs still compile and run on your device. The editor, keyboard controls and Duo layouts are unchanged in this update.

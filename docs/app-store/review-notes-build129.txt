@@ -1,0 +1,9 @@
+Version 1.1.6 (build 129). Publication is manual.
+
+This update refreshes the Academy bootstrap catalog, lesson information and offline content license. The editor, keyboard and Duo layout code is unchanged from the published 1.1.5 build 128.
+
+Review steps: in Learn, refresh the course list and update Cargo & Real Projects and Concurrency & Async. In Cargo & Real Projects, open "Serde: Decode, Validate, Encode" and its supplied Cargo project. Explicitly prepare its pinned packages, then use Run or Debug. The example performs a typed JSON round trip and checks invalid input. Concurrency & Async includes current-thread Tokio projects for JoinSet, Semaphore and watch-channel shutdown. These use real serde/serde_json and Tokio rt/sync; they do not require procedural macros, native threads, sockets or OS signals. Package preparation needs network access, while compilation and execution happen locally in the app's bounded WebAssembly sandbox. The existing lesson question remains the completion exercise.
+
+Shared Playgrounds and Connect AI from 1.1.5 remain available. Open a project in Projects, choose Share Playground and create a temporary room, then choose Connect AI agent. The optional agent link works with the Crabrix MCP package on a computer running Claude Code, Codex or Cursor. Its key stays after # and Crabrix MCP decrypts locally. Permission for an agent to request Run/Debug on this device is off until the user explicitly grants selected operations to a controller, for 10 minutes, and can be revoked. Editing or running on another participant's device does not start this device's compiler.
+
+Rust compiles and runs locally. Course downloads, package preparation and sharing need network access; the app otherwise works offline. No login or paid account is required for the native Academy or compiler. Existing account-free encrypted shared rooms and their expiry are unchanged.

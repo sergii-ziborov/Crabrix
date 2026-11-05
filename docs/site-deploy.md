@@ -1,5 +1,32 @@
 # Crabrix website deployment
 
+## Current hosting — Helsinki, 5 November 2026
+
+Production runs on `2.29.175.213`, Hostwatch node
+`fe8b3706-3da6-47f8-875c-ce86a0cb8114`. Use `service_locations` to inspect
+current placement, then target `crabrix-web` or `crabrix-mcp` on that node.
+The current website was built through the configured Hostwatch source builder
+from `343aef5`, image
+`sha256:8e2dbd8f3cf791a015b05a2c7ea8f988bce537896ba5ac8792fe009f3a8ea4ad`.
+The migrated `practice-1758478` baseline, image `3a9398047dc7…`, remains
+available for rollback. [Current release and SEO readback](seo/2026-11-05/README.md).
+Both production containers retain their names and loopback ports 3212/3214.
+Academy accounts, backups and deletion journals remain at
+`/srv/apps/crabrix-site/accounts`, owned by container UID 1000.
+
+The former 116.203.99.11 origin now forwards to Helsinki using verified TLS;
+its production containers and account-backup timer are stopped. Source data
+and images are retained for recovery. Cloudflare's apex A now points directly
+to `2.29.175.213` (DNS only, TTL 300), and `www` remains a CNAME to the apex.
+Both authoritative answers and direct valid-TLS health were verified on
+5 November. Keep the forwarding route during cached-DNS propagation.
+Stage reviewed images at
+Helsinki, use MCP `deployment_preview` then `deployment_update`, and follow
+`image_publish_status` to verified success. Do not deploy new releases to the
+retired source based on historical notes below. Rollback must preserve writes
+accepted on Helsinki before switching back. Process replacement closes volatile
+playground rooms and remote MCP sessions.
+
 ## Browser Cargo and source folders — 5 November 2026
 
 The live site uses `localhost/crabrix-web-site:cargo-0fb35d3`, from source
