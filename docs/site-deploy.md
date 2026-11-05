@@ -724,3 +724,31 @@ its start time were unchanged. Rollback container
 `crabrix-web-site-before-docs-shots-20261105` is retained. The isolated candidate,
 three screenshot Simulators, local preview and SSH tunnel were removed/stopped.
 [Publication receipt](site-release-2026-11-05-captures.json).
+
+
+## Current website: fresh Duo captures — 5 November 2026
+
+Published source `77e16e8c6ba962dae3eb5ca7db5e9550d4b8f047` as
+`localhost/crabrix-web-site:duo-77e16e8`. Both earlier Duo images are replaced by
+current Crabrix 1.1.5 build 128 source/Simulator captures built with SDK 27.1 and
+its existing Duo condition. The editor frame shows actual software-keyboard
+input and helper symbols; Output shows `hello from two Rust files` from a real
+local multi-file Run. The capture test now dismisses actual first-use keyboard
+and achievement panels before retaining frames. Full inner-display pixels are
+preserved with lossless orientation correction; no UI was drawn or resized.
+
+The gallery, Guide, social image and compatibility URLs use the new images at
+their actual 2006 × 2852 dimensions. The old-capture captions are removed.
+Validation: native screenshot test passes, 135 site tests, production build,
+TypeScript, 15 theme/width configurations and gallery zoom/navigation. The
+candidate and public site each pass 79 image/SEO checks plus 13 existing
+regression checks, including guest lesson gating and SDK artifact identity.
+The public browser confirms both current images and no horizontal overflow.
+
+The 3,030-entry context matched its source manifest; the previous context stayed
+unchanged. Accounts were backed up before cutover and their mount and resource
+limits preserved. Remote MCP was not restarted. Rollback container
+`crabrix-web-site-before-duo-20261105` remains. The isolated candidate, capture
+Simulator, local preview and tunnel were removed/stopped. Application runtime,
+native publication, npm and App Review are unchanged.
+[Publication receipt](site-release-2026-11-05-duo.json).

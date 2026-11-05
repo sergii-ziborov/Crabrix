@@ -1,0 +1,85 @@
+{
+  "sourceCommit": "77e16e8c6ba962dae3eb5ca7db5e9550d4b8f047",
+  "atUTC": "2026-11-05T00:57:16Z",
+  "image": "localhost/crabrix-web-site:duo-77e16e8",
+  "imageID": "d960e7066900e895aee6c4a0e3eddf6aa833372bf9aa879a26cd4ae1240a5172",
+  "health": "healthy",
+  "rollbackContainer": "crabrix-web-site-before-duo-20261105",
+  "accountBackup": "Account backup saved; seven-day retention applied.",
+  "accountMountUnchanged": true,
+  "resourceLimitsUnchanged": true,
+  "remoteMCPContainerUnchanged": true,
+  "remoteMCPImage": "localhost/crabrix-mcp-remote:0.5.0-d411197",
+  "remoteMCPContainerID": "4624eca64194378d90d0503ef0ed7704ae7dee503a72f4e4a83c1fdcfcae85a0",
+  "nativeAppChanged": false,
+  "DNSChanged": false,
+  "nginxChanged": false,
+  "publicVerifiedAtUTC": "2026-11-05T00:58:44.802Z",
+  "context": {
+    "sourceCommit": "77e16e8c6ba962dae3eb5ca7db5e9550d4b8f047",
+    "sourceTreeSHA256": "0fc54b597bd298866dd183dd093ca5ed0d1228d975014720368c15d7c2e848ce",
+    "allEntriesVerified": 3030,
+    "transferredBytes": 1732157,
+    "baseContextUnchanged": true,
+    "accountDataTouched": false
+  },
+  "captureManifest": "docs/site-duo-captures-2026-11-05-assets.json",
+  "checks": {
+    "siteTestsPassed": 135,
+    "productionBuild": true,
+    "typeScript": true,
+    "nativeDuoScreenshotTest": "passed; real software-keyboard tap and local Run in portrait/landscape",
+    "themeAndWidthConfigurations": 15,
+    "publicHTTP": 79,
+    "publicRegressionHTTP": 13,
+    "publicBrowser": {
+      "atUTC": "2026-11-05T00:58:32.974Z",
+      "publicDuoChecks": [
+        {
+          "newDuoImages": [
+            "/screenshots/2026-11-05/duo-laptop.png"
+          ],
+          "path": "/guide/",
+          "scrollWidth": 390,
+          "staleCaption": false,
+          "width": 390
+        },
+        {
+          "newDuoImages": [
+            "/screenshots/2026-11-05/duo-laptop.png",
+            "/screenshots/2026-11-05/duo-laptop.png"
+          ],
+          "path": "/",
+          "scrollWidth": 820,
+          "staleCaption": false,
+          "width": 820
+        },
+        {
+          "newDuoImages": [
+            "/screenshots/2026-11-05/duo-laptop.png",
+            "/screenshots/2026-11-05/duo-laptop.png"
+          ],
+          "path": "/",
+          "scrollWidth": 1440,
+          "staleCaption": false,
+          "width": 1440
+        }
+      ],
+      "liveDuoImage": {
+        "height": 2852,
+        "src": "/screenshots/2026-11-05/duo-laptop.png",
+        "width": 2006
+      },
+      "liveOutputSrc": "/screenshots/2026-11-05/duo-output.png",
+      "errors": []
+    }
+  },
+  "cleanup": {
+    "isolatedDuoSimulatorRemoved": true,
+    "isolatedCandidateRemoved": true,
+    "previewStopped": true,
+    "tunnelStopped": true,
+    "rollbackRetained": true
+  },
+  "scope": "Two fresh native Simulator images and website descriptions; application runtime, npm, native release and App Review unchanged."
+}
