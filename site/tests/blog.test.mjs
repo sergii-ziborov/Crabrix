@@ -107,7 +107,7 @@ test('every article image has complete WebP delivery copies with a smaller downl
   let originalBytes = 0, fullBytes = 0, cardBytes = 0;
   for (const source of sources) {
     const original = readFileSync(new URL('../public' + source, import.meta.url));
-    const stem = source.replace(/\.png$/, '');
+    const stem = source.replace(/\.(?:png|jpe?g)$/i, '');
     const variants = ['.webp', '-640.webp'].map(suffix => readFileSync(new URL('../public' + stem + suffix, import.meta.url)));
     for (const bytes of variants) {
       assert.equal(bytes.toString('ascii', 0, 4), 'RIFF', source);

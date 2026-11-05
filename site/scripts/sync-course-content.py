@@ -4,6 +4,7 @@
 import argparse
 import json
 import shutil
+import struct
 import subprocess
 from pathlib import Path
 
@@ -60,6 +61,14 @@ def main() -> None:
                 source_image = folder / expected
                 if not source_image.is_file():
                     raise ValueError(f"missing lesson illustration: {source_image}")
+                with source_image.open('rb') as image:
+                    header = image.read(24)
+                if header[:8] != b'\x89PNG\r\n\x1a\n' or header[12:16] != b'IHDR':
+                    raise ValueError(f"invalid PNG dimensions: {source_image}")
+                width, height = struct.unpack('>II', header[16:24])
+                if not width or not height:
+                    raise ValueError(f"empty lesson illustration: {source_image}")
+                illustration.update(width=width, height=height)
                 destination_image = SITE / "content" / "learn-media" / course_id / Path(expected).name
                 destination_image.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source_image, destination_image)

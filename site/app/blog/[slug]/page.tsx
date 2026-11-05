@@ -7,6 +7,7 @@ import { postBySlug, posts, postWordCount } from "@/lib/posts";
 import { SyntaxCode } from "@/components/SyntaxCode";
 import type { CodeLanguage } from "@/lib/code-highlighting";
 import { BlogImage } from "@/components/blog-image";
+import { postPublicationDate, postModificationDate } from '@/lib/post-dates';
 
 const highlightedLanguages = new Set(["rust", "toml", "sql", "json", "html", "typescript", "shell", "go"]);
 
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const post = postBySlug((await params).slug);
   const image = post?.sections.find((section) => section.image)?.image;
   return post ? pageMetadata({ title: post.title, description: post.summary,
-    path: `/blog/${post.slug}/`, image: image?.src, imageAlt: image?.alt, articleDate: post.publishedDate ?? post.date, modifiedDate: post.modifiedDate }) : {};
+    path: `/blog/${post.slug}/`, image: image?.src, imageAlt: image?.alt, articleDate: postPublicationDate(post), modifiedDate: postModificationDate(post) }) : {};
 }
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -38,8 +39,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
     <div className="site-shell article-page">
       <StructuredData data={{ "@context": "https://schema.org", "@graph": [
         { "@type": "BlogPosting", headline: post.title, description: post.summary,
-          mainEntityOfPage: pageUrl(`/blog/${post.slug}/`), datePublished: post.publishedDate ?? post.date,
-          ...(post.modifiedDate ? { dateModified: post.modifiedDate } : {}),
+          mainEntityOfPage: pageUrl(`/blog/${post.slug}/`), datePublished: postPublicationDate(post),
+          dateModified: postModificationDate(post),
           author: { "@type": "Person", name: "Serhii Ziborov", url: pageUrl("/about/") },
           publisher: { "@type": "Organization", name: "Crabrix", url: pageUrl("/") },
           image: post.sections.flatMap((section) => section.image ? [new URL(section.image.src, pageUrl("/")).href] : []),

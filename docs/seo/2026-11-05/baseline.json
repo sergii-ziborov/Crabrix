@@ -1,0 +1,20 @@
+{
+  "sitemap": {
+    "status": 200,
+    "contentType": "application/xml",
+    "urlCount": 833,
+    "uniqueURLs": 833
+  },
+  "crawled": 833,
+  "courses": 7,
+  "lessons": 771,
+  "articles": 39,
+  "badStatuses": [],
+  "duplicateTitles": {},
+  "duplicateDescriptions": {},
+  "missingImageAlt": [],
+  "invalidJSONLD": [],
+  "brokenFragments": [],
+  "extraLinksChecked": 71,
+  "extraLinksBroken": []
+}

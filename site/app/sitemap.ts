@@ -2,8 +2,9 @@ import type { MetadataRoute } from "next";
 import { courseSnapshot } from "@/lib/courses";
 import { pageUrl } from "@/lib/seo";
 import { posts } from "@/lib/posts";
-import { BLOG_PAGE_SIZE, blogPagePath } from "@/lib/blog-pagination";
+import { BLOG_PAGE_SIZE, blogPage, blogPagePath } from "@/lib/blog-pagination";
 import { lessonModifiedDates, courseModifiedDates } from "@/lib/lesson-seo";
+import { postModificationDate } from '@/lib/post-dates';
 
 export const dynamic = "force-static";
 
@@ -17,13 +18,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }))),
   ]);
   const pageModifiedDates: Record<string, string> = {
-    "": "2026-11-05", about: "2026-11-05", ai: "2026-11-05", learn: "2026-10-29",
-    playground: "2026-11-05", guide: "2026-11-05", blog: "2026-11-04", technology: "2026-11-05", privacy: "2026-10-27", licenses: "2026-10-27",
+    "": "2026-11-05", about: "2026-11-05", ai: "2026-11-05", learn: "2026-11-05",
+    playground: "2026-11-05", guide: "2026-11-05", technology: "2026-11-05", privacy: "2026-11-04", licenses: "2026-11-05",
   };
+  const archiveModified = (page: number) => blogPage(posts, page)?.posts.map(postModificationDate).sort().at(-1);
+  const firstArchiveModified = archiveModified(1);
+  if (firstArchiveModified) pageModifiedDates.blog = firstArchiveModified;
   return [...paths.map((path) => ({ url: pageUrl(path),
     ...(pageModifiedDates[path] ? { lastModified: pageModifiedDates[path] } : {}),
-  })), ...Array.from({ length: Math.max(0, Math.ceil(posts.length / BLOG_PAGE_SIZE) - 1) }, (_, index) => ({ url: pageUrl(blogPagePath(index + 2)) })), ...courseEntries,
-    ...posts.map((post) => ({ url: pageUrl(`blog/${post.slug}`), lastModified: post.modifiedDate ?? post.date,
+  })), ...Array.from({ length: Math.max(0, Math.ceil(posts.length / BLOG_PAGE_SIZE) - 1) }, (_, index) => ({ url: pageUrl(blogPagePath(index + 2)), lastModified: archiveModified(index + 2) })), ...courseEntries,
+    ...posts.map((post) => ({ url: pageUrl(`blog/${post.slug}`), lastModified: postModificationDate(post),
       images: post.sections.flatMap((section) => section.image ? [new URL(section.image.src, pageUrl("/")).href] : []),
     })),
   ];

@@ -3,7 +3,7 @@ import type { PostImage } from "@/lib/posts";
 export function BlogImage({ image, decorative = false, card = false, priority = false }: {
   image: PostImage; decorative?: boolean; card?: boolean; priority?: boolean;
 }) {
-  const stem = image.src.replace(/\.png$/, "");
+  const stem = image.src.replace(/\.(?:png|jpe?g)$/i, "");
   return <picture>
     <source type="image/webp"
       srcSet={`${stem}-640.webp 640w, ${stem}.webp ${image.width ?? 1536}w`}

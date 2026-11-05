@@ -1176,7 +1176,7 @@
           },
           {
             "title": "SDK and MCP installation",
-            "url": "/playground/mcp/"
+            "url": "/ai/"
           }
         ]
       },
@@ -1301,7 +1301,7 @@
           "This distinction matters when adding more tools to an assistant host. Crabrix’s own MCP surface does not expose arbitrary host files or shell execution, but another connected tool may have broader capabilities. Permission labels and server instructions cannot substitute for the host’s security controls. We deliberately included an adversarial comment in the test source; both coding agents ignored it as data. That single result does not establish universal prompt-injection resistance."
         ],
         "image": {
-          "src": "/images/blog/mcp-real-agents/actual-shared-output.png",
+          "src": "/images/blog/mcp-real-agents/actual-shared-output.jpg",
           "alt": "Actual Crabrix browser showing the two-agent Rust program and reported output with no execution on that observer client",
           "caption": "Actual browser capture from this check. The observer received two-agent-checks=passed while its compiler remained unprepared. No room key or private link is shown.",
           "width": 1280,
@@ -1374,7 +1374,7 @@
         "links": [
           {
             "title": "Complete setup and security boundaries",
-            "url": "/playground/mcp/"
+            "url": "/ai/"
           },
           {
             "title": "Crabrix user guide",
@@ -1415,7 +1415,7 @@
         "links": [
           {
             "title": "SDK and MCP setup",
-            "url": "/playground/mcp/"
+            "url": "/ai/"
           },
           {
             "title": "Try a browser Playground",
@@ -1673,7 +1673,7 @@
           },
           {
             "title": "MCP setup",
-            "url": "/playground/mcp/"
+            "url": "/ai/"
           }
         ]
       },
@@ -2058,7 +2058,7 @@
           },
           {
             "title": "Learn about local MCP controls",
-            "url": "/playground/mcp/"
+            "url": "/ai/"
           }
         ]
       }
@@ -2770,7 +2770,8 @@
         "heading": "Run the example and use an ownership checklist",
         "paragraphs": [
           "Put the admission helper and its test in `src/lib.rs` of a native Cargo project, using the manifest below. The task and progress examples can live in the same library. Run `cargo test --locked` after creating and retaining the lockfile. The sample requires a Tokio runtime with timers and the listed features; paused tests additionally use `test-util`. The exact pinned dependency keeps the demonstration reproducible without requiring every feature of Tokio.",
-          "For Crabrix projects, distinguish this native Tokio exercise from the phone's bundled WASI execution environment. Check the application guide for supported runtime features and sandbox limits before moving a server-oriented dependency graph onto iPhone. The underlying ownership questions remain useful in either environment. At every cancellation point, ask who holds the payload, what progress remains observable, whether retry is safe, and which owner will finish cleanup. Clear answers make timeout behavior testable and make failures explainable to the person who pressed Retry."
+          "For Crabrix projects, distinguish this native Tokio exercise from the phone's bundled WASI execution environment. Check the application guide for supported runtime features and sandbox limits before moving a server-oriented dependency graph onto iPhone. The underlying ownership questions remain useful in either environment. At every cancellation point, ask who holds the payload, what progress remains observable, whether retry is safe, and which owner will finish cleanup. Clear answers make timeout behavior testable and make failures explainable to the person who pressed Retry.",
+          "For a verified local starting point in Crabrix or the browser Playground, use the Academy projects for JoinSet ownership, Semaphore admission and watch-channel shutdown. They use the pinned current-thread rt/sync profile with no runtime attribute macros. These exercises isolate task lifetime and backpressure from this article’s additional timer, test-util and macro requirements. Preparing packages is explicit, and compilation and execution stay on the selected device."
         ],
         "code": "[package]\nname = \"cancellation-boundaries\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[dependencies]\ntokio = { version = \"=1.54.1\", features = [\"rt\", \"sync\", \"time\", \"macros\"] }\n\n[dev-dependencies]\ntokio = { version = \"=1.54.1\", features = [\"test-util\"] }\n",
         "codeLanguage": "toml",
@@ -2783,10 +2784,29 @@
             "title": "Continue with Rust ownership lessons",
             "url": "https://crabrix.com/learn/ownership/"
           }
+        ],
+        "links": [
+          {
+            "title": "Own tasks with JoinSet",
+            "url": "/learn/concurrency/joinset-task-ownership/"
+          },
+          {
+            "title": "Bound work with Semaphore",
+            "url": "/learn/concurrency/semaphore-backpressure/"
+          },
+          {
+            "title": "A graceful shutdown protocol",
+            "url": "/learn/concurrency/graceful-shutdown-protocol/"
+          },
+          {
+            "title": "Start a local current-thread runtime",
+            "url": "/learn/concurrency/async-runtime/"
+          }
         ]
       }
     ],
-    "readingMinutes": 11
+    "readingMinutes": 11,
+    "modifiedDate": "2026-11-05"
   },
   {
     "slug": "rust-serde-json-validation-boundaries",
@@ -3047,7 +3067,8 @@
         "heading": "Run the lab with an honest platform contract",
         "paragraphs": [
           "These examples are local data transformations. On desktop Rust, run them with the manifest above and keep the assertions. In Crabrix, dependency preparation and procedural-macro support depend on the app's qualified compiler profile: Serde derive is a procedural macro, so a successful standard-library example does not establish that this dependency graph will build there. Inspect the actual compatibility report rather than substituting a claim based on the crate name.",
-          "The portable lesson is the boundary design. You can practice domain validation with a manually constructed transport structure even when a particular derive graph is unavailable. When you add a new accepted field, specify its meaning, default and migration behavior, add a failing fixture first, and rerun the complete import path. That routine gives a JSON API a clear contract as it grows, without requiring a server, a framework or an opaque validation layer to explain its behavior."
+          "Crabrix now includes a qualified local Serde lesson project for both the app and browser Playground. It uses the real serde and serde_json crates with explicit Serialize and Deserialize implementations, so its strict field checks, domain validation and JSON round-trip do not require the experimental derive compiler. Open the lesson project, explicitly prepare its pinned packages on your device, then use Run or Debug locally. The article’s derive-based version remains a separate toolchain profile; downloading a crate alone does not establish macro compatibility.",
+          "When you add an accepted field, specify its meaning, default and migration behavior, add a failing fixture first, and rerun the complete import path. That routine gives a JSON API a clear contract as it grows, without requiring a server, a framework or an opaque validation layer to explain its behavior."
         ],
         "links": [
           {
@@ -3061,12 +3082,24 @@
           {
             "title": "Option and Result",
             "url": "/learn/basics/option-result/"
+          },
+          {
+            "title": "Run the local Serde validation project",
+            "url": "/learn/projects/serde-roundtrip-validation/"
+          },
+          {
+            "title": "Practice typed data validation",
+            "url": "/learn/projects/validated-records/"
+          },
+          {
+            "title": "Check hostile parser inputs",
+            "url": "/learn/projects/hostile-parser-inputs/"
           }
         ]
       }
     ],
     "readingMinutes": 11,
-    "modifiedDate": "2026-10-29"
+    "modifiedDate": "2026-11-05"
   },
   {
     "slug": "crabrix-offline-rust-web-preview",
@@ -5492,7 +5525,9 @@
         "image": {
           "src": "/blog/rust-upgrade-workshop.png",
           "alt": "A crab checks test cards in a workshop connecting an older tool cabinet to a new one.",
-          "caption": "An upgrade is a maintenance task: keep the old baseline, check the new result, and record what changed."
+          "caption": "An upgrade is a maintenance task: keep the old baseline, check the new result, and record what changed.",
+          "width": 1536,
+          "height": 1024
         },
         "sources": [
           {
@@ -5523,7 +5558,9 @@
         "image": {
           "src": "/blog/rust-upgrade-infographic.png",
           "alt": "Five upgrade steps: baseline, pin toolchain, build and test, check targets, record results. Compiler, edition and dependencies are separate choices.",
-          "caption": "Hold the edition and dependency graph steady while checking the compiler upgrade. Migrate them separately when needed."
+          "caption": "Hold the edition and dependency graph steady while checking the compiler upgrade. Migrate them separately when needed.",
+          "width": 1536,
+          "height": 1024
         },
         "sources": [
           {
@@ -5628,7 +5665,9 @@
         "image": {
           "src": "/blog/ownership-workshop.png",
           "alt": "A crab passes a single message card between reading, editing and final-report stations.",
-          "caption": "Reading a message, editing it, and taking it into a report are three different jobs."
+          "caption": "Reading a message, editing it, and taking it into a report are three different jobs.",
+          "width": 1536,
+          "height": 1024
         }
       },
       {
@@ -5686,7 +5725,9 @@
         "image": {
           "src": "/blog/ownership-infographic.png",
           "alt": "Three separate choices: move ownership into a function, borrow text for reading, or borrow a string mutably for exclusive editing.",
-          "caption": "These are alternatives for a function's job. Shared and mutable access are not shown as simultaneous borrows."
+          "caption": "These are alternatives for a function's job. Shared and mutable access are not shown as simultaneous borrows.",
+          "width": 1536,
+          "height": 1024
         },
         "sources": [
           {
@@ -5775,7 +5816,9 @@
         "image": {
           "src": "/blog/result-workshop.png",
           "alt": "A crab at an input workshop sends a valid order along a mint route and a rejected order to a helpful repair station.",
-          "caption": "Expected input failures need a useful route back to the caller, not an unexplained crash."
+          "caption": "Expected input failures need a useful route back to the caller, not an unexplained crash.",
+          "width": 1536,
+          "height": 1024
         }
       },
       {
@@ -5828,7 +5871,9 @@
         "image": {
           "src": "/blog/result-infographic.png",
           "alt": "Result branches into Ok(value), which continues, and Err(error), which returns to the caller through the question mark operator.",
-          "caption": "The diagram shows propagation from the current function. The caller chooses whether to show, retry, skip or stop."
+          "caption": "The diagram shows propagation from the current function. The caller chooses whether to show, retry, skip or stop.",
+          "width": 1536,
+          "height": 1024
         },
         "sources": [
           {
@@ -5925,7 +5970,9 @@
         "image": {
           "src": "/blog/compiler-flow.png",
           "alt": "Infographic showing source file, local Rust compiler, WASI binary, and local output inside an on-device boundary, with diagnostics branching from the compiler.",
-          "caption": "The app keeps compilation and program execution as separate, observable steps."
+          "caption": "The app keeps compilation and program execution as separate, observable steps.",
+          "width": 1672,
+          "height": 941
         }
       },
       {
@@ -5965,7 +6012,9 @@
         "image": {
           "src": "/blog/compiler-workspace.png",
           "alt": "A stylized phone code editor and diagnostics enclosed in a local sandbox.",
-          "caption": "The project workspace is editable while the guest runtime stays inside explicit limits."
+          "caption": "The project workspace is editable while the guest runtime stays inside explicit limits.",
+          "width": 1672,
+          "height": 941
         }
       },
       {
@@ -6014,7 +6063,9 @@
         "image": {
           "src": "/blog/lesson-loop.png",
           "alt": "Infographic of the learning loop: read, predict, edit, check or run, and repeat.",
-          "caption": "A prediction turns compiler feedback into an explanation you can test."
+          "caption": "A prediction turns compiler feedback into an explanation you can test.",
+          "width": 1672,
+          "height": 941
         }
       },
       {
@@ -6055,7 +6106,9 @@
         "image": {
           "src": "/blog/project-ownership.png",
           "alt": "An illustrated lesson page becoming a separate project folder with editable source files.",
-          "caption": "The lesson stays a reference; the editable project becomes the place for your experiments."
+          "caption": "The lesson stays a reference; the editable project becomes the place for your experiments.",
+          "width": 1672,
+          "height": 941
         }
       },
       {

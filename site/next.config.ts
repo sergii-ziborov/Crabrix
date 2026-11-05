@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/index.html", destination: "/", permanent: true },
       { source: "/playground/mcp", destination: "/ai/", permanent: true },
+      { source: "/images/blog/mcp-real-agents/actual-shared-output.png", destination: "/images/blog/mcp-real-agents/actual-shared-output.jpg", permanent: true },
       ...["about", "technology", "support", "privacy", "terms"].map((route) => ({ source: `/${route}.html`, destination: `/${route}/`, permanent: true })),
     ];
   },

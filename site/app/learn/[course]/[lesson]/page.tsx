@@ -11,6 +11,8 @@ import { StructuredData } from "@/components/structured-data";
 import { CourseIcon } from "@/components/course-icon";
 import { AlgorithmVisualizer } from "@/components/algorithm-visualizer";
 import { lessonAlgorithmTrace } from "@/lib/algorithm-traces";
+import { lessonRelatedPosts } from '@/lib/lesson-related-posts';
+import { postBySlug } from '@/lib/posts';
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +37,13 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
   const found = lessonById(course, lessonId);
   if (!found) notFound();
   const { unit, lesson } = found;
+  const relatedPosts = lessonRelatedPosts(course.id, lesson.id).flatMap(slug => {
+    const post = postBySlug(slug);
+    return post ? [post] : [];
+  });
+  const relatedReading = relatedPosts.length > 0 && <aside className="lesson-reading" aria-label="Related Rust guides">
+    <h2>Related free reading</h2><ul>{relatedPosts.map(post => <li key={post.slug}><Link href={`/blog/${post.slug}/`}>{post.title}</Link></li>)}</ul>
+  </aside>;
   const structuredData = <StructuredData data={{ "@context": "https://schema.org", "@graph": [{ "@type": "Article",
     inLanguage: "en", timeRequired: `PT${lesson.minutes}M`, articleSection: course.title,
     headline: lesson.title, description: lessonDescription(lesson),
@@ -66,6 +75,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
           <p className="auth-note">No payment details. Your account opens the complete Academy.</p>
           {course.id === "algorithms" && <p><Link href="/learn/algorithms/#visualization">Try an interactive algorithm walkthrough →</Link></p>}
         </section>
+        {relatedReading}
         <Link href={`/learn/${course.id}/`}>← All lessons in {course.title}</Link>
       </article>
     </div>;
@@ -100,7 +110,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
       <article className="lesson-content lesson-full">
         {algorithmTrace && <AlgorithmVisualizer key={algorithmTrace.key} trace={algorithmTrace} />}
         {!isBasics && lesson.illustration && <figure className="lesson-infographic">
-          <img src={`/learn-media/${course.id}/${lesson.illustration.path.slice(6)}`} alt={lesson.illustration.alt} loading="lazy" />
+          <img src={`/learn-media/${course.id}/${lesson.illustration.path.slice(6)}`} alt={lesson.illustration.alt} width={lesson.illustration.width} height={lesson.illustration.height} loading="lazy" />
           <figcaption>{prose(lesson.illustration.caption)}</figcaption>
         </figure>}
         {isBasics && explanationParagraphs.length > 0 && <section className="lesson-reading"><h2>Start with the idea</h2>
@@ -108,7 +118,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
         </section>}
         {isBasics && exampleSection}
         {isBasics && lesson.illustration && <figure className="lesson-infographic">
-          <img src={`/learn-media/${course.id}/${lesson.illustration.path.slice(6)}`} alt={lesson.illustration.alt} loading="lazy" />
+          <img src={`/learn-media/${course.id}/${lesson.illustration.path.slice(6)}`} alt={lesson.illustration.alt} width={lesson.illustration.width} height={lesson.illustration.height} loading="lazy" />
           <figcaption>{prose(lesson.illustration.caption)}</figcaption>
         </figure>}
         {isBasics && explanationParagraphs.length > 1 && <section className="lesson-reading"><h2>Work through it</h2>
@@ -146,6 +156,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
           {depth.connections && depth.connections.length > 0 && <><h3>Connections</h3><ul>{depth.connections.map((connection, connectionIndex) => <li key={connectionIndex}><strong>{connection.title}:</strong> {connection.concept}</li>)}</ul></>}
         </section>}
         {algorithm?.expectedAnswer && <details><summary>Reveal the Algorithm Atlas answer</summary><p><code>{algorithm.expectedAnswer}</code></p></details>}
+        {relatedReading}
         <nav className="lesson-list" aria-label="Lesson navigation">
           {index > 0 && <Link className="lesson-link" href={`/learn/${course.id}/${lessons[index - 1].id}`}>← {lessons[index - 1].title}</Link>}
           {index + 1 < lessons.length && <Link className="lesson-link" href={`/learn/${course.id}/${lessons[index + 1].id}`}>{lessons[index + 1].title} →</Link>}

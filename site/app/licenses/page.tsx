@@ -3,7 +3,7 @@ import Link from "next/link";
 import legal from "@/content/legal-documents.json";
 import licenses from "@/content/license-index.json";
 
-export const metadata = pageMetadata({"title": "Licenses and Educational Content Rights", "description": "Read Crabrix application terms, educational content rights and original Rust compiler and Swift dependency licenses, also available offline in the app.", "path": "/licenses/"});
+export const metadata = pageMetadata({"title": "Licenses and Educational Content Rights", "description": "Read Crabrix educational content rights, quotation and attribution rules, application terms and original open-source dependency licenses.", "path": "/licenses/", modifiedDate: "2026-11-05"});
 
 export default function LicensesPage() {
   return (
