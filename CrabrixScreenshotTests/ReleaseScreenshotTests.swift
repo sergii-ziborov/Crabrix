@@ -115,10 +115,35 @@ final class ReleaseScreenshotTests: XCTestCase {
 
     func testDuoDisplayScreenshots() throws {
         continueAfterFailure = false
+        defer { XCUIDevice.shared.orientation = .portrait }
         for (orientation, name) in [(UIDeviceOrientation.portrait, "portrait"), (.landscapeLeft, "landscape")] {
             XCUIDevice.shared.orientation = orientation
             for tab in ["code", "output"] {
-                launch(["--crabrix-auto-dock=\(tab)"])
+                var arguments = ["--crabrix-auto-multifile", "--crabrix-auto-dock=\(tab)"]
+                if tab == "output" { arguments += ["--crabrix-auto-run", "--crabrix-auto-output"] }
+                launch(arguments)
+                if tab == "code" {
+                    let editor = app.textViews["Source code editor"]
+                    XCTAssertTrue(editor.waitForExistence(timeout: 15))
+                    editor.tap()
+                    XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 15))
+                    let typingTip = app.buttons["Continue"]
+                    if typingTip.waitForExistence(timeout: 2) { typingTip.tap() }
+                    // Tap the actual software keyboard, rather than injecting
+                    // text through the hardware-keyboard automation path.
+                    let space = app.keyboards.keys["space"]
+                    XCTAssertTrue(space.waitForExistence(timeout: 10))
+                    space.tap()
+                    Thread.sleep(forTimeInterval: 1)
+                } else {
+                    let output = app.staticTexts.containing(NSPredicate(
+                        format: "label CONTAINS %@", "hello from two Rust files"
+                    )).firstMatch
+                    XCTAssertTrue(output.waitForExistence(timeout: 120), "Capture completed local Run output, not an empty panel")
+                    let celebration = app.buttons["Nice"]
+                    if celebration.waitForExistence(timeout: 2) { celebration.tap() }
+                    XCTAssertFalse(celebration.exists, "Do not publish a celebration-covered output frame")
+                }
                 let application = XCTAttachment(screenshot: app.screenshot())
                 application.name = "duo-\(name)-\(tab)-application"
                 application.lifetime = .keepAlways

@@ -1,0 +1,45 @@
+{
+  "atUTC": "2026-11-05T00:51:57.679779+00:00",
+  "newCaptures": 2,
+  "assets": [
+    {
+      "name": "duo-laptop",
+      "width": 2006,
+      "height": 2852,
+      "bytes": 229130,
+      "sha256": "b629052555707e0745465e8f3d77504a6601c4ea2854da71f8c82899330e8e4e",
+      "surface": "Crabrix 1.1.5 build 128 source / Duo Simulator / SDK 27.1"
+    },
+    {
+      "name": "duo-output",
+      "width": 2006,
+      "height": 2852,
+      "bytes": 650102,
+      "sha256": "b1acf060eae43a8c0107592a18c40429e1430cadd1a774a7dc4a64c7588c118a",
+      "surface": "Crabrix 1.1.5 build 128 source / Duo Simulator / SDK 27.1"
+    }
+  ],
+  "nativeBuild": {
+    "version": "1.1.5",
+    "build": "128",
+    "sdk": "iphonesimulator27.1",
+    "executableSHA256": "4cf758438337ae0d6f84e72cb55223dd750928cddf4741ab61df198b0efe4bc9",
+    "duoSDKConditionConfirmed": true
+  },
+  "provenance": {
+    "test": "CrabrixScreenshotTests/ReleaseScreenshotTests/testDuoDisplayScreenshots",
+    "result": "passed",
+    "fixture": "actual native multi-file project, software-keyboard tap and completed local Run",
+    "stdout": "hello from two Rust files",
+    "posture": "Partially Open, selected in official Device Hub on an isolated Duo clone",
+    "pixelProcessing": "Full inner-display frame, lossless 180-degree orientation correction and opaque RGB encoding; no resampling, cropping or drawn UI",
+    "rejectedFrames": [
+      "SDK without Duo compile condition",
+      "system keyboard onboarding",
+      "achievement celebration",
+      "hardware keyboard injection left software keyboard hidden"
+    ],
+    "applicationSourceChanged": false,
+    "appStoreOrTestFlightChanged": false
+  }
+}

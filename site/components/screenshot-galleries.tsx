@@ -14,8 +14,8 @@ const groups: { device: string; images: Capture[] }[] = [
     { name: "iphone-cyberpunk-settings", caption: "Choose a theme and protect your workspace" },
   ] },
   { device: "iPhone Duo", images: [
-    { name: "duo-laptop", caption: "Unfolded Rust workspace · earlier qualification capture" },
-    { name: "duo-output", caption: "Local Run output · earlier qualification capture" },
+    { name: "duo-laptop", caption: "Write Rust with the fold-aware workspace and keyboard" },
+    { name: "duo-output", caption: "Read the result of a completed local Rust Run" },
   ] },
   { device: "iPad", images: [
     { name: "ipad-build", caption: "Work with files, search and the Rust editor" },
@@ -60,7 +60,7 @@ function DeviceGallery({ device, images }: typeof groups[number]) {
 export function ScreenshotGalleries() {
   return <section id="screens"><div className="site-shell">
     <h2>On the device</h2>
-    <p className="section-lede">Choose a course, keep it offline, then turn an idea into a project. Browse each device gallery or open a screenshot at full size. iPhone and iPad captures show Crabrix 1.1.5; Duo retains earlier qualification captures.</p>
+    <p className="section-lede">Choose a course, keep it offline, then turn an idea into a project. Browse each device gallery or open a screenshot at full size. iPhone, iPad and Duo captures show the Crabrix 1.1.5 source build.</p>
     <div className="device-galleries">{groups.map(group => <DeviceGallery key={group.device} {...group} />)}</div>
   </div></section>;
 }

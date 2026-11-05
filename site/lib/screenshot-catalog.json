@@ -203,17 +203,17 @@
     "surface": "Crabrix 1.1.5 source build / Simulator"
   },
   "duo-laptop": {
-    "src": "/screenshots/duo-laptop.png",
-    "width": 2007,
-    "height": 2853,
-    "capturedAt": "earlier qualification capture",
-    "surface": "Duo Simulator / earlier qualification"
+    "src": "/screenshots/2026-11-05/duo-laptop.png",
+    "width": 2006,
+    "height": 2852,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 build 128 source / Duo Simulator / SDK 27.1"
   },
   "duo-output": {
-    "src": "/screenshots/duo-output.png",
-    "width": 2007,
-    "height": 2853,
-    "capturedAt": "earlier qualification capture",
-    "surface": "Duo Simulator / earlier qualification"
+    "src": "/screenshots/2026-11-05/duo-output.png",
+    "width": 2006,
+    "height": 2852,
+    "capturedAt": "2026-11-05",
+    "surface": "Crabrix 1.1.5 build 128 source / Duo Simulator / SDK 27.1"
   }
 }

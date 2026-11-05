@@ -94,3 +94,14 @@ images on phone/tablet/desktop layouts, with no overflow or console errors.
 The account backup and unchanged persistent mount were verified; the independent
 remote MCP container was not restarted. The previous website is retained for
 rollback. See `docs/site-release-2026-11-05-captures.json` for serving identity.
+
+
+## Duo follow-up after Mac unlock
+
+The retained Duo captures described above are superseded by two fresh 1.1.5
+source/Simulator frames. SDK 27.1 enables the existing Duo compile condition.
+The official Device Hub selected the isolated clone’s partially open posture.
+The screenshot test now requires actual software-keyboard input and completed
+local Run output, and dismisses onboarding/celebration through their controls.
+Full frames are retained with lossless orientation correction; no UI was drawn.
+See `docs/site-duo-captures-2026-11-05-assets.json` for provenance and hashes.
