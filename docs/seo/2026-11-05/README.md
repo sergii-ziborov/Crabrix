@@ -42,3 +42,41 @@ The review follows Google's primary guidance on
 [canonical URLs](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls),
 [image delivery](https://developers.google.com/search/docs/appearance/google-images)
 and [registration/paywall markup](https://developers.google.com/search/docs/appearance/structured-data/paywalled-content).
+
+Publication and final verification
+
+The configured Hostwatch source builder built commit 343aef5 as image
+8e2dbd8f3cf7…; registry publication and the independent web deployment both
+finished successfully. The isolated candidate first passed all 833 URLs and
+normal sign-in/full-lesson navigation. A consistent account backup preceded
+cutover. The existing production account session still opens full lessons;
+account/cache mounts, limits and the sibling remote MCP container are unchanged.
+The prior image remains available for the configured rollback. No DNS, nginx,
+app binary, npm package or App Review change was made.
+
+The public post-publication crawl passed all 833 canonical URLs, 70 additional
+internal destinations and 129 unique image/social-image URLs. No duplicate
+metadata, missing intrinsic image dimensions, invalid JSON-LD or broken internal
+fragment was found. HTTP, www, slash normalization and the old image URL return
+permanent redirects. Nonexistent routes remain 404/noindex, auth pages noindex,
+and Googlebot/Twitterbot receive the same bounded lesson preview as other guests.
+Guest starter/media/raw-corpus gates remain 307/401/404 respectively.
+
+Sixteen published full-lesson cases cover widths 390/768/1024/1440 across Light,
+Dark, Amber Circuit and Cyberpunk; the related article also passed phone, tablet
+and desktop widths. No horizontal page overflow was observed. Both directions
+of article/lesson navigation work, and the lesson's starter opens in a separate
+Playground tab. Intrinsic dimensions reserve image space; this audit does not
+claim a measured field CLS or Core Web Vitals improvement.
+
+In the existing authorized Search Console session, sc-domain:crabrix.com already
+has one https://crabrix.com/sitemap.xml entry, status Успешно, submitted 29 October,
+last processed 4 November, with 809 discovered pages. That count is Google's
+previous sitemap discovery, not a count of indexed pages or the current 833 URLs.
+No duplicate submission was created. The index coverage report remained blank
+after navigation and reload, so index counts, coverage reasons and field Core Web
+Vitals were not verified and no revalidation success is claimed.
+
+[Final HTTP results](published.json), [deployment receipt](release.json),
+[theme/viewport cases](layout.json), [article cases](article-layout.json),
+[published Academy screenshot](published-academy.png).

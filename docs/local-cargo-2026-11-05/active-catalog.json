@@ -1,0 +1,18 @@
+{
+  "url": "https://raw.githubusercontent.com/sergii-ziborov/crabrix-courses/main/catalog.v1.json",
+  "status": 200,
+  "sequence": 20,
+  "sha256": "4c2b78dddbb8f7fc3e531d754ca801876e37aa89d3281e6b57f0453c0b639ace",
+  "updatedCourses": [
+    {
+      "courseID": "concurrency",
+      "contentVersion": "1.0.8",
+      "archiveSHA256": "3174280ce91473585889836e8774e365aaeceb79328af9442ac882c63586d820"
+    },
+    {
+      "courseID": "projects",
+      "contentVersion": "1.0.10",
+      "archiveSHA256": "729d3cfd24677ca14cc91ae8e269a796829cccef5fea6fc04dd2634076f0e1aa"
+    }
+  ]
+}

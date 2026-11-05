@@ -44,7 +44,7 @@ Validation:
 - All five pass the same browser Worker pipeline in the local CLI gate, with
   fetch forbidden after preparation. Actual in-app browser preparation and Serde
   Run/Step over/Continue also finish with exit 0.
-- 144 site tests, TypeScript/production build, 28 CoursePack tests and 17 actual
+- 149 site tests, TypeScript/production build, 28 CoursePack tests and 17 actual
   host Cargo reading programs pass. New regressions cover target selection,
   bounded build-script I/O/directives, path validation, RSC serialization and
   narrowly validated post-login return paths.
@@ -72,3 +72,11 @@ Primary technical references:
 [Rust cfg semantics](https://doc.rust-lang.org/reference/conditional-compilation.html),
 [Tokio WASM support](https://docs.rs/tokio/1.54.1/tokio/#wasm-support),
 [explicit Serde traits](https://serde.rs/impl-serialize.html).
+
+Publication is complete: the governed website release and public HTTPS readback are
+recorded in [the release receipt](seo/2026-11-05/release.json). Signed catalog
+sequence 20 is active at the public catalog URL; it selects Projects 1.0.10 and
+Concurrency 1.0.8 from the immutable local-cargo-lessons-2026-11-05 release. The
+[public catalog readback](local-cargo-2026-11-05/active-catalog.json) records its exact
+SHA-256. The bundled bootstrap catalog is also updated for the next app build.
+No app binary or App Review selection was changed by this publication.

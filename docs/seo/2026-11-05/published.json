@@ -1,0 +1,101 @@
+{
+  "checkedAt": "2026-11-05T16:28:48.800Z",
+  "sitemap": {
+    "status": 200,
+    "contentType": "application/xml",
+    "urlCount": 833,
+    "uniqueURLs": 833
+  },
+  "canonicalPages": 833,
+  "courses": 7,
+  "lessons": 771,
+  "articles": 39,
+  "duplicateTitles": [],
+  "duplicateDescriptions": [],
+  "brokenFragments": [],
+  "extraLinksChecked": 70,
+  "extraLinksBroken": [],
+  "imageURLsChecked": 129,
+  "imagesBroken": [],
+  "imageDimensionsMissing": 0,
+  "invalidJSONLD": [],
+  "redirects": [
+    {
+      "url": "http://crabrix.com/learn/",
+      "status": 308,
+      "location": "https://crabrix.com/learn/",
+      "type": "text/html"
+    },
+    {
+      "url": "http://www.crabrix.com/learn/",
+      "status": 308,
+      "location": "https://crabrix.com/learn/",
+      "type": "text/html"
+    },
+    {
+      "url": "https://crabrix.com/learn",
+      "status": 308,
+      "location": "/learn/",
+      "type": null
+    },
+    {
+      "url": "https://www.crabrix.com/learn/",
+      "status": 308,
+      "location": "https://crabrix.com/learn/",
+      "type": "text/html"
+    },
+    {
+      "url": "https://crabrix.com/playground/mcp/",
+      "status": 308,
+      "location": "/ai/",
+      "type": null
+    },
+    {
+      "url": "https://crabrix.com/images/blog/mcp-real-agents/actual-shared-output.png",
+      "status": 308,
+      "location": "/images/blog/mcp-real-agents/actual-shared-output.jpg",
+      "type": null
+    }
+  ],
+  "gates": [
+    {
+      "userAgent": "Mozilla/5.0",
+      "status": 200,
+      "fullSourceExposed": false
+    },
+    {
+      "userAgent": "Mozilla/5.0",
+      "starterStatus": 307
+    },
+    {
+      "userAgent": "Googlebot",
+      "status": 200,
+      "fullSourceExposed": false
+    },
+    {
+      "userAgent": "Googlebot",
+      "starterStatus": 307
+    },
+    {
+      "userAgent": "Twitterbot",
+      "status": 200,
+      "fullSourceExposed": false
+    },
+    {
+      "userAgent": "Twitterbot",
+      "starterStatus": 307
+    },
+    {
+      "url": "https://crabrix.com/learn-media/projects/serde-roundtrip-validation.png",
+      "status": 401,
+      "location": null,
+      "type": "text/plain;charset=UTF-8"
+    },
+    {
+      "url": "https://crabrix.com/content/courses.json",
+      "status": 404,
+      "location": null,
+      "type": "text/html; charset=utf-8"
+    }
+  ]
+}

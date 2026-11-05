@@ -1,0 +1,77 @@
+{
+  "sourceCommit": "343aef560dd43c5698901eb3861e6b49b40a6e74",
+  "nodeId": "fe8b3706-3da6-47f8-875c-ce86a0cb8114",
+  "sourceOverlay": {
+    "uploadId": "crabrix-academy-seo-343aef5-20261105",
+    "sha256": "555e6abd93366be9c5352bbd3940de9f94d2001cb5f2fc8ac638f40bd527cbd6",
+    "bytes": 1054832,
+    "reviewedFiles": 34
+  },
+  "jobs": [
+    {
+      "id": "crabrix-academy-seo-source-343aef5-20261105",
+      "targetId": "crabrix-web",
+      "destination": "localhost:5001/hostwatch/helsinki/crabrix-web:current",
+      "digest": "sha256:3a9398047dc7202facb58bb2c282d0a13287df2e287809bc8e4a24e552b1b53e",
+      "state": "succeeded",
+      "createdAt": "2026-11-05T16:20:43.161323873Z",
+      "finishedAt": "2026-11-05T16:23:47.210011115Z",
+      "action": "source_build",
+      "expectedRevision": "sha256:a01c61f9eb8a0b4f6eda00d22c719b59c6fb7a6a478509bb7585556633e016a2",
+      "sourceBuild": {
+        "uploadId": "crabrix-academy-seo-343aef5-20261105",
+        "mode": "partial"
+      },
+      "sourceRevision": "sha256:6564cf77a14d29348202ed511b6a700e3d4fb75698433ea9924311606661f189",
+      "builtDigest": "sha256:8e2dbd8f3cf791a015b05a2c7ea8f988bce537896ba5ac8792fe009f3a8ea4ad"
+    },
+    {
+      "id": "crabrix-academy-seo-publish-343aef5-20261105",
+      "targetId": "crabrix-web",
+      "destination": "localhost:5001/hostwatch/helsinki/crabrix-web:current",
+      "digest": "sha256:8e2dbd8f3cf791a015b05a2c7ea8f988bce537896ba5ac8792fe009f3a8ea4ad",
+      "state": "succeeded",
+      "createdAt": "2026-11-05T16:24:21.097904083Z",
+      "finishedAt": "2026-11-05T16:24:48.036189781Z",
+      "action": "update",
+      "expectedPublishedDigest": "sha256:0c66e622781c33e1418dedfa8ef5ceafe4f81480c0f3989bc6a97f2936f304df",
+      "publishedDigest": "sha256:391dc2b09dfdaaf31cee5b0a46bc16717056f0e15edc9764a10c587d3afd70bc"
+    },
+    {
+      "id": "crabrix-academy-seo-deploy-343aef5-20261105",
+      "targetId": "crabrix-web",
+      "destination": "localhost:5001/hostwatch/helsinki/crabrix-web:current",
+      "digest": "sha256:8e2dbd8f3cf791a015b05a2c7ea8f988bce537896ba5ac8792fe009f3a8ea4ad",
+      "state": "succeeded",
+      "createdAt": "2026-11-05T16:26:28.569260858Z",
+      "finishedAt": "2026-11-05T16:26:30.455097413Z",
+      "action": "deploy_update",
+      "expectedRevision": "sha256:d34555f5811dfca1a82e94d70c0d15fbc298705d4c87b040ed3cff2463e2219b"
+    }
+  ],
+  "readback": {
+    "webContainerId": "3f555c8bb37f167eb15bd519b65a93a99471a7544cfa673943bde7a3995b4270",
+    "image": "sha256:8e2dbd8f3cf791a015b05a2c7ea8f988bce537896ba5ac8792fe009f3a8ea4ad",
+    "healthHTTP": 200,
+    "accountBackupBeforeCutover": true,
+    "accountMountPreserved": true,
+    "resourceLimitsPreserved": true,
+    "existingSignedInAcademySessionWorks": true,
+    "remoteMCPUnchanged": true,
+    "remoteMCPContainerId": "572d49c69fcdf2c8fa46dc3fe14d40d0161ce54fa08761ec25be4d2b93a203ec",
+    "remoteMCPStartedAt": "2026-11-05T09:04:16.577736718Z"
+  },
+  "searchConsole": {
+    "checkedAt": "2026-11-05T16:23:00Z",
+    "property": "sc-domain:crabrix.com",
+    "sitemap": "https://crabrix.com/sitemap.xml",
+    "statusObserved": "\u0423\u0441\u043f\u0435\u0448\u043d\u043e",
+    "submittedDate": "2026-10-29",
+    "lastProcessedDate": "2026-11-04",
+    "discoveredPages": 809,
+    "duplicateSubmission": false,
+    "indexCoverageReport": "not readable: after navigation/reload the report remained blank",
+    "indexCounts": null,
+    "fieldCoreWebVitals": null
+  }
+}
