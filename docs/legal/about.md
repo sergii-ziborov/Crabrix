@@ -1,6 +1,6 @@
 # About Crabrix
 
-Updated: 2026-10-27 · [Website copy](https://crabrix.com/about/)
+Updated: 2026-11-05 · [Website copy](https://crabrix.com/about/)
 
 A real Rust compiler on a phone, an honest account of its limits, and one developer behind it.
 
@@ -34,6 +34,8 @@ Crabrix pins one compiler build and ships it in the app. Nothing is downloaded a
 
 The public [toolchain builder](https://github.com/sergii-ziborov/crabrix-toolchain) produced the signed compiler release from pinned source. Its build inputs, compatibility results, licenses and two-build difference report are public. The compiler has its own identity distinct from the runtime fork.
 
+The [guest web Playground](https://crabrix.com/playground/) also runs Rust locally in your browser, with source folders, explicitly prepared registry libraries and encrypted live rooms. Its Cargo profile is narrower than the native app’s. [See the browser Cargo limits](https://crabrix.com/guide/#browser-cargo) and [connect your own AI agent](https://crabrix.com/ai/); execution always needs a local action or a scoped permission on the selected client.
+
 ## What it cannot do
 
 Being honest about the edges is more useful than a feature list. The bundled compiler targets `wasm32-wasip1` and has no native linker, so:
@@ -42,15 +44,15 @@ Being honest about the edges is more useful than a feature list. The bundled com
 
 - Compilation is interpreted WebAssembly, so a first build is slower than on a laptop. Repeat builds come from a local artifact cache.
 
-- The local source debugger supports breakpoints, stepping, active async poll frames and bounded primitive, String, Vec and concrete local struct previews. Const bodies, macro expansions, dependency internals and arbitrary memory inspection remain outside its scope. A `cargo test` harness is not included.
+- The local source debugger supports breakpoints, stepping, active async poll frames and bounded primitive, String, Vec and concrete local struct previews. Const bodies, macro expansions, dependency internals and arbitrary memory inspection remain outside its scope. Crabrix 1.1.5 includes selected-entry libtest and bundled rustfmt; integration targets, dev-dependency graphs, doctests and should_panic remain outside the current test profile.
 
 The Packages screen labels every dependency verified, expected to work, needs review, or unsupported, based on real build outcomes recorded on device.
 
 ## Learning, not just tooling
 
-Crabrix contains a full Rust course — 154 lessons across six language courses, from `fn main` through ownership, traits, and async to macros, unsafe, and FFI, plus interview preparation that reaches past the language into memory, networking, databases, and distributed systems. A separate Algorithm Atlas adds 200 reusable patterns across 20 independent solution methods. Each method has its own path, and every pattern is taught through a mental model, recognition guide, and local Rust challenge.
+Crabrix contains a full Rust course — 171 lessons across six language courses, from `fn main` through ownership, traits, and async to macros, unsafe, and FFI, plus interview preparation that reaches past the language into memory, networking, databases, and distributed systems. A separate Algorithm Atlas adds 200 reusable patterns across 20 independent solution methods. Each method has its own path, and every pattern is taught through a mental model, recognition guide, and local Rust challenge.
 
-All 754 lessons and steps have expanded written guidance, inline code markup, a syntax-highlighted example, and an infographic with a caption and alt text. Crabrix includes compiler-backed labs across the Rust curriculum, and every Algorithm Atlas pattern ends in a local Rust challenge the bundled compiler has to accept. Three drills — Quick Practice, Term Train, and Code Recall — are generated from that same curriculum and scheduled with SM-2 spaced repetition, so what you are weakest at comes back soonest.
+All 771 lessons and steps have expanded written guidance, inline code markup, a syntax-highlighted example, and an infographic with a caption and alt text. Crabrix includes compiler-backed labs across the Rust curriculum, and every Algorithm Atlas pattern ends in a local Rust challenge the bundled compiler has to accept. Three drills — Quick Practice, Term Train, and Code Recall — are generated from that same curriculum and scheduled with SM-2 spaced repetition, so what you are weakest at comes back soonest.
 
 A new installation offers seven signed courses for individual download. Code Examples is a separate optional download with 46 editable projects. Existing learners receive all seven signed transition packs locally so previously available courses stay available offline. Later versions are published as data-only CoursePacks from the public [course repository](https://github.com/sergii-ziborov/crabrix-courses). Learn shows the size before a requested update. Opening a starter creates a separate editable project, so an updated course does not replace your work.
 
