@@ -20,7 +20,7 @@ export function SiteNavigation() {
     <nav className="site-nav" aria-label="Main navigation">
       {links.map(([label, href]) => {
         const active = href === "/" ? pathname === "/" : pathname === href.slice(0, -1) || pathname.startsWith(href);
-        return <Link key={href} href={href} aria-current={active ? "page" : undefined}>{label}</Link>;
+        return <Link prefetch={false} key={href} href={href} aria-current={active ? "page" : undefined}>{label}</Link>;
       })}
     </nav>
   );

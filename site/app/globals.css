@@ -168,6 +168,14 @@ table.plain td { color: var(--muted); }
 .unit-panel { padding: 22px; border: 1px solid var(--border); border-radius: 16px; background: var(--panel); }
 .unit-panel h2 { font-size: 23px; }
 .unit-panel p { margin: 0 0 12px; color: var(--muted); }
+.method-index { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 8px 18px; margin-top: 20px; }
+.method-index a { overflow-wrap: anywhere; }
+.method-guide { max-width: 78ch; margin-block: 20px; }
+.method-guide p { line-height: 1.75; color: var(--text); }
+.method-sources { margin-top: 36px; }
+.pattern-navigation { border-top: 1px solid var(--border); margin-block: 28px; padding-top: 24px; }
+.pattern-navigation ol { padding-left: 1.5em; }
+.pattern-navigation li { padding-block: 5px; overflow-wrap: anywhere; }
 .lesson-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 9px; }
 .lesson-link { display: flex; align-items: center; justify-content: space-between; gap: 15px; border: 1px solid var(--border); border-radius: 10px; padding: 11px 13px; color: var(--text); background: var(--raised); text-decoration: none; font-size: 14px; }
 .lesson-link:hover { border-color: var(--mint); }

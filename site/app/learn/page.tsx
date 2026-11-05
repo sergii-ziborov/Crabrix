@@ -24,7 +24,7 @@ export default function LearnPage() {
       </div>
       <div className="catalog-grid">
         {snapshot.courses.map((course) => (
-          <Link className="course-card" href={`/learn/${course.id}`} key={course.id}>
+          <Link prefetch={false} className="course-card" href={`/learn/${course.id}`} key={course.id}>
             <span className="card-kicker">{course.level} · {course.units.length} units</span>
             <div className="course-card-heading"><CourseIcon course={course.id} /><h2>{course.title}</h2></div>
             <p>{course.subtitle}</p>

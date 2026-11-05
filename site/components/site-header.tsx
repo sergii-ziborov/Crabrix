@@ -8,14 +8,14 @@ export async function SiteHeader() {
   return (
     <header className="site-header">
       <div className="site-shell site-header-row">
-        <Link className="site-brand" href="/" aria-label="Crabrix home">
+        <Link prefetch={false} className="site-brand" href="/" aria-label="Crabrix home">
           <span className="site-mark" aria-hidden="true"><img src="/brand/crabrix-mark.png" width="35" height="35" alt="" /></span>
           <span>Crabrix</span>
         </Link>
         <SiteNavigation />
         <div className="site-header-tools">
           <ThemeSelect />
-          <Link className="site-account" href={viewer ? "/account/" : "/login/"}>{viewer ? "Account" : "Sign in"}</Link>
+          <Link prefetch={false} className="site-account" href={viewer ? "/account/" : "/login/"}>{viewer ? "Account" : "Sign in"}</Link>
         </div>
       </div>
     </header>

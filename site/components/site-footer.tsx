@@ -6,17 +6,17 @@ export function SiteFooter() {
       <div className="site-shell site-footer-row">
         <div>© 2026 Serhii Ziborov. All rights reserved.</div>
         <nav aria-label="Footer navigation">
-          <Link href="/learn">Learn</Link>
-          <Link href="/blog">Blog</Link>
-          <Link href="/guide/">User guide</Link>
-          <Link href="/ai/">Connect AI</Link>
-          <Link href="/sitemap/">Sitemap</Link>
-          <Link href="/about">About</Link>
-          <Link href="/technology">Technology</Link>
-          <Link href="/support">Support</Link>
-          <Link href="/privacy">Privacy</Link>
-          <Link href="/terms">Terms</Link>
-          <Link href="/licenses">Licenses</Link>
+          <Link prefetch={false} href="/learn">Learn</Link>
+          <Link prefetch={false} href="/blog">Blog</Link>
+          <Link prefetch={false} href="/guide/">User guide</Link>
+          <Link prefetch={false} href="/ai/">Connect AI</Link>
+          <Link prefetch={false} href="/sitemap/">Sitemap</Link>
+          <Link prefetch={false} href="/about">About</Link>
+          <Link prefetch={false} href="/technology">Technology</Link>
+          <Link prefetch={false} href="/support">Support</Link>
+          <Link prefetch={false} href="/privacy">Privacy</Link>
+          <Link prefetch={false} href="/terms">Terms</Link>
+          <Link prefetch={false} href="/licenses">Licenses</Link>
           <a href="https://github.com/sergii-ziborov/Crabrix">GitHub</a>
         </nav>
       </div>

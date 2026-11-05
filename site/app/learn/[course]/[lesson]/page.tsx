@@ -37,12 +37,21 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
   const found = lessonById(course, lessonId);
   if (!found) notFound();
   const { unit, lesson } = found;
+  const patternSteps = course.id === "algorithms" && lesson.algorithm?.patternID
+    ? unit.lessons.filter(item => item.algorithm?.patternID === lesson.algorithm?.patternID) : [];
+  const patternNavigation = patternSteps.length > 0 && <nav className="pattern-navigation" aria-label="Steps in this algorithm pattern">
+    <h2>Study this pattern</h2>
+    <ol>{patternSteps.map(item => <li key={item.id}>{item.id === lesson.id
+      ? <span aria-current="page">{item.title}</span>
+      : <Link prefetch={false} href={`/learn/${course.id}/${item.id}`}>{item.title}</Link>}</li>)}</ol>
+    <p><Link prefetch={false} href={`/learn/algorithms/#${unit.id}`}>Compare methods in {unit.title} →</Link></p>
+  </nav>;
   const relatedPosts = lessonRelatedPosts(course.id, lesson.id).flatMap(slug => {
     const post = postBySlug(slug);
     return post ? [post] : [];
   });
   const relatedReading = relatedPosts.length > 0 && <aside className="lesson-reading" aria-label="Related Rust guides">
-    <h2>Related free reading</h2><ul>{relatedPosts.map(post => <li key={post.slug}><Link href={`/blog/${post.slug}/`}>{post.title}</Link></li>)}</ul>
+    <h2>Related free reading</h2><ul>{relatedPosts.map(post => <li key={post.slug}><Link prefetch={false} href={`/blog/${post.slug}/`}>{post.title}</Link></li>)}</ul>
   </aside>;
   const structuredData = <StructuredData data={{ "@context": "https://schema.org", "@graph": [{ "@type": "Article",
     inLanguage: "en", timeRequired: `PT${lesson.minutes}M`, articleSection: course.title,
@@ -62,7 +71,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
     const next = encodeURIComponent(path);
     return <div className="site-shell lesson-page">
       {structuredData}
-      <nav className="breadcrumbs" aria-label="Breadcrumbs"><Link href="/learn/">Learn</Link><span>/</span><Link href={`/learn/${course.id}/`}>{course.title}</Link><span>/</span><span>{unit.title}</span></nav>
+      <nav className="breadcrumbs" aria-label="Breadcrumbs"><Link prefetch={false} href="/learn/">Learn</Link><span>/</span><Link prefetch={false} href={`/learn/${course.id}/`}>{course.title}</Link><span>/</span><span>{unit.title}</span></nav>
       <div className="page-intro lesson-content"><p className="eyebrow">{unit.title} · {lesson.minutes} min · free with an account</p><div className="academy-heading"><CourseIcon course={course.id} size={64} /><h1>{lesson.title}</h1></div>
         <span className="preview-label">Lesson preview · about 30%</span><p className="lede">{prose(preview.summary)}</p>
         {preview.rule && <div className="lesson-callout"><strong>Core idea</strong><p>{prose(preview.rule)}</p></div>}
@@ -73,10 +82,11 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
           <p>Create a free account to read the complete explanation, see the infographic, explore the code, and try the exercises. All 771 lessons and algorithm steps are included.</p>
           <div className="access-actions"><Link className="btn" rel="nofollow" prefetch={false} href={`/register/?next=${next}`}>Create free account →</Link><Link rel="nofollow" prefetch={false} href={`/login/?next=${next}`}>Already learning? Sign in</Link></div>
           <p className="auth-note">No payment details. Your account opens the complete Academy.</p>
-          {course.id === "algorithms" && <p><Link href="/learn/algorithms/#visualization">Try an interactive algorithm walkthrough →</Link></p>}
+          {course.id === "algorithms" && <p><Link prefetch={false} href="/learn/algorithms/#visualization">Try an interactive algorithm walkthrough →</Link></p>}
         </section>
         {relatedReading}
-        <Link href={`/learn/${course.id}/`}>← All lessons in {course.title}</Link>
+        {patternNavigation}
+        <Link prefetch={false} href={`/learn/${course.id}/`}>← All lessons in {course.title}</Link>
       </article>
     </div>;
   }
@@ -91,14 +101,14 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
   const exampleSection = (writing?.exampleCode || writing?.practiceCode) && <section><h2>Read the code</h2>
     {writing?.exampleCode && <><SyntaxCode code={writing.exampleCode} />{writing.exampleCaption && <p>{prose(writing.exampleCaption)}</p>}</>}
     {writing?.practiceCode && writing.practiceCode !== writing.exampleCode && <><h3>Practice starter</h3><SyntaxCode code={writing.practiceCode} /></>}
-    {lesson.playgroundProject && <p><Link className="btn" href={`/playground/?lesson=${course.id}/${lesson.id}`} target="_blank" rel="nofollow noopener">Open local Cargo example in Playground ↗</Link></p>}
+    {lesson.playgroundProject && <p><Link prefetch={false} className="btn" href={`/playground/?lesson=${course.id}/${lesson.id}`} target="_blank" rel="nofollow noopener">Open local Cargo example in Playground ↗</Link></p>}
   </section>;
   return (
     <div className="site-shell lesson-page">
       {structuredData}
       <nav className="breadcrumbs" aria-label="Breadcrumbs">
-        <Link href="/learn">Learn</Link><span>/</span>
-        <Link href={`/learn/${course.id}`}>{course.title}</Link><span>/</span>
+        <Link prefetch={false} href="/learn">Learn</Link><span>/</span>
+        <Link prefetch={false} href={`/learn/${course.id}`}>{course.title}</Link><span>/</span>
         <span>{unit.title}</span>
       </nav>
       <div className="page-intro lesson-content">
@@ -157,9 +167,10 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
         </section>}
         {algorithm?.expectedAnswer && <details><summary>Reveal the Algorithm Atlas answer</summary><p><code>{algorithm.expectedAnswer}</code></p></details>}
         {relatedReading}
+        {patternNavigation}
         <nav className="lesson-list" aria-label="Lesson navigation">
-          {index > 0 && <Link className="lesson-link" href={`/learn/${course.id}/${lessons[index - 1].id}`}>← {lessons[index - 1].title}</Link>}
-          {index + 1 < lessons.length && <Link className="lesson-link" href={`/learn/${course.id}/${lessons[index + 1].id}`}>{lessons[index + 1].title} →</Link>}
+          {index > 0 && <Link prefetch={false} className="lesson-link" href={`/learn/${course.id}/${lessons[index - 1].id}`}>← {lessons[index - 1].title}</Link>}
+          {index + 1 < lessons.length && <Link prefetch={false} className="lesson-link" href={`/learn/${course.id}/${lessons[index + 1].id}`}>{lessons[index + 1].title} →</Link>}
         </nav>
       </article>
     </div>

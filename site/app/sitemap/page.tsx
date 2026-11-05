@@ -11,13 +11,13 @@ export default function SitemapPage() {
       <p className="lede">Browse 771 lesson previews, seven courses and {posts.length} practical articles. A free account opens complete Academy lessons.</p>
       <p><a href="/sitemap.xml">XML sitemap for search engines</a></p>
     </div>
-    <section className="unit-panel"><h2><Link href="/guide/">Crabrix user guide</Link></h2><p>Screenshot walkthroughs for projects, offline packages, Check and Run, the terminal, device layouts and compiler boundaries.</p></section>
-    <section className="unit-panel"><h2><Link href="/ai/">Connect AI to Crabrix</Link></h2><p>Set up Crabrix MCP or the SDK, connect a temporary room and see AI edits and selections in Crabrix on your device.</p></section>
-    <section className="unit-panel"><h2><Link href="/blog/">Rust blog</Link></h2><ul>{posts.map((post) => <li key={post.slug}><Link href={`/blog/${post.slug}/`}>{post.title}</Link> <time dateTime={post.date}>{post.date}</time></li>)}</ul></section>
+    <section className="unit-panel"><h2><Link prefetch={false} href="/guide/">Crabrix user guide</Link></h2><p>Screenshot walkthroughs for projects, offline packages, Check and Run, the terminal, device layouts and compiler boundaries.</p></section>
+    <section className="unit-panel"><h2><Link prefetch={false} href="/ai/">Connect AI to Crabrix</Link></h2><p>Set up Crabrix MCP or the SDK, connect a temporary room and see AI edits and selections in Crabrix on your device.</p></section>
+    <section className="unit-panel"><h2><Link prefetch={false} href="/blog/">Rust blog</Link></h2><ul>{posts.map((post) => <li key={post.slug}><Link prefetch={false} href={`/blog/${post.slug}/`}>{post.title}</Link> <time dateTime={post.date}>{post.date}</time></li>)}</ul></section>
     {courseSnapshot().courses.map((course) => <section className="unit-panel" key={course.id}>
-      <h2><Link href={`/learn/${course.id}/`}>{course.title}</Link></h2>
+      <h2><Link prefetch={false} href={`/learn/${course.id}/`}>{course.title}</Link></h2>
       {course.units.map((unit) => <div key={unit.id}><h3>{unit.title}</h3><ul>
-        {unit.lessons.map((lesson) => <li key={lesson.id}><Link href={`/learn/${course.id}/${lesson.id}/`}>{lesson.title}</Link></li>)}
+        {unit.lessons.map((lesson) => <li key={lesson.id}><Link prefetch={false} href={`/learn/${course.id}/${lesson.id}/`}>{lesson.title}</Link></li>)}
       </ul></div>)}
     </section>)}
   </div>;

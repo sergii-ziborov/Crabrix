@@ -45,3 +45,18 @@ test('figure captions render inline code through prose()', () => {
   assert.equal(page.match(/<figcaption>\{prose\(lesson\.illustration\.caption\)\}<\/figcaption>/g)?.length, 2);
   assert.ok(!page.includes('<figcaption>{lesson.illustration.caption}'));
 });
+
+test('all 600 algorithm previews lead with their teaching stage, not the shared fixture preamble', () => {
+  const anchors = { model: /^Begin with the concrete question:/, recognize: /^A problem is a good match for /, challenge: /^Solve the exact task,/ };
+  const bodies = new Set();
+  const course = snapshot.courses.find(course => course.id === 'algorithms');
+  for (const unit of course.units) for (const lesson of unit.lessons) {
+    const preview = lessonPreview(lesson);
+    const body = preview.paragraphs.join(' ');
+    assert.match(body, anchors[lesson.algorithm.stage], lesson.id);
+    assert.ok(!bodies.has(body), lesson.id);
+    bodies.add(body);
+    assert.ok(!body.includes(lesson.writing.exampleCode));
+  }
+  assert.equal(bodies.size, 600);
+});

@@ -28,10 +28,28 @@ function lastSentenceEnd(text: string) {
 // The 30% budget counts code the preview never shows, so it can exceed the prose.
 const MAX_EXPLANATION_SHARE = .6;
 
+// Atlas explanations start with a shared fixture and output-format contract.
+// Lead with the actual teaching stage, so a recognition preview explains when
+// to choose the method instead of repeating the mental-model page's fixture.
+function previewExplanation(lesson: Lesson): string {
+  const explanation = lesson.writing?.explanation || lesson.algorithm?.idea || "";
+  const anchors: Record<string, RegExp> = {
+    model: /^Begin with the concrete question:/,
+    recognize: /^A problem is a good match for /,
+    challenge: /^Solve the exact task,/,
+  };
+  const anchor = anchors[lesson.algorithm?.stage || ""];
+  if (!anchor) return explanation;
+  const paragraphs = explanation.split(/\n\s*\n/);
+  const start = paragraphs.findIndex(paragraph => anchor.test(paragraph));
+  if (start < 0) return explanation;
+  return [...paragraphs.slice(start), ...paragraphs.slice(0, start)].join("\n\n");
+}
+
 export function lessonPreview(lesson: Lesson, isBasics = false) {
   const summary = lesson.writing?.summary || lesson.concept;
   const rule = lesson.writing?.rule || "";
-  const explanation = lesson.writing?.explanation || lesson.algorithm?.idea || "";
+  const explanation = previewExplanation(lesson);
   const tokens = [...explanation.matchAll(/\S+/g)];
   const budget = Math.min(Math.floor(tokens.length * MAX_EXPLANATION_SHARE),
     Math.max(0, Math.floor(lessonWordCount(lesson, isBasics) * .30) - words(lesson.title) - words(summary) - words(rule)));
