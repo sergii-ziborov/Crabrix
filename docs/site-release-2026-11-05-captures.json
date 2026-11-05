@@ -1,0 +1,87 @@
+{
+  "sourceCommit": "7044c9c21225ae2af13134517092a56460c0ddd4",
+  "atUTC": "2026-11-05T00:05:03Z",
+  "image": "localhost/crabrix-web-site:docs-shots-7044c9c",
+  "imageID": "58a84a8fc9436f515e4ebe0b5b9a2ee3bc0ceb741c91ccd6ebaa7c7f67f9c1d2",
+  "health": "healthy",
+  "rollbackContainer": "crabrix-web-site-before-docs-shots-20261105",
+  "accountBackup": "Account backup saved; seven-day retention applied.",
+  "accountMountUnchanged": true,
+  "resourceLimitsUnchanged": true,
+  "remoteMCPContainerUnchanged": true,
+  "remoteMCPImage": "localhost/crabrix-mcp-remote:0.5.0-d411197",
+  "remoteMCPContainerID": "4624eca64194378d90d0503ef0ed7704ae7dee503a72f4e4a83c1fdcfcae85a0",
+  "nativeAppChanged": false,
+  "DNSChanged": false,
+  "nginxChanged": false,
+  "publicVerifiedAtUTC": "2026-11-05T00:07:21.341Z",
+  "origin": "https://crabrix.com",
+  "sourceTree": {
+    "sourceCommit": "7044c9c21225ae2af13134517092a56460c0ddd4",
+    "sourceTreeSHA256": "bc8a47d3e48bc66720c2d9e05de609b137c2f0755bbf1cb055b36547485e1b52",
+    "allEntriesVerified": 3028,
+    "transferredBytes": 25471827,
+    "baseContextUnchanged": true,
+    "accountDataTouched": false
+  },
+  "captureManifest": "docs/site-captures-refresh-2026-11-05-assets.json",
+  "newCaptures": 22,
+  "websiteBaseline": "Crabrix 1.1.5 build 128 source / SDK 0.5.0",
+  "checks": {
+    "siteTestsPassed": 135,
+    "productionBuild": true,
+    "typeScript": true,
+    "localResponsiveConfigurations": 60,
+    "publicRefreshHTTP": 119,
+    "publicRegressionHTTP": 13,
+    "galleryImages": 12,
+    "galleryDialogs": 3,
+    "sitemapUniqueURLs": 816,
+    "allVersionedCaptureHashesAndDimensionsMatch": true,
+    "legacyImageAliasesMatch": true,
+    "guestLessonGatePreserved": true,
+    "sdkTarballUnchanged": true,
+    "publicBrowser": {
+      "atUTC": "2026-11-05T00:06:18.692Z",
+      "publicReadback": [
+        {
+          "newImages": 12,
+          "scrollWidth": 390,
+          "url": "/guide/",
+          "width": 390
+        },
+        {
+          "newImages": 3,
+          "scrollWidth": 820,
+          "url": "/ai/",
+          "width": 820
+        },
+        {
+          "newImages": 5,
+          "scrollWidth": 1440,
+          "url": "/",
+          "width": 1440
+        }
+      ],
+      "liveState": {
+        "heading": "Your Rust workspace, in the browser",
+        "image": "/screenshots/2026-11-05/playground-cargo.png",
+        "overflow": false,
+        "url": "https://crabrix.com/#browser-playground"
+      },
+      "errors": []
+    }
+  },
+  "cleanup": {
+    "isolatedCandidateRemoved": true,
+    "isolatedScreenshotSimulatorsRemoved": 3,
+    "localPreviewStopped": true,
+    "candidateTunnelStopped": true,
+    "rollbackRetained": true
+  },
+  "limits": [
+    "Duo inner-display captures retained from earlier qualification; new black frames were rejected and native UI access was blocked by the Mac lock.",
+    "Specialty qualification captures remain where the illustrated controls still apply.",
+    "Native source screenshot build is not an App Store or TestFlight publication."
+  ]
+}

@@ -693,3 +693,34 @@ The public image is `localhost/crabrix-web-site:playground-c02379a`. The candida
 passed the 17 browser scenarios in `scripts/probes/playground/workspace.cjs` on
 loopback 3213 before cutover. The accounts backup ran first, and the previous
 container `crabrix-web-site-before-playground-20261102` is kept for rollback.
+
+
+## Current website: product captures and guide — 5 November 2026
+
+Published source `7044c9c21225ae2af13134517092a56460c0ddd4` as
+`localhost/crabrix-web-site:docs-shots-7044c9c`. The public website is healthy.
+The Guide, home, Connect AI, About and Technology now describe the current web
+Cargo workspace and the 1.1.5 native source baseline; the capability record
+identifies SDK 0.5.0. This does not change App Store availability or App Review.
+
+Twenty-two reviewed iPhone/iPad/browser captures use versioned November 5 URLs,
+correct intrinsic dimensions and compatibility aliases. Duo retains explicitly
+labeled earlier captures because the Mac lock prevented switching the Simulator
+inner display; new black frames were rejected. Other still-applicable specialty
+qualification captures remain. [Capture provenance](site-captures-refresh-2026-11-05.md).
+
+Validation: 135 site tests, production build, TypeScript, 60 responsive/theme
+configurations, all 12 gallery images and three enlargement dialogs. Both the
+isolated candidate and public HTTPS site passed 119 refresh checks plus 13
+regression checks, including image SHA-256/dimensions, metadata, 816 unique
+sitemap URLs, SDK archive identity and guest lesson gating. The public browser
+readback confirmed the current images without overflow or console errors.
+
+The 3,028-entry deployment context matched its source manifest. Only a 24.3 MiB
+compressed delta was transferred; the previous context remained unchanged.
+A consistent account backup completed before cutover; the persistent account
+mount, limits and restart policy were preserved. The remote MCP container and
+its start time were unchanged. Rollback container
+`crabrix-web-site-before-docs-shots-20261105` is retained. The isolated candidate,
+three screenshot Simulators, local preview and SSH tunnel were removed/stopped.
+[Publication receipt](site-release-2026-11-05-captures.json).

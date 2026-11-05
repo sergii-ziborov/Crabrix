@@ -83,3 +83,14 @@ Atlas playback remain where the illustrated controls are still applicable.
 Raw test logs, xcresults, candidate build contexts and capture harnesses remain
 in the ignored `build/site-refresh-20261105/` directory. Room keys and private
 links are excluded from public documentation and deployment assets.
+
+
+## Publication
+
+The website was switched to `docs-shots-7044c9c` at 2026-11-05T00:05:03Z.
+The public HTTPS readback passed all 119 refresh and 13 regression checks.
+Its image bytes match the capture manifest. The live browser confirmed current
+images on phone/tablet/desktop layouts, with no overflow or console errors.
+The account backup and unchanged persistent mount were verified; the independent
+remote MCP container was not restarted. The previous website is retained for
+rollback. See `docs/site-release-2026-11-05-captures.json` for serving identity.
