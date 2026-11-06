@@ -1,0 +1,64 @@
+{
+  "publishedAt": "2026-11-06T09:21:31.648623738Z",
+  "appSourceCommit": "b176ab8ef685e701c348297dc81c1fff40f29412",
+  "courseSourceCommit": "f78fcbaf74d200ee5ad002499da5ea38237e750b",
+  "servingImage": "sha256:cd2fda6661836d670da9664639580a1c5d39e1f4c094afe499124440c6dba8b6",
+  "rollbackImage": "sha256:633adcdf8a2c42eb409f9e3071f21b564b6dbb5f5d566a95fe5bf3264bb98d9a",
+  "sourceBuild": "crabrix-learning-guide-build-arm-20261106-c",
+  "registryPublication": "crabrix-learning-guide-publish-arm-20261106-c",
+  "deployment": "crabrix-learning-guide-deploy-arm-20261106-c",
+  "accountBackupCompleted": true,
+  "accountMountPreserved": true,
+  "mcpSiblingImageUnchanged": true,
+  "isolatedQAContainerRemoved": true,
+  "candidateAudit": {
+    "checkedAt": "2026-11-06T09:19:37.987Z",
+    "base": "http://127.0.0.1:3428",
+    "canonicalPages": 833,
+    "pagesChecked": 833,
+    "lessons": 771,
+    "algorithmSteps": 600,
+    "checkedInternalFragments": 1212,
+    "publicLessonsPassed": true,
+    "privateAccountRoutesNoindex": true,
+    "htmlRscQueryIndexable": true,
+    "issues": []
+  },
+  "productionAudit": {
+    "checkedAt": "2026-11-06T09:23:29.169Z",
+    "base": "https://crabrix.com",
+    "canonicalPages": 833,
+    "pagesChecked": 833,
+    "lessons": 771,
+    "algorithmSteps": 600,
+    "checkedInternalFragments": 1212,
+    "publicLessonsPassed": true,
+    "privateAccountRoutesNoindex": true,
+    "htmlRscQueryIndexable": true,
+    "issues": []
+  },
+  "browserGuide": {
+    "widths": [
+      390,
+      1024
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "amber",
+      "cyberpunk"
+    ],
+    "horizontalOverflow": false,
+    "brokenImages": 0
+  },
+  "browserHomeAndAbout": {
+    "widths": [
+      390,
+      1024
+    ],
+    "horizontalOverflow": false,
+    "brokenImages": 0,
+    "oneH1PerPage": true,
+    "fourthDrillCopyPresent": true
+  }
+}

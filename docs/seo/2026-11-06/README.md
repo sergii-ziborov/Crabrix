@@ -1,5 +1,11 @@
 # Public Atlas guidance and crawl efficiency — 6 November 2026
 
+This is the historical receipt for the earlier preview-gated release below.
+Later on 6 November, the owner approved complete public Academy reading.
+[The public-Academy follow-up](public-academy.md) records that newer deployment:
+all 771 full lessons, examples and illustrations now open without registration.
+The earlier preview limits described here no longer define the serving site.
+
 This release retains all 833 canonical sitemap URLs, all 771 Academy lessons,
 existing articles, themes and registration requirements. It expands the existing
 Algorithms course rather than creating shallow copies or removing lesson pages.

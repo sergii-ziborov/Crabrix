@@ -1,0 +1,99 @@
+{
+  "checkedAt": "2026-11-06T09:54:33.914275+00:00",
+  "version": "1.1.7",
+  "buildNumber": "132",
+  "buildID": "50171754-3b56-42fe-b06d-08e1c546c6f7",
+  "appStoreVersionID": "f8b1fe62-889f-4aa2-b19b-5a7c85374cee",
+  "appStoreState": "PREPARE_FOR_SUBMISSION",
+  "reviewSubmitted": false,
+  "reviewPendingReason": "Final manual safe-area verification needs the Mac unlocked. The CUA tool currently reports it locked.",
+  "releaseType": "MANUAL",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "appSourceCommit": "2f62ef05d898e09e21c4c6c920d0c500726fda90",
+  "cloudBuildRunID": "808e2e9a-74fc-4207-9c53-00df8cebca32",
+  "cloudCompletionStatus": "SUCCEEDED",
+  "cloudExecutionProgress": "COMPLETE",
+  "cloudActions": [
+    {
+      "type": "BUILD",
+      "state": "SUCCEEDED",
+      "progress": "COMPLETE"
+    },
+    {
+      "type": "ARCHIVE",
+      "state": "SUCCEEDED",
+      "progress": "COMPLETE"
+    }
+  ],
+  "testFlightGroup": {
+    "groupID": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "groupName": "Internal QA",
+    "buildID": "50171754-3b56-42fe-b06d-08e1c546c6f7",
+    "verified": true
+  },
+  "testNotesFile": "docs/app-store/testflight-what-to-test-1.1.7-build132.txt",
+  "reviewNotesFile": "docs/app-store/review-notes-build132.txt",
+  "listingReadbackMatches": true,
+  "reviewNotesReadbackMatches": true,
+  "screenshotsRetained": 19,
+  "orderedScreenshotBytesAndNamesMatchPreviousVersion": true,
+  "archiveVerification": {
+    "version": "1.1.7",
+    "build": "132",
+    "sdk": "iphoneos27.1",
+    "xcode": "2710",
+    "xcodeBuild": "27A9275",
+    "encryptionExempt": true,
+    "strictAppStoreExportSignatureVerified": true,
+    "distributionProvisioningProfileVerified": true,
+    "privateICloudKVSEntitlementAllowedBySignedProfile": true,
+    "debuggerAttachDisabledInDistribution": true,
+    "storeExportSHA256": "9b686326c0bd56141f132f24a0e4491c7b5df008d587ec9d9063170b97262742",
+    "activeCatalogSequence": 22,
+    "activeCatalogSHA256": "edbdfaaa3f816f7178215a4be363e469aa683953dfbc0b714eceee79fdb22279",
+    "bundledLegalCopiesMatch": true
+  },
+  "artifacts": [
+    {
+      "artifactID": "78f5e8ca-dab2-4562-b967-7dec97eae033",
+      "fileName": "Crabrix Build 132 XCResult for Crabrix archive.xcresult.zip",
+      "fileType": "RESULT_BUNDLE",
+      "localFile": "cloud-132.xcresult.zip",
+      "bytes": 147475,
+      "sha256": "28efc9d2dc429d8e01492d0bea8436c8bc18ec1027673da33476d104ba3be21a"
+    },
+    {
+      "artifactID": "93fb50bc-2a58-45a0-9d65-408fca3eb055",
+      "fileName": "Crabrix Build 132 Archive for Crabrix on iOS.xcarchive.zip",
+      "fileType": "ARCHIVE",
+      "localFile": "cloud-132.xcarchive.zip",
+      "bytes": 99177195,
+      "sha256": "bd362dc5842a42498431ecdce56df63b849e635c02a88abc57b4a750691e2d99"
+    }
+  ],
+  "storeExport": {
+    "artifactID": "04ea38dc-8d59-42de-a6ad-b42f812cb005",
+    "fileName": "Crabrix 1.1.7 app-store.zip",
+    "bytes": 89590230,
+    "sha256": "9b686326c0bd56141f132f24a0e4491c7b5df008d587ec9d9063170b97262742"
+  },
+  "simulatorRegression": {
+    "result": "Passed",
+    "totalTestCount": 46,
+    "passedTests": 46,
+    "skippedTests": 0,
+    "failedTests": 0,
+    "sourceBuildNumber": "132"
+  },
+  "physicalDeviceTested": false,
+  "appleICloudDeliveryBetweenSignedInPhysicalDevicesVerified": false,
+  "manualDeviceChecks": {
+    "iPhone130": "File recovery preview/confirmation, restored lesson/practice history, Hard reveal and schedule, contextual question layout.",
+    "iPad130": "Real iPhone recovery file imported; card history and practice counters retained; left swipe revealed answer and ten-minute review.",
+    "Duo130": "Signed Basics download, iPhone recovery import, restored 1/28 and Term Train 3 runs, 2 cards/1 due; right swipe in Reduce Motion revealed answer and four-day review.",
+    "DuoSafeAreaIssue": "The first open-pose check exposed Next/Finish too close to the bottom. Build 132 moves grading and Next/Finish into a safe-area inset.",
+    "final132Layout": "Pending Mac unlock; compile and core tests passed.",
+    "iCloud": "No Apple account is signed in to the QA simulators. Queued/fake transport is not counted as delivery."
+  }
+}

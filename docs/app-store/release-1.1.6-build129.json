@@ -6,7 +6,6 @@
   "appStoreVersionID": "37ddcc45-822d-44b4-8f06-f6ab810d87d2",
   "reviewSubmissionID": "3b4e97eb-122c-4c49-8578-8b72bc61489b",
   "appStoreState": "READY_FOR_SALE",
-  "reviewState": "WAITING_FOR_REVIEW",
   "submittedDate": "2026-11-05T17:18:12.035Z",
   "releaseType": "MANUAL",
   "processingState": "VALID",
@@ -86,5 +85,7 @@
     "57 opt-in or separate-profile cases remain skipped; they are not counted as passes."
   ],
   "releaseStateCheckedOn": "2026-11-06",
-  "releaseRequestAcceptedOn": "2026-11-06"
+  "releaseRequestAcceptedOn": "2026-11-06",
+  "reviewStateAtSubmission": "WAITING_FOR_REVIEW",
+  "currentReviewState": "COMPLETE"
 }

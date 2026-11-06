@@ -1,6 +1,6 @@
 # Flashcards and private learning recovery
 
-Native target: Crabrix 1.1.7 (130). This record describes the implementation;
+Native target: Crabrix 1.1.7 (132). This record describes the implementation;
 TestFlight and review status require the independent Apple release receipt.
 
 The fourth practice uses the installed, signed curriculum. Only completed lesson
@@ -13,7 +13,9 @@ to 12 distinct lessons, with repeated explanations separated.
 
 Don’t know, Hard and Easy save a self-assessment and reveal the answer. Left/right
 swipes map to Don’t know/Easy. Show answer permits a preview before grading, and
-Next is explicit so an explanation never disappears on a timer. Difficult cards
+Next is explicit so an explanation never disappears on a timer. Grading and
+Next/Finish are pinned above the system safe area, including short open-Duo
+viewports; the card body scrolls independently. Difficult cards
 return sooner. A changed answer receives a new schedule without erasing lifetime
 attempts. Reduce Motion replaces rotation with a fade. These self-assessments do
 not award compiler-verification credit or submit new achievement events.
@@ -59,7 +61,7 @@ Restoring never imports, launches or grants execution authority to a project.
 
 ## Verification
 
-- Signed Simulator build: 1.1.7 (130); 46 targeted tests passed, no failures/skips.
+- Signed Simulator build: 1.1.7 (132); 46 targeted tests passed, no failures/skips.
   They cover existing progress/training and bootstrap behavior, all bundled lesson
   card coverage, corruption/version/bounds rejection, interrupted recovery,
   previous-copy fallback, unrelated preference preservation, cloud empty-install
@@ -74,6 +76,16 @@ Restoring never imports, launches or grants execution authority to a project.
 - iPhone Simulator: imported a recovery file through Files and explicit preview/
   confirmation; restored completion and Term Train count; opened the learned
   lesson's card, graded Hard, observed its answer and next-day review schedule.
+- iPad Simulator: imported the actual iPhone recovery file through Files and its
+  preview/confirmation; completion, card history and practice counters survived.
+  A left swipe revealed the answer and scheduled a ten-minute review.
+- Duo Simulator: downloaded the signed Basics course, then imported the iPhone
+  recovery file through Files and both explicit confirmations. The installed
+  course showed 1/28 completed, Term Train 3 runs and the card deck 2 cards/1 due.
+  With Reduce Motion enabled, right swipe graded Easy and revealed the answer
+  with a four-day review. The first layout check exposed a Next/Finish button
+  too close to the bottom in the open pose; build 132 moves actions into a
+  safe-area inset. Its final layout verification is recorded in the release receipt.
 - Live delivery between two real Apple iCloud accounts/devices has not been
   verified in this environment. No simulated or queued delivery is counted as a
   successful Apple synchronization. Final device-layout checks are recorded in
