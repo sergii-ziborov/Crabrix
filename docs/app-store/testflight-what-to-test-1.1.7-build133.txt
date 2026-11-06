@@ -1,0 +1,11 @@
+Algorithm Atlas laboratory refinements
+
+Open Learn > Algorithms > a lesson > Watch algorithm steps. Inspect arrays and matrices: source index labels belong to the selected collection; costs, window sizes and other scalar parameters must not appear as arbitrary array indices. Try Dijkstra, a sliding window and a matrix example.
+
+Download a section, step forward and back, scrub, change speed, then leave the app while playing. Playback should pause. Inspect exact values and call frames. A failed initial section check now offers Retry instead of an indefinite loading indicator.
+
+Open a personal copy in Code, change the input, then Run and Debug. The copy should keep its own edits and provenance while the lesson replay retains its original source and output. Return to lesson from Project settings. Removing a replay section must keep personal projects and progress.
+
+The website now opens exact personal Playground copies from all 600 Atlas stages. Recordings use a native Rust target; personal code uses wasm32-wasip1, so target-sized values can have different limits.
+
+This candidate is for TestFlight only. It does not replace build 132 in App Review.

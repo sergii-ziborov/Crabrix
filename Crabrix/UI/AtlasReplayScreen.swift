@@ -5,25 +5,32 @@ import UIKit
 final class AtlasReplayLoader: ObservableObject {
     @Published private(set) var section: AtlasReplayLibrary.Section?
     @Published private(set) var recording: AtlasRecording?
+    @Published private(set) var indexBindings: [String: Set<String>] = [:]
+    @Published private(set) var isInspecting = false
     @Published private(set) var isWorking = false
     @Published private(set) var received = 0
     @Published private(set) var total = 0
     @Published private(set) var message: String?
     private var job: Task<Void, Never>?
     private var identity = UUID()
+    private var inspectionIdentity = UUID()
 
     func inspect(method: String, lesson: String, source: String) async {
+        let inspection = UUID(); inspectionIdentity = inspection
+        isInspecting = true; message = nil; section = nil; recording = nil; indexBindings = [:]
+        defer { if inspectionIdentity == inspection { isInspecting = false } }
         do {
             let library = try AtlasReplayLibrary.shared.get()
             let section = try await library.section(method)
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled, inspectionIdentity == inspection else { return }
             self.section = section
             if section.isInstalled {
                 let recording = try await library.recording(method: method, lessonID: lesson, source: source)
-                guard !Task.isCancelled else { return }
+                guard !Task.isCancelled, inspectionIdentity == inspection else { return }
+                self.indexBindings = AtlasIndexBindings.collect(source: recording.replay.source)
                 self.recording = recording
             }
-        } catch { if !Task.isCancelled { message = error.localizedDescription } }
+        } catch { if !Task.isCancelled, inspectionIdentity == inspection { message = error.localizedDescription } }
     }
     func download(method: String, lesson: String, source: String) {
         operate { [weak self] id in
@@ -44,7 +51,7 @@ final class AtlasReplayLoader: ObservableObject {
             let library = try AtlasReplayLibrary.shared.get()
             try await library.remove(method)
             let section = try await library.section(method)
-            self?.recording = nil; self?.section = section
+            self?.recording = nil; self?.indexBindings = [:]; self?.section = section
         }
     }
     func stop() { job?.cancel(); if isWorking { message = "Stopping…" } }
@@ -147,7 +154,7 @@ struct AtlasReplayScreen: View {
                     Text("If this example changed, update its course. Remove and download the recording section again if its verification fails.")
                         .font(.caption).foregroundStyle(CrabrixTheme.muted)
                     Button("Remove downloaded section", role: .destructive) { loader.remove(method: method) }
-                        .disabled(loader.isWorking)
+                        .disabled(loader.isWorking || loader.isInspecting)
                 } else {
                     Button {
                         loader.download(method: method, lesson: lessonID, source: source)
@@ -156,9 +163,14 @@ struct AtlasReplayScreen: View {
                               systemImage: "arrow.down.circle")
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }.buttonStyle(.borderedProminent).tint(CrabrixTheme.blue)
-                        .foregroundStyle(CrabrixTheme.onAccent).disabled(loader.isWorking)
+                        .foregroundStyle(CrabrixTheme.onAccent).disabled(loader.isWorking || loader.isInspecting)
                         .accessibilityIdentifier("atlas-download-section")
                 }
+            } else if loader.message != nil && !loader.isInspecting {
+                Button("Retry section check", systemImage: "arrow.clockwise") {
+                    Task { await loader.inspect(method: method, lesson: lessonID, source: source) }
+                }
+                .accessibilityIdentifier("atlas-retry-section")
             } else { ProgressView("Reading signed section list…") }
             Text("Optional data only. Removing a section keeps your progress and personal projects.")
                 .font(.caption).foregroundStyle(CrabrixTheme.muted)
@@ -249,7 +261,7 @@ struct AtlasReplayScreen: View {
                     }
                     Button("Remove downloaded section", role: .destructive) {
                         playing = false; loader.remove(method: method)
-                    }.disabled(loader.isWorking)
+                    }.disabled(loader.isWorking || loader.isInspecting)
                 }.font(.caption).foregroundStyle(CrabrixTheme.muted).padding(.vertical, 8)
             }
         }
@@ -270,7 +282,7 @@ struct AtlasReplayScreen: View {
             ?? collections.first
         return VStack(alignment: .leading, spacing: 14) {
             Text("Data & variables").font(.headline)
-            Text("Blue: current index · Green: changed value").font(.caption2).foregroundStyle(CrabrixTheme.muted)
+            Text("Blue: source index · Green: changed value").font(.caption2).foregroundStyle(CrabrixTheme.muted)
             DisclosureGroup("Fixed example input") {
                 Text(replay.input).font(.caption.monospaced()).textSelection(.enabled).padding(.vertical, 8)
             }.font(.subheadline)
@@ -279,7 +291,8 @@ struct AtlasReplayScreen: View {
                     ForEach(collections, id: \.name) { Text($0.name).tag($0.name) }
                 }.pickerStyle(.menu)
                 AtlasValueView(name: selected.name, value: replay.values[selected.value].data,
-                    previous: previous[selected.name], locals: locals, edge: replay.sites[frame.site].edge)
+                    previous: previous[selected.name], locals: locals, edge: replay.sites[frame.site].edge,
+                    indexNames: loader.indexBindings[selected.name] ?? [])
             }
             ForEach(frame.locals.filter { if case .scalar = replay.values[$0.value].data { true } else { false } }, id: \.name) { local in
                 let value = replay.values[local.value]

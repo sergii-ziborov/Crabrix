@@ -3,6 +3,25 @@ import ZIPFoundation
 @testable import Crabrix
 
 final class AtlasReplayTests: XCTestCase {
+    func testIndexLabelsBelongToTheirCollectionAndIgnoreParametersAndProse() {
+        let source = ##"""
+        let cost = 0; let k = 2;
+        let answer = values[left] + values[right];
+        let cell = dp[row][column];
+        for (index, value) in items.iter().enumerate() { println!("{}", value); }
+        // values[cost]
+        /* dp[k] /* items[answer] */ values[k] */
+        let caption = r#"values[cost]"#;
+        let text = "items[k]";
+        other[column];
+        """##
+        let bindings = AtlasIndexBindings.collect(source: source)
+        XCTAssertEqual(bindings["values"], ["left", "right"])
+        XCTAssertEqual(bindings["dp"], ["row", "column"])
+        XCTAssertEqual(bindings["items"], ["index"])
+        XCTAssertEqual(bindings["other"], ["column"])
+        XCTAssertFalse(bindings.values.contains { $0.contains("cost") || $0.contains("k") || $0.contains("answer") })
+    }
     private var fixtures: URL {
         Bundle(for: Self.self).url(forResource: "AtlasReplay", withExtension: nil)!
     }
@@ -160,14 +179,15 @@ final class AtlasReplayTests: XCTestCase {
         let bootstrap = try CourseBootstrap()
         let entries = CourseUpdatePlanner.latestCompatible(in: try bootstrap.bundledCatalog(), appVersion: bootstrap.appVersion)
         let entry = try XCTUnwrap(entries["algorithms|en"])
+        let descriptor = try Data(contentsOf: fixtures.appending(path: "current-algorithms.descriptor.json"))
+        XCTAssertEqual(AtlasReplay.digest(descriptor), entry.descriptorSHA256,
+                       "Keep the personal-copy fixture aligned with the signed bundled course catalog.")
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         let archive = caches.appending(path: "Crabrix/CourseDownloads/\(entry.archiveSHA256).zip")
         guard FileManager.default.fileExists(atPath: archive.path) else {
             throw XCTSkip("Prepare the actual public algorithms course with the Simulator UI fixture first; this case itself never downloads.")
         }
         let root = try temporary(); defer { try? FileManager.default.removeItem(at: root) }
-        let descriptor = try Data(contentsOf: fixtures.appending(path: "current-algorithms.descriptor.json"))
-        XCTAssertEqual(AtlasReplay.digest(descriptor), entry.descriptorSHA256)
         let installer = try CourseInstaller(root: root.appending(path: "course"), appVersion: bootstrap.appVersion)
         _ = try await installer.install(descriptorBytes: descriptor, downloadedArchive: archive, keyring: bootstrap.keyring())
         let repository = try await installer.loadRepository(keyring: bootstrap.keyring())

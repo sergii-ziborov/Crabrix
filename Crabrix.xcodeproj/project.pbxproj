@@ -229,6 +229,7 @@
 		9EA4E146FBE64B0A444DF050 /* ProjectFilePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB1A73C28417FEDEEA4BE1B /* ProjectFilePolicy.swift */; };
 		9EB66F8224A4D1AE2F66644E /* ProjectPreflight.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB6A473947081519B4129602 /* ProjectPreflight.swift */; };
 		9F22D3FE5EDB6F45D89EBEEB /* CoursePackVerifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E974AA588AEAB526FF75C14 /* CoursePackVerifierTests.swift */; };
+		9FB270F51D0EDDD7C68CF5A0 /* AtlasSourceIndices.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA2F19A34ACE4A06486B48E5 /* AtlasSourceIndices.swift */; };
 		A12CA2877A1AC33E5E96B8E6 /* CourseDownloadManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84350CE3C63401A5D0FC805 /* CourseDownloadManagerTests.swift */; };
 		A198458B4F8D61196F4BE64B /* toolchain.lock.json in Resources */ = {isa = PBXBuildFile; fileRef = 9A933B2B0009B98281F32A47 /* toolchain.lock.json */; };
 		A2F5E5D31700F19C82F66E5B /* RustcRuntimeCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C77AD3B175C77EC406E52254 /* RustcRuntimeCacheTests.swift */; };
@@ -686,6 +687,7 @@
 		D750FF719EB5B0AC11A7ECBF /* CargoManifestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoManifestTests.swift; sourceTree = "<group>"; };
 		D78CFC64D85AAA456A17738E /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		D9DCC4288BCBC22B167ACD45 /* RustCourseCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustCourseCatalog.swift; sourceTree = "<group>"; };
+		DA2F19A34ACE4A06486B48E5 /* AtlasSourceIndices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlasSourceIndices.swift; sourceTree = "<group>"; };
 		DB2D37D461D0EDF4F84DD855 /* ProjectTerminalSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectTerminalSession.swift; sourceTree = "<group>"; };
 		DC7C9CD390E44F6849E4DB3B /* CompilerCandidate */ = {isa = PBXFileReference; lastKnownFileType = folder; name = CompilerCandidate; path = CrabrixTests/CompilerCandidate; sourceTree = SOURCE_ROOT; };
 		DCA31C6F7A431A34679A02D8 /* swift-argument-parser-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-argument-parser-LICENSE.txt"; sourceTree = "<group>"; };
@@ -1171,6 +1173,7 @@
 				5764C24D7A7235B9C83EC0F1 /* AdaptiveFold.swift */,
 				CD350E97620F1FB339249C56 /* AppearancePicker.swift */,
 				21BDEFD062989EB8A8A957E0 /* AtlasReplayScreen.swift */,
+				DA2F19A34ACE4A06486B48E5 /* AtlasSourceIndices.swift */,
 				5E20A77FEDA44BB55308AB2E /* AtlasValueView.swift */,
 				08CF787A36CA91D1C110D707 /* BuildDockView.swift */,
 				4416BEF4A5157F2F6D4E2B2F /* BuildWorkflowControls.swift */,
@@ -1611,6 +1614,7 @@
 				7B65128BEBCE8771F995ADA1 /* AtlasReplay.swift in Sources */,
 				94B7FB7739043A98CB65C618 /* AtlasReplayLibrary.swift in Sources */,
 				E251297DF8E2B142C7BE02AC /* AtlasReplayScreen.swift in Sources */,
+				9FB270F51D0EDDD7C68CF5A0 /* AtlasSourceIndices.swift in Sources */,
 				FAE74B70FF6B9FB281864E75 /* AtlasValueView.swift in Sources */,
 				53C508818988C87F3CA384F9 /* BorrowExplanation.swift in Sources */,
 				B0E19E7B68ACB01F1F333C69 /* BorrowRepair.swift in Sources */,
@@ -1950,7 +1954,9 @@
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) CRABRIX_SOCIAL CRABRIX_LEGACY_FIXTURES";
 				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphoneos27.1*]" = "$(inherited) CRABRIX_DUO_SDK";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphoneos27.2*]" = "$(inherited) CRABRIX_DUO_SDK";
 				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphonesimulator27.1*]" = "$(inherited) CRABRIX_DUO_SDK";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphonesimulator27.2*]" = "$(inherited) CRABRIX_DUO_SDK";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
@@ -1998,7 +2004,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = CrabrixShare/CrabrixShare.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 132;
+				CURRENT_PROJECT_VERSION = 133;
 				INFOPLIST_FILE = CrabrixShare/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2057,7 +2063,7 @@
 				CODE_SIGN_ENTITLEMENTS = Crabrix/Crabrix.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 132;
+				CURRENT_PROJECT_VERSION = 133;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Crabrix/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Crabrix;
@@ -2141,7 +2147,9 @@
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG CRABRIX_SOCIAL";
 				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphoneos27.1*]" = "$(inherited) CRABRIX_DUO_SDK";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphoneos27.2*]" = "$(inherited) CRABRIX_DUO_SDK";
 				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphonesimulator27.1*]" = "$(inherited) CRABRIX_DUO_SDK";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphonesimulator27.2*]" = "$(inherited) CRABRIX_DUO_SDK";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -2171,7 +2179,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = CrabrixShare/CrabrixShare.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 132;
+				CURRENT_PROJECT_VERSION = 133;
 				INFOPLIST_FILE = CrabrixShare/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2213,7 +2221,7 @@
 				CODE_SIGN_ENTITLEMENTS = Crabrix/Crabrix.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 132;
+				CURRENT_PROJECT_VERSION = 133;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Crabrix/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Crabrix;
@@ -2243,7 +2251,7 @@
 				CODE_SIGN_ENTITLEMENTS = Crabrix/Crabrix.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 132;
+				CURRENT_PROJECT_VERSION = 133;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Crabrix/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Crabrix;
@@ -2321,7 +2329,9 @@
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) CRABRIX_SOCIAL";
 				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphoneos27.1*]" = "$(inherited) CRABRIX_DUO_SDK";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphoneos27.2*]" = "$(inherited) CRABRIX_DUO_SDK";
 				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphonesimulator27.1*]" = "$(inherited) CRABRIX_DUO_SDK";
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphonesimulator27.2*]" = "$(inherited) CRABRIX_DUO_SDK";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
@@ -2336,7 +2346,7 @@
 				CODE_SIGN_ENTITLEMENTS = CrabrixShare/CrabrixShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 132;
+				CURRENT_PROJECT_VERSION = 133;
 				INFOPLIST_FILE = CrabrixShare/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
