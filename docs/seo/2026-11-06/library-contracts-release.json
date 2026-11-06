@@ -1,0 +1,147 @@
+{
+  "publishedAt": "2026-11-06T12:09:50.88281307Z",
+  "nodeId": "52efe55c-ac21-439d-a10c-19a0d47da4a1",
+  "runtimeSourceCommit": "b8d450e",
+  "auditSourceCommit": "bac048a",
+  "courseSourceCommit": "c04a8cc9d00166ee48274cffaf6612bc28a89754",
+  "catalogSequence": 23,
+  "coursePackage": "projects@1.0.12",
+  "servingImage": "sha256:e14e535da4fda1697446e77950cede0f1940f4a0410fe394333dd87d7f284eec",
+  "rollbackImage": "sha256:342d2bbd1e76235f754b2e43fa67c19a2ce6477aa68998adc04f877daee564a5",
+  "previousStableImage": "sha256:cd2fda6661836d670da9664639580a1c5d39e1f4c094afe499124440c6dba8b6",
+  "hostwatch": {
+    "build": {
+      "id": "crabrix-library-contracts-build-20261106-v4",
+      "targetId": "crabrix-web",
+      "destination": "localhost:5001/hostwatch/falkenstein/crabrix-web:current",
+      "digest": "sha256:342d2bbd1e76235f754b2e43fa67c19a2ce6477aa68998adc04f877daee564a5",
+      "state": "succeeded",
+      "createdAt": "2026-11-06T12:04:57.738632743Z",
+      "finishedAt": "2026-11-06T12:07:48.483343073Z",
+      "action": "source_build",
+      "expectedRevision": "sha256:cbcba537f1f7ad5faf7f944b4252c9aea87b113f475cd00daa5084de39b59b94",
+      "sourceBuild": {
+        "uploadId": "crabrix-library-contracts-sitemap-20261106-v4",
+        "mode": "partial"
+      },
+      "sourceRevision": "sha256:0de17afe24a6a651a74d411231b3a513b784dbd3142ba2033c199d8e83c6ac2a",
+      "builtDigest": "sha256:e14e535da4fda1697446e77950cede0f1940f4a0410fe394333dd87d7f284eec"
+    },
+    "publication": {
+      "id": "crabrix-library-contracts-publish-20261106-v4",
+      "targetId": "crabrix-web",
+      "destination": "localhost:5001/hostwatch/falkenstein/crabrix-web:current",
+      "digest": "sha256:e14e535da4fda1697446e77950cede0f1940f4a0410fe394333dd87d7f284eec",
+      "state": "succeeded",
+      "createdAt": "2026-11-06T12:08:30.888707584Z",
+      "finishedAt": "2026-11-06T12:09:24.725196936Z",
+      "action": "update",
+      "expectedPublishedDigest": "sha256:d490f5f02e2fd21e722d815aec68b3cba7fa5b248601a270393caeab4aeb9286",
+      "publishedDigest": "sha256:5f2acf4be69b38c51350646120c7b1628d47dea0d0f2f0c2cfa670811c9cded3"
+    },
+    "deployment": {
+      "id": "crabrix-library-contracts-deploy-20261106-v4",
+      "targetId": "crabrix-web",
+      "destination": "localhost:5001/hostwatch/falkenstein/crabrix-web:current",
+      "digest": "sha256:e14e535da4fda1697446e77950cede0f1940f4a0410fe394333dd87d7f284eec",
+      "state": "succeeded",
+      "createdAt": "2026-11-06T12:09:48.891651078Z",
+      "finishedAt": "2026-11-06T12:09:50.88281307Z",
+      "action": "deploy_update",
+      "expectedRevision": "sha256:4aaab1a8a891ee0d2482f643aebddd4903796b9819db4b9a61a8dec8a0ab3415"
+    },
+    "live": {
+      "targetId": "crabrix-web",
+      "container": "crabrix-web-site-1",
+      "exists": true,
+      "containerId": "86a7c79c596946591c8b2fda29bacfd3befcef95fa462483ae2770d4099dc1c0",
+      "imageDigest": "sha256:e14e535da4fda1697446e77950cede0f1940f4a0410fe394333dd87d7f284eec",
+      "sourceDigest": "sha256:e14e535da4fda1697446e77950cede0f1940f4a0410fe394333dd87d7f284eec",
+      "running": true,
+      "revision": "sha256:111a6676feb90f1a035b36d1299dba720e0b3bc8d1539ecfb07379ee6077ebdc",
+      "actions": [
+        "update",
+        "replace",
+        "delete"
+      ]
+    },
+    "candidate": {
+      "status": 200,
+      "urls": 836,
+      "newLessons": true,
+      "cache": null,
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "existingProductionRouteCacheMountedReadOnly": true
+    }
+  },
+  "publicHttp": {
+    "checkedAt": "2026-11-06T12:10:56.572Z",
+    "base": "https://crabrix.com",
+    "canonicalPages": 836,
+    "pagesChecked": 836,
+    "lessons": 774,
+    "algorithmSteps": 600,
+    "expectedLessons": 774,
+    "sitemapContentCoveragePassed": true,
+    "checkedInternalFragments": 1216,
+    "publicLessonsPassed": true,
+    "privateAccountRoutesNoindex": true,
+    "htmlRscQueryIndexable": true,
+    "issues": []
+  },
+  "courseTests": 31,
+  "siteTests": 158,
+  "localWasmChecks": 17,
+  "responsiveCases": 28,
+  "allPreviousLessonPayloadsPreserved": 771,
+  "allOriginalArticleSectionsAndImagesPreserved": 39,
+  "accountBackupCompleted": true,
+  "accountAndCacheMountsPreserved": true,
+  "mcpImageUnchanged": "sha256:b995973f50cdaba621177abc6564422894444658298a80180535f241eb5184b9",
+  "temporaryQAContainersRemoved": true,
+  "sitemapDefect": {
+    "beforeURLs": 833,
+    "beforeCache": "HIT",
+    "afterURLs": 836,
+    "afterCacheHit": false,
+    "reproducedWithSameProductionCache": true,
+    "historicalGoogleRankingCauseNotEstablished": true
+  },
+  "browserRunAndDebug": {
+    "responsiveCases": 24,
+    "widths": [
+      390,
+      768
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "amber",
+      "cyberpunk"
+    ],
+    "overflowCases": 0,
+    "diagramsLoaded": true,
+    "answerRevealVerified": true,
+    "featureProgramRun": {
+      "stdout": "core=7\n",
+      "exitCode": 0
+    },
+    "featureProgramDebug": "Explicitly refused: statement attributes at main.rs:15. Run supported; limitation disclosed at import.",
+    "msrvDebug": {
+      "paused": "main.rs:8",
+      "stepOver": "main.rs:9",
+      "continued": true,
+      "stdout": "same contract on old and current Rust\n",
+      "exitCode": 0
+    }
+  },
+  "atlasWebPersonalCopies": 600,
+  "nativeReview132Unchanged": true,
+  "native133": {
+    "sourceCommit": "9bd267d",
+    "atlasTests": 42,
+    "testFlightUpload": "Owned by Lab release chat; do not infer completion from archive preparation"
+  },
+  "duoVisualQA": "Deferred by user while Mac locked",
+  "physicalICloudDelivery": "Not verified"
+}

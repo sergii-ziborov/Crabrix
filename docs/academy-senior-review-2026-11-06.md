@@ -77,3 +77,23 @@ positions are retained; no pending App Review binary is changed by this data rel
 
 This deepens the first P1 row. Variance, HRTB/GAT tradeoffs and the other rows
 remain open; the whole senior-engineering programme is not marked complete.
+
+
+The 6 November website release is live: 158 website tests, 31 course tests and
+17 local WASM checks passed, including independent `00/10/01/11` Cargo-feature
+observations. Browser checks covered the three new readings at phone/tablet
+widths in four themes, answer reveal, local execution and MSRV Debug stepping.
+The feature demonstration uses statement attributes outside the source Debug
+profile; its import notice explains that Run is the supported operation. Compiler
+errors now take precedence over informational lesson notices.
+
+Production verification caught a persisted static sitemap from the prior release.
+The dynamic sitemap now returns all 836 canonical pages and all 774 lessons, even
+with the same old route cache mounted. The HTTP audit now compares coverage to
+the pinned corpus and articles; all 836 pages passed with no issues. No conclusion
+about historical Google ranking recovery follows from this technical fix.
+
+See `docs/seo/2026-11-06/library-contracts-release.json` for release identities
+and bounded evidence. Native build 132 on review remains unchanged. The separate
+Atlas TestFlight 133 candidate is tracked by its release chat. Manual Duo visual
+QA and physical-device iCloud delivery remain unverified.

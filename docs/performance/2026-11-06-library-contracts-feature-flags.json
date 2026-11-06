@@ -1,0 +1,38 @@
+{
+  "passed": true,
+  "offline": true,
+  "networkBeforeOffline": [
+    "https://cargo-gate.invalid/playground-runtime/rustc.wasm.gz",
+    "https://cargo-gate.invalid/playground-runtime/sysroot.zip"
+  ],
+  "checks": [
+    {
+      "name": "feature-minimal",
+      "compilation": 0,
+      "execution": 0,
+      "stdout": "flags=00\ncore=7\n",
+      "expectedPass": true
+    },
+    {
+      "name": "feature-details",
+      "compilation": 0,
+      "execution": 0,
+      "stdout": "flags=10\ncore=7\n",
+      "expectedPass": true
+    },
+    {
+      "name": "feature-trace",
+      "compilation": 0,
+      "execution": 0,
+      "stdout": "flags=01\ncore=7\n",
+      "expectedPass": true
+    },
+    {
+      "name": "feature-details-trace",
+      "compilation": 0,
+      "execution": 0,
+      "stdout": "flags=11\ncore=7\n",
+      "expectedPass": true
+    }
+  ]
+}
