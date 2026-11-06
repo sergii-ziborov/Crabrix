@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-06T09:54:33.914275+00:00",
+  "checkedAt": "2026-11-06T09:55:53.232870+00:00",
   "version": "1.1.7",
   "buildNumber": "132",
   "buildID": "50171754-3b56-42fe-b06d-08e1c546c6f7",
@@ -52,7 +52,9 @@
     "storeExportSHA256": "9b686326c0bd56141f132f24a0e4491c7b5df008d587ec9d9063170b97262742",
     "activeCatalogSequence": 22,
     "activeCatalogSHA256": "edbdfaaa3f816f7178215a4be363e469aa683953dfbc0b714eceee79fdb22279",
-    "bundledLegalCopiesMatch": true
+    "bundledLegalCopiesMatch": true,
+    "strictCloudArchiveSignatureVerified": true,
+    "archiveSHA256": "bd362dc5842a42498431ecdce56df63b849e635c02a88abc57b4a750691e2d99"
   },
   "artifacts": [
     {
