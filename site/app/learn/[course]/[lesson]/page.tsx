@@ -89,7 +89,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
         {writing?.rule && <div className="lesson-callout"><strong>Core idea</strong><p>{prose(writing.rule)}</p></div>}
       </div>
       <article className="lesson-content lesson-full">
-        {algorithmTrace && <AlgorithmVisualizer key={algorithmTrace.key} trace={algorithmTrace} />}
+        {algorithmTrace && <AlgorithmVisualizer key={`${lesson.id}:${algorithmTrace.key}`} trace={algorithmTrace} practice={{href: `/playground/?lesson=${encodeURIComponent(`${course.id}/${lesson.id}`)}`, variation: depth?.transferChallenge}} />}
         {!isBasics && lesson.illustration && <figure className="lesson-infographic">
           <img src={`/learn-media/${course.id}/${lesson.illustration.path.slice(6)}`} alt={lesson.illustration.alt} width={lesson.illustration.width} height={lesson.illustration.height} loading="lazy" />
           <figcaption>{prose(lesson.illustration.caption)}</figcaption>

@@ -2,9 +2,10 @@ import type { AtlasValue } from "@/lib/algorithm-trace-types";
 import { valueText } from "@/lib/algorithm-trace-types";
 import { edgeTarget, isAdjacencyList, linkedTree, type TreeNode } from "@/lib/algorithm-state-model";
 import { useId } from "react";
+import {atlasValueKey, collectionChanges} from '@/lib/algorithm-playback';
 
 type StateProps = { value: AtlasValue; previous?: AtlasValue; name: string; pointers?: [string, number][]; category: string; edge?: { collection: string; from: string; to: string } };
-const same = (a: AtlasValue | undefined, b: AtlasValue) => !!a && valueText(a) === valueText(b);
+const same = (a: AtlasValue | undefined, b: AtlasValue) => !!a && atlasValueKey(a) === atlasValueKey(b);
 
 function Cells({ value, previous, pointers = [] }: StateProps & { value: Extract<AtlasValue, { kind: "list" }> }) {
   const before = previous?.kind === "list" ? previous.items : [];
@@ -49,7 +50,7 @@ function Graph({ value, pointers = [], state, edge, name }: StateProps & { value
     if (Number.isInteger(to) && to >= 0 && to < n) edges.push({ from, to, weight: item.kind === "list" && item.items[1] ? valueText(item.items[1]) : undefined });
   }); });
   const vertex = (key: string | undefined) => key && state?.[key]?.kind === "scalar" ? Number(state[key].text) : undefined;
-  const u = edge?.collection === name ? vertex(edge.from) : pointers.find(([name]) => ["u", "node", "vertex", "v"].includes(name))?.[1];
+  const u = edge?.collection === name ? vertex(edge.from) : ["u", "node", "vertex", "v"].map(vertex).find(value => value !== undefined);
   const v = edge?.collection === name ? vertex(edge.to) : undefined;
   const distance = state?.distance ?? state?.dist;
   return <div className="atlas-graph"><svg viewBox="0 0 440 350" role="img" aria-label={`Adjacency graph: ${n} vertices. Active vertex ${u ?? "none"}. Edge direction and weights are listed below.`}>
@@ -84,6 +85,8 @@ function Tree({ root }: { root: TreeNode }) {
 
 export function AlgorithmState(props: StateProps & { state?: Record<string, AtlasValue> }) {
   const { value } = props;
+  const changes=collectionChanges(value,props.previous);
+  const removed=changes.removed.length>0&&<details className="atlas-removed"><summary>Removed {changes.removed.length} {value.kind==='map'?'entries':'members'}</summary><ul>{changes.removed.map((item,i)=><li key={i}><code>{valueText(item.key)}{item.value?` → ${valueText(item.value)}`:''}</code></li>)}</ul></details>;
   const tree = linkedTree(value);
   if (tree) return <Tree root={tree} />;
   if (value.kind === "list") {
@@ -92,7 +95,10 @@ export function AlgorithmState(props: StateProps & { state?: Record<string, Atla
     if (matrix) return <Matrix {...props} value={value} />;
     return <Cells {...props} value={value} />;
   }
-  if (value.kind === "map") return <div className="atlas-scroll"><table className="atlas-map"><thead><tr><th>Key</th><th>Value</th></tr></thead><tbody>{value.entries.map(([k, v], i) => <tr key={i}><th scope="row">{valueText(k)}</th><td>{valueText(v)}</td></tr>)}</tbody></table>{!value.entries.length && <p className="atlas-empty">Empty map</p>}</div>;
-  if (value.kind === "set") return <div className="atlas-set" role="list" aria-label="Set members, unordered">{value.items.map((item, i) => <span role="listitem" key={i}>{valueText(item)}</span>)}{!value.items.length && <p className="atlas-empty">Empty set</p>}</div>;
+  if (value.kind === "map") return <div className="atlas-scroll"><table className="atlas-map"><thead><tr><th>Key</th><th>Value</th></tr></thead><tbody>{value.entries.map(([k, v], i) => {
+    const key=atlasValueKey(k),added=changes.added.has(key),updated=changes.updated.has(key);
+    return <tr key={i} className={added||updated?'is-changed':undefined}><th scope="row">{valueText(k)}</th><td>{valueText(v)}{(added||updated)&&<small className="atlas-value-change">{added?'Added':'Changed'}</small>}</td></tr>;
+  })}</tbody></table>{!value.entries.length && <p className="atlas-empty">Empty map</p>}{removed}</div>;
+  if (value.kind === "set") return <><div className="atlas-set" role="list" aria-label="Set members, unordered">{value.items.map((item, i) => <span role="listitem" key={i} className={changes.added.has(atlasValueKey(item))?'is-changed':undefined} aria-label={valueText(item)+(changes.added.has(atlasValueKey(item))?', added':'')}>{valueText(item)}</span>)}{!value.items.length && <p className="atlas-empty">Empty set</p>}</div>{removed}</>;
   return <pre className="atlas-raw">{valueText(value)}</pre>;
 }
