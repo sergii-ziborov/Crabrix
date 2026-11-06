@@ -38,6 +38,20 @@ def main() -> None:
                 raise ValueError(f"lesson parent mismatch in {course_id}/{unit_id}")
             for lesson in lessons:
                 project = folder / 'projects' / lesson['id']
+                if course_id == 'projects' and lesson['id'] in {
+                    'public-api-compatibility', 'msrv-verification', 'feature-compatibility-matrix'
+                }:
+                    # Complete worked programs, qualified in the local WASM engine.
+                    # The separate grading solution/harness is not exported.
+                    files = {'main.rs': lesson['writing']['exampleCode']}
+                    if lesson['id'] == 'feature-compatibility-matrix':
+                        files['Cargo.toml'] = ('[package]\nname="feature-compatibility-matrix"\n'
+                            'version="0.1.0"\nedition="2021"\n[features]\n'
+                            'default=["details","trace"]\ndetails=[]\ntrace=[]\n')
+                    lesson['playgroundProject'] = {
+                        'schemaVersion': 1, 'name': lesson['id'], 'entryFile': 'main.rs',
+                        'edition': '2021', 'files': files,
+                    }
                 # Only the explicitly qualified Cargo demonstrations launch in
                 # Playground. Grading harnesses/checks are never exported here.
                 if lesson['id'] in {'serde-roundtrip-validation', 'joinset-task-ownership',

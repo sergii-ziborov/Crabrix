@@ -596,7 +596,7 @@
     "title": "Rust 1.99.1: make patch upgrades prove themselves",
     "date": "2026-11-01",
     "publishedDate": "2026-11-04",
-    "modifiedDate": "2026-11-04",
+    "modifiedDate": "2026-11-06",
     "summary": "Understand Rust 1.99.1’s linker and FFI fixes, build a C/Rust smoke test and qualify compiler upgrades with explicit target-specific evidence.",
     "relatedSlugs": [
       "rust-1-99-upgrade",
@@ -778,6 +778,18 @@
           {
             "title": "Rust GPU and linker build boundaries",
             "url": "/blog/rust-gpu-linker-groups-build-boundaries/"
+          }
+        ]
+      },
+      {
+        "heading": "Keep the minimum compiler in the matrix",
+        "paragraphs": [
+          "A successful current-toolchain job does not test the minimum version declared in Cargo.toml. The new Academy lesson demonstrates a standard-library method that succeeds on a current compiler but is rejected by the real Rust 1.78 compiler, then retains the same behavior with a compatible implementation. Use that small negative case to check that your minimum-version CI job actually runs the promised toolchain and configurations."
+        ],
+        "links": [
+          {
+            "url": "/learn/projects/msrv-verification/",
+            "title": "MSRV Is a Tested Promise"
           }
         ]
       }
@@ -4491,7 +4503,7 @@
     "title": "Cargo features: smaller builds and portable dependencies",
     "date": "2026-10-16",
     "summary": "Understand Cargo feature unification, defaults and target limits. Design additive features, inspect dependency requests, and test portable configurations.",
-    "readingMinutes": 11,
+    "readingMinutes": 12,
     "sections": [
       {
         "heading": "A dependency name is only the start",
@@ -4616,13 +4628,26 @@
           "When a build fails, keep the diagnostic attached to the failing package and configuration. A missing host facility, an unsupported target API and a type error in your own program require different fixes. Do not solve all three by randomly disabling features until the message changes. Preserve a minimal reproducer and document the exact combination that works.",
           "The same discipline helps library design. Give the core a useful contract, make optional capabilities additive where possible, document defaults, and test the promised configurations. Consumers can then choose a smaller dependency surface with confidence because the boundaries were designed and verified, rather than inferred from a feature name."
         ]
+      },
+      {
+        "heading": "Try an unchanged downstream feature matrix",
+        "paragraphs": [
+          "The new Library Contracts fixture builds the same consumer with defaults, without defaults, with each optional feature and with their union. It also follows two dependency paths to show why one edge cannot globally disable defaults another edge enables. A feature-specific behavior regression and duplicate helpers in the union give the matrix concrete failures to detect. The lesson separates its local baseline-API grade from the full Cargo matrix."
+        ],
+        "links": [
+          {
+            "url": "/learn/projects/feature-compatibility-matrix/",
+            "title": "The Downstream Feature Matrix"
+          }
+        ]
       }
     ],
     "relatedSlugs": [
       "rust-1-99-upgrade",
       "real-rust-on-iphone",
       "testing-rust-boundaries-fixtures-doctests"
-    ]
+    ],
+    "modifiedDate": "2026-11-06"
   },
   {
     "slug": "rust-pattern-matching-without-panics",
@@ -4881,6 +4906,18 @@
           "Remove duplication when tests repeat the same promise through the same path. Preserve distinct cases when they guard different boundaries, even if the assertions look similar. A compact suite with clear failures is easier to trust than a large suite whose helper layers and shared setup make every failure ambiguous. Maintenance quality affects whether people investigate failures or learn to ignore them.",
           "For your next small Rust function, write one ordinary case, one empty or missing case, one malformed case and one precise boundary case where those categories apply. Explain each expected result before running the program. That habit turns testing from a final checkbox into a practical method for discovering what the function should mean."
         ]
+      },
+      {
+        "heading": "A consumer contract you can run",
+        "paragraphs": [
+          "Keep the downstream caller unchanged while evolving its library. The new Library Contracts lesson compares compatible private representation changes with a changed constructor and a behavioral regression, using separate compile and execution failures. Its local lab checks normal and boundary values through an independent caller; the companion fixture repeats the external-consumer check on the minimum and current compiler."
+        ],
+        "links": [
+          {
+            "url": "/learn/projects/public-api-compatibility/",
+            "title": "Evolving a Public API"
+          }
+        ]
       }
     ],
     "relatedSlugs": [
@@ -4888,7 +4925,8 @@
       "rust-enums-state-machines",
       "cargo-features-portable-dependencies",
       "result-errors-that-help"
-    ]
+    ],
+    "modifiedDate": "2026-11-06"
   },
   {
     "slug": "rust-memoization-cache-contracts",

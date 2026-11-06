@@ -63,6 +63,15 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
     { name: course.title, path: `/learn/${course.id}/` }, { name: lesson.title, path: `/learn/${course.id}/${lesson.id}/` }])] }} />;
   const writing = lesson.writing;
   const depth = lesson.depth;
+  const resources = (Array.isArray(lesson.resources) ? lesson.resources : []).filter(resource => {
+    if (!resource || typeof resource.title !== 'string' || typeof resource.url !== 'string') return false;
+    try {
+      const url = new URL(resource.url);
+      return url.protocol === 'https:' && !url.username && !url.password &&
+        (url.hostname === 'doc.rust-lang.org' || (url.hostname === 'github.com' &&
+          url.pathname.startsWith('/sergii-ziborov/crabrix-courses/')));
+    } catch { return false; }
+  });
   const algorithm = lesson.algorithm;
   const algorithmTrace = course.id === "algorithms" ? lessonAlgorithmTrace(lesson) : undefined;
   const lessons = courseLessons(course);
@@ -72,7 +81,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
   const exampleSection = (writing?.exampleCode || writing?.practiceCode) && <section><h2>Read the code</h2>
     {writing?.exampleCode && <><SyntaxCode code={writing.exampleCode} />{writing.exampleCaption && <p>{prose(writing.exampleCaption)}</p>}</>}
     {writing?.practiceCode && writing.practiceCode !== writing.exampleCode && <><h3>Practice starter</h3><SyntaxCode code={writing.practiceCode} /></>}
-    {lesson.playgroundProject && <p><Link prefetch={false} className="btn" href={`/playground/?lesson=${course.id}/${lesson.id}`} target="_blank" rel="nofollow noopener">Open local Cargo example in Playground ↗</Link></p>}
+    {lesson.playgroundProject && <p><Link prefetch={false} className="btn" href={`/playground/?lesson=${course.id}/${lesson.id}`} target="_blank" rel="nofollow noopener">Open local example in Playground ↗</Link></p>}
   </section>;
   return (
     <div className="site-shell lesson-page">
@@ -120,6 +129,10 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
           <p>{prose(writing?.task || algorithm?.task || "")}</p>
           {writing?.success && <p><strong>What success looks like:</strong> {prose(writing.success)}</p>}
         </section>}
+        {resources.length > 0 && <aside className="lesson-reading" aria-label="Companion sources">
+          <h2>Companion sources</h2>
+          <ul>{resources.map(resource => <li key={resource.url}><a href={resource.url} rel="noopener noreferrer">{resource.title} ↗</a></li>)}</ul>
+        </aside>}
         {writing?.question && <section><h2>Check your understanding</h2><p>{prose(writing.question)}</p>
           <details className="answer-reveal"><summary>Reveal the answer</summary>
             {writing.answers && <ol>{writing.answers.map((answer, answerIndex) => <li className={answerIndex === writing.correctAnswer ? "correct" : undefined} key={answerIndex}>{prose(answer)}</li>)}</ol>}

@@ -1,6 +1,6 @@
 # Precision review and senior coverage — 6 November 2026
 
-The corpus contains 771 lessons/steps (171 Rust readings and 600 Atlas steps),
+The initial review covered 771 lessons/steps (171 Rust readings and 600 Atlas steps),
 plus the separate Examples gallery. This pass does not certify every lesson as
 production training or claim that all senior topics are covered.
 
@@ -60,3 +60,20 @@ an observable failure case and an independent assessment for each next unit.
 
 The next work should deepen these contracts rather than adding shallow topic cards
 or claiming that networking/database tooling runs in the browser WASI profile.
+
+## First follow-up: Library Contracts
+
+Cargo & Real Projects 1.0.12 adds three readings: Evolving a Public API, MSRV Is
+a Tested Promise and The Downstream Feature Matrix. Each includes a separate
+reading question, typed compiler lab and contextual diagram. The current corpus
+therefore has 774 lessons/steps (174 Rust readings and 600 Atlas steps).
+
+The [companion source and qualification](https://github.com/sergii-ziborov/crabrix-courses/tree/library-contracts-2026-11-06/editorial/library_contracts_20261106) records unchanged external consumers, real Rust 1.78/current checks, feature
+unions and deliberately rejected regressions. The current local WASM Worker
+also passed the worked programs and four actual Cargo profiles without network
+after verified asset loading. The reading distinguishes that installed-compiler
+result from evidence for an older compiler. Existing IDs and saved answer
+positions are retained; no pending App Review binary is changed by this data release.
+
+This deepens the first P1 row. Variance, HRTB/GAT tradeoffs and the other rows
+remain open; the whole senior-engineering programme is not marked complete.

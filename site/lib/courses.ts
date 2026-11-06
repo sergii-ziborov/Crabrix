@@ -11,6 +11,7 @@ export type Lesson = {
   order: number;
   exerciseKind: string;
   playgroundProject?: PlaygroundDocument;
+  resources?: { title: string; url: string }[];
   illustration?: { path: string; alt: string; caption: string; width?: number; height?: number };
   writing?: {
     summary?: string;

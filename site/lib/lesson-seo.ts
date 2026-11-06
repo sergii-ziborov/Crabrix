@@ -113,3 +113,9 @@ export function lessonPageModifiedDate(course: string, lesson: string): string {
   return [lessonModifiedDates[`${course}/${lesson}`] || "", academyPublicReadingDate].sort().at(-1)!;
 }
 for (const course of Object.keys(courseModifiedDates)) courseModifiedDates[course] = academyPublicReadingDate;
+
+// Library Contracts: authored and qualified 6 November 2026.
+for (const id of ["public-api-compatibility", "msrv-verification", "feature-compatibility-matrix"]) {
+  lessonModifiedDates[`projects/${id}`] = "2026-11-06T13:27:00+02:00";
+}
+courseModifiedDates.projects = "2026-11-06T13:27:00+02:00";
