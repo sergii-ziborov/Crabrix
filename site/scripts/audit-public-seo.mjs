@@ -1,6 +1,6 @@
 // HTTP smoke audit for the public site. Never uses an account or opens a room.
 // node scripts/audit-public-seo.mjs https://crabrix.com /tmp/seo-receipt.json
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 
 const base = new URL(process.argv[2] || 'https://crabrix.com');
@@ -30,6 +30,16 @@ const urls = [...sitemap.matchAll(/<url>\s*<loc>([^<]+)<\/loc>/g)].map(match => 
 assert.ok(urls.length > 0, 'Empty sitemap');
 assert.equal(new Set(urls).size, urls.length, 'Duplicate sitemap URLs');
 assert.ok(urls.every(url => new URL(url).origin === origin && !new URL(url).search));
+// Coverage is checked against the pinned corpus, not only against whatever
+// an old persisted sitemap happens to list.
+const corpus = JSON.parse(readFileSync(new URL('../content/courses.json', import.meta.url)));
+const articles = JSON.parse(readFileSync(new URL('../content/posts.json', import.meta.url)));
+const expected = [
+  ...corpus.courses.flatMap(course => course.units.flatMap(unit => unit.lessons.map(lesson => `${origin}/learn/${course.id}/${lesson.id}/`))),
+  ...articles.map(post => `${origin}/blog/${post.slug}/`),
+];
+const listed = new Set(urls);
+for (const url of expected) if (!listed.has(url)) issues.push({ url, error: 'Current published content is missing from sitemap' });
 const pages = new Map();
 const unique = { title: new Map(), description: new Map() };
 let lessons = 0, algorithmSteps = 0;
@@ -107,7 +117,7 @@ assert.ok(!/noindex/.test(query.response.headers.get('x-robots-tag') || ''));
 assert.deepEqual(tags(query.html, 'link').filter(tag => tag.rel === 'canonical').map(tag => tag.href), [origin + '/learn/algorithms/']);
 assert.equal((await get('/favicon.ico')).response.status, 200);
 
-const receipt = { checkedAt: new Date().toISOString(), base: base.origin, canonicalPages: urls.length, pagesChecked: pages.size, lessons, algorithmSteps, checkedInternalFragments: fragments, publicLessonsPassed: true, privateAccountRoutesNoindex: true, htmlRscQueryIndexable: true, issues };
+const receipt = { checkedAt: new Date().toISOString(), base: base.origin, canonicalPages: urls.length, pagesChecked: pages.size, lessons, algorithmSteps, expectedLessons: corpus.lessonCount, sitemapContentCoveragePassed: expected.every(url => listed.has(url)), checkedInternalFragments: fragments, publicLessonsPassed: true, privateAccountRoutesNoindex: true, htmlRscQueryIndexable: true, issues };
 if (process.argv[3]) writeFileSync(process.argv[3], JSON.stringify(receipt, null, 2) + '\n');
 console.log(JSON.stringify(receipt, null, 2));
 if (issues.length) process.exitCode = 1;

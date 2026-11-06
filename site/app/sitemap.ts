@@ -6,7 +6,9 @@ import { BLOG_PAGE_SIZE, blogPage, blogPagePath } from "@/lib/blog-pagination";
 import { lessonPageModifiedDate, courseModifiedDates } from "@/lib/lesson-seo";
 import { postModificationDate } from '@/lib/post-dates';
 
-export const dynamic = "force-static";
+// The route cache survives container replacement; read this release's corpus
+// on request so a previous release cannot keep new lessons out of the sitemap.
+export const dynamic = "force-dynamic";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const paths = ["", "about", "technology", "support", "privacy", "terms", "licenses", "learn", "blog", "guide", "playground", "ai", "sitemap"];
