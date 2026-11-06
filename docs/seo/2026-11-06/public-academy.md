@@ -62,3 +62,26 @@ Search Console exports and user analytics remain in ignored local investigation
 artifacts. Availability, indexability and sitemap acceptance do not establish
 ranking recovery or an exact cause for a loss of impressions. The existing
 accepted sitemap must not be duplicated.
+
+## Guide and recovery follow-up
+
+A second website release was published on 6 November at 09:21 UTC from
+`b176ab8ef685e701c348297dc81c1fff40f29412`. The source overlay updates the guide,
+About/home copy, privacy documentation, signed course snapshot and two real
+iPhone/iPad Flashcards screenshots. The active course source is
+`f78fcbaf74d200ee5ad002499da5ea38237e750b`; catalog 22 clarifies Clone, Copy
+and FnMut terms without rewriting the immutable migration fixture.
+
+- Serving image: `sha256:cd2fda6661836d670da9664639580a1c5d39e1f4c094afe499124440c6dba8b6`.
+- Isolated candidate and published HTTP audits each passed 833 canonical pages,
+  771 public full lessons, 600 Atlas steps and 1,212 internal fragments.
+- Published guide checked at 390 and 1024 pixels in Light, Dark, Amber Circuit
+  and Cyberpunk: no document overflow or broken image was observed. Viewport
+  and theme were restored after testing.
+- Account backup completed before deployment; the account mount and both runtime
+  cache mounts remain. The MCP sibling keeps its previous immutable image.
+- The prior serving image remains available for rollback. The isolated QA
+  container used no account mount and was removed after verification.
+- Native iCloud delivery is distinct from website publication: automatic private
+  copies remain optional and queued Apple sync is not presented as confirmed
+  delivery. The guide states this and documents the independent Files fallback.

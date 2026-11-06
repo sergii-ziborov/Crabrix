@@ -1,0 +1,9 @@
+Crabrix 1.1.7 (132)
+
+Flashcards is the fourth Learn practice. Complete a lesson, then review its ideas and questions. Don’t know / Hard / Easy flip the card and save a spaced-review schedule; swipe left/right for Don’t know/Easy. Read the answer before Next. Check narrow iPhone, iPad, Duo and Reduce Motion.
+
+Profile → Learning backup: optional automatic private iCloud copies, plus .crabrixprogress export/import through Files. Confirm the dated preview before restoring. Check reinstall recovery with the same Apple account and independent file recovery. Apple sync may be delayed; a queued backup is not a delivery confirmation. Existing copies must survive a fresh empty install. Test unavailable/full iCloud and recovery after an interruption. Projects, access credentials and execution permissions are excluded.
+
+Existing Quick Practice, Term Train, Code Recall, course progress, editor and local compilation must retain their behavior. Updated signed ownership terms clarify Clone, Copy and FnMut. Full website Academy lessons are public without registration.
+
+The grading row and Next/Finish action now remain above the system safe area, including the short open-Duo viewport. Long card content remains independently scrollable.

@@ -39,24 +39,9 @@ struct FlashcardsView: View {
                     } else if let card = current {
                         sessionHeader(card)
                         cardFaces(card)
-                            .frame(height: max(300, min(540, geometry.size.height - 220)))
+                            .frame(height: max(240, min(540, geometry.size.height - 140)))
                             .offset(x: reduceMotion ? 0 : dragOffset)
                             .simultaneousGesture(swipe)
-                        gradeButtons
-                        if revealed || selectedGrade != nil {
-                            Button(action: next) {
-                                Label(index + 1 == queue.count ? "Finish review" : "Next card", systemImage: "arrow.right")
-                                    .font(.headline).frame(maxWidth: .infinity).padding(.vertical, 10)
-                            }
-                            .buttonStyle(.borderedProminent).tint(CrabrixTheme.blue)
-                            .foregroundStyle(CrabrixTheme.onAccent)
-                            .disabled(selectedGrade == nil || isSaving)
-                            .accessibilityIdentifier("flashcards-next")
-                        } else {
-                            Text("Swipe left: don’t know · right: easy")
-                                .font(.caption).foregroundStyle(CrabrixTheme.muted)
-                                .multilineTextAlignment(.center)
-                        }
                     }
                     if let errorMessage {
                         Text(errorMessage).font(.callout).foregroundStyle(CrabrixTheme.coral)
@@ -64,9 +49,14 @@ struct FlashcardsView: View {
                     }
                 }
                 .padding(20)
-                .padding(.bottom, 60)
+                .padding(.bottom, hasStarted && current != nil ? 0 : 60)
                 .frame(maxWidth: 680)
                 .frame(maxWidth: .infinity)
+            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if hasStarted, current != nil {
+                reviewActions
             }
         }
         .foregroundStyle(CrabrixTheme.primary)
@@ -74,6 +64,32 @@ struct FlashcardsView: View {
         .navigationTitle("Flashcards")
         .navigationBarTitleDisplayMode(.inline)
         .task { await load() }
+    }
+
+    /// Keep grading and Next above the home indicator and native tab chrome,
+    /// including the shorter open-Duo viewport. Long answers scroll independently.
+    private var reviewActions: some View {
+        VStack(spacing: 12) {
+            gradeButtons
+            if revealed || selectedGrade != nil {
+                Button(action: next) {
+                    Label(index + 1 == queue.count ? "Finish review" : "Next card", systemImage: "arrow.right")
+                        .font(.headline).frame(maxWidth: .infinity).padding(.vertical, 10)
+                }
+                .buttonStyle(.borderedProminent).tint(CrabrixTheme.blue)
+                .foregroundStyle(CrabrixTheme.onAccent)
+                .disabled(selectedGrade == nil || isSaving)
+                .accessibilityIdentifier("flashcards-next")
+            } else {
+                Text("Swipe left: don’t know · right: easy")
+                    .font(.caption).foregroundStyle(CrabrixTheme.muted)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding(.horizontal, 20).padding(.vertical, 12)
+        .frame(maxWidth: 680)
+        .frame(maxWidth: .infinity)
+        .background(CrabrixTheme.background)
     }
 
     private var overview: some View {
