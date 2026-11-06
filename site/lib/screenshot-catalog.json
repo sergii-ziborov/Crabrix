@@ -215,5 +215,19 @@
     "height": 2852,
     "capturedAt": "2026-11-05",
     "surface": "Crabrix 1.1.5 build 128 source / Duo Simulator / SDK 27.1"
+  },
+  "ipad-flashcards": {
+    "src": "/screenshots/2026-11-06/ipad-flashcards.png",
+    "width": 2064,
+    "height": 2752,
+    "capturedAt": "2026-11-06",
+    "surface": "iPad Simulator · Crabrix 1.1.7 (130) · Dark"
+  },
+  "iphone-flashcards": {
+    "src": "/screenshots/2026-11-06/iphone-flashcards.png",
+    "width": 1206,
+    "height": 2622,
+    "capturedAt": "2026-11-06",
+    "surface": "iPhone Simulator · Crabrix 1.1.7 (130) · Light"
   }
 }
