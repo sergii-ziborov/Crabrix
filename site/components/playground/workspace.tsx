@@ -395,7 +395,7 @@ function Workspace({ seed, seedNotice, seedDraftId, seedUnsaved, seedModal, onOp
     </header>
     <div className="pg-session-bar"><span className={expired ? "pg-expired" : ""}>{lifetimeLabel}</span><span>{link && expiresAt && now ? `Until ${new Date(expiresAt).toLocaleString()}` : draftStatus}</span><span className="pg-connection" role="status">{connection}</span>{link ? <button className="pg-link-button" onClick={() => copyToLocal()} disabled={!source || blocked} title={blocked ? "A blocked project cannot become a local draft. Save to device exports every file." : undefined}>Copy to local</button> : null}</div>
     {blocked && view ? <div className="pg-notice pg-blocked" role="status"><span>Run is paused: {view.blocked.map(reason => blockedSummary[reason]).join(" ")} Editing, recovery and Save to device still work.</span></div> : null}
-    {notice || compiler.error ? <div className="pg-notice" role="alert"><span>{notice || compiler.error}</span><button className="pg-icon-button" aria-label="Dismiss notice" onClick={() => { setNotice(""); compiler.clearError(); }}>×</button></div> : null}
+    {notice || compiler.error ? <div className="pg-notice" role="alert"><span>{compiler.error || notice}</span><button className="pg-icon-button" aria-label="Dismiss notice" onClick={() => { setNotice(""); compiler.clearError(); }}>×</button></div> : null}
     <div className="pg-main-layout">
       <aside className={`pg-files ${filePane ? "pg-files-visible" : ""}`}>
         <div className="pg-sidebar-heading"><strong>PROJECT</strong><div className="pg-sidebar-tools">

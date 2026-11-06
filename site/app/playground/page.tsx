@@ -22,5 +22,8 @@ export default async function PlaygroundPage({ searchParams }: { searchParams: P
     return <PlaygroundLoader key={path} initialDocument={algorithmPlayground(trace, lesson.id)} initialNotice="Algorithm example copy · change the original input, then Run or Debug locally. The recording stays unchanged." />;
   }
   if (!lesson.playgroundProject) notFound();
-  return <PlaygroundLoader key={path} initialDocument={lessonPlayground(lesson.playgroundProject)} initialNotice="Lesson copy · prepare the pinned packages on this device, then Run or Debug locally." />;
+  const notice = path === 'projects/feature-compatibility-matrix'
+    ? 'Lesson copy · use Run for this feature example. Its conditional statements are outside the source Debug profile.'
+    : 'Lesson copy · edit and run locally. If Cargo dependencies are declared, prepare them on this device first.';
+  return <PlaygroundLoader key={path} initialDocument={lessonPlayground(lesson.playgroundProject)} initialNotice={notice} />;
 }
