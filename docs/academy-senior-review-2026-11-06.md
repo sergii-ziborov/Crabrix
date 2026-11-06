@@ -94,6 +94,6 @@ the pinned corpus and articles; all 836 pages passed with no issues. No conclusi
 about historical Google ranking recovery follows from this technical fix.
 
 See `docs/seo/2026-11-06/library-contracts-release.json` for release identities
-and bounded evidence. Native build 132 on review remains unchanged. The separate
-Atlas TestFlight 133 candidate is tracked by its release chat. Manual Duo visual
-QA and physical-device iCloud delivery remain unverified.
+and bounded evidence. Native build 132 on review remains unchanged. Crabrix 1.1.7 (133) is VALID / IN_BETA_TESTING in Internal QA; Apple readback
+retains build 132 in WAITING_FOR_REVIEW. Manual Duo visual QA and physical-device
+iCloud delivery remain unverified.

@@ -140,7 +140,14 @@
   "native133": {
     "sourceCommit": "9bd267d",
     "atlasTests": 42,
-    "testFlightUpload": "Owned by Lab release chat; do not infer completion from archive preparation"
+    "testFlightUpload": "VALID / IN_BETA_TESTING",
+    "appleBuildID": "cd538be5-42a4-4f03-8c4b-640958437c51",
+    "testFlightGroup": "Internal QA",
+    "verifiedAt": "2026-11-06T12:30:16.859Z",
+    "review132State": "WAITING_FOR_REVIEW",
+    "review132BuildID": "50171754-3b56-42fe-b06d-08e1c546c6f7",
+    "webDebugGeneratedSourcesHostMetadataChecks": 400,
+    "webDebugMetadataCheckIsNotWasmExecution": true
   },
   "duoVisualQA": "Deferred by user while Mac locked",
   "physicalICloudDelivery": "Not verified"
