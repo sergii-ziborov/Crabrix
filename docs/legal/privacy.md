@@ -1,12 +1,12 @@
 # Privacy Policy
 
-Updated: 2026-11-04 · [Website copy](https://crabrix.com/privacy/)
+Updated: 2026-11-06 · [Website copy](https://crabrix.com/privacy/)
 
 The app keeps your code on your device. Website Academy accounts use a username, password and private recovery code. This page explains both.
 
-LAST UPDATED 4 NOVEMBER 2026
+LAST UPDATED 6 NOVEMBER 2026
 
-**The short version.** Crabrix has no required account or in-app analytics SDK. Your code, projects, answers, and course progress stay on your device unless you explicitly export source or create/join a temporary encrypted Playground. If you switch on Game Center in Profile, Crabrix sends your numeric rating and achievement ladder progress to Apple for its leaderboard and achievements. It is off by default; The app has no online profile or board of its own; website Academy accounts are separate. Other network requests are requested course downloads, package discovery and downloads, repository imports, and optional encrypted Playground collaboration. If you write to support — including through *Report a problem* — that email reaches a person, and this page says what happens to it.
+**The short version.** Crabrix has no required account or in-app analytics SDK. Your code, projects, answers, and course progress stay on your device unless you explicitly export a copy, enable optional private iCloud learning backup, or create/join a temporary encrypted Playground. If you switch on Game Center in Profile, Crabrix sends your numeric rating and achievement ladder progress to Apple for its leaderboard and achievements. It is off by default; The app has no online profile or board of its own; website Academy accounts are separate. Other network requests are requested course downloads, package discovery and downloads, repository imports, optional private Apple learning backup, and optional encrypted Playground collaboration. If you write to support — including through *Report a problem* — that email reaches a person, and this page says what happens to it.
 
 ## Who is responsible
 
@@ -14,13 +14,13 @@ Crabrix is made by Serhii Ziborov, an independent developer. There is no company
 
 ## What stays on your device
 
-These items are stored locally. Optional source sharing is described below; the numeric rating and achievement ladder progress are sent to Apple if you enable Game Center:
+These items are stored locally. Optional source sharing and private iCloud learning backup are described below; the numeric rating and achievement ladder progress are sent to Apple if you enable Game Center:
 
 - **Your Rust code and projects** — files you write, import from GitHub, or open from the Files app.
 
 - **Build output** — compiler diagnostics, program stdout and stderr, and cached build artifacts.
 
-- **Learning progress** — lessons completed, answers, topic mastery, rating and achievements. Game Center receives the numeric rating and achievement ladder progress described below.
+- **Learning progress** — lessons completed, answers, topic mastery, rating, achievements and flashcard review schedules. Optional iCloud learning backup and Game Center have the separate scopes described below.
 
 - **Preferences** — appearance, editor font size, and the rest of Settings.
 
@@ -30,9 +30,17 @@ These items are stored locally. Optional source sharing is described below; the 
 
 - **Installed CoursePacks** — lesson text, media, starter source, and checks, stored separately from your progress and projects.
 
-Deleting the app removes its local container. Copies in Files, iCloud Drive or a device backup follow those storage settings. Unshared local projects have no Crabrix server backup; temporary encrypted rooms are not a backup and may expire or end early. Apple may retain Game Center scores and achievements already shared after you switch the feature off or delete Crabrix. Your code, projects, answers, and lesson history reach someone else only if you export or share them yourself.
+Deleting the app removes its local container. Copies in Files, iCloud Drive or a device backup follow those storage settings. Unshared local projects have no Crabrix server backup; temporary encrypted rooms are not a backup and may expire or end early. Apple may retain Game Center scores and achievements already shared after you switch the feature off or delete Crabrix. Your code, projects, answers, and lesson history reach someone else only if you export or share them yourself or enable the optional private Apple backup described below.
 
 ## What leaves your device
+
+### Optional private learning backup
+
+Starting with Crabrix 1.1.7, Profile → Learning backup offers automatic backup to your personal Apple iCloud key-value store. It is off by default. If enabled, the app sends completed lesson IDs, saved lesson answer indices, topic mastery, flashcard review history, practice session counts, rating and achievement metadata to Apple under your iCloud account. No Crabrix account is needed, and this learning copy is not sent to the Crabrix website, Playground relay or other participants.
+
+The learning copy excludes project source and resources, compiler caches, account credentials, Git access, room keys, local execution permissions and the profile photo. Apple controls iCloud synchronization, availability and retention under your Apple account settings. A queued upload is not a guarantee that another device has received it. Turning automatic backup off stops new uploads; existing recovery copies are retained in your iCloud storage. Copies from another installation are offered with their date and summary, and restoration requires your confirmation before replacing local learning progress.
+
+You can also export or import a `.crabrixprogress` recovery file through Files or iCloud Drive. That file contains learning history and is not password protected; share it only with intended recipients. A local “Before restore” copy is kept before a restore. Reinstalling removes local-only copies, so keep an exported file or allow a private iCloud copy to synchronize beforehand. Backup limits or unavailable iCloud do not prevent local learning and file export. Game Center stores leaderboard scores and achievements separately; it is not used to restore the full lesson history.
 
 ### Temporary encrypted Playgrounds and interviews
 
@@ -84,7 +92,7 @@ For the separate website service, [Account](https://crabrix.com/account/) lets y
 
 ## Website Academy accounts
 
-The website at `crabrix.com` is hosted by Hetzner in Helsinki, Finland. Anyone can read the blog, course catalogue and complete lessons, examples and illustrations without registration. Website accounts are optional. The iOS app does not require this account.
+The website at `crabrix.com` is hosted by Hetzner in Falkenstein, Germany. Anyone can read the blog, course catalogue and complete lessons, examples and illustrations without registration. Website accounts are optional. The iOS app does not require this account.
 
 We store your username, salted password hash, hashed recovery code, account creation time and the version of the Terms you accepted. We store hashed session tokens and their expiry times so you can remain signed in for up to 30 days. Passwords and recovery codes are not stored in readable form. No email, real name or payment details are required. Do not choose a username containing sensitive personal information.
 

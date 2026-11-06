@@ -1,0 +1,5 @@
+Crabrix 1.1.7 adds local lesson flashcards and optional private learning recovery. No account or in-app purchase is required. In Learn, download Rust Basics, finish a lesson and open Flashcards. Cards reuse signed lesson content and are self-assessments, not compiler verification.
+
+Profile → Learning backup enables optional iCloud key-value storage under the user's own Apple account. It is off by default and has an independent Files export/import path. A backup contains learning progress only, excluding project source/resources, account credentials, Git access, room keys and execution permissions. Restore requires preview/confirmation and never executes code. Game Center remains optional and separate.
+
+All code compilation and execution remains local on device. No backend execution, native downloadable executable, payment or new account requirement is added. Existing downloadable course and local sandbox limits remain. The website Academy now offers full public reading without login.

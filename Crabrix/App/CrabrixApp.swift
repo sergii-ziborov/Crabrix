@@ -8,6 +8,7 @@ struct CrabrixApp: App {
     @StateObject private var progress: CrabrixProgressStore
     @StateObject private var academyContent: AcademyContentStore
     @StateObject private var appLock: AppLockController
+    @StateObject private var learningBackup: LearningBackupCoordinator
     #if CRABRIX_SOCIAL
     /// Identity and the global board, through Game Center. Optional everywhere:
     /// the app is fully usable without ever signing in.
@@ -18,6 +19,12 @@ struct CrabrixApp: App {
         // Decide before CrabrixProgressStore can write its current schema to
         // UserDefaults. Otherwise a fresh install can look like an upgrade.
         let initialInstallMode = CourseLaunchPolicy.resolve()
+        var recoveryError: String?
+        if let domain = Bundle.main.bundleIdentifier {
+            do { try LearningProgressArchive.recoverPendingRestore(defaults: .standard, domain: domain) }
+            catch { recoveryError = error.localizedDescription }
+        }
+        _learningBackup = StateObject(wrappedValue: LearningBackupCoordinator(recoveryError: recoveryError))
         _progress = StateObject(wrappedValue: CrabrixProgressStore())
         _academyContent = StateObject(wrappedValue: AcademyContentStore(
             initialInstallMode: initialInstallMode
@@ -36,10 +43,15 @@ struct CrabrixApp: App {
                         .environmentObject(progress)
                         .environmentObject(academyContent)
                         .environmentObject(appLock)
+                        .environmentObject(learningBackup)
                         .achievementCelebrations(store: progress)
                 )
-                .allowsHitTesting(!appLock.isLocked)
-                .accessibilityHidden(appLock.isLocked)
+                .allowsHitTesting(!appLock.isLocked && !learningBackup.recoveryRequired)
+                .accessibilityHidden(appLock.isLocked || learningBackup.recoveryRequired)
+
+                if learningBackup.recoveryRequired, !appLock.isLocked {
+                    LearningRecoveryView(backup: learningBackup)
+                }
 
                 if appLock.isLocked || (appLock.isEnabled && scenePhase != .active) {
                     AppLockScreen(controller: appLock)
@@ -47,18 +59,21 @@ struct CrabrixApp: App {
             }
             .onChange(of: scenePhase, initial: true) { _, phase in
                 appLock.scenePhaseChanged(phase)
+                if phase == .background { learningBackup.saveNow() }
             }
             .task {
+                learningBackup.start()
                 await academyContent.prepare()
             }
             .onReceive(progress.$state) { state in
+                guard !learningBackup.recoveryRequired else { return }
                 #if CRABRIX_SOCIAL
                 Task { await gameCenter.submit(state: state) }
                 #endif
             }
             #if CRABRIX_SOCIAL
             .onReceive(gameCenter.$status) { status in
-                if status.isSignedIn {
+                if status.isSignedIn && !learningBackup.recoveryRequired {
                     Task { await gameCenter.submit(state: progress.state) }
                 }
             }

@@ -113,6 +113,7 @@ struct ContentView: View {
     @EnvironmentObject private var progress: CrabrixProgressStore
     @EnvironmentObject private var appLock: AppLockController
     @EnvironmentObject private var academy: AcademyContentStore
+    @EnvironmentObject private var learningBackup: LearningBackupCoordinator
     /// Lessons already turned into rating, seeded from persisted progress so a
     /// relaunch never re-awards them.
     @State private var scoredLessonIDs: Set<String>?
@@ -645,6 +646,16 @@ struct ContentView: View {
             if phase == .background { model.flushPendingAutosave() }
             guard phase == .active, !appLock.isLocked else { return }
             Task { await model.consumePendingSharedImport() }
+        }
+        .onAppear {
+            learningBackup.canRestore = { !model.isBusy && !appLock.isLocked }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .learningProgressRestored)) { _ in
+            progress.reloadAfterRestore()
+            scoredLessonIDs = Set(UserDefaults.standard.stringArray(forKey: LearningProgressKeys.completed) ?? [])
+            model.reloadLearningProgressAfterRestore()
+            learningPath = []
+            if let repository = academy.repository { progress.configureAcademy(repository: repository) }
         }
         .onChange(of: model.isBusy) { _, isBusy in
             UIApplication.shared.isIdleTimerDisabled = isBusy && keepAwakeDuringBuild

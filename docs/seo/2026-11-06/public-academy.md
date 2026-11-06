@@ -34,13 +34,29 @@ after downloading and byte-checking the new release assets. See the
   widths 390, 768, 1024 and 1440. No document overflow or broken image was observed.
   Answer reveal and moving playback to the final stdout `2` worked without login.
 
-Publication uses the existing Hostwatch source/build, registry and deployment
-steps, with the existing account volume, backup and rollback retained. At this
-checkpoint it is **not yet deployed**: the server's 7 GiB source-workspace reserve
-exceeds its free space. Only two superseded, unpublished Crabrix source trees
-were discarded through the configured API. The Hostwatch chat has the capacity
-issue as well as the separate shared-Nginx incident. No quota was reduced and no
-unscoped image or volume prune was run.
+## Published verification
+
+Published 6 November, 08:24 UTC through Hostwatch on the newly migrated ARM64 server.
+The first ARM64 build was interrupted by an operator agent restart before it
+produced an image; the operator verified the missing image/processes and closed
+that job as failed. A fresh preview and a new operation key produced the successful
+build. No uncertain operation was replayed or reported as successful.
+
+- Application source: `684343b` with course snapshot `449c8a2`.
+- Serving image: `sha256:633adcdf8a2c42eb409f9e3071f21b564b6dbb5f5d566a95fe5bf3264bb98d9a`.
+- The complete container candidate audit and the production audit both checked
+  all 833 canonical pages, 771 public full lessons, 600 Atlas steps and 1,209
+  internal fragments with no issues. Public media and known lesson starters work;
+  private account exports remain authenticated.
+- Account backup completed before deployment, and the existing account data mount
+  was preserved. The MCP sibling image was unchanged by this website release.
+- Published Testing was inspected in all four explicit themes at requested widths
+  390, 768, 1024 and 1440; no horizontal document overflow or broken image was seen.
+- The prior immutable image is retained for rollback. Only isolated QA state was
+  used by the candidate container; no account database was attached to it.
+
+The operator's migration resolved the old server's source-workspace reserve limit.
+No quota was reduced and no unscoped image or volume prune was run.
 
 Search Console exports and user analytics remain in ignored local investigation
 artifacts. Availability, indexability and sitemap acceptance do not establish

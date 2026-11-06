@@ -5,7 +5,7 @@
   "buildID": "b1bc3cf5-e3bc-4eff-a189-8be1ed029e53",
   "appStoreVersionID": "37ddcc45-822d-44b4-8f06-f6ab810d87d2",
   "reviewSubmissionID": "3b4e97eb-122c-4c49-8578-8b72bc61489b",
-  "appStoreState": "WAITING_FOR_REVIEW",
+  "appStoreState": "READY_FOR_SALE",
   "reviewState": "WAITING_FOR_REVIEW",
   "submittedDate": "2026-11-05T17:18:12.035Z",
   "releaseType": "MANUAL",
@@ -84,5 +84,7 @@
     "Interrupted-download mock now fails after observed partial progress rather than a scheduler-dependent 200 ms delay. This is test code only.",
     "The actual iOS WebKit Run/Debug, device Keychain, native HTTPS clone/fetch and Tokio async debug gates pass.",
     "57 opt-in or separate-profile cases remain skipped; they are not counted as passes."
-  ]
+  ],
+  "releaseStateCheckedOn": "2026-11-06",
+  "releaseRequestAcceptedOn": "2026-11-06"
 }

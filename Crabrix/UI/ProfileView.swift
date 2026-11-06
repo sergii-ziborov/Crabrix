@@ -34,6 +34,14 @@ struct ProfileView: View {
             VStack(alignment: .leading, spacing: 20) {
                 identityCard
                 statsCard
+                NavigationLink {
+                    LearningBackupView()
+                } label: {
+                    Label("Learning backup", systemImage: "icloud.and.arrow.up")
+                        .font(.headline).frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(18).background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 20))
+                }
+                .buttonStyle(.plain).accessibilityIdentifier("profile-learning-backup")
                 AchievementsSection(store: progress)
             }
             .padding(22)
@@ -297,16 +305,16 @@ struct ProfileView: View {
     private var subtitle: String {
         #if CRABRIX_SOCIAL
         guard gameCenter.isEnabled else {
-            return "Everything is stored on this device"
+            return "Local learning · optional recovery copies"
         }
         switch gameCenter.status {
         case .signedIn:
             return "Game Center · rating syncs to the global board"
         default:
-            return "Everything is stored on this device"
+            return "Local learning · optional recovery copies"
         }
         #else
-        return "Everything is stored on this device"
+        return "Local learning · optional recovery copies"
         #endif
     }
 

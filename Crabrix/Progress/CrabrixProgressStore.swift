@@ -27,6 +27,16 @@ final class CrabrixProgressStore: ObservableObject {
         adoptCatalogIfNeeded()
     }
 
+    func reloadAfterRestore() {
+        let restored = Self.load(from: defaults)
+        pendingCelebration = []
+        achievementFamilies = CrabrixAchievementCatalog.families(for: restored.achievementMethods)
+        atlasPatternCount = restored.achievementMethods.reduce(0) { $0 + $1.patternIDs.count }
+        atlasMethodCount = restored.achievementMethods.count
+        state = restored
+        adoptCatalogIfNeeded()
+    }
+
     /// Reconciles a state written against an older achievement catalogue.
     ///
     /// Tiers changed every id, so without this every badge the learner already

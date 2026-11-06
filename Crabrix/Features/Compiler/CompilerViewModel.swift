@@ -1942,6 +1942,18 @@ final class CompilerViewModel: ObservableObject {
         persistCompletedLessons()
     }
 
+    /// Restoring learning never opens, imports or executes a project.
+    func reloadLearningProgressAfterRestore() {
+        lessonAnswerIndices = userDefaults.dictionary(forKey: Self.lessonAnswersKey) as? [String: Int] ?? [:]
+        lessonResetDates = userDefaults.dictionary(forKey: Self.lessonResetDatesKey) as? [String: Double] ?? [:]
+        activeLessonID = nil
+        activeLessonContent = nil
+        activeLessonIsReview = false
+        activeLessonWasResumed = false
+        lessonEvidenceMessage = nil
+        completedLessonIDs = Set(userDefaults.stringArray(forKey: Self.completedLessonsKey) ?? [])
+    }
+
     /// Restarts only this course's lesson path. Earned rating, achievements,
     /// attempt evidence and editable projects remain intact.
     func resetCourseProgress(lessonIDs: Set<String>) {

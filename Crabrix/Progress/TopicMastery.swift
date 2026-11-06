@@ -225,6 +225,12 @@ final class TopicMasteryStore: @unchecked Sendable {
         defaults.removeObject(forKey: Self.storageKey)
     }
 
+    func reloadAfterRestore() {
+        lock.lock()
+        defer { lock.unlock() }
+        cache = nil
+    }
+
     /// Keeps first appearance order, which is the caller's priority order.
     static func deduplicated(_ topics: [String]) -> [String] {
         var seen = Set<String>()

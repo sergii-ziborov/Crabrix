@@ -260,6 +260,7 @@ private struct CourseLibraryView: View {
     @EnvironmentObject private var progress: CrabrixProgressStore
     @AppStorage("crabrix.learn.trainingSessions") private var trainingSessions = 0
     @AppStorage("crabrix.learn.recallSessions") private var recallSessions = 0
+    @AppStorage("crabrix.learn.flashcardSessions") private var flashcardSessions = 0
     @State private var pendingDownload: CourseCatalogPayload.Entry?
     @State private var confirmUpdateAll = false
     @State private var pendingRemoval: (id: String, title: String)?
@@ -784,6 +785,20 @@ private struct CourseLibraryView: View {
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("learn-code-recall")
+
+            NavigationLink {
+                FlashcardsView(completedLessonIDs: completedLessonIDs) { flashcardSessions += 1 }
+            } label: {
+                LearningPracticeCard(
+                    title: "Flashcards",
+                    subtitle: "Flip ideas from completed lessons, then space your reviews",
+                    badge: flashcardSessions == 0 ? "NEW" : "\(flashcardSessions) RUNS",
+                    systemImage: "rectangle.stack.fill",
+                    tint: CrabrixTheme.coral
+                )
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("learn-flashcards")
         }
     }
 
