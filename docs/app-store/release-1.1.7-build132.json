@@ -1,12 +1,11 @@
 {
-  "checkedAt": "2026-11-06T09:55:53.232870+00:00",
+  "checkedAt": "2026-11-06T10:59:22.033068+00:00",
   "version": "1.1.7",
   "buildNumber": "132",
   "buildID": "50171754-3b56-42fe-b06d-08e1c546c6f7",
   "appStoreVersionID": "f8b1fe62-889f-4aa2-b19b-5a7c85374cee",
-  "appStoreState": "PREPARE_FOR_SUBMISSION",
-  "reviewSubmitted": false,
-  "reviewPendingReason": "Final manual safe-area verification needs the Mac unlocked. The CUA tool currently reports it locked.",
+  "appStoreState": "WAITING_FOR_REVIEW",
+  "reviewSubmitted": true,
   "releaseType": "MANUAL",
   "processingState": "VALID",
   "internalBuildState": "IN_BETA_TESTING",
@@ -95,7 +94,11 @@
     "iPad130": "Real iPhone recovery file imported; card history and practice counters retained; left swipe revealed answer and ten-minute review.",
     "Duo130": "Signed Basics download, iPhone recovery import, restored 1/28 and Term Train 3 runs, 2 cards/1 due; right swipe in Reduce Motion revealed answer and four-day review.",
     "DuoSafeAreaIssue": "The first open-pose check exposed Next/Finish too close to the bottom. Build 132 moves grading and Next/Finish into a safe-area inset.",
-    "final132Layout": "Pending Mac unlock; compile and core tests passed.",
+    "final132Layout": "Deferred: the Mac was locked during final visual verification. The owner subsequently explicitly requested submission. Compile and 46 core tests passed; no completed manual layout check is claimed.",
     "iCloud": "No Apple account is signed in to the QA simulators. Queued/fake transport is not counted as delivery."
-  }
+  },
+  "reviewSubmissionID": "30457075-0e14-49e9-87f9-2c9054da776a",
+  "reviewState": "WAITING_FOR_REVIEW",
+  "submittedDate": "2026-11-06T10:58:45.751Z",
+  "manualVisualCheckDeferred": true
 }
