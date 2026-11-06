@@ -1,0 +1,95 @@
+{
+  "checkedAt": "2026-11-06T12:30:16.859Z",
+  "version": "1.1.7",
+  "buildNumber": "133",
+  "buildID": "cd538be5-42a4-4f03-8c4b-640958437c51",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "testFlightGroup": {
+    "id": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "name": "Internal QA",
+    "isInternalGroup": true
+  },
+  "testNotesReadbackMatches": true,
+  "reviewBuildID": "50171754-3b56-42fe-b06d-08e1c546c6f7",
+  "reviewState": "WAITING_FOR_REVIEW",
+  "reviewSubmitted": false,
+  "appSourceCommit": "5e49a517d85604eb7bada8ae9fc854a03a586f53",
+  "mainEquivalentNativeCommit": "9bd267dc7d67216cdb4cd11b7511a89efc6eb054",
+  "archiveVerification": {
+    "sourceCommit": "5e49a517d85604eb7bada8ae9fc854a03a586f53",
+    "version": "1.1.7",
+    "build": "133",
+    "sdk": "iphoneos27.2",
+    "xcodeBuild": "27B52",
+    "duoSDKFlagEnabled": true,
+    "signedBundles": [
+      {
+        "bundleID": "com.sergiiziborov.Crabrix",
+        "profile": "Crabrix TestFlight Lab 133 Nov 2026",
+        "distribution": true,
+        "entitlementsCovered": true
+      },
+      {
+        "bundleID": "com.sergiiziborov.Crabrix.Share",
+        "profile": "Crabrix Share TestFlight 1.1 Oct 2026",
+        "distribution": true,
+        "entitlementsCovered": true
+      }
+    ],
+    "legalDocumentsMatchSource": true,
+    "encryptionExempt": true,
+    "activeCatalogSequence": 22
+  },
+  "ipa": {
+    "bytes": 89721602,
+    "sha256": "411c31d2bb7ec1099bcb7d581eab27a272603bbcfd43a1af5f3f8a26e805fab7",
+    "appleValidation": "passed",
+    "upload": "succeeded"
+  },
+  "verification": {
+    "sourceCommit": "5e49a517d85604eb7bada8ae9fc854a03a586f53",
+    "native": {
+      "tests": 42,
+      "failures": 0,
+      "skipped": 0,
+      "signedAtlasLessonMappings": 600,
+      "uniqueRecordings": 400,
+      "personalCopyRunDebug": "passed",
+      "resultBundle": "AtlasReplay133.xcresult"
+    },
+    "web": {
+      "tests": 158,
+      "typecheck": "passed",
+      "productionBuild": "passed",
+      "publicRunOutput": "2\n",
+      "publicDebug": "breakpoint, step, continue and output2 passed",
+      "editedLocalCopyOutput": "-1\n",
+      "originalRecordingOutput": "2\n",
+      "sampleRenderers": [
+        "array",
+        "map",
+        "set",
+        "graph",
+        "matrix",
+        "tree"
+      ],
+      "mobileWidths": [
+        320,
+        390
+      ],
+      "debugPreparation": {
+        "uniquePrograms": 400,
+        "transformFailures": 0,
+        "hostRustMetadataTypecheckFailures": 0,
+        "allWasmProgramsExecuted": false
+      }
+    }
+  },
+  "distribution": "Existing Internal QA TestFlight group only",
+  "existingReviewPreserved": true,
+  "automaticCIUsed": false,
+  "githubActionsEnabled": false,
+  "nativeManualVisualCheckCompleted": false,
+  "physicalDeviceTested": false
+}
