@@ -15,7 +15,7 @@ from urllib.parse import urljoin
 
 ROOT = Path(__file__).resolve().parents[1]
 UPDATED = "2026-10-10"
-UPDATED_BY_SLUG = {"about": "2026-11-05", "privacy": "2026-11-06", "terms": "2026-10-27", "content-license": "2026-11-05"}
+UPDATED_BY_SLUG = {"about": "2026-11-06", "privacy": "2026-11-06", "terms": "2026-10-27", "content-license": "2026-11-05"}
 
 
 class Node:

@@ -2,7 +2,7 @@
   {
     "id": "about",
     "title": "About Crabrix",
-    "updated": "2026-11-05",
+    "updated": "2026-11-06",
     "sourceURL": "https://crabrix.com/about/",
     "blocks": [
       {
@@ -107,7 +107,11 @@
       },
       {
         "kind": "p",
-        "text": "All 771 lessons and steps have expanded written guidance, inline code markup, a syntax-highlighted example, and an infographic with a caption and alt text. Crabrix includes compiler-backed labs across the Rust curriculum, and every Algorithm Atlas pattern ends in a local Rust challenge the bundled compiler has to accept. Three drills — Quick Practice, Term Train, and Code Recall — are generated from that same curriculum and scheduled with SM-2 spaced repetition, so what you are weakest at comes back soonest."
+        "text": "All 771 lessons and steps have expanded written guidance, inline code markup, a syntax-highlighted example, and an infographic with a caption and alt text. Crabrix includes compiler-backed labs across the Rust curriculum, and every Algorithm Atlas pattern ends in a local Rust challenge the bundled compiler has to accept. Quick Practice, Term Train, and Code Recall are generated from that same curriculum and scheduled with SM-2 spaced repetition, so what you are weakest at comes back soonest."
+      },
+      {
+        "kind": "p",
+        "text": "Crabrix 1.1.7 adds a fourth drill, [Flashcards](https://crabrix.com/guide/#flashcards), based on completed lessons. Grade recall, reveal the explanation, and review difficult ideas sooner. The review history stays local in SQLite. Optional private iCloud learning copies and Files exports help restore lesson and practice progress after reinstalling, without uploading your projects or execution permissions."
       },
       {
         "kind": "p",

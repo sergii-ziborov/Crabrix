@@ -1,6 +1,6 @@
 # About Crabrix
 
-Updated: 2026-11-05 · [Website copy](https://crabrix.com/about/)
+Updated: 2026-11-06 · [Website copy](https://crabrix.com/about/)
 
 A real Rust compiler on a phone, an honest account of its limits, and one developer behind it.
 
@@ -52,7 +52,9 @@ The Packages screen labels every dependency verified, expected to work, needs re
 
 Crabrix contains a full Rust course — 171 lessons across six language courses, from `fn main` through ownership, traits, and async to macros, unsafe, and FFI, plus interview preparation that reaches past the language into memory, networking, databases, and distributed systems. A separate Algorithm Atlas adds 200 reusable patterns across 20 independent solution methods. Each method has its own path, and every pattern is taught through a mental model, recognition guide, and local Rust challenge.
 
-All 771 lessons and steps have expanded written guidance, inline code markup, a syntax-highlighted example, and an infographic with a caption and alt text. Crabrix includes compiler-backed labs across the Rust curriculum, and every Algorithm Atlas pattern ends in a local Rust challenge the bundled compiler has to accept. Three drills — Quick Practice, Term Train, and Code Recall — are generated from that same curriculum and scheduled with SM-2 spaced repetition, so what you are weakest at comes back soonest.
+All 771 lessons and steps have expanded written guidance, inline code markup, a syntax-highlighted example, and an infographic with a caption and alt text. Crabrix includes compiler-backed labs across the Rust curriculum, and every Algorithm Atlas pattern ends in a local Rust challenge the bundled compiler has to accept. Quick Practice, Term Train, and Code Recall are generated from that same curriculum and scheduled with SM-2 spaced repetition, so what you are weakest at comes back soonest.
+
+Crabrix 1.1.7 adds a fourth drill, [Flashcards](https://crabrix.com/guide/#flashcards), based on completed lessons. Grade recall, reveal the explanation, and review difficult ideas sooner. The review history stays local in SQLite. Optional private iCloud learning copies and Files exports help restore lesson and practice progress after reinstalling, without uploading your projects or execution permissions.
 
 A new installation offers seven signed courses for individual download. Code Examples is a separate optional download with 46 editable projects. Existing learners receive all seven signed transition packs locally so previously available courses stay available offline. Later versions are published as data-only CoursePacks from the public [course repository](https://github.com/sergii-ziborov/crabrix-courses). Learn shows the size before a requested update. Opening a starter creates a separate editable project, so an updated course does not replace your work.
 
