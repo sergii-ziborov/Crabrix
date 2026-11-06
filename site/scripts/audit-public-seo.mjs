@@ -39,7 +39,10 @@ const expected = [
   ...articles.map(post => `${origin}/blog/${post.slug}/`),
 ];
 const listed = new Set(urls);
-for (const url of expected) if (!listed.has(url)) issues.push({ url, error: 'Current published content is missing from sitemap' });
+// Next canonicalizes dotted Atlas IDs without a trailing slash. Canonical
+// spelling itself is verified separately for every listed page below.
+const contains = url => listed.has(url) || listed.has(url.replace(/\/$/, ''));
+for (const url of expected) if (!contains(url)) issues.push({ url, error: 'Current published content is missing from sitemap' });
 const pages = new Map();
 const unique = { title: new Map(), description: new Map() };
 let lessons = 0, algorithmSteps = 0;
@@ -117,7 +120,7 @@ assert.ok(!/noindex/.test(query.response.headers.get('x-robots-tag') || ''));
 assert.deepEqual(tags(query.html, 'link').filter(tag => tag.rel === 'canonical').map(tag => tag.href), [origin + '/learn/algorithms/']);
 assert.equal((await get('/favicon.ico')).response.status, 200);
 
-const receipt = { checkedAt: new Date().toISOString(), base: base.origin, canonicalPages: urls.length, pagesChecked: pages.size, lessons, algorithmSteps, expectedLessons: corpus.lessonCount, sitemapContentCoveragePassed: expected.every(url => listed.has(url)), checkedInternalFragments: fragments, publicLessonsPassed: true, privateAccountRoutesNoindex: true, htmlRscQueryIndexable: true, issues };
+const receipt = { checkedAt: new Date().toISOString(), base: base.origin, canonicalPages: urls.length, pagesChecked: pages.size, lessons, algorithmSteps, expectedLessons: corpus.lessonCount, sitemapContentCoveragePassed: expected.every(contains), checkedInternalFragments: fragments, publicLessonsPassed: true, privateAccountRoutesNoindex: true, htmlRscQueryIndexable: true, issues };
 if (process.argv[3]) writeFileSync(process.argv[3], JSON.stringify(receipt, null, 2) + '\n');
 console.log(JSON.stringify(receipt, null, 2));
 if (issues.length) process.exitCode = 1;
