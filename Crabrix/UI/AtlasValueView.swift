@@ -6,6 +6,7 @@ struct AtlasValueView: View {
     let previous: AtlasValue?
     let locals: [String: AtlasValue]
     let edge: AtlasReplay.Site.Edge?
+    var indexNames: Set<String> = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -38,7 +39,7 @@ struct AtlasValueView: View {
     }
     private var pointers: [(String, Int)] {
         locals.compactMap { key, value in
-            if case let .scalar(text) = value, let index = Int(text), index >= 0 { return (key, index) }
+            if indexNames.contains(key), case let .scalar(text) = value, let index = Int(text), index >= 0 { return (key, index) }
             return nil
         }.sorted { $0.0 < $1.0 }
     }
@@ -131,7 +132,7 @@ struct AtlasValueView: View {
     }
     private func graphView(_ graph: AtlasGraph) -> some View {
         let from = scalar(edge?.collection == name ? edge?.from : nil)
-            ?? pointers.first(where: { ["u", "node", "vertex", "v"].contains($0.0) })?.1
+            ?? ["u", "node", "vertex", "v"].lazy.compactMap { scalar($0) }.first
         let to = edge?.collection == name ? scalar(edge?.to) : nil
         return VStack(alignment: .leading, spacing: 8) {
             Canvas { context, size in
