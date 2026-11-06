@@ -356,6 +356,11 @@ html[data-theme="light"] .contact-form select, html[data-theme="light"] .contact
 .site-theme select { min-height: 34px; max-width: 128px; padding: 4px 8px; color: var(--muted); background: var(--panel); border: 1px solid var(--border); border-radius: 9px; font-size: 13px; }
 .site-theme select:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .site-header-tools { display: flex; align-items: center; gap: 10px; flex: none; }
+@media (max-width: 360px) {
+  .site-header-tools { gap: 6px; }
+  .site-theme select { max-width: 100px; }
+  .site-account { padding-inline: 8px; }
+}
 
 .home-playground-shot { margin:28px auto 0; max-width:1040px; }
 .home-playground-shot img { display:block; width:100%; height:auto; border:1px solid var(--border); border-radius:18px; }

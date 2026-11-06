@@ -7,8 +7,8 @@ There are 400 distinct lesson traces plus one independent public demonstration.
 
 The same corpus now has a separately signed
 [native offline-replay candidate](offline-atlas-replay-2026-10-28.md). Its optional
-data packs are public GitHub release assets; website lesson routes retain their
-existing account gate. This does not add backend execution.
+data packs are public GitHub release assets. Website lessons and their selected
+recordings are public. This does not add backend execution.
 
 ## What the learner sees
 
@@ -18,16 +18,28 @@ existing account gate. This does not add backend execution.
   with directed edges/weights, linked lists and binary tree nodes.
 - Scalar variables, closure arguments/accumulators and actual standard output.
 - A responsive layout: data above code on phones, alongside code on wider screens.
-- The existing free-account gate for full lessons. The open course demo uses a
-  separate input; full traces are not in `public/` or an unauthenticated API.
+- Public lessons, with a separate input for the open course demo. The raw content
+  directory remains server-only; only the selected lesson's recording is sent.
+- A personal Playground copy of the exact source/input for all 600 stages, with
+  local Run and Debug. Editing the copy never rewrites the lesson recording.
+- Collection-specific source index labels, membership-based map/set changes and
+  comparisons against the previous snapshot in the same function activation.
 
 ## Execution model
 
 Walkthroughs are **recorded examples**, not a second general-purpose debugger.
 Their Rust is compiled and executed on the maintainer's computer at author time.
-The deployed server reads a selected JSON file after authorization; browser
-playback is entirely local and never sends execution requests. The Playground's
-local compiler/debugger is unchanged.
+The deployed server reads a selected JSON file for a known public lesson; browser
+playback is entirely local and never sends execution requests. A personal copy
+uses the existing local Playground compiler/debugger. Recordings use a native
+Rust target; Playground uses wasm32-wasip1, so target-sized types such as usize
+can have different limits. The copy keeps the original source and reference
+output, with that target distinction disclosed beside the action and in README.
+
+Index labels are presentation hints from direct indexing or enumeration of the
+selected collection. Costs, window sizes and other scalar parameters are not
+automatically labeled as indices. Strings/comments are excluded. Arithmetic or
+indirect indexing is left unlabeled; this is not a semantic debugger.
 
 The planner uses Lezer's Rust AST to insert statement checkpoints and function /
 closure call guards. Captures borrow standard Debug values briefly; the original

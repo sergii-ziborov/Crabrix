@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import type { AlgorithmTrace, AtlasValue } from "@/lib/algorithm-trace-types";
 import { valueText } from "@/lib/algorithm-trace-types";
 import { highlightedCode } from "./SyntaxCode";
 import { AlgorithmState } from "./algorithm-state";
+import { atlasValueKey, previousFrameIndices } from '@/lib/algorithm-playback';
+import { sourceIndexBindings } from '@/lib/algorithm-index-bindings';
 import "./algorithm-visualizer.css";
 
 function operationTitle(statement: string) {
@@ -26,7 +29,7 @@ function operationTitle(statement: string) {
   return "Evaluate the expression";
 }
 
-export function AlgorithmVisualizer({ trace, demo = false }: { trace: AlgorithmTrace; demo?: boolean }) {
+export function AlgorithmVisualizer({ trace, demo = false, practice }: { trace: AlgorithmTrace; demo?: boolean; practice?: {href: string; variation?: string} }) {
   const [step, setStep] = useState(0), [playing, setPlaying] = useState(false), [speed, setSpeed] = useState(850);
   const [selected, setSelected] = useState("");
   const id = useId(), codeRef = useRef<HTMLDivElement>(null);
@@ -34,19 +37,18 @@ export function AlgorithmVisualizer({ trace, demo = false }: { trace: AlgorithmT
   const frame = trace.frames[Math.min(step, trace.frames.length - 1)];
   const site = trace.sites[frame.site];
   const values = useMemo(() => Object.fromEntries(frame.locals.map(([name, ref]) => [name, trace.values[ref].data])), [frame, trace]);
+  const previousIndices=useMemo(()=>previousFrameIndices(trace.frames),[trace.frames]);
   const previous = useMemo(() => {
-    const invocation = frame.stack.at(-1)?.[1];
-    for (let i = Math.min(step, trace.frames.length - 1) - 1; i >= 0; i--) {
-      const candidate = trace.frames[i];
-      if (candidate.stack.at(-1)?.[1] === invocation) return Object.fromEntries(candidate.locals.map(([name, ref]) => [name, trace.values[ref].data]));
-    }
+    const prior=previousIndices[Math.min(step,trace.frames.length-1)];
+    if(prior!==undefined)return Object.fromEntries(trace.frames[prior].locals.map(([name,ref])=>[name,trace.values[ref].data]));
     return {} as Record<string, AtlasValue>;
-  }, [frame, step, trace]);
+  }, [previousIndices, step, trace]);
   const collections = Object.entries(values).filter(([, v]) => v.kind !== "scalar");
   const preferred = ["dp", "graph", "g", "adj", "grid", "matrix", "root", "head", "tree", "bit", "values", "a", "nums", "data", "text"].map(name => collections.find(([n]) => n === name)).find(Boolean);
   const focus = collections.find(([name]) => name === selected) ?? preferred ?? collections[0];
-  const pointers: [string, number][] = Object.entries(values).flatMap(([name, v]) => (new RegExp(`\\[\\s*${name}\\s*\\]`).test(trace.source) || new RegExp(`for\\s*\\(\\s*${name}\\s*,[^\\n]*\\.enumerate\\(\\)`).test(trace.source)) && v.kind === "scalar" && /^\d+$/.test(v.text) && Number.isSafeInteger(Number(v.text)) ? [[name, Number(v.text)] as [string, number]] : []);
-  const changes = Object.entries(values).filter(([name, value]) => previous[name] && valueText(previous[name]) !== valueText(value));
+  const indexBindings=useMemo(()=>sourceIndexBindings(trace.source),[trace.source]);
+  const pointers: [string, number][] = Object.entries(values).flatMap(([name, v]) => indexBindings.get(focus?.[0]??'')?.has(name) && v.kind === "scalar" && /^\d+$/.test(v.text) && Number.isSafeInteger(Number(v.text)) ? [[name, Number(v.text)] as [string, number]] : []);
+  const changes = Object.entries(values).filter(([name, value]) => previous[name] && atlasValueKey(previous[name]) !== atlasValueKey(value));
   const lines = useMemo(() => trace.source.trimEnd().split("\n").map(line => highlightedCode(line, "rust")), [trace.source]);
 
   useEffect(() => {
@@ -58,6 +60,11 @@ export function AlgorithmVisualizer({ trace, demo = false }: { trace: AlgorithmT
     return () => window.clearInterval(timer);
   }, [playing, speed, trace.frames.length]);
   useEffect(() => { if (complete) setPlaying(false); }, [complete]);
+  useEffect(() => {
+    const pause = () => { if (document.hidden) setPlaying(false); };
+    document.addEventListener('visibilitychange', pause);
+    return () => document.removeEventListener('visibilitychange', pause);
+  }, []);
   useEffect(() => {
     const pane = codeRef.current, line = pane?.querySelector<HTMLElement>(".is-executing");
     if (pane && line) pane.scrollTop = Math.max(0, line.offsetTop - pane.clientHeight / 2);
@@ -78,7 +85,7 @@ export function AlgorithmVisualizer({ trace, demo = false }: { trace: AlgorithmT
     <div className="atlas-progress"><label htmlFor={`${id}-step`}>{complete ? "Finished" : `Step ${step + 1}`}<span>{complete ? trace.frames.length : step + 1} / {trace.frames.length}</span></label><input id={`${id}-step`} aria-label="Execution step" type="range" min="0" max={trace.frames.length} value={step} onChange={e => seek(Number(e.target.value))} /></div>
     <div className="atlas-operation" aria-live={playing ? "off" : "polite"} aria-atomic="true"><span className="atlas-operation-label">{complete ? "✓ Result" : `${site.function} · before line ${site.line}`}</span><strong>{complete ? "Execution finished" : operationTitle(site.statement)}</strong><p>{complete ? `Standard output: ${trace.stdout.trim()}` : changes.length ? `Changed since the previous step in this call: ${changes.map(([name, v]) => `${name}${v.kind === "scalar" ? `: ${valueText(previous[name])} → ${valueText(v)}` : ""}`).join(" · ")}` : frame.locals.length ? "Inspect the current state, then take the next step." : "This call is starting. Local values appear as they are initialized."}</p></div>
     <div className="atlas-workspace">
-      <div className="atlas-state-pane"><div className="atlas-pane-title"><h3>Data & variables</h3><span className="atlas-legend"><i /> Changed <b /> Index</span></div>
+      <div className="atlas-state-pane"><div className="atlas-pane-title"><h3>Data & variables</h3><span className="atlas-legend"><i /> Changed <b /> Source index</span></div>
         {trace.input && <details className="atlas-input"><summary>Example input</summary><code>{trace.input}</code></details>}
         <div className="atlas-state-stage">
           {focus ? <><div className="atlas-collection-tabs" role="group" aria-label="Inspect a collection">{collections.map(([name]) => <button type="button" aria-pressed={name === focus[0]} key={name} onClick={() => setSelected(name)}>{name}{changes.some(([n]) => n === name) ? " •" : ""}</button>)}</div><AlgorithmState name={focus[0]} value={focus[1]} previous={previous[focus[0]]} pointers={pointers} category={trace.category} edge={site.edge} state={values} /></> : <div className="atlas-state-empty"><span aria-hidden="true">🦀</span><p>{complete ? "The example has finished." : "Follow the code. Data appears here when it enters scope."}</p></div>}
@@ -94,6 +101,12 @@ export function AlgorithmVisualizer({ trace, demo = false }: { trace: AlgorithmT
       <div className="atlas-code-pane"><div className="atlas-pane-title"><h3>Rust source</h3><span>{complete ? "Completed" : `Line ${site.line}`}</span></div><div className="atlas-code-scroll" ref={codeRef} tabIndex={0} aria-label="Rust source with current execution line"><pre><code>{lines.map((line, index) => <span className={`atlas-code-line ${!complete && site.line === index + 1 ? "is-executing" : ""}`} key={index} aria-current={!complete && site.line === index + 1 ? "step" : undefined}><span className="atlas-line-number" aria-hidden="true">{index + 1}</span><span>{line.length ? line : " "}</span>{"\n"}</span>)}</code></pre></div></div>
     </div>
     {complete && <div className="atlas-output"><strong>Standard output</strong><pre>{trace.stdout}</pre><button type="button" onClick={() => seek(0)}>Replay example ↺</button></div>}
+    {practice && <section className="atlas-practice" aria-label="Experiment with this example"><h3>Try your own version</h3>
+      {practice.variation && <p>{practice.variation}</p>}
+      <Link className="btn" prefetch={false} href={practice.href} target="_blank" rel="nofollow noopener">Open personal copy in Playground ↗</Link>
+      <p>Start with this exact source and input, change a value, then use Run or Debug locally. This replay stays attached to the original example.</p>
+      <p>Recordings use a native Rust target. Playground runs on wasm32-wasip1; target-sized types such as usize can have different limits.</p>
+    </section>}
     <footer className="atlas-footnote">Recorded from this Rust example and checked against its original output. Playback runs locally in your browser. Values show the state before the highlighted line.{trace.verification.omittedCaptures > 0 && " Borrowed or moved values are hidden when they cannot be inspected safely."}</footer>
   </section>;
 }
