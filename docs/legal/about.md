@@ -60,7 +60,7 @@ Rating is earned across everything, and a successful run is scored on how much R
 
 ## Who makes it
 
-Crabrix is built by **Serhii Ziborov**, an independent developer. It is not a company, it has no investors, and it has nobody's growth targets to hit. That is why it is a one-time purchase with no subscription, no advertising, no analytics, and no required app account. The separate website Academy offers free accounts for full lessons; its public previews and blog are open to everyone.
+Crabrix is built by **Serhii Ziborov**, an independent developer. It is not a company, it has no investors, and it has nobody's growth targets to hit. That is why it is a one-time purchase with no subscription, no advertising, no analytics, and no required app account. The separate website Academy and blog are open to everyone, including complete lessons, examples and illustrations without registration.
 
 The source is on [GitHub](https://github.com/sergii-ziborov/Crabrix) for review. Questions, bugs, and disagreements are welcome — [write to support](https://crabrix.com/support/).
 

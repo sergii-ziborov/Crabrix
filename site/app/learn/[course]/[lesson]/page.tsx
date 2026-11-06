@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import { pageMetadata, pageUrl, breadcrumbs } from "@/lib/seo";
-import { lessonDescription, lessonModifiedDates } from "@/lib/lesson-seo";
+import { lessonDescription, lessonPageModifiedDate } from "@/lib/lesson-seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { courseById, courseLessons, lessonById } from "@/lib/courses";
 import { SyntaxCode } from "@/components/SyntaxCode";
-import { currentViewer } from "@/lib/auth";
-import { lessonPreview } from "@/lib/lesson-preview";
 import { StructuredData } from "@/components/structured-data";
 import { CourseIcon } from "@/components/course-icon";
 import { AlgorithmVisualizer } from "@/components/algorithm-visualizer";
@@ -27,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ course: s
   const { course: courseId, lesson: lessonId } = await params;
   const course = courseById(courseId);
   const lesson = course && lessonById(course, lessonId)?.lesson;
-  return lesson ? pageMetadata({ title: `${lesson.title} — ${course.title}`, description: lessonDescription(lesson), path: `/learn/${course.id}/${lesson.id}/`, kind: "article", modifiedDate: lessonModifiedDates[`${course.id}/${lesson.id}`] }) : {};
+  return lesson ? pageMetadata({ title: `${lesson.title} — ${course.title}`, description: lessonDescription(lesson), path: `/learn/${course.id}/${lesson.id}/`, kind: "article", modifiedDate: lessonPageModifiedDate(course.id, lesson.id) }) : {};
 }
 
 export default async function LessonPage({ params }: { params: Promise<{ course: string; lesson: string }> }) {
@@ -56,40 +54,13 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
   const structuredData = <StructuredData data={{ "@context": "https://schema.org", "@graph": [{ "@type": "Article",
     inLanguage: "en", timeRequired: `PT${lesson.minutes}M`, articleSection: course.title,
     headline: lesson.title, description: lessonDescription(lesson),
-    url: pageUrl(`/learn/${course.id}/${lesson.id}/`), mainEntityOfPage: pageUrl(`/learn/${course.id}/${lesson.id}/`), isAccessibleForFree: false,
+    url: pageUrl(`/learn/${course.id}/${lesson.id}/`), mainEntityOfPage: pageUrl(`/learn/${course.id}/${lesson.id}/`), isAccessibleForFree: true,
     about: { "@type": "Thing", name: lesson.concept },
     isPartOf: { "@type": "Course", name: course.title, url: pageUrl(`/learn/${course.id}/`) },
-    ...(lessonModifiedDates[`${course.id}/${lesson.id}`] ? { dateModified: lessonModifiedDates[`${course.id}/${lesson.id}`] } : {}),
+    ...(lessonPageModifiedDate(course.id, lesson.id) ? { dateModified: lessonPageModifiedDate(course.id, lesson.id) } : {}),
     author: { "@type": "Person", name: "Serhii Ziborov", url: "https://crabrix.com/about/" },
-    hasPart: { "@type": "WebPageElement", isAccessibleForFree: false, cssSelector: ".lesson-full" },
   }, breadcrumbs([{ name: "Crabrix", path: "/" }, { name: "Learn Rust", path: "/learn/" },
     { name: course.title, path: `/learn/${course.id}/` }, { name: lesson.title, path: `/learn/${course.id}/${lesson.id}/` }])] }} />;
-  const viewer = await currentViewer();
-  if (!viewer) {
-    const preview = lessonPreview(lesson, course.id === "basics");
-    const path = `/learn/${course.id}/${lesson.id}/`;
-    const next = encodeURIComponent(path);
-    return <div className="site-shell lesson-page">
-      {structuredData}
-      <nav className="breadcrumbs" aria-label="Breadcrumbs"><Link prefetch={false} href="/learn/">Learn</Link><span>/</span><Link prefetch={false} href={`/learn/${course.id}/`}>{course.title}</Link><span>/</span><span>{unit.title}</span></nav>
-      <div className="page-intro lesson-content"><p className="eyebrow">{unit.title} · {lesson.minutes} min · free with an account</p><div className="academy-heading"><CourseIcon course={course.id} size={64} /><h1>{lesson.title}</h1></div>
-        <span className="preview-label">Lesson preview · about 30%</span><p className="lede">{prose(preview.summary)}</p>
-        {preview.rule && <div className="lesson-callout"><strong>Core idea</strong><p>{prose(preview.rule)}</p></div>}
-      </div>
-      <article className="lesson-content">
-        <section className="lesson-reading"><h2>Start with the idea</h2>{preview.paragraphs.map((paragraph, index) => <p key={index}>{prose(paragraph)}</p>)}</section>
-        <section className="lesson-access lesson-full"><p className="eyebrow">Keep learning, for free</p><h2>The rest of this lesson is waiting for you.</h2>
-          <p>Create a free account to read the complete explanation, see the infographic, explore the code, and try the exercises. All 771 lessons and algorithm steps are included.</p>
-          <div className="access-actions"><Link className="btn" rel="nofollow" prefetch={false} href={`/register/?next=${next}`}>Create free account →</Link><Link rel="nofollow" prefetch={false} href={`/login/?next=${next}`}>Already learning? Sign in</Link></div>
-          <p className="auth-note">No payment details. Your account opens the complete Academy.</p>
-          {course.id === "algorithms" && <p><Link prefetch={false} href="/learn/algorithms/#visualization">Try an interactive algorithm walkthrough →</Link></p>}
-        </section>
-        {relatedReading}
-        {patternNavigation}
-        <Link prefetch={false} href={`/learn/${course.id}/`}>← All lessons in {course.title}</Link>
-      </article>
-    </div>;
-  }
   const writing = lesson.writing;
   const depth = lesson.depth;
   const algorithm = lesson.algorithm;

@@ -84,7 +84,7 @@ For the separate website service, [Account](https://crabrix.com/account/) lets y
 
 ## Website Academy accounts
 
-The website at `crabrix.com` is hosted by Hetzner in Germany. Anyone can read the blog, course catalogue and approximately the first 30% of each lesson. A free website account opens the complete Academy. The iOS app does not require this account.
+The website at `crabrix.com` is hosted by Hetzner in Helsinki, Finland. Anyone can read the blog, course catalogue and complete lessons, examples and illustrations without registration. Website accounts are optional. The iOS app does not require this account.
 
 We store your username, salted password hash, hashed recovery code, account creation time and the version of the Terms you accepted. We store hashed session tokens and their expiry times so you can remain signed in for up to 30 days. Passwords and recovery codes are not stored in readable form. No email, real name or payment details are required. Do not choose a username containing sensitive personal information.
 
@@ -94,7 +94,7 @@ Ordinary server access logs include your IP address, time, requested URL, respon
 
 Account data remains while your account exists. You can download your username and creation date and delete your account in [Account](https://crabrix.com/account/). Deletion removes the active account, credentials and sessions. Restricted daily database backups expire after seven days. Non-readable deletion fingerprints are kept for up to eight days so a restore does not resurrect an erased account. If a backup is restored, account deletions recorded after it was created must be reapplied before access is reopened.
 
-Where the GDPR applies, providing the account and requested lesson access is necessary to perform our agreement with you. Basic server security and abuse prevention rely on our legitimate interest in keeping the service available and secure. Hetzner processes hosting data for us. We do not sell account information, use it for advertising, make automated decisions with legal effects, or send it to Apple for sign-in.
+Where the GDPR applies, providing the optional account service is necessary to perform our agreement with you. Basic server security and abuse prevention rely on our legitimate interest in keeping the service available and secure. Hetzner processes hosting data for us. We do not sell account information, use it for advertising, make automated decisions with legal effects, or send it to Apple for sign-in.
 
 You may request access, correction, deletion, portability where applicable, restriction or object to processing based on legitimate interests. Contact the developer using the support link below. You can also complain to the data protection authority in your place of residence where applicable. Support will verify ownership before disclosing or changing account data. Without your password or recovery code, we cannot reliably establish ownership or restore access.
 

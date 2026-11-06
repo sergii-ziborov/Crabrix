@@ -56,15 +56,16 @@ await bounded(urls, async url => {
   for (const image of tags(html, 'img')) assert.ok('alt' in image && +image.width > 0 && +image.height > 0, `Image attributes: ${image.src}`);
   if (/^\/learn\/[^/]+\/[^/]+\/?$/.test(path)) {
     lessons++;
-    assert.ok(html.includes('The rest of this lesson is waiting for you.'));
-    assert.ok(!/<pre\b/.test(html), 'Guest received a full code block');
+    assert.ok(html.includes('lesson-content lesson-full'), 'Complete lesson missing');
+    assert.ok(!html.includes('The rest of this lesson is waiting for you.'), 'Registration gate remains');
+    assert.ok(/<pre\b/.test(html), 'Public worked code missing');
+    const article = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].flatMap(match => JSON.parse(match[1])['@graph'] || []).find(item => item['@type'] === 'Article');
+    assert.equal(article?.isAccessibleForFree, true, 'Incorrect free-content markup');
   }
   if (path.startsWith('/learn/algorithms/algorithm.')) {
     algorithmSteps++;
     assert.ok(html.includes('Steps in this algorithm pattern'));
-    const stage = path.replace(/\/$/, '').split('.').at(-1);
-    const prefix = { model: 'Begin with the concrete question:', recognize: 'A problem is a good match for ', challenge: 'Solve the exact task,' }[stage];
-    assert.ok(prefix && html.includes(prefix), 'Stage-specific introduction missing');
+    assert.ok(html.includes('The pattern') && html.includes('Try it'), 'Full algorithm teaching missing');
   }
   if (path === '/learn/algorithms/') assert.equal((html.match(/class="method-guide"/g) || []).length, 20);
   pages.set(url, { ids: new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(match => decode(match[1]))), links: tags(html, 'a').map(tag => tag.href).filter(Boolean) });
@@ -88,14 +89,17 @@ for (const path of ['/login/', '/register/', '/recover/', '/not-a-crabrix-page-s
 for (const agent of ['Mozilla/5.0', 'Googlebot', 'Twitterbot']) {
   const { response, html } = await get('/learn/projects/serde-roundtrip-validation/', { headers: { 'user-agent': agent } });
   assert.equal(response.status, 200);
-  assert.ok(html.includes('The rest of this lesson is waiting for you.') && !html.includes('struct RecordVisitor'));
+  assert.ok(html.includes('lesson-content lesson-full') && html.includes('RecordVisitor'));
+  assert.ok(!html.includes('The rest of this lesson is waiting for you.'));
   const starter = await get('/playground/?lesson=projects/serde-roundtrip-validation', { headers: { 'user-agent': agent }, redirect: 'manual' });
-  assert.equal(starter.response.status, 307); assert.ok(starter.response.headers.get('location')?.includes('/login/'));
+  assert.equal(starter.response.status, 200);
+  assert.ok(starter.html.includes('RecordVisitor'), 'Public validated starter missing');
 }
-for (const [path, status] of [['/learn-media/projects/serde-roundtrip-validation.png', 401], ['/content/courses.json', 404]]) {
+for (const [path, status] of [['/learn-media/projects/serde-roundtrip-validation.png', 200], ['/learn-media/projects/not-a-lesson.png', 404], ['/learn-media/projects/courses.json', 404], ['/content/courses.json', 404]]) {
   assert.equal((await get(path)).response.status, status);
 }
 // A cache-busting RSC parameter must never noindex its normal HTML equivalent.
+assert.equal((await get('/account/export/', { redirect: 'manual' })).response.status, 401);
 const query = await get('/learn/algorithms/?_rsc=seo-smoke');
 assert.equal(query.response.status, 200);
 assert.ok(query.response.headers.get('content-type')?.includes('text/html'));
@@ -103,7 +107,7 @@ assert.ok(!/noindex/.test(query.response.headers.get('x-robots-tag') || ''));
 assert.deepEqual(tags(query.html, 'link').filter(tag => tag.rel === 'canonical').map(tag => tag.href), [origin + '/learn/algorithms/']);
 assert.equal((await get('/favicon.ico')).response.status, 200);
 
-const receipt = { checkedAt: new Date().toISOString(), base: base.origin, canonicalPages: urls.length, pagesChecked: pages.size, lessons, algorithmSteps, checkedInternalFragments: fragments, accessGatesPassed: true, htmlRscQueryIndexable: true, issues };
+const receipt = { checkedAt: new Date().toISOString(), base: base.origin, canonicalPages: urls.length, pagesChecked: pages.size, lessons, algorithmSteps, checkedInternalFragments: fragments, publicLessonsPassed: true, privateAccountRoutesNoindex: true, htmlRscQueryIndexable: true, issues };
 if (process.argv[3]) writeFileSync(process.argv[3], JSON.stringify(receipt, null, 2) + '\n');
 console.log(JSON.stringify(receipt, null, 2));
 if (issues.length) process.exitCode = 1;

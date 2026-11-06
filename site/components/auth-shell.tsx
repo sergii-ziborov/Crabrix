@@ -6,7 +6,7 @@ export function AuthShell({ title, description, children }: { title: string; des
     <aside className="auth-story">
       <p className="eyebrow">Crabrix Academy</p>
       <h1>A little Rust.<br />A real understanding.</h1>
-      <p className="lede">Read, trace, change, and try again. Your free account opens every lesson.</p>
+      <p className="lede">Read, trace, change, and try again. All lessons are public; a website account is optional.</p>
       <div className="auth-code-art" aria-hidden="true"><span>fn</span> grow() &#123;<br />&nbsp;&nbsp;<span>let</span> next = practice();<br />&nbsp;&nbsp;understanding.push(next);<br />&#125;</div>
       <ul className="auth-benefits"><li>771 lessons and algorithm steps</li><li>Examples, explanations and infographics</li><li>Free access. No payment details.</li></ul>
       <Link className="auth-link" href="/learn/">Explore the course library →</Link>

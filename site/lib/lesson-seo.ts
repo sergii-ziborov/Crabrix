@@ -1,13 +1,13 @@
 import type { Course, Lesson } from "./courses";
 
 const courseDescriptions: Record<string, string> = {
-  basics: "Learn Rust from variables and functions to ownership, structs, enums and Result. Read lesson previews; a free account opens explanations, code and exercises.",
+  basics: "Learn Rust from variables and functions to ownership, structs, enums and Result. Read complete explanations, code and exercises for free, without registration.",
   algorithms: "Explore 200 Rust algorithm patterns with step-by-step visualizations, real execution traces, code and exercises. Try the interactive demo without signing in.",
-  ownership: "Understand Rust borrowing, lifetimes, traits, closures and iterators with compiler-guided examples. Preview the course; complete lessons are free with an account.",
-  projects: "Build Rust projects with Cargo, files, data validation, Serde, typed errors and reliability tests. Browse lesson previews and open the complete course with a free account.",
-  concurrency: "Learn Rust threads, futures, JoinSet, backpressure and graceful async shutdown. Preview the lessons; a free account opens examples and exercises.",
-  systems: "Study Rust macros, unsafe boundaries, FFI, WASM, WASI and local runtime resource budgets. Read public lesson previews; the complete course is free with an account.",
-  interview: "Prepare for Rust interviews with 52 topics on ownership, async, API design, systems and live coding. Browse previews; a free account opens worked examples.",
+  ownership: "Understand Rust borrowing, lifetimes, traits, closures and iterators with compiler-guided examples. Read the complete course for free, without an account.",
+  projects: "Build Rust projects with Cargo, files, data validation, Serde, typed errors and reliability tests. Study complete examples and exercises for free, without registration.",
+  concurrency: "Learn Rust threads, futures, JoinSet, backpressure and graceful async shutdown. Read complete examples and exercises for free, without registration.",
+  systems: "Study Rust macros, unsafe boundaries, FFI, WASM, WASI and local runtime resource budgets. Read complete explanations and practical examples for free, without an account.",
+  interview: "Prepare for Rust interviews with 52 topics on ownership, async, API design, systems and live coding. Study worked examples and exercises for free, without registration.",
 };
 
 export function courseDescription(course: Course): string {
@@ -106,3 +106,10 @@ for (const id of ["q-ownership", "q-borrowing", "q-lifetimes", "q-option-result"
   lessonModifiedDates[`interview/${id}`] = "2026-10-29";
 }
 courseModifiedDates.interview = "2026-10-29";
+
+// Complete Academy HTML became public on this editorial release, not at build time.
+export const academyPublicReadingDate = "2026-11-06T09:00:00+02:00";
+export function lessonPageModifiedDate(course: string, lesson: string): string {
+  return [lessonModifiedDates[`${course}/${lesson}`] || "", academyPublicReadingDate].sort().at(-1)!;
+}
+for (const course of Object.keys(courseModifiedDates)) courseModifiedDates[course] = academyPublicReadingDate;

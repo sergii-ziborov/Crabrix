@@ -3,7 +3,7 @@ import { StructuredData } from "@/components/structured-data";
 import { legacyMain } from "@/lib/legacy";
 import { ScreenshotGalleries } from "@/components/screenshot-galleries";
 
-export const metadata = pageMetadata({"title": "Rust Compiler for iPhone, iPad & Duo", "description": "Compile Rust locally on iPhone, iPad and iPhone Duo. Try the browser Playground, supported Cargo projects, 771 lessons and 46 code examples.", "path": "/", modifiedDate: "2026-11-05"});
+export const metadata = pageMetadata({"title": "Rust Compiler for iPhone, iPad & Duo", "description": "Compile Rust locally on iPhone, iPad and iPhone Duo. Try the browser Playground, supported Cargo projects, 771 lessons and 46 code examples.", "path": "/", modifiedDate: "2026-11-06"});
 
 export default function HomePage() {
   const [beforeGallery, afterGallery] = legacyMain("index").split("<!-- screenshot-galleries -->");

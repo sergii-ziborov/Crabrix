@@ -29,7 +29,7 @@ export default async function CoursePage({ params }: { params: Promise<{ course:
           url: pageUrl(`/learn/${course.id}/`), inLanguage: "en", educationalLevel: course.level,
           provider: { "@type": "Organization", name: "Crabrix", url: pageUrl("/") },
           offers: { "@type": "Offer", price: "0", priceCurrency: "USD", category: "Free" },
-          coursePrerequisites: "A free Academy account to read complete lessons; previews are public.",
+          coursePrerequisites: "No account required. Read the complete lessons and try their examples for free.",
         },
         breadcrumbs([{ name: "Crabrix", path: "/" }, { name: "Learn Rust", path: "/learn/" }, { name: course.title, path: `/learn/${course.id}/` }]),
       ] }} />
@@ -38,16 +38,16 @@ export default async function CoursePage({ params }: { params: Promise<{ course:
         <p className="eyebrow">Free course · {course.level}</p>
         <div className="academy-heading"><CourseIcon course={course.id} size={72} /><h1>{course.title}</h1></div>
         <p className="lede">{course.subtitle}</p>
-        <p className="card-meta">{course.units.length} units · {courseLessons(course).length} lessons · complete lessons free with an account</p>
+        <p className="card-meta">{course.units.length} units · {courseLessons(course).length} lessons · complete lessons free without registration</p>
       </div>
       {course.id === "algorithms" && <>
         <section className="unit-panel" aria-labelledby="choose-method">
           <h2 id="choose-method">Choose an algorithm from the problem's constraints</h2>
-          <p>Start with the operations, input guarantees and size limits. The method guides below explain what each family preserves, where it fails, and what to watch for in Rust. Each pattern has three separate steps: build a mental model, decide when it applies, then solve a challenge. The guides and lesson previews are public; sign in for complete examples, exercises and walkthroughs.</p>
+          <p>Start with the operations, input guarantees and size limits. The method guides below explain what each family preserves, where it fails, and what to watch for in Rust. Each pattern has three separate steps: build a mental model, decide when it applies, then solve a challenge. The guides, complete examples, exercises and walkthroughs are public. No sign-in is needed.</p>
           <nav className="method-index" aria-label="Algorithm methods">{course.units.map(unit => <a key={unit.id} href={`#${unit.id}`}>{unit.title}</a>)}</nav>
         </section>
         <AlgorithmVisualizer trace={publicAlgorithmDemo()} demo />
-        <p className="card-meta">Every pattern below includes a walkthrough of its actual Rust example: arrays, graphs, trees, call stacks and more. Sign in to explore all 200 patterns and their practice examples.</p>
+        <p className="card-meta">Every pattern below includes a walkthrough of its actual Rust example: arrays, graphs, trees, call stacks and more. Explore all 200 patterns and their practice examples without registration.</p>
       </>}
       <div className="unit-list">
         {course.units.map((unit) => (

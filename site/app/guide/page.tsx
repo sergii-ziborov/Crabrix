@@ -10,7 +10,7 @@ export const metadata = pageMetadata({
   description: "Use Crabrix 1.1.5: build Rust and web projects locally, connect AI agents with MCP 0.5.0, recover shared files and approve Run/Debug on one device.",
   path: "/guide/", image: screenshotAsset("duo-laptop").src,
   imageAlt: "Crabrix Duo editor with project search, code tabs, helper keys and keyboard",
-  kind: "article", modifiedDate: "2026-11-05",
+  kind: "article", modifiedDate: "2026-11-06",
 });
 
 const contents = [
@@ -52,7 +52,7 @@ export default function GuidePage() {
     <StructuredData data={{ "@context": "https://schema.org", "@graph": [
       { "@type": "TechArticle", headline: "Crabrix user guide", description: metadata.description,
         mainEntityOfPage: pageUrl("/guide/"), inLanguage: "en", isAccessibleForFree: true,
-        dateModified: "2026-11-05",
+        dateModified: "2026-11-06",
         author: { "@type": "Person", name: "Serhii Ziborov", url: pageUrl("/about/") },
         image: [pageUrl(screenshotAsset("duo-laptop").src), pageUrl(screenshotAsset("iphone-build").src)],
       }, breadcrumbs([{ name: "Crabrix", path: "/" }, { name: "User guide", path: "/guide/" }]),
@@ -246,7 +246,7 @@ export default function GuidePage() {
         <p>In <strong>Learn</strong>, download a course and open its lessons offline. A signed course update can replace lesson explanations, starters and media while retaining your learning progress. Refresh installed courses to look for updates; use the course's Update action or Update all when an update is offered.</p>
         <p><strong>Open in Code</strong> creates or opens an editable project for an example or lesson. That project is a durable copy. Updating the course does not silently rewrite your edited project. If you want the newer starter too, open it separately and compare the source before replacing your own work.</p>
         <p>Some challenges validate a particular behavior through a private harness; a program compiling successfully is not always the same as passing the challenge. Read the lesson's expected outcome and feedback. Code Examples also include descriptions and illustrations that explain what the program is meant to demonstrate.</p>
-        <p>The website's <Link href="/learn/">Academy</Link> provides public lesson previews and complete lessons in a free website account. The native app's local compiler and downloaded learning material do not require that website login. Optional online account or Game Center features are separate from local compilation.</p>
+        <p>The website's <Link href="/learn/">Academy</Link> provides complete public lessons, examples and illustrations without registration. The native app's local compiler and downloaded learning material do not require that website login. Optional online account or Game Center features are separate from local compilation.</p>
         <div className="guide-screenshots"><Screenshot name="iphone-learn" alt="Downloaded Rust courses in Crabrix Learn" caption="Download a course while connected, then keep reading it offline." /><Screenshot name="iphone-examples" alt="Crabrix Code Examples learning path" caption="Examples connect the explanation and illustration to an editable Rust project." /></div>
         <Screenshot name="iphone-example-detail" alt="Ferris Pixel Art example with its explanation, infographic and Open in Code button" caption="An example guide explains what to notice. Open in Code creates your own editable project; future course updates keep that project intact." />
       </section>

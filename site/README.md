@@ -31,7 +31,7 @@ Tokio/Axum measurements separately from the installed App Store compiler;
 procedural macros and the large-project speed target are still under qualification.
 Guide and Technology carry their actual 25 October modification date in the
 sitemap. The site retains 27 articles, 56 original blog images, all 742 lesson
-previews and the existing account gate.
+complete public lessons and private account boundaries.
 
 ## 27 October: measuring Rust performance
 
@@ -81,7 +81,7 @@ pnpm build
 ```
 
 `pnpm test` covers credential/session handling, recovery rotation, account
-deletion, backup restoration, all 742 lesson previews and the blog content requirements
+deletion, backup restoration, all 771 complete lessons and steps and the blog content requirements
 (length, publication dates, unique prose and image assets). `scripts/test-account-flow.mjs` runs the browser account lifecycle
 against a running site and deletes its isolated test account. It needs an
 installed Chrome and the `PLAYWRIGHT_MODULE` path or a local Playwright install.
@@ -90,27 +90,22 @@ registration captures without credentials or recovery codes.
 
 ## Content and synchronization
 
-`content/courses.json` is the pinned 742-lesson curriculum from the course
-repository, including all 142 Rust lessons and 600 Algorithm Atlas steps.
-Refresh both lesson JSON and the 182 private media files with:
+`content/courses.json` is the pinned 771-lesson curriculum from the course
+repository, including all 171 Rust lessons and 600 Algorithm Atlas steps.
+Refresh both lesson JSON and the the lesson media files with:
 
 ```sh
 python3 scripts/sync-course-content.py /path/to/crabrix-courses
 pnpm build
 ```
 
-Lesson sources and images live under `content/`, never `public/`. Guests receive
-approximately 30% of the lesson's visible word count and an invitation to create
-a free account. Exercises, answers and the rest of the lesson are absent from
-both guest HTML and React Server Component responses. `/learn-media/` checks
-the same session. Authenticated responses use private/no-store caching.
-Google receives the same previews as other logged-out visitors. Registration
-content has matching JSON-LD markup; account pages are excluded from indexing.
-
-This is website access control, not copy protection: the separate app course
-repository and signed release archives remain public so existing native builds
-can download and update their courses. Changing that delivery model requires
-an app release and a separate migration.
+Lesson sources and images live under `content/`, never `public/`. The complete
+Academy is public without registration: explanation, code, exercises, answers,
+infographics and validated local Playground starters. Browsers and crawlers
+receive the same content. `/learn-media/` serves only filenames explicitly
+referenced by known lessons; arbitrary source files remain unavailable.
+Account pages and personal data retain their authentication and noindex rules.
+Public reading does not grant redistribution rights: see `CONTENT-LICENSE.md`.
 
 `content/posts.json` contains 27 articles. The five added on 23 October occupy
 previously unoccupied editorial dates of 11, 14, 21, 22 and 23 October. Two
@@ -203,9 +198,7 @@ runtime. See the [official security update](https://nextjs.org/blog/nextjs-secur
 Public routes share canonical HTTPS addresses matching their final served URL,
 individual
 titles/descriptions, Open Graph and Twitter cards. BlogPosting, Course,
-Article and BreadcrumbList data describe the actual visible content. Restricted
-lesson markup identifies the account requirement; it does not expose the full
-lesson to crawlers. Account routes stay noindex and outside the sitemap.
+Article and BreadcrumbList data describe the actual visible content. Public lesson markup marks complete lessons as accessible for free. Account routes stay noindex and outside the sitemap.
 Ordinary pages end in a slash; dotted Atlas lesson IDs follow Next's
 extension-like URL rule and omit it, avoiding a redirect from sitemap URLs.
 
@@ -213,7 +206,7 @@ The [HTML sitemap](https://crabrix.com/sitemap/) lists all seven courses, 742
 lessons and 27 articles. `/sitemap.xml` contains 787 canonical URLs and 56 public
 blog image URLs. Known editorial modification dates are retained for the ten
 corrected lessons and three courses; build time does not invent modification
-dates. Private lesson media and account routes are excluded. `sitemap.xml` at
+dates. Lesson media are served through the validated media route; account routes are excluded. `sitemap.xml` at
 the site root is a synchronized legacy snapshot; Next's metadata route serves
 the production XML. `lib/lesson-seo.ts` supplies readable, unique descriptions
 without Markdown backticks and recorded editorial change dates.

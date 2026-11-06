@@ -2,7 +2,7 @@
 
 Updated: 2026-10-27 · [Website copy](https://crabrix.com/terms/)
 
-The app is a one-time purchase. Website Academy access is free with an account. Your own code remains yours.
+The app is a one-time purchase. Complete website Academy reading is free without registration. Your own code remains yours.
 
 LAST UPDATED 10 OCTOBER 2026
 
@@ -10,11 +10,11 @@ Crabrix is sold through the App Store, so Apple's [Licensed Application End User
 
 ## Free website Academy accounts
 
-These website terms form an agreement between you and Serhii Ziborov, the developer of Crabrix. The blog and lesson previews are public. Complete website lessons are available without payment after registration. The app is sold separately through Apple and works without a website account. A website account does not purchase the app or synchronise its projects or progress.
+These website terms form an agreement between you and Serhii Ziborov, the developer of Crabrix. The blog and complete website lessons, examples and illustrations are public and available without payment or registration. The app is sold separately through Apple and works without a website account. A website account does not purchase the app or synchronise its projects or progress.
 
 You must be at least 16 to register. Choose your own username, protect your password, and save your private recovery code. Do not impersonate another person or share credentials to bypass access limits. You may delete the website account in Account. If you lose both your password and recovery code, we cannot promise recovery; you can create a new free account.
 
-Your account grants personal access to read and practise with the learning material. The text and illustrations remain protected by their stated content terms. Do not mass-extract or redistribute the Academy, resell access, circumvent account checks, or interfere with the service. Search engines may index public previews under the same access rules as other visitors. Nothing here removes rights granted by an applicable open-source licence or mandatory law. Course source examples and publicly distributed app packs retain their separate notices.
+You may read and practise with the public learning material for personal learning without an account. The text and illustrations remain protected by their stated content terms. Do not mass-extract or redistribute the Academy, resell the material, access other people’s private accounts, or interfere with the service. Search engines may index complete public lessons under the same access rules as other visitors. Nothing here removes rights granted by an applicable open-source licence or mandatory law. Course source examples and publicly distributed app packs retain their separate notices.
 
 We may limit requests or suspend an account used for abuse, unauthorised redistribution or security attacks. Where practical, we will explain the reason and let you contact support to contest an error; urgent security issues may require immediate action. Website access and content can change, and uninterrupted availability is not guaranteed. Material changes to these terms will be announced on the website; any new payment terms would require a separate agreement.
 

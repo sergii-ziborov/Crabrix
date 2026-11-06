@@ -5,8 +5,8 @@ import { join } from "node:path";
 import type { AlgorithmTrace } from "./algorithm-trace-types";
 import type { Lesson } from "./courses";
 
-// Full traces are read only after the lesson's existing account gate. They are
-// outside public/, and only one selected example is sent to a lesson's client.
+// Only the selected known lesson's validated trace is sent to its client.
+// Complete lessons and traces are public; the raw content tree stays unserved.
 export function lessonAlgorithmTrace(lesson: Lesson): AlgorithmTrace | undefined {
   if (!lesson.algorithm?.patternID || !lesson.writing?.exampleCode) return;
   const digest = createHash("sha256").update(lesson.writing.exampleCode).digest("hex");

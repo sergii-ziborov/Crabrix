@@ -7,7 +7,7 @@ media and compiled CoursePacks, except where a file carries its own notice.
 ## Personal learning permission
 
 You may read the public material, download official CoursePacks for Crabrix,
-and read the complete website Academy through your own free account. For
+and read the complete website Academy without registration. For
 personal learning, you may copy, edit, compile and run the supplied example
 code and starter projects on your own devices, and keep private backups of
 that practice work. Your own original code remains yours. This permission

@@ -123,7 +123,7 @@
       },
       {
         "kind": "p",
-        "text": "Crabrix is built by **Serhii Ziborov**, an independent developer. It is not a company, it has no investors, and it has nobody's growth targets to hit. That is why it is a one-time purchase with no subscription, no advertising, no analytics, and no required app account. The separate website Academy offers free accounts for full lessons; its public previews and blog are open to everyone."
+        "text": "Crabrix is built by **Serhii Ziborov**, an independent developer. It is not a company, it has no investors, and it has nobody's growth targets to hit. That is why it is a one-time purchase with no subscription, no advertising, no analytics, and no required app account. The separate website Academy and blog are open to everyone, including complete lessons, examples and illustrations without registration."
       },
       {
         "kind": "p",
@@ -343,7 +343,7 @@
       },
       {
         "kind": "p",
-        "text": "The website at `crabrix.com` is hosted by Hetzner in Germany. Anyone can read the blog, course catalogue and approximately the first 30% of each lesson. A free website account opens the complete Academy. The iOS app does not require this account."
+        "text": "The website at `crabrix.com` is hosted by Hetzner in Helsinki, Finland. Anyone can read the blog, course catalogue and complete lessons, examples and illustrations without registration. Website accounts are optional. The iOS app does not require this account."
       },
       {
         "kind": "p",
@@ -363,7 +363,7 @@
       },
       {
         "kind": "p",
-        "text": "Where the GDPR applies, providing the account and requested lesson access is necessary to perform our agreement with you. Basic server security and abuse prevention rely on our legitimate interest in keeping the service available and secure. Hetzner processes hosting data for us. We do not sell account information, use it for advertising, make automated decisions with legal effects, or send it to Apple for sign-in."
+        "text": "Where the GDPR applies, providing the optional account service is necessary to perform our agreement with you. Basic server security and abuse prevention rely on our legitimate interest in keeping the service available and secure. Hetzner processes hosting data for us. We do not sell account information, use it for advertising, make automated decisions with legal effects, or send it to Apple for sign-in."
       },
       {
         "kind": "p",
@@ -471,7 +471,7 @@
     "blocks": [
       {
         "kind": "p",
-        "text": "The app is a one-time purchase. Website Academy access is free with an account. Your own code remains yours."
+        "text": "The app is a one-time purchase. Complete website Academy reading is free without registration. Your own code remains yours."
       },
       {
         "kind": "p",
@@ -487,7 +487,7 @@
       },
       {
         "kind": "p",
-        "text": "These website terms form an agreement between you and Serhii Ziborov, the developer of Crabrix. The blog and lesson previews are public. Complete website lessons are available without payment after registration. The app is sold separately through Apple and works without a website account. A website account does not purchase the app or synchronise its projects or progress."
+        "text": "These website terms form an agreement between you and Serhii Ziborov, the developer of Crabrix. The blog and complete website lessons, examples and illustrations are public and available without payment or registration. The app is sold separately through Apple and works without a website account. A website account does not purchase the app or synchronise its projects or progress."
       },
       {
         "kind": "p",
@@ -495,7 +495,7 @@
       },
       {
         "kind": "p",
-        "text": "Your account grants personal access to read and practise with the learning material. The text and illustrations remain protected by their stated content terms. Do not mass-extract or redistribute the Academy, resell access, circumvent account checks, or interfere with the service. Search engines may index public previews under the same access rules as other visitors. Nothing here removes rights granted by an applicable open-source licence or mandatory law. Course source examples and publicly distributed app packs retain their separate notices."
+        "text": "You may read and practise with the public learning material for personal learning without an account. The text and illustrations remain protected by their stated content terms. Do not mass-extract or redistribute the Academy, resell the material, access other people’s private accounts, or interfere with the service. Search engines may index complete public lessons under the same access rules as other visitors. Nothing here removes rights granted by an applicable open-source licence or mandatory law. Course source examples and publicly distributed app packs retain their separate notices."
       },
       {
         "kind": "p",
@@ -619,7 +619,7 @@
     "blocks": [
       {
         "kind": "pre",
-        "text": "# Crabrix educational content\n\nCopyright © 2026 Serhii Ziborov. All rights reserved in the authored course\ntexts, articles, questions, answer choices, explanations, exercises, starter projects,\nmedia and compiled CoursePacks, except where a file carries its own notice.\n\n## Personal learning permission\n\nYou may read the public material, download official CoursePacks for Crabrix,\nand read the complete website Academy through your own free account. For\npersonal learning, you may copy, edit, compile and run the supplied example\ncode and starter projects on your own devices, and keep private backups of\nthat practice work. Your own original code remains yours. This permission\nmakes the app's editable lesson projects usable; it does not grant rights to\nrepublish the educational corpus or the original illustrations.\n\n## Short quotations and attribution\n\nYou may publish short quotations from authored lesson or article text for\ncommentary, review, teaching or discussion, provided that you identify Crabrix\nand the author (Serhii Ziborov, unless the original names another author) and\ninclude an active link to the original lesson or article on https://crabrix.com/.\nKeep quotations proportionate to your own work; this permission does not cover\ncomplete lessons, articles, collections, questions and answer sets, illustrations\nor CoursePacks. Automated and AI-assisted use has the same conditions; public\naccess is not permission to copy or redistribute the educational corpus.\n\n## Other uses\n\nExcept for the short quotations permitted above, public access does not grant\npermission to mass-extract, republish, sell,\nsublicense or distribute the authored course texts, questions, explanations,\nmedia or CoursePacks, or to publish adapted versions of that corpus. Request\nseparate written permission for those uses through https://crabrix.com/support/.\nThe same restriction applies to redistributing the authored example projects\nas teaching content or as part of another product. This restriction does not\nlimit rights granted by a file's own open-source license or mandatory law.\n\n## Separate licenses\n\nThe MIT license in the crabrix-courses repository covers its authored tools\nand schemas, not the educational corpus. The application and website source\nhave the separate source-available license in the Crabrix app repository.\nThird-party notices remain with their material and continue to govern it.\nThe course repository's PROVENANCE.md identifies the migrated source snapshot."
+        "text": "# Crabrix educational content\n\nCopyright © 2026 Serhii Ziborov. All rights reserved in the authored course\ntexts, articles, questions, answer choices, explanations, exercises, starter projects,\nmedia and compiled CoursePacks, except where a file carries its own notice.\n\n## Personal learning permission\n\nYou may read the public material, download official CoursePacks for Crabrix,\nand read the complete website Academy without registration. For\npersonal learning, you may copy, edit, compile and run the supplied example\ncode and starter projects on your own devices, and keep private backups of\nthat practice work. Your own original code remains yours. This permission\nmakes the app's editable lesson projects usable; it does not grant rights to\nrepublish the educational corpus or the original illustrations.\n\n## Short quotations and attribution\n\nYou may publish short quotations from authored lesson or article text for\ncommentary, review, teaching or discussion, provided that you identify Crabrix\nand the author (Serhii Ziborov, unless the original names another author) and\ninclude an active link to the original lesson or article on https://crabrix.com/.\nKeep quotations proportionate to your own work; this permission does not cover\ncomplete lessons, articles, collections, questions and answer sets, illustrations\nor CoursePacks. Automated and AI-assisted use has the same conditions; public\naccess is not permission to copy or redistribute the educational corpus.\n\n## Other uses\n\nExcept for the short quotations permitted above, public access does not grant\npermission to mass-extract, republish, sell,\nsublicense or distribute the authored course texts, questions, explanations,\nmedia or CoursePacks, or to publish adapted versions of that corpus. Request\nseparate written permission for those uses through https://crabrix.com/support/.\nThe same restriction applies to redistributing the authored example projects\nas teaching content or as part of another product. This restriction does not\nlimit rights granted by a file's own open-source license or mandatory law.\n\n## Separate licenses\n\nThe MIT license in the crabrix-courses repository covers its authored tools\nand schemas, not the educational corpus. The application and website source\nhave the separate source-available license in the Crabrix app repository.\nThird-party notices remain with their material and continue to govern it.\nThe course repository's PROVENANCE.md identifies the migrated source snapshot."
       }
     ]
   }
