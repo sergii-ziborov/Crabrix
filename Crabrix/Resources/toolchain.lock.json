@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "toolchainID": "crabrix-rust-2026-10-02.1",
+  "toolchainID": "crabrix-rust-2026-11-07.1",
   "target": "wasm32-wasip1",
   "rustVersion": "1.96.0-dev",
   "rustVersionComponents": {
@@ -10,28 +10,31 @@
   },
   "source": {
     "kind": "crabrix-release-v1",
-    "baseURL": "https://github.com/sergii-ziborov/crabrix-toolchain/releases/download/toolchain-2026-10-02.1",
+    "baseURL": "https://github.com/sergii-ziborov/crabrix-toolchain/releases/download/toolchain-2026-11-07.1",
     "keyID": "crabrix-toolchain-2026-10",
     "sourceLockSHA256": "7c44029b80757b80fe5bfb54614bc09e967917506bc28a275dc694eb404bf97a",
-    "builderSourceCommit": "079b2dabbac02f8e5de452765c4bb89e0c4fc6ff",
+    "builderSourceCommit": "0a5970c97ef0e192c8f6e5dec460190924489f97",
     "compilerAsset": {
       "name": "rustc.wasm",
-      "sha256": "0286dc52064283ef78ba153a554d86ae742e6c8cd638aea8662e07d3529233fc"
+      "sha256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008"
     },
     "sysrootAsset": {
       "name": "sysroot-wasip1.zip",
-      "sha256": "085fece5602fdd3af4efde3e08388090928c33b03fc874d99aba741a0b85283b"
+      "sha256": "44c0912b34520e0f85e63a8bb12e5447e83c59c9195a8bd4f7c72db2d4772842"
     },
     "inventoryAsset": {
       "name": "sysroot-files.json",
-      "sha256": "6f91fe3517cbb1a194f38a9031fcb69fa528678f3bc27b0dd454bc54e123eab1"
+      "sha256": "0349126aa9ecf80f9abf3f8a1d3c4c1266ed04d661aa38efab796c089e159da1"
     },
     "descriptorAsset": {
       "name": "toolchain.descriptor.json",
-      "sha256": "aa73af686793a6242e3b084207cb94b2edf2b49031cad9756c9d590091c922e7"
+      "sha256": "1bfb5e26126979fe8068720dc3f8d1d2fbf5e07d270f2f6d6324f5484713bf71"
     }
   },
-  "rustcSHA256": "0286dc52064283ef78ba153a554d86ae742e6c8cd638aea8662e07d3529233fc",
-  "sysrootManifestSHA256": "4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c",
-  "sysrootArchiveSHA256": "085fece5602fdd3af4efde3e08388090928c33b03fc874d99aba741a0b85283b"
+  "rustcSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+  "sysrootManifestSHA256": "52308082924a0a6716b4d314ac48be48fb74abc49c384c6c82df491b73dbc2f0",
+  "sysrootArchiveSHA256": "44c0912b34520e0f85e63a8bb12e5447e83c59c9195a8bd4f7c72db2d4772842",
+  "capabilities": [
+    "proc-macro-rpc-v1"
+  ]
 }
