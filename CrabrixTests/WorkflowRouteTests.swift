@@ -14,6 +14,46 @@ final class WorkflowRouteTests: XCTestCase {
         let root = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "CompilerCandidate", withExtension: nil))
         return try JSONDecoder().decode(Fixtures.self, from: Data(contentsOf: root.appending(path: "WorkflowRoute.json")))
     }
+    func testBundledReleaseCatalogDownloadsAndInstallsProductionSignedRoute() async throws {
+        guard ProcessInfo.processInfo.environment["CRABRIX_RUN_WORKFLOW_FETCH"] == "1" else {
+            throw XCTSkip("Run CrabrixWorkflowGate for the explicit public production-package gate.")
+        }
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let currentVersion = try XCTUnwrap(SemanticVersion("1.1.8"))
+        let previousVersion = try XCTUnwrap(SemanticVersion("1.1.7"))
+        let bootstrap = try CourseBootstrap(root: root, appVersion: currentVersion)
+        let catalog = try bootstrap.bundledCatalog()
+        XCTAssertEqual(catalog.sequence, 24)
+        let entry = try XCTUnwrap(CourseUpdatePlanner.latestCompatible(in: catalog,
+            appVersion: currentVersion)["projects|en"])
+        XCTAssertEqual(entry.contentVersion, "1.1.0")
+        XCTAssertEqual(entry.minimumAppVersion, "1.1.8")
+        XCTAssertTrue(entry.requiredCapabilities.contains("workflow-terminal-v1"))
+        XCTAssertNil(CourseUpdatePlanner.latestCompatible(in: catalog,
+            appVersion: previousVersion)["projects|en"])
+        let manager = try CourseDownloadManager(cacheRoot: root.appending(path: "downloads"))
+        let downloaded = try await manager.download(entry)
+        let installer = try CourseInstaller(root: root.appending(path: "installed"),
+                                            appVersion: SemanticVersion("1.1.8"))
+        _ = try await installer.install(descriptorBytes: downloaded.descriptor,
+            downloadedArchive: downloaded.archive, keyring: bootstrap.keyring())
+        let repository = try await installer.loadRepository(keyring: bootstrap.keyring())
+        XCTAssertTrue(repository.unavailable.isEmpty)
+        let lessons = try XCTUnwrap(repository.loaded["projects"]).course.units.flatMap(\.lessons)
+            .filter { $0.id.hasPrefix("route-") }
+        XCTAssertEqual(lessons.count, 24)
+        for lesson in lessons {
+            XCTAssertNotNil(repository.challenge(for: lesson.id), lesson.id)
+            XCTAssertNotNil(repository.workflowCompanion(for: lesson.id), lesson.id)
+        }
+        let client = CourseCatalogClient(stateURL: root.appending(path: "catalog-state.json"),
+            keyring: try bootstrap.keyring(), bundled: catalog)
+        let retained = try await client.refresh()
+        XCTAssertGreaterThanOrEqual(retained.sequence, catalog.sequence)
+        XCTAssertEqual(CourseUpdatePlanner.latestCompatible(in: retained,
+            appVersion: currentVersion)["projects|en"]?.contentVersion, "1.1.0")
+    }
     func testSignedPackInstallsAllRouteLessonsAndKeepsAnOpenedOldSnapshot() async throws {
         let fixtures = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "CompilerCandidate", withExtension: nil))
         let pack = fixtures.appending(path: "WorkflowPack")

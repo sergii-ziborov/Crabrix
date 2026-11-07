@@ -4,6 +4,14 @@ Implemented as a local release candidate, Crabrix **1.1.8 (134)** with
 Projects CoursePack **1.1.0** and the `workflow-terminal-v1` capability.
 The production catalog, public website and App Review submission are unchanged.
 
+The owner subsequently authorized merging all Crabrix worktrees, TestFlight upload
+and App Review submission. The Atlas worktree history is integrated with its
+already cherry-picked changes retained. The generated-project source now also
+pins 1.1.8 (134), and production-signed catalog 24 is bundled with this compatible
+binary. Its immutable course assets are published as the workflow-route-2026-11-07
+prerelease; the public main catalog remains 23 during qualification. Apple delivery
+status will be recorded independently after archive/upload/processing readback.
+
 ## Learning content
 
 The course source is the sibling `crabrix-courses` checkout at

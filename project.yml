@@ -293,6 +293,24 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
 
 schemes:
+  CrabrixWorkflowGate:
+    build:
+      targets:
+        Crabrix: all
+        CrabrixTests: [test]
+    test:
+      config: CompilerCandidate
+      gatherCoverageData: false
+      environmentVariables:
+        CRABRIX_RUN_WORKFLOW_FETCH: "1"
+      targets:
+        - name: CrabrixTests
+          selectedTests:
+            - WorkflowRouteTests
+            - ProjectTerminalSessionTests
+            - SyntaxHighlighterTests
+            - CoursePackVerifierTests
+            - GitWorkspaceTests
   CrabrixInterviewGate:
     build:
       targets:
