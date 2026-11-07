@@ -59,7 +59,7 @@
       },
       {
         "kind": "li",
-        "text": "Toolchain artifact: [`crabrix-rust-2026-10-02.1`](https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1)"
+        "text": "Toolchain artifact: [`crabrix-rust-2026-11-07.1`](https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-11-07.1)"
       },
       {
         "kind": "li",
@@ -67,7 +67,7 @@
       },
       {
         "kind": "p",
-        "text": "The public [toolchain builder](https://github.com/sergii-ziborov/crabrix-toolchain) produced the signed compiler release from pinned source. Its build inputs, compatibility results, licenses and two-build difference report are public. The compiler has its own identity distinct from the runtime fork."
+        "text": "The public [toolchain builder](https://github.com/sergii-ziborov/crabrix-toolchain) produced the signed compiler release from pinned source. Its build inputs, compatibility results, licenses and two-build reproducibility report are public. The compiler has its own identity distinct from the runtime fork."
       },
       {
         "kind": "p",
@@ -83,7 +83,7 @@
       },
       {
         "kind": "li",
-        "text": "Native C linking and host procedural macros are not supported. Standard-library-only WASI build scripts can run locally; host subprocesses and separate build-dependency graphs are outside the supported build path."
+        "text": "Native C linking and host subprocesses are not supported. Supported procedural macros and standard-library-only build scripts run locally as bounded WASI guests; separate build-dependency graphs are outside the supported build path."
       },
       {
         "kind": "li",

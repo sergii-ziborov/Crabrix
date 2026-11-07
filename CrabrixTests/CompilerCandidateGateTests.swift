@@ -152,17 +152,26 @@ final class CompilerCandidateGateTests: XCTestCase {
                     "-o", "/work/canary.wasm"], prefix: "canary-compile")
                 XCTAssertEqual(canary.exitCode, 0, canary.stderr)
                 let canaryModule = try parseWasm(filePath: work.appending(path: "canary.wasm").path)
-                let reproduced = try runtime.run(
-                    module: canaryModule, arguments: ["canary"], environment: [:], preopens: [],
-                    captureDirectory: work, capturePrefix: "canary-run",
-                    resourceLimiter: WasmSandboxResourceLimiter(),
-                    fuelBudget: WasmSandboxPolicy.userProgramInstructionBudget,
-                    wallClockLimit: .seconds(10), interrupter: WasmInterrupter(),
-                    capturedOutputLimitBytes: WasmSandboxPolicy.userProgramOutputLimitBytes)
-                XCTAssertNotEqual(reproduced.exitCode, 0)
-                XCTAssertTrue(reproduced.stderr.contains("assertion failed: !flag.value.load(Ordering::SeqCst)"),
-                              reproduced.stderr)
-                XCTAssertFalse(reproduced.stdout.contains("candidate smoke: sum=6 wide=-119"))
+                let output: (stdout: String, stderr: String)
+                do {
+                    let reproduced = try runtime.run(
+                        module: canaryModule, arguments: ["canary"], environment: [:], preopens: [],
+                        captureDirectory: work, capturePrefix: "canary-run",
+                        resourceLimiter: WasmSandboxResourceLimiter(),
+                        fuelBudget: WasmSandboxPolicy.userProgramInstructionBudget,
+                        wallClockLimit: .seconds(10), interrupter: WasmInterrupter(),
+                        capturedOutputLimitBytes: WasmSandboxPolicy.userProgramOutputLimitBytes)
+                    XCTAssertNotEqual(reproduced.exitCode, 0)
+                    output = (reproduced.stdout, reproduced.stderr)
+                } catch let failure as RustcRuntimeFailure {
+                    guard let trap = failure.underlying as? Trap,
+                          trap.description.split(separator: "\n").first == "Trap: unreachable"
+                    else { throw failure }
+                    output = (failure.stdout, failure.stderr)
+                }
+                XCTAssertTrue(output.stderr.contains("assertion failed: !flag.value.load(Ordering::SeqCst)"),
+                              output.stderr)
+                XCTAssertFalse(output.stdout.contains("candidate smoke: sum=6 wide=-119"))
             }
 
             let invalid = "fn main() { let mut v = vec![1]; let first = &v[0]; v.push(2); println!(\"{first}\"); }"

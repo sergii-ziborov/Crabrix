@@ -257,7 +257,7 @@ CoursePacks; compatible app builds can download them from the release catalog.
 
 Crabrix 1.1 pins [CrabrixRuntime](https://github.com/sergii-ziborov/crabrix-runtime) at `e714b3efb3f4973bfd20ea41cb2cf0d6eb27713d`, derived from WasmKit **0.4.1** (`a0471eaee817c523b8023d8ebb1c70ff70b7950a`). The adapter uses upstream fuel metering, a separate cancellation/deadline probe sampled at fuel checkpoints, read-only compiler inputs, bounded WASI output, fresh execution stores, and virtual memory reservation to avoid copying the compiler's full Wasm memory on growth. The corrected software-bounds direct interpreter is enabled on arm64; other architectures retain token dispatch. Both retain fuel, cancellation and memory checks. WASI now validates guest pointer ranges and keeps configured blocking polls interruptible. The Wasm guest has no network import.
 
-The compiler-acceleration branch now pins runtime `e714b3efb3f4973bfd20ea41cb2cf0d6eb27713d`. It retains the offline web preview and existing workspace geometry. Its full-LTO and static native compiler candidates remain separate from the signed production toolchain. The runtime dispatch and direct-emission improvements are retained for the current release; a 30-second large-project result is still unconfirmed. Three cold iPhone 13 mini samples of the **three-dependency Tokio profile** measured **29.78 / 27.88 / 28.54 seconds**. The **22-dependency Axum in-memory router** passed in **126.29 seconds**, heating the phone from nominal to serious; it did not run a TCP server. These are not a 30-second result for the unchanged 32-package Kameo project. See [Tokio evidence](docs/performance/2026-10-25-direct-emission.json) and [Axum evidence](docs/performance/2026-10-25-axum.json). The versioned WASI procedural-macro bridge is under qualification and is not enabled by the signed production toolchain.
+The compiler-acceleration branch now pins runtime `e714b3efb3f4973bfd20ea41cb2cf0d6eb27713d`. It retains the offline web preview and existing workspace geometry. Its static native compiler candidates remain separate from the signed production toolchain. The runtime dispatch and direct-emission improvements are retained for the current release; a 30-second large-project result is still unconfirmed. Three cold iPhone 13 mini samples of the **three-dependency Tokio profile** measured **29.78 / 27.88 / 28.54 seconds**. The **22-dependency Axum in-memory router** passed in **126.29 seconds**, heating the phone from nominal to serious; it did not run a TCP server. These are not a 30-second result for the unchanged 32-package Kameo project. See [Tokio evidence](docs/performance/2026-10-25-direct-emission.json) and [Axum evidence](docs/performance/2026-10-25-axum.json). Build 135 selects the corrected WASI compiler and enables its signed procedural-macro capability; the static native compiler experiment remains disabled.
 
 The corrected experimental static compiler passed ten required simulator gates,
 including real Serde macros, the unchanged full Kameo/Tokio workload, Axum,
@@ -273,21 +273,18 @@ Later shared-Mac simulator comparisons recorded **19.480–40.436 s** for the sa
 
 In an A/B/A Release Simulator measurement using the same compiler and a heavy multi-crate CLI project, this runtime completed the selected workload **about 1.6× faster** than the preceding Crabrix runtime. The [raw observations](docs/performance/2026-10-02-sampled-cancellation-heavy-cli-simulator.json) document the source graph, output checks, cache preparation, and measurement limits. This result describes that workload on Simulator; other projects and devices need their own measurements. [Runtime integration](docs/runtime-integration.md) explains the implementation.
 
-The 1.1 source pins the [Crabrix source-built Rust toolchain](https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1), `crabrix-rust-2026-10-02.1`. Its `rustc.wasm` and `wasm32-wasip1` sysroot are built from locked source and published with a signed descriptor, notices, compatibility results, and a two-build difference report. The build Mac verifies the descriptor and every artifact before bundling them; the phone does not download compiler or runtime updates. The two source builds have different raw digests, so the release claims source-pinned inputs rather than byte-identical reproducibility. See [toolchain provenance and limits](docs/toolchain.md).
+Build 135 pins the [Crabrix source-built Rust toolchain](https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-11-07.1), `crabrix-rust-2026-11-07.1`. Its compiler fixes narrow atomic memory accesses and ships a matching macro-capable WASI sysroot. Two independent Mac source builds produced identical compiler, sysroot ZIP and inventory bytes. The signed descriptor binds those files to original build provenance, notices and executed app compatibility results. The build Mac verifies them before bundling; the phone does not download compiler or runtime updates. See [toolchain provenance and limits](docs/toolchain.md).
 
 The release graph has one runtime dependency. CoursePacks contain data, text, media, and editable Rust source; they cannot replace the compiler or install executable plugins. [Architecture](docs/architecture.md) and [course delivery](docs/course-delivery.md) explain the boundaries.
 
 ## Build from source
 
-Distribution builds are compiled, archived and uploaded through **Xcode Cloud**.
-Its workflow is manual; GitHub Actions does not build or deploy Crabrix.
-Distribution is pinned to Xcode 27.1 RC / iOS 27.1 SDK so the preserved Duo
-hinge code is compiled. An archive built with SDK 27.0 omits that code; do
-not use such an archive for the Duo release. See the
-[build 50 manifest](docs/releases/1.1-build50.json). The
-current selected review build, source commit and review status are recorded in
-[submission status](docs/app-store/submission-status.md) and the
-[release manifests](docs/releases/). XcodeGen and `zstd` are build tools. The app
+Distribution builds use Xcode 27.2 / iOS 27.2 SDK, including the preserved Duo
+hinge API. Manual Xcode Cloud workflows are also available; GitHub pushes do
+not deploy the app. Build 135 is archived and uploaded from the qualified build
+Mac. The selected review build, exact source commit and Apple status are recorded
+in [submission status](docs/app-store/submission-status.md). XcodeGen and `zstd`
+are build tools. The app
 supports iOS 18 and later. Package versions and the runtime revision are pinned
 in [Dependencies/Package.resolved](Dependencies/Package.resolved) and
 [project.yml](project.yml). Signing is needed for a physical device; the bundle
@@ -305,6 +302,12 @@ xcodebuild build -project Crabrix.xcodeproj -scheme Crabrix \
 For a distribution archive, provide `CRABRIX_APP_PROFILE` and `CRABRIX_SHARE_PROFILE` as the names of your installed App Store provisioning profiles and set `DEVELOPMENT_TEAM`. The app profile must include the Game Center entitlement. These profile names are build inputs, not repository credentials; the profiles and signing keys stay outside Git.
 
 ## Verify
+
+For the complete optimized Simulator test driver, pass
+`-configuration Release ENABLE_TESTABILITY=YES CRABRIX_TEST_FIXTURE_CONDITIONS=CRABRIX_LEGACY_FIXTURES`.
+This enables the historical course catalogs audited by migration tests. Leave
+`CRABRIX_TEST_FIXTURE_CONDITIONS` unset for distribution archives. Compiler,
+network, macro and fixture gates also require their documented explicit inputs.
 
 The normal scheme runs app and content tests. Separate schemes opt into the expensive compiler and public network gates:
 
@@ -330,7 +333,7 @@ publication. These Cloud workflows have manual triggers only.
 
 ## Compatibility and limits
 
-- The shipped compiler targets `wasm32-wasip1`. Procedural macros, native linking, host subprocesses and separate build-dependency graphs remain outside its supported Cargo subset. Standard-library-only build scripts run locally as bounded WASI guests.
+- The shipped compiler targets `wasm32-wasip1`. Supported procedural macros use the bundled WASI bridge, including Serde derive. Native linking, host subprocesses and separate build-dependency graphs remain outside its supported Cargo subset. Standard-library-only build scripts run locally as bounded WASI guests.
 - Crate compatibility is measured per package. A successful metadata Check does not prove code generation or linking.
 - Course update crash injection, physical-device performance and Face ID behavior still need their release gates. Selected Simulator gates include compiler output budgeting and supported heavy projects; [current validation](docs/VALIDATION.md) gives their exact scope.
 - Internet is needed to download a selected course, discover/download crates, and import a GitHub project. Compilation and program execution stay on device.
