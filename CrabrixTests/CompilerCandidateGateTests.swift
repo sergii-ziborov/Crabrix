@@ -10,10 +10,7 @@ import XCTest
 final class CompilerCandidateGateTests: XCTestCase {
     func testHistoricalThinCompilerReproducesAtomicWidthDefect() async throws {
         try XCTSkipIf(ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_CANDIDATE"] != "1")
-        let artifactName = ProcessInfo.processInfo.environment["CRABRIX_COMPILER_CANDIDATE_ARTIFACT"] ?? "Artifact"
-        guard ["Artifact", "ArtifactFat"].contains(artifactName)
-        else { throw CocoaError(.fileReadCorruptFile) }
-        try checkCandidate(artifactName: artifactName)
+        try checkCandidate(artifactName: "Artifact")
     }
 
     func testHistoricalO2CompilerReproducesAtomicWidthDefect() async throws {
