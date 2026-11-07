@@ -58,6 +58,21 @@ final class CompilerCandidateGateTests: XCTestCase {
         let root = FileManager.default.temporaryDirectory.appending(path: "CompilerCandidate-\(UUID())")
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
+        // AtomicBool's non-generic implementation can come from libcore.
+        // Preserve the original signed sysroot too: pairing an old compiler
+        // with the corrected libcore would stop reproducing the old defect.
+        let historicalArchive = directory.deletingLastPathComponent()
+            .appending(path: "HistoricalSysroot/sysroot-wasip1.zip")
+        let historicalArchiveSHA = "085fece5602fdd3af4efde3e08388090928c33b03fc874d99aba741a0b85283b"
+        let historicalBytes = try Data(contentsOf: historicalArchive, options: [.mappedIfSafe])
+        guard SHA256.hash(data: historicalBytes).map({ String(format: "%02x", $0) }).joined()
+                == historicalArchiveSHA else { throw CocoaError(.fileReadCorruptFile) }
+        let historicalRoot = root.appending(path: "historical-toolchain")
+        try BundledSysroot.prepare(archive: historicalArchive, checksum: historicalArchiveSHA, at: historicalRoot)
+        let historicalSysroot = historicalRoot.appending(path: "sysroot-wasip1")
+        let historicalManifest = try Data(contentsOf: historicalSysroot.appending(path: "manifest.json"))
+        XCTAssertEqual(SHA256.hash(data: historicalManifest).map { String(format: "%02x", $0) }.joined(),
+                       "4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c")
 
         let smoke = #"""
         use std::collections::BTreeMap;
@@ -107,7 +122,8 @@ final class CompilerCandidateGateTests: XCTestCase {
             let preopens: [WASIBridgeToHost.Preopen] = [
                 .init(guestPath: "/work", hostPath: work.path),
                 .init(guestPath: "/tmp", hostPath: work.path),
-                .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path, readOnly: true),
+                .init(guestPath: "/sysroot", hostPath: (name == "production"
+                    ? toolchain.sysrootURL : historicalSysroot).path, readOnly: true),
             ]
             func invoke(_ arguments: [String], prefix: String) throws -> WasmProcessResult {
                 try runtime.run(
