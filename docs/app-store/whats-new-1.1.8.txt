@@ -1,0 +1,5 @@
+24 new lessons connect Git → CLI → HTTP API → SQL → diagnostics → delivery, with worked programs, independent typed labs and boundary checks.
+
+Open Task Ledger and practise with shared CLI/HTTP/SQLite data. Terminal adds argv/env/stdin, SQL, curl and HTTP request files, plus matching syntax highlighting.
+
+Download or update Cargo & Real Projects to Projects 1.1.0. Existing course progress, projects, Flashcards and Atlas recordings are retained.
