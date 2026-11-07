@@ -141,3 +141,27 @@ matched API readback before App Review submission. The approved unreleased 1.1.7
 was withdrawn only after build 134 was VALID, then replaced by this submission.
 Do not publish Projects 1.1.0 to older apps; its descriptor requires Crabrix 1.1.8
 and `workflow-terminal-v1`.
+
+## Extended qualification of the 58 skipped cases
+
+The explicit follow-up executed all 58 previously skipped cases: **54 passed,
+4 failed, no skips**. The release profile passed 40/41; the 17 experimental
+cases passed 14/17. All public course delivery/upgrade checks, the five offline
+Cargo lesson Run/Debug flows, Shared runtime transport/cancellation and the
+production-signed workflow package download passed.
+
+The shipping compiler and three older experimental compiler variants fail the
+same narrow-atomic canary. A false `AtomicBool` reads as true when adjacent bytes
+are nonzero. This matches the documented backend-width defect. Compiler
+`27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008`, built from
+recipe `0a5970c97ef0e192c8f6e5dec460190924489f97`, was recovered from the original
+Cloud 89 test products. Its compiler, complete sysroot and all 60 inventory files
+were verified. It passed the unchanged atomic test separately and all eight
+selected macro/Kameo cases, including real Serde derive and both full cold
+Kameo interpreter controls.
+
+The corrected compiler was staged only in generated XCTest resources, which were
+then restored and signature-verified. Build 134 and its published compiler inputs
+were not changed. Promoting a corrected production toolchain and replacing the
+app binary remain separate release work. The extended suite is not qualified as
+passing. [Exact outcomes and evidence](app-store/extended-tests-1.1.8-build134.json).

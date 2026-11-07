@@ -1,3 +1,20 @@
+> Extended qualification — 7 November 2026: all **58** cases skipped by the
+> standard regression run have now executed: **54 passed, 4 failed, 0 skipped**.
+> The release profile passed **40/41**; experimental profiles passed **14/17**.
+> The shipping compiler and three older compiler candidates fail the unchanged
+> narrow-atomic canary: a false `AtomicBool` reads nonzero neighboring bytes.
+> The source-built corrected compiler `27acccf9` passed the same atomic test
+> separately and all eight selected macro/Kameo gates, including real Serde
+> derive and cold/changed-root Kameo on direct and token interpreters.
+> Build **1.1.8 (134)** still contains compiler `0286dc52`; this qualification
+> did not promote the candidate or upload a new binary. The extended suite is
+> **not green**. App source/runtime inputs are unchanged. Network delivery,
+> course updates, offline Cargo Run/Debug and Shared runtime checks passed.
+> Disk-exhaustion failures were repeated after cleanup; the last stalled result
+> export was repeated with a complete bundle. Original test resources and their
+> strict signatures were restored. No physical-device result is claimed.
+> [All 58 results and exact compiler inputs](extended-tests-1.1.8-build134.json).
+
 > Delivery verified through App Store Connect — 7 November 2026: **1.1.8 (134)**
 > is **WAITING_FOR_REVIEW**, selecting build **134**, with **MANUAL** release.
 > Build 134 is **VALID**, **APP_STORE_ELIGIBLE** and **IN_BETA_TESTING** in
