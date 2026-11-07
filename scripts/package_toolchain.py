@@ -51,7 +51,19 @@ if release['source']['kind'] == 'crabrix-release-v1':
             raise SystemExit(f'Unexpected extra bundled toolchain resource: {item}')
         retired = retired_root / item.name
         if retired.exists():
-            raise SystemExit(f'Retired toolchain directory already exists: {retired}')
+            names = {path.name for path in item.iterdir()}
+            if retired.is_symlink() or not retired.is_dir() or names != {
+                    path.name for path in retired.iterdir()} or not all(
+                    (item / name).is_file() and not (item / name).is_symlink()
+                    and (retired / name).is_file() and not (retired / name).is_symlink()
+                    and hashlib.sha256((item / name).read_bytes()).digest()
+                        == hashlib.sha256((retired / name).read_bytes()).digest()
+                    for name in names):
+                raise SystemExit(f'Retired toolchain differs from generated resources: {retired}')
+            # A branch switch can recreate the same generated version. Its
+            # verified recovery copy already exists; discard only this duplicate.
+            shutil.rmtree(item)
+            continue
         retired_root.mkdir(parents=True, exist_ok=True)
         item.replace(retired)
     print('Packaged verified Crabrix source-built compiler resources:', output)
