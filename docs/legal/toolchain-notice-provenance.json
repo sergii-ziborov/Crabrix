@@ -1,6 +1,6 @@
 {
-  "release": "toolchain-2026-10-02.1",
-  "toolchainID": "crabrix-rust-2026-10-02.1",
+  "release": "toolchain-2026-11-07.1",
+  "toolchainID": "crabrix-rust-2026-11-07.1",
   "descriptorKeyID": "crabrix-toolchain-2026-10",
   "files": {
     "licenses.zip": {
@@ -13,5 +13,6 @@
     }
   },
   "vendorPackages": 1592,
-  "noticeFiles": 2628
+  "noticeFiles": 2628,
+  "retainedFromRelease": "toolchain-2026-10-02.1"
 }

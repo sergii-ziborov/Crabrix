@@ -118,6 +118,16 @@ final class BundledCompilerGateTests: XCTestCase {
             candidate = BundledToolchain(rustcURL: compilerURL, sysrootURL: sysroot,
                                          version: identity, supportsProceduralMacros: artifactName == "ArtifactMacro",
                                          compilerSHA256: sha)
+            if artifactName == "ArtifactMacro",
+               ProcessInfo.processInfo.environment["CRABRIX_VERIFY_BUNDLED_MACROS"] == "1" {
+                guard baseline.supportsProceduralMacros,
+                      baseline.compilerSHA256 == sha,
+                      CargoToolchain.release?.sysrootArchiveSHA256
+                        == (provenance?["candidateSysroot"] as? [String: Any])?["archiveSHA256"] as? String
+                else { throw CocoaError(.fileReadCorruptFile) }
+                candidate = nil
+                print("MACRO TOOLCHAIN MODE verified main app bundle")
+            }
             print("MEASURED COMPILER CANDIDATE SHA256", sha)
         }
         print("MEASURED COMPILER INPUT", candidate?.version ?? CargoToolchain.artifactIdentity)
@@ -1690,9 +1700,18 @@ final class BundledCompilerGateTests: XCTestCase {
         """
         let manager = CargoPackageManager()
         let defaultSnapshot = try await manager.prepare(manifestSource: defaultManifest)
-        XCTAssertTrue(defaultSnapshot.blockingPackages.contains {
+        XCTAssertTrue(defaultSnapshot.packages.contains {
             $0.name == "syn" && $0.features.contains("proc-macro")
-        })
+        }, "The default declaration must actually exercise syn's proc-macro feature")
+        if CargoToolchain.supportsProceduralMacros {
+            XCTAssertTrue(defaultSnapshot.blockingPackages.isEmpty, defaultSnapshot.blockingPackages.map {
+                "\($0.name): \($0.compatibility.detail ?? "")"
+            }.joined(separator: "\n"))
+        } else {
+            XCTAssertTrue(defaultSnapshot.blockingPackages.contains {
+                $0.name == "syn" && $0.features.contains("proc-macro")
+            })
+        }
 
         let manifest = try CargoManifestEditor.usingSynParserFeatures(defaultManifest)
         let snapshot = try await manager.prepare(manifestSource: manifest)

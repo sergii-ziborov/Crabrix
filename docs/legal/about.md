@@ -28,11 +28,11 @@ Crabrix pins one compiler build and ships it in the app. Nothing is downloaded a
 
 - Target: `wasm32-wasip1`
 
-- Toolchain artifact: [`crabrix-rust-2026-10-02.1`](https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1)
+- Toolchain artifact: [`crabrix-rust-2026-11-07.1`](https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-11-07.1)
 
 - Runtime: [CrabrixRuntime](https://github.com/sergii-ziborov/crabrix-runtime) from WasmKit 0.4.1
 
-The public [toolchain builder](https://github.com/sergii-ziborov/crabrix-toolchain) produced the signed compiler release from pinned source. Its build inputs, compatibility results, licenses and two-build difference report are public. The compiler has its own identity distinct from the runtime fork.
+The public [toolchain builder](https://github.com/sergii-ziborov/crabrix-toolchain) produced the signed compiler release from pinned source. Its build inputs, compatibility results, licenses and two-build reproducibility report are public. The compiler has its own identity distinct from the runtime fork.
 
 The [guest web Playground](https://crabrix.com/playground/) also runs Rust locally in your browser, with source folders, explicitly prepared registry libraries and encrypted live rooms. Its Cargo profile is narrower than the native app’s. [See the browser Cargo limits](https://crabrix.com/guide/#browser-cargo) and [connect your own AI agent](https://crabrix.com/ai/); execution always needs a local action or a scoped permission on the selected client.
 
@@ -40,7 +40,7 @@ The [guest web Playground](https://crabrix.com/playground/) also runs Rust local
 
 Being honest about the edges is more useful than a feature list. The bundled compiler targets `wasm32-wasip1` and has no native linker, so:
 
-- Native C linking and host procedural macros are not supported. Standard-library-only WASI build scripts can run locally; host subprocesses and separate build-dependency graphs are outside the supported build path.
+- Native C linking and host subprocesses are not supported. Supported procedural macros and standard-library-only build scripts run locally as bounded WASI guests; separate build-dependency graphs are outside the supported build path.
 
 - Compilation is interpreted WebAssembly, so a first build is slower than on a laptop. Repeat builds come from a local artifact cache.
 

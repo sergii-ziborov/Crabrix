@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "toolchainID": "crabrix-rust-2026-10-02.1",
+  "toolchainID": "crabrix-rust-2026-11-07.1",
   "files": {
     "engine.wasm": {
       "bytes": 20932943,
@@ -16,7 +16,7 @@
     },
     "stdlib.json": {
       "bytes": 13961151,
-      "sha256": "fd400a4dadc88daf3bea394ea3ae91394d6206e32eca92e7182c4e021ae0739e"
+      "sha256": "ad23cac8ff3a680303f713c27a68af5fc67d1a38d995647d7a90b10911af714b"
     },
     "worker.js": {
       "bytes": 4920,
@@ -37,5 +37,17 @@
       "sha256": "605aa5ea22b3c2a67a2200109a6f48a1f37dbbd0b151bff1ccf92d4421efd433"
     }
   },
-  "candidateOnly": false
+  "candidateOnly": false,
+  "toolchainCompatibility": {
+    "schemaVersion": 1,
+    "analysisBuildToolchainID": "crabrix-rust-2026-10-02.1",
+    "activeToolchainID": "crabrix-rust-2026-11-07.1",
+    "compilerRustSourceCommit": "abc48c0b8aba37d3f3862a9d5c76eb4e78f90e88",
+    "compilerSourceLockSHA256": "7c44029b80757b80fe5bfb54614bc09e967917506bc28a275dc694eb404bf97a",
+    "compilerBuilderSourceCommit": "0a5970c97ef0e192c8f6e5dec460190924489f97",
+    "compilerArtifactIdentity": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008:52308082924a0a6716b4d314ac48be48fb74abc49c384c6c82df491b73dbc2f0",
+    "unchangedEngineSHA256": "c67132fb1ed7eced4617a6eb408c497e7c0706e6a24a55aec1c826019bdae9a5",
+    "originalStdlibSHA256": "fd400a4dadc88daf3bea394ea3ae91394d6206e32eca92e7182c4e021ae0739e",
+    "method": "Exact re-export from the same pinned Rust revision; packaging identity only; original build receipt unchanged"
+  }
 }

@@ -26,7 +26,7 @@ Forest Anderson. The builder recipe remains under the MIT License. The
 compiler, sysroot and their dependencies retain separate licenses.
 
 Source, lock, licenses and release notices:
-https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1
+https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-11-07.1
 
 Builder upstream and license: https://github.com/AngelOnFira/wasm-rustc
 

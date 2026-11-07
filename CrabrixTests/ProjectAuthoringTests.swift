@@ -174,8 +174,14 @@ final class ProjectAuthoringTests: XCTestCase {
         let source = try XCTUnwrap(model.exportProject().files["Cargo.toml"])
         let manifest = try CratePackageManifest.parse(source)
         let dependency = try XCTUnwrap(manifest.dependencies.first { $0.alias == "syn" })
-        XCTAssertFalse(dependency.usesDefaultFeatures)
-        XCTAssertEqual(Set(dependency.features), Set(["derive", "parsing", "printing", "clone-impls"]))
+        if CargoToolchain.supportsProceduralMacros {
+            // The signed WASI macro profile can use syn's normal defaults.
+            XCTAssertTrue(dependency.usesDefaultFeatures)
+            XCTAssertTrue(dependency.features.isEmpty)
+        } else {
+            XCTAssertFalse(dependency.usesDefaultFeatures)
+            XCTAssertEqual(Set(dependency.features), Set(["derive", "parsing", "printing", "clone-impls"]))
+        }
     }
 
     func testExistingPlainSynDependencyCanBeRepairedInProject() throws {

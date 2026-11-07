@@ -30,7 +30,9 @@ def verify():
     assert receipt['patchedSourceAudit']['sourceFiles'] == source['sourceFiles']
     assert source['upstreamArchiveSHA256'] == upstream['upstreamArchiveSHA256']
     assert source['patches'] == upstream['patches']
-    assert manifest['schemaVersion'] == 1 and manifest['toolchainID'] == upstream['toolchainID']
+    assert manifest['schemaVersion'] == 1
+    active = json.loads((ROOT / 'Crabrix/Resources/toolchain.lock.json').read_text())
+    assert manifest['toolchainID'] == active['toolchainID'], 'Analysis must match the selected app toolchain'
     assert set(manifest['files']) == {'index.html', 'host.js', 'worker.js', 'engine.wasm', 'stdlib.json'}
     for path, expected in receipt['sourceFiles'].items():
         assert hashlib.sha256((VENDOR / path).read_bytes()).hexdigest() == expected, path
@@ -57,6 +59,24 @@ def verify():
     library = json.loads((RESOURCE / 'stdlib.json').read_text())
     assert library['rustSourceCommit'] == upstream['compilerRustSourceCommit']
     assert library['toolchainID'] == manifest['toolchainID']
+    qualification = manifest.get('toolchainCompatibility')
+    if qualification:
+        assert qualification['schemaVersion'] == 1
+        assert qualification['analysisBuildToolchainID'] == upstream['toolchainID']
+        assert qualification['activeToolchainID'] == active['toolchainID']
+        assert qualification['compilerRustSourceCommit'] == library['rustSourceCommit']
+        assert qualification['compilerSourceLockSHA256'] == active['source']['sourceLockSHA256']
+        assert qualification['compilerBuilderSourceCommit'] == active['source']['builderSourceCommit']
+        assert qualification['compilerArtifactIdentity'] == active['rustcSHA256'] + ':' + active['sysrootManifestSHA256']
+        assert qualification['unchangedEngineSHA256'] == receipt['moduleSHA256']
+        # Reconstruct the original export exactly. Only its packaging identity
+        # changed; every source byte and the original build receipt are retained.
+        raw = (RESOURCE / 'stdlib.json').read_bytes()
+        current_id, original_id = active['toolchainID'].encode(), upstream['toolchainID'].encode()
+        assert current_id != original_id and raw.count(current_id) == 1
+        assert hashlib.sha256(raw.replace(current_id, original_id, 1)).hexdigest() == qualification['originalStdlibSHA256']
+    else:
+        assert manifest['toolchainID'] == upstream['toolchainID']
     assert len(library['files']) == 1011 and len({f['path'] for f in library['files']}) == 1011
     assert len(library['crates']) == 3 and all(f['path'].startswith('__lib/') for f in library['files'])
     index = json.loads((RESOURCE / 'SemanticNoticeIndex.json').read_text())

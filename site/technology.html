@@ -215,14 +215,14 @@
   </div>
 
   <div class="wrap prose">
-    <p><strong>Documented native baseline: Crabrix 1.1.5. Website profiles checked 5 November 2026.</strong> Check Settings for your installed app version; the website, native app and MCP have separate release versions.</p>
+    <p><strong>Documented native profile: Crabrix 1.1.8 build 135. Check TestFlight and App Store availability separately. Website profiles checked 7 November 2026.</strong> Check Settings for your installed app version; the website, native app and MCP have separate release versions.</p>
     <h2>The toolchain in the app</h2>
     <div class="table-scroll">
       <table class="plain">
         <tbody>
           <tr><td>Bundled <code>rustc</code></td><td>Source-built Rust <code>1.96.0-dev</code>; exact artifact identity is shown in the app.</td></tr>
           <tr><td>Target</td><td><code>wasm32-wasip1</code></td></tr>
-          <tr><td>Toolchain artifact</td><td><a href="https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-10-02.1"><code>crabrix-rust-2026-10-02.1</code></a></td></tr>
+          <tr><td>Toolchain artifact</td><td><a href="https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-11-07.1"><code>crabrix-rust-2026-11-07.1</code></a></td></tr>
           <tr><td>Downloaded at runtime</td><td>Nothing. The compiler ships in the app bundle after signature, SHA-256 and sysroot inventory verification at build time.</td></tr>
           <tr><td>Runtime</td><td><a href="https://github.com/sergii-ziborov/crabrix-runtime">CrabrixRuntime</a>, derived from WasmKit 0.4.1, pinned to a public commit. No JIT or daemon.</td></tr>
         </tbody>
@@ -230,8 +230,8 @@
     </div>
     <p>
       The public <a href="https://github.com/sergii-ziborov/crabrix-toolchain">Crabrix toolchain builder</a>
-      produced this signed release from pinned Rust sources. Two clean builds are
-      documented; their raw bytes differ, so byte-identical reproducibility is not claimed.
+      produced this signed release from pinned Rust sources. Two independent Mac source builds produced identical raw compiler, sysroot ZIP
+      and inventory bytes. The original build provenance is retained in the signed release.
       The runtime and compiler have separate identities.
     </p>
 
@@ -304,7 +304,7 @@
           <tr><td>Dependency source</td><td>Completely viewable in the app; <strong>Vendor &amp; Edit</strong> copies it into your project and compiles your patched copy</td></tr>
           <tr><td>Offline</td><td>Cached graphs rebuild with no network; <strong>Pin for Offline</strong> keeps the exact verified archives after iOS purges its caches</td></tr>
           <tr><td>Build scripts (<code>build.rs</code>)</td><td>Std-only WASI scripts execute locally with bounded output and a writable OUT_DIR. Host subprocesses, native linking and independent build-dependency graphs are unsupported.</td></tr>
-          <tr><td>Procedural macros</td><td>Not supported — they need a host compiler the app does not bundle</td></tr>
+          <tr><td>Procedural macros</td><td>Supported through the bundled WASI macro bridge, including Serde derive; host dylibs are not loaded</td></tr>
           <tr><td>Native C or system libraries</td><td>Not supported; there is no native linker for this target</td></tr>
         </tbody>
       </table>
@@ -345,7 +345,7 @@
       <tbody>
         <tr><th scope="row">Tokio 1.54.1</th><td>29.78 / 27.88 / 28.54 seconds</td><td>Three dependencies; defaults off, rt, sync, time and io-util. Timer, task and channel assertions passed. This is a small profile.</td></tr>
         <tr><th scope="row">Axum 0.8.9 + Tower 0.5.2 + Tokio 1.54.1</th><td>126.29 seconds</td><td>22 dependencies; Axum defaults off. An in-memory request returned HTTP 200 and the expected body. No TCP server was started. Device thermal state changed from nominal to serious.</td></tr>
-        <tr><th scope="row">Large Tokio project / procedural macros</th><td>Still under development</td><td>The unchanged Kameo 0.22.2 graph has 32 packages. Its macro requirements and the 30-second large-project target are not yet satisfied.</td></tr>
+        <tr><th scope="row">Large Tokio project / procedural macros</th><td>Functional Simulator acceptance passed</td><td>The unchanged Kameo 0.22.2 graph has 32 packages, including five macro crates. Cold compilation and a changed root produced the expected actor results. A 30-second physical-device result has not been established.</td></tr>
       </tbody>
     </table>
     <p>

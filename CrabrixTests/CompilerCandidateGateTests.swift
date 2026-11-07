@@ -8,20 +8,17 @@ import XCTest
 /// This never changes the app's production artifact identity. A test-only
 /// resource contains the compiler built by the separate manual Cloud workflow.
 final class CompilerCandidateGateTests: XCTestCase {
-    func testCandidateCompilesAndRunsUsingSignedSysroot() async throws {
+    func testHistoricalThinCompilerReproducesAtomicWidthDefect() async throws {
         try XCTSkipIf(ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_CANDIDATE"] != "1")
-        let artifactName = ProcessInfo.processInfo.environment["CRABRIX_COMPILER_CANDIDATE_ARTIFACT"] ?? "Artifact"
-        guard ["Artifact", "ArtifactFat"].contains(artifactName)
-        else { throw CocoaError(.fileReadCorruptFile) }
-        try checkCandidate(artifactName: artifactName)
+        try checkCandidate(artifactName: "Artifact")
     }
 
-    func testTransformedCandidateCompilesAndRunsUsingSignedSysroot() async throws {
+    func testHistoricalO2CompilerReproducesAtomicWidthDefect() async throws {
         try XCTSkipIf(ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_TRANSFORMED"] != "1")
         try checkCandidate(artifactName: "ArtifactO2")
     }
 
-    func testFatCandidateCompilesAndRunsUsingSignedSysroot() async throws {
+    func testHistoricalFatCompilerReproducesAtomicWidthDefect() async throws {
         try XCTSkipIf(ProcessInfo.processInfo.environment["CRABRIX_RUN_COMPILER_FAT"] != "1")
         try checkCandidate(artifactName: "ArtifactFat")
     }
@@ -39,6 +36,15 @@ final class CompilerCandidateGateTests: XCTestCase {
         let sha = SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
         XCTAssertEqual(sha, provenance?["compilerSHA256"] as? String)
         XCTAssertEqual(bytes.count, provenance?["compilerBytes"] as? Int)
+        let historicalHashes = [
+            "Artifact": "0900e146ea3d54efb021a79165b2439d28ad67bd296a5075c4d915f6ddb353ac",
+            "ArtifactO2": "c536ce70d4487ec08af4de4849f24456611e28d61ee1468438a8ddbcde35d45f",
+            "ArtifactFat": "8f1b313ccb59bf43546e36cfcdbd04dac9b5c8388a6ffec23efe2148564c17e6",
+        ]
+        // These immutable pre-fix inputs are negative controls. Keep the
+        // defect reproducible while requiring the shipping compiler to pass
+        // the same adjacent-byte canaries. Never relabel a new binary as O2.
+        XCTAssertEqual(sha, historicalHashes[artifactName])
         for url in [compiler, provenanceURL] {
             let attachment = XCTAttachment(contentsOfFile: url)
             attachment.name = "compiler-candidate-" + url.lastPathComponent
@@ -49,6 +55,21 @@ final class CompilerCandidateGateTests: XCTestCase {
         let root = FileManager.default.temporaryDirectory.appending(path: "CompilerCandidate-\(UUID())")
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
+        // AtomicBool's non-generic implementation can come from libcore.
+        // Preserve the original signed sysroot too: pairing an old compiler
+        // with the corrected libcore would stop reproducing the old defect.
+        let historicalArchive = directory.deletingLastPathComponent()
+            .appending(path: "HistoricalSysroot/sysroot-wasip1.zip")
+        let historicalArchiveSHA = "085fece5602fdd3af4efde3e08388090928c33b03fc874d99aba741a0b85283b"
+        let historicalBytes = try Data(contentsOf: historicalArchive, options: [.mappedIfSafe])
+        guard SHA256.hash(data: historicalBytes).map({ String(format: "%02x", $0) }).joined()
+                == historicalArchiveSHA else { throw CocoaError(.fileReadCorruptFile) }
+        let historicalRoot = root.appending(path: "historical-toolchain")
+        try BundledSysroot.prepare(archive: historicalArchive, checksum: historicalArchiveSHA, at: historicalRoot)
+        let historicalSysroot = historicalRoot.appending(path: "sysroot-wasip1")
+        let historicalManifest = try Data(contentsOf: historicalSysroot.appending(path: "manifest.json"))
+        XCTAssertEqual(SHA256.hash(data: historicalManifest).map { String(format: "%02x", $0) }.joined(),
+                       "4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c")
 
         let smoke = #"""
         use std::collections::BTreeMap;
@@ -98,7 +119,8 @@ final class CompilerCandidateGateTests: XCTestCase {
             let preopens: [WASIBridgeToHost.Preopen] = [
                 .init(guestPath: "/work", hostPath: work.path),
                 .init(guestPath: "/tmp", hostPath: work.path),
-                .init(guestPath: "/sysroot", hostPath: toolchain.sysrootURL.path, readOnly: true),
+                .init(guestPath: "/sysroot", hostPath: (name == "production"
+                    ? toolchain.sysrootURL : historicalSysroot).path, readOnly: true),
             ]
             func invoke(_ arguments: [String], prefix: String) throws -> WasmProcessResult {
                 try runtime.run(
@@ -119,7 +141,7 @@ final class CompilerCandidateGateTests: XCTestCase {
             try smoke.write(to: work.appending(path: "main.rs"), atomically: true, encoding: .utf8)
             var flags = ["--sysroot", "/sysroot", "--target", "wasm32-wasip1", "--edition", "2021",
                          "--error-format=json", "-Copt-level=0", "-Cpanic=abort", "-Zunstable-options"]
-            if name == "candidate" { flags += ["--cfg", "crabrix_atomic_canaries"] }
+            if name == "production" { flags += ["--cfg", "crabrix_atomic_canaries"] }
             let started = ContinuousClock.now
             let compiled = try invoke(["/work/main.rs"] + flags + ["-o", "/work/program.wasm"], prefix: "compile")
             print("COMPILER CANDIDATE COMPILE", name, started.duration(to: .now))
@@ -137,6 +159,33 @@ final class CompilerCandidateGateTests: XCTestCase {
             XCTAssertEqual(executed.exitCode, 0, executed.stderr)
             XCTAssertEqual(executed.stdout.trimmingCharacters(in: .whitespacesAndNewlines),
                            "candidate smoke: sum=6 wide=-119")
+
+            if name == "candidate" {
+                let canary = try invoke(["/work/main.rs"] + flags + ["--cfg", "crabrix_atomic_canaries",
+                    "-o", "/work/canary.wasm"], prefix: "canary-compile")
+                XCTAssertEqual(canary.exitCode, 0, canary.stderr)
+                let canaryModule = try parseWasm(filePath: work.appending(path: "canary.wasm").path)
+                let output: (stdout: String, stderr: String)
+                do {
+                    let reproduced = try runtime.run(
+                        module: canaryModule, arguments: ["canary"], environment: [:], preopens: [],
+                        captureDirectory: work, capturePrefix: "canary-run",
+                        resourceLimiter: WasmSandboxResourceLimiter(),
+                        fuelBudget: WasmSandboxPolicy.userProgramInstructionBudget,
+                        wallClockLimit: .seconds(10), interrupter: WasmInterrupter(),
+                        capturedOutputLimitBytes: WasmSandboxPolicy.userProgramOutputLimitBytes)
+                    XCTAssertNotEqual(reproduced.exitCode, 0)
+                    output = (reproduced.stdout, reproduced.stderr)
+                } catch let failure as RustcRuntimeFailure {
+                    guard let trap = failure.underlying as? Trap,
+                          trap.description.split(separator: "\n").first == "Trap: unreachable"
+                    else { throw failure }
+                    output = (failure.stdout, failure.stderr)
+                }
+                XCTAssertTrue(output.stderr.contains("assertion failed: !flag.value.load(Ordering::SeqCst)"),
+                              output.stderr)
+                XCTAssertFalse(output.stdout.contains("candidate smoke: sum=6 wide=-119"))
+            }
 
             let invalid = "fn main() { let mut v = vec![1]; let first = &v[0]; v.push(2); println!(\"{first}\"); }"
             try invalid.write(to: work.appending(path: "invalid.rs"), atomically: true, encoding: .utf8)
