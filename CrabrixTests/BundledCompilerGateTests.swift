@@ -1700,9 +1700,18 @@ final class BundledCompilerGateTests: XCTestCase {
         """
         let manager = CargoPackageManager()
         let defaultSnapshot = try await manager.prepare(manifestSource: defaultManifest)
-        XCTAssertTrue(defaultSnapshot.blockingPackages.contains {
+        XCTAssertTrue(defaultSnapshot.packages.contains {
             $0.name == "syn" && $0.features.contains("proc-macro")
-        })
+        }, "The default declaration must actually exercise syn's proc-macro feature")
+        if CargoToolchain.supportsProceduralMacros {
+            XCTAssertTrue(defaultSnapshot.blockingPackages.isEmpty, defaultSnapshot.blockingPackages.map {
+                "\($0.name): \($0.compatibility.detail ?? "")"
+            }.joined(separator: "\n"))
+        } else {
+            XCTAssertTrue(defaultSnapshot.blockingPackages.contains {
+                $0.name == "syn" && $0.features.contains("proc-macro")
+            })
+        }
 
         let manifest = try CargoManifestEditor.usingSynParserFeatures(defaultManifest)
         let snapshot = try await manager.prepare(manifestSource: manifest)
