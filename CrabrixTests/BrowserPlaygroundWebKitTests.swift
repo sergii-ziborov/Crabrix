@@ -9,8 +9,12 @@ final class BrowserPlaygroundWebKitTests: XCTestCase {
         let configuration = WKWebViewConfiguration(); configuration.websiteDataStore = .nonPersistent()
         let web = WKWebView(frame: CGRect(x: 0, y: 0, width: 1024, height: 768), configuration: configuration)
         let controller = UIViewController(); controller.view.addSubview(web)
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 1024, height: 768)); window.rootViewController = controller; window.makeKeyAndVisible()
-        defer { web.stopLoading(); window.isHidden = true }
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previous = scene.windows.first(where: \.isKeyWindow)
+        let window = UIWindow(windowScene: scene)
+        window.frame = CGRect(x: 0, y: 0, width: 1024, height: 768)
+        window.rootViewController = controller; window.makeKeyAndVisible()
+        defer { web.stopLoading(); window.isHidden = true; window.rootViewController = nil; previous?.makeKey() }
         web.load(URLRequest(url: URL(string: "http://127.0.0.1:3393/playground/")!))
         let loaded = await wait(web, script: "Boolean(document.querySelector('.cm-content'))", timeout: 45)
         XCTAssertTrue(loaded); guard loaded else { return }
@@ -34,9 +38,12 @@ final class BrowserPlaygroundWebKitTests: XCTestCase {
         configuration.websiteDataStore = .nonPersistent()
         let web = WKWebView(frame: CGRect(x: 0, y: 0, width: 1024, height: 768), configuration: configuration)
         let controller = UIViewController(); controller.view.addSubview(web)
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 1024, height: 768))
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previous = scene.windows.first(where: \.isKeyWindow)
+        let window = UIWindow(windowScene: scene)
+        window.frame = CGRect(x: 0, y: 0, width: 1024, height: 768)
         window.rootViewController = controller; window.makeKeyAndVisible()
-        defer { web.stopLoading(); window.isHidden = true }
+        defer { web.stopLoading(); window.isHidden = true; window.rootViewController = nil; previous?.makeKey() }
         web.load(URLRequest(url: URL(string: "http://127.0.0.1:3393/playground/")!))
         let loaded = await wait(web, script: "Boolean(document.querySelector('.cm-content'))", timeout: 45)
         XCTAssertTrue(loaded, "The actual public editor must hydrate in iOS WebKit")
