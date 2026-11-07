@@ -1,0 +1,11 @@
+Crabrix is a Rust programming and learning environment. No account or sign-in is required. Rust source is visible and editable; compilation and execution use the bundled local compiler and bounded WASI runtime.
+
+This update adds a 24-lesson Git, CLI, HTTP API, SQLite, diagnostics and delivery route. In Learn → Cargo & Real Projects, download or update Projects 1.1.0, then open the new Git unit. The compatible signed catalog is bundled in this build. Course downloads contain data and editable source, not compiler/runtime updates.
+
+Each lesson separates its worked example from its typed lab and private verification caller. SQL labs use fresh SQLite fixtures and execute the submitted SQL. On a route lesson's Apply page, Open Task Ledger creates an independent editable personal project. Its README.md lists terminal commands and target limits.
+
+For the companion, run sqlite3 tasks.db .read migrations/001.sql, then cargo run --database tasks.db -- add "learn Rust". Start cargo serve --port 8080 --database tasks.db and send curl -i http://127.0.0.1:8080/tasks. The loopback adapter executes the visible std-only Rust handler; it is not a remote execution service. http stop stops the listener. Leaving the project or backgrounding the app also stops it. SQLite data stays under the personal project's identity.
+
+The included desktop source uses Axum/SQLx, Docker and CI on a desktop/server. The iOS app does not launch Linux containers or arbitrary host processes. Existing project, editor, Duo, recovery, flashcard and Atlas laboratory features are retained. Existing screenshots remain applicable. Release remains manual.
+
+Build 135 replaces the bundled WASI Rust compiler and its matching standard library with a reproducibly built, signed toolchain. It fixes narrow atomic operations reading or modifying adjacent bytes. Rust remains 1.96.0-dev; compiler data is installed with the app, not downloaded as a runtime update. Supported procedural macros compile and run locally as bounded WASI modules, including the Serde derive and Kameo acceptance workloads. No native AOT compiler experiment is enabled.
