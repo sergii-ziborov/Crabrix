@@ -43,6 +43,16 @@ license documents. Runtime assets have a separate SHA-256 check before WebKit
 loads them. `candidateOnly` remains true until qualification; an artifact's
 presence is not a release claim.
 
+When selecting another signed compiler built from the same Rust revision,
+re-export the source library to a temporary file and run
+`scripts/qualify_semantic_toolchain.py --signed-toolchain /path/to/release
+--exported-library /path/to/reexport.json`. This verifies the descriptor and
+signed source lock, requires an exact byte match with the existing 1,011-file
+export, and changes only its packaging identity. The manifest records the new
+compiler/sysroot identity and the original library hash. The analyzer module,
+upstream manifest and original build receipt remain unchanged. A different Rust
+source revision requires rebuilding the analyzer instead of this qualification.
+
 ## Profile
 
 - Definition, project references, hover, signature, completion, completion-import
