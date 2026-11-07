@@ -1,0 +1,154 @@
+{
+  "checkedAt": "2026-11-07T20:10:15.584687+00:00",
+  "scope": "Four-file native compiler documentation overlay; bounded partial source build and deployment through Hostwatch. Browser compiler assets are unchanged.",
+  "sourceInputs": {
+    "target": "crabrix-web",
+    "nodeId": "52efe55c-ac21-439d-a10c-19a0d47da4a1",
+    "approvedRevision": "sha256:56d73150a6f76e0dd7deab022dc25df6a10ba4e2603a2532cc3eedb4fabcecc7",
+    "mode": "partial",
+    "sourceCommit": "088beda8c74496c49fd04bd129b4760052943fd9",
+    "files": [
+      {
+        "path": "about.html",
+        "sha256": "c7d4d859c48dadf06136374ad6f55742eb49fdc537e2b8fb0e78b5e2200c81af",
+        "bytes": 21552,
+        "newSHA256": "90cb245bd7d81facb3ed72c87c5ca4fc6e2895ce4beba91ea648e17b1f172036",
+        "newBytes": 21576
+      },
+      {
+        "path": "technology.html",
+        "sha256": "dcef142f22ee249752dddde4c7e545694588c9c9ab6b643eaaf6ad44edb7203a",
+        "bytes": 23664,
+        "newSHA256": "d189ecd5e507e19f1a48d63c9241ed4ece290f55120106354a68673ec0a106d4",
+        "newBytes": 23912
+      },
+      {
+        "path": "content/legal-documents.json",
+        "sha256": "3b107a47826e805f6df696f19a42d447a5c5486431e68d5f0b0795a6dc6d5d03",
+        "bytes": 52533,
+        "newSHA256": "4f5ae4b071f8f1daf21d3d85f564efcc6fa551cbb2a570ba189dffa91604c5ac",
+        "newBytes": 52557
+      },
+      {
+        "path": "public/licenses/ThirdPartyNotices.md",
+        "sha256": "9f72303e3d64fc8387a39dce447ff8a258a3b4ba94bb375dd0668d749ddd42b5",
+        "bytes": 7900,
+        "newSHA256": "4ea35854b4e9c317115f2da011bbbd53fc6abd70b90243f68f2d45d287bd7b65",
+        "newBytes": 7900
+      }
+    ],
+    "archiveBytes": 30523,
+    "archiveSHA256": "4d8420f435d8d9942ee71cf4905a602c26e04ab2b867981c42bf4f51d51c04db"
+  },
+  "build": {
+    "id": "crabrix-compiler-docs-build-20261107-v1",
+    "targetId": "crabrix-web",
+    "destination": "localhost:5001/hostwatch/falkenstein/crabrix-web:current",
+    "digest": "sha256:f17f65b20c7a1bf48b99c2a1c8503d0f27e3677e2dcf5684af790a1d2bc77b24",
+    "state": "succeeded",
+    "createdAt": "2026-11-07T19:41:51.505623326Z",
+    "finishedAt": "2026-11-07T19:45:08.199549513Z",
+    "action": "source_build",
+    "expectedRevision": "sha256:7035659cb6585bc017566039c76cb5955aa509722b27820e4a194f5a87c44770",
+    "sourceBuild": {
+      "uploadId": "crabrix-compiler-docs-20261107-v1",
+      "mode": "partial"
+    },
+    "sourceRevision": "sha256:8e16f17ab14c3c11a80fce548576f72c8a2cfaad357409740feed4a1a0176809",
+    "builtDigest": "sha256:9ad4905edc1fe577b17fca71f623cfa73fd50a57076f5b9c352e60139d50448b",
+    "builderDigest": "sha256:03768328dacc08da49b5ff0a652aededc827407046289df63265ff9c7b4ef10b"
+  },
+  "registry": {
+    "id": "crabrix-compiler-docs-publish-20261107-v1",
+    "targetId": "crabrix-web",
+    "destination": "localhost:5001/hostwatch/falkenstein/crabrix-web:current",
+    "digest": "sha256:9ad4905edc1fe577b17fca71f623cfa73fd50a57076f5b9c352e60139d50448b",
+    "state": "succeeded",
+    "createdAt": "2026-11-07T20:07:23.547270622Z",
+    "finishedAt": "2026-11-07T20:08:17.530786009Z",
+    "action": "update",
+    "expectedPublishedDigest": "sha256:e042873437a42550c33e50a36b154d7272d4f6c8bfd414b741d485aded40402d",
+    "publishedDigest": "sha256:ac53d1de39f267b1c40c81e0521e744e728d536a5e256e59a4add695384deb31"
+  },
+  "deployment": {
+    "id": "crabrix-compiler-docs-deploy-20261107-v1",
+    "targetId": "crabrix-web",
+    "destination": "localhost:5001/hostwatch/falkenstein/crabrix-web:current",
+    "digest": "sha256:9ad4905edc1fe577b17fca71f623cfa73fd50a57076f5b9c352e60139d50448b",
+    "state": "succeeded",
+    "createdAt": "2026-11-07T20:08:35.119228591Z",
+    "finishedAt": "2026-11-07T20:08:37.208527577Z",
+    "action": "deploy_update",
+    "expectedRevision": "sha256:c2cb0b6e7e2a0735ca152b053227b05e358b32f1e764f272da774e65a0b3d155"
+  },
+  "web": {
+    "targetId": "crabrix-web",
+    "container": "crabrix-web-site-1",
+    "exists": true,
+    "containerId": "1bf1aa0fd945f94093cc3ea99e86523c86f9e3d1f78ebd987e74599177f0a1c9",
+    "imageDigest": "sha256:9ad4905edc1fe577b17fca71f623cfa73fd50a57076f5b9c352e60139d50448b",
+    "sourceDigest": "sha256:9ad4905edc1fe577b17fca71f623cfa73fd50a57076f5b9c352e60139d50448b",
+    "running": true,
+    "revision": "sha256:85d2a982dd461b0e49bb6bd7bd9ccccde58831f59f72f8f50133725c6575fe52",
+    "actions": [
+      "update",
+      "replace",
+      "delete"
+    ]
+  },
+  "mcp": {
+    "targetId": "crabrix-mcp",
+    "container": "crabrix-mcp-remote-1",
+    "exists": true,
+    "containerId": "828ed8a117ffbcccb15dc629151d54bbd3316fb4b657d4905676926e1026a5cb",
+    "imageDigest": "sha256:b995973f50cdaba621177abc6564422894444658298a80180535f241eb5184b9",
+    "sourceDigest": "sha256:b995973f50cdaba621177abc6564422894444658298a80180535f241eb5184b9",
+    "running": true,
+    "revision": "sha256:5172adb81d481f18e9097257577d3e8b259a9d7142a5050705fbbe1c058a8b7b",
+    "actions": [
+      "update",
+      "replace",
+      "delete"
+    ]
+  },
+  "publicChecks": [
+    {
+      "url": "https://crabrix.com/about/",
+      "status": 200,
+      "requiredText": "crabrix-rust-2026-11-07.1",
+      "bytes": 35553,
+      "sha256": "7cdb196a8eb66e4f09fae6d2d6e82e2238001c53a00499ce49e17d306ac9015f"
+    },
+    {
+      "url": "https://crabrix.com/technology/",
+      "status": 200,
+      "requiredText": "crabrix-rust-2026-11-07.1",
+      "bytes": 46945,
+      "sha256": "0d3fe92fc1340f8679b53791231c56a0024fe24b58485a117a49566f6c15f353"
+    },
+    {
+      "url": "https://crabrix.com/licenses/ThirdPartyNotices.md",
+      "status": 200,
+      "requiredText": "toolchain-2026-11-07.1",
+      "bytes": 7900,
+      "sha256": "4ea35854b4e9c317115f2da011bbbd53fc6abd70b90243f68f2d45d287bd7b65"
+    },
+    {
+      "url": "https://crabrix.com/learn/",
+      "status": 200,
+      "requiredText": "Git",
+      "bytes": 26597,
+      "sha256": "890f8788f38d3f706270eaeb3fcf3b2e33dbfe6c9f512500c8642c2f32d0de9a"
+    },
+    {
+      "url": "https://crabrix.com/playground/",
+      "status": 200,
+      "requiredText": "Rust",
+      "bytes": 15097,
+      "sha256": "808c0ec63f0c6ab2d3b9ebce19f5e348935b20ef6bcea43c070d4ba006d106dd"
+    }
+  ],
+  "siblingMCPImageUnchanged": true,
+  "noDatabaseMigrations": true,
+  "toolchainReleaseURL": "https://github.com/sergii-ziborov/crabrix-toolchain/releases/tag/toolchain-2026-11-07.1"
+}
