@@ -30,7 +30,9 @@ settings:
     debug:
       SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG CRABRIX_SOCIAL
     release:
-      SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) CRABRIX_SOCIAL"
+      # The full XCTest driver audits legacy migration fixtures too. Opt in
+      # explicitly for Simulator qualification; ordinary archives leave it empty.
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) CRABRIX_SOCIAL $(CRABRIX_TEST_FIXTURE_CONDITIONS)"
     CompilerCandidate:
       ENABLE_TESTABILITY: YES
       SWIFT_OPTIMIZATION_LEVEL: "-O"
