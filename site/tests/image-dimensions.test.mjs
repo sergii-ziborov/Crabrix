@@ -15,8 +15,8 @@ test('all article images reserve their true intrinsic size before loading',()=>{
  for(const post of posts)for(const section of post.sections)if(section.image){const image=section.image;assert.deepEqual([image.width,image.height],dimensions(new URL('../public'+image.src,import.meta.url)),image.src);count++;}
  assert.equal(count,93);
 });
-test('all 774 lesson infographics retain their true intrinsic dimensions',()=>{
+test('all 798 lesson infographics retain their true intrinsic dimensions',()=>{
  const courses=JSON.parse(readFileSync(new URL('../content/courses.json',import.meta.url)));let count=0;
  for(const course of courses.courses)for(const unit of course.units)for(const lesson of unit.lessons){const image=lesson.illustration;assert.deepEqual([image.width,image.height],dimensions(new URL('../content/learn-media/'+course.id+'/'+image.path.slice(6),import.meta.url)),lesson.id);count++;}
- assert.equal(count,774);
+ assert.equal(count,798);
 });

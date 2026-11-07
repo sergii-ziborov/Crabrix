@@ -46,6 +46,7 @@ struct LearningHubView: View {
     let onResetCourseProgress: (Set<String>) -> Void
     let onAnswerLesson: (RustLesson, Int, Bool) -> Void
     let onOpenExample: (RustShowcaseProject, String, String) -> Void
+    let onOpenCompanion: (CourseProjectTemplate, CourseSession) -> Void
     let onOpenReplay: (AtlasRecording, CourseSession) -> Void
 
     var body: some View {
@@ -191,6 +192,9 @@ struct LearningHubView: View {
                             .map { String($0.id.dropFirst("algorithms-".count)) } : nil,
                     onOpenReplay: { recording in onOpenReplay(recording, session) },
                     onStart: { onStartLesson(lesson, session) },
+                    onOpenCompanion: repository.workflowCompanion(for: lessonID).map { template in
+                        { onOpenCompanion(template, session) }
+                    },
                     onComplete: {
                         completeAndContinue(from: lesson)
                     },

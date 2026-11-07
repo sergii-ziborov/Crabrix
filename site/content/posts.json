@@ -6089,7 +6089,7 @@
         "heading": "Reading is a starting point",
         "paragraphs": [
           "A short example can make a concept look obvious while someone else has already made every choice. You see a finished function, a correct type, and a successful output. The real skill starts when one detail changes: an input is empty, a value moves, or a branch returns the wrong type. Crabrix lessons are meant to give you an idea and a concrete Rust snippet, but the way to make that idea yours is to predict, edit, and check it. The compiler then tests a claim about your own code instead of asking you to remember someone else’s answer.",
-          "The Academy currently organizes six Rust courses with 142 guided lessons, plus Algorithm Atlas with 200 patterns across 600 steps. Those counts describe the catalog, not a promise that reading every page automatically makes someone fluent. A useful lesson has to make the next action clear: what to notice, what to change, what result to expect, and how to explain a surprise. On the website every lesson is open to read. In the app you can take an example into the editor and turn it into a project that remains yours."
+          "The Academy connects guided Rust courses with Algorithm Atlas, which covers 200 patterns across 600 steps. Those describe the catalog, not a promise that reading every page automatically makes someone fluent. A useful lesson has to make the next action clear: what to notice, what to change, what result to expect, and how to explain a surprise. On the website every lesson is open to read. In the app you can take an example into the editor and turn it into a project that remains yours."
         ]
       },
       {
@@ -6169,8 +6169,153 @@
           "A project copy is useful because it remains editable after the lesson ends. Rename it to describe the experiment, keep the source and tests that explain its behavior, and export it when you want to move it elsewhere. A downloaded course can be updated independently of that project. Offline reading and offline building also differ: a course can be stored on the phone while an exercise using an uncached dependency may still require preparation. Plan accordingly before a trip or a class without connectivity.",
           "One good learning session is not measured by the number of lessons completed. It is measured by a rule you can now explain and a program whose behavior you can predict. After Rust Basics, try ownership with a deliberate move and borrow; after that, build a small multi-file program with one recoverable error. Return to the free web lesson when you need the reference, then use the local compiler to test the next claim. Over time, your project collection becomes evidence of what you can actually make."
         ]
+      },
+      {
+        "heading": "Git: Changes to History",
+        "paragraphs": [
+          "Start the Task Ledger route by explaining what a proposed change actually contains. Inspect the working tree, select a coherent commit, make an isolated branch, and practise recovering without overwriting work. Each lesson has a complete reading program and a separate typed lab. Open the companion project when you want to apply those contracts to actual files and Git history."
+        ],
+        "links": [
+          {
+            "title": "Review the Exact Change",
+            "url": "/learn/projects/route-git-review/"
+          },
+          {
+            "title": "Commit Only Reviewed Paths",
+            "url": "/learn/projects/route-git-select/"
+          },
+          {
+            "title": "Switch Without Losing Work",
+            "url": "/learn/projects/route-git-branch/"
+          },
+          {
+            "title": "Recover One Historical File",
+            "url": "/learn/projects/route-git-recover/"
+          }
+        ]
+      },
+      {
+        "heading": "CLI: A Reliable Interface",
+        "paragraphs": [
+          "Give the same program a clear command-line boundary. Preserve quoted and empty arguments, define configuration precedence, keep records on stdout and diagnostics on stderr, and return a meaningful exit status. The mobile terminal passes arguments, selected environment values and redirected stdin to the compiled Rust program. Compare two invocations of the same build so a cached executable cannot hide stale input."
+        ],
+        "links": [
+          {
+            "title": "Parse a CLI Contract",
+            "url": "/learn/projects/route-cli-arguments/"
+          },
+          {
+            "title": "Resolve Configuration Once",
+            "url": "/learn/projects/route-cli-config/"
+          },
+          {
+            "title": "Process Bounded Standard Input",
+            "url": "/learn/projects/route-cli-streams/"
+          },
+          {
+            "title": "Separate Output from Failure",
+            "url": "/learn/projects/route-cli-exit/"
+          }
+        ]
+      },
+      {
+        "heading": "HTTP API: Explicit Contracts",
+        "paragraphs": [
+          "Expose a small HTTP interface with explicit routes and request limits. Validate JSON before changing state and decide what replaying a write means. In the app, the companion uses a localhost adapter that passes HTTP requests to the compiled Rust handler. Its separate desktop profile runs an Axum server. These are labelled target choices: the on-device adapter does not provide a general Linux networking runtime."
+        ],
+        "links": [
+          {
+            "title": "Route Method and Path Together",
+            "url": "/learn/projects/route-http-routing/"
+          },
+          {
+            "title": "Validate Before Applying Effects",
+            "url": "/learn/projects/route-http-limits/"
+          },
+          {
+            "title": "Encode a Valid JSON Boundary",
+            "url": "/learn/projects/route-http-json/"
+          },
+          {
+            "title": "Retry Without Duplicating Tasks",
+            "url": "/learn/projects/route-http-idempotency/"
+          }
+        ]
+      },
+      {
+        "heading": "SQL: Durable State",
+        "paragraphs": [
+          "Persist the task boundary in SQLite. Start with constraints, specify ordering and exact matching, bind untrusted values as parameters, and make dependent changes transactional. The native SQL labs execute submitted statements against fresh SQLite fixtures. A reading example that prints a query is useful for tracing, but running that example alone does not demonstrate a correct database implementation."
+        ],
+        "links": [
+          {
+            "title": "Make Invalid Rows Impossible",
+            "url": "/learn/projects/route-sql-schema/"
+          },
+          {
+            "title": "Query the Right Rows in a Stable Order",
+            "url": "/learn/projects/route-sql-query/"
+          },
+          {
+            "title": "Bind Values Instead of SQL Syntax",
+            "url": "/learn/projects/route-sql-parameters/"
+          },
+          {
+            "title": "Commit Related Changes Atomically",
+            "url": "/learn/projects/route-sql-transactions/"
+          }
+        ]
+      },
+      {
+        "heading": "Diagnostics: Explain a Failure",
+        "paragraphs": [
+          "Investigate one failure with evidence you can follow. Attach operation context and a bounded request ID, keep raw latency samples alongside the percentile, and give retries a finite budget. The desktop companion includes real latency and readiness probes. Run them against a healthy service and a stopped service, then explain the different exit outcomes before changing a timeout."
+        ],
+        "links": [
+          {
+            "title": "Add Context Without Leaking Secrets",
+            "url": "/learn/projects/route-diag-context/"
+          },
+          {
+            "title": "Propagate One Request Identity",
+            "url": "/learn/projects/route-diag-correlation/"
+          },
+          {
+            "title": "Measure the Tail, Not Just the Average",
+            "url": "/learn/projects/route-diag-latency/"
+          },
+          {
+            "title": "Bound the Retry Budget",
+            "url": "/learn/projects/route-diag-retries/"
+          }
+        ]
+      },
+      {
+        "heading": "Delivery: A Repeatable Release",
+        "paragraphs": [
+          "Finish by connecting checks to the exact artifact you intend to deliver. Separate runtime configuration from source, build from a clean revision, verify the executable checksum, and rehearse a rollback that preserves compatible data. The companion includes desktop CI and a Dockerfile; Docker and hosted CI run in their respective environments. The mobile lessons teach and check the decisions without claiming to launch those external systems on iOS."
+        ],
+        "links": [
+          {
+            "title": "Make Checks Block Delivery",
+            "url": "/learn/projects/route-delivery-gates/"
+          },
+          {
+            "title": "Validate Before Starting the Service",
+            "url": "/learn/projects/route-delivery-config/"
+          },
+          {
+            "title": "Bind an Artifact to Its Source",
+            "url": "/learn/projects/route-delivery-artifacts/"
+          },
+          {
+            "title": "Release, Observe and Recover",
+            "url": "/learn/projects/route-delivery-rollback/"
+          }
+        ]
       }
-    ]
+    ],
+    "modifiedDate": "2026-11-07"
   },
   {
     "slug": "rust-dependency-graphs-deterministic-plans",

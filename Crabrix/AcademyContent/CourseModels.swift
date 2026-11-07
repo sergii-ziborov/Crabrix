@@ -198,6 +198,7 @@ struct CourseChallengeDTO: Decodable, Sendable {
         let input: String
         let expectedAnswer: String
     }
+    let executionProfile: String?
     let lessonID: String
     let patternID: String
     let projectName: String
@@ -209,6 +210,9 @@ struct CourseChallengeDTO: Decodable, Sendable {
     let forbiddenSourceFragments: [String]
 
     func runtimeChallenge() throws -> AlgorithmChallenge {
+        guard executionProfile == nil || ["std-v1", "sqlite-v1"].contains(executionProfile!) else {
+            throw CoursePackError.incompatibleCapability("lesson execution profile")
+        }
         let cases = try verificationCases.map { item -> AlgorithmVerificationCase in
             guard let kind = AlgorithmVerificationCaseKind(rawValue: item.kind) else {
                 throw CoursePackError.incompatibleCapability("verification case \(item.kind)")
@@ -222,7 +226,7 @@ struct CourseChallengeDTO: Decodable, Sendable {
             source: source, verificationSource: verificationSource,
             verificationCases: cases, expectedOutput: expectedOutput,
             requiredSourceFragments: requiredSourceFragments,
-            forbiddenSourceFragments: forbiddenSourceFragments
+            forbiddenSourceFragments: forbiddenSourceFragments, usesSQL: executionProfile == "sqlite-v1"
         )
     }
 }

@@ -17,7 +17,7 @@ function tokensFor(code: string, language: CodeLanguage): CodeToken[] {
     const expression = language === "go"
       ? /\/\/[^\n]*|\/\*[\s\S]*?\*\/|`[^`]*`|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]\w*\b/g
       : language === "shell"
-      ? /#[^\n]*|"(?:\\.|[^"\\])*"|'[^']*'|--?[A-Za-z][\w-]*|\b(?:git|cargo|rustfmt|npm)\b/g
+      ? /#[^\n]*|"(?:\\.|[^"\\])*"|'[^']*'|--?[A-Za-z][\w-]*|\b(?:git|cargo|rustfmt|npm|curl|sqlite3|sql|http|env|docker|echo|cat|grep|cd|pwd|ls)\b/g
       : language === "html"
       ? /<!--[\s\S]*?-->|<\/?[A-Za-z][\w:-]*|[A-Za-z_:][\w:.-]*(?=\s*=)|"(?:\\.|[^"\\])*"|'[^']*'/g
       : /\/\/[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][\w$]*\b/g;

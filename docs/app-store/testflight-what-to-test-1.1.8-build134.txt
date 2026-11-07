@@ -1,0 +1,9 @@
+Crabrix 1.1.8 (134): Git → CLI → HTTP API → SQL → diagnostics → delivery.
+
+Learn → Cargo & Real Projects: download/update Projects 1.1.0. The six new units contain 24 lessons, worked examples and separate typed labs. In SQL lessons, the submitted statement is executed against fresh SQLite fixtures. A worked-example Run alone does not complete a lab.
+
+Choose Open Task Ledger on a route lesson's Apply page. It creates an independent personal project. Follow README.md to initialise SQLite, create/read tasks through CLI, start the localhost HTTP adapter, send requests from curl or editable .http files, and inspect the same data with SQL. Check idempotent replay, conflicting request keys, invalid input and data after a service restart.
+
+Check quoted/empty CLI arguments, invocation-local env, redirected stdin, shell/SQL/HTTP/Dockerfile/diff/.env highlighting and Stop/project-switch behaviour. Existing projects, course progress and Atlas laboratory recordings should remain intact.
+
+Docker, hosted CI and the full Axum/SQLx server use the included desktop profile. The on-device std-only handler uses explicit WASI/SQLite/HTTP adapters. The web SQL readings print queries; native SQL labs execute them. Container execution and physical-device performance are not yet qualified.

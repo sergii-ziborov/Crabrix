@@ -174,7 +174,7 @@ struct ProjectPreflight: Sendable {
                     }
                 } catch { issue(.profile, "\(path): \(error.localizedDescription)", blocks: all, code: .invalidManifest, subject: path) }
             }
-            issue(.profile, "Target is wasm32-wasip1 with local WASI execution. Native C/C++ libraries, GPU/CUDA, host subprocesses, OS threads and listening TCP servers are not provided. A crate name alone never establishes compatibility.")
+            issue(.profile, "Target is wasm32-wasip1 with local WASI execution. Native C/C++ libraries, GPU/CUDA, host subprocesses, OS threads and direct guest TCP listening are not provided. The project terminal offers an explicit loopback HTTP host adapter through cargo serve. A crate name alone never establishes compatibility.")
         }
         let operations = ProjectVerifiedOperation.allCases.map { operation in
             let blocker = issues.first { $0.blocked.contains(operation) }

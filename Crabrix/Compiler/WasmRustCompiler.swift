@@ -180,6 +180,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         resourceFiles: [String: Data] = [:],
         edition: String = "2024",
         plan: CargoBuildPlan = .empty,
+        input: RustProgramInput = .init(),
         cancellation: CompilerInvocationCancellation? = nil,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
         onStage: (@Sendable (String) -> Void)? = nil
@@ -190,7 +191,7 @@ final class WasmRustCompiler: @unchecked Sendable {
             sourcePath: sourcePath,
             supportingFiles: supportingFiles, resourceFiles: resourceFiles,
             edition: edition,
-            plan: plan,
+            plan: plan, input: input,
             cancellation: cancellation, onDependencyProgress: onDependencyProgress,
             onStage: onStage
         )
@@ -247,15 +248,17 @@ final class WasmRustCompiler: @unchecked Sendable {
         source: String, sourcePath: String = "main.rs", supportingFiles: [String: String] = [:],
         resourceFiles: [String: Data] = [:],
         edition: String = "2024", plan: CargoBuildPlan = .empty, session: RustDebugSession,
+        input: RustProgramInput = .init(),
         cancellation: CompilerInvocationCancellation? = nil,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)? = nil,
         onStage: (@Sendable (String) -> Void)? = nil
     ) async -> CompilationResult {
+        guard input.isValid else { return .failure(phase: .setup, detail: "Invalid program input.") }
         beginInvocation()
         return await withCheckedContinuation { continuation in
             queue.async(qos: .userInitiated, flags: .enforceQoS) { [self] in
                 defer { endInvocation() }
-                let checked = execute(action: .check, source: source, sourcePath: sourcePath, supportingFiles: supportingFiles, resourceFiles: resourceFiles, edition: edition, plan: plan, cancellation: cancellation, onDependencyProgress: onDependencyProgress, onStage: onStage)
+                let checked = execute(action: .check, source: source, sourcePath: sourcePath, supportingFiles: supportingFiles, resourceFiles: resourceFiles, edition: edition, plan: plan, input: input, cancellation: cancellation, onDependencyProgress: onDependencyProgress, onStage: onStage)
                 guard checked.succeeded else { continuation.resume(returning: checked); return }
                 guard !session.isStopped, cancellation?.isCancelled != true else { continuation.resume(returning: .failure(phase: .setup, detail: "Debug stopped before execution.")); return }
                 do {
@@ -265,7 +268,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                     session.prepare(instrumented)
                     files.merge(instrumented.files) { _, debug in debug }
                     let main = files.removeValue(forKey: sourcePath)!
-                    continuation.resume(returning: execute(action: .run, source: main, sourcePath: sourcePath, supportingFiles: files, resourceFiles: resourceFiles, edition: edition, plan: plan, cancellation: cancellation, onDependencyProgress: onDependencyProgress, onStage: onStage, debugSession: session))
+                    continuation.resume(returning: execute(action: .run, source: main, sourcePath: sourcePath, supportingFiles: files, resourceFiles: resourceFiles, edition: edition, plan: plan, input: input, cancellation: cancellation, onDependencyProgress: onDependencyProgress, onStage: onStage, debugSession: session))
                 } catch { continuation.resume(returning: .failure(phase: .setup, detail: error.localizedDescription)) }
             }
         }
@@ -317,10 +320,12 @@ final class WasmRustCompiler: @unchecked Sendable {
         resourceFiles: [String: Data],
         edition: String,
         plan: CargoBuildPlan,
+        input: RustProgramInput = .init(),
         cancellation: CompilerInvocationCancellation? = nil,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?,
         onStage: (@Sendable (String) -> Void)?
     ) async -> CompilationResult {
+        guard input.isValid else { return .failure(phase: .setup, detail: "Program input exceeds the bounded CLI profile.") }
         beginInvocation()
         return await withCheckedContinuation { continuation in
             queue.async(qos: action == .check ? .utility : .userInitiated,
@@ -334,7 +339,7 @@ final class WasmRustCompiler: @unchecked Sendable {
                         sourcePath: sourcePath,
                         supportingFiles: supportingFiles, resourceFiles: resourceFiles,
                         edition: edition,
-                        plan: plan,
+                        plan: plan, input: input,
                         cancellation: cancellation,
                         onDependencyProgress: onDependencyProgress,
                         onStage: onStage
@@ -354,6 +359,7 @@ final class WasmRustCompiler: @unchecked Sendable {
         resourceFiles: [String: Data],
         edition: String,
         plan: CargoBuildPlan,
+        input: RustProgramInput = .init(),
         cancellation: CompilerInvocationCancellation? = nil,
         onDependencyProgress: (@Sendable (CargoBuildProgress) -> Void)?,
         onStage: (@Sendable (String) -> Void)?,
@@ -453,7 +459,8 @@ final class WasmRustCompiler: @unchecked Sendable {
                     previewResourceFiles: action.testInvocation == nil ? resourceFiles : [:],
                     successDetail: "Executed a cached local build artifact inside the bounded WasmKit sandbox.",
                     debugSession: debugSession,
-                    programArguments: action.testInvocation?.arguments ?? []
+                    programArguments: action.testInvocation?.arguments ?? input.arguments,
+                    programInput: input
                 )
             }
 
@@ -687,7 +694,8 @@ final class WasmRustCompiler: @unchecked Sendable {
                     ? "Compiled and executed locally inside the bounded WasmKit sandbox."
                     : "Compiled \(plan.units.count) dependencies and the program locally, then ran it in the bounded sandbox.",
                 debugSession: debugSession,
-                programArguments: action.testInvocation?.arguments ?? []
+                programArguments: action.testInvocation?.arguments ?? input.arguments,
+                programInput: input
             )
         } catch let cancellation as WasmExecutionCancelled {
             return cancelledResult(
@@ -1278,7 +1286,8 @@ final class WasmRustCompiler: @unchecked Sendable {
         previewResourceFiles: [String: Data],
         successDetail: String,
         debugSession: RustDebugSession? = nil,
-        programArguments: [String] = []
+        programArguments: [String] = [],
+        programInput: RustProgramInput = .init()
     ) throws -> CompilationResult {
         let sandboxURL = jobRoot.appending(path: "sandbox", directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: sandboxURL, withIntermediateDirectories: true)
@@ -1297,7 +1306,9 @@ final class WasmRustCompiler: @unchecked Sendable {
             output = try runtime.run(
                 module: module,
                 arguments: ["program"] + programArguments,
-                environment: [:],
+                environment: programInput.environment,
+                standardInput: programInput.standardInput,
+                sqlDatabase: programInput.database,
                 preopens: [
                     .init(
                         guestPath: WasmSandboxPolicy.writableGuestDirectory,
@@ -1615,5 +1626,25 @@ final class WasmRustCompiler: @unchecked Sendable {
         } catch {
             // A cache write must never turn a successful local compilation into a failure.
         }
+    }
+}
+
+/// Invocation-only input. It is never merged into compiler/build-script environment
+/// or retained in a shared room. Cached executables receive fresh input on every run.
+struct RustProgramInput: Equatable, Sendable {
+    var arguments: [String] = []
+    var environment: [String: String] = [:]
+    var standardInput: Data = Data()
+    var database: ProjectSQLDatabase? = nil
+
+    var isValid: Bool {
+        arguments.count <= 128 && environment.count <= 64 && standardInput.count <= 1024 * 1024
+        && arguments.allSatisfy { !$0.contains("\0") && $0.utf8.count <= 8192 }
+        && environment.allSatisfy { key, value in
+            key.range(of: "^[A-Za-z_][A-Za-z0-9_]*$", options: .regularExpression) != nil
+            && !value.contains("\0") && value.utf8.count <= 8192
+        }
+        && arguments.reduce(0, { $0 + $1.utf8.count })
+            + environment.reduce(0, { $0 + $1.key.utf8.count + $1.value.utf8.count }) <= 65536
     }
 }

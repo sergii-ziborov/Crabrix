@@ -19,7 +19,11 @@ struct SyntaxToken: Equatable, Sendable {
 
 enum SyntaxHighlighter {
     static func tokens(in source: String, filePath: String) -> [SyntaxToken] {
-        switch URL(fileURLWithPath: filePath).pathExtension.lowercased() {
+        let language = SourceLanguage(filePath: filePath)
+        if [.shell, .sql, .http, .dockerfile, .diff, .dotenv].contains(language) {
+            return workflowTokens(in: source, language: language)
+        }
+        return switch URL(fileURLWithPath: filePath).pathExtension.lowercased() {
         case "rs": rustTokens(in: source)
         case "toml", "lock": tomlTokens(in: source)
         default: WebSyntaxHighlighter.tokens(in: source, language: SourceLanguage(filePath: filePath))
@@ -88,6 +92,31 @@ enum SyntaxHighlighter {
                 ("string", .string), ("keyword", .keyword), ("number", .number),
             ]
         )
+    }
+
+    private static func workflowTokens(in source: String, language: SourceLanguage) -> [SyntaxToken] {
+        let pattern: String
+        var options: NSRegularExpression.Options = [.anchorsMatchLines]
+        switch language {
+        case .sql:
+            options.insert(.caseInsensitive)
+            pattern = #"(?<comment>--[^\n]*|/\*[\s\S]*?\*/)|(?<string>'(?:''|[^'])*'|"(?:""|[^"])*"|`[^`]*`)|(?<keyword>\b(?:select|from|where|and|or|not|is|null|as|join|left|right|inner|outer|on|group|by|order|having|limit|offset|asc|desc|create|table|index|unique|primary|key|foreign|references|check|default|insert|into|values|update|set|delete|begin|immediate|commit|rollback|savepoint|release|explain|query|plan|if|exists|drop|alter|add|conflict|do|returning|distinct|case|when|then|else|end)\b)|(?<type>\b(?:integer|int|bigint|text|varchar|real|blob|boolean|numeric|timestamp)\b)|(?<attribute>[:@$][A-Za-z_]\w*|\?[0-9]*)|(?<number>\b\d+(?:\.\d+)?\b)"#
+        case .shell, .dotenv:
+            pattern = #"(?<comment>(?:^|(?<=\s))#[^\n]*)|(?<string>'[^']*'|"(?:\\.|[^"\\])*")|(?<attribute>\$\{[^}]*\}|\$[A-Za-z_][A-Za-z_0-9]*|--?[A-Za-z][\w-]*)|(?<key>\b[A-Za-z_][A-Za-z_0-9]*(?==))|(?<keyword>\b(?:git|cargo|rustfmt|curl|http|sqlite3|sql|env|echo|cat|grep|head|tail|wc|pwd|cd|ls|mkdir|cp|mv|rm|touch|sh|bash|docker|npm|crabrix|if|then|else|fi|for|in|do|done|export|set|exit|printf)\b)|(?<section>&&|\|\||[|<>;])|(?<number>\b\d+\b)"#
+        case .dockerfile:
+            options.insert(.caseInsensitive)
+            pattern = #"(?<comment>^\s*#[^\n]*)|(?<string>"(?:\\.|[^"\\])*"|'[^']*')|(?<keyword>^\s*(?:from|run|cmd|entrypoint|copy|add|workdir|env|arg|expose|user|healthcheck|label|volume|shell|stopsignal)\b)|(?<attribute>--[\w-]+|\$\{[^}]*\})|(?<number>\b\d+\b)"#
+        case .diff:
+            pattern = #"(?<section>^(?:diff |index |@@)[^\n]*)|(?<string>^\+[^\n]*)|(?<keyword>^-[^\n]*)"#
+        case .http:
+            pattern = #"(?<comment>^\s*#[^\n]*)|(?<keyword>\b(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|HTTP/1\.[01])\b)|(?<key>^[A-Za-z][A-Za-z0-9-]*(?=:))|(?<string>"(?:\\.|[^"\\])*")|(?<attribute>https?://[^\s]+)|(?<number>\b\d+\b)"#
+        default: return []
+        }
+        return matches(pattern: pattern, source: source, options: options, groups: [
+            ("comment", .comment), ("string", .string), ("keyword", .keyword),
+            ("type", .type), ("number", .number), ("attribute", .attribute),
+            ("section", .section), ("key", .key),
+        ].filter { pattern.contains("?<" + $0.0 + ">") })
     }
 
     private static func matches(

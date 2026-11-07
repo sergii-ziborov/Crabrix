@@ -65,6 +65,7 @@
 		2A129C11FCE30742F1CD2CE4 /* AlgorithmCourseData.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE8D71E8F886A79DC5EF3FD /* AlgorithmCourseData.swift */; };
 		2AEE951350A08279CB646E51 /* WABT-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2F90B2D7CF47286F181B33B6 /* WABT-LICENSE.txt */; };
 		2B4BE9C0F4102CCB8142F774 /* swift-system-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = E4B798EE784275F9C194D9B5 /* swift-system-LICENSE.txt */; };
+		2BA2F9BEC35FC9DB7FEE7ACC /* WorkflowRouteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3389A706E2F9A9426068F39F /* WorkflowRouteTests.swift */; };
 		2D5A7B2E04A0D214078674F9 /* CargoBuildPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9F0FB50E1462BCBC86DF551 /* CargoBuildPlan.swift */; };
 		2EDAA64A906A801232614A42 /* AppearancePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD350E97620F1FB339249C56 /* AppearancePicker.swift */; };
 		2F1E35EE27154CC2829FF454 /* WebCompilerRuntime.js in Resources */ = {isa = PBXBuildFile; fileRef = 6DCD1A4778EFF6EC4156CC7C /* WebCompilerRuntime.js */; };
@@ -310,6 +311,7 @@
 		D4D661BD52CBBCEA2290672F /* RustToolsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ACD874BCD4D6C936B47D0CF /* RustToolsTests.swift */; };
 		D5050F9D62A3048C30A31F67 /* TopicMastery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1D24127CCCD6858FC76A21 /* TopicMastery.swift */; };
 		D62CE9F33D5CD754B6052DB4 /* BuildWorkspaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CEBD152D5381C70622EDD87 /* BuildWorkspaceTests.swift */; };
+		D6CC447FA0E78B0A312CB69A /* ProjectWorkflowTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3B8F31B605424785CE3D36 /* ProjectWorkflowTools.swift */; };
 		D70ECFBCDF8636B011990335 /* ProblemReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15AF611D0815ED4D2805F0C /* ProblemReportTests.swift */; };
 		D76CC0F2D94CB399650F0083 /* SourceLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DE096ACF2087A64CE3BBB9 /* SourceLanguage.swift */; };
 		D7D2F78FB1C6AF5EFC197114 /* BrowserTypeScriptChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D11A16D2052B9EB171D59562 /* BrowserTypeScriptChecker.swift */; };
@@ -449,6 +451,7 @@
 		2F90B2D7CF47286F181B33B6 /* WABT-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "WABT-LICENSE.txt"; sourceTree = "<group>"; };
 		30BBFC3C8EB9DA5951CF0F0B /* FlashcardReviewStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlashcardReviewStore.swift; sourceTree = "<group>"; };
 		31CD8399BD51110CC32C0859 /* LegalDocumentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegalDocumentView.swift; sourceTree = "<group>"; };
+		3389A706E2F9A9426068F39F /* WorkflowRouteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowRouteTests.swift; sourceTree = "<group>"; };
 		34454EEDE1F2D70EF3FC91BA /* CargoPackageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoPackageManager.swift; sourceTree = "<group>"; };
 		36BDF6B354489AAC2B80E776 /* InterviewRevision */ = {isa = PBXFileReference; lastKnownFileType = folder; name = InterviewRevision; path = CrabrixTests/Fixtures/InterviewRevision; sourceTree = SOURCE_ROOT; };
 		3786418CA7D9446F9360AE70 /* ThemeContrastTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeContrastTests.swift; sourceTree = "<group>"; };
@@ -626,6 +629,7 @@
 		AAD3161C843E95583F80834C /* Crabrix.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Crabrix.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABB041C5A186A0E2DB1CB3F9 /* CrateSourceBrowserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrateSourceBrowserTests.swift; sourceTree = "<group>"; };
 		AC4745C09CED9CA69999E7B0 /* BuildProblemsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildProblemsTests.swift; sourceTree = "<group>"; };
+		AD3B8F31B605424785CE3D36 /* ProjectWorkflowTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectWorkflowTools.swift; sourceTree = "<group>"; };
 		AD6A06B3CF1D9DA428CCB401 /* swift-syntax-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-syntax-LICENSE.txt"; sourceTree = "<group>"; };
 		AF263BC0BDACD405CDF0BAFF /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B2888F23BE9517E3AC3CA427 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -943,6 +947,7 @@
 				83162DA802CA86A5A232D638 /* CompilerViewModel.swift */,
 				383BF5A77A159E435B3711B1 /* ProjectGitCommand.swift */,
 				DB2D37D461D0EDF4F84DD855 /* ProjectTerminalSession.swift */,
+				AD3B8F31B605424785CE3D36 /* ProjectWorkflowTools.swift */,
 			);
 			path = Compiler;
 			sourceTree = "<group>";
@@ -1147,6 +1152,7 @@
 				EFB95E5F0B1274A060145AB0 /* TypingEconomyTests.swift */,
 				9B7DEC5BEFC801A5493DF69D /* WasmProceduralMacroTests.swift */,
 				8832CBE2C15F09166CBB610F /* WasmSandboxPolicyTests.swift */,
+				3389A706E2F9A9426068F39F /* WorkflowRouteTests.swift */,
 				6E813F931BF1A33E9CC0BCEF /* Fixtures */,
 			);
 			path = CrabrixTests;
@@ -1726,6 +1732,7 @@
 				9EB66F8224A4D1AE2F66644E /* ProjectPreflight.swift in Sources */,
 				F45D8BC9C4B3DA20720E7DF3 /* ProjectPreflightSheet.swift in Sources */,
 				009994261D14A5AB525D7C4B /* ProjectTerminalSession.swift in Sources */,
+				D6CC447FA0E78B0A312CB69A /* ProjectWorkflowTools.swift in Sources */,
 				25BCB8C64DECFAE94BD6E999 /* ProjectsHomeView.swift in Sources */,
 				85C427DBCCA201F9EF8D0BD7 /* QuickPracticeView.swift in Sources */,
 				968B0F832E7B692C65747E9B /* RustAdvancedExpansion.swift in Sources */,
@@ -1864,6 +1871,7 @@
 				92FEF66418D13E68DA4E0A91 /* TypingEconomyTests.swift in Sources */,
 				ED1B7ECE4EA6C8519B9A2BE4 /* WasmProceduralMacroTests.swift in Sources */,
 				C53ABD73F0DA4F22450B6886 /* WasmSandboxPolicyTests.swift in Sources */,
+				2BA2F9BEC35FC9DB7FEE7ACC /* WorkflowRouteTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2004,14 +2012,14 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = CrabrixShare/CrabrixShare.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 133;
+				CURRENT_PROJECT_VERSION = 134;
 				INFOPLIST_FILE = CrabrixShare/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.1.7;
+				MARKETING_VERSION = 1.1.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.Crabrix.Share;
 				PRODUCT_NAME = CrabrixShare;
 				SDKROOT = iphoneos;
@@ -2063,7 +2071,7 @@
 				CODE_SIGN_ENTITLEMENTS = Crabrix/Crabrix.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 133;
+				CURRENT_PROJECT_VERSION = 134;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Crabrix/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Crabrix;
@@ -2077,7 +2085,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.7;
+				MARKETING_VERSION = 1.1.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.Crabrix;
 				PRODUCT_NAME = Crabrix;
 				SDKROOT = iphoneos;
@@ -2179,14 +2187,14 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = CrabrixShare/CrabrixShare.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 133;
+				CURRENT_PROJECT_VERSION = 134;
 				INFOPLIST_FILE = CrabrixShare/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.1.7;
+				MARKETING_VERSION = 1.1.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.Crabrix.Share;
 				PRODUCT_NAME = CrabrixShare;
 				SDKROOT = iphoneos;
@@ -2221,7 +2229,7 @@
 				CODE_SIGN_ENTITLEMENTS = Crabrix/Crabrix.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 133;
+				CURRENT_PROJECT_VERSION = 134;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Crabrix/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Crabrix;
@@ -2235,7 +2243,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.7;
+				MARKETING_VERSION = 1.1.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.Crabrix;
 				PRODUCT_NAME = Crabrix;
 				SDKROOT = iphoneos;
@@ -2251,7 +2259,7 @@
 				CODE_SIGN_ENTITLEMENTS = Crabrix/Crabrix.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 133;
+				CURRENT_PROJECT_VERSION = 134;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Crabrix/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Crabrix;
@@ -2265,7 +2273,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.7;
+				MARKETING_VERSION = 1.1.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.Crabrix;
 				PRODUCT_NAME = Crabrix;
 				PROVISIONING_PROFILE_SPECIFIER = "$(CRABRIX_APP_PROFILE)";
@@ -2346,14 +2354,14 @@
 				CODE_SIGN_ENTITLEMENTS = CrabrixShare/CrabrixShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 133;
+				CURRENT_PROJECT_VERSION = 134;
 				INFOPLIST_FILE = CrabrixShare/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.1.7;
+				MARKETING_VERSION = 1.1.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sergiiziborov.Crabrix.Share;
 				PRODUCT_NAME = CrabrixShare;
 				PROVISIONING_PROFILE_SPECIFIER = "$(CRABRIX_SHARE_PROFILE)";
