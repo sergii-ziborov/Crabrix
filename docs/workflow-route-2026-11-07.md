@@ -1,21 +1,25 @@
 # Git → CLI → HTTP API → SQL → diagnostics → delivery
 
-Implemented as a local release candidate, Crabrix **1.1.8 (134)** with
-Projects CoursePack **1.1.0** and the `workflow-terminal-v1` capability.
-The production catalog, public website and App Review submission are unchanged.
+Delivered as Crabrix **1.1.8 (134)** with Projects CoursePack **1.1.0** and the
+`workflow-terminal-v1` capability. Apple confirms **VALID / IN_BETA_TESTING** in
+TestFlight Internal QA and **WAITING_FOR_REVIEW** for the App Review submission.
+Release remains **MANUAL**. All 19 ordered Store screenshots are retained.
 
-The owner subsequently authorized merging all Crabrix worktrees, TestFlight upload
-and App Review submission. The Atlas worktree history is integrated with its
-already cherry-picked changes retained. The generated-project source now also
-pins 1.1.8 (134), and production-signed catalog 24 is bundled with this compatible
-binary. Its immutable course assets are published as the workflow-route-2026-11-07
-prerelease; the public main catalog remains 23 during qualification. Apple delivery
-status will be recorded independently after archive/upload/processing readback.
+All Crabrix worktree history is merged into `main`, including the Atlas worktree
+and the release-validation fixes. The signed distribution archive comes from
+`4a8177920fe084d7e552add986c64ebf061888cd`, using Xcode 27.2 / SDK 27.2.
+Production-signed catalog 24 is bundled with this compatible binary. Its immutable
+course assets are published as the workflow-route-2026-11-07 prerelease; public
+main catalog 23 remains compatible with released older apps. The website serves
+all 24 new lessons and the public Task Ledger companion.
+
+[Verified delivery, tests and Apple readback](app-store/release-1.1.8-build134.json)
+records the exact build, submission, source revisions and artifact hashes.
 
 ## Learning content
 
 The course source is the sibling `crabrix-courses` checkout at
-`76d607ad0dc24f9497d7c1db8208b19a8e1bd515`. Six ordered units extend Cargo & Real
+`ad06ddbb545f83d6cb51d563ffbaefbc692799ba`. Six ordered units extend Cargo & Real
 Projects with four lessons each:
 
 | Unit | Practice |
@@ -90,24 +94,36 @@ does not claim arbitrary shell pipelines or Linux process support.
 
 ## Verification
 
-Artifacts live under the ignored `build/workflow-route-20261107/` directory.
+Initial qualification artifacts live under the ignored
+`build/workflow-route-20261107/` directory. Final release evidence, signed archive,
+exported IPA and Apple readbacks live under `build/workflow-release-20261107/`.
 
 - Source corpus: 34 Python tests, validation of 8 packs/798 lessons, 24 executed
   readings, and 96 compiled lab variants. All references pass; unchanged starters,
   semantic regressions and forged-verdict variants fail (72 rejections).
-- Native Simulator gate: `WorkflowRouteTests`, `ProjectTerminalSessionTests`,
-  `SyntaxHighlighterTests`, `CoursePackVerifierTests` and `GitWorkspaceTests`.
-  All 36 pass with local Simulator signing. This includes all 24 lab contracts,
-  actual loopback HTTP → Rust → SQLite, shared CLI/database state, retained old
-  package snapshots and new signed test-package installation. Final receipt:
-  `build/workflow-route-20261107/final-native.xcresult` (36 executed, zero failures).
-- Test package: Projects ZIP uses the openly published test publisher key only.
-  The production trust store is unchanged. Its ignored fixture is documented in
-  the content repository's `editorial/workflow_route_20261107/README.md`.
+- Native workflow gate: all 49 pass with local Simulator signing. The seven
+  suites cover all 24 lab contracts, actual loopback HTTP → Rust → SQLite,
+  shared CLI/database state, Git, syntax, retained old package snapshots,
+  production-signed download/installation, Stop/execution limits and terminal
+  keyboard dismissal across project updates. Final result:
+  `build/workflow-release-20261107/workflow-fixed.xcresult` (zero failures/skips).
+- Full Simulator regression: 776 cases, 718 passed, 58 opt-in scenarios skipped,
+  zero failures. Browser Run/Debug and TypeScript use the actual local fixture
+  server. Final result: `full-regression-fixed.xcresult`. The run exposed and
+  verified fixes for stdin capture-directory setup, dismissed keyboard focus and
+  WebKit fixture window restoration.
+- Production delivery: the real public Projects ZIP uses the existing production
+  publisher key. The production trust store is unchanged. The separate ignored
+  test-signed fixture remains documented in the content repository's
+  `editorial/workflow_route_20261107/README.md`.
 - Website: TypeScript check, all 160 tests and production build pass. Local
   production HTTP checks cover all 24 new pages and Playground links, 24 article
   backlinks, the companion ZIP and a route PNG. The ZIP's 22 source files match
   the public course template and exclude private grading/build/database artifacts.
+  Hostwatch built, published and deployed the approved `crabrix-web` component;
+  the MCP sibling image is unchanged. Production checks pass for all 24 route
+  pages, the byte-identical companion ZIP, 860 canonical pages, 798 lessons,
+  600 Atlas steps and 1,222 internal fragments.
 - Desktop: native companion's 3 tests and the desktop constraint test pass;
   real HTTP/SQL acceptance checks creation, idempotent replay, conflict, invalid
   input, injection-shaped data, latency/retry probes, graceful stop and restart
@@ -116,7 +132,12 @@ Artifacts live under the ignored `build/workflow-route-20261107/` directory.
   is correctly rejected.
 
 The Dockerfile's Rust image tag exists, but a container build was not executed:
-the local Docker daemon is unavailable. Hosted CI, physical-device layout and
-performance, production publication and App Store submission remain release
-qualification work. Do not publish Projects 1.1.0 to older apps; its descriptor
-requires Crabrix 1.1.8 and `workflow-terminal-v1`.
+the local Docker daemon is unavailable. Hosted CI and physical-device layout and
+performance remain unverified. The signed local release archive and exported IPA
+passed strict signature, distribution entitlement, version, legal-copy and course
+catalog checks, then Apple validation/upload without warnings. TestFlight notes,
+Store metadata, reviewer notes, selected build and all 19 screenshot checksums
+matched API readback before App Review submission. The approved unreleased 1.1.7
+was withdrawn only after build 134 was VALID, then replaced by this submission.
+Do not publish Projects 1.1.0 to older apps; its descriptor requires Crabrix 1.1.8
+and `workflow-terminal-v1`.

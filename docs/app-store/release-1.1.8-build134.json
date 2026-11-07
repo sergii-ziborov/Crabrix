@@ -1,0 +1,176 @@
+{
+  "checkedAt": "2026-11-07T15:18:56.108Z",
+  "version": "1.1.8",
+  "buildNumber": "134",
+  "buildID": "d8479dea-35ab-4b9f-830d-89a1733585c7",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "buildAudienceType": "APP_STORE_ELIGIBLE",
+  "testFlightGroup": {
+    "id": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "name": "Internal QA",
+    "isInternalGroup": true
+  },
+  "testNotesReadbackMatches": true,
+  "reviewSubmitted": true,
+  "reviewBuildID": "d8479dea-35ab-4b9f-830d-89a1733585c7",
+  "reviewState": "WAITING_FOR_REVIEW",
+  "reviewSubmissionState": "WAITING_FOR_REVIEW",
+  "reviewSubmissionID": "57beb5d7-678b-4fe6-b483-a936d05330ab",
+  "reviewSubmittedDate": "2026-11-07T15:17:23.795Z",
+  "appStoreVersionID": "f8b1fe62-889f-4aa2-b19b-5a7c85374cee",
+  "releaseType": "MANUAL",
+  "metadataReadbackMatches": true,
+  "reviewerNotesReadbackMatches": true,
+  "screenshotCount": 19,
+  "orderedScreenshotChecksumsUnchanged": true,
+  "replacedApprovedUnreleasedVersion": "1.1.7",
+  "replacementStartedOnlyAfterBuild134Valid": true,
+  "appSourceCommit": "4a8177920fe084d7e552add986c64ebf061888cd",
+  "courseSourceCommit": "ad06ddbb545f83d6cb51d563ffbaefbc692799ba",
+  "allWorktreeHistoryMergedIntoMain": true,
+  "pullRequests": [
+    {
+      "url": "https://github.com/sergii-ziborov/Crabrix/pull/66",
+      "merged": true
+    },
+    {
+      "url": "https://github.com/sergii-ziborov/Crabrix/pull/67",
+      "merged": true
+    },
+    {
+      "url": "https://github.com/sergii-ziborov/crabrix-courses/pull/6",
+      "merged": true
+    }
+  ],
+  "archiveVerification": {
+    "sourceCommit": "4a8177920fe084d7e552add986c64ebf061888cd",
+    "version": "1.1.8",
+    "build": "134",
+    "sdk": "iphoneos27.2",
+    "xcodeBuild": "27B52",
+    "duoSDKFlagEnabled": true,
+    "signedBundles": [
+      {
+        "bundleID": "com.sergiiziborov.Crabrix",
+        "profile": "Crabrix TestFlight Lab 133 Nov 2026",
+        "distribution": true,
+        "entitlementsCovered": true
+      },
+      {
+        "bundleID": "com.sergiiziborov.Crabrix.Share",
+        "profile": "Crabrix Share TestFlight 1.1 Oct 2026",
+        "distribution": true,
+        "entitlementsCovered": true
+      }
+    ],
+    "legalDocumentsMatchSource": true,
+    "encryptionExempt": true,
+    "activeCatalogSequence": 24,
+    "activeCatalogSHA256": "855467da8fb264ca5ce7ad6c9fa3c1de63600d0f21dcbe6cd1839420f48dcac4",
+    "projectsVersion": "1.1.0"
+  },
+  "ipa": {
+    "bytes": 89858750,
+    "sha256": "e164d78a9db67ff7f29c285d78c3563a852d94bdd83a9577ff5eb1ae9d708eaa",
+    "strictSignatureVerified": true,
+    "appleValidation": "passed",
+    "upload": "succeeded",
+    "appleUploadWarnings": []
+  },
+  "courseDelivery": {
+    "projectsVersion": "1.1.0",
+    "minimumAppVersion": "1.1.8",
+    "capability": "workflow-terminal-v1",
+    "bundledCatalogSequence": 24,
+    "publicCatalogSequence": 23,
+    "productionSignedDownloadAndInstallation": "passed",
+    "newRouteLessons": 24,
+    "totalLessonsAndStages": 798,
+    "rustLessons": 198,
+    "atlasSteps": 600,
+    "examplesInSeparatePack": 46,
+    "assetsURL": "https://github.com/sergii-ziborov/crabrix-courses/releases/tag/workflow-route-2026-11-07"
+  },
+  "verification": {
+    "fullRegression": {
+      "total": 776,
+      "passed": 718,
+      "skipped": 58,
+      "failures": 0,
+      "configuration": "CompilerCandidate",
+      "resultBundle": "full-regression-fixed.xcresult"
+    },
+    "workflowGate": {
+      "tests": 49,
+      "passed": 49,
+      "skipped": 0,
+      "failures": 0,
+      "resultBundle": "workflow-fixed.xcresult",
+      "covers": [
+        "production-signed route download and installation",
+        "all 24 route lab contracts",
+        "real loopback HTTP and SQLite",
+        "fresh argv/environment/stdin across cached executables",
+        "Stop and execution limits",
+        "terminal keyboard dismissal and project changes",
+        "Git and syntax highlighting"
+      ]
+    },
+    "courseCorpus": {
+      "pythonTests": 34,
+      "executedReadings": 24,
+      "compiledLabVariants": 96,
+      "referenceSolutionsPassed": 24,
+      "wrongUnchangedOrForgedVariantsRejected": 72
+    },
+    "website": {
+      "tests": 160,
+      "typecheck": "passed",
+      "productionBuild": "passed",
+      "publicSEO": {
+        "checkedAt": "2026-11-07T14:58:28.402Z",
+        "base": "https://crabrix.com",
+        "canonicalPages": 860,
+        "pagesChecked": 860,
+        "lessons": 798,
+        "algorithmSteps": 600,
+        "expectedLessons": 798,
+        "sitemapContentCoveragePassed": true,
+        "checkedInternalFragments": 1222,
+        "publicLessonsPassed": true,
+        "privateAccountRoutesNoindex": true,
+        "htmlRscQueryIndexable": true,
+        "issues": []
+      },
+      "routePages": 24,
+      "companionMatchesSource": true,
+      "companionSHA256": "3afe26454e99b7d2d78784717a4f004591b968bea8d5a434c981d4b2b5792428"
+    },
+    "desktopCompanion": {
+      "nativeTests": 3,
+      "desktopConstraintTests": 1,
+      "realHTTPAndSQLiteAcceptance": "passed",
+      "idempotencyConflictValidationInjectionAndPersistence": "passed",
+      "artifactChecksumChecks": "passed",
+      "modifiedArtifactRejected": true,
+      "containerBuildExecuted": false
+    }
+  },
+  "websiteDeployment": {
+    "url": "https://crabrix.com",
+    "sourceCommit": "b0f9fb82c7e0cb750317d915db72dc6242010da2",
+    "hostwatchSourceRevision": "sha256:56d73150a6f76e0dd7deab022dc25df6a10ba4e2603a2532cc3eedb4fabcecc7",
+    "builtDigest": "sha256:f17f65b20c7a1bf48b99c2a1c8503d0f27e3677e2dcf5684af790a1d2bc77b24",
+    "publishedDigest": "sha256:e042873437a42550c33e50a36b154d7272d4f6c8bfd414b741d485aded40402d",
+    "buildState": "succeeded",
+    "publicationState": "succeeded",
+    "deploymentState": "succeeded",
+    "deployedAt": "2026-11-07T14:43:45.193831288Z",
+    "mcpSiblingImageUnchanged": true
+  },
+  "evidenceDirectory": "build/workflow-release-20261107/",
+  "automaticCIUsed": false,
+  "physicalDeviceTested": false,
+  "nativeManualVisualCheckCompleted": false
+}

@@ -1,3 +1,23 @@
+> Delivery verified through App Store Connect — 7 November 2026: **1.1.8 (134)**
+> is **WAITING_FOR_REVIEW**, selecting build **134**, with **MANUAL** release.
+> Build 134 is **VALID**, **APP_STORE_ELIGIBLE** and **IN_BETA_TESTING** in
+> **Internal QA**. Reviewer notes, Store metadata and TestFlight notes match
+> API readback; all 19 ordered screenshots retain their original checksums.
+> All Crabrix worktree history is merged and pushed to `main`. The local
+> distribution archive from `4a81779` uses Xcode 27.2 / SDK 27.2; application
+> and Share Extension signatures, entitlements, legal copies, catalog 24 and
+> exported IPA passed verification and Apple validation. The workflow gate
+> passed 49/49; the broad run passed 718, skipped 58 opt-in scenarios and had
+> no failures. All 160 web tests and 34 content tests passed. Production serves
+> all 798 lessons; its 860-page audit and all 24 route pages passed. Projects
+> 1.1.0 is production-signed and requires this compatible app; public catalog
+> 23 is retained until release. No physical-device or Docker-container pass
+> is claimed. The approved unreleased 1.1.7 was withdrawn only after 134 was
+> VALID, then replaced by this review submission.
+> [Delivery and Apple readback](release-1.1.8-build134.json).
+>
+> Earlier entries below are historical.
+
 > Delivery verified through App Store Connect — 5 November 2026: **1.1.6 (129)**
 > is **WAITING_FOR_REVIEW**, with **MANUAL** release. Build 129 is **VALID**,
 > **APP_STORE_ELIGIBLE** and **IN_BETA_TESTING** in **Internal QA**. The manual
