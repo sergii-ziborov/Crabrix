@@ -311,6 +311,8 @@ schemes:
             - SyntaxHighlighterTests
             - CoursePackVerifierTests
             - GitWorkspaceTests
+            - WasmSandboxPolicyTests
+            - TerminalKeyboardTests
   CrabrixInterviewGate:
     build:
       targets:

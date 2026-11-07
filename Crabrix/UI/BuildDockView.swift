@@ -1164,6 +1164,8 @@ private struct TerminalDockContent: View {
         }
         .task(id: project.id) {
             terminal.attach(to: project)
+        }
+        .task {
             guard autoFocus else { return }
             keyboard.focus()
         }
@@ -1273,9 +1275,9 @@ private struct TerminalCommandField: UIViewRepresentable {
         func highlight(_ field: UITextField) {
             guard field.markedTextRange == nil else { return }
             let source = field.text ?? ""
-            let selected = field.selectedTextRange.map {
+            let selected = field.isFirstResponder ? field.selectedTextRange.map {
                 (field.offset(from: field.beginningOfDocument, to: $0.start), field.offset(from: field.beginningOfDocument, to: $0.end))
-            }
+            } : nil
             let styled = NSMutableAttributedString(string: source, attributes: [
                 .font: field.font ?? UIFont.monospacedSystemFont(ofSize: 12, weight: .regular),
                 .foregroundColor: UIColor(CrabrixTheme.primary),
@@ -1283,7 +1285,7 @@ private struct TerminalCommandField: UIViewRepresentable {
             for token in SyntaxHighlighter.tokens(in: source, filePath: "command.sh") {
                 styled.addAttribute(.foregroundColor, value: SyntaxTheme.uiColor(for: token.kind), range: token.range)
             }
-            field.attributedText = styled
+            if field.attributedText?.isEqual(to: styled) != true { field.attributedText = styled }
             if let (start, end) = selected,
                let lower = field.position(from: field.beginningOfDocument, offset: start),
                let upper = field.position(from: field.beginningOfDocument, offset: end) {

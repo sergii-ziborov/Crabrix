@@ -9,6 +9,7 @@ final class TerminalKeyboardTests: XCTestCase {
         @Published var tab: BuildDockTab
         @Published var text = "fn main() { println!(\"crab\"); }"
         @Published var cursor = 0
+        @Published var project = CrabrixProject(name: "keyboard-lab", files: ["main.rs": "fn main() {}"], entryFile: "main.rs", provenance: nil)
         let editorKeyboard = RustEditorKeyboardBridge()
 
         init(tab: BuildDockTab) { self.tab = tab }
@@ -26,7 +27,7 @@ final class TerminalKeyboardTests: XCTestCase {
                     Text("Project toolbar").frame(height: 58)
                     BuildDockView(
                         selectedTab: $state.tab, terminal: terminal,
-                        project: CrabrixProject(name: "keyboard-lab", files: ["main.rs": "fn main() {}"], entryFile: "main.rs", provenance: nil),
+                        project: state.project,
                         result: nil, activity: .idle, canStartBuild: true,
                         onCheck: {}, onRun: {}, onReplaceFiles: { _, _ in true },
                         workspace: .empty, onFetch: {}, onCancel: {},
@@ -185,6 +186,20 @@ final class TerminalKeyboardTests: XCTestCase {
             field.text = "help"
             field.sendActions(for: .editingChanged)
             field.window?.layoutIfNeeded()
+            try await Task.sleep(for: .milliseconds(300))
+            XCTAssertFalse(field.isFirstResponder)
+            XCTAssertFalse(keyboard.isFocused)
+        }
+    }
+
+    func testSwitchingProjectsKeepsAnExplicitlyDismissedKeyboardHidden() async throws {
+        try await withWorkspace(initialTab: .terminal) { view, state in
+            try await self.waitUntil { self.find(TerminalTextField.self, in: view)?.isFirstResponder == true }
+            let field = try XCTUnwrap(self.find(TerminalTextField.self, in: view))
+            let keyboard = try XCTUnwrap(field.keyboardController)
+            keyboard.dismiss()
+            try await self.waitUntil { !field.isFirstResponder && !keyboard.isFocused }
+            state.project = CrabrixProject(name: "another-project", files: ["main.rs": "fn main() {}"], entryFile: "main.rs", provenance: nil)
             try await Task.sleep(for: .milliseconds(300))
             XCTAssertFalse(field.isFirstResponder)
             XCTAssertFalse(keyboard.isFocused)

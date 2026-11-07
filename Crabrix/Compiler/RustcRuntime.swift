@@ -274,11 +274,11 @@ final class RustcRuntime: @unchecked Sendable {
                 interrupter?.cancel(reason: .outputLimit)
             }
         }
+        let capture = try Capture(directory: captureDirectory, prefix: capturePrefix)
         let inputURL = captureDirectory.appending(path: capturePrefix + "-stdin")
         try standardInput.write(to: inputURL, options: .atomic)
         let inputHandle = try FileHandle(forReadingFrom: inputURL)
         defer { try? inputHandle.close(); try? FileManager.default.removeItem(at: inputURL) }
-        let capture = try Capture(directory: captureDirectory, prefix: capturePrefix)
         var exitCode: UInt32 = 0
         var thrown: (any Error)?
         do {
