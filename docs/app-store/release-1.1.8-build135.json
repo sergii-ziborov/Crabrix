@@ -1,0 +1,139 @@
+{
+  "checkedAt": "2026-11-07T21:03:01.101282+00:00",
+  "version": "1.1.8",
+  "buildNumber": "135",
+  "buildID": "38eb3280-bcda-4f43-9786-70599a4e37ff",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "buildAudienceType": "APP_STORE_ELIGIBLE",
+  "testFlightGroup": {
+    "id": "8e1c1fc1-d1c9-4828-b7a5-a78f72dad871",
+    "name": "Internal QA",
+    "isInternalGroup": true
+  },
+  "testNotesReadbackMatches": true,
+  "reviewSubmitted": true,
+  "reviewBuildID": "38eb3280-bcda-4f43-9786-70599a4e37ff",
+  "reviewState": "WAITING_FOR_REVIEW",
+  "reviewSubmissionState": "WAITING_FOR_REVIEW",
+  "reviewSubmissionID": "2e697679-b5c0-4bc1-83dc-71f98f132dba",
+  "reviewSubmittedDate": "2026-11-07T20:59:27.041Z",
+  "appStoreVersionID": "f8b1fe62-889f-4aa2-b19b-5a7c85374cee",
+  "releaseType": "MANUAL",
+  "metadataReadbackMatches": true,
+  "reviewerNotesReadbackMatches": true,
+  "screenshotCount": 19,
+  "orderedScreenshotChecksumsUnchanged": true,
+  "replacedUnreleasedBuild": "134",
+  "replacementStartedOnlyAfterBuild135Valid": true,
+  "appSourceCommit": "c2b22cf2a62caa9b5ace2a7e6541335e52ff7dac",
+  "worktreeHistories": [
+    {
+      "repository": "crabrix-poc",
+      "main": "c2b22cf2a62caa9b5ace2a7e6541335e52ff7dac",
+      "allWorktreeHeadsMerged": true,
+      "pushed": true
+    },
+    {
+      "repository": "crabrix-toolchain",
+      "main": "8e4fbf1afadfd4e6f9cd18c9c14891ac003834f1",
+      "allWorktreeHeadsMerged": true,
+      "pushed": true
+    },
+    {
+      "repository": "crabrix-courses",
+      "main": "ad06ddbb545f83d6cb51d563ffbaefbc692799ba",
+      "allWorktreeHeadsMerged": true,
+      "pushed": true
+    }
+  ],
+  "allWorktreeHistoryMergedIntoMain": true,
+  "pullRequests": [
+    {
+      "url": "https://github.com/sergii-ziborov/Crabrix/pull/69",
+      "merged": true
+    },
+    {
+      "url": "https://github.com/sergii-ziborov/crabrix-toolchain/pull/8",
+      "merged": true
+    },
+    {
+      "url": "https://github.com/sergii-ziborov/crabrix-toolchain/pull/9",
+      "merged": true
+    }
+  ],
+  "archiveVerification": {
+    "sourceCommit": "c2b22cf2a62caa9b5ace2a7e6541335e52ff7dac",
+    "version": "1.1.8",
+    "build": "135",
+    "sdk": "iphoneos27.2",
+    "xcodeBuild": "27B52",
+    "duoSDKFlagEnabled": true,
+    "signedBundles": [
+      {
+        "bundleID": "com.sergiiziborov.Crabrix",
+        "profile": "Crabrix TestFlight Lab 133 Nov 2026",
+        "distribution": true,
+        "entitlementsCovered": true
+      },
+      {
+        "bundleID": "com.sergiiziborov.Crabrix.Share",
+        "profile": "Crabrix Share TestFlight 1.1 Oct 2026",
+        "distribution": true,
+        "entitlementsCovered": true
+      }
+    ],
+    "legalDocumentsMatchSource": true,
+    "encryptionExempt": true,
+    "activeCatalogSequence": 24,
+    "activeCatalogSHA256": "855467da8fb264ca5ce7ad6c9fa3c1de63600d0f21dcbe6cd1839420f48dcac4",
+    "projectsVersion": "1.1.0",
+    "toolchainID": "crabrix-rust-2026-11-07.1",
+    "compilerSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+    "sysrootArchiveSHA256": "44c0912b34520e0f85e63a8bb12e5447e83c59c9195a8bd4f7c72db2d4772842",
+    "onlyShippingToolchain": true,
+    "nativeCompilerExperimentEnabled": false
+  },
+  "ipa": {
+    "sourceCommit": "c2b22cf2a62caa9b5ace2a7e6541335e52ff7dac",
+    "version": "1.1.8",
+    "build": "135",
+    "sdk": "iphoneos27.2",
+    "bytes": 89282960,
+    "sha256": "b2e376944910e70c31f088138f56ae519bcf0f9bc15ebdac775ec483e4a074f6",
+    "strictSignatureVerified": true,
+    "signedBundles": [
+      "com.sergiiziborov.Crabrix",
+      "com.sergiiziborov.Crabrix.Share"
+    ],
+    "catalogMatchesArchive": true,
+    "legalDocumentsMatchSource": true,
+    "toolchainID": "crabrix-rust-2026-11-07.1",
+    "compilerSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+    "sysrootArchiveSHA256": "44c0912b34520e0f85e63a8bb12e5447e83c59c9195a8bd4f7c72db2d4772842",
+    "onlyShippingToolchain": true,
+    "semanticAssetsMatchSource": true,
+    "appleValidation": "passed",
+    "upload": "succeeded",
+    "appleDeliveryUUID": "38eb3280-bcda-4f43-9786-70599a4e37ff"
+  },
+  "compilerQualificationReceipt": "docs/app-store/compiler-qualification-1.1.8-build135.json",
+  "nativeTests": {
+    "discovered": 802,
+    "passed": 802,
+    "failed": 0,
+    "skipped": 0,
+    "unexecuted": 0,
+    "method": "Unique test-case reconciliation across retained core and repaired/batched XCTest results, including eight Swift Testing tests. Initial failures retained in original result bundle; repaired classes supersede their previous results. Historical compiler variants are explicit negative controls."
+  },
+  "otherSuites": {
+    "appBuildScriptsPassed": 18,
+    "toolchainReleaseScriptsPassed": 33,
+    "webPassed": 160,
+    "webTypecheck": true,
+    "webProductionBuild": true
+  },
+  "siteReceipt": "docs/site-compiler-release-2026-11-07.json",
+  "priorBuild134ReceiptRetained": "docs/app-store/release-1.1.8-build134.json",
+  "physicalDevicePerformanceClaim": false
+}

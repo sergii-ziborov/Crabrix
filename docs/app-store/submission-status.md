@@ -1,3 +1,24 @@
+> Delivery verified for corrected compiler — 7 November 2026: **1.1.8 (135)**
+> is **WAITING_FOR_REVIEW**, selecting build **135**, with **MANUAL** release.
+> TestFlight is **VALID**, **APP_STORE_ELIGIBLE** and **IN_BETA_TESTING** in Internal QA.
+> The signed compiler and matching sysroot fix narrow atomic operations and enable
+> supported WASI procedural macros. All **802** discovered native tests passed,
+> with **0 failed, skipped or unexecuted**, reconciled by unique test identifier.
+> Original failing bundles and the build 134 record remain retained. Three old
+> compiler variants remain explicit negative controls that reproduce the old bug;
+> their binaries are not claimed fixed and are absent from the distribution.
+> The optimized prepromotion gate passed 17/17; app build scripts 18/18,
+> toolchain scripts 33/33 and web tests 160/160 also passed. Public downloads of all
+> 13 signed toolchain assets match. App and Share signatures, entitlements,
+> SDK 27.2, source-bound semantic assets, catalog and exported IPA were verified.
+> Metadata and notes match Apple readback; all 19 ordered screenshots are retained.
+> Build 134 was withdrawn only after 135 was valid and available in TestFlight.
+> No physical-device performance claim is made.
+> [Delivery and Apple readback](release-1.1.8-build135.json) ·
+> [Full qualification](compiler-qualification-1.1.8-build135.json).
+>
+> Entries below are historical.
+
 > Extended qualification — 7 November 2026: all **58** cases skipped by the
 > standard regression run have now executed: **54 passed, 4 failed, 0 skipped**.
 > The release profile passed **40/41**; experimental profiles passed **14/17**.
