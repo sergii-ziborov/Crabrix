@@ -924,6 +924,7 @@ final class CompilerViewModel: ObservableObject {
     func check() { startBuild(.checking) }
 
     func run() { startBuild(.running) }
+    func runFromTerminal(_ input: RustProgramInput) { startBuild(.running, programInput: input) }
     func build() { startBuild(.building) }
 
     func performBrowserCommand(_ command: BrowserProjectCommand) {
@@ -1035,7 +1036,8 @@ final class CompilerViewModel: ObservableObject {
 
     private func startBuild(_ mode: Activity, browserDirectory: String? = nil,
                             prepareBrowserPackages: Bool = false, frozenBrowserPackages: Bool = false,
-                            debugging: Bool = false, unitTestRequest: RustUnitTestRequest? = nil) {
+                            debugging: Bool = false, unitTestRequest: RustUnitTestRequest? = nil,
+                            programInput: RustProgramInput = .init()) {
         guard canStartBuild else { return }
         do { try ProjectFilePolicy.validate(currentProject().files, entryFile: entryFile) }
         catch { result = .failure(phase: .setup, detail: error.localizedDescription); return }
@@ -1070,6 +1072,11 @@ final class CompilerViewModel: ObservableObject {
         var projectFiles = project.supporting
         projectFiles[project.entryPath] = project.main
         let (compilerProject, harnessRun) = lessonCompilation(of: project, mode: mode)
+        var invocationInput = programInput
+        if mode == .running, harnessRun != nil, activeLessonContent?.challenge?.usesSQL == true {
+            do { invocationInput.database = try ProjectSQLDatabase() }
+            catch { activity = .idle; result = .failure(phase: .setup, detail: error.localizedDescription); return }
+        }
         let manifestSource = manifestSource(in: project)
         let lockfileSource = project.entryPath == "Cargo.lock"
             ? project.main
@@ -1319,14 +1326,14 @@ final class CompilerViewModel: ObservableObject {
             default:
                 if let debugSession {
                     await compiler.debug(source: compilerProject.main, sourcePath: compilerProject.entryPath,
-                        supportingFiles: compilerProject.supporting, resourceFiles: resourceFiles, edition: rootEdition, plan: plan, session: debugSession,
+                        supportingFiles: compilerProject.supporting, resourceFiles: resourceFiles, edition: rootEdition, plan: plan, session: debugSession, input: invocationInput,
                         onDependencyProgress: plan.isEmpty ? nil : progress, onStage: stageHandler)
                 } else { await compiler.run(
                     source: compilerProject.main,
                     sourcePath: compilerProject.entryPath,
                     supportingFiles: compilerProject.supporting, resourceFiles: resourceFiles,
                     edition: rootEdition,
-                    plan: plan,
+                    plan: plan, input: invocationInput,
                     onDependencyProgress: plan.isEmpty ? nil : progress,
                     onStage: stageHandler
                 ) }
@@ -1980,6 +1987,14 @@ final class CompilerViewModel: ObservableObject {
         guard index >= 0, lessonAnswerIndices[lessonID] == nil else { return }
         lessonAnswerIndices[lessonID] = index
         userDefaults.set(lessonAnswerIndices, forKey: Self.lessonAnswersKey)
+    }
+
+    func openWorkflowCompanion(_ template: CourseProjectTemplate, session: CourseSession) {
+        let copy = CrabrixProject(name: template.name, files: template.files, entryFile: template.entryFile,
+            provenance: .academyExample(id: "task-ledger-route", courseID: session.courseID,
+                contentVersion: session.contentVersion, templateHash: template.templateHash))
+        loadProject(copy)
+        projectTransfer = .ready("Created Task Ledger in My Projects. Open README.md for the route commands.")
     }
 
     func openAcademyExample(_ showcase: RustShowcaseProject,

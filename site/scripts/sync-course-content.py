@@ -5,6 +5,7 @@ import argparse
 import json
 import shutil
 import struct
+import zipfile
 import subprocess
 from pathlib import Path
 
@@ -25,6 +26,19 @@ def main() -> None:
     if not (source / "CONTENT-LICENSE.md").is_file():
         parser.error("source is not the Crabrix course repository")
 
+    companion = source / "courses/projects/projects/route-git-review/companion"
+    if companion.is_dir():
+        destination = SITE / "public/examples/task-ledger-route.zip"
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        with zipfile.ZipFile(destination, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+            for path in sorted(companion.rglob("*")):
+                if not path.is_file():
+                    continue
+                info = zipfile.ZipInfo(path.relative_to(companion).as_posix(), (1980, 1, 1, 0, 0, 0))
+                info.compress_type = zipfile.ZIP_DEFLATED
+                info.external_attr = 0o100644 << 16
+                archive.writestr(info, path.read_bytes())
+
     courses = []
     for course_id in COURSE_IDS:
         folder = source / "courses" / course_id
@@ -38,6 +52,10 @@ def main() -> None:
                 raise ValueError(f"lesson parent mismatch in {course_id}/{unit_id}")
             for lesson in lessons:
                 project = folder / 'projects' / lesson['id']
+                for resource in lesson.get('resources', []):
+                    if resource.get('url') == 'https://crabrix.com/examples/task-ledger-route.zip':
+                        resource['url'] = '/examples/task-ledger-route.zip'
+
                 if course_id == 'projects' and lesson['id'] in {
                     'public-api-compatibility', 'msrv-verification', 'feature-compatibility-matrix'
                 }:
@@ -51,6 +69,13 @@ def main() -> None:
                     lesson['playgroundProject'] = {
                         'schemaVersion': 1, 'name': lesson['id'], 'entryFile': 'main.rs',
                         'edition': '2021', 'files': files,
+                    }
+                if course_id == 'projects' and lesson['id'].startswith('route-'):
+                    # Readings are complete std-only demonstrations. SQL readings
+                    # print their statement; native private labs execute SQLite.
+                    lesson['playgroundProject'] = {
+                        'schemaVersion': 1, 'name': lesson['id'], 'entryFile': 'main.rs',
+                        'edition': '2024', 'files': {'main.rs': lesson['writing']['exampleCode']},
                     }
                 # Only the explicitly qualified Cargo demonstrations launch in
                 # Playground. Grading harnesses/checks are never exported here.

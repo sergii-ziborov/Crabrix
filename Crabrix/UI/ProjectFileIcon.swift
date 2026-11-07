@@ -53,6 +53,12 @@ struct ProjectFileAppearance {
             return Self(symbol: "list.bullet.rectangle", tint: CrabrixTheme.violet)
         case .markdown:
             return Self(symbol: "doc.richtext.fill", tint: CrabrixTheme.blue)
+        case .shell: return Self(symbol: "terminal.fill", tint: CrabrixTheme.mint)
+        case .sql: return Self(symbol: "externaldrive.fill", tint: CrabrixTheme.blue)
+        case .http: return Self(symbol: "network", tint: CrabrixTheme.mint)
+        case .dockerfile: return Self(symbol: "shippingbox.fill", tint: CrabrixTheme.blue)
+        case .diff: return Self(symbol: "plus.forwardslash.minus", tint: CrabrixTheme.coral)
+        case .dotenv: return Self(symbol: "slider.horizontal.3", tint: CrabrixTheme.amber)
         case .plainText:
             return Self(symbol: "doc.text", tint: CrabrixTheme.muted)
         }

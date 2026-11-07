@@ -309,6 +309,10 @@ struct ContentView: View {
                     )
                     openCodeWorkspace()
                 },
+                onOpenCompanion: { template, session in
+                    model.openWorkflowCompanion(template, session: session)
+                    openCodeWorkspace()
+                },
                 onOpenReplay: { recording, session in
                     if model.openAtlasRecording(recording, session: session) { openCodeWorkspace() }
                 }
@@ -923,6 +927,7 @@ struct ContentView: View {
                 canStartBuild: model.canStartBuild && !model.isProjectOperationInProgress,
                 onCheck: model.check,
                 onRun: model.run,
+                onRunWithInput: model.runFromTerminal,
                 onBuild: model.build,
                 onTest: model.runUnitTests,
                 onFormat: { model.formatRust($0, applyToEditor: editorKeyboard.applyFormattedText) },

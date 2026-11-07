@@ -252,6 +252,8 @@ final class RustcRuntime: @unchecked Sendable {
         module: Module,
         arguments: [String],
         environment: [String: String],
+        standardInput: Data = Data(),
+        sqlDatabase: ProjectSQLDatabase? = nil,
         preopens: [WASIBridgeToHost.Preopen],
         captureDirectory: URL,
         capturePrefix: String,
@@ -272,6 +274,10 @@ final class RustcRuntime: @unchecked Sendable {
                 interrupter?.cancel(reason: .outputLimit)
             }
         }
+        let inputURL = captureDirectory.appending(path: capturePrefix + "-stdin")
+        try standardInput.write(to: inputURL, options: .atomic)
+        let inputHandle = try FileHandle(forReadingFrom: inputURL)
+        defer { try? inputHandle.close(); try? FileManager.default.removeItem(at: inputURL) }
         let capture = try Capture(directory: captureDirectory, prefix: capturePrefix)
         var exitCode: UInt32 = 0
         var thrown: (any Error)?
@@ -282,6 +288,7 @@ final class RustcRuntime: @unchecked Sendable {
                     args: arguments,
                     environment: environment,
                     preopens: preopens,
+                    stdin: inputHandle.fileDescriptor,
                     stdout: capture.stdoutHandle.fileDescriptor,
                     stderr: capture.stderrHandle.fileDescriptor,
                     outputBudget: outputBudget
@@ -291,6 +298,7 @@ final class RustcRuntime: @unchecked Sendable {
                     args: arguments,
                     environment: environment,
                     preopens: preopens,
+                    stdin: inputHandle.fileDescriptor,
                     stdout: capture.stdoutHandle.fileDescriptor,
                     stderr: capture.stderrHandle.fileDescriptor
                 )
@@ -322,6 +330,7 @@ final class RustcRuntime: @unchecked Sendable {
                 if let macroSession { macroSession.transport.link(to: &imports, store: store) }
                 else { ProcMacroTransport.linkUnavailable(to: &imports, store: store) }
                 debugSession?.link(to: &imports, store: store, interrupter: interrupter)
+                sqlDatabase?.link(to: &imports, store: store, module: module, interrupter: interrupter)
                 let instance = try module.instantiate(store: store, imports: imports)
                 CompilerPhaseTrace.emit("instantiate", since: instantiateStarted)
                 let guestStarted = ContinuousClock.now

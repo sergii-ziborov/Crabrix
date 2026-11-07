@@ -807,6 +807,7 @@ actor ProjectLibrary {
         // A failed text-project deletion must not erase its still-usable history.
         try await GitRepositoryStore(root: gitStorageURL).delete(projectID)
         try await recent.remove(projectID: projectID)
+        try ProjectSQLDatabase.remove(projectID: projectID)
     }
 
     /// Persists organization metadata without pretending the project was

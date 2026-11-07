@@ -75,6 +75,7 @@ struct LessonDetailView: View {
     let courseTheme: RustCourseTheme
     let isCompleted: Bool
     let onStart: () -> Void
+    var onOpenCompanion: (() -> Void)? = nil
     let onComplete: () -> Void
     let onShowAchievements: () -> Void
     let replayMethod: String?
@@ -125,6 +126,7 @@ struct LessonDetailView: View {
         replayMethod: String? = nil,
         onOpenReplay: ((AtlasRecording) -> Void)? = nil,
         onStart: @escaping () -> Void,
+        onOpenCompanion: (() -> Void)? = nil,
         onComplete: @escaping () -> Void,
         onShowAchievements: @escaping () -> Void,
         onAnswer: @escaping (Int, Bool) -> Void = { _, _ in }
@@ -138,6 +140,7 @@ struct LessonDetailView: View {
         self.courseTheme = courseTheme
         self.isCompleted = isCompleted
         self.onStart = onStart
+        self.onOpenCompanion = onOpenCompanion
         self.onComplete = onComplete
         self.onShowAchievements = onShowAchievements
         self.onAnswer = onAnswer
@@ -519,6 +522,14 @@ struct LessonDetailView: View {
                 systemImage: isLive ? "hammer.fill" : "checkmark.seal.fill",
                 tint: CrabrixTheme.mint
             )
+
+            if let onOpenCompanion {
+                LessonCard(title: "Task Ledger route project", systemImage: "terminal.fill", tint: CrabrixTheme.blue) {
+                    Text("Practise the route commands in your own editable project. Its README covers Git, CLI, HTTP, SQL and delivery.")
+                    Button(action: onOpenCompanion) { Label("Open Task Ledger", systemImage: "folder.badge.plus") }
+                        .buttonStyle(.bordered)
+                }
+            }
 
             LessonCard(title: "Success looks like", systemImage: "flag.checkered", tint: CrabrixTheme.mint) {
                 formattedParagraph(brief.success, plainColor: CrabrixTheme.primary)

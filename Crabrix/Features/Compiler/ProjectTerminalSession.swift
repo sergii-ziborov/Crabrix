@@ -13,6 +13,7 @@ final class ProjectTerminalSession: ObservableObject {
         let id = UUID()
         let text: String
         let kind: Kind
+        var syntaxPath: String? = nil
     }
 
     @Published var command = ""
@@ -20,6 +21,9 @@ final class ProjectTerminalSession: ObservableObject {
     @Published private(set) var projectName = ""
     @Published private(set) var projectID: UUID?
 
+    private let httpServer = ProjectHTTPServer()
+    private var workflowTasks: [UUID: Task<Void, Never>] = [:]
+    private var serviceCompiler: WasmRustCompiler?
     private var buffers: [UUID: [Line]] = [:]
     private var resultSignatures: [UUID: String] = [:]
     private var workingDirectories: [UUID: String] = [:]
@@ -61,6 +65,7 @@ final class ProjectTerminalSession: ObservableObject {
             projectName = project.name
             return
         }
+        httpServer.stop(); serviceCompiler?.cancel(); serviceCompiler = nil
         if let projectID { buffers[projectID] = lines }
         projectID = project.id
         projectName = project.name
@@ -87,6 +92,7 @@ final class ProjectTerminalSession: ObservableObject {
         workspace: CargoWorkspaceSnapshot = .empty,
         onCheck: () -> Void,
         onRun: () -> Void,
+        onRunWithInput: ((RustProgramInput) -> Void)? = nil,
         onBuild: (() -> Void)? = nil,
         onTest: ((RustUnitTestRequest) -> Void)? = nil,
         onFormat: ((RustFormatRequest) -> Void)? = nil,
@@ -108,9 +114,14 @@ final class ProjectTerminalSession: ObservableObject {
         historyDrafts[project.id] = nil
         append("$ \(visibleCommand)", kind: .command)
 
-        guard let components = Self.shellWords(raw), !components.isEmpty else {
+        guard let components = Self.shellWords(raw) else {
             append("shell: unmatched quote", kind: .error)
             return
+        }
+        guard !components.isEmpty else { return }
+        if let words = try? ProjectCommandLexer.words(raw),
+           words.contains(where: { $0.isOperator && ["|", "||", "&&", ";", "&", "<<"].contains($0.value) }) {
+            append("Shell pipelines and command lists are outside this terminal profile; run each command separately.", kind: .error); return
         }
         let normalized = components.map { $0.lowercased() }
         guard let executable = normalized.first else { return }
@@ -125,6 +136,13 @@ final class ProjectTerminalSession: ObservableObject {
                 "  grep [-inr] · find · wc Search and inspect text\n" +
                 "  touch · mkdir · rm      Edit the project snapshot\n" +
                 "  cp · mv · echo          Copy, move, and write files\n" +
+                "  cargo run -- args < file  Run with arguments and stdin\n" +
+                "  env KEY=value cargo run -- args  Invocation environment\n" +
+                "  sqlite3 name.db SQL      Execute real SQLite; .read path.sql\n" +
+                "  cargo serve [--port N] [--database name.db]  Local Rust HTTP\n" +
+                "  curl [-i] [-X METHOD] [-H header] [-d body] URL  HTTP request\n" +
+                "  http run request.http   Send one editable HTTP request file\n" +
+                "  http stop               Stop the loopback service\n" +
                 "  cargo check|run|build   Use the bundled Rust toolchain\n" +
                 "  cargo test [filter]     Selected-entry unit tests; --lib or --bin NAME\n" +
                 "  cargo test -- --list    Discover unit tests without running them\n" +
@@ -180,9 +198,29 @@ final class ProjectTerminalSession: ObservableObject {
             append("crabrix", kind: .info)
         case "uname":
             append("Crabrix iOS sandbox · arm64 · bundled WASI Rust toolchain", kind: .info)
+        case "env" where components.count > 1:
+            guard !isBusy else { append("A build is already running.", kind: .error); return }
+            do {
+                let input = try ProjectCommandLexer.runInput(ProjectCommandLexer.words(raw), files: project.files, directory: currentDirectory, projectID: project.id)
+                guard let onRunWithInput else { throw ProjectWorkflowFailure("CLI input is unavailable in this view.") }
+                onRunWithInput(input)
+            } catch { append(error.localizedDescription, kind: .error) }
+        case "sqlite3", "sql":
+            runSQL(arguments: Array(components.dropFirst()), project: project, isBusy: isBusy)
+        case "curl":
+            runHTTP(arguments: Array(components.dropFirst()), project: project)
+        case "http":
+            if components.count == 3, components[1] == "run" {
+                do {
+                    guard let path = normalizedPath(components[2], project: project), let text = project.files[path] else { throw ProjectWorkflowFailure("HTTP request file is missing.") }
+                    runHTTP(arguments: try ProjectHTTPRequestFile.curlArguments(text), project: project)
+                } catch { append(error.localizedDescription, kind: .error) }
+            }
+            else if components == ["http", "stop"] { httpServer.stop(); serviceCompiler?.cancel(); serviceCompiler = nil; append("Local HTTP service stopped.", kind: .info) }
+            else { append("usage: cargo serve [--port 8080] [--database tasks.db] · curl URL · http run request.http · http stop", kind: .error) }
         case "env":
             append(
-                "HOME=/workspace/\(project.name)\nPWD=/workspace/\(project.name)\(currentDirectory.isEmpty ? "" : "/\(currentDirectory)")\nSHELL=crabrix-project-shell\nTERM=xterm-256color\nNETWORK=preview-disabled; explicit package preparation only",
+                "HOME=/workspace/\(project.name)\nPWD=/workspace/\(project.name)\(currentDirectory.isEmpty ? "" : "/\(currentDirectory)")\nSHELL=crabrix-project-shell\nTERM=xterm-256color\nNETWORK=explicit terminal HTTP; loopback Rust HTTP adapter; preview remains isolated",
                 kind: .info
             )
         case "date":
@@ -210,6 +248,18 @@ final class ProjectTerminalSession: ObservableObject {
                 guard let onGitCommand else { append("Local Git is unavailable in this view.", kind: .error); return }
                 onGitCommand(command)
             } catch { append(error.localizedDescription, kind: .error) }
+        case "cargo" where components.dropFirst().first == "serve":
+            startHTTP(arguments: Array(components.dropFirst(2)), project: project, isBusy: isBusy)
+        case "cargo" where components.dropFirst().first == "run":
+            guard !isBusy else { append("A build is already running.", kind: .error); return }
+            if components == ["cargo", "run"] { onRun() }
+            else {
+                do {
+                    let input = try ProjectCommandLexer.runInput(ProjectCommandLexer.words(raw), files: project.files, directory: currentDirectory, projectID: project.id)
+                    guard let onRunWithInput else { throw ProjectWorkflowFailure("CLI input is unavailable in this view.") }
+                    onRunWithInput(input)
+                } catch { append(error.localizedDescription, kind: .error) }
+            }
         case "cargo":
             runCargo(
                 arguments: Array(components.dropFirst()),
@@ -237,6 +287,144 @@ final class ProjectTerminalSession: ObservableObject {
             append("\(components[0]): command is not available in the iOS project sandbox", kind: .error)
             append("Type help for Crabrix project commands.", kind: .info)
         }
+    }
+
+    private func runSQL(arguments: [String], project: CrabrixProject, isBusy: Bool) {
+        guard !isBusy, workflowTasks[project.id] == nil else { append("Wait for the current project operation.", kind: .error); return }
+        guard arguments.count >= 2 else { append("usage: sqlite3 tasks.db 'SELECT …' · sqlite3 tasks.db .read migrations/001.sql", kind: .error); return }
+        let name = arguments[0]
+        let query: String
+        if arguments[1] == ".read", arguments.count == 3 {
+            guard let path = normalizedPath(arguments[2], project: project), let text = project.files[path] else { append("SQL script does not exist in this project.", kind: .error); return }
+            query = text
+        } else if arguments.count == 2, !arguments[1].hasPrefix(".") { query = arguments[1] }
+        else { append("Use a quoted SQL script or .read <project.sql>. SQLite dot-shell commands are outside this profile.", kind: .error); return }
+        workflowTasks[project.id] = Task { [weak self] in
+            let outcome: Swift.Result<ProjectSQLDatabase.Result, any Error> = await Task.detached {
+                do { return .success(try ProjectSQLDatabase.open(projectID: project.id, name: name).execute(query)) }
+                catch { return .failure(error) }
+            }.value
+            guard let self else { return }; workflowTasks[project.id] = nil
+            guard projectID == project.id else { return }
+            switch outcome {
+            case let .success(value):
+                if value.columns.isEmpty { append("SQLite: \(value.changes) row(s) changed.", kind: .success) }
+                else {
+                    let rows = [value.columns] + value.rows.map { $0.map { $0 ?? "NULL" } }
+                    append(rows.map { $0.joined(separator: "\t") }.joined(separator: "\n"), kind: .info)
+                }
+            case let .failure(error): append("SQLite: " + error.localizedDescription, kind: .error)
+            }
+        }
+    }
+
+    private func runHTTP(arguments: [String], project: CrabrixProject) {
+        guard workflowTasks[project.id] == nil else { append("Wait for the current terminal request.", kind: .error); return }
+        var index = 0, method: String?, body: Data?, url: URL?, headers: [String: String] = [:]
+        var includeHeaders = false, fail = false
+        do {
+            while index < arguments.count {
+                let argument = arguments[index]
+                if ["-s", "-S", "-sS"].contains(argument) { index += 1; continue }
+                if argument == "-i" || argument == "--include" { includeHeaders = true; index += 1; continue }
+                if argument == "-f" || argument == "--fail" { fail = true; index += 1; continue }
+                if ["-X", "--request", "-H", "--header", "-d", "--data", "--data-binary"].contains(argument) {
+                    guard index + 1 < arguments.count else { throw ProjectWorkflowFailure("curl: option needs a value.") }
+                    let value = arguments[index + 1]; index += 2
+                    if argument == "-X" || argument == "--request" {
+                        guard method == nil, ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"].contains(value) else { throw ProjectWorkflowFailure("curl: unsupported or duplicate method.") }; method = value
+                    } else if argument == "-H" || argument == "--header" {
+                        guard let colon = value.firstIndex(of: ":") else { throw ProjectWorkflowFailure("curl: header needs Name: value.") }
+                        let key = String(value[..<colon]), field = value[value.index(after: colon)...].trimmingCharacters(in: .whitespaces)
+                        guard !key.isEmpty, key.utf8.count <= 128, key.allSatisfy({ $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-") }),
+                              !field.contains("\r"), !field.contains("\n"), field.utf8.count <= 8192,
+                              !["host", "content-length", "transfer-encoding", "connection"].contains(key.lowercased()) else { throw ProjectWorkflowFailure("curl: invalid or reserved header.") }
+                        headers[key] = field
+                    } else {
+                        guard body == nil else { throw ProjectWorkflowFailure("curl: provide one request body.") }
+                        if value.hasPrefix("@") {
+                            guard let path = normalizedPath(String(value.dropFirst()), project: project), let text = project.files[path] else { throw ProjectWorkflowFailure("curl: request body file is missing.") }
+                            body = Data(text.utf8)
+                        } else { body = Data(value.utf8) }
+                    }
+                } else {
+                    guard !argument.hasPrefix("-"), url == nil, let candidate = URL(string: argument),
+                          let parts = URLComponents(url: candidate, resolvingAgainstBaseURL: false),
+                          parts.user == nil, parts.password == nil, parts.fragment == nil,
+                          candidate.scheme == "https" || candidate.scheme == "http" && ["127.0.0.1", "localhost", "::1"].contains(candidate.host ?? "") else {
+                        throw ProjectWorkflowFailure("curl: use one HTTPS URL or an HTTP loopback URL; unsupported options are refused.")
+                    }
+                    url = candidate; index += 1
+                }
+            }
+            guard let url, (body?.count ?? 0) <= 65536, headers.count <= 32 else { throw ProjectWorkflowFailure("curl: URL required; request body is limited to 64 KiB.") }
+            var request = URLRequest(url: url); request.httpMethod = method ?? (body == nil ? "GET" : "POST")
+            request.httpBody = body
+            for (key, value) in headers { request.setValue(value, forHTTPHeaderField: key) }
+            if body != nil, request.value(forHTTPHeaderField: "Content-Type") == nil { request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type") }
+            let captured = request, showHeaders = includeHeaders, failOnStatus = fail
+            workflowTasks[project.id] = Task { [weak self] in
+                do {
+                    let (data, response) = try await ProjectHTTPClient().send(captured)
+                    guard let self else { return }; workflowTasks[project.id] = nil
+                    guard projectID == project.id else { return }
+                    let header = "HTTP \(response.statusCode)\n" + response.allHeaderFields.sorted { String(describing: $0.key) < String(describing: $1.key) }.map { "\($0.key): \($0.value)" }.joined(separator: "\n")
+                    let output = (showHeaders ? header + "\n\n" : "") + String(decoding: data, as: UTF8.self)
+                    append(output.isEmpty ? "HTTP \(response.statusCode)" : output, kind: failOnStatus && response.statusCode >= 400 ? .error : .info,
+                        syntaxPath: showHeaders ? "response.http" : response.value(forHTTPHeaderField: "Content-Type")?.contains("json") == true ? "response.json" : nil)
+                } catch {
+                    guard let self else { return }; workflowTasks[project.id] = nil
+                    if projectID == project.id { append("curl: " + error.localizedDescription, kind: .error) }
+                }
+            }
+        } catch { append(error.localizedDescription, kind: .error) }
+    }
+
+    private func startHTTP(arguments: [String], project: CrabrixProject, isBusy: Bool) {
+        guard !isBusy, !httpServer.isRunning, workflowTasks[project.id] == nil else { append("Stop the previous service with http stop and wait for active operations.", kind: .error); return }
+        var port: UInt16 = 8080, databaseName: String?, index = 0
+        var seen: Set<String> = []
+        do {
+            while index < arguments.count {
+                let option = arguments[index]
+                guard seen.insert(option).inserted, index + 1 < arguments.count else { throw ProjectWorkflowFailure("usage: cargo serve [--port 8080] [--database tasks.db]") }
+                if option == "--port", let value = UInt16(arguments[index + 1]), value >= 1024 { port = value }
+                else if option == "--database" { databaseName = arguments[index + 1] }
+                else { throw ProjectWorkflowFailure("usage: cargo serve [--port 8080] [--database tasks.db]") }
+                index += 2
+            }
+            guard project.manifest?.dependencies.isEmpty != false else {
+                throw ProjectWorkflowFailure("The local stdin HTTP adapter currently accepts std-only handlers. Axum/TCP projects use the documented desktop profile.")
+            }
+            guard let source = project.files[project.entryFile], project.entryFile.hasSuffix(".rs") else { throw ProjectWorkflowFailure("Select a Rust program entry before starting HTTP.") }
+            var support = project.files; support.removeValue(forKey: project.entryFile)
+            let supporting = support
+            let database = try databaseName.map { try ProjectSQLDatabase.open(projectID: project.id, name: $0) }
+            let cancellation = CompilerInvocationCancellation()
+            let compiler = WasmRustCompiler(); serviceCompiler = compiler
+            append("Building the frozen HTTP handler; no request is executed until the loopback listener is ready.", kind: .info)
+            workflowTasks[project.id] = Task { [weak self] in
+                let result = await compiler.build(source: source, sourcePath: project.entryFile, supportingFiles: supporting)
+                guard let self else { return }; workflowTasks[project.id] = nil
+                guard projectID == project.id, serviceCompiler === compiler else { return }
+                guard result.succeeded else { serviceCompiler = nil; append(result.stderr.isEmpty ? result.detail : result.stderr, kind: .error); return }
+                do {
+                    try httpServer.start(port: port, handler: { [weak self] request in
+                        let value = await compiler.run(source: source, sourcePath: project.entryFile, supportingFiles: supporting,
+                            input: .init(standardInput: request, database: database), cancellation: cancellation)
+                        if value.succeeded { return value.stdout }
+                        await MainActor.run { [weak self] in
+                            guard let self, projectID == project.id else { return }
+                            append("[handler] " + (value.stderr.isEmpty ? value.detail : value.stderr), kind: .error)
+                        }
+                        return "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/plain\r\n\r\nHandler execution failed; inspect and test the Rust program."
+                    }, event: { [weak self] message, error in
+                        guard let self, projectID == project.id else { return }
+                        append(message, kind: error ? .error : .info)
+                    }, onStop: { cancellation.cancel() })
+                } catch { serviceCompiler = nil; append(error.localizedDescription, kind: .error) }
+            }
+        } catch { append(error.localizedDescription, kind: .error) }
     }
 
     private func runNpm(arguments: [String], project: CrabrixProject, isBusy: Bool,
@@ -349,7 +537,7 @@ final class ProjectTerminalSession: ObservableObject {
 
     func recordGit(_ text: String, isError: Bool, project: CrabrixProject) {
         attach(to: project)
-        append("[git] " + text, kind: isError ? .error : .info)
+        append("[git] " + text, kind: isError ? .error : .info, syntaxPath: text.contains("@@") ? "change.diff" : nil)
     }
 
     private func runCargo(
@@ -506,56 +694,11 @@ final class ProjectTerminalSession: ObservableObject {
     private static let availableCommands: Set<String> = [
         "help", "pwd", "ls", "cd", "tree", "cat", "head", "tail", "wc",
         "grep", "find", "touch", "mkdir", "rm", "cp", "mv", "echo",
-        "whoami", "uname", "env", "date", "which", "cargo", "rustfmt", "git", "npm", "history", "clear",
+        "sqlite3", "sql", "curl", "http", "whoami", "uname", "env", "date", "which", "cargo", "rustfmt", "git", "npm", "history", "clear",
     ]
 
     private static func shellWords(_ input: String) -> [String]? {
-        var words: [String] = []
-        var word = ""
-        var quote: Character?
-        var escaped = false
-
-        func flush() {
-            guard !word.isEmpty else { return }
-            words.append(word)
-            word = ""
-        }
-
-        var index = input.startIndex
-        while index < input.endIndex {
-            let character = input[index]
-            if escaped {
-                word.append(character)
-                escaped = false
-            } else if character == "\\" && quote != "'" {
-                escaped = true
-            } else if let activeQuote = quote {
-                if character == activeQuote {
-                    quote = nil
-                } else {
-                    word.append(character)
-                }
-            } else if character == "\"" || character == "'" {
-                quote = character
-            } else if character.isWhitespace {
-                flush()
-            } else if character == ">" {
-                flush()
-                let next = input.index(after: index)
-                if next < input.endIndex, input[next] == ">" {
-                    words.append(">>")
-                    index = next
-                } else {
-                    words.append(">")
-                }
-            } else {
-                word.append(character)
-            }
-            index = input.index(after: index)
-        }
-        guard quote == nil, !escaped else { return nil }
-        flush()
-        return words
+        try? ProjectCommandLexer.words(input).map(\.value)
     }
 
     private static func directories(in files: [String: String]) -> Set<String> {
@@ -748,7 +891,7 @@ final class ProjectTerminalSession: ObservableObject {
                     .joined(separator: "\n")
                 append(numbered, kind: .info)
             } else {
-                append(content, kind: .info)
+                append(content, kind: .info, syntaxPath: path)
             }
         }
     }
@@ -958,7 +1101,7 @@ final class ProjectTerminalSession: ObservableObject {
                 append(arguments.joined(separator: " "), kind: .info)
                 return
             }
-            guard redirectIndex + 1 < arguments.count,
+            guard redirectIndex + 2 == arguments.count, arguments.filter({ $0 == ">" || $0 == ">>" }).count == 1,
                   let path = resolve(arguments[redirectIndex + 1]), !path.isEmpty, ensureParent(path) else {
                 fail("invalid redirection")
                 return
@@ -992,11 +1135,24 @@ final class ProjectTerminalSession: ObservableObject {
         if let pattern = try? NSRegularExpression(pattern: #"(?:gh[pousr]_[A-Za-z0-9_]{10,}|github_pat_[A-Za-z0-9_]{10,})"#) {
             result = pattern.stringByReplacingMatches(in: result, range: NSRange(result.startIndex..., in: result), withTemplate: "<redacted token>")
         }
+        for pattern in [#"(?i)(Authorization|Cookie|X-API-Key)\s*:\s*[^\"'\r\n]*"#,
+                        #"(?i)\b([A-Z0-9_]*(?:TOKEN|SECRET|PASSWORD|API_KEY)[A-Z0-9_]*)=(?:\"[^\"]*\"|'[^']*'|[^\s]+)"#] {
+            if let expression = try? NSRegularExpression(pattern: pattern) {
+                result = expression.stringByReplacingMatches(in: result, range: NSRange(result.startIndex..., in: result), withTemplate: "$1=<redacted>")
+            }
+        }
         return result
     }
 
-    private func append(_ text: String, kind: Line.Kind) {
-        lines.append(Line(text: text, kind: kind))
+    private func append(_ text: String, kind: Line.Kind, syntaxPath: String? = nil) {
+        let preview = text.utf8.count > 131072
+            ? String(decoding: text.utf8.prefix(131072), as: UTF8.self) + "\n[Terminal preview limited; full compiler output remains in Output.]"
+            : text
+        lines.append(Line(text: preview, kind: kind, syntaxPath: syntaxPath))
+        var bytes = lines.reduce(0) { $0 + $1.text.utf8.count }
+        while lines.count > 1000 || bytes > 2 * 1024 * 1024 {
+            bytes -= lines.removeFirst().text.utf8.count
+        }
         if let projectID { buffers[projectID] = lines }
     }
 }

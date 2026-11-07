@@ -8,6 +8,7 @@ import { bracketMatching, indentOnInput, syntaxHighlighting, HighlightStyle, Str
 import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
 import { markdown } from "@codemirror/lang-markdown";
 import { toml } from "@codemirror/legacy-modes/mode/toml";
+import { workflowLanguageSupport } from "@/lib/workflow-syntax";
 import { rust } from "@codemirror/lang-rust";
 import { tags } from "@lezer/highlight";
 import { yCollab, yUndoManagerKeymap, ySyncAnnotation } from "y-codemirror.next";
@@ -20,7 +21,8 @@ export type FileEditorState = { text: Y.Text; undo: Y.UndoManager; anchor: numbe
 export function createFileEditorState(text: Y.Text): FileEditorState { return { text, undo: new Y.UndoManager(text), anchor: 0, head: 0, top: 0, left: 0 }; }
 const colors = HighlightStyle.define([
   { tag: tags.keyword, color: "var(--pg-keyword)" }, { tag: [tags.string, tags.character], color: "var(--pg-string)" },
-  { tag: tags.comment, color: "var(--pg-comment)" }, { tag: [tags.typeName, tags.className], color: "var(--pg-type)" },
+  { tag: tags.comment, color: "var(--pg-comment)" },
+  { tag: tags.inserted, color: "var(--pg-string)" }, { tag: tags.deleted, color: "var(--pg-keyword)" }, { tag: [tags.typeName, tags.className], color: "var(--pg-type)" },
   { tag: [tags.number, tags.bool], color: "var(--pg-number)" }, { tag: tags.macroName, color: "var(--pg-macro)" },
 ]);
 
@@ -54,7 +56,7 @@ export function PlaygroundCodeEditor({ fileState, readOnly, preferences, onLimit
     if (!parent.current) return;
     const undo = fileState.undo, length = text.length;
     const state = EditorState.create({ doc: text.toString(), selection: { anchor: Math.min(fileState.anchor, length), head: Math.min(fileState.head, length) }, extensions: [
-      lineNumbers(), highlightActiveLine(), drawSelection(), indentOnInput(), bracketMatching(), ...(filePath.endsWith(".rs") ? [rust()] : filePath.endsWith(".toml") ? [StreamLanguage.define(toml)] : filePath.endsWith(".md") ? [markdown({ codeLanguages: [LanguageDescription.of({ name: "Rust", alias: ["rs"], support: rust() })] })] : []), syntaxHighlighting(colors),
+      lineNumbers(), highlightActiveLine(), drawSelection(), indentOnInput(), bracketMatching(), ...(filePath.endsWith(".rs") ? [rust()] : filePath.endsWith(".toml") ? [StreamLanguage.define(toml)] : filePath.endsWith(".md") ? [markdown({ codeLanguages: [LanguageDescription.of({ name: "Rust", alias: ["rs"], support: rust() })] })] : workflowLanguageSupport(filePath)), syntaxHighlighting(colors),
       keymap.of([...yUndoManagerKeymap, ...closeBracketsKeymap, ...defaultKeymap, indentWithTab]),
       yCollab(text, awareness, { undoManager: undo }),
       configuration.current.of(options(preferences, readOnly)),

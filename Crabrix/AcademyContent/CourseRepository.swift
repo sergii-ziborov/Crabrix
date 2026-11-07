@@ -32,6 +32,20 @@ struct LessonIllustration: Sendable {
 extension CourseRepository {
     func illustration(for lessonID: String) -> LessonIllustration? { nil }
 
+    /// Data-only reference to a companion tree in the retained course snapshot.
+    /// Opening it creates a personal project and grants no execution authority.
+    func workflowCompanion(for lessonID: String) -> CourseProjectTemplate? {
+        guard let metadata = starterProject(for: lessonID)?.files["workflow-companion.json"],
+              let reference = try? JSONDecoder().decode(WorkflowCompanionReference.self, from: Data(metadata.utf8)),
+              let source = starterProject(for: reference.lessonID) else { return nil }
+        let files = Dictionary(uniqueKeysWithValues: source.files.compactMap { path, content -> (String,String)? in
+            guard path.hasPrefix("companion/") else { return nil }
+            return (String(path.dropFirst("companion/".count)), content)
+        })
+        guard !files.isEmpty, (try? ProjectFilePolicy.validate(files, entryFile: reference.entryFile)) != nil else { return nil }
+        return CourseProjectTemplate(name: reference.name, entryFile: reference.entryFile, files: files)
+    }
+
     func learningTotals() -> CourseLearningTotals {
         let rust = courses.filter { $0.id != "algorithms" }
             .flatMap { $0.units.flatMap(\.lessons) }.count
@@ -122,3 +136,5 @@ struct LoadedCourse: Sendable {
     let contentVersion: String
     let archiveSHA256: String
 }
+
+private struct WorkflowCompanionReference: Decodable { let lessonID: String; let name: String; let entryFile: String }

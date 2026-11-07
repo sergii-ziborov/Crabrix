@@ -137,6 +137,7 @@ struct BuildDockView<CodeContent: View>: View {
     let canStartBuild: Bool
     let onCheck: () -> Void
     let onRun: () -> Void
+    var onRunWithInput: ((RustProgramInput) -> Void)? = nil
     var onBuild: (() -> Void)? = nil
     var onTest: ((RustUnitTestRequest) -> Void)? = nil
     var onFormat: ((RustFormatRequest) -> Void)? = nil
@@ -188,6 +189,7 @@ struct BuildDockView<CodeContent: View>: View {
         canStartBuild: Bool,
         onCheck: @escaping () -> Void,
         onRun: @escaping () -> Void,
+        onRunWithInput: ((RustProgramInput) -> Void)? = nil,
         onBuild: (() -> Void)? = nil,
         onTest: ((RustUnitTestRequest) -> Void)? = nil,
         onFormat: ((RustFormatRequest) -> Void)? = nil,
@@ -229,6 +231,7 @@ struct BuildDockView<CodeContent: View>: View {
         self.canStartBuild = canStartBuild
         self.onCheck = onCheck
         self.onRun = onRun
+        self.onRunWithInput = onRunWithInput
         self.onBuild = onBuild
         self.onTest = onTest
         self.onFormat = onFormat
@@ -428,6 +431,7 @@ struct BuildDockView<CodeContent: View>: View {
             canStartBuild: canStartBuild,
             onCheck: onCheck,
             onRun: onRun,
+            onRunWithInput: onRunWithInput,
             onBuild: onBuild,
             onTest: onTest,
             onFormat: onFormat,
@@ -1043,6 +1047,7 @@ private struct TerminalDockContent: View {
     let canStartBuild: Bool
     let onCheck: () -> Void
     let onRun: () -> Void
+    var onRunWithInput: ((RustProgramInput) -> Void)? = nil
     var onBuild: (() -> Void)? = nil
     var onTest: ((RustUnitTestRequest) -> Void)? = nil
     var onFormat: ((RustFormatRequest) -> Void)? = nil
@@ -1075,7 +1080,7 @@ private struct TerminalDockContent: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 9)
                 }
-                .onChange(of: terminal.lines.count) { _, _ in
+                .onChange(of: terminal.lines.last?.id) { _, _ in
                     if let last = terminal.lines.last {
                         withAnimation(.easeOut(duration: 0.12)) { proxy.scrollTo(last.id, anchor: .bottom) }
                     }
@@ -1157,7 +1162,7 @@ private struct TerminalDockContent: View {
             .background(CrabrixTheme.panel)
             .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { commandBarWidth = $0 }
         }
-        .task {
+        .task(id: project.id) {
             terminal.attach(to: project)
             guard autoFocus else { return }
             keyboard.focus()
@@ -1188,6 +1193,7 @@ private struct TerminalDockContent: View {
             workspace: workspace,
             onCheck: onCheck,
             onRun: onRun,
+            onRunWithInput: onRunWithInput,
             onBuild: onBuild,
             onTest: onTest,
             onFormat: onFormat,
@@ -1241,6 +1247,7 @@ private struct TerminalCommandField: UIViewRepresentable {
     func updateUIView(_ field: TerminalTextField, context: Context) {
         context.coordinator.parent = self
         if field.text != text { field.text = text }
+        context.coordinator.highlight(field)
         // Responder changes belong to explicit actions, outside SwiftUI's
         // layout update. Resigning here can leave the keyboard safe area stuck
         // at its old height even after UIKit has hidden the keyboard.
@@ -1260,6 +1267,28 @@ private struct TerminalCommandField: UIViewRepresentable {
 
         @objc func changed(_ field: UITextField) {
             parent.text = field.text ?? ""
+            highlight(field)
+        }
+
+        func highlight(_ field: UITextField) {
+            guard field.markedTextRange == nil else { return }
+            let source = field.text ?? ""
+            let selected = field.selectedTextRange.map {
+                (field.offset(from: field.beginningOfDocument, to: $0.start), field.offset(from: field.beginningOfDocument, to: $0.end))
+            }
+            let styled = NSMutableAttributedString(string: source, attributes: [
+                .font: field.font ?? UIFont.monospacedSystemFont(ofSize: 12, weight: .regular),
+                .foregroundColor: UIColor(CrabrixTheme.primary),
+            ])
+            for token in SyntaxHighlighter.tokens(in: source, filePath: "command.sh") {
+                styled.addAttribute(.foregroundColor, value: SyntaxTheme.uiColor(for: token.kind), range: token.range)
+            }
+            field.attributedText = styled
+            if let (start, end) = selected,
+               let lower = field.position(from: field.beginningOfDocument, offset: start),
+               let upper = field.position(from: field.beginningOfDocument, offset: end) {
+                field.selectedTextRange = field.textRange(from: lower, to: upper)
+            }
         }
 
         func textFieldDidBeginEditing(_ textField: UITextField) {
@@ -1310,6 +1339,7 @@ private struct TerminalHighlightedLine: View {
     }
 
     private var styledText: Text {
+        if let path = line.syntaxPath { return Text(SyntaxTheme.attributedString(line.text, filePath: path, fontSize: 11)) }
         if line.kind == .command, line.text.hasPrefix("$ ") {
             return command
         }
@@ -1377,13 +1407,8 @@ private struct TerminalHighlightedLine: View {
     }
 
     private var command: Text {
-        let raw = String(line.text.dropFirst(2))
-        let parts = raw.split(maxSplits: 1, whereSeparator: \.isWhitespace)
-        let executable = parts.first.map(String.init) ?? raw
-        let arguments = parts.count > 1 ? " " + parts[1] : ""
-        return Text("$ ").foregroundColor(CrabrixTheme.mint)
-            + Text(executable).foregroundColor(CrabrixTheme.amber)
-            + Text(arguments).foregroundColor(CrabrixTheme.primary)
+        Text("$ ").foregroundColor(CrabrixTheme.mint)
+            + Text(SyntaxTheme.attributedString(String(line.text.dropFirst(2)), filePath: "command.sh", fontSize: 11))
     }
 
     private var color: Color {

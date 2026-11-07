@@ -83,6 +83,7 @@ struct AlgorithmChallenge: Equatable, Sendable {
     let expectedOutput: String
     let requiredSourceFragments: [String]
     let forbiddenSourceFragments: [String]
+    var usesSQL = false
 }
 
 #if DEBUG || CRABRIX_LEGACY_FIXTURES
