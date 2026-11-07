@@ -1,0 +1,618 @@
+{
+  "checkedAt": "2026-11-07T17:56:42.270682+00:00",
+  "sourceCommit": "ed4dcb93630d0ef1c100296b111a855e4ba8e152",
+  "originalRegressionReceipt": "docs/app-store/release-1.1.8-build134.json",
+  "originalSkippedTests": 58,
+  "completedOriginalTests": 58,
+  "passed": 54,
+  "failed": 4,
+  "skipped": 0,
+  "unexecuted": 0,
+  "qualificationResult": "FAILED",
+  "releaseProfile": {
+    "tests": 41,
+    "passed": 40,
+    "failed": 1,
+    "skipped": 0
+  },
+  "experimentalProfiles": {
+    "tests": 17,
+    "passed": 14,
+    "failed": 3,
+    "skipped": 0
+  },
+  "whyOriginallySkipped": [
+    "Explicit opt-in flags for expensive real compiler/dependency graphs and experimental backends",
+    "Actual public CoursePack network downloads and signed installation",
+    "Checksum-verified local Cargo archives and old/new signed course fixtures",
+    "Owned localhost Shared runtime relay",
+    "Prepared public Atlas archive in the dedicated Simulator cache"
+  ],
+  "shippedCompiler": {
+    "compilerSHA256": "0286dc52064283ef78ba153a554d86ae742e6c8cd638aea8662e07d3529233fc",
+    "sysrootIdentity": "4ec1d70c58413982296aafe6fbb2a4509187f1d0ac10d0b1ee4740c7e94fb23c",
+    "affectedRelease": "1.1.8 (134)"
+  },
+  "failureFamily": {
+    "name": "Narrow atomic memory width",
+    "observedSymptom": "AtomicBool initialized to false reads as true with nonzero neighboring bytes in a repr(C) struct. The guest panics at the unchanged assertion.",
+    "failedTests": [
+      "BundledCompilerGateTests/testAtomicBoolAndIntegerStateRemainConsistent",
+      "CompilerCandidateGateTests/testCandidateCompilesAndRunsUsingSignedSysroot",
+      "CompilerCandidateGateTests/testFatCandidateCompilesAndRunsUsingSignedSysroot",
+      "CompilerCandidateGateTests/testTransformedCandidateCompilesAndRunsUsingSignedSysroot"
+    ],
+    "releaseFailureCount": 1,
+    "olderExperimentalVariantFailureCount": 3,
+    "priorDiagnosis": "docs/performance/2026-10-25-native-candidate-status.md",
+    "backendFixSourceCommit": "0a5970c97ef0e192c8f6e5dec460190924489f97"
+  },
+  "olderCandidateInputs": {
+    "Artifact": {
+      "compilerSHA256": "0900e146ea3d54efb021a79165b2439d28ad67bd296a5075c4d915f6ddb353ac",
+      "compilerBytes": 95199989
+    },
+    "ArtifactO2": {
+      "compilerSHA256": "c536ce70d4487ec08af4de4849f24456611e28d61ee1468438a8ddbcde35d45f",
+      "compilerBytes": 63890638
+    },
+    "ArtifactFat": {
+      "compilerSHA256": "8f1b313ccb59bf43546e36cfcdbd04dac9b5c8388a6ffec23efe2148564c17e6",
+      "compilerBytes": 79051505
+    }
+  },
+  "correctedCandidate": {
+    "compilerSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+    "compilerBytes": 79081228,
+    "builderCommit": "0a5970c97ef0e192c8f6e5dec460190924489f97",
+    "cloudBuildID": "eb73637a-1c11-4d19-b178-f4a8666ed50f",
+    "candidateSysroot": {
+      "archiveSHA256": "44c0912b34520e0f85e63a8bb12e5447e83c59c9195a8bd4f7c72db2d4772842",
+      "inventorySHA256": "0349126aa9ecf80f9abf3f8a1d3c4c1266ed04d661aa38efab796c089e159da1",
+      "sourceStage": "build/aarch64-apple-darwin/stage1/lib/rustlib/wasm32-wasip1/lib",
+      "fileCount": 60
+    },
+    "allInventoryFilesVerified": true,
+    "source": "Apple Xcode Cloud build 89 TEST_PRODUCTS",
+    "productionReplacement": false,
+    "sourceAppleArtifactBytes": 181715979,
+    "sourceAppleArtifactSHA256": "12c5c3db2d2a2dd018715af1019383902fb383918917ec4a9ecd71a7d8a81807",
+    "retainedPayloadComplete": true,
+    "redundantTransportZipRemoved": true
+  },
+  "correctedCandidateControl": {
+    "test": "BundledCompilerGateTests/testAtomicBoolAndIntegerStateRemainConsistent",
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "countedInOriginal58": false,
+    "resultBundle": "build/skipped-tests-20261107/corrected-atomic-control.xcresult",
+    "mode": "WASM software-direct with the source-built candidate sysroot"
+  },
+  "correctedMacroQualification": {
+    "tests": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "includes": [
+      "Kameo startup variants",
+      "compiler/source-sysroot binding",
+      "object/metadata emission diagnostic",
+      "real Serde derive",
+      "unchanged Kameo cold and changed-root runs on direct and token interpreters",
+      "locked Kameo dependency graph with five macro crates",
+      "unchanged identity macro source"
+    ]
+  },
+  "infrastructure": {
+    "diskExhaustionObserved": true,
+    "secondSimulatorDeleted": true,
+    "onlyOwnedGeneratedCachesCleaned": true,
+    "affectedProductionCasesRetried": 36,
+    "productionRetryPassed": 36,
+    "lastResultExporterInterrupted": true,
+    "lastSmokeTestRetriedWithCompleteResultBundle": true,
+    "newSimulatorRetained": false,
+    "simulator": "E7FA4183-4CB2-427B-84A2-9A5889371AA3",
+    "runtime": "iOS 26.5",
+    "xcode": "27.2",
+    "sdk": "iphonesimulator27.2",
+    "testConfiguration": "CompilerCandidate"
+  },
+  "productionInputsChanged": false,
+  "candidatePromotedToProduction": false,
+  "newAppBinaryUploaded": false,
+  "originalTestResourcesRestored": true,
+  "strictSignatureAfterRestoration": "passed",
+  "physicalDeviceTested": false,
+  "evidenceDirectory": "build/skipped-tests-20261107/",
+  "tests": [
+    {
+      "id": "AtlasReplayTests/testPreparedLessonCopyChangesRunsAndDebugsWithoutReusingOriginalRecording",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 12.731,
+      "log": "build/skipped-tests-20261107/production.log",
+      "resultBundle": "build/skipped-tests-20261107/production.xcresult",
+      "resultBundleStatus": "Interrupted after these completed tests; their XCTest log records precede the disk-exhaustion incident."
+    },
+    {
+      "id": "BuildProblemsTests/testWeatherStationCompilesAndRunsWithoutUnusedProcMacroDependency",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 2.076,
+      "log": "build/skipped-tests-20261107/production.log",
+      "resultBundle": "build/skipped-tests-20261107/production.xcresult",
+      "resultBundleStatus": "Interrupted after these completed tests; their XCTest log records precede the disk-exhaustion incident."
+    },
+    {
+      "id": "BundledCompilerGateTests/testAppliedRepairNeedsLearnerEvidenceButAnEarlyFixDoesNot",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 6.127,
+      "log": "build/skipped-tests-20261107/production.log",
+      "resultBundle": "build/skipped-tests-20261107/production.xcresult",
+      "resultBundleStatus": "Interrupted after these completed tests; their XCTest log records precede the disk-exhaustion incident."
+    },
+    {
+      "id": "BundledCompilerGateTests/testAtomicBoolAndIntegerStateRemainConsistent",
+      "status": "failed",
+      "profile": "release",
+      "durationSeconds": 3.891,
+      "log": "build/skipped-tests-20261107/production.log",
+      "resultBundle": "build/skipped-tests-20261107/production.xcresult",
+      "resultBundleStatus": "Interrupted after these completed tests; their XCTest log records precede the disk-exhaustion incident."
+    },
+    {
+      "id": "BundledCompilerGateTests/testAxumColdRouterWithTokio",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 633.892,
+      "log": "build/skipped-tests-20261107/production.log",
+      "resultBundle": "build/skipped-tests-20261107/production.xcresult",
+      "resultBundleStatus": "Interrupted after these completed tests; their XCTest log records precede the disk-exhaustion incident."
+    },
+    {
+      "id": "BundledCompilerGateTests/testAxumRoutesARealHTTPRequestWithoutATCPServer",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 356.765,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testChallengeEvidenceThroughTheRealHarness",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 4.732,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testClapRegexJSONCommandLineAppBuildsAndRuns",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 317.284,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testFreshRevisionCompilesAndRunsWithoutArtifactCache",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 1.163,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testKameoActorStartupDiagnostics",
+      "status": "passed",
+      "profile": "experimental",
+      "durationSeconds": 342.28,
+      "log": "build/skipped-tests-20261107/candidate-run-01.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-01.xcresult",
+      "compilerSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+      "sourceBuiltSysrootVerified": true
+    },
+    {
+      "id": "BundledCompilerGateTests/testMacroCandidateInputBindsCompilerAndCompleteSourceSysroot",
+      "status": "passed",
+      "profile": "experimental",
+      "durationSeconds": 0.357,
+      "log": "build/skipped-tests-20261107/candidate-run-02.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-02.xcresult",
+      "compilerSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+      "sourceBuiltSysrootVerified": true
+    },
+    {
+      "id": "BundledCompilerGateTests/testMarkdownAndTemplatesRenderARealHTMLPageOffline",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 150.506,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testMultiFileClapRegexCollectionsAppBuildsAndRuns",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 39.997,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testMultiFileDependencyRichLogMonitorBuildsAndRuns",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 10.986,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testMultiFileRoutePlannerWithGraphCratesBuildsAndRuns",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 144.268,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testPrelinkedIdentityRPCProbe",
+      "status": "passed",
+      "profile": "experimental",
+      "durationSeconds": 0.975,
+      "log": "build/skipped-tests-20261107/candidate-run-03.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-03.xcresult",
+      "compilerSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+      "sourceBuiltSysrootVerified": true,
+      "probeMode": "emit",
+      "scope": "Object and metadata emission diagnostic; cold compile and actual macro consumers are separate tests."
+    },
+    {
+      "id": "BundledCompilerGateTests/testProgramPanicKeepsItsMessageAndRunPhase",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 1.16,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testProjectBuildScriptTracksInputsAndExposesGeneratedCodeAndCfg",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 6.814,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testRegexAndJSONLogAnalyzerBuildsAndRuns",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 9.579,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testReopenedLabRunsTheHarnessAndEarnsEvidence",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 3.888,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testRunKeepsMainActorResponsiveAtUserInitiatedPriority",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 1.333,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testRustGeneratesAnOfflineHTMLCSSJavaScriptPreview",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 1.402,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testSerdeDeriveRunsThroughTheOfflineWASIMacroBridge",
+      "status": "passed",
+      "profile": "experimental",
+      "durationSeconds": 95.142,
+      "log": "build/skipped-tests-20261107/candidate-run-04.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-04.xcresult",
+      "compilerSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+      "sourceBuiltSysrootVerified": true
+    },
+    {
+      "id": "BundledCompilerGateTests/testSerdeJSONBuildScriptRunsInsideTheOfflineWASISandbox",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 102.199,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testSourceBuiltCompilerCheckedI64Multiplication",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 1.763,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testSourceBuiltCompilerFloatToI128BuiltinsUseWasmABI",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 1.103,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testSourceBuiltCompilerI128ByteSwap",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 1.095,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testSourceBuiltCompilerI128ImmediateComparison",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 1.695,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testSourceBuiltCompilerRegexDependencyBuildsAndRuns",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 6.257,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testSynParserOnlyDependencyBuildsAndRuns",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 61.172,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testTokioCold01OriginalToken",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 79.31,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testTokioCold02RebuiltToken",
+      "status": "passed",
+      "profile": "experimental",
+      "durationSeconds": 47.411,
+      "log": "build/skipped-tests-20261107/candidate-run-05.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-05.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testTokioCold03RebuiltDirect",
+      "status": "passed",
+      "profile": "experimental",
+      "durationSeconds": 37.801,
+      "log": "build/skipped-tests-20261107/candidate-run-06.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-06.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testTokioCold04OriginalDirect",
+      "status": "passed",
+      "profile": "experimental",
+      "durationSeconds": 66.146,
+      "log": "build/skipped-tests-20261107/candidate-run-07.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-07.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testTokioCold05RebuiltO2Direct",
+      "status": "passed",
+      "profile": "experimental",
+      "durationSeconds": 39.439,
+      "log": "build/skipped-tests-20261107/candidate-run-08.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-08.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testTokioCold06RebuiltFatDirect",
+      "status": "passed",
+      "profile": "experimental",
+      "durationSeconds": 29.054,
+      "log": "build/skipped-tests-20261107/candidate-run-09.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-09.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testTokioColdDispatchComparison",
+      "status": "passed",
+      "profile": "experimental",
+      "durationSeconds": 152.997,
+      "log": "build/skipped-tests-20261107/candidate-run-10.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-10.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testTokioCurrentThreadTimersAndChannelsRunOffline",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 65.872,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "BundledCompilerGateTests/testUnchangedKameoColdActorsAndChangedRootRunOffline",
+      "status": "passed",
+      "profile": "experimental",
+      "durationSeconds": 298.526,
+      "log": "build/skipped-tests-20261107/candidate-run-11.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-11.xcresult",
+      "compilerSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+      "sourceBuiltSysrootVerified": true
+    },
+    {
+      "id": "BundledCompilerGateTests/testUnchangedKameoColdTokenCompilerControl",
+      "status": "passed",
+      "profile": "experimental",
+      "durationSeconds": 449.212,
+      "log": "build/skipped-tests-20261107/candidate-run-12.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-12.xcresult",
+      "compilerSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+      "sourceBuiltSysrootVerified": true
+    },
+    {
+      "id": "BundledCompilerGateTests/testUnchangedKameoGraphPreparesWithAllFiveMacroCrates",
+      "status": "passed",
+      "profile": "experimental",
+      "durationSeconds": 7.36,
+      "log": "build/skipped-tests-20261107/candidate-run-13.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-13.xcresult",
+      "compilerSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+      "sourceBuiltSysrootVerified": true
+    },
+    {
+      "id": "BundledCompilerGateTests/testWASIProcMacroIdentityUsesTheUnchangedMacroSource",
+      "status": "passed",
+      "profile": "experimental",
+      "durationSeconds": 42.983,
+      "log": "build/skipped-tests-20261107/candidate-run-14.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-14.xcresult",
+      "compilerSHA256": "27acccf94e1f4083b311b352164fe1a310077c76f4cd3e221a2ee26b02309008",
+      "sourceBuiltSysrootVerified": true
+    },
+    {
+      "id": "CompilerCandidateGateTests/testCandidateCompilesAndRunsUsingSignedSysroot",
+      "status": "failed",
+      "profile": "experimental",
+      "durationSeconds": 8.925,
+      "log": "build/skipped-tests-20261107/candidate-run-15.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-15.xcresult"
+    },
+    {
+      "id": "CompilerCandidateGateTests/testFatCandidateCompilesAndRunsUsingSignedSysroot",
+      "status": "failed",
+      "profile": "experimental",
+      "durationSeconds": 7.773,
+      "log": "build/skipped-tests-20261107/candidate-run-16.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-16.xcresult"
+    },
+    {
+      "id": "CompilerCandidateGateTests/testTransformedCandidateCompilesAndRunsUsingSignedSysroot",
+      "status": "failed",
+      "profile": "experimental",
+      "durationSeconds": 8.053,
+      "log": "build/skipped-tests-20261107/candidate-run-17-retry.log",
+      "resultBundle": "build/skipped-tests-20261107/candidate-run-17-retry.xcresult"
+    },
+    {
+      "id": "CompilerPerformanceProbeTests/testColdEngineAndUnchangedWarningCheck",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 1.275,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "CourseDeliveryGateTests/testPublicArchiveResumesFromPersistedRange",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 1.281,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "CourseDeliveryGateTests/testPublicAtlasUpgradeLoadsRevisedStepsAndIllustrations",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 8.342,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "CourseDeliveryGateTests/testPublicConstellationGeneratorCompilesAndRendersRepeatableCanvas",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 224.215,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "CourseDeliveryGateTests/testPublicCourseUpgradeKeepsOpenLessonSnapshotAndStableIDs",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 2.131,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "CourseDeliveryGateTests/testPublicExamplesUpgradeKeepsEditedProjectAndLoadsEveryInfographic",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 4.708,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "CourseDeliveryGateTests/testPublicSignedCatalogAndCourseInstall",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 328.094,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "LocalCargoLessonTests/testFiveCargoLessonsRunAndDebugOfflineWithReleasedToolchain",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 249.449,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "LocalCargoLessonTests/testSignedCargoLessonUpdatePreservesTheOpenedCourseSnapshot",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 0.932,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "PlaygroundRuntimeInputTests/testActualSharedCompilerBuildDoesNotRunAndLateStopCannotCancelTheNextLocalRun",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 12.177,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "PlaygroundRuntimeTransportTests/testActualNativeHTTPRoleProofAndRuntimePresenceKeepSourceAndUnicodeSelectionUnchanged",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 0.775,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "PracticalCourseUpdateTests/testSignedPracticalUpdateLoadsWithoutChangingAnOldRepository",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 1.464,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    },
+    {
+      "id": "WorkflowRouteTests/testBundledReleaseCatalogDownloadsAndInstallsProductionSignedRoute",
+      "status": "passed",
+      "profile": "release",
+      "durationSeconds": 58.092,
+      "log": "build/skipped-tests-20261107/production-resume.log",
+      "resultBundle": "build/skipped-tests-20261107/production-resume.xcresult"
+    }
+  ]
+}
