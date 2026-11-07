@@ -118,6 +118,16 @@ final class BundledCompilerGateTests: XCTestCase {
             candidate = BundledToolchain(rustcURL: compilerURL, sysrootURL: sysroot,
                                          version: identity, supportsProceduralMacros: artifactName == "ArtifactMacro",
                                          compilerSHA256: sha)
+            if artifactName == "ArtifactMacro",
+               ProcessInfo.processInfo.environment["CRABRIX_VERIFY_BUNDLED_MACROS"] == "1" {
+                guard baseline.supportsProceduralMacros,
+                      baseline.compilerSHA256 == sha,
+                      CargoToolchain.release?.sysrootArchiveSHA256
+                        == (provenance?["candidateSysroot"] as? [String: Any])?["archiveSHA256"] as? String
+                else { throw CocoaError(.fileReadCorruptFile) }
+                candidate = nil
+                print("MACRO TOOLCHAIN MODE verified main app bundle")
+            }
             print("MEASURED COMPILER CANDIDATE SHA256", sha)
         }
         print("MEASURED COMPILER INPUT", candidate?.version ?? CargoToolchain.artifactIdentity)

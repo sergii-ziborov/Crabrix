@@ -142,7 +142,7 @@ def stage(directory, app):
         raise ValueError("a signed app bundle cannot be modified for candidate tests")
     manifest_file = app / "toolchain.lock.json"
     manifest = json.loads(manifest_file.read_text())
-    if manifest.get("source", {}).get("kind") != "legacy-tar-zstd":
+    if manifest.get("source", {}).get("kind") not in ("legacy-tar-zstd", "crabrix-release-v1"):
         raise ValueError("test app is not the pinned baseline build")
     provenance, compiler_sha, manifest_sha, archive_sha = verify_candidate(directory)
     version = provenance.get("rustVersion")
@@ -164,6 +164,8 @@ def stage(directory, app):
         "rustcSHA256": compiler_sha,
         "sysrootManifestSHA256": manifest_sha,
         "sysrootArchiveSHA256": archive_sha,
+        "capabilities": (["proc-macro-rpc-v1"]
+                         if provenance.get("experimentalProcMacroBridge") else []),
         "source": {"kind": "local-candidate-test-only"},
     })
     with tempfile.NamedTemporaryFile("w", dir=app, prefix=".toolchain.lock.",

@@ -37,7 +37,17 @@ if release['source']['kind'] == 'crabrix-release-v1':
     for item in resource_root.iterdir():
         if item.name == version:
             continue
-        if item.is_symlink() or not item.is_dir() or not (item / '.inputs-sha256').is_file():
+        previous_source = source.parent / item.name
+        signed_files = {'rustc.wasm', 'sysroot-wasip1.zip', 'sysroot-wasip1.sha256'}
+        verified_previous = (item.is_dir() and not item.is_symlink()
+            and {path.name for path in item.iterdir()} == signed_files
+            and all((item / name).is_file() and not (item / name).is_symlink()
+                    and (previous_source / name).is_file()
+                    and hashlib.sha256((item / name).read_bytes()).digest()
+                        == hashlib.sha256((previous_source / name).read_bytes()).digest()
+                    for name in signed_files))
+        if item.is_symlink() or not item.is_dir() or not (
+                (item / '.inputs-sha256').is_file() or verified_previous):
             raise SystemExit(f'Unexpected extra bundled toolchain resource: {item}')
         retired = retired_root / item.name
         if retired.exists():
