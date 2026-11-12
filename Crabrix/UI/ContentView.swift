@@ -154,6 +154,9 @@ struct ContentView: View {
         return .code
     }()
     @State private var tabletopTabsGlobalY: CGFloat?
+    /// Results and git messages that arrived while their tab was not showing.
+    @State private var unseenOutputCount = 0
+    @State private var unseenTerminalCount = 0
     @State private var duoPartiallyOpen = false
     @State private var duoHingePresent = false
     @State private var learningPath: [LearningRoute] = []
@@ -206,7 +209,7 @@ struct ContentView: View {
             ) != nil
                 || tabletopTabsGlobalY != nil
             tabContent(tabletop: tabletop, hingeGlobalY: hingeGlobalY)
-                .toolbar((tabletop && isWorkspaceOpen) || tabletWorkspaceHidesTabs ? .hidden : .visible, for: .tabBar)
+                .toolbar((tabletop && isWorkspaceOpen) || workspaceHidesTabs ? .hidden : .visible, for: .tabBar)
         }
     }
 
@@ -217,12 +220,31 @@ struct ContentView: View {
             && horizontalSizeClass == .regular && UIDevice.current.userInterfaceIdiom == .pad
     }
 
+    /// iPhone in portrait gives the bottom of the screen to Code, Problems,
+    /// Output and Terminal while a project is open. The header's close button
+    /// returns to Projects, where the app tabs come back.
+    private var phoneWorkspaceHidesTabs: Bool {
+        isWorkspaceOpen && selectedDestination == .projects
+            && UIDevice.current.userInterfaceIdiom == .phone
+            && verticalSizeClass == .regular && !duoHingePresent
+    }
+
+    private var workspaceHidesTabs: Bool { tabletWorkspaceHidesTabs || phoneWorkspaceHidesTabs }
+
+    private var buildDockBadges: BuildDockBadges {
+        BuildDockBadges(
+            problems: model.result?.problemDiagnostics.count ?? 0,
+            output: unseenOutputCount,
+            terminal: unseenTerminalCount
+        )
+    }
+
     private func tabNavigation(tabletop: Bool, hingeGlobalY: CGFloat) -> some View {
         TabView(selection: $selectedDestination) {
             Group {
                 if isWorkspaceOpen {
                     buildWorkspace(hingeGlobalY: hingeGlobalY)
-                        .toolbar(tabletop || tabletWorkspaceHidesTabs ? .hidden : .visible, for: .tabBar)
+                        .toolbar(tabletop || workspaceHidesTabs ? .hidden : .visible, for: .tabBar)
                         .modifier(TabBarOverCode(enabled: !duoHingePresent))
                         .ignoresSafeArea(tabletop ? .container : [], edges: .top)
                         .ignoresSafeArea(
@@ -328,7 +350,7 @@ struct ContentView: View {
         }
         .tabViewStyle(.tabBarOnly)
         .modifier(PersistentTabBar())
-        .toolbar((tabletop && isWorkspaceOpen) || tabletWorkspaceHidesTabs ? .hidden : .visible, for: .tabBar)
+        .toolbar((tabletop && isWorkspaceOpen) || workspaceHidesTabs ? .hidden : .visible, for: .tabBar)
         .toolbarBackground(CrabrixTheme.panel, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .id(appearanceRaw)
@@ -678,6 +700,8 @@ struct ContentView: View {
             Task { await resumeLesson(lessonID) }
         }
         .onChange(of: model.projectID) { _, _ in
+            unseenOutputCount = 0
+            unseenTerminalCount = 0
             terminal.attach(to: model.exportProject())
             selectedBuildDockTab = ProcessInfo.processInfo.arguments.contains("--crabrix-auto-terminal")
                 ? .terminal : .code
@@ -694,19 +718,29 @@ struct ContentView: View {
             completion.dismiss()
             terminal.record(result, project: model.exportProject())
             recordBuildProgress(result)
-            withAnimation(.easeOut(duration: 0.18)) {
-                if result.phase == .test {
-                    selectedBuildDockTab = .output
-                } else if !result.succeeded {
-                    selectedBuildDockTab = .problems
-                } else if result.phase == .run {
-                    selectedBuildDockTab = .output
-                }
+            let shownTab: BuildDockTab = if result.phase == .test {
+                .output
+            } else if !result.succeeded {
+                .problems
+            } else if result.phase == .run {
+                .output
+            } else {
+                selectedBuildDockTab
             }
+            withAnimation(.easeOut(duration: 0.18)) { selectedBuildDockTab = shownTab }
+            // A failed run opens Problems; what it printed waits in Output.
+            let printed = !result.stdout.isEmpty || (result.phase == .run && !result.stderr.isEmpty)
+                || result.webPreview != nil
+            if printed && shownTab != .output { unseenOutputCount += 1 }
         }
         .onReceive(model.$gitConsoleEvent) { event in
             guard let event, event.projectID == model.projectID else { return }
             terminal.recordGit(event.text, isError: event.isError, project: model.exportProject())
+            if selectedBuildDockTab != .terminal { unseenTerminalCount += 1 }
+        }
+        .onChange(of: selectedBuildDockTab) { _, tab in
+            if tab == .output { unseenOutputCount = 0 }
+            if tab == .terminal { unseenTerminalCount = 0 }
         }
         .onReceive(model.$gitRestorePreview) { preview in
             if preview != nil { isGitPresented = true }
@@ -898,7 +932,7 @@ struct ContentView: View {
                 showsEnvironmentBar: tabletopTabsGlobalY == nil,
                 dockTabs: tabsInToolbar ? BuildDockTabsRow(
                     selectedTab: $selectedBuildDockTab,
-                    problemCount: model.result?.problemDiagnostics.count ?? 0,
+                    badges: buildDockBadges,
                     keyboardBridge: editorKeyboard
                 ) : nil,
                 onSelectFile: selectEditorFile,
@@ -952,6 +986,8 @@ struct ContentView: View {
                 hingeGlobalY: hingeGlobalY,
                 codeRunsUnderTabs: !model.debugActive,
                 tabsInToolbar: tabsInToolbar,
+                tabsReplaceTabBar: phoneWorkspaceHidesTabs,
+                badges: buildDockBadges,
                 assistantUsesAppleIntelligence: editorCompletionUsesAppleIntelligence,
                 onRequestCompletion: requestEditorAssistant
             ) {

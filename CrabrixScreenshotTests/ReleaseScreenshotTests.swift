@@ -190,9 +190,13 @@ final class ReleaseScreenshotTests: XCTestCase {
                 tabAttachment.lifetime = .keepAlways
                 add(tabAttachment)
             }
-            // iPad's workspace goes back to Projects before showing the tabs.
+            // iPad's workspace goes back to Projects before showing the tabs;
+            // iPhone in portrait closes the editor, whose tabs replace the app's.
             let back = app.buttons["Back to Projects"]
             if back.exists { back.tap() }
+            if !app.tabBars.buttons["Learn"].exists, app.buttons["Close editor"].exists {
+                app.buttons["Close editor"].tap()
+            }
             let tabBarLearn = app.tabBars.buttons["Learn"]
             let learn = tabBarLearn.exists ? tabBarLearn : app.buttons["Learn"].firstMatch
             XCTAssertTrue(learn.exists, app.debugDescription)
@@ -210,6 +214,7 @@ final class ReleaseScreenshotTests: XCTestCase {
         let tabBarLearn = app.tabBars.buttons["Learn"]
         let back = app.buttons["Back to Projects"]
         if back.exists { back.tap() }
+        if !tabBarLearn.exists, app.buttons["Close editor"].exists { app.buttons["Close editor"].tap() }
         (tabBarLearn.exists ? tabBarLearn : app.buttons["Learn"].firstMatch).tap()
         let download = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Download'")).firstMatch
         XCTAssertTrue(download.waitForExistence(timeout: 15), app.debugDescription)

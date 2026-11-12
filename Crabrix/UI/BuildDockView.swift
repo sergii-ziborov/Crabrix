@@ -69,33 +69,85 @@ private struct FloatingDockBackground: ViewModifier {
     }
 }
 
+/// What waits in each tab: Problems counts the current diagnostics, Output
+/// and Terminal count what arrived while another tab was showing.
+struct BuildDockBadges: Equatable {
+    var problems = 0
+    var output = 0
+    var terminal = 0
+
+    func count(for tab: BuildDockTab) -> Int {
+        switch tab {
+        case .code: 0
+        case .problems: problems
+        case .output: output
+        case .terminal: terminal
+        }
+    }
+}
+
+private struct BuildDockBadge: View {
+    let count: Int
+    let tint: Color
+
+    var body: some View {
+        Text(count > 99 ? "99+" : "\(count)")
+            .font(.system(size: 10, weight: .bold, design: .rounded))
+            .monospacedDigit()
+            .foregroundStyle(CrabrixTheme.onAccent)
+            .padding(.horizontal, count > 9 ? 4 : 0)
+            .frame(minWidth: 16, minHeight: 16)
+            .background(tint, in: Capsule())
+    }
+}
+
 /// Code, Problems, Output and Terminal, wherever the layout places them.
 struct BuildDockTabsRow: View {
     @Binding var selectedTab: BuildDockTab
-    let problemCount: Int
+    let badges: BuildDockBadges
     let keyboardBridge: RustEditorKeyboardBridge
     var height: CGFloat = 34
     /// Duo's docked row marks the active tab with a top stripe. Floating tabs
     /// use a capsule, like the selected item of the tab bar beneath them.
     var capsuleSelection = true
+    /// On iPhone in portrait the tabs take the place of the hidden app tab bar:
+    /// equal widths, the icon above its label and the badge on the icon.
+    var tabBarStyle = false
 
     var body: some View {
         let activeTab = selectedTab
         ForEach(BuildDockTab.allCases) { tab in
+            let badge = badges.count(for: tab)
             Button {
                 tab.select($selectedTab, editorKeyboard: keyboardBridge)
             } label: {
-                HStack(spacing: 5) {
-                    Image(systemName: tab.systemImage)
-                    Text(tab.title)
-                    if tab == .problems {
-                        Text("\(problemCount)")
-                            .padding(.horizontal, 5)
-                            .padding(.vertical, 1)
-                            .background(CrabrixTheme.raised, in: Capsule())
+                Group {
+                    if tabBarStyle {
+                        VStack(spacing: 3) {
+                            Image(systemName: tab.systemImage)
+                                .font(.system(size: 17, weight: .medium))
+                                .frame(height: 22)
+                                .overlay(alignment: .topTrailing) {
+                                    if badge > 0 {
+                                        BuildDockBadge(count: badge, tint: tab == .problems ? CrabrixTheme.coral : tab.tint)
+                                            .offset(x: 12, y: -6)
+                                    }
+                                }
+                            Text(tab.title.capitalized)
+                                .font(.system(size: 10, weight: .semibold))
+                        }
+                        .frame(maxWidth: .infinity)
+                    } else {
+                        HStack(spacing: 5) {
+                            Image(systemName: tab.systemImage)
+                            Text(tab.title)
+                            if badge > 0 {
+                                BuildDockBadge(count: badge, tint: tab == .problems ? CrabrixTheme.coral : tab.tint)
+                            }
+                        }
+                        .padding(.horizontal, capsuleSelection ? 10 : 8)
                     }
                 }
-                .padding(.horizontal, capsuleSelection ? 10 : 8)
                 .frame(height: height)
                 .foregroundStyle(activeTab == tab ? tab.tint : CrabrixTheme.muted)
                 .background {
@@ -116,6 +168,7 @@ struct BuildDockTabsRow: View {
             .buttonStyle(.plain)
             .accessibilityIdentifier("build-dock-\(tab.rawValue)")
             .accessibilityLabel("Show \(tab.title.lowercased())")
+            .accessibilityValue(badge > 0 ? "\(badge) new" : "")
             .accessibilityAddTraits(activeTab == tab ? .isSelected : [])
         }
     }
@@ -168,12 +221,16 @@ struct BuildDockView<CodeContent: View>: View {
     /// In phone landscape the tabs live in the editor toolbar, where they take
     /// no height from the code.
     let tabsInToolbar: Bool
+    /// In phone portrait the app tab bar is hidden while code is open, and these
+    /// tabs take its place at the bottom of the screen.
+    let tabsReplaceTabBar: Bool
+    let badges: BuildDockBadges
     let assistantUsesAppleIntelligence: Bool
     let onRequestCompletion: () -> Void
     let codeContent: CodeContent
     @State private var cameraOnLeadingEdge = UIDevice.current.orientation == .landscapeLeft
 
-    private static var floatingTabsHeight: CGFloat { 48 }
+    private var floatingTabsHeight: CGFloat { tabsReplaceTabBar ? 58 : 48 }
 
     init(
         selectedTab: Binding<BuildDockTab>,
@@ -214,6 +271,8 @@ struct BuildDockView<CodeContent: View>: View {
         hingeGlobalY: CGFloat,
         codeRunsUnderTabs: Bool = true,
         tabsInToolbar: Bool = false,
+        tabsReplaceTabBar: Bool = false,
+        badges: BuildDockBadges = BuildDockBadges(),
         assistantUsesAppleIntelligence: Bool,
         onRequestCompletion: @escaping () -> Void,
         @ViewBuilder codeContent: () -> CodeContent
@@ -256,6 +315,8 @@ struct BuildDockView<CodeContent: View>: View {
         self.hingeGlobalY = hingeGlobalY
         self.codeRunsUnderTabs = codeRunsUnderTabs
         self.tabsInToolbar = tabsInToolbar
+        self.tabsReplaceTabBar = tabsReplaceTabBar
+        self.badges = badges
         self.assistantUsesAppleIntelligence = assistantUsesAppleIntelligence
         self.onRequestCompletion = onRequestCompletion
         self.codeContent = codeContent()
@@ -319,7 +380,7 @@ struct BuildDockView<CodeContent: View>: View {
         let wide = geometry.size.width >= 500
         let underTabs = selectedTab == .code && codeRunsUnderTabs
         let camera = geometry.safeAreaInsets.leading
-        let tabsHeight = tabsInToolbar ? 0 : Self.floatingTabsHeight
+        let tabsHeight = tabsInToolbar ? 0 : floatingTabsHeight
         return ZStack(alignment: wide ? .bottomLeading : .bottom) {
             GeometryReader { full in
                 let clearance = tabsHeight + max(0, full.frame(in: .global).maxY - geometry.frame(in: .global).maxY)
@@ -339,7 +400,7 @@ struct BuildDockView<CodeContent: View>: View {
             if !tabsInToolbar {
                 header(tabletop: false, wide: wide, floating: true)
                     .modifier(FloatingDockBackground())
-                    .padding(.horizontal, wide ? 12 : 0)
+                    .padding(.horizontal, wide ? 12 : tabsReplaceTabBar ? 16 : 0)
                     .padding(.bottom, 3)
             }
         }
@@ -354,10 +415,11 @@ struct BuildDockView<CodeContent: View>: View {
         return HStack(spacing: 4) {
             BuildDockTabsRow(
                 selectedTab: $selectedTab,
-                problemCount: result?.problemDiagnostics.count ?? 0,
+                badges: badges,
                 keyboardBridge: keyboardBridge,
-                height: tabletop ? 30 : 34,
-                capsuleSelection: floating
+                height: tabletop ? 30 : floating && tabsReplaceTabBar ? 48 : 34,
+                capsuleSelection: floating,
+                tabBarStyle: floating && tabsReplaceTabBar
             )
 
             if !floating { Spacer() }
@@ -383,7 +445,7 @@ struct BuildDockView<CodeContent: View>: View {
         }
         .font(.system(size: 9, weight: .semibold, design: .monospaced))
         .padding(.horizontal, floating ? 5 : 9)
-        .frame(height: tabletop ? 34 : floating ? 44 : 38)
+        .frame(height: tabletop ? 34 : floating ? (tabsReplaceTabBar ? 58 : 44) : 38)
     }
 
     private var dockKeyboardIsFocused: Bool {
