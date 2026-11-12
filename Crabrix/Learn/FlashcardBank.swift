@@ -7,16 +7,18 @@ extension FlashcardDeck {
         for course in repository.courses where course.id != "examples" {
             for lesson in course.units.flatMap(\.lessons) {
                 guard let writing = repository.writing(for: lesson.id) else { continue }
-                let summary = writing.summary.trimmingCharacters(in: .whitespacesAndNewlines)
-                let rule = writing.rule.trimmingCharacters(in: .whitespacesAndNewlines)
-                let explanation = [summary, rule == summary ? "" : rule].filter { !$0.isEmpty }
-                let answer = explanation.joined(separator: "\n\n")
-                if !answer.isEmpty, answer.utf8.count <= 8_192 {
+                // Authored recall questions about the lesson. A lesson without
+                // them keeps only its Quick Check card below.
+                for (index, recall) in writing.recall.enumerated() {
+                    let code = recall.code?.trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard recall.answer.utf8.count <= 8_192, (code?.utf8.count ?? 0) <= 8_192,
+                          (code?.split(separator: "\n").count ?? 0) <= 80 else { continue }
                     result.append(Flashcard(
-                        id: "\(course.id)/\(lesson.id)/concept", courseID: course.id,
+                        id: "\(course.id)/\(lesson.id)/recall-\(index)", courseID: course.id,
                         courseTitle: course.title, lessonID: lesson.id, lessonTitle: lesson.title,
-                        kind: .concept, prompt: "What is the core idea of \(lesson.title)?",
-                        answer: answer, code: nil
+                        kind: .concept, prompt: recall.question.trimmingCharacters(in: .whitespacesAndNewlines),
+                        answer: recall.answer.trimmingCharacters(in: .whitespacesAndNewlines),
+                        code: code?.isEmpty == false ? code : nil
                     ))
                 }
                 // The same authored prompt/answer powers the lesson question.

@@ -30,5 +30,25 @@ final class FlashcardDeckTests: XCTestCase {
         XCTAssertEqual(Set(queue.map(\.lessonID)).count, queue.count)
         XCTAssertEqual(Set(queue.map(\.answer)).count, queue.count)
         XCTAssertLessThanOrEqual(queue.count, 12)
+        XCTAssertFalse(deck.contains { $0.prompt.hasPrefix("What is the core idea") })
+    }
+
+    func testRecallQuestionsDecodeAndOlderLessonsStillDecode() throws {
+        var lesson: [String: Any] = [
+            "summary": "s", "explanation": "e", "exampleCaption": "c", "exampleCode": "", "task": "t",
+            "success": "ok", "rule": "r", "practiceCode": "", "question": "q", "answers": ["a", "b"],
+            "correctAnswer": 1, "feedback": "f",
+        ]
+        let older = try JSONDecoder().decode(CourseWritingDTO.self, from: JSONSerialization.data(withJSONObject: lesson))
+        XCTAssertEqual(try older.runtimeWriting().recall, [])
+        lesson["recall"] = [
+            ["question": "Why does `{ base * 2 }` produce a value?", "answer": "Its last expression has no semicolon."],
+            ["question": "What type is `value` here?", "answer": "`()`", "code": "let value = { 1; };"],
+            ["question": " ", "answer": "dropped"],
+        ]
+        let newer = try JSONDecoder().decode(CourseWritingDTO.self, from: JSONSerialization.data(withJSONObject: lesson))
+        let recall = try newer.runtimeWriting().recall
+        XCTAssertEqual(recall.map(\.answer), ["Its last expression has no semicolon.", "`()`"])
+        XCTAssertEqual(recall.last?.code, "let value = { 1; };")
     }
 }

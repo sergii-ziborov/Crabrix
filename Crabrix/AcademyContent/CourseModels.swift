@@ -80,6 +80,8 @@ struct CourseWritingDTO: Decodable, Sendable {
     let answers: [String]
     let correctAnswer: Int
     let feedback: String
+    /// Added in course content after app 1.1.8; older packs and apps go without.
+    let recall: [RustLessonRecall]?
 
     func runtimeWriting() throws -> RustLessonWriting {
         guard !answers.isEmpty, answers.indices.contains(correctAnswer) else {
@@ -89,7 +91,11 @@ struct CourseWritingDTO: Decodable, Sendable {
             summary: summary, explanation: explanation, exampleCaption: exampleCaption,
             exampleCode: exampleCode, task: task, success: success, rule: rule,
             practiceCode: practiceCode, question: question, answers: answers,
-            correctAnswer: correctAnswer, feedback: feedback
+            correctAnswer: correctAnswer, feedback: feedback,
+            recall: (recall ?? []).filter {
+                !$0.question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    && !$0.answer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            }
         )
     }
 }

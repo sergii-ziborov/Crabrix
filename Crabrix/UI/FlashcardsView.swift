@@ -106,7 +106,7 @@ struct FlashcardsView: View {
                 }
             }
             if eligible.isEmpty {
-                Text("Finish a lesson to add its ideas and questions to your deck. Your cards come from the courses you keep on this device.")
+                Text("Finish a lesson to add its questions to your deck. Your cards come from the courses you keep on this device.")
                     .foregroundStyle(CrabrixTheme.muted).multilineTextAlignment(.center)
             } else {
                 Text("Think of the answer, then choose Don’t know, Hard or Easy. The card flips so you can compare. Read at your own pace before continuing.")

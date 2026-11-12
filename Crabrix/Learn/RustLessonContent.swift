@@ -17,6 +17,14 @@ struct RustLessonWriting: Sendable {
     let answers: [String]
     let correctAnswer: Int
     let feedback: String
+    /// Authored recall questions for flashcards, beyond the Quick Check.
+    var recall: [RustLessonRecall] = []
+}
+
+struct RustLessonRecall: Sendable, Decodable, Equatable {
+    let question: String
+    let answer: String
+    let code: String?
 }
 
 #if DEBUG || CRABRIX_LEGACY_FIXTURES
