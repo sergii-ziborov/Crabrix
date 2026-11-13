@@ -1,0 +1,7 @@
+Crabrix 1.1.9: the code screen on iPhone and real questions on flashcards. Everything from 1.1.8 is included.
+
+Code screen on iPhone in portrait: while a project is open, the Projects, Learn and Settings tabs are hidden and Code, Problems, Output and Terminal take their place at the bottom of the screen. Close the editor with × at the top to return to Projects. In landscape and on iPad and Duo the layout did not change.
+
+Badges: Problems shows how many compiler problems there are. Output shows how many new results arrived while you were on another tab, and Terminal how many new Git messages. Opening the tab clears its badge.
+
+Flashcards: in Learn, update your courses (Update all), finish a lesson and open Flashcards. The generic "What is the core idea of …?" card is gone. Each lesson now asks its own questions: two per Rust lesson and one per Algorithms step, plus the lesson's Quick Check. Please report any question that is unclear or any answer you think is wrong.
