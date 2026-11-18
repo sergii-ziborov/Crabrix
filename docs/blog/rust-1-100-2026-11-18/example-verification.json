@@ -1,0 +1,57 @@
+{
+  "rustc": "rustc 1.100.0 (0ef1bc386 2026-11-09)",
+  "host": "aarch64-apple-darwin",
+  "blocks": [
+    {
+      "section": "Use ! when one implementation cannot fail",
+      "sha256": "bb2a711fced7006c04f53ac37852ccd4bc952a1686de5a35ffc984fefd61fcfc",
+      "edition": "2024",
+      "compiled": true,
+      "stderr": "",
+      "exit": 0,
+      "stdout": "loaded: dark\ntext error: line 2: expected key=value\n"
+    },
+    {
+      "section": "The fallback change that can break older editions",
+      "sha256": "5d409fd9cd9032ec1f16841c79acf09c2ba437d6a7afa07b5d45006f4b2b9d8c",
+      "edition": "2021",
+      "compiled": true,
+      "stderr": "",
+      "exit": 0,
+      "stdout": "ran\n"
+    },
+    {
+      "section": "Measure one workload with a forwarding allocator",
+      "sha256": "4f142ccdf39a8363436cc2b52c4a5e6d8e19890b9eb0619c738e2ee014107a44",
+      "edition": "2024",
+      "compiled": true,
+      "stderr": "",
+      "exit": 0,
+      "stdout": "100 ids, label \"report\"\ncalls 3, peak 408 bytes, live after drop 0 bytes\n"
+    },
+    {
+      "section": "A rollback that covers early returns and ?",
+      "sha256": "1de8493d2fd779ed4f977c8a75bbb2d40ab91a10520fd751b5468edcd471c0df",
+      "edition": "2024",
+      "compiled": true,
+      "stderr": "",
+      "exit": 0,
+      "stdout": "Ok(2)\nErr(\"\\\"rivets\\\" is not name:count\")\nErr(\"invalid digit found in string\")\nitems: [(\"bolts\", 40), (\"nuts\", 25)]\nlog:   [\"stocked 2\", \"rolled back to 2 items\", \"rolled back to 2 items\"]\n"
+    },
+    {
+      "section": "Smaller APIs that remove helper code",
+      "sha256": "f5cce914f29ae1cc988c76545c6dd0ad5f0f94275a3126f1bc2aa98a9f430866",
+      "edition": "2024",
+      "compiled": true,
+      "stderr": "",
+      "exit": 0,
+      "stdout": "v1.100.0 -> 1.100.0\n1.99.1 -> 1.99.1\nreport/src/lib.rs\n[0, 1, 4, 9, 16]\ndark mode: true\n70.7\n"
+    }
+  ],
+  "rust199NeverType": {
+    "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+    "rejected": true,
+    "E0658": true
+  },
+  "passed": true
+}

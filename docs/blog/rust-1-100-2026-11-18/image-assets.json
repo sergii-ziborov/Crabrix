@@ -1,0 +1,72 @@
+{
+  "mode": "Figma MCP generate_image, model gpt-image-2.5-flare",
+  "figmaFile": "https://www.figma.com/design/G4GdGePAAmDv1EV1iWWXMA",
+  "generated": "2026-11-18",
+  "assets": [
+    {
+      "kind": "cover",
+      "path": "site/public/images/blog/november-2026/rust-1-100/cover.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2425470,
+      "sha256": "6012a57f5e62dcdb8ea0a4880b793664ea9b8be33a4d15a448ac1cf0e16e8b07",
+      "figmaNode": "1:2",
+      "promptSummary": "Original editorial illustration ... crab on a glowing 1.100 milestone with !, memory blocks, guard lantern, crate under hourglass (see Figma node 1:2)",
+      "webp": [
+        "site/public/images/blog/november-2026/rust-1-100/cover.webp",
+        "site/public/images/blog/november-2026/rust-1-100/cover-640.webp"
+      ]
+    },
+    {
+      "kind": "infographic",
+      "path": "site/public/images/blog/november-2026/rust-1-100/infographic.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 1782477,
+      "sha256": "406f44e6cee2a4a98acd30454c163c225322f34a0fe3adf0f8d6f53182bc0a86",
+      "figmaNode": "1:3",
+      "promptSummary": "Infographic 'RUST 1.100 AT A GLANCE' with four cards: NEVER TYPE !, ALLOCATORS, DROPGUARD, CARGO COOLDOWNS (Figma node 1:3)",
+      "webp": [
+        "site/public/images/blog/november-2026/rust-1-100/infographic.webp",
+        "site/public/images/blog/november-2026/rust-1-100/infographic-640.webp"
+      ]
+    },
+    {
+      "kind": "dropguard",
+      "path": "site/public/images/blog/november-2026/rust-1-100/dropguard.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 1877842,
+      "sha256": "a0aaf00036962b75d4c8eeeef5b9c5cecf489b9646d71c9d1e04275d3a61a204",
+      "figmaNode": "1:4",
+      "promptSummary": "Diagram 'DROPGUARD: EVERY EXIT PATH': return Err and ? error run the guard, success passes DropGuard::dismiss (Figma node 1:4)",
+      "webp": [
+        "site/public/images/blog/november-2026/rust-1-100/dropguard.webp",
+        "site/public/images/blog/november-2026/rust-1-100/dropguard-640.webp"
+      ]
+    },
+    {
+      "kind": "cooldown",
+      "path": "site/public/images/blog/november-2026/rust-1-100/cooldown.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2223141,
+      "sha256": "9002a47fc288fde2fbeb9f08f4a7e030f49446014b7f60922371ff76b05607f9",
+      "figmaNode": "1:5",
+      "promptSummary": "Warehouse cooldown area with hourglass and '3 DAYS' calendar, crab at the gate (Figma node 1:5)",
+      "webp": [
+        "site/public/images/blog/november-2026/rust-1-100/cooldown.webp",
+        "site/public/images/blog/november-2026/rust-1-100/cooldown-640.webp"
+      ]
+    }
+  ],
+  "notes": "All four images were inspected visually; text in the infographic and diagram was checked letter by letter. Conceptual artwork, not product screenshots or measurements. Full prompts are in build session history; summaries above."
+}

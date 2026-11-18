@@ -1,0 +1,254 @@
+{
+  "publishedAt": "2026-11-18T15:15:00Z",
+  "node": "52efe55c-ac21-439d-a10c-19a0d47da4a1 (Crabrix \u00b7 2.31.78.155)",
+  "target": "crabrix-web",
+  "scope": "Lesson left edge, struck-through $14.99, crates.io search dialog in Playground Packages, Rust 1.100 article with four images, modifiedDate bumps",
+  "upload": {
+    "id": "crabrix-site-20261118-v2",
+    "mode": "partial",
+    "files": 25,
+    "sha256": "4f87768716e44bf2e916854845530ec8a15be010e9fe84ab93643cff2742ae63"
+  },
+  "baseImage": "sha256:9ad4905edc1fe577b17fca71f623cfa73fd50a57076f5b9c352e60139d50448b",
+  "build": {
+    "id": "crabrix-site-build-20261118-v2",
+    "targetId": "crabrix-web",
+    "destination": "localhost:5001/hostwatch/falkenstein/crabrix-web:current",
+    "digest": "sha256:0a2e1fcdca6424f1ad7891707205bd4166ddc22ea695204a27f172e75c215e53",
+    "state": "succeeded",
+    "createdAt": "2026-11-18T15:09:41.460056559Z",
+    "finishedAt": "2026-11-18T15:13:21.742675188Z",
+    "action": "source_build",
+    "expectedRevision": "sha256:85a4c03adc864b4a05e9326f0b94a20bc0357f32484b75b970b15f9b1cf77bfe",
+    "sourceBuild": {
+      "uploadId": "crabrix-site-20261118-v2",
+      "mode": "partial"
+    },
+    "sourceRevision": "sha256:6b6584e8f488775be2e5fafcd2d1f79e17d0154f61ab8b8df6924de16148762e",
+    "builtDigest": "sha256:5da34bd01a67253b944976313673a57de835ce8b772454bfc7a66bee8378e435",
+    "builderDigest": "sha256:03768328dacc08da49b5ff0a652aededc827407046289df63265ff9c7b4ef10b"
+  },
+  "publish": {
+    "id": "crabrix-site-publish-20261118-v2",
+    "targetId": "crabrix-web",
+    "destination": "localhost:5001/hostwatch/falkenstein/crabrix-web:current",
+    "digest": "sha256:5da34bd01a67253b944976313673a57de835ce8b772454bfc7a66bee8378e435",
+    "state": "succeeded",
+    "createdAt": "2026-11-18T15:13:41.886160672Z",
+    "finishedAt": "2026-11-18T15:14:36.598636616Z",
+    "action": "update",
+    "expectedPublishedDigest": "sha256:ac53d1de39f267b1c40c81e0521e744e728d536a5e256e59a4add695384deb31",
+    "publishedDigest": "sha256:95ab2ea6db0e0b896df6e8a8cb8e55fbd8301fa7908a1754e7c156f9314e4443"
+  },
+  "deploy": {
+    "id": "crabrix-site-deploy-20261118-v2",
+    "targetId": "crabrix-web",
+    "destination": "localhost:5001/hostwatch/falkenstein/crabrix-web:current",
+    "digest": "sha256:5da34bd01a67253b944976313673a57de835ce8b772454bfc7a66bee8378e435",
+    "state": "succeeded",
+    "createdAt": "2026-11-18T15:14:58.112773727Z",
+    "finishedAt": "2026-11-18T15:15:00.329868995Z",
+    "action": "deploy_update",
+    "expectedRevision": "sha256:85d2a982dd461b0e49bb6bd7bd9ccccde58831f59f72f8f50133725c6575fe52"
+  },
+  "supersededStagedBuild": "crabrix-rust100-crates-build-20261118-v1 (22-file overlay, built but never published)",
+  "local": {
+    "tests": "168/168",
+    "typescript": "pass",
+    "build": "pass (Next 16.4.2 SecurityFatalError nudge on first run; retry passes)"
+  },
+  "production": {
+    "https": [
+      "/ 200",
+      "/blog/rust-1-100-never-type-dropguard-cargo-cooldowns/ 200",
+      "12 image representations 200",
+      "sitemap lists the article",
+      "cover.png sha256 6012a57f\u2026 matches"
+    ],
+    "browser": {
+      "origin": "https://crabrix.com",
+      "widths": {
+        "390": {
+          "course": {
+            "crumbs": {
+              "left": 16,
+              "width": 358
+            },
+            "h1": {
+              "left": 80,
+              "width": 294
+            },
+            "eyebrow": {
+              "left": 16,
+              "width": 358
+            }
+          },
+          "lesson": {
+            "crumbs": {
+              "left": 16,
+              "width": 358
+            },
+            "h1": {
+              "left": 80,
+              "width": 143
+            },
+            "eyebrow": {
+              "left": 16,
+              "width": 358
+            }
+          },
+          "sameLeftEdge": true,
+          "price": {
+            "text": "$9.99 \ninstead of\n$14.99 \u00b7 goes up as Crabrix grows",
+            "struck": "line-through"
+          },
+          "article": {
+            "title": "Rust 1.100: the never type, DropGuard, allocators and Cargo cooldowns",
+            "images": [
+              {
+                "src": "https://crabrix.com/images/blog/november-2026/rust-1-100/cover-640.webp",
+                "ok": true
+              },
+              {
+                "src": "https://crabrix.com/images/blog/november-2026/rust-1-100/infographic-640.webp",
+                "ok": true
+              },
+              {
+                "src": "https://crabrix.com/images/blog/november-2026/rust-1-100/dropguard-640.webp",
+                "ok": true
+              },
+              {
+                "src": "https://crabrix.com/images/blog/november-2026/rust-1-100/cooldown-640.webp",
+                "ok": true
+              }
+            ],
+            "overflow": false,
+            "codeBlocks": 9
+          },
+          "errors": []
+        },
+        "820": {
+          "course": {
+            "crumbs": {
+              "left": 22,
+              "width": 776
+            },
+            "h1": {
+              "left": 112,
+              "width": 392
+            },
+            "eyebrow": {
+              "left": 22,
+              "width": 776
+            }
+          },
+          "lesson": {
+            "crumbs": {
+              "left": 22,
+              "width": 776
+            },
+            "h1": {
+              "left": 104,
+              "width": 171
+            },
+            "eyebrow": {
+              "left": 22,
+              "width": 776
+            }
+          },
+          "sameLeftEdge": false,
+          "price": {
+            "text": "$9.99 \ninstead of\n$14.99 \u00b7 goes up as Crabrix grows",
+            "struck": "line-through"
+          },
+          "article": {
+            "title": "Rust 1.100: the never type, DropGuard, allocators and Cargo cooldowns",
+            "images": [
+              {
+                "src": "https://crabrix.com/images/blog/november-2026/rust-1-100/cover.webp",
+                "ok": true
+              },
+              {
+                "src": "https://crabrix.com/images/blog/november-2026/rust-1-100/infographic.webp",
+                "ok": true
+              },
+              {
+                "src": "https://crabrix.com/images/blog/november-2026/rust-1-100/dropguard.webp",
+                "ok": true
+              },
+              {
+                "src": "https://crabrix.com/images/blog/november-2026/rust-1-100/cooldown.webp",
+                "ok": true
+              }
+            ],
+            "overflow": false,
+            "codeBlocks": 9
+          },
+          "errors": []
+        },
+        "1440": {
+          "course": {
+            "crumbs": {
+              "left": 160,
+              "width": 1120
+            },
+            "h1": {
+              "left": 250,
+              "width": 513
+            },
+            "eyebrow": {
+              "left": 160,
+              "width": 1120
+            }
+          },
+          "lesson": {
+            "crumbs": {
+              "left": 160,
+              "width": 1120
+            },
+            "h1": {
+              "left": 242,
+              "width": 224
+            },
+            "eyebrow": {
+              "left": 160,
+              "width": 850
+            }
+          },
+          "sameLeftEdge": false,
+          "price": {
+            "text": "$9.99 \ninstead of\n$14.99 \u00b7 goes up as Crabrix grows",
+            "struck": "line-through"
+          },
+          "article": {
+            "title": "Rust 1.100: the never type, DropGuard, allocators and Cargo cooldowns",
+            "images": [
+              {
+                "src": "https://crabrix.com/images/blog/november-2026/rust-1-100/cover.webp",
+                "ok": true
+              },
+              {
+                "src": "https://crabrix.com/images/blog/november-2026/rust-1-100/infographic.webp",
+                "ok": true
+              },
+              {
+                "src": "https://crabrix.com/images/blog/november-2026/rust-1-100/dropguard.webp",
+                "ok": true
+              },
+              {
+                "src": "https://crabrix.com/images/blog/november-2026/rust-1-100/cooldown.webp",
+                "ok": true
+              }
+            ],
+            "overflow": false,
+            "codeBlocks": 9
+          },
+          "errors": []
+        }
+      }
+    },
+    "crateSearch": "crates.io search -> itoa -> Add itoa 1.0.19 -> Cargo.toml declared, at 1440 and 390 px, no page errors"
+  },
+  "notBackedUp": "No Hostwatch backup profile is configured on this node; the accounts volume is retained by deployment_update.",
+  "rollback": "Previous image sha256:9ad4905e\u2026 remains; deployment_update to it restores the 7 November site."
+}

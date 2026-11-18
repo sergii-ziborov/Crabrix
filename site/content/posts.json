@@ -1,5 +1,384 @@
 [
   {
+    "slug": "rust-1-100-never-type-dropguard-cargo-cooldowns",
+    "title": "Rust 1.100: the never type, DropGuard, allocators and Cargo cooldowns",
+    "date": "2026-11-18",
+    "publishedDate": "2026-11-18",
+    "modifiedDate": "2026-11-18",
+    "readingMinutes": 14,
+    "summary": "Rust 1.100.0 stabilizes the never type, allocators for Vec and Box, DropGuard and Cargo cooldowns. Tested examples, the fallback break and an upgrade order.",
+    "relatedSlugs": [
+      "rust-1-99-upgrade",
+      "rust-1-100-i686-windows-host-tools",
+      "cargo-features-portable-dependencies"
+    ],
+    "sections": [
+      {
+        "heading": "Rust 1.100.0 arrived on 12 November",
+        "paragraphs": [
+          "The Rust team released Rust 1.100.0 on 12 November 2026. The round number is a coincidence of the six-week train, but the contents are unusually broad. The never type can finally be written anywhere a type is expected. The core of the allocator API is stable for Vec and Box. A new DropGuard type runs a closure on every exit path. On the Cargo side, the release reports unused dependencies, changes the layout of the build directory and adds dependency cooldowns, which hold back versions that were published too recently.",
+          "Every Rust program below was compiled and run with rustc 1.100.0 (0ef1bc386 2026-11-09) on an aarch64 Mac, and the never-type examples also with Rust 1.99.0 to show what changed. Cargo observations come from small test packages resolved against crates.io. We separate the announcement's promises from our own observations and note where Crabrix does not have these features yet."
+        ],
+        "sources": [
+          {
+            "title": "Announcing Rust 1.100.0",
+            "url": "https://blog.rust-lang.org/2026/11/12/Rust-1.100.0/"
+          },
+          {
+            "title": "Rust 1.100.0 release notes",
+            "url": "https://doc.rust-lang.org/stable/releases.html#version-11000-2026-11-12"
+          }
+        ],
+        "image": {
+          "src": "/images/blog/november-2026/rust-1-100/cover.png",
+          "alt": "An orange paper crab stands on a glowing 1.100 milestone surrounded by an exclamation mark, memory blocks, a lantern and a crate under an hourglass",
+          "caption": "Original generated illustration: the four themes of Rust 1.100 around a 1.100 milestone, from the never type to Cargo cooldowns.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "The never type gets a name everywhere",
+        "paragraphs": [
+          "The never type, spelled `!` in code, is the type of a computation that never produces a value. Expressions such as `return`, `break`, a panic or `std::process::exit` have this type, and any code after them is unreachable. Because no value of type `!` can exist, Rust lets it coerce into any other type. That is why a match arm can say `None => return` while the other arm produces a `u32`: the diverging arm fits whatever type the match needs.",
+          "Programs have relied on that behaviour for years, and a function could already declare `-> !` when it never returns. What was missing was naming it elsewhere: from 1.100 you can write `Result<T, !>`, use `!` as an associated type, or put it in a generic argument, after ten years and five failed stabilization attempts. At the same time, `std::convert::Infallible` becomes an alias for `!`, so existing APIs that were written with `Infallible` accept it unchanged."
+        ],
+        "sources": [
+          {
+            "title": "Never type section of the announcement",
+            "url": "https://blog.rust-lang.org/2026/11/12/Rust-1.100.0/#never-type"
+          },
+          {
+            "title": "The never primitive type",
+            "url": "https://doc.rust-lang.org/stable/std/primitive.never.html"
+          },
+          {
+            "title": "Stabilize the never type project goal",
+            "url": "https://goals.rust-lang.org/2026/stabilize-never-type.html"
+          }
+        ]
+      },
+      {
+        "heading": "Use ! when one implementation cannot fail",
+        "paragraphs": [
+          "The most practical use of the never type is an interface with an error type where one implementation genuinely cannot fail. In the example, a `Settings` trait has an associated `Error`. Settings parsed from user text can be malformed, so that implementation uses `String`. Settings that are already in memory cannot fail to be read, so their `Error` is `!`. The generic `theme` function is written once and works with both.",
+          "The payoff is at the call site. Because the error type is `!`, the pattern `let Ok(current) = theme(&loaded)` is irrefutable: the compiler knows the `Err` case cannot occur, so there is no `unwrap` and no unreachable branch to maintain. The text version still forces the caller to handle its error. Running the program printed `loaded: dark` followed by `text error: line 2: expected key=value`. Keep `!` for errors that are truly impossible; a merely rare failure still deserves a real error type."
+        ],
+        "code": "use std::collections::HashMap;\n\ntrait Settings {\n    type Error;\n    fn get(&self, key: &str) -> Result<Option<String>, Self::Error>;\n}\n\n/// Settings already loaded into memory: reading them cannot fail.\nstruct Loaded(HashMap<String, String>);\n\nimpl Settings for Loaded {\n    type Error = !;\n    fn get(&self, key: &str) -> Result<Option<String>, !> {\n        Ok(self.0.get(key).cloned())\n    }\n}\n\n/// Settings read from text supplied by a user: a line can be malformed.\nstruct Text(String);\n\nimpl Settings for Text {\n    type Error = String;\n    fn get(&self, key: &str) -> Result<Option<String>, String> {\n        for (number, line) in self.0.lines().enumerate() {\n            let Some((name, value)) = line.split_once('=') else {\n                return Err(format!(\"line {}: expected key=value\", number + 1));\n            };\n            if name.trim() == key {\n                return Ok(Some(value.trim().to_string()));\n            }\n        }\n        Ok(None)\n    }\n}\n\nfn theme<S: Settings>(settings: &S) -> Result<String, S::Error> {\n    Ok(settings.get(\"theme\")?.unwrap_or_else(|| \"system\".to_string()))\n}\n\nfn main() {\n    let loaded = Loaded(HashMap::from([(\"theme\".to_string(), \"dark\".to_string())]));\n    // The error type is `!`, so this pattern is irrefutable: no unwrap, no dead branch.\n    let Ok(current) = theme(&loaded);\n    println!(\"loaded: {current}\");\n\n    let text = Text(\"font = mono\\ntheme light\".to_string());\n    match theme(&text) {\n        Ok(value) => println!(\"text: {value}\"),\n        Err(message) => println!(\"text error: {message}\"),\n    }\n}\n",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Infallible is now an alias for !",
+            "url": "https://doc.rust-lang.org/stable/std/convert/type.Infallible.html"
+          }
+        ]
+      },
+      {
+        "heading": "The fallback change that can break older editions",
+        "paragraphs": [
+          "Making `Infallible` an alias required one breaking change. When the compiler has to infer a type only from a diverging expression, it picks a fallback type. Editions 2015, 2018 and 2021 used `()`, while edition 2024 already used `!`. Rust 1.100 switches the older editions to `!` as well. Most code never notices. The rare case the announcement mentions is discarding the result of a generic function whose type parameter is never named.",
+          "We reproduced that case with a `load<T: Default>()` function called as `load()?;` in edition 2021. Rust 1.99 already rejected it through the deny-by-default lint `dependency_on_unit_never_type_fallback` and suggested `load::<()>()`. Rust 1.100 reports error E0277, the trait bound `!: Default` is not satisfied, with a note pointing to issue 148922. The fix is the same in both cases: name the type you are throwing away, as in the program below, which compiles and prints `ran` on 1.100.",
+          "Dependencies are where this is most likely to surprise you. Cargo caps lints for registry dependencies, so a crate that triggered the old lint could still compile inside your build; with 1.100 the same code is a type error. The team sent fixes to affected public crates in advance, so first update the failing dependency rather than patching it locally. Expect a few new unreachable-code warnings as well."
+        ],
+        "code": "fn load<T: Default>() -> Result<T, String> {\n    Ok(T::default())\n}\n\nfn run() -> Result<(), String> {\n    // Before: `load()?;` and `T` came from never-type fallback.\n    // Rust 1.99: denied by the `dependency_on_unit_never_type_fallback` lint.\n    // Rust 1.100: error[E0277]: the trait bound `!: Default` is not satisfied.\n    load::<()>()?; // name the value you are discarding\n    Ok(())\n}\n\nfn main() {\n    run().unwrap();\n    println!(\"ran\");\n}\n",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Never type fallback in the 2024 edition guide",
+            "url": "https://doc.rust-lang.org/edition-guide/rust-2024/never-type-fallback.html"
+          },
+          {
+            "title": "Inference change tracking issue 148922",
+            "url": "https://github.com/rust-lang/rust/issues/148922"
+          }
+        ]
+      },
+      {
+        "heading": "Allocators for Vec and Box",
+        "paragraphs": [
+          "Rust 1.100 stabilizes the core of the allocator API. The `Allocator` trait is public and stable, together with the `Global` and `System` allocators that implement it. `Vec` gains `new_in`, `with_capacity_in`, `allocator` and the raw-parts constructors that carry an allocator. `Box` gains `new_in`, `from_raw_in`, `from_non_null_in`, `allocator` and the matching `into_raw` conversions. The trait is also implemented for `&A`, `&mut A`, `Box`, `Rc` and `Arc` of an allocator, so one allocator value can be shared by reference among several collections.",
+          "The scope is deliberately narrow. Only Vec and Box accept a custom allocator on stable today; `String`, `HashMap` and the other collections are not part of this release. Replacing the allocator of a whole program is still done with the `#[global_allocator]` attribute, which is a separate mechanism. The announcement describes this as the foundation of the Allocators 1.0 project goal and expects more collections and pointer types to follow now that the trait design is settled."
+        ],
+        "sources": [
+          {
+            "title": "Allocator trait documentation",
+            "url": "https://doc.rust-lang.org/std/alloc/trait.Allocator.html"
+          },
+          {
+            "title": "allocator_api tracking issue",
+            "url": "https://github.com/rust-lang/rust/issues/32838"
+          },
+          {
+            "title": "Allocators 1.0 project goal",
+            "url": "https://goals.rust-lang.org/2026/allocators-1.0.html"
+          }
+        ],
+        "image": {
+          "src": "/images/blog/november-2026/rust-1-100/infographic.png",
+          "alt": "Infographic titled Rust 1.100 at a glance with four cards: never type, allocators, DropGuard and Cargo cooldowns",
+          "caption": "Original generated infographic: the four headline changes of Rust 1.100 with one short summary each, from the never type to Cargo cooldowns.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Measure one workload with a forwarding allocator",
+        "paragraphs": [
+          "A good first custom allocator does not manage memory at all. The `Meter` type below forwards every request to `System` and only records what it saw. The implementation is an `unsafe impl` because the trait has a contract the compiler cannot check: a returned block must fit the requested layout and remain valid until it is deallocated. Forwarding to System keeps that hard part inside the standard library, while the counting code stays trivial.",
+          "The collections borrow the meter, since `&Meter` is an allocator too. Our run printed `100 ids, label \"report\"` and then `calls 3, peak 408 bytes, live after drop 0 bytes`. Those numbers are explainable: the Vec started with room for two `u32` values, which is 8 bytes, then grew to 400 bytes for 100 ids, and the Box took 6 bytes. The peak of 408 bytes shows that during growth the new block was allocated before the old one was released. The `Cell` fields make the meter single-threaded; sharing it between threads would need atomics."
+        ],
+        "code": "use std::alloc::{AllocError, Allocator, Layout, System};\nuse std::cell::Cell;\nuse std::ptr::NonNull;\n\n/// Forwards to the system allocator and records what one workload asked for.\n#[derive(Default)]\nstruct Meter {\n    live: Cell<usize>,\n    peak: Cell<usize>,\n    calls: Cell<usize>,\n}\n\nunsafe impl Allocator for Meter {\n    fn allocate(&self, layout: Layout) -> Result<NonNull<[u8]>, AllocError> {\n        let block = System.allocate(layout)?;\n        self.calls.set(self.calls.get() + 1);\n        self.live.set(self.live.get() + layout.size());\n        self.peak.set(self.peak.get().max(self.live.get()));\n        Ok(block)\n    }\n\n    unsafe fn deallocate(&self, ptr: NonNull<u8>, layout: Layout) {\n        self.live.set(self.live.get() - layout.size());\n        unsafe { System.deallocate(ptr, layout) }\n    }\n}\n\nfn main() {\n    let meter = Meter::default();\n    {\n        // `&Meter` is an allocator too, so the collection borrows the meter.\n        let mut ids = Vec::with_capacity_in(2, &meter);\n        ids.extend(1..=100_u32);\n        let label = Box::new_in(*b\"report\", &meter);\n        println!(\"{} ids, label {:?}\", ids.len(), std::str::from_utf8(&*label).unwrap());\n    }\n    println!(\n        \"calls {}, peak {} bytes, live after drop {} bytes\",\n        meter.calls.get(),\n        meter.peak.get(),\n        meter.live.get()\n    );\n}\n",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Vec::with_capacity_in",
+            "url": "https://doc.rust-lang.org/stable/std/vec/struct.Vec.html#method.with_capacity_in"
+          },
+          {
+            "title": "Box::new_in",
+            "url": "https://doc.rust-lang.org/stable/std/boxed/struct.Box.html#method.new_in"
+          }
+        ]
+      },
+      {
+        "heading": "DropGuard turns cleanup into a value",
+        "paragraphs": [
+          "Drop already gives Rust reliable cleanup: when a value goes out of scope its destructor runs, whether the function returned normally, left early through `?`, or unwound from a panic. The friction is that using Drop for one function's cleanup means declaring a type and an impl block. `core::mem::DropGuard`, also available as `std::mem::DropGuard`, removes that ceremony. It takes a value and a closure, derefs to the value so you can keep using it, and runs the closure with the value when the guard is dropped.",
+          "`DropGuard::dismiss` is the other half. It hands the value back without running the closure, which makes all-or-nothing operations easy: arm a rollback at the start, and dismiss it only after every step has succeeded. Note the call syntax. dismiss is an associated function, so you write `DropGuard::dismiss(guard)` rather than `guard.dismiss()`. The announcement explains that this avoids name collisions with methods of the wrapped value, which are reachable through `DerefMut`."
+        ],
+        "sources": [
+          {
+            "title": "DropGuard section of the announcement",
+            "url": "https://blog.rust-lang.org/2026/11/12/Rust-1.100.0/#dropguard-run-a-closure-on-every-exit-path"
+          },
+          {
+            "title": "core::mem::DropGuard",
+            "url": "https://doc.rust-lang.org/stable/core/mem/struct.DropGuard.html"
+          }
+        ],
+        "image": {
+          "src": "/images/blog/november-2026/rust-1-100/dropguard.png",
+          "alt": "Diagram titled DropGuard every exit path: return Err and question-mark errors pass a lantern labelled guard runs roll back, success passes DropGuard dismiss",
+          "caption": "Original generated diagram: early returns and ? errors run the guard and restore the shelf; DropGuard::dismiss on success keeps the changes.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "A rollback that covers early returns and ?",
+        "paragraphs": [
+          "The example stocks a shelf from entries written as name:count. It records the current length, then wraps the shelf in a guard whose closure truncates back to that length and writes a log line. Inside the loop there are two ways to fail: an entry without a colon returns early with `Err`, and a count that is not a number fails through `?`. Neither exit path needs its own cleanup code. Only after the whole batch has been accepted does the function dismiss the guard and keep the new items.",
+          "The run printed `Ok(2)` for the valid batch, then an error for `rivets`, which has no count, and an error for `pins:many`, which has an invalid digit. The shelf still held exactly bolts and nuts, and the log read `stocked 2` followed by two `rolled back` entries. Keep guard closures short and make sure they cannot panic, because a panic while another panic is unwinding aborts the process. Also remember that `std::mem::forget` on a guard is safe and skips the closure, so unsafe code must not rely on a DropGuard running to stay sound."
+        ],
+        "code": "use std::mem::DropGuard;\nuse std::num::ParseIntError;\n\n#[derive(Debug, Default)]\nstruct Shelf {\n    items: Vec<(String, u32)>,\n    log: Vec<String>,\n}\n\n/// Stocks every `name:count` entry, or leaves `items` exactly as it was.\nfn stock_all(shelf: &mut Shelf, batch: &[&str]) -> Result<usize, String> {\n    let before = shelf.items.len();\n    let mut shelf = DropGuard::new(shelf, move |shelf: &mut Shelf| {\n        shelf.items.truncate(before);\n        shelf.log.push(format!(\"rolled back to {before} items\"));\n    });\n\n    for entry in batch {\n        let Some((name, count)) = entry.split_once(':') else {\n            return Err(format!(\"{entry:?} is not name:count\")); // early return\n        };\n        let count: u32 = count.trim().parse().map_err(|e: ParseIntError| e.to_string())?; // `?`\n        shelf.items.push((name.trim().to_string(), count)); // `DerefMut` reaches the shelf\n    }\n\n    let shelf = DropGuard::dismiss(shelf); // success: keep the changes\n    shelf.log.push(format!(\"stocked {}\", batch.len()));\n    Ok(shelf.items.len())\n}\n\nfn main() {\n    let mut shelf = Shelf::default();\n    println!(\"{:?}\", stock_all(&mut shelf, &[\"bolts:40\", \"nuts:25\"]));\n    println!(\"{:?}\", stock_all(&mut shelf, &[\"washers:10\", \"rivets\"]));\n    println!(\"{:?}\", stock_all(&mut shelf, &[\"springs:3\", \"pins:many\"]));\n    println!(\"items: {:?}\", shelf.items);\n    println!(\"log:   {:?}\", shelf.log);\n}\n",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Rust means never having to close a socket",
+            "url": "https://blog.skylight.io/rust-means-never-having-to-close-a-socket/"
+          }
+        ]
+      },
+      {
+        "heading": "conjure_zst is a tool for unsafe code",
+        "paragraphs": [
+          "`std::mem::conjure_zst` gives unsafe code a sanctioned way to create a value of a zero-sized type, replacing tricks such as transmuting `()` or calling `MaybeUninit::uninit().assume_init()`. It is unsafe because zero-sized types often act as proof tokens: PyO3's `Python<'py>` marker, the announcement's example, represents holding the Python interpreter lock, and conjuring one would let safe code skip that requirement. Application code rarely needs it. In review, treat a call like a transmute that must carry a safety comment."
+        ],
+        "sources": [
+          {
+            "title": "std::mem::conjure_zst",
+            "url": "https://doc.rust-lang.org/stable/std/mem/fn.conjure_zst.html"
+          },
+          {
+            "title": "Unsafe code guidelines",
+            "url": "https://github.com/rust-lang/unsafe-code-guidelines"
+          }
+        ]
+      },
+      {
+        "heading": "Cargo reports unused dependencies",
+        "paragraphs": [
+          "Unused dependencies cost build time, and rustc's `unused_crate_dependencies` lint was never a good fit under Cargo, because one dependencies table serves every target in a package. Cargo 1.100 now performs the check itself and warns about a dependency that no built target uses. The warning is part of a new linting system configured in the `[lints.cargo]` table of `Cargo.toml`, which completes the Cargo lints project goal.",
+          "In our test package a path dependency that `main.rs` never referenced produced `warning: unused dependency helper` with the manifest line underlined, exactly as in the announcement. With `unused_dependencies` set to `deny`, as below, the build failed with `could not finalize app (manifest)`. Running `cargo check --bin app` printed nothing, which matches the documented limitation: the lint appears only when every target that may use the table is built. Dev-dependencies are never reported. Check a full build, move platform-specific crates to target-specific tables, and switch CI to deny only once the list is clean."
+        ],
+        "code": "[lints.cargo]\nunused_dependencies = \"deny\"\n",
+        "codeLanguage": "toml",
+        "sources": [
+          {
+            "title": "Cargo lints reference",
+            "url": "https://doc.rust-lang.org/stable/cargo/reference/lints.html"
+          },
+          {
+            "title": "Cargo lints project goal",
+            "url": "https://goals.rust-lang.org/2026/cargo-lints.html"
+          }
+        ]
+      },
+      {
+        "heading": "The build directory has a new layout",
+        "paragraphs": [
+          "Cargo compiles everything in the build directory and then copies final artifacts into the target directory. Different configurations, such as other feature sets, produce different copies that are kept apart by a configuration hash, but that hash was not applied consistently. Rust 1.100 organizes the build directory by build step instead of file type and moves the hash from file names into parent directories. That removes extra and missed rebuilds, especially when git worktrees share a build directory.",
+          "We saw the effect immediately. After a debug build of a package with serde_json, `target/debug/deps` no longer existed. Dependency outputs lived under `target/debug/build/<package>/<hash>/`, for example `target/debug/build/serde_json` with three hash directories, while the final binary was still copied to `target/debug/cool`. Scripts that globbed `target/debug/deps` for rlib files or parsed hashed file names will break. Read artifact paths from `cargo build --message-format=json` instead, and check cargo issue 17287 if a workaround of yours is affected."
+        ],
+        "sources": [
+          {
+            "title": "Reducing Cargo cache collisions",
+            "url": "https://blog.rust-lang.org/2026/11/12/Rust-1.100.0/#reducing-cargo-cache-collisions"
+          },
+          {
+            "title": "Call for testing: build-dir layout v2",
+            "url": "https://blog.rust-lang.org/2026/03/13/call-for-testing-build-dir-layout-v2/"
+          },
+          {
+            "title": "cargo issue 17287",
+            "url": "https://github.com/rust-lang/cargo/issues/17287"
+          }
+        ]
+      },
+      {
+        "heading": "Dependency cooldowns with min-publish-age",
+        "paragraphs": [
+          "Malicious versions of crates are often caught within hours or days of being published, by automated scanners or by the community. Rust 1.100 stabilizes publish-age aware resolution so you can wait out that window. Setting `global-min-publish-age` in `.cargo/config.toml` makes Cargo skip any version that is newer than the threshold and print what it held back. The idea is known more widely as dependency cooldowns.",
+          "To see it clearly we used an exaggerated 90-day window on a package that depends on serde_json. Cargo printed `Locking 11 packages to highest Rust 1.100.0 compatible versions as of 90 days ago`, then lines such as `Adding serde_json v1.0.151 (available: v1.0.154, published 38 days ago)` and the same for itoa, syn and unicode-ident. Without the setting, the same manifest locked serde_json 1.0.154. A real policy would use a shorter window; the announcement's example uses three days."
+        ],
+        "code": "# .cargo/config.toml\n[registry]\nglobal-min-publish-age = \"3 days\"\n",
+        "codeLanguage": "toml",
+        "sources": [
+          {
+            "title": "Cargo min-publish-age section of the announcement",
+            "url": "https://blog.rust-lang.org/2026/11/12/Rust-1.100.0/#cargo-min-publish-age-a-k-a-dependency-cooldowns"
+          },
+          {
+            "title": "registry.global-min-publish-age",
+            "url": "https://doc.rust-lang.org/cargo/reference/config.html#registryglobal-min-publish-age"
+          }
+        ],
+        "image": {
+          "src": "/images/blog/november-2026/rust-1-100/cooldown.png",
+          "alt": "An orange paper crab with a clipboard guards a warehouse gate while new crates wait beside an hourglass and a calendar marked 3 days",
+          "caption": "Original generated illustration: freshly published crates wait in a cooldown area before Cargo lets them through to the shelves.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Overrides last only until the next broad update",
+        "paragraphs": [
+          "Sometimes you need a new version immediately, for example a security fix. Asking for it with `cargo update serde_json --precise 1.0.154` failed in our test with `version 1.0.154 is too new (published 38 days ago, minimum age 90 days)`, and Cargo suggested the environment variable shown below. With `CARGO_RESOLVER_INCOMPATIBLE_PUBLISH_AGE=allow` the same command updated serde_json and recorded 1.0.154 in `Cargo.lock`.",
+          "The detail worth knowing came next. A later plain `cargo update`, run while 1.0.154 was still inside the window, printed `Downgrading serde_json v1.0.154 -> v1.0.151`. The override is kept in the lockfile, as the announcement says, but only until something re-resolves it. If your team uses overrides, write down why each one was made and avoid running a broad `cargo update` in the same change, or the urgent fix can quietly disappear again."
+        ],
+        "code": "# refused while the version is inside the window\ncargo update serde_json --precise 1.0.154\n\n# deliberate, one-off override\nCARGO_RESOLVER_INCOMPATIBLE_PUBLISH_AGE=allow \\\n  cargo update serde_json --precise 1.0.154\n\n# a later broad update re-resolves and can downgrade it again\ncargo update\n",
+        "codeLanguage": "shell",
+        "sources": [
+          {
+            "title": "cargo update reference",
+            "url": "https://doc.rust-lang.org/cargo/commands/cargo-update.html"
+          }
+        ]
+      },
+      {
+        "heading": "What a cooldown does not do",
+        "paragraphs": [
+          "A cooldown depends on the registry recording when each version was published. Versions without a `pubtime` field in the index are never held back. `cargo install` ignores the minimum age for the installed crate and its dependencies, so pin an exact version with `cargo install foo@1.2.3` when that matters. Most importantly, the announcement is explicit that cooldowns reduce the risk of some supply-chain attacks but are not a complete defense. Reviewing dependency updates is still part of the job.",
+          "Choosing the window is a trade-off: a longer cooldown gives scanners more time but delays legitimate fixes. A few days plus a written override rule is a reasonable start. The crates.io supply chain hardening goal plans quarantine support and automated detection of suspicious releases."
+        ],
+        "sources": [
+          {
+            "title": "crates.io supply chain hardening project goal",
+            "url": "https://goals.rust-lang.org/2026/crates-io-supply-chain-hardening.html"
+          }
+        ]
+      },
+      {
+        "heading": "Smaller APIs that remove helper code",
+        "paragraphs": [
+          "The list of stabilized APIs is long, and several entries replace helpers that many projects write themselves. `str::trim_prefix` and `trim_suffix` behave like `strip_prefix` and `strip_suffix` but return the input unchanged when the affix is absent, instead of an `Option`. Slices and `Path` have the same pair; `Path::trim_prefix` works on whole components, so `crates/report/src/lib.rs` became `report/src/lib.rs` in our run. `Vec::from_fn` builds a vector from each index, and `bool::toggle` flips a flag in place.",
+          "`Box::map`, `Rc::map` and `Arc::map` transform the wrapped value, and the documentation says `Box::map` reuses the allocation when possible; like dismiss, they are associated functions. `Box::take` moves the value out while keeping the allocation for reuse. `Once` now implements `Default`, `UnsafeCell` gains `replace` and unchecked reference accessors, and Windows code gets `CommandExt::show_window` and `ChildExt::main_thread_handle`. The program printed `1.100.0`, then `1.99.1` unchanged, the trimmed path, `[0, 1, 4, 9, 16]`, `dark mode: true` and `70.7`."
+        ],
+        "code": "use std::path::Path;\n\nfn main() {\n    // Like `strip_prefix`, but returns the input unchanged when the prefix is absent.\n    for line in [\"v1.100.0\", \"1.99.1\"] {\n        println!(\"{line} -> {}\", line.trim_prefix('v'));\n    }\n\n    let file = Path::new(\"crates/report/src/lib.rs\");\n    println!(\"{}\", file.trim_prefix(\"crates\").display());\n\n    // Build a vector from its index without a separate push loop.\n    let squares = Vec::from_fn(5, |i| i * i);\n    println!(\"{squares:?}\");\n\n    let mut dark = false;\n    dark.toggle();\n    println!(\"dark mode: {dark}\");\n\n    // Map the boxed value; the standard library reuses the allocation when possible.\n    let celsius = Box::new(21.5_f64);\n    let fahrenheit = Box::map(celsius, |c| c * 9.0 / 5.0 + 32.0);\n    println!(\"{fahrenheit}\");\n}\n",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "str::trim_prefix",
+            "url": "https://doc.rust-lang.org/stable/std/primitive.str.html#method.trim_prefix"
+          },
+          {
+            "title": "Box::map",
+            "url": "https://doc.rust-lang.org/stable/std/boxed/struct.Box.html#method.map"
+          },
+          {
+            "title": "Vec::from_fn",
+            "url": "https://doc.rust-lang.org/stable/std/vec/struct.Vec.html#method.from_fn"
+          }
+        ]
+      },
+      {
+        "heading": "An upgrade order for existing projects",
+        "paragraphs": [
+          "Upgrade in small, separate steps so each failure has one cause. First record the toolchain you use today and switch to 1.100 without touching the manifest. If a dependency fails with a never-type error, update that dependency on its own. Then build every target and run the tests, read the new unused-dependency warnings and fix scripts that depended on the old build directory. Adopt a cooldown last, in its own change, because it alters how every later update resolves. Separate commits keep a regression easy to bisect."
+        ],
+        "code": "rustc -V && cargo -V            # record the current toolchain\nrustup update stable\ncargo build --all-targets        # never-type errors, unused dependencies\ncargo test\ncargo build --message-format=json > artifacts.json  # paths for scripts\n",
+        "codeLanguage": "shell",
+        "sources": [
+          {
+            "title": "Install and update Rust",
+            "url": "https://www.rust-lang.org/tools/install"
+          }
+        ]
+      },
+      {
+        "heading": "Crabrix and Rust 1.100",
+        "paragraphs": [
+          "Be aware of one limit if you practise with Crabrix. The iPhone and iPad app and the browser Playground run a source-built compiler that reports Rust 1.96.0-dev for wasm32-wasip1. Writing `!` as a type there fails with error E0658 (the `!` type is experimental), which is the same error we got from Rust 1.99. DropGuard, the Allocator trait and the new trim methods are not available either, and Crabrix's own package preparation does not read `global-min-publish-age`. Use a desktop 1.100 toolchain to try these features.",
+          "The underlying ideas still work in Crabrix today. Diverging expressions already coerce, so match arms that return or panic behave as described above. `Infallible` remains available for error types that cannot occur, and a small struct with a `Drop` implementation gives the same rollback behaviour as a `DropGuard`. Code written that way keeps compiling on newer releases."
+        ],
+        "links": [
+          {
+            "title": "Technology and compiler limits",
+            "url": "/technology/"
+          },
+          {
+            "title": "Playground",
+            "url": "/playground/"
+          }
+        ]
+      },
+      {
+        "heading": "Next on nightly: a parallel front end",
+        "paragraphs": [
+          "Four days after the release, on 16 November, the compiler team announced that the parallel front end, which covers type checking and borrow checking, is enabled by default on nightly since nightly-2026-11-14, initially with two threads. In their benchmarks, checking some single crates such as nalgebra, cargo or diesel was almost three times faster with eight threads, while a whole-graph cargo check of the cargo crate went from 36.7 to 30.8 seconds, because Cargo and LLVM already keep the cores busy.",
+          "Stable still uses the sequential front end. On nightly, `-Zunstable-options --jobs-frontend=N` changes the thread count and `--jobs-frontend=1` opts out. Diagnostics may appear in a nondeterministic order, and the team asks for crash and reproducibility reports before stabilization."
+        ],
+        "sources": [
+          {
+            "title": "Enabling the parallel frontend on nightly",
+            "url": "https://blog.rust-lang.org/2026/11/16/enabling-parallel-frontend-on-nightly/"
+          }
+        ]
+      },
+      {
+        "heading": "Summary",
+        "paragraphs": [
+          "Rust 1.100.0 names the never type, opens custom allocators for Vec and Box, turns scoped cleanup into a value and gives Cargo better build-hygiene and supply-chain tools. The main upgrade risk is the never-type fallback change in older editions. Update the compiler first, read what Cargo now reports, and adopt cooldowns as a deliberate policy."
+        ],
+        "sources": [
+          {
+            "title": "Full Rust 1.100.0 changes",
+            "url": "https://github.com/rust-lang/rust/releases/tag/1.100.0"
+          },
+          {
+            "title": "Cargo 1.100 changelog",
+            "url": "https://doc.rust-lang.org/nightly/cargo/CHANGELOG.html#cargo-1100-2026-11-12"
+          },
+          {
+            "title": "Clippy 1.100 changelog",
+            "url": "https://github.com/rust-lang/rust-clippy/blob/master/CHANGELOG.md#rust-1100"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "slug": "crabrix-ai-agents-local-mcp-remote-workflows",
     "title": "Crabrix and AI agents: local MCP, direct connections and real Rust work",
     "date": "2026-11-04",

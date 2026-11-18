@@ -1,5 +1,21 @@
 # Crabrix website deployment
 
+## Current hosting and release — 18 November 2026
+
+Production now runs on Hostwatch node `52efe55c-ac21-439d-a10c-19a0d47da4a1`
+(Crabrix · 2.31.78.155, arm64), target `crabrix-web`; the Helsinki notes below are historical.
+Use `service_locations` to confirm placement. Releases are partial source overlays:
+`source_upload` → `source_preview` → `source_build` → `image_update` → `deployment_update`.
+`build/site-release-20261118/hw.py` drives the local `hostwatch-mcp-node` bridge for multi-chunk uploads.
+
+The 18 November release (image `sha256:5da34bd0…`, registry `sha256:95ab2ea6…`) moves lessons
+to the course page's left edge, shows a struck-through $14.99 next to $9.99, adds the crates.io
+search dialog to Playground Packages and publishes the Rust 1.100 article with four images.
+168 tests, TypeScript and the build passed. Production HTTPS and browser checks at 390/820/1440 px
+passed, including a real crates.io search and add. No backup profile exists on this node; the
+accounts volume is retained by the update. Rollback: redeploy `sha256:9ad4905e…`.
+[Release receipt](site-release-2026-11-18.json).
+
 ## Current hosting — Helsinki, 5 November 2026
 
 Production runs on `2.29.175.213`, Hostwatch node

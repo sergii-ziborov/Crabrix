@@ -4,7 +4,7 @@ import { legacyMain } from "@/lib/legacy";
 import { courseSnapshot } from "@/lib/courses";
 import { ScreenshotGalleries } from "@/components/screenshot-galleries";
 
-export const metadata = pageMetadata({"title": "Rust Compiler for iPhone, iPad & Duo", "description": `Compile Rust locally on iPhone, iPad and iPhone Duo. Try the browser Playground, supported Cargo projects, ${courseSnapshot().lessonCount} lessons and 46 code examples.`, "path": "/", modifiedDate: "2026-11-06"});
+export const metadata = pageMetadata({"title": "Rust Compiler for iPhone, iPad & Duo", "description": `Compile Rust locally on iPhone, iPad and iPhone Duo. Try the browser Playground, supported Cargo projects, ${courseSnapshot().lessonCount} lessons and 46 code examples.`, "path": "/", modifiedDate: "2026-11-18"});
 
 export default function HomePage() {
   const [beforeGallery, afterGallery] = legacyMain("index").split("<!-- screenshot-galleries -->");

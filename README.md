@@ -4,6 +4,26 @@
 
 [Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support/) · [Privacy](https://crabrix.com/privacy/) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
+## Website — 18 November 2026
+
+- **Lessons no longer jump sideways.** A lesson used to sit in a centred 850px column while its course page
+  started at the shell's left edge, so the breadcrumbs and title moved right on every click. Lessons now share
+  the course page's left edge; only the reading column is narrower.
+- **Price:** the launch price shows `$9.99` next to a struck-through `$14.99`.
+- **Playground packages work like the app.** *+ Add crate* opens a crates.io catalogue: debounced search,
+  the app's sort options (most downloaded, relevance, trending, recently updated, newest, name), download counts,
+  crate details with owners and versions (yanked or too-new-for-the-browser-compiler versions flagged), a
+  preview of the exact `Cargo.toml` line, and a manual-entry fallback. Logic is in `site/lib/crates-io.ts`
+  with unit tests; the dialog is `site/components/playground/crate-catalog-dialog.tsx`.
+- **New article:** [Rust 1.100: the never type, DropGuard, allocators and Cargo cooldowns](https://crabrix.com/blog/rust-1-100-never-type-dropguard-cargo-cooldowns/),
+  2,664 prose words and four generated images. Every Rust block was compiled and run with rustc 1.100.0, and the Cargo
+  behaviour was observed with Cargo 1.100 against crates.io.
+  [Sources, examples and verification](docs/blog/rust-1-100-2026-11-18/README.md).
+
+Checks: 168 site tests, TypeScript, the production build, and browser runs at 390/820/1440 px (same left edge,
+no overflow, all images decoded, real crates.io search → add `itoa` on desktop and phone).
+Live since 18 November 15:15 UTC on the Crabrix Hostwatch node. [Deployment record](docs/site-deploy.md) · [receipt](docs/site-release-2026-11-18.json).
+
 ## Crabrix 1.1.6 — TestFlight and App Review
 
 Build **129** is **VALID / IN_BETA_TESTING** in Internal QA and

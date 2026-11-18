@@ -101,6 +101,7 @@ h3 { font-size: 19px; margin: 0 0 8px; }
 .price { max-width: 560px; padding: 30px; border: 1px solid var(--border); border-radius: 20px; background: linear-gradient(160deg, var(--raised), var(--panel)); }
 .price .amount { font-size: 52px; font-weight: 800; letter-spacing: -.04em; line-height: 1.1; }
 .price .amount span { font-size: 16px; color: var(--muted); font-weight: 500; letter-spacing: 0; }
+.price .amount .was-price { margin-left: 6px; font-size: .5em; font-weight: 650; letter-spacing: -.02em; color: var(--muted); text-decoration-thickness: 2px; text-decoration-color: var(--coral); }
 .price ul { padding: 0; margin: 20px 0 0; list-style: none; }
 .price li { position: relative; padding: 5px 0 5px 26px; color: var(--muted); }
 .price li::before { content: "✓"; position: absolute; left: 0; color: var(--mint); }
@@ -268,7 +269,7 @@ html[data-theme="light"] .contact-form select, html[data-theme="light"] .contact
 .lesson-access p { max-width: 55ch; }
 .lesson-access .access-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
 .preview-label { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; padding: 5px 10px; color: var(--mint); font-size: 12px; font-weight: 650; }
-.article-content p code, .article-content li code { color: var(--inline-code); background: var(--inline-code-bg); border: 1px solid var(--inline-code-border); padding: .08em .28em; border-radius: 5px; font-size: .91em; font-weight: 650; }
+.article-content p code, .article-content li code { color: var(--inline-code); background: var(--inline-code-bg); border: 1px solid var(--inline-code-border); padding: .08em .28em; border-radius: 5px; font-size: .91em; font-weight: 650; overflow-wrap: anywhere; }
 .post-cover { width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 10px; margin-bottom: 8px; }
 @media (max-width: 950px) { .auth-page { grid-template-columns: 1fr 400px; gap: 28px; } }
 @media (max-width: 760px) { .auth-page { grid-template-columns: 1fr; padding-top: 30px; gap: 28px; } .auth-story h1 { font-size: 34px; } .auth-code-art, .auth-benefits { display: none; } .auth-story .lede { margin-bottom: 10px; } .auth-panel { padding: 24px; } .account-grid { grid-template-columns: 1fr; } }
@@ -314,7 +315,9 @@ html[data-theme="light"] .contact-form select, html[data-theme="light"] .contact
 .curriculum a.unit .course-icon { margin-bottom:12px; }
 .curriculum a.unit:hover { border-color:var(--coral); background:var(--panel); }
 .curriculum a.unit:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
-.lesson-page .lesson-content, .lesson-page > .breadcrumbs { margin-inline:auto; max-width:850px; }
+/* Lessons share the course page's left edge so breadcrumbs and headings stay put when a lesson opens;
+   only the reading column is narrower. */
+.lesson-page .lesson-content { max-width:850px; }
 
 /* Equal preview heights preserve each device's aspect ratio without giant captures. */
 .device-galleries { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }

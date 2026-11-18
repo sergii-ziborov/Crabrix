@@ -20,8 +20,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }))),
   ]);
   const pageModifiedDates: Record<string, string> = {
-    "": "2026-11-05", about: "2026-11-05", ai: "2026-11-05", learn: "2026-11-06",
-    playground: "2026-11-05", guide: "2026-11-06", technology: "2026-11-05", privacy: "2026-11-06", terms: "2026-11-06", licenses: "2026-11-06",
+    "": "2026-11-18", about: "2026-11-05", ai: "2026-11-05", learn: "2026-11-06",
+    playground: "2026-11-18", guide: "2026-11-18", technology: "2026-11-05", privacy: "2026-11-06", terms: "2026-11-06", licenses: "2026-11-06",
   };
   const archiveModified = (page: number) => blogPage(posts, page)?.posts.map(postModificationDate).sort().at(-1);
   const firstArchiveModified = archiveModified(1);

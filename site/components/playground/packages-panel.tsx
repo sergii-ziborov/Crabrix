@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { CrateCatalogDialog } from "./crate-catalog-dialog";
 
 export type BrowserPackageRow = {
   name: string;
@@ -34,76 +36,83 @@ export function PackagesPanel({
   packages, manifestPath, preparing, disabled, readOnly, error, progress,
   onPrepare, onCancel, onAdd, onOpenManifest,
 }: Props) {
-  const [adding, setAdding] = useState(false);
-  const [name, setName] = useState("");
-  const [version, setVersion] = useState("1");
   const [open, setOpen] = useState(true);
+  // The catalogue renders in the workspace root: on phones this sidebar can be
+  // display:none, which would hide an open modal dialog with it.
+  const [catalogHost, setCatalogHost] = useState<HTMLElement | null>(null);
+  const [added, setAdded] = useState("");
+  const addButton = useRef<HTMLButtonElement>(null), openingManifest = useRef(false);
   useEffect(() => { if (error) setOpen(true); }, [error]);
-  const canSubmit = !disabled && !readOnly && !preparing && !!name.trim() && !!version.trim();
+  useEffect(() => { if (preparing) setAdded(""); }, [preparing]);
+  const canAdd = !disabled && !readOnly && !preparing;
   const needsPreparation = packages.some(row => row.state !== "prepared");
-  const showAdd = adding && !readOnly;
+  const declared = useMemo(() => new Set(packages.filter(row => row.requirement !== "transitive").map(row => row.name)), [packages]);
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (canSubmit && onAdd(name.trim(), version.trim())) { setName(""); setAdding(false); }
+  const openCatalog = () => {
+    const button = addButton.current;
+    setAdded("");
+    setCatalogHost(button?.closest<HTMLElement>(".pg-workspace") ?? document.body);
+  };
+  const add = (name: string, requirement: string) => {
+    if (!canAdd || !onAdd(name, requirement)) return false;
+    setAdded(`Added ${name} = "${requirement}" to Cargo.toml. Prepare downloads it.`);
+    return true;
   };
 
-  return <details className="pg-packages" open={open} onToggle={event => setOpen(event.currentTarget.open)}>
-    <summary className="pg-packages-summary">
-      <span className="pg-packages-chevron" aria-hidden="true">▸</span>
-      <strong>Packages</strong>
-      <span className="pg-packages-count" aria-label={packages.length + (packages.length === 1 ? " dependency" : " dependencies")}>{packages.length}</span>
-    </summary>
-    <div className="pg-packages-body">
-      <p className="pg-packages-std">Rust std <span>with compiler</span></p>
-      <p className="pg-packages-profile">Registry Rust libraries; unsupported build requirements are reported.</p>
+  return <>
+    <details className="pg-packages" open={open} onToggle={event => setOpen(event.currentTarget.open)}>
+      <summary className="pg-packages-summary">
+        <span className="pg-packages-chevron" aria-hidden="true">▸</span>
+        <strong>Packages</strong>
+        <span className="pg-packages-count" aria-label={packages.length + (packages.length === 1 ? " dependency" : " dependencies")}>{packages.length}</span>
+      </summary>
+      <div className="pg-packages-body">
+        <p className="pg-packages-std">Rust std <span>with compiler</span></p>
+        <p className="pg-packages-profile">Registry Rust libraries; unsupported build requirements are reported.</p>
 
-      {packages.length ? <ul className="pg-packages-list">
-        {packages.map(row => <li key={row.name} className="pg-package-row">
-          <div className="pg-package-name-line">
-            <strong title={row.name}>{row.name}</strong>
-            <span title={row.version ? "Resolved " + row.version + "; requested " + row.requirement : "Requested " + row.requirement}>
-              {row.version ?? row.requirement}
-            </span>
-          </div>
-          <small className={"pg-package-state pg-package-state-" + row.state}
-            aria-label={row.state === "prepared" ? "Source ready in this browser; compilation is not yet verified" : stateLabel[row.state]}>
-            {stateLabel[row.state]}
-          </small>
-        </li>)}
-      </ul> : <p className="pg-packages-empty">{error ? "Open Cargo.toml to resolve its requirements." : "No dependencies yet. Prepared sources stay in this browser."}</p>}
+        {packages.length ? <ul className="pg-packages-list">
+          {packages.map(row => <li key={row.name} className="pg-package-row">
+            <div className="pg-package-name-line">
+              <strong title={row.name}>{row.name}</strong>
+              <span title={row.version ? "Resolved " + row.version + "; requested " + row.requirement : "Requested " + row.requirement}>
+                {row.version ?? row.requirement}
+              </span>
+            </div>
+            <small className={"pg-package-state pg-package-state-" + row.state}
+              aria-label={row.state === "prepared" ? "Source ready in this browser; compilation is not yet verified" : stateLabel[row.state]}>
+              {stateLabel[row.state]}
+            </small>
+          </li>)}
+        </ul> : <p className="pg-packages-empty">{error ? "Open Cargo.toml to resolve its requirements." : "No dependencies yet. Prepared sources stay in this browser."}</p>}
 
-      {error ? <p className="pg-packages-error" role="alert">{error}</p> : null}
-      {progress ? <p className="pg-packages-progress" role="status">{progress}</p> : null}
-      <div className="pg-packages-actions">
-        <button type="button" className="pg-button" onClick={() => setAdding(value => !value)}
-          disabled={disabled || readOnly || preparing} aria-expanded={showAdd}
-          aria-controls={showAdd ? "pg-package-add-fields" : undefined}>
-          {showAdd ? "Close" : "+ Add crate"}
-        </button>
-        {preparing
-          ? <button type="button" className="pg-button" onClick={onCancel}>Cancel</button>
-          : <button type="button" className="pg-button pg-packages-prepare" onClick={onPrepare}
-              disabled={disabled || !needsPreparation} title="Download and prepare crate sources in this browser"
-              aria-label="Download and prepare crate sources">↓ Prepare</button>}
+        {error ? <p className="pg-packages-error" role="alert">{error}</p> : null}
+        {progress ? <p className="pg-packages-progress" role="status">{progress}</p> : null}
+        {added && !error ? <p className="pg-packages-progress" role="status">{added}</p> : null}
+        <div className="pg-packages-actions">
+          <button ref={addButton} type="button" className="pg-button" onClick={openCatalog}
+            disabled={!canAdd} aria-haspopup="dialog" aria-expanded={!!catalogHost}
+            title="Search crates.io and add a dependency to Cargo.toml">
+            + Add crate
+          </button>
+          {preparing
+            ? <button type="button" className="pg-button" onClick={onCancel}>Cancel</button>
+            : <button type="button" className="pg-button pg-packages-prepare" onClick={onPrepare}
+                disabled={disabled || !needsPreparation} title="Download and prepare crate sources in this browser"
+                aria-label="Download and prepare crate sources">↓ Prepare</button>}
+        </div>
+
+        {manifestPath ? <button type="button" className="pg-packages-manifest" onClick={onOpenManifest}
+          title={manifestPath}>Open Cargo.toml</button> : null}
       </div>
-
-      {showAdd ? <form id="pg-package-add-fields" className="pg-packages-add" onSubmit={submit}>
-        <label>Crate name
-          <input value={name} onChange={event => setName(event.target.value)}
-            placeholder="itoa" autoCapitalize="off" autoComplete="off" spellCheck={false}
-            disabled={disabled || preparing} />
-        </label>
-        <label>Version requirement
-          <input value={version} onChange={event => setVersion(event.target.value)}
-            placeholder="1" autoCapitalize="off" autoComplete="off" spellCheck={false}
-            disabled={disabled || preparing} />
-        </label>
-        <button type="submit" className="pg-button pg-packages-prepare" disabled={!canSubmit}>Add to Cargo.toml</button>
-      </form> : null}
-
-      {manifestPath ? <button type="button" className="pg-packages-manifest" onClick={onOpenManifest}
-        title={manifestPath}>Open Cargo.toml</button> : null}
-    </div>
-  </details>;
+    </details>
+    {catalogHost ? createPortal(<CrateCatalogDialog declared={declared} canAdd={canAdd} error={error} onAdd={add}
+      blockedReason={readOnly ? "This Playground is read only." : preparing ? "Wait for package preparation to finish." : disabled ? "Cargo.toml cannot be changed while the Playground is busy." : undefined}
+      onOpenManifest={manifestPath ? () => { openingManifest.current = true; onOpenManifest(); } : undefined}
+      onClosed={() => {
+        setCatalogHost(null);
+        // Focus returns to Add crate, unless the dialog handed over to Cargo.toml in the editor.
+        if (!openingManifest.current) requestAnimationFrame(() => addButton.current?.focus());
+        openingManifest.current = false;
+      }} />, catalogHost) : null}
+  </>;
 }
