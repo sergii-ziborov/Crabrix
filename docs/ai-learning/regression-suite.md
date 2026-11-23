@@ -49,6 +49,17 @@ passed, 0 failed (catalog 27, 23 Nov); `BridgeCourseTests` 1 passed.
 
 Phases 1–3 do not change the app; the iOS set is a guard, required again in Phase 6.
 
+## After phases 4–7 (23 November 2026)
+
+| Repo | Command | Result |
+|---|---|---|
+| Crabrix site | `cd site && npm test` | 181 tests, 181 pass (172 after phases 1–3, + 9 in `academy-ai-phases.test.mjs`) |
+| Crabrix site | `npx tsc --noEmit`, `npx next build` | pass |
+| Crabrix site | `node docs/ai-learning/evidence/pages.cjs <origin> <outdir>` (390/820/1440 px: client tabs, copy, `via=ai` arrival, lesson handoff, feedback card once, Playground practice copy Run, GPC sends nothing) | all pass at 3 widths: no overflow or page errors, events carry no cookies, the feedback card shows once, GPC sends nothing (`evidence/pages.json`) |
+| Crabrix site | `node docs/ai-learning/evidence/practice-copies.cjs <origin> site/content/academy-practice-starters.json <out>` (✓ Check of every practice copy in the browser Playground) | 189 compile (60 with warnings only), 1 fails by design with E0502; Examples 46/46 (`evidence/practice-copies.json`, `example-copies.json`) |
+| crabrix-courses | `python3 -m unittest discover -s tests` | 45 tests OK (1 skipped) |
+| crabrix-courses | `python3 tools/practice_starters.py --check` (needs rustc with `wasm32-wasip1`) | 190 starters up to date |
+
 ## Pass criteria
 
 Every baseline count above is equal or higher, with 0 failures. New tests add to the counts; no

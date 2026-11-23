@@ -27,6 +27,7 @@ import { FileDialog, fileDialogTitle, type FileRequest } from "./file-dialog";
 import { RecoveryPanel } from "./recovery-panel";
 import { ImportDialog } from "./import-dialog";
 import { ConnectAIDialog } from "./connect-ai-dialog";
+import { noteAIRun } from "@/lib/academy-events-client";
 import toolchain from "@/lib/playground-toolchain.json";
 import { findCargoManifest, readCargoRoot } from "@/lib/browser-cargo-manifest";
 import { PackagesPanel } from "./packages-panel";
@@ -342,7 +343,7 @@ function Workspace({ seed, seedNotice, seedDraftId, seedUnsaved, seedModal, onOp
   const run = (mode: "check" | "run" | "debug") => {
     if (!source || expired) return;
     if (cargo.preparing) { setNotice("Wait for package preparation or cancel it before compiling."); return; }
-    try { const value = validatePlaygroundDocument(runnableDocument(doc, codecOf())); readCargoRoot(value); compiler.start(mode, value, stdin); setResultRevision(documentRevision(value)); setDock(mode === "check" ? "problems" : mode === "debug" ? "debug" : "output"); }
+    try { const value = validatePlaygroundDocument(runnableDocument(doc, codecOf())); readCargoRoot(value); compiler.start(mode, value, stdin); if (mode !== "check") noteAIRun(); setResultRevision(documentRevision(value)); setDock(mode === "check" ? "problems" : mode === "debug" ? "debug" : "output"); }
     catch (error) { setNotice(String(error)); }
   };
   const current = view?.files.find(file => file.key === selected), selectedPath = current?.path ?? selected;

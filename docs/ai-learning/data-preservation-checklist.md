@@ -58,8 +58,19 @@ Snapshot all of it (hash per store) as the "before" state.
 | Release → candidate → release, no duplicates/resets | `CourseDeliveryGateTests.testUpdatePlannerSelectsLatestCompatibleVersionWithoutDowngrading`, `CourseInstallerTests.testReplacedVersionTreesAreRemovedAndTheActiveOneKept` |
 | Migrations idempotent | `CourseBootstrapTests.testFirstLaunchDecisionPersistsBeforeNewProgressIsWritten`, `testDeletingLocalMaterialDoesNotReactivateItOnRelaunch`; `ProgressAndTrainTests.testStableRewardEventIsAppliedOnceAcrossRelaunch`; `LearningBackupTests.testInterruptedRestore…IsNotReplayed` |
 
-Phases 1–3 introduce **no** migration and no schema change; the only new persistent data are
-crabrix-courses `academy/*` files and site routes, outside every learner store.
+Phases 1–7 introduce **no** migration and no change to any existing schema. New persistent data,
+all outside every existing learner store:
+
+| New data | Where | Written by | Removing it |
+|---|---|---|---|
+| `academy/*` metadata (paths, contract, practice starters, learning-state schema) | crabrix-courses, site `content/` | authors | no learner effect |
+| `crabrix.ai.*` UserDefaults flags (first use, feedback answered) | iOS app | Learn with AI screen | no learner effect |
+| `crabrix.ai.*` localStorage/sessionStorage markers | learner's browser | with-ai page, lesson pages, Playground | no learner effect |
+| `academy-events.sqlite` `(day, event, detail, count)` | site `/data` volume | events route | `rm`; accounts unaffected |
+
+Because nothing is migrated, a repeated update (release → candidate → release) has nothing to
+re-run: there is no step that could duplicate or reset data. The AI Learning State is never
+imported into the app in this release, so the "restore replaces" path is untouched.
 
 ## New tests required by this feature
 
@@ -72,3 +83,8 @@ crabrix-courses `academy/*` files and site routes, outside every learner store.
 3. crabrix-courses: every learning-path step references an existing lesson; paths are not part of
    any pack (`tools/coursepack.py build` output unchanged).
 4. iOS (Phase 6 only): the 15.1 fixture before/after hash test.
+5. Phases 4–7: practice copies match the lesson text (courses + site tests) and every copy is
+   checked in the real browser Playground; learning-state merge never lowers official progress
+   (SDK); the backup reader accepts a real app-made file and refuses corrupted ones (SDK); the
+   event endpoint stores counters only (site); switches leave lessons, Playground and rooms alone
+   (site, SDK).

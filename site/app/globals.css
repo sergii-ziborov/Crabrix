@@ -417,3 +417,12 @@ html[data-theme="light"] .contact-form select, html[data-theme="light"] .contact
 @media (max-width:760px) { .prompt-list { grid-template-columns:1fr; } }
 .path-link { flex-wrap:wrap; }
 .path-link small { white-space:normal; }
+.ai-feedback { border:1px solid var(--border); border-radius:14px; padding:14px 16px; margin:22px 0; background:var(--panel); }
+.ai-feedback h2 { font-size:18px; margin:0 0 8px; }
+.ai-feedback-prompted { border-color:var(--blue); }
+.ai-feedback textarea { width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); font:inherit; padding:8px 10px; margin:4px 0 8px; }
+.ai-lesson-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.ai-lesson-actions .btn { margin:0; }
+.ai-lesson .card-meta { margin:8px 0 0; }
+.learning-state-steps li { margin:6px 0; }
+.ai-feedback-static textarea { width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); font:inherit; padding:8px 10px; margin:4px 0 8px; }

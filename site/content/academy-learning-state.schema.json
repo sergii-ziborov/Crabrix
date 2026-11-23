@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://crabrix.com/api/academy/v1/learning-state.schema.json",
+  "title": "Crabrix AI Learning State v1",
+  "description": "A portable file the learner owns. It is never the official Crabrix progress record. Merge rules: docs/ai-learning/PLAN.md, 'Phase 5'. Readers drop unknown keys and report them; this schema lists the keys they keep.",
+  "type": "object",
+  "required": ["format", "schemaVersion", "updatedAt"],
+  "properties": {
+    "format": { "const": "crabrix.ai-learning-state" },
+    "schemaVersion": { "const": 1 },
+    "updatedAt": { "$ref": "#/$defs/time" },
+    "producer": { "type": "string", "maxLength": 80 },
+    "learningPath": { "type": ["string", "null"], "pattern": "^[a-z0-9-]{1,128}$" },
+    "teachingMode": { "enum": ["guided", "socratic", "pair", "review"] },
+    "currentLesson": { "$ref": "#/$defs/lessonOrNull" },
+    "learner": {
+      "type": "object",
+      "properties": {
+        "background": { "enum": ["beginner", "nodejs", "c", "experienced", "other", null] },
+        "knownTechnologies": { "type": "array", "maxItems": 20, "items": { "type": "string", "minLength": 1, "maxLength": 60 } },
+        "preferredLanguage": { "type": ["string", "null"], "maxLength": 35 },
+        "goal": { "type": ["string", "null"], "maxLength": 500 }
+      }
+    },
+    "aiSession": {
+      "type": "object",
+      "properties": {
+        "lastSummary": { "type": "string", "maxLength": 2000 },
+        "suggestedNextLesson": { "$ref": "#/$defs/lessonOrNull" },
+        "conceptsNeedingReview": { "type": "array", "maxItems": 50, "items": { "type": "string", "minLength": 1, "maxLength": 80 } }
+      }
+    },
+    "officialProgress": {
+      "description": "A copy made by the Crabrix app or read from a .crabrixprogress backup file. Agents never create or edit it.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["source", "capturedAt", "completed", "credited"],
+          "properties": {
+            "source": { "enum": ["crabrix-ios", "crabrix-backup-file"] },
+            "capturedAt": { "$ref": "#/$defs/time" },
+            "appVersion": { "type": ["string", "null"], "maxLength": 40 },
+            "completed": { "type": "array", "maxItems": 10000, "items": { "$ref": "#/$defs/progressLesson" } },
+            "credited": {
+              "type": "array", "maxItems": 10000,
+              "items": {
+                "type": "object", "required": ["lessonId", "viaLessonId"],
+                "properties": {
+                  "courseId": { "$ref": "#/$defs/idOrNull" },
+                  "lessonId": { "$ref": "#/$defs/id" },
+                  "viaLessonId": { "$ref": "#/$defs/id" }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "description": "Learner- or agent-reported items. Never official.",
+      "type": "array", "maxItems": 500,
+      "items": {
+        "type": "object", "required": ["lessonId", "kind", "at"],
+        "properties": {
+          "courseId": { "$ref": "#/$defs/idOrNull" },
+          "lessonId": { "$ref": "#/$defs/id" },
+          "kind": { "enum": ["discussed", "compiled_by_learner", "ran_by_learner", "ai_reviewed"] },
+          "at": { "$ref": "#/$defs/time" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9.-]{0,159}$" },
+    "idOrNull": { "type": ["string", "null"], "pattern": "^[a-z0-9][a-z0-9.-]{0,159}$" },
+    "time": { "type": "string", "pattern": "^20[2-9][0-9]-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9](\\.[0-9]{1,3})?Z$" },
+    "lesson": {
+      "type": "object", "required": ["courseId", "lessonId"],
+      "properties": { "courseId": { "$ref": "#/$defs/id" }, "lessonId": { "$ref": "#/$defs/id" } }
+    },
+    "lessonOrNull": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/lesson" }] },
+    "progressLesson": {
+      "type": "object", "required": ["lessonId"],
+      "properties": { "courseId": { "$ref": "#/$defs/idOrNull" }, "lessonId": { "$ref": "#/$defs/id" } }
+    }
+  }
+}

@@ -1,0 +1,1341 @@
+{
+ "checkedOn": "2026-11-23",
+ "origin": "local production build (next start)",
+ "summary": {
+  "compiles:accepted-with-warnings": 60,
+  "compiles:accepted": 129,
+  "fails-by-design:errors": 1
+ },
+ "results": [
+  {
+   "path": "basics/block-expressions",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_variables: unused variable: `value`"
+  },
+  {
+   "path": "basics/booleans-comparisons",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "basics/chars-and-text",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "basics/collections",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_mut: variable does not need to be mutable"
+  },
+  {
+   "path": "basics/comments-docs",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "basics/control-flow",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "basics/debugging-values",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "basics/derive",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "basics/enums",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: variants `Quit` and `Write` are never constructed"
+  },
+  {
+   "path": "basics/function-parameters",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_variables: unused variable: `result`"
+  },
+  {
+   "path": "basics/functions",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `area` is never used"
+  },
+  {
+   "path": "basics/hello-rust",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "basics/loops",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_variables: unused variable: `value`"
+  },
+  {
+   "path": "basics/methods-intro",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "basics/number-types",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "basics/operators",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "basics/option-result",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `find` is never used"
+  },
+  {
+   "path": "basics/parsing",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "basics/pattern-matching",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "basics/print-formatting",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "basics/ranges",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_variables: unused variable: `values`"
+  },
+  {
+   "path": "basics/recoverable-errors",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `read` is never used"
+  },
+  {
+   "path": "basics/references-intro",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "basics/strings",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "basics/structs",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: struct `Rectangle` is never constructed"
+  },
+  {
+   "path": "basics/types",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_variables: unused variable: `value`"
+  },
+  {
+   "path": "basics/variables",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_variables: unused variable: `total`"
+  },
+  {
+   "path": "basics/what-is-rust",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "ownership/asref-borrowed-inputs",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "ownership/associated-types",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: trait `Parser` is never used"
+  },
+  {
+   "path": "ownership/blanket-impls",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: trait `Named` is never used"
+  },
+  {
+   "path": "ownership/borrowing",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "ownership/closure-capture-modes",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "ownership/closures",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_variables: unused variable: `consume`"
+  },
+  {
+   "path": "ownership/copy-clone",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "ownership/default-trait-methods",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: trait `Summary` is never used"
+  },
+  {
+   "path": "ownership/drop-order",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "ownership/fromstr-domain-values",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "ownership/generic-lifetimes",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `choose` is never used"
+  },
+  {
+   "path": "ownership/generics",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `show` is never used"
+  },
+  {
+   "path": "ownership/interior-mutability-intro",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "ownership/iterator-adapters",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_variables: unused variable: `total`"
+  },
+  {
+   "path": "ownership/iterator-impl",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "ownership/iterators",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_variables: unused variable: `names`"
+  },
+  {
+   "path": "ownership/lifetime-elision",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `first` is never used"
+  },
+  {
+   "path": "ownership/lifetimes",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: struct `Excerpt` is never constructed"
+  },
+  {
+   "path": "ownership/lifetimes-intro",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `longest` is never used"
+  },
+  {
+   "path": "ownership/move-functions",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "ownership/mutable-borrows",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "ownership/operator-traits",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_variables: unused variable: `m`"
+  },
+  {
+   "path": "ownership/option-result-transpose",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "ownership/owned-or-borrowed",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `label` is never used"
+  },
+  {
+   "path": "ownership/ownership",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "ownership/partial-moves",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_variables: unused variable: `name`"
+  },
+  {
+   "path": "ownership/phantom-data",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: struct `Ready` is never constructed"
+  },
+  {
+   "path": "ownership/reborrowing",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `bump` is never used"
+  },
+  {
+   "path": "ownership/slices",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `first` is never used"
+  },
+  {
+   "path": "ownership/trait-objects",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: trait `Draw` is never used"
+  },
+  {
+   "path": "ownership/traits",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: trait `Shape` is never used"
+  },
+  {
+   "path": "concurrency/async-cancellation",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "concurrency/atomics-basics",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "concurrency/blocking-async",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `handler` is never used"
+  },
+  {
+   "path": "concurrency/channels",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_variables: unused variable: `worker`"
+  },
+  {
+   "path": "concurrency/concurrency",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "concurrency/deadlock-avoidance",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: static `X` is never used"
+  },
+  {
+   "path": "concurrency/futures",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_must_use: unused implementer of `Future` that must be used"
+  },
+  {
+   "path": "concurrency/mutex-poisoning",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "concurrency/pinning-intuition",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "concurrency/scoped-threads",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "concurrency/send-sync",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "concurrency/shared-state",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "systems/benchmarking-profiling",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "systems/cfg-features",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "systems/declarative-macros",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "systems/ffi",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: struct `Point` is never constructed"
+  },
+  {
+   "path": "systems/idioms",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_variables: unused variable: `from`"
+  },
+  {
+   "path": "systems/macro-hygiene",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "systems/performance",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `shout` is never used"
+  },
+  {
+   "path": "systems/raw-pointers",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "systems/repr-layout",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "systems/runtime-resource-budgets",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "systems/token-trees",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_macros: unused macro definition: `twice`"
+  },
+  {
+   "path": "systems/unsafe",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `first` is never used"
+  },
+  {
+   "path": "systems/unsafe-traits",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: trait `StableAddress` is never used"
+  },
+  {
+   "path": "systems/wasm-host-boundaries",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "systems/wasm-linear-memory",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "projects/box",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: enum `Tree` is never used"
+  },
+  {
+   "path": "projects/buffered-line-input",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "projects/cargo-command-cycle",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "projects/cycles",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "projects/deref-drop",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "projects/doc-examples",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "projects/error-context",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `port` is never used"
+  },
+  {
+   "path": "projects/errors",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `read` is never used"
+  },
+  {
+   "path": "projects/feature-design",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `paint` is never used"
+  },
+  {
+   "path": "projects/hostile-parser-inputs",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "projects/paths-and-boundaries",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "projects/properties-and-oracles",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "projects/rc-refcell",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_variables: unused variable: `a`"
+  },
+  {
+   "path": "projects/sandbox-file-roundtrip",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "projects/testing",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `compute` is never used"
+  },
+  {
+   "path": "projects/unicode-regression-tests",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "projects/validated-records",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-api-design",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-async-locks",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-async-traits",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: trait `NativeSource` is never used"
+  },
+  {
+   "path": "interview/q-async-vs-threads",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-atomics",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-backpressure",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-blocking-async",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `handler` is never used"
+  },
+  {
+   "path": "interview/q-borrowing",
+   "check": "fails-by-design",
+   "wrap": null,
+   "outcome": "errors",
+   "first": "error \u00b7 E0502: cannot borrow `items` as mutable because it is also borrowed as immutable"
+  },
+  {
+   "path": "interview/q-box-rc-arc",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-caching",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-cap",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-channels-vs-mutex",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-closure-traits",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-code-review",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `first` is never used"
+  },
+  {
+   "path": "interview/q-complexity",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-copy-clone-cow",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-deadlock",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-debugging-session",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-dyn-generics",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-error-boundaries",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-ffi-abi",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_variables: unused variable: `ptr`"
+  },
+  {
+   "path": "interview/q-future-send",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-hashmap",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-http-versions",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-integer-boundaries",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-interior-mutability",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-iterator-ownership",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-lifetimes",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `pick` is never used"
+  },
+  {
+   "path": "interview/q-lru-design",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-option-result",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-ownership",
+   "check": "compiles",
+   "wrap": "in-main",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_variables: unused variable: `b`"
+  },
+  {
+   "path": "interview/q-parser-design",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-pin-future",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-postmortem",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-requirements",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: struct `Requirements` is never constructed"
+  },
+  {
+   "path": "interview/q-send-sync",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: function `run` is never used"
+  },
+  {
+   "path": "interview/q-stack-heap",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-syscalls",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-tcp-udp",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-testing-strategy",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-tls",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-tradeoff-communication",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-trait-coherence",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-two-sum-rust",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-unsafe",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-utf8-boundaries",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "interview/q-virtual-memory",
+   "check": "compiles",
+   "wrap": "main-added",
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-char-arrays-to-strings",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-const-by-default",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-dangling-pointers-to-lifetimes",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-for-loops-to-ranges",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_comparisons: comparison is useless due to type limits"
+  },
+  {
+   "path": "rust-for-c-developers/c-functions-are-expressions",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-integer-overflow-and-casts",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-make-and-headers-to-cargo",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-malloc-free-to-ownership",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-null-and-errno-to-option-result",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-pointer-length-to-slices",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-pointers-to-references",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-printf-to-println",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-pthreads-to-threads",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-rustc-diagnostics",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-struct-copy-to-copy-clone",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-structs-to-impl",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-tagged-unions-to-enums",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-unsafe-and-ffi",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-what-rust-is",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-c-developers/c-what-safe-rust-rules-out",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-array-methods-to-iterators",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_must_use: unused `Map` that must be used"
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-console-log-to-println",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-functions-to-fn",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-interfaces-to-traits",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-let-const-to-let-mut",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-map-and-objects-to-hashmap",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-mutation-to-borrowing",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-no-garbage-collector",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: fields `left` and `right` are never read"
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-npm-to-cargo",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-null-undefined-to-option",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-number-to-integer-types",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-objects-to-structs",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-promises-to-futures",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 unused_must_use: unused implementer of `Future` that must be used"
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-shared-references-to-ownership",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-truthiness-to-bool-and-match",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-try-catch-to-result",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-ts-unions-to-enums",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-types-are-checked-not-erased",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: fields `id` and `name` are never read"
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-utf16-strings-to-utf8",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "rust-for-nodejs-developers/node-what-rust-is",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  }
+ ]
+}

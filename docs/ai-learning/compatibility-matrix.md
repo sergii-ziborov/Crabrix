@@ -27,3 +27,15 @@ check that proves the protection, or `GAP` where one must be added.
 | Website accounts | `auth-data/accounts.sqlite` | no | no | — | API is anonymous, no cookies needed | GAP: API route ignores session cookie |
 | Offline iOS learning | packs + local compiler | no | no | a new network dependency in lesson open | iOS AI entry (Phase 6) must be optional, no SDK in launch path | `CourseBootstrapTests.testBundledBaselineInstallsOfflineAndRelaunchKeepsIdentity` |
 | Remote MCP capacity | one process, 64 sessions (`remote.ts:26`) | — | — | academy traffic starving room sessions | academy endpoint stateless, no session slot | GAP: load/limit test |
+
+## Phases 4–7 additions (23 November 2026)
+
+| New piece | Touches existing data? | Protection | Test |
+|---|---|---|---|
+| Playground practice copies (`/playground/?lesson=` for 190 more lessons) | No. A new unsaved document through the existing `initialDocument` path (`unsaved: true`); drafts in IndexedDB are not written unless the learner keeps drafts, as before. Lessons with `playgroundProject` and Atlas traces open exactly as before. | Served only while the lesson field's sha256 equals the one checked by rustc in crabrix-courses; otherwise 404 as before. | courses `PracticeStarterTests`; site `academy-ai-phases.test.mjs`; browser run of every copy (`docs/ai-learning/evidence/practice-copies.json`) |
+| API `playground.kind`, `status.json`, `learning-state.schema.json` | No. Additive fields and paths; `index.json` lesson `playground` stays a boolean. | — | site tests; local HTTP checks |
+| AI Learning State v1 | No. A file the learner exports or an agent writes. Nothing imports it into the app. | Add-only merge; official section only from the app or a backup file; secret patterns refused. | SDK learning-state tests; iOS export tests |
+| `.crabrixprogress` reader (SDK, local only) | Reads a file the learner names; writes nothing; not on the remote server. | Same size/hash/version checks as the app's `LearningBackupCodec`. | SDK backup reader tests on a real Swift-made fixture |
+| iOS Learn with AI entry and lesson sheet | Reads progress stores only when the learner exports with progress switched on; writes only `crabrix.ai.*` flags. | No launch-path or lesson-open dependency; status check only when the screen opens. | iOS data-preservation test (byte-identical stores) |
+| Website events and feedback | No existing data. New `academy-events.sqlite` next to the accounts DB with `(day, event, detail, count)` only. | Fixed lists; no cookie/IP/UA read; GPC/DNT respected; text only via email draft. | site tests; local POST check |
+| Switches | Turn off only the new pieces. | Lessons, Playground, rooms and existing MCP tools do not read them. | site and SDK switch tests |

@@ -4,6 +4,8 @@ import { siteOrigin } from "./seo.ts";
 export const ACADEMY_MCP_URL = `${siteOrigin}/mcp/academy`;
 /** The first Crabrix MCP release that includes the crabrix_academy_* tools and the learn-rust skill. */
 export const ACADEMY_SDK_VERSION = "0.6.0";
+/** Feedback goes to an email draft the learner sends; the address is base64 like the other mail buttons. */
+export const FEEDBACK_MAIL = "c2VyZ2lpLnppYm9yb3ZAZ21haWwuY29t";
 
 export const learningPrompts = [
   { id: "beginner", title: "Beginner",

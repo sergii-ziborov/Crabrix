@@ -138,6 +138,12 @@ def main() -> None:
     if (academy / "learning-paths.json").is_file():
         shutil.copyfile(academy / "learning-paths.json", SITE / "content" / "academy-paths.json")
         shutil.copyfile(academy / "teaching-contract.md", SITE / "content" / "academy-teaching-contract.md")
+    # Playground practice copies (qualified with rustc in crabrix-courses) and the portable
+    # AI Learning State schema. Neither is part of a CoursePack.
+    for name, target in (("practice-starters.json", "academy-practice-starters.json"),
+                         ("learning-state.schema.json", "academy-learning-state.schema.json")):
+        if (academy / name).is_file():
+            shutil.copyfile(academy / name, SITE / "content" / target)
     gallery = source / "courses" / "examples" / "library-projects"
     examples = []
     for project_root in sorted(path for path in gallery.iterdir() if path.is_dir()):

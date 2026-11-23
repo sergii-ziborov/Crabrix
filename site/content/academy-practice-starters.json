@@ -1,0 +1,1907 @@
+{
+ "schemaVersion": 1,
+ "checkedWith": "rustc 1.99.0, --target wasm32-wasip1 --edition 2024, check only",
+ "considered": 207,
+ "starters": [
+  {
+   "courseId": "basics",
+   "lessonId": "block-expressions",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "49016c91eb57c5139b414eec7957184dfeea36c1203f1a2fc8b9095eb68f8966",
+   "programSha256": "f5992b4cbb72e158e1115d554a2002c8a70424ca1c85d2643d330daf006480c9",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "booleans-comparisons",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "eb63f7492eca7e1842dd6a2eb77f5b57e276ee0e7f5f7e77102377164f139dd3",
+   "programSha256": "895bc3a3663b9c1ec49c726cc959296cf2b573512b00237f4cfa7863f64dded3",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "chars-and-text",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "7922c38ea93a878bb229209d305664f4febf7ff66120c7c1ac7cb303862bd431",
+   "programSha256": "071dd17fdb211a3cacd82115f1aed8b75975fa9933b43a41b5b98bc7b7b1ea26",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "collections",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "f8de175d307a21de2753e807cfd5c0c6f8a1d4c9740d812dd1bdecf6f092cc6e",
+   "programSha256": "d8fcda39006c7b091046a971e31d88ddad8766e6396ffcc82b2f20753e339133",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "comments-docs",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "deec27ef9389a2064c629007e00d2e934bb17d6efa9e80e00f5d7bb63bfaab4d",
+   "programSha256": "7484b78be7720331714bc72725ebd29d1fe4fb18a5eaae393d07eac6397b9e76",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "control-flow",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "d5852d5ed00defe49bef85478290ae5f12ca4065ab85573166116f99a31a91c9",
+   "programSha256": "8b3a53ab4a90cafdf33d8defdf568c9e27c1137b0dd298c729f03546e2cdad72",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "debugging-values",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "01c7070905656afc983e3364680459233c77918c2085fe7189e518a998207e0f",
+   "programSha256": "f9af61a9c5eca847ef9b72640c6985d04cfd51474e76664e3382c0cb01c122f3",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "derive",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "e6f3bd8a6529bff97211ea7cc95ab42c9cf83dd31aba713466e02ca6a9b15919",
+   "programSha256": "2fd0e3a6e5a8d7c89dced233797c64a48aeaf31875b4354385ebcd7522f6d18d",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "enums",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "5ed8e76685308aa3cdd3e255e983135620062498a123d082213b37c95c8ba8b3",
+   "programSha256": "c2703b6555db09d0cfed95ce2f14f8a651050e955ea861e500836b49ed80aba5",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "function-parameters",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "0a2b62d13406ebaed59c712eab618a191fc11594dc35579fc0bcf90764f1bfd1",
+   "programSha256": "09a85f60450c5d778f97ada23780a602ebb5db86e097a9364e9ade174e9ff5fa",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "functions",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "main-added",
+   "sha256": "5a742981737186a5a66836322df0b108ccb6107bac0844e2fbb509b86fbd8a59",
+   "programSha256": "4127189294dbb768edbec766c7b1d8ebd6efd3144a0265034fbac41efcb3b569",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "hello-rust",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "6023f679f336f1b5305abd0cdc5d0a63879810cc2885173ab70d2156d6cac771",
+   "programSha256": "6023f679f336f1b5305abd0cdc5d0a63879810cc2885173ab70d2156d6cac771",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "loops",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "c886bf96b82d1d0591284618b0c185e983195db07e947a56c09a5cbdf58dbae0",
+   "programSha256": "6998be53ce572a392c12908fa085cf3e132ed9ea429c941605d8313f49b7fe0b",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "methods-intro",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "19787be48a1333b2e638ad9b99fc9fdd274856b49e35ea4881277ab0902b757d",
+   "programSha256": "15f8509930b1fcbe93a8499c9988fef646055222f8412a10c695f3a355516de1",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "number-types",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "3b18868a5493bc62a7df393440f1f3f7b82913ac7d2cb34ccf8d04d01200d56e",
+   "programSha256": "f1ef1af160c624473b7364d37e9f63f048ce40778866a98096287e71c0c0bd8e",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "operators",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "17f095737b3243a7cee779b670709604919ad3f8762966c94c26621b27cc5d5e",
+   "programSha256": "31ea9c9b487d328049733937267b5f928f5bce66fa8383335a6cb1b40bad132d",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "option-result",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "20cdd1969c97592d09c16ccf5ab82471e8c0117f7df3c793f3e74c43445d9c24",
+   "programSha256": "ec77a1cc0d9f7040f08b09fa1e03ba16ad8a780dc5948322314b882e4479a797",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "parsing",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "0ec3ac48ac384b73876a0887e21ed32864fac1b31bf2ffd018d97436f6974601",
+   "programSha256": "23d59b46bad9324f1848823f3277da4818e13aca8eb282556f91a55456ed552c",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "pattern-matching",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "0a24a692d228dd85332bf32ac7b93ec74d0e7df2ca0724d5899f25aedf63faf8",
+   "programSha256": "7553399b14ce41ac550083687681973ef3b0c6866fa920dada50b888a75a052a",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "print-formatting",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "00ee4b1727860c47d1dcfed47128ddbbbb64ba3bb874bb29a686a5dbd7ff9476",
+   "programSha256": "77803e7d6e329de3dac86151b6ebd117b0720756a51097fd7961d6b59120f25a",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "ranges",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "cd3282a3b471d8e93e322f920362d9ba5540019031f40cb457bb2247a937e895",
+   "programSha256": "e904cb941a5117b168f2e2e59899af2a708527387bfadb314cd00100e4e7f229",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "recoverable-errors",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "971aebd5e997c1ccf19f8c253767f3b5b350485ab6f30d41f113c100ca690a6a",
+   "programSha256": "a1175c1590e994bea4e53fd0aacb43f222f43524161192b59aca9b423c40817d",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "references-intro",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "ba06c27727e38e0e55101fe124e08394086c0720f691e93c85a4db0ef86d6f2e",
+   "programSha256": "009881079df8c4e4370bcce16bd12093b47a16bbe1ca662953a8c48b78498103",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "strings",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "16dc7c1bf380568845fd222e77ddc863129b5de53c5c8b9072d5796fbd177e00",
+   "programSha256": "9238653589eb6f75ad9a9d30b256f34d7b9aa77ae6796ccf5511b50d31534866",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "structs",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "main-added",
+   "sha256": "9a2ec16afe2a742773f9dc4b5b7b8c91827d42de04b5f715976f27c7e811a87c",
+   "programSha256": "1a860215af3eb1f99debb25622bacc872469d434773b343028f10623dc44f147",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "types",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "1c35c166c476d347e72b7dd53798f3dca577afeb1d9a56064b7aaf4b5909fc4e",
+   "programSha256": "be163cea2517ef18178e973df2d3d8f05d34c38bc31cc2065e3a2e300a50dde1",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "variables",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "28f7b7eb38cccfc1e0d5ce96964f85054cea9fbd3492c4cef9141a5672be49c9",
+   "programSha256": "9df5081c310eb58956b8840b0dd065780dd2aa75b37e07eb2bfbf4d5cee5d510",
+   "check": "compiles"
+  },
+  {
+   "courseId": "basics",
+   "lessonId": "what-is-rust",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "bfe6ed51801758e8772af2c8fadecb08856cbad903e0eed7beef706b812beee2",
+   "programSha256": "bfe6ed51801758e8772af2c8fadecb08856cbad903e0eed7beef706b812beee2",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "asref-borrowed-inputs",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "fb0c1fed6cd0d58e7b2d7a1a9e6d84e6a82f4f6a8532c7a27610221f169d33be",
+   "programSha256": "fb0c1fed6cd0d58e7b2d7a1a9e6d84e6a82f4f6a8532c7a27610221f169d33be",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "associated-types",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "0cb5ffb09cb562117bf4438902e0395ed02cdfbb328f703447b43f215e272b14",
+   "programSha256": "ac4a0f8d267511537ec9d64b95f0614e4d4144c28d48c06873fc77639180139b",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "blanket-impls",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "d4be4911ccb255feeee00295d36576efebab5ab24942efe4485faf8403ce111b",
+   "programSha256": "caf4a73ebb92f61241adabe46b9e327e934f6556e6fffba293536f162306c935",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "borrowing",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "b2f16b648cd69c2607f52b205686ec54eaaa50ed5d63fce4e0a11e2d04164961",
+   "programSha256": "197ad560951ad38a47f8832936f29189f4721a107180df047e84fd9f5d78c8fe",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "closure-capture-modes",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "a951148fbb70a533dcf9a6948e325bf37256b2df38eac650493ca73e27193da3",
+   "programSha256": "bca919428447f9cb2f138d14d18d52617c580eab0ac2a0edc80e21d81f060ebb",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "closures",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "fc15f5f15faeee5d5ab6e02ee88d4b993bc005b087f46dcc24bd84a56a4146e6",
+   "programSha256": "49aa7d781946dd9a2ce70e0c76bea99ceee3a3777ab89e92102d83eae94cd726",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "copy-clone",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "345899af19b287153b9958b3fc402ed548d146570d6f8cdf74f900043b626017",
+   "programSha256": "b7f91909965fbea214d14712e6dacabda422fbef0c43938b04f8a84ad19c0f9f",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "default-trait-methods",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "7ce333c58da1ed1f9490ce488be1a184ab62ba1de43dfaf3866d8678915416e6",
+   "programSha256": "aa5328e50ff3e6674d1ca483aebdfc4182f54ce6220ee712f1a4f4bed1aa4911",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "drop-order",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "f53a84bb0c2aca5b04be05b8a60ec46e43dda92730ded3236cce1eb262bcd5f2",
+   "programSha256": "f53a84bb0c2aca5b04be05b8a60ec46e43dda92730ded3236cce1eb262bcd5f2",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "fromstr-domain-values",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "5428fc2a054a82c15b064c0b6fde2de892ebad97d460326909d89cbcd6cfbb37",
+   "programSha256": "5428fc2a054a82c15b064c0b6fde2de892ebad97d460326909d89cbcd6cfbb37",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "generic-lifetimes",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "8fceb17634280774bf4002c22f1aaa5e3fb3e3636fbb4c432e98c57f30b9a332",
+   "programSha256": "c09a0d8ae70b881a9b4fbb6069b8696d239f0b25a188f5297fd1db7e7ba8092b",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "generics",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "9ac4b070dab0b371c90fe1b635d28eae300df58b6903107800bfd045295b3e7e",
+   "programSha256": "4864d27be6d3552615dd487f44248ec62ab3acd22fc3973b24a02caef0509e84",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "interior-mutability-intro",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "11798b209a5612acb2b7e8c27996cc0d0812ed7ff6d8f31c18a48a18244ccc28",
+   "programSha256": "3cf246e923fc0f006ca4e3000cf75249e6f5e74da4ec4943ab385ce770ebd3c9",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "iterator-adapters",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "e950b623276e5a9c36d85619bef37679bb221b3d38e77e3112f1f869d218c287",
+   "programSha256": "739956babdc5d244943c23d1da5212b097edbe70fd09634de70ef941a63471b0",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "iterator-impl",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "2d4a2e7e479650953dcf9653faaced3b83cae24bf113b63bec838a53c14eb99b",
+   "programSha256": "68e5eafd711813bd29cc4db8c2d25371f1b28c5a1b9dcbdacda2bedc61db4da9",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "iterators",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "b0ce78502bb8a4f511c9b824466497f4447a9575dd7dae7d6ac5fe186a95a83d",
+   "programSha256": "5ff8fd99f3589b9becc7c5c14c4b82d5fae6410197da7eb375c9252a71a0f34e",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "lifetime-elision",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "c405b8c7fe6ac6108e983d64587ac455b15def6f52d8a672fe9ff2d532d471c9",
+   "programSha256": "f4ab90134130bdb0908745642712295bcb15ca1e6ab5d578dc1395f29e870c5e",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "lifetimes",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "main-added",
+   "sha256": "8e8a3e308a3b4e687eb2e867178966d587770b1d16a89a31013eca7a3ab90f96",
+   "programSha256": "d38f8d24ca2373eb54bbec4b0b1fa18a27604cc139c6c48589a617ad40e447dd",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "lifetimes-intro",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "main-added",
+   "sha256": "d0d0a5ca7c4e4db8c75a375a6a62a91f4906fc1dec7c1d08100edd13a06cf85a",
+   "programSha256": "9c531f2a771118220fb21e89eeda5eea141f85c9c7fc93bf79c7059c9ea57d62",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "move-functions",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "d680aabbde54583f6bbcce81dcbe7ffb9f6d539da5daad04f1d817071314ae01",
+   "programSha256": "ccb70a70c3f528c7afd5f776ceecaa9e6959cd96e7ee29b2df850474ee4ff9a2",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "mutable-borrows",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "a157d127ccc5b91c21342881989413ff2038460b866a7df0851bf3be5717bdc8",
+   "programSha256": "31f59f48a2e525b6867560265ffa39b0e1c6133f60e55d1e8e0d0cfab4d04b88",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "operator-traits",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "bfb899e17ab623bc34b387eee2234d885c3568fe381eeb5bfa4940bc71bb39cf",
+   "programSha256": "33fac625bfcf359986aefc4a1415a50fe699c2f1fa193deaa74e763d9e0374e1",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "option-result-transpose",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "5ea280cffef626424ef59fb57ede44d50da0dee8a6643bd9ac01a2c878a7938a",
+   "programSha256": "5ea280cffef626424ef59fb57ede44d50da0dee8a6643bd9ac01a2c878a7938a",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "owned-or-borrowed",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "0320aae8f0eab68e25eab9e44d4cb4878d1e47d234461fef93b5d51eeb638550",
+   "programSha256": "8c732866804ac1b151b273e791c4d382f1518738c9cdd66e68cb3385818ed88c",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "ownership",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "6412570f7693dfb48f5b53cdc2e9ffd5f4845aca0628ab0d2ba7560ac6c8a8cb",
+   "programSha256": "853ff9835a60566d7279d4baa3e1877d41f3fe51f215a39c5fd3492cf9de5591",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "partial-moves",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "1d6cec241801cf7bbcfbd65ccc9c6add9d4f3ece59141e477ddcf60f024a770f",
+   "programSha256": "1808d9496ad8e86b869a120b17ea93d0d13c49dc7dbc3b40a07a5c544848848f",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "phantom-data",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "85449e6cdb641456cd98f2297a5f3daac661bc37aee7840aae4b78df80de4fdd",
+   "programSha256": "5bc20e07a28e14e28232daceb61175d4bd89b780b56a46958e72fc8f161716bb",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "reborrowing",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "dac1c1d2a99620e290c18b19aeb7817c77930f939b2d6e8128ab9d3a8f638eb3",
+   "programSha256": "6570ccbef58d07b91c4f5ac0c31e407abf57b6f3e86ee8be7c8be7043c1d6189",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "slices",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "6ee3f32eaac80851ce56d98f4b5f371389ec15f1e766adc7551baf93cbf15b1e",
+   "programSha256": "b93c8d62f0c355c4df600437c6835b39efae24bbfa948feed3af2c540610048d",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "trait-objects",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "dc99bb0e89f0a102b04adafbd76cccef92873206bde3a28cec78498349655d83",
+   "programSha256": "baca387fa38d317bf27c1a34ad0acd15d947653061ad210e184eb539c17a677b",
+   "check": "compiles"
+  },
+  {
+   "courseId": "ownership",
+   "lessonId": "traits",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "main-added",
+   "sha256": "ca2fe14e0636106d862a04b52a6f741bcbff207a2fdd890434da9d860f7c2ffd",
+   "programSha256": "f42163ca1858b0695c286afd7e60232f597f3d792600822fb64fbfd7208a77a4",
+   "check": "compiles"
+  },
+  {
+   "courseId": "concurrency",
+   "lessonId": "async-cancellation",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "f1ec544bfc359e24cbc10a71a77480a3623ef47d3baeaa01d50e399f366fa1cd",
+   "programSha256": "f1ec544bfc359e24cbc10a71a77480a3623ef47d3baeaa01d50e399f366fa1cd",
+   "check": "compiles"
+  },
+  {
+   "courseId": "concurrency",
+   "lessonId": "atomics-basics",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "a4713d132cdcb015aca5ae3fe5c47dc63c235226d419f242f0034b36b2174bd2",
+   "programSha256": "54ad3b2d21382b9867bd3caba8d014c113b52b5b662ecb9c28f1c6b337dd4df8",
+   "check": "compiles"
+  },
+  {
+   "courseId": "concurrency",
+   "lessonId": "blocking-async",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "fef10e5a393957b4cfdc163618876f3ae4a665159135f12b98f1ca01b3aa5fd4",
+   "programSha256": "82a41597eacc48bf7a615570c310ad8c31b342569074ae5af078aabd2ee2c0f2",
+   "check": "compiles"
+  },
+  {
+   "courseId": "concurrency",
+   "lessonId": "channels",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "75c053d5e093b4103dbf81aa1ec46e48a194ddb5c5555731ffe96c07ac12bd09",
+   "programSha256": "3ffa708ccea77ded61966bbe8da92c488c4b253dabd8570b7413ccfc9b2d9509",
+   "check": "compiles"
+  },
+  {
+   "courseId": "concurrency",
+   "lessonId": "concurrency",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "b6a77992c4100587412cc076509f24b478feb5dc3269af1dd7d03e49f5160841",
+   "programSha256": "193b0dc914796b0c7c49a63d8b9fe2e0ede4209c7399817aa702755058ec3072",
+   "check": "compiles"
+  },
+  {
+   "courseId": "concurrency",
+   "lessonId": "deadlock-avoidance",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "29d7ec1f446a6272926eee0618ec085afb43205a7e3e128aea2facad41e820bd",
+   "programSha256": "f6549b081c04fdb7a1b4714868db00609ce893c4d1bd07d7a8f37ac418cb0209",
+   "check": "compiles"
+  },
+  {
+   "courseId": "concurrency",
+   "lessonId": "futures",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "2e1be3114ec5ef2c47f4c77cb142270fd22a47fbb1d51bc99effd0d60140804f",
+   "programSha256": "2e1be3114ec5ef2c47f4c77cb142270fd22a47fbb1d51bc99effd0d60140804f",
+   "check": "compiles"
+  },
+  {
+   "courseId": "concurrency",
+   "lessonId": "mutex-poisoning",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "83f860438af30b7c0600a8433482e6c6893b357d472f131075c9299e19600c90",
+   "programSha256": "9bdc21a2dacd81f34b8f52ca3e570876da3f6ddb7b0b648f40f7da72ab2848d7",
+   "check": "compiles"
+  },
+  {
+   "courseId": "concurrency",
+   "lessonId": "pinning-intuition",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "3db695bde7c74d9db8daa753ad9a7ee33d24d8593b34e4675f24dcf8db02810e",
+   "programSha256": "3db695bde7c74d9db8daa753ad9a7ee33d24d8593b34e4675f24dcf8db02810e",
+   "check": "compiles"
+  },
+  {
+   "courseId": "concurrency",
+   "lessonId": "scoped-threads",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "ba40742b54c5330ac02f989af0e362e9f89707616a3103f42aeba04ee8e4f4be",
+   "programSha256": "f37fdafb356a3ca458c218383af1c86b2e5a643400fbeb67fcad70afbad344e9",
+   "check": "compiles"
+  },
+  {
+   "courseId": "concurrency",
+   "lessonId": "send-sync",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "db15a52989fce4db5690225d41e995cbeb30d621e64b0aeb1e693ff0f8970248",
+   "programSha256": "b7edaf419276612a4d864dac5f470a7c471a2b4329831d7ef9847a67130ad686",
+   "check": "compiles"
+  },
+  {
+   "courseId": "concurrency",
+   "lessonId": "shared-state",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "2024b8c679a8622f17f5aab70143c4102f7f44b9b245df44a8c993abee843900",
+   "programSha256": "fcf8da10a225a3eb0a8aff77e8a15fd24a4c65cda5c10bbfa0ee8f0cb60c570a",
+   "check": "compiles"
+  },
+  {
+   "courseId": "systems",
+   "lessonId": "benchmarking-profiling",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "a45d0080b2fd5a0a1d65aa391f16736ad761638dcce4e9bd15f95606b6ac47a8",
+   "programSha256": "a45d0080b2fd5a0a1d65aa391f16736ad761638dcce4e9bd15f95606b6ac47a8",
+   "check": "compiles"
+  },
+  {
+   "courseId": "systems",
+   "lessonId": "cfg-features",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "961f1353f20fc00944d2bd696cbcde89771d94ea7916649041a616b4c2f1c333",
+   "programSha256": "961f1353f20fc00944d2bd696cbcde89771d94ea7916649041a616b4c2f1c333",
+   "check": "compiles"
+  },
+  {
+   "courseId": "systems",
+   "lessonId": "declarative-macros",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "efec05aa5b6906efed964438e129ac042824d751187896a258f787adffbdfd02",
+   "programSha256": "6025dc892880e27e15114f4f7062e6935c54ec8a5c4f61f2686b1ad3c3231fbb",
+   "check": "compiles"
+  },
+  {
+   "courseId": "systems",
+   "lessonId": "ffi",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "5e17f834e3b7527b028e7ead805daea54e994b022e8885fa55c28fa60524aa66",
+   "programSha256": "5e17f834e3b7527b028e7ead805daea54e994b022e8885fa55c28fa60524aa66",
+   "check": "compiles"
+  },
+  {
+   "courseId": "systems",
+   "lessonId": "idioms",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "66cc6423e7bab2d65cf1dc1371337e45d70f3c4d7900b4626af4822785b0ffa9",
+   "programSha256": "e7ebc8c198c7c8e39c58c1e037af65e0f75dcd02119ea84f713ef5851f95c23e",
+   "check": "compiles"
+  },
+  {
+   "courseId": "systems",
+   "lessonId": "macro-hygiene",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "main-added",
+   "sha256": "b03823335b2ad36065368fa6f7ecc2d40cb8998e42366db00e1b94de1499fa78",
+   "programSha256": "44a7866d581e476f7c8c3cd5086bcef1fd3f87154ea4e9cc87fb3284776d574e",
+   "check": "compiles"
+  },
+  {
+   "courseId": "systems",
+   "lessonId": "performance",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "522b3e2471ca7ee6484b09de4fe14eba9dc35df96dababb40b75b5ca7f48fca5",
+   "programSha256": "60004d628fefa35df3f08ad25cd0e7c9ada12edbaa60ef478b7d52a4298f8e95",
+   "check": "compiles"
+  },
+  {
+   "courseId": "systems",
+   "lessonId": "raw-pointers",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "519102321a60ad094e0e22b5814ae8a220b72e02b28239ec69ef9eb5c1645b07",
+   "programSha256": "bebf8c7764fdba63f436a91a19af35e0124fadb9efde5975c6bcf0acd2423245",
+   "check": "compiles"
+  },
+  {
+   "courseId": "systems",
+   "lessonId": "repr-layout",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "26930fc607a50af5894aab816e02c17562478b0f11d0d1158ca16c20251d304b",
+   "programSha256": "26930fc607a50af5894aab816e02c17562478b0f11d0d1158ca16c20251d304b",
+   "check": "compiles"
+  },
+  {
+   "courseId": "systems",
+   "lessonId": "runtime-resource-budgets",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "03c4a4aa4a041d4fda8e93c4f279ea20688bf33eb0e39491bcc383db10c8fff2",
+   "programSha256": "03c4a4aa4a041d4fda8e93c4f279ea20688bf33eb0e39491bcc383db10c8fff2",
+   "check": "compiles"
+  },
+  {
+   "courseId": "systems",
+   "lessonId": "token-trees",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "main-added",
+   "sha256": "de772f9d156192615250d669c23298227d535164bebb7797595412c2598b1660",
+   "programSha256": "816dbb84224986c4cb7211ad46a443b4b28735449bfc8c8081f05257edd18e60",
+   "check": "compiles"
+  },
+  {
+   "courseId": "systems",
+   "lessonId": "unsafe",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "main-added",
+   "sha256": "bc9b3974e710c3887a285f19abda0a5ec019d4751a8ee5f210f223a1a1e97cc4",
+   "programSha256": "89f28c7558e56b6dd3718965ca96b1e1cb13a386b4a420e1371ffcc8f040b15d",
+   "check": "compiles"
+  },
+  {
+   "courseId": "systems",
+   "lessonId": "unsafe-traits",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "40aaef47a8ceb7d8f8700f2371c4b2ca2674f4f86a92c9844f7c7f478715977e",
+   "programSha256": "49a65e0d44608ea2a09f0eb9d97de6afae29a2a9735a12fb1818a03d6407a5f6",
+   "check": "compiles"
+  },
+  {
+   "courseId": "systems",
+   "lessonId": "wasm-host-boundaries",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "0eaa21b0ea4ae6687b5b61c8e8d42649125a718fa1d62e34131f85cf8a605ca8",
+   "programSha256": "0eaa21b0ea4ae6687b5b61c8e8d42649125a718fa1d62e34131f85cf8a605ca8",
+   "check": "compiles"
+  },
+  {
+   "courseId": "systems",
+   "lessonId": "wasm-linear-memory",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "53ab8a16e22e36ce6935061d80ef13745c13b0cfd9072075b69d9ecd095da679",
+   "programSha256": "53ab8a16e22e36ce6935061d80ef13745c13b0cfd9072075b69d9ecd095da679",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "box",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "main-added",
+   "sha256": "65492642c0a12ff89083f31c8823fee9c2d74a80c11280654e452c366610c949",
+   "programSha256": "7dab65327d8a123952696351427127b2234f8870066cbc9f11f97645b63e9fe4",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "buffered-line-input",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "d4f040f737a001098d6f1ec70d6a083cca0dab935793e0cfbb3a66c83c6aa2e7",
+   "programSha256": "d4f040f737a001098d6f1ec70d6a083cca0dab935793e0cfbb3a66c83c6aa2e7",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "cargo-command-cycle",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "e2d391be2d01eb17dfc0a30db4157f5f4941174b0bdefaaa89f45b15ac816010",
+   "programSha256": "e2d391be2d01eb17dfc0a30db4157f5f4941174b0bdefaaa89f45b15ac816010",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "cycles",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "2fe7681a51dd41141a06e3c7de1b98bba98d4bfec2e67533cd3c2e585b9e721f",
+   "programSha256": "c9ee84c55bfc2f8f1049589e455d6a13793bd9a973e0b8db7840fe5a9eeed0f8",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "deref-drop",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "f337bfad4a8f19e8426a518803e73699586ab857b99ee422b387f5b962107420",
+   "programSha256": "f337bfad4a8f19e8426a518803e73699586ab857b99ee422b387f5b962107420",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "doc-examples",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "c4d3d864b1becede00ac79d3a6ba05becb3d7b45c2d4060c38be48780db9d52e",
+   "programSha256": "194255a6c3e86cc70669090a270196495b113bc02ec5d08f80363fb84f84c4bd",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "error-context",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "222a7c83aecfc84ac0dab84e6afede9c1a2118014e48c4ac4e091a08d1882921",
+   "programSha256": "40dd332e610968f10c32a123f8121840e7dad72c447979fb49dbd56c7600a981",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "errors",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "db7ded6f8e8fbf97d0fd03f688203f63268e905e94f5dcb93eab0bf0694731e7",
+   "programSha256": "f6d1c61f6a8fd24f002be94ec4bfc91063f1bb6fdea8267183d81129fbf91c7f",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "feature-design",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "main-added",
+   "sha256": "c44c18525bb2c5725bfb3abcef81943e37a2b15d8ba05800eb9c1b1ea93488be",
+   "programSha256": "b3c19706c36f3cef678ba2ecde53cdc44ed50d9ad101469a4f6b0f3c253edf57",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "hostile-parser-inputs",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "a61fea7be9f805eec40e27be93da8782488e9f8a6d3e99dde12fc55e0920130a",
+   "programSha256": "a61fea7be9f805eec40e27be93da8782488e9f8a6d3e99dde12fc55e0920130a",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "paths-and-boundaries",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "ee3794ce46851758f4b49b53bf18b3e8c7063d3354f79e08b5a99740c8e3338c",
+   "programSha256": "ee3794ce46851758f4b49b53bf18b3e8c7063d3354f79e08b5a99740c8e3338c",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "properties-and-oracles",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "a3c7adaae3963d1ae6be5005b3c73ca7abf62248c9a2bfca9d701f5228d635d2",
+   "programSha256": "a3c7adaae3963d1ae6be5005b3c73ca7abf62248c9a2bfca9d701f5228d635d2",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "rc-refcell",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "in-main",
+   "sha256": "dafb9013a10f5e8826d3a50ed0258d9f093913d18db213d48d4630b85b31abcc",
+   "programSha256": "f1f1bc668b9cf9fdc85cf1ed78c12758fd5c1dbfa194ec829240be6973707d3e",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "sandbox-file-roundtrip",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "4343a305c693fcefafd86061b0f8881163d294a59d6448c9de5ef79a017dcff0",
+   "programSha256": "4343a305c693fcefafd86061b0f8881163d294a59d6448c9de5ef79a017dcff0",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "testing",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "ae22bf94648979848f9290635126411c07b97adc539ec4e806c2691cc8c9dac8",
+   "programSha256": "8669f950fc49057aa3f2961b3bfc21d43ba06b337f894304229879c9a0f2d8d2",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "unicode-regression-tests",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "15657dadbcb8087d1a74b65404f00ab5c1176f3ff8ca1a03ed6bf6ffc92b1e27",
+   "programSha256": "15657dadbcb8087d1a74b65404f00ab5c1176f3ff8ca1a03ed6bf6ffc92b1e27",
+   "check": "compiles"
+  },
+  {
+   "courseId": "projects",
+   "lessonId": "validated-records",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "f1b854110a4ec793cdda3c5094446c42a446dad3245766859770ffc4d8a7d4c4",
+   "programSha256": "f1b854110a4ec793cdda3c5094446c42a446dad3245766859770ffc4d8a7d4c4",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-api-design",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "fe13b75740b9c1d2fa92a21d8346ef35af5d7f883724a5f92a55da3eaae77972",
+   "programSha256": "2b9bd07182c3e06da5f67cc3165c9ef8a83ee06f2dce63d0cf7eade06acc5486",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-async-locks",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "106f5d8e05c057451d0be8fd73e29e4b1c4bf0eda55f4e3d50439e4787c694d4",
+   "programSha256": "106f5d8e05c057451d0be8fd73e29e4b1c4bf0eda55f4e3d50439e4787c694d4",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-async-traits",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "bfe4e8009964023ef78d876e3e43ef8a2ca6f9689b0e1c1d7efb24de355435ea",
+   "programSha256": "bfe4e8009964023ef78d876e3e43ef8a2ca6f9689b0e1c1d7efb24de355435ea",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-async-vs-threads",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "80f5560295f236dd6eea4bc116442c33d969d6d2767e2b02769764325733326f",
+   "programSha256": "7e59162a6196edca9b5dd211ba1b4894564a33fa4121de68b532360d50a9056c",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-atomics",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "6536600fafacd72000505317245e72fd578a2bb170ba3e0ff465b9021f224ad4",
+   "programSha256": "6536600fafacd72000505317245e72fd578a2bb170ba3e0ff465b9021f224ad4",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-backpressure",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "0f7d13bf54c17b7a187189795959d784560551cc5a04728cc9d261b12b006c38",
+   "programSha256": "28ca3ab9ef6e0961a56b0eb9a83bac9001f1b0cf3510f14326613cfa10b33d4b",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-blocking-async",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "21574d63f9ca0e69103f5198a6095d9dcdb8c85dd2a9c0a4fa0ad12dde867535",
+   "programSha256": "68ab1589db209bcd599939dc9d11e3624045de0bd90ec493259aeaa33e8cc006",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-borrowing",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "1ea0763a9f3b902bf931cbdd824a50a70296aba59ffa4a5affa90f1f49fd703f",
+   "programSha256": "1ea0763a9f3b902bf931cbdd824a50a70296aba59ffa4a5affa90f1f49fd703f",
+   "check": "fails-by-design"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-box-rc-arc",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "f44912b0c5a2bc6b02fe0ff49a7c7472a6b87f2fa70ca254fca4171121878aad",
+   "programSha256": "f44912b0c5a2bc6b02fe0ff49a7c7472a6b87f2fa70ca254fca4171121878aad",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-caching",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "d814f6c2c207d5b5c98659b2489d855508b5e88130dc1d62e3f6120126c975a2",
+   "programSha256": "c320e19656a724caeba4315041136aac0eeb0e6bc12958be5a8a8c7ae1528295",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-cap",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "25ac67f1490c5fc61be39b93361909eff676e353e6cfdca4230ca5dad6a39b15",
+   "programSha256": "aefa6e873b42ed15846a3359b10bcb8bab57f7d60a83e465f8b8b9c8ace2e8ce",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-channels-vs-mutex",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "690936a2eb95b9ac47f3a1a11d620c45ff566ffb49927d07d9636d95bf63059f",
+   "programSha256": "77d9b25ac8f7013d54a52375f78b1fbd0900e185b2b231d86275af9c82659c0b",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-closure-traits",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "091a47dac702e622ecd2ab96cf2fbc43498cc1c2448212d13bac138a0f5241bd",
+   "programSha256": "091a47dac702e622ecd2ab96cf2fbc43498cc1c2448212d13bac138a0f5241bd",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-code-review",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "1db590181e3aaac9a7c9be0b93c8e440ba4a19f988ab74e2a26f120e5e2971aa",
+   "programSha256": "5884e70098c650fd7609611f90baf42e677175bbf874164a5586e6de39fa8303",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-complexity",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "67a5154cdf6a7e5cb0450dd09548e50ddb59cd962f6f22ff13bf4618cfb63dba",
+   "programSha256": "67a5154cdf6a7e5cb0450dd09548e50ddb59cd962f6f22ff13bf4618cfb63dba",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-copy-clone-cow",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "9aae2639c85e25ee1ea16c5b275842bc13b6bc8d8030f5a8699ccf7fd2f8563d",
+   "programSha256": "9aae2639c85e25ee1ea16c5b275842bc13b6bc8d8030f5a8699ccf7fd2f8563d",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-deadlock",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "2d0a809974c2bc0cca0fdf2db0c35b8f7f7863a6230307fdaf22a710ed64940c",
+   "programSha256": "67d6136727452da00d90a9a1bd951c8df09799323e5f0f5bb4c44d0c38ac22d0",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-debugging-session",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "5a4035db1330eef191a9172313097118bc0481b06a35eb1246102228acd8872b",
+   "programSha256": "5a4035db1330eef191a9172313097118bc0481b06a35eb1246102228acd8872b",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-dyn-generics",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "3d5db957df5c6b1591029241e7ffbab3ef8e6c8a88f0751f206b8de792f38d2c",
+   "programSha256": "3d5db957df5c6b1591029241e7ffbab3ef8e6c8a88f0751f206b8de792f38d2c",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-error-boundaries",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "fdd497e5ac66db32260ea10a405200643094d571e1371850045e6d0e46af99e7",
+   "programSha256": "fdd497e5ac66db32260ea10a405200643094d571e1371850045e6d0e46af99e7",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-ffi-abi",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "abeb4453aa539b1c3dfefaef3746a504fdc49e6679d032396b2ba85cc27acf1c",
+   "programSha256": "abeb4453aa539b1c3dfefaef3746a504fdc49e6679d032396b2ba85cc27acf1c",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-future-send",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "c3fc6f1b69fe8eefef0e69d1648588f7cfc8abb60281f265a2bf925bead8220d",
+   "programSha256": "c3fc6f1b69fe8eefef0e69d1648588f7cfc8abb60281f265a2bf925bead8220d",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-hashmap",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "caf5739cb8e72edb664dc05cf19f8e9679c1ba3e77ba30c12a52bcf6a4780c73",
+   "programSha256": "caf5739cb8e72edb664dc05cf19f8e9679c1ba3e77ba30c12a52bcf6a4780c73",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-http-versions",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "025f445382f71e7ba624556ff0f79a89b7f6f4f79975aeaf50c5d9bb9890f19d",
+   "programSha256": "0c847831231c1eb94cfa263e1a6610080ffff175e27a592a7de3a50651270c11",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-integer-boundaries",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "8b7bd2dd6211c0ff712452156836bcc490ffb2926b4a1ecd52e68a1a09e06e08",
+   "programSha256": "8b7bd2dd6211c0ff712452156836bcc490ffb2926b4a1ecd52e68a1a09e06e08",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-interior-mutability",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "1e636e2438e49a2b9fbee2fec23a2a34e1405903600b36ec1f36bacb2be6eb98",
+   "programSha256": "1e636e2438e49a2b9fbee2fec23a2a34e1405903600b36ec1f36bacb2be6eb98",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-iterator-ownership",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "ca95a68336ba6efe0054e270bea6eb99a6746cc0b9a56bb5878739f7f3808ea5",
+   "programSha256": "ca95a68336ba6efe0054e270bea6eb99a6746cc0b9a56bb5878739f7f3808ea5",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-lifetimes",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "main-added",
+   "sha256": "dd6937f9097aef4dd2a9d134703c28d3883ab73dc306b47f8bd409a72145e2dd",
+   "programSha256": "cb9548ae4bcf508da167a101fd93d7937de63270182adb7b078dbcc205b9ab7c",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-lru-design",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "8ad09652333384e61b2d3889f3b0e604c08916f3d2481b640a07071e56bcfa87",
+   "programSha256": "cf7a3009fa71c78a6459eeb2a8b237f85b03277f92fa5233ec04c3983b23f26e",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-option-result",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "ec68ba53928a411aa2cd25c1b4b806ddc7db245e3a3b69912bd87f55f75ca040",
+   "programSha256": "ec68ba53928a411aa2cd25c1b4b806ddc7db245e3a3b69912bd87f55f75ca040",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-ownership",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "in-main",
+   "sha256": "1d95358b063a46814091b2d31833e81cf1f0c249ea8d93f9e5a2969c4b90648f",
+   "programSha256": "c675e71289ed75d0375f6827ce86fc9017e65ad24180d855dbb0df941233503e",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-parser-design",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "a0825739d3c4e7e733150e08dbd38bc8ea46506a01c2da987b79ace910f3a7b6",
+   "programSha256": "a0825739d3c4e7e733150e08dbd38bc8ea46506a01c2da987b79ace910f3a7b6",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-pin-future",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "c22097800a69ccebbd3f9bbdbb940511be8223f87ecf223cd22a4e802982cf79",
+   "programSha256": "c22097800a69ccebbd3f9bbdbb940511be8223f87ecf223cd22a4e802982cf79",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-postmortem",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "7bb952bca864fcad717929176f555a59a725d01d7887a92211e72135d636e853",
+   "programSha256": "2780610583879e990d879cde89a664e413edb93c7e93d30e43a4a63fd7598b06",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-requirements",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "2e95521898957da8cd1fb8175f1efdb61a1d274a718461f2ae7080346ebbd96f",
+   "programSha256": "8e9cf02a7f8ba52b7ef68ce9a5847d8524d767242e9c855b54e64da9086ec149",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-send-sync",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": "main-added",
+   "sha256": "0a25e85314d22c368d10c8736a8378b73105bed8bb9c494f6ba126d66c380a84",
+   "programSha256": "5960c04ca92330d128f09cf5b975222414ea9e5f076a6aa18af0cef7e90dffb9",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-stack-heap",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "a52b830e1194660b3f96f486560e553a11417656210b7a09f48c31779307c7d9",
+   "programSha256": "a52b830e1194660b3f96f486560e553a11417656210b7a09f48c31779307c7d9",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-syscalls",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "31640ca4206402c3e3ef550ae34dd2904e0d1a6c5e306c22cc8e11fda4bf59e5",
+   "programSha256": "31640ca4206402c3e3ef550ae34dd2904e0d1a6c5e306c22cc8e11fda4bf59e5",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-tcp-udp",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "e2a1a40d8fc80cfe303184cb7f0923138382dc17759f3b3a87e89eeb325816bb",
+   "programSha256": "af2301359244f0ec3d8821fe8d3518eda2d4ec1e94be5d8343913c562c7be6ec",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-testing-strategy",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "f7d590c2e0b6604c2d8badd8ac89a953a080299c89e772fef12abfccb5b544fb",
+   "programSha256": "53a2c389a68eb395214d02295a69acba88c7f1905f1c4149c94faa571b7c2114",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-tls",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "a5162212b24494aa30fff39ad9249ca688c0de7c8be966da71f4dc984b36626d",
+   "programSha256": "aa2f47ed339662b17a738e6d12a49f35a5792f364aa44d636aa71b44995a99fd",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-tradeoff-communication",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "51defeebd837ba7adcfac88686af612e25fab55fccae2ad9f79b4341c9187ea5",
+   "programSha256": "52667ac277a670854001c54d3e01e30aa54836fe167eb000611188e25038d822",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-trait-coherence",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "f7ac6d8f777fbeba9a7b5693508b79a1a810414463b2bb8af68f94b72ddd22cb",
+   "programSha256": "f7ac6d8f777fbeba9a7b5693508b79a1a810414463b2bb8af68f94b72ddd22cb",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-two-sum-rust",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "e9a558c4113caa6eaedde2c7bf654c678c81a9db7e2459286708b11eb259def0",
+   "programSha256": "e9a558c4113caa6eaedde2c7bf654c678c81a9db7e2459286708b11eb259def0",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-unsafe",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "b63594ff5a86e203512f29ec9412c80fe782f0dc8c5d0cadf08f03e814baae6e",
+   "programSha256": "b63594ff5a86e203512f29ec9412c80fe782f0dc8c5d0cadf08f03e814baae6e",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-utf8-boundaries",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "a43611696ec16e44f9c7ca75973f0e855a3d8136c660b4448749d93720375aa2",
+   "programSha256": "a43611696ec16e44f9c7ca75973f0e855a3d8136c660b4448749d93720375aa2",
+   "check": "compiles"
+  },
+  {
+   "courseId": "interview",
+   "lessonId": "q-virtual-memory",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": "main-added",
+   "sha256": "c95368423dd211b51b7233dabe550a96fbc7dff4056c60e3a8e8ef5f86183085",
+   "programSha256": "bbe45f575939b93c7374705a18fef0ebe67deaec203c868d1a6ea13e42f84153",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-char-arrays-to-strings",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "02aca7406d07eb82b76b1aca06f66dccd8b2a8ee7521fc84ddd930a9c70a9bb5",
+   "programSha256": "02aca7406d07eb82b76b1aca06f66dccd8b2a8ee7521fc84ddd930a9c70a9bb5",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-const-by-default",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "17951d87e44118c011bc36c50423b77298adcb3ef7def0f071b55f813762d4a8",
+   "programSha256": "17951d87e44118c011bc36c50423b77298adcb3ef7def0f071b55f813762d4a8",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-dangling-pointers-to-lifetimes",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "c206bec81d8985f7187c5ef421260d951a54ddea8f19450df403fd96e491153f",
+   "programSha256": "c206bec81d8985f7187c5ef421260d951a54ddea8f19450df403fd96e491153f",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-for-loops-to-ranges",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "9d569c44f849ac8d2b148ef57df95a3d4c4a437fbf8310026d454c3d43712a3f",
+   "programSha256": "9d569c44f849ac8d2b148ef57df95a3d4c4a437fbf8310026d454c3d43712a3f",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-functions-are-expressions",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "a09e33f7ece54a0c0c7ce82471e2f4148d40e360147b190b1426c37aad1eb536",
+   "programSha256": "a09e33f7ece54a0c0c7ce82471e2f4148d40e360147b190b1426c37aad1eb536",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-integer-overflow-and-casts",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "17dd33ac12b75a5cc4dd50a7ef33e3b61113189b6993cae0c87246b68f6bf5a6",
+   "programSha256": "17dd33ac12b75a5cc4dd50a7ef33e3b61113189b6993cae0c87246b68f6bf5a6",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-make-and-headers-to-cargo",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "1d692fd559776d64363b12db5abd2d9f4dc9571c84616e6a39add82b058b58b2",
+   "programSha256": "1d692fd559776d64363b12db5abd2d9f4dc9571c84616e6a39add82b058b58b2",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-malloc-free-to-ownership",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "9aae7aaad518ca7915228dba6c1df885321b911ffa1bbb5f01dc5a684d5f08cf",
+   "programSha256": "9aae7aaad518ca7915228dba6c1df885321b911ffa1bbb5f01dc5a684d5f08cf",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-null-and-errno-to-option-result",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "0ceec9d60c770c6866e1a60a09eb7600d940ade9474f578809205dac0f1dc8c6",
+   "programSha256": "0ceec9d60c770c6866e1a60a09eb7600d940ade9474f578809205dac0f1dc8c6",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-pointer-length-to-slices",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "a2cdc4b117845d532477c5c2ac2debff07722bed85a7f9550230f5a3acb099f3",
+   "programSha256": "a2cdc4b117845d532477c5c2ac2debff07722bed85a7f9550230f5a3acb099f3",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-pointers-to-references",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "97a85566715f981a7bf165048940f91ab3f675f1cb19cf773aa31fe4bbd5b100",
+   "programSha256": "97a85566715f981a7bf165048940f91ab3f675f1cb19cf773aa31fe4bbd5b100",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-printf-to-println",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "b6d2e2221026250e850484ab39dfca150cc2f0588937d8eb40be0b7334fc11f7",
+   "programSha256": "b6d2e2221026250e850484ab39dfca150cc2f0588937d8eb40be0b7334fc11f7",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-pthreads-to-threads",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "f4a757993bb192840ee021320a568f64b9e4eeab890d1f4543bb6bd08c38fca3",
+   "programSha256": "f4a757993bb192840ee021320a568f64b9e4eeab890d1f4543bb6bd08c38fca3",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-rustc-diagnostics",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "54b73d412f0037a9cf0f3d94fb58c10f04da1adec953cec3d40347f952d4d48b",
+   "programSha256": "54b73d412f0037a9cf0f3d94fb58c10f04da1adec953cec3d40347f952d4d48b",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-struct-copy-to-copy-clone",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "798f3a9144560a420a555a3e063aa2a016d82d7ad964e9a8d2b7ffd2e8e5f52b",
+   "programSha256": "798f3a9144560a420a555a3e063aa2a016d82d7ad964e9a8d2b7ffd2e8e5f52b",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-structs-to-impl",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "dfb185ca151ba176ecfb03a6ed6bcdddf71e8439e1714d4b84d5b93daab327db",
+   "programSha256": "dfb185ca151ba176ecfb03a6ed6bcdddf71e8439e1714d4b84d5b93daab327db",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-tagged-unions-to-enums",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "5f69eef7c4ff5b24455cd42e3184e1444e25936456ebaef69ea841228f027a72",
+   "programSha256": "5f69eef7c4ff5b24455cd42e3184e1444e25936456ebaef69ea841228f027a72",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-unsafe-and-ffi",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "5e272ec94d755a88deae67e3960a71bdf7c5f417cdc005a0a81dd749211fc728",
+   "programSha256": "5e272ec94d755a88deae67e3960a71bdf7c5f417cdc005a0a81dd749211fc728",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-what-rust-is",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "5c636d1715e3814bce8c1e5ea1ca604100b6883283863ebe286cec9900459be0",
+   "programSha256": "5c636d1715e3814bce8c1e5ea1ca604100b6883283863ebe286cec9900459be0",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-c-developers",
+   "lessonId": "c-what-safe-rust-rules-out",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "5c28df4b61ebfcb00154cb676fb62a96d1392654020fe610a622bb4c0bff2d75",
+   "programSha256": "5c28df4b61ebfcb00154cb676fb62a96d1392654020fe610a622bb4c0bff2d75",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-array-methods-to-iterators",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "8590d1e9c73dde836d29aa8a6cba7a23452eeded93437fc7f3cc65b97f914493",
+   "programSha256": "8590d1e9c73dde836d29aa8a6cba7a23452eeded93437fc7f3cc65b97f914493",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-console-log-to-println",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "21cb16ce12042a21b5bcdb936f084b6c4bbdbcd963ca0d726c8d1eabdac82074",
+   "programSha256": "21cb16ce12042a21b5bcdb936f084b6c4bbdbcd963ca0d726c8d1eabdac82074",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-functions-to-fn",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "a9852577e6bc16de9035471374c6517f1b5947d84d113a2bed34d5fc77d30444",
+   "programSha256": "a9852577e6bc16de9035471374c6517f1b5947d84d113a2bed34d5fc77d30444",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-interfaces-to-traits",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "3ea8d5e68731b4edc634770e200b9490ff00f6653c840b01acc17bd7772de5fb",
+   "programSha256": "3ea8d5e68731b4edc634770e200b9490ff00f6653c840b01acc17bd7772de5fb",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-let-const-to-let-mut",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "a6604d242a44ba60c3b9bcabff241fbb7a43310d0654bfd064dbdc619b3f3260",
+   "programSha256": "a6604d242a44ba60c3b9bcabff241fbb7a43310d0654bfd064dbdc619b3f3260",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-map-and-objects-to-hashmap",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "0f3ff641a709be418a536314fe0e23133a6131a0355101e4a2ecbd2781aa5c09",
+   "programSha256": "0f3ff641a709be418a536314fe0e23133a6131a0355101e4a2ecbd2781aa5c09",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-mutation-to-borrowing",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "99b4f7e1de1cbbf67f4c2e18079ad6b89a99a687c6885231a322f9f886b030e7",
+   "programSha256": "99b4f7e1de1cbbf67f4c2e18079ad6b89a99a687c6885231a322f9f886b030e7",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-no-garbage-collector",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "1331cdddd35c71086b1d7e5b2e303ee625756251b6c66439fe13e642cde0d6a0",
+   "programSha256": "1331cdddd35c71086b1d7e5b2e303ee625756251b6c66439fe13e642cde0d6a0",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-npm-to-cargo",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "2c9aade813d53c0528088addc681a0f0a9c74698751f7d69aadf1aa050033f4e",
+   "programSha256": "2c9aade813d53c0528088addc681a0f0a9c74698751f7d69aadf1aa050033f4e",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-null-undefined-to-option",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "0eea9da9b6f56dfca0d6ae079951bb20bafd88908272fb02ac38764804777721",
+   "programSha256": "0eea9da9b6f56dfca0d6ae079951bb20bafd88908272fb02ac38764804777721",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-number-to-integer-types",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "e7936cfa90eed22971132c40cb4479dd33b20ac35751ae58eeeafc94564d6160",
+   "programSha256": "e7936cfa90eed22971132c40cb4479dd33b20ac35751ae58eeeafc94564d6160",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-objects-to-structs",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "34cada3915aab465797c8fadfe6e376a75826744315add5e635f84c77ca651c8",
+   "programSha256": "34cada3915aab465797c8fadfe6e376a75826744315add5e635f84c77ca651c8",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-promises-to-futures",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "28ce0d4d7e413bbccbefe8b97de9bfefc10a037e72f0773aa303473b8d4592d0",
+   "programSha256": "28ce0d4d7e413bbccbefe8b97de9bfefc10a037e72f0773aa303473b8d4592d0",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-shared-references-to-ownership",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "69329890209aab34897ac9713af764e25108c96b07658a173ed686c0ae9ad5e5",
+   "programSha256": "69329890209aab34897ac9713af764e25108c96b07658a173ed686c0ae9ad5e5",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-truthiness-to-bool-and-match",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "059a0444be03b7b085fd175934d347192ca0db0c300b4f9087201bbe6077e096",
+   "programSha256": "059a0444be03b7b085fd175934d347192ca0db0c300b4f9087201bbe6077e096",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-try-catch-to-result",
+   "edition": "2024",
+   "source": "practiceCode",
+   "wrap": null,
+   "sha256": "f968df9f1c6fca74e4d9a30faba6ead42f158e331f811a626852b9d4840ebcc6",
+   "programSha256": "f968df9f1c6fca74e4d9a30faba6ead42f158e331f811a626852b9d4840ebcc6",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-ts-unions-to-enums",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "aa81a1f415bad803d23a78ef42fb182f69356a4be27d23de5905fb2b75e72f0f",
+   "programSha256": "aa81a1f415bad803d23a78ef42fb182f69356a4be27d23de5905fb2b75e72f0f",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-types-are-checked-not-erased",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "fbd6fc1b3e4524ac2272eace49618f5df5264c0e2c2e7ff4f12b3692540ced90",
+   "programSha256": "fbd6fc1b3e4524ac2272eace49618f5df5264c0e2c2e7ff4f12b3692540ced90",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-utf16-strings-to-utf8",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "6cc748c0d377db1295895c565ac7d40f23b9c8c649b1d834bf237e8e8a63cee8",
+   "programSha256": "6cc748c0d377db1295895c565ac7d40f23b9c8c649b1d834bf237e8e8a63cee8",
+   "check": "compiles"
+  },
+  {
+   "courseId": "rust-for-nodejs-developers",
+   "lessonId": "node-what-rust-is",
+   "edition": "2024",
+   "source": "exampleCode",
+   "wrap": null,
+   "sha256": "73acd390a84e0321bee1e89705b03cf2e9984b004fdb81444a4560c6ad927b1c",
+   "programSha256": "73acd390a84e0321bee1e89705b03cf2e9984b004fdb81444a4560c6ad927b1c",
+   "check": "compiles"
+  }
+ ]
+}

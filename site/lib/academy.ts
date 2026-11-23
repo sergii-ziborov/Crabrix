@@ -6,6 +6,9 @@ import { bridgeLessonsCrediting, courseById, courseLessons, courseSnapshot, less
 import { lessonAlgorithmTrace } from "./algorithm-traces";
 import { pageUrl, siteOrigin } from "./seo";
 import { appSupportsBridgeCredits } from "./bridges";
+import { practiceCopy, practiceNotice, type PracticeStarter } from "./practice-copy";
+import { lessonPlayground } from "./lesson-playground";
+import type { PlaygroundDocument } from "./playground-document";
 
 /**
  * Public, read-only Academy API v1 (docs/ai-learning/PLAN.md). It exposes only what the
@@ -25,6 +28,8 @@ const contentFile = (name: string) => join(process.cwd(), "content", name);
 let paths: LearningPath[] | undefined;
 let examples: ExampleProject[] | undefined;
 let contract: string | undefined;
+let schema: string | undefined;
+let starters: Map<string, PracticeStarter> | undefined;
 let index: Record<string, unknown> | undefined;
 
 export function catalogVersion(): string {
@@ -49,6 +54,27 @@ export function teachingContract(): string {
   return contract;
 }
 
+export function learningStateSchema(): string {
+  schema ??= existsSync(contentFile("academy-learning-state.schema.json"))
+    ? readFileSync(contentFile("academy-learning-state.schema.json"), "utf8") : "";
+  return schema;
+}
+
+function practiceStarters(): Map<string, PracticeStarter> {
+  starters ??= new Map(existsSync(contentFile("academy-practice-starters.json"))
+    ? (JSON.parse(readFileSync(contentFile("academy-practice-starters.json"), "utf8")).starters as PracticeStarter[])
+      .map(starter => [`${starter.courseId}/${starter.lessonId}`, starter]) : []);
+  return starters;
+}
+
+/** A practice copy of the lesson's own code for the Playground, when it was qualified. */
+export function lessonPracticeCopy(course: Course, lesson: Lesson): { document: PlaygroundDocument; notice: string } | undefined {
+  if (course.id === "algorithms" || lesson.playgroundProject) return undefined;
+  const starter = practiceStarters().get(`${course.id}/${lesson.id}`);
+  const document = practiceCopy(lesson, starter);
+  return document && starter ? { document, notice: practiceNotice(starter) } : undefined;
+}
+
 export function teachingContractVersion(): string {
   return /Version (\d+\.\d+\.\d+)/.exec(teachingContract())?.[1] ?? "0.0.0";
 }
@@ -56,12 +82,20 @@ export function teachingContractVersion(): string {
 const lessonUrl = (courseId: string, lessonId: string) => pageUrl(`/learn/${courseId}/${lessonId}/`);
 const playgroundUrl = (courseId: string, lessonId: string) => `${siteOrigin}/playground/?lesson=${courseId}/${lessonId}`;
 
-/** Mirrors app/playground/page.tsx: only lessons it can open get a link. */
-export function playgroundAvailable(course: Course, lesson: Lesson): boolean {
+export type PlaygroundKind = "lesson-project" | "practice-copy" | "algorithm-trace";
+
+/** Mirrors app/playground/page.tsx: what /playground/?lesson=<course>/<lesson> opens, if anything. */
+export function playgroundKind(course: Course, lesson: Lesson): PlaygroundKind | null {
   if (course.id === "algorithms") {
-    try { return Boolean(lessonAlgorithmTrace(lesson)); } catch { return false; }
+    try { return lessonAlgorithmTrace(lesson) ? "algorithm-trace" : null; } catch { return null; }
   }
-  return Boolean(lesson.playgroundProject);
+  if (lesson.playgroundProject) return "lesson-project";
+  return lessonPracticeCopy(course, lesson) ? "practice-copy" : null;
+}
+
+/** Only lessons the Playground can open get a link. */
+export function playgroundAvailable(course: Course, lesson: Lesson): boolean {
+  return playgroundKind(course, lesson) !== null;
 }
 
 /**
@@ -112,6 +146,7 @@ export function academyIndex(): Record<string, unknown> {
     examples: exampleProjects().map(example => ({ id: example.id, title: example.title, detail: example.detail,
       difficulty: example.difficulty, category: example.category, concepts: example.concepts })),
     teachingContract: { version: teachingContractVersion(), url: `${siteOrigin}/api/academy/v1/teaching-contract.md` },
+    learningState: { schemaVersion: 1, schemaUrl: `${siteOrigin}/api/academy/v1/learning-state.schema.json` },
   };
   return index;
 }
@@ -134,7 +169,7 @@ export function academyLesson(courseId: string, lessonId: string): Record<string
     }),
     ...bridgeLessonsCrediting(course.id, lesson.id).map(ref => ({ courseId: ref.course.id, lessonId: ref.lesson.id, title: ref.lesson.title, relation: "coveredBy" })),
   ];
-  const available = playgroundAvailable(course, lesson);
+  const kind = playgroundKind(course, lesson);
   const { playgroundProject: _project, resources: _resources, illustration, ...rest } = lesson;
   void _project; void _resources;
   return {
@@ -144,7 +179,7 @@ export function academyLesson(courseId: string, lessonId: string): Record<string
     url: lessonUrl(course.id, lesson.id),
     writing: rest.writing ?? null, depth: rest.depth ?? null, algorithm: rest.algorithm ?? null, bridge: rest.bridge ?? null,
     illustration: illustration ? { url: `${siteOrigin}/learn-media/${course.id}/${illustration.path.slice(6)}`, alt: illustration.alt, caption: illustration.caption } : null,
-    playground: available ? { available: true, url: playgroundUrl(course.id, lesson.id) } : { available: false, url: null },
+    playground: kind ? { available: true, url: playgroundUrl(course.id, lesson.id), kind } : { available: false, url: null, kind: null },
     appAvailability: appAvailability(course.id, lesson.id),
     related,
   };
@@ -164,6 +199,16 @@ export function academyPath(pathId: string): Record<string, unknown> | undefined
   };
 }
 
+/** An Examples project as a new Playground document; the original stays unchanged. */
+export function examplePlaygroundDocument(exampleId: string): PlaygroundDocument | undefined {
+  const example = exampleProjects().find(item => item.id === exampleId);
+  if (!example) return undefined;
+  const edition = /edition\s*=\s*"(2021|2024)"/.exec(example.files["Cargo.toml"] ?? "")?.[1] === "2024" ? "2024" : "2021";
+  try {
+    return lessonPlayground({ schemaVersion: 1, name: example.id, entryFile: example.entryFile, edition, files: { ...example.files } });
+  } catch { return undefined; }
+}
+
 export function academyExample(exampleId: string): Record<string, unknown> | undefined {
   const example = exampleProjects().find(item => item.id === exampleId);
   if (!example) return undefined;
@@ -172,6 +217,8 @@ export function academyExample(exampleId: string): Record<string, unknown> | und
     id: example.id, title: example.title, detail: example.detail, difficulty: example.difficulty,
     category: example.category, concepts: example.concepts, readme: example.readme, files: example.files,
     entryFile: example.entryFile, illustration: null,
+    playground: examplePlaygroundDocument(example.id)
+      ? { available: true, url: `${siteOrigin}/playground/?example=${example.id}`, kind: "example-copy" } : { available: false, url: null, kind: null },
   };
 }
 

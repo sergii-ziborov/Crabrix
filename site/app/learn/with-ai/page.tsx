@@ -1,11 +1,14 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { pageMetadata, pageUrl, breadcrumbs } from "@/lib/seo";
 import { StructuredData } from "@/components/structured-data";
 import { SyntaxCode } from "@/components/SyntaxCode";
 import { CopyText } from "@/components/copy-text";
 import { AgentSetup } from "@/components/agent-setup";
-import { ACADEMY_MCP_URL, ACADEMY_SDK_VERSION, learningPrompts } from "@/lib/ai-learning";
+import { ACADEMY_MCP_URL, ACADEMY_SDK_VERSION, FEEDBACK_MAIL, learningPrompts } from "@/lib/ai-learning";
 import { academyPath, learningPaths, teachingContractVersion } from "@/lib/academy";
+import { aiLearningEnabled } from "@/lib/flags";
+import { AIFeedback, AIPageView } from "@/components/ai-learning-client";
 
 export const metadata = pageMetadata({
   title: "Learn Rust with Your AI Agent — Claude, Codex and Cursor with Crabrix Academy",
@@ -13,31 +16,31 @@ export const metadata = pageMetadata({
   path: "/learn/with-ai/",
 });
 
-const feedbackAddress = "c2VyZ2lpLnppYm9yb3ZAZ21haWwuY29t";
-
 export default function LearnWithAIPage() {
+  if (!aiLearningEnabled()) notFound();
   const paths = learningPaths();
+  const cursorConfig = `{\n  "mcpServers": {\n    "crabrix-academy": {\n      "url": "${ACADEMY_MCP_URL}"\n    }\n  }\n}`;
   const clients = [
     { id: "claude", name: "Claude", body: <>
       <p>In Claude on the web, desktop or mobile: <strong>Customize → Connectors → + → Add custom connector</strong>. Name it <em>Crabrix Academy</em> and paste this URL:</p>
-      <SyntaxCode language="shell" code={ACADEMY_MCP_URL} /><CopyText text={ACADEMY_MCP_URL} label="Copy URL" />
-      <p>No sign-in. Then start a chat with one of the prompts below.</p></> },
+      <SyntaxCode language="shell" code={ACADEMY_MCP_URL} /><CopyText text={ACADEMY_MCP_URL} label="Copy URL" event="instructions_copied" detail="claude" />
+      <p>No sign-in. Then start a chat with one of the prompts below. A connector you add on the web is also available in the Claude app on your phone or tablet.</p></> },
     { id: "claude-code", name: "Claude Code", body: <>
       <p>Add the Academy as a remote MCP server:</p>
       <SyntaxCode language="shell" code={`claude mcp add --transport http crabrix-academy ${ACADEMY_MCP_URL}`} />
-      <CopyText text={`claude mcp add --transport http crabrix-academy ${ACADEMY_MCP_URL}`} />
+      <CopyText text={`claude mcp add --transport http crabrix-academy ${ACADEMY_MCP_URL}`} event="instructions_copied" detail="claude-code" />
       <p>Or install the Crabrix plugin ({ACADEMY_SDK_VERSION} or newer). It adds a local Academy server, the <code>crabrix-learn-rust</code> skill and the shared Playground; an existing installation keeps its handoff skill and rooms.</p>
       <SyntaxCode language="shell" code={"/plugin marketplace add sergii-ziborov/crabrix-sdk\n/plugin install crabrix@crabrix"} /></> },
     { id: "codex", name: "Codex", body: <>
       <SyntaxCode language="shell" code={`codex mcp add crabrix-academy --url ${ACADEMY_MCP_URL}`} />
-      <CopyText text={`codex mcp add crabrix-academy --url ${ACADEMY_MCP_URL}`} />
+      <CopyText text={`codex mcp add crabrix-academy --url ${ACADEMY_MCP_URL}`} event="instructions_copied" detail="codex" />
       <p>To run the Academy locally instead (Node.js 22 or newer), add <code>codex mcp add crabrix-academy -- npx -y crabrix@{ACADEMY_SDK_VERSION} academy</code>. Your existing <code>crabrix</code> server for Playground rooms stays as it is.</p></> },
     { id: "cursor", name: "Cursor", body: <>
       <p>Add this server to <code>~/.cursor/mcp.json</code>, then restart Cursor:</p>
-      <SyntaxCode language="json" code={`{\n  "mcpServers": {\n    "crabrix-academy": {\n      "url": "${ACADEMY_MCP_URL}"\n    }\n  }\n}`} /></> },
+      <SyntaxCode language="json" code={cursorConfig} /><CopyText text={cursorConfig} label="Copy JSON" event="instructions_copied" detail="cursor" /></> },
     { id: "other", name: "Other MCP client", body: <>
       <p>Add a remote MCP server with Streamable HTTP and no authentication:</p>
-      <SyntaxCode language="shell" code={ACADEMY_MCP_URL} /><CopyText text={ACADEMY_MCP_URL} label="Copy URL" />
+      <SyntaxCode language="shell" code={ACADEMY_MCP_URL} /><CopyText text={ACADEMY_MCP_URL} label="Copy URL" event="instructions_copied" detail="other" />
       <p>Clients that run local servers can start the same read-only tools with <code>npx -y crabrix@{ACADEMY_SDK_VERSION} academy</code> (Node.js 22 or newer). Playground rooms keep using the <code>crabrix</code> server you may already have.</p></> },
   ];
   return (
@@ -47,6 +50,7 @@ export default function LearnWithAIPage() {
           isPartOf: { "@type": "WebSite", name: "Crabrix", url: pageUrl("/") } },
         breadcrumbs([{ name: "Crabrix", path: "/" }, { name: "Learn Rust", path: "/learn/" }, { name: "Learn with AI", path: "/learn/with-ai/" }]),
       ] }} />
+      <AIPageView page="with-ai" />
       <nav className="breadcrumbs" aria-label="Breadcrumbs"><Link prefetch={false} href="/learn">Learn</Link><span>/</span><span>Learn with AI</span></nav>
       <div className="page-intro">
         <p className="eyebrow">Optional · free · no account</p>
@@ -74,7 +78,7 @@ export default function LearnWithAIPage() {
         <h2 id="prompts">Start with a prompt</h2>
         <div className="prompt-list">
           {learningPrompts.map(prompt => <div className="prompt-card" key={prompt.id}>
-            <h3>{prompt.title}</h3><blockquote>{prompt.text}</blockquote><CopyText text={prompt.text} label="Copy prompt" />
+            <h3>{prompt.title}</h3><blockquote>{prompt.text}</blockquote><CopyText text={prompt.text} label="Copy prompt" event="prompt_copied" detail={prompt.id} />
           </div>)}
         </div>
       </section>
@@ -92,6 +96,17 @@ export default function LearnWithAIPage() {
         <p>Coming from another language? <Link prefetch={false} href="/learn/rust-for-c-developers/">Rust for C Developers</Link> and <Link prefetch={false} href="/learn/rust-for-nodejs-developers/">Rust for Node.js Developers</Link> put your current habits next to Rust.</p>
       </section>
 
+      <section className="unit-panel" aria-labelledby="continue">
+        <h2 id="continue">Continue where you left off</h2>
+        <p>Your progress stays where you earned it. Nothing is synchronised between the Crabrix app, this website and your agent automatically, so you choose what your agent may know:</p>
+        <ul className="learning-state-steps">
+          <li><strong>From the Crabrix app</strong> (iPhone and iPad, in the next app version): <em>Learn → Learn with AI → Continue learning</em>. Switch on <em>Include my completed lessons</em>, then copy or share your learning state and paste it into your agent with the <em>Continue learning</em> prompt. It works from a phone alone.</li>
+          <li><strong>From a backup file</strong>, on a computer: with the local Academy server (<code>npx -y crabrix@{ACADEMY_SDK_VERSION} academy</code>), ask your agent to read your <code>.crabrixprogress</code> file. It is read on your computer and is not uploaded by Crabrix.</li>
+          <li><strong>Without either</strong>: tell your agent which lesson you are on. It assumes nothing else.</li>
+        </ul>
+        <p>Your agent can keep its notes in the same file: your path, mode, current lesson, a short summary and what to review. Combining two files only ever adds the lessons the app recorded; an older or partial file never removes any, and the file never changes your progress in the app. It holds no code, room links, passwords or keys. Format: <a href="/api/academy/v1/learning-state.schema.json">AI Learning State v1</a>.</p>
+      </section>
+
       <section className="unit-panel" aria-labelledby="honest">
         <h2 id="honest">What your agent can and cannot do</h2>
         <ul>
@@ -105,14 +120,7 @@ export default function LearnWithAIPage() {
         <p className="card-meta">Agents follow the <a href="/api/academy/v1/teaching-contract.md">Crabrix teaching contract</a> (version {teachingContractVersion()}). Developers can read the public <a href="/api/academy/v1/index.json">Academy API</a>.</p>
       </section>
 
-      <section className="unit-panel" aria-labelledby="feedback">
-        <h2 id="feedback">Did learning Rust with your AI agent help?</h2>
-        <p>One click opens an email draft; nothing is sent until you send it.</p>
-        <div className="cta-row">
-          {["Yes", "Partly", "I couldn’t get it working"].map(answer => <button key={answer} type="button" className="btn ghost"
-            data-mail={feedbackAddress} data-subject={`Crabrix — Learning with AI: ${answer}`}>{answer}</button>)}
-        </div>
-      </section>
+      <AIFeedback mode="always" mail={FEEDBACK_MAIL} />
     </div>
   );
 }
