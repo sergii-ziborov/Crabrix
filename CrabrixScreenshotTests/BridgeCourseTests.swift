@@ -25,10 +25,29 @@ final class BridgeCourseTests: XCTestCase {
         }
         scrollTo(course)
         XCTAssertTrue(course.waitForExistence(timeout: 180), "signed bridge pack must download and install")
+        // A learner who installed an earlier bridge version gets it through Update.
+        let update = app.buttons["Update Rust for C Developers lessons"]
+        if update.exists {
+            update.tap()
+            let confirm = app.buttons.matching(NSPredicate(
+                format: "label MATCHES %@", "^Update [0-9][0-9,. ]* (bytes|KB|MB|GB|TB)$"
+            )).firstMatch
+            XCTAssertTrue(confirm.waitForExistence(timeout: 10))
+            confirm.tap()
+            let installed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: update)
+            XCTAssertEqual(XCTWaiter.wait(for: [installed], timeout: 180), .completed)
+        }
         capture("bridge-01-learn")
 
         launch(["-CrabrixTab", "learn", "-CrabrixLearn", "rust-for-c-developers"])
+        XCTAssertTrue(app.staticTexts["0 of 20 lessons"].waitForExistence(timeout: 20)
+                      || app.staticTexts.matching(NSPredicate(format: "label ENDSWITH 'of 20 lessons'")).firstMatch.exists,
+                      "the course opens with the Rust at a glance unit")
         capture("bridge-02-course")
+
+        launch(["-CrabrixTab", "learn", "-CrabrixLearn", "c-what-rust-is"])
+        XCTAssertTrue(app.otherElements["lesson-page-heading"].waitForExistence(timeout: 20))
+        capture("bridge-02b-intro-lesson")
 
         launch(["-CrabrixTab", "learn", "-CrabrixLearn", "c-malloc-free-to-ownership"])
         XCTAssertTrue(app.otherElements["lesson-page-heading"].waitForExistence(timeout: 20))

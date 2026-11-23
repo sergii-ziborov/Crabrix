@@ -243,21 +243,25 @@ final class LessonBridgeTests: XCTestCase {
         let installer = try CourseInstaller(root: root.appending(path: "installed"),
                                             appVersion: XCTUnwrap(SemanticVersion("1.1.9")))
         for course in ["rust-for-c-developers", "rust-for-nodejs-developers"] {
+            let archive = try XCTUnwrap(FileManager.default.contentsOfDirectory(atPath: packs.path)
+                .first { $0.hasPrefix("\(course)-") && $0.hasSuffix(".zip") }, course)
             _ = try await installer.install(
                 descriptorBytes: Data(contentsOf: packs.appending(path: "\(course).descriptor.json")),
-                downloadedArchive: packs.appending(path: "\(course)-1.0.0.zip"),
+                downloadedArchive: packs.appending(path: archive),
                 keyring: bootstrap.keyring()
             )
         }
         let repository = try await installer.loadRepository(keyring: bootstrap.keyring())
         XCTAssertTrue(repository.unavailable.isEmpty, "\(repository.unavailable)")
-        for (course, label) in [("rust-for-c-developers", "C"), ("rust-for-nodejs-developers", "JavaScript (Node.js)")] {
+        for (course, label, credits) in [("rust-for-c-developers", "C", 32),
+                                         ("rust-for-nodejs-developers", "JavaScript (Node.js)", 33)] {
             let loaded = try XCTUnwrap(repository.course(id: course), course)
             XCTAssertEqual(loaded.theme, .bridges)
             let lessons = loaded.units.flatMap(\.lessons)
-            XCTAssertEqual(lessons.count, 17, course)
+            XCTAssertEqual(lessons.count, 20, course)
+            XCTAssertTrue(lessons.first?.id.hasSuffix("what-rust-is") == true, course)
             let bridges = try lessons.map { try XCTUnwrap(repository.bridge(for: $0.id), $0.id) }
-            XCTAssertEqual(bridges.map(\.credits.count).reduce(0, +), 30, course)
+            XCTAssertEqual(bridges.map(\.credits.count).reduce(0, +), credits, course)
             XCTAssertTrue(bridges.contains { $0.fromLabel == label }, course)
         }
     }

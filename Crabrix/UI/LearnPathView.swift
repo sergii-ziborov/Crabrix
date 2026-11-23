@@ -715,6 +715,7 @@ enum LessonMapLayout {
 private extension RustLesson {
     var symbol: String {
         switch id {
+        case "what-is-rust", "c-what-rust-is", "node-what-rust-is": "info.circle.fill"
         case "hello-rust": "terminal.fill"
         case "variables": "equal.circle.fill"
         case "types": "square.stack.3d.up.fill"

@@ -1,5 +1,13 @@
 # Changelog
 
+## 23 November — Rust at a glance and What Rust Is
+
+- Both bridge courses (1.0.1) open with "Rust at a glance": compiled ahead of time,
+  no garbage collector or built-in runtime, what safe Rust rules out, reading rustc
+  diagnostics. Rust Basics 1.0.10 starts with "What Rust Is" (also on the website).
+  Signed catalog 27 is bundled; packs are in the `bridge-theory-2026-11-23` pre-release.
+  The UI test now also covers updating an installed bridge course.
+
 ## 23 November — Rust for C and Node.js developers
 
 - Two new courses, 17 lessons each: Rust for C Developers and Rust for Node.js
