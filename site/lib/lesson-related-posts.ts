@@ -31,5 +31,11 @@ const related: Record<string, readonly string[]> = {
   'concurrency/joinset-task-ownership': ['rust-async-cancellation-safe-timeouts'],
   'concurrency/semaphore-backpressure': ['rust-async-cancellation-safe-timeouts'],
   'concurrency/graceful-shutdown-protocol': ['rust-async-cancellation-safe-timeouts'],
+  'basics/what-is-rust': ['what-is-rust-compiled-no-garbage-collector-safe', 'learn-rust-with-ai-agent-claude-codex-cursor'],
+  'rust-for-c-developers/c-what-rust-is': ['rust-for-c-developers-ownership-malloc-free', 'what-is-rust-compiled-no-garbage-collector-safe'],
+  'rust-for-nodejs-developers/node-what-rust-is': ['rust-for-nodejs-developers-ownership-result-async', 'what-is-rust-compiled-no-garbage-collector-safe'],
+  'basics/pattern-matching': ['practise-rust-in-browser-playground-lesson-copies'],
+  'ownership/slices': ['practise-rust-in-browser-playground-lesson-copies'],
+  'rust-for-c-developers/c-pointer-length-to-slices': ['practise-rust-in-browser-playground-lesson-copies'],
 };
 export const lessonRelatedPosts = (course: string, lesson: string): readonly string[] => related[`${course}/${lesson}`] ?? [];

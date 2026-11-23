@@ -147,6 +147,18 @@ export default function LearnWithAIPage() {
         <p className="card-meta">Agents follow the <a href="/api/academy/v1/teaching-contract.md">Crabrix teaching contract</a> (version {teachingContractVersion()}). Developers can read the public <a href="/api/academy/v1/index.json">Academy API</a>.</p>
       </section>
 
+      <section className="unit-panel" aria-labelledby="reading">
+        <h2 id="reading">Read more</h2>
+        <div className="lesson-list">
+          {[["learn-rust-with-ai-agent-claude-codex-cursor", "Learn Rust with AI: Claude, Codex and Cursor with Crabrix Academy"],
+            ["rust-for-nodejs-developers-ownership-result-async", "Rust for Node.js developers: ownership, Result and async side by side"],
+            ["rust-for-c-developers-ownership-malloc-free", "Rust for C developers: malloc and free rules the compiler checks"],
+            ["practise-rust-in-browser-playground-lesson-copies", "Practise Rust lessons in your browser"],
+            ["what-is-rust-compiled-no-garbage-collector-safe", "What is the Rust programming language?"]].map(([slug, title]) =>
+            <Link prefetch={false} className="lesson-link path-link" key={slug} href={`/blog/${slug}/`}><span>{title}</span></Link>)}
+        </div>
+      </section>
+
       <section className="unit-panel with-ai-faq" aria-labelledby="faq">
         <h2 id="faq">Questions about learning Rust with AI</h2>
         {faq.map(item => <div key={item.q}><h3>{item.q}</h3><p>{item.a}</p></div>)}
