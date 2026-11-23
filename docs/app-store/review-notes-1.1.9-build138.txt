@@ -1,0 +1,11 @@
+Crabrix is a Rust programming and learning environment. No account or sign-in is required. Rust source is visible and editable; compilation and execution use the bundled local compiler and bounded WASI runtime.
+
+What is new in 1.1.9:
+
+1. Two bridge courses. In Learn, download "Rust for C Developers" or "Rust for Node.js Developers" (the signed catalog is bundled in this build). Each lesson shows C or JavaScript/TypeScript next to Rust. Completing a bridge lesson marks the Academy lessons it covers as "Known from C" / "Known from Node.js"; those marks count toward the path but give no XP or achievements. Rust Basics starts with a new lesson, "What Rust Is".
+
+2. Learn with AI (optional). At the bottom of Learn, "Learn with your AI agent" explains how to connect an AI client the user already has (Claude, Claude Code, Codex, Cursor, others) to Crabrix Academy, a public read-only lesson service at https://crabrix.com/mcp/academy. The screen only shows text, copies setup steps and prompts to the clipboard, and offers links that open claude.ai or chatgpt.com in the browser or the installed app. Crabrix contains no AI model, sends no prompts or code anywhere, and needs no account. Each lesson has a sparkles button, "Learn this lesson with AI", with a prompt containing only that lesson's public title, ID and web address. Under Continue learning, the user may export a small JSON learning-state file through the share sheet; "Include my completed lessons" is off by default. When the screen opens, the app reads https://crabrix.com/api/academy/v1/status.json (no identifiers) to learn whether the feature is paused; offline, the screen still works. An optional feedback card opens a Mail draft only.
+
+3. iPhone code screen: while a project is open in portrait, the Projects/Learn/Settings tabs are replaced by Code, Problems, Output and Terminal; close the editor with × to return. Flashcards ask each lesson's own questions.
+
+Existing progress, answers, projects, Flashcards and Atlas recordings are retained after the update. The app collects no data; AI features are optional and the rest of the app works offline.

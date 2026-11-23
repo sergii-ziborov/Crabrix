@@ -1,5 +1,2183 @@
 [
   {
+    "slug": "learn-rust-with-ai-agent-claude-codex-cursor",
+    "title": "Learn Rust with AI: Claude, Codex and Cursor with Crabrix Academy",
+    "date": "2026-11-24",
+    "publishedDate": "2026-11-24",
+    "modifiedDate": "2026-11-24",
+    "readingMinutes": 14,
+    "summary": "Learn Rust with AI that teaches from real lessons: connect Claude, Claude Code, Codex or Cursor to Crabrix Academy for graded hints, practice and honest progress.",
+    "relatedSlugs": [
+      "crabrix-ai-agents-local-mcp-remote-workflows",
+      "crabrix-mcp-two-agents-local-rust-workflows",
+      "from-lesson-to-project",
+      "ownership-in-a-real-program"
+    ],
+    "sections": [
+      {
+        "heading": "Learn Rust with AI that teaches from a real curriculum",
+        "paragraphs": [
+          "You can learn Rust with AI in two quite different ways. You can ask a chat model to teach you, and it will produce fluent explanations and exercises from memory. Or you can connect the same agent to a curriculum it has to follow: real lessons with stable URLs, exercises with success criteria, graded hints and a compiler you run yourself. Since this week, Claude, Claude Code, Codex, Cursor and other MCP clients can connect to Crabrix Academy and teach from its lessons, while you write the code.",
+          "AI stays optional. Every lesson, quick check and compiler lab, and the Playground, work exactly as before without it."
+        ],
+        "image": {
+          "src": "/images/blog/november-2026/learn-rust-with-ai-agent-claude-codex-cursor/cover.png",
+          "alt": "An orange paper crab mentor beside a learner at a desk, pointing at a chat window on a laptop that is linked to a Rust lesson card",
+          "caption": "Original generated illustration: a crab mentor and a learner at a desk, with the chat window linked to a real Rust lesson card.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Learn Rust with your AI agent",
+            "url": "/learn/with-ai/"
+          },
+          {
+            "title": "All Crabrix Academy courses",
+            "url": "/learn/"
+          }
+        ]
+      },
+      {
+        "heading": "Why a bare chat makes a weak AI Rust tutor",
+        "paragraphs": [
+          "A general chat model knows a lot of Rust, and that is part of the problem. Ask it for an exercise and it invents one, with no fixed success criterion. Ask for help and it tends to hand over finished code, because a complete answer looks helpful. Ask whether your solution is correct and it may say yes without anything having been compiled. The next day it has no idea which lessons you finished.",
+          "An agent connected to a curriculum has fewer ways to drift. It looks the lesson up, links the original and takes the exercise from it. Its hints come from the lesson's own material in a fixed order, the compiler output you discuss is the output you produced, and its review is labelled \"AI reviewed\", which is not the same as passing. The model is no less fallible, but the facts now live in a source you can check."
+        ]
+      },
+      {
+        "heading": "What Crabrix Academy MCP gives your agent",
+        "paragraphs": [
+          "Crabrix Academy MCP is a set of read-only tools in Crabrix MCP 0.6.0, the npm package `crabrix`. They read the public Academy on crabrix.com: 839 lessons, of which 239 are Rust lessons and 600 are Algorithm Atlas steps, plus 46 example projects and 8 learning paths. There is no account, sign-in or API key. The `crabrix_academy_*` tools find lessons (`catalog`, `search`), return a lesson, its exercise and graded hints (`get_lesson`, `get_exercise`, `get_hint`), plan study (`learning_path`, `next`), list examples, return Playground links, review an attempt against the lesson's rubric and handle an AI Learning State.",
+          "The remote server at `https://crabrix.com/mcp/academy` speaks Streamable HTTP, needs nothing installed and exposes only the Academy tools, with no access to Playground rooms. The local server, `npx -y crabrix@0.6.0 academy`, runs the same tools over stdio with Node.js 22 or newer, plus `crabrix_academy_import_progress_backup`, which reads a backup file from your disk and is never offered over HTTP. Both follow the Crabrix teaching contract, version 1.1.0: real lessons with their URLs, hints before solutions, no claims of completion."
+        ],
+        "links": [
+          {
+            "title": "Rust Basics course",
+            "url": "/learn/basics/"
+          },
+          {
+            "title": "Ownership Mastery course",
+            "url": "/learn/ownership/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "MCP transports: stdio and Streamable HTTP",
+            "url": "https://modelcontextprotocol.io/specification/2025-11-25/basic/transports"
+          },
+          {
+            "title": "Crabrix SDK and MCP server source",
+            "url": "https://github.com/sergii-ziborov/crabrix-sdk"
+          }
+        ]
+      },
+      {
+        "heading": "Claude and Claude Code: add the Academy in one step",
+        "paragraphs": [
+          "In Claude on the web, desktop or mobile, open Customize, then Connectors, choose + and then Add custom connector. Name it Crabrix Academy and paste `https://crabrix.com/mcp/academy`. No sign-in follows. A connector you add on the web is also available in the Claude app on your phone or tablet.",
+          "For Claude Code, the command below adds the Academy as a remote MCP server. Alternatively, install the Crabrix plugin, version 0.6.0 or newer, by running `/plugin marketplace add sergii-ziborov/crabrix-sdk` and then `/plugin install crabrix@crabrix` inside a session. It adds a local Academy server, the `crabrix-learn-rust` skill with the teaching rules and the shared Playground tools; an existing installation keeps its handoff skill and rooms. Pick one route, or the agent sees every Academy tool twice."
+        ],
+        "code": "claude mcp add --transport http crabrix-academy https://crabrix.com/mcp/academy\n",
+        "codeLanguage": "shell",
+        "sources": [
+          {
+            "title": "Connect Claude Code to tools via MCP",
+            "url": "https://code.claude.com/docs/en/mcp"
+          }
+        ]
+      },
+      {
+        "heading": "Codex, Cursor and other clients: one Rust MCP server URL",
+        "paragraphs": [
+          "Codex takes the same URL: `codex mcp add crabrix-academy --url https://crabrix.com/mcp/academy`. To run the Academy on your own computer instead, register `codex mcp add crabrix-academy -- npx -y crabrix@0.6.0 academy`, which needs Node.js 22 or newer. If you already have a `crabrix` server registered for Playground rooms, it stays as it is; the Academy entry is separate.",
+          "Cursor reads MCP servers from `~/.cursor/mcp.json`. Add the entry below and restart Cursor. Any other client that supports remote MCP servers over Streamable HTTP without authentication can use the same URL, and clients that only run local servers can start the same read-only tools with `npx -y crabrix@0.6.0 academy`. To test a setup, ask the agent to list the Crabrix Academy courses: a working connection answers from `crabrix_academy_catalog`, not from memory."
+        ],
+        "code": "{\n  \"mcpServers\": {\n    \"crabrix-academy\": {\n      \"url\": \"https://crabrix.com/mcp/academy\"\n    }\n  }\n}\n",
+        "codeLanguage": "json",
+        "sources": [
+          {
+            "title": "Codex: Model Context Protocol",
+            "url": "https://developers.openai.com/codex/mcp"
+          },
+          {
+            "title": "Cursor: Model Context Protocol",
+            "url": "https://cursor.com/docs/context/mcp"
+          }
+        ]
+      },
+      {
+        "heading": "Four prompts to start a Rust session",
+        "paragraphs": [
+          "The Learn with AI page offers four plain-text prompts that work in any connected client. For a beginner: \"Teach me Rust through Crabrix Academy. Start from the basics, give me practical exercises, and help me understand each concept before moving on.\" For a Node.js developer: \"I am experienced with Node.js and TypeScript. Teach me Rust through Crabrix Academy using concepts familiar to backend developers. Give me practical exercises and use the Crabrix Playground when appropriate.\"",
+          "For a C developer: \"I have experience with C. Teach me Rust through memory management, ownership, borrowing, lifetimes and system programming. Use Crabrix Academy lessons and practical examples.\" And to pick up where you stopped: \"Help me continue my Crabrix Rust learning using my available progress and previous exercises. Do not assume I have completed lessons unless the learning state confirms it.\" The last sentence stops the agent guessing your history.",
+          "Every lesson page also has a Learn this lesson with AI prompt with the lesson's IDs, link, goal and practice option, which asks for hints before any solution and nothing marked as passed. Clients with MCP prompt support also get `learn_rust_with_crabrix` (background and mode) and `continue_crabrix_learning`."
+        ],
+        "links": [
+          {
+            "title": "The four prompts on Learn with AI",
+            "url": "/learn/with-ai/"
+          },
+          {
+            "title": "What Rust Is",
+            "url": "/learn/basics/what-is-rust/"
+          },
+          {
+            "title": "Rust for Node.js Developers",
+            "url": "/learn/rust-for-nodejs-developers/"
+          },
+          {
+            "title": "Rust for C Developers",
+            "url": "/learn/rust-for-c-developers/"
+          }
+        ]
+      },
+      {
+        "heading": "Teaching modes: guided, Socratic, pair programming and review",
+        "paragraphs": [
+          "You choose how the agent teaches, and it switches only when you ask. Guided is the default: the agent explains one idea at a time, asks a short question, gives the lesson's exercise and helps step by step. In Socratic mode the agent asks questions that lead you to the answer and explains only after you have tried. It suits borrowing, where the rule clicks once you have predicted the compiler's objection.",
+          "Review mode starts from your solution: the agent reads it, points to concrete issues, explains why they matter and suggests the next lesson. Pair programming means editing code together in a Crabrix Playground, and only in a room you share with the agent or ask it to create. The Academy server has no room tools, so pairing needs the regular Crabrix MCP server, included in the Claude Code plugin, or an agent link from Connect AI. For most learning, guided or Socratic mode is enough."
+        ],
+        "links": [
+          {
+            "title": "Connect AI to a shared Playground",
+            "url": "/ai/"
+          }
+        ]
+      },
+      {
+        "heading": "Graded hints from 1 to 5, and why the solution needs an explicit ask",
+        "paragraphs": [
+          "When you are stuck, the agent calls `crabrix_academy_get_hint` one level at a time, and every level is built from the lesson's own material. Level 1, direction, repeats the lesson's rule and its first trace step. Level 2, concept, gives the opening of the lesson's explanation. Level 3, structure, lists the trace steps in order. Level 4, the detailed hint, names the common misconception, its correction and the lesson's feedback, and adds the transfer challenge. Level 5 is solution material: the lesson's worked example or, for an Algorithm Atlas step, the expected answer and the Rust sketch.",
+          "Level 5 sits behind a flag. A request without `revealSolution: true` returns no material, only a note telling the agent to ask whether you want it and otherwise to offer level 4. The teaching contract allows the flag only after you explicitly ask for the solution. Reading a correct program teaches far less than producing one, and being stuck for a while is where much of the learning happens. Even level 5 is labelled honestly: a worked example shows the rule but is not the graded answer, and the app's grading harnesses are private."
+        ],
+        "image": {
+          "src": "/images/blog/november-2026/learn-rust-with-ai-agent-claude-codex-cursor/teaching-loop.png",
+          "alt": "Diagram of the teaching loop: LESSON, HINT, YOUR CODE, AI REVIEW and APP CHECK cards joined by arrows, with a return arrow to the lesson",
+          "caption": "Original generated diagram: the teaching loop runs from lesson and hint to your code and an AI review; only the app check records progress.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "An example session: the Borrowing lesson and E0502",
+        "paragraphs": [
+          "A shortened, illustrative session in Claude Code, Guided mode. The lesson text, task, hint and compiler message are real; the agent's wording is typical, not recorded.",
+          "You: I write TypeScript for a living. Teach me borrowing, and do not give me the answer. Agent [`crabrix_academy_search`, then `crabrix_academy_get_lesson` with view `teaching`]: This is Borrowing in Ownership Mastery, at crabrix.com/learn/ownership/borrowing/. Its rule: \"Many shared borrows or one mutable borrow, never both at once.\" In TypeScript any reference to an array can push to it; Rust allows many readers, but a writer needs exclusive access. Why could `push` be dangerous while something points at element 0?",
+          "You: Because the vector may move to a bigger buffer, and the old reference would point at freed memory? Agent [`crabrix_academy_get_exercise`, `crabrix_academy_open_playground`]: Yes, close to the lesson's recall answer. The task: \"Repair E0502 with the smallest edit that keeps the push and the printed value.\" The starter takes `let first = &items[0];`, pushes \"compiler\", then prints `first`. The Playground link opens a practice copy of the lesson's example; put the starter in `main` and press Run.",
+          "You: Run says error[E0502]: cannot borrow `items` as mutable because it is also borrowed as immutable. A hint, please, not the fix. Agent [`crabrix_academy_get_hint`, level 1]: From the lesson: `first` borrows `items` at `let first = &items[0];`, and that shared borrow stays active until `println!(\"{first}\");`, its last use. Where is that last use compared with the push?",
+          "You: After it. I moved the `println!` above the push and Run printed crab. Agent [`crabrix_academy_review_attempt` with `ran: \"yes\"`]: That is the minimal change the lesson describes: the shared borrow ends at its last use, before the mutable one starts, with no clone. Status: `compiled_by_learner`, not a pass; finish the lesson in the Crabrix app to record it. Next in the course is Slices.",
+          "Below is the learner's version, with an extra line showing the push happened. With rustc 1.99.0 and `--edition 2024` it printed `crab`, then `3 items: [\"crab\", \"rust\", \"compiler\"]`; it also builds for wasm32-wasip1. The starter fails with exactly the E0502 message above, and rustc marks the `println!` with \"immutable borrow later used here\". The agent never wrote the fix, invented an exercise or called the lesson complete."
+        ],
+        "code": "fn main() {\n    let mut items = vec![\"crab\", \"rust\"];\n    let first = &items[0];\n    println!(\"{first}\"); // last use of the shared borrow\n    items.push(\"compiler\"); // the mutable borrow starts here, after it\n    println!(\"{} items: {items:?}\", items.len());\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "Borrowing lesson",
+            "url": "/learn/ownership/borrowing/"
+          },
+          {
+            "title": "Slices, the next lesson",
+            "url": "/learn/ownership/slices/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "The Rust Book: references and borrowing",
+            "url": "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html"
+          },
+          {
+            "title": "Rust error code E0502",
+            "url": "https://doc.rust-lang.org/error_codes/E0502.html"
+          }
+        ]
+      },
+      {
+        "heading": "Practise in the Playground: practice copies, Example copies and no rooms",
+        "paragraphs": [
+          "`crabrix_academy_open_playground` returns a link such as `/playground/?lesson=ownership/borrowing`, and its `kind` says what opens. Besides a lesson's own project (`lesson-project`) and Atlas inputs (`algorithm-trace`), 190 lessons gained a `practice-copy` this week: the lesson's practice code or worked example, unchanged, placed inside a program when it is a fragment. All 190 were checked with rustc for wasm32-wasip1 and then in the browser Playground. 189 compile; Why Borrowing Works is a fix-me exercise whose copy deliberately does not, and its notice says so.",
+          "`/playground/?example=<id>` likewise opens a copy of any of the 46 example projects. Every copy is a new, unsaved document that never overwrites your saved drafts or changes the original. A copy is served only while the lesson's code matches the checked version, so an edited lesson never opens a stale starter.",
+          "Opening a link never creates a shared room, deliberately. A room is a capability: whoever holds its link can read the source, and an agent link lets an agent edit it. That should be your decision, not a side effect of practice. You open the link in your own browser, and Run and Debug happen on your device. To bring the agent into the editor, share the Playground yourself."
+        ],
+        "links": [
+          {
+            "title": "Open the Playground",
+            "url": "/playground/"
+          },
+          {
+            "title": "Why Borrowing Works, the fix-me exercise",
+            "url": "/learn/interview/q-borrowing/"
+          },
+          {
+            "title": "Variables, a lesson with a practice copy",
+            "url": "/learn/basics/variables/"
+          }
+        ]
+      },
+      {
+        "heading": "Honest progress: AI reviewed is not passed",
+        "paragraphs": [
+          "Crabrix separates what an agent may say from what counts as progress. Only the Crabrix app's own checks record a lesson as completed: a quick check answered, a compiled lab whose private tests pass, or a borrow exercise the compiler accepts with the expected output. The agent cannot write progress anywhere, and the tools never return \"verified\" or \"passed\".",
+          "`crabrix_academy_review_attempt` takes what you report (compiled, ran, output matched, app check) and returns the lesson's rubric with one of three statuses. `compiled_by_learner`: you said it compiled or ran, and the agent reviewed it. `ai_reviewed`: reviewed, with no compiler result reported. `not_verified`: it does not compile yet, so the first error comes first. If you report that the app check passed, the tool replies that the record lives in Crabrix and it cannot confirm it. Source code never goes to this tool.",
+          "The teaching contract also asks agents to separate three things in every answer: what the compiler or a run actually printed, what you told them, and what they reasoned. The habit is worth copying: if an agent says your loop is correct, ask whether anything was compiled."
+        ]
+      },
+      {
+        "heading": "Continue later with an AI Learning State",
+        "paragraphs": [
+          "Nothing is synchronised between the app, the website and your agent, so a new session knows only what you give it. You can name the lesson you are on, or paste an AI Learning State: a JSON file, `crabrix-learning-state.json`, that you own. It holds your path, mode, current lesson, a summary, concepts to review, evidence of what was discussed, compiled, run or AI reviewed, and optionally a copy of the lessons the app recorded.",
+          "In Crabrix 1.1.9 the app can export it from Learn, Learn with your AI agent, in the Continue learning section. Completed lessons are included only after you switch on Include my completed lessons; the export holds lesson IDs, not answers, code or projects, and it never changes your progress in the app. Copy prompt puts the state under the Continue learning prompt; Share file sends the JSON. On a computer, the local server can read a `.crabrixprogress` backup file you name, without uploading it.",
+          "Agents write only the context and evidence; `officialProgress`, the copy from the app or a backup, stays as received. States combine only through `crabrix_academy_learning_state` with `action: \"merge\"`, which only adds official lessons, so an older or partial file cannot remove one. With the local 0.6.0 server, merging an older export holding one completed lesson with the newer state below, whose `officialProgress` is null, kept that lesson, took the newer summary and added `borrowing` to the concepts to review beside `shadowing`. The file never holds code, links, keys or passwords."
+        ],
+        "code": "{\n  \"format\": \"crabrix.ai-learning-state\",\n  \"schemaVersion\": 1,\n  \"updatedAt\": \"2026-11-24T19:40:00Z\",\n  \"producer\": \"claude-code\",\n  \"learningPath\": \"rust-for-nodejs\",\n  \"teachingMode\": \"guided\",\n  \"currentLesson\": { \"courseId\": \"ownership\", \"lessonId\": \"borrowing\" },\n  \"learner\": { \"background\": \"nodejs\", \"goal\": \"Write backend services in Rust\" },\n  \"aiSession\": {\n    \"lastSummary\": \"Fixed E0502 by ending the shared borrow before push.\",\n    \"suggestedNextLesson\": { \"courseId\": \"ownership\", \"lessonId\": \"slices\" },\n    \"conceptsNeedingReview\": [\"borrowing\"]\n  },\n  \"officialProgress\": null,\n  \"evidence\": [\n    { \"courseId\": \"ownership\", \"lessonId\": \"borrowing\", \"kind\": \"ran_by_learner\", \"at\": \"2026-11-24T19:35:00Z\" }\n  ]\n}\n",
+        "codeLanguage": "json"
+      },
+      {
+        "heading": "Learning Rust on a phone only",
+        "paragraphs": [
+          "A computer is not required. Add the connector once in Claude, on the web or in the mobile app, and use it from the Claude app. Without a connector, a copied lesson prompt still gives any AI app the lesson's link and goal, but the agent cannot fetch the lesson itself. In the next app version, Crabrix 1.1.9, rolling out through the App Store, the Learn tab gains a Learn with your AI agent entry with setup steps for each client and the prompts, and lessons gain a Learn this lesson with AI button marked with a sparkle. Its prompt holds only the lesson's public details, ready to copy into your AI app.",
+          "To continue across days, paste the state exported from the app with the Continue learning prompt and, at the end, ask the agent for the updated JSON. Keep it in your notes for next time; the app does not import it, and nothing an agent writes reaches your progress. The screen is static content with copy and share actions: it needs no network, adds no SDK and sends no events, so the app keeps its Data Not Collected label. Lessons that reached the website first, such as the bridge courses, open at their URLs until 1.1.9 arrives."
+        ],
+        "image": {
+          "src": "/images/blog/november-2026/learn-rust-with-ai-agent-claude-codex-cursor/phone-learning.png",
+          "alt": "An orange paper crab on a train seat holding a phone, between a lesson app screen and a chat screen exchanging small JSON cards",
+          "caption": "Original generated illustration: learning on a phone alone, with a learning state copied from the app into a chat and an updated copy kept for later.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Privacy: what the Academy server sees and what it does not",
+        "paragraphs": [
+          "The Academy server answers requests for public lessons, exercises, hints, examples and paths. It has no accounts and holds no user data. It does not see your Playground code, which runs on your device, your app progress or your rooms; the remote endpoint has no room access.",
+          "With the remote server, the arguments the agent sends, such as a search query, lesson IDs you finished or a learning state to validate, reach the Crabrix MCP process to compute the reply and are not stored. With the local server they stay on your computer, and only requests for public lesson data go to crabrix.com. Returned links carry `via=ai`, so the website can count agent visits in daily totals; it is not an identifier, and the counter stores no cookie, IP address, lesson ID or code.",
+          "The largest data flow is the one you control: whatever you paste into a chat goes to your AI provider under its own terms. Paste the exercise and your attempt, not credentials or a private project. The contract also tells agents not to ask for passwords, tokens or room links unless you want to pair."
+        ]
+      },
+      {
+        "heading": "Eight learning paths over the same lessons",
+        "paragraphs": [
+          "A learning path is another order through existing lessons, not a separate course, and a lesson you finished anywhere counts on every path that contains it. Rust from Zero has 52 steps for people new to Rust or to compiled languages. Rust for Node.js Developers, 47 steps, and Rust for C Developers, 45, start with the bridge courses, 20 lessons each, which put your current habits next to Rust and credit the Academy lessons they cover. Rust for Experienced Programmers, 28 steps, skips the syntax tour.",
+          "Rust Backend Development, 27 steps, covers errors with context, CLIs, HTTP, SQL and async backpressure. Async Rust, 16, covers futures, cancellation safety and graceful shutdown. Systems Programming, 22, covers macros, unsafe Rust, FFI, layout and WebAssembly. Rust Interview Preparation, 52, gathers the interview topics.",
+          "To start, open the Learn with AI page, add the connector for your client and paste a prompt. Read the lesson the agent links, write the code yourself, ask for hints one level at a time and finish the lesson in the app when you want it recorded."
+        ],
+        "links": [
+          {
+            "title": "From mutation to borrowing, for Node.js developers",
+            "url": "/learn/rust-for-nodejs-developers/node-mutation-to-borrowing/"
+          },
+          {
+            "title": "From pointers to references, for C developers",
+            "url": "/learn/rust-for-c-developers/c-pointers-to-references/"
+          },
+          {
+            "title": "Concurrency and Async course",
+            "url": "/learn/concurrency/"
+          },
+          {
+            "title": "Set up your agent",
+            "url": "/learn/with-ai/"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "rust-for-nodejs-developers-ownership-result-async",
+    "title": "Rust for Node.js developers: ownership, Result and async side by side",
+    "date": "2026-11-23",
+    "publishedDate": "2026-11-24",
+    "modifiedDate": "2026-11-24",
+    "readingMinutes": 15,
+    "summary": "Rust for Node.js developers: TypeScript next to Rust for ownership, Option, Result, traits, lazy futures and Cargo, with tested examples and a migration checklist.",
+    "relatedSlugs": [
+      "ownership-in-a-real-program",
+      "result-errors-that-help",
+      "rust-futures-cooperative-work",
+      "rust-async-cancellation-safe-timeouts",
+      "rust-serde-json-validation-boundaries"
+    ],
+    "sections": [
+      {
+        "heading": "Rust for Node.js developers: what changes first",
+        "paragraphs": [
+          "Rust for Node.js developers is less about new syntax than about decisions that JavaScript makes for you. In Node.js, V8 decides when memory is freed, any function may throw, a Promise starts running as soon as it is created, and TypeScript's types disappear before the code runs. Rust moves each of those decisions into code the compiler checks: an owner frees each value at a known point, failure is part of the return type, a future does nothing until it is polled, and types survive into the compiled program. Whether you are looking for Rust for JavaScript developers or for a route from TypeScript to Rust, these are the four shifts to learn first.",
+          "This guide follows the free Crabrix course Rust for Node.js Developers: 20 lessons in five units, each of which puts a Node.js habit next to its Rust counterpart, names exactly what changes and ends with a small port. Many lessons credit the Academy lessons that cover the same ground in more depth, and we link both kinds below.",
+          "Every Rust program in this article was compiled and run with rustc 1.99.0 in edition 2024, and also checked for wasm32-wasip1, the target the Crabrix Playground compiles to. Every TypeScript snippet passed `tsc --strict` (version 5.9) and ran on Node.js 22.13, and quoted output comes from those runs. Similar constructs are not identical, so each section says where the comparison stops."
+        ],
+        "image": {
+          "src": "/images/blog/november-2026/rust-for-nodejs-developers-ownership-result-async/cover.png",
+          "alt": "An orange paper crab leads a developer with a laptop away from a glowing carousel of envelopes and clocks towards a lamp-lit Rust workshop with tools and crates",
+          "caption": "Original generated illustration: leaving the always-turning event loop for a workshop where every tool has one owner and a place to be put away.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Rust for Node.js Developers course",
+            "url": "/learn/rust-for-nodejs-developers/"
+          },
+          {
+            "title": "Node.js runtime vs compiled Rust",
+            "url": "/learn/rust-for-nodejs-developers/node-what-rust-is/"
+          },
+          {
+            "title": "What Rust Is",
+            "url": "/learn/basics/what-is-rust/"
+          }
+        ]
+      },
+      {
+        "heading": "From TypeScript to Rust: types that are checked, not erased",
+        "paragraphs": [
+          "`node app.js` starts a runtime: V8 interprets your file and compiles hot functions while it runs, and Node.js supplies the event loop and the garbage collector. `cargo build` works ahead of time and writes a native executable, or a WebAssembly module, that runs without Rust or Node.js installed. A typo in an untested branch is a `TypeError` in JavaScript on the day that branch runs; in Rust it stops the build. Our test with `sum.to_strng()` failed with E0599, no method named `to_strng` found for type `u32` in the current scope, and rustc suggested `to_string`.",
+          "TypeScript narrows the gap, but its types are erased. The snippet below passes `tsc --strict`, yet `JSON.parse(raw) as User` is an assertion that nothing verifies: `user.id + 1` printed `string 421`, and the value typed `any` failed at runtime with `Cannot read properties of null (reading 'toUpperCase')`. Rust has no `any`. Its `as` is a real conversion between primitive types, such as `u64` to `u32`, which truncates, and casting a `&str` to a `u32` does not compile. Outside text becomes a typed value only through a step that returns a `Result`, such as `parse` or `serde_json::from_str`.",
+          "Read each arrow in the infographic as 'is replaced by a different design', not 'is the same as'. The sections that follow pair a short TypeScript snippet with the Rust code that replaces it."
+        ],
+        "code": "interface User {\n  id: number;\n  name: string;\n}\n\nconst raw = '{\"id\": \"42\", \"name\": null}';\nconst user = JSON.parse(raw) as User; // an assertion that nothing checks\nconsole.log(typeof user.id, user.id + 1); // string 421\n\nconst label: any = user.name;\ntry {\n  console.log(label.toUpperCase()); // type-checks, fails at runtime\n} catch (err) {\n  console.log((err as Error).message);\n}\n",
+        "codeLanguage": "typescript",
+        "image": {
+          "src": "/images/blog/november-2026/rust-for-nodejs-developers-ownership-result-async/infographic.png",
+          "alt": "Infographic with a TYPESCRIPT column and a RUST column: null leads to Option, throw leads to Result and Promise leads to Future",
+          "caption": "Original generated infographic: three TypeScript habits and the Rust designs that replace them, null with Option, throw with Result and Promise with Future.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "TypeScript types vs Rust types",
+            "url": "/learn/rust-for-nodejs-developers/node-types-are-checked-not-erased/"
+          },
+          {
+            "title": "Reading rustc",
+            "url": "/learn/basics/compiler-feedback/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "TypeScript handbook: type assertions",
+            "url": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-assertions"
+          },
+          {
+            "title": "Rust reference: type cast expressions",
+            "url": "https://doc.rust-lang.org/reference/expressions/operator-expr.html#type-cast-expressions"
+          }
+        ]
+      },
+      {
+        "heading": "No garbage collector: what V8 did for you",
+        "paragraphs": [
+          "In JavaScript, assignment copies a reference. Below, `alias` and `order` name one object, the spread copy `shallow` is a new outer object that still shares the `items` array, and `addItem` changes the caller's data without saying so in its signature; all three views printed the same two items. Nothing in the code decides when the object is freed. V8's garbage collector reclaims it some time after the last reference disappears, and a `FinalizationRegistry` callback for it may run late or never.",
+          "That is convenient for memory and awkward for everything else: files, sockets and locks still need `close()` or `try/finally`. Rust replaces the collector with a rule the compiler enforces. Every value has exactly one owner, and when the owner goes out of scope the value is dropped: its `Drop` implementation runs, its fields are dropped and its memory is released, at a line you can point to. The same mechanism closes a `File`, releases the lock held by a `MutexGuard` and frees a `Vec`, and there are no collection pauses."
+        ],
+        "code": "type Order = { id: number; items: string[] };\n\nfunction addItem(order: Order, item: string): void {\n  order.items.push(item); // changes the caller's object\n}\n\nfunction archive(order: Order): string {\n  return `archived #${order.id} with ${order.items.length} items`;\n}\n\nconst order: Order = { id: 7, items: [\"tea\"] };\nconst alias = order;          // a second reference to the same object\nconst shallow = { ...order }; // a new outer object, same items array\naddItem(alias, \"cake\");\nconsole.log(archive(order));  // archived #7 with 2 items\nconsole.log(shallow.items);   // [ 'tea', 'cake' ]\n// `order` is still usable; V8 frees it some time after the last reference goes\n",
+        "codeLanguage": "typescript",
+        "links": [
+          {
+            "title": "Garbage collection vs deterministic drop",
+            "url": "/learn/rust-for-nodejs-developers/node-no-garbage-collector/"
+          },
+          {
+            "title": "Drop & Scope",
+            "url": "/learn/ownership/drop-order/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "V8: the Orinoco garbage collector",
+            "url": "https://v8.dev/blog/trash-talk"
+          },
+          {
+            "title": "MDN: FinalizationRegistry",
+            "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry"
+          }
+        ]
+      },
+      {
+        "heading": "Ownership in Rust: moves, borrows and a drop you can predict",
+        "paragraphs": [
+          "The Rust version puts each choice in a signature. `add_item` takes `&mut Order`, an exclusive borrow for the duration of the call, and the call site repeats it as `&mut order`. `count` takes `&Order`, a shared borrow that can only read. `archive` takes `Order` by value, so `archive(order)` moves ownership into the function. The move copies the struct itself, an integer plus the `Vec`'s pointer, capacity and length, not the strings, and from that line on `order` is unusable in `main`.",
+          "Because `archive` owns the order, `drop order #7 (2 items)` printed as `archive` returned, before `main` printed the receipt. The clone, renumbered to 8, has its own `Vec` and `String`s, which makes it closer to `structuredClone` than to spread, and it was dropped at the closing brace of `main`. When we added a line that read `order.id` after the move, rustc refused with E0382, borrow of moved value: `order`, pointed at `archive(order)` and suggested borrowing or cloning instead.",
+          "Borrowing has one rule: any number of shared references `&T` or exactly one mutable reference `&mut T`, never both at once. It rules out the habit of appending to an array while a loop walks it, which is E0502 in Rust. Ask for the least access a function needs: `&str` or `&[T]` to read, `&mut` to change, and a value only when the function must keep or consume the data. Small `Copy` types such as integers and `bool` are duplicated on assignment, so nothing moves."
+        ],
+        "code": "#[derive(Clone, Debug)]\nstruct Order {\n    id: u32,\n    items: Vec<String>,\n}\n\nimpl Drop for Order {\n    fn drop(&mut self) {\n        println!(\"drop order #{} ({} items)\", self.id, self.items.len());\n    }\n}\n\nfn add_item(order: &mut Order, item: &str) {\n    order.items.push(item.to_string()); // exclusive borrow, only for this call\n}\n\nfn count(order: &Order) -> usize {\n    order.items.len() // shared borrow: read only\n}\n\nfn archive(order: Order) -> String {\n    format!(\"archived #{} with {} items\", order.id, order.items.len())\n} // `archive` owns `order`, so it is dropped here\n\nfn main() {\n    let mut order = Order { id: 7, items: vec![String::from(\"tea\")] };\n    add_item(&mut order, \"cake\");\n    let mut copy = order.clone(); // an independent copy, Vec and Strings included\n    copy.id = 8;\n    println!(\"{} items\", count(&order));\n    let receipt = archive(order); // move: `order` cannot be used after this line\n    println!(\"{receipt}\");\n    println!(\"end of main\");\n} // `copy` is dropped here\n",
+        "codeLanguage": "rust",
+        "image": {
+          "src": "/images/blog/november-2026/rust-for-nodejs-developers-ownership-result-async/ownership.png",
+          "alt": "An orange paper crab carries a single parcel along a glowing track from a station holding only a dashed outline to an empty tray at a second station",
+          "caption": "Original generated illustration: a move hands the one parcel to the next function, leaving only an outline behind, and the new owner releases it when done.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Shared references vs ownership",
+            "url": "/learn/rust-for-nodejs-developers/node-shared-references-to-ownership/"
+          },
+          {
+            "title": "Mutating arguments vs borrowing",
+            "url": "/learn/rust-for-nodejs-developers/node-mutation-to-borrowing/"
+          },
+          {
+            "title": "Ownership",
+            "url": "/learn/ownership/ownership/"
+          },
+          {
+            "title": "Moves Across Functions",
+            "url": "/learn/ownership/move-functions/"
+          },
+          {
+            "title": "Borrowing",
+            "url": "/learn/ownership/borrowing/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "The Rust Programming Language: What is ownership?",
+            "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html"
+          },
+          {
+            "title": "The Rust Programming Language: References and borrowing",
+            "url": "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html"
+          },
+          {
+            "title": "std::ops::Drop",
+            "url": "https://doc.rust-lang.org/std/ops/trait.Drop.html"
+          }
+        ]
+      },
+      {
+        "heading": "null, undefined and ?? in TypeScript",
+        "paragraphs": [
+          "With `strictNullChecks`, TypeScript marks absence in types such as `number | undefined`, and `?.` and `??` make optional data pleasant to read. Three problems remain. A missing property, `undefined` and `null` are different runtime values behind one optional type. The checks vanish after compilation, so data from outside can break them. And `||` falls back on every falsy value, so the buggy version below turns a configured `0` into `3`: the snippet printed `3 0 3`. `Map.get` with optional chaining printed `undefined` without complaint, which is convenient until that value reaches an addition and becomes `NaN`."
+        ],
+        "code": "interface Config {\n  network?: { retries?: number };\n}\n\nconst retryLimit = (c: Config): number => c.network?.retries ?? 3;\nconst retryLimitBuggy = (c: Config): number => c.network?.retries || 3;\n\nconst zero: Config = { network: { retries: 0 } };\nconsole.log(retryLimit({}), retryLimit(zero), retryLimitBuggy(zero)); // 3 0 3\n\nconst users = new Map([[1, \"ana\"]]);\nconsole.log(users.get(2)?.toUpperCase()); // undefined, no error\n",
+        "codeLanguage": "typescript",
+        "links": [
+          {
+            "title": "null, undefined and ?? vs Option",
+            "url": "/learn/rust-for-nodejs-developers/node-null-undefined-to-option/"
+          },
+          {
+            "title": "Truthiness vs bool, if and match",
+            "url": "/learn/rust-for-nodejs-developers/node-truthiness-to-bool-and-match/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "MDN: nullish coalescing operator",
+            "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing"
+          },
+          {
+            "title": "MDN: optional chaining",
+            "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining"
+          }
+        ]
+      },
+      {
+        "heading": "Option in Rust: absence is part of the type",
+        "paragraphs": [
+          "Rust has no `null`. A value that may be missing has type `Option<T>`, either `Some(value)` or `None`, and cannot be used as a `T` until you decide what absence means: adding `1` to an `Option<u32>` is E0369, cannot add `{integer}` to `Option<u32>`. The operators become methods. `a?.b` is `as_ref().and_then(...)` when `b` is itself optional, or `map` when it is not, and `x ?? 3` is `unwrap_or(3)`, or `unwrap_or_else` when the default is expensive to build.",
+          "`unwrap_or` replaces only `None`, so `Some(0)` stays `0` and the example printed `3 0`, like the correct TypeScript version rather than the `||` one. `HashMap::get` returns an `Option` too, and the `match` must handle both arms. Inside a function that returns `Option`, `?` returns `None` early, which is why `first_word_len(\"   \")` printed `None`. `Option` says whether a value is there, not why it is missing. When the caller needs a reason, return `Result`, or `Result<Option<T>, E>` when absence is normal and failure is a separate case."
+        ],
+        "code": "use std::collections::HashMap;\n\nstruct Network {\n    retries: Option<u32>,\n}\n\nstruct Config {\n    network: Option<Network>,\n}\n\nfn retry_limit(config: &Config) -> u32 {\n    // `?.` becomes `and_then`, `??` becomes `unwrap_or`; Some(0) stays 0\n    config.network.as_ref().and_then(|n| n.retries).unwrap_or(3)\n}\n\nfn first_word_len(text: &str) -> Option<usize> {\n    let word = text.split_whitespace().next()?; // returns None early\n    Some(word.len())\n}\n\nfn main() {\n    let empty = Config { network: None };\n    let zero = Config { network: Some(Network { retries: Some(0) }) };\n    println!(\"{} {}\", retry_limit(&empty), retry_limit(&zero));\n\n    let users = HashMap::from([(1, \"ana\")]);\n    match users.get(&2) {\n        Some(name) => println!(\"found {name}\"),\n        None => println!(\"no user 2\"),\n    }\n    println!(\"{:?} {:?}\", first_word_len(\"hello world\"), first_word_len(\"   \"));\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "Option & Result",
+            "url": "/learn/basics/option-result/"
+          },
+          {
+            "title": "Pattern Matching",
+            "url": "/learn/basics/pattern-matching/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "std::option::Option",
+            "url": "https://doc.rust-lang.org/std/option/enum.Option.html"
+          }
+        ]
+      },
+      {
+        "heading": "throw and try/catch: failure the signature does not show",
+        "paragraphs": [
+          "In JavaScript any function may throw anything, and nothing in its type says so: `parsePort` declares `number`, and callers learn about the exception by reading its body or watching it fail. The parsing is lenient as well. `Number(\"\")` is `0`, which the range check happens to reject, but `Number(\"0x50\")` is `80`, so the hexadecimal string was accepted as port 80. In strict TypeScript the `catch` variable has type `unknown`, hence `err as Error`.",
+          "Teams work around the silent signature with `@throws` comments or returned `{ ok, error }` objects. Rust builds that idea into the language: you cannot reach the value without deciding what to do about the error, and a `Result` that is ignored triggers a compiler warning."
+        ],
+        "code": "function parsePort(text: string): number {\n  const n = Number(text);\n  if (!Number.isInteger(n) || n < 1 || n > 65535) {\n    throw new Error(`invalid port: ${JSON.stringify(text)}`);\n  }\n  return n;\n}\n\nfor (const input of [\"8080\", \"\", \"0x50\", \"70000\"]) {\n  try {\n    console.log(JSON.stringify(input), \"->\", parsePort(input));\n  } catch (err) {\n    console.log(JSON.stringify(input), \"->\", (err as Error).message);\n  }\n}\n",
+        "codeLanguage": "typescript",
+        "links": [
+          {
+            "title": "try/catch vs Result",
+            "url": "/learn/rust-for-nodejs-developers/node-try-catch-to-result/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "TypeScript: useUnknownInCatchVariables",
+            "url": "https://www.typescriptlang.org/tsconfig/#useUnknownInCatchVariables"
+          }
+        ]
+      },
+      {
+        "heading": "Result and the ? operator instead of exceptions",
+        "paragraphs": [
+          "`parse_port` returns `Result<u16, PortError>`, either `Ok(port)` or `Err(reason)`. The error is an enum you design, so callers tell `NotANumber` from `OutOfRange` with `match` instead of comparing message strings, and `NotANumber` keeps the original `ParseIntError` as its cause. Parsing is strict: the empty string gave cannot parse integer from empty string, and `0x50` gave invalid digit found in string. One surprise runs the other way, because integer `parse` accepts a leading plus sign: `\"+8080\"` parsed as `8080` in our test, so validate the format first if your contract forbids a sign.",
+          "`?` is the visible form of exception propagation. In `parse_port`, `text.parse().map_err(PortError::NotANumber)?` returns early with the wrapped error. In `listen_address`, `split_once(':')` gives an `Option`, `ok_or` turns it into a `Result`, and `?` converts the error through `From` into the function's `String` error type. `?` compiles only where the return type can carry the error, so every call that can fail is marked. The run printed `Ok(\"localhost:3000\")`, an `Err` naming the port for `localhost:0`, and `Err(\"expected host:port\")`.",
+          "Panics are not exceptions either. `unwrap()`, `expect()`, an out-of-bounds index and integer overflow in a debug build all panic, which unwinds the thread or aborts the process. Keep them for bugs and use `Result` for anything a caller can reasonably handle: bad input, a missing file, a refused connection."
+        ],
+        "code": "use std::fmt;\nuse std::num::ParseIntError;\n\n#[derive(Debug)]\nenum PortError {\n    NotANumber(ParseIntError),\n    OutOfRange(u32),\n}\n\nimpl fmt::Display for PortError {\n    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {\n        match self {\n            PortError::NotANumber(e) => write!(f, \"not a number: {e}\"),\n            PortError::OutOfRange(n) => write!(f, \"{n} is outside 1..=65535\"),\n        }\n    }\n}\n\nfn parse_port(text: &str) -> Result<u16, PortError> {\n    let n: u32 = text.parse().map_err(PortError::NotANumber)?;\n    match u16::try_from(n) {\n        Ok(port) if port != 0 => Ok(port),\n        _ => Err(PortError::OutOfRange(n)),\n    }\n}\n\nfn listen_address(spec: &str) -> Result<String, String> {\n    let (host, port) = spec.split_once(':').ok_or(\"expected host:port\")?;\n    let port = parse_port(port).map_err(|e| format!(\"port {port:?}: {e}\"))?;\n    Ok(format!(\"{host}:{port}\"))\n}\n\nfn main() {\n    for input in [\"8080\", \"\", \"0x50\", \"70000\"] {\n        match parse_port(input) {\n            Ok(port) => println!(\"{input:?} -> {port}\"),\n            Err(err) => println!(\"{input:?} -> {err}\"),\n        }\n    }\n    println!(\"{:?}\", listen_address(\"localhost:3000\"));\n    println!(\"{:?}\", listen_address(\"localhost:0\"));\n    println!(\"{:?}\", listen_address(\"localhost\"));\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "Handling Failure",
+            "url": "/learn/basics/recoverable-errors/"
+          },
+          {
+            "title": "Error Design",
+            "url": "/learn/projects/errors/"
+          },
+          {
+            "title": "Error Context",
+            "url": "/learn/projects/error-context/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "The Rust Programming Language: Recoverable errors with Result",
+            "url": "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html"
+          },
+          {
+            "title": "std::result::Result",
+            "url": "https://doc.rust-lang.org/std/result/enum.Result.html"
+          }
+        ]
+      },
+      {
+        "heading": "Interfaces and duck typing in TypeScript",
+        "paragraphs": [
+          "TypeScript interfaces are structural. The two object literals below have no `implements` clause, yet both are `Shape`s because they have `area` and `name` with compatible types: duck typing with a compiler. On a class, `implements` is an extra check rather than the thing that creates the relationship. A `Shape[]` can mix any such objects, and each call is looked up on the object at runtime. The snippet printed `rect undefined`. Rust takes the opposite position."
+        ],
+        "code": "interface Shape {\n  area(): number;\n  name(): string;\n}\n\n// No `implements`: any value with these members is a Shape.\nconst square = { side: 3, area() { return this.side * this.side; }, name: () => \"square\" };\nconst rect = { w: 2, h: 5, area() { return this.w * this.h; }, name: () => \"rect\" };\n\nfunction largest(shapes: Shape[]): string | undefined {\n  let best: Shape | undefined;\n  for (const s of shapes) if (!best || s.area() > best.area()) best = s;\n  return best?.name();\n}\n\nconsole.log(largest([square, rect]), largest([])); // rect undefined\n",
+        "codeLanguage": "typescript",
+        "links": [
+          {
+            "title": "TypeScript interfaces vs traits",
+            "url": "/learn/rust-for-nodejs-developers/node-interfaces-to-traits/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "TypeScript handbook: type compatibility",
+            "url": "https://www.typescriptlang.org/docs/handbook/type-compatibility.html"
+          }
+        ]
+      },
+      {
+        "heading": "Traits in Rust: explicit implementations, static or dynamic dispatch",
+        "paragraphs": [
+          "Rust traits are nominal. `Square` is a `Shape` only because of `impl Shape for Square`; an inherent `area` method with the same signature does not count, and passing such a type where a `Shape` is required is E0277, the trait bound is not satisfied. Default methods such as `describe` take the place of a shared base class, and implementing standard traits such as `Display` plugs a type into existing generic code. A discriminated union, by contrast, becomes an `enum` rather than a trait.",
+          "How you use a trait is a design decision. `total_area<T: Shape>` is generic, like `<T extends Shape>`, but it is compiled separately for each concrete type and dispatched statically, so every item in the slice must be the same type. `largest` takes `&[Box<dyn Shape>]`, trait objects that carry a pointer to the value and to a table of its methods, which is how a mixed TypeScript array behaves. The program printed `Some(\"rect with area 10\") None`, then `5`. Neither form is automatically faster: generics can increase code size, and trait objects add an indirection."
+        ],
+        "code": "trait Shape {\n    fn area(&self) -> u32;\n    fn name(&self) -> &str;\n    // A default method, shared by every implementation.\n    fn describe(&self) -> String {\n        format!(\"{} with area {}\", self.name(), self.area())\n    }\n}\n\nstruct Square { side: u32 }\nstruct Rect { w: u32, h: u32 }\n\nimpl Shape for Square {\n    fn area(&self) -> u32 { self.side * self.side }\n    fn name(&self) -> &str { \"square\" }\n}\n\nimpl Shape for Rect {\n    fn area(&self) -> u32 { self.w * self.h }\n    fn name(&self) -> &str { \"rect\" }\n}\n\n// Generic: compiled once per concrete T; every item is the same T.\nfn total_area<T: Shape>(items: &[T]) -> u32 {\n    items.iter().map(|s| s.area()).sum()\n}\n\n// Trait objects: a mixed list, dispatched at runtime.\nfn largest(shapes: &[Box<dyn Shape>]) -> Option<String> {\n    shapes.iter().max_by_key(|s| s.area()).map(|s| s.describe())\n}\n\nfn main() {\n    let mixed: Vec<Box<dyn Shape>> = vec![Box::new(Square { side: 3 }), Box::new(Rect { w: 2, h: 5 })];\n    println!(\"{:?} {:?}\", largest(&mixed), largest(&[]));\n    println!(\"{}\", total_area(&[Square { side: 2 }, Square { side: 1 }]));\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "Traits",
+            "url": "/learn/ownership/traits/"
+          },
+          {
+            "title": "Trait Objects",
+            "url": "/learn/ownership/trait-objects/"
+          },
+          {
+            "title": "TypeScript unions vs enums",
+            "url": "/learn/rust-for-nodejs-developers/node-ts-unions-to-enums/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "The Rust Programming Language: Traits",
+            "url": "https://doc.rust-lang.org/book/ch10-02-traits.html"
+          },
+          {
+            "title": "The dyn keyword",
+            "url": "https://doc.rust-lang.org/std/keyword.dyn.html"
+          }
+        ]
+      },
+      {
+        "heading": "Promises and the Node.js event loop",
+        "paragraphs": [
+          "Calling an async function in JavaScript runs its body synchronously up to the first `await`, and the event loop built into Node.js drives the rest. That is why the snippet printed `fetching 1` and `fetching 2` before `both promises created`, and why `fetchPrice(3)` logged although nothing awaited it. A Promise is work that has already started. `Promise.all` starts nothing; it waits for promises that are already running.",
+          "Nor can a Promise be cancelled from outside: an `AbortSignal` only asks the called code to stop, and it may not listen. Because the event loop belongs to the runtime, a Node.js program never has to choose an executor."
+        ],
+        "code": "async function fetchPrice(id: number): Promise<number> {\n  console.log(`fetching ${id}`); // runs as soon as fetchPrice() is called\n  return 40 + id;\n}\n\nasync function total(): Promise<number> {\n  const a = fetchPrice(1); // already running\n  const b = fetchPrice(2); // already running\n  console.log(\"both promises created\");\n  return (await a) + (await b);\n}\n\nconst pending = total();\nconsole.log(\"created\");\npending.then((sum) => console.log(`total = ${sum}`));\nvoid fetchPrice(3); // runs too, although nothing awaits it\n",
+        "codeLanguage": "typescript",
+        "links": [
+          {
+            "title": "Promises vs futures",
+            "url": "/learn/rust-for-nodejs-developers/node-promises-to-futures/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Node.js: the event loop, timers and process.nextTick()",
+            "url": "https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick"
+          },
+          {
+            "title": "MDN: Promise",
+            "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"
+          }
+        ]
+      },
+      {
+        "heading": "Async in Rust: lazy futures and a runtime such as Tokio",
+        "paragraphs": [
+          "Calling a Rust `async fn` runs nothing. It returns a `Future`, a state machine that makes progress only when it is polled, normally through `.await`, and Rust has no built-in event loop to do the polling. Here a ten-line `block_on` polls in a loop with a no-op waker, which suits only futures that never wait for I/O. The output reverses the JavaScript order: `created` and `both futures created` printed before `fetching 1`, and the dropped future never printed `fetching 3`. Calling `save(\"invoice-7\");` without `.await` made rustc warn: unused implementer of `Future` that must be used, with the note futures do nothing unless you `.await` or poll them.",
+          "Real programs use a runtime. With Tokio and its `macros`, `rt-multi-thread` and `time` features, you mark `async fn main` with `#[tokio::main]`; the executor polls your futures and uses each `Waker` to resume work when a socket or timer is ready. The counterparts are close, not equal. `a.await + b.await` runs two futures in sequence. `tokio::join!(a, b)` polls both concurrently inside one task, the usual replacement for `Promise.all`. `tokio::spawn` starts a separate task without being awaited, possibly on another worker thread, so its future must be `Send` and `'static`.",
+          "Laziness also gives Rust cancellation: a dropped future is never polled again, and its local values are dropped. That is how `tokio::time::timeout` and `select!` cancel work. In a separate offline Cargo run with Tokio 1.54.1, `join!` completed both calls, and a 60 ms `timeout` around a 150 ms call reported the timeout after dropping the inner future. Keep data consistent between `.await` points, because a future can stop at any of them."
+        ],
+        "code": "use std::future::Future;\nuse std::pin::pin;\nuse std::task::{Context, Poll, Waker};\n\nasync fn fetch_price(id: u32) -> u32 {\n    println!(\"fetching {id}\");\n    40 + id\n}\n\nasync fn total() -> u32 {\n    let a = fetch_price(1); // nothing runs yet\n    let b = fetch_price(2);\n    println!(\"both futures created\");\n    a.await + b.await // one after the other, not like Promise.all\n}\n\n// A minimal executor for futures that never wait on I/O.\n// Real programs use a runtime such as Tokio instead.\nfn block_on<F: Future>(future: F) -> F::Output {\n    let mut future = pin!(future);\n    let mut cx = Context::from_waker(Waker::noop());\n    loop {\n        if let Poll::Ready(value) = future.as_mut().poll(&mut cx) {\n            return value;\n        }\n    }\n}\n\nfn main() {\n    let pending = total();\n    println!(\"created\");\n    println!(\"total = {}\", block_on(pending));\n    let unused = fetch_price(3);\n    drop(unused); // never polled: \"fetching 3\" is never printed\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "Futures",
+            "url": "/learn/concurrency/futures/"
+          },
+          {
+            "title": "Runtimes",
+            "url": "/learn/concurrency/async-runtime/"
+          },
+          {
+            "title": "Cancellation Safety",
+            "url": "/learn/concurrency/async-cancellation/"
+          },
+          {
+            "title": "Practise this lesson in the Playground",
+            "url": "/playground/?lesson=rust-for-nodejs-developers/node-promises-to-futures"
+          }
+        ],
+        "sources": [
+          {
+            "title": "std::future::Future",
+            "url": "https://doc.rust-lang.org/std/future/trait.Future.html"
+          },
+          {
+            "title": "The Rust Programming Language: async and await",
+            "url": "https://doc.rust-lang.org/book/ch17-00-async-await.html"
+          },
+          {
+            "title": "Tokio tutorial",
+            "url": "https://tokio.rs/tokio/tutorial"
+          }
+        ]
+      },
+      {
+        "heading": "Cargo vs npm: Cargo.toml, Cargo.lock and version requirements",
+        "paragraphs": [
+          "`Cargo.toml` plays the part of `package.json`, with `[dependencies]` and `[dev-dependencies]` sections, and `Cargo.lock` records the resolved versions like `package-lock.json`; commit it for applications. Crate sources are cached once per user under `~/.cargo/registry` and build output goes to `target/`, so there is no `node_modules`. `cargo add serde` does the job of `npm install serde`, `cargo build` fetches whatever is missing, and `run`, `test`, `check` and `fmt` are built-in subcommands. There is no `scripts` section and no `main` or `bin` field: `src/main.rs` is the default binary and `src/lib.rs` the library.",
+          "One rule catches almost everyone. In `package.json`, a bare `\"1.0.11\"` pins exactly that version. In `Cargo.toml`, a bare `\"1.0.140\"` already means `^1.0.140`, any release from 1.0.140 up to but not including 2.0.0, and an exact pin needs `\"=1.0.11\"`; `cargo metadata` reported `^1`, `^1.0.140` and `=1.0.11` for the manifest below. Dependencies must also be declared to be visible. Node can find an undeclared package in a parent `node_modules`, but Cargo passes only declared crates to rustc, so an undeclared one is an unresolved import, E0432."
+        ],
+        "code": "[package]\nname = \"tasks\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[dependencies]\nserde = { version = \"1\", features = [\"derive\"] }  # ^1: any 1.x release\nserde_json = \"1.0.140\"                            # ^1.0.140, not an exact pin\ntokio = { version = \"1\", features = [\"macros\", \"rt-multi-thread\", \"time\"] }\nitoa = \"=1.0.11\"                                  # an exact pin, like npm's \"1.0.11\"\n\n[dev-dependencies]\npretty_assertions = \"1\"\n",
+        "codeLanguage": "toml",
+        "links": [
+          {
+            "title": "npm and package.json vs Cargo",
+            "url": "/learn/rust-for-nodejs-developers/node-npm-to-cargo/"
+          },
+          {
+            "title": "Dependencies",
+            "url": "/learn/projects/dependencies/"
+          },
+          {
+            "title": "Lockfile Reproducibility",
+            "url": "/learn/projects/lockfile-reproducibility/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Cargo: specifying dependencies",
+            "url": "https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html"
+          },
+          {
+            "title": "Cargo: Cargo.toml vs Cargo.lock",
+            "url": "https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html"
+          },
+          {
+            "title": "npm: package.json",
+            "url": "https://docs.npmjs.com/cli/v10/configuring-npm/package-json"
+          }
+        ]
+      },
+      {
+        "heading": "Build a small Rust CLI that turns task lines into JSON",
+        "paragraphs": [
+          "The last example is the kind of program a Node.js developer would write as a quick script. It reads lines such as `1, Port the config loader, done`, validates each into a typed `Task` and prints JSON with the valid tasks and the rejected lines. It uses only the standard library, so a bare `rustc` builds it. `parse_task` borrows each line as `&str` and returns `Result<Task, String>`: `?` handles a bad id, `ok_or` turns a missing title into an error, and the status `match` refuses unknown values instead of defaulting them. The `Task` owns its title, so `to_string()` copies it out of the borrowed line.",
+          "Without arguments it used the built-in sample and printed one line of JSON, which `python3 -m json.tool` accepted: two tasks, one with escaped inner quotes, and two rejected lines, line 3 for the id `x` and line 4 for the status `later`. With a path argument it reads that file instead. When `main` returns `Err`, Rust prints the error's `Debug` form and exits with status 1; a missing file printed `Error: \"missing.txt: No such file or directory (os error 2)\"`.",
+          "In a real project, Serde derives `Serialize` and `Deserialize` for your structs, and `serde_json::from_str::<Task>` returns a `Result`, so JSON from outside is checked against the type instead of being asserted with `as`. That is the Rust answer to `JSON.parse(raw) as User`; the hand-written `json_string` only keeps this example free of dependencies."
+        ],
+        "code": "use std::{env, fs};\n\n#[derive(Debug, PartialEq)]\nenum Status {\n    Open,\n    Done,\n}\n\n#[derive(Debug)]\nstruct Task {\n    id: u32,\n    title: String,\n    status: Status,\n}\n\n/// Parses `id, title[, open|done]` into a Task, or says what is wrong.\nfn parse_task(line: &str) -> Result<Task, String> {\n    let mut fields = line.split(',').map(str::trim);\n    let id = fields.next().unwrap_or(\"\");\n    let id: u32 = id.parse().map_err(|e| format!(\"id {id:?}: {e}\"))?;\n    let title = fields.next().filter(|t| !t.is_empty()).ok_or(\"missing title\")?;\n    let status = match fields.next() {\n        None | Some(\"open\") => Status::Open,\n        Some(\"done\") => Status::Done,\n        Some(other) => return Err(format!(\"unknown status {other:?}\")),\n    };\n    Ok(Task { id, title: title.to_string(), status })\n}\n\n/// A JSON string literal: quotes, backslashes and control characters escaped.\nfn json_string(text: &str) -> String {\n    let mut out = String::from(\"\\\"\");\n    for c in text.chars() {\n        match c {\n            '\"' => out.push_str(\"\\\\\\\"\"),\n            '\\\\' => out.push_str(\"\\\\\\\\\"),\n            c if c.is_control() => out.push_str(&format!(\"\\\\u{:04x}\", c as u32)),\n            c => out.push(c),\n        }\n    }\n    out.push('\"');\n    out\n}\n\nconst SAMPLE: &str = \"1, Port the config loader, done\n2, Rename \\\"user_id\\\"\nx, Write tests\n3, Measure, later\n\";\n\nfn main() -> Result<(), String> {\n    // `tasks todo.txt` reads a file; without an argument the sample is used.\n    let input = match env::args().nth(1) {\n        Some(path) => fs::read_to_string(&path).map_err(|e| format!(\"{path}: {e}\"))?,\n        None => SAMPLE.to_string(),\n    };\n    let (mut tasks, mut rejected) = (Vec::new(), Vec::new());\n    for (index, line) in input.lines().enumerate() {\n        if line.trim().is_empty() {\n            continue;\n        }\n        match parse_task(line) {\n            Ok(task) => tasks.push(task),\n            Err(reason) => rejected.push((index + 1, reason)),\n        }\n    }\n    let tasks: Vec<String> = tasks\n        .iter()\n        .map(|t| format!(r#\"{{\"id\":{},\"title\":{},\"done\":{}}}\"#, t.id, json_string(&t.title), t.status == Status::Done))\n        .collect();\n    let rejected: Vec<String> = rejected\n        .iter()\n        .map(|(line, reason)| format!(r#\"{{\"line\":{line},\"error\":{}}}\"#, json_string(reason)))\n        .collect();\n    println!(r#\"{{\"tasks\":[{}],\"rejected\":[{}]}}\"#, tasks.join(\",\"), rejected.join(\",\"));\n    Ok(())\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "Classes and objects vs structs",
+            "url": "/learn/rust-for-nodejs-developers/node-objects-to-structs/"
+          },
+          {
+            "title": "Serde: Decode, Validate, Encode",
+            "url": "/learn/projects/serde-roundtrip-validation/"
+          },
+          {
+            "title": "Parse a CLI Contract",
+            "url": "/learn/projects/route-cli-arguments/"
+          },
+          {
+            "title": "Separate Output from Failure",
+            "url": "/learn/projects/route-cli-exit/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "std::process::Termination",
+            "url": "https://doc.rust-lang.org/std/process/trait.Termination.html"
+          },
+          {
+            "title": "Serde",
+            "url": "https://serde.rs/"
+          },
+          {
+            "title": "serde_json documentation",
+            "url": "https://docs.rs/serde_json/latest/serde_json/"
+          }
+        ]
+      },
+      {
+        "heading": "A migration checklist from TypeScript to Rust",
+        "paragraphs": [
+          "Start small and pure. A parser, a validator, a pricing rule or a CLI is easier to port than an HTTP service, because it has clear inputs and outputs and needs no runtime. First record what the TypeScript does with awkward input: `0`, an empty string, a missing field, `null`, a number above 2^53 and non-ASCII text. Those cases become your first Rust tests, and the differences surface there. `Number(\"\")` is `0` while `\"\".parse::<u32>()` is an error, and `\"café\".length` is 4 UTF-16 code units while `\"café\".len()` is 5 UTF-8 bytes.",
+          "Translate types before functions. Interfaces that hold data become structs, discriminated unions become enums, optional fields become `Option<T>`, and each `number` becomes a chosen type such as `u32`, `i64` or `f64`, with checked arithmetic where overflow is possible. Array method chains become iterator chains, which are lazy. At each function boundary choose `&T` to read, `&mut T` to change or a value to consume. Replace `throw` with `Result` and an error enum, keep panics for bugs, and parse outside data instead of asserting its type.",
+          "Leave async for last: pick a runtime, `.await` every future you create, use `join!` where you used `Promise.all`, spawn only work that must outlive the current function, and treat a timeout as cancellation. Commit `Cargo.lock` for applications, remember that a bare version is a caret requirement, and run `cargo clippy` and `cargo test` before you compare the port with the original."
+        ],
+        "links": [
+          {
+            "title": "Number vs Rust integer types",
+            "url": "/learn/rust-for-nodejs-developers/node-number-to-integer-types/"
+          },
+          {
+            "title": "UTF-16 strings vs UTF-8 String",
+            "url": "/learn/rust-for-nodejs-developers/node-utf16-strings-to-utf8/"
+          },
+          {
+            "title": "Array methods vs iterators",
+            "url": "/learn/rust-for-nodejs-developers/node-array-methods-to-iterators/"
+          },
+          {
+            "title": "Objects and Map vs HashMap",
+            "url": "/learn/rust-for-nodejs-developers/node-map-and-objects-to-hashmap/"
+          }
+        ]
+      },
+      {
+        "heading": "Practise the bridge course in the Playground or with an AI agent",
+        "paragraphs": [
+          "All 20 lessons are free on the website, and each opens a practice copy in the browser Playground, which compiles Rust on your own device with a real rustc for wasm32-wasip1. In the iPhone and iPad app the bridge courses arrive with Crabrix 1.1.9, the next app version, which is rolling out through the App Store. The Rust for Node.js Developers learning path continues past the bridge course to 47 lessons: ownership in depth, traits, error design, a CLI and an HTTP API, then async Rust with backpressure and graceful shutdown.",
+          "To learn with an AI agent, connect Claude, Claude Code, Codex, Cursor or another MCP client to Crabrix Academy at `https://crabrix.com/mcp/academy`, which is read-only and needs no sign-in, or run `npx -y crabrix@0.6.0 academy` locally. The Learn with AI page has a prompt for Node.js developers, and every lesson page has its own. The agent's review of your code is marked AI reviewed: only the checks in the Crabrix app record progress, and the agent cannot change it."
+        ],
+        "links": [
+          {
+            "title": "Learn Rust with your AI agent",
+            "url": "/learn/with-ai/"
+          },
+          {
+            "title": "Rust for Node.js Developers course",
+            "url": "/learn/rust-for-nodejs-developers/"
+          },
+          {
+            "title": "Playground",
+            "url": "/playground/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Model Context Protocol",
+            "url": "https://modelcontextprotocol.io/"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "rust-for-c-developers-ownership-malloc-free",
+    "title": "Rust for C developers: malloc and free rules the compiler checks",
+    "date": "2026-11-22",
+    "publishedDate": "2026-11-24",
+    "modifiedDate": "2026-11-24",
+    "readingMinutes": 14,
+    "summary": "Rust for C developers: how ownership, Drop, borrows, lifetimes and slices turn the malloc and free contract into compiler checks, with tested C and Rust.",
+    "relatedSlugs": [
+      "ownership-in-a-real-program",
+      "rust-strings-utf8-safe-parsing",
+      "rust-arc-mutex-rwlock-shared-state",
+      "rust-checked-arithmetic-conversions",
+      "rust-iterators-without-extra-allocations"
+    ],
+    "sections": [
+      {
+        "heading": "Rust for C developers starts with the same machine",
+        "paragraphs": [
+          "If you write C, you already know most of what Rust does at run time. This guide to Rust for C developers follows the free Crabrix bridge course, Rust for C Developers: twenty lessons that each put a C habit next to its Rust equivalent and name exactly what changes. The thread through all of them is memory. In C, the rules about who calls `free`, how long a pointer stays valid and how big a buffer is are kept in comments and code review. Rust writes them into types and checks them before the program runs.",
+          "Moving from C to Rust means a compiler that asks for the proofs you used to keep in your head, not a new machine. Below, Rust vs C memory management is taken one contrast at a time, ending with a porting checklist.",
+          "Every Rust program here was compiled with rustc 1.99.0 and `--edition 2024` on an aarch64 Mac and run; outputs and errors are quoted from those runs. The C programs were compiled with Apple clang 21 and `-Wall -Wextra`, and the deliberately buggy ones were run again under AddressSanitizer."
+        ],
+        "image": {
+          "src": "/images/blog/november-2026/rust-for-c-developers-ownership-malloc-free/cover.png",
+          "alt": "An orange paper crab engineer hands a brass key with a tag reading OWNER across a workbench covered in glowing amber and cyan memory blocks",
+          "caption": "Original generated illustration: ownership as a key that one owner holds and hands over, above a workbench of heap allocations.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Rust for C Developers course",
+            "url": "/learn/rust-for-c-developers/"
+          },
+          {
+            "title": "What Rust Is, from C",
+            "url": "/learn/rust-for-c-developers/c-what-rust-is/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "What is ownership? (The Rust Programming Language)",
+            "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html"
+          }
+        ]
+      },
+      {
+        "heading": "Stack and heap work the way you expect",
+        "paragraphs": [
+          "Rust has no garbage collector, no virtual machine and no interpreter. rustc lowers the program to LLVM IR, LLVM emits machine code as it does for clang, and the platform linker produces an ordinary executable. Locals live in stack frames, `Box`, `Vec` and `String` allocate on the heap through the system allocator, and structs have a size you can ask for.",
+          "The example is adapted from the course's first lesson. `size_of::<Point>()` printed 8, as `sizeof(struct point)` would. `Box::new(on_stack)` does the work of `malloc` plus a copy, and the run printed `Box<Point> is 8 bytes, &Point is 8 bytes`: a box is a single pointer, with no reference count beside it. The difference is the closing brace, where the compiler frees the box exactly once because its owner goes out of scope. Nothing watches pointers at run time; ownership and borrowing are checked in the compiler and cost nothing in the binary."
+        ],
+        "code": "#[derive(Clone, Copy)]\nstruct Point {\n    x: i32,\n    y: i32,\n}\n\nfn main() {\n    let on_stack = Point { x: 1, y: 2 };  // a stack slot, as in C\n    let mut on_heap = Box::new(on_stack); // malloc + copy, with one owner\n    on_heap.x = 10;\n    let alias = &on_heap;                 // a pointer the compiler tracks\n    println!(\"{} {} {} {}\", on_stack.x, alias.x, alias.y, size_of::<Point>());\n    println!(\"Box<Point> is {} bytes, &Point is {} bytes\", size_of::<Box<Point>>(), size_of::<&Point>());\n}                                         // the Box is freed here, exactly once\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "What Rust Is, from C",
+            "url": "/learn/rust-for-c-developers/c-what-rust-is/"
+          },
+          {
+            "title": "What Rust Is (Rust Basics)",
+            "url": "/learn/basics/what-is-rust/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "std::mem::size_of",
+            "url": "https://doc.rust-lang.org/std/mem/fn.size_of.html"
+          },
+          {
+            "title": "std::boxed::Box",
+            "url": "https://doc.rust-lang.org/std/boxed/struct.Box.html"
+          }
+        ]
+      },
+      {
+        "heading": "Ownership is the malloc and free contract made explicit",
+        "paragraphs": [
+          "Every C codebase has an ownership policy, even if nobody wrote it down: the function that calls `malloc` frees, unless a comment says the callee takes over. Get it wrong and you have a leak, a use after free or a double free.",
+          "The C program below is deliberately buggy. `archive()` frees its argument, nothing in `void archive(char *)` says so, and `main` frees the same pointer again. It compiled without a warning under `-Wall -Wextra`. The plain macOS build was killed by a trap inside `free` (exit status 133), and only the AddressSanitizer build said why: `attempting double-free`, at line 16.",
+          "Rust moves the policy into the type. `String`, `Vec<T>` and `Box<T>` own their heap memory. A parameter of type `String` takes ownership; a parameter of type `&str` borrows. One value has one owner, a move transfers ownership and ends the old binding, and the final owner frees the value when it goes out of scope.",
+          "A move is cheap: it copies the handle (for a `String`, a pointer, a length and a capacity) and treats the source as uninitialised; only `.clone()` copies heap data. A struct that owns a `Vec` cannot be `Copy`, so C's shallow struct copy becomes a move, and one buffer keeps one owner."
+        ],
+        "code": "/* Deliberately buggy: a double free that compiles without a warning. */\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Takes ownership and frees the report. Only this comment says so. */\nstatic void archive(char *report) {\n    printf(\"archived %s\\n\", report);\n    free(report);\n}\n\nint main(void) {\n    char *report = strdup(\"q3-summary\");\n    if (!report) return 1;\n    archive(report);\n    free(report);                 /* ASan: attempting double-free */\n    return 0;\n}\n",
+        "codeLanguage": "c",
+        "image": {
+          "src": "/images/blog/november-2026/rust-for-c-developers-ownership-malloc-free/infographic.png",
+          "alt": "Infographic with a C column listing malloc, free and pointer, each linked by an arrow to a Rust column listing owner, drop and borrow",
+          "caption": "Original generated infographic: malloc maps to an owner, free to drop, and a raw pointer to a checked borrow.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "From malloc/free to Ownership",
+            "url": "/learn/rust-for-c-developers/c-malloc-free-to-ownership/"
+          },
+          {
+            "title": "Ownership (Academy)",
+            "url": "/learn/ownership/ownership/"
+          },
+          {
+            "title": "Struct Copies: Copy and Clone",
+            "url": "/learn/rust-for-c-developers/c-struct-copy-to-copy-clone/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "malloc(3) and free(3), Linux manual page",
+            "url": "https://man7.org/linux/man-pages/man3/malloc.3.html"
+          },
+          {
+            "title": "AddressSanitizer, Clang documentation",
+            "url": "https://clang.llvm.org/docs/AddressSanitizer.html"
+          }
+        ]
+      },
+      {
+        "heading": "Drop replaces free and the goto cleanup chain",
+        "paragraphs": [
+          "The Rust version needs no `free` at all. `archive(report)` moves the `String` into the function, which frees it on return. There is nothing to forget on an early return and nothing to call twice.",
+          "The second half shows the order. Three `Noisy` values implement `Drop`, Rust's destructor hook, and the run printed `archived q3-summary`, `end of main`, then `drop file`, `drop lock` and `drop log`. Locals drop in reverse declaration order, like a careful `goto cleanup` chain, on every exit path: a return, an error passed up with `?` or an unwinding panic.",
+          "The same mechanism closes files and releases locks. To free early, call `drop(x)`, which moves the value into a function that does nothing with it. Calling a destructor method yourself is rejected with `E0040`, so a double free stays unwritable."
+        ],
+        "code": "struct Noisy(&'static str);\n\nimpl Drop for Noisy {\n    fn drop(&mut self) {\n        println!(\"drop {}\", self.0); // runs once, when the owner goes away\n    }\n}\n\nfn archive(report: String) { // takes ownership; the String is freed here\n    println!(\"archived {report}\");\n}\n\nfn main() {\n    let report = String::from(\"q3-summary\");\n    archive(report);             // moved: `report` can no longer be used\n    let _log = Noisy(\"log\");\n    let _lock = Noisy(\"lock\");\n    let _file = Noisy(\"file\");\n    println!(\"end of main\");\n}                                // drops in reverse: file, lock, log\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "Drop & Scope",
+            "url": "/learn/ownership/drop-order/"
+          },
+          {
+            "title": "Deref & Drop",
+            "url": "/learn/projects/deref-drop/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "std::ops::Drop",
+            "url": "https://doc.rust-lang.org/std/ops/trait.Drop.html"
+          }
+        ]
+      },
+      {
+        "heading": "Use after free becomes error E0382",
+        "paragraphs": [
+          "Now add the C habit back and use the report after handing it over. rustc refuses, and the diagnostic has the anatomy every Rust error shares.",
+          "The first line gives the code and the rule, `borrow of moved value`. `^^^^^^` marks the primary span, where the rule is broken, and the `------` labels explain why: where the value moved, and that `String` is not `Copy`. The `note:` points at the parameter that takes ownership, and the `help:` proposes `report.clone()`.",
+          "Treat `help:` as one change that would compile, not as the fix. If `archive` only reads the report, the note's suggestion is better: make the parameter `&str` so the caller keeps ownership and nothing is copied. Fix the first error and recompile before reading the rest. `rustc --explain E0382` prints the rule offline."
+        ],
+        "code": "$ cat archive.rs\nfn archive(report: String) {\n    println!(\"archived {report}\");\n}\n\nfn main() {\n    let report = String::from(\"q3-summary\");\n    archive(report);\n    println!(\"{report}\");\n}\n$ rustc --edition 2024 archive.rs\nerror[E0382]: borrow of moved value: `report`\n --> archive.rs:8:16\n  |\n6 |     let report = String::from(\"q3-summary\");\n  |         ------ move occurs because `report` has type `String`, which does not implement the `Copy` trait\n7 |     archive(report);\n  |             ------ value moved here\n8 |     println!(\"{report}\");\n  |                ^^^^^^ value borrowed here after move\n  |\nnote: consider changing this parameter type in function `archive` to borrow instead if owning the value isn't necessary\n --> archive.rs:1:20\n  |\n1 | fn archive(report: String) {\n  |    -------         ^^^^^^ this parameter takes ownership of the value\n  |    |\n  |    in this function\nhelp: consider cloning the value if the performance cost is acceptable\n  |\n7 |     archive(report.clone());\n  |                   ++++++++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0382`.\n",
+        "codeLanguage": "shell",
+        "links": [
+          {
+            "title": "Reading rustc Diagnostics",
+            "url": "/learn/rust-for-c-developers/c-rustc-diagnostics/"
+          },
+          {
+            "title": "Reading rustc (Rust Basics)",
+            "url": "/learn/basics/compiler-feedback/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Error code E0382",
+            "url": "https://doc.rust-lang.org/error_codes/E0382.html"
+          }
+        ]
+      },
+      {
+        "heading": "Borrowing versus pointers: shared readers or one writer",
+        "paragraphs": [
+          "A C pointer can read, write, alias and dangle, and its type does not say which. The second C example is again deliberately buggy: keep `int *first` into a growable array, push, then read through `first` after `realloc` may have moved the buffer. There were no warnings, the plain build printed `1` by luck, and AddressSanitizer reported `heap-use-after-free` on line 21.",
+          "Rust references are pointers with two enforced rules. `&T` is shared: any number may exist, and nothing mutates the value while they are in use, a guarantee `const T *` never gives. `&mut T` is exclusive: while it is in use, no other reference to the value may be used, which is what `restrict` promises and C never checks.",
+          "References are also never null, so the `if (!p) return -1;` guard disappears; `Option<&T>` is the nullable form, and it measured 8 bytes, the same as a plain reference."
+        ],
+        "code": "/* Deliberately buggy: a pointer into a buffer that realloc may move. */\n#include <stdio.h>\n#include <stdlib.h>\n\nstruct ivec { int *data; size_t len, cap; };\n\nstatic void push(struct ivec *v, int x) {\n    if (v->len == v->cap) {\n        v->cap = v->cap ? v->cap * 2 : 1;\n        v->data = realloc(v->data, v->cap * sizeof *v->data); /* may move */\n        if (!v->data) exit(1);\n    }\n    v->data[v->len++] = x;\n}\n\nint main(void) {\n    struct ivec v = {0};\n    push(&v, 1);\n    int *first = &v.data[0];  /* a pointer into the buffer */\n    push(&v, 2);              /* realloc may have moved the buffer */\n    printf(\"%d\\n\", *first);   /* ASan: heap-use-after-free */\n    free(v.data);\n    return 0;\n}\n",
+        "codeLanguage": "c",
+        "links": [
+          {
+            "title": "Pointers to References",
+            "url": "/learn/rust-for-c-developers/c-pointers-to-references/"
+          },
+          {
+            "title": "First References",
+            "url": "/learn/basics/references-intro/"
+          },
+          {
+            "title": "Borrowing",
+            "url": "/learn/ownership/borrowing/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "References and borrowing (The Rust Programming Language)",
+            "url": "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html"
+          },
+          {
+            "title": "realloc, cppreference",
+            "url": "https://en.cppreference.com/w/c/memory/realloc"
+          }
+        ]
+      },
+      {
+        "heading": "The borrow checker guards the gate at compile time",
+        "paragraphs": [
+          "Port the `ivec` example literally and rustc stops at the push. `v.push(2)` needs `&mut v` while `first` still holds a shared borrow that is used on the next line. That is `E0502`, and its three labels tell the story: where the reader starts, where the writer wants in, and where the reader is still in use.",
+          "A borrow lasts until its last use, not until the end of the block, so printing before the push, or copying the value out with `let first = v[0];`, fixes it. Two writers are refused the same way: two live `&mut total` borrows stopped the build with `E0499`. Passing `&mut v` and `&v` to one function, the aliasing that `restrict` forbids, was rejected with `E0502`.",
+          "The gate closes at compile time; the binary carries no lock or counter for these references. A design that needs the check at run time, such as a graph of shared nodes, uses `RefCell`, where a violation becomes a panic."
+        ],
+        "code": "$ cat push.rs\nfn main() {\n    let mut v = vec![1];\n    let first = &v[0];\n    v.push(2);\n    println!(\"{first}\");\n}\n$ rustc --edition 2024 push.rs\nerror[E0502]: cannot borrow `v` as mutable because it is also borrowed as immutable\n --> push.rs:4:5\n  |\n3 |     let first = &v[0];\n  |                  - immutable borrow occurs here\n4 |     v.push(2);\n  |     ^^^^^^^^^ mutable borrow occurs here\n5 |     println!(\"{first}\");\n  |                ----- immutable borrow later used here\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0502`.\n",
+        "codeLanguage": "shell",
+        "image": {
+          "src": "/images/blog/november-2026/rust-for-c-developers-ownership-malloc-free/borrow-checker.png",
+          "alt": "An orange paper crab gatekeeper at a toll gate lets a line of cyan arrows onto a bridge of memory blocks while a single amber arrow waits behind the barrier",
+          "caption": "Original generated illustration: the borrow checker lets many shared readers cross, and holds the one writer back until they are done.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Mutable Borrows",
+            "url": "/learn/ownership/mutable-borrows/"
+          },
+          {
+            "title": "Rc & RefCell",
+            "url": "/learn/projects/rc-refcell/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Error code E0502",
+            "url": "https://doc.rust-lang.org/error_codes/E0502.html"
+          },
+          {
+            "title": "Error code E0499",
+            "url": "https://doc.rust-lang.org/error_codes/E0499.html"
+          }
+        ]
+      },
+      {
+        "heading": "Lifetimes are the dangling-pointer check",
+        "paragraphs": [
+          "A C function that returns a pointer into one of its arguments says so in a comment, if at all; `const char *longer(const char *, const char *)` carries none of it. The course's C version frees `b` and then prints the result. It compiled cleanly with `-Wall -Wextra`, and AddressSanitizer reported `heap-use-after-free`.",
+          "Rust writes the fact into the signature. `fn longer<'a>(a: &'a str, b: &'a str) -> &'a str` says the result is valid only while both inputs are, and the compiler checks every caller. Below, `b` is dropped at the end of the inner block while `result` still points into it, so the build stops with `E0597`.",
+          "An annotation describes a relationship; it never makes a value live longer, and returning a reference to a local is still rejected. Most signatures need none: with one reference input, as in `fn first_word(line: &str) -> &str`, elision ties the output to it. With several reference inputs and a reference output, rustc asks which one you return, with `E0106`."
+        ],
+        "code": "$ cat longer.rs\nfn longer<'a>(a: &'a str, b: &'a str) -> &'a str {\n    if a.len() >= b.len() { a } else { b }\n}\n\nfn main() {\n    let a = String::from(\"short\");\n    let result;\n    {\n        let b = String::from(\"much longer\");\n        result = longer(&a, &b);\n    }\n    println!(\"{result}\");\n}\n$ rustc --edition 2024 longer.rs\nerror[E0597]: `b` does not live long enough\n  --> longer.rs:10:29\n   |\n 9 |         let b = String::from(\"much longer\");\n   |             - binding `b` declared here\n10 |         result = longer(&a, &b);\n   |                             ^^ borrowed value does not live long enough\n11 |     }\n   |     - `b` dropped here while still borrowed\n12 |     println!(\"{result}\");\n   |                ------ borrow later used here\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0597`.\n",
+        "codeLanguage": "shell",
+        "links": [
+          {
+            "title": "Dangling Pointers and Lifetimes",
+            "url": "/learn/rust-for-c-developers/c-dangling-pointers-to-lifetimes/"
+          },
+          {
+            "title": "Lifetime Intuition",
+            "url": "/learn/ownership/lifetimes-intro/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Validating references with lifetimes (The Rust Programming Language)",
+            "url": "https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html"
+          },
+          {
+            "title": "Error code E0597",
+            "url": "https://doc.rust-lang.org/error_codes/E0597.html"
+          }
+        ]
+      },
+      {
+        "heading": "Slices replace a pointer and a length",
+        "paragraphs": [
+          "C arrays decay to pointers at a function boundary, so the length travels separately. Compiling the course's C `max_in` with `-Wall -Wextra` gave one warning, `-Wsizeof-array-argument`, because `sizeof xs` inside the function is a pointer's size. Its `i <= n` off-by-one got no warning, and the plain build printed `max = 9` after reading past the array.",
+          "A Rust slice `&[T]` is a fat pointer, the address and the length in one value. Arrays and vectors both coerce to it, `len()` is always right, and indexing is checked: `xs[3]` on a three-element array panicked with `index out of bounds: the len is 3 but the index is 3`. `xs.get(3)` returns `None`. The example printed `max = Some(9)`, `vec max = Some(8)`, `tail max = Some(2)`, `empty max = None` and `None`.",
+          "Slicing makes a view, not a copy. A bounds check is a compare and a predictable branch, and the optimiser removes it when it can prove the index is in range, as iterator loops usually allow."
+        ],
+        "code": "fn max_in(xs: &[i32]) -> Option<i32> { // the slice carries its length\n    let mut best = *xs.first()?;          // empty slice: None, not a read of xs[0]\n    for &x in &xs[1..] {                  // a subslice: a view, nothing copied\n        if x > best {\n            best = x;\n        }\n    }\n    Some(best)\n}\n\nfn main() {\n    let xs = [4, 9, 2];\n    let v = vec![7, 3, 8, 1];\n    println!(\"len = {}\", xs.len());\n    println!(\"max = {:?}\", max_in(&xs));              // an array coerces to &[i32]\n    println!(\"vec max = {:?}\", max_in(&v));           // so does a Vec\n    println!(\"tail max = {:?}\", max_in(&xs[2..]));\n    println!(\"empty max = {:?}\", max_in(&xs[3..]));   // valid and empty\n    println!(\"{:?}\", xs.get(3));                      // checked access: None\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "Pointer + Length to Slices",
+            "url": "/learn/rust-for-c-developers/c-pointer-length-to-slices/"
+          },
+          {
+            "title": "Slices (Academy)",
+            "url": "/learn/ownership/slices/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "The slice type (The Rust Programming Language)",
+            "url": "https://doc.rust-lang.org/book/ch04-03-slices.html"
+          },
+          {
+            "title": "Primitive type slice",
+            "url": "https://doc.rust-lang.org/std/primitive.slice.html"
+          }
+        ]
+      },
+      {
+        "heading": "Box, Rc and Arc: choose by the number of owners",
+        "paragraphs": [
+          "C has one heap pointer type and conventions on top of it; Rust names the common ones. `Box<T>` is the single owner of one allocation, like a `struct node *next` that frees its node. `Rc<T>` is shared ownership on one thread with a plain count, the `refcount++` and release function C programs write by hand. `Arc<T>` uses an atomic count, so its handles may cross threads.",
+          "In the example, the boxed list summed to 3 and every node is freed when `list` goes out of scope. The `Rc` count fell from 2 to 1 when `reader` was dropped. Three threads each got an `Arc` clone and returned `[20, 40, 60]`, and after joining the count was back to 1. Cloning either pointer copies a pointer and bumps a count; it never deep-copies the value.",
+          "Pick the narrowest that fits; the compiler holds the line, and moving an `Rc` into a thread failed with `E0277`. Neither pointer grants mutation: add `RefCell` on one thread, or a `Mutex` across threads, whose guard releases the lock when dropped, even on an early return."
+        ],
+        "code": "use std::rc::Rc;\nuse std::sync::Arc;\nuse std::thread;\n\n// Box: each node owns the next one, like a malloc'd `struct node *next`.\nenum List {\n    Node(i32, Box<List>),\n    End,\n}\n\nfn sum(list: &List) -> i32 {\n    match list {\n        List::Node(value, next) => value + sum(next),\n        List::End => 0,\n    }\n}\n\nfn main() {\n    let list = List::Node(1, Box::new(List::Node(2, Box::new(List::End))));\n    println!(\"box sum = {}\", sum(&list)); // the whole list is freed when `list` goes\n\n    // Rc: several owners on one thread; the last one to leave frees the value.\n    let config = Rc::new(String::from(\"verbose\"));\n    let reader = Rc::clone(&config); // copies a pointer and bumps a count\n    println!(\"rc owners = {}\", Rc::strong_count(&config));\n    drop(reader);\n    println!(\"rc owners = {}\", Rc::strong_count(&config));\n\n    // Arc: the same idea with an atomic count, so handles may cross threads.\n    let table = Arc::new(vec![10, 20, 30]);\n    let handles: Vec<_> = (0..3)\n        .map(|i| {\n            let table = Arc::clone(&table);\n            thread::spawn(move || table[i] * 2)\n        })\n        .collect();\n    let doubled: Vec<i32> = handles.into_iter().map(|h| h.join().unwrap()).collect();\n    println!(\"arc results = {doubled:?}, owners now = {}\", Arc::strong_count(&table));\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "Box<T>",
+            "url": "/learn/projects/box/"
+          },
+          {
+            "title": "Box, Rc, and Arc (interview question)",
+            "url": "/learn/interview/q-box-rc-arc/"
+          },
+          {
+            "title": "pthreads to std::thread",
+            "url": "/learn/rust-for-c-developers/c-pthreads-to-threads/"
+          },
+          {
+            "title": "Shared State",
+            "url": "/learn/concurrency/shared-state/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "std::rc::Rc",
+            "url": "https://doc.rust-lang.org/std/rc/struct.Rc.html"
+          },
+          {
+            "title": "std::sync::Arc",
+            "url": "https://doc.rust-lang.org/std/sync/struct.Arc.html"
+          }
+        ]
+      },
+      {
+        "heading": "Strings are not char pointers",
+        "paragraphs": [
+          "A C string is a byte array ended by a NUL; its length is a scan and `strcpy` trusts the destination. Compiling the course's C example, clang caught one case statically, `'strcpy' will always overflow; destination buffer has size 8, but the source string has length 9 (including NUL byte)`, and the plain build was killed with exit status 133. Overflows with run-time lengths get no such warning.",
+          "`String` owns a heap buffer and stores its length and capacity, so `len()` is constant time and `push_str` grows the buffer instead of overflowing it. `&str` is a borrowed pointer and length. Both are always valid UTF-8, which changes counting: `len()` of `café` printed 5 bytes, as `strlen` would, while `chars().count()` printed 4, and `to_uppercase()` gave `CAFÉ` where byte-wise `toupper` leaves the `é` alone.",
+          "Indexing a string by an integer does not compile, and byte ranges must land on character boundaries: `get(0..4)` returned `None` because byte 4 is inside `é`. At the C boundary, `CString` adds the terminator and refuses an interior NUL; the run printed 18 bytes for the 17-byte name, and `true` for the rejection."
+        ],
+        "code": "use std::ffi::CString;\n\nfn main() {\n    let word = \"café\";\n    println!(\"len={} chars={}\", word.len(), word.chars().count()); // bytes vs chars\n    println!(\"{}\", word.to_uppercase());                // CAFÉ: Unicode-aware\n    println!(\"{:?} {:?}\", word.get(0..3), word.get(0..4)); // byte 4 is inside 'é'\n\n    let mut name = String::with_capacity(8);\n    name.push_str(\"Margaret\");                          // fits exactly; no NUL needed\n    name.push_str(\" Hamilton\");                         // grows instead of overflowing\n    println!(\"{name} ({} bytes)\", name.len());\n\n    // Crossing into C: a NUL-terminated copy, refused if the text contains a NUL.\n    let for_c = CString::new(name.as_str()).expect(\"no interior NUL\");\n    println!(\"{} bytes with the terminator\", for_c.as_bytes_with_nul().len());\n    println!(\"interior NUL rejected: {}\", CString::new(\"a\\0b\").is_err());\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "char Arrays to Strings",
+            "url": "/learn/rust-for-c-developers/c-char-arrays-to-strings/"
+          },
+          {
+            "title": "Strings & UTF-8",
+            "url": "/learn/basics/strings/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "std::string::String",
+            "url": "https://doc.rust-lang.org/std/string/struct.String.html"
+          },
+          {
+            "title": "std::ffi::CString",
+            "url": "https://doc.rust-lang.org/std/ffi/struct.CString.html"
+          },
+          {
+            "title": "strcpy, cppreference",
+            "url": "https://en.cppreference.com/w/c/string/byte/strcpy"
+          }
+        ]
+      },
+      {
+        "heading": "Option and Result replace NULL, -1 and errno",
+        "paragraphs": [
+          "C signals trouble out of band: `NULL` for absent, or `-1` with the reason in `errno`, which must be cleared before calls such as `strtol` and read before the next call overwrites it. When `-1` is also a valid result, only `errno` tells them apart.",
+          "Rust puts both cases in the return type. `Option<T>` is `Some` or `None`, `Result<T, E>` is `Ok` or `Err`, and the caller cannot reach the value without handling the other case. The example gives a C-style `parse_port` a named error type: `ok_or` turns absence into `PortError::Missing`, `?` replaces the `if (rc < 0) return rc;` ladder, and `u16::try_from` refuses a value that does not fit instead of truncating it.",
+          "The run printed `port 8080`, `no port given`, `not a number: invalid digit found in string` for `-1`, and `70000 does not fit in a u16`. Each error travels with its result, and no later call can overwrite it. Keep `unwrap()` and `expect()`, which turn failure into a panic, for tests and impossible states."
+        ],
+        "code": "use std::fmt;\nuse std::num::ParseIntError;\n\n#[derive(Debug)]\nenum PortError {\n    Missing,\n    NotANumber(ParseIntError),\n    OutOfRange(u32),\n}\n\nimpl fmt::Display for PortError {\n    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {\n        match self {\n            PortError::Missing => write!(f, \"no port given\"),\n            PortError::NotANumber(e) => write!(f, \"not a number: {e}\"),\n            PortError::OutOfRange(v) => write!(f, \"{v} does not fit in a u16\"),\n        }\n    }\n}\n\n// C: `int parse_port(const char *s)`, returning -1 and setting errno.\nfn parse_port(text: Option<&str>) -> Result<u16, PortError> {\n    let text = text.ok_or(PortError::Missing)?; // NULL becomes a named case\n    let value: u32 = text.trim().parse().map_err(PortError::NotANumber)?;\n    u16::try_from(value).map_err(|_| PortError::OutOfRange(value))\n}\n\nfn main() {\n    for input in [Some(\"8080\"), None, Some(\"-1\"), Some(\"70000\")] {\n        match parse_port(input) {\n            Ok(port) => println!(\"{input:?} -> port {port}\"),\n            Err(error) => println!(\"{input:?} -> error: {error}\"),\n        }\n    }\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "NULL and errno to Option and Result",
+            "url": "/learn/rust-for-c-developers/c-null-and-errno-to-option-result/"
+          },
+          {
+            "title": "Option & Result",
+            "url": "/learn/basics/option-result/"
+          },
+          {
+            "title": "Handling Failure",
+            "url": "/learn/basics/recoverable-errors/"
+          },
+          {
+            "title": "Integer Overflow and Casts",
+            "url": "/learn/rust-for-c-developers/c-integer-overflow-and-casts/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "errno(3), Linux manual page",
+            "url": "https://man7.org/linux/man-pages/man3/errno.3.html"
+          },
+          {
+            "title": "Recoverable errors with Result (The Rust Programming Language)",
+            "url": "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html"
+          }
+        ]
+      },
+      {
+        "heading": "unsafe and FFI are the honest boundary",
+        "paragraphs": [
+          "Creating a raw pointer, `*const T` or `*mut T`, is safe; dereferencing it needs `unsafe`, as do calling foreign functions, accessing a mutable `static` and reading a `union` field. Inside the block, types, borrows and slice bounds are still checked. `unsafe` is your claim that invariants the compiler cannot see hold, written down in a `# Safety` section on each `unsafe fn` and a `// SAFETY:` comment on each block.",
+          "The example is a thin unsafe edge around safe code. `sum_i32` is exported to C with `#[unsafe(no_mangle)]` and `extern \"C\"`, and turns the C pointer and length into a slice with `slice::from_raw_parts`, whose obligations are what the C contract said in prose: non-null, aligned, `n` initialised elements, no mutation meanwhile. After that line it is ordinary bounds-checked Rust. In edition 2024, foreign declarations such as `abs` go in an `unsafe extern \"C\"` block.",
+          "`#[repr(C)]` gives `Pair` C's field order and padding, so its size was 8, like a C struct of a `uint8_t` and a `uint32_t`; without it Rust may reorder fields. The run printed `6 size=8 tag=7 value=42 abs=5`. Keep `unsafe` blocks small, documented and tested, and review them as you reviewed every pointer in C."
+        ],
+        "code": "use std::slice;\n\n#[repr(C)] // C field order and padding: tag, 3 padding bytes, value\nstruct Pair {\n    tag: u8,\n    value: u32,\n}\n\n/// Callable from C as `int32_t sum_i32(const int32_t *xs, size_t n)`.\n///\n/// # Safety\n/// `xs` must be non-null, aligned and point to `n` initialised `i32`s\n/// that nothing mutates during the call.\n#[unsafe(no_mangle)]\npub unsafe extern \"C\" fn sum_i32(xs: *const i32, n: usize) -> i32 {\n    // SAFETY: the caller upholds the contract documented above.\n    let values = unsafe { slice::from_raw_parts(xs, n) };\n    values.iter().sum() // from here on: ordinary, bounds-checked Rust\n}\n\nunsafe extern \"C\" {\n    fn abs(x: i32) -> i32; // from the C library; the declaration is a promise\n}\n\nfn main() {\n    let xs = [1, 2, 3];\n    let p = Pair { tag: 7, value: 42 };\n    // SAFETY: `xs` is a live array of 3 `i32`s, and `abs` has this C signature.\n    let (total, magnitude) = unsafe { (sum_i32(xs.as_ptr(), xs.len()), abs(-5)) };\n    println!(\"{total} size={} tag={} value={} abs={magnitude}\", size_of::<Pair>(), p.tag, p.value);\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "unsafe, Raw Pointers and FFI",
+            "url": "/learn/rust-for-c-developers/c-unsafe-and-ffi/"
+          },
+          {
+            "title": "unsafe Rust",
+            "url": "/learn/systems/unsafe/"
+          },
+          {
+            "title": "Raw Pointers",
+            "url": "/learn/systems/raw-pointers/"
+          },
+          {
+            "title": "FFI",
+            "url": "/learn/systems/ffi/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Foreign Function Interface (The Rustonomicon)",
+            "url": "https://doc.rust-lang.org/nomicon/ffi.html"
+          },
+          {
+            "title": "Unsafe extern blocks (Edition Guide, Rust 2024)",
+            "url": "https://doc.rust-lang.org/edition-guide/rust-2024/unsafe-extern.html"
+          },
+          {
+            "title": "Behavior considered undefined (The Rust Reference)",
+            "url": "https://doc.rust-lang.org/reference/behavior-considered-undefined.html"
+          }
+        ]
+      },
+      {
+        "heading": "What Rust does not prevent: leaks, deadlocks and logic bugs",
+        "paragraphs": [
+          "Safe Rust excludes undefined behaviour: use after free, double free, dangling references, out-of-bounds access, null dereference, uninitialised reads and data races. The course's C program with four of these compiled without a warning; in safe Rust none of them can be written. That is not the same as correct.",
+          "Leaks are safe: `Box::leak`, `mem::forget` and reference-count cycles cannot corrupt memory. The example links two nodes with `Rc` in both directions; the run reported 2 owners each, and dropping both outside handles printed no `free a` and no `free b`. A `Weak` back link fixes the design because it does not own: `upgrade()` worked while the parent lived, `free parent` printed when it was dropped, and the next `upgrade()` returned nothing.",
+          "Deadlocks are safe too: two threads taking two `Mutex`es in opposite orders hang Rust as they hang C. A panic is defined behaviour. Integer overflow panics in debug builds and, by default, wraps in release builds unless you choose `checked_`, `wrapping_` or `saturating_` arithmetic. Wrong answers compile as well as right ones, so keep your tests."
+        ],
+        "code": "use std::cell::RefCell;\nuse std::rc::{Rc, Weak};\n\nstruct Node {\n    name: &'static str,\n    next: RefCell<Option<Rc<Node>>>,\n}\n\nimpl Drop for Node {\n    fn drop(&mut self) {\n        println!(\"free {}\", self.name);\n    }\n}\n\nfn node(name: &'static str) -> Rc<Node> {\n    Rc::new(Node { name, next: RefCell::new(None) })\n}\n\nfn main() {\n    // Two strong links in a cycle: safe Rust, and neither node is ever freed.\n    let a = node(\"a\");\n    let b = node(\"b\");\n    *a.next.borrow_mut() = Some(Rc::clone(&b));\n    *b.next.borrow_mut() = Some(Rc::clone(&a));\n    println!(\"a owners = {}, b owners = {}\", Rc::strong_count(&a), Rc::strong_count(&b));\n    drop(a);\n    drop(b); // no \"free a\" or \"free b\" follows: the cycle leaks\n\n    // A Weak back link does not own, so the parent is freed on time.\n    let parent = node(\"parent\");\n    let back: Weak<Node> = Rc::downgrade(&parent);\n    println!(\"parent alive: {}\", back.upgrade().is_some());\n    drop(parent);\n    println!(\"parent alive: {}\", back.upgrade().is_some());\n\n    // Box::leak is safe too: the memory is never returned to the allocator.\n    let forever: &'static mut u32 = Box::leak(Box::new(1));\n    *forever += 1;\n    println!(\"leaked value = {forever}\");\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "What Safe Rust Rules Out",
+            "url": "/learn/rust-for-c-developers/c-what-safe-rust-rules-out/"
+          },
+          {
+            "title": "Reference Cycles",
+            "url": "/learn/projects/cycles/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Behavior not considered unsafe (The Rust Reference)",
+            "url": "https://doc.rust-lang.org/reference/behavior-not-considered-unsafe.html"
+          },
+          {
+            "title": "Reference cycles can leak memory (The Rust Programming Language)",
+            "url": "https://doc.rust-lang.org/book/ch15-06-reference-cycles.html"
+          }
+        ]
+      },
+      {
+        "heading": "A checklist for porting C code to Rust",
+        "paragraphs": [
+          "Port one module at a time, keep the C tests, and let the compiler find the conventions you relied on.",
+          "First, run the C code under `-fsanitize=address,undefined`. Undefined behaviour found now is a bug you would otherwise port faithfully, and the outputs become the reference the Rust version must match.",
+          "Next, turn every ownership comment into a type. A pointer parameter that is consumed becomes `T`, `Box<T>`, `Vec<T>` or `String`; one that is only read becomes `&T`, `&[T]` or `&str`; one that is written becomes `&mut T`. A returned pointer becomes a value if the caller owns it, or a reference with a lifetime if it points into an argument.",
+          "Replace pointer-and-length pairs with slices, `char *` with `String` or `&str`, `NULL` with `Option`, and `-1` plus `errno` with `Result` and an error `enum`. Tagged unions become `enum`s, and `match` lists every place a new variant must be handled. Make integer conversions explicit with `From`, `TryFrom` or `as`.",
+          "Delete the cleanup code: `free`, `goto cleanup` and `pthread_mutex_unlock` become `Drop`, as long as each resource has one owner whose scope ends where the old cleanup ran. Keep `extern` declarations and raw-pointer conversions in one small module and expose only safe functions.",
+          "Finally, replace the Makefile with Cargo and keep `-Werror` discipline with `#![deny(warnings)]` or `-D warnings` in CI."
+        ],
+        "links": [
+          {
+            "title": "Tagged Unions to Enums",
+            "url": "/learn/rust-for-c-developers/c-tagged-unions-to-enums/"
+          },
+          {
+            "title": "Headers and make to Cargo",
+            "url": "/learn/rust-for-c-developers/c-make-and-headers-to-cargo/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "UndefinedBehaviorSanitizer, Clang documentation",
+            "url": "https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html"
+          },
+          {
+            "title": "The Cargo Book",
+            "url": "https://doc.rust-lang.org/cargo/"
+          }
+        ]
+      },
+      {
+        "heading": "Learn it with the course, the Playground or your AI agent",
+        "paragraphs": [
+          "Rust for C Developers is free on the web: 20 lessons in five units, from what Rust is to `unsafe`, FFI and threads. Each lesson sets the C program beside the Rust one, asks you to port a C function, and lists the Academy lessons it covers, such as Ownership, Borrowing and Slices. The bridge courses reach the iPhone and iPad app in the next app version, Crabrix 1.1.9.",
+          "Every lesson in the course opens a practice copy of its code in the Playground, which runs a real Rust compiler in your browser. They are among the 190 Academy lessons that gained practice copies this week, checked with rustc for wasm32-wasip1 and then in the Playground. A copy is a new, unsaved document and never overwrites a draft.",
+          "To learn with an AI agent, the Learn with your AI agent page connects Claude, Claude Code, Codex, Cursor or another MCP client to the read-only Academy server at `https://crabrix.com/mcp/academy`, with no sign-in. Its C developer prompt asks for memory management, ownership, borrowing, lifetimes and system programming, and the Rust for C Developers learning path has 45 steps: the 20 bridge lessons, then borrowing in depth, smart pointers, FFI and layout, unsafe contracts and threads with atomics. The agent's review is labelled AI reviewed; only the app's checks record progress."
+        ],
+        "links": [
+          {
+            "title": "Rust for C Developers course",
+            "url": "/learn/rust-for-c-developers/"
+          },
+          {
+            "title": "Learn Rust with your AI agent",
+            "url": "/learn/with-ai/"
+          },
+          {
+            "title": "Playground",
+            "url": "/playground/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Model Context Protocol",
+            "url": "https://modelcontextprotocol.io/"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "practise-rust-in-browser-playground-lesson-copies",
+    "title": "Rust playground online: practise 190 Crabrix lessons in your browser",
+    "date": "2026-11-21",
+    "publishedDate": "2026-11-24",
+    "modifiedDate": "2026-11-24",
+    "readingMinutes": 14,
+    "summary": "A Rust playground online with a real local compiler: open practice copies of 190 Crabrix lessons, then Check, Run and Debug them in your browser.",
+    "relatedSlugs": [
+      "from-lesson-to-project",
+      "real-rust-on-iphone",
+      "crabrix-offline-rust-web-preview",
+      "rust-debugging-visualizers-string-vec-reproductions"
+    ],
+    "sections": [
+      {
+        "heading": "A Rust playground online that compiles on your device",
+        "paragraphs": [
+          "Most people who search for a Rust playground online want three things: a page that opens quickly, a compiler that tells the truth and code worth typing. The Crabrix Playground already had the first two. It runs real rustc inside your browser, without an account, and your source is never sent to a server for compilation. Now it has the third: 190 lessons from the free Crabrix Academy open their own code in the Playground as a practice copy, and the 46 Examples projects open as copies too.",
+          "This guide explains what the new Practise this code in Playground button opens, how the copies were checked and where the browser stops. It shows three real lesson programs exactly as the Playground serves them, with the output we saw in a production build of the site and with rustc 1.99.0 on an aarch64 Mac."
+        ],
+        "links": [
+          {
+            "title": "Open the Crabrix Playground",
+            "url": "/playground/"
+          },
+          {
+            "title": "Learn Rust with your AI agent",
+            "url": "/learn/with-ai/"
+          }
+        ],
+        "image": {
+          "src": "/images/blog/november-2026/practise-rust-in-browser-playground-lesson-copies/cover.png",
+          "alt": "An orange paper crab points at a browser window on a laptop while a glowing engine of gears inside the laptop compiles the code locally",
+          "caption": "Original generated illustration: the Playground's compiler runs inside your own device, shown as an engine under the keyboard that feeds the browser editor.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "Run Rust in the browser with a local rustc",
+        "paragraphs": [
+          "The Playground does not forward your code to a build server. Its compiler is rustc itself, built from Rust sources and compiled to WebAssembly, together with a standard library for the `wasm32-wasip1` target. The current browser toolchain is `crabrix-rust-2026-10-02.1`, which reports Rust 1.96.0-dev; the editor shows `rustc 1.96.0-dev · wasm32-wasip1` above the code. Your program is compiled to WebAssembly as well and executed in a browser Worker, the same way on a laptop or a phone.",
+          "The toolchain is fetched only when you first press Check or Run: a compressed compiler of about 22.4 MiB that expands to about 123 MiB, and a standard-library archive of about 22.3 MiB, roughly 44.7 MiB to transfer in total. Each file is checked against a SHA-256 hash and cached when the browser allows it; a private window or storage eviction can mean downloading it again. The privacy policy states the rule plainly: Run and Check compile and execute on your device, and no compilation service receives your source."
+        ],
+        "links": [
+          {
+            "title": "Playground guide",
+            "url": "/guide/#playground"
+          }
+        ],
+        "sources": [
+          {
+            "title": "rustc book: wasm32-wasip1 platform support",
+            "url": "https://doc.rust-lang.org/rustc/platform-support/wasm32-wasip1.html"
+          },
+          {
+            "title": "WASI, the WebAssembly System Interface",
+            "url": "https://wasi.dev/"
+          }
+        ]
+      },
+      {
+        "heading": "What a practice copy is, and what it is not",
+        "paragraphs": [
+          "A practice copy is the lesson's own code, unchanged, placed in a new Playground document. Each Academy lesson page shows its code; where a copy exists, a Practise this code in Playground button sits below that code and opens `/playground/?lesson=<course>/<lesson>`. The copy is a single file, `main.rs`, in edition 2024. It is not a solution, and it is not the graded compiler lab from the Crabrix app: grading harnesses and check files are never read or published.",
+          "Lesson code comes in three shapes, and the Playground's notice tells you which one you got. A whole program with its own `fn main` opens as it is. Definitions without `main` get an empty `fn main() {}` appended, and the notice asks you to call them from `main`. Statements without a surrounding function are indented into `fn main`. Of the 190 copies, 91 are whole programs, 52 have an empty main added and 47 were placed inside main. Nothing else is rewritten or added.",
+          "Every copy is tied to the exact text that was checked. The list records a SHA-256 hash of the lesson field and of the program built from it, and the site serves a copy only while both still match. If a lesson's code is edited later, its copy disappears: the button is no longer shown, the address returns not found, and the copy returns only after the new text has been checked again."
+        ],
+        "links": [
+          {
+            "title": "Rust Basics course",
+            "url": "/learn/basics/"
+          }
+        ],
+        "image": {
+          "src": "/images/blog/november-2026/practise-rust-in-browser-playground-lesson-copies/practice-flow.png",
+          "alt": "Flow diagram with five cards: LESSON, PRACTICE COPY, then CHECK, RUN and DEBUG grouped inside a frame labelled IN YOUR BROWSER",
+          "caption": "Original generated diagram: a lesson becomes a practice copy, and Check, Run and Debug all happen in your browser.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "How 190 lessons were checked twice",
+        "paragraphs": [
+          "A small tool in the course repository made the selection. It looked at the 207 Rust lessons that do not already have a Playground project of their own; the 32 lessons with a starter project and the 600 Algorithm Atlas steps keep the Playground behaviour they had before. For each lesson it tried the practice code first, then the example code, and kept the first that compiled with rustc 1.99.0 using `--target wasm32-wasip1 --edition 2024`. Practice code that does not compile was accepted only when the lesson's exercise is to repair it. Seventeen lessons had no code that qualified and got no copy.",
+          "The second check used the Playground itself. On 23 November a script opened every copy in a production build of the site and pressed Check with the browser's own compiler. 129 copies were accepted without a message, 60 were accepted with warnings, mostly about code that is never used or an unused variable, and one produced errors on purpose. The copies are spread across eight courses: 47 in Rust Interview Prep, 31 in Ownership Mastery, 28 in Rust Basics, 20 each in Rust for C Developers and Rust for Node.js Developers, 17 in Cargo & Real Projects, 15 in Macros & Systems Rust and 12 in Concurrency & Async.",
+          "A passing Check proves that a program compiles, not that Run prints something useful. The three examples below show the outcomes you will meet: a fragment that runs, definitions waiting to be called, and a program that compiles and then panics."
+        ],
+        "links": [
+          {
+            "title": "Ownership Mastery course",
+            "url": "/learn/ownership/"
+          },
+          {
+            "title": "Rust Interview Prep course",
+            "url": "/learn/interview/"
+          },
+          {
+            "title": "Rust for C Developers course",
+            "url": "/learn/rust-for-c-developers/"
+          },
+          {
+            "title": "Rust for Node.js Developers course",
+            "url": "/learn/rust-for-nodejs-developers/"
+          }
+        ],
+        "image": {
+          "src": "/images/blog/november-2026/practise-rust-in-browser-playground-lesson-copies/lesson-cards.png",
+          "alt": "An orange paper crab stamps a long stream of paper lesson cards that fold into small glowing project boxes with play buttons, one card marked with a wrench",
+          "caption": "Original generated illustration: lesson cards become small runnable projects, with one card kept as the single fix-me exercise.",
+          "width": 1536,
+          "height": 1024
+        }
+      },
+      {
+        "heading": "A fragment placed inside main: Pattern Matching",
+        "paragraphs": [
+          "The Pattern Matching lesson in Rust Basics teaches guards: a condition that narrows one arm while the compiler still demands that the match covers every case. Its practice code has no function around it, so the Playground indents it into `fn main`. The block below is the copy exactly as served; its hash matches the recorded one.",
+          "Run printed `even 4` with exit code 0, in the browser and natively. Now make the lesson's point visible. Change `Some(4)` to `Some(-3)` and predict the output, then add an arm with the guard `if n < 0` above the even arm and run again: it prints `negative -3`. Move that arm below the plain `Some(n)` arm instead and rustc warns about an unreachable pattern, while Run prints `odd -3`, because arms are tried from top to bottom. Finish with `None`."
+        ],
+        "code": "fn main() {\n    let value = Some(4);\n    match value {\n        Some(n) if n % 2 == 0 => println!(\"even {n}\"),\n        Some(n) => println!(\"odd {n}\"),\n        None => println!(\"none\"),\n    }\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "Pattern Matching lesson",
+            "url": "/learn/basics/pattern-matching/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Rust Reference: match guards",
+            "url": "https://doc.rust-lang.org/reference/expressions/match-expr.html#match-guards"
+          }
+        ]
+      },
+      {
+        "heading": "Definitions with an empty main: Slices",
+        "paragraphs": [
+          "The Slices lesson in Ownership Mastery has a practice starter with one function and no `main`. The copy appends `fn main() {}`, and the notice says what to do next: call the definitions from `main`, then Run or Debug locally. Run it unchanged and the Output panel shows (No stdout) with exit code 0. Compiled natively, rustc adds a `dead_code` warning that `first` is never used, a reminder that nothing calls it yet.",
+          "Call it with `\"crabrix\"` and it returns `cra`. Call it with `\"hi\"` and the program panics, because `&text[..3]` asks for bytes that are not there; try `\"naïve\"` and it panics for a different reason, since byte 3 falls inside the two-byte `ï`. That is the lesson's task in miniature: borrow at most a given number of elements, clamp to the length and never panic. The slice you return borrows the caller's text and allocates nothing, which is why the compiler will not let it outlive its input."
+        ],
+        "code": "fn first(text: &str) -> &str {\n    &text[..3]\n}\n\nfn main() {}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "Slices lesson",
+            "url": "/learn/ownership/slices/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "The Rust Programming Language: the slice type",
+            "url": "https://doc.rust-lang.org/book/ch04-03-slices.html"
+          }
+        ]
+      },
+      {
+        "heading": "Compiles is not the same as correct: a C loop in Rust",
+        "paragraphs": [
+          "Bridge lessons often start with the code an experienced C or JavaScript programmer writes on a first attempt in Rust. In Pointer + Length to Slices, from Rust for C Developers, the copy is a direct port of a C loop that runs while `i <= n`. It compiles without a warning. Run it in the browser and Output shows (No stdout), then `index out of bounds: the len is 3 but the index is 3`, and exit code 1. The native build stops with the same panic message and exit code 101.",
+          "This is the outcome the lesson wants. In C the same loop reads one element past the array, a stack buffer overflow under AddressSanitizer; Rust checks the index and stops. Fix it with an exclusive range or `iter().max()`, then attempt the lesson's real task: return the longest run of equal neighbouring values as a subslice. The Node.js bridge has the same kind of copy in try/catch vs Result, which parses `\"70000\"` into a `u16` and calls `unwrap` on the result."
+        ],
+        "code": "fn main() {\n    let xs = [4, 9, 2];\n    let mut best = xs[0];\n    for i in 1..=xs.len() {\n        if xs[i] > best {\n            best = xs[i];\n        }\n    }\n    println!(\"{best}\");\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "Pointer + Length to Slices lesson",
+            "url": "/learn/rust-for-c-developers/c-pointer-length-to-slices/"
+          },
+          {
+            "title": "try/catch vs Result lesson",
+            "url": "/learn/rust-for-nodejs-developers/node-try-catch-to-result/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Primitive type slice",
+            "url": "https://doc.rust-lang.org/std/primitive.slice.html"
+          }
+        ]
+      },
+      {
+        "heading": "The one fix-me exercise: Why Borrowing Works",
+        "paragraphs": [
+          "Exactly one copy fails by design. Why Borrowing Works, in Rust Interview Prep, asks you to repair a five-line program so that it prints `crab` while keeping the `items.push(` call and the `println!`. Its notice says so: the code does not compile yet, fixing it is the exercise, and Run shows the compiler's message.",
+          "Pressing Run in the browser stopped after compilation and the Problems tab, now marked 1, held the real diagnostic: error[E0502]: cannot borrow `items` as mutable because it is also borrowed as immutable. The labels point at the immutable borrow on line 3, the push on line 4 and the later use on line 5. rustc 1.99.0 on the Mac reported the same error. The hint is in that last label: a borrow lasts until its final use, not until the closing brace. Once it compiles, say which rule you broke; the lesson calls it aliasing XOR mutation.",
+          "Borrowing, in Ownership Mastery, has a copy too, but it is the lesson's compiling example, because its practice fragment is not a whole program. Open it after solving the interview version and compare where each borrow ends."
+        ],
+        "links": [
+          {
+            "title": "Why Borrowing Works lesson",
+            "url": "/learn/interview/q-borrowing/"
+          },
+          {
+            "title": "Borrowing lesson",
+            "url": "/learn/ownership/borrowing/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Rust error code E0502",
+            "url": "https://doc.rust-lang.org/error_codes/E0502.html"
+          },
+          {
+            "title": "References and borrowing",
+            "url": "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html"
+          }
+        ]
+      },
+      {
+        "heading": "Examples projects open as copies",
+        "paragraphs": [
+          "The Academy's 46 Examples projects, from Ferris Pixel Art to an RPN calculator, now open with `/playground/?example=<id>`. Each is a small standard-library Cargo project of at most three files, and the copy is a new document: the original Example stays unchanged, and so do your drafts. In the same browser check, 45 Examples were accepted cleanly and one, CSV Report, with a warning about a field that is never read.",
+          "FizzBuzz by Match is a good first one. Its copy ran in our test and printed the numbers 1 to 20 with Fizz, Buzz and FizzBuzz in their places, by matching on the pair `(value % 3, value % 5)`. Change the range, add a rule for multiples of 7 and run it again."
+        ],
+        "links": [
+          {
+            "title": "FizzBuzz by Match as a Playground copy",
+            "url": "/playground/?example=fizzbuzz-match"
+          }
+        ]
+      },
+      {
+        "heading": "Check, Run and Debug do different jobs",
+        "paragraphs": [
+          "Check compiles the current files and reports diagnostics without running anything. When rustc is satisfied, the Problems tab says Rust accepted the current build snapshot; otherwise each error and warning appears with its file and line. Use it while you are still shaping the code.",
+          "Run compiles and then executes the program. Standard input comes from the Input tab, standard output appears in Output, and the last line reports the exit code, the total time and the words compiled locally. If compilation fails, Run stops there and the Problems tab shows the count, which is exactly what the fix-me copy does.",
+          "Debug builds a separate, instrumented snapshot of your source. You set breakpoints in the gutter, step into, over and out, and inspect real values from the running program: a String with its byte length, a Vec with its length and up to 16 elements, and concrete local structs up to 16 fields and four levels deep. It needs a page with shared-memory support; if your browser lacks it, use Run or open the project in the Crabrix app. A paused session does not spend the 30-second execution budget, and pauses are capped at 30 minutes."
+        ],
+        "links": [
+          {
+            "title": "Debug real Rust on your device",
+            "url": "/guide/#debugger"
+          }
+        ],
+        "sources": [
+          {
+            "title": "MDN: crossOriginIsolated",
+            "url": "https://developer.mozilla.org/en-US/docs/Web/API/Window/crossOriginIsolated"
+          }
+        ]
+      },
+      {
+        "heading": "Opening a copy never overwrites your drafts",
+        "paragraphs": [
+          "Every copy opens as a new unsaved document with its own identity, and unshared source lives in browser memory. If you switch on Keep drafts in this browser in the Playground settings, your edited copy is saved as a separate draft on this device, source only, with no room links or permissions. A browser keeps up to 32 drafts, and you delete old ones in the same settings. Opening the same lesson again gives you a fresh copy rather than replacing what you wrote.",
+          "Without that switch, a draft lasts until you leave the page, and Save to device, a source ZIP, is your copy. None of this sends source to Crabrix or counts as lesson progress."
+        ]
+      },
+      {
+        "heading": "What wasm32-wasip1 cannot do in the browser",
+        "paragraphs": [
+          "The target sets real limits, and some lessons meet them. The clearest is threads. Twelve Concurrency & Async lessons have copies and Check accepts all of them, but native threads are not enabled in this profile. When we ran the Threads copy, which calls `std::thread::spawn`, the browser Output showed `failed to spawn thread` with the error kind `Unsupported` and exit code 1. The Scoped Threads copy failed the same way when we ran its `wasm32-wasip1` build outside the browser. Use Check on those copies to learn what the compiler demands of `Send` types and moving closures, and a native toolchain to watch threads run.",
+          "Programs have no network access either: sockets are not enabled, so an HTTP or TCP example can compile and still cannot connect. Each run has a 64 MiB memory maximum, a 1 MiB limit on captured output and a 30-second execution deadline, and compiling against the standard library has a 45-second deadline. The editor holds up to 16 files and 128 KiB of source, at most 64 KiB per file, which every practice copy fits easily.",
+          "Crates are possible within a bounded profile: declare a dependency in Packages, press Prepare, and the browser resolves up to 16 crates.io libraries, one version each, and verifies their archives. Host procedural macros and native linking are not supported. Practice copies need none of this; each is a single `main.rs` using only the standard library."
+        ],
+        "links": [
+          {
+            "title": "Concurrency & Async course",
+            "url": "/learn/concurrency/"
+          },
+          {
+            "title": "Threads lesson",
+            "url": "/learn/concurrency/concurrency/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "std::thread::spawn",
+            "url": "https://doc.rust-lang.org/std/thread/fn.spawn.html"
+          },
+          {
+            "title": "rustc book: wasm32-wasip1 platform support",
+            "url": "https://doc.rust-lang.org/rustc/platform-support/wasm32-wasip1.html"
+          }
+        ]
+      },
+      {
+        "heading": "When an AI agent hands you a practice link",
+        "paragraphs": [
+          "Learn Rust with your AI agent connects Claude, Claude Code, Codex, Cursor and other MCP clients to the Academy through Crabrix MCP 0.6.0, either the remote read-only server at `https://crabrix.com/mcp/academy`, which needs no sign-in, or a local one started with `npx -y crabrix@0.6.0 academy`. When the agent reaches the practice step, it calls `crabrix_academy_open_playground` with the course and lesson IDs. The tool returns the existing Playground link and a `kind` that says what it opens: a lesson project, a practice copy or an Algorithm Atlas trace. Examples come with an example-copy link from `crabrix_academy_get_examples`. Neither creates a room. In Claude Code the remote setup is the single command below; the Learn with AI page lists the equivalent steps for the other clients.",
+          "Links handed out by the tools carry `via=ai`. The page counts that arrival once, as an anonymous daily total per kind, adds one for the first Run or Debug in that tab, and then removes the parameter from the address. No cookie, identifier, IP address, lesson ID or code is stored with the count, the totals are deleted after 400 days, and nothing is sent when Global Privacy Control or Do Not Track is on.",
+          "The agent can explain, give graded hints and review code you paste, but its review is labelled AI reviewed; official progress comes only from the checks in the Crabrix app. Crabrix 1.1.9, rolling out through the App Store, adds a Learn this lesson with AI button to lessons, which copies the same public lesson context for your agent."
+        ],
+        "code": "claude mcp add --transport http crabrix-academy https://crabrix.com/mcp/academy\n",
+        "codeLanguage": "shell",
+        "links": [
+          {
+            "title": "Set up Learn Rust with your AI agent",
+            "url": "/learn/with-ai/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Model Context Protocol",
+            "url": "https://modelcontextprotocol.io/"
+          }
+        ]
+      },
+      {
+        "heading": "Pair programming in a shared room, only when you choose",
+        "paragraphs": [
+          "A practice copy is private to your browser. It becomes shared only when you choose Share Playground and create a temporary room, with a lifetime of 1, 4, 12 or 24 hours and one hour selected by default. Up to four participants edit the same files, and each compiles and runs their own snapshot on their own device. Source is encrypted with AES-256-GCM, and the key stays in the link fragment after `#`, which is not sent in requests to the relay. A view-only link lets someone read, run and copy without editing.",
+          "The Academy tools cannot open a room for you. If you want an agent to edit alongside you, share the room and agree to it; the agent joins through Crabrix MCP with its own link, and letting it run code is a separate permission on your device, off by default and limited to ten minutes. Practise alone on a copy, and share a room only when a person or an agent needs to see the same lines."
+        ],
+        "links": [
+          {
+            "title": "Playgrounds, live interviews and AI agents",
+            "url": "/guide/#playground"
+          }
+        ]
+      },
+      {
+        "heading": "Your first 30 minutes with Rust exercises online",
+        "paragraphs": [
+          "Minutes 0 to 5. Open Hello, Rust in Rust Basics and press Practise this code in Playground. The first Check or Run downloads the 44.7 MiB toolchain, so start it while you read. Run prints `Hello, Crabrix!`. Change the greeting, predict the output and run it, then write `{}` with no argument, as the lesson suggests, and read the error the compiler gives before any program runs.",
+          "Minutes 5 to 12. Open Pattern Matching and make the edits described above: a negative number, a guard, the order of the arms, `None`. Use Check between edits and Run when you want output.",
+          "Minutes 12 to 20. Open Slices, call `first` from the empty `main` with three inputs and watch two of them panic. Then rewrite it to clamp to the length. If your browser supports Debug, set a breakpoint inside `first` and step through each call.",
+          "Minutes 20 to 28. Open Why Borrowing Works, read the E0502 message in Problems and make the smallest edit that prints `crab` with the push and the `println!` still in place. Then open Borrowing in Ownership Mastery and compare your fix with its example.",
+          "Minutes 28 to 30. Write down one rule from each lesson in your own words. Coming from C or Node.js, give your next session to Pointer + Length to Slices or try/catch vs Result. With an AI agent, connect it from Learn with AI and ask it to continue where you stopped; it hands you the same practice links."
+        ],
+        "links": [
+          {
+            "title": "Hello, Rust lesson",
+            "url": "/learn/basics/hello-rust/"
+          },
+          {
+            "title": "Pattern Matching lesson",
+            "url": "/learn/basics/pattern-matching/"
+          },
+          {
+            "title": "Slices lesson",
+            "url": "/learn/ownership/slices/"
+          },
+          {
+            "title": "Why Borrowing Works lesson",
+            "url": "/learn/interview/q-borrowing/"
+          },
+          {
+            "title": "Learn with AI",
+            "url": "/learn/with-ai/"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "what-is-rust-compiled-no-garbage-collector-safe",
+    "title": "What is the Rust programming language? Compiled, no GC, memory-safe",
+    "date": "2026-11-20",
+    "publishedDate": "2026-11-24",
+    "modifiedDate": "2026-11-24",
+    "readingMinutes": 14,
+    "summary": "What is the Rust programming language? A compiled language with no garbage collector and memory safety by default, with tested code and a first-week plan.",
+    "relatedSlugs": [
+      "ownership-in-a-real-program",
+      "result-errors-that-help",
+      "rust-iterators-without-extra-allocations",
+      "real-rust-on-iphone",
+      "rust-performance-measure-before-optimizing"
+    ],
+    "sections": [
+      {
+        "heading": "What is the Rust programming language?",
+        "paragraphs": [
+          "What is the Rust programming language? In one sentence: Rust is a compiled, statically typed, general-purpose language without a garbage collector. Its compiler, `rustc`, checks types, ownership and borrowing before the program runs, and only a program that passes those checks becomes a native executable. That single design decision explains most of what people like about Rust, and most of what they find hard in the first weeks.",
+          "Rust suits software where speed, predictable memory use and correctness all matter: command-line tools, web servers, embedded devices, WebAssembly modules and parts of operating systems. Rust 1.0 was released in May 2015, and a new stable compiler has followed every six weeks since.",
+          "This guide follows the Crabrix Academy lesson What Rust Is and the Rust at a glance units of our bridge courses for C and Node.js developers. Every program below was compiled and run with rustc 1.99.0 on an Apple silicon Mac with `--edition 2024`, and the compiler error is real terminal output."
+        ],
+        "image": {
+          "src": "/images/blog/november-2026/what-is-rust-compiled-no-garbage-collector-safe/cover.png",
+          "alt": "An orange paper crab beside a glowing forge that turns rolled source scrolls into a polished cyan block, with an idle garbage truck behind a no-entry sign",
+          "caption": "Original generated illustration: rustc as a forge that turns source into a native program, with no garbage collector waiting to clean up.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "What Rust Is (Rust Basics, lesson 1)",
+            "url": "/learn/basics/what-is-rust/"
+          },
+          {
+            "title": "Rust Basics course",
+            "url": "/learn/basics/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Announcing Rust 1.0",
+            "url": "https://blog.rust-lang.org/2015/05/15/Rust-1.0/"
+          },
+          {
+            "title": "The Rust Programming Language (the Book)",
+            "url": "https://doc.rust-lang.org/book/"
+          }
+        ]
+      },
+      {
+        "heading": "Compiled ahead of time to native code and WebAssembly",
+        "paragraphs": [
+          "Rust is compiled ahead of time. `rustc`, usually driven by Cargo, checks the whole crate and lowers it to LLVM IR; LLVM, the code generator family clang also uses, emits machine code for one target, and the linker produces an ordinary executable. The machine that runs it needs no interpreter, virtual machine or runtime package, because the standard library is linked into the binary.",
+          "Compare `node app.js`, which starts a runtime: V8 interprets the JavaScript and compiles hot functions while the program runs, and every machine needs Node.js installed. There, as in Python, calling a method that does not exist is discovered only when that line executes. In Rust, a type error in a branch your tests never reach still stops the build.",
+          "The target is a choice. `rustc --edition 2024 targets.rs` produced an arm64 Mach-O executable that printed `area = 12` and `compiled for aarch64`. Adding `--target wasm32-wasip1` produced a WebAssembly module from the same source, which printed `area = 12` and `compiled for wasm32` under Node.js's WASI support. That is the target Crabrix uses: the iPhone and iPad app and the browser Playground carry a real rustc and run your program on your device."
+        ],
+        "code": "// rustc checks the whole file first, then writes a program for one target.\nfn area(width: u32, height: u32) -> u32 {\n    width * height\n}\n\nfn main() {\n    let room = area(4, 3);\n    println!(\"area = {room}\");\n    println!(\"compiled for {}\", std::env::consts::ARCH);\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "Node.js runtime vs compiled Rust",
+            "url": "/learn/rust-for-nodejs-developers/node-what-rust-is/"
+          },
+          {
+            "title": "What Rust Is, from C",
+            "url": "/learn/rust-for-c-developers/c-what-rust-is/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "rustc platform support",
+            "url": "https://doc.rust-lang.org/rustc/platform-support.html"
+          },
+          {
+            "title": "The wasm32-wasip1 target",
+            "url": "https://doc.rust-lang.org/rustc/platform-support/wasm32-wasip1.html"
+          }
+        ]
+      },
+      {
+        "heading": "Rust has no garbage collector: owners and Drop free memory",
+        "paragraphs": [
+          "Rust has no garbage collector, and you do not call `free` either. Each value has exactly one owner, usually a variable. When the owner goes out of scope, the value is dropped: its `Drop` implementation runs, then its fields are dropped, then its memory is released. The compiler places that cleanup at a point you can see in the source, the closing brace of the owner's scope.",
+          "Ownership can move. Passing a `Vec` or `String` by value makes the function its new owner; returning it moves it back. A value is freed exactly once, by whoever owns it last. To release something early, call `drop(value)`, an ordinary function that takes ownership and lets the value go.",
+          "Our run printed `inner scope ends`, then `free temp (16 bytes)` at the inner closing brace, `free scratch (64 bytes)` at the explicit `drop`, the last line of `main`, and finally `free input (1024 bytes)`. Moving `input` through `keep` freed nothing, because ownership went in and came straight back."
+        ],
+        "code": "struct Buffer {\n    name: &'static str,\n    bytes: Vec<u8>,\n}\n\nimpl Drop for Buffer {\n    fn drop(&mut self) {\n        println!(\"free {} ({} bytes)\", self.name, self.bytes.len());\n    }\n}\n\nfn keep(buffer: Buffer) -> Buffer {\n    buffer // ownership moves in and straight back out: nothing is freed here\n}\n\nfn main() {\n    let input = Buffer { name: \"input\", bytes: vec![0; 1024] };\n    let scratch = Buffer { name: \"scratch\", bytes: vec![0; 64] };\n    {\n        let _temp = Buffer { name: \"temp\", bytes: vec![0; 16] };\n        println!(\"inner scope ends\");\n    } // `temp` is freed here, at the closing brace\n    let input = keep(input);\n    drop(scratch); // free early: `drop` takes ownership and lets it go\n    println!(\"main ends with {} still owned\", input.name);\n} // `input` is freed here, exactly once\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "Garbage collection vs deterministic drop",
+            "url": "/learn/rust-for-nodejs-developers/node-no-garbage-collector/"
+          },
+          {
+            "title": "Drop & Scope",
+            "url": "/learn/ownership/drop-order/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "What is ownership? (the Book)",
+            "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html"
+          },
+          {
+            "title": "The Drop trait",
+            "url": "https://doc.rust-lang.org/std/ops/trait.Drop.html"
+          }
+        ]
+      },
+      {
+        "heading": "Deterministic drop compared with free() and a garbage collector",
+        "paragraphs": [
+          "In C, `malloc` and `free` are your responsibility. Forget a `free` and memory leaks; call it twice, or use the pointer afterwards, and the behaviour is undefined: a crash much later, or a security hole. Rust keeps C's machine model of stack frames, heap allocations and fixed-width integers, but the compiler decides where memory is released and refuses programs that would touch it afterwards.",
+          "In a garbage-collected language such as JavaScript, Java or Go, a collector frees objects some time after they become unreachable. That is convenient, but the timing is not yours: finalisers may run late or never, so files, sockets and locks still need an explicit `close()` or `try/finally`, and the collector's pauses and memory headroom follow its heuristics rather than your code.",
+          "Because Rust ties cleanup to scope, one mechanism handles every resource. A `File` closes its descriptor in `Drop`, a `MutexGuard` releases its lock and a `Vec` frees its buffer. There are no collection pauses, and the cost of freeing appears at the closing brace where it happens. The price is that you must decide who owns each value, which is what the borrow checker teaches you."
+        ],
+        "image": {
+          "src": "/images/blog/november-2026/what-is-rust-compiled-no-garbage-collector-safe/infographic.png",
+          "alt": "Infographic with five enamel cards labelled Compiled, No GC, Ownership, Safe by default and Cargo above an orange paper crab mascot",
+          "caption": "Original generated infographic: Rust in five words, compiled ahead of time, no garbage collector, ownership, safe by default and Cargo.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "From malloc/free to Ownership",
+            "url": "/learn/rust-for-c-developers/c-malloc-free-to-ownership/"
+          },
+          {
+            "title": "Ownership",
+            "url": "/learn/ownership/ownership/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "std::sync::Mutex and MutexGuard",
+            "url": "https://doc.rust-lang.org/std/sync/struct.Mutex.html"
+          }
+        ]
+      },
+      {
+        "heading": "What safe Rust rules out: use after free, null and data races",
+        "paragraphs": [
+          "Most Rust code is safe Rust, in which the compiler upholds the memory rules for you, and safe Rust has no undefined behaviour. The classic C bugs cannot be written: use after free and double free are ruled out by ownership, dangling references by borrow checking, and reading a variable before it is initialised is error `E0381`.",
+          "Null dereference disappears because references are never null. When a value may be absent, its type says so: `Option<T>` is either `Some(value)` or `None`, and you cannot use the value until you have handled both cases. Out-of-bounds access is the one memory rule checked at run time. `xs[i]` with a bad index panics, and `xs.get(i)` returns `None`, so a bad index never reads neighbouring memory.",
+          "Data races are compile errors too. The `Send` and `Sync` traits, together with borrowing, decide which values may cross threads and how. In the example, two scoped threads add to one total, and the compiler accepts that only because `total` is reached through a `Mutex`. Our run printed `user 1: ana`, `user 7: not found`, `readings.get(10) = None` and `total = 18`."
+        ],
+        "code": "use std::sync::Mutex;\nuse std::thread;\n\nfn find_user(id: u32) -> Option<&'static str> {\n    match id {\n        1 => Some(\"ana\"),\n        _ => None, // no null: absence is a value the caller must handle\n    }\n}\n\nfn main() {\n    // No null dereference: the caller must decide what `None` means.\n    for id in [1, 7] {\n        match find_user(id) {\n            Some(name) => println!(\"user {id}: {name}\"),\n            None => println!(\"user {id}: not found\"),\n        }\n    }\n\n    // No out-of-bounds read: `get` returns None instead of touching other memory.\n    let readings = [3, 4, 5, 6];\n    println!(\"readings.get(10) = {:?}\", readings.get(10));\n\n    // No data race: the threads can reach `total` only through its Mutex.\n    let total = Mutex::new(0);\n    thread::scope(|s| {\n        for chunk in readings.chunks(2) {\n            let total = &total;\n            s.spawn(move || {\n                let sum: i32 = chunk.iter().sum();\n                *total.lock().unwrap() += sum;\n            });\n        }\n    });\n    println!(\"total = {}\", total.into_inner().unwrap());\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "What Safe Rust Rules Out",
+            "url": "/learn/rust-for-c-developers/c-what-safe-rust-rules-out/"
+          },
+          {
+            "title": "Option & Result",
+            "url": "/learn/basics/option-result/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Behavior considered undefined (Rust Reference)",
+            "url": "https://doc.rust-lang.org/reference/behavior-considered-undefined.html"
+          },
+          {
+            "title": "std::option",
+            "url": "https://doc.rust-lang.org/std/option/index.html"
+          },
+          {
+            "title": "Fearless concurrency (the Book)",
+            "url": "https://doc.rust-lang.org/book/ch16-00-concurrency.html"
+          }
+        ]
+      },
+      {
+        "heading": "What safe Rust does not rule out: leaks, deadlocks, panics, logic errors",
+        "paragraphs": [
+          "Safe means free of undefined behaviour, not correct. The Rust Reference lists behaviour the compiler does not consider unsafe even though you would call it a bug: deadlocks, leaks of memory and other resources, exiting without running destructors, integer overflow and logic errors. A safe program can also panic, or run out of memory or stack.",
+          "Each of these is defined, which matters when you debug. A leak through `Box::leak`, `std::mem::forget` or an `Rc` cycle wastes memory but cannot corrupt it. A panic unwinds the thread and runs destructors, or aborts if configured to. Integer overflow panics in debug builds and wraps in release builds, so where it matters, choose `checked_add`, `wrapping_add` or `saturating_add`.",
+          "Our run printed `v1-leaked`, then `None 4 255` for the three additions on a `u8` holding 250, then `second lock available: false` while the guard was alive and `true` after `drop(guard)`. Calling `lock()` instead of `try_lock()` at that point would have waited for ever, and the compiler would not have objected. Tests, review and careful design remain your job."
+        ],
+        "code": "use std::sync::Mutex;\n\nfn main() {\n    // A leak is safe: the memory is never freed, but nothing can misuse it.\n    let label: &'static mut String = Box::leak(Box::new(String::from(\"v1\")));\n    label.push_str(\"-leaked\");\n    println!(\"{label}\");\n\n    // Overflow is defined behaviour: say which result you want.\n    let level: u8 = 250;\n    println!(\"{:?} {} {}\", level.checked_add(10), level.wrapping_add(10), level.saturating_add(10));\n\n    // A deadlock is safe too: a second `lock()` here would wait for ever.\n    let counter = Mutex::new(0);\n    let guard = counter.lock().unwrap();\n    println!(\"second lock available: {}\", counter.try_lock().is_ok());\n    drop(guard);\n    println!(\"after drop: {}\", counter.try_lock().is_ok());\n}\n",
+        "codeLanguage": "rust",
+        "sources": [
+          {
+            "title": "Behavior not considered unsafe (Rust Reference)",
+            "url": "https://doc.rust-lang.org/reference/behavior-not-considered-unsafe.html"
+          },
+          {
+            "title": "std::mem::forget is safe",
+            "url": "https://doc.rust-lang.org/std/mem/fn.forget.html"
+          }
+        ]
+      },
+      {
+        "heading": "unsafe is an explicit, searchable boundary",
+        "paragraphs": [
+          "When safe Rust cannot express something, such as calling C, driving hardware or building a low-level data structure, you write `unsafe`. It re-enables a short list of powers: dereferencing raw pointers, calling `unsafe` functions including every C function, accessing mutable statics, implementing `unsafe` traits and reading `union` fields. Type checking and the borrow checker stay on.",
+          "Inside an unsafe block undefined behaviour is possible again, and the whole program's safety rests on that block being right. So keep such blocks small, put a `// SAFETY:` comment above each one naming the invariant it relies on, and wrap it in a safe function that checks the invariant first. The standard library's `Vec` and `Mutex` are built exactly this way.",
+          "In the example, `first_and_last` skips bounds checks with `get_unchecked` only after proving the slice is not empty, and `c_abs` rejects `INT_MIN`, for which C's `abs` is undefined, before crossing the boundary. Edition 2024 requires `unsafe extern` for the C declarations. It printed `Some((3, 5)) None` and `42`, natively and as WebAssembly. Because `unsafe` is a keyword, a reviewer can find every such place with one search."
+        ],
+        "code": "unsafe extern \"C\" {\n    fn abs(input: i32) -> i32; // from the C standard library\n}\n\n/// A safe function: it checks what the unsafe block relies on first.\nfn first_and_last(values: &[u32]) -> Option<(u32, u32)> {\n    if values.is_empty() {\n        return None;\n    }\n    let last = values.len() - 1;\n    // SAFETY: `values` is not empty, so indexes 0 and `last` are in bounds.\n    let pair = unsafe { (*values.get_unchecked(0), *values.get_unchecked(last)) };\n    Some(pair)\n}\n\nfn c_abs(x: i32) -> i32 {\n    assert!(x != i32::MIN, \"abs(INT_MIN) is undefined behaviour in C\");\n    // SAFETY: `abs` takes no pointers, and the one undefined input is excluded.\n    unsafe { abs(x) }\n}\n\nfn main() {\n    println!(\"{:?} {:?}\", first_and_last(&[3, 4, 5]), first_and_last(&[]));\n    println!(\"{}\", c_abs(-42));\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "unsafe, Raw Pointers and FFI",
+            "url": "/learn/rust-for-c-developers/c-unsafe-and-ffi/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Unsafe Rust (the Book)",
+            "url": "https://doc.rust-lang.org/book/ch20-01-unsafe-rust.html"
+          },
+          {
+            "title": "The unsafe keyword",
+            "url": "https://doc.rust-lang.org/std/keyword.unsafe.html"
+          }
+        ]
+      },
+      {
+        "heading": "Zero-cost abstractions, made concrete with iterators",
+        "paragraphs": [
+          "Zero-cost abstraction is a phrase Rust borrows from C++. The Rust Book quotes Bjarne Stroustrup: what you don't use, you don't pay for, and what you do use, you couldn't hand code any better. It does not mean free to compile. It means no run-time overhead compared with the code you would otherwise write by hand.",
+          "Iterators are the everyday example. `filter`, `map` and `sum` look like JavaScript's array methods, but they are lazy: nothing runs until `sum` pulls values through, and no intermediate array is built. Each closure has its own type, so the compiler specialises the pipeline and can inline it into a single loop.",
+          "We checked rather than assumed. Both functions below return 220 for the numbers 1 to 10. Compiled as a library with `-C opt-level=3` for aarch64, each became 58 instructions of the same shape: no bounds check, no allocation, no call, and a main loop handling four values per pass without branches. Only register choice and the order of two instruction pairs differed, on this compiler and target, so still measure your own hot code."
+        ],
+        "code": "/// The loop you might write by hand.\nfn even_squares_loop(values: &[u64]) -> u64 {\n    let mut total = 0;\n    for i in 0..values.len() {\n        let v = values[i];\n        if v % 2 == 0 {\n            total += v * v;\n        }\n    }\n    total\n}\n\n/// The same work as an iterator chain: no intermediate Vec is built.\nfn even_squares_iter(values: &[u64]) -> u64 {\n    values.iter().filter(|&&v| v % 2 == 0).map(|&v| v * v).sum()\n}\n\nfn main() {\n    let values: Vec<u64> = (1..=10).collect();\n    println!(\"loop: {}\", even_squares_loop(&values));\n    println!(\"iter: {}\", even_squares_iter(&values));\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "Array methods vs iterators",
+            "url": "/learn/rust-for-nodejs-developers/node-array-methods-to-iterators/"
+          },
+          {
+            "title": "Iterators",
+            "url": "/learn/ownership/iterators/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Performance in loops vs. iterators (the Book)",
+            "url": "https://doc.rust-lang.org/book/ch13-04-performance.html"
+          },
+          {
+            "title": "std::iter",
+            "url": "https://doc.rust-lang.org/std/iter/index.html"
+          }
+        ]
+      },
+      {
+        "heading": "Cargo and crates.io: one tool for the whole project",
+        "paragraphs": [
+          "Rust ships with Cargo, its build tool and package manager. Where C combines make, headers and a system package manager, and Node.js has npm and `package.json`, Rust has `Cargo.toml` and one command: `cargo build`, `cargo run`, `cargo test` for unit, integration and documentation tests, and `cargo doc` for API documentation from your comments.",
+          "Libraries are called crates and come from crates.io, the community registry. `cargo add` writes a dependency into `Cargo.toml`, and `Cargo.lock` records the exact versions that were resolved, so a later build uses the same ones. When we ran the commands below with Cargo 1.99, `cargo new` wrote `edition = \"2024\"` into the manifest, `cargo add itoa` added `itoa = \"1.0.19\"`, and `cargo run` printed `Hello, world!`.",
+          "Most Rust projects build the same way: clone, run `cargo build`, and Cargo downloads, verifies and compiles the dependency graph. `cargo fmt` and `cargo clippy` are standard too."
+        ],
+        "code": "cargo new hello-crab      # Cargo.toml, src/main.rs and a git repository\ncd hello-crab\ncargo run                 # builds target/debug/hello-crab, prints Hello, world!\ncargo add itoa            # writes itoa = \"1.0.19\" under [dependencies]\ncargo test                # unit, integration and documentation tests\ncargo build --release     # optimised build in target/release/\n",
+        "codeLanguage": "shell",
+        "links": [
+          {
+            "title": "npm and package.json vs Cargo",
+            "url": "/learn/rust-for-nodejs-developers/node-npm-to-cargo/"
+          },
+          {
+            "title": "Headers and make to Cargo",
+            "url": "/learn/rust-for-c-developers/c-make-and-headers-to-cargo/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "The Cargo Book",
+            "url": "https://doc.rust-lang.org/cargo/"
+          },
+          {
+            "title": "First steps with Cargo",
+            "url": "https://doc.rust-lang.org/cargo/getting-started/first-steps.html"
+          },
+          {
+            "title": "crates.io",
+            "url": "https://crates.io/"
+          }
+        ]
+      },
+      {
+        "heading": "Reading rustc errors: the compiler as a teacher",
+        "paragraphs": [
+          "Many people meet Rust's compiler as an obstacle and later treat it as a teacher. Its diagnostics have a fixed anatomy worth learning on your first day. Below is real output for a program whose `total` takes a `Vec<i32>` by value, after which `main` uses the vector again: the same mistake as freeing a buffer in C and keeping the pointer.",
+          "Read it from the top. The first line gives the severity, the code and the rule: `error[E0382]: borrow of moved value`. The `-->` line gives the file, line and column. Under the source, `^^^` marks the primary span, where the rule is broken, and `---` marks secondary spans that explain why: where the value was created, that `Vec<i32>` does not implement `Copy`, and where it moved. The `note:` points at the parameter that takes ownership, and `help:` proposes a change.",
+          "No program was built. In C the equivalent use after free compiles without a warning under `-Wall -Wextra` and fails, if you are lucky, under AddressSanitizer at run time. `rustc --explain E0382` prints the rule with examples, offline."
+        ],
+        "code": "$ rustc --edition 2024 readings.rs\nerror[E0382]: borrow of moved value: `readings`\n --> readings.rs:8:40\n  |\n6 |     let readings = vec![3, 4, 5];\n  |         -------- move occurs because `readings` has type `Vec<i32>`, which does not implement the `Copy` trait\n7 |     let sum = total(readings);\n  |                     -------- value moved here\n8 |     println!(\"{sum} from {} readings\", readings.len());\n  |                                        ^^^^^^^^ value borrowed here after move\n  |\nnote: consider changing this parameter type in function `total` to borrow instead if owning the value isn't necessary\n --> readings.rs:1:18\n  |\n1 | fn total(values: Vec<i32>) -> i32 {\n  |    -----         ^^^^^^^^ this parameter takes ownership of the value\n  |    |\n  |    in this function\nhelp: consider cloning the value if the performance cost is acceptable\n  |\n7 |     let sum = total(readings.clone());\n  |                             ++++++++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0382`.\n",
+        "codeLanguage": "shell",
+        "image": {
+          "src": "/images/blog/november-2026/what-is-rust-compiled-no-garbage-collector-safe/compiler-teacher.png",
+          "alt": "A friendly terminal-shaped robot teacher with glasses hands an orange paper crab a page of code with amber underlines and a lightbulb note",
+          "caption": "Original generated illustration: rustc as a patient teacher, returning your code with the broken line underlined and a suggested fix.",
+          "width": 1536,
+          "height": 1024
+        },
+        "links": [
+          {
+            "title": "Reading rustc",
+            "url": "/learn/basics/compiler-feedback/"
+          },
+          {
+            "title": "Reading rustc Diagnostics (for C developers)",
+            "url": "/learn/rust-for-c-developers/c-rustc-diagnostics/"
+          },
+          {
+            "title": "TypeScript types vs Rust types",
+            "url": "/learn/rust-for-nodejs-developers/node-types-are-checked-not-erased/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Error code E0382",
+            "url": "https://doc.rust-lang.org/error_codes/E0382.html"
+          }
+        ]
+      },
+      {
+        "heading": "Fix the first error, and treat help as evidence",
+        "paragraphs": [
+          "The `help:` line suggests `readings.clone()`. That would compile, but it copies the whole vector to satisfy a function that only reads it. The `note:` points to the better fix: `total` does not need ownership, so it should borrow a slice, `&[i32]`, and the caller passes `&readings`. Treat a suggestion as evidence about your program, not as an order, and decide first what the program should mean.",
+          "The corrected program printed `12 from 3 readings`. Two habits help. Fix the first error and rebuild before reading the rest, because one root mistake can produce several later messages. And predict the result before you press Run: a prediction the compiler contradicts is when you learn something.",
+          "Errors and warnings are separate in Rust. An error means no program is built, and no flag lets it through. A warning, such as an unused variable, still produces a program; `#![deny(warnings)]` or `RUSTFLAGS=\"-D warnings\"` in continuous integration turns warnings into errors, and `cargo clippy` adds hundreds of further lints."
+        ],
+        "code": "// The fix the note points to: borrow the readings instead of taking them.\nfn total(values: &[i32]) -> i32 {\n    values.iter().sum()\n}\n\nfn main() {\n    let readings = vec![3, 4, 5];\n    let sum = total(&readings);\n    println!(\"{sum} from {} readings\", readings.len());\n}\n",
+        "codeLanguage": "rust",
+        "links": [
+          {
+            "title": "Borrowing",
+            "url": "/learn/ownership/borrowing/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Clippy documentation",
+            "url": "https://doc.rust-lang.org/clippy/"
+          }
+        ]
+      },
+      {
+        "heading": "Editions let Rust change without breaking your code",
+        "paragraphs": [
+          "Rust is designed so that code which compiles on one stable release keeps compiling on later ones, with rare exceptions for soundness fixes. Changes that would break old code, such as new keywords or stricter rules, wait for an edition: 2015, 2018, 2021 and 2024 so far. The 2024 edition became stable with Rust 1.85 in February 2025.",
+          "An edition is chosen per crate, in `Cargo.toml` or with `rustc --edition`. Crates on different editions link into one program, so a 2018 library and a 2024 application work side by side and the ecosystem never migrates at once. `cargo fix --edition` applies the mechanical changes, such as 2024's `unsafe extern`.",
+          "For a learner: start new projects on the latest edition, as `cargo new` does, and read older material with that in mind; nearly all of it still applies."
+        ],
+        "sources": [
+          {
+            "title": "The Rust Edition Guide",
+            "url": "https://doc.rust-lang.org/edition-guide/"
+          },
+          {
+            "title": "Announcing Rust 1.85.0 and Rust 2024",
+            "url": "https://blog.rust-lang.org/2025/02/20/Rust-1.85.0/"
+          },
+          {
+            "title": "How Rust is made and release channels",
+            "url": "https://doc.rust-lang.org/book/appendix-07-nightly-rust.html"
+          }
+        ]
+      },
+      {
+        "heading": "Where Rust is used: Linux, Android and Windows",
+        "paragraphs": [
+          "Rust is used where C and C++ were the default and memory safety matters. The Linux kernel added initial Rust support in version 6.1, released in December 2022. Its documentation now has a Rust section with a quick start, coding guidelines and a description of how Rust abstractions wrap the kernel's C interfaces for users such as drivers and file systems written in Rust.",
+          "Android's platform documentation states that Android supports developing native operating-system components in Rust, and describes the language as giving memory safety with performance comparable to C and C++, without a garbage collector. Google's security team has also written about memory-safe languages, Rust included, in Android 13.",
+          "Microsoft documents Rust development on Windows on Microsoft Learn and is a founding member of the Rust Foundation. Beyond operating systems, rustc's platform support page lists targets from Linux, macOS and Windows to microcontrollers and WebAssembly."
+        ],
+        "sources": [
+          {
+            "title": "Rust in the Linux kernel documentation",
+            "url": "https://docs.kernel.org/rust/"
+          },
+          {
+            "title": "Linux kernel Rust: general information",
+            "url": "https://docs.kernel.org/rust/general-information.html"
+          },
+          {
+            "title": "Linux 6.1 release summary (Kernel Newbies)",
+            "url": "https://kernelnewbies.org/Linux_6.1"
+          },
+          {
+            "title": "Android Rust introduction",
+            "url": "https://source.android.com/docs/setup/build/rust/building-rust-modules/overview"
+          },
+          {
+            "title": "Memory safe languages in Android 13",
+            "url": "https://security.googleblog.com/2022/12/memory-safe-languages-in-android-13.html"
+          },
+          {
+            "title": "Overview of developing on Windows with Rust",
+            "url": "https://learn.microsoft.com/en-us/windows/dev-environment/rust/overview"
+          }
+        ]
+      },
+      {
+        "heading": "Why learn Rust, and how long does it take?",
+        "paragraphs": [
+          "Why learn Rust? Three reasons hold up. You get native performance and memory use you can predict from the code. You get a compiler that rejects whole classes of bugs before the program exists, including the memory and threading bugs behind many C and C++ security fixes. And the ideas transfer: once you have reasoned about ownership, borrowing and absence, you notice them everywhere.",
+          "How long it takes depends on where you start. The Crabrix path Rust from Zero has 52 lessons, from What Rust Is to Send & Sync, and their own time estimates add up to about 12 hours. That covers what a beginner needs, not fluency: most learning happens afterwards, writing small programs, and ownership and lifetimes usually take longest to feel natural.",
+          "If you already program in C or Node.js, start with a bridge course. Rust for C Developers and Rust for Node.js Developers have 20 lessons each, under four hours of estimated time, and set your habits beside Rust: malloc and free beside ownership, NULL and errno beside `Option` and `Result`, npm beside Cargo, the garbage collector beside deterministic drop."
+        ],
+        "links": [
+          {
+            "title": "Rust for C Developers",
+            "url": "/learn/rust-for-c-developers/"
+          },
+          {
+            "title": "Rust for Node.js Developers",
+            "url": "/learn/rust-for-nodejs-developers/"
+          }
+        ]
+      },
+      {
+        "heading": "A first-week Rust learning plan with Rust from Zero",
+        "paragraphs": [
+          "A week of short daily sessions covers the first 17 steps of the Rust from Zero path: the first two units of Rust Basics and the start of the third. Their stated times add up to just under three hours, leaving room to repeat and vary each exercise.",
+          "Day 1: What Rust Is, Hello, Rust and Variables; build the example, then break it on purpose and read the error. Day 2: Printing Values, Numbers and Booleans. Day 3: Characters & Text and Reading rustc; create three controlled errors and write down the first line of each. Day 4: Compound Types, Operators & Casting and Block Expressions. Day 5: Functions, Parameters and Control Flow. Day 6: Ranges, Loops and Parsing Values.",
+          "Day 7 has no new lesson. Write a small program that parses a few numbers from text and prints their total and largest value, using only this week's material, and note every error you hit. What Rust Is and the bridge courses are on the website now and reach the iPhone and iPad app in Crabrix 1.1.9; the other lessons here are already in the app, where progress stays on your device."
+        ],
+        "links": [
+          {
+            "title": "Hello, Rust",
+            "url": "/learn/basics/hello-rust/"
+          },
+          {
+            "title": "Variables",
+            "url": "/learn/basics/variables/"
+          },
+          {
+            "title": "Parsing Values",
+            "url": "/learn/basics/parsing/"
+          },
+          {
+            "title": "Open What Rust Is in the Playground",
+            "url": "/playground/?lesson=basics/what-is-rust"
+          }
+        ]
+      },
+      {
+        "heading": "Three ways to learn Rust: on your own, AI-assisted or agent-first",
+        "paragraphs": [
+          "Crabrix offers one Academy three ways. On your own: lessons, quick checks and compiler labs on the website and in the app, with no account. AI-assisted: read a lesson and ask your assistant about it; every lesson page has a Learn this lesson with AI prompt carrying its title, goal and link. Agent-first: connect Claude, Claude Code, Codex, Cursor or another MCP client to Crabrix Academy, and the agent finds lessons, explains them and sets the exercises.",
+          "The Academy server is public and read-only, with no sign-in: `https://crabrix.com/mcp/academy`, or locally `npx -y crabrix@0.6.0 academy`. It serves lessons, exercises, examples and learning paths, including Rust from Zero, and never sees your progress, projects or Playground rooms. Agents follow a published teaching contract: teach from the real lessons and link them, give hints before solutions, and leave the code to you.",
+          "An agent's review is labelled AI reviewed; only the checks in the Crabrix app record a lesson as passed, and the agent cannot change your progress. Crabrix 1.1.9, rolling out through the App Store, adds Learn with your AI agent under Learn and a Learn this lesson with AI button on lessons. Whichever way you choose, start the same way: open What Rust Is, build the example and read what the compiler says."
+        ],
+        "code": "# Claude Code: the read-only Academy as a remote MCP server\nclaude mcp add --transport http crabrix-academy https://crabrix.com/mcp/academy\n\n# Codex\ncodex mcp add crabrix-academy --url https://crabrix.com/mcp/academy\n\n# Clients that start local servers (Node.js 22 or newer)\nnpx -y crabrix@0.6.0 academy\n",
+        "codeLanguage": "shell",
+        "links": [
+          {
+            "title": "Learn Rust with your AI agent",
+            "url": "/learn/with-ai/"
+          },
+          {
+            "title": "All Crabrix courses",
+            "url": "/learn/"
+          },
+          {
+            "title": "Playground",
+            "url": "/playground/"
+          }
+        ],
+        "sources": [
+          {
+            "title": "Model Context Protocol",
+            "url": "https://modelcontextprotocol.io/"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "slug": "rust-1-100-never-type-dropguard-cargo-cooldowns",
     "title": "Rust 1.100: the never type, DropGuard, allocators and Cargo cooldowns",
     "date": "2026-11-18",

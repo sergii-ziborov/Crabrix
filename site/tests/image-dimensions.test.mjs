@@ -13,7 +13,7 @@ const dimensions=url=>{
 test('all article images reserve their true intrinsic size before loading',()=>{
  const posts=JSON.parse(readFileSync(new URL('../content/posts.json',import.meta.url)));let count=0;
  for(const post of posts)for(const section of post.sections)if(section.image){const image=section.image;assert.deepEqual([image.width,image.height],dimensions(new URL('../public'+image.src,import.meta.url)),image.src);count++;}
- assert.equal(count,97);
+ assert.equal(count,112);
 });
 test('every lesson infographics retain their true intrinsic dimensions',()=>{
  const courses=JSON.parse(readFileSync(new URL('../content/courses.json',import.meta.url)));let count=0;

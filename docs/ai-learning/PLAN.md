@@ -153,8 +153,9 @@ for lessons listed in crabrix-courses `academy/practice-starters.json`:
   stale or unchecked starter.
 - `practiceCode` that fails to compile is listed only for lessons whose task is to fix it
   (`fails-by-design`); the Playground notice says so.
-- The copy is a new, unsaved Playground document (`Cargo.toml` + `src/main.rs`). Opening it never
-  overwrites a draft: the existing draft store keeps its own entries.
+- The copy is a new, unsaved Playground document with one file, `main.rs` (entry file, edition
+  2024), like the existing single-file lesson starters. Opening it never overwrites a draft: the
+  existing draft store keeps its own entries.
 - API: the lesson view's `playground` becomes `{ available, url, kind }`, `kind` =
   `"lesson-project" | "practice-copy" | "algorithm-trace" | null`. `index.json` lessons keep
   `playground: boolean`.

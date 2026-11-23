@@ -426,3 +426,7 @@ html[data-theme="light"] .contact-form select, html[data-theme="light"] .contact
 .ai-lesson .card-meta { margin:8px 0 0; }
 .learning-state-steps li { margin:6px 0; }
 .ai-feedback-static textarea { width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); font:inherit; padding:8px 10px; margin:4px 0 8px; }
+.with-ai-hero { margin:8px 0 6px; }
+.with-ai-hero img { display:block; width:100%; height:auto; border-radius:18px; border:1px solid var(--border); }
+.with-ai-faq h3 { font-size:17px; margin:16px 0 4px; }
+.with-ai-faq p { margin:0; color:var(--muted); }
