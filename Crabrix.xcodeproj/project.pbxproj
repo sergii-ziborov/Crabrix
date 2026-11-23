@@ -35,6 +35,7 @@
 		174103D1F25E41077BC10B8C /* CargoManifestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D750FF719EB5B0AC11A7ECBF /* CargoManifestTests.swift */; };
 		176D4AA2F72B07A0A78FCB1E /* CrateArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E77E8ACA6B7156FA97662E /* CrateArchive.swift */; };
 		19698524933302A424041804 /* ShowcaseModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C55C8AFA6C00D3918A5941 /* ShowcaseModels.swift */; };
+		199E67B984EED84DD378903F /* AcademyAI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60AD4C845582F590C4E70400 /* AcademyAI.swift */; };
 		1A03C1DF3670BA9ED3556693 /* CratePackageManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF144EE0C3990D3E4191546A /* CratePackageManifest.swift */; };
 		1A1D786A305713181EEAD795 /* CompilationResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB88EA53398F55BCADE4D5C /* CompilationResult.swift */; };
 		1A42F7C59F55681D04B0409E /* swift-argument-parser-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = DCA31C6F7A431A34679A02D8 /* swift-argument-parser-LICENSE.txt */; };
@@ -137,6 +138,7 @@
 		5A8F5408F2D3C761D5D6E2EF /* SystemPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 5FF229CB96783B625B672CB7 /* SystemPackage */; };
 		5B10435436E88DF87EB62125 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 91DD1737DEBABD179BA0EF7F /* README.md */; };
 		5C04E9676F6DDF6B017B7E78 /* ToolchainVendorNotices.zip in Resources */ = {isa = PBXBuildFile; fileRef = EC1B3A3F659FB05698CBD237 /* ToolchainVendorNotices.zip */; };
+		5CFBF3B211BA40CE2D797CAC /* LearnWithAIUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F09B817D126DD9CA0A7B4C3 /* LearnWithAIUITests.swift */; };
 		601D6B01C57DB6E81DE36A68 /* PlaygroundCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68F186A0D0CF091F824D05EE /* PlaygroundCodec.swift */; };
 		60390C36C619675DCA53E9E3 /* CrabrixProject.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE1CA198E7A3ADFE5C61CBE2 /* CrabrixProject.swift */; };
 		60B236289CF2F22BA2F7D31C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AF263BC0BDACD405CDF0BAFF /* PrivacyInfo.xcprivacy */; };
@@ -175,6 +177,7 @@
 		756F6E56F2DA0EE0E4C7FEA1 /* PlaygroundSelectionOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 163AA64CC0EA67D11087E31E /* PlaygroundSelectionOverlay.swift */; };
 		75C7785DC26F26DAE60C59E2 /* LocalAvatarStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C47D79BBDE68DFCC732EF6AC /* LocalAvatarStoreTests.swift */; };
 		76680E04E311A68F3E8CA7FD /* BuildWorkflowControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4416BEF4A5157F2F6D4E2B2F /* BuildWorkflowControls.swift */; };
+		76F7AEB7C15B305154445346 /* AILearningState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B1E167A670BF7D367E3029 /* AILearningState.swift */; };
 		7797091FFE0B77E9E323A452 /* LocalExecutionReason.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A289E9F850F47AAA42B5E0 /* LocalExecutionReason.swift */; };
 		77C9A62FCFC3C6C0B4D8B183 /* CargoLockfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54941194910930A95296DE96 /* CargoLockfile.swift */; };
 		784BA51F294FD0353AB53A19 /* RustLessonDepth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F3DEBE91E458885CE146E62 /* RustLessonDepth.swift */; };
@@ -205,6 +208,7 @@
 		876BE7BDE991FD1A3AA33977 /* CodeRecallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF605A50A6EB406DF55C4E57 /* CodeRecallView.swift */; };
 		8774C7F4897814F164353FA7 /* AlgorithmVerificationData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162A3B2789B3CD0F65472A4E /* AlgorithmVerificationData.swift */; };
 		882405AEECB2A66226DF9C77 /* LearningProgressArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE1B78ACCF980AE04EC0EED /* LearningProgressArchive.swift */; };
+		8B678C990963068100469C8D /* AcademyAIStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE7C425A42B6770AD725476 /* AcademyAIStatus.swift */; };
 		8BEE3AD2A033A121F471F851 /* TermMatchTrainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559E456A8AD38F60E3A9BAD2 /* TermMatchTrainView.swift */; };
 		8C261E44759C5A230B315A0F /* LocalExecutionReasonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C96485679F9396CEA42E3FB4 /* LocalExecutionReasonTests.swift */; };
 		8D487FD86C6E957664E46DE4 /* MarkdownRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1812450C699363664714AC3A /* MarkdownRenderer.swift */; };
@@ -290,6 +294,7 @@
 		C3E7EC12C47849AA14FD1964 /* RustLearningPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7455D4C092EC1F4E6EBF847A /* RustLearningPath.swift */; };
 		C40C409476063ACBD40EA9E3 /* ProjectFilePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB1A73C28417FEDEEA4BE1B /* ProjectFilePolicy.swift */; };
 		C49F1387D78CE2E9B25D5157 /* CrabrixGit in Frameworks */ = {isa = PBXBuildFile; productRef = 6EE5FF6675FF3282625EA72B /* CrabrixGit */; };
+		C50003B9B0A9DC1873A06326 /* AILearningFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF182067314AE342BB1861 /* AILearningFlags.swift */; };
 		C53ABD73F0DA4F22450B6886 /* WasmSandboxPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8832CBE2C15F09166CBB610F /* WasmSandboxPolicyTests.swift */; };
 		C554687050F486FE98581C6B /* CratesIOClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41A5B9EA24490E8E2ADABA38 /* CratesIOClient.swift */; };
 		C56EA75AEB015034CDCF4A1B /* BundledSysrootTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A201213590F9ECED7CE983FC /* BundledSysrootTests.swift */; };
@@ -304,6 +309,7 @@
 		CB5D1D144064727B02CE7DD0 /* SemanticVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038C4428EA249D76936D4DEB /* SemanticVersionTests.swift */; };
 		CE4BB5894285EC57C4E3B650 /* LessonMapLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 386D9CB2F6ECA745336EB7F9 /* LessonMapLayoutTests.swift */; };
 		CEF656FA1A534296367AF705 /* RustDebugCompiler.js in Resources */ = {isa = PBXBuildFile; fileRef = B764DA54BC3599CE4F4C5A11 /* RustDebugCompiler.js */; };
+		CF19F84E0D885D857BFA1459 /* LearnWithAITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1684BC1B80A2330923EB7D1 /* LearnWithAITests.swift */; };
 		CFFADC07DACA0221CB930503 /* GitCore in Resources */ = {isa = PBXBuildFile; fileRef = AA04BBFEA122899821E83B68 /* GitCore */; };
 		D10649D53E90EFB46D97F0F1 /* CourseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43399378DEFA3EFDB3368AF9 /* CourseRepository.swift */; };
 		D181A2147A44EC4C2E0E5BF6 /* TerminalKeyboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D111D533F55B983FC047F784 /* TerminalKeyboardTests.swift */; };
@@ -342,6 +348,7 @@
 		EDD602BB2F5547C82174AD00 /* AppToolchainReleaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24851507366B69E1C89A070E /* AppToolchainReleaseTests.swift */; };
 		EF101C40AFF5C8D91F8EA769 /* CourseBootstrapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CFF7795F63D1B35CF6A62BE /* CourseBootstrapTests.swift */; };
 		F0B9BBE785A01AD1ACC83D6F /* LearnPathView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D22109AD0D3338201CEFE20 /* LearnPathView.swift */; };
+		F176414D88F153574CA59D69 /* LearnWithAIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FA0E2112F2AB6A38676EA58 /* LearnWithAIView.swift */; };
 		F18AFE001FA97304AEA1A402 /* RustLessonProgressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A19951F6B509DE6C56E27216 /* RustLessonProgressionTests.swift */; };
 		F1F0BF0DA8B783EE070F2CA5 /* BuildProblemsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC4745C09CED9CA69999E7B0 /* BuildProblemsTests.swift */; };
 		F29BBFB0A222A5ACFEBF5BDF /* PlaygroundCodec.js in Resources */ = {isa = PBXBuildFile; fileRef = D36DAB1C755D61A62E455241 /* PlaygroundCodec.js */; };
@@ -489,11 +496,13 @@
 		44ABFA97B5DA7FD2FADA63C6 /* ProjectTerminalSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectTerminalSessionTests.swift; sourceTree = "<group>"; };
 		4574D10D2917B923B4BB6F0E /* RustDebuggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustDebuggerTests.swift; sourceTree = "<group>"; };
 		459D0EA1C860A20CA5D1F489 /* RustDebuggerViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustDebuggerViews.swift; sourceTree = "<group>"; };
+		46B1E167A670BF7D367E3029 /* AILearningState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AILearningState.swift; sourceTree = "<group>"; };
 		46E231FE4DC967D6823C7FE8 /* WasmRustCompiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmRustCompiler.swift; sourceTree = "<group>"; };
 		4739AE48C2A3B528E557BD05 /* WebSyntaxHighlighter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSyntaxHighlighter.swift; sourceTree = "<group>"; };
 		4775CE41B31CD63B5B25459E /* RustCompletionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustCompletionTests.swift; sourceTree = "<group>"; };
 		4B5D547BD90275851C98865A /* TermTrainDeck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermTrainDeck.swift; sourceTree = "<group>"; };
 		4C552F2CEA08713116E71EC3 /* ProjectCreationViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectCreationViews.swift; sourceTree = "<group>"; };
+		4CE7C425A42B6770AD725476 /* AcademyAIStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcademyAIStatus.swift; sourceTree = "<group>"; };
 		4CEB138148FDAC5C6E8A3DC4 /* FlashcardBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlashcardBank.swift; sourceTree = "<group>"; };
 		4F3DEBE91E458885CE146E62 /* RustLessonDepth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustLessonDepth.swift; sourceTree = "<group>"; };
 		50CA9CE9D5823AC1D63033E5 /* SemanticVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersion.swift; sourceTree = "<group>"; };
@@ -516,6 +525,8 @@
 		5E20A77FEDA44BB55308AB2E /* AtlasValueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlasValueView.swift; sourceTree = "<group>"; };
 		5F250162E0D44C864E253DBA /* PlaygroundLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundLink.swift; sourceTree = "<group>"; };
 		5F2E28AF633C57EFB91DF034 /* LocalProjectLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalProjectLoader.swift; sourceTree = "<group>"; };
+		5FA0E2112F2AB6A38676EA58 /* LearnWithAIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnWithAIView.swift; sourceTree = "<group>"; };
+		60AD4C845582F590C4E70400 /* AcademyAI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcademyAI.swift; sourceTree = "<group>"; };
 		610A135ADD4192782FBD84D3 /* GitWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitWorkspaceView.swift; sourceTree = "<group>"; };
 		6144900292EBA554C0536077 /* BrowserReactTypes.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = BrowserReactTypes.json; sourceTree = "<group>"; };
 		6166C001764BC9D14984D241 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -538,6 +549,7 @@
 		6E24E44406D79170CEDED477 /* swift-nio-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-nio-LICENSE.txt"; sourceTree = "<group>"; };
 		6E42868B52F7E467F9905F3B /* PackageDownloadSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageDownloadSheet.swift; sourceTree = "<group>"; };
 		6E974AA588AEAB526FF75C14 /* CoursePackVerifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePackVerifierTests.swift; sourceTree = "<group>"; };
+		6F09B817D126DD9CA0A7B4C3 /* LearnWithAIUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnWithAIUITests.swift; sourceTree = "<group>"; };
 		6FE873D7DECE2525A58DA2CA /* PlaygroundRuntimeTransportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundRuntimeTransportTests.swift; sourceTree = "<group>"; };
 		72C0A9DB161BABC0D5AC50DA /* GitHubRepositoryReferenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubRepositoryReferenceTests.swift; sourceTree = "<group>"; };
 		72DC4FCC3E4B95BAE6574E1C /* CargoManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CargoManifest.swift; sourceTree = "<group>"; };
@@ -552,6 +564,7 @@
 		79E25647259ABABE1E3D1288 /* CrateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrateStore.swift; sourceTree = "<group>"; };
 		79E542E4C249E9B6C5C5A01A /* lezer-lr-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "lezer-lr-LICENSE.txt"; sourceTree = "<group>"; };
 		7B3F13A7DE7204F3C4BE384B /* babel-standalone-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "babel-standalone-LICENSE.txt"; sourceTree = "<group>"; };
+		7BCF182067314AE342BB1861 /* AILearningFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AILearningFlags.swift; sourceTree = "<group>"; };
 		7C63EBB6B2847C44339CBE3A /* swift-nio-NOTICE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-nio-NOTICE.txt"; sourceTree = "<group>"; };
 		7D7984860DD790021AB2EBC8 /* lib0-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "lib0-LICENSE.txt"; sourceTree = "<group>"; };
 		7D99AE47DD410C8942EAA227 /* BrowserTypeScriptCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserTypeScriptCheckerTests.swift; sourceTree = "<group>"; };
@@ -708,6 +721,7 @@
 		DFDF4C5AC05F84A2C6DF092D /* LearningBackupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearningBackupTests.swift; sourceTree = "<group>"; };
 		E0C3BDD5967E4251001E6D75 /* NativeCompilerWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeCompilerWorker.swift; sourceTree = "<group>"; };
 		E15AF611D0815ED4D2805F0C /* ProblemReportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProblemReportTests.swift; sourceTree = "<group>"; };
+		E1684BC1B80A2330923EB7D1 /* LearnWithAITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnWithAITests.swift; sourceTree = "<group>"; };
 		E28616F40A43EF200A8D0265 /* InspectorViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorViews.swift; sourceTree = "<group>"; };
 		E4B798EE784275F9C194D9B5 /* swift-system-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-system-LICENSE.txt"; sourceTree = "<group>"; };
 		E4D08AA163586E6C07EFEC1D /* ToolchainNoticesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolchainNoticesView.swift; sourceTree = "<group>"; };
@@ -898,6 +912,10 @@
 		3FE9A7BB9A11FEFDF598B594 /* Learn */ = {
 			isa = PBXGroup;
 			children = (
+				60AD4C845582F590C4E70400 /* AcademyAI.swift */,
+				4CE7C425A42B6770AD725476 /* AcademyAIStatus.swift */,
+				7BCF182067314AE342BB1861 /* AILearningFlags.swift */,
+				46B1E167A670BF7D367E3029 /* AILearningState.swift */,
 				19F2B8BCB656C03FB95DB696 /* AlgorithmCourseCatalog.swift */,
 				BEE8D71E8F886A79DC5EF3FD /* AlgorithmCourseData.swift */,
 				162A3B2789B3CD0F65472A4E /* AlgorithmVerificationData.swift */,
@@ -1117,6 +1135,7 @@
 				848B7E724A3E3B2A60B7D3CB /* InterviewCourseUpdateTests.swift */,
 				DFDF4C5AC05F84A2C6DF092D /* LearningBackupTests.swift */,
 				83EFF9A45C3D21C1132BADCD /* LearningCloudBackupTests.swift */,
+				E1684BC1B80A2330923EB7D1 /* LearnWithAITests.swift */,
 				FCC790D8134D48819C71EC4F /* LessonBridgeTests.swift */,
 				386D9CB2F6ECA745336EB7F9 /* LessonMapLayoutTests.swift */,
 				D6F4F8745EED70B20DA5D125 /* LessonNavigationFooterVisibilityTests.swift */,
@@ -1203,6 +1222,7 @@
 				2F1D4F5C74EE8A49272C3C46 /* LearningBackupView.swift */,
 				2ABA30545D5EEB41F7D73D2F /* LearningHubView.swift */,
 				6D22109AD0D3338201CEFE20 /* LearnPathView.swift */,
+				5FA0E2112F2AB6A38676EA58 /* LearnWithAIView.swift */,
 				31CD8399BD51110CC32C0859 /* LegalDocumentView.swift */,
 				5CAC5B86C54D56DCAC398E6A /* LessonDetailView.swift */,
 				A248CC4AF57D9B4C55C1F3BF /* LicensesView.swift */,
@@ -1333,6 +1353,7 @@
 			children = (
 				112BF83F7F871D6B6FFB835B /* BridgeCourseTests.swift */,
 				5CEBD152D5381C70622EDD87 /* BuildWorkspaceTests.swift */,
+				6F09B817D126DD9CA0A7B4C3 /* LearnWithAIUITests.swift */,
 				9889F0283337FBF2D615B9EF /* PlaygroundRuntimeTests.swift */,
 				CF7DB287D36ACF2B45D2CA19 /* PlaygroundTests.swift */,
 				E560EAA1E9DC2387BE92ED56 /* ReleaseScreenshotTests.swift */,
@@ -1594,6 +1615,7 @@
 			files = (
 				A05F1E60A4E67D0A249A9429 /* BridgeCourseTests.swift in Sources */,
 				D62CE9F33D5CD754B6052DB4 /* BuildWorkspaceTests.swift in Sources */,
+				5CFBF3B211BA40CE2D797CAC /* LearnWithAIUITests.swift in Sources */,
 				601D6B01C57DB6E81DE36A68 /* PlaygroundCodec.swift in Sources */,
 				256049342F025616B4A8483E /* PlaygroundDocument.swift in Sources */,
 				7F265841AD28E48F5E48C8F8 /* PlaygroundEncryption.swift in Sources */,
@@ -1617,6 +1639,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C50003B9B0A9DC1873A06326 /* AILearningFlags.swift in Sources */,
+				76F7AEB7C15B305154445346 /* AILearningState.swift in Sources */,
+				199E67B984EED84DD378903F /* AcademyAI.swift in Sources */,
+				8B678C990963068100469C8D /* AcademyAIStatus.swift in Sources */,
 				79148B2203952A72C77D5388 /* AcademyContentStore.swift in Sources */,
 				DD74E3CFB5C4836F4B571E46 /* AchievementCelebrationView.swift in Sources */,
 				52C44E944F7455EA0DEA976C /* AdaptiveFold.swift in Sources */,
@@ -1694,6 +1720,7 @@
 				C7C8B5BA51A4A63B29454B56 /* InspectorViews.swift in Sources */,
 				23560A181485665C5325D292 /* InstalledCourseRepository.swift in Sources */,
 				F0B9BBE785A01AD1ACC83D6F /* LearnPathView.swift in Sources */,
+				F176414D88F153574CA59D69 /* LearnWithAIView.swift in Sources */,
 				42A9B7EEBC35A948C0E25EEC /* LearningBackupCoordinator.swift in Sources */,
 				8533F0EFC4A2BA535F94AFB5 /* LearningBackupView.swift in Sources */,
 				C0DA483BA5B3C3FEA41A7024 /* LearningHubView.swift in Sources */,
@@ -1838,6 +1865,7 @@
 				0F392C6E026B23A1A93A675E /* GitWorkspaceTests.swift in Sources */,
 				30378E05BFED089463AD93E2 /* InstalledCourseRepositoryTests.swift in Sources */,
 				078EFA77298C327BC759EB34 /* InterviewCourseUpdateTests.swift in Sources */,
+				CF19F84E0D885D857BFA1459 /* LearnWithAITests.swift in Sources */,
 				065B0EBFBC4EBF2A7F238592 /* LearningBackupTests.swift in Sources */,
 				2809741AED98E746A8E8F83C /* LearningCloudBackupTests.swift in Sources */,
 				3C004CEC2A6A589D2F0B535B /* LessonBridgeTests.swift in Sources */,

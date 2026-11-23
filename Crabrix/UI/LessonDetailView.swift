@@ -88,9 +88,12 @@ struct LessonDetailView: View {
     let onOpenReplay: ((AtlasRecording) -> Void)?
     /// Called once, with the first answer the reader commits to.
     var onAnswer: (Int, Bool) -> Void = { _, _ in }
+    /// "Learn this lesson with AI"; nil hides the action.
+    var learnWithAI: LessonAIContext? = nil
 
     @State private var page = 0
     @State private var showsReplay = false
+    @State private var showsLearnWithAI = false
     @State private var selectedAnswer: Int?
     @State private var lastWrongAnswer: Int?
     /// How many times this lesson's quick check has been answered wrongly, so
@@ -138,7 +141,8 @@ struct LessonDetailView: View {
         onOpenCompanion: (() -> Void)? = nil,
         onComplete: @escaping () -> Void,
         onShowAchievements: @escaping () -> Void,
-        onAnswer: @escaping (Int, Bool) -> Void = { _, _ in }
+        onAnswer: @escaping (Int, Bool) -> Void = { _, _ in },
+        learnWithAI: LessonAIContext? = nil
     ) {
         self.lesson = lesson
         self.writing = writing
@@ -156,6 +160,7 @@ struct LessonDetailView: View {
         self.onComplete = onComplete
         self.onShowAchievements = onShowAchievements
         self.onAnswer = onAnswer
+        self.learnWithAI = learnWithAI
         // Older installations did not persist the chosen answer, and a pack can
         // move the correct one. A completed lesson opens as answered regardless.
         let restored = LessonAnswerRestoration.state(
@@ -214,6 +219,26 @@ struct LessonDetailView: View {
                 AtlasReplayScreen(method: replayMethod, lessonID: lesson.id,
                     source: writing.exampleCode, variation: depth.transferChallenge, onOpenCopy: onOpenReplay)
                     .presentationDetents([.large]).presentationDragIndicator(.visible)
+            }
+        }
+        .toolbar {
+            if AcademyAIFeature.isEnabled, learnWithAI != nil {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showsLearnWithAI = true
+                    } label: {
+                        Label("Learn this lesson with AI", systemImage: "sparkles")
+                    }
+                    .accessibilityLabel("Learn this lesson with AI")
+                    .accessibilityIdentifier("lesson-learn-with-ai")
+                }
+            }
+        }
+        .sheet(isPresented: $showsLearnWithAI) {
+            if let learnWithAI {
+                LessonAISheet(context: learnWithAI)
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
         }
     }

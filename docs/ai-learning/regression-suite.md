@@ -31,12 +31,34 @@ xcodebuild test -project Crabrix.xcodeproj -scheme Crabrix \
   -only-testing:CrabrixTests/InstalledCourseRepositoryTests \
   -only-testing:CrabrixTests/LessonBridgeTests \
   -only-testing:CrabrixTests/RustLessonProgressionTests \
-  -only-testing:CrabrixTests/ProgressAndTrainTests \
+  -only-testing:CrabrixTests/CrabrixProgressStoreTests \
+  -only-testing:CrabrixTests/TermTrainDeckTests \
+  -only-testing:CrabrixTests/RustLessonProgressionNextStepTests \
+  -only-testing:CrabrixTests/CodeRecallDeckTests \
+  -only-testing:CrabrixTests/CurriculumCoverageTests \
+  -only-testing:CrabrixTests/ProgressStateCompatibilityTests \
+  -only-testing:CrabrixTests/GameCenterEntryTests \
   -only-testing:CrabrixTests/ProjectAuthoringTests \
   -only-testing:CrabrixTests/ProjectImportTests \
   -only-testing:CrabrixTests/FlashcardDeckTests \
-  -only-testing:CrabrixTests/TopicMasteryTests
+  -only-testing:CrabrixTests/TopicMasteryRecordTests \
+  -only-testing:CrabrixTests/TopicSchedulerTests \
+  -only-testing:CrabrixTests/TopicMasteryStoreTests \
+  -only-testing:CrabrixTests/RustQuestionBankTests \
+  -only-testing:CrabrixTests/TermTrainTopicTests \
+  -only-testing:CrabrixTests/WeakTopicDeduplicationTests \
+  -only-testing:CrabrixTests/AILearningStateEncoderTests \
+  -only-testing:CrabrixTests/AcademyAIContentTests \
+  -only-testing:CrabrixTests/AcademyAIStatusTests \
+  -only-testing:CrabrixTests/AILearningFlagsTests \
+  -only-testing:CrabrixTests/LearnWithAIDataPreservationTests
 ```
+
+`-only-testing` takes class names; `ProgressAndTrainTests.swift` and `TopicMasteryTests.swift` hold the
+13 classes listed above (a file name there silently matches nothing). On 24 November with Learn with
+AI: this set plus the 5 Learn with AI classes ran 145 tests, 2 skipped (they need production pack
+directories), 0 failed; the 13 classes 68 passed; `CrabrixScreenshotTests/LearnWithAIUITests` passed
+on iPhone and iPad (`docs/ai-learning/ios-learn-with-ai.md`).
 
 Network-dependent gates (run when packs or catalogs change): `CourseDeliveryGateTests`,
 `PracticalCourseUpdateTests`, `InterviewCourseUpdateTests`, `WorkflowRouteTests` (some skip unless
