@@ -26,6 +26,7 @@ enum SyntaxHighlighter {
         return switch URL(fileURLWithPath: filePath).pathExtension.lowercased() {
         case "rs": rustTokens(in: source)
         case "toml", "lock": tomlTokens(in: source)
+        case "c", "h": cTokens(in: source)
         default: WebSyntaxHighlighter.tokens(in: source, language: SourceLanguage(filePath: filePath))
         }
     }
@@ -77,6 +78,34 @@ enum SyntaxHighlighter {
             } else { result.append(token) }
         }
         return result
+    }
+
+    /// Bridge lessons show C beside Rust. A keyword-level grammar is enough to
+    /// read a short comparison snippet; C is not an editable project language.
+    private static func cTokens(in source: String) -> [SyntaxToken] {
+        let keywords = [
+            "auto", "break", "case", "const", "continue", "default", "do", "else", "enum",
+            "extern", "for", "goto", "if", "inline", "register", "restrict", "return", "sizeof",
+            "static", "struct", "switch", "typedef", "union", "volatile", "while", "NULL",
+            "true", "false",
+        ].joined(separator: "|")
+        let types = [
+            "bool", "char", "double", "float", "int", "long", "short", "signed", "unsigned",
+            "void", "size_t", "ssize_t", "ptrdiff_t", "int8_t", "int16_t", "int32_t", "int64_t",
+            "uint8_t", "uint16_t", "uint32_t", "uint64_t", "uintptr_t", "FILE",
+        ].joined(separator: "|")
+        let pattern = #"""
+        (?<comment>//[^\n]*|/\*[\s\S]*?\*/)|(?<attribute>^[ \t]*#[ \t]*[A-Za-z]+[^\n]*)|(?<string>\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])+')|(?<keyword>\b(?:\#(keywords))\b)|(?<type>\b(?:\#(types))\b)|(?<number>\b(?:0[xX][0-9A-Fa-f]+|\d+(?:\.\d+)?)[uUlLfF]*\b)
+        """#
+        return matches(
+            pattern: pattern,
+            source: source,
+            options: [.anchorsMatchLines],
+            groups: [
+                ("comment", .comment), ("attribute", .attribute), ("string", .string),
+                ("keyword", .keyword), ("type", .type), ("number", .number),
+            ]
+        )
     }
 
     private static func tomlTokens(in source: String) -> [SyntaxToken] {

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { lessonPreview, lessonWordCount } from '../lib/lesson-preview.ts';
 const snapshot = JSON.parse(readFileSync(new URL('../content/courses.json', import.meta.url)));
-test('all 798 previews withhold exercises and keep code markup balanced', () => {
+test('every previews withhold exercises and keep code markup balanced', () => {
   let count = 0;
   for (const course of snapshot.courses) for (const unit of course.units) for (const lesson of unit.lessons) {
     const preview = lessonPreview(lesson, course.id === 'basics');
@@ -15,7 +15,8 @@ test('all 798 previews withhold exercises and keep code markup balanced', () => 
     assert.equal((preview.paragraphs.join(' ').match(/`/g) || []).length % 2, 0, lesson.id);
     count++;
   }
-  assert.equal(count, 798);
+  assert.equal(count, snapshot.lessonCount);
+  assert.ok(count >= 798);
 });
 
 const lessons = snapshot.courses.flatMap(course => course.units.flatMap(unit => unit.lessons.map(lesson => ({ lesson, basics: course.id === 'basics' }))));
@@ -42,7 +43,7 @@ test('previews end on a real sentence, never on a macro name in a code span', ()
 
 test('figure captions render inline code through prose()', () => {
   const page = readFileSync(new URL('../app/learn/[course]/[lesson]/page.tsx', import.meta.url), 'utf8');
-  assert.equal(page.match(/<figcaption>\{prose\(lesson\.illustration\.caption\)\}<\/figcaption>/g)?.length, 2);
+  assert.equal(page.match(/<figcaption>\{prose\(lesson\.illustration\.caption\)\}<\/figcaption>/g)?.length, 3);
   assert.ok(!page.includes('<figcaption>{lesson.illustration.caption}'));
 });
 

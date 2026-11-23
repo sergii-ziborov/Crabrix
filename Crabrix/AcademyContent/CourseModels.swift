@@ -46,6 +46,8 @@ struct CourseLessonDTO: Decodable, Sendable {
     let writing: CourseWritingDTO
     let depth: CourseDepthDTO
     let illustration: CourseLessonIllustrationDTO?
+    /// `bridge-lessons-v1`: a comparison with another language plus credits.
+    let bridge: CourseBridgeDTO?
 
     func runtimeLesson() throws -> RustLesson {
         let exercise: RustLesson.Exercise

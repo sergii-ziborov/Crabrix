@@ -6,7 +6,10 @@ struct LearnPathView: View {
     let units: [RustLearningUnit]
     let courseTitle: String
     let courseTheme: RustCourseTheme
+    /// Completed or credited lessons; both count as done on the path.
     let completedLessonIDs: Set<String>
+    /// "Known from C" for lessons credited by a bridge lesson.
+    var creditLabels: [String: String] = [:]
     var unlockScope: RustLessonProgression.UnlockScope = .course
     let onResetProgress: () -> Void
     let onOpenLesson: (RustLesson) -> Void
@@ -73,13 +76,14 @@ struct LearnPathView: View {
                     LearningUnitMap(
                         unit: unit,
                         completedLessonIDs: completedLessonIDs,
+                        creditLabels: creditLabels,
                         readyLessonIDs: readyLessonIDs,
                         courseTheme: courseTheme,
                         onOpenLesson: onOpenLesson
                     )
                 }
 
-                LearningLegend()
+                LearningLegend(showsKnown: lessons.contains { creditLabels[$0.id] != nil })
             }
             .padding(.horizontal, 26)
             .padding(.vertical, 22)
@@ -168,6 +172,7 @@ struct LearningHero: View {
 private struct LearningUnitMap: View {
     let unit: RustLearningUnit
     let completedLessonIDs: Set<String>
+    let creditLabels: [String: String]
     let readyLessonIDs: Set<String>
     let courseTheme: RustCourseTheme
     let onOpenLesson: (RustLesson) -> Void
@@ -226,6 +231,7 @@ private struct LearningUnitMap: View {
                             lesson: lesson,
                             lessonNumber: index + 1,
                             state: state(for: lesson),
+                            knownLabel: creditLabels[lesson.id],
                             palette: palette,
                             labelToRight: labelToRight(at: index),
                             onOpen: { onOpenLesson(lesson) },
@@ -257,6 +263,7 @@ private struct LearningUnitMap: View {
     }
 
     private func state(for lesson: RustLesson) -> LessonMapState {
+        if creditLabels[lesson.id] != nil { return .known }
         if isCompleted(lesson) { return .completed }
         return readyLessonIDs.contains(lesson.id) ? .ready : .locked
     }
@@ -396,6 +403,8 @@ private struct LessonMapNode: View {
     let lesson: RustLesson
     let lessonNumber: Int
     let state: LessonMapState
+    /// Set for a lesson a bridge lesson credited, e.g. "Known from C".
+    var knownLabel: String? = nil
     let palette: LearningPalette
     let labelToRight: Bool
     let onOpen: () -> Void
@@ -434,7 +443,7 @@ private struct LessonMapNode: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(LessonMapButtonStyle(isEnabled: state != .locked))
-            .accessibilityLabel("Lesson \(lessonNumber), \(lesson.title), \(state.accessibilityLabel)")
+            .accessibilityLabel("Lesson \(lessonNumber), \(lesson.title), \(knownLabel ?? state.accessibilityLabel)")
         }
     }
 
@@ -485,7 +494,7 @@ private struct LessonMapNode: View {
                 .multilineTextAlignment(labelToRight ? .leading : .trailing)
                 .lineLimit(2)
 
-            Text(state.badge(minutes: lesson.minutes))
+            Text(knownLabel.map { $0.uppercased() } ?? state.badge(minutes: lesson.minutes))
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
                 .foregroundStyle(state.tint(palette: palette))
                 .padding(.horizontal, 7)
@@ -499,7 +508,7 @@ private struct LessonMapNode: View {
     /// own fill rather than assuming a dark background.
     private var nodeIconColor: Color {
         switch state {
-        case .completed, .ready: CrabrixTheme.onAccent
+        case .completed, .known, .ready: CrabrixTheme.onAccent
         case .locked: CrabrixTheme.muted
         }
     }
@@ -509,6 +518,10 @@ private struct LessonMapNode: View {
         case .completed:
             LinearGradient(colors: [RustCourseTheme.basics.primaryColor,
                                     RustCourseTheme.basics.secondaryColor],
+                           startPoint: .top, endPoint: .bottom)
+        case .known:
+            LinearGradient(colors: [RustCourseTheme.bridges.primaryColor,
+                                    RustCourseTheme.bridges.secondaryColor],
                            startPoint: .top, endPoint: .bottom)
         case .ready:
             LinearGradient(colors: [palette.primary, palette.secondary], startPoint: .topLeading, endPoint: .bottomTrailing)
@@ -520,6 +533,7 @@ private struct LessonMapNode: View {
     private var nodeShadow: Color {
         switch state {
         case .completed: CrabrixTheme.mint.opacity(0.28)
+        case .known: RustCourseTheme.bridges.primaryColor.opacity(0.28)
         case .ready: palette.primary.opacity(0.38)
         case .locked: .black.opacity(0.15)
         }
@@ -538,9 +552,14 @@ private struct LessonMapButtonStyle: ButtonStyle {
 }
 
 private struct LearningLegend: View {
+    var showsKnown = false
+
     var body: some View {
         HStack(spacing: 18) {
             LegendItem(color: CrabrixTheme.mint, icon: "checkmark", text: "Complete")
+            if showsKnown {
+                LegendItem(color: RustCourseTheme.bridges.primaryColor, icon: "checkmark.seal.fill", text: "Known")
+            }
             LegendItem(color: CrabrixTheme.coral, icon: "play.fill", text: "Live lab")
             LegendItem(color: CrabrixTheme.raised, icon: "lock.fill", text: "Coming next", foreground: CrabrixTheme.muted)
         }
@@ -572,12 +591,15 @@ private struct LegendItem: View {
 
 private enum LessonMapState: Equatable {
     case completed
+    /// Credited by a bridge lesson: done for the path, still openable.
+    case known
     case ready
     case locked
 
     var accessibilityLabel: String {
         switch self {
         case .completed: "complete"
+        case .known: "known from a bridge course"
         case .ready: "available"
         case .locked: "coming later"
         }
@@ -586,6 +608,7 @@ private enum LessonMapState: Equatable {
     func badge(minutes: Int) -> String {
         switch self {
         case .completed: "COMPLETE"
+        case .known: "KNOWN"
         case .ready: "START · \(minutes) MIN"
         case .locked: "COMING NEXT"
         }
@@ -594,6 +617,7 @@ private enum LessonMapState: Equatable {
     func tint(palette: LearningPalette) -> Color {
         switch self {
         case .completed: CrabrixTheme.mint
+        case .known: RustCourseTheme.bridges.primaryColor
         case .ready: palette.primary
         case .locked: CrabrixTheme.muted
         }
@@ -601,6 +625,7 @@ private enum LessonMapState: Equatable {
 
     func symbol(for lesson: RustLesson) -> String {
         if self == .completed { return "checkmark" }
+        if self == .known { return "checkmark.seal.fill" }
         if self == .locked { return "lock.fill" }
         return lesson.symbol
     }

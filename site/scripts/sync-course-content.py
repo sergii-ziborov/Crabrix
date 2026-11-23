@@ -12,6 +12,8 @@ from pathlib import Path
 
 SITE = Path(__file__).resolve().parents[1]
 COURSE_IDS = ("basics", "ownership", "projects", "concurrency", "interview", "systems", "algorithms")
+# "Rust for … developers" courses, synced when the source checkout has them.
+BRIDGE_COURSE_IDS = ("rust-for-c-developers", "rust-for-nodejs-developers")
 
 
 def read_json(path: Path) -> dict:
@@ -40,7 +42,9 @@ def main() -> None:
                 archive.writestr(info, path.read_bytes())
 
     courses = []
-    for course_id in COURSE_IDS:
+    bridges = tuple(course_id for course_id in BRIDGE_COURSE_IDS
+                    if (source / "courses" / course_id / "course.json").is_file())
+    for course_id in COURSE_IDS + bridges:
         folder = source / "courses" / course_id
         course = read_json(folder / "course.json")
         units = []

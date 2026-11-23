@@ -368,3 +368,30 @@ html[data-theme="light"] .contact-form select, html[data-theme="light"] .contact
 .home-playground-shot { margin:28px auto 0; max-width:1040px; }
 .home-playground-shot img { display:block; width:100%; height:auto; border:1px solid var(--border); border-radius:18px; }
 .home-playground-shot figcaption { margin-top:12px; color:var(--muted); font-size:.875rem; line-height:1.6; }
+
+/* Bridge courses: another language and Rust, side by side. */
+.bridge-badge { display:flex; flex-direction:column; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--raised), var(--panel)); border:1px solid var(--border); color:var(--text); font-weight:800; line-height:1; letter-spacing:.02em; }
+.bridge-badge small { color:var(--mint); font-weight:700; margin-top:.25em; letter-spacing:0; }
+.course-card-heading h3 { font-size:24px; line-height:1.2; margin:0; overflow-wrap:anywhere; }
+.bridge-entry { margin:8px 0 34px; }
+.bridge-entry h2 { font-size:22px; margin:0 0 14px; }
+.bridge-card-link { border-color:var(--mint); }
+.bridge-note { margin:14px 0 0; font-size:15px; }
+.lesson-page .lesson-content.has-bridge { max-width:none; }
+.lesson-content.has-bridge > :not(.bridge-compare) { max-width:850px; }
+.bridge-panes { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; align-items:start; }
+.bridge-pane { margin:0; min-width:0; }
+.bridge-pane figcaption { color:var(--muted); font-size:14px; margin:0 0 8px; min-height:2.9em; }
+.bridge-pane figcaption strong { display:inline-block; margin-right:6px; padding:1px 8px; border-radius:999px; font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:var(--on-accent); background:var(--coral); }
+.bridge-pane-rust figcaption strong { background:var(--mint); }
+.bridge-pane pre { margin:0; }
+.bridge-contrasts { width:100%; border-collapse:separate; border-spacing:0; margin:22px 0 0; border:1px solid var(--border); border-radius:14px; overflow:hidden; font-size:15px; }
+.bridge-contrasts caption { text-align:left; font-weight:700; padding:0 0 10px; color:var(--text); }
+.bridge-contrasts th, .bridge-contrasts td { text-align:left; vertical-align:top; padding:11px 14px; border-top:1px solid var(--border); color:var(--muted); width:50%; }
+.bridge-contrasts thead th { border-top:0; background:var(--panel); color:var(--text); }
+.bridge-contrasts td + td, .bridge-contrasts th + th { border-left:1px solid var(--border); }
+.bridge-contrasts code { color:var(--inline-code); background:var(--inline-code-bg); border:1px solid var(--inline-code-border); border-radius:5px; padding:.08em .28em; font-size:.91em; }
+.bridge-skip { margin-top:28px; }
+.bridge-skip small, .bridge-credits small { color:var(--muted); }
+@media (max-width:860px) { .bridge-panes { grid-template-columns:1fr; } .bridge-pane figcaption { min-height:0; } }
+@media (max-width:540px) { .bridge-contrasts, .bridge-contrasts tbody, .bridge-contrasts tr, .bridge-contrasts td { display:block; width:auto; } .bridge-contrasts thead { display:none; } .bridge-contrasts td + td { border-left:0; border-top:1px dashed var(--border); } .bridge-contrasts td::before { display:block; font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text); margin-bottom:3px; } .bridge-contrasts td:first-child::before { content:attr(data-label); } .bridge-contrasts td:last-child::before { content:"Rust"; } }

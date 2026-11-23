@@ -39,7 +39,10 @@ struct LearningHubView: View {
     @State private var lessonSession: CourseSession?
     @State private var examplesSnapshot: LoadedCourse?
     @State private var appliedLaunchRoute = false
+    /// Lessons the learner finished themselves.
     let completedLessonIDs: Set<String>
+    /// Lessons a completed bridge lesson vouches for: target → bridge lesson.
+    var creditedLessonIDs: [String: String] = [:]
     let lessonAnswerIndices: [String: Int]
     let onStartLesson: (RustLesson, CourseSession) -> Void
     let onCompleteLesson: (RustLesson) -> Void
@@ -49,11 +52,24 @@ struct LearningHubView: View {
     let onOpenCompanion: (CourseProjectTemplate, CourseSession) -> Void
     let onOpenReplay: (AtlasRecording, CourseSession) -> Void
 
+    /// Completed or credited: what the course path counts as done.
+    private var learnedLessonIDs: Set<String> {
+        LessonCredits.learned(completed: completedLessonIDs, credited: creditedLessonIDs)
+    }
+
+    /// "Known from C" per credited lesson, from the bridge course that granted it.
+    private var creditLabels: [String: String] {
+        let repository = academy.repository
+        return creditedLessonIDs.mapValues { source in
+            LessonCredits.knownLabel(forCourseTitle: repository?.course(containing: source)?.title)
+        }
+    }
+
     var body: some View {
         NavigationStack(path: $navigationPath) {
             CourseLibraryView(
                 navigationPath: $navigationPath,
-                completedLessonIDs: completedLessonIDs,
+                completedLessonIDs: learnedLessonIDs,
                 showsPractice: true,
                 onOpenWeakTopic: openWeakTopic
             )
@@ -123,7 +139,7 @@ struct LearningHubView: View {
         case .courses:
             CourseLibraryView(
                 navigationPath: $navigationPath,
-                completedLessonIDs: completedLessonIDs,
+                completedLessonIDs: learnedLessonIDs,
                 showsPractice: false,
                 onOpenWeakTopic: openWeakTopic
             )
@@ -155,7 +171,8 @@ struct LearningHubView: View {
                     units: course.units,
                     courseTitle: course.title,
                     courseTheme: course.theme,
-                    completedLessonIDs: completedLessonIDs,
+                    completedLessonIDs: learnedLessonIDs,
+                    creditLabels: creditLabels,
                     unlockScope: course.id == "algorithms" ? .independentUnits : .course,
                     onResetProgress: {
                         onResetCourseProgress(Set(course.units.flatMap(\.lessons).map(\.id)))
@@ -184,6 +201,10 @@ struct LearningHubView: View {
                     writing: writing,
                     lessonDepth: depth,
                     illustration: repository.illustration(for: lessonID),
+                    bridge: repository.bridge(for: lessonID),
+                    bridgeCreditTitles: repository.creditTargets(for: lessonID)
+                        .compactMap { repository.lesson(id: $0)?.title },
+                    knownFrom: isReview ? nil : creditLabels[lessonID],
                     courseTheme: course.theme,
                     isCompleted: isReview,
                     savedAnswer: lessonAnswerIndices[lesson.id],
@@ -230,7 +251,8 @@ struct LearningHubView: View {
 
     private func completeAndContinue(from lesson: RustLesson) {
         onCompleteLesson(lesson)
-        let completed = completedLessonIDs.union([lesson.id])
+        let completed = learnedLessonIDs.union([lesson.id])
+            .union(academy.repository?.creditTargets(for: lesson.id) ?? [])
         if let course = academy.repository?.course(containing: lesson.id),
            course.id == "algorithms" {
             let methodLessons = course.units.first { $0.lessons.contains { $0.id == lesson.id } }?.lessons ?? []
@@ -791,6 +813,7 @@ private struct CourseLibraryView: View {
             .accessibilityIdentifier("learn-code-recall")
 
             NavigationLink {
+                // Credited lessons join too, so spaced review checks the credit.
                 FlashcardsView(completedLessonIDs: completedLessonIDs) { flashcardSessions += 1 }
             } label: {
                 LearningPracticeCard(
@@ -868,7 +891,8 @@ private struct CourseLibraryView: View {
     }
 
     private static func order(_ id: String) -> Int {
-        ["basics", "ownership", "projects", "concurrency", "systems", "interview", "algorithms"]
+        ["basics", "rust-for-c-developers", "rust-for-nodejs-developers", "ownership", "projects",
+         "concurrency", "systems", "interview", "algorithms"]
             .firstIndex(of: id) ?? Int.max
     }
 
@@ -881,6 +905,10 @@ private struct CourseLibraryView: View {
         case "systems": ("Macros & Systems Rust", "Unsafe, FFI and performance", "cpu.fill")
         case "interview": ("Rust Interview Prep", "Explain and practise core ideas", "person.crop.rectangle.stack.fill")
         case "algorithms": ("Algorithm Atlas", "200 patterns and Rust challenges", "square.grid.3x3.fill")
+        case "rust-for-c-developers":
+            ("Rust for C Developers", "Bridges · C habits next to Rust, credits known lessons", "arrow.left.arrow.right")
+        case "rust-for-nodejs-developers":
+            ("Rust for Node.js Developers", "Bridges · JavaScript next to Rust, credits known lessons", "arrow.left.arrow.right")
         default: (id.replacingOccurrences(of: "-", with: " ").capitalized, "Rust course", "book.closed.fill")
         }
     }

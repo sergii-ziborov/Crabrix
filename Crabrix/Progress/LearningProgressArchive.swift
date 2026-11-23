@@ -3,6 +3,8 @@ import Foundation
 enum LearningProgressKeys {
     static let progress = "crabrix.progress.state.v1"
     static let completed = "crabrix.learn.completedLessonIDs"
+    /// `[credited lesson ID: bridge lesson ID]`, written only when non-empty.
+    static let credited = "crabrix.learn.creditedLessonIDs.v1"
     static let answers = "crabrix.learn.lessonAnswerIndices"
     static let mastery = "crabrix.mastery.v1"
     static let resetDates = "crabrix.learn.lessonResetDates.v1"
@@ -30,6 +32,10 @@ enum LearningProgressPreferences {
         let rawAnswers = defaults.dictionary(forKey: LearningProgressKeys.answers) ?? [:]
         let answers = rawAnswers.compactMapValues { ($0 as? NSNumber)?.intValue }
         guard answers.count == rawAnswers.count else { throw LearningBackupError.invalid }
+        let credited: [String: String]
+        if defaults.object(forKey: LearningProgressKeys.credited) == nil { credited = [:] }
+        else if let values = defaults.dictionary(forKey: LearningProgressKeys.credited) as? [String: String] { credited = values }
+        else { throw LearningBackupError.invalid }
         let resets: [String: Double]
         if defaults.object(forKey: LearningProgressKeys.resetDates) == nil { resets = [:] }
         else if let values = defaults.dictionary(forKey: LearningProgressKeys.resetDates) as? [String: Double] { resets = values }
@@ -40,7 +46,8 @@ enum LearningProgressPreferences {
             mastery: mastery, flashcards: [], lessonResetDates: resets,
             termTrainSessions: defaults.integer(forKey: LearningProgressKeys.terms),
             codeRecallSessions: defaults.integer(forKey: LearningProgressKeys.recall),
-            flashcardSessions: defaults.integer(forKey: LearningProgressKeys.cards)
+            flashcardSessions: defaults.integer(forKey: LearningProgressKeys.cards),
+            creditedLessonIDs: credited
         )
     }
 
@@ -51,6 +58,8 @@ enum LearningProgressPreferences {
         // Only this explicit learning allowlist comes from the selected backup.
         values[LearningProgressKeys.progress] = snapshot.progressData
         values[LearningProgressKeys.completed] = snapshot.completedLessonIDs
+        // A backup made before credits existed restores to no credits.
+        values[LearningProgressKeys.credited] = snapshot.creditedLessonIDs.isEmpty ? nil : snapshot.creditedLessonIDs
         values[LearningProgressKeys.answers] = snapshot.answers
         values[LearningProgressKeys.mastery] = try JSONEncoder().encode(snapshot.mastery)
         values[LearningProgressKeys.resetDates] = snapshot.lessonResetDates

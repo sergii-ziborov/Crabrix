@@ -7,6 +7,8 @@ const courseDescriptions: Record<string, string> = {
   projects: "Build Rust projects with Cargo, files, data validation, Serde, typed errors and reliability tests. Study complete examples and exercises for free, without registration.",
   concurrency: "Learn Rust threads, futures, JoinSet, backpressure and graceful async shutdown. Read complete examples and exercises for free, without registration.",
   systems: "Study Rust macros, unsafe boundaries, FFI, WASM, WASI and local runtime resource budgets. Read complete explanations and practical examples for free, without an account.",
+  "rust-for-c-developers": "Learn Rust from C: malloc/free vs ownership, pointers vs references, tagged unions vs enums, errno vs Result. Each lesson puts C next to Rust.",
+  "rust-for-nodejs-developers": "Learn Rust from JavaScript and TypeScript: undefined vs Option, try/catch vs Result, array methods vs iterators, npm vs Cargo, Promises vs futures.",
   interview: "Prepare for Rust interviews with 52 topics on ownership, async, API design, systems and live coding. Study worked examples and exercises for free, without registration.",
 };
 
@@ -109,10 +111,16 @@ courseModifiedDates.interview = "2026-10-29";
 
 // Complete Academy HTML became public on this editorial release, not at build time.
 export const academyPublicReadingDate = "2026-11-06T09:00:00+02:00";
+// Bridge courses ("Rust for C/Node.js Developers") were authored after the
+// Academy became public. Set to the day they are published.
+export const bridgePublishedDate = "2026-11-23";
+export const bridgeCourseIDs = ["rust-for-c-developers", "rust-for-nodejs-developers"];
 export function lessonPageModifiedDate(course: string, lesson: string): string {
-  return [lessonModifiedDates[`${course}/${lesson}`] || "", academyPublicReadingDate].sort().at(-1)!;
+  return [lessonModifiedDates[`${course}/${lesson}`] || "", academyPublicReadingDate,
+    bridgeCourseIDs.includes(course) ? bridgePublishedDate : ""].sort().at(-1)!;
 }
 for (const course of Object.keys(courseModifiedDates)) courseModifiedDates[course] = academyPublicReadingDate;
+for (const course of bridgeCourseIDs) courseModifiedDates[course] = bridgePublishedDate;
 
 // Library Contracts: authored and qualified 6 November 2026.
 for (const id of ["public-api-compatibility", "msrv-verification", "feature-compatibility-matrix"]) {

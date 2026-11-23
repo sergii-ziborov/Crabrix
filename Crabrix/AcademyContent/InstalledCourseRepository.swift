@@ -78,6 +78,10 @@ struct InstalledCourseRepository: CourseRepository {
         loaded.values.lazy.compactMap { $0.challenges[lessonID] }.first
     }
 
+    func bridge(for lessonID: String) -> LessonBridge? {
+        loaded.values.lazy.compactMap { $0.bridges[lessonID] }.first
+    }
+
     func algorithmMethods() -> [AlgorithmMethodDTO] {
         loaded["algorithms"]?.algorithmMethods ?? []
     }
@@ -131,6 +135,7 @@ struct InstalledCourseRepository: CourseRepository {
         var writings: [String: RustLessonWriting] = [:]
         var depths: [String: RustLessonDepth] = [:]
         var illustrations: [String: LessonIllustration] = [:]
+        var bridges: [String: LessonBridge] = [:]
         var lessonIllustrationPaths = Set<String>()
         var evidence: [String: LessonEvidence] = [:]
         var projects: [String: CourseProjectTemplate] = [:]
@@ -162,6 +167,14 @@ struct InstalledCourseRepository: CourseRepository {
                 }
                 writings[lessonID] = writing
                 depths[lessonID] = try lesson.depth.runtimeDepth()
+                if let bridge = lesson.bridge {
+                    // An app without bridge support must never install this
+                    // pack, so the descriptor has to say it needs one.
+                    guard descriptor.requiredCapabilities.contains(CourseBridgeDTO.capability) else {
+                        throw CoursePackError.manifestMismatch("bridge capability \(lessonID)")
+                    }
+                    bridges[lessonID] = try bridge.runtimeBridge(courseID: courseID, lessonID: lessonID)
+                }
                 evidence[lessonID] = proof
                 lessons.append(try lesson.runtimeLesson())
                 if let illustration = lesson.illustration {
@@ -318,7 +331,7 @@ struct InstalledCourseRepository: CourseRepository {
         )
         return LoadedCourse(
             course: runtime, language: language, order: source.order,
-            writing: writings, depth: depths, illustrations: illustrations, evidence: evidence,
+            writing: writings, depth: depths, illustrations: illustrations, bridges: bridges, evidence: evidence,
             projects: projects, challenges: challenges, algorithmMethods: algorithmMethods,
             terms: terms, showcases: orderedShowcases.map { $0.project },
             contentVersion: version, archiveSHA256: record.archiveSHA256
