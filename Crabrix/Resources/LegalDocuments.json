@@ -187,7 +187,7 @@
       },
       {
         "kind": "p",
-        "text": "LAST UPDATED 6 NOVEMBER 2026"
+        "text": "LAST UPDATED 23 NOVEMBER 2026"
       },
       {
         "kind": "p",
@@ -388,6 +388,22 @@
       {
         "kind": "p",
         "text": "You may request access, correction, deletion, portability where applicable, restriction or object to processing based on legitimate interests. Contact the developer using the support link below. You can also complain to the data protection authority in your place of residence where applicable. Support will verify ownership before disclosing or changing account data. Without your password or recovery code, we cannot reliably establish ownership or restore access."
+      },
+      {
+        "kind": "h2",
+        "text": "Learn Rust with your AI agent"
+      },
+      {
+        "kind": "p",
+        "text": "The optional Crabrix Academy MCP server (`crabrix.com/mcp/academy`) and the public Academy API (`/api/academy/v1`) serve only public lesson content. They need no account, read no cookies and receive no progress, projects or Playground room links. Requests from your AI client appear in the ordinary access logs described above. What you type into an AI chat goes to that AI provider under its own terms."
+      },
+      {
+        "kind": "p",
+        "text": "To learn whether this feature helps, the website counts a few anonymous actions: opening the Learn with AI page, choosing an AI client tab, copying setup steps or a prompt, opening a lesson or the Playground from a link an agent gave you, the first Run there, coming back to the course catalogue on a later day, and the answer to “Did learning Rust with your AI agent help?”. Each action adds one to a daily total. No cookie, identifier, IP address, browser information, lesson, code or text is stored with it, and the totals are deleted after 400 days. Your browser sends nothing when Global Privacy Control or Do Not Track is on. A comment you write for that question is never sent to the website; it only fills an email draft that you choose to send. Your browser keeps small local markers (when you first copied an AI setup, whether you answered the question) so the question appears once; they do not leave your browser."
+      },
+      {
+        "kind": "p",
+        "text": "The Crabrix app’s Learn with AI screen sends no analytics. When you open it, the app asks `crabrix.com/api/academy/v1/status.json`, without any identifier, whether the feature is paused. An AI Learning State you share from the app contains only what you chose: your completed lesson IDs if you switch them on, and never code, answers, room keys or credentials. It goes only where you send it."
       },
       {
         "kind": "h2",
