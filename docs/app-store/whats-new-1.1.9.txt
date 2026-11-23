@@ -1,0 +1,11 @@
+Rust for C Developers and Rust for Node.js Developers: two new courses put C or JavaScript/TypeScript next to Rust, lesson by lesson. Finishing a bridge lesson marks the Academy lessons it covers as known from C or Node.js, so you can skip what you already understand.
+
+Rust Basics now starts with "What Rust Is": compiled ahead of time, no garbage collector, safe by default.
+
+Learn with your AI agent (optional): set up Claude, Claude Code, Codex, Cursor or another MCP client with Crabrix Academy, copy ready prompts, and use "Learn this lesson with AI" on any lesson. Your agent teaches from the real lessons; only Crabrix checks record your progress. Your completed lessons are shared only if you switch that on.
+
+Code screen on iPhone: while a project is open, Code, Problems, Output and Terminal sit at the bottom of the screen, with badges for new problems and results.
+
+Flashcards now ask each lesson's own questions.
+
+All existing progress, answers and projects are kept.

@@ -14,7 +14,28 @@ export const metadata = pageMetadata({
   title: "Learn Rust with Your AI Agent — Claude, Codex and Cursor with Crabrix Academy",
   description: "Connect Claude, Claude Code, Codex or Cursor to Crabrix Academy. Your agent teaches from real Rust lessons and exercises, and you write the code. Free, no account.",
   path: "/learn/with-ai/",
+  image: "/images/learn/learn-with-ai-og.jpg",
+  imageAlt: "An orange paper crab tutor at a desk with a laptop, a phone chat and Rust lesson cards",
+  modifiedDate: "2026-11-24",
 });
+
+/** Visible on the page and in FAQPage structured data; keep both identical. */
+const faq = [
+  { q: "Do I need an account or an API key?",
+    a: "No Crabrix account. The Crabrix Academy server is public and read-only. You use your own AI client, under its own plan and terms." },
+  { q: "Can my AI agent mark a lesson as completed?",
+    a: "No. Only Crabrix checks in the app record progress. An agent's review is labelled AI reviewed, never passed or verified, and the agent cannot change your progress." },
+  { q: "Which AI clients work with Crabrix Academy?",
+    a: "Any MCP client that supports remote servers over Streamable HTTP or local servers over stdio: Claude on the web, desktop and mobile, Claude Code, Codex, Cursor and others." },
+  { q: "Does Crabrix see my code or my chats?",
+    a: "No. The Academy server only answers requests for lessons, exercises, hints, examples and learning paths. Your code runs in the browser Playground or the Crabrix app, and your chat stays with your AI provider." },
+  { q: "Can I learn Rust with AI on a phone, without a computer?",
+    a: "Yes. Add the Crabrix Academy connector once in Claude on the web and use it in the Claude app, or copy a lesson prompt from this website or from the Crabrix app and paste it into your AI app." },
+  { q: "Will the agent just give me the answers?",
+    a: "Agents follow the Crabrix teaching contract: hints one level at a time, and a full solution only when you ask for it. You choose the mode: guided, Socratic, pair programming or review." },
+  { q: "What if I stop using AI?",
+    a: "Nothing changes. Every lesson, quick check, compiler lab and the Playground work exactly as before, and the app keeps working offline." },
+];
 
 export default function LearnWithAIPage() {
   if (!aiLearningEnabled()) notFound();
@@ -49,6 +70,7 @@ export default function LearnWithAIPage() {
         { "@type": "WebPage", name: "Learn Rust with Your AI Agent", url: pageUrl("/learn/with-ai/"), inLanguage: "en",
           isPartOf: { "@type": "WebSite", name: "Crabrix", url: pageUrl("/") } },
         breadcrumbs([{ name: "Crabrix", path: "/" }, { name: "Learn Rust", path: "/learn/" }, { name: "Learn with AI", path: "/learn/with-ai/" }]),
+        { "@type": "FAQPage", mainEntity: faq.map(item => ({ "@type": "Question", name: item.q, acceptedAnswer: { "@type": "Answer", text: item.a } })) },
       ] }} />
       <AIPageView page="with-ai" />
       <nav className="breadcrumbs" aria-label="Breadcrumbs"><Link prefetch={false} href="/learn">Learn</Link><span>/</span><span>Learn with AI</span></nav>
@@ -58,6 +80,11 @@ export default function LearnWithAIPage() {
         <p className="lede">Your AI tutor. Crabrix Academy. Real Rust code. Connect Claude, Codex, Cursor or another MCP client to the Academy: your agent teaches from the real lessons and exercises, and you write the code and run it in Crabrix.</p>
         <p className="card-meta">AI is optional. Every lesson, exercise and the Playground work exactly as before without it.</p>
       </div>
+      <figure className="with-ai-hero">
+        <img src="/images/learn/learn-with-ai.webp" srcSet="/images/learn/learn-with-ai-768.webp 768w, /images/learn/learn-with-ai.webp 1536w"
+          sizes="(max-width: 900px) 100vw, 860px" width={1536} height={1024} fetchPriority="high"
+          alt="An orange paper crab tutor sits at a desk beside a laptop and a phone showing a chat, with Rust lesson cards above and a progress seal kept behind a small gate" />
+      </figure>
 
       <section className="unit-panel" aria-labelledby="three-ways">
         <h2 id="three-ways">Three ways to learn, one Academy</h2>
@@ -118,6 +145,11 @@ export default function LearnWithAIPage() {
           <li>Whatever you paste into a chat goes to your agent&rsquo;s model provider under its own terms.</li>
         </ul>
         <p className="card-meta">Agents follow the <a href="/api/academy/v1/teaching-contract.md">Crabrix teaching contract</a> (version {teachingContractVersion()}). Developers can read the public <a href="/api/academy/v1/index.json">Academy API</a>.</p>
+      </section>
+
+      <section className="unit-panel with-ai-faq" aria-labelledby="faq">
+        <h2 id="faq">Questions about learning Rust with AI</h2>
+        {faq.map(item => <div key={item.q}><h3>{item.q}</h3><p>{item.a}</p></div>)}
       </section>
 
       <AIFeedback mode="always" mail={FEEDBACK_MAIL} />
