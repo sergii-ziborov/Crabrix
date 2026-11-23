@@ -4,7 +4,7 @@ Updated: 2026-11-06 · [Website copy](https://crabrix.com/privacy/)
 
 The app keeps your code on your device. Website Academy accounts use a username, password and private recovery code. This page explains both.
 
-LAST UPDATED 6 NOVEMBER 2026
+LAST UPDATED 23 NOVEMBER 2026
 
 **The short version.** Crabrix has no required account or in-app analytics SDK. Your code, projects, answers, and course progress stay on your device unless you explicitly export a copy, enable optional private iCloud learning backup, or create/join a temporary encrypted Playground. If you switch on Game Center in Profile, Crabrix sends your numeric rating and achievement ladder progress to Apple for its leaderboard and achievements. It is off by default; The app has no online profile or board of its own; website Academy accounts are separate. Other network requests are requested course downloads, package discovery and downloads, repository imports, optional private Apple learning backup, and optional encrypted Playground collaboration. If you write to support — including through *Report a problem* — that email reaches a person, and this page says what happens to it.
 
@@ -105,6 +105,14 @@ Account data remains while your account exists. You can download your username a
 Where the GDPR applies, providing the optional account service is necessary to perform our agreement with you. Basic server security and abuse prevention rely on our legitimate interest in keeping the service available and secure. Hetzner processes hosting data for us. We do not sell account information, use it for advertising, make automated decisions with legal effects, or send it to Apple for sign-in.
 
 You may request access, correction, deletion, portability where applicable, restriction or object to processing based on legitimate interests. Contact the developer using the support link below. You can also complain to the data protection authority in your place of residence where applicable. Support will verify ownership before disclosing or changing account data. Without your password or recovery code, we cannot reliably establish ownership or restore access.
+
+## Learn Rust with your AI agent
+
+The optional Crabrix Academy MCP server (`crabrix.com/mcp/academy`) and the public Academy API (`/api/academy/v1`) serve only public lesson content. They need no account, read no cookies and receive no progress, projects or Playground room links. Requests from your AI client appear in the ordinary access logs described above. What you type into an AI chat goes to that AI provider under its own terms.
+
+To learn whether this feature helps, the website counts a few anonymous actions: opening the Learn with AI page, choosing an AI client tab, copying setup steps or a prompt, opening a lesson or the Playground from a link an agent gave you, the first Run there, coming back to the course catalogue on a later day, and the answer to “Did learning Rust with your AI agent help?”. Each action adds one to a daily total. No cookie, identifier, IP address, browser information, lesson, code or text is stored with it, and the totals are deleted after 400 days. Your browser sends nothing when Global Privacy Control or Do Not Track is on. A comment you write for that question is never sent to the website; it only fills an email draft that you choose to send. Your browser keeps small local markers (when you first copied an AI setup, whether you answered the question) so the question appears once; they do not leave your browser.
+
+The Crabrix app’s Learn with AI screen sends no analytics. When you open it, the app asks `crabrix.com/api/academy/v1/status.json`, without any identifier, whether the feature is paused. An AI Learning State you share from the app contains only what you chose: your completed lesson IDs if you switch them on, and never code, answers, room keys or credentials. It goes only where you send it.
 
 ## Optional support correspondence
 
