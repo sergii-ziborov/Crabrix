@@ -1,0 +1,332 @@
+{
+ "checkedOn": "2026-11-23",
+ "origin": "local production build (next start)",
+ "summary": {
+  "compiles:accepted": 45,
+  "compiles:accepted-with-warnings": 1
+ },
+ "results": [
+  {
+   "path": "example=ferris-pixel-art",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=orbit-dashboard",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=constellation-generator",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=word-lab",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=fizzbuzz-match",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=temperature-table",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=prime-sieve",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=roman-numerals",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=run-length-encoder",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=matrix-multiply",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=mandelbrot-ascii",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=game-of-life",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=binary-search-tree",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=state-machine",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=csv-report",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted-with-warnings",
+   "first": "warning \u00b7 dead_code: field `product` is never read"
+  },
+  {
+   "path": "example=tokenizer",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=generic-stack",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=iterator-pipeline",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=error-pipeline",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=guessing-oracle",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=budget-planner",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=todo-board",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=caesar-cipher",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=palindrome-inspector",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=unit-converter",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=ascii-histogram",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=dice-lab",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=tic-tac-toe-referee",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=log-analyzer",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=inventory-ledger",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=maze-bfs",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=markdown-outline",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=command-parser",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=checksum-lab",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=task-scheduler",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=vending-state-machine",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=weather-station",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=rpn-calculator",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=event-bus",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=word-chain-game",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=pixel-sunset",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=cellular-garden",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=mandelbrot-canvas",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=constellation-map",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=terrain-map",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  },
+  {
+   "path": "example=color-waves",
+   "check": "compiles",
+   "wrap": null,
+   "outcome": "accepted",
+   "first": null
+  }
+ ]
+}

@@ -1,0 +1,89 @@
+# Regression suite — run before and after every Academy MCP change
+
+Baselines measured 23 November 2026 on the `feature/academy-mcp` branches before feature code landed.
+
+| Repo | Command | Baseline |
+|---|---|---|
+| Crabrix site | `cd site && npm test` | 168 tests, 168 pass, 0 fail |
+| Crabrix site | `cd site && node_modules/.bin/tsc --noEmit -p .` | pass (also passed at `cf19476` earlier today) |
+| Crabrix site | `cd site && npm run build` (a first run may fail once with Next's upgrade nudge; retry) | passed at `cf19476`; not re-run for this audit |
+| Crabrix site | browser check: `node build/bridges-site-20261123/check.cjs <origin> <outdir>` (390/820/1440 px, status, overflow, page errors, broken images) | 18/18 clean on production after the 23 Nov release |
+| crabrix-courses | `python3 -m unittest discover -s tests` | 39 tests on `main` `cc73b6d`, OK (1 skipped); 42 with the in-progress `tests/test_academy_metadata.py` |
+| crabrix-courses | `python3 tools/coursepack.py validate --courses courses/ --schema schemas/` | `Validated 10 courses and 839 lessons` |
+| crabrix-courses | `python3 -I editorial/bridges_20261123/<course>/verify.py` (both bridges) and `python3 editorial/bridges_20261123/verify_what_is_rust.py` | 20/20 lessons each, 0 failures; what-is-rust 6/6 |
+| crabrix-sdk | `npm test` | 83 tests, 83 pass, 0 fail |
+| crabrix-sdk | `npx tsc --noEmit` | pass |
+
+## iOS (targeted; the full suite is too large for this Mac's free disk)
+
+Run on the "Crabrix iPhone" Simulator, Debug, with `-derivedDataPath build/dd-<name>` and delete it
+afterwards:
+
+```sh
+xcodebuild test -project Crabrix.xcodeproj -scheme Crabrix \
+  -destination 'platform=iOS Simulator,name=Crabrix iPhone' -derivedDataPath build/dd-academy \
+  -only-testing:CrabrixTests/LearningBackupTests \
+  -only-testing:CrabrixTests/LearningCloudBackupTests \
+  -only-testing:CrabrixTests/CourseBootstrapTests \
+  -only-testing:CrabrixTests/CourseInstallerTests \
+  -only-testing:CrabrixTests/CoursePackVerifierTests \
+  -only-testing:CrabrixTests/CourseDownloadManagerTests \
+  -only-testing:CrabrixTests/InstalledCourseRepositoryTests \
+  -only-testing:CrabrixTests/LessonBridgeTests \
+  -only-testing:CrabrixTests/RustLessonProgressionTests \
+  -only-testing:CrabrixTests/CrabrixProgressStoreTests \
+  -only-testing:CrabrixTests/TermTrainDeckTests \
+  -only-testing:CrabrixTests/RustLessonProgressionNextStepTests \
+  -only-testing:CrabrixTests/CodeRecallDeckTests \
+  -only-testing:CrabrixTests/CurriculumCoverageTests \
+  -only-testing:CrabrixTests/ProgressStateCompatibilityTests \
+  -only-testing:CrabrixTests/GameCenterEntryTests \
+  -only-testing:CrabrixTests/ProjectAuthoringTests \
+  -only-testing:CrabrixTests/ProjectImportTests \
+  -only-testing:CrabrixTests/FlashcardDeckTests \
+  -only-testing:CrabrixTests/TopicMasteryRecordTests \
+  -only-testing:CrabrixTests/TopicSchedulerTests \
+  -only-testing:CrabrixTests/TopicMasteryStoreTests \
+  -only-testing:CrabrixTests/RustQuestionBankTests \
+  -only-testing:CrabrixTests/TermTrainTopicTests \
+  -only-testing:CrabrixTests/WeakTopicDeduplicationTests \
+  -only-testing:CrabrixTests/AILearningStateEncoderTests \
+  -only-testing:CrabrixTests/AcademyAIContentTests \
+  -only-testing:CrabrixTests/AcademyAIStatusTests \
+  -only-testing:CrabrixTests/AILearningFlagsTests \
+  -only-testing:CrabrixTests/LearnWithAIDataPreservationTests
+```
+
+`-only-testing` takes class names; `ProgressAndTrainTests.swift` and `TopicMasteryTests.swift` hold the
+13 classes listed above (a file name there silently matches nothing). On 24 November with Learn with
+AI: this set plus the 5 Learn with AI classes ran 145 tests, 2 skipped (they need production pack
+directories), 0 failed; the 13 classes 68 passed; `CrabrixScreenshotTests/LearnWithAIUITests` passed
+on iPhone and iPad (`docs/ai-learning/ios-learn-with-ai.md`).
+
+Network-dependent gates (run when packs or catalogs change): `CourseDeliveryGateTests`,
+`PracticalCourseUpdateTests`, `InterviewCourseUpdateTests`, `WorkflowRouteTests` (some skip unless
+their env flags are set). Production-pack check: `TEST_RUNNER_CRABRIX_BRIDGE_PACKS=<dir>` with
+`LessonBridgeTests/testProductionSignedBridgePacksInstallAndDecode`. UI: scheme
+`CrabrixScreenshots`, `-only-testing:CrabrixScreenshotTests/BridgeCourseTests`.
+
+Last measured: `LessonBridgeTests` + `CourseBootstrapTests` + `RustLessonProgressionTests` = 42
+passed, 0 failed (catalog 27, 23 Nov); `BridgeCourseTests` 1 passed.
+
+Phases 1–3 do not change the app; the iOS set is a guard, required again in Phase 6.
+
+## After phases 4–7 (23 November 2026)
+
+| Repo | Command | Result |
+|---|---|---|
+| Crabrix site | `cd site && npm test` | 181 tests, 181 pass (172 after phases 1–3, + 9 in `academy-ai-phases.test.mjs`) |
+| Crabrix site | `npx tsc --noEmit`, `npx next build` | pass |
+| Crabrix site | `node docs/ai-learning/evidence/pages.cjs <origin> <outdir>` (390/820/1440 px: client tabs, copy, `via=ai` arrival, lesson handoff, feedback card once, Playground practice copy Run, GPC sends nothing) | all pass at 3 widths: no overflow or page errors, events carry no cookies, the feedback card shows once, GPC sends nothing (`evidence/pages.json`) |
+| Crabrix site | `node docs/ai-learning/evidence/practice-copies.cjs <origin> site/content/academy-practice-starters.json <out>` (✓ Check of every practice copy in the browser Playground) | 189 compile (60 with warnings only), 1 fails by design with E0502; Examples 46/46 (`evidence/practice-copies.json`, `example-copies.json`) |
+| crabrix-courses | `python3 -m unittest discover -s tests` | 45 tests OK (1 skipped) |
+| crabrix-courses | `python3 tools/practice_starters.py --check` (needs rustc with `wasm32-wasip1`) | 190 starters up to date |
+
+## Pass criteria
+
+Every baseline count above is equal or higher, with 0 failures. New tests add to the counts; no
+existing test may be deleted or weakened except to replace an exact tool-name list with a superset
+assertion that still lists the 18 existing names unchanged.

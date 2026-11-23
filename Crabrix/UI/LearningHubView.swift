@@ -7,6 +7,8 @@ enum LearningRoute: Hashable {
     case examples
     case example(String)
     case profile
+    /// Learn with AI. Navigation state only; routes are never persisted.
+    case learnWithAI
 
     /// Opens a Learn screen straight from a launch argument, the same way
     /// `-CrabrixTab` opens a tab. Store screenshots are captured this way so
@@ -21,6 +23,7 @@ enum LearningRoute: Hashable {
         if value == "courses" { return [.courses] }
         if value == "profile" { return [.profile] }
         if value == "examples" { return [.examples] }
+        if value == "with-ai" { return AcademyAIFeature.isEnabled ? [.learnWithAI] : [] }
         if value.hasPrefix("example:") {
             return [.examples, .example(String(value.dropFirst("example:".count)))]
         }
@@ -188,6 +191,13 @@ struct LearningHubView: View {
         case .profile:
             ProfileView(completedLessonIDs: completedLessonIDs)
 
+        case .learnWithAI:
+            if AcademyAIFeature.isEnabled {
+                LearnWithAIView(currentLesson: nil, progress: aiLearningProgress())
+            } else {
+                ContentUnavailableView("Learn with AI unavailable", systemImage: "sparkles")
+            }
+
         case let .lesson(lessonID):
             if let repository = lessonSession?.repository ?? academy.repository,
                let lesson = repository.lesson(id: lessonID),
@@ -224,13 +234,28 @@ struct LearningHubView: View {
                     },
                     onAnswer: { index, correct in
                         onAnswerLesson(lesson, index, correct)
-                    }
+                    },
+                    learnWithAI: AcademyAIFeature.isEnabled
+                        ? LessonAIContext(
+                            lesson: AcademyAILessonContext(courseID: course.id, lesson: lesson, rule: writing.rule),
+                            progress: aiLearningProgress()
+                        ) : nil
                 )
                 .id(lesson.id)
             } else {
                 ContentUnavailableView("Lesson unavailable", systemImage: "book.closed")
             }
         }
+    }
+
+    /// Read only when the learner exports with "Include my completed lessons"
+    /// on: the two progress sets this view already holds, and which installed
+    /// course each lesson belongs to.
+    private func aiLearningProgress() -> @MainActor () -> AILearningState.Progress {
+        let completed = completedLessonIDs
+        let credited = creditedLessonIDs
+        let courses = academy.repository?.courses ?? []
+        return { AILearningState.Progress(completed: completed, credited: credited, courses: courses) }
     }
 
     private func returnToCourse(containing lesson: RustLesson) {
@@ -327,6 +352,11 @@ private struct CourseLibraryView: View {
         academy.availableUpdates.sorted { Self.order($0.courseID) < Self.order($1.courseID) }
     }
 
+    /// An extra, optional entry; hidden by `AcademyAIFeature.isEnabled`.
+    private var showsLearnWithAI: Bool {
+        AcademyAIFeature.isEnabled && academy.repository != nil && academy.errorMessage == nil
+    }
+
     private var pendingIsUpdate: Bool {
         pendingDownload.flatMap { academy.repository?.loaded[$0.courseID] } != nil
     }
@@ -358,9 +388,13 @@ private struct CourseLibraryView: View {
                     }
                 }
 
+                if showsLearnWithAI && !installed.isEmpty { learnWithAISection }
+
                 if !available.isEmpty {
                     availableSection
                 }
+
+                if showsLearnWithAI && installed.isEmpty { learnWithAISection }
 
                 if let catalogError = academy.catalogError {
                     HStack(spacing: 8) {
@@ -763,6 +797,24 @@ private struct CourseLibraryView: View {
                 .padding(14)
                 .crabrixPanel(cornerRadius: 14)
             }
+        }
+    }
+
+    private var learnWithAISection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Learn with AI").font(.title2.bold())
+            NavigationLink(value: LearningRoute.learnWithAI) {
+                LearningPracticeCard(
+                    title: "Learn with your AI agent",
+                    subtitle: "Claude, Codex or Cursor teach from these lessons · optional",
+                    badge: "NEW",
+                    systemImage: "sparkles",
+                    tint: CrabrixTheme.blue
+                )
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Learn with AI. Connect Claude, Codex or Cursor to Crabrix Academy. Optional")
+            .accessibilityIdentifier("learn-with-ai")
         }
     }
 

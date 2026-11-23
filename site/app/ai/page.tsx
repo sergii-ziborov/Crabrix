@@ -6,7 +6,7 @@ import download from "@/lib/mcp-download.json";
 import { screenshotAsset } from "@/lib/screenshots";
 import "./mcp.css";
 
-export const metadata = pageMetadata({ title: "Connect AI to Crabrix: encrypted MCP for Claude, Codex, Cursor and Grok", description: "Give Claude, Codex, Cursor or Grok its own link to an end-to-end encrypted, temporary Rust Playground. Crabrix MCP, remote MCP with nothing to install, and SDKs for JavaScript, Rust and Go. Code runs on your device.", path: "/ai/", modifiedDate: "2026-11-05" });
+export const metadata = pageMetadata({ title: "Connect AI to Crabrix: encrypted MCP for Claude, Codex, Cursor and Grok", description: "Give Claude, Codex, Cursor or Grok its own link to an end-to-end encrypted, temporary Rust Playground. Crabrix MCP, remote MCP with nothing to install, and SDKs for JavaScript, Rust and Go. Code runs on your device.", path: "/ai/", modifiedDate: "2026-11-24" });
 
 function ProductCapture({ name, caption, alt, width, height }: { name: string; caption: string; alt: string; width: number; height: number }) {
   const image = screenshotAsset(name, width, height);
@@ -57,7 +57,15 @@ export default function ConnectAIPage() {
       </div>
       <div className="mcp-browser-capture"><ProductCapture name="playground-shared-browser" width={1440} height={1000} alt="Current web Playground showing a named source selection from the Crabrix SDK" caption="5 November · browser: the same SDK selection reaches the live editor. Editing source does not run it. The temporary demo room was ended after capture." /></div>
     </section>
-    <section id="new" className="mcp-section"><div className="eyebrow">New in {download.version}</div><h2>Every agent gets its own link.</h2>
+    <section id="new" className="mcp-section"><div className="eyebrow">New in {download.version}</div><h2>Your agent can teach you Rust.</h2>
+      <div className="mcp-feature-grid">
+        <article className="mcp-feature"><span aria-hidden="true">✎</span><h3>Crabrix Academy over MCP</h3><p>Read-only <code>crabrix_academy_*</code> tools find real lessons, exercises, hints, Examples and learning paths. Your agent teaches; you write the code.</p></article>
+        <article className="mcp-feature"><span aria-hidden="true">☁</span><h3>Remote or local</h3><p>Add <code>https://crabrix.com/mcp/academy</code> as a remote MCP server with no sign-in, or run <code>npx -y crabrix@{download.version} academy</code>. Room tools and agent links work exactly as before.</p></article>
+        <article className="mcp-feature"><span aria-hidden="true">✓</span><h3>Honest progress</h3><p>An agent&rsquo;s review is &ldquo;AI reviewed&rdquo;, never a pass. Only Crabrix checks record progress, and a learning state you bring only ever adds lessons.</p></article>
+      </div>
+      <p><Link href="/learn/with-ai/">Learn Rust with your AI agent →</Link></p>
+    </section>
+    <section id="agent-links" className="mcp-section"><div className="eyebrow">Since 0.5.0</div><h2>Every agent gets its own link.</h2>
       <div className="mcp-feature-grid">
         <article className="mcp-feature"><span aria-hidden="true">⇄</span><h3>Agent links</h3><p>Connect AI gives agents a separate link from the one you share with people, with the same access and expiry. <code>crabrix_handoff</code> returns both.</p></article>
         <article className="mcp-feature"><span aria-hidden="true">✦</span><h3>Setup for your agent</h3><p>Pick Claude, Codex, Cursor or Grok in Connect AI and follow its steps, with the real link already in every command. Cursor installs with one click.</p></article>

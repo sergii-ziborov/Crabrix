@@ -1,0 +1,101 @@
+{
+ "390": {
+  "withAiClipboard": "codex mcp add crabrix-academy --url https://crabrix.com/mcp/academy",
+  "promptClipboard": "I am experienced with Node.js and TypeScript. Teach me Rust through Crabrix Academy using concepts familiar to backend developers. Give me practical exercises and use the Crabrix Playground when appropriate.",
+  "continueSection": 1,
+  "staticFeedback": 1,
+  "withAiOverflow": 0,
+  "lessonUrlAfterArrival": "http://localhost:3399/learn/basics/variables/",
+  "practiceButton": 1,
+  "lessonClipboard": [
+   "I'm learning Rust with Crabrix Academy. Teach me this lesson with the Crabrix Academy tools.",
+   "Lesson: Variables (courseId \"basics\", lessonId \"variables\")"
+  ],
+  "lessonOverflow": 0,
+  "promptedCard": 1,
+  "afterAnswer": 1,
+  "cardAfterReload": 0,
+  "learnOverflow": 0,
+  "playgroundUrlAfterArrival": "http://localhost:3399/playground/?lesson=basics/variables",
+  "playgroundNotice": "Practice copy \u00b7 this lesson's code placed inside main. Edit it, then Run or Debug locally. Your saved drafts are not changed.",
+  "events": [
+   "{\"event\":\"with_ai_opened\"}",
+   "{\"event\":\"client_selected\",\"detail\":\"codex\"}",
+   "{\"event\":\"instructions_copied\",\"detail\":\"codex\"}",
+   "{\"event\":\"prompt_copied\",\"detail\":\"nodejs\"}",
+   "{\"event\":\"lesson_opened_from_ai\"}",
+   "{\"event\":\"prompt_copied\",\"detail\":\"lesson\"}",
+   "{\"event\":\"feedback_answered\",\"detail\":\"partly\"}",
+   "{\"event\":\"playground_opened_from_ai\",\"detail\":\"practice-copy\"}"
+  ],
+  "eventCookies": 0,
+  "errors": []
+ },
+ "820": {
+  "withAiClipboard": "codex mcp add crabrix-academy --url https://crabrix.com/mcp/academy",
+  "promptClipboard": "I am experienced with Node.js and TypeScript. Teach me Rust through Crabrix Academy using concepts familiar to backend developers. Give me practical exercises and use the Crabrix Playground when appropriate.",
+  "continueSection": 1,
+  "staticFeedback": 1,
+  "withAiOverflow": 0,
+  "lessonUrlAfterArrival": "http://localhost:3399/learn/basics/variables/",
+  "practiceButton": 1,
+  "lessonClipboard": [
+   "I'm learning Rust with Crabrix Academy. Teach me this lesson with the Crabrix Academy tools.",
+   "Lesson: Variables (courseId \"basics\", lessonId \"variables\")"
+  ],
+  "lessonOverflow": 0,
+  "promptedCard": 1,
+  "afterAnswer": 1,
+  "cardAfterReload": 0,
+  "learnOverflow": 0,
+  "playgroundUrlAfterArrival": "http://localhost:3399/playground/?lesson=basics/variables",
+  "playgroundNotice": "Practice copy \u00b7 this lesson's code placed inside main. Edit it, then Run or Debug locally. Your saved drafts are not changed.",
+  "events": [
+   "{\"event\":\"with_ai_opened\"}",
+   "{\"event\":\"client_selected\",\"detail\":\"codex\"}",
+   "{\"event\":\"instructions_copied\",\"detail\":\"codex\"}",
+   "{\"event\":\"prompt_copied\",\"detail\":\"nodejs\"}",
+   "{\"event\":\"lesson_opened_from_ai\"}",
+   "{\"event\":\"prompt_copied\",\"detail\":\"lesson\"}",
+   "{\"event\":\"feedback_answered\",\"detail\":\"partly\"}",
+   "{\"event\":\"playground_opened_from_ai\",\"detail\":\"practice-copy\"}"
+  ],
+  "eventCookies": 0,
+  "errors": []
+ },
+ "1440": {
+  "withAiClipboard": "codex mcp add crabrix-academy --url https://crabrix.com/mcp/academy",
+  "promptClipboard": "I am experienced with Node.js and TypeScript. Teach me Rust through Crabrix Academy using concepts familiar to backend developers. Give me practical exercises and use the Crabrix Playground when appropriate.",
+  "continueSection": 1,
+  "staticFeedback": 1,
+  "withAiOverflow": 0,
+  "lessonUrlAfterArrival": "http://localhost:3399/learn/basics/variables/",
+  "practiceButton": 1,
+  "lessonClipboard": [
+   "I'm learning Rust with Crabrix Academy. Teach me this lesson with the Crabrix Academy tools.",
+   "Lesson: Variables (courseId \"basics\", lessonId \"variables\")"
+  ],
+  "lessonOverflow": 0,
+  "promptedCard": 1,
+  "afterAnswer": 1,
+  "cardAfterReload": 0,
+  "learnOverflow": 0,
+  "playgroundUrlAfterArrival": "http://localhost:3399/playground/?lesson=basics/variables",
+  "playgroundNotice": "Practice copy \u00b7 this lesson's code placed inside main. Edit it, then Run or Debug locally. Your saved drafts are not changed.",
+  "runOutput": "Exit 0 \u00b7 0.29s total \u00b7 compiled locally",
+  "events": [
+   "{\"event\":\"with_ai_opened\"}",
+   "{\"event\":\"client_selected\",\"detail\":\"codex\"}",
+   "{\"event\":\"instructions_copied\",\"detail\":\"codex\"}",
+   "{\"event\":\"prompt_copied\",\"detail\":\"nodejs\"}",
+   "{\"event\":\"lesson_opened_from_ai\"}",
+   "{\"event\":\"prompt_copied\",\"detail\":\"lesson\"}",
+   "{\"event\":\"feedback_answered\",\"detail\":\"partly\"}",
+   "{\"event\":\"playground_opened_from_ai\",\"detail\":\"practice-copy\"}",
+   "{\"event\":\"first_run_from_ai\"}"
+  ],
+  "eventCookies": 0,
+  "errors": []
+ },
+ "gpcEventsSent": 0
+}

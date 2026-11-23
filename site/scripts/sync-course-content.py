@@ -132,6 +132,39 @@ def main() -> None:
         "rustLessonCount": sum(counts.values()) - counts["algorithms"],
         "courses": courses,
     }
+    # AI teaching metadata (not part of any CoursePack) and the Examples library for the
+    # public, read-only Academy API.
+    academy = source / "academy"
+    if (academy / "learning-paths.json").is_file():
+        shutil.copyfile(academy / "learning-paths.json", SITE / "content" / "academy-paths.json")
+        shutil.copyfile(academy / "teaching-contract.md", SITE / "content" / "academy-teaching-contract.md")
+    # Playground practice copies (qualified with rustc in crabrix-courses) and the portable
+    # AI Learning State schema. Neither is part of a CoursePack.
+    for name, target in (("practice-starters.json", "academy-practice-starters.json"),
+                         ("learning-state.schema.json", "academy-learning-state.schema.json")):
+        if (academy / name).is_file():
+            shutil.copyfile(academy / name, SITE / "content" / target)
+    gallery = source / "courses" / "examples" / "library-projects"
+    examples = []
+    for project_root in sorted(path for path in gallery.iterdir() if path.is_dir()):
+        metadata = read_json(project_root / "project.json")
+        files = {}
+        for path in sorted(project_root.rglob("*")):
+            relative = path.relative_to(project_root).as_posix()
+            if path.is_file() and relative not in {"project.json", "README.md"} and path.stat().st_size <= 65536:
+                files[relative] = path.read_text(encoding="utf-8")
+        examples.append({
+            "id": metadata["id"], "title": metadata["title"], "detail": metadata["detail"],
+            "difficulty": metadata["difficulty"], "category": metadata["category"],
+            "concepts": metadata["concepts"], "order": metadata["order"],
+            "entryFile": metadata["project"]["entryFile"],
+            "readme": (project_root / "README.md").read_text(encoding="utf-8"), "files": files,
+        })
+    examples.sort(key=lambda example: example["order"])
+    (SITE / "content" / "academy-examples.json").write_text(
+        json.dumps({"schemaVersion": 1, "examples": examples}, ensure_ascii=False, separators=(",", ":")) + "\n",
+        encoding="utf-8")
+
     destination = SITE / "content" / "courses.json"
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")

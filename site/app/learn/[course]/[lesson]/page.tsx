@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { pageMetadata, pageUrl, breadcrumbs } from "@/lib/seo";
+import { pageMetadata, pageUrl, breadcrumbs, siteOrigin } from "@/lib/seo";
 import { lessonDescription, lessonPageModifiedDate } from "@/lib/lesson-seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { bridgeLessonsCrediting, courseById, courseLessons, lessonById, lessonRef } from "@/lib/courses";
 import { appSupportsBridgeCredits, bridgeAudience } from "@/lib/bridges";
+import { FEEDBACK_MAIL, lessonPrompt } from "@/lib/ai-learning";
+import { LessonAIHandoff } from "@/components/lesson-ai-handoff";
+import { AIArrival, AIFeedback } from "@/components/ai-learning-client";
+import { playgroundAvailable, playgroundKind } from "@/lib/academy";
+import { aiLearningEnabled } from "@/lib/flags";
 import { SyntaxCode } from "@/components/SyntaxCode";
 import { StructuredData } from "@/components/structured-data";
 import { CourseIcon } from "@/components/course-icon";
@@ -87,13 +92,17 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
   const index = lessons.findIndex((item) => item.id === lesson.id);
   const isBasics = course.id === "basics";
   const explanationParagraphs = writing?.explanation?.split(/\n\s*\n/) || [];
+  // A qualified practice copy of this lesson's own code (lessons with a project keep their button).
+  const practiceLink = playgroundKind(course, lesson) === "practice-copy" && <p><Link prefetch={false} className="btn ghost" href={`/playground/?lesson=${course.id}/${lesson.id}`} target="_blank" rel="nofollow noopener">Practise this code in Playground ↗</Link></p>;
   const exampleSection = bridge ? (writing?.practiceCode && <section><h2>The {bridge.fromLabel} habit, written in Rust</h2>
     <p>This is how the {bridge.fromLabel} version usually looks on a first attempt in Rust. Predict what rustc says before you read the explanation.</p>
     <SyntaxCode code={writing.practiceCode} language="rust" />
+    {practiceLink}
   </section>) : (writing?.exampleCode || writing?.practiceCode) && <section><h2>Read the code</h2>
     {writing?.exampleCode && <><SyntaxCode code={writing.exampleCode} />{writing.exampleCaption && <p>{prose(writing.exampleCaption)}</p>}</>}
     {writing?.practiceCode && writing.practiceCode !== writing.exampleCode && <><h3>Practice starter</h3><SyntaxCode code={writing.practiceCode} /></>}
     {lesson.playgroundProject && <p><Link prefetch={false} className="btn" href={`/playground/?lesson=${course.id}/${lesson.id}`} target="_blank" rel="nofollow noopener">Open local example in Playground ↗</Link></p>}
+    {practiceLink}
   </section>;
   return (
     <div className="site-shell lesson-page">
@@ -186,6 +195,18 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
           <figcaption>{prose(lesson.illustration.caption)}</figcaption>
         </figure>}
         {algorithm?.expectedAnswer && <details><summary>Reveal the Algorithm Atlas answer</summary><p><code>{algorithm.expectedAnswer}</code></p></details>}
+        {aiLearningEnabled() && (() => {
+          const prompt = lessonPrompt({ courseId: course.id, lessonId: lesson.id, title: lesson.title,
+            goal: writing?.rule || lesson.concept, url: pageUrl(`/learn/${course.id}/${lesson.id}/`),
+            playgroundUrl: playgroundAvailable(course, lesson) ? `${siteOrigin}/playground/?lesson=${course.id}/${lesson.id}` : undefined });
+          return <details className="ai-lesson">
+            <summary>Learn this lesson with AI</summary>
+            <p>Paste this into Claude, Codex, Cursor or another agent connected to <Link prefetch={false} href="/learn/with-ai/#connect">Crabrix Academy</Link>. It contains only this lesson&rsquo;s public details.</p>
+            <pre className="ai-prompt">{prompt}</pre>
+            <LessonAIHandoff prompt={prompt} />
+          </details>;
+        })()}
+        {aiLearningEnabled() && <><AIArrival place="lesson" /><AIFeedback mode="prompted" mail={FEEDBACK_MAIL} /></>}
         {relatedReading}
         {patternNavigation}
         <nav className="lesson-list" aria-label="Lesson navigation">

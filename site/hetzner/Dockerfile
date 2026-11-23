@@ -13,6 +13,7 @@ COPY --from=build --chown=node:node /app/.next/standalone ./
 COPY --from=build --chown=node:node /app/.next/static ./.next/static
 COPY --from=build --chown=node:node /app/public ./public
 COPY --from=build --chown=node:node /app/scripts/backup-accounts.mjs ./scripts/backup-accounts.mjs
+COPY --from=build --chown=node:node /app/scripts/academy-events-report.mjs ./scripts/academy-events-report.mjs
 USER node
 EXPOSE 8080
 CMD ["node", "server.js"]
