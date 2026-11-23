@@ -1,0 +1,24 @@
+{
+ "date": "2026-11-23",
+ "target": "crabrix-web",
+ "node": "52efe55c-ac21-439d-a10c-19a0d47da4a1",
+ "sourceCommit": "cf194767e683731c0dc0b34aed70be3e9cd5fbab",
+ "courseSourceCommit": "cc73b6dd5d5d777094fbafb2fa9238b799890d6c",
+ "overlay": {
+  "uploadId": "crabrix-site-20261123-theory",
+  "files": 10,
+  "baseRevision": "sha256:52ce709aa531e54d9a873ad2519a56d73705d56eca0ae51c4c9346bb66c11849",
+  "revision": "sha256:2eaa5b4bdc0fc23a2a32c13afb4697339f7ede5082a9c9096cce7597495e35aa"
+ },
+ "previousImage": "sha256:7697bf5c4ed29f2f8d07f3631198d66d11011eb41e5a71d36e788e0fa58336e5",
+ "builtImage": "sha256:7fddf5008e036198d1521c567af953249baaf8a25b1b968404d776c7352fd6d3",
+ "publishedDigest": "sha256:637e76013f3c3c37b27bd7867a14da5661da15372c0967f332747d0c29fe56b9",
+ "diskBudget": "First build refused: 9.80 GB free < 10 GiB minimum. retention_run removed six superseded shared build-cache images (559 MB freed, 10.36 GB free); minFreeBytes was lowered to 9.5 GiB for this build and restored to 10 GiB afterwards. Current, published and rollback versions were untouched.",
+ "checks": {
+  "siteTests": "168/168",
+  "typescript": "pass",
+  "build": "pass",
+  "production": "200 for What Rust Is, both bridge intro lessons and the new image; browser runs at 390/820/1440 px with no overflow, page errors or broken images"
+ },
+ "rollback": "redeploy sha256:7697bf5c4ed29f2f8d07f3631198d66d11011eb41e5a71d36e788e0fa58336e5"
+}

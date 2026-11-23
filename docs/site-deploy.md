@@ -1,5 +1,15 @@
 # Crabrix website deployment
 
+## What Rust Is and Rust at a glance — 23 November 2026
+
+Overlay of 10 files from main `cf19476` (courses `cc73b6d`): the new first Basics lesson
+`/learn/basics/what-is-rust/` and the bridge theory units. Image `sha256:7fddf500…`.
+The node's build budget refused the first build (9.80 GB free < 10 GiB); `retention_run`
+freed 559 MB of superseded build cache, `minFreeBytes` was lowered to 9.5 GiB for this
+build and restored to 10 GiB. **The node is near its build floor; the next release will
+need more retention or disk.** Rollback: `sha256:7697bf5c…`.
+[Receipt](site-release-2026-11-23-theory.json).
+
 ## Rust for C and Node.js developers — 23 November 2026
 
 Overlay of 50 site files from main `3c8f61e` (courses `3da810a`) on node `52efe55c`:
