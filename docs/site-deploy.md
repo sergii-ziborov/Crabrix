@@ -1,5 +1,15 @@
 # Crabrix website deployment
 
+## Rust for C and Node.js developers — 23 November 2026
+
+Overlay of 50 site files from main `3c8f61e` (courses `3da810a`) on node `52efe55c`:
+`/learn/rust-for-c-developers/` and `/learn/rust-for-nodejs-developers/` (34 lessons),
+side-by-side code, skip maps and reverse links from covered Academy lessons. The remote
+tree matched `15e93d8` before the upload (only `site/README.md` drifted). Image
+`sha256:7697bf5c…` (registry `sha256:21ca3894…`). 168 tests, TypeScript, build and
+production browser runs at 390/820/1440 px passed. Rollback: redeploy `sha256:266af156…`.
+Overlay tooling: `build/site-release-20261123/`. [Receipt](site-release-2026-11-23.json).
+
 ## Current hosting and release — 18 November 2026
 
 Production now runs on Hostwatch node `52efe55c-ac21-439d-a10c-19a0d47da4a1`

@@ -1,0 +1,25 @@
+{
+ "date": "2026-11-23",
+ "target": "crabrix-web",
+ "node": "52efe55c-ac21-439d-a10c-19a0d47da4a1",
+ "sourceCommit": "3c8f61e6e49be9b816b210047ffc955ba60a21e3",
+ "courseSourceCommit": "3da810a3a8a4295809b009e0e19af35f844c2c9d",
+ "overlay": {
+  "uploadId": "crabrix-site-20261123-bridges",
+  "files": 50,
+  "sha256": "e0f5e0360ffa10a00a3825ff7fe391b0a4ea73d29766e85ab916c8a5612ee74e",
+  "baseRevision": "sha256:82ecc37fc278223ae2831fcfa868a87fdb25b0671a9651f058b0ab96b5e4c5c4",
+  "revision": "sha256:5acdc550245a3cf7f543defea5b0e5b03836e674de2e09023579c9aea7c457b2"
+ },
+ "previousImage": "sha256:266af15626108b02f532b865b54e4d6a60438930e1035e988f75dd7a69a98e0c",
+ "builtImage": "sha256:7697bf5c4ed29f2f8d07f3631198d66d11011eb41e5a71d36e788e0fa58336e5",
+ "publishedDigest": "sha256:21ca3894730d539c8a4d17630df9f3efaf218dd0c2d08ccd36ab605b95b67e40",
+ "preDeployDrift": "Remote tree matched 15e93d8 except site/README.md and the two untracked playground runtime binaries.",
+ "checks": {
+  "siteTests": "168/168",
+  "typescript": "pass",
+  "build": "pass",
+  "production": "200 for both course pages, two lessons, a credited Academy lesson, a bridge image; 36 bridge sitemap URLs; browser runs at 390/820/1440 px on 6 pages with no overflow, page errors or broken images"
+ },
+ "rollback": "redeploy sha256:266af15626108b02f532b865b54e4d6a60438930e1035e988f75dd7a69a98e0c"
+}
