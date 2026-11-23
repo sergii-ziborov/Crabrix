@@ -127,3 +127,7 @@ for (const id of ["public-api-compatibility", "msrv-verification", "feature-comp
   lessonModifiedDates[`projects/${id}`] = "2026-11-06T13:27:00+02:00";
 }
 courseModifiedDates.projects = "2026-11-06T13:27:00+02:00";
+
+// "What Rust Is" opens Rust Basics; published with the bridge courses.
+lessonModifiedDates["basics/what-is-rust"] = bridgePublishedDate;
+courseModifiedDates.basics = bridgePublishedDate;
